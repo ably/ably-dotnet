@@ -46,8 +46,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AblyWebException.cs" />
     <Compile Include="AblyException.cs" />
-    <Compile Include="AblyException1.cs" />
     <Compile Include="AblyInvalidApiKeyException.cs" />
     <Compile Include="AblyRequest.cs" />
     <Compile Include="AblyResponse.cs" />
