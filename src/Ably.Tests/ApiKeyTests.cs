@@ -19,7 +19,7 @@ namespace Ably.Tests
         [InlineData(null)]
         public void Parse_WithKeyNotContaining3PartsSeparatedByColon_ThrowsInvalidKeyException(string key)
         {
-            Assert.Throws<AblyInvalidApiKeyException>(delegate { ApiKey.Parse(key); });
+            Assert.Throws<AblyException>(delegate { ApiKey.Parse(key); });
         }
 
         [Fact]

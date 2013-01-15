@@ -1,13 +1,6 @@
-﻿using Newtonsoft.Json;
-using NLog;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
-using System.Net;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ably
 {
@@ -31,19 +24,22 @@ namespace Ably
         {
             get { return _KeyValue; }
         }
-        private ApiKey()
+        
+        internal ApiKey(string appId)
         {
-
+            _AppId = appId;
         }
+
+        private ApiKey() { }
 
         public static ApiKey Parse(string key)
         {
             if (string.IsNullOrWhiteSpace(key))
-                throw new AblyInvalidApiKeyException(key);
+                new ArgumentException("Ably key was not specified").Throw();
 
             var parts = key.Trim().Split(':');
             if (parts.Length != 3)
-                throw new AblyInvalidApiKeyException(key);
+                new ArgumentOutOfRangeException("Ably key must contain three parts").Throw();
 
             return new ApiKey() { _AppId = parts[0], _KeyId = parts[1], _KeyValue = parts[2] };
         }

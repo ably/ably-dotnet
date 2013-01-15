@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading;
 
 namespace Ably
 {
-    public class RequestTokenOptions
+    public class RequestTokenParams
     {
-        public string ClientId { get; set; }
-        public string Capability { get; set; }
-        public TimeSpan? Expires { get; set; }
-
+        public String Id { get; set;}
+        public TimeSpan? Ttl { get; set; }
+        public String Capability { get; set; }
+        public String ClientId { get; set; }
+        public long TimeStamp { get; set; }
+        public String Nonce { get; set; }
+        public String Mac { get; set; }
     }
 }

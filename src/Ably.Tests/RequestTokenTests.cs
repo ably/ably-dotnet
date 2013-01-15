@@ -51,7 +51,7 @@ namespace Ably.Tests
             var rest = GetRestClient();
 
 
-            rest.RequestToken(new RequestTokenOptions { Capability = "Blah" });
+            rest.RequestToken(new RequestTokenParams { Capability = "Blah" });
 
             var expectedUnixTime = Now.AddHours(1).ToUnixTime().ToString();
             Assert.Equal(expectedUnixTime, CurrentRequest.PostParameters["expires"]);
@@ -75,7 +75,7 @@ namespace Ably.Tests
         {
             var options = SendRequestTokenWithValidOptions();
 
-            var expectedUnixTime = Now.Add(options.Expires.Value).ToUnixTime().ToString();
+            var expectedUnixTime = Now.Add(options.Ttl.Value).ToUnixTime().ToString();
             Assert.Equal(expectedUnixTime, CurrentRequest.PostParameters["expires"]);
 
         }
@@ -101,7 +101,7 @@ namespace Ably.Tests
         {
             var rest = GetRestClient();
 
-            rest.RequestToken(new RequestTokenOptions { Capability = "Test" });
+            rest.RequestToken(new RequestTokenParams { Capability = "Test" });
 
             Assert.False(CurrentRequest.PostParameters.ContainsKey("client_id"));
         }
@@ -149,10 +149,10 @@ namespace Ably.Tests
             Assert.Equal(mac, CurrentRequest.PostParameters["mac"]);
         }
 
-        private RequestTokenOptions SendRequestTokenWithValidOptions()
+        private RequestTokenParams SendRequestTokenWithValidOptions()
         {
             var rest = GetRestClient();
-            var options = new RequestTokenOptions { Capability = "Blah", ClientId = "ClientId", Expires = TimeSpan.FromMinutes(10) };
+            var options = new RequestTokenParams { Capability = "Blah", ClientId = "ClientId", Ttl = TimeSpan.FromMinutes(10) };
 
             //Act
             rest.RequestToken(options);

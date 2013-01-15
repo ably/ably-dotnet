@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Runtime.Serialization;
 
 namespace Ably
@@ -28,5 +29,8 @@ namespace Ably
 
         }
 
+        public HttpStatusCode? HttpStatusCode { get; set; }
+        public string ErrorCode { get; set; }
+        public string Reason { get { return Message; } }
     }
 }
