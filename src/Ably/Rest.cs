@@ -1,3 +1,4 @@
+using Ably.Auth;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -11,11 +12,19 @@ namespace Ably
         internal static string DefaultHost = "ably.io";
     }
 
-    public class Rest
+    public interface IAuthCommands
+    {
+        Token RequestToken(AuthOptions options);
+        Token Authorise(AuthOptions options, TokenRequest request);
+        Token CreateTokenRequest(AuthOptions options, TokenRequest request);
+    }
+
+    public class Rest : IAuthCommands
     {
         private AblyHttpClient _client;
         private AblyOptions _options;
         private ILogger Logger = Config.AblyLogger;
+        private Token _token;
 
         public Rest()
         {
@@ -84,6 +93,11 @@ namespace Ably
             _client = new AblyHttpClient(_options.AppId, host, _options.Port, _options.Encrypted);
         }
 
+        public IAuthCommands Auth
+        {
+            get { return this; }
+        }
+
         internal Func<AblyRequest, AblyResponse> ExecuteRequest = ExecuteRequestInternal;
 
         internal Func<DateTime> Now = () => DateTime.Now;
@@ -127,6 +141,21 @@ namespace Ably
             var signText = string.Join("\n", values) + "\n";
 
             return signText.ComputeHMacSha256(key);
+        }
+
+        Token IAuthCommands.RequestToken(AuthOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        Token IAuthCommands.Authorise(AuthOptions options, TokenRequest request)
+        {
+            throw new NotImplementedException();
+        }
+
+        Token IAuthCommands.CreateTokenRequest(AuthOptions options, TokenRequest request)
+        {
+            throw new NotImplementedException();
         }
     }
 }

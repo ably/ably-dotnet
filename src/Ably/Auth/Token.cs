@@ -27,7 +27,7 @@ namespace Ably.Auth
         }
     }
 
-    internal sealed class TokenRequest
+    public sealed class TokenRequest
     {
         [JsonProperty("id")]
         public String Id { get; set; }

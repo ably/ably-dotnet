@@ -6,7 +6,7 @@ namespace Ably
 {
     public class AblyRequest
     {
-        private string host = "rest.ably.io";
+        
 
         public AblyRequest(string url)
         {
