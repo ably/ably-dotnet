@@ -25,6 +25,11 @@ namespace Ably.Tests
             }
         }
 
+        private static Rest GetRestClient()
+        {
+            return new Rest(ValidKey);
+        }
+
         [Fact]
         public void Ctor_WithNoParametersAndNoAblyConnectionString_Throws()
         {
@@ -86,7 +91,7 @@ namespace Ably.Tests
         [Fact]
         public void ChannelsGet_ReturnsNewChannelWithName()
         {
-            var rest = new Rest(ValidKey);
+            var rest = GetRestClient();
 
             var channel = rest.Channels.Get("Test");
 
@@ -96,7 +101,7 @@ namespace Ably.Tests
         [Fact]
         public void Stats_CreatesGetRequestWithCorrectPath()
         {
-            var rest = new Rest(ValidKey);
+            var rest = GetRestClient();
             
 
             AblyRequest request = null;
@@ -107,10 +112,11 @@ namespace Ably.Tests
             Assert.Equal("/apps/" + rest.Options.AppId + "/stats", request.Path);
         }
 
+        
         [Fact]
         public void Stats_WithQuery_SetsCorrectRequestHeaders()
         {
-            var rest = new Rest(ValidKey);
+            var rest = GetRestClient();
             AblyRequest request = null;
             rest.ExecuteRequest = x => { request = x; return (AblyResponse)null; };
             var query = new DataRequestQuery();
@@ -120,6 +126,39 @@ namespace Ably.Tests
             query.Direction = QueryDirection.Forwards;
             query.Limit = 1000;
             rest.Stats(query);
+
+            request.AssertContainsParameter("start", query.Start.Value.ToUnixTime().ToString());
+            request.AssertContainsParameter("end", query.End.Value.ToUnixTime().ToString());
+            request.AssertContainsParameter("direction", query.Direction.ToString().ToLower());
+            request.AssertContainsParameter("limit", query.Limit.Value.ToString());
+        }
+
+        [Fact]
+        public void History_WithNoOptions_CreateGetRequestWithValidPath()
+        {
+            var rest = GetRestClient();
+            AblyRequest request = null;
+            rest.ExecuteRequest = x => { request = x; return (AblyResponse)null; };
+            rest.History();
+
+            Assert.Equal(HttpMethod.Get, request.Method);
+            Assert.Equal(String.Format("/apps/{0}/history", rest.Options.AppId), request.Path);
+        }
+
+        [Fact]
+        public void History_WithOptions_AddsParametersToRequest()
+        {
+            var rest = GetRestClient();
+            AblyRequest request = null;
+            rest.ExecuteRequest = x => { request = x; return (AblyResponse)null; };
+
+            var query = new DataRequestQuery();
+            DateTime now = DateTime.Now;
+            query.Start = now.AddHours(-1);
+            query.End = now;
+            query.Direction = QueryDirection.Forwards;
+            query.Limit = 1000;
+            rest.History(query);
 
             request.AssertContainsParameter("start", query.Start.Value.ToUnixTime().ToString());
             request.AssertContainsParameter("end", query.End.Value.ToUnixTime().ToString());
