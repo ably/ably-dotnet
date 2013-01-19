@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Xunit;
 using System.Runtime.Serialization;
 using Xunit.Extensions;
+using System.Net.Http;
 
 namespace Ably.Tests
 {
@@ -92,6 +93,38 @@ namespace Ably.Tests
             Assert.Equal("Test", channel.Name);
         }
 
-        
+        [Fact]
+        public void Stats_CreatesGetRequestWithCorrectPath()
+        {
+            var rest = new Rest(ValidKey);
+            
+
+            AblyRequest request = null;
+            rest.ExecuteRequest = x => { request = x; return (AblyResponse)null; };
+            rest.Stats();
+
+            Assert.Equal(HttpMethod.Get, request.Method);
+            Assert.Equal("/apps/" + rest.Options.AppId + "/stats", request.Path);
+        }
+
+        [Fact]
+        public void Stats_WithQuery_SetsCorrectRequestHeaders()
+        {
+            var rest = new Rest(ValidKey);
+            AblyRequest request = null;
+            rest.ExecuteRequest = x => { request = x; return (AblyResponse)null; };
+            var query = new DataRequestQuery();
+            DateTime now = DateTime.Now;
+            query.Start = now.AddHours(-1);
+            query.End = now;
+            query.Direction = QueryDirection.Forwards;
+            query.Limit = 1000;
+            rest.Stats(query);
+
+            request.AssertContainsParameter("start", query.Start.Value.ToUnixTime().ToString());
+            request.AssertContainsParameter("end", query.End.Value.ToUnixTime().ToString());
+            request.AssertContainsParameter("direction", query.Direction.ToString().ToLower());
+            request.AssertContainsParameter("limit", query.Limit.Value.ToString());
+        }
     }
 }

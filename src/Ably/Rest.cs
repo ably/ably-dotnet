@@ -183,6 +183,32 @@ namespace Ably
             return DateTimeOffset.Now;
         }
 
+        public Stats Stats()
+        {
+            return Stats(new DataRequestQuery());
+        }
+
+        public Stats Stats(DataRequestQuery query)
+        {
+            query.Validate();
+
+            var request = CreateGetRequest("/apps/" + Options.AppId + "/stats");
+
+            if (query.Start.HasValue)
+                request.QueryParameters.Add("start", query.Start.Value.ToUnixTime().ToString());
+
+            if (query.End.HasValue)
+                request.QueryParameters.Add("end", query.End.Value.ToUnixTime().ToString());
+
+            request.QueryParameters.Add("direction", query.Direction.ToString().ToLower());
+            if (query.Limit.HasValue)
+                request.QueryParameters.Add("limit", query.Limit.Value.ToString());
+
+            ExecuteRequest(request);
+
+            return new Stats();
+        }
+
         internal AblyRequest CreateGetRequest(string path)
         {
             var request = new AblyRequest(path, HttpMethod.Get);

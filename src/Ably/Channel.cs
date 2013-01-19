@@ -61,8 +61,6 @@ namespace Ably
             return new List<Message>();
         }
 
-        
-
         public Stats Stats()
         {
             return Stats(new DataRequestQuery());
