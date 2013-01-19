@@ -8,13 +8,13 @@ using Xunit;
 
 namespace Ably.Tests
 {
-    public class RestApiTests
+    public abstract class RestApiTests
     {
-        private const string ValidKey = "AHSz6w:uQXPNQ:FGBZbsKSwqbCpkob";
-        private AblyRequest _currentRequest;
-        private MimeTypes mimeTypes = new MimeTypes();
+        protected const string ValidKey = "AHSz6w:uQXPNQ:FGBZbsKSwqbCpkob";
+        protected AblyRequest _currentRequest;
+        protected MimeTypes mimeTypes = new MimeTypes();
         
-        Rest GetRestClient()
+        protected Rest GetRestClient()
         {
             var rest = new Rest(ValidKey);
         
@@ -22,6 +22,9 @@ namespace Ably.Tests
             return rest;
         }
 
+    }
+    public class TimeTests : RestApiTests
+    {
         [Fact]
         public void Time_ShouldSendGetRequestToCorrectPathWithCorrectHeaders()
         {
