@@ -12,7 +12,7 @@ namespace Ably.Tests
     {
         protected const string ValidKey = "AHSz6w:uQXPNQ:FGBZbsKSwqbCpkob";
         protected AblyRequest _currentRequest;
-        protected MimeTypes mimeTypes = new MimeTypes();
+        internal MimeTypes mimeTypes = new MimeTypes();
         
         protected Rest GetRestClient()
         {

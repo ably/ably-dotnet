@@ -20,7 +20,12 @@ namespace Ably
         Token CreateTokenRequest(TokenRequest request, AuthOptions options);
     }
 
-    public class Rest : IAuthCommands
+    public interface IChannelCommands
+    {
+        IChannel Get(string name);
+    }
+
+    public class Rest : IAuthCommands, IChannelCommands
     {
         private AblyHttpClient _client;
         private AblyOptions _options;
@@ -100,6 +105,11 @@ namespace Ably
         }
 
         public IAuthCommands Auth
+        {
+            get { return this; }
+        }
+
+        public IChannelCommands Channels
         {
             get { return this; }
         }
@@ -209,5 +219,10 @@ namespace Ably
         //    }
         //    return headers;
         //}
+
+        IChannel IChannelCommands.Get(string name)
+        {
+            return new Channel(this, name); 
+        }
     }
 }

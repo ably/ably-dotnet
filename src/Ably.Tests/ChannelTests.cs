@@ -8,11 +8,11 @@ using Xunit;
 namespace Ably.Tests
 {
     public class ChannelTests : RestApiTests
-    
     {
         [Fact]
         public void Publish_CreatesRequestWithValidPath()
         {
+            var rest = GetRestClient();
             
         }
     }

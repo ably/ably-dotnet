@@ -81,5 +81,15 @@ namespace Ably.Tests
 
             Assert.IsType<ArgumentException>(ex.InnerException);
         }
+
+        [Fact]
+        public void ChannelsGet_ReturnsNewChannelWithName()
+        {
+            var rest = new Rest(ValidKey);
+
+            var channel = rest.Channels.Get("Test");
+
+            Assert.Equal("Test", channel.Name);
+        }
     }
 }
