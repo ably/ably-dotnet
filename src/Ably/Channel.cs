@@ -43,7 +43,7 @@ namespace Ably
 
         public IEnumerable<Message> History(DataRequestQuery query)
         {
-            ValidateQuery(query);
+            query.Validate();
 
             var request = _restClient.CreateGetRequest(basePath + "/history");
 
@@ -61,25 +61,7 @@ namespace Ably
             return new List<Message>();
         }
 
-        private void ValidateQuery(DataRequestQuery query)
-        {
-            if (query.Limit.HasValue && (query.Limit < 0 || query.Limit > 10000))
-                new ArgumentOutOfRangeException("Limit", "History query limit must be between 0 and 10000").Throw();
-
-            if(query.Start.HasValue)
-            {
-                if (query.Start.Value < new DateTime(1970, 1, 1))
-                    new ArgumentOutOfRangeException("Start", "Start only supports dates after 1 January 1970").Throw();
-            }
-
-            if(query.End.HasValue)
-                if (query.End.Value < new DateTime(1970, 1, 1))
-                    new ArgumentOutOfRangeException("End", "End only supports dates after 1 January 1970").Throw();
-
-            if (query.Start.HasValue && query.End.HasValue)
-                if (query.End.Value < query.Start.Value)
-                    new ArgumentOutOfRangeException("End", "End date should be after Start date").Throw(); 
-        }
+        
 
         public Stats Stats()
         {
@@ -88,7 +70,7 @@ namespace Ably
 
         public Stats Stats(DataRequestQuery query)
         {
-            ValidateQuery(query);
+            query.Validate();
 
             var request = _restClient.CreateGetRequest(basePath + "/stats");
 
@@ -106,33 +88,6 @@ namespace Ably
 
             return new Stats() ;
         }
-    }
-
-    public class Message
-    {
-        public string Name { get; set; }
-        public string ChannelId { get; set; }
-        public object Data { get; set; }
-        public DateTimeOffset TimeStamp { get; set; }
-    }
-
-    public class DataRequestQuery
-    {
-        public DateTime? Start { get; set; }
-        public DateTime? End { get; set; }
-        public int? Limit { get; set; }
-        public HistoryDirection Direction { get; set; }
-
-        public DataRequestQuery()
-        {
-            Direction = HistoryDirection.Backwards;
-        }
-    }
-
-    public enum HistoryDirection
-    {
-        Forwards,
-        Backwards
     }
 
     public class ChannelPublishPayload

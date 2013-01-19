@@ -54,7 +54,7 @@ namespace Ably.Tests
             DateTime now = DateTime.Now;
             query.Start = now.AddHours(-1);
             query.End = now;
-            query.Direction = HistoryDirection.Forwards;
+            query.Direction = QueryDirection.Forwards;
             query.Limit = 1000;
             channel.History(query);
 
@@ -122,7 +122,7 @@ namespace Ably.Tests
             DateTime now = DateTime.Now;
             query.Start = now.AddHours(-1);
             query.End = now;
-            query.Direction = HistoryDirection.Forwards;
+            query.Direction = QueryDirection.Forwards;
             query.Limit = 1000;
             channel.Stats(query);
 
