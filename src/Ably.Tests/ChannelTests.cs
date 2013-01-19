@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using Xunit;
+using System.Threading;
+using Xunit.Extensions;
 
 namespace Ably.Tests
 {
@@ -16,7 +18,7 @@ namespace Ably.Tests
             channel.Publish("event", "data");
 
             Assert.Equal(HttpMethod.Post, _currentRequest.Method);
-            Assert.Equal("/apps/" + rest.Options.AppId + "/channels/" + channel.Name + "/publish", _currentRequest.Path);
+            Assert.Equal(String.Format("/apps/{0}/channels/{1}/publish", rest.Options.AppId, channel.Name), _currentRequest.Path);
         }
 
         [Fact]
@@ -30,6 +32,73 @@ namespace Ably.Tests
             var data = _currentRequest.Data as ChannelPublishPayload;
             Assert.Equal("data", data.Data);
             Assert.Equal("event", data.Name);
+        }
+
+        [Fact]
+        public void History_WithNoOptions_CreateGetRequestWithValidPath()
+        {
+            var rest = GetRestClient();
+            var channel = rest.Channels.Get("Test");
+            channel.History();
+
+            Assert.Equal(HttpMethod.Get, _currentRequest.Method);
+            Assert.Equal(String.Format("/apps/{0}/channels/{1}/history", rest.Options.AppId, channel.Name), _currentRequest.Path);
+        }
+
+        [Fact]
+         public void History_WithOptions_AddsParametersToRequest()
+        {
+            var rest = GetRestClient();
+            var channel = rest.Channels.Get("Test");
+            var query = new HistoryRequestQuery();
+            DateTime now = DateTime.Now;
+            query.Start = now.AddHours(-1);
+            query.End = now;
+            query.Direction = HistoryDirection.Forwards;
+            query.Limit = 1000;
+            channel.History(query);
+
+            _currentRequest.AssertContainsParameter("start", query.Start.Value.ToUnixTime().ToString());
+            _currentRequest.AssertContainsParameter("end", query.End.Value.ToUnixTime().ToString());
+            _currentRequest.AssertContainsParameter("direction", query.Direction.ToString().ToLower());
+            _currentRequest.AssertContainsParameter("limit", query.Limit.Value.ToString());
+        }
+
+        [Theory]
+        [InlineData(10001)]
+        [InlineData(-1)]
+        public void History_WithInvalidLimit_Throws(int limit)
+        {
+            var rest = GetRestClient();
+            var channel = rest.Channels.Get("Test");
+            var query = new HistoryRequestQuery() { Limit = limit };
+
+            var ex = Assert.Throws<AblyException>(delegate { channel.History(query); });
+
+            Assert.IsType<ArgumentOutOfRangeException>(ex.InnerException);
+        }
+
+        [Theory]
+        [PropertyData("InvalidHistoryDates")]
+        public void History_WithInvalidStartOrEnd_Throws(DateTime start, DateTime end)
+        {
+            var rest = GetRestClient();
+            var channel = rest.Channels.Get("Test");
+            var query = new HistoryRequestQuery() { Start = start, End = end };
+
+            var ex = Assert.Throws<AblyException>(delegate { channel.History(query); });
+
+            Assert.IsType<ArgumentOutOfRangeException>(ex.InnerException);
+        }
+
+        public static IEnumerable<object[]> InvalidHistoryDates
+        {
+            get
+            {
+                yield return new object[] { new DateTime(1969, 1, 1), DateTime.Now };
+                yield return new object[] { new DateTime(2000, 1, 1), new DateTime(1999, 12, 31) };
+                yield return new object[] { null, new DateTime(1969, 12, 31) };
+            }
         }
     }
 

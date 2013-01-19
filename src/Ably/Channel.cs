@@ -8,6 +8,8 @@ namespace Ably
     public interface IChannel
     {
         void Publish(string name, object data);
+        IEnumerable<Message> History();
+        IEnumerable<Message> History(HistoryRequestQuery parameters);
         string Name { get; }
     }
 
@@ -31,7 +33,78 @@ namespace Ably
             request.Data = new ChannelPublishPayload { Name = name, Data = data };
             _restClient.ExecuteRequest(request);
         }
-        
+
+        public IEnumerable<Message> History()
+        {
+            return History(new HistoryRequestQuery());
+        }
+
+        public IEnumerable<Message> History(HistoryRequestQuery query)
+        {
+            ValidateQuery(query);
+
+            var request = _restClient.CreateGetRequest(basePath + "/history");
+
+            if (query.Start.HasValue)
+                request.QueryParameters.Add("start", query.Start.Value.ToUnixTime().ToString());
+
+            if (query.End.HasValue)
+                request.QueryParameters.Add("end", query.End.Value.ToUnixTime().ToString());
+
+            request.QueryParameters.Add("direction", query.Direction.ToString().ToLower());
+            if (query.Limit.HasValue)
+                request.QueryParameters.Add("limit", query.Limit.Value.ToString());
+
+            _restClient.ExecuteRequest(request);
+            return null;
+        }
+
+        private void ValidateQuery(HistoryRequestQuery query)
+        {
+            if (query.Limit.HasValue && (query.Limit < 0 || query.Limit > 10000))
+                new ArgumentOutOfRangeException("Limit", "History query limit must be between 0 and 10000").Throw();
+
+            if(query.Start.HasValue)
+            {
+                if (query.Start.Value < new DateTime(1970, 1, 1))
+                    new ArgumentOutOfRangeException("Start", "Start only supports dates after 1 January 1970").Throw();
+            }
+
+            if(query.End.HasValue)
+                if (query.End.Value < new DateTime(1970, 1, 1))
+                    new ArgumentOutOfRangeException("End", "End only supports dates after 1 January 1970").Throw();
+
+            if (query.Start.HasValue && query.End.HasValue)
+                if (query.End.Value < query.Start.Value)
+                    new ArgumentOutOfRangeException("End", "End date should be after Start date").Throw(); 
+        }
+    }
+
+    public class Message
+    {
+        public string Name { get; set; }
+        public string ChannelId { get; set; }
+        public object Data { get; set; }
+        public DateTimeOffset TimeStamp { get; set; }
+    }
+
+    public class HistoryRequestQuery
+    {
+        public DateTime? Start { get; set; }
+        public DateTime? End { get; set; }
+        public int? Limit { get; set; }
+        public HistoryDirection Direction { get; set; }
+
+        public HistoryRequestQuery()
+        {
+            Direction = HistoryDirection.Backwards;
+        }
+    }
+
+    public enum HistoryDirection
+    {
+        Forwards,
+        Backwards
     }
 
     public class ChannelPublishPayload
