@@ -9,7 +9,9 @@ namespace Ably
     {
         void Publish(string name, object data);
         IEnumerable<Message> History();
-        IEnumerable<Message> History(HistoryRequestQuery parameters);
+        IEnumerable<Message> History(DataRequestQuery query);
+        Stats Stats();
+        Stats Stats(DataRequestQuery query);
         string Name { get; }
     }
 
@@ -36,10 +38,10 @@ namespace Ably
 
         public IEnumerable<Message> History()
         {
-            return History(new HistoryRequestQuery());
+            return History(new DataRequestQuery());
         }
 
-        public IEnumerable<Message> History(HistoryRequestQuery query)
+        public IEnumerable<Message> History(DataRequestQuery query)
         {
             ValidateQuery(query);
 
@@ -56,10 +58,10 @@ namespace Ably
                 request.QueryParameters.Add("limit", query.Limit.Value.ToString());
 
             _restClient.ExecuteRequest(request);
-            return null;
+            return new List<Message>();
         }
 
-        private void ValidateQuery(HistoryRequestQuery query)
+        private void ValidateQuery(DataRequestQuery query)
         {
             if (query.Limit.HasValue && (query.Limit < 0 || query.Limit > 10000))
                 new ArgumentOutOfRangeException("Limit", "History query limit must be between 0 and 10000").Throw();
@@ -78,6 +80,32 @@ namespace Ably
                 if (query.End.Value < query.Start.Value)
                     new ArgumentOutOfRangeException("End", "End date should be after Start date").Throw(); 
         }
+
+        public Stats Stats()
+        {
+            return Stats(new DataRequestQuery());
+        }
+
+        public Stats Stats(DataRequestQuery query)
+        {
+            ValidateQuery(query);
+
+            var request = _restClient.CreateGetRequest(basePath + "/stats");
+
+            if (query.Start.HasValue)
+                request.QueryParameters.Add("start", query.Start.Value.ToUnixTime().ToString());
+
+            if (query.End.HasValue)
+                request.QueryParameters.Add("end", query.End.Value.ToUnixTime().ToString());
+
+            request.QueryParameters.Add("direction", query.Direction.ToString().ToLower());
+            if (query.Limit.HasValue)
+                request.QueryParameters.Add("limit", query.Limit.Value.ToString());
+
+            _restClient.ExecuteRequest(request);
+
+            return new Stats() ;
+        }
     }
 
     public class Message
@@ -88,14 +116,14 @@ namespace Ably
         public DateTimeOffset TimeStamp { get; set; }
     }
 
-    public class HistoryRequestQuery
+    public class DataRequestQuery
     {
         public DateTime? Start { get; set; }
         public DateTime? End { get; set; }
         public int? Limit { get; set; }
         public HistoryDirection Direction { get; set; }
 
-        public HistoryRequestQuery()
+        public DataRequestQuery()
         {
             Direction = HistoryDirection.Backwards;
         }

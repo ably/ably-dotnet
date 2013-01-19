@@ -50,7 +50,7 @@ namespace Ably.Tests
         {
             var rest = GetRestClient();
             var channel = rest.Channels.Get("Test");
-            var query = new HistoryRequestQuery();
+            var query = new DataRequestQuery();
             DateTime now = DateTime.Now;
             query.Start = now.AddHours(-1);
             query.End = now;
@@ -71,7 +71,7 @@ namespace Ably.Tests
         {
             var rest = GetRestClient();
             var channel = rest.Channels.Get("Test");
-            var query = new HistoryRequestQuery() { Limit = limit };
+            var query = new DataRequestQuery() { Limit = limit };
 
             var ex = Assert.Throws<AblyException>(delegate { channel.History(query); });
 
@@ -84,7 +84,7 @@ namespace Ably.Tests
         {
             var rest = GetRestClient();
             var channel = rest.Channels.Get("Test");
-            var query = new HistoryRequestQuery() { Start = start, End = end };
+            var query = new DataRequestQuery() { Start = start, End = end };
 
             var ex = Assert.Throws<AblyException>(delegate { channel.History(query); });
 
@@ -100,7 +100,36 @@ namespace Ably.Tests
                 yield return new object[] { null, new DateTime(1969, 12, 31) };
             }
         }
-    }
 
-    
+        [Fact]
+        public void Stats_CreatesGetRequestWithCorrectPath()
+        {
+            var rest = GetRestClient();
+            var channel = rest.Channels.Get("Test");
+
+            channel.Stats();
+
+            Assert.Equal(HttpMethod.Get, _currentRequest.Method);
+            Assert.Equal(String.Format("/apps/{0}/channels/{1}/stats", rest.Options.AppId, channel.Name), _currentRequest.Path);
+        }
+
+        [Fact]
+        public void Stats_WithOptions_AddsParametersToRequest()
+        {
+            var rest = GetRestClient();
+            var channel = rest.Channels.Get("Test");
+            var query = new DataRequestQuery();
+            DateTime now = DateTime.Now;
+            query.Start = now.AddHours(-1);
+            query.End = now;
+            query.Direction = HistoryDirection.Forwards;
+            query.Limit = 1000;
+            channel.Stats(query);
+
+            _currentRequest.AssertContainsParameter("start", query.Start.Value.ToUnixTime().ToString());
+            _currentRequest.AssertContainsParameter("end", query.End.Value.ToUnixTime().ToString());
+            _currentRequest.AssertContainsParameter("direction", query.Direction.ToString().ToLower());
+            _currentRequest.AssertContainsParameter("limit", query.Limit.Value.ToString());
+        }
+    }
 }

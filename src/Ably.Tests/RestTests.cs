@@ -91,5 +91,7 @@ namespace Ably.Tests
 
             Assert.Equal("Test", channel.Name);
         }
+
+        
     }
 }
