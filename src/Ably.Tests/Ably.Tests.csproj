@@ -38,6 +38,8 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -52,7 +54,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AuthOptionsTests.cs" />
+    <Compile Include="ChannelTests.cs" />
     <Compile Include="RequestTokenTests.cs" />
+    <Compile Include="RestApiTests.cs" />
     <Compile Include="RestTests.cs" />
     <Compile Include="ApiKeyTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

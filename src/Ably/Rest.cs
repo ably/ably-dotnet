@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Net.Http;
 
 namespace Ably
 {
@@ -15,8 +16,8 @@ namespace Ably
     public interface IAuthCommands
     {
         Token RequestToken(AuthOptions options);
-        Token Authorise(AuthOptions options, TokenRequest request);
-        Token CreateTokenRequest(AuthOptions options, TokenRequest request);
+        Token Authorise(TokenRequest request, AuthOptions options);
+        Token CreateTokenRequest(TokenRequest request, AuthOptions options);
     }
 
     public class Rest : IAuthCommands
@@ -25,6 +26,11 @@ namespace Ably
         private AblyOptions _options;
         private ILogger Logger = Config.AblyLogger;
         private Token _token;
+
+        internal AblyOptions Options
+        {
+            get { return _options; }
+        }
 
         public Rest()
         {
@@ -148,14 +154,60 @@ namespace Ably
             throw new NotImplementedException();
         }
 
-        Token IAuthCommands.Authorise(AuthOptions options, TokenRequest request)
+        Token IAuthCommands.Authorise(TokenRequest request, AuthOptions options)
         {
             throw new NotImplementedException();
         }
 
-        Token IAuthCommands.CreateTokenRequest(AuthOptions options, TokenRequest request)
+        Token IAuthCommands.CreateTokenRequest(TokenRequest request, AuthOptions options)
         {
             throw new NotImplementedException();
         }
+
+        public DateTimeOffset Time()
+        {
+            var request = CreateGetRequest("/time");
+            var response = ExecuteRequest(request);
+            return DateTimeOffset.Now;
+        }
+
+        private AblyRequest CreateGetRequest(string path)
+        {
+            var request = new AblyRequest(path, HttpMethod.Get);
+            foreach(var header in GetDefaultHeaders(_options.UseTextProtocol == false))
+            {
+                request.Headers.Add(header.Key, header.Value);
+            }
+            return request;
+        }
+
+        private static IEnumerable<KeyValuePair<string, string>> GetDefaultHeaders(bool binary)
+        {
+            if (binary)
+            {
+                yield return new KeyValuePair<string, string>("Accept", AblyHttpClient.MimeTypes.GetHeaderValue("binary", "json"));
+            }
+            else
+            {
+                yield return new KeyValuePair<string, string>("Accept", AblyHttpClient.MimeTypes.GetHeaderValue("json"));
+            }
+        }
+
+        //private static NameValueCollection GetDefaultPostHeaders(bool binary)
+        //{
+
+        //    var headers = new NameValueCollection();
+        //    if (binary)
+        //    {
+        //        headers.Add("Accept", "application/x-thrift,application/json");
+        //        headers.Add("Content-Type", "application/x-thrift");
+        //    }
+        //    else
+        //    {
+        //        headers.Add("Accept", "application/json");
+        //        headers.Add("Content-Type", "application/json");
+        //    }
+        //    return headers;
+        //}
     }
 }

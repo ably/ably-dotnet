@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Net.Http;
 
 namespace Ably
 {
@@ -12,15 +13,8 @@ namespace Ably
         private readonly bool _IsSecure;
         private readonly string _basePath;
 
-        static IDictionary<string, string> mimeTypes = new Dictionary<String, String>();
+        internal static readonly MimeTypes MimeTypes = new MimeTypes();
 
-        static AblyHttpClient()
-        {
-            mimeTypes.Add("json", "application/json");
-            mimeTypes.Add("xml", "application/xml");
-            mimeTypes.Add("html", "text/html");
-            mimeTypes.Add("binary", "application/x-thrift");
-        }
 
         public AblyHttpClient(string appId, string host) : this(appId, host, null, true) { }
 
@@ -34,6 +28,8 @@ namespace Ably
 
         public AblyResponse Get(AblyRequest request)
         {
+            var client = new HttpClient();
+            
             throw new NotImplementedException();
         }
 
@@ -48,35 +44,6 @@ namespace Ably
         }
 
 
-        private static NameValueCollection GetDefaultHeaders(bool binary)
-        {
-            NameValueCollection headers = new NameValueCollection();
-            if (binary)
-            {
-                headers.Add("Accept", "application/x-thrift,application/json");
-            }
-            else
-            {
-                headers.Add("Accept", "application/json");
-            }
-            return headers;
-        }
-
-        private static NameValueCollection GetDefaultPostHeaders(bool binary)
-        {
-
-            var headers = new NameValueCollection();
-            if (binary)
-            {
-                headers.Add("Accept", "application/x-thrift,application/json");
-                headers.Add("Content-Type", "application/x-thrift");
-            }
-            else
-            {
-                headers.Add("Accept", "application/json");
-                headers.Add("Content-Type", "application/json");
-            }
-            return headers;
-        }
+        
     }
 }

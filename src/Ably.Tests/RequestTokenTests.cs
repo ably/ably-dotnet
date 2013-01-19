@@ -42,7 +42,7 @@ namespace Ably.Tests
             SendRequestTokenWithValidOptions();
 
             //Assert
-            Assert.Equal(CurrentRequest.Url, "/apps/AHSz6w/requestToken");
+            Assert.Equal(CurrentRequest.Path, "/apps/AHSz6w/requestToken");
         }
 
         [Fact]
