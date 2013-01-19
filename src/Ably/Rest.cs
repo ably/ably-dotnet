@@ -32,6 +32,8 @@ namespace Ably
         private ILogger Logger = Config.AblyLogger;
         private Token _token;
 
+        internal static readonly MimeTypes MimeTypes = new MimeTypes();
+
         internal AblyOptions Options
         {
             get { return _options; }
@@ -181,10 +183,20 @@ namespace Ably
             return DateTimeOffset.Now;
         }
 
-        private AblyRequest CreateGetRequest(string path)
+        internal AblyRequest CreateGetRequest(string path)
         {
             var request = new AblyRequest(path, HttpMethod.Get);
             foreach(var header in GetDefaultHeaders(_options.UseTextProtocol == false))
+            {
+                request.Headers.Add(header.Key, header.Value);
+            }
+            return request;
+        }
+
+        internal AblyRequest CreatePostRequest(string path)
+        {
+            var request = new AblyRequest(path, HttpMethod.Post);
+            foreach (var header in GetDefaultPostHeaders(_options.UseTextProtocol == false))
             {
                 request.Headers.Add(header.Key, header.Value);
             }
@@ -195,30 +207,27 @@ namespace Ably
         {
             if (binary)
             {
-                yield return new KeyValuePair<string, string>("Accept", AblyHttpClient.MimeTypes.GetHeaderValue("binary", "json"));
+                yield return new KeyValuePair<string, string>("Accept", MimeTypes.GetHeaderValue("binary", "json"));
             }
             else
             {
-                yield return new KeyValuePair<string, string>("Accept", AblyHttpClient.MimeTypes.GetHeaderValue("json"));
+                yield return new KeyValuePair<string, string>("Accept", MimeTypes.GetHeaderValue("json"));
             }
         }
 
-        //private static NameValueCollection GetDefaultPostHeaders(bool binary)
-        //{
-
-        //    var headers = new NameValueCollection();
-        //    if (binary)
-        //    {
-        //        headers.Add("Accept", "application/x-thrift,application/json");
-        //        headers.Add("Content-Type", "application/x-thrift");
-        //    }
-        //    else
-        //    {
-        //        headers.Add("Accept", "application/json");
-        //        headers.Add("Content-Type", "application/json");
-        //    }
-        //    return headers;
-        //}
+        private static IEnumerable<KeyValuePair<string, string>> GetDefaultPostHeaders(bool binary)
+        {
+            if (binary)
+            {
+                yield return new KeyValuePair<string, string>("Accept", MimeTypes.GetHeaderValue("binary", "json"));
+                yield return new KeyValuePair<string, string>("Content-Type", MimeTypes.GetHeaderValue("binary"));
+            }
+            else
+            {
+                yield return new KeyValuePair<string, string>("Accept", MimeTypes.GetHeaderValue("json"));
+                yield return new KeyValuePair<string, string>("Content-Type", MimeTypes.GetHeaderValue("json"));
+            }
+        }
 
         IChannel IChannelCommands.Get(string name)
         {

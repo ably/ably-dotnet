@@ -10,7 +10,6 @@ namespace Ably
         public AblyRequest(string path, HttpMethod method)
         {
             Path = path;
-            PostParameters = new Dictionary<string, string>();
             QueryParameters = new Dictionary<string, string>();
             Headers = new Dictionary<string, string>();
             Method = method;
@@ -21,6 +20,6 @@ namespace Ably
 
         public Dictionary<string, string> Headers { get; private set; }
         public Dictionary<string, string> QueryParameters { get; private set; }
-        public Dictionary<string, string> PostParameters { get; private set; }
+        public object Data { get; set; }
     }
 }

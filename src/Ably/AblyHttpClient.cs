@@ -13,7 +13,7 @@ namespace Ably
         private readonly bool _IsSecure;
         private readonly string _basePath;
 
-        internal static readonly MimeTypes MimeTypes = new MimeTypes();
+        
 
 
         public AblyHttpClient(string appId, string host) : this(appId, host, null, true) { }
