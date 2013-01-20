@@ -16,8 +16,8 @@ namespace Ably.Tests
         {
             return new AuthOptions()
             {
-                AuthHeaders = new List<string> { "Test" },
-                AuthParams = new List<string> { "Test" },
+                AuthHeaders = new Dictionary<string, string> { {"Test", "Test"} },
+                AuthParams = new Dictionary<string, string> { {"Test", "Test"} },
                 AuthToken = "Token",
                 AuthUrl = "http://www.google.com",
                 Key = "key",
@@ -63,8 +63,8 @@ namespace Ably.Tests
             AuthOptions complete = GetCompleteOptions();
             var otherComplete = new AuthOptions()
             {
-                AuthHeaders = new List<string> { "Complete" },
-                AuthParams = new List<string> { "Complete" },
+                AuthHeaders = new Dictionary<string, string> { {"Complete", "Test"} },
+                AuthParams = new Dictionary<string, string> { {"Complete", "Test"} },
                 AuthToken = "Complete",
                 AuthUrl = "http://www.ably.io",
                 Key = "completeKey",

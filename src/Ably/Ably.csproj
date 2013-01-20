@@ -55,8 +55,10 @@
     <Compile Include="AblyResponse.cs" />
     <Compile Include="ApiKey.cs" />
     <Compile Include="Assert.cs" />
+    <Compile Include="AuthMethod.cs" />
     <Compile Include="AuthOptions.cs" />
     <Compile Include="Auth\Token.cs" />
+    <Compile Include="Capability.cs" />
     <Compile Include="Channel.cs" />
     <Compile Include="ConfigurationMissingException.cs" />
     <Compile Include="DataRequestQuery.cs" />
@@ -72,7 +74,7 @@
     <Compile Include="MimeTypes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryDirection.cs" />
-    <Compile Include="RequestTokenOptions.cs" />
+    <Compile Include="RequestTokenData.cs" />
     <Compile Include="Rest.cs" />
     <Compile Include="Statistics.cs" />
     <Compile Include="StringUtils.cs" />

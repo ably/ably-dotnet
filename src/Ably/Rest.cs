@@ -1,4 +1,5 @@
 using Ably.Auth;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -10,13 +11,14 @@ namespace Ably
     public static class Config
     {
         public static ILogger AblyLogger = Logger.Current;
-        internal static string DefaultHost = "ably.io";
+        internal static string DefaultHost = "rest.ably.io";
+        internal static Func<DateTime> Now = () => DateTime.Now;
     }
 
     public interface IAuthCommands
     {
-        Token RequestToken(AuthOptions options);
-        Token Authorise(TokenRequest request, AuthOptions options);
+        Token RequestToken(TokenRequest request, AuthOptions options);
+        Token Authorise(AuthOptions options);
         Token CreateTokenRequest(TokenRequest request, AuthOptions options);
     }
 
@@ -30,7 +32,8 @@ namespace Ably
         private AblyHttpClient _client;
         private AblyOptions _options;
         private ILogger Logger = Config.AblyLogger;
-        private Token _token;
+        internal AuthMethod AuthMethod;
+        internal Token CurrentToken;
 
         internal static readonly MimeTypes MimeTypes = new MimeTypes();
 
@@ -46,6 +49,7 @@ namespace Ably
             {
                 new ConfigurationMissingException("A connection strig with key 'Ably' doesn't exist in the application configuration").Throw();
             }
+            
             //Parse it when I know how things work
         }
 
@@ -104,8 +108,56 @@ namespace Ably
 
             string host = _options.Host.IsNotEmpty() ? _options.Host : Config.DefaultHost;
             _client = new AblyHttpClient(_options.AppId, host, _options.Port, _options.Encrypted);
+
+            InitAuth();
         }
 
+        
+        private void InitAuth()
+        {
+            if(Options.Key.IsNotEmpty())
+            {
+                if(Options.ClientId == null)
+                {
+                    AuthMethod = AuthMethod.Basic;
+                    Logger.Info("Using basic authentication for all calls");
+                    return;
+                }
+            }
+
+            AuthMethod = AuthMethod.Token;
+            if (Options.AuthToken.IsNotEmpty())
+            {
+                CurrentToken = new Token() { Id = Options.AuthToken };
+            }
+            LogCurrentAuthenticationMethod();
+        }
+
+        private void LogCurrentAuthenticationMethod()
+        {
+            if (Options.AuthCallback != null)
+            {
+                Logger.Info("Authentication will be done using token auth with authCallback");
+            }
+            else if (Options.AuthUrl.IsNotEmpty())
+            {
+                Logger.Info("Authentication will be done using token auth with authUrl");
+            }
+            else if (Options.KeyValue.IsNotEmpty() != null)
+            {
+                Logger.Info("Authentication will be done using token auth with client-side signing");
+            }
+            else if (Options.AuthToken.IsNotEmpty())
+            {
+                Logger.Info("Authentication will be done using token auth with supplied token only");
+            }
+            else
+            {
+                /* this is not a hard error - but any operation that requires
+                 * authentication will fail */
+                Logger.Info("Authentication will fail because no authentication parameters supplied");
+            }
+        }
         public IAuthCommands Auth
         {
             get { return this; }
@@ -118,55 +170,44 @@ namespace Ably
 
         internal Func<AblyRequest, AblyResponse> ExecuteRequest = ExecuteRequestInternal;
 
-        internal Func<DateTime> Now = () => DateTime.Now;
         
         private static AblyResponse ExecuteRequestInternal(AblyRequest request)
         {
             return null;
         }
 
-        public string RequestToken(RequestTokenParams options)
+        Token IAuthCommands.RequestToken(TokenRequest requestData, AuthOptions options)
         {
-            //var request = new AblyRequest(String.Format("/apps/{0}/requestToken", _key.AppId));
-            //request.PostParameters.Add("id", _key.KeyId);
-            //TimeSpan expiresInterval = options.Ttl.HasValue ? options.Ttl.Value :  TimeSpan.FromHours(1);
-            //string expiresUnixTime = Now().Add(expiresInterval).ToUnixTime().ToString();
-            //request.PostParameters.Add("expires", expiresUnixTime);
-            //if(string.IsNullOrWhiteSpace(options.Capability) == false )
-            //    request.PostParameters.Add("capability", options.Capability);
-            //if(string.IsNullOrWhiteSpace(options.ClientId) == false )
-            //    request.PostParameters.Add("client_id", options.ClientId);
+            var mergedOptions = options != null ? options.Merge(Options) : Options;
 
-            //request.PostParameters.Add("timestamp", Now().ToUnixTime().ToString());
-            //request.PostParameters.Add("nonce", Guid.NewGuid().ToString("N").ToLower());
-            //request.PostParameters.Add("mac", CalculateMac(request.PostParameters, _key.KeyValue));
-            //ExecuteRequest(request);
-            return "";
+            var request = CreatePostRequest(String.Format("/apps/{0}/requestToken", Options.AppId));
+            if(mergedOptions.AuthCallback != null)
+            {
+                var signedPostData = mergedOptions.AuthCallback(requestData);
+                request.PostData = JsonConvert.DeserializeObject<TokenRequestPostData>(signedPostData);
+            }
+            else if(mergedOptions.AuthUrl.IsNotEmpty())
+            {
+                var authRequest = new AblyRequest(mergedOptions.AuthUrl, HttpMethod.Post);
+                authRequest.PostParameters.Merge(mergedOptions.AuthParams);
+                authRequest.Headers.Merge(mergedOptions.AuthHeaders);
+                var response = ExecuteRequest(authRequest);
+                var signedData = response.Result;
+                request.PostData = JsonConvert.DeserializeObject<TokenRequestPostData>(signedData);
+            }
+            else
+            {
+                request.PostData = requestData.GetPostData(mergedOptions.KeyValue);
+            }
+
+            
+
+            ExecuteRequest(request);
+
+            return new Token();
         }
 
-        private string CalculateMac(Dictionary<string, string> postParameters, string key)
-        {
-            var values = new[] 
-            { 
-                postParameters.Get("id"), 
-                postParameters.Get("expires"),
-                postParameters.Get("capability", ""), 
-                postParameters.Get("client_id", ""), 
-                postParameters.Get("timestamp"),
-                postParameters.Get("nonce")
-            };
-
-            var signText = string.Join("\n", values) + "\n";
-
-            return signText.ComputeHMacSha256(key);
-        }
-
-        Token IAuthCommands.RequestToken(AuthOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        Token IAuthCommands.Authorise(TokenRequest request, AuthOptions options)
+        Token IAuthCommands.Authorise(AuthOptions options)
         {
             throw new NotImplementedException();
         }

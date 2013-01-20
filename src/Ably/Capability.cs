@@ -5,13 +5,16 @@ using System.Text;
 
 namespace Ably
 {
-    public class AblyResponse
+    public class Capability
     {
-        public AblyResponse()
+        public Capability()
         {
             
         }
 
-        public string Result { get; set; }
+        public override string ToString()
+        {
+            return "capability";
+        }
     }
 }

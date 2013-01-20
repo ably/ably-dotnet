@@ -32,7 +32,7 @@ namespace Ably
         {
             var request = _restClient.CreatePostRequest(basePath + "/publish");
 
-            request.Data = new ChannelPublishPayload { Name = name, Data = data };
+            request.PostData = new ChannelPublishPayload { Name = name, Data = data };
             _restClient.ExecuteRequest(request);
         }
 

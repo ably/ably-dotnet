@@ -1,11 +1,13 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using Xunit;
 
 namespace Ably.Tests
 {
-    public class RequestTokenTests
+    public class AuthorisationTests
     {
         private const string ApiKey = "AHSz6w:uQXPNQ:FGBZbsKSwqbCpkob";
         public AblyRequest CurrentRequest { get; set; }
@@ -20,7 +22,7 @@ namespace Ably.Tests
                 return null;
             };
 
-            rest.Now = () => Now;
+            Config.Now = () => Now;
             return rest;
         }
 
@@ -36,127 +38,84 @@ namespace Ably.Tests
 
 
         [Fact]
-        public void RequestToken_SendsRequestToCorrectUrl()
+        public void RequestToken_CreatesPostRequestWithCorrectUrl()
         {
             //Arrange
             SendRequestTokenWithValidOptions();
 
             //Assert
-            Assert.Equal(CurrentRequest.Path, "/apps/AHSz6w/requestToken");
+            Assert.Equal("/apps/AHSz6w/requestToken", CurrentRequest.Path);
+            Assert.Equal(HttpMethod.Post, CurrentRequest.Method);
         }
 
         [Fact]
-        public void RequestToken_WithoutExpires_SetsExpiresParamToOneHour()
-        {
-            var rest = GetRestClient();
-
-
-            rest.RequestToken(new RequestTokenParams { Capability = "Blah" });
-
-            var expectedUnixTime = Now.AddHours(1).ToUnixTime().ToString();
-            Assert.Equal(expectedUnixTime, CurrentRequest.PostParameters["expires"]);
-        }
-
-
-
-        [Fact]
-        public void RequestToken_ShouldPostCorrectKeyId()
-        {
-            //Arrange
-            SendRequestTokenWithValidOptions();
-
-            //Assert
-
-            Assert.Equal(CurrentRequest.PostParameters["id"], GetKeyId()); //TODO: Change
-        }
-
-        [Fact]
-        public void RequestToken_ShouldPostCorrectExpiryTime()
-        {
-            var options = SendRequestTokenWithValidOptions();
-
-            var expectedUnixTime = Now.Add(options.Ttl.Value).ToUnixTime().ToString();
-            Assert.Equal(expectedUnixTime, CurrentRequest.PostParameters["expires"]);
-
-        }
-
-        [Fact]
-        public void RequestToken_ShouldPostCorrectCapability()
-        {
-            var options = SendRequestTokenWithValidOptions();
-
-            Assert.Equal(options.Capability, CurrentRequest.PostParameters["capability"]);
-        }
-
-        [Fact]
-        public void RequestToken_ShouldPostCorrectClientId()
-        {
-            var options = SendRequestTokenWithValidOptions();
-
-            Assert.Equal(options.ClientId, CurrentRequest.PostParameters["client_id"]);
-        }
-
-        [Fact]
-        public void RequestToken_WithOutClientId_DoesntIncludeItInPostRequest()
-        {
-            var rest = GetRestClient();
-
-            rest.RequestToken(new RequestTokenParams { Capability = "Test" });
-
-            Assert.False(CurrentRequest.PostParameters.ContainsKey("client_id"));
-        }
-
-        [Fact]
-        public void RequestToken_ShouldPostTimeStamp()
+        public void RequestToken_SetsRequestTokenRequestToRequestPostData()
         {
             SendRequestTokenWithValidOptions();
 
-            var timeStamp = Now.ToUnixTime().ToString();
-            Assert.Equal(timeStamp, CurrentRequest.PostParameters["timestamp"]);
+            Assert.IsType<TokenRequestPostData>(CurrentRequest.PostData);
         }
 
         [Fact]
-        public void RequestToken_ShouldPostRandomNonce()
+        public void RequestToken_WithRequestCallback_RetrievesTokenDataFromCallback()
         {
-            var currentNonce = "";
-            for (int i = 0; i < 10; i++)
+            var rest = GetRestClient();
+            var tokenRequest = new TokenRequest { Id = GetKeyId(), Capability = new Capability() };
+            var requestdata = new TokenRequestPostData { id = GetKeyId(), capability = "123" };
+
+            var authCallbackCalled = false;
+            var options = new AuthOptions
             {
-                SendRequestTokenWithValidOptions();
+                AuthCallback = (x) => { authCallbackCalled = true; return JsonConvert.SerializeObject(requestdata); }
+            };
+            rest.Auth.RequestToken(tokenRequest, options);
 
-                Assert.NotEqual(currentNonce, CurrentRequest.PostParameters["nonce"]);
-                currentNonce = CurrentRequest.PostParameters["nonce"];
-            }
+            Assert.True(authCallbackCalled);
+            Assert.Equal(requestdata, CurrentRequest.PostData);
         }
 
         [Fact]
-        public void RequestToken_ShouldCalculateHMacOfTheCurrentRequestAndBase64EncodeItAndAddItToCurrentRequest()
-        {
-            var options = SendRequestTokenWithValidOptions();
-
-            var values = new[] 
-            { 
-                CurrentRequest.PostParameters.Get("id"), 
-                CurrentRequest.PostParameters.Get("expires"),
-                CurrentRequest.PostParameters.Get("capability", ""), 
-                CurrentRequest.PostParameters.Get("client_id", ""), 
-                CurrentRequest.PostParameters.Get("timestamp"),
-                CurrentRequest.PostParameters.Get("nonce")
-            };
-            var signText = string.Join("\n", values) + "\n";
-
-            string mac = signText.ComputeHMacSha256(GetKeyValue());
-
-            Assert.Equal(mac, CurrentRequest.PostParameters["mac"]);
-        }
-        
-        private RequestTokenParams SendRequestTokenWithValidOptions()
+        public void RequestToken_WithAuthUrl_SendsPostRequestToThePostUrlFollowedByRequestTokenRequest()
         {
             var rest = GetRestClient();
-            var options = new RequestTokenParams { Capability = "Blah", ClientId = "ClientId", Ttl = TimeSpan.FromMinutes(10) };
+            var options = new AuthOptions
+            {
+                AuthUrl = "http://testUrl",
+                AuthHeaders = new Dictionary<string, string> { { "Test", "Test" } },
+                AuthParams = new Dictionary<string, string> { { "Test", "Test" } }
+            };
+            List<AblyRequest> requests = new List<AblyRequest>();
+            var requestdata = new TokenRequestPostData { id = GetKeyId(), capability = "123" };
+            rest.ExecuteRequest = (x) => { 
+                requests.Add(x);
+                if (x.Path == options.AuthUrl)
+                    {
+                        return new AblyResponse { Result = JsonConvert.SerializeObject(requestdata) };
+                    } 
+                else
+                    return null; 
+            };
+
+            var tokenRequest = new TokenRequest { Id = GetKeyId(), Capability = new Capability() };
+            
+            rest.Auth.RequestToken(tokenRequest, options);
+
+            Assert.Equal(2, requests.Count);
+            Assert.Equal(options.AuthHeaders, requests.First().Headers);
+            Assert.Equal(options.AuthParams, requests.First().PostParameters);
+            Assert.Equal(options.AuthUrl, requests.First().Path);
+            Assert.Equal(requestdata, requests.Last().PostData);
+        }
+
+        private TokenRequest SendRequestTokenWithValidOptions()
+        {
+            var rest = GetRestClient();
+            var request = new TokenRequest { Capability = new Capability(), ClientId = "ClientId", Ttl = TimeSpan.FromMinutes(10) };
 
             //Act
-            rest.RequestToken(options);
-            return options;
+            rest.Auth.RequestToken(request, null);
+            return request;
         }
     }
+
 }

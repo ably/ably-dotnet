@@ -28,8 +28,8 @@ namespace Ably.Tests
             var channel = rest.Channels.Get("Test");
             channel.Publish("event", "data");
 
-            Assert.IsType<ChannelPublishPayload>(_currentRequest.Data);
-            var data = _currentRequest.Data as ChannelPublishPayload;
+            Assert.IsType<ChannelPublishPayload>(_currentRequest.PostData);
+            var data = _currentRequest.PostData as ChannelPublishPayload;
             Assert.Equal("data", data.Data);
             Assert.Equal("event", data.Name);
         }

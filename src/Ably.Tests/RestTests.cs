@@ -89,6 +89,42 @@ namespace Ably.Tests
         }
 
         [Fact]
+        public void Init_WithKeyAndNoClientId_SetsAuthMethodToBasic()
+        {
+            var client = new Rest(ValidKey);
+            Assert.Equal(AuthMethod.Basic, client.AuthMethod);
+        }
+
+        [Fact]
+        public void Init_WithKeyAndClientId_SetsAuthMethodToToken()
+        {
+            var client = new Rest(new AblyOptions { Key = ValidKey, ClientId = "123" });
+            Assert.Equal(AuthMethod.Token, client.AuthMethod);
+        }
+
+        [Fact]
+        public void Init_WithKeyNoClientIdAndAuthTokenId_SetsCurrentTokenWithSuppliedId()
+        {
+            AblyOptions options = new AblyOptions { Key = ValidKey, ClientId = "123", AuthToken = "222" };
+            var client = new Rest(options);
+
+            Assert.Equal(options.AuthToken, client.CurrentToken.Id);
+        }
+
+        [Fact]
+        public void Init_WithouthKey_SetsAuthMethodToToken()
+        {
+            var client = new Rest(opts =>
+            {
+                opts.KeyValue = "blah";
+                opts.ClientId = "123";
+                opts.AppId = "123";
+            });
+
+            Assert.Equal(AuthMethod.Token, client.AuthMethod);
+        }
+
+        [Fact]
         public void ChannelsGet_ReturnsNewChannelWithName()
         {
             var rest = GetRestClient();
