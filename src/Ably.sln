@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1EA29F
 		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.IntegrationTests", "Ably.IntegrationTests\Ably.IntegrationTests.csproj", "{50B70469-A7CD-46F5-AAE8-EE9C24CFA206}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{4E136C14-03D4-4194-8DE7-3E9A26C5B028}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4E136C14-03D4-4194-8DE7-3E9A26C5B028}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4E136C14-03D4-4194-8DE7-3E9A26C5B028}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50B70469-A7CD-46F5-AAE8-EE9C24CFA206}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50B70469-A7CD-46F5-AAE8-EE9C24CFA206}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50B70469-A7CD-46F5-AAE8-EE9C24CFA206}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50B70469-A7CD-46F5-AAE8-EE9C24CFA206}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

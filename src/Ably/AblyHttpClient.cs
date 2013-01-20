@@ -31,7 +31,12 @@ namespace Ably
             var webRequest = HttpWebRequest.Create(GetRequestUrl(request)) as HttpWebRequest;
             foreach(var header in request.Headers)
             {
-                webRequest.Headers.Add(header.Key, header.Value);
+                if (header.Key == "Accept")
+                    webRequest.Accept = header.Value;
+                else if (header.Key == "Content-Type")
+                    webRequest.ContentType = header.Value;
+                else
+                    webRequest.Headers.Add(header.Key, header.Value);
             }
             webRequest.UserAgent = "Ably.net library";
             webRequest.Method = request.Method.Method;
@@ -47,7 +52,7 @@ namespace Ably
                 requestBody = string.Join("&", request.PostParameters.Select(x => x.Key + "=" + x.Value));
             }
 
-            if(requestBody != null)
+            if(requestBody.IsNotEmpty())
             {
                 
                 var body = Encoding.UTF8.GetBytes(requestBody);
@@ -59,7 +64,8 @@ namespace Ably
             {
                 var ablyResponse = new AblyResponse();
                 ablyResponse.Type = response.ContentType == "application/json" ? ResponseType.Json : ResponseType.Thrift;
-                using(var reader = new StreamReader(response.GetResponseStream(), Encoding.GetEncoding(response.ContentEncoding)))
+                string encoding = response.ContentEncoding.IsNotEmpty() ? response.ContentEncoding : "utf-8";
+                using(var reader = new StreamReader(response.GetResponseStream(), Encoding.GetEncoding(encoding)))
                 {
                     ablyResponse.JsonResult = reader.ReadToEnd();
                 }
@@ -72,9 +78,10 @@ namespace Ably
             string protocol = _IsSecure ? "https://" : "http://";
             if (request.Url.StartsWith("http"))
                 return new Uri(request.Url);
-            return new Uri(String.Format("{0}{1}{2}{3}", 
+            return new Uri(String.Format("{0}{1}{2}{3}{4}", 
                                protocol, 
                                _Host, 
+                               _Port.HasValue ? ":" + _Port.Value : "",
                                request.Url, 
                                GetQuery(request)));
         }

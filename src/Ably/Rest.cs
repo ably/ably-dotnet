@@ -1,5 +1,6 @@
 using Ably.Auth;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -238,11 +239,12 @@ namespace Ably
             return CurrentToken;
         }
 
-        public DateTimeOffset Time()
+        public DateTime Time()
         {
             var request = CreateGetRequest("/time");
             var response = ExecuteRequest(request);
-            return DateTimeOffset.Now;
+            long serverTime = (long)JArray.Parse(response.JsonResult).First;
+            return serverTime.FromUnixTimeInMilliseconds();
         }
 
         public Stats Stats()
@@ -316,7 +318,7 @@ namespace Ably
             return request;
         }
 
-        private static IEnumerable<KeyValuePair<string, string>> GetDefaultHeaders(bool binary)
+        internal static IEnumerable<KeyValuePair<string, string>> GetDefaultHeaders(bool binary)
         {
             if (binary)
             {
@@ -328,7 +330,7 @@ namespace Ably
             }
         }
 
-        private static IEnumerable<KeyValuePair<string, string>> GetDefaultPostHeaders(bool binary)
+        internal static IEnumerable<KeyValuePair<string, string>> GetDefaultPostHeaders(bool binary)
         {
             if (binary)
             {
