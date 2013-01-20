@@ -25,7 +25,6 @@ namespace Ably
                 data.ttl = now.AddHours(1).ToUnixTime().ToString();
             data.timestamp = now.ToUnixTime().ToString();
             data.CalculateMac(keyValue);
-            data.nonce = Guid.NewGuid().ToString("N").ToLower();
             
             return data;
         }
@@ -35,6 +34,7 @@ namespace Ably
     {
         public TokenRequestPostData()
         {
+            nonce = Guid.NewGuid().ToString("N").ToLower();
         }
 
         public string id { get; set; }
