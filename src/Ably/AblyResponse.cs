@@ -5,13 +5,16 @@ using System.Text;
 
 namespace Ably
 {
+    public enum ResponseType
+    {
+        Json,
+        Thrift
+    }
+
     public class AblyResponse
     {
-        public AblyResponse()
-        {
-            
-        }
+        public ResponseType Type { get; set; }
 
-        public string Result { get; set; }
+        public string JsonResult { get; set; }
     }
 }

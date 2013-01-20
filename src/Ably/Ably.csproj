@@ -78,6 +78,7 @@
     <Compile Include="Rest.cs" />
     <Compile Include="Statistics.cs" />
     <Compile Include="StringUtils.cs" />
+    <Compile Include="TokenRequestPostData.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

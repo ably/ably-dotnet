@@ -1,3 +1,4 @@
+using Ably.Auth;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -44,8 +45,30 @@ namespace Ably.Tests
             SendRequestTokenWithValidOptions();
 
             //Assert
-            Assert.Equal("/apps/AHSz6w/requestToken", CurrentRequest.Path);
+            Assert.Equal("/apps/AHSz6w/requestToken", CurrentRequest.Url);
             Assert.Equal(HttpMethod.Post, CurrentRequest.Method);
+        }
+
+        [Fact]
+        public void RequestToken_WithTokenRequestWithoutId_Throws()
+        {
+            var request = new TokenRequest();
+
+            var client = GetRestClient();
+            var ex = Assert.Throws<AblyException>(delegate { client.Auth.RequestToken(request, null); });
+
+            Assert.IsType<ArgumentNullException>(ex.InnerException);
+        }
+
+        [Fact]
+        public void RequestToken_WithTokenRequestWithoutCapability_Throws()
+        {
+            var request = new TokenRequest() { Id = "123" };
+
+            var client = GetRestClient();
+            var ex = Assert.Throws<AblyException>(delegate { client.Auth.RequestToken(request, null); });
+
+            Assert.IsType<ArgumentNullException>(ex.InnerException);
         }
 
         [Fact]
@@ -58,7 +81,7 @@ namespace Ably.Tests
 
         [Fact]
         public void RequestToken_WithRequestCallback_RetrievesTokenDataFromCallback()
-        {
+        {   
             var rest = GetRestClient();
             var tokenRequest = new TokenRequest { Id = GetKeyId(), Capability = new Capability() };
             var requestdata = new TokenRequestPostData { id = GetKeyId(), capability = "123" };
@@ -88,9 +111,9 @@ namespace Ably.Tests
             var requestdata = new TokenRequestPostData { id = GetKeyId(), capability = "123" };
             rest.ExecuteRequest = (x) => { 
                 requests.Add(x);
-                if (x.Path == options.AuthUrl)
+                if (x.Url == options.AuthUrl)
                     {
-                        return new AblyResponse { Result = JsonConvert.SerializeObject(requestdata) };
+                        return new AblyResponse { JsonResult = JsonConvert.SerializeObject(requestdata) };
                     } 
                 else
                     return null; 
@@ -103,14 +126,36 @@ namespace Ably.Tests
             Assert.Equal(2, requests.Count);
             Assert.Equal(options.AuthHeaders, requests.First().Headers);
             Assert.Equal(options.AuthParams, requests.First().PostParameters);
-            Assert.Equal(options.AuthUrl, requests.First().Path);
+            Assert.Equal(options.AuthUrl, requests.First().Url);
             Assert.Equal(requestdata, requests.Last().PostData);
+        }
+
+        [Fact]
+        public void Authorise_WithNotExpiredCurrentTokenAndForceFalse_ReturnsCurrentToken()
+        {
+            var client = GetRestClient();
+            client.CurrentToken = new Token() { Expires = Config.Now().AddHours(1).ToUnixTime() };
+
+            var token = client.Auth.Authorise(null, null, false);
+
+            Assert.Same(client.CurrentToken, token);
+        }
+
+        [Fact]
+        public void Authorise_WithNotExpiredCurrentTokenAndForceTrue_RequestsNewToken()
+        {
+            var client = GetRestClient();
+            client.CurrentToken = new Token() { Expires = Config.Now().AddHours(1).ToUnixTime() };
+
+            var token = client.Auth.Authorise(new TokenRequest() { ClientId = "123", Capability = new Capability(), Id = "123"}, null, true);
+
+            Assert.Contains("requestToken", CurrentRequest.Url);
         }
 
         private TokenRequest SendRequestTokenWithValidOptions()
         {
             var rest = GetRestClient();
-            var request = new TokenRequest { Capability = new Capability(), ClientId = "ClientId", Ttl = TimeSpan.FromMinutes(10) };
+            var request = new TokenRequest { Capability = new Capability(), ClientId = "ClientId", Ttl = TimeSpan.FromMinutes(10), Id =GetKeyId() };
 
             //Act
             rest.Auth.RequestToken(request, null);

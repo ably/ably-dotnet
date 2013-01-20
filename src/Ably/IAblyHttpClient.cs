@@ -7,8 +7,6 @@ namespace Ably
 {
     public interface IAblyHttpClient
     {
-        AblyResponse Get(AblyRequest request);
-        AblyResponse Delete(AblyResponse request);
-        AblyResponse Post(AblyResponse request);
+        AblyResponse Execute(AblyRequest request);
     }
 }

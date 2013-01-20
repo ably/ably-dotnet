@@ -1,8 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Text;
 
 namespace Ably
 {
@@ -11,39 +15,73 @@ namespace Ably
         private readonly string _Host;
         private readonly int? _Port;
         private readonly bool _IsSecure;
-        private readonly string _basePath;
 
         
+        public AblyHttpClient(string host) : this(host, null, true) { }
 
-
-        public AblyHttpClient(string appId, string host) : this(appId, host, null, true) { }
-
-        public AblyHttpClient(string appId, string host, int? port = null, bool isSecure = true)
+        public AblyHttpClient(string host, int? port = null, bool isSecure = true)
         {
-            _basePath = "/apps/" + appId;
             _IsSecure = isSecure;
             _Port = port;
             _Host = host;
         }
 
-        public AblyResponse Get(AblyRequest request)
+        public AblyResponse Execute(AblyRequest request)
         {
-            var client = new HttpClient();
+            var webRequest = HttpWebRequest.Create(GetRequestUrl(request)) as HttpWebRequest;
+            foreach(var header in request.Headers)
+            {
+                webRequest.Headers.Add(header.Key, header.Value);
+            }
+            webRequest.UserAgent = "Ably.net library";
+            webRequest.Method = request.Method.Method;
+            webRequest.ContentLength = 0;
             
-            throw new NotImplementedException();
+            string requestBody = "";
+            if(request.PostData != null)
+            {
+                requestBody = JsonConvert.SerializeObject(request.PostData);
+            }
+            else if(request.PostParameters.Count > 0)
+            {
+                requestBody = string.Join("&", request.PostParameters.Select(x => x.Key + "=" + x.Value));
+            }
+
+            if(requestBody != null)
+            {
+                
+                var body = Encoding.UTF8.GetBytes(requestBody);
+                webRequest.ContentLength = body.Length;
+                webRequest.GetRequestStream().Write(body, 0, body.Length);
+            }
+
+            using(var response = webRequest.GetResponse() as HttpWebResponse)
+            {
+                var ablyResponse = new AblyResponse();
+                ablyResponse.Type = response.ContentType == "application/json" ? ResponseType.Json : ResponseType.Thrift;
+                using(var reader = new StreamReader(response.GetResponseStream(), Encoding.GetEncoding(response.ContentEncoding)))
+                {
+                    ablyResponse.JsonResult = reader.ReadToEnd();
+                }
+                return ablyResponse;
+            }
         }
 
-        public AblyResponse Delete(AblyResponse request)
+        private Uri GetRequestUrl(AblyRequest request)
         {
-            throw new NotImplementedException();
+            string protocol = _IsSecure ? "https://" : "http://";
+            if (request.Url.StartsWith("http"))
+                return new Uri(request.Url);
+            return new Uri(String.Format("{0}{1}{2}{3}", 
+                               protocol, 
+                               _Host, 
+                               request.Url, 
+                               GetQuery(request)));
         }
 
-        public AblyResponse Post(AblyResponse request)
+        private object GetQuery(AblyRequest request)
         {
-            throw new NotImplementedException();
+            return "?" + string.Join("&", request.QueryParameters.Select(x => String.Format("{0}={1}", x.Key, x.Value)));
         }
-
-
-        
     }
 }

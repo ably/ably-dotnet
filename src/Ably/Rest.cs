@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 
 namespace Ably
 {
@@ -18,8 +19,7 @@ namespace Ably
     public interface IAuthCommands
     {
         Token RequestToken(TokenRequest request, AuthOptions options);
-        Token Authorise(AuthOptions options);
-        Token CreateTokenRequest(TokenRequest request, AuthOptions options);
+        Token Authorise(TokenRequest request, AuthOptions options, bool force);
     }
 
     public interface IChannelCommands
@@ -86,6 +86,7 @@ namespace Ably
 
         private void InitialiseAbly()
         {
+            ExecuteRequest = ExecuteRequestInternal;
             if(_options == null)
             {
                 Logger.Error("No options provider to Ably rest");
@@ -107,7 +108,7 @@ namespace Ably
             }
 
             string host = _options.Host.IsNotEmpty() ? _options.Host : Config.DefaultHost;
-            _client = new AblyHttpClient(_options.AppId, host, _options.Port, _options.Encrypted);
+            _client = new AblyHttpClient(host, _options.Port, _options.Encrypted);
 
             InitAuth();
         }
@@ -168,16 +169,30 @@ namespace Ably
             get { return this; }
         }
 
-        internal Func<AblyRequest, AblyResponse> ExecuteRequest = ExecuteRequestInternal;
+        internal Func<AblyRequest, AblyResponse> ExecuteRequest;
 
-        
-        private static AblyResponse ExecuteRequestInternal(AblyRequest request)
+        private AblyResponse ExecuteRequestInternal(AblyRequest request)
         {
-            return null;
+            AddAuthHeader(request);
+            return _client.Execute(request);
+        }
+
+        private void AddAuthHeader(AblyRequest request)
+        {
+            if(AuthMethod == Ably.AuthMethod.Basic)
+            {
+                var authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(Options.Key));
+                request.Headers["Authorization"] = "Basic " + authInfo;
+            }
         }
 
         Token IAuthCommands.RequestToken(TokenRequest requestData, AuthOptions options)
         {
+            if (requestData == null)
+                new ArgumentNullException("requestData", "Cannot request token without TokenRequest data").Throw();
+
+            requestData.Validate();
+
             var mergedOptions = options != null ? options.Merge(Options) : Options;
 
             var request = CreatePostRequest(String.Format("/apps/{0}/requestToken", Options.AppId));
@@ -192,7 +207,7 @@ namespace Ably
                 authRequest.PostParameters.Merge(mergedOptions.AuthParams);
                 authRequest.Headers.Merge(mergedOptions.AuthHeaders);
                 var response = ExecuteRequest(authRequest);
-                var signedData = response.Result;
+                var signedData = response.JsonResult;
                 request.PostData = JsonConvert.DeserializeObject<TokenRequestPostData>(signedData);
             }
             else
@@ -207,14 +222,20 @@ namespace Ably
             return new Token();
         }
 
-        Token IAuthCommands.Authorise(AuthOptions options)
+        Token IAuthCommands.Authorise(TokenRequest request, AuthOptions options, bool force)
         {
-            throw new NotImplementedException();
-        }
+            if(CurrentToken != null)
+            {
+                if(CurrentToken.Expires > Config.Now().ToUnixTime())
+                {
+                    if(force == false)
+                        return CurrentToken;
+                }
+                CurrentToken = null;
+            }
 
-        Token IAuthCommands.CreateTokenRequest(TokenRequest request, AuthOptions options)
-        {
-            throw new NotImplementedException();
+            CurrentToken = Auth.RequestToken(request, options);
+            return CurrentToken;
         }
 
         public DateTimeOffset Time()

@@ -31,7 +31,7 @@ namespace Ably.Tests
             var rest = GetRestClient();
             rest.Time();
             
-            Assert.Equal("/time", _currentRequest.Path);
+            Assert.Equal("/time", _currentRequest.Url);
             Assert.Equal(HttpMethod.Get, _currentRequest.Method);
             _currentRequest.AssertContainsHeader(Headers.Accept, mimeTypes["json"]);
         }

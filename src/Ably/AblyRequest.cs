@@ -9,14 +9,14 @@ namespace Ably
     {
         public AblyRequest(string path, HttpMethod method)
         {
-            Path = path;
+            Url = path;
             QueryParameters = new Dictionary<string, string>();
             Headers = new Dictionary<string, string>();
             PostParameters = new Dictionary<string, string>();
             Method = method;
         }
 
-        public string Path { get; private set; }
+        public string Url { get; private set; }
         public HttpMethod Method { get; private set; }
 
         public Dictionary<string, string> Headers { get; private set; }

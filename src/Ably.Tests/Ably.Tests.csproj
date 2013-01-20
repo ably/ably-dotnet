@@ -59,7 +59,7 @@
   <ItemGroup>
     <Compile Include="AuthOptionsTests.cs" />
     <Compile Include="ChannelTests.cs" />
-    <Compile Include="RequestTokenTests.cs" />
+    <Compile Include="AuthorisationTests.cs" />
     <Compile Include="RestApiTests.cs" />
     <Compile Include="RestTests.cs" />
     <Compile Include="ApiKeyTests.cs" />

@@ -145,7 +145,7 @@ namespace Ably.Tests
             rest.Stats();
 
             Assert.Equal(HttpMethod.Get, request.Method);
-            Assert.Equal("/apps/" + rest.Options.AppId + "/stats", request.Path);
+            Assert.Equal("/apps/" + rest.Options.AppId + "/stats", request.Url);
         }
 
         
@@ -178,7 +178,7 @@ namespace Ably.Tests
             rest.History();
 
             Assert.Equal(HttpMethod.Get, request.Method);
-            Assert.Equal(String.Format("/apps/{0}/history", rest.Options.AppId), request.Path);
+            Assert.Equal(String.Format("/apps/{0}/history", rest.Options.AppId), request.Url);
         }
 
         [Fact]
