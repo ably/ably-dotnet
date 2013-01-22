@@ -125,6 +125,38 @@ namespace Ably.Tests
         }
 
         [Fact]
+        public void Init_WithCallback_ExecutesCallbackOnFirstRequest()
+        {
+        	
+        }
+  //      	public void authinit2() {
+		//try {
+		//	TestVars testVars = RestSetup.getTestVars();
+		//	Options opts = new Options();
+		//	opts.appId = testVars.appId;
+		//	opts.restHost = testVars.restHost;
+		//	opts.restPort = testVars.restPort;
+		//	opts.encrypted = testVars.encrypted;
+		//	opts.authCallback = new TokenCallback() {
+		//		@Override
+		//		public String getTokenRequest(TokenParams params) throws AblyException {
+		//			authinit2_cbCalled = true;
+		//			return "this_is_not_really_a_token_request";
+		//		}};
+		//	AblyRest ably = new AblyRest(opts);
+		//	/* make a call to trigger token request */
+		//	try {
+		//		ably.stats(null);
+		//	} catch(Throwable t) {}
+		//	assertTrue("Token callback not called", authinit2_cbCalled);
+		//	assertEquals("Unexpected Auth method mismatch", ably.auth.getAuthMethod(), AuthMethod.token);
+		//} catch (AblyException e) {
+		//	e.printStackTrace();
+		//	fail("authinit2: Unexpected exception instantiating library");
+		//}
+	//}
+
+        [Fact]
         public void ChannelsGet_ReturnsNewChannelWithName()
         {
             var rest = GetRestClient();

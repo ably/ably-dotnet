@@ -243,6 +243,9 @@ namespace Ably
         {
             var request = CreateGetRequest("/time");
             var response = ExecuteRequest(request);
+            if (response.Type != ResponseType.Json)
+                throw new AblyException("Invalid response from server");
+
             long serverTime = (long)JArray.Parse(response.JsonResult).First;
             return serverTime.FromUnixTimeInMilliseconds();
         }
