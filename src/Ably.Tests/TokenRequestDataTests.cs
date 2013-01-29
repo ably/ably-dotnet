@@ -73,7 +73,7 @@ namespace Ably.Tests
             var request = GetTokenRequest();
             var data = request.GetPostData(GetKeyValue());
 
-            Assert.Equal(request.Capability.ToString(), data.capability);
+            Assert.Equal(request.Capability.ToJson(), data.capability);
         }
 
         [Fact]

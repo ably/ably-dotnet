@@ -9,6 +9,7 @@ using Xunit;
 using System.Runtime.Serialization;
 using Xunit.Extensions;
 using System.Net.Http;
+using Moq;
 
 namespace Ably.Tests
 {
@@ -127,35 +128,22 @@ namespace Ably.Tests
         [Fact]
         public void Init_WithCallback_ExecutesCallbackOnFirstRequest()
         {
-        	
-        }
-  //      	public void authinit2() {
-		//try {
-		//	TestVars testVars = RestSetup.getTestVars();
-		//	Options opts = new Options();
-		//	opts.appId = testVars.appId;
-		//	opts.restHost = testVars.restHost;
-		//	opts.restPort = testVars.restPort;
-		//	opts.encrypted = testVars.encrypted;
-		//	opts.authCallback = new TokenCallback() {
-		//		@Override
-		//		public String getTokenRequest(TokenParams params) throws AblyException {
-		//			authinit2_cbCalled = true;
-		//			return "this_is_not_really_a_token_request";
-		//		}};
-		//	AblyRest ably = new AblyRest(opts);
-		//	/* make a call to trigger token request */
-		//	try {
-		//		ably.stats(null);
-		//	} catch(Throwable t) {}
-		//	assertTrue("Token callback not called", authinit2_cbCalled);
-		//	assertEquals("Unexpected Auth method mismatch", ably.auth.getAuthMethod(), AuthMethod.token);
-		//} catch (AblyException e) {
-		//	e.printStackTrace();
-		//	fail("authinit2: Unexpected exception instantiating library");
-		//}
-	//}
+            bool called = false;
+            var options = new AblyOptions
+            {
+                AuthCallback = (x) => { called = true; return ""; },
+                AppId = "-NyOAA" //Random
+            };
+            
+            var rest = new Rest(options);
 
+            rest._client = new Mock<IAblyHttpClient>().Object;
+
+            rest.Stats();
+
+            Assert.True(called, "Rest with Callback needs to request token using callback");
+        }
+  
         [Fact]
         public void ChannelsGet_ReturnsNewChannelWithName()
         {

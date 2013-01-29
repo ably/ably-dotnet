@@ -29,8 +29,15 @@ namespace Ably.Tests
         public void Time_ShouldSendGetRequestToCorrectPathWithCorrectHeaders()
         {
             var rest = GetRestClient();
-            rest.Time();
-            
+
+            try
+            {
+                rest.Time();
+            }
+            catch
+            {
+                //ignore processing errors and only care about the request
+            }
             Assert.Equal("/time", _currentRequest.Url);
             Assert.Equal(HttpMethod.Get, _currentRequest.Method);
             _currentRequest.AssertContainsHeader(Headers.Accept, mimeTypes["json"]);

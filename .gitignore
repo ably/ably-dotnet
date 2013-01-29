@@ -12,3 +12,5 @@ App_Data/*
 *.orig
 build/*
 src/packages/*
+*ncrunchsolution*
+*ncrunch*

@@ -16,7 +16,7 @@ namespace Ably
         {
             var data = new TokenRequestPostData();
             data.id = Id;
-            data.capability = Capability.ToString();
+            data.capability = Capability.ToJson();
             data.client_id = ClientId;
             DateTime now = Config.Now();
             if (Ttl.HasValue)
@@ -31,8 +31,8 @@ namespace Ably
 
         internal void Validate()
         {
-            if (Id.IsEmpty())
-                new ArgumentNullException("Id", "Cannot use TokenRequest without Id").Throw();
+            //if (Id.IsEmpty())
+            //    new ArgumentNullException("Id", "Cannot use TokenRequest without Id").Throw();
 
             if (Capability == null)
                 new ArgumentNullException("Capability", "Cannot user TokenRequest without Capability specified").Throw();

@@ -23,5 +23,6 @@ namespace Ably
         public Dictionary<string, string> QueryParameters { get; private set; }
         public object PostData { get; set; }
         public Dictionary<string, string> PostParameters { get; set; }
+        public bool SkipAuthentication { get; set; }
     }
 }

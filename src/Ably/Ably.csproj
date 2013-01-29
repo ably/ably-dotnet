@@ -59,6 +59,7 @@
     <Compile Include="AuthOptions.cs" />
     <Compile Include="Auth\Token.cs" />
     <Compile Include="Capability.cs" />
+    <Compile Include="CapabilityResource.cs" />
     <Compile Include="Channel.cs" />
     <Compile Include="ConfigurationMissingException.cs" />
     <Compile Include="DataRequestQuery.cs" />

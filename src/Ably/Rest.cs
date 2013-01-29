@@ -30,7 +30,7 @@ namespace Ably
 
     public class Rest : IAuthCommands, IChannelCommands
     {
-        private AblyHttpClient _client;
+        internal IAblyHttpClient _client;
         private AblyOptions _options;
         private ILogger Logger = Config.AblyLogger;
         internal AuthMethod AuthMethod;
@@ -174,7 +174,8 @@ namespace Ably
 
         private AblyResponse ExecuteRequestInternal(AblyRequest request)
         {
-            AddAuthHeader(request);
+            if(request.SkipAuthentication == false)
+                AddAuthHeader(request);
             return _client.Execute(request);
         }
 
@@ -185,21 +186,33 @@ namespace Ably
                 var authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(Options.Key));
                 request.Headers["Authorization"] = "Basic " + authInfo;
             }
+            else
+            {
+                if (CurrentToken == null)
+                {
+                    CurrentToken = Auth.Authorise(null, null, false);
+                }
+
+                if (CurrentToken == null)
+                    throw new AblyException("Invalid token credentials");
+
+                request.Headers["Authorization"] = "Bearer " + CurrentToken.Id;
+            }
         }
 
         Token IAuthCommands.RequestToken(TokenRequest requestData, AuthOptions options)
         {
-            if (requestData == null)
-                new ArgumentNullException("requestData", "Cannot request token without TokenRequest data").Throw();
-
-            requestData.Validate();
+            var data = requestData ?? new TokenRequest { ClientId = Options.ClientId, Capability = new Capability() };
+                
+            data.Validate();
 
             var mergedOptions = options != null ? options.Merge(Options) : Options;
 
             var request = CreatePostRequest(String.Format("/apps/{0}/requestToken", Options.AppId));
+            request.SkipAuthentication = true;
             if(mergedOptions.AuthCallback != null)
             {
-                var signedPostData = mergedOptions.AuthCallback(requestData);
+                var signedPostData = mergedOptions.AuthCallback(data);
                 request.PostData = JsonConvert.DeserializeObject<TokenRequestPostData>(signedPostData);
             }
             else if(mergedOptions.AuthUrl.IsNotEmpty())
@@ -207,13 +220,14 @@ namespace Ably
                 var authRequest = new AblyRequest(mergedOptions.AuthUrl, HttpMethod.Post);
                 authRequest.PostParameters.Merge(mergedOptions.AuthParams);
                 authRequest.Headers.Merge(mergedOptions.AuthHeaders);
+                authRequest.SkipAuthentication = true;
                 var response = ExecuteRequest(authRequest);
                 var signedData = response.JsonResult;
                 request.PostData = JsonConvert.DeserializeObject<TokenRequestPostData>(signedData);
             }
             else
             {
-                request.PostData = requestData.GetPostData(mergedOptions.KeyValue);
+                request.PostData = data.GetPostData(mergedOptions.KeyValue);
             }
 
             
@@ -242,6 +256,7 @@ namespace Ably
         public DateTime Time()
         {
             var request = CreateGetRequest("/time");
+            request.SkipAuthentication = true;
             var response = ExecuteRequest(request);
             if (response.Type != ResponseType.Json)
                 throw new AblyException("Invalid response from server");
