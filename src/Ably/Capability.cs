@@ -52,7 +52,9 @@ namespace Ably
             {
                 result[resource.Name] = GetResourceValue(resource);
             }
-            return CleanUpWhiteSpace(result.ToString());
+            if(result.Children().Any())
+                return CleanUpWhiteSpace(result.ToString());
+            return "";
         }
 
         private static JArray GetResourceValue(CapabilityResource resource)
@@ -64,6 +66,7 @@ namespace Ably
             else
                 return new JArray(resource.AllowedOperations.ToArray());
         }
+
         private string CleanUpWhiteSpace(string jsonString)
         {
             return Regex.Replace(jsonString, @"\s+", " ", RegexOptions.Singleline);

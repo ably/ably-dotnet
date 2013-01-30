@@ -10,19 +10,22 @@ namespace Ably.Auth
     public sealed class Token
     {
         public String Id { get; set; }
-        public long Expires { get; set;}
-        public long IssuedAt { get; set; }
-        public String Capability { get; set; }
-        public String ClientId { get; set; }
+        public DateTime Expires { get; set;}
+        public DateTime IssuedAt { get; set; }
+        public Capability Capability { get; set; }
+        public string ClientId { get; set; }
 
         public static Token fromJSON(Newtonsoft.Json.Linq.JObject json)
         {
+            var access_token = json["access_token"];
+            if (access_token == null)
+                return new Token();
             Token token = new Token();
-            token.Id = json.Value<string>("id");
-            token.Expires = json.Value<long>("expires");
-            token.IssuedAt = json.Value<long>("issued_at");
-            token.Capability = json.Value<string>("capability");
-            token.ClientId = json.Value<string>("client_id");
+            token.Id = (string)access_token["id"];
+            token.Expires = ((long)access_token["expires"]).FromUnixTime();
+            token.IssuedAt = ((long)access_token["issued_at"]).FromUnixTime();
+            token.Capability = new Capability(access_token["capability"].ToString());
+            //token.ClientId = json.Value<string>("client_id");
             return token;
         }
     }

@@ -13,7 +13,7 @@ namespace Ably.Tests
         public void Capability_WithOutAnyResources_ReturnsJsonString()
         {
             var capability = new Capability();
-            Assert.Equal("{}", capability.ToJson());
+            Assert.Equal("", capability.ToJson());
         }
 
         [Fact]
@@ -54,7 +54,7 @@ namespace Ably.Tests
             var capability = new Capability();
             capability.AddResource("name");
 
-            Assert.Equal("{}", capability.ToJson());
+            Assert.Equal("", capability.ToJson());
         }
 
         [Fact]

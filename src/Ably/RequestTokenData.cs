@@ -7,22 +7,22 @@ namespace Ably
 {
     public class TokenRequest
     {
-        public String Id { get; set;}
+        public string Id { get; set;}
         public TimeSpan? Ttl { get; set; }
         public Capability Capability { get; set; }
-        public String ClientId { get; set; }
+        public string ClientId { get; set; }
 
         internal TokenRequestPostData GetPostData(string keyValue)
         {
             var data = new TokenRequestPostData();
             data.id = Id;
             data.capability = Capability.ToJson();
-            data.client_id = ClientId;
+            data.client_id = ClientId ?? "";
             DateTime now = Config.Now();
             if (Ttl.HasValue)
-                data.ttl = now.Add(Ttl.Value).ToUnixTime().ToString();
+                data.ttl = Ttl.Value.TotalSeconds.ToString();
             else
-                data.ttl = now.AddHours(1).ToUnixTime().ToString();
+                data.ttl = TimeSpan.FromHours(1).TotalSeconds.ToString();
             data.timestamp = now.ToUnixTime().ToString();
             data.CalculateMac(keyValue);
             

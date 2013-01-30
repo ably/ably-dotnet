@@ -131,13 +131,15 @@ namespace Ably.Tests
             bool called = false;
             var options = new AblyOptions
             {
-                AuthCallback = (x) => { called = true; return ""; },
+                AuthCallback = (x) => { called = true; return "{}"; },
                 AppId = "-NyOAA" //Random
             };
-            
+
             var rest = new Rest(options);
 
-            rest._client = new Mock<IAblyHttpClient>().Object;
+            Mock<IAblyHttpClient> httpClient = new Mock<IAblyHttpClient>();
+            httpClient.Setup(x => x.Execute(It.IsAny<AblyRequest>())).Returns(new AblyResponse() { JsonResult = "{}"});
+            rest._client = httpClient.Object;
 
             rest.Stats();
 

@@ -49,6 +49,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Auth\RequestTokenTests.cs" />
+    <Compile Include="PublishTests.cs" />
     <Compile Include="TestFixture.cs" />
     <Compile Include="TestsSetup.cs" />
     <Compile Include="Key.cs" />
@@ -68,6 +70,7 @@
       <Name>Ably</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

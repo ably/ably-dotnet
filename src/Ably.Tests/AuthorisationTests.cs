@@ -20,7 +20,7 @@ namespace Ably.Tests
             rest.ExecuteRequest = (request) =>
             {
                 CurrentRequest = request;
-                return null;
+                return new AblyResponse() { JsonResult = "{}" };
             };
 
             Config.Now = () => Now;
@@ -45,7 +45,7 @@ namespace Ably.Tests
             SendRequestTokenWithValidOptions();
 
             //Assert
-            Assert.Equal("/apps/AHSz6w/requestToken", CurrentRequest.Url);
+            Assert.Equal("/apps/AHSz6w/authorise", CurrentRequest.Url);
             Assert.Equal(HttpMethod.Post, CurrentRequest.Method);
         }
 
@@ -58,6 +58,19 @@ namespace Ably.Tests
             var ex = Assert.Throws<AblyException>(delegate { client.Auth.RequestToken(request, null); });
 
             Assert.IsType<ArgumentNullException>(ex.InnerException);
+        }
+
+        [Fact]
+        public void RequestToken_WithNoRequestAndNoExtraOptions_CreatesDefaultRequestWithIdClientIdAndBlankCapability()
+        {
+            var client = GetRestClient();
+            client.Options.ClientId = "Test";
+            client.Auth.RequestToken(null, null);
+
+            var data = CurrentRequest.PostData as TokenRequestPostData;
+            Assert.Equal(GetKeyId(), data.id);
+            Assert.Equal("", data.capability);
+            Assert.Equal(client.Options.ClientId, data.client_id);
         }
 
         [Fact]
@@ -116,7 +129,7 @@ namespace Ably.Tests
                         return new AblyResponse { JsonResult = JsonConvert.SerializeObject(requestdata) };
                     } 
                 else
-                    return null; 
+                    return new AblyResponse { JsonResult = "{}" } ; 
             };
 
             var tokenRequest = new TokenRequest { Id = GetKeyId(), Capability = new Capability() };
@@ -134,7 +147,7 @@ namespace Ably.Tests
         public void Authorise_WithNotExpiredCurrentTokenAndForceFalse_ReturnsCurrentToken()
         {
             var client = GetRestClient();
-            client.CurrentToken = new Token() { Expires = Config.Now().AddHours(1).ToUnixTime() };
+            client.CurrentToken = new Token() { Expires = Config.Now().AddHours(1) };
 
             var token = client.Auth.Authorise(null, null, false);
 
@@ -145,12 +158,13 @@ namespace Ably.Tests
         public void Authorise_WithNotExpiredCurrentTokenAndForceTrue_RequestsNewToken()
         {
             var client = GetRestClient();
-            client.CurrentToken = new Token() { Expires = Config.Now().AddHours(1).ToUnixTime() };
+            client.CurrentToken = new Token() { Expires = Config.Now().AddHours(1) };
 
             var token = client.Auth.Authorise(new TokenRequest() { ClientId = "123", Capability = new Capability(), Id = "123"}, null, true);
 
-            Assert.Contains("requestToken", CurrentRequest.Url);
+            Assert.Contains("authorise", CurrentRequest.Url);
         }
+
 
         private TokenRequest SendRequestTokenWithValidOptions()
         {

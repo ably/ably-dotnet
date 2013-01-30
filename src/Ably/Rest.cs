@@ -183,7 +183,7 @@ namespace Ably
         {
             if(AuthMethod == Ably.AuthMethod.Basic)
             {
-                var authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(Options.Key));
+                var authInfo = Convert.ToBase64String(Encoding.UTF8.GetBytes(Options.Key));
                 request.Headers["Authorization"] = "Basic " + authInfo;
             }
             else
@@ -202,13 +202,16 @@ namespace Ably
 
         Token IAuthCommands.RequestToken(TokenRequest requestData, AuthOptions options)
         {
-            var data = requestData ?? new TokenRequest { ClientId = Options.ClientId, Capability = new Capability() };
+            var data = requestData ?? new TokenRequest { 
+                                                        Id = Options.KeyId,
+                                                        ClientId = Options.ClientId,
+                                                        Capability = new Capability() };
                 
             data.Validate();
 
             var mergedOptions = options != null ? options.Merge(Options) : Options;
 
-            var request = CreatePostRequest(String.Format("/apps/{0}/requestToken", Options.AppId));
+            var request = CreatePostRequest(String.Format("/apps/{0}/authorise", Options.AppId));
             request.SkipAuthentication = true;
             if(mergedOptions.AuthCallback != null)
             {
@@ -230,18 +233,15 @@ namespace Ably
                 request.PostData = data.GetPostData(mergedOptions.KeyValue);
             }
 
-            
-
-            ExecuteRequest(request);
-
-            return new Token();
+            var result = ExecuteRequest(request);
+            return Token.fromJSON(JObject.Parse(result.JsonResult));
         }
 
         Token IAuthCommands.Authorise(TokenRequest request, AuthOptions options, bool force)
         {
             if(CurrentToken != null)
             {
-                if(CurrentToken.Expires > Config.Now().ToUnixTime())
+                if(CurrentToken.Expires > Config.Now())
                 {
                     if(force == false)
                         return CurrentToken;
