@@ -21,7 +21,7 @@ namespace Ably.IntegrationTests
             {
                 Key = "TiHk3g:3lJG9Q:R8KadsOydTRCNMOp",
                 Host = "rest.ably.io",
-                Encrypted = testData.encrypted
+                Encrypted = false
             };
             var ably = new Rest(options);
             IChannel channel = ably.Channels.Get("test");

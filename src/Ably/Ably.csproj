@@ -49,7 +49,6 @@
   <ItemGroup>
     <Compile Include="AblyHttpClient.cs" />
     <Compile Include="AblyOptions.cs" />
-    <Compile Include="AblyWebException.cs" />
     <Compile Include="AblyException.cs" />
     <Compile Include="AblyRequest.cs" />
     <Compile Include="AblyResponse.cs" />

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,8 +33,25 @@ namespace Ably
         {
             var request = _restClient.CreatePostRequest(basePath + "/publish");
 
-            request.PostData = new ChannelPublishPayload { Name = name, Data = data };
+            request.PostData = GetPostData(name, data);
             _restClient.ExecuteRequest(request);
+        }
+
+        private static ChannelPublishPayload GetPostData(string name, object data)
+        {
+            ChannelPublishPayload payload = new ChannelPublishPayload { Name = name};
+            if(data is byte[])
+            {
+                payload.Data = Convert.ToBase64String((byte[])data);
+                payload.Encoding = "base64";
+            }
+            else
+            {
+                payload.Data = data;
+            }
+
+            payload.Type = data.GetType().FullName;
+            return payload;
         }
 
         public IEnumerable<Message> History()
@@ -57,8 +75,47 @@ namespace Ably
             if (query.Limit.HasValue)
                 request.QueryParameters.Add("limit", query.Limit.Value.ToString());
 
-            _restClient.ExecuteRequest(request);
-            return new List<Message>();
+            var response = _restClient.ExecuteRequest(request);
+
+            return ParseHistoryResponse(response);
+        }
+
+        private IEnumerable<Message> ParseHistoryResponse(AblyResponse response)
+        {
+            var results = new List<Message>();
+            if (response == null)
+                return results;
+
+            var json = JArray.Parse(response.JsonResult);
+            foreach (var message in json)
+            {
+                results.Add(new Message
+                {
+                    Name = (string)message["name"],
+                    Data = GetMessageData(message),
+                    TimeStamp = ((long)message["timestamp"]).FromUnixTime(),
+                    ChannelId = (string)message["client_id"]
+                });
+            }
+            return results;
+        }
+
+        private object GetMessageData(JToken message)
+        {
+            var enconding = (string)message["encoding"];
+            var type = (string)message["type"];
+
+            if(enconding.IsNotEmpty() && enconding == "base64")
+            {
+                return Convert.FromBase64String((string)message["data"]);
+            }
+            else if(type.IsNotEmpty())
+            {
+                var objectType = Type.GetType(type, false);
+                if (objectType != null)
+                    return JsonConvert.DeserializeObject(message["data"].ToString(), objectType);
+            }
+            return (string)message["data"];
         }
 
         public Stats Stats()
@@ -94,5 +151,9 @@ namespace Ably
         public string Name { get; set; }
         [JsonProperty("data")]
         public object Data { get; set; }
+        [JsonProperty("type")]
+        public string Type { get; set; }
+        [JsonProperty("encoding", NullValueHandling= NullValueHandling.Ignore)]
+        public string Encoding { get; set; }
     }
 }

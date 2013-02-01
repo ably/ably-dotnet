@@ -34,6 +34,33 @@ namespace Ably.Tests
             Assert.Equal("event", data.Name);
         }
 
+        [Theory]
+        [InlineData("string", typeof(string))]
+        [InlineData(true, typeof(bool))]
+        [InlineData(10, typeof(int))]
+        public void Publish_WithData_AddsDataTypeToRequest(object data, Type expectedType)
+        {
+            var rest = GetRestClient();
+            var channel = rest.Channels.Get("Test");
+            channel.Publish("event", data);
+
+            Assert.IsType<ChannelPublishPayload>(_currentRequest.PostData);
+            var postData = _currentRequest.PostData as ChannelPublishPayload;
+            Assert.Equal(expectedType.FullName, postData.Type);
+        }
+
+        [Fact]
+        public void Publish_WithBinaryArrayData_AddsBase64EncodingToRequest()
+        {
+            var rest = GetRestClient();
+            var channel = rest.Channels.Get("Test");
+            channel.Publish("event", new byte[] { 1, 2});
+
+            Assert.IsType<ChannelPublishPayload>(_currentRequest.PostData);
+            var postData = _currentRequest.PostData as ChannelPublishPayload;
+            Assert.Equal("base64", postData.Encoding);
+        }
+
         [Fact]
         public void History_WithNoOptions_CreateGetRequestWithValidPath()
         {
