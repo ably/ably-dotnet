@@ -29,6 +29,8 @@ namespace Ably
         public AblyResponse Execute(AblyRequest request)
         {
             var webRequest = HttpWebRequest.Create(GetRequestUrl(request)) as HttpWebRequest;
+            HttpWebResponse response = null;
+
             foreach (var header in request.Headers)
             {
                 if (header.Key == "Accept")
@@ -40,45 +42,64 @@ namespace Ably
             }
             webRequest.UserAgent = "Ably.net library";
             webRequest.Method = request.Method.Method;
+
+            try
+            {
+                string requestBody = "";
+                if (request.PostData != null)
+                {
+                    requestBody = request.PostData is string ? (string)request.PostData : JsonConvert.SerializeObject(request.PostData);
+                }
+                else if (request.PostParameters.Count > 0)
+                {
+                    requestBody = string.Join("&", request.PostParameters.Select(x => x.Key + "=" + x.Value));
+                }
             
-
-            string requestBody = "";
-            if (request.PostData != null)
-            {
-                requestBody = request.PostData is string ? (string)request.PostData : JsonConvert.SerializeObject(request.PostData);
-            }
-            else if (request.PostParameters.Count > 0)
-            {
-                requestBody = string.Join("&", request.PostParameters.Select(x => x.Key + "=" + x.Value));
-            }
-
-            if (requestBody.IsNotEmpty())
-            {
-
-                var body = Encoding.UTF8.GetBytes(requestBody);
-                webRequest.ContentLength = body.Length;
-                //webRequest.SendChunked = true;
-                //webRequest.TransferEncoding = "utf-8";
-                using (Stream stream = webRequest.GetRequestStream())
+                if (requestBody.IsNotEmpty())
                 {
-                    stream.Write(body, 0, body.Length);
-                }
-            }
-            else
-                webRequest.ContentLength = 0;
 
-            using (var response = webRequest.GetResponse() as HttpWebResponse)
-            {
-                var ablyResponse = new AblyResponse();
-                ablyResponse.Type = response.ContentType == "application/json" ? ResponseType.Json : ResponseType.Thrift;
-                ablyResponse.StatusCode = response.StatusCode;
-                string encoding = response.ContentEncoding.IsNotEmpty() ? response.ContentEncoding : "utf-8";
-                using (var reader = new StreamReader(response.GetResponseStream(), Encoding.GetEncoding(encoding)))
-                {
-                    ablyResponse.JsonResult = reader.ReadToEnd();
+                    var body = Encoding.UTF8.GetBytes(requestBody);
+                    webRequest.ContentLength = body.Length;
+                    //webRequest.SendChunked = true;
+                    //webRequest.TransferEncoding = "utf-8";
+                    using (Stream stream = webRequest.GetRequestStream())
+                    {
+                        stream.Write(body, 0, body.Length);
+                    }
                 }
-                return ablyResponse;
+                else
+                    webRequest.ContentLength = 0;
+
+            
+                response = webRequest.GetResponse() as HttpWebResponse;
+                return GetAblyResponse(response);
             }
+            catch(WebException exception)
+            {
+                var errorResponse = exception.Response as HttpWebResponse;
+                if (errorResponse != null)
+                    throw AblyException.FromResponse(GetAblyResponse(errorResponse));
+                else
+                    throw new AblyException("Unexpected error. check the inner exception for details", exception);
+            }
+            finally
+            {
+                if (response != null)
+                    response.Dispose();
+            }
+        }
+
+        private static AblyResponse GetAblyResponse(HttpWebResponse response)
+        {
+            var ablyResponse = new AblyResponse();
+            ablyResponse.Type = response.ContentType == "application/json" ? ResponseType.Json : ResponseType.Thrift;
+            ablyResponse.StatusCode = response.StatusCode;
+            string encoding = response.ContentEncoding.IsNotEmpty() ? response.ContentEncoding : "utf-8";
+            using (var reader = new StreamReader(response.GetResponseStream(), Encoding.GetEncoding(encoding)))
+            {
+                ablyResponse.JsonResult = reader.ReadToEnd();
+            }
+            return ablyResponse;
         }
 
         private Uri GetRequestUrl(AblyRequest request)

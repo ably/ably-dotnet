@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AblyExceptionTests.cs" />
     <Compile Include="Auth\RequestTokenTests.cs" />
     <Compile Include="PublishTests.cs" />
     <Compile Include="TestFixture.cs" />

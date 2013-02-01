@@ -1,4 +1,5 @@
 using Ably.Auth;
+using Moq;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -50,14 +51,16 @@ namespace Ably.Tests
         }
 
         [Fact]
-        public void RequestToken_WithTokenRequestWithoutId_Throws()
+        public void RequestToken_WithTokenRequestWithoutId_UsesRestClientDefaultKeyId()
         {
             var request = new TokenRequest();
 
             var client = GetRestClient();
-            var ex = Assert.Throws<AblyException>(delegate { client.Auth.RequestToken(request, null); });
 
-            Assert.IsType<ArgumentNullException>(ex.InnerException);
+            client.Auth.RequestToken(request, null);
+
+            var data = CurrentRequest.PostData as TokenRequestPostData;
+            Assert.Equal(client.Options.KeyId, data.id);
         }
 
         [Fact]
@@ -74,14 +77,16 @@ namespace Ably.Tests
         }
 
         [Fact]
-        public void RequestToken_WithTokenRequestWithoutCapability_Throws()
+        public void RequestToken_WithTokenRequestWithoutCapability_SetsBlankCapability()
         {
             var request = new TokenRequest() { Id = "123" };
 
             var client = GetRestClient();
-            var ex = Assert.Throws<AblyException>(delegate { client.Auth.RequestToken(request, null); });
 
-            Assert.IsType<ArgumentNullException>(ex.InnerException);
+            client.Auth.RequestToken(request, null);
+
+            var data = CurrentRequest.PostData as TokenRequestPostData;
+            Assert.Equal("", data.capability);
         }
 
         [Fact]
@@ -90,6 +95,29 @@ namespace Ably.Tests
             SendRequestTokenWithValidOptions();
 
             Assert.IsType<TokenRequestPostData>(CurrentRequest.PostData);
+        }
+
+        [Fact]
+        public void RequestToken_WithQueryTime_SendsTimeRequestAndUsesReturnedTimeForTheRequest()
+        {
+            var rest = GetRestClient();
+            var currentTime = DateTime.Now;
+            rest.ExecuteRequest = x =>
+                {
+                    if (x.Url.Contains("time"))
+                       return new AblyResponse { JsonResult = "[" + currentTime.ToUnixTimeInMilliseconds() + "]", Type = ResponseType.Json };
+                    else
+                    {
+                        //Assert
+                        var data = x.PostData as TokenRequestPostData;
+                        Assert.Equal(data.timestamp, currentTime.ToUnixTime().ToString());
+                        return new AblyResponse() { JsonResult = "{}" };
+                    }
+                };
+            var request = new TokenRequest { Capability = new Capability(), ClientId = "ClientId", Ttl = TimeSpan.FromMinutes(10), Id = GetKeyId() };
+
+            //Act
+            rest.Auth.RequestToken(request, new AuthOptions() { QueryTime = true });
         }
 
         [Fact]
@@ -164,7 +192,6 @@ namespace Ably.Tests
 
             Assert.Contains("authorise", CurrentRequest.Url);
         }
-
 
         private TokenRequest SendRequestTokenWithValidOptions()
         {

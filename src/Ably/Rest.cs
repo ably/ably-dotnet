@@ -206,17 +206,19 @@ namespace Ably
                                                         Id = Options.KeyId,
                                                         ClientId = Options.ClientId,
                                                         Capability = new Capability() };
-                
+            data.Id = data.Id ?? Options.KeyId;
+            data.Capability = data.Capability ?? new Capability();
             data.Validate();
 
             var mergedOptions = options != null ? options.Merge(Options) : Options;
 
             var request = CreatePostRequest(String.Format("/apps/{0}/authorise", Options.AppId));
             request.SkipAuthentication = true;
+            TokenRequestPostData postData = null;
             if(mergedOptions.AuthCallback != null)
             {
                 var signedPostData = mergedOptions.AuthCallback(data);
-                request.PostData = JsonConvert.DeserializeObject<TokenRequestPostData>(signedPostData);
+                postData = JsonConvert.DeserializeObject<TokenRequestPostData>(signedPostData);
             }
             else if(mergedOptions.AuthUrl.IsNotEmpty())
             {
@@ -226,15 +228,26 @@ namespace Ably
                 authRequest.SkipAuthentication = true;
                 var response = ExecuteRequest(authRequest);
                 var signedData = response.JsonResult;
-                request.PostData = JsonConvert.DeserializeObject<TokenRequestPostData>(signedData);
+                postData = JsonConvert.DeserializeObject<TokenRequestPostData>(signedData);
             }
             else
             {
-                request.PostData = data.GetPostData(mergedOptions.KeyValue);
+                postData = data.GetPostData(mergedOptions.KeyValue);
             }
 
+            if (mergedOptions.QueryTime)
+                postData.timestamp = Time().ToUnixTime().ToString();
+
+            request.PostData = postData;
             var result = ExecuteRequest(request);
-            return Token.fromJSON(JObject.Parse(result.JsonResult));
+            try
+            {
+                return Token.fromJSON(JObject.Parse(result.JsonResult));
+            }
+            catch (JsonException ex)
+            {
+                throw new AblyException("Invalid json returned", ex);
+            }
         }
 
         Token IAuthCommands.Authorise(TokenRequest request, AuthOptions options, bool force)
