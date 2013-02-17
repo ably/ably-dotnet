@@ -10,9 +10,7 @@ namespace Ably.IntegrationTests
     [TestFixture]
     public class TimeTests
     {
-        /**
-	     * Verify accuracy of time (to within 2 seconds of actual time)
-	     */
+        
         [Test]
         public void TimeFromAblyServerShouldBeCloseToCurrentTime()
         {

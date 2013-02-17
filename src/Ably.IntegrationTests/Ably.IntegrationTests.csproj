@@ -52,6 +52,7 @@
     <Compile Include="AblyExceptionTests.cs" />
     <Compile Include="Auth\RequestTokenTests.cs" />
     <Compile Include="PublishTests.cs" />
+    <Compile Include="StatsTests.cs" />
     <Compile Include="TestFixture.cs" />
     <Compile Include="TestsSetup.cs" />
     <Compile Include="Key.cs" />

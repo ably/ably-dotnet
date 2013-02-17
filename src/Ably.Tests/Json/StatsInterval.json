@@ -1,0 +1,223 @@
+﻿{
+		"all": {
+			"all": {
+				"count": 10,
+				"data": 19.3
+			},
+			"messages": {
+				"count": 10,
+				"data": 11.3
+			},
+			"presence": {
+				"count": 10,
+				"data": 33.4
+			}
+		},
+		"inbound": {
+			"all": {
+				"all": {
+					"count": 11,
+					"data": 12
+				},
+				"messages": {
+					"count": 13,
+					"data": 14
+				},
+				"presence": {
+					"count": 15,
+					"data": 16
+				}
+			},
+			"realtime": {
+				"all": {
+					"count": 17,
+					"data": 18
+				},
+				"messages": {
+					"count": 19,
+					"data": 20
+				},
+				"presence": {
+					"count": 21,
+					"data": 22
+				}
+			},
+			"rest": {
+				"all": {
+					"count": 23,
+					"data": 24
+				},
+				"messages": {
+					"count": 25,
+					"data": 26
+				},
+				"presence": {
+					"count": 27,
+					"data": 28
+				}
+			},
+			"post": {
+				"all": {
+					"count": 29,
+					"data": 30
+				},
+				"messages": {
+					"count": 31,
+					"data": 32
+				},
+				"presence": {
+					"count": 33,
+					"data": 34
+				}
+			},
+			"httpStream": {
+				"all": {
+					"count": 35,
+					"data": 36
+				},
+				"messages": {
+					"count": 37,
+					"data": 38
+				},
+				"presence": {
+					"count": 39,
+					"data": 40
+				}
+			}
+		},
+		"outbound": {
+			"all": {
+				"all": {
+					"count": 41,
+					"data": 42
+				},
+				"messages": {
+					"count": 43,
+					"data": 44
+				},
+				"presence": {
+					"count": 45,
+					"data": 46
+				}
+			},
+			"realtime": {
+				"all": {
+					"count": 47,
+					"data": 48
+				},
+				"messages": {
+					"count": 49,
+					"data": 50
+				},
+				"presence": {
+					"count": 51,
+					"data": 52
+				}
+			},
+			"rest": {
+				"all": {
+					"count": 53,
+					"data": 54
+				},
+				"messages": {
+					"count": 55,
+					"data": 56
+				},
+				"presence": {
+					"count": 57,
+					"data": 58
+				}
+			},
+			"post": {
+				"all": {
+					"count": 59,
+					"data": 60
+				},
+				"messages": {
+					"count": 61,
+					"data": 62
+				},
+				"presence": {
+					"count": 63,
+					"data": 64
+				}
+			},
+			"httpStream": {
+				"all": {
+					"count": 65,
+					"data": 66
+				},
+				"messages": {
+					"count": 67,
+					"data": 68
+				},
+				"presence": {
+					"count": 69,
+					"data": 70
+				}
+			}
+		},
+		"persisted": {
+			"all": {
+				"count": 20,
+				"data": 180
+			},
+			"messages": {
+				"count": 20,
+				"data": 180
+			},
+			"presence": {
+				"count": 0,
+				"data": 0
+			}
+		},
+		"connections": {
+			"all": {
+				"opened": 0,
+				"peak": 0,
+				"mean": null,
+				"min": 0,
+				"refused": 0,
+				"sample_count": 0,
+				"sample_sum": 0
+			},
+			"plain": {
+				"opened": null,
+				"peak": null,
+				"mean": 0,
+				"min": null,
+				"refused": null,
+				"sample_count": 2,
+				"sample_sum": 0
+			},
+			"tls": {
+				"opened": null,
+				"peak": null,
+				"mean": 0,
+				"min": null,
+				"refused": null,
+				"sample_count": 2,
+				"sample_sum": 0
+			}
+		},
+		"channels": {
+			"opened": 1,
+			"peak": 1,
+			"mean": 1,
+			"min": null,
+			"refused": null,
+			"sample_count": 2,
+			"sample_sum": 2
+		},
+		"apiRequests": {
+			"succeeded": 1,
+			"failed": null,
+			"refused": null
+		},
+		"tokenRequests": {
+			"succeeded": null,
+			"failed": 1,
+			"refused": null
+		},
+		"intervalId": "2013-02-07:22:31"
+	}

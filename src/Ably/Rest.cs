@@ -278,30 +278,40 @@ namespace Ably
             return serverTime.FromUnixTimeInMilliseconds();
         }
 
-        public Stats Stats()
+        public IEnumerable<Stats> Stats()
         {
             return Stats(new DataRequestQuery());
         }
 
-        public Stats Stats(DataRequestQuery query)
+        public IEnumerable<Stats> Stats(DataRequestQuery query)
         {
             query.Validate();
 
             var request = CreateGetRequest("/apps/" + Options.AppId + "/stats");
 
             if (query.Start.HasValue)
-                request.QueryParameters.Add("start", query.Start.Value.ToUnixTime().ToString());
+                request.QueryParameters.Add("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
 
             if (query.End.HasValue)
-                request.QueryParameters.Add("end", query.End.Value.ToUnixTime().ToString());
+                request.QueryParameters.Add("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
 
             request.QueryParameters.Add("direction", query.Direction.ToString().ToLower());
             if (query.Limit.HasValue)
                 request.QueryParameters.Add("limit", query.Limit.Value.ToString());
 
-            ExecuteRequest(request);
+            var response = ExecuteRequest(request);
 
-            return new Stats();
+            var json = JToken.Parse(response.JsonResult);
+            var stats = new List<Stats>();
+            if(json.HasValues && json.Children().Count() > 0)
+            {
+                foreach (var token in json.Children())
+                {
+                    stats.Add(token.ToObject<Stats>());
+                }
+            }
+            
+            return stats;
         }
 
         public IEnumerable<Message> History()

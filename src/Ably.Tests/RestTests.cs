@@ -141,7 +141,7 @@ namespace Ably.Tests
             httpClient.Setup(x => x.Execute(It.IsAny<AblyRequest>())).Returns(new AblyResponse() { JsonResult = "{}"});
             rest._client = httpClient.Object;
 
-            rest.Stats();
+            rest.History();
 
             Assert.True(called, "Rest with Callback needs to request token using callback");
         }
@@ -163,7 +163,7 @@ namespace Ably.Tests
             
 
             AblyRequest request = null;
-            rest.ExecuteRequest = x => { request = x; return (AblyResponse)null; };
+            rest.ExecuteRequest = x => { request = x; return new AblyResponse { Type = ResponseType.Json, JsonResult = "{  }" };  };
             rest.Stats();
 
             Assert.Equal(HttpMethod.Get, request.Method);
@@ -176,7 +176,7 @@ namespace Ably.Tests
         {
             var rest = GetRestClient();
             AblyRequest request = null;
-            rest.ExecuteRequest = x => { request = x; return (AblyResponse)null; };
+            rest.ExecuteRequest = x => { request = x; return new AblyResponse { JsonResult = "{}" }; };
             var query = new DataRequestQuery();
             DateTime now = DateTime.Now;
             query.Start = now.AddHours(-1);
@@ -185,8 +185,8 @@ namespace Ably.Tests
             query.Limit = 1000;
             rest.Stats(query);
 
-            request.AssertContainsParameter("start", query.Start.Value.ToUnixTime().ToString());
-            request.AssertContainsParameter("end", query.End.Value.ToUnixTime().ToString());
+            request.AssertContainsParameter("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
+            request.AssertContainsParameter("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
             request.AssertContainsParameter("direction", query.Direction.ToString().ToLower());
             request.AssertContainsParameter("limit", query.Limit.Value.ToString());
         }

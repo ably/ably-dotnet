@@ -17,13 +17,13 @@ namespace Ably.IntegrationTests
 
         private static TestVars GetTestData()
         {
-            return new TestVars() { encrypted = false, restHost = "staging-rest.ably.io", keys = new List<Key>() };
+            return new TestVars() { encrypted = false, restHost = "rest.ably.io", keys = new List<Key>() };
         }
         [SetUp]
         public void RunBeforeAllTests()
         {
-         //   Config.DefaultHost = "staging-rest.ably.io";
-         //   TestData = GetTestData();
+            Config.DefaultHost = "rest.ably.io";
+               TestData = GetTestData();
          //   AblyHttpClient client = new AblyHttpClient(TestData.restHost, null, false);
          //   AblyRequest request = new AblyRequest("/apps", HttpMethod.Post);
          //   request.Headers.Add("Accept", "application/json");
@@ -33,6 +33,8 @@ namespace Ably.IntegrationTests
          //   var json = JObject.Parse(response.JsonResult);
          //   
          //   TestData.appId = (string)json["id"];
+               var testKey = new Key() { keyStr = "BO8VEg:VMdFSQ:YXMuQMOOw69Fw681" };
+            TestData.keys.Add(testKey);
          //   foreach (var key in json["keys"])
 	        //{
          //       var testkey = new Key();
