@@ -44,20 +44,21 @@ namespace Ably.IntegrationTests
         {
             var ably = GetAbly();
             IChannel publish = ably.Channels.Get("test");
-
+            var time = ably.Time();
             publish.Publish("publish0", true);
             publish.Publish("publish1", 24);
             publish.Publish("publish2", 24.0);
             publish.Publish("publish3", "This is a string message payload");
             byte[] byteMessage = UTF8Encoding.UTF8.GetBytes("This is a byte[] message payload");
             publish.Publish("publish4", byteMessage);
-            publish.Publish("publish5", new { test = "This is a json object message payload" });
+            var obj = new { test = "This is a json object message payload" };
+            publish.Publish("publish5", obj);
             List<int> listOfValues = new List<int> { 1, 2, 3 };
             publish.Publish("publish6", listOfValues);
 
-            Thread.Sleep(10000);
+            Thread.Sleep(20000);
 
-            var messages = publish.History().ToList();
+            var messages = publish.History(new DataRequestQuery { Start = time, Direction = QueryDirection.Forwards}).ToList();
 
             Assert.AreEqual(7, messages.Count());
             Assert.AreEqual(true, messages[0].Value<bool>());
@@ -66,7 +67,7 @@ namespace Ably.IntegrationTests
             Assert.AreEqual("This is a string message payload", messages[3].Value<string>());
             Assert.AreEqual(byteMessage, messages[4].Value<byte[]>());
             Assert.AreEqual(true, messages[4].IsBinaryMessage);
-            Assert.AreEqual(new { test = "This is a json object message payload" }, messages[5].Value<object>());
+            Assert.AreEqual(obj, messages[5].Value(obj.GetType()));
             Assert.AreEqual(listOfValues, messages[6].Value<List<int>>());
         }
     }

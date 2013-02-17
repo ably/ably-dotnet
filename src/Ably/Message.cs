@@ -22,19 +22,27 @@ namespace Ably
 
         public T Value<T>()
         {
+            object value = Value(typeof(T));
+            if (value == null)
+                return default(T);
+            return (T)value;
+        }
+
+        public object Value(Type type)
+        {
             if (IsBinaryMessage)
             {
-                if (typeof(T) == typeof(byte[]))
-                    return (T)Data;
+                if (type == typeof(byte[]))
+                    return (byte[])Data;
                 else
-                    throw new InvalidOperationException(String.Format("Current message contains binary data which cannot be converted to {0}", typeof(T)));
+                    throw new InvalidOperationException(String.Format("Current message contains binary data which cannot be converted to {0}", type));
             }
 
-            JToken token = Data as JToken;
-            if (token.Type == JTokenType.Object)
-                return token.ToObject<T>();
-            return token.Value<T>();
+            if (Data == null)
+                return null;
+            return JsonConvert.DeserializeObject(Data.ToString(), type);
         }
+
         public DateTimeOffset TimeStamp { get; set; }
     }
 }

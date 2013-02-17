@@ -65,10 +65,10 @@ namespace Ably
             var request = _restClient.CreateGetRequest(basePath + "/history");
 
             if (query.Start.HasValue)
-                request.QueryParameters.Add("start", query.Start.Value.ToUnixTime().ToString());
+                request.QueryParameters.Add("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
 
             if (query.End.HasValue)
-                request.QueryParameters.Add("end", query.End.Value.ToUnixTime().ToString());
+                request.QueryParameters.Add("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
 
             request.QueryParameters.Add("direction", query.Direction.ToString().ToLower());
             if (query.Limit.HasValue)
@@ -107,7 +107,7 @@ namespace Ably
             {
                 return Convert.FromBase64String((string)message["data"]);
             }
-            return message["data"];
+            return message["data"].ToString();
         }
 
         public Stats Stats()
@@ -122,10 +122,10 @@ namespace Ably
             var request = _restClient.CreateGetRequest(basePath + "/stats");
 
             if (query.Start.HasValue)
-                request.QueryParameters.Add("start", query.Start.Value.ToUnixTime().ToString());
+                request.QueryParameters.Add("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
 
             if (query.End.HasValue)
-                request.QueryParameters.Add("end", query.End.Value.ToUnixTime().ToString());
+                request.QueryParameters.Add("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
 
             request.QueryParameters.Add("direction", query.Direction.ToString().ToLower());
             if (query.Limit.HasValue)

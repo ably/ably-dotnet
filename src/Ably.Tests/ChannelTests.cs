@@ -70,8 +70,8 @@ namespace Ably.Tests
             query.Limit = 1000;
             channel.History(query);
 
-            _currentRequest.AssertContainsParameter("start", query.Start.Value.ToUnixTime().ToString());
-            _currentRequest.AssertContainsParameter("end", query.End.Value.ToUnixTime().ToString());
+            _currentRequest.AssertContainsParameter("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
+            _currentRequest.AssertContainsParameter("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
             _currentRequest.AssertContainsParameter("direction", query.Direction.ToString().ToLower());
             _currentRequest.AssertContainsParameter("limit", query.Limit.Value.ToString());
         }
@@ -138,8 +138,8 @@ namespace Ably.Tests
             query.Limit = 1000;
             channel.Stats(query);
 
-            _currentRequest.AssertContainsParameter("start", query.Start.Value.ToUnixTime().ToString());
-            _currentRequest.AssertContainsParameter("end", query.End.Value.ToUnixTime().ToString());
+            _currentRequest.AssertContainsParameter("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
+            _currentRequest.AssertContainsParameter("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
             _currentRequest.AssertContainsParameter("direction", query.Direction.ToString().ToLower());
             _currentRequest.AssertContainsParameter("limit", query.Limit.Value.ToString());
         }
