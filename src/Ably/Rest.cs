@@ -145,7 +145,7 @@ namespace Ably
             {
                 Logger.Info("Authentication will be done using token auth with authUrl");
             }
-            else if (Options.KeyValue.IsNotEmpty() != null)
+            else if (Options.KeyValue.IsNotEmpty())
             {
                 Logger.Info("Authentication will be done using token auth with client-side signing");
             }

@@ -58,7 +58,7 @@ namespace Ably.IntegrationTests
 
             Thread.Sleep(20000);
 
-            var messages = publish.History(new DataRequestQuery { Start = time, Direction = QueryDirection.Forwards}).ToList();
+            var messages = publish.History(new HistoryDataRequestQuery { Start = time, Direction = QueryDirection.Forwards}).ToList();
 
             Assert.AreEqual(7, messages.Count());
             Assert.AreEqual(true, messages[0].Value<bool>());

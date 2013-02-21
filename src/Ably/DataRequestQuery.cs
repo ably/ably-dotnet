@@ -5,6 +5,19 @@ using System.Linq;
 
 namespace Ably
 {
+    public enum HistoryBy
+        {
+        	Message,
+        Bundle,
+        Hour
+        }
+    public class HistoryDataRequestQuery : DataRequestQuery
+    {
+        public HistoryBy? By { get; set; }
+
+        
+    }
+
     public class DataRequestQuery
     {
         public DateTime? Start { get; set; }

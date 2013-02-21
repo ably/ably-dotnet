@@ -37,6 +37,11 @@ namespace Ably
             mac = signText.ComputeHMacSha256(key);
         }
 
+        public override int GetHashCode()
+        {
+            return id.GetHashCode();
+        }
+
         public override bool Equals(object obj)
         {
             var other = obj as TokenRequestPostData;

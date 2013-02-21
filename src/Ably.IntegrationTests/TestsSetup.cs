@@ -32,7 +32,7 @@ namespace Ably.IntegrationTests
          //   var response = client.Execute(request);
          //   var json = JObject.Parse(response.JsonResult);
          //   
-         //   TestData.appId = (string)json["id"];
+               TestData.appId = "BO8VEg";
                var testKey = new Key() { keyStr = "BO8VEg:VMdFSQ:YXMuQMOOw69Fw681" };
             TestData.keys.Add(testKey);
          //   foreach (var key in json["keys"])

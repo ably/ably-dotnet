@@ -48,7 +48,7 @@ namespace Ably
                     exception.ErrorCode = (string)json["error"]["code"];
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //If there is no json or there is something wrong we don't want to throw from here. The
             }

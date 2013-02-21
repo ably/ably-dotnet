@@ -13,7 +13,6 @@ namespace Ably.Auth
         public DateTime Expires { get; set;}
         public DateTime IssuedAt { get; set; }
         public Capability Capability { get; set; }
-        public string ClientId { get; set; }
 
         public static Token fromJSON(Newtonsoft.Json.Linq.JObject json)
         {
@@ -25,7 +24,6 @@ namespace Ably.Auth
             token.Expires = ((long)access_token["expires"]).FromUnixTime();
             token.IssuedAt = ((long)access_token["issued_at"]).FromUnixTime();
             token.Capability = new Capability(access_token["capability"].ToString());
-            //token.ClientId = json.Value<string>("client_id");
             return token;
         }
     }

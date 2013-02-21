@@ -10,7 +10,7 @@ namespace Ably
     {
         void Publish(string name, object data);
         IEnumerable<Message> History();
-        IEnumerable<Message> History(DataRequestQuery query);
+        IEnumerable<Message> History(HistoryDataRequestQuery query);
         Stats Stats();
         Stats Stats(DataRequestQuery query);
         string Name { get; }
@@ -55,10 +55,10 @@ namespace Ably
 
         public IEnumerable<Message> History()
         {
-            return History(new DataRequestQuery());
+            return History(new HistoryDataRequestQuery());
         }
 
-        public IEnumerable<Message> History(DataRequestQuery query)
+        public IEnumerable<Message> History(HistoryDataRequestQuery query)
         {
             query.Validate();
 
@@ -73,6 +73,8 @@ namespace Ably
             request.QueryParameters.Add("direction", query.Direction.ToString().ToLower());
             if (query.Limit.HasValue)
                 request.QueryParameters.Add("limit", query.Limit.Value.ToString());
+            if (query.By.HasValue)
+                request.QueryParameters.Add("by", query.By.Value.ToString().ToLower());
 
             var response = _restClient.ExecuteRequest(request);
 
@@ -107,7 +109,7 @@ namespace Ably
             {
                 return Convert.FromBase64String((string)message["data"]);
             }
-            return message["data"].ToString();
+            return message["data"] != null ? message["data"].ToString() : null ;
         }
 
         public Stats Stats()
