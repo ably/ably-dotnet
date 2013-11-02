@@ -11,7 +11,7 @@ namespace Ably.Tests
 {
     public class AuthorisationTests
     {
-        private const string ApiKey = "AHSz6w:uQXPNQ:FGBZbsKSwqbCpkob";
+        private const string ApiKey = "AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob";
         public AblyRequest CurrentRequest { get; set; }
         public readonly DateTime Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc);
 
@@ -30,14 +30,8 @@ namespace Ably.Tests
 
         private static string GetKeyId()
         {
-            return ApiKey.Split(':')[1];
+            return ApiKey.Split(':')[0].Split('.')[1];
         }
-
-        private static string GetKeyValue()
-        {
-            return ApiKey.Split(':')[2];
-        }
-
 
         [Fact]
         public void RequestToken_CreatesPostRequestWithCorrectUrl()

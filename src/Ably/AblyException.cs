@@ -37,21 +37,29 @@ namespace Ably
 
         public static AblyException FromResponse(AblyResponse response)
         {
-            var exception = new AblyException();
-            exception.HttpStatusCode = response.StatusCode;
+            string reason = "";
+            string errorCode = "";
             try
             {
                 var json = JObject.Parse(response.JsonResult);
                 if (json["error"] != null)
                 {
-                    exception.Reason = (string)json["error"]["reason"];
-                    exception.ErrorCode = (string)json["error"]["code"];
+                    reason = (string)json["error"]["reason"];
+                    errorCode = (string)json["error"]["code"];
                 }
             }
             catch (Exception)
             {
                 //If there is no json or there is something wrong we don't want to throw from here. The
             }
+
+            string message = errorCode.IsNotEmpty() ? string.Format("{0}: {1}", errorCode, reason) : "Something went wrong. Response: " + response.JsonResult;
+            var exception = new AblyException(message)
+                {
+                    HttpStatusCode = response.StatusCode,
+                    Reason = reason,
+                    ErrorCode = errorCode
+                };
             return exception;
         }
     }

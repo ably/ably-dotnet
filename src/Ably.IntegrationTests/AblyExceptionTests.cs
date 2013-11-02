@@ -23,7 +23,7 @@ namespace Ably.IntegrationTests
                 rest.Auth.RequestToken(null, null);
             });
 
-            Assert.AreEqual(ex.InnerException, Is.InstanceOf<WebException>());
+            Assert.That(ex.InnerException, Is.InstanceOf<WebException>());
         }
 
         [Test]

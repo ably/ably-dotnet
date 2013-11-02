@@ -15,7 +15,7 @@ namespace Ably.Tests
 {
     public class RestTests
     {
-        private const string ValidKey = "AHSz6w:uQXPNQ:FGBZbsKSwqbCpkob";
+        private const string ValidKey = "AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob";
         private readonly ApiKey Key = ApiKey.Parse(ValidKey);
 
         private class RestThatReadsDummyConnectionString : Rest

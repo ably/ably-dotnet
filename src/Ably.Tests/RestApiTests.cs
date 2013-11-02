@@ -10,7 +10,7 @@ namespace Ably.Tests
 {
     public abstract class RestApiTests
     {
-        protected const string ValidKey = "AHSz6w:uQXPNQ:FGBZbsKSwqbCpkob";
+        protected const string ValidKey = "AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob";
         protected AblyRequest _currentRequest;
         internal MimeTypes mimeTypes = new MimeTypes();
         

@@ -38,10 +38,15 @@ namespace Ably
                 new ArgumentException("Ably key was not specified").Throw();
 
             var parts = key.Trim().Split(':');
-            if (parts.Length != 3)
-                new ArgumentOutOfRangeException("Ably key must contain three parts").Throw();
+            if (parts.Length == 2)
+            {
+                var keyParts = parts[0].Split(".".ToCharArray());
+                return new ApiKey() { _AppId = keyParts[0], _KeyId = keyParts[1], _KeyValue = parts[1] };
+            }
+            
+            new ArgumentOutOfRangeException("Ably key must be in the following format [AppId].[keyId]:[keyValue]").Throw();
 
-            return new ApiKey() { _AppId = parts[0], _KeyId = parts[1], _KeyValue = parts[2] };
+            return new ApiKey();
         }
     }
 }
