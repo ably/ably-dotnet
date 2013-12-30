@@ -18,7 +18,7 @@ namespace Ably.Tests
             channel.Publish("event", "data");
 
             Assert.Equal(HttpMethod.Post, _currentRequest.Method);
-            Assert.Equal(String.Format("/apps/{0}/channels/{1}/publish", rest.Options.AppId, channel.Name), _currentRequest.Url);
+            Assert.Equal(String.Format("/channels/{0}/publish", channel.Name), _currentRequest.Url);
         }
 
         [Fact]
@@ -54,7 +54,7 @@ namespace Ably.Tests
             channel.History();
 
             Assert.Equal(HttpMethod.Get, _currentRequest.Method);
-            Assert.Equal(String.Format("/apps/{0}/channels/{1}/history", rest.Options.AppId, channel.Name), _currentRequest.Url);
+            Assert.Equal(String.Format("/channels/{0}/history", channel.Name), _currentRequest.Url);
         }
 
         [Fact]
@@ -87,9 +87,7 @@ namespace Ably.Tests
             var channel = rest.Channels.Get("Test");
             var query = new HistoryDataRequestQuery() { Limit = limit };
 
-            var ex = Assert.Throws<AblyException>(delegate { channel.History(query); });
-
-            Assert.IsType<ArgumentOutOfRangeException>(ex.InnerException);
+            Assert.Throws<AblyException>(delegate { channel.History(query); });
         }
 
         [Theory]
@@ -100,9 +98,8 @@ namespace Ably.Tests
             var channel = rest.Channels.Get("Test");
             var query = new HistoryDataRequestQuery() { Start = start, End = end };
 
-            var ex = Assert.Throws<AblyException>(delegate { channel.History(query); });
+             Assert.Throws<AblyException>(delegate { channel.History(query); });
 
-            Assert.IsType<ArgumentOutOfRangeException>(ex.InnerException);
         }
 
         public static IEnumerable<object[]> InvalidHistoryDates
@@ -124,7 +121,7 @@ namespace Ably.Tests
             channel.Stats();
 
             Assert.Equal(HttpMethod.Get, _currentRequest.Method);
-            Assert.Equal(String.Format("/apps/{0}/channels/{1}/stats", rest.Options.AppId, channel.Name), _currentRequest.Url);
+            Assert.Equal(String.Format("/channels/{0}/stats", channel.Name), _currentRequest.Url);
         }
 
         [Fact]

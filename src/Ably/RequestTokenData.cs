@@ -35,7 +35,7 @@ namespace Ably
             //    new ArgumentNullException("Id", "Cannot use TokenRequest without Id").Throw();
 
             if (Capability == null)
-                new ArgumentNullException("Capability", "Cannot user TokenRequest without Capability specified").Throw();
+                throw new AblyException("Cannot user TokenRequest without Capability specified");
         }
     }
 }

@@ -1,3 +1,4 @@
+using System.Net;
 using Ably.Auth;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -48,7 +49,7 @@ namespace Ably
             var key = GetConnectionString();
             if (string.IsNullOrEmpty(key))
             {
-                new ConfigurationMissingException("A connection strig with key 'Ably' doesn't exist in the application configuration").Throw();
+                throw new AblyException("A connection strig with key 'Ably' doesn't exist in the application configuration");
             }
             
             //Parse it when I know how things work
@@ -91,7 +92,7 @@ namespace Ably
             if(_options == null)
             {
                 Logger.Error("No options provider to Ably rest");
-                new ArgumentNullException("Options").Throw();
+                throw new AblyException("Invalid options");
             }
 
             if(_options.Key.IsNotEmpty())
@@ -105,7 +106,7 @@ namespace Ably
             if(_options.AppId.IsEmpty())
             {
                 Logger.Error("Cannot initialise Ably without AppId");
-                new ArgumentException("Cannot initialise Ably without an AppId").Throw();
+                throw new AblyException("Cannot initialise Ably without an AppId");
             }
 
             string host = _options.Host.IsNotEmpty() ? _options.Host : Config.DefaultHost;
@@ -179,7 +180,7 @@ namespace Ably
             return _client.Execute(request);
         }
 
-        private void AddAuthHeader(AblyRequest request)
+        internal void AddAuthHeader(AblyRequest request)
         {
             if(AuthMethod == Ably.AuthMethod.Basic)
             {
@@ -194,7 +195,7 @@ namespace Ably
                 }
 
                 if (CurrentToken == null)
-                    throw new AblyException("Invalid token credentials");
+                    throw new AblyException("Invalid token credentials", 40100, HttpStatusCode.Unauthorized);
 
                 request.Headers["Authorization"] = "Bearer " + CurrentToken.Id;
             }
@@ -240,13 +241,14 @@ namespace Ably
 
             request.PostData = postData;
             var result = ExecuteRequest(request);
+
             try
             {
                 return Token.fromJSON(JObject.Parse(result.JsonResult));
             }
             catch (JsonException ex)
             {
-                throw new AblyException("Invalid json returned", ex);
+                throw new AblyException(new ErrorInfo("Invalid json returned", 500), ex);
             }
         }
 
@@ -272,7 +274,7 @@ namespace Ably
             request.SkipAuthentication = true;
             var response = ExecuteRequest(request);
             if (response.Type != ResponseType.Json)
-                throw new AblyException("Invalid response from server");
+                throw new AblyException("Invalid response from server", 500, null);
 
             long serverTime = (long)JArray.Parse(response.JsonResult).First;
             return serverTime.FromUnixTimeInMilliseconds();
@@ -287,7 +289,7 @@ namespace Ably
         {
             query.Validate();
 
-            var request = CreateGetRequest("/apps/" + Options.AppId + "/stats");
+            var request = CreateGetRequest("/stats");
 
             if (query.Start.HasValue)
                 request.QueryParameters.Add("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
@@ -303,7 +305,7 @@ namespace Ably
 
             var json = JToken.Parse(response.JsonResult);
             var stats = new List<Stats>();
-            if(json.HasValues && json.Children().Count() > 0)
+            if(json.HasValues && json.Children().Any())
             {
                 foreach (var token in json.Children())
                 {
@@ -323,7 +325,7 @@ namespace Ably
         {
             query.Validate();
 
-            var request = CreateGetRequest("/apps/" + Options.AppId + "/history");
+            var request = CreateGetRequest("/history");
 
             if (query.Start.HasValue)
                 request.QueryParameters.Add("start", query.Start.Value.ToUnixTime().ToString());

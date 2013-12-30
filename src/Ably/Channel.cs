@@ -2,7 +2,6 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Ably
 {
@@ -26,7 +25,7 @@ namespace Ably
         {
             Name = name;
             _restClient = restClient;
-            basePath = string.Format("/apps/{0}/channels/{1}", restClient.Options.AppId, name);
+            basePath = string.Format("/channels/{0}", name);
         }
 
         public void Publish(string name, object data)
@@ -39,7 +38,7 @@ namespace Ably
 
         private static ChannelPublishPayload GetPostData(string name, object data)
         {
-            ChannelPublishPayload payload = new ChannelPublishPayload { Name = name};
+            var payload = new ChannelPublishPayload { Name = name};
             if(data is byte[])
             {
                 payload.Data = Convert.ToBase64String((byte[])data);
@@ -92,10 +91,10 @@ namespace Ably
             {
                 results.Add(new Message
                 {
-                    Name = (string)message["name"],
+                    Name = message.OptValue<string>("name"),
                     Data = GetMessageData(message),
-                    TimeStamp = ((long)message["timestamp"]).FromUnixTimeInMilliseconds(),
-                    ChannelId = (string)message["client_id"]
+                    TimeStamp = message.OptValue<long>("timestamp").FromUnixTimeInMilliseconds(),
+                    ChannelId = message.OptValue<string>("client_id")
                 });
             }
             return results;
@@ -109,7 +108,7 @@ namespace Ably
             {
                 return Convert.FromBase64String((string)message["data"]);
             }
-            return message["data"] != null ? message["data"].ToString() : null ;
+            return message["data"];
         }
 
         public Stats Stats()

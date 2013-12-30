@@ -80,7 +80,7 @@ namespace Ably
                 if (errorResponse != null)
                     throw AblyException.FromResponse(GetAblyResponse(errorResponse));
                 else
-                    throw new AblyException("Unexpected error. check the inner exception for details", exception);
+                    throw new AblyException(new ErrorInfo("Unexpected error. Check the inner exception for details", 500, null), exception);
             }
             finally
             {

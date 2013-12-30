@@ -47,9 +47,9 @@ namespace Ably
             var webException = ex as AblyException;
             if (webException != null)
             {
-                message.AppendLine("Error code: " + webException.ErrorCode);
-                message.AppendLine("Status code: " + webException.HttpStatusCode);
-                message.AppendLine("Reason: " + webException.Reason);
+                message.AppendLine("Error code: " + webException.ErrorInfo.Code);
+                message.AppendLine("Status code: " + webException.ErrorInfo.StatusCode);
+                message.AppendLine("Reason: " + webException.ErrorInfo.Reason);
             }
 
             message.AppendLine(ex.Message);

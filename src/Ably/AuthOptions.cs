@@ -7,11 +7,11 @@ namespace Ably
     public class AuthOptions
     {
         public Func<TokenRequest, string> AuthCallback;
-        public String AuthUrl { get; set; }
-        public String Key { get; set; }
-        public String KeyId { get; set; }
-        public String KeyValue { get; set; }
-        public String AuthToken { get; set; }
+        public string AuthUrl { get; set; }
+        public string Key { get; set; }
+        public string KeyId { get; set; }
+        public string KeyValue { get; set; }
+        public string AuthToken { get; set; }
         public Dictionary<string, string> AuthHeaders { get; set; }
         public Dictionary<string, string> AuthParams { get; set; }
         public bool QueryTime { get; set; }

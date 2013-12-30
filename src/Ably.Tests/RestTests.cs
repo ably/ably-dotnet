@@ -15,7 +15,7 @@ namespace Ably.Tests
 {
     public class RestTests
     {
-        private const string ValidKey = "AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob";
+        private const string ValidKey = "1iZPfA.BjcI_g:wpNhw5RCw6rDjisl";
         private readonly ApiKey Key = ApiKey.Parse(ValidKey);
 
         private class RestThatReadsDummyConnectionString : Rest
@@ -34,11 +34,9 @@ namespace Ably.Tests
         [Fact]
         public void Ctor_WithNoParametersAndNoAblyConnectionString_Throws()
         {
-            var ex = Assert.Throws<AblyException>(delegate {
+            Assert.Throws<AblyException>(delegate {
              new RestThatReadsDummyConnectionString();
             });
-
-            Assert.IsType<ConfigurationMissingException>(ex.InnerException);
         }
 
         [Fact]
@@ -52,12 +50,10 @@ namespace Ably.Tests
         [Fact]
         public void Ctor_WithNoParametersWithInvalidKey_ThrowsInvalidKeyException()
         {
-            AblyException ex = Assert.Throws<AblyException>(delegate
+            Assert.Throws<AblyException>(delegate
             {
                 new Rest("InvalidKey");
             });
-
-            Assert.IsType<ArgumentOutOfRangeException>(ex.InnerException);
         }
 
         [Fact]
@@ -84,9 +80,7 @@ namespace Ably.Tests
         [Fact]
         public void Init_WithNoAppIdOrKey_Throws()
         {
-            var ex = Assert.Throws<AblyException>(delegate { new Rest(""); });
-
-            Assert.IsType<ArgumentException>(ex.InnerException);
+            Assert.Throws<AblyException>(delegate { var rest = new Rest(""); });
         }
 
         [Fact]
@@ -145,6 +139,25 @@ namespace Ably.Tests
 
             Assert.True(called, "Rest with Callback needs to request token using callback");
         }
+
+        [Fact]
+        public void AddAuthHeader_WithBasicAuthentication_AddsCorrectAuthorisationHeader()
+        {
+            //Arrange
+            var rest = new Rest(ValidKey);
+            ApiKey key = ApiKey.Parse(ValidKey);
+            var request = new AblyRequest("/test", HttpMethod.Get);
+            var expectedValue = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(key.ToString()));
+
+            //Act
+            rest.AddAuthHeader(request);
+
+            //Assert
+            var authHeader = request.Headers.First();
+            Assert.Equal("Authorization", authHeader.Key);
+
+            Assert.Equal(expectedValue, authHeader.Value);
+        }
   
         [Fact]
         public void ChannelsGet_ReturnsNewChannelWithName()
@@ -167,7 +180,7 @@ namespace Ably.Tests
             rest.Stats();
 
             Assert.Equal(HttpMethod.Get, request.Method);
-            Assert.Equal("/apps/" + rest.Options.AppId + "/stats", request.Url);
+            Assert.Equal("/stats", request.Url);
         }
 
         
@@ -200,7 +213,7 @@ namespace Ably.Tests
             rest.History();
 
             Assert.Equal(HttpMethod.Get, request.Method);
-            Assert.Equal(String.Format("/apps/{0}/history", rest.Options.AppId), request.Url);
+            Assert.Equal("/history", request.Url);
         }
 
         [Fact]

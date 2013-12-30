@@ -9,17 +9,17 @@ namespace Ably.Tests
 {
     public class TokenRequestDataTests
     {
-        private const string ApiKey = "AHSz6w:uQXPNQ:FGBZbsKSwqbCpkob";
+        private const string ApiKey = "AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob";
         public readonly DateTime Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc);
 
         private static string GetKeyId()
         {
-            return ApiKey.Split(':')[1];
+            return ApiKey.Split(':')[0];
         }
 
         private static string GetKeyValue()
         {
-            return ApiKey.Split(':')[2];
+            return ApiKey.Split(':')[1];
         }
 
         private static TokenRequest GetTokenRequest()

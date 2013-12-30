@@ -65,6 +65,7 @@
     <Compile Include="Extensions\DateExtensions.cs" />
     <Compile Include="ExtendedSource.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
+    <Compile Include="Extensions\JTokenExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="IAblyHttpClient.cs" />
     <Compile Include="ILogger.cs" />

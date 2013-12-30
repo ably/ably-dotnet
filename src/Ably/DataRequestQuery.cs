@@ -33,21 +33,21 @@ namespace Ably
         internal void Validate()
         {
             if (Limit.HasValue && (Limit < 0 || Limit > 10000))
-                new ArgumentOutOfRangeException("Limit", "History query limit must be between 0 and 10000").Throw();
+               throw new AblyException("History query limit must be between 0 and 10000");
 
             if (Start.HasValue)
             {
                 if (Start.Value < new DateTime(1970, 1, 1))
-                    new ArgumentOutOfRangeException("Start", "Start only supports dates after 1 January 1970").Throw();
+                    throw new AblyException("Start only supports dates after 1 January 1970");
             }
 
             if (End.HasValue)
                 if (End.Value < new DateTime(1970, 1, 1))
-                    new ArgumentOutOfRangeException("End", "End only supports dates after 1 January 1970").Throw();
+                    throw new AblyException("End only supports dates after 1 January 1970");
 
             if (Start.HasValue && End.HasValue)
                 if (End.Value < Start.Value)
-                    new ArgumentOutOfRangeException("End", "End date should be after Start date").Throw();
+                    throw new AblyException("End date should be after Start date");
         }
     }
 }

@@ -38,8 +38,8 @@ namespace Ably.IntegrationTests
                 rest.Auth.RequestToken(request, null);
             });
 
-            Assert.AreEqual(HttpStatusCode.BadRequest, ex.HttpStatusCode.Value);
-            Assert.AreEqual("40003", ex.ErrorCode);
+            Assert.AreEqual(HttpStatusCode.BadRequest, ex.ErrorInfo.StatusCode.Value);
+            Assert.AreEqual("40003", ex.ErrorInfo.Code);
         }
 
         private static Ably.AblyOptions GetDefaultOptions()

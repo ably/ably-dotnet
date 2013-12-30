@@ -10,12 +10,4 @@ namespace Ably
     {
 
     }
-
-    public static class ExceptionExtensions
-    {
-    	public static void Throw(this Exception ex)
-        {
-            throw new AblyException("Check inner exception: " + ex.Message, ex);
-        }
-    }
 }

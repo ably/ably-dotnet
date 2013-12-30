@@ -34,13 +34,20 @@ namespace Ably
             {
                 if (type == typeof(byte[]))
                     return (byte[])Data;
-                else
-                    throw new InvalidOperationException(String.Format("Current message contains binary data which cannot be converted to {0}", type));
+                throw new InvalidOperationException(String.Format("Current message contains binary data which cannot be converted to {0}", type));
             }
 
             if (Data == null)
                 return null;
-            return JsonConvert.DeserializeObject(Data.ToString(), type);
+            if (Data is JToken)
+            {
+                return ((JToken) Data).ToObject(type);
+            }
+            if (typeof(IConvertible).IsAssignableFrom(type))
+            {
+                return Convert.ChangeType(Data, type);
+            }
+            return Data;
         }
 
         public DateTimeOffset TimeStamp { get; set; }
