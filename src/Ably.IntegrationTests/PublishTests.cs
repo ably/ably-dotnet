@@ -28,10 +28,10 @@ namespace Ably.IntegrationTests
         public void CanPublishAMessageAndRetrieveIt()
         {
             Ably.Rest ably = GetAbly();
-            IChannel channel = ably.Channels.Get("test");
+            IChannel channel = ably.Channels.Get("persisted:test");
             channel.Publish("test", true);
 
-            Thread.Sleep(10000);
+            Thread.Sleep(8000);
 
             var messages = channel.History();
 
@@ -43,7 +43,7 @@ namespace Ably.IntegrationTests
         public void CanPublishWithVariousDataTypesAndRetrieveCorrectMessages()
         {
             var ably = GetAbly();
-            IChannel publish = ably.Channels.Get("test");
+            IChannel publish = ably.Channels.Get("persisted:test");
             var time = ably.Time();
             publish.Publish("publish0", true);
             publish.Publish("publish1", 24);
@@ -56,7 +56,7 @@ namespace Ably.IntegrationTests
             List<int> listOfValues = new List<int> { 1, 2, 3 };
             publish.Publish("publish6", listOfValues);
 
-            Thread.Sleep(20000);
+            Thread.Sleep(16000);
 
             var messages = publish.History(new HistoryDataRequestQuery { Start = time, Direction = QueryDirection.Forwards}).ToList();
 

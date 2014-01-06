@@ -21,6 +21,15 @@ namespace Ably
 
         public Dictionary<string, string> Headers { get; private set; }
         public Dictionary<string, string> QueryParameters { get; private set; }
+        
+        public void AddQueryParameters(IEnumerable<KeyValuePair<string, string>> parameters)
+        {
+            foreach (var keyValuePair in parameters)
+            {
+                QueryParameters.Add(keyValuePair.Key, keyValuePair.Value);
+            }
+        }
+
         public object PostData { get; set; }
         public Dictionary<string, string> PostParameters { get; set; }
         public bool SkipAuthentication { get; set; }

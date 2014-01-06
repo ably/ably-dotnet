@@ -19,7 +19,6 @@ namespace Ably.IntegrationTests
             var options = new AblyOptions
             {
                 Key = testData.keys[0].keyStr,
-                Host = "rest.ably.io",
                 Encrypted = false
             };
             var ably = new Rest(options);
@@ -38,17 +37,16 @@ namespace Ably.IntegrationTests
             }
             var end = ably.Time();
 
-            Thread.Sleep(120000);
+            Thread.Sleep(8000);
 
             var stats = ably.Stats(new DataRequestQuery { Start = time, Direction = QueryDirection.Forwards });
 
             Assert.NotNull(stats);
             Assert.AreEqual(20, stats.First().All.All.Count);
 
-            var backwardsStats = ably.Stats(new DataRequestQuery { Start = end, End = time, Direction = QueryDirection.Backwards });
+            var backwardsStats = ably.Stats(new DataRequestQuery { Start = time, End = end, Direction = QueryDirection.Backwards });
 
             Assert.AreEqual(20, backwardsStats.First().All.All.Count);
-            
         }
 
 

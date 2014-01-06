@@ -47,13 +47,13 @@ namespace Ably.IntegrationTests
         [TearDown]
         public void RunAfterAllTests()
         {
-            var options = new AblyOptions { Key = TestData.keys[0].keyStr, Encrypted = TestData.encrypted };
+            //var options = new AblyOptions { Key = TestData.keys[0].keyStr, Encrypted = TestData.encrypted };
 
-            var rest = new Rest(options);
+            //var rest = new Rest(options);
 
-            AblyRequest request = new AblyRequest("/apps/" + TestData.appId, HttpMethod.Delete);
-            request.Headers.Add("Accept", "application/json");
-            rest.ExecuteRequest(request);
+            //AblyRequest request = new AblyRequest("/apps/" + TestData.appId, HttpMethod.Delete);
+            //request.Headers.Add("Accept", "application/json");
+            //rest.ExecuteRequest(request);
         }
     }
 }

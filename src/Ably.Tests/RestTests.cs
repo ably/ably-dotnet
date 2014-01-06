@@ -135,7 +135,7 @@ namespace Ably.Tests
             httpClient.Setup(x => x.Execute(It.IsAny<AblyRequest>())).Returns(new AblyResponse() { JsonResult = "{}"});
             rest._client = httpClient.Object;
 
-            rest.History();
+            rest.Stats();
 
             Assert.True(called, "Rest with Callback needs to request token using callback");
         }
@@ -200,39 +200,6 @@ namespace Ably.Tests
 
             request.AssertContainsParameter("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
             request.AssertContainsParameter("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
-            request.AssertContainsParameter("direction", query.Direction.ToString().ToLower());
-            request.AssertContainsParameter("limit", query.Limit.Value.ToString());
-        }
-
-        [Fact]
-        public void History_WithNoOptions_CreateGetRequestWithValidPath()
-        {
-            var rest = GetRestClient();
-            AblyRequest request = null;
-            rest.ExecuteRequest = x => { request = x; return (AblyResponse)null; };
-            rest.History();
-
-            Assert.Equal(HttpMethod.Get, request.Method);
-            Assert.Equal("/history", request.Url);
-        }
-
-        [Fact]
-        public void History_WithOptions_AddsParametersToRequest()
-        {
-            var rest = GetRestClient();
-            AblyRequest request = null;
-            rest.ExecuteRequest = x => { request = x; return (AblyResponse)null; };
-
-            var query = new DataRequestQuery();
-            DateTime now = DateTime.Now;
-            query.Start = now.AddHours(-1);
-            query.End = now;
-            query.Direction = QueryDirection.Forwards;
-            query.Limit = 1000;
-            rest.History(query);
-
-            request.AssertContainsParameter("start", query.Start.Value.ToUnixTime().ToString());
-            request.AssertContainsParameter("end", query.End.Value.ToUnixTime().ToString());
             request.AssertContainsParameter("direction", query.Direction.ToString().ToLower());
             request.AssertContainsParameter("limit", query.Limit.Value.ToString());
         }

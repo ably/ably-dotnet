@@ -6,16 +6,27 @@ using System.Linq;
 namespace Ably
 {
     public enum HistoryBy
-        {
-        	Message,
+    {
+        Message,
         Bundle,
         Hour
-        }
+    }
     public class HistoryDataRequestQuery : DataRequestQuery
     {
         public HistoryBy? By { get; set; }
 
-        
+        public static HistoryDataRequestQuery Create()
+        {
+            return new HistoryDataRequestQuery();
+        }
+
+        public override IEnumerable<KeyValuePair<string, string>> GetParameters()
+        {
+            var result = new List<KeyValuePair<string,string>>(base.GetParameters());
+            if(By.HasValue)
+                result.Add(new KeyValuePair<string, string>("by", By.ToString().ToLower()));
+            return result;
+        }
     }
 
     public class DataRequestQuery
@@ -33,7 +44,7 @@ namespace Ably
         internal void Validate()
         {
             if (Limit.HasValue && (Limit < 0 || Limit > 10000))
-               throw new AblyException("History query limit must be between 0 and 10000");
+                throw new AblyException("History query limit must be between 0 and 10000");
 
             if (Start.HasValue)
             {
@@ -48,6 +59,22 @@ namespace Ably
             if (Start.HasValue && End.HasValue)
                 if (End.Value < Start.Value)
                     throw new AblyException("End date should be after Start date");
+        }
+
+        public virtual IEnumerable<KeyValuePair<string, string>> GetParameters()
+        {
+            var result = new List<KeyValuePair<string, string>>();
+            if (Start.HasValue)
+                result.Add(new KeyValuePair<string, string>("start", Start.Value.ToUnixTimeInMilliseconds().ToString()));
+
+            if (End.HasValue)
+                result.Add(new KeyValuePair<string, string>("end", End.Value.ToUnixTimeInMilliseconds().ToString()));
+
+            result.Add(new KeyValuePair<string, string>("direction", Direction.ToString().ToLower()));
+            if (Limit.HasValue)
+                result.Add(new KeyValuePair<string, string>("limit", Limit.Value.ToString()));
+
+            return result;
         }
     }
 }

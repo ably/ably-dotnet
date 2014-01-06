@@ -21,6 +21,7 @@ namespace Ably
             throw new NotImplementedException();
         }
     }
+
     public class Stats
     {
         public MessageTypes All { get; set; }
@@ -34,44 +35,18 @@ namespace Ably
         [JsonProperty("intervalId")]
         [JsonConverter(typeof(StatsJsonDateConverter))]
         public DateTime Interval { get; set; }
-    }
 
-    public class ResourceCount
-    {
-        public int? Opened { get; set;}
-        public int? Peak { get; set; }
-        public int? Mean { get; set; }
-        public int? Min { get; set; }
-        public int? Refused { get; set; } 
-    }
-
-    public  class RequestCount
-    {
-        public int? Succeeded { get; set; }
-        public int? Failed { get; set; }
-        public int? Refused { get; set; }
-    }
-
-    public class MessageTypes
-    {
-        public MessageCount All { get; set; }
-        public MessageCount Messages { get; set; }
-        public MessageCount Presence { get; set; }
-    }
-     
-    public class MessageCount
-    {
-        public int? Count { get; set; }
-        public double? Data { get; set; }
-    }
-
-    public class MessageTraffic
-    {
-        public MessageTypes All { get; set; }
-        public MessageTypes Realtime { get; set; }
-        public MessageTypes Rest { get; set; }
-        public MessageTypes Post { get; set; }
-        public MessageTypes HttpStream { get; set; }
+    public Stats()
+        {
+            All = new MessageTypes();
+            Inbound = new MessageTraffic();
+            Outbound = new MessageTraffic();
+            Persisted = new MessageTypes();
+            Connections = new ConnectionTypes();
+            Channels = new ResourceCount();
+            ApiRequests = new RequestCount();
+            TokenRequests = new RequestCount();
+        }
     }
 
     public class ConnectionTypes
@@ -79,5 +54,73 @@ namespace Ably
         public ResourceCount All { get; set; }
         public ResourceCount Plain { get; set; }
         public ResourceCount Tls { get; set; }
+
+        public ConnectionTypes()
+        {
+            All = new ResourceCount();
+            Plain = new ResourceCount();
+            Tls = new ResourceCount();
+        }
+    }
+
+    public class MessageCount
+    {
+        public double Count { get; set; }
+        public double Data { get; set; }
+    }
+
+    /**
+     * A breakdown of summary stats data for different (message vs presence)
+     * message types.
+     */
+    public class MessageTypes
+    {
+        public MessageCount All { get; set; }
+        public MessageCount Messages { get; set; }
+        public MessageCount Presence { get; set; }
+
+        public MessageTypes()
+        {
+            All = new MessageCount();
+            Messages = new MessageCount();
+            Presence = new MessageCount();
+        }
+    }
+
+    /**
+     * A breakdown of summary stats data for traffic over various transport types.
+     */
+    public class MessageTraffic
+    {
+        public MessageTypes All { get; set; }
+        public MessageTypes Realtime { get; set; }
+        public MessageTypes Rest { get; set; }
+        public MessageTypes Push { get; set; }
+        public MessageTypes HttpStream { get; set; }
+
+        public MessageTraffic()
+        {
+            All = new MessageTypes();
+            Realtime = new MessageTypes();
+            Rest = new MessageTypes();
+            Push = new MessageTypes();
+            HttpStream = new MessageTypes();
+        }
+    }
+
+    public class RequestCount
+    {
+        public double Succeeded { get; set; }
+        public double Failed { get; set; }
+        public double Refused { get; set; }
+    }
+
+    public class ResourceCount
+    {
+        public double Opened { get; set; }
+        public double Peak { get; set; }
+        public double Mean { get; set; }
+        public double Min { get; set; }
+        public double Refused { get; set; }
     }
 }

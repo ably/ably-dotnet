@@ -68,10 +68,13 @@
     <Compile Include="Extensions\JTokenExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="IAblyHttpClient.cs" />
+    <Compile Include="IChannel.cs" />
     <Compile Include="ILogger.cs" />
+    <Compile Include="IPartialResult.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="MimeTypes.cs" />
+    <Compile Include="PresenceMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryDirection.cs" />
     <Compile Include="RequestTokenData.cs" />

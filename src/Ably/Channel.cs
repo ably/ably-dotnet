@@ -5,16 +5,6 @@ using System.Collections.Generic;
 
 namespace Ably
 {
-    public interface IChannel
-    {
-        void Publish(string name, object data);
-        IEnumerable<Message> History();
-        IEnumerable<Message> History(HistoryDataRequestQuery query);
-        Stats Stats();
-        Stats Stats(DataRequestQuery query);
-        string Name { get; }
-    }
-
     public class Channel : IChannel
     {
         public string Name { get; private set; }
@@ -36,6 +26,19 @@ namespace Ably
             _restClient.ExecuteRequest(request);
         }
 
+        public void Publish(IEnumerable<Message> messages)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IList<PresenceMessage> Presence()
+        {
+            var request = _restClient.CreateGetRequest(basePath + "/presence");
+            var response = _restClient.ExecuteRequest(request);
+
+            return JsonConvert.DeserializeObject<List<PresenceMessage>>(response.JsonResult);
+        }
+
         private static ChannelPublishPayload GetPostData(string name, object data)
         {
             var payload = new ChannelPublishPayload { Name = name};
@@ -52,35 +55,25 @@ namespace Ably
             return payload;
         }
 
-        public IEnumerable<Message> History()
+        public IList<Message> History()
         {
             return History(new HistoryDataRequestQuery());
         }
 
-        public IEnumerable<Message> History(HistoryDataRequestQuery query)
+        public IList<Message> History(HistoryDataRequestQuery query)
         {
             query.Validate();
 
             var request = _restClient.CreateGetRequest(basePath + "/history");
 
-            if (query.Start.HasValue)
-                request.QueryParameters.Add("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
-
-            if (query.End.HasValue)
-                request.QueryParameters.Add("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
-
-            request.QueryParameters.Add("direction", query.Direction.ToString().ToLower());
-            if (query.Limit.HasValue)
-                request.QueryParameters.Add("limit", query.Limit.Value.ToString());
-            if (query.By.HasValue)
-                request.QueryParameters.Add("by", query.By.Value.ToString().ToLower());
+            request.AddQueryParameters(query.GetParameters());
 
             var response = _restClient.ExecuteRequest(request);
 
             return ParseHistoryResponse(response);
         }
 
-        private IEnumerable<Message> ParseHistoryResponse(AblyResponse response)
+        private IList<Message> ParseHistoryResponse(AblyResponse response)
         {
             var results = new List<Message>();
             if (response == null)
@@ -111,12 +104,12 @@ namespace Ably
             return message["data"];
         }
 
-        public Stats Stats()
+        public IList<Stats> Stats()
         {
             return Stats(new DataRequestQuery());
         }
 
-        public Stats Stats(DataRequestQuery query)
+        public IList<Stats> Stats(DataRequestQuery query)
         {
             query.Validate();
 
@@ -134,7 +127,7 @@ namespace Ably
 
             _restClient.ExecuteRequest(request);
 
-            return new Stats() ;
+            return new List<Stats>();
         }
     }
 

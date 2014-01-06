@@ -142,5 +142,22 @@ namespace Ably.Tests
             _currentRequest.AssertContainsParameter("direction", query.Direction.ToString().ToLower());
             _currentRequest.AssertContainsParameter("limit", query.Limit.Value.ToString());
         }
+
+        [Fact]
+        public void Presence_CreatesGetRequestWithCorrectPath()
+        {
+            var rest = GetRestClient();
+            rest.ExecuteRequest = request =>
+                {
+                    _currentRequest = request;
+                    return new AblyResponse() {JsonResult = "[]"};
+                };
+            var channel = rest.Channels.Get("Test");
+
+            channel.Presence();
+
+            Assert.Equal(HttpMethod.Get, _currentRequest.Method);
+            Assert.Equal(String.Format("/channels/{0}/presence", channel.Name), _currentRequest.Url);
+        }
     }
 }

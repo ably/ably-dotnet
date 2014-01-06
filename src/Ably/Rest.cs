@@ -291,15 +291,7 @@ namespace Ably
 
             var request = CreateGetRequest("/stats");
 
-            if (query.Start.HasValue)
-                request.QueryParameters.Add("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
-
-            if (query.End.HasValue)
-                request.QueryParameters.Add("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
-
-            request.QueryParameters.Add("direction", query.Direction.ToString().ToLower());
-            if (query.Limit.HasValue)
-                request.QueryParameters.Add("limit", query.Limit.Value.ToString());
+            request.AddQueryParameters(query.GetParameters());
 
             var response = ExecuteRequest(request);
 
@@ -314,31 +306,6 @@ namespace Ably
             }
             
             return stats;
-        }
-
-        public IEnumerable<Message> History()
-        {
-            return History(new DataRequestQuery());
-        }
-
-        public IEnumerable<Message> History(DataRequestQuery query)
-        {
-            query.Validate();
-
-            var request = CreateGetRequest("/history");
-
-            if (query.Start.HasValue)
-                request.QueryParameters.Add("start", query.Start.Value.ToUnixTime().ToString());
-
-            if (query.End.HasValue)
-                request.QueryParameters.Add("end", query.End.Value.ToUnixTime().ToString());
-
-            request.QueryParameters.Add("direction", query.Direction.ToString().ToLower());
-            if (query.Limit.HasValue)
-                request.QueryParameters.Add("limit", query.Limit.Value.ToString());
-
-            ExecuteRequest(request);
-            return new List<Message>();
         }
 
         internal AblyRequest CreateGetRequest(string path)
