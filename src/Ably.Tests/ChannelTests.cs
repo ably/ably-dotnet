@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Http;
 using Xunit;
@@ -99,7 +100,31 @@ namespace Ably.Tests
             var query = new HistoryDataRequestQuery() { Start = start, End = end };
 
              Assert.Throws<AblyException>(delegate { channel.History(query); });
+        }
 
+        [Fact]
+        public void History_WithPartialResult_ReturnsCorrectFirstAndNextLinks()
+        {
+            //Arrange
+            var rest = GetRestClient();
+            
+            rest.ExecuteRequest = request =>
+                {
+                    var response = new AblyResponse()
+                        {
+                            Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
+                            JsonResult = "[]"
+                        };
+                    return response;
+                };
+            var channel = rest.Channels.Get("test");
+            
+            //Act
+            var result = channel.History();
+
+            //Assert
+            Assert.NotNull(result.NextQuery);
+            Assert.NotNull(result.InitialResultQuery);
         }
 
         public static IEnumerable<object[]> InvalidHistoryDates

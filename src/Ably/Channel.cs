@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Specialized;
+using System.Diagnostics.Contracts;
+using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -55,12 +58,13 @@ namespace Ably
             return payload;
         }
 
-        public IList<Message> History()
+        public IPartialResult<Message> History()
         {
             return History(new HistoryDataRequestQuery());
         }
 
-        public IList<Message> History(HistoryDataRequestQuery query)
+
+        public IPartialResult<Message> History(DataRequestQuery query)
         {
             query.Validate();
 
@@ -70,13 +74,20 @@ namespace Ably
 
             var response = _restClient.ExecuteRequest(request);
 
-            return ParseHistoryResponse(response);
+            return ParseHistoryResponse(response, query);
         }
 
-        private IList<Message> ParseHistoryResponse(AblyResponse response)
+        public IPartialResult<Message> History(HistoryDataRequestQuery query)
         {
-            var results = new List<Message>();
-            if (response == null)
+            return History(query as DataRequestQuery);
+        }
+
+        private IPartialResult<Message> ParseHistoryResponse(AblyResponse response, DataRequestQuery request)
+        {
+            Contract.Assert(response != null);
+
+            var results = new PartialResult<Message>(request.Limit ?? 100);
+            if (response.JsonResult.IsEmpty())
                 return results;
 
             var json = JArray.Parse(response.JsonResult);
@@ -90,6 +101,8 @@ namespace Ably
                     ChannelId = message.OptValue<string>("client_id")
                 });
             }
+            results.NextQuery = DataRequestQuery.GetLinkQuery(response.Headers, "next");
+            results.InitialResultQuery = DataRequestQuery.GetLinkQuery(response.Headers, "first");
             return results;
         }
 

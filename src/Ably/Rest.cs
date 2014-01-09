@@ -18,18 +18,7 @@ namespace Ably
         internal static Func<DateTime> Now = () => DateTime.Now;
     }
 
-    public interface IAuthCommands
-    {
-        Token RequestToken(TokenRequest request, AuthOptions options);
-        Token Authorise(TokenRequest request, AuthOptions options, bool force);
-    }
-
-    public interface IChannelCommands
-    {
-        IChannel Get(string name);
-    }
-
-    public class Rest : IAuthCommands, IChannelCommands
+    public class Rest : IAuthCommands, IChannelCommands, IRestCommands
     {
         internal IAblyHttpClient _client;
         private AblyOptions _options;
@@ -280,12 +269,12 @@ namespace Ably
             return serverTime.FromUnixTimeInMilliseconds();
         }
 
-        public IEnumerable<Stats> Stats()
+        public IPartialResult<Stats> Stats()
         {
             return Stats(new DataRequestQuery());
         }
 
-        public IEnumerable<Stats> Stats(DataRequestQuery query)
+        public IPartialResult<Stats> Stats(DataRequestQuery query)
         {
             query.Validate();
 
@@ -295,15 +284,19 @@ namespace Ably
 
             var response = ExecuteRequest(request);
 
+            var stats = new PartialResult<Stats>();
+            if (response.JsonResult.IsEmpty())
+                return stats;
+
             var json = JToken.Parse(response.JsonResult);
-            var stats = new List<Stats>();
             if(json.HasValues && json.Children().Any())
             {
-                foreach (var token in json.Children())
-                {
-                    stats.Add(token.ToObject<Stats>());
-                }
+                stats.AddRange(json.Children().Select(token => token.ToObject<Stats>()));
             }
+
+            stats.NextQuery = DataRequestQuery.GetLinkQuery(response.Headers, "next");
+            stats.InitialResultQuery = DataRequestQuery.GetLinkQuery(response.Headers, "first");
+
             
             return stats;
         }
@@ -358,5 +351,9 @@ namespace Ably
         {
             return new Channel(this, name); 
         }
+    }
+
+    public interface IRestCommands
+    {
     }
 }

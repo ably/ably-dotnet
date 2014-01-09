@@ -18,7 +18,7 @@ namespace Ably.Tests
         {
             var rest = new Rest(ValidKey);
         
-            rest.ExecuteRequest = x => { _currentRequest = x; return (AblyResponse)null; };
+            rest.ExecuteRequest = x => { _currentRequest = x; return new AblyResponse(); };
             return rest;
         }
 
