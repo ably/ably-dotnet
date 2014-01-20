@@ -23,7 +23,7 @@ namespace Ably
 
         public void Publish(string name, object data)
         {
-            var request = _restClient.CreatePostRequest(basePath + "/publish");
+            var request = _restClient.CreatePostRequest(basePath + "/messages");
 
             request.PostData = GetPostData(name, data);
             _restClient.ExecuteRequest(request);
@@ -68,7 +68,7 @@ namespace Ably
         {
             query.Validate();
 
-            var request = _restClient.CreateGetRequest(basePath + "/history");
+            var request = _restClient.CreateGetRequest(basePath + "/messages");
 
             request.AddQueryParameters(query.GetParameters());
 

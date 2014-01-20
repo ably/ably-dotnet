@@ -19,7 +19,7 @@ namespace Ably.Tests
             channel.Publish("event", "data");
 
             Assert.Equal(HttpMethod.Post, _currentRequest.Method);
-            Assert.Equal(String.Format("/channels/{0}/publish", channel.Name), _currentRequest.Url);
+            Assert.Equal(String.Format("/channels/{0}/messages", channel.Name), _currentRequest.Url);
         }
 
         [Fact]
@@ -55,7 +55,7 @@ namespace Ably.Tests
             channel.History();
 
             Assert.Equal(HttpMethod.Get, _currentRequest.Method);
-            Assert.Equal(String.Format("/channels/{0}/history", channel.Name), _currentRequest.Url);
+            Assert.Equal(String.Format("/channels/{0}/messages", channel.Name), _currentRequest.Url);
         }
 
         [Fact]
