@@ -22,7 +22,7 @@ namespace Ably.Protocol
 #if !SILVERLIGHT
     [Serializable]
 #endif
-    public partial class TData : TBase
+    internal partial class TData : TBase
     {
         private TType _type;
         private int _i32Data;

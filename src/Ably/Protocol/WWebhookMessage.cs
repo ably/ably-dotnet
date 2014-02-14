@@ -22,7 +22,7 @@ namespace Ably.Protocol
 #if !SILVERLIGHT
     [Serializable]
 #endif
-    public partial class WWebhookMessage : TBase
+    internal partial class WWebhookMessage : TBase
     {
         private string _name;
         private string _webhookId;

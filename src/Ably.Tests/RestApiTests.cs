@@ -40,7 +40,6 @@ namespace Ably.Tests
             }
             Assert.Equal("/time", _currentRequest.Url);
             Assert.Equal(HttpMethod.Get, _currentRequest.Method);
-            _currentRequest.AssertContainsHeader(Headers.Accept, mimeTypes["json"]);
         }
     }
 

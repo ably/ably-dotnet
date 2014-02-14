@@ -22,7 +22,7 @@ namespace Ably.Protocol
 #if !SILVERLIGHT
     [Serializable]
 #endif
-    public partial class SMessageTypes : TBase
+    internal partial class SMessageTypes : TBase
     {
         private SMessageCount _all;
         private SMessageCount _messages;

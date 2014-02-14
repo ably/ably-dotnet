@@ -22,7 +22,7 @@ namespace Ably.Protocol
 #if !SILVERLIGHT
     [Serializable]
 #endif
-    public partial class SRequestCount : TBase
+    internal partial class SRequestCount : TBase
     {
         private double _succeeded;
         private double _failed;

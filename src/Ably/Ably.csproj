@@ -55,6 +55,7 @@
     <Compile Include="AblyException.cs" />
     <Compile Include="AblyRequest.cs" />
     <Compile Include="AblyResponse.cs" />
+    <Compile Include="AesCipher.cs" />
     <Compile Include="ApiKey.cs" />
     <Compile Include="Assert.cs" />
     <Compile Include="AuthMethod.cs" />
@@ -64,6 +65,7 @@
     <Compile Include="CapabilityResource.cs" />
     <Compile Include="Channel.cs" />
     <Compile Include="ConfigurationMissingException.cs" />
+    <Compile Include="Data.cs" />
     <Compile Include="DataRequestQuery.cs" />
     <Compile Include="Extensions\DateExtensions.cs" />
     <Compile Include="ExtendedSource.cs" />
@@ -104,7 +106,9 @@
     <Compile Include="Protocol\WWebhookMessage.cs" />
     <Compile Include="Protocol\WWebhookMessageArray.cs" />
     <Compile Include="QueryDirection.cs" />
+    <Compile Include="RequestHandler.cs" />
     <Compile Include="RequestTokenData.cs" />
+    <Compile Include="ResponseHandler.cs" />
     <Compile Include="Rest.cs" />
     <Compile Include="Statistics.cs" />
     <Compile Include="StringUtils.cs" />

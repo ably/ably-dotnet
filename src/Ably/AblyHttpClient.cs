@@ -12,10 +12,13 @@ namespace Ably
 {
     public class AblyHttpClient : IAblyHttpClient
     {
+        internal static readonly MimeTypes MimeTypes = new MimeTypes();
+
         private readonly string _Host;
         private readonly int? _Port;
         private readonly bool _IsSecure;
-
+        private readonly ResponseHandler _responseHandler = new ResponseHandler();
+        private readonly RequestHandler _requestHandler = new RequestHandler();
         
         public AblyHttpClient(string host) : this(host, null, true) { }
 
@@ -31,45 +34,24 @@ namespace Ably
             var webRequest = HttpWebRequest.Create(GetRequestUrl(request)) as HttpWebRequest;
             HttpWebResponse response = null;
 
-            foreach (var header in request.Headers)
-            {
-                if (header.Key == "Accept")
-                    webRequest.Accept = header.Value;
-                else if (header.Key == "Content-Type")
-                    webRequest.ContentType = header.Value;
-                else
-                    webRequest.Headers.Add(header.Key, header.Value);
-            }
+            PopulateDefaultHeaders(request, webRequest);
+            PopulateWebRequestHeaders(webRequest, request.Headers);
+
             webRequest.UserAgent = "Ably.net library";
             webRequest.Method = request.Method.Method;
 
             try
             {
-                string requestBody = "";
-                if (request.PostData != null)
-                {
-                    requestBody = request.PostData is string ? (string)request.PostData : JsonConvert.SerializeObject(request.PostData);
-                }
-                else if (request.PostParameters.Count > 0)
-                {
-                    requestBody = string.Join("&", request.PostParameters.Select(x => x.Key + "=" + x.Value));
-                }
+                var requestBody = _requestHandler.GetRequestBody(request);
             
-                if (requestBody.IsNotEmpty())
+                webRequest.ContentLength = requestBody.Length;
+                if (requestBody.Any())
                 {
-
-                    var body = Encoding.UTF8.GetBytes(requestBody);
-                    webRequest.ContentLength = body.Length;
-                    //webRequest.SendChunked = true;
-                    //webRequest.TransferEncoding = "utf-8";
                     using (Stream stream = webRequest.GetRequestStream())
                     {
-                        stream.Write(body, 0, body.Length);
+                        stream.Write(requestBody, 0, requestBody.Length);
                     }
                 }
-                else
-                    webRequest.ContentLength = 0;
-
             
                 response = webRequest.GetResponse() as HttpWebResponse;
                 return GetAblyResponse(response);
@@ -89,18 +71,80 @@ namespace Ably
             }
         }
 
+        private void PopulateDefaultHeaders(AblyRequest request, HttpWebRequest webRequest)
+        {
+            if (request.Method == HttpMethod.Post)
+            {
+                PopulateWebRequestHeaders(webRequest, GetDefaultPostHeaders(request.UseTextProtocol));
+            }
+            if (request.Method == HttpMethod.Get)
+            {
+                PopulateWebRequestHeaders(webRequest, GetDefaultHeaders(request.UseTextProtocol));
+            }
+        }
+
+        private static void PopulateWebRequestHeaders(HttpWebRequest webRequest, IEnumerable<KeyValuePair<string, string>> headers)
+        {
+            foreach (var header in headers)
+            {
+                if (header.Key == "Accept")
+                    webRequest.Accept = header.Value;
+                else if (header.Key == "Content-Type")
+                    webRequest.ContentType = header.Value;
+                else
+                    webRequest.Headers.Add(header.Key, header.Value);
+            }
+        }
+
+        internal static IEnumerable<KeyValuePair<string, string>> GetDefaultHeaders(bool useTextProtocol)
+        {
+            if (useTextProtocol)
+            {
+                yield return new KeyValuePair<string, string>("Accept", MimeTypes.GetHeaderValue("json"));
+            }
+            else
+            {
+                yield return new KeyValuePair<string, string>("Accept", MimeTypes.GetHeaderValue("binary", "json"));
+            }
+        }
+
+        internal static IEnumerable<KeyValuePair<string, string>> GetDefaultPostHeaders(bool useTextProtocol)
+        {
+            if (useTextProtocol)
+            {
+                yield return new KeyValuePair<string, string>("Accept", MimeTypes.GetHeaderValue("json"));
+                yield return new KeyValuePair<string, string>("Content-Type", MimeTypes.GetHeaderValue("json"));
+            }
+            else
+            {
+                yield return new KeyValuePair<string, string>("Accept", MimeTypes.GetHeaderValue("binary", "json"));
+                yield return new KeyValuePair<string, string>("Content-Type", MimeTypes.GetHeaderValue("binary"));
+            }
+        }
+
         private static AblyResponse GetAblyResponse(HttpWebResponse response)
         {
             var ablyResponse = new AblyResponse();
             ablyResponse.Type = response.ContentType == "application/json" ? ResponseType.Json : ResponseType.Thrift;
             ablyResponse.StatusCode = response.StatusCode;
-            string encoding = response.ContentEncoding.IsNotEmpty() ? response.ContentEncoding : "utf-8";
-            using (var reader = new StreamReader(response.GetResponseStream(), Encoding.GetEncoding(encoding)))
-            {
-                ablyResponse.JsonResult = reader.ReadToEnd();
-            }
+            ablyResponse.Encoding = response.ContentEncoding.IsNotEmpty() ? response.ContentEncoding : "utf-8";
+            ablyResponse.Body = ReadFully(response.GetResponseStream());
             ablyResponse.Headers = response.Headers;
             return ablyResponse;
+        }
+
+        private static byte[] ReadFully(Stream input)
+        {
+            byte[] buffer = new byte[16 * 1024];
+            using (MemoryStream ms = new MemoryStream())
+            {
+                int read;
+                while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    ms.Write(buffer, 0, read);
+                }
+                return ms.ToArray();
+            }
         }
 
         private Uri GetRequestUrl(AblyRequest request)

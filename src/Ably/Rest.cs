@@ -14,8 +14,10 @@ namespace Ably
     public static class Config
     {
         public static ILogger AblyLogger = Logger.Current;
+        public static Func<CipherParams, IChannelCipher> GetCipher = @params => new AesCipher(@params);
         internal static string DefaultHost = "rest.ably.io";
         internal static Func<DateTime> Now = () => DateTime.Now;
+
     }
 
     public class Rest : IAuthCommands, IChannelCommands, IRestCommands
@@ -25,8 +27,9 @@ namespace Ably
         private ILogger Logger = Config.AblyLogger;
         internal AuthMethod AuthMethod;
         internal Token CurrentToken;
+        internal IResponseHandler ResponseHandler = new ResponseHandler();
+        internal IRequestHandler RequestHandler = new RequestHandler();
 
-        internal static readonly MimeTypes MimeTypes = new MimeTypes();
 
         internal AblyOptions Options
         {
@@ -166,6 +169,8 @@ namespace Ably
         {
             if(request.SkipAuthentication == false)
                 AddAuthHeader(request);
+
+
             return _client.Execute(request);
         }
 
@@ -217,7 +222,7 @@ namespace Ably
                 authRequest.Headers.Merge(mergedOptions.AuthHeaders);
                 authRequest.SkipAuthentication = true;
                 var response = ExecuteRequest(authRequest);
-                var signedData = response.JsonResult;
+                var signedData = response.TextResponse;
                 postData = JsonConvert.DeserializeObject<TokenRequestPostData>(signedData);
             }
             else
@@ -229,11 +234,12 @@ namespace Ably
                 postData.timestamp = Time().ToUnixTime().ToString();
 
             request.PostData = postData;
+
             var result = ExecuteRequest(request);
 
             try
             {
-                return Token.fromJSON(JObject.Parse(result.JsonResult));
+                return Token.fromJSON(JObject.Parse(result.TextResponse));
             }
             catch (JsonException ex)
             {
@@ -265,7 +271,7 @@ namespace Ably
             if (response.Type != ResponseType.Json)
                 throw new AblyException("Invalid response from server", 500, null);
 
-            long serverTime = (long)JArray.Parse(response.JsonResult).First;
+            long serverTime = (long)JArray.Parse(response.TextResponse).First;
             return serverTime.FromUnixTimeInMilliseconds();
         }
 
@@ -285,10 +291,10 @@ namespace Ably
             var response = ExecuteRequest(request);
 
             var stats = new PartialResult<Stats>();
-            if (response.JsonResult.IsEmpty())
+            if (response.TextResponse.IsEmpty())
                 return stats;
 
-            var json = JToken.Parse(response.JsonResult);
+            var json = JToken.Parse(response.TextResponse);
             if(json.HasValues && json.Children().Any())
             {
                 stats.AddRange(json.Children().Select(token => token.ToObject<Stats>()));
@@ -301,55 +307,34 @@ namespace Ably
             return stats;
         }
 
-        internal AblyRequest CreateGetRequest(string path)
+        internal AblyRequest CreateGetRequest(string path, bool encrypted = false, CipherParams @params = null)
         {
             var request = new AblyRequest(path, HttpMethod.Get);
-            foreach(var header in GetDefaultHeaders(_options.UseTextProtocol == false))
-            {
-                request.Headers.Add(header.Key, header.Value);
-            }
+            request.UseTextProtocol = _options.UseTextProtocol;
+            request.Encrypted = encrypted;
+            request.CipherParams = @params;
             return request;
         }
 
-        internal AblyRequest CreatePostRequest(string path)
+        internal AblyRequest CreatePostRequest(string path, bool encrypted = false, CipherParams @params = null)
         {
             var request = new AblyRequest(path, HttpMethod.Post);
-            foreach (var header in GetDefaultPostHeaders(_options.UseTextProtocol == false))
-            {
-                request.Headers.Add(header.Key, header.Value);
-            }
+            request.UseTextProtocol = _options.UseTextProtocol;
+            request.Encrypted = encrypted;
+            request.CipherParams = @params;
             return request;
         }
 
-        internal static IEnumerable<KeyValuePair<string, string>> GetDefaultHeaders(bool binary)
-        {
-            if (binary)
-            {
-                yield return new KeyValuePair<string, string>("Accept", MimeTypes.GetHeaderValue("binary", "json"));
-            }
-            else
-            {
-                yield return new KeyValuePair<string, string>("Accept", MimeTypes.GetHeaderValue("json"));
-            }
-        }
-
-        internal static IEnumerable<KeyValuePair<string, string>> GetDefaultPostHeaders(bool binary)
-        {
-            if (binary)
-            {
-                yield return new KeyValuePair<string, string>("Accept", MimeTypes.GetHeaderValue("binary", "json"));
-                yield return new KeyValuePair<string, string>("Content-Type", MimeTypes.GetHeaderValue("binary"));
-            }
-            else
-            {
-                yield return new KeyValuePair<string, string>("Accept", MimeTypes.GetHeaderValue("json"));
-                yield return new KeyValuePair<string, string>("Content-Type", MimeTypes.GetHeaderValue("json"));
-            }
-        }
+        
 
         IChannel IChannelCommands.Get(string name)
         {
-            return new Channel(this, name); 
+            return new Channel(this, name, new ResponseHandler(), Options.ChannelDefaults); 
+        }
+
+        IChannel IChannelCommands.Get(string name, ChannelOptions options)
+        {
+            return new Channel(this, name, new ResponseHandler(), options);
         }
     }
 

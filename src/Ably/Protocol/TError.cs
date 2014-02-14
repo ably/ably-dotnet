@@ -22,7 +22,7 @@ namespace Ably.Protocol
 #if !SILVERLIGHT
     [Serializable]
 #endif
-    public partial class TError : TBase
+    internal partial class TError : TBase
     {
         private short _statusCode;
         private short _code;

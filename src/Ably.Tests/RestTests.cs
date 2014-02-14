@@ -132,7 +132,7 @@ namespace Ably.Tests
             var rest = new Rest(options);
 
             Mock<IAblyHttpClient> httpClient = new Mock<IAblyHttpClient>();
-            httpClient.Setup(x => x.Execute(It.IsAny<AblyRequest>())).Returns(new AblyResponse() { JsonResult = "{}"});
+            httpClient.Setup(x => x.Execute(It.IsAny<AblyRequest>())).Returns(new AblyResponse() { TextResponse = "{}"});
             rest._client = httpClient.Object;
 
             rest.Stats();
@@ -175,7 +175,7 @@ namespace Ably.Tests
             var rest = GetRestClient();
             
             AblyRequest request = null;
-            rest.ExecuteRequest = x => { request = x; return new AblyResponse { Type = ResponseType.Json, JsonResult = "{  }" };  };
+            rest.ExecuteRequest = x => { request = x; return new AblyResponse { Type = ResponseType.Json, TextResponse = "{  }" };  };
             rest.Stats();
 
             Assert.Equal(HttpMethod.Get, request.Method);
@@ -188,7 +188,7 @@ namespace Ably.Tests
         {
             var rest = GetRestClient();
             AblyRequest request = null;
-            rest.ExecuteRequest = x => { request = x; return new AblyResponse { JsonResult = "{}" }; };
+            rest.ExecuteRequest = x => { request = x; return new AblyResponse { TextResponse = "{}" }; };
             var query = new DataRequestQuery();
             DateTime now = DateTime.Now;
             query.Start = now.AddHours(-1);
@@ -214,7 +214,7 @@ namespace Ably.Tests
                 var response = new AblyResponse()
                 {
                     Headers = DataRequestQueryTests.GetSampleStatsRequestHeaders(),
-                    JsonResult = "{}"
+                    TextResponse = "{}"
                 };
                 return response;
             };

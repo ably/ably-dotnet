@@ -46,7 +46,7 @@ namespace Ably
 
                 try
                 {
-                    var json = JObject.Parse(response.JsonResult);
+                    var json = JObject.Parse(response.TextResponse);
                     if (json["error"] != null)
                     {
                         reason = (string)json["error"]["reason"];
@@ -76,6 +76,12 @@ namespace Ably
         {
 
         }
+
+        public AblyException(Exception ex)
+            : this(new ErrorInfo("Unexpected error :" + ex.Message, 50000, HttpStatusCode.InternalServerError))
+            {
+                
+            }
 
         public AblyException(string reason, int code, HttpStatusCode? statusCode = null) : this(new ErrorInfo(reason, code, statusCode))
         {

@@ -14,6 +14,7 @@ namespace Ably
             Headers = new Dictionary<string, string>();
             PostParameters = new Dictionary<string, string>();
             Method = method;
+            UseTextProtocol = true;
         }
 
         public string Url { get; private set; }
@@ -29,8 +30,11 @@ namespace Ably
                 QueryParameters.Add(keyValuePair.Key, keyValuePair.Value);
             }
         }
-
+        
+        public bool UseTextProtocol { get; set; }
         public object PostData { get; set; }
+        public bool Encrypted { get; set; }
+        public CipherParams CipherParams { get; set; }
         public Dictionary<string, string> PostParameters { get; set; }
         public bool SkipAuthentication { get; set; }
     }

@@ -22,7 +22,7 @@ namespace Ably.Protocol
 #if !SILVERLIGHT
     [Serializable]
 #endif
-    public partial class TPresenceArray : TBase
+    internal partial class TPresenceArray : TBase
     {
         private List<TPresence> _items;
 

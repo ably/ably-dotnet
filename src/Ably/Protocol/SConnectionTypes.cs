@@ -22,7 +22,7 @@ namespace Ably.Protocol
 #if !SILVERLIGHT
     [Serializable]
 #endif
-    public partial class SConnectionTypes : TBase
+    internal partial class SConnectionTypes : TBase
     {
         private SResourceCount _all;
         private SResourceCount _plain;

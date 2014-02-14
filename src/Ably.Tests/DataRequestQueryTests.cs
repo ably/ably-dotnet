@@ -11,6 +11,7 @@ namespace Ably.Tests
 
             headers.Add("Link", string.Format("<./history{0}>; rel=\"first\"", FirstQueryString));
             headers.Add("Link", string.Format("<./history{0}>; rel=\"next\"", NextQueryString));
+            headers.Add("Link", string.Format("<./history{0}>; rel=\"current\"", CurrentQueryString));
             return headers;
         }
 
@@ -24,6 +25,7 @@ namespace Ably.Tests
         }
         
         public const string FirstQueryString = "?start=1380794880000&end=1380794881058&limit=100&by=minute&direction=forwards&format=json&first_start=1380794880000";
+        public const string CurrentQueryString = "?start=1380794880000&end=1380794881058&limit=100&by=minute&direction=forwards&format=json&first_start=1380794880000";
         public const string NextQueryString = "?start=1380794881111&end=1380794881058&limit=100&by=minute&direction=forwards&format=json&first_start=1380794880000";
 
         [Fact]

@@ -7,7 +7,7 @@
 
 namespace Ably.Protocol
 {
-    public enum TType
+    internal enum TType
     {
         NONE = 0,
         TRUE = 1,

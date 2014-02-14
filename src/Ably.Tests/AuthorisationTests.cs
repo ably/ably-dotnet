@@ -21,7 +21,7 @@ namespace Ably.Tests
             rest.ExecuteRequest = (request) =>
             {
                 CurrentRequest = request;
-                return new AblyResponse() { JsonResult = "{}" };
+                return new AblyResponse() { TextResponse = "{}" };
             };
 
             Config.Now = () => Now;
@@ -99,13 +99,13 @@ namespace Ably.Tests
             rest.ExecuteRequest = x =>
                 {
                     if (x.Url.Contains("time"))
-                       return new AblyResponse { JsonResult = "[" + currentTime.ToUnixTimeInMilliseconds() + "]", Type = ResponseType.Json };
+                       return new AblyResponse { TextResponse = "[" + currentTime.ToUnixTimeInMilliseconds() + "]", Type = ResponseType.Json };
                     else
                     {
                         //Assert
                         var data = x.PostData as TokenRequestPostData;
                         Assert.Equal(data.timestamp, currentTime.ToUnixTime().ToString());
-                        return new AblyResponse() { JsonResult = "{}" };
+                        return new AblyResponse() { TextResponse = "{}" };
                     }
                 };
             var request = new TokenRequest { Capability = new Capability(), ClientId = "ClientId", Ttl = TimeSpan.FromMinutes(10), Id = GetKeyId() };
@@ -148,10 +148,10 @@ namespace Ably.Tests
                 requests.Add(x);
                 if (x.Url == options.AuthUrl)
                     {
-                        return new AblyResponse { JsonResult = JsonConvert.SerializeObject(requestdata) };
+                        return new AblyResponse { TextResponse = JsonConvert.SerializeObject(requestdata) };
                     } 
                 else
-                    return new AblyResponse { JsonResult = "{}" } ; 
+                    return new AblyResponse { TextResponse = "{}" } ; 
             };
 
             var tokenRequest = new TokenRequest { Id = GetKeyId(), Capability = new Capability() };

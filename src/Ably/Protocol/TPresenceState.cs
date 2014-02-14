@@ -7,7 +7,7 @@
 
 namespace Ably.Protocol
 {
-    public enum TPresenceState
+    internal enum TPresenceState
     {
         ENTER = 0,
         LEAVE = 1,

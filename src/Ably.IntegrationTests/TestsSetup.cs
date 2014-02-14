@@ -30,7 +30,7 @@ namespace Ably.IntegrationTests
                request.Headers.Add("Content-Type", "application/json");
                request.PostData = File.ReadAllText("testAppSpec.json");
                var response = client.Execute(request);
-               var json = JObject.Parse(response.JsonResult);
+               var json = JObject.Parse(response.TextResponse);
             
             string appId = TestData.appId = (string)json["id"];
             foreach (var key in json["keys"])

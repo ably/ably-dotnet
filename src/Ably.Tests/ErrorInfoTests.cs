@@ -9,7 +9,7 @@ namespace Ably.Tests
         public void Parse_WithJsonResponseWhereJsonIsWrong_ReturnsUnknown500Error()
         {
             //Arrange
-            var response = new AblyResponse() {JsonResult = "", Type = ResponseType.Json, StatusCode = (HttpStatusCode)500};
+            var response = new AblyResponse() {TextResponse = "", Type = ResponseType.Json, StatusCode = (HttpStatusCode)500};
 
             //Act
             var errorInfo = ErrorInfo.Parse(response);
@@ -26,7 +26,7 @@ namespace Ably.Tests
             //Arrange
             var reason = "test";
             var code = 40400;
-            var response = new AblyResponse() { JsonResult = string.Format("{{ \"error\": {{ \"code\":{0}, \"reason\":\"{1}\" }} }}",code, reason), Type = ResponseType.Json, StatusCode = (HttpStatusCode)500 };
+            var response = new AblyResponse() { TextResponse = string.Format("{{ \"error\": {{ \"code\":{0}, \"reason\":\"{1}\" }} }}",code, reason), Type = ResponseType.Json, StatusCode = (HttpStatusCode)500 };
 
             //Act
             var errorInfo = ErrorInfo.Parse(response);

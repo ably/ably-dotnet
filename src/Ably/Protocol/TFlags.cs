@@ -7,7 +7,7 @@
 
 namespace Ably.Protocol
 {
-    public enum TFlags
+    internal enum TFlags
     {
         SYNC_TIME = 0,
     }

@@ -56,7 +56,7 @@ namespace Ably.IntegrationTests
             List<int> listOfValues = new List<int> { 1, 2, 3 };
             publish.Publish("publish6", listOfValues);
 
-            Thread.Sleep(16000);
+            Thread.Sleep(8000);
 
             var messages = publish.History(new HistoryDataRequestQuery { Start = time, Direction = QueryDirection.Forwards}).ToList();
 

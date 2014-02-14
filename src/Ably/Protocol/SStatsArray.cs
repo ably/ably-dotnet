@@ -22,7 +22,7 @@ namespace Ably.Protocol
 #if !SILVERLIGHT
     [Serializable]
 #endif
-    public partial class SStatsArray : TBase
+    internal partial class SStatsArray : TBase
     {
         private List<SStats> _items;
 

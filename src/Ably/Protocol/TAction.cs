@@ -7,7 +7,7 @@
 
 namespace Ably.Protocol
 {
-    public enum TAction
+    internal enum TAction
     {
         HEARTBEAT = 0,
         ACK = 1,
