@@ -4,6 +4,21 @@ using System.Security.Cryptography;
 
 namespace Ably
 {
+    internal static class DateService
+    {
+        internal static Func<DateTime> Now = () => DateTime.Now;
+
+        internal static long NowInUnixMilliseconds 
+        {
+            get { return Now().ToUnixTimeInMilliseconds(); }
+        }
+
+        internal static long NowInUnixSecond
+        {
+            get { return Now().ToUnixTime(); }
+        }
+    }
+
     public class AesCipher : IChannelCipher
     {
         private readonly CipherParams _params;

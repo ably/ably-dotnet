@@ -49,7 +49,7 @@ namespace Ably
                     var json = JObject.Parse(response.TextResponse);
                     if (json["error"] != null)
                     {
-                        reason = (string)json["error"]["reason"];
+                        reason = (string)json["error"]["message"];
                         errorCode = (int)json["error"]["code"];
                     }
                 }

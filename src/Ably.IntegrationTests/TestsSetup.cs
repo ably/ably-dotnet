@@ -17,7 +17,7 @@ namespace Ably.IntegrationTests
 
         private static TestVars GetTestData()
         {
-            return new TestVars() { encrypted = false, restHost = "staging-rest.ably.io", keys = new List<Key>() };
+            return new TestVars() { encrypted = true, restHost = "staging-rest.ably.io", keys = new List<Key>() };
         }
         [SetUp]
         public void RunBeforeAllTests()
@@ -47,7 +47,7 @@ namespace Ably.IntegrationTests
         [TearDown]
         public void RunAfterAllTests()
         {
-            //var options = new AblyOptions { Key = TestData.keys[0].keyStr, Encrypted = TestData.encrypted };
+            //var options = new AblyOptions { Key = TestData.keys[0].keyStr, Tls = TestData.encrypted };
 
             //var rest = new Rest(options);
 

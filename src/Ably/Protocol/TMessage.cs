@@ -22,7 +22,7 @@ namespace Ably.Protocol
 #if !SILVERLIGHT
     [Serializable]
 #endif
-    internal partial class TMessage : TBase
+    public partial class TMessage : TBase
     {
         private string _name;
         private string _clientId;

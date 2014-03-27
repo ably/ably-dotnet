@@ -160,7 +160,7 @@ namespace Ably
                                GetQuery(request)));
         }
 
-        private object GetQuery(AblyRequest request)
+        private string GetQuery(AblyRequest request)
         {
             string query = string.Join("&", request.QueryParameters.Select(x => String.Format("{0}={1}", x.Key, x.Value)));
             if(query.IsNotEmpty())

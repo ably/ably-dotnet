@@ -14,9 +14,9 @@ namespace Ably.IntegrationTests
         [Test]
         public void CanPublishWhenUsingTokenAuthentication()
         {
-            var ably = new Rest(new AblyOptions { Encrypted = false, Key = TestsSetup.TestData.keys[0].keyStr });
+            var ably = new Rest(new AblyOptions { Tls = false, Key = TestsSetup.TestData.keys[0].keyStr });
             var token = ably.Auth.RequestToken(null, null);
-            var tokenAbly = new Rest(new AblyOptions { Encrypted = false, AppId = TestsSetup.TestData.appId, AuthToken = token.Id });
+            var tokenAbly = new Rest(new AblyOptions { Tls = false, AppId = TestsSetup.TestData.appId, AuthToken = token.Id });
 
             var testChannel = tokenAbly.Channels.Get("test");
            // testChannel.Publish("data", 1);

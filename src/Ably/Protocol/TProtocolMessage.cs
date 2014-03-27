@@ -22,7 +22,7 @@ namespace Ably.Protocol
 #if !SILVERLIGHT
     [Serializable]
 #endif
-    internal partial class TProtocolMessage : TBase
+    public partial class TProtocolMessage : TBase
     {
         private TAction _action;
         private sbyte _flags;

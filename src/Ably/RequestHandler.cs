@@ -19,10 +19,17 @@ namespace Ably
                 return GetMessagesRequestBody(new[] { request.PostData as Message }, request.UseTextProtocol, request.Encrypted, request.CipherParams);
             if (request.PostData is IEnumerable<Message>)
                 return GetMessagesRequestBody(request.PostData as IEnumerable<Message>, request.UseTextProtocol, request.Encrypted, request.CipherParams);
+
+            if(request.PostData == null)
+                return new byte[]{};
+
+            if (request.PostData is string && ((string) request.PostData).IsJson())
+                return GetBytes(request.PostData as string);
+
             return GetBytes(JsonConvert.SerializeObject(request.PostData));
         }
 
-        private byte[] GetMessagesRequestBody(IEnumerable<Message> messages, bool useTextProtocol, bool encrytped, CipherParams @params)
+        private byte[] GetMessagesRequestBody(IEnumerable<Message> messages, bool useTextProtocol, bool encrypted, CipherParams @params)
         {
 
             if (useTextProtocol)
@@ -36,7 +43,7 @@ namespace Ably
                         Timestamp = message.Timestamp
                     };
 
-                    if (encrytped)
+                    if (encrypted)
                     {
                         var cipher = Config.GetCipher(@params);
                         var data = Data.AsPlaintext(message.Data);

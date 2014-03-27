@@ -1,5 +1,7 @@
 ﻿using System.Collections.Specialized;
 using System.Diagnostics.Contracts;
+using System.Net;
+using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
@@ -31,7 +33,7 @@ namespace Ably
             _handler = handler;
             _restClient = restClient;
             _options = options;
-            basePath = string.Format("/channels/{0}", name);
+            basePath = string.Format("/channels/{0}", WebUtility.UrlEncode(name));
         }
 
         public void Publish(string name, object data)

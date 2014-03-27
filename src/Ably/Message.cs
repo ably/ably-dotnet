@@ -30,6 +30,21 @@ namespace Ably
             return (T)value;
         }
 
+        public void EncryptData(IChannelCipher cipher)
+        {
+            var data = Ably.Data.AsPlaintext(Data);
+            Data = new CipherData(cipher.Encrypt(data.Buffer), data.Type);
+        }
+
+        public void DecryptData(IChannelCipher cipher)
+        {
+            var cipherData = Data as CipherData;
+            if (cipherData != null)
+            {
+                Data = Ably.Data.FromPlaintext(cipher.Decrypt(cipherData.Buffer), cipherData.Type);
+            }
+        }
+
         public object Value(Type type)
         {
             if (IsBinaryMessage)
@@ -55,6 +70,17 @@ namespace Ably
         }
 
         public DateTimeOffset TimeStamp { get; set; }
+
+        public Message(string name, object data)
+        {
+            Name = name;
+            Data = data;
+        }
+
+        public Message()
+        {
+            
+        }
     }
 
     public class MessagePayload

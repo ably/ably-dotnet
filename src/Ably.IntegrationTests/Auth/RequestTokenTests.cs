@@ -54,7 +54,7 @@ namespace Ably.IntegrationTests.Auth
             var options = new AblyOptions
             {
                 Key = testData.keys[0].keyStr,
-                Encrypted = testData.encrypted
+                Tls = testData.encrypted
             };
             return options;
         }

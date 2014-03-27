@@ -14,12 +14,11 @@ namespace Ably.IntegrationTests
         private static Ably.Rest GetAbly()
         {
             var testData = TestsSetup.TestData;
-
-
+            
             var options = new AblyOptions
             {
                 Key = testData.keys.First().keyStr,
-                Encrypted = false
+                Tls = true
             };
             var ably = new Rest(options);
             return ably;
@@ -31,7 +30,7 @@ namespace Ably.IntegrationTests
             IChannel channel = ably.Channels.Get("persisted:test");
             channel.Publish("test", true);
 
-            Thread.Sleep(8000);
+            Thread.Sleep(16000);
 
             var messages = channel.History();
 

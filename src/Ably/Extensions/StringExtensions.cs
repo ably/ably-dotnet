@@ -15,6 +15,16 @@ namespace Ably
             return string.IsNullOrEmpty(text);
         }
 
+        public static bool IsJson(this string input)
+        {
+            if (input.IsEmpty())
+                return false;
+
+            input = input.Trim();
+            return input.StartsWith("{") && input.EndsWith("}")
+                   || input.StartsWith("[") && input.EndsWith("]");
+        }
+
         public static NameValueCollection ParseQueryString(this string text)
         {
             if(text.IsEmpty())

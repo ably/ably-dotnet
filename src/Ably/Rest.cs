@@ -1,5 +1,6 @@
 using System.Net;
 using Ably.Auth;
+using Ably.Realtime;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -17,6 +18,8 @@ namespace Ably
         public static Func<CipherParams, IChannelCipher> GetCipher = @params => new AesCipher(@params);
         internal static string DefaultHost = "rest.ably.io";
         internal static Func<DateTime> Now = () => DateTime.Now;
+        public static Func<TransportParams, ConnectionManager, ITransport> GetTransport =
+            (transportParams, manager) => { throw new NotImplementedException(); };  
 
     }
 
@@ -102,7 +105,7 @@ namespace Ably
             }
 
             string host = _options.Host.IsNotEmpty() ? _options.Host : Config.DefaultHost;
-            _client = new AblyHttpClient(host, _options.Port, _options.Encrypted);
+            _client = new AblyHttpClient(host, _options.Port, _options.Tls);
 
             InitAuth();
         }
