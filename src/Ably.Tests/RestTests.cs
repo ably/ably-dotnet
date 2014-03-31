@@ -18,6 +18,15 @@ namespace Ably.Tests
         private const string ValidKey = "1iZPfA.BjcI_g:wpNhw5RCw6rDjisl";
         private readonly ApiKey Key = ApiKey.Parse(ValidKey);
 
+        class FakeHttpClient : IAblyHttpClient
+        {
+             public Func<AblyRequest, AblyResponse> ExecuteFunc = delegate { return new AblyResponse(); }; 
+            public AblyResponse Execute(AblyRequest request)
+            {
+                return ExecuteFunc(request);
+            }
+        }
+
         private class RestThatReadsDummyConnectionString : Rest
         {
             internal override string GetConnectionString()
@@ -131,9 +140,9 @@ namespace Ably.Tests
 
             var rest = new Rest(options);
 
-            Mock<IAblyHttpClient> httpClient = new Mock<IAblyHttpClient>();
-            httpClient.Setup(x => x.Execute(It.IsAny<AblyRequest>())).Returns(new AblyResponse() { TextResponse = "{}"});
-            rest._client = httpClient.Object;
+            var httpClient = new FakeHttpClient();
+            httpClient.ExecuteFunc = delegate { return new AblyResponse() {TextResponse = "{}"}; };
+            rest._client = httpClient;
 
             rest.Stats();
 
