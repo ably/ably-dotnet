@@ -91,7 +91,7 @@ namespace Ably
         public AblyException(ErrorInfo info)
             : base(info.ToString())
         {
-
+            ErrorInfo = info;
         }
 
 

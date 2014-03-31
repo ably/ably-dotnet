@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace Ably
 {
-    public static class StringUtils
+    internal static class StringUtils
     {
 
         /// <summary>
@@ -14,15 +12,35 @@ namespace Ably
         /// </summary>
         /// <param name="text">string for which the hash is computed</param>
         /// <returns>Base64 encoded string of computed HMAC SHA256 hash</returns>
-        public static string ComputeHMacSha256(this string text, string key)
+        internal static string ComputeHMacSha256(this string text, string key)
         {
-            byte[] bytes = Encoding.ASCII.GetBytes(text);
-            byte[] keyBytes = Encoding.ASCII.GetBytes(key);
+            byte[] bytes = text.GetBytes();
+            byte[] keyBytes = key.GetBytes();
             using (var hmac = new HMACSHA256(keyBytes))
             {
                 hmac.ComputeHash(bytes);
                 return Convert.ToBase64String(hmac.Hash);
             }
+        }
+
+        internal static byte[] GetBytes(this string text)
+        {
+            return Encoding.UTF8.GetBytes(text);
+        }
+
+        internal static string GetText(this byte[] bytes)
+        {
+            return Encoding.UTF8.GetString(bytes);
+        }
+
+        internal static string ToBase64(this byte[] bytes)
+        {
+            return Convert.ToBase64String(bytes);
+        }
+
+        internal static byte[] FromBase64(this string base64String)
+        {
+            return Convert.FromBase64String(base64String);
         }
     }
 }

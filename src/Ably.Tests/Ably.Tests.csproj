@@ -65,6 +65,7 @@
     <Compile Include="DataRequestQueryTests.cs" />
     <Compile Include="ErrorInfoTests.cs" />
     <Compile Include="MessageTests.cs" />
+    <Compile Include="RequestHandlerTests.cs" />
     <Compile Include="RestApiTests.cs" />
     <Compile Include="RestTests.cs" />
     <Compile Include="ApiKeyTests.cs" />

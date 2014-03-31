@@ -95,18 +95,16 @@ namespace Ably.Tests
         public void RequestToken_WithQueryTime_SendsTimeRequestAndUsesReturnedTimeForTheRequest()
         {
             var rest = GetRestClient();
-            var currentTime = DateTime.Now;
+            var currentTime = DateTime.Now.ToUniversalTime();
             rest.ExecuteRequest = x =>
                 {
                     if (x.Url.Contains("time"))
                        return new AblyResponse { TextResponse = "[" + currentTime.ToUnixTimeInMilliseconds() + "]", Type = ResponseType.Json };
-                    else
-                    {
-                        //Assert
-                        var data = x.PostData as TokenRequestPostData;
-                        Assert.Equal(data.timestamp, currentTime.ToUnixTime().ToString());
-                        return new AblyResponse() { TextResponse = "{}" };
-                    }
+                    
+                    //Assert
+                    var data = x.PostData as TokenRequestPostData;
+                    Assert.Equal(data.timestamp, currentTime.ToUnixTime().ToString());
+                    return new AblyResponse() { TextResponse = "{}" };
                 };
             var request = new TokenRequest { Capability = new Capability(), ClientId = "ClientId", Ttl = TimeSpan.FromMinutes(10), Id = GetKeyId() };
 

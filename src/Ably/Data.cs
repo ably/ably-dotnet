@@ -26,8 +26,20 @@ namespace Ably
 
     public class CipherParams
     {
-        public String Algorithm;
-        public byte[] Key { get; set; }
+        public string Algorithm { get; private set; }
+        public byte[] Key { get; private set; }
+
+        public CipherParams(byte[] key)
+        {
+            Key = key;
+        }
+
+        public CipherParams(string algorithm, byte[] key)
+        {
+            Algorithm = algorithm.IsEmpty() ? Crypto.DefaultAlgorithm : algorithm;
+            Key = key;
+        }
+
     }
 
     public class Crypto
@@ -44,22 +56,22 @@ namespace Ably
                 aes.KeySize = DefaultKeylength;
                 aes.Mode = CipherMode.CBC;
                 aes.Padding = PaddingMode.PKCS7;
-                aes.BlockSize = DefaultBlocklength;
+                aes.BlockSize = DefaultBlocklength * 8;
                 aes.GenerateKey();
-                return new CipherParams() { Algorithm = DefaultAlgorithm, Key = aes.Key };
+                return new CipherParams(aes.Key);
             }
         }
 
         public static CipherParams GetDefaultParams(byte[] key)
         {
-            return new CipherParams() { Algorithm = "AES", Key = key };
+            return new CipherParams(key);
         }
 
         public static IChannelCipher GetCipher(ChannelOptions opts)
         {
             CipherParams @params = opts.CipherParams ?? GetDefaultParams();
 
-            if (string.Equals(@params.Algorithm, "aes", StringComparison.CurrentCultureIgnoreCase))
+            if (string.Equals(@params.Algorithm, "aes", StringComparison.InvariantCulture))
                 return new AesCipher(@params);
 
             throw new AblyException("Currently only the AES encryption algorith is supported", 50000, HttpStatusCode.InternalServerError);
