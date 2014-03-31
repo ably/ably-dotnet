@@ -57,6 +57,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AblyResponseTests.cs" />
     <Compile Include="AuthOptionsTests.cs" />
     <Compile Include="CapabilityTests.cs" />
     <Compile Include="ChannelTests.cs" />

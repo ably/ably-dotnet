@@ -80,6 +80,7 @@
     <Compile Include="IPartialResult.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Message.cs" />
+    <Compile Include="MessagePayload.cs" />
     <Compile Include="MimeTypes.cs" />
     <Compile Include="PresenceMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
