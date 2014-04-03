@@ -280,7 +280,7 @@ namespace Ably
             return Stats(new StatsDataRequestQuery());
         }
 
-        public IPartialResult<Stats> Stats(StatsDataRequestQuery query)
+        public IPartialResult<Stats> Stats(DataRequestQuery query)
         {
             query.Validate();
 
