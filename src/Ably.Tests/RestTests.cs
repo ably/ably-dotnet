@@ -198,7 +198,7 @@ namespace Ably.Tests
             var rest = GetRestClient();
             AblyRequest request = null;
             rest.ExecuteRequest = x => { request = x; return new AblyResponse { TextResponse = "{}" }; };
-            var query = new DataRequestQuery();
+            var query = new StatsDataRequestQuery();
             DateTime now = DateTime.Now;
             query.Start = now.AddHours(-1);
             query.End = now;

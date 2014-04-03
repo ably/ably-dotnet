@@ -277,10 +277,10 @@ namespace Ably
 
         public IPartialResult<Stats> Stats()
         {
-            return Stats(new DataRequestQuery());
+            return Stats(new StatsDataRequestQuery());
         }
 
-        public IPartialResult<Stats> Stats(DataRequestQuery query)
+        public IPartialResult<Stats> Stats(StatsDataRequestQuery query)
         {
             query.Validate();
 
@@ -302,7 +302,6 @@ namespace Ably
 
             stats.NextQuery = DataRequestQuery.GetLinkQuery(response.Headers, "next");
             stats.InitialResultQuery = DataRequestQuery.GetLinkQuery(response.Headers, "first");
-
             
             return stats;
         }

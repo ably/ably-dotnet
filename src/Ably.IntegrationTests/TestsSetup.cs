@@ -17,14 +17,14 @@ namespace Ably.IntegrationTests
 
         private static TestVars GetTestData()
         {
-            return new TestVars() { encrypted = false, restHost = "staging-rest.ably.io", keys = new List<Key>() };
+            return new TestVars() { encrypted = true, restHost = "staging-rest.ably.io", keys = new List<Key>() };
         }
         [SetUp]
         public void RunBeforeAllTests()
         {
             Config.DefaultHost = "staging-rest.ably.io";
                TestData = GetTestData();
-               AblyHttpClient client = new AblyHttpClient(TestData.restHost, null, false);
+               AblyHttpClient client = new AblyHttpClient(TestData.restHost, null);
                AblyRequest request = new AblyRequest("/apps", HttpMethod.Post);
                request.Headers.Add("Accept", "application/json");
                request.Headers.Add("Content-Type", "application/json");

@@ -62,6 +62,7 @@
     <Compile Include="CapabilityTests.cs" />
     <Compile Include="ChannelTests.cs" />
     <Compile Include="AuthorisationTests.cs" />
+    <Compile Include="CipherParamsTests.cs" />
     <Compile Include="DataRequestQueryParseFacts.cs" />
     <Compile Include="DataRequestQueryTests.cs" />
     <Compile Include="ErrorInfoTests.cs" />

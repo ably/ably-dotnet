@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Text;
+using Ably.Protocol;
 using Newtonsoft.Json.Linq;
 
 namespace Ably
@@ -18,21 +19,22 @@ namespace Ably
             else if (obj is byte[])
             {
                 result.Buffer = (byte[])obj;
-                result.Type = Protocol.TType.BUFFER;
+                result.Type = TType.BUFFER;
             }
             else if (obj is JObject)
             {
                 result.Buffer = Encoding.UTF8.GetBytes(obj.ToString());
-                result.Type = Protocol.TType.JSONOBJECT;
+                result.Type = TType.JSONOBJECT;
             }
             else if (obj is JArray)
             {
                 result.Buffer = Encoding.UTF8.GetBytes(obj.ToString());
-                result.Type = Protocol.TType.JSONARRAY;
+                result.Type = TType.JSONARRAY;
             }
             else if (obj is bool)
             {
-                result = null;
+                result.Buffer = new byte[]{};
+                result.Type = ((bool) obj) ? TType.TRUE : TType.FALSE;
             }
             else if (obj is int)
             {
