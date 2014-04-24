@@ -19,11 +19,12 @@ namespace Ably.IntegrationTests
             var options = new AblyOptions
             {
                 Key = testData.keys.First().keyStr,
-                Encrypted = false
+                Tls = false
             };
             var ably = new Rest(options);
             return ably;
         }
+
         [Test]
         public void CanPublishAMessageAndRetrieveIt()
         {

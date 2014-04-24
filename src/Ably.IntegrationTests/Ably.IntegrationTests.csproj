@@ -51,6 +51,8 @@
   <ItemGroup>
     <Compile Include="AblyExceptionTests.cs" />
     <Compile Include="Auth\RequestTokenTests.cs" />
+    <Compile Include="CapabilityTests.cs" />
+    <Compile Include="CryptoTests.cs" />
     <Compile Include="PublishTests.cs" />
     <Compile Include="StatsTests.cs" />
     <Compile Include="TestFixture.cs" />

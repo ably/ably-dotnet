@@ -11,6 +11,7 @@ namespace Ably
         public TimeSpan? Ttl { get; set; }
         public Capability Capability { get; set; }
         public string ClientId { get; set; }
+        public DateTime? Timestamp { get; set; }
 
         internal TokenRequestPostData GetPostData(string keyValue)
         {
@@ -23,7 +24,10 @@ namespace Ably
                 data.ttl = Ttl.Value.TotalSeconds.ToString();
             else
                 data.ttl = TimeSpan.FromHours(1).TotalSeconds.ToString();
-            data.timestamp = now.ToUnixTime().ToString();
+            if (Timestamp.HasValue)
+                data.timestamp = Timestamp.Value.ToUnixTime().ToString();
+            else
+                data.timestamp = now.ToUnixTime().ToString();
             data.CalculateMac(keyValue);
             
             return data;

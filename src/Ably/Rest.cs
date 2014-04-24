@@ -102,7 +102,7 @@ namespace Ably
             }
 
             string host = _options.Host.IsNotEmpty() ? _options.Host : Config.DefaultHost;
-            _client = new AblyHttpClient(host, _options.Port, _options.Encrypted);
+            _client = new AblyHttpClient(host, _options.Port, _options.Tls);
 
             InitAuth();
         }
@@ -115,12 +115,13 @@ namespace Ably
                 if(Options.ClientId == null)
                 {
                     AuthMethod = AuthMethod.Basic;
-                    Logger.Info("Using basic authentication for all calls");
+                    Logger.Info("Using basic authentication.");
                     return;
                 }
             }
 
             AuthMethod = AuthMethod.Token;
+            Logger.Info("Using token authentication.");
             if (Options.AuthToken.IsNotEmpty())
             {
                 CurrentToken = new Token() { Id = Options.AuthToken };
@@ -197,17 +198,18 @@ namespace Ably
 
         Token IAuthCommands.RequestToken(TokenRequest requestData, AuthOptions options)
         {
+            var mergedOptions = options != null ? options.Merge(Options) : Options;
+            
             var data = requestData ?? new TokenRequest { 
-                                                        Id = Options.KeyId,
+                                                        Id = mergedOptions.KeyId,
                                                         ClientId = Options.ClientId,
                                                         Capability = new Capability() };
-            data.Id = data.Id ?? Options.KeyId;
+
+            data.Id = data.Id ?? mergedOptions.KeyId;
             data.Capability = data.Capability ?? new Capability();
             data.Validate();
 
-            var mergedOptions = options != null ? options.Merge(Options) : Options;
-
-            var request = CreatePostRequest(String.Format("/apps/{0}/authorise", Options.AppId));
+            var request = CreatePostRequest(String.Format("/keys/{0}/requestToken", data.Id));
             request.SkipAuthentication = true;
             TokenRequestPostData postData = null;
             if(mergedOptions.AuthCallback != null)

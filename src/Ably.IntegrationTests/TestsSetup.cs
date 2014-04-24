@@ -17,18 +17,18 @@ namespace Ably.IntegrationTests
 
         private static TestVars GetTestData()
         {
-            return new TestVars() { encrypted = true, restHost = "staging-rest.ably.io", keys = new List<Key>() };
+            return new TestVars() { tls = true, restHost = "staging-rest.ably.io", keys = new List<Key>() };
         }
         [SetUp]
         public void RunBeforeAllTests()
         {
             Config.DefaultHost = "staging-rest.ably.io";
                TestData = GetTestData();
-               AblyHttpClient client = new AblyHttpClient(TestData.restHost, null);
+               AblyHttpClient client = new AblyHttpClient(TestData.restHost, null, false);
                AblyRequest request = new AblyRequest("/apps", HttpMethod.Post);
                request.Headers.Add("Accept", "application/json");
                request.Headers.Add("Content-Type", "application/json");
-               request.PostData = File.ReadAllText("testAppSpec.json");
+               request.PostData = JToken.Parse(File.ReadAllText("testAppSpec.json"));
                var response = client.Execute(request);
                var json = JObject.Parse(response.TextResponse);
             
@@ -47,7 +47,7 @@ namespace Ably.IntegrationTests
         [TearDown]
         public void RunAfterAllTests()
         {
-            //var options = new AblyOptions { Key = TestData.keys[0].keyStr, Encrypted = TestData.encrypted };
+            //var options = new AblyOptions { Key = TestData.keys[0].keyStr, Tls = TestData.tls };
 
             //var rest = new Rest(options);
 

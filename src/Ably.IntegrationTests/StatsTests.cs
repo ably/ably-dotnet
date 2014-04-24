@@ -18,7 +18,7 @@ namespace Ably.IntegrationTests
             var options = new AblyOptions
             {
                 Key = testData.keys[0].keyStr,
-                Encrypted = true
+                Tls = true
             };
             var ably = new Rest(options);
             return ably;
@@ -280,6 +280,7 @@ namespace Ably.IntegrationTests
             Assert.IsNotNull(stats);
             Assert.AreEqual(1, stats.Count());
             Assert.AreEqual(50, (int)stats.First().Inbound.All.All.Count);
+
         }
 
         [Test]

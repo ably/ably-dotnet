@@ -1,9 +1,5 @@
 ﻿using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ably.IntegrationTests
 {
@@ -17,7 +13,7 @@ namespace Ably.IntegrationTests
             TestVars testData = TestsSetup.TestData;
             AblyOptions opts = new AblyOptions();
             opts.Key = "AHSz6w:uQXPNQ:FGBZbsKSwqbCpkob";
-            opts.Encrypted = false;
+            opts.Tls = false;
             Rest ably = new Rest(opts);
             var serverTime = ably.Time();
             var localTime = DateTimeOffset.UtcNow;
@@ -31,7 +27,7 @@ namespace Ably.IntegrationTests
         {
             var options = new AblyOptions();
             options.AppId = "AHSz6w";
-            options.Encrypted = false;
+            options.Tls = false;
             Rest ably = new Rest(options);
             var serverTime = ably.Time();
             Assert.Greater(serverTime, DateTime.MinValue);
@@ -43,7 +39,7 @@ namespace Ably.IntegrationTests
             var options = new AblyOptions();
             options.AppId = "AHSz6w";
             options.Host = "this.host.does.not.exist";
-            options.Encrypted = false;
+            options.Tls = false;
             Rest ably = new Rest(options);
 
             Assert.Throws<AblyException>(delegate

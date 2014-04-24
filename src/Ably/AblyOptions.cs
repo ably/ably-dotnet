@@ -11,13 +11,13 @@ namespace Ably
 
         public string Host { get; set; }
         public int? Port { get; set; }
-        public bool Encrypted { get; set; }
+        public bool Tls { get; set; }
         public bool UseTextProtocol { get; set; }
         public ChannelOptions ChannelDefaults { get; set; }
 
         public AblyOptions()
         {
-            Encrypted = true;
+            Tls = true;
             UseTextProtocol = true;
             ChannelDefaults = new ChannelOptions();
         }

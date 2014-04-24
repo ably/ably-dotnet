@@ -123,7 +123,7 @@ namespace Ably
 
         private static AblyResponse GetAblyResponse(HttpWebResponse response)
         {
-            return new AblyResponse(response.ContentType, response.ContentEncoding, ReadFully(response.GetResponseStream()))
+            return new AblyResponse(response.ContentEncoding, response.ContentType, ReadFully(response.GetResponseStream()))
             {
                 StatusCode = response.StatusCode,
                 Headers = response.Headers
