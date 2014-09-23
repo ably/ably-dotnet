@@ -22,6 +22,7 @@ namespace Ably.IntegrationTests
             options.Host = testVars.restHost;
             options.Port = testVars.restPort;
             options.Tls = testVars.tls;
+            options.Key = testVars.keys.First().keyStr;
             options.UseTextProtocol = true;
             _ably = new Rest(options);
             _ably2 = new Rest(options);

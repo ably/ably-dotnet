@@ -192,7 +192,7 @@ namespace Ably
                 if (CurrentToken == null)
                     throw new AblyException("Invalid token credentials", 40100, HttpStatusCode.Unauthorized);
 
-                request.Headers["Authorization"] = "Bearer " + CurrentToken.Id;
+                request.Headers["Authorization"] = "Bearer " + CurrentToken.Id.ToBase64();
             }
         }
 
@@ -325,8 +325,6 @@ namespace Ably
             request.CipherParams = @params;
             return request;
         }
-
-        
 
         IChannel IChannelCommands.Get(string name)
         {

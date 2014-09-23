@@ -7,6 +7,7 @@ namespace Ably
 
         public CipherParams(byte[] key)
         {
+            Algorithm = Crypto.DefaultAlgorithm;
             Key = key;
         }
 

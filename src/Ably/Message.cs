@@ -8,7 +8,6 @@ namespace Ably
         public string Name { get; set; }
         public string ChannelId { get; set; }
         public object Data { get; set; }
-        public long Timestamp { get; set; }
 
         public bool IsBinaryMessage
         {
@@ -27,8 +26,12 @@ namespace Ably
         {
             if (IsBinaryMessage)
             {
-                if (type == typeof(byte[]))
-                    return Data;
+                if (type == typeof (byte[]))
+                {
+                    if (Data is byte[])
+                        return Data;
+                    return ((string)Data ?? "").FromBase64();
+                }
                 throw new InvalidOperationException(
                     String.Format("Current message contains binary data which cannot be converted to {0}", type));
             }

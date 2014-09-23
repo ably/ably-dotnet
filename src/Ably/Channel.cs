@@ -1,15 +1,11 @@
-﻿using System.Collections.Specialized;
-using System.Diagnostics.Contracts;
-using System.Text.RegularExpressions;
-using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Ably
 {
     internal interface IResponseHandler
     {
-        T ParseResponse<T>(AblyResponse response) where T : class;
-        T ParseResponse<T>(AblyResponse response, T obj) where T : class;
+        T ParseMessagesResponse<T>(AblyResponse response) where T : class;
+        IEnumerable<Message> ParseMessagesResponse(AblyResponse response, ChannelOptions options);
     }
 
     internal interface IRequestHandler
@@ -30,8 +26,20 @@ namespace Ably
             Name = name;
             _handler = handler;
             _restClient = restClient;
-            _options = options;
-            basePath = string.Format("/channels/{0}", name);
+            _options = GetOptions(options);
+            basePath = string.Format("/channels/{0}", name.EncodeUriPart());
+        }
+
+        private ChannelOptions GetOptions(ChannelOptions options)
+        {
+            if(options == null)
+                return new ChannelOptions();
+
+            if (options.Encrypted && options.CipherParams == null)
+            {
+                return new ChannelOptions() {Encrypted = true, CipherParams = Crypto.GetDefaultParams()};
+            }
+            return new ChannelOptions() {Encrypted = options.Encrypted, CipherParams = options.CipherParams};
         }
 
         public void Publish(string name, object data)
@@ -54,7 +62,7 @@ namespace Ably
             var request = _restClient.CreateGetRequest(basePath + "/presence");
             var response = _restClient.ExecuteRequest(request);
 
-            return _handler.ParseResponse<List<PresenceMessage>>(response);
+            return _handler.ParseMessagesResponse<List<PresenceMessage>>(response);
         }
 
         public IPartialResult<Message> History()
@@ -77,7 +85,8 @@ namespace Ably
             result.NextQuery = DataRequestQuery.Parse(response.Headers["next"]);
             result.InitialResultQuery = DataRequestQuery.Parse(response.Headers["initial"]);
 
-            return _handler.ParseResponse<IPartialResult<Message>>(response, result);
+            result.AddRange(_handler.ParseMessagesResponse(response, _options));
+            return result;
         }
 
         public IPartialResult<Message> History(HistoryDataRequestQuery query)

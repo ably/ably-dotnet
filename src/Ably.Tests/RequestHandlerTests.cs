@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -43,6 +40,19 @@ namespace Ably.Tests
             //Assert
             Assert.NotNull(payload);
             Assert.Equal(2, payload.Count);
+        }
+
+        [Fact]
+        public void GetRequestBody_WhenPostDataIsNull_ReturnsEmptyByteArray()
+        {
+            //Arrange
+            var request = GetRequest(null);
+
+            //Act
+            var result = new RequestHandler().GetRequestBody(request);
+
+            //Assert
+            Assert.Empty(result);
         }
 
         [Fact]
@@ -95,7 +105,7 @@ namespace Ably.Tests
         [Fact]
         public void GetMessagePayload_WithMessageWithBinaryData_ReturnPayloadWithBase64EncodedBinaryData()
         {
-            var message = new Message() { Name = "Martin", Data = new byte[] { 1, 2, 3, 4, 5} };
+            var message = new Message() { Name = "Martin", Data = new byte[] { 1, 2, 3, 4, 5}};
 
             //Act
             var result = RequestHandler.CreateMessagePayload(message, false, null);
@@ -112,21 +122,19 @@ namespace Ably.Tests
         {
             //Arrange
             var message = new Message() {Name = "Martin", Data = "EncryptionTest"};
+            var plainTextData = Data.AsPlaintext(message.Data);
+            var cipherParams = Crypto.GetDefaultParams();
 
             //Act
-            var cipherParams = Crypto.GetDefaultParams();
             var result = RequestHandler.CreateMessagePayload(message, true, cipherParams); //Uses default params for encryption
 
             //Assert
-            Assert.IsType<CipherData>(result.Data);
-            Assert.Equal(message.Name, result.Name);
-            Assert.Equal("cipher+base64", result.Encoding);
-
-            var cipherData = result.Data as CipherData;
             var cipher = Config.GetCipher(cipherParams);
-            var data = Data.FromPlaintext(cipher.Decrypt(cipherData.Buffer), cipherData.Type) as string;
-            
-            Assert.Equal(message.Data, data);
+            Assert.Equal(plainTextData.Type.ToString(), result.Type);
+            Assert.Equal(message.Name, result.Name);
+            var decryptedValue = cipher.Decrypt(result.Data.ToString().FromBase64()).GetText();
+            Assert.Equal(message.Data, decryptedValue);
+            Assert.Equal("cipher+base64", result.Encoding);
         }
 
         private T GetPayload<T>(byte[] bodyBytes)

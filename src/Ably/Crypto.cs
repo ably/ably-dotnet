@@ -33,7 +33,7 @@ namespace Ably
         {
             CipherParams @params = opts.CipherParams ?? GetDefaultParams();
 
-            if (string.Equals(@params.Algorithm, "aes", StringComparison.InvariantCulture))
+            if (string.Equals(@params.Algorithm, DefaultAlgorithm, StringComparison.InvariantCulture))
                 return new AesCipher(@params);
 
             throw new AblyException("Currently only the AES encryption algorith is supported", 50000, HttpStatusCode.InternalServerError);

@@ -19,7 +19,7 @@ namespace Ably.IntegrationTests
             var options = new AblyOptions
             {
                 Key = testData.keys.First().keyStr,
-                Tls = false
+                Tls = testData.tls
             };
             var ably = new Rest(options);
             return ably;
@@ -32,7 +32,7 @@ namespace Ably.IntegrationTests
             IChannel channel = ably.Channels.Get("persisted:test");
             channel.Publish("test", true);
 
-            Thread.Sleep(8000);
+            Thread.Sleep(12000);
 
             var messages = channel.History();
 
@@ -57,10 +57,11 @@ namespace Ably.IntegrationTests
             List<int> listOfValues = new List<int> { 1, 2, 3 };
             publish.Publish("publish6", listOfValues);
 
-            Thread.Sleep(8000);
+            Thread.Sleep(16000);
 
-            var messages = publish.History(new HistoryDataRequestQuery { Start = time, Direction = QueryDirection.Forwards}).ToList();
+            var messages = publish.History(new HistoryDataRequestQuery { Limit = 7, Direction = QueryDirection.Backwards}).ToList();
 
+            messages.Reverse();
             Assert.AreEqual(7, messages.Count());
             Assert.AreEqual(true, messages[0].Value<bool>());
             Assert.AreEqual(24, messages[1].Value<int>());

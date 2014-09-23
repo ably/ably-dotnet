@@ -49,7 +49,7 @@ namespace Ably
                     var json = JObject.Parse(response.TextResponse);
                     if (json["error"] != null)
                     {
-                        reason = (string)json["error"]["reason"];
+                        reason = (string)json["error"]["message"];
                         errorCode = (int)json["error"]["code"];
                     }
                 }
@@ -61,7 +61,6 @@ namespace Ably
             }
             return new ErrorInfo(reason.IsEmpty() ? "Unknown error" : reason, errorCode, response.StatusCode);
         }
-
     }
 
     public class AblyException : Exception

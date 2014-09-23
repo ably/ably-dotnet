@@ -11,6 +11,12 @@ namespace Ably
         internal static TypedBuffer AsPlaintext(Object obj)
         {
             var result = new TypedBuffer();
+            if (obj == null)
+            {
+                result.Type = TType.NONE;
+                return result;
+            }
+
             if (obj is String)
             {
                 result.Buffer = Encoding.UTF8.GetBytes((String)obj);

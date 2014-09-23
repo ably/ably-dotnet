@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -14,6 +12,9 @@ namespace Ably
         {
             if(request.UseTextProtocol == false)
                 throw new AblyException("Binary protocol is not supported yet.", 50000, HttpStatusCode.InternalServerError);
+
+            if(request.PostData == null)
+                return new byte[] {};
 
             if (request.PostData is Message)
                 return GetMessagesRequestBody(new[] {request.PostData as Message}, request.UseTextProtocol,
@@ -45,19 +46,26 @@ namespace Ably
             {
                 var cipher = Config.GetCipher(@params);
                 var data = Data.AsPlaintext(message.Data);
-                payload.Data = new CipherData(cipher.Encrypt(data.Buffer), data.Type);
-                payload.Encoding = "cipher+base64";
+                payload.Type = data.Type.ToString();
+                payload.Data = cipher.Encrypt(data.Buffer).ToBase64();
+                payload.Encoding = MessagePayload.EncryptedEncoding;
             }
             else if (message.IsBinaryMessage)
             {
                 payload.Data = message.Value<byte[]>().ToBase64();
-                payload.Encoding = "base64";
+                payload.Encoding = MessagePayload.Base64Encoding;
             }
             else
             {
-                payload.Data = message.Data;
+                payload.Data = GetDataString(message.Data);
             }
             return payload;
+        }
+
+        private static string GetDataString(object data)
+        {
+            var jobject = JObject.FromObject(new {data});
+            return jobject["data"].ToString();
         }
     }
 }
