@@ -34,7 +34,7 @@ namespace Ably
         public ExtendedSource(string sourceName)
             : base(sourceName)
         {
-            Action<bool> bo = tf => Console.Write(tf);
+
         }
 
         /// <summary>
@@ -105,25 +105,25 @@ namespace Ably
             internal MethodProfiler(TraceSource source, string message)
             {
                 source.TraceEvent(TraceEventType.Start, 0, message);
-                _disposal = delegate() { source.TraceEvent(TraceEventType.Stop, 0, message); };
+                _disposal = () => source.TraceEvent(TraceEventType.Stop, 0, message);
             }
 
             internal MethodProfiler(TraceSource source, string format, params object[] args)
             {
                 source.TraceEvent(TraceEventType.Start, 0, format, args);
-                _disposal = delegate() { source.TraceEvent(TraceEventType.Stop, 0, format, args); };
+                _disposal = () => source.TraceEvent(TraceEventType.Stop, 0, format, args);
             }
 
             internal MethodProfiler(TraceSource source, object data)
             {
                 source.TraceData(TraceEventType.Start, 0, data);
-                _disposal = delegate() { source.TraceData(TraceEventType.Stop, 0, data); };
+                _disposal = () => source.TraceData(TraceEventType.Stop, 0, data);
             }
 
             internal MethodProfiler(TraceSource source, params object[] data)
             {
                 source.TraceData(TraceEventType.Start, 0, data);
-                _disposal = delegate() { source.TraceData(TraceEventType.Stop, 0, data); };
+                _disposal = () => source.TraceData(TraceEventType.Stop, 0, data);
             }
 
             void IDisposable.Dispose()

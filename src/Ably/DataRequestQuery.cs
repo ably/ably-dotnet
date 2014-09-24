@@ -31,6 +31,31 @@ namespace Ably
         }
     }
 
+    public enum StatsUnit
+    {
+        Hour,
+        Day,
+        Month
+    }
+
+    public class StatsDataRequestQuery : DataRequestQuery
+    {
+        public StatsUnit? Unit { get; set; }
+
+        public override IEnumerable<KeyValuePair<string, string>> GetParameters()
+        {
+            var result = new List<KeyValuePair<string, string>>(base.GetParameters());
+            if (Unit.HasValue)
+                result.Add(new KeyValuePair<string, string>("unit", Unit.ToString().ToLower()));
+            return result;
+        }
+
+        public static StatsDataRequestQuery Create()
+        {
+            return new StatsDataRequestQuery();
+        }
+    }
+
     public class DataRequestQuery
     {
         protected bool Equals(DataRequestQuery other)

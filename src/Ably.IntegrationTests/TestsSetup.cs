@@ -15,23 +15,23 @@ namespace Ably.IntegrationTests
     {
         public static TestVars TestData;
 
-        private static TestVars GetTestData()
+        private static TestVars GetTestData() 
         {
-            return new TestVars() { encrypted = true, restHost = "staging-rest.ably.io", keys = new List<Key>() };
+            return new TestVars() { tls = true, restHost = "sandbox-rest.ably.io", keys = new List<Key>() };
         }
         [SetUp]
         public void RunBeforeAllTests()
         {
-            Config.DefaultHost = "staging-rest.ably.io";
-               TestData = GetTestData();
-               AblyHttpClient client = new AblyHttpClient(TestData.restHost, null, false);
-               AblyRequest request = new AblyRequest("/apps", HttpMethod.Post);
-               request.Headers.Add("Accept", "application/json");
-               request.Headers.Add("Content-Type", "application/json");
-               request.PostData = File.ReadAllText("testAppSpec.json");
-               var response = client.Execute(request);
-               var json = JObject.Parse(response.TextResponse);
-            
+            TestData = GetTestData();
+            Config.DefaultHost = TestData.restHost;
+            AblyHttpClient client = new AblyHttpClient(TestData.restHost, null, TestData.tls);
+            AblyRequest request = new AblyRequest("/apps", HttpMethod.Post);
+            request.Headers.Add("Accept", "application/json");
+            request.Headers.Add("Content-Type", "application/json");
+            request.PostData = JToken.Parse(File.ReadAllText("testAppSpec.json"));
+            var response = client.Execute(request);
+            var json = JObject.Parse(response.TextResponse);
+
             string appId = TestData.appId = (string)json["id"];
             foreach (var key in json["keys"])
             {
@@ -47,13 +47,13 @@ namespace Ably.IntegrationTests
         [TearDown]
         public void RunAfterAllTests()
         {
-            //var options = new AblyOptions { Key = TestData.keys[0].keyStr, Tls = TestData.encrypted };
+            //var options = new AblyOptions { Key = TestData.keys[0].keyStr, Encrypted = TestData.encrypted };
 
-            //var rest = new Rest(options);
+            var rest = new Rest(options);
 
-            //AblyRequest request = new AblyRequest("/apps/" + TestData.appId, HttpMethod.Delete);
-            //request.Headers.Add("Accept", "application/json");
-            //rest.ExecuteRequest(request);
+            AblyRequest request = new AblyRequest("/apps/" + TestData.appId, HttpMethod.Delete);
+            request.Headers.Add("Accept", "application/json");
+            rest.ExecuteRequest(request);
         }
     }
 }

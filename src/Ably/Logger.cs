@@ -43,7 +43,7 @@ namespace Ably
 
         private string GetExceptionDetails(Exception ex)
         {
-            StringBuilder message = new StringBuilder();
+            var message = new StringBuilder();
             var webException = ex as AblyException;
             if (webException != null)
             {

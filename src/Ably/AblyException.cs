@@ -36,7 +36,7 @@ namespace Ably
             return string.Format("Reason: {0}; Code: {1}; HttpStatusCode: ({2}){3}", Reason, Code, (int)StatusCode.Value, StatusCode);
         }
 
-        public static ErrorInfo Parse(AblyResponse response)
+        internal static ErrorInfo Parse(AblyResponse response)
         {
             string reason = "";
             int errorCode = 500;
@@ -61,7 +61,6 @@ namespace Ably
             }
             return new ErrorInfo(reason.IsEmpty() ? "Unknown error" : reason, errorCode, response.StatusCode);
         }
-
     }
 
     public class AblyException : Exception
@@ -91,7 +90,7 @@ namespace Ably
         public AblyException(ErrorInfo info)
             : base(info.ToString())
         {
-
+            ErrorInfo = info;
         }
 
 
@@ -109,7 +108,7 @@ namespace Ably
 
         public ErrorInfo ErrorInfo { get; set; }
 
-        public static AblyException FromResponse(AblyResponse response)
+        internal static AblyException FromResponse(AblyResponse response)
         {
             return new AblyException(ErrorInfo.Parse(response));
         }

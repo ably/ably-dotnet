@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Ably
 {
-    public interface IAblyHttpClient
+    internal interface IAblyHttpClient
     {
         AblyResponse Execute(AblyRequest request);
     }

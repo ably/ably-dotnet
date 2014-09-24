@@ -57,14 +57,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AblyResponseTests.cs" />
     <Compile Include="AuthOptionsTests.cs" />
     <Compile Include="CapabilityTests.cs" />
     <Compile Include="ChannelTests.cs" />
     <Compile Include="AuthorisationTests.cs" />
+    <Compile Include="CipherParamsTests.cs" />
     <Compile Include="DataRequestQueryParseFacts.cs" />
     <Compile Include="DataRequestQueryTests.cs" />
     <Compile Include="ErrorInfoTests.cs" />
     <Compile Include="MessageTests.cs" />
+    <Compile Include="RequestHandlerTests.cs" />
     <Compile Include="RestApiTests.cs" />
     <Compile Include="RestTests.cs" />
     <Compile Include="ApiKeyTests.cs" />

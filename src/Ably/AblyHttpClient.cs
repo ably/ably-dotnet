@@ -10,14 +10,13 @@ using System.Text;
 
 namespace Ably
 {
-    public class AblyHttpClient : IAblyHttpClient
+    internal class AblyHttpClient : IAblyHttpClient
     {
         internal static readonly MimeTypes MimeTypes = new MimeTypes();
 
         private readonly string _Host;
         private readonly int? _Port;
         private readonly bool _IsSecure;
-        private readonly ResponseHandler _responseHandler = new ResponseHandler();
         private readonly RequestHandler _requestHandler = new RequestHandler();
         
         public AblyHttpClient(string host) : this(host, null, true) { }
@@ -124,19 +123,17 @@ namespace Ably
 
         private static AblyResponse GetAblyResponse(HttpWebResponse response)
         {
-            var ablyResponse = new AblyResponse();
-            ablyResponse.Type = response.ContentType == "application/json" ? ResponseType.Json : ResponseType.Thrift;
-            ablyResponse.StatusCode = response.StatusCode;
-            ablyResponse.Encoding = response.ContentEncoding.IsNotEmpty() ? response.ContentEncoding : "utf-8";
-            ablyResponse.Body = ReadFully(response.GetResponseStream());
-            ablyResponse.Headers = response.Headers;
-            return ablyResponse;
+            return new AblyResponse(response.ContentEncoding, response.ContentType, ReadFully(response.GetResponseStream()))
+            {
+                StatusCode = response.StatusCode,
+                Headers = response.Headers
+            };
         }
 
         private static byte[] ReadFully(Stream input)
         {
-            byte[] buffer = new byte[16 * 1024];
-            using (MemoryStream ms = new MemoryStream())
+            var buffer = new byte[16 * 1024];
+            using (var ms = new MemoryStream())
             {
                 int read;
                 while ((read = input.Read(buffer, 0, buffer.Length)) > 0)

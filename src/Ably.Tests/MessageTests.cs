@@ -14,22 +14,15 @@ namespace Ably.Tests
         [Fact]
         public void IsBinaryMessage_WithByteArrayData_ReturnsTrue()
         {
-            var message = new Message { Data = new byte[] {} };
+            var message = new Message { Data = new byte[] { 1, 2} };
             Assert.True(message.IsBinaryMessage);
         }
 
-        [Fact]
-        public void Value_WithBinaryMessageAndTypeIsByteArray_ReturnsArray()
-        {
-            byte[] byteArray = new byte[] { };
-            var message = new Message { Data = byteArray };
-            Assert.Same(byteArray, message.Value<byte[]>());
-        }
-
+        
         [Fact]
         public void Value_WithBinarryMessageAndTypeIsNOTByteArray_ThrowsInvalidOperationException()
         {
-            var message = new Message { Data = new byte[] {} };
+            var message = new Message { Data = new byte[] { 1,2} };
             Assert.Throws<InvalidOperationException>(delegate { message.Value<int>(); });
         }
 

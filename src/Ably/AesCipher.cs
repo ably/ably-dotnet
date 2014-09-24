@@ -44,7 +44,10 @@ namespace Ably
 
                 // The result of the encryption and decryption            
                 byte[] cipherText = crypto.TransformFinalBlock(input, 0, input.Length);
-                return aesEncryption.IV.Union(cipherText).ToArray();
+                var result = new byte[cipherText.Length + aesEncryption.IV.Length];
+                Buffer.BlockCopy(aesEncryption.IV, 0, result, 0, aesEncryption.IV.Length);
+                Buffer.BlockCopy(cipherText, 0, result, aesEncryption.IV.Length, cipherText.Length);
+                return result;
 
             }
         }

@@ -1,10 +1,8 @@
 using System.Net;
 using Ably.Auth;
-using Ably.Realtime;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Net.Http;
@@ -12,17 +10,6 @@ using System.Text;
 
 namespace Ably
 {
-    public static class Config
-    {
-        public static ILogger AblyLogger = Logger.Current;
-        public static Func<CipherParams, IChannelCipher> GetCipher = @params => new AesCipher(@params);
-        internal static string DefaultHost = "rest.ably.io";
-        internal static Func<DateTime> Now = () => DateTime.Now;
-        public static Func<TransportParams, ConnectionManager, ITransport> GetTransport =
-            (transportParams, manager) => { throw new NotImplementedException(); };  
-
-    }
-
     public class Rest : IAuthCommands, IChannelCommands, IRestCommands
     {
         internal IAblyHttpClient _client;
@@ -47,7 +34,7 @@ namespace Ably
                 throw new AblyException("A connection strig with key 'Ably' doesn't exist in the application configuration");
             }
             
-            //Parse it when I know how things work
+            //TODO: Parse it when I know how things work
         }
 
         public Rest(string apiKey) : this(new AblyOptions { Key = apiKey})
@@ -118,12 +105,13 @@ namespace Ably
                 if(Options.ClientId == null)
                 {
                     AuthMethod = AuthMethod.Basic;
-                    Logger.Info("Using basic authentication for all calls");
+                    Logger.Info("Using basic authentication.");
                     return;
                 }
             }
 
             AuthMethod = AuthMethod.Token;
+            Logger.Info("Using token authentication.");
             if (Options.AuthToken.IsNotEmpty())
             {
                 CurrentToken = new Token() { Id = Options.AuthToken };
@@ -194,23 +182,24 @@ namespace Ably
                 if (CurrentToken == null)
                     throw new AblyException("Invalid token credentials", 40100, HttpStatusCode.Unauthorized);
 
-                request.Headers["Authorization"] = "Bearer " + CurrentToken.Id;
+                request.Headers["Authorization"] = "Bearer " + CurrentToken.Id.ToBase64();
             }
         }
 
         Token IAuthCommands.RequestToken(TokenRequest requestData, AuthOptions options)
         {
+            var mergedOptions = options != null ? options.Merge(Options) : Options;
+            
             var data = requestData ?? new TokenRequest { 
-                                                        Id = Options.KeyId,
+                                                        Id = mergedOptions.KeyId,
                                                         ClientId = Options.ClientId,
                                                         Capability = new Capability() };
-            data.Id = data.Id ?? Options.KeyId;
+
+            data.Id = data.Id ?? mergedOptions.KeyId;
             data.Capability = data.Capability ?? new Capability();
             data.Validate();
 
-            var mergedOptions = options != null ? options.Merge(Options) : Options;
-
-            var request = CreatePostRequest(String.Format("/apps/{0}/authorise", Options.AppId));
+            var request = CreatePostRequest(String.Format("/keys/{0}/requestToken", data.Id));
             request.SkipAuthentication = true;
             TokenRequestPostData postData = null;
             if(mergedOptions.AuthCallback != null)
@@ -280,7 +269,7 @@ namespace Ably
 
         public IPartialResult<Stats> Stats()
         {
-            return Stats(new DataRequestQuery());
+            return Stats(new StatsDataRequestQuery());
         }
 
         public IPartialResult<Stats> Stats(DataRequestQuery query)
@@ -305,7 +294,6 @@ namespace Ably
 
             stats.NextQuery = DataRequestQuery.GetLinkQuery(response.Headers, "next");
             stats.InitialResultQuery = DataRequestQuery.GetLinkQuery(response.Headers, "first");
-
             
             return stats;
         }
@@ -327,8 +315,6 @@ namespace Ably
             request.CipherParams = @params;
             return request;
         }
-
-        
 
         IChannel IChannelCommands.Get(string name)
         {

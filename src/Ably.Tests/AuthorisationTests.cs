@@ -30,7 +30,7 @@ namespace Ably.Tests
 
         private static string GetKeyId()
         {
-            return ApiKey.Split(':')[0].Split('.')[1];
+            return ApiKey.Split(':')[0];
         }
 
         [Fact]
@@ -40,7 +40,7 @@ namespace Ably.Tests
             SendRequestTokenWithValidOptions();
 
             //Assert
-            Assert.Equal("/apps/AHSz6w/authorise", CurrentRequest.Url);
+            Assert.Equal("/keys/" + GetKeyId() + "/requestToken", CurrentRequest.Url);
             Assert.Equal(HttpMethod.Post, CurrentRequest.Method);
         }
 
@@ -84,6 +84,33 @@ namespace Ably.Tests
         }
 
         [Fact]
+        public void RequestToken_TimeStamp_SetsTimestampOnTheDataRequest()
+        {
+            var date = new DateTime(2014, 1, 1);
+            var request = new TokenRequest() { Timestamp = date };
+
+            var client = GetRestClient();
+
+            client.Auth.RequestToken(request, null);
+
+            var data = CurrentRequest.PostData as TokenRequestPostData;
+            Assert.Equal(date.ToUnixTime().ToString(), data.timestamp);
+        }
+
+        [Fact]
+        public void RequestToken_WithoutTimeStamp_SetsCurrentTimeOnTheRequest()
+        {
+            var request = new TokenRequest();
+
+            var client = GetRestClient();
+
+            client.Auth.RequestToken(request, null);
+
+            var data = CurrentRequest.PostData as TokenRequestPostData;
+            Assert.Equal(Now.ToUnixTime().ToString(), data.timestamp);
+        }
+
+        [Fact]
         public void RequestToken_SetsRequestTokenRequestToRequestPostData()
         {
             SendRequestTokenWithValidOptions();
@@ -92,21 +119,40 @@ namespace Ably.Tests
         }
 
         [Fact]
+        public void RequestToken_WithExplicitKeyIdAndKeyValue_UsesCorrectKeyIdAndValueToCreateTheRequest()
+        {
+            var request = new TokenRequest();
+            var options = new AuthOptions()
+            {
+                KeyId = "AAAAAA.BBBBBB",
+                KeyValue = "keyvalue"
+            };
+            var client = GetRestClient();
+
+            client.Auth.RequestToken(request, options);
+
+            var data = CurrentRequest.PostData as TokenRequestPostData;
+            Assert.Equal(options.KeyId, data.id);
+            var currentMac = data.mac;
+
+            data.CalculateMac(options.KeyValue);
+            Assert.Equal(data.mac, currentMac);
+        }
+
+        [Fact]
         public void RequestToken_WithQueryTime_SendsTimeRequestAndUsesReturnedTimeForTheRequest()
         {
             var rest = GetRestClient();
-            var currentTime = DateTime.Now;
+            var currentTime = DateTime.Now.ToUniversalTime();
             rest.ExecuteRequest = x =>
                 {
                     if (x.Url.Contains("time"))
                        return new AblyResponse { TextResponse = "[" + currentTime.ToUnixTimeInMilliseconds() + "]", Type = ResponseType.Json };
-                    else
-                    {
-                        //Assert
-                        var data = x.PostData as TokenRequestPostData;
-                        Assert.Equal(data.timestamp, currentTime.ToUnixTime().ToString());
-                        return new AblyResponse() { TextResponse = "{}" };
-                    }
+                    
+                    //Assert
+                    var data = x.PostData as TokenRequestPostData;
+                    Assert.Equal(data.timestamp, currentTime.ToUnixTime().ToString());
+                    return new AblyResponse() { TextResponse = "{}" };
                 };
             var request = new TokenRequest { Capability = new Capability(), ClientId = "ClientId", Ttl = TimeSpan.FromMinutes(10), Id = GetKeyId() };
 
@@ -184,7 +230,7 @@ namespace Ably.Tests
 
             var token = client.Auth.Authorise(new TokenRequest() { ClientId = "123", Capability = new Capability(), Id = "123"}, null, true);
 
-            Assert.Contains("authorise", CurrentRequest.Url);
+            Assert.Contains("requestToken", CurrentRequest.Url);
         }
 
         private TokenRequest SendRequestTokenWithValidOptions()

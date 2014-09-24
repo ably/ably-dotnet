@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
+using System.Net.Mime;
 using System.Text;
 
 namespace Ably
@@ -13,32 +14,31 @@ namespace Ably
         Thrift
     }
 
-    public class AblyResponse
+    internal class AblyResponse
     {
-        public NameValueCollection Headers { get; set; } 
-        public ResponseType Type { get; set; }
-        public HttpStatusCode StatusCode { get; set; }
-        public string TextResponse { get; set; }
+        internal NameValueCollection Headers { get; set; } 
+        internal ResponseType Type { get; set; }
+        internal HttpStatusCode StatusCode { get; set; }
+        internal string TextResponse { get; set; }
 
-        private byte[] _body;
-        public byte[] Body
-        {
-            get { return _body; }
-            set
-            {
-                if (Type == ResponseType.Json)
-                {
-                    TextResponse = System.Text.Encoding.GetEncoding(Encoding).GetString(value);
-                }
-                _body = value;
-            }
-        }
+        internal byte[] Body { get; set; }
 
-        public string Encoding { get; set; }
+        internal string Encoding { get; set; }
 
-        public AblyResponse()
+        internal AblyResponse()
         {
             Headers = new NameValueCollection();
+        }
+
+        internal AblyResponse(string encoding, string contentType, byte[] body)
+        {
+            Type = contentType.ToLower() == "application/json" ? ResponseType.Json : ResponseType.Thrift;
+            Encoding = encoding.IsNotEmpty() ? encoding : "utf-8";
+            if (Type == ResponseType.Json)
+            {
+                TextResponse = System.Text.Encoding.GetEncoding(Encoding).GetString(body);
+            }
+            Body = body;
         }
     }
 }

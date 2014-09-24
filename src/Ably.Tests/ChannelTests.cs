@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Http;
+using Newtonsoft.Json;
 using Xunit;
 using System.Threading;
 using Xunit.Extensions;
@@ -166,6 +167,36 @@ namespace Ably.Tests
             Assert.NotNull(result.NextQuery);
             Assert.NotNull(result.CurrentResultQuery);
             Assert.NotNull(result.InitialResultQuery);
+        }
+
+        [Fact]
+        public void History_ForAnEncryptedChannel_DecryptsMessagesBeforeReturningThem()
+        {
+            //Arrange
+            var rest = GetRestClient();
+            var message = new Message() {Name = "test", Data = "Test"};
+            var defaultParams = Crypto.GetDefaultParams();
+            var payload = RequestHandler.CreateMessagePayload(message, true, defaultParams);
+
+            rest.ExecuteRequest = request =>
+            {
+                var response = new AblyResponse()
+                {
+                    Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
+                    TextResponse = string.Format("[{0}]", JsonConvert.SerializeObject(payload))
+                };
+                return response;
+            };
+
+            var channel = rest.Channels.Get("test", new ChannelOptions(defaultParams));
+
+            //Act
+            var result = channel.History();
+
+            //Assert
+            Assert.NotEmpty(result);
+            var firstMessage = result.First();
+            Assert.Equal(message.Data, firstMessage.Data);
         }
 
         public static IEnumerable<object[]> InvalidHistoryDates

@@ -1,188 +1,22 @@
 using System;
-using System.Linq;
 using System.Net;
 using System.Text;
-using Ably;
 using Ably.Protocol;
 using Newtonsoft.Json.Linq;
-using TType = Thrift.Protocol.TType;
-using System.Security.Cryptography;
 
 namespace Ably
 {
-    internal sealed class CipherData : TypedBuffer
-    {
-        public CipherData(byte[] cipherText, Ably.Protocol.TType type)
-        {
-            Buffer = cipherText;
-            Type = type;
-        }
-
-        public CipherData(byte[] cipherText, int type)
-            : this(cipherText, (Protocol.TType)type)
-        {
-        }
-    }
-
-    public class CipherParams
-    {
-        public String Algorithm;
-        public byte[] Key { get; set; }
-    }
-
-    public class Crypto
-    {
-
-        public const String DefaultAlgorithm = "AES";
-        public const int DefaultKeylength = 128; // bits
-        public const int DefaultBlocklength = 16; // bytes
-
-        public static CipherParams GetDefaultParams()
-        {
-            using (var aes = new AesCryptoServiceProvider())
-            {
-                aes.KeySize = DefaultKeylength;
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
-                aes.BlockSize = DefaultBlocklength;
-                aes.GenerateKey();
-                return new CipherParams() { Algorithm = DefaultAlgorithm, Key = aes.Key };
-            }
-        }
-
-        public static CipherParams GetDefaultParams(byte[] key)
-        {
-            return new CipherParams() { Algorithm = "AES", Key = key };
-        }
-
-        public static IChannelCipher GetCipher(ChannelOptions opts)
-        {
-            CipherParams @params = opts.CipherParams ?? GetDefaultParams();
-
-            if (string.Equals(@params.Algorithm, "aes", StringComparison.CurrentCultureIgnoreCase))
-                return new AesCipher(@params);
-
-            throw new AblyException("Currently only the AES encryption algorith is supported", 50000, HttpStatusCode.InternalServerError);
-        }
-    }
-
-    public interface IChannelCipher
-    {
-        byte[] Encrypt(byte[] input);
-        byte[] Decrypt(byte[] input);
-    }
-
-    public class ChannelOptions
-    {
-        public bool Encrypted { get; set; }
-        public CipherParams CipherParams { get; set; }
-    }
-
-    internal class TypedBuffer
-    {
-        public byte[] Buffer { get; set; }
-        public Protocol.TType Type { get; set; }
-    }
-
-
     public class Data
     {
-        internal static Object FromThrift(TData data)
-        {
-            Object result = null;
-            Protocol.TType type = data.Type;
-
-            switch (data.Type)
-            {
-                case Protocol.TType.NONE:
-                    break;
-                case Protocol.TType.TRUE:
-                    result = true;
-                    break;
-                case Protocol.TType.FALSE:
-                    result = false;
-                    break;
-                case Protocol.TType.INT32:
-                    result = data.I32Data;
-                    break;
-                case Protocol.TType.INT64:
-                    result = data.I64Data;
-                    break;
-                case Protocol.TType.DOUBLE:
-                    result = data.DoubleData;
-                    break;
-                case Protocol.TType.STRING:
-                    result = data.StringData;
-                    break;
-                case Protocol.TType.BUFFER:
-                    byte[] extract = new byte[data.BinaryData.Count()];
-                    data.BinaryData.CopyTo(extract, 0);
-                    result = extract;
-                    break;
-                case Protocol.TType.JSONARRAY:
-                    result = JArray.Parse(data.StringData);
-                    break;
-                case Protocol.TType.JSONOBJECT:
-                    result = JObject.Parse(data.StringData);
-                    break;
-                default:
-                    break;
-            }
-            return result;
-        }
-
-        internal static TData ToThrift(Object obj)
-        {
-            var result = new TData();
-            if (obj is string)
-            {
-                result.Type = Ably.Protocol.TType.STRING;
-                result.StringData = (string)obj;
-            }
-            else if (obj is byte[])
-            {
-                result.Type = (Ably.Protocol.TType.BUFFER);
-                result.BinaryData = ((byte[])obj);
-            }
-            else if (obj is JObject)
-            {
-                result.Type = Protocol.TType.JSONOBJECT;
-                result.StringData = obj.ToString();
-            }
-            else if (obj is JArray)
-            {
-                result.Type = Protocol.TType.JSONARRAY;
-                result.StringData = obj.ToString();
-            }
-            else if (obj is bool)
-            {
-                result.Type = (bool)obj ? Protocol.TType.TRUE : Protocol.TType.FALSE;
-            }
-            else if (obj is int)
-            {
-                result.Type = (Protocol.TType.INT32);
-                result.I32Data = (int)obj;
-            }
-            else if (obj is long)
-            {
-                result.Type = (Protocol.TType.INT64);
-                result.I64Data = (long)obj;
-            }
-            else if (obj is Double)
-            {
-                result.Type = (Protocol.TType.DOUBLE);
-                result.DoubleData = (double)obj;
-            }
-            else
-            {
-                throw new AblyException("Unsupported type: " + obj.GetType().FullName, 40000, HttpStatusCode.BadRequest);
-            }
-            return result;
-        }
-
         internal static TypedBuffer AsPlaintext(Object obj)
         {
             var result = new TypedBuffer();
+            if (obj == null)
+            {
+                result.Type = TType.NONE;
+                return result;
+            }
+
             if (obj is String)
             {
                 result.Buffer = Encoding.UTF8.GetBytes((String)obj);
@@ -191,21 +25,22 @@ namespace Ably
             else if (obj is byte[])
             {
                 result.Buffer = (byte[])obj;
-                result.Type = Protocol.TType.BUFFER;
+                result.Type = TType.BUFFER;
             }
             else if (obj is JObject)
             {
                 result.Buffer = Encoding.UTF8.GetBytes(obj.ToString());
-                result.Type = Protocol.TType.JSONOBJECT;
+                result.Type = TType.JSONOBJECT;
             }
             else if (obj is JArray)
             {
                 result.Buffer = Encoding.UTF8.GetBytes(obj.ToString());
-                result.Type = Protocol.TType.JSONARRAY;
+                result.Type = TType.JSONARRAY;
             }
             else if (obj is bool)
             {
-                result = null;
+                result.Buffer = new byte[]{};
+                result.Type = ((bool) obj) ? TType.TRUE : TType.FALSE;
             }
             else if (obj is int)
             {

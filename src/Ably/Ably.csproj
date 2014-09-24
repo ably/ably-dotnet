@@ -70,7 +70,11 @@
     <Compile Include="Capability.cs" />
     <Compile Include="CapabilityResource.cs" />
     <Compile Include="Channel.cs" />
+    <Compile Include="ChannelOptions.cs" />
+    <Compile Include="CipherData.cs" />
+    <Compile Include="CipherParams.cs" />
     <Compile Include="ConfigurationMissingException.cs" />
+    <Compile Include="Crypto.cs" />
     <Compile Include="Data.cs" />
     <Compile Include="DataRequestQuery.cs" />
     <Compile Include="Extensions\DateExtensions.cs" />
@@ -81,11 +85,13 @@
     <Compile Include="IAblyHttpClient.cs" />
     <Compile Include="IAuthCommands.cs" />
     <Compile Include="IChannel.cs" />
+    <Compile Include="IChannelCipher.cs" />
     <Compile Include="IChannelCommands.cs" />
     <Compile Include="ILogger.cs" />
     <Compile Include="IPartialResult.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Message.cs" />
+    <Compile Include="MessagePayload.cs" />
     <Compile Include="MimeTypes.cs" />
     <Compile Include="PresenceMessage.cs" />
     <Compile Include="Properties\Annotations.cs" />
@@ -126,6 +132,7 @@
     <Compile Include="Statistics.cs" />
     <Compile Include="StringUtils.cs" />
     <Compile Include="TokenRequestPostData.cs" />
+    <Compile Include="TypedBuffer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
