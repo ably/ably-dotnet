@@ -3,7 +3,6 @@ using Ably.Auth;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Net.Http;
@@ -11,15 +10,6 @@ using System.Text;
 
 namespace Ably
 {
-    public static class Config
-    {
-        public static ILogger AblyLogger = Logger.Current;
-        public static Func<CipherParams, IChannelCipher> GetCipher = @params => new AesCipher(@params);
-        internal static string DefaultHost = "rest.ably.io";
-        internal static Func<DateTime> Now = () => DateTime.Now;
-
-    }
-
     public class Rest : IAuthCommands, IChannelCommands, IRestCommands
     {
         internal IAblyHttpClient _client;
@@ -44,7 +34,7 @@ namespace Ably
                 throw new AblyException("A connection strig with key 'Ably' doesn't exist in the application configuration");
             }
             
-            //Parse it when I know how things work
+            //TODO: Parse it when I know how things work
         }
 
         public Rest(string apiKey) : this(new AblyOptions { Key = apiKey})

@@ -1,10 +1,9 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using Ably.Protocol;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Ably
 {
@@ -24,7 +23,7 @@ namespace Ably
             if (response.Type == ResponseType.Json)
             {
                 var messages = JsonConvert.DeserializeObject<List<MessagePayload>>(response.TextResponse);
-                
+
                 return ProcessMessages(messages, options);
             }
             throw new AblyException("Only json messages are supported.", 50100, HttpStatusCode.NotImplemented);
@@ -46,11 +45,11 @@ namespace Ably
                 }
                 else if (payload.IsEncrypted)
                 {
-                    if(options.Encrypted == false || options.CipherParams == null)
+                    if (options.Encrypted == false || options.CipherParams == null)
                     {
                         throw new AblyException("Cannot decrypt message because the current channel was created without encryption enabled. Payload: " + payload);
                     }
-                    
+
                     var cipher = GetCipher(options);
                     var buffer = GetTypedBufferFromEncryptedMessage(payload, cipher);
 
@@ -61,13 +60,16 @@ namespace Ably
                         Data = Data.FromPlaintext(buffer)
                     };
                 }
-                
-                yield return new Message()
+                else
                 {
-                    Name = payload.Name,
-                    TimeStamp = GetTime(payload),
-                    Data = payload.Data
-                };
+                    
+                    yield return new Message()
+                    {
+                        Name = payload.Name,
+                        TimeStamp = GetTime(payload),
+                        Data = payload.Data.IsJson() ? (object)JToken.Parse(payload.Data) : payload.Data
+                    };
+                }
             }
         }
 
@@ -78,7 +80,7 @@ namespace Ably
 
         private static DateTime GetTime(MessagePayload payload)
         {
-            if(payload.Timestamp.HasValue)
+            if (payload.Timestamp.HasValue)
                 return payload.Timestamp.Value.FromUnixTime();
             return Config.Now();
         }
@@ -88,7 +90,7 @@ namespace Ably
             TType type;
             if (Enum.TryParse(payload.Type, out type))
             {
-                var result = new TypedBuffer() {Type = type};
+                var result = new TypedBuffer() { Type = type };
                 if (payload.Data.IsNotEmpty())
                 {
                     try
