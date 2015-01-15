@@ -1,4 +1,5 @@
-﻿using Ably.Tests;
+﻿using Ably.Auth;
+using Ably.Tests;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -134,7 +135,7 @@ namespace Ably.Tests
             bool called = false;
             var options = new AblyOptions
             {
-                AuthCallback = (x) => { called = true; return "{}"; },
+                AuthCallback = (x) => { called = true; return new Token(); },
                 AppId = "-NyOAA" //Random
             };
 

@@ -2,14 +2,13 @@ namespace Ably
 {
     internal sealed class CipherData : TypedBuffer
     {
-        public CipherData(byte[] cipherText, Ably.Protocol.TType type)
+        public CipherData(byte[] cipherText)
         {
             Buffer = cipherText;
-            Type = type;
         }
 
         public CipherData(byte[] cipherText, int type)
-            : this(cipherText, (Protocol.TType)type)
+            : this(cipherText)
         {
         }
     }

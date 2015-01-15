@@ -8,5 +8,6 @@ namespace Ably
         public static Func<CipherParams, IChannelCipher> GetCipher = @params => new AesCipher(@params);
         internal static string DefaultHost = "rest.ably.io";
         internal static Func<DateTime> Now = () => DateTime.Now;
+
     }
 }

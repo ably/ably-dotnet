@@ -1,14 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
-using NUnit.Framework;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using NUnit.Framework;
 
-namespace Ably.IntegrationTests
+namespace Ably.AcceptanceTests
 {
     [SetUpFixture]
     public class TestsSetup
@@ -18,6 +14,14 @@ namespace Ably.IntegrationTests
         private static TestVars GetTestData() 
         {
             return new TestVars() { tls = true, restHost = "sandbox-rest.ably.io", keys = new List<Key>() };
+        }
+
+        public static Ably.AblyOptions GetDefaultOptions()
+        {
+            return new AblyOptions
+            {
+                Key = TestData.keys[0].keyStr,
+            };
         }
         [SetUp]
         public void RunBeforeAllTests()

@@ -34,12 +34,12 @@ namespace Ably.Tests
 	                            }
                             }";
 
-                var token = Token.fromJSON(JObject.Parse(json));
+                var token = Token.FromJson((JObject)JObject.Parse(json)["access_token"]);
 
                 Assert.Equal("QF_CjTvDs2kFQMKLwpccEhIkNcKpw5ovPsOnLsOgJMKow5ACXHvCgGzCtcK7", token.Id);
                 //Assert.Equal("3lJG9Q", token.ClientId
                 Assert.Equal(1359555878, token.IssuedAt.ToUnixTime());
-                Assert.Equal(1359559478, token.Expires.ToUnixTime());
+                Assert.Equal(1359559478, token.ExpiresAt.ToUnixTime());
                 var expectedCapability = new Capability();
                 expectedCapability.AddResource("*").AllowAll();
                 Assert.Equal(expectedCapability.ToJson(), token.Capability.ToJson());

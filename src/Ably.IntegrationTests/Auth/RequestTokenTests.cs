@@ -20,7 +20,7 @@ namespace Ably.IntegrationTests.Auth
 
             Assert.NotNull(token);
             Assert.True(((TimeSpan)(token.IssuedAt - DateTime.Now)).Minutes < 2);
-            Assert.AreEqual(token.IssuedAt.AddHours(1), token.Expires); 
+            Assert.AreEqual(token.IssuedAt.AddHours(1), token.ExpiresAt); 
         }
 
         [Test]
@@ -43,7 +43,7 @@ namespace Ably.IntegrationTests.Auth
 
             Assert.NotNull(token);
             Assert.True(((TimeSpan)(token.IssuedAt - DateTime.Now)).Minutes < 2);
-            Assert.AreEqual(token.IssuedAt.AddHours(8), token.Expires);
+            Assert.AreEqual(token.IssuedAt.AddHours(8), token.ExpiresAt);
         }
 
        
@@ -54,7 +54,6 @@ namespace Ably.IntegrationTests.Auth
             var options = new AblyOptions
             {
                 Key = testData.keys[0].keyStr,
-                Encrypted = testData.encrypted
             };
             return options;
         }

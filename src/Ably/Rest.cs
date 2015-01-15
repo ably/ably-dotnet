@@ -114,7 +114,7 @@ namespace Ably
             Logger.Info("Using token authentication.");
             if (Options.AuthToken.IsNotEmpty())
             {
-                CurrentToken = new Token() { Id = Options.AuthToken };
+                CurrentToken = new Token(Options.AuthToken);
             }
             LogCurrentAuthenticationMethod();
         }
@@ -204,17 +204,35 @@ namespace Ably
             TokenRequestPostData postData = null;
             if(mergedOptions.AuthCallback != null)
             {
-                var signedPostData = mergedOptions.AuthCallback(data);
-                postData = JsonConvert.DeserializeObject<TokenRequestPostData>(signedPostData);
+                var token = mergedOptions.AuthCallback(data);
+                if (token != null)
+                    return token;
+                throw new AblyException("AuthCallback returned an invalid token");
             }
-            else if(mergedOptions.AuthUrl.IsNotEmpty())
+            
+            if(mergedOptions.AuthUrl.IsNotEmpty())
             {
-                var authRequest = new AblyRequest(mergedOptions.AuthUrl, HttpMethod.Post);
-                authRequest.PostParameters.Merge(mergedOptions.AuthParams);
+                var url = mergedOptions.AuthUrl;
+                var authRequest = new AblyRequest(url, mergedOptions.AuthMethod);
+                if (mergedOptions.AuthMethod == HttpMethod.Get)
+                {
+                    authRequest.AddQueryParameters(mergedOptions.AuthParams);
+                }
+                else
+                {
+                    authRequest.PostParameters = mergedOptions.AuthParams;
+                }
                 authRequest.Headers.Merge(mergedOptions.AuthHeaders);
                 authRequest.SkipAuthentication = true;
                 var response = ExecuteRequest(authRequest);
+                if(response.Type != ResponseType.Json)
+                    throw new AblyException(new ErrorInfo(string.Format("Content Type {0} is not supported by this client library", response.ContentType), 500));
+
                 var signedData = response.TextResponse;
+                var jData = JObject.Parse(signedData);
+                if (Token.IsToken(jData))
+                    return Token.FromJson(jData);
+
                 postData = JsonConvert.DeserializeObject<TokenRequestPostData>(signedData);
             }
             else
@@ -231,7 +249,8 @@ namespace Ably
 
             try
             {
-                return Token.fromJSON(JObject.Parse(result.TextResponse));
+                var json = JObject.Parse(result.TextResponse);
+                return Token.FromJson((JObject)json["access_token"]);
             }
             catch (JsonException ex)
             {
@@ -243,7 +262,7 @@ namespace Ably
         {
             if(CurrentToken != null)
             {
-                if(CurrentToken.Expires > Config.Now())
+                if(CurrentToken.ExpiresAt > Config.Now())
                 {
                     if(force == false)
                         return CurrentToken;

@@ -1,13 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using Ably.Auth;
 
 namespace Ably
 {
     public class AuthOptions
     {
-        public Func<TokenRequest, string> AuthCallback;
+        public Func<TokenRequest, Token> AuthCallback;
         public string AuthUrl { get; set; }
+        /// <summary>
+        /// Used in conjunction with AuthUrl. Default is GET.
+        /// </summary>
+        public HttpMethod AuthMethod { get; set; }
         public string Key { get; set; }
         public string KeyId { get; set; }
         public string KeyValue { get; set; }
@@ -23,6 +29,7 @@ namespace Ably
         {
             AuthHeaders = new Dictionary<string,string>();
             AuthParams = new Dictionary<string, string>();
+            AuthMethod = HttpMethod.Get;
         }
 
         public AuthOptions Merge(AuthOptions defaults)

@@ -24,7 +24,7 @@ namespace Ably.Tests
                 KeyId = "keyId",
                 KeyValue = "keyValue",
                 QueryTime = true,
-                AuthCallback = param => string.Empty
+                AuthCallback = param => null
             };
         }
 
@@ -71,7 +71,7 @@ namespace Ably.Tests
                 KeyId = "CompleteKeyId",
                 KeyValue = "CompleteKeyValue",
                 QueryTime = true,
-                AuthCallback = param => "Complete"
+                AuthCallback = param => null
             };
             otherComplete.Merge(complete);
 

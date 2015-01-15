@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 
 namespace Ably
 {
@@ -44,6 +46,19 @@ namespace Ably
                 }
             }
             return queryParameters;
+        }
+
+        public static string JoinStrings(this IEnumerable<string> input, string delimiter = ", ")
+        {
+            return string.Join(delimiter, input.Where(x => x.IsNotEmpty()));
+        }
+
+        public static string Join<T>(this IEnumerable<T> listOfTs, Func<T, string> selector, string delimiter = ",") where T : class
+        {
+            if (listOfTs != null)
+                return String.Join(delimiter, listOfTs.Select(selector));
+
+            return string.Empty;
         }
     }
 }

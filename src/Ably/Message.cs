@@ -24,8 +24,7 @@ namespace Ably
 
         public void EncryptData(IChannelCipher cipher)
         {
-            var data = Ably.Data.AsPlaintext(Data);
-            Data = new CipherData(cipher.Encrypt(data.Buffer), data.Type);
+            Data = null;
         }
 
         public void DecryptData(IChannelCipher cipher)
@@ -33,7 +32,7 @@ namespace Ably
             var cipherData = Data as CipherData;
             if (cipherData != null)
             {
-                Data = Ably.Data.FromPlaintext(cipher.Decrypt(cipherData.Buffer), cipherData.Type);
+                Data = null;
             }
         }
 

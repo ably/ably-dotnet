@@ -48,7 +48,7 @@ namespace Ably.IntegrationTests
             var tokenDetails = _ably.Auth.RequestToken(null, null);
             Assert.NotNull(tokenDetails.Id);
             Assert.True((tokenDetails.IssuedAt >= (requestTime.AddSeconds(-1))) && (tokenDetails.IssuedAt <= (requestTime.AddSeconds(1))));
-            Assert.AreEqual(tokenDetails.Expires, tokenDetails.IssuedAt.AddSeconds(60 * 60));
+            Assert.AreEqual(tokenDetails.ExpiresAt, tokenDetails.IssuedAt.AddSeconds(60 * 60));
             Assert.AreEqual(tokenDetails.Capability.ToString(), permitAll);
         }
 
@@ -63,7 +63,7 @@ namespace Ably.IntegrationTests
             var tokenDetails = _ably.Auth.RequestToken(new TokenRequest(), null);
             Assert.NotNull(tokenDetails.Id);
             Assert.True((tokenDetails.IssuedAt >= (requestTime.AddSeconds(-1))) && (tokenDetails.IssuedAt <= (requestTime.AddSeconds(1))));
-            Assert.AreEqual(tokenDetails.Expires, tokenDetails.IssuedAt.AddSeconds(60 * 60));
+            Assert.AreEqual(tokenDetails.ExpiresAt, tokenDetails.IssuedAt.AddSeconds(60 * 60));
             Assert.AreEqual(tokenDetails.Capability.ToString(), permitAll);
         }
 
@@ -79,7 +79,7 @@ namespace Ably.IntegrationTests
             var tokenDetails = _ably.Auth.RequestToken(request, null);
             Assert.NotNull(tokenDetails.Id);
             Assert.True((tokenDetails.IssuedAt >= (requestTime.AddSeconds(-1))) && (tokenDetails.IssuedAt <= (requestTime.AddSeconds(1))));
-            Assert.AreEqual(tokenDetails.Expires, tokenDetails.IssuedAt.AddSeconds(60 * 60));
+            Assert.AreEqual(tokenDetails.ExpiresAt, tokenDetails.IssuedAt.AddSeconds(60 * 60));
             Assert.AreEqual(tokenDetails.Capability.ToString(), permitAll);
         }
 
@@ -112,7 +112,7 @@ namespace Ably.IntegrationTests
             var tokenDetails = _ably.Auth.RequestToken(null, authOptions);
             Assert.NotNull(tokenDetails.Id);
             Assert.True((tokenDetails.IssuedAt >= (requestTime.AddSeconds(-1))) && (tokenDetails.IssuedAt <= (requestTime.AddSeconds(1))));
-            Assert.AreEqual(tokenDetails.Expires, tokenDetails.IssuedAt.AddSeconds(60 * 60));
+            Assert.AreEqual(tokenDetails.ExpiresAt, tokenDetails.IssuedAt.AddSeconds(60 * 60));
             Assert.AreEqual(tokenDetails.Capability.ToString(), permitAll);
         }
 
@@ -128,7 +128,7 @@ namespace Ably.IntegrationTests
             var tokenDetails = _ably.Auth.RequestToken(new TokenRequest() { ClientId = clientId }, null);
             Assert.NotNull(tokenDetails.Id);
             Assert.True((tokenDetails.IssuedAt >= (requestTime.AddSeconds(-1))) && (tokenDetails.IssuedAt <= (requestTime.AddSeconds(1))));
-            Assert.AreEqual(tokenDetails.Expires, tokenDetails.IssuedAt.AddSeconds(60 * 60));
+            Assert.AreEqual(tokenDetails.ExpiresAt, tokenDetails.IssuedAt.AddSeconds(60 * 60));
             Assert.AreEqual(tokenDetails.Capability.ToString(), permitAll);
             Assert.AreEqual(tokenDetails.ClientId, clientId);
         }
@@ -173,7 +173,7 @@ namespace Ably.IntegrationTests
             tokenParams.Ttl = TimeSpan.FromSeconds(100);
             var tokenDetails = _ably.Auth.RequestToken(tokenParams, null);
             Assert.NotNull(tokenDetails.Id);
-            Assert.AreEqual(tokenDetails.Expires, tokenDetails.IssuedAt.Add(tokenParams.Ttl.Value));
+            Assert.AreEqual(tokenDetails.ExpiresAt, tokenDetails.IssuedAt.Add(tokenParams.Ttl.Value));
         }
 
         /**

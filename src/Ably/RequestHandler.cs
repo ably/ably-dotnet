@@ -45,9 +45,8 @@ namespace Ably
             if (encrypted)
             {
                 var cipher = Config.GetCipher(@params);
-                var data = Data.AsPlaintext(message.Data);
-                payload.Type = data.Type.ToString();
-                payload.Data = cipher.Encrypt(data.Buffer).ToBase64();
+                payload.Type = "";
+                payload.Data = null;
                 payload.Encoding = MessagePayload.EncryptedEncoding;
             }
             else if (message.IsBinaryMessage)

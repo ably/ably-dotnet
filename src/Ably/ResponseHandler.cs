@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using Ably.Protocol;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -57,12 +56,12 @@ namespace Ably
                     {
                         Name = payload.Name,
                         TimeStamp = GetTime(payload),
-                        Data = Data.FromPlaintext(buffer)
+                        Data = null
                     };
                 }
                 else
                 {
-                    
+
                     yield return new Message()
                     {
                         Name = payload.Name,
@@ -87,27 +86,19 @@ namespace Ably
 
         private static TypedBuffer GetTypedBufferFromEncryptedMessage(MessagePayload payload, IChannelCipher cipher)
         {
-            TType type;
-            if (Enum.TryParse(payload.Type, out type))
+            var result = new TypedBuffer();
+            if (payload.Data.IsNotEmpty())
             {
-                var result = new TypedBuffer() { Type = type };
-                if (payload.Data.IsNotEmpty())
+                try
                 {
-                    try
-                    {
-                        result.Buffer = cipher.Decrypt(payload.Data.FromBase64());
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new AblyException(string.Format("Cannot decrypt payload: {0}", payload));
-                    }
+                    result.Buffer = cipher.Decrypt(payload.Data.FromBase64());
                 }
-                return result;
+                catch (Exception ex)
+                {
+                    throw new AblyException(string.Format("Cannot decrypt payload: {0}", payload));
+                }
             }
-            else
-            {
-                throw new AblyException(string.Format("Data type was not supplied in the incoming message. Payload: {0}", payload), 50000, HttpStatusCode.BadRequest);
-            }
+            return result;
         }
     }
 }

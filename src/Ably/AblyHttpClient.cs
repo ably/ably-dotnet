@@ -18,7 +18,7 @@ namespace Ably
         private readonly int? _Port;
         private readonly bool _IsSecure;
         private readonly RequestHandler _requestHandler = new RequestHandler();
-        
+
         public AblyHttpClient(string host) : this(host, null, true) { }
 
         public AblyHttpClient(string host, int? port = null, bool isSecure = true)
@@ -41,21 +41,24 @@ namespace Ably
 
             try
             {
-                var requestBody = _requestHandler.GetRequestBody(request);
-            
-                webRequest.ContentLength = requestBody.Length;
-                if (requestBody.Any())
+                if (webRequest.Method == "POST")
                 {
-                    using (Stream stream = webRequest.GetRequestStream())
+                    var requestBody = _requestHandler.GetRequestBody(request);
+
+                    webRequest.ContentLength = requestBody.Length;
+                    if (requestBody.Any())
                     {
-                        stream.Write(requestBody, 0, requestBody.Length);
+                        using (Stream stream = webRequest.GetRequestStream())
+                        {
+                            stream.Write(requestBody, 0, requestBody.Length);
+                        }
                     }
                 }
-            
+
                 response = webRequest.GetResponse() as HttpWebResponse;
                 return GetAblyResponse(response);
             }
-            catch(WebException exception)
+            catch (WebException exception)
             {
                 var errorResponse = exception.Response as HttpWebResponse;
                 if (errorResponse != null)
@@ -149,18 +152,18 @@ namespace Ably
             string protocol = _IsSecure ? "https://" : "http://";
             if (request.Url.StartsWith("http"))
                 return new Uri(request.Url);
-            return new Uri(String.Format("{0}{1}{2}{3}{4}", 
-                               protocol, 
-                               _Host, 
+            return new Uri(String.Format("{0}{1}{2}{3}{4}",
+                               protocol,
+                               _Host,
                                _Port.HasValue ? ":" + _Port.Value : "",
-                               request.Url, 
+                               request.Url,
                                GetQuery(request)));
         }
 
         private string GetQuery(AblyRequest request)
         {
             string query = string.Join("&", request.QueryParameters.Select(x => String.Format("{0}={1}", x.Key, x.Value)));
-            if(query.IsNotEmpty())
+            if (query.IsNotEmpty())
                 return "?" + query;
             return string.Empty;
         }

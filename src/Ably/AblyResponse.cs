@@ -11,7 +11,8 @@ namespace Ably
     public enum ResponseType
     {
         Json,
-        Thrift
+        Thrift,
+        Other
     }
 
     internal class AblyResponse
@@ -20,6 +21,7 @@ namespace Ably
         internal ResponseType Type { get; set; }
         internal HttpStatusCode StatusCode { get; set; }
         internal string TextResponse { get; set; }
+        internal string ContentType { get; set; }
 
         internal byte[] Body { get; set; }
 
@@ -32,6 +34,7 @@ namespace Ably
 
         internal AblyResponse(string encoding, string contentType, byte[] body)
         {
+            ContentType = contentType;
             Type = contentType.ToLower() == "application/json" ? ResponseType.Json : ResponseType.Thrift;
             Encoding = encoding.IsNotEmpty() ? encoding : "utf-8";
             if (Type == ResponseType.Json)

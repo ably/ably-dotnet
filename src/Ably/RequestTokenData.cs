@@ -1,7 +1,4 @@
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Ably
 {
@@ -12,6 +9,7 @@ namespace Ably
         public Capability Capability { get; set; }
         public string ClientId { get; set; }
         public DateTime? Timestamp { get; set; }
+        public string Nonce { get; set;}
 
         internal TokenRequestPostData GetPostData(string keyValue)
         {
@@ -20,6 +18,8 @@ namespace Ably
             data.capability = Capability.ToJson();
             data.client_id = ClientId ?? "";
             DateTime now = Config.Now();
+            if (Nonce.IsNotEmpty())
+                data.nonce = Nonce;
             if (Ttl.HasValue)
                 data.ttl = Ttl.Value.TotalSeconds.ToString();
             else

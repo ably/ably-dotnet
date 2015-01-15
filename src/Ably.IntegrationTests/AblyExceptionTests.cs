@@ -49,7 +49,6 @@ namespace Ably.IntegrationTests
             var options = new AblyOptions
             {
                 Key = testData.keys[0].keyStr,
-                Encrypted = testData.encrypted
             };
             return options;
         }
