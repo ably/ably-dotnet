@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Xunit;
 
 namespace Ably.Tests
@@ -77,6 +78,15 @@ namespace Ably.Tests
             Assert.Equal(2, capability.Resources.Count);
             Assert.Equal("first", capability.Resources.First().Name);
             Assert.Equal("*", capability.Resources.First().AllowedOperations.First());
+        }
+
+        [Fact]
+        public void Capability_WithDefaultAllAll_AddsThemCorrectly()
+        {
+            var capabilityString = "{ \"*\": [ \"*\" ] }";
+            var capability = new Capability(capabilityString);
+
+            capability.ToJson().Should().Be(capabilityString);
         }
         
     }

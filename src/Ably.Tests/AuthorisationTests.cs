@@ -1,11 +1,12 @@
-using Ably.Auth;
-using FluentAssertions;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using Newtonsoft.Json.Linq;
+using System.Reflection.Emit;
+using Ably.Auth;
+using FluentAssertions;
+using Moq;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Ably.Tests
@@ -32,6 +33,13 @@ namespace Ably.Tests
         private static string GetKeyId()
         {
             return ApiKey.Split(':')[0];
+        }
+
+        [Fact]
+        public void TokenShouldNotBeSetBeforeAuthoriseIsCalled()
+        {
+            var client = GetRestClient();
+            client.CurrentToken.Should().BeNull();
         }
 
         [Fact]
@@ -67,8 +75,8 @@ namespace Ably.Tests
 
             var data = CurrentRequest.PostData as TokenRequestPostData;
             Assert.Equal(GetKeyId(), data.id);
-            Assert.Equal("", data.capability);
-            Assert.Equal(client.Options.ClientId, data.client_id);
+            Assert.Equal(Capability.AllowAll.ToJson(), data.capability);
+            Assert.Equal(client.Options.ClientId, data.clientId);
         }
 
         [Fact]
@@ -81,7 +89,7 @@ namespace Ably.Tests
             client.Auth.RequestToken(request, null);
 
             var data = CurrentRequest.PostData as TokenRequestPostData;
-            Assert.Equal("", data.capability);
+            Assert.Equal(Capability.AllowAll.ToJson(), data.capability);
         }
 
         [Fact]
@@ -276,7 +284,7 @@ namespace Ably.Tests
                 AuthUrl = "http://authUrl"
             };
 
-            var dateTime = DateTime.Now;
+            var dateTime = DateTime.UtcNow;
             rest.ExecuteRequest = (x) =>
             {
                 if (x.Url == options.AuthUrl)
@@ -288,7 +296,7 @@ namespace Ably.Tests
                                        "\"expires\":" + dateTime.ToUnixTime() + "," +
                                        "\"issued_at\":" + dateTime.ToUnixTime() + "," +
                                        "\"capability\":\"{}\"," +
-                                       "\"client_id\":\"111\"" +
+                                       "\"clientId\":\"111\"" +
                                        "}"
                     };
                 }
@@ -299,7 +307,7 @@ namespace Ably.Tests
 
             var token = rest.Auth.RequestToken(tokenRequest, options);
             Assert.NotNull(token);
-            Assert.Equal(dateTime, token.IssuedAt);
+            dateTime.Should().BeWithin(TimeSpan.FromSeconds(1)).After(token.IssuedAt);
         }
 
         [Fact]
@@ -339,7 +347,7 @@ namespace Ably.Tests
                 AuthUrl = "http://authUrl"
             };
 
-            rest.ExecuteRequest = (x) => rest._client.Execute(x);
+            rest.ExecuteRequest = (x) => rest._httpClient.Execute(x);
 
             var tokenRequest = new TokenRequest { Id = GetKeyId(), Capability = new Capability() };
 
@@ -373,6 +381,17 @@ namespace Ably.Tests
         }
 
         [Fact]
+        public void Authorise_PreservesTokenRequestOptionsForSubsequentRequests()
+        {
+            var client = GetRestClient();
+            client.Auth.Authorise(new TokenRequest() {Ttl = TimeSpan.FromMinutes(260)}, null, false);
+
+            client.Auth.Authorise(null, null, false);
+            var data = CurrentRequest.PostData as TokenRequestPostData;
+            data.ttl.Should().Be(TimeSpan.FromMinutes(260).TotalSeconds.ToString());
+        }
+
+        [Fact]
         public void Authorise_WithNotExpiredCurrentTokenAndForceTrue_RequestsNewToken()
         {
             var client = GetRestClient();
@@ -381,6 +400,19 @@ namespace Ably.Tests
             var token = client.Auth.Authorise(new TokenRequest() { ClientId = "123", Capability = new Capability(), Id = "123" }, null, true);
 
             Assert.Contains("requestToken", CurrentRequest.Url);
+            token.Should().NotBeNull();
+        }
+
+        [Fact]
+        public void Authorise_WithExpiredCurrentToken_RequestsNewToken()
+        {
+            var client = GetRestClient();
+            client.CurrentToken = new Token() { ExpiresAt = Config.Now().AddHours(-1) };
+
+            var token = client.Auth.Authorise(null, null, false);
+
+            Assert.Contains("requestToken", CurrentRequest.Url);
+            token.Should().NotBeNull();
         }
 
         private TokenRequest SendRequestTokenWithValidOptions()
@@ -394,6 +426,181 @@ namespace Ably.Tests
         }
     }
 
+    public class AuthCreateTokenRequestAcceptanceTests
+    {
+        private const string ApiKey = "AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob";
+        public AblyRequest CurrentRequest { get; set; }
+        public readonly DateTime Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc);
+        public Rest Client { get; set; }
+
+        public AuthCreateTokenRequestAcceptanceTests()
+        {
+            Client = GetRestClient();
+        }
+
+        private Rest GetRestClient()
+        {
+            var rest = new Rest(ApiKey);
+            rest.ExecuteRequest = (request) =>
+            {
+                CurrentRequest = request;
+                return new AblyResponse() {TextResponse = "{}"};
+            };
+
+            Config.Now = () => Now;
+            return rest;
+        }
+
+        [Fact]
+        public void UsesKeyIdFromTheClient()
+        {
+            var data = Client.Auth.CreateTokenRequest(null, null);
+            data.id.Should().Be(Client.Options.KeyId);
+        }
+
+        [Fact]
+        public void UsesDefaultTtlWhenNoneIsSpecified()
+        {
+            var data = Client.Auth.CreateTokenRequest(null, null);
+            data.ttl.Should().Be(TokenRequest.Defaults.Ttl.TotalSeconds.ToString());
+        }
+
+        [Fact]
+        public void UsesTheDefaultCapability()
+        {
+            var data = Client.Auth.CreateTokenRequest(null, null);
+            data.capability.Should().Be(TokenRequest.Defaults.Capability.ToJson());
+        }
+
+        [Fact]
+        public void UsesUniqueNonseWhichIsMoreThan16Characters()
+        {
+            var data = Client.Auth.CreateTokenRequest(null, null);
+            var secondTime = Client.Auth.CreateTokenRequest(null, null);
+            data.nonce.Should().NotBe(secondTime.nonce);
+            data.nonce.Length.Should().BeGreaterOrEqualTo(16);
+        }
+
+        [Fact]
+        public void WithCapabilityOverridesDefault()
+        {
+            var capability = new Capability();
+            capability.AddResource("test").AllowAll();
+
+            var data = Client.Auth.CreateTokenRequest(new TokenRequest() {Capability = capability}, null);
+            data.capability.Should().Be(capability.ToJson());
+        }
+
+        [Fact]
+        public void WithTtlOverridesDefault()
+        {
+            var data = Client.Auth.CreateTokenRequest(new TokenRequest() {Ttl = TimeSpan.FromHours(2)}, null);
+
+            data.ttl.Should().Be(TimeSpan.FromHours(2).TotalSeconds.ToString());
+        }
+
+        [Fact]
+        public void WithNonceOverridesDefault()
+        {
+            var data = Client.Auth.CreateTokenRequest(new TokenRequest() { Nonce = "Blah" }, null);
+            data.nonce.Should().Be("Blah");
+        }
+
+        [Fact]
+        public void WithTimeStampOverridesDefault()
+        {
+            var date = new DateTime(2014, 1, 1);
+            var data = Client.Auth.CreateTokenRequest(new TokenRequest() { Timestamp= date }, null);
+            data.timestamp.Should().Be(date.ToUnixTime().ToString());
+        }
+
+        [Fact]
+        public void WithClientIdOverridesDefault()
+        {
+            var data = Client.Auth.CreateTokenRequest(new TokenRequest() { ClientId = "123"}, null);
+            data.clientId.Should().Be("123");
+        }
+
+        [Fact]
+        public void WithQueryTimeQueriesForTimestamp()
+        {
+            var currentTime = DateTime.UtcNow;
+            Client.ExecuteRequest = x => 
+                new AblyResponse { TextResponse = "[" + currentTime.ToUnixTimeInMilliseconds() + "]", Type = ResponseType.Json };
+            var data = Client.Auth.CreateTokenRequest(null, new AuthOptions() {QueryTime = true});
+            data.timestamp.Should().Be(currentTime.ToUnixTime().ToString());
+        }
+
+        [Fact]
+        public void WithOutKeyIdThrowsException()
+        {
+            var client = new Rest(new AblyOptions() { AppId = "123"});
+            Assert.Throws<AblyException>(delegate { client.Auth.CreateTokenRequest(null, null); });
+        }
+
+        [Fact]
+        public void WithOutKeyValueThrowsException()
+        {
+            var client = new Rest(new AblyOptions() { AppId = "123", KeyId = "222"});
+            Assert.Throws<AblyException>(delegate { client.Auth.CreateTokenRequest(null, null); });
+        }
+
+        [Fact]
+        public void GeneratesHMac()
+        {
+            var data = Client.Auth.CreateTokenRequest(null, null);
+            data.mac.Should().NotBeEmpty();
+        }
+    }
+
+    public class ImplicitTokenAuthWithClientId
+    {
+        private Mock<IAblyHttpClient> _ablyHttpClient;
+        private string _clientId;
+        private const string ApiKey = "AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob";
+        public AblyRequest CurrentRequest { get; set; }
+        public Rest Client { get; set; }
+
+        public ImplicitTokenAuthWithClientId()
+        {
+            _clientId = "123";
+            Client = new Rest(new AblyOptions() {Key = ApiKey, ClientId = _clientId});
+            _ablyHttpClient = new Mock<IAblyHttpClient>();
+            Client._httpClient = _ablyHttpClient.Object;
+            _ablyHttpClient.Setup(x => x.Execute(It.IsAny<AblyRequest>())).Returns((AblyRequest request) =>
+            {
+                if (request.Url.Contains("requestToken"))
+                {
+                    return new AblyResponse() { TextResponse = "{ \"access_token\": { \"id\": \"unique-token-id\"}}" };
+                }
+                return new AblyResponse() { TextResponse = "{}" };
+            }).Verifiable();
+        }
+
+        [Fact]
+        public void WhenPublishing_WillSendATokenRequestToServer()
+        {
+            Client.Channels.Get("test").Publish("test", true);
+
+            _ablyHttpClient.Verify(x => x.Execute(It.IsAny<AblyRequest>()), Times.Exactly(2));
+        }
+
+        [Fact]
+        public void BeforeSendingAMessage_CurrentTokenIsNull()
+        {
+            Client.CurrentToken.Should().BeNull();
+        }
+
+        [Fact]
+        public void AfterSendingAMessage_CurrentTokenHasDefaultCapabilityAndTtl()
+        {
+            Client.Channels.Get("test").Publish("test", true);
+
+            Client.CurrentToken.Should().NotBeNull();
+        }
+    }
+
+
     public class AuthRequestTokenAcceptanceTests
     {
         private const string ApiKey = "AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob";
@@ -406,16 +613,11 @@ namespace Ably.Tests
             rest.ExecuteRequest = (request) =>
             {
                 CurrentRequest = request;
-                return new AblyResponse() { TextResponse = "{}" };
+                return new AblyResponse() {TextResponse = "{}"};
             };
 
             Config.Now = () => Now;
             return rest;
-        }
-
-        private static string GetKeyId()
-        {
-            return ApiKey.Split(':')[0];
         }
 
         private void RequestToken(TokenRequest request, AuthOptions authOptions,
@@ -428,7 +630,7 @@ namespace Ably.Tests
                 //Assert
                 var data = x.PostData as TokenRequestPostData;
                 action(data, x);
-                return new AblyResponse() { TextResponse = "{}" };
+                return new AblyResponse() {TextResponse = "{}"};
             };
 
             rest.Auth.RequestToken(request, authOptions);
@@ -437,8 +639,8 @@ namespace Ably.Tests
         [Fact]
         public void WithOverridingClientId_OverridesTheDefault()
         {
-            var tokenRequest = new TokenRequest { ClientId = "123" };
-            RequestToken(tokenRequest, null, (data, request) => Assert.Equal("123", data.client_id));
+            var tokenRequest = new TokenRequest {ClientId = "123"};
+            RequestToken(tokenRequest, null, (data, request) => Assert.Equal("123", data.clientId));
         }
 
         [Fact]
@@ -446,7 +648,7 @@ namespace Ably.Tests
         {
             var capability = new Capability();
             capability.AddResource("test").AllowAll();
-            var tokenRequest = new TokenRequest { Capability = capability };
+            var tokenRequest = new TokenRequest {Capability = capability};
 
             RequestToken(tokenRequest, null, (data, request) => Assert.Equal(capability.ToJson(), data.capability));
         }
@@ -454,21 +656,22 @@ namespace Ably.Tests
         [Fact]
         public void WithOverridingNonce_OverridesTheDefault()
         {
-            RequestToken(new TokenRequest { Nonce = "Blah" }, null, (data, request) => Assert.Equal("Blah", data.nonce));
+            RequestToken(new TokenRequest {Nonce = "Blah"}, null, (data, request) => Assert.Equal("Blah", data.nonce));
         }
 
         [Fact]
         public void WithOverridingTimeStamp_OverridesTheDefault()
         {
             var timeStamp = new DateTime(2015, 1, 1);
-            var tokenRequest = new TokenRequest { Timestamp = timeStamp };
-            RequestToken(tokenRequest, null, (data, request) => Assert.Equal(timeStamp.ToUnixTime().ToString(), data.timestamp));
+            var tokenRequest = new TokenRequest {Timestamp = timeStamp};
+            RequestToken(tokenRequest, null,
+                (data, request) => Assert.Equal(timeStamp.ToUnixTime().ToString(), data.timestamp));
         }
 
         [Fact]
         public void WithOverridingTtl_OverridesTheDefault()
         {
-            RequestToken(new TokenRequest { Ttl = TimeSpan.FromSeconds(2) }, null,
+            RequestToken(new TokenRequest {Ttl = TimeSpan.FromSeconds(2)}, null,
                 (data, request) => Assert.Equal(TimeSpan.FromSeconds(2).TotalSeconds.ToString(), data.ttl));
         }
 
@@ -478,16 +681,15 @@ namespace Ably.Tests
             var keyId = "Blah";
             var keyValue = "BBB";
 
-            RequestToken(new TokenRequest(), new AuthOptions() { KeyId = keyId, KeyValue = keyValue }, (data, request) =>
+            RequestToken(new TokenRequest(), new AuthOptions() {KeyId = keyId, KeyValue = keyValue}, (data, request) =>
             {
                 Assert.Contains(keyId, request.Url);
-                var testData = new TokenRequestPostData();
-                var values = new[] 
-                { 
-                    data.id, 
+                var values = new[]
+                {
+                    data.id,
                     data.ttl,
-                    data.capability, 
-                    data.client_id, 
+                    data.capability,
+                    data.clientId,
                     data.timestamp,
                     data.nonce
                 };
@@ -498,5 +700,7 @@ namespace Ably.Tests
             });
         }
     }
+
+
 
 }

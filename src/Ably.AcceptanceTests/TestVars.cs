@@ -7,9 +7,14 @@ namespace Ably.AcceptanceTests
     {
         public String appId;
         public List<Key> keys;
-        public String restHost;
+
+        public string restHost
+        {
+            get { return Environment.ToString().ToLower() + "-" + Config.DefaultHost; }
+        }
         public int? restPort;
         public bool tls;
+        public AblyEnvironment Environment;
 
         public AblyOptions CreateOptions(string key) {
 			var opts = new AblyOptions() { Key = key};

@@ -122,7 +122,6 @@ namespace Ably.Tests
         {
             //Arrange
             var message = new Message() {Name = "Martin", Data = "EncryptionTest"};
-            var plainTextData = "";
             var cipherParams = Crypto.GetDefaultParams();
 
             //Act
@@ -144,8 +143,7 @@ namespace Ably.Tests
 
         private AblyRequest GetRequest(object data, bool encrypted = false, CipherParams cipherParams = null, bool useTextProtocol = true)
         {
-            var request = new AblyRequest("", HttpMethod.Get);
-            request.UseTextProtocol = useTextProtocol;
+            var request = new AblyRequest("", HttpMethod.Get, Protocol.Json);
             request.PostData = data;
             request.Encrypted = encrypted;
             request.CipherParams = cipherParams;

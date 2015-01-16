@@ -55,9 +55,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Auth.cs" />
+    <Compile Include="AuthRequestTokenTests.cs" />
     <Compile Include="Key.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RestAcceptanceTests.cs" />
     <Compile Include="TestsSetup.cs" />
     <Compile Include="TestVars.cs" />
   </ItemGroup>

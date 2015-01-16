@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Linq;
 using System.Net;
-using System.Net.Mime;
-using System.Text;
 
 namespace Ably
 {
@@ -15,7 +10,7 @@ namespace Ably
         Other
     }
 
-    internal class AblyResponse
+    public class AblyResponse
     {
         internal NameValueCollection Headers { get; set; } 
         internal ResponseType Type { get; set; }

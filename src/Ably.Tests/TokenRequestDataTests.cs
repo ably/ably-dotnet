@@ -82,7 +82,7 @@ namespace Ably.Tests
             var request = GetTokenRequest();
             var data = request.GetPostData(GetKeyValue());
 
-            Assert.Equal(request.ClientId, data.client_id);
+            Assert.Equal(request.ClientId, data.clientId);
         }
 
         [Fact]
@@ -118,7 +118,7 @@ namespace Ably.Tests
                 data.id, 
                 data.ttl,
                 data.capability, 
-                data.client_id, 
+                data.clientId, 
                 data.timestamp,
                 data.nonce
             };

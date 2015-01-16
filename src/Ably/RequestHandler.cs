@@ -10,20 +10,22 @@ namespace Ably
     {
         public byte[] GetRequestBody(AblyRequest request)
         {
-            if(request.UseTextProtocol == false)
-                throw new AblyException("Binary protocol is not supported yet.", 50000, HttpStatusCode.InternalServerError);
-
             if(request.PostData == null)
                 return new byte[] {};
 
             if (request.PostData is Message)
-                return GetMessagesRequestBody(new[] {request.PostData as Message}, request.UseTextProtocol,
+                return GetMessagesRequestBody(new[] {request.PostData as Message},
                     request.Encrypted, request.CipherParams);
             if (request.PostData is IEnumerable<Message>)
-                return GetMessagesRequestBody(request.PostData as IEnumerable<Message>, request.UseTextProtocol,
+                return GetMessagesRequestBody(request.PostData as IEnumerable<Message>, 
                     request.Encrypted, request.CipherParams);
 
             return JsonConvert.SerializeObject(request.PostData).GetBytes();
+        }
+
+        private byte[] GetMessagesRequestBody(IEnumerable<Message> messages, bool encrypted, CipherParams @params)
+        {
+            return GetMessagesRequestBody(messages, false, encrypted, @params);
         }
 
         byte[] GetMessagesRequestBody(IEnumerable<Message> messages, bool useTextProtocol, bool encrypted, CipherParams @params)

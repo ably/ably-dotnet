@@ -1,9 +1,16 @@
 using System;
+using System.Globalization;
 
 namespace Ably
 {
     public class TokenRequest
     {
+        public static class Defaults
+        {
+            public static readonly TimeSpan Ttl = TimeSpan.FromHours(1);
+            public static readonly Capability Capability = Capability.AllowAll;
+        }
+
         public string Id { get; set;}
         public TimeSpan? Ttl { get; set; }
         public Capability Capability { get; set; }
@@ -15,15 +22,15 @@ namespace Ably
         {
             var data = new TokenRequestPostData();
             data.id = Id;
-            data.capability = Capability.ToJson();
-            data.client_id = ClientId ?? "";
+            data.capability = (Capability ?? Defaults.Capability).ToJson();
+            data.clientId = ClientId ?? "";
             DateTime now = Config.Now();
             if (Nonce.IsNotEmpty())
                 data.nonce = Nonce;
             if (Ttl.HasValue)
-                data.ttl = Ttl.Value.TotalSeconds.ToString();
+                data.ttl = Ttl.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture);
             else
-                data.ttl = TimeSpan.FromHours(1).TotalSeconds.ToString();
+                data.ttl = Defaults.Ttl.TotalSeconds.ToString(CultureInfo.InvariantCulture);
             if (Timestamp.HasValue)
                 data.timestamp = Timestamp.Value.ToUnixTime().ToString();
             else
@@ -31,15 +38,6 @@ namespace Ably
             data.CalculateMac(keyValue);
             
             return data;
-        }
-
-        internal void Validate()
-        {
-            //if (Id.IsEmpty())
-            //    new ArgumentNullException("Id", "Cannot use TokenRequest without Id").Throw();
-
-            if (Capability == null)
-                throw new AblyException("Cannot user TokenRequest without Capability specified");
         }
     }
 }

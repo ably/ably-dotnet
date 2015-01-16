@@ -2,7 +2,7 @@ using System;
 
 namespace Ably
 {
-    internal class TokenRequestPostData
+    public class TokenRequestPostData
     {
         public TokenRequestPostData()
         {
@@ -12,7 +12,7 @@ namespace Ably
         public string id { get; set; }
         public string ttl { get; set; }
         public string capability { get; set; }
-        public string client_id { get; set; }
+        public string clientId { get; set; }
         public string timestamp { get; set; }
         public string nonce { get; set; }
         public string mac { get; set; }
@@ -24,7 +24,7 @@ namespace Ably
                     id, 
                     ttl,
                     capability, 
-                    client_id, 
+                    clientId, 
                     timestamp,
                     nonce
                 };
@@ -47,7 +47,7 @@ namespace Ably
             return id == other.id
                 && ttl == other.ttl
                 && capability == other.capability
-                && client_id == other.client_id
+                && clientId == other.clientId
                 && timestamp == other.timestamp
                 && nonce == other.nonce
                 && mac == other.mac;

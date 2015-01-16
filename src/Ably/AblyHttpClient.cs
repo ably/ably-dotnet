@@ -77,11 +77,11 @@ namespace Ably
         {
             if (request.Method == HttpMethod.Post)
             {
-                PopulateWebRequestHeaders(webRequest, GetDefaultPostHeaders(request.UseTextProtocol));
+                PopulateWebRequestHeaders(webRequest, GetDefaultPostHeaders(request.Protocol));
             }
             if (request.Method == HttpMethod.Get)
             {
-                PopulateWebRequestHeaders(webRequest, GetDefaultHeaders(request.UseTextProtocol));
+                PopulateWebRequestHeaders(webRequest, GetDefaultHeaders(request.Protocol));
             }
         }
 
@@ -98,9 +98,9 @@ namespace Ably
             }
         }
 
-        internal static IEnumerable<KeyValuePair<string, string>> GetDefaultHeaders(bool useTextProtocol)
+        internal static IEnumerable<KeyValuePair<string, string>> GetDefaultHeaders(Protocol protocol)
         {
-            if (useTextProtocol)
+            if (protocol == Protocol.Json)
             {
                 yield return new KeyValuePair<string, string>("Accept", MimeTypes.GetHeaderValue("json"));
             }
@@ -110,9 +110,9 @@ namespace Ably
             }
         }
 
-        internal static IEnumerable<KeyValuePair<string, string>> GetDefaultPostHeaders(bool useTextProtocol)
+        internal static IEnumerable<KeyValuePair<string, string>> GetDefaultPostHeaders(Protocol protocol)
         {
-            if (useTextProtocol)
+            if (protocol == Protocol.Json)
             {
                 yield return new KeyValuePair<string, string>("Accept", MimeTypes.GetHeaderValue("json"));
                 yield return new KeyValuePair<string, string>("Content-Type", MimeTypes.GetHeaderValue("json"));

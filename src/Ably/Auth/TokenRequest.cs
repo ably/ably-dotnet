@@ -11,7 +11,7 @@ namespace Ably.Auth
         public long Ttl { get; set; }
         [JsonProperty("capability")]
         public String Capability { get; set; }
-        [JsonProperty("client_id")]
+        [JsonProperty("clientId")]
         public String ClientId { get; set; }
         [JsonProperty("timestamp")]
         public long TimeStamp { get; set; }

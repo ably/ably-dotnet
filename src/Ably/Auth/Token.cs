@@ -29,10 +29,13 @@ namespace Ably.Auth
             var token = new Token();
             token.Id = (string) json["id"];
             token.KeyId = (string) json["key"];
-            token.ExpiresAt = ((long) json["expires"]).FromUnixTime();
-            token.IssuedAt = ((long) json["issued_at"]).FromUnixTime();
-            token.Capability = new Capability(json["capability"].ToString());
-            token.ClientId = (string) json["client_id"];
+            if(json["expires"] != null)
+                token.ExpiresAt = ((long) json["expires"]).FromUnixTime();
+            if(json["issued_at"] != null)
+                token.IssuedAt = ((long) json["issued_at"]).FromUnixTime();
+            if(json["capability"] != null)
+                token.Capability = new Capability(json["capability"].ToString());
+            token.ClientId = (string) json["clientId"];
             return token;
         }
 

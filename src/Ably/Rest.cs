@@ -12,14 +12,16 @@ namespace Ably
 {
     public class Rest : IAuthCommands, IChannelCommands, IRestCommands
     {
-        internal IAblyHttpClient _client;
+        internal IAblyHttpClient _httpClient;
         private AblyOptions _options;
         private ILogger Logger = Config.AblyLogger;
         internal AuthMethod AuthMethod;
         internal Token CurrentToken;
         internal IResponseHandler ResponseHandler = new ResponseHandler();
         internal IRequestHandler RequestHandler = new RequestHandler();
-
+        private TokenRequest _lastTokenRequest;
+        private Protocol _protocol;
+        internal Protocol Protocol { get { return _protocol; } }
 
         internal AblyOptions Options
         {
@@ -85,24 +87,37 @@ namespace Ably
                 _options.KeyValue = key.KeyValue;
             }
 
-            if(_options.AppId.IsEmpty())
+            if (_options.UseBinaryProtocol == false)
             {
-                Logger.Error("Cannot initialise Ably without AppId");
-                throw new AblyException("Cannot initialise Ably without an AppId");
+                _protocol = Protocol.Json;
+            }
+            else
+            {
+                _protocol = _options.Protocol ?? Protocol.MsgPack;
             }
 
-            string host = _options.Host.IsNotEmpty() ? _options.Host : Config.DefaultHost;
-            _client = new AblyHttpClient(host, _options.Port, _options.Tls);
+            string host = GetHost();
+            _httpClient = new AblyHttpClient(host, _options.Port, _options.Tls);
 
             InitAuth();
         }
 
-        
+        private string GetHost()
+        {
+            if (_options.Host.IsNotEmpty()) return _options.Host;
+
+            if (_options.Environment.HasValue)
+                return _options.Environment.Value.ToString().ToLower() + "-" + Config.DefaultHost;
+
+            return Config.DefaultHost;
+        }
+
+
         private void InitAuth()
         {
             if(Options.Key.IsNotEmpty())
             {
-                if(Options.ClientId == null)
+                if(Options.ClientId.IsEmpty())
                 {
                     AuthMethod = AuthMethod.Basic;
                     Logger.Info("Using basic authentication.");
@@ -155,14 +170,34 @@ namespace Ably
         }
 
         internal Func<AblyRequest, AblyResponse> ExecuteRequest;
+        
 
         private AblyResponse ExecuteRequestInternal(AblyRequest request)
         {
             if(request.SkipAuthentication == false)
                 AddAuthHeader(request);
 
+            return _httpClient.Execute(request);
+        }
 
-            return _client.Execute(request);
+        private bool TokenCreatedExternally
+        {
+            get { return Options.AuthUrl.IsNotEmpty() || Options.AuthCallback != null; }
+        }
+
+        private bool HasApiKey
+        {
+            get { return Options.KeyId.IsNotEmpty() && Options.KeyValue.IsNotEmpty(); }
+        }
+
+        private bool HasTokenId
+        {
+            get { return Options.AuthToken.IsNotEmpty();  }
+        }
+
+        public bool TokenRenewable
+        {
+            get { return TokenCreatedExternally || (HasApiKey && HasTokenId == false); }
         }
 
         internal void AddAuthHeader(AblyRequest request)
@@ -192,12 +227,16 @@ namespace Ably
             
             var data = requestData ?? new TokenRequest { 
                                                         Id = mergedOptions.KeyId,
-                                                        ClientId = Options.ClientId,
-                                                        Capability = new Capability() };
+                                                        ClientId = Options.ClientId};
+            
+            if (requestData == null && options == null && _lastTokenRequest != null)
+            {
+                data = _lastTokenRequest;
+            }
 
             data.Id = data.Id ?? mergedOptions.KeyId;
-            data.Capability = data.Capability ?? new Capability();
-            data.Validate();
+
+            _lastTokenRequest = data;
 
             var request = CreatePostRequest(String.Format("/keys/{0}/requestToken", data.Id));
             request.SkipAuthentication = true;
@@ -213,7 +252,7 @@ namespace Ably
             if(mergedOptions.AuthUrl.IsNotEmpty())
             {
                 var url = mergedOptions.AuthUrl;
-                var authRequest = new AblyRequest(url, mergedOptions.AuthMethod);
+                var authRequest = new AblyRequest(url, mergedOptions.AuthMethod, Protocol);
                 if (mergedOptions.AuthMethod == HttpMethod.Get)
                 {
                     authRequest.AddQueryParameters(mergedOptions.AuthParams);
@@ -274,6 +313,39 @@ namespace Ably
             return CurrentToken;
         }
 
+        TokenRequestPostData IAuthCommands.CreateTokenRequest(TokenRequest requestData, AuthOptions options)
+        {
+            var mergedOptions = options != null ? options.Merge(Options) : Options;
+            
+            if (mergedOptions.KeyId == null || mergedOptions.KeyValue == null)
+                throw new AblyException("No key specified", 40101, HttpStatusCode.Unauthorized);
+            
+            var data = requestData ?? new TokenRequest
+            {
+                ClientId = Options.ClientId
+            };
+
+            data.Id = data.Id ?? mergedOptions.KeyId;
+
+            if (data.Id != mergedOptions.KeyId)
+                throw new AblyException("Incompatible keys specified", 40102, HttpStatusCode.Unauthorized);
+            
+            if (requestData == null && options == null && _lastTokenRequest != null)
+            {
+                data = _lastTokenRequest;
+            }
+
+            data.Id = data.Id ?? mergedOptions.KeyId;
+
+            var postData = data.GetPostData(mergedOptions.KeyValue);
+            if (mergedOptions.QueryTime)
+                postData.timestamp = Time().ToUnixTime().ToString();
+
+            return postData;
+        }
+
+
+
         public DateTime Time()
         {
             var request = CreateGetRequest("/time");
@@ -319,8 +391,7 @@ namespace Ably
 
         internal AblyRequest CreateGetRequest(string path, bool encrypted = false, CipherParams @params = null)
         {
-            var request = new AblyRequest(path, HttpMethod.Get);
-            request.UseTextProtocol = _options.UseTextProtocol;
+            var request = new AblyRequest(path, HttpMethod.Get, Protocol);
             request.Encrypted = encrypted;
             request.CipherParams = @params;
             return request;
@@ -328,8 +399,7 @@ namespace Ably
 
         internal AblyRequest CreatePostRequest(string path, bool encrypted = false, CipherParams @params = null)
         {
-            var request = new AblyRequest(path, HttpMethod.Post);
-            request.UseTextProtocol = _options.UseTextProtocol;
+            var request = new AblyRequest(path, HttpMethod.Post, Protocol);
             request.Encrypted = encrypted;
             request.CipherParams = @params;
             return request;

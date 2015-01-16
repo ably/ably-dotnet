@@ -1,19 +1,45 @@
-﻿using Ably.Auth;
-using Ably.Tests;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
+﻿using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
-using System.Runtime.Serialization;
-using Xunit.Extensions;
 using System.Net.Http;
-using Moq;
+using System.Text;
+using Ably.Auth;
+using FluentAssertions;
+using Xunit;
 
 namespace Ably.Tests
 {
+
+    public class RestProtocolTests
+    {
+        [Fact]
+        public void WhenProtocolIsNotDefined_DefaultsToMsgPack()
+        {
+            var rest = new Rest(new AblyOptions());
+            rest.Protocol.Should().Be(Protocol.MsgPack);
+        }
+
+        [Fact]
+        public void WhenProtocolIsJson_RestProtocolIsSetToJson()
+        {
+            var rest = new Rest(new AblyOptions() {Protocol = Protocol.Json});
+            rest.Protocol.Should().Be(Protocol.Json);
+        }
+
+        [Fact]
+        public void WhenUseBinaryIsFalse_ProtocolIsSetToJson()
+        {
+            var rest = new Rest(new AblyOptions() {UseBinaryProtocol = false});
+            rest.Protocol.Should().Be(Protocol.Json);
+        }
+
+        [Fact]
+        public void WhenProtocolIsMsgPack_ProtocolIsSetToMsgPack()
+        {
+            var rest = new Rest(new AblyOptions() { Protocol = Protocol.MsgPack});
+            rest.Protocol.Should().Be(Protocol.MsgPack);
+        }
+    }
+
     public class RestTests
     {
         private const string ValidKey = "1iZPfA.BjcI_g:wpNhw5RCw6rDjisl";
@@ -88,12 +114,6 @@ namespace Ably.Tests
         }
 
         [Fact]
-        public void Init_WithNoAppIdOrKey_Throws()
-        {
-            Assert.Throws<AblyException>(delegate { var rest = new Rest(""); });
-        }
-
-        [Fact]
         public void Init_WithKeyAndNoClientId_SetsAuthMethodToBasic()
         {
             var client = new Rest(ValidKey);
@@ -143,11 +163,19 @@ namespace Ably.Tests
 
             var httpClient = new FakeHttpClient();
             httpClient.ExecuteFunc = delegate { return new AblyResponse() {TextResponse = "{}"}; };
-            rest._client = httpClient;
+            rest._httpClient = httpClient;
 
             rest.Stats();
 
             Assert.True(called, "Rest with Callback needs to request token using callback");
+        }
+
+        [Fact]
+        public void Init_WithTokenId_SetsTokenRenewableToFalse()
+        {
+            var rest = new Rest(new AblyOptions() {AuthToken = "token_id"});
+
+            rest.TokenRenewable.Should().BeFalse();
         }
 
         [Fact]
@@ -156,7 +184,7 @@ namespace Ably.Tests
             //Arrange
             var rest = new Rest(ValidKey);
             ApiKey key = ApiKey.Parse(ValidKey);
-            var request = new AblyRequest("/test", HttpMethod.Get);
+            var request = new AblyRequest("/test", HttpMethod.Get, Protocol.Json);
             var expectedValue = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(key.ToString()));
 
             //Act

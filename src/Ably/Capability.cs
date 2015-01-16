@@ -7,6 +7,8 @@ namespace Ably
 {
     public class Capability
     {
+        public readonly static Capability AllowAll = new Capability("{ \"*\": [ \"*\" ] }");
+
         public List<CapabilityResource> Resources { get; set; }
 
         public Capability()

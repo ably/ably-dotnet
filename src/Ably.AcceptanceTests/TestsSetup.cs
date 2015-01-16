@@ -13,7 +13,7 @@ namespace Ably.AcceptanceTests
 
         private static TestVars GetTestData() 
         {
-            return new TestVars() { tls = true, restHost = "sandbox-rest.ably.io", keys = new List<Key>() };
+            return new TestVars() { tls = true, keys = new List<Key>(), Environment = AblyEnvironment.Sandbox};
         }
 
         public static Ably.AblyOptions GetDefaultOptions()
@@ -21,13 +21,13 @@ namespace Ably.AcceptanceTests
             return new AblyOptions
             {
                 Key = TestData.keys[0].keyStr,
+                Environment = TestData.Environment
             };
         }
         [SetUp]
         public void RunBeforeAllTests()
         {
             TestData = GetTestData();
-            Config.DefaultHost = TestData.restHost;
             AblyHttpClient client = new AblyHttpClient(TestData.restHost, null, TestData.tls);
             AblyRequest request = new AblyRequest("/apps", HttpMethod.Post);
             request.Headers.Add("Accept", "application/json");

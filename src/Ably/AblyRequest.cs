@@ -7,14 +7,13 @@ namespace Ably
 {
     public class AblyRequest
     {
-        public AblyRequest(string path, HttpMethod method)
+        public AblyRequest(string path, HttpMethod method, Protocol protocol)
         {
             Url = path;
             QueryParameters = new Dictionary<string, string>();
             Headers = new Dictionary<string, string>();
             PostParameters = new Dictionary<string, string>();
             Method = method;
-            UseTextProtocol = true;
         }
 
         public string Url { get; private set; }
@@ -31,7 +30,7 @@ namespace Ably
             }
         }
         
-        public bool UseTextProtocol { get; set; }
+        public Protocol Protocol { get; set; }
         public object PostData { get; set; }
         public bool Encrypted { get; set; }
         public CipherParams CipherParams { get; set; }
