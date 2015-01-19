@@ -7,6 +7,11 @@ using Xunit;
 
 namespace Ably.Tests
 {
+    public class MessageHandlerTests
+    {
+        
+    }
+
     public class RequestHandlerTests
     {
         [Fact]
@@ -14,7 +19,7 @@ namespace Ably.Tests
         {
             //Arrange
             var message = new Message() {Name = "Martin", Data = "Test"};
-            var handler = new RequestHandler();
+            var handler = new MessageHandler();
             var request = GetRequest(message);
 
             //Act
@@ -30,7 +35,7 @@ namespace Ably.Tests
         {
             //Arrange
             var messages = new [] { new Message() { Name = "Martin", Data = "Test" }, new Message() { Name = "Martin", Data = "Test" }};
-            var handler = new RequestHandler();
+            var handler = new MessageHandler();
             var request = GetRequest(messages);
 
             //Act
@@ -49,7 +54,7 @@ namespace Ably.Tests
             var request = GetRequest(null);
 
             //Act
-            var result = new RequestHandler().GetRequestBody(request);
+            var result = new MessageHandler().GetRequestBody(request);
 
             //Assert
             Assert.Empty(result);
@@ -64,7 +69,7 @@ namespace Ably.Tests
             //Act
             var ex = Assert.Throws<AblyException>(delegate
             {
-                new RequestHandler().GetRequestBody(request);
+                new MessageHandler().GetRequestBody(request);
             });
 
             //Assert
@@ -76,7 +81,7 @@ namespace Ably.Tests
         public void GetRequestBody_WithObjectThatIsNotAMessage_ReturnsObjectInPayloadData()
         {
             //Arrange
-            var handler = new RequestHandler();
+            var handler = new MessageHandler();
             var date = new DateTime(2014, 1, 1);
             var request = GetRequest(date);
 
@@ -94,12 +99,18 @@ namespace Ably.Tests
             var message = new Message() { Name = "Martin", Data = "Test" };
 
             //Act
-            var result = RequestHandler.CreateMessagePayload(message, false, null);
+            var payload = new MessagePayload()
+            {
+                name = message.Name,
+                timestamp = message.TimeStamp.DateTime.ToUnixTime(),
+                data = message.Data
+            };
+            var result = payload;
 
             //Assert
-            Assert.Equal(message.Data, result.Data);
-            Assert.Equal(message.Name, result.Name);
-            Assert.Equal(message.TimeStamp.ToUnixTime(), result.Timestamp);
+            Assert.Equal(message.Data, result.data);
+            Assert.Equal(message.Name, result.name);
+            Assert.Equal(message.TimeStamp.ToUnixTime(), result.timestamp);
         }
 
         [Fact]
@@ -108,13 +119,19 @@ namespace Ably.Tests
             var message = new Message() { Name = "Martin", Data = new byte[] { 1, 2, 3, 4, 5}};
 
             //Act
-            var result = RequestHandler.CreateMessagePayload(message, false, null);
+            var payload = new MessagePayload()
+            {
+                name = message.Name,
+                timestamp = message.TimeStamp.DateTime.ToUnixTime(),
+                data = message.Data
+            };
+            var result = payload;
 
             //Assert
-            Assert.Equal(message.Value<byte[]>().ToBase64(), result.Data);
-            Assert.Equal(message.Name, result.Name);
-            Assert.Equal("base64", result.Encoding);
-            Assert.Equal(message.TimeStamp.ToUnixTime(), result.Timestamp);
+            Assert.Equal(message.Value<byte[]>().ToBase64(), result.data);
+            Assert.Equal(message.Name, result.name);
+            Assert.Equal("base64", result.encoding);
+            Assert.Equal(message.TimeStamp.ToUnixTime(), result.timestamp);
         }
 
         [Fact]
@@ -125,15 +142,21 @@ namespace Ably.Tests
             var cipherParams = Crypto.GetDefaultParams();
 
             //Act
-            var result = RequestHandler.CreateMessagePayload(message, true, cipherParams); //Uses default params for encryption
+            var payload = new MessagePayload()
+            {
+                name = message.Name,
+                timestamp = message.TimeStamp.DateTime.ToUnixTime(),
+                data = message.Data
+            };
+            var result = payload; //Uses default params for encryption
 
             //Assert
             var cipher = Config.GetCipher(cipherParams);
             //Assert.Equal(plainTextData.Type.ToString(), result.Type);
-            Assert.Equal(message.Name, result.Name);
-            var decryptedValue = cipher.Decrypt(result.Data.ToString().FromBase64()).GetText();
+            Assert.Equal(message.Name, result.name);
+            var decryptedValue = cipher.Decrypt(result.data.ToString().FromBase64()).GetText();
             Assert.Equal(message.Data, decryptedValue);
-            Assert.Equal("cipher+base64", result.Encoding);
+            Assert.Equal("cipher+base64", result.encoding);
         }
 
         private T GetPayload<T>(byte[] bodyBytes)
@@ -145,8 +168,7 @@ namespace Ably.Tests
         {
             var request = new AblyRequest("", HttpMethod.Get, Protocol.Json);
             request.PostData = data;
-            request.Encrypted = encrypted;
-            request.CipherParams = cipherParams;
+            request.ChannelOptions = new ChannelOptions() { Encrypted = encrypted, CipherParams = cipherParams};
             return request;
         }
     }

@@ -77,7 +77,7 @@ namespace Ably
         }
 
         public AblyException(Exception ex)
-            : this(new ErrorInfo("Unexpected error :" + ex.Message, 50000, HttpStatusCode.InternalServerError))
+            : this(new ErrorInfo("Unexpected error :" + ex.Message, 50000, HttpStatusCode.InternalServerError), ex)
             {
                 
             }
@@ -97,7 +97,7 @@ namespace Ably
         public AblyException(ErrorInfo info, Exception innerException)
             : base(info.ToString(), innerException)
         {
-
+            ErrorInfo = info;
         }
 
         protected AblyException(SerializationInfo info, StreamingContext context)

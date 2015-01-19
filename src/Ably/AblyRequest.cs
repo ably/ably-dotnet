@@ -7,13 +7,17 @@ namespace Ably
 {
     public class AblyRequest
     {
-        public AblyRequest(string path, HttpMethod method, Protocol protocol)
+        private ChannelOptions _channelOptions;
+
+        public AblyRequest(string path, HttpMethod method, Protocol protocol = Protocol.MsgPack)
         {
             Url = path;
             QueryParameters = new Dictionary<string, string>();
             Headers = new Dictionary<string, string>();
             PostParameters = new Dictionary<string, string>();
             Method = method;
+            Protocol = protocol;
+            ChannelOptions = new ChannelOptions();
         }
 
         public string Url { get; private set; }
@@ -32,8 +36,13 @@ namespace Ably
         
         public Protocol Protocol { get; set; }
         public object PostData { get; set; }
-        public bool Encrypted { get; set; }
-        public CipherParams CipherParams { get; set; }
+
+        public ChannelOptions ChannelOptions
+        {
+            get { return _channelOptions; }
+            set { _channelOptions = value ?? new ChannelOptions(); }
+        }
+
         public Dictionary<string, string> PostParameters { get; set; }
         public bool SkipAuthentication { get; set; }
     }

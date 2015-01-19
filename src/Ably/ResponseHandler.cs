@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -32,44 +33,46 @@ namespace Ably
         {
             foreach (var payload in payloads)
             {
-                if (payload.IsBinaryMessage)
-                {
-                    yield return
-                        new Message()
-                        {
-                            Name = payload.Name,
-                            Data = payload.Data.FromBase64(),
-                            TimeStamp = GetTime(payload)
-                        };
-                }
-                else if (payload.IsEncrypted)
-                {
-                    if (options.Encrypted == false || options.CipherParams == null)
-                    {
-                        throw new AblyException("Cannot decrypt message because the current channel was created without encryption enabled. Payload: " + payload);
-                    }
+                //if (payload.IsBinaryMessage)
+                //{
+                //    yield return
+                //        new Message()
+                //        {
+                //            Name = payload.name,
+                //            //Data = payload.Data.FromBase64(),
+                //            TimeStamp = GetTime(payload)
+                //        };
+                //}
+                //else if (payload.IsEncrypted)
+                //{
+                //    if (options.Encrypted == false || options.CipherParams == null)
+                //    {
+                //        throw new AblyException("Cannot decrypt message because the current channel was created without encryption enabled. Payload: " + payload);
+                //    }
 
-                    var cipher = GetCipher(options);
-                    var buffer = GetTypedBufferFromEncryptedMessage(payload, cipher);
+                //    var cipher = GetCipher(options);
+                //    var buffer = GetTypedBufferFromEncryptedMessage(payload, cipher);
 
-                    yield return new Message()
-                    {
-                        Name = payload.Name,
-                        TimeStamp = GetTime(payload),
-                        Data = null
-                    };
-                }
-                else
-                {
+                //    yield return new Message()
+                //    {
+                //        Name = payload.name,
+                //        TimeStamp = GetTime(payload),
+                //        Data = null
+                //    };
+                //}
+                //else
+                //{
 
-                    yield return new Message()
-                    {
-                        Name = payload.Name,
-                        TimeStamp = GetTime(payload),
-                        Data = payload.Data.IsJson() ? (object)JToken.Parse(payload.Data) : payload.Data
-                    };
-                }
+                //    yield return new Message()
+                //    {
+                //        Name = payload.name,
+                //        TimeStamp = GetTime(payload),
+                //        //Data = payload.Data.IsJson() ? (object)JToken.Parse(payload.Data) : payload.Data
+                //    };
+                //}
             }
+
+            return Enumerable.Empty<Message>();
         }
 
         private IChannelCipher GetCipher(ChannelOptions options)
@@ -79,25 +82,25 @@ namespace Ably
 
         private static DateTime GetTime(MessagePayload payload)
         {
-            if (payload.Timestamp.HasValue)
-                return payload.Timestamp.Value.FromUnixTime();
+            if (payload.timestamp.HasValue)
+                return payload.timestamp.Value.FromUnixTime();
             return Config.Now();
         }
 
         private static TypedBuffer GetTypedBufferFromEncryptedMessage(MessagePayload payload, IChannelCipher cipher)
         {
             var result = new TypedBuffer();
-            if (payload.Data.IsNotEmpty())
-            {
-                try
-                {
-                    result.Buffer = cipher.Decrypt(payload.Data.FromBase64());
-                }
-                catch (Exception ex)
-                {
-                    throw new AblyException(string.Format("Cannot decrypt payload: {0}", payload));
-                }
-            }
+            //if (payload.Data.IsNotEmpty())
+            //{
+            //    try
+            //    {
+            //        result.Buffer = cipher.Decrypt(payload.Data.FromBase64());
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        throw new AblyException(string.Format("Cannot decrypt payload: {0}", payload));
+            //    }
+            //}
             return result;
         }
     }

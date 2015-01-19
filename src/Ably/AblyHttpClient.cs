@@ -1,12 +1,9 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 
 namespace Ably
 {
@@ -14,18 +11,19 @@ namespace Ably
     {
         internal static readonly MimeTypes MimeTypes = new MimeTypes();
 
-        private readonly string _Host;
-        private readonly int? _Port;
-        private readonly bool _IsSecure;
-        private readonly RequestHandler _requestHandler = new RequestHandler();
+        private readonly string _host;
+        private readonly int? _port;
+        private readonly bool _isSecure;
+        private readonly MessageHandler _messageHandler;
 
-        public AblyHttpClient(string host) : this(host, null, true) { }
+        public AblyHttpClient(string host) : this(host, null, true, Protocol.MsgPack) { }
 
-        public AblyHttpClient(string host, int? port = null, bool isSecure = true)
+        public AblyHttpClient(string host, int? port = null, bool isSecure = true, Protocol protocol = Protocol.MsgPack)
         {
-            _IsSecure = isSecure;
-            _Port = port;
-            _Host = host;
+            _isSecure = isSecure;
+            _port = port;
+            _host = host;
+            _messageHandler = new MessageHandler(protocol);
         }
 
         public AblyResponse Execute(AblyRequest request)
@@ -43,7 +41,7 @@ namespace Ably
             {
                 if (webRequest.Method == "POST")
                 {
-                    var requestBody = _requestHandler.GetRequestBody(request);
+                    var requestBody = _messageHandler.GetRequestBody(request);
 
                     webRequest.ContentLength = requestBody.Length;
                     if (requestBody.Any())
@@ -149,13 +147,13 @@ namespace Ably
 
         private Uri GetRequestUrl(AblyRequest request)
         {
-            string protocol = _IsSecure ? "https://" : "http://";
+            string protocol = _isSecure ? "https://" : "http://";
             if (request.Url.StartsWith("http"))
                 return new Uri(request.Url);
             return new Uri(String.Format("{0}{1}{2}{3}{4}",
                                protocol,
-                               _Host,
-                               _Port.HasValue ? ":" + _Port.Value : "",
+                               _host,
+                               _port.HasValue ? ":" + _port.Value : "",
                                request.Url,
                                GetQuery(request)));
         }

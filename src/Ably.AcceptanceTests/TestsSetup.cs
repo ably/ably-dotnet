@@ -16,7 +16,7 @@ namespace Ably.AcceptanceTests
             return new TestVars() { tls = true, keys = new List<Key>(), Environment = AblyEnvironment.Sandbox};
         }
 
-        public static Ably.AblyOptions GetDefaultOptions()
+        public static AblyOptions GetDefaultOptions()
         {
             return new AblyOptions
             {

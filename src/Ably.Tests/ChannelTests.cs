@@ -176,7 +176,13 @@ namespace Ably.Tests
             var rest = GetRestClient();
             var message = new Message() {Name = "test", Data = "Test"};
             var defaultParams = Crypto.GetDefaultParams();
-            var payload = RequestHandler.CreateMessagePayload(message, true, defaultParams);
+            var payload1 = new MessagePayload()
+            {
+                name = message.Name,
+                timestamp = message.TimeStamp.DateTime.ToUnixTime(),
+                data = message.Data
+            };
+            var payload = payload1;
 
             rest.ExecuteRequest = request =>
             {

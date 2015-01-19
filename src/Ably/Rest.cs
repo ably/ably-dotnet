@@ -10,7 +10,7 @@ using System.Text;
 
 namespace Ably
 {
-    public class Rest : IAuthCommands, IChannelCommands, IRestCommands
+    public class Rest : IAuthCommands, IChannelCommands
     {
         internal IAblyHttpClient _httpClient;
         private AblyOptions _options;
@@ -18,7 +18,6 @@ namespace Ably
         internal AuthMethod AuthMethod;
         internal Token CurrentToken;
         internal IResponseHandler ResponseHandler = new ResponseHandler();
-        internal IRequestHandler RequestHandler = new RequestHandler();
         private TokenRequest _lastTokenRequest;
         private Protocol _protocol;
         internal Protocol Protocol { get { return _protocol; } }
@@ -199,6 +198,8 @@ namespace Ably
         {
             get { return TokenCreatedExternally || (HasApiKey && HasTokenId == false); }
         }
+
+        public bool IsBinaryProtorol { get { return Protocol == Protocol.MsgPack; }}
 
         internal void AddAuthHeader(AblyRequest request)
         {
@@ -389,20 +390,14 @@ namespace Ably
             return stats;
         }
 
-        internal AblyRequest CreateGetRequest(string path, bool encrypted = false, CipherParams @params = null)
+        internal AblyRequest CreateGetRequest(string path, ChannelOptions options = null)
         {
-            var request = new AblyRequest(path, HttpMethod.Get, Protocol);
-            request.Encrypted = encrypted;
-            request.CipherParams = @params;
-            return request;
+            return new AblyRequest(path, HttpMethod.Get, Protocol) {ChannelOptions = options};
         }
 
-        internal AblyRequest CreatePostRequest(string path, bool encrypted = false, CipherParams @params = null)
+        internal AblyRequest CreatePostRequest(string path, ChannelOptions options = null)
         {
-            var request = new AblyRequest(path, HttpMethod.Post, Protocol);
-            request.Encrypted = encrypted;
-            request.CipherParams = @params;
-            return request;
+            return new AblyRequest(path, HttpMethod.Post, Protocol) {ChannelOptions = options};
         }
 
         IChannel IChannelCommands.Get(string name)
@@ -414,9 +409,5 @@ namespace Ably
         {
             return new Channel(this, name, new ResponseHandler(), options);
         }
-    }
-
-    public interface IRestCommands
-    {
     }
 }

@@ -28,52 +28,56 @@ namespace Ably
             _params = @params;
         }
 
-        private static byte[] Encrypt(byte[] input, byte[] key, int keySize)
+        private static byte[] Encrypt(byte[] input, byte[] key, int keySize, CipherMode mode)
         {
-            ICryptoTransform crypto;
             using (var aesEncryption = new RijndaelManaged())
             {
                 aesEncryption.GenerateIV();
                 aesEncryption.KeySize = keySize;
-                aesEncryption.BlockSize = 128;
-                aesEncryption.Mode = CipherMode.CBC;
+                aesEncryption.BlockSize = Crypto.DefaultBlocklength * 8;
+                aesEncryption.Mode = mode;
                 aesEncryption.Padding = PaddingMode.PKCS7;
                 aesEncryption.IV = aesEncryption.IV;
                 aesEncryption.Key = key;
-                crypto = aesEncryption.CreateEncryptor();
+                ICryptoTransform crypto = aesEncryption.CreateEncryptor();
 
-                // The result of the encryption and decryption            
+                // The result of the encryption and decryption
                 byte[] cipherText = crypto.TransformFinalBlock(input, 0, input.Length);
                 var result = new byte[cipherText.Length + aesEncryption.IV.Length];
                 Buffer.BlockCopy(aesEncryption.IV, 0, result, 0, aesEncryption.IV.Length);
                 Buffer.BlockCopy(cipherText, 0, result, aesEncryption.IV.Length, cipherText.Length);
                 return result;
-
             }
         }
 
-        private static byte[] Decrypt(byte[] input, byte[] key, int keySize)
+        private static byte[] Decrypt(byte[] input, byte[] key, int keySize, CipherMode mode)
         {
-            //byte[] encryptedBytes = Convert.FromBase64CharArray(encryptedText.ToCharArray(), 0, encryptedText.Length);
-            byte[] iv = input.Take(keySize / 8).ToArray();
+            byte[] iv = input.Take(Crypto.DefaultBlocklength).ToArray();
             using (var aesEncryption = new RijndaelManaged())
             {
                 aesEncryption.KeySize = keySize;
-                aesEncryption.BlockSize = 128;
-                aesEncryption.Mode = CipherMode.CBC;
+                aesEncryption.BlockSize = Crypto.DefaultBlocklength * 8;
+                aesEncryption.Mode = mode;
                 aesEncryption.Padding = PaddingMode.PKCS7;
                 aesEncryption.IV = iv;
                 aesEncryption.Key = key;
+
                 ICryptoTransform decrypt = aesEncryption.CreateDecryptor();
-                return decrypt.TransformFinalBlock(input.Skip(keySize / 8).ToArray(), 0, input.Length - keySize / 8);
+                var encryptedBuffer = input.Skip(Crypto.DefaultBlocklength).ToArray();
+                return decrypt.TransformFinalBlock(encryptedBuffer, 0, encryptedBuffer.Length);
             }
+        }
+
+        public string Algorithm
+        {
+            get { return "AES"; }
         }
 
         public byte[] Encrypt(byte[] input)
         {
             try
             {
-                return Encrypt(input, _params.Key, Crypto.DefaultKeylength);
+                return Encrypt(input, _params.Key, _params.KeyLength, _params.Mode);
             }
             catch (Exception ex)
             {
@@ -85,7 +89,7 @@ namespace Ably
         {
             try
             {
-                return Decrypt(input, _params.Key, Crypto.DefaultKeylength);
+                return Decrypt(input, _params.Key, _params.KeyLength, _params.Mode);
             }
             catch (Exception ex)
             {

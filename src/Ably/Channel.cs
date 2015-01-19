@@ -15,11 +15,6 @@ namespace Ably
         IEnumerable<Message> ParseMessagesResponse(AblyResponse response, ChannelOptions options);
     }
 
-    internal interface IRequestHandler
-    {
-        byte[] GetRequestBody(AblyRequest request);
-    }
-
     public class Channel : IChannel
     {
         public string Name { get; private set; }
@@ -51,7 +46,7 @@ namespace Ably
 
         public void Publish(string name, object data)
         {
-            var request = _restClient.CreatePostRequest(basePath + "/messages", _options.Encrypted, _options.CipherParams);
+            var request = _restClient.CreatePostRequest(basePath + "/messages", _options);
 
             request.PostData = new Message() { Name = name, Data = data };
             _restClient.ExecuteRequest(request);
@@ -59,7 +54,7 @@ namespace Ably
 
         public void Publish(IEnumerable<Message> messages)
         {
-            var request = _restClient.CreatePostRequest(basePath + "/messages", _options.Encrypted, _options.CipherParams);
+            var request = _restClient.CreatePostRequest(basePath + "/messages", _options);
             request.PostData = messages;
             _restClient.ExecuteRequest(request);
         }
