@@ -14,10 +14,9 @@ namespace Ably
             get { return string.Format("{0}-{1}-{2}", Algorithm, KeyLength, Mode); }
         }
 
-        public CipherParams(byte[] key)
+        public CipherParams(byte[] key) : this(Crypto.DefaultAlgorithm, key)
         {
-            Algorithm = Crypto.DefaultAlgorithm;
-            Key = key;
+            
         }
 
         public CipherParams(string algorithm, byte[] key, CipherMode? mode = null, int? keyLength = null)

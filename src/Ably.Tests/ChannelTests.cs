@@ -83,7 +83,7 @@ namespace Ably.Tests
         {
             var rest = GetRestClient();
             var channel = rest.Channels.Get("Test");
-            rest.ExecuteRequest = delegate(AblyRequest request)
+            rest.ExecuteHttpRequest = delegate(AblyRequest request)
             {
                 _currentRequest = request;
                 return new AblyResponse() { TextResponse = "[]"};
@@ -98,7 +98,7 @@ namespace Ably.Tests
          public void History_WithOptions_AddsParametersToRequest()
         {
             var rest = GetRestClient();
-            rest.ExecuteRequest = delegate(AblyRequest request)
+            rest.ExecuteHttpRequest = delegate(AblyRequest request)
             {
                 _currentRequest = request;
                 return new AblyResponse() { TextResponse = "[]" };
@@ -148,8 +148,8 @@ namespace Ably.Tests
         {
             //Arrange
             var rest = GetRestClient();
-            
-            rest.ExecuteRequest = request =>
+
+            rest.ExecuteHttpRequest = request =>
                 {
                     var response = new AblyResponse()
                         {
@@ -184,7 +184,7 @@ namespace Ably.Tests
             };
             var payload = payload1;
 
-            rest.ExecuteRequest = request =>
+            rest.ExecuteHttpRequest = request =>
             {
                 var response = new AblyResponse()
                 {
@@ -219,7 +219,7 @@ namespace Ably.Tests
         public void Presence_CreatesGetRequestWithCorrectPath()
         {
             var rest = GetRestClient();
-            rest.ExecuteRequest = request =>
+            rest.ExecuteHttpRequest = request =>
                 {
                     _currentRequest = request;
                     return new AblyResponse() {TextResponse = "[]"};

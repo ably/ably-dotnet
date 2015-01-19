@@ -30,19 +30,19 @@ namespace Ably.IntegrationTests
     public class StatsTests
     {
         private static long timeOffset;
-        private DateTime _start;
-        private DateTime _end;
+        private DateTimeOffset _start;
+        private DateTimeOffset _end;
 
         [TestFixtureSetUp]
         public void Setup()
         {
             var ably = TestHelpers.GetAbly();
             long timeFromService = ably.Time().ToUnixTimeInMilliseconds();
-            timeOffset = timeFromService - DateTime.Now.ToUnixTimeInMilliseconds();
+            timeOffset = timeFromService - Config.Now().ToUnixTimeInMilliseconds();
 
             /* first, wait for the start of a minute,
 		     * to prevent earlier tests polluting our results */
-            var now = (timeOffset + DateTime.Now.ToUnixTimeInMilliseconds()).FromUnixTimeInMilliseconds();
+            var now = (timeOffset + Config.Now().ToUnixTimeInMilliseconds()).FromUnixTimeInMilliseconds();
 
             _start = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute + 1, 0);
             Thread.Sleep((int) (_start - now).TotalMilliseconds);
@@ -52,7 +52,7 @@ namespace Ably.IntegrationTests
             for (int i = 0; i < 50; i++)
                 stats0.Publish("stats" + i, i);
 
-            _end = (timeOffset + DateTime.Now.ToUnixTimeInMilliseconds()).FromUnixTimeInMilliseconds();
+            _end = (timeOffset + Config.Now().ToUnixTimeInMilliseconds()).FromUnixTimeInMilliseconds();
             //Wait for everything to be persisted
             Thread.Sleep(8000);
 

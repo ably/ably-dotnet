@@ -33,9 +33,13 @@ namespace Ably
             Encoders.Add(new Base64Encoder(protocol));
         }
 
+        public void SetRequestBody(AblyRequest request)
+        {
+            request.RequestBody = GetRequestBody(request);
+        }
+
         public byte[] GetRequestBody(AblyRequest request)
         {
-            //If null return empty array
             if (request.PostData == null)
                 return new byte[] { };
 
@@ -47,7 +51,7 @@ namespace Ably
                 return GetMessagesRequestBody(request.PostData as IEnumerable<Message>,
                     request.ChannelOptions);
 
-            //Any other requests like history or 
+            //Any other requests like auth or history etc
             return JsonConvert.SerializeObject(request.PostData).GetBytes();
         }
 
@@ -94,6 +98,4 @@ namespace Ably
             }
         }
     }
-
-    
 }

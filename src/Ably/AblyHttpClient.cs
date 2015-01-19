@@ -14,16 +14,14 @@ namespace Ably
         private readonly string _host;
         private readonly int? _port;
         private readonly bool _isSecure;
-        private readonly MessageHandler _messageHandler;
 
-        public AblyHttpClient(string host) : this(host, null, true, Protocol.MsgPack) { }
+        public AblyHttpClient(string host) : this(host, null, true) { }
 
-        public AblyHttpClient(string host, int? port = null, bool isSecure = true, Protocol protocol = Protocol.MsgPack)
+        public AblyHttpClient(string host, int? port = null, bool isSecure = true)
         {
             _isSecure = isSecure;
             _port = port;
             _host = host;
-            _messageHandler = new MessageHandler(protocol);
         }
 
         public AblyResponse Execute(AblyRequest request)
@@ -41,7 +39,7 @@ namespace Ably
             {
                 if (webRequest.Method == "POST")
                 {
-                    var requestBody = _messageHandler.GetRequestBody(request);
+                    var requestBody = request.RequestBody;
 
                     webRequest.ContentLength = requestBody.Length;
                     if (requestBody.Any())

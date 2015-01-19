@@ -20,7 +20,7 @@ namespace Ably.Tests
         private Rest GetRestClient()
         {
             var rest = new Rest(ApiKey);
-            rest.ExecuteRequest = (request) =>
+            rest.ExecuteHttpRequest = (request) =>
             {
                 CurrentRequest = request;
                 return new AblyResponse() { TextResponse = "{}" };
@@ -152,8 +152,8 @@ namespace Ably.Tests
         public void RequestToken_WithQueryTime_SendsTimeRequestAndUsesReturnedTimeForTheRequest()
         {
             var rest = GetRestClient();
-            var currentTime = DateTime.Now.ToUniversalTime();
-            rest.ExecuteRequest = x =>
+            var currentTime = DateTimeOffset.UtcNow;
+            rest.ExecuteHttpRequest = x =>
                 {
                     if (x.Url.Contains("time"))
                         return new AblyResponse { TextResponse = "[" + currentTime.ToUnixTimeInMilliseconds() + "]", Type = ResponseType.Json };
@@ -173,7 +173,7 @@ namespace Ably.Tests
         public void RequestToken_WithoutQueryTime_SendsTimeRequestAndUsesReturnedTimeForTheRequest()
         {
             var rest = GetRestClient();
-            rest.ExecuteRequest = x =>
+            rest.ExecuteHttpRequest = x =>
             {
                 Assert.False(x.Url.Contains("time"));
                 return new AblyResponse() { TextResponse = "{}" };
@@ -220,7 +220,7 @@ namespace Ably.Tests
 
             AblyRequest authRequest = null;
             var requestdata = new TokenRequestPostData { id = GetKeyId(), capability = "123" };
-            rest.ExecuteRequest = x =>
+            rest.ExecuteHttpRequest = x =>
             {
                 if (x.Url == options.AuthUrl)
                 {
@@ -254,7 +254,7 @@ namespace Ably.Tests
             };
             AblyRequest authRequest = null;
             var requestdata = new TokenRequestPostData { id = GetKeyId(), capability = "123" };
-            rest.ExecuteRequest = (x) =>
+            rest.ExecuteHttpRequest = (x) =>
             {
                 if (x.Url == options.AuthUrl)
                 {
@@ -285,7 +285,7 @@ namespace Ably.Tests
             };
 
             var dateTime = DateTime.UtcNow;
-            rest.ExecuteRequest = (x) =>
+            rest.ExecuteHttpRequest = (x) =>
             {
                 if (x.Url == options.AuthUrl)
                 {
@@ -320,7 +320,7 @@ namespace Ably.Tests
             };
             List<AblyRequest> requests = new List<AblyRequest>();
             var requestdata = new TokenRequestPostData { id = GetKeyId(), capability = "123" };
-            rest.ExecuteRequest = (x) =>
+            rest.ExecuteHttpRequest = (x) =>
             {
                 requests.Add(x);
                 if (x.Url == options.AuthUrl)
@@ -347,7 +347,7 @@ namespace Ably.Tests
                 AuthUrl = "http://authUrl"
             };
 
-            rest.ExecuteRequest = (x) => rest._httpClient.Execute(x);
+            rest.ExecuteHttpRequest = (x) => rest._httpClient.Execute(x);
 
             var tokenRequest = new TokenRequest { Id = GetKeyId(), Capability = new Capability() };
 
@@ -362,7 +362,7 @@ namespace Ably.Tests
             {
                 AuthUrl = "http://authUrl"
             };
-            rest.ExecuteRequest = (x) => new AblyResponse { Type = ResponseType.Other };
+            rest.ExecuteHttpRequest = (x) => new AblyResponse { Type = ResponseType.Other };
 
             var tokenRequest = new TokenRequest { Id = GetKeyId(), Capability = new Capability() };
 
@@ -441,7 +441,7 @@ namespace Ably.Tests
         private Rest GetRestClient()
         {
             var rest = new Rest(ApiKey);
-            rest.ExecuteRequest = (request) =>
+            rest.ExecuteHttpRequest = (request) =>
             {
                 CurrentRequest = request;
                 return new AblyResponse() {TextResponse = "{}"};
@@ -524,8 +524,8 @@ namespace Ably.Tests
         [Fact]
         public void WithQueryTimeQueriesForTimestamp()
         {
-            var currentTime = DateTime.UtcNow;
-            Client.ExecuteRequest = x => 
+            var currentTime = Config.Now();
+            Client.ExecuteHttpRequest = x => 
                 new AblyResponse { TextResponse = "[" + currentTime.ToUnixTimeInMilliseconds() + "]", Type = ResponseType.Json };
             var data = Client.Auth.CreateTokenRequest(null, new AuthOptions() {QueryTime = true});
             data.timestamp.Should().Be(currentTime.ToUnixTime().ToString());
@@ -610,7 +610,7 @@ namespace Ably.Tests
         private Rest GetRestClient()
         {
             var rest = new Rest(ApiKey);
-            rest.ExecuteRequest = (request) =>
+            rest.ExecuteHttpRequest = (request) =>
             {
                 CurrentRequest = request;
                 return new AblyResponse() {TextResponse = "{}"};
@@ -625,7 +625,7 @@ namespace Ably.Tests
         {
             var rest = GetRestClient();
 
-            rest.ExecuteRequest = x =>
+            rest.ExecuteHttpRequest = x =>
             {
                 //Assert
                 var data = x.PostData as TokenRequestPostData;

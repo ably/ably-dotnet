@@ -18,6 +18,7 @@ namespace Ably
             Method = method;
             Protocol = protocol;
             ChannelOptions = new ChannelOptions();
+            RequestBody = new byte[] {};
         }
 
         public string Url { get; private set; }
@@ -44,6 +45,7 @@ namespace Ably
         }
 
         public Dictionary<string, string> PostParameters { get; set; }
+        public byte[] RequestBody { get; set; }
         public bool SkipAuthentication { get; set; }
     }
 }

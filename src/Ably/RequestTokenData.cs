@@ -15,7 +15,7 @@ namespace Ably
         public TimeSpan? Ttl { get; set; }
         public Capability Capability { get; set; }
         public string ClientId { get; set; }
-        public DateTime? Timestamp { get; set; }
+        public DateTimeOffset? Timestamp { get; set; }
         public string Nonce { get; set;}
 
         internal TokenRequestPostData GetPostData(string keyValue)
@@ -24,7 +24,7 @@ namespace Ably
             data.id = Id;
             data.capability = (Capability ?? Defaults.Capability).ToJson();
             data.clientId = ClientId ?? "";
-            DateTime now = Config.Now();
+            DateTimeOffset now = Config.Now();
             if (Nonce.IsNotEmpty())
                 data.nonce = Nonce;
             if (Ttl.HasValue)

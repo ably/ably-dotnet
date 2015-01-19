@@ -6,7 +6,7 @@ namespace Ably
 {
     internal static class DateService
     {
-        internal static Func<DateTime> Now = () => DateTime.Now;
+        internal static Func<DateTimeOffset> Now = () => DateTimeOffset.UtcNow;
 
         internal static long NowInUnixMilliseconds 
         {

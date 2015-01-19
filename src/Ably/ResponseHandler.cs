@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Ably
 {
@@ -80,28 +79,11 @@ namespace Ably
             return _cipher ?? (_cipher = Crypto.GetCipher(options));
         }
 
-        private static DateTime GetTime(MessagePayload payload)
+        private static DateTimeOffset GetTime(MessagePayload payload)
         {
             if (payload.timestamp.HasValue)
                 return payload.timestamp.Value.FromUnixTime();
             return Config.Now();
-        }
-
-        private static TypedBuffer GetTypedBufferFromEncryptedMessage(MessagePayload payload, IChannelCipher cipher)
-        {
-            var result = new TypedBuffer();
-            //if (payload.Data.IsNotEmpty())
-            //{
-            //    try
-            //    {
-            //        result.Buffer = cipher.Decrypt(payload.Data.FromBase64());
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        throw new AblyException(string.Format("Cannot decrypt payload: {0}", payload));
-            //    }
-            //}
-            return result;
         }
     }
 }

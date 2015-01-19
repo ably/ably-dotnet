@@ -80,8 +80,8 @@ namespace Ably
             }
         }
 
-        public DateTime? Start { get; set; }
-        public DateTime? End { get; set; }
+        public DateTimeOffset? Start { get; set; }
+        public DateTimeOffset? End { get; set; }
         public int? Limit { get; set; }
         public QueryDirection Direction { get; set; }
         internal Dictionary<string, string> ExtraParameters { get; set; } 
@@ -187,7 +187,7 @@ namespace Ably
             return null;
         }
 
-        private static DateTime? ToDateTime(object value)
+        private static DateTimeOffset? ToDateTime(object value)
         {
             if (value == null)
                 return null;

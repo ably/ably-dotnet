@@ -17,6 +17,7 @@ namespace Ably
         private ILogger Logger = Config.AblyLogger;
         internal AuthMethod AuthMethod;
         internal Token CurrentToken;
+        internal MessageHandler _messageHandler;
         internal IResponseHandler ResponseHandler = new ResponseHandler();
         private TokenRequest _lastTokenRequest;
         private Protocol _protocol;
@@ -71,7 +72,6 @@ namespace Ably
 
         private void InitialiseAbly()
         {
-            ExecuteRequest = ExecuteRequestInternal;
             if(_options == null)
             {
                 Logger.Error("No options provider to Ably rest");
@@ -95,8 +95,11 @@ namespace Ably
                 _protocol = _options.Protocol ?? Protocol.MsgPack;
             }
 
+            _messageHandler = new MessageHandler(_protocol);
+
             string host = GetHost();
             _httpClient = new AblyHttpClient(host, _options.Port, _options.Tls);
+            ExecuteHttpRequest = _httpClient.Execute;
 
             InitAuth();
         }
@@ -110,7 +113,6 @@ namespace Ably
 
             return Config.DefaultHost;
         }
-
 
         private void InitAuth()
         {
@@ -168,15 +170,16 @@ namespace Ably
             get { return this; }
         }
 
-        internal Func<AblyRequest, AblyResponse> ExecuteRequest;
-        
+        internal Func<AblyRequest, AblyResponse> ExecuteHttpRequest;
 
-        private AblyResponse ExecuteRequestInternal(AblyRequest request)
+        internal AblyResponse ExecuteRequest(AblyRequest request)
         {
-            if(request.SkipAuthentication == false)
+            if (request.SkipAuthentication == false)
                 AddAuthHeader(request);
 
-            return _httpClient.Execute(request);
+            _messageHandler.SetRequestBody(request);
+
+            return ExecuteHttpRequest(request);
         }
 
         private bool TokenCreatedExternally
@@ -345,9 +348,7 @@ namespace Ably
             return postData;
         }
 
-
-
-        public DateTime Time()
+        public DateTimeOffset Time()
         {
             var request = CreateGetRequest("/time");
             request.SkipAuthentication = true;

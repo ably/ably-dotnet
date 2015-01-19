@@ -8,8 +8,8 @@ namespace Ably.Auth
         public string Id { get; private set; }
         public string KeyId { get; internal set; }
         
-        public DateTime ExpiresAt { get; internal set;}
-        public DateTime IssuedAt { get; internal set; }
+        public DateTimeOffset ExpiresAt { get; internal set;}
+        public DateTimeOffset IssuedAt { get; internal set; }
         public Capability Capability { get; internal set; }
         public string ClientId { get; internal set; }
 

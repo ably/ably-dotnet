@@ -213,7 +213,7 @@ namespace Ably.Tests
             var rest = GetRestClient();
             
             AblyRequest request = null;
-            rest.ExecuteRequest = x => { request = x; return new AblyResponse { Type = ResponseType.Json, TextResponse = "{  }" };  };
+            rest.ExecuteHttpRequest = x => { request = x; return new AblyResponse { Type = ResponseType.Json, TextResponse = "{  }" }; };
             rest.Stats();
 
             Assert.Equal(HttpMethod.Get, request.Method);
@@ -226,7 +226,7 @@ namespace Ably.Tests
         {
             var rest = GetRestClient();
             AblyRequest request = null;
-            rest.ExecuteRequest = x => { request = x; return new AblyResponse { TextResponse = "{}" }; };
+            rest.ExecuteHttpRequest = x => { request = x; return new AblyResponse { TextResponse = "{}" }; };
             var query = new StatsDataRequestQuery();
             DateTime now = DateTime.Now;
             query.Start = now.AddHours(-1);
@@ -247,7 +247,7 @@ namespace Ably.Tests
             //Arrange
             var rest = GetRestClient();
 
-            rest.ExecuteRequest = request =>
+            rest.ExecuteHttpRequest = request =>
             {
                 var response = new AblyResponse()
                 {
