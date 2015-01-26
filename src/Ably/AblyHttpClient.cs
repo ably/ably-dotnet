@@ -11,22 +11,75 @@ namespace Ably
     {
         internal static readonly MimeTypes MimeTypes = new MimeTypes();
 
-        private readonly string _host;
+        private string _host;
         private readonly int? _port;
         private readonly bool _isSecure;
+        private readonly AblyEnvironment? _environment;
+        private bool _isDefaultHost;
 
         public AblyHttpClient(string host) : this(host, null, true) { }
 
-        public AblyHttpClient(string host, int? port = null, bool isSecure = true)
+        public AblyHttpClient(string host, int? port = null, bool isSecure = true, AblyEnvironment? environment = AblyEnvironment.Live)
         {
             _isSecure = isSecure;
+            _environment = environment;
             _port = port;
             _host = host;
+            _isDefaultHost = host == Config.DefaultHost;
         }
 
         public AblyResponse Execute(AblyRequest request)
         {
+            var hosts = Config.FallbackHosts;
+
+            int currentTry = 0;
+            var startTime = Config.Now();
+            while (currentTry <= hosts.Length)
+            {
+                var requestTime = Config.Now();
+                if((requestTime - startTime).TotalSeconds > Config.CommulativeFailedRequestTimeOutInSeconds)
+                    throw new AblyException(
+                        new ErrorInfo(string.Format("Commulative retry timeout of {0}s was exceeded.", 
+                            Config.CommulativeFailedRequestTimeOutInSeconds), 500, null));
+
+                try
+                {
+                    return ExecuteInternal(request);
+                }
+                catch (WebException exception)
+                {
+                    var errorResponse = exception.Response as HttpWebResponse;
+
+                    if (IsRetryable(exception) && _isDefaultHost)
+                    {
+                        Logger.Current.Error("Error making a connection to Ably servers. Retrying", exception);
+                        _host = hosts[currentTry - 1];
+                        currentTry++;
+                        continue;
+                    }
+                    
+                    if (errorResponse != null)
+                        throw AblyException.FromResponse(GetAblyResponse(errorResponse));
+
+                    throw new AblyException(new ErrorInfo("Unexpected error. Check the inner exception for details", 500, null), exception);
+                }
+            }
+            throw new AblyException(new ErrorInfo("Unexpected error while making a request.", 500, null));
+        }
+
+        private bool IsRetryable(WebException ex)
+        {
+            return
+                ex.Status == WebExceptionStatus.ReceiveFailure ||
+                ex.Status == WebExceptionStatus.ConnectFailure ||
+                ex.Status == WebExceptionStatus.Timeout ||
+                ex.Status == WebExceptionStatus.KeepAliveFailure;
+        }
+
+        private AblyResponse ExecuteInternal(AblyRequest request)
+        {
             var webRequest = HttpWebRequest.Create(GetRequestUrl(request)) as HttpWebRequest;
+            webRequest.Timeout = Config.ConnectTimeout;
             HttpWebResponse response = null;
 
             PopulateDefaultHeaders(request, webRequest);
@@ -41,7 +94,8 @@ namespace Ably
                 {
                     var requestBody = request.RequestBody;
 
-                    webRequest.ContentLength = requestBody.Length;
+                    webRequest
+                        .ContentLength = requestBody.Length;
                     if (requestBody.Any())
                     {
                         using (Stream stream = webRequest.GetRequestStream())
@@ -54,19 +108,12 @@ namespace Ably
                 response = webRequest.GetResponse() as HttpWebResponse;
                 return GetAblyResponse(response);
             }
-            catch (WebException exception)
-            {
-                var errorResponse = exception.Response as HttpWebResponse;
-                if (errorResponse != null)
-                    throw AblyException.FromResponse(GetAblyResponse(errorResponse));
-                else
-                    throw new AblyException(new ErrorInfo("Unexpected error. Check the inner exception for details", 500, null), exception);
-            }
             finally
             {
                 if (response != null)
                     response.Dispose();
             }
+
         }
 
         private void PopulateDefaultHeaders(AblyRequest request, HttpWebRequest webRequest)
@@ -102,7 +149,7 @@ namespace Ably
             }
             else
             {
-                yield return new KeyValuePair<string, string>("Accept", MimeTypes.GetHeaderValue("binary", "json"));
+                yield return new KeyValuePair<string, string>("Accept", MimeTypes.GetHeaderValue("binary"));
             }
         }
 
@@ -115,7 +162,7 @@ namespace Ably
             }
             else
             {
-                yield return new KeyValuePair<string, string>("Accept", MimeTypes.GetHeaderValue("binary", "json"));
+                yield return new KeyValuePair<string, string>("Accept", MimeTypes.GetHeaderValue("binary"));
                 yield return new KeyValuePair<string, string>("Content-Type", MimeTypes.GetHeaderValue("binary"));
             }
         }
@@ -150,10 +197,17 @@ namespace Ably
                 return new Uri(request.Url);
             return new Uri(String.Format("{0}{1}{2}{3}{4}",
                                protocol,
-                               _host,
+                               GetHost(),
                                _port.HasValue ? ":" + _port.Value : "",
                                request.Url,
                                GetQuery(request)));
+        }
+
+        private string GetHost()
+        {
+            if(_isDefaultHost && (_environment.HasValue && _environment != AblyEnvironment.Live))
+                return _environment.ToString().ToLower() + "-" + _host;
+            return _host;
         }
 
         private string GetQuery(AblyRequest request)

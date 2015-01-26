@@ -5,7 +5,7 @@ using System.Net.Http;
 
 namespace Ably
 {
-    public class AblyRequest
+    internal class AblyRequest
     {
         private ChannelOptions _channelOptions;
 
@@ -19,6 +19,7 @@ namespace Ably
             Protocol = protocol;
             ChannelOptions = new ChannelOptions();
             RequestBody = new byte[] {};
+            ResponseDataType = typeof (object);
         }
 
         public string Url { get; private set; }
@@ -37,6 +38,7 @@ namespace Ably
         
         public Protocol Protocol { get; set; }
         public object PostData { get; set; }
+        public Type ResponseDataType { get; set; }
 
         public ChannelOptions ChannelOptions
         {

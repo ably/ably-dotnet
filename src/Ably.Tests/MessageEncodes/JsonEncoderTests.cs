@@ -21,16 +21,16 @@ namespace Ably.Tests.MessageEncodes
             encoder = new JsonEncoder(Protocol.MsgPack);
         }
 
-        private MessagePayload EncodePayload(object data, string encoding = "")
+        private Message EncodePayload(object data, string encoding = "")
         {
-            var payload = new MessagePayload() {data = data, encoding = encoding};
+            var payload = new Message() {Data = data, Encoding = encoding};
             encoder.Encode(payload, new ChannelOptions());
             return payload;
         }
 
-        private MessagePayload DecodePayload(object data, string encoding = "")
+        private Message DecodePayload(object data, string encoding = "")
         {
-            var payload = new MessagePayload() { data = data, encoding = encoding };
+            var payload = new Message() { Data = data, Encoding = encoding };
             encoder.Decode(payload, new ChannelOptions());
             return payload;
         }
@@ -42,12 +42,12 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = DecodePayload(_jsonData, "json");
                 
-                payload.data.Should().BeOfType<JObject>();
+                payload.Data.Should().BeOfType<JObject>();
 
-                var obj =(payload.data as JObject).ToObject(_objectData.GetType());
+                var obj =(payload.Data as JObject).ToObject(_objectData.GetType());
                 obj.Should().Be(_objectData);
 
-                payload.encoding.Should().BeEmpty();
+                payload.Encoding.Should().BeEmpty();
             }
 
             [Fact]
@@ -55,8 +55,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = DecodePayload(_jsonData, "utf-8/json");
 
-                payload.data.Should().BeOfType<JObject>();
-                payload.encoding.Should().Be("utf-8");
+                payload.Data.Should().BeOfType<JObject>();
+                payload.Encoding.Should().Be("utf-8");
             }
 
             [Fact]
@@ -64,8 +64,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = DecodePayload("test", "utf-8");
 
-                payload.data.Should().Be("test");
-                payload.encoding.Should().Be("utf-8");
+                payload.Data.Should().Be("test");
+                payload.Encoding.Should().Be("utf-8");
             }
 
             [Fact]
@@ -85,8 +85,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = EncodePayload(_objectData);
 
-                payload.data.Should().Be(_jsonData);
-                payload.encoding.Should().Be("json");
+                payload.Data.Should().Be(_jsonData);
+                payload.Encoding.Should().Be("json");
             }
 
             [Fact]
@@ -94,8 +94,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = EncodePayload(_objectData, "utf-8");
 
-                payload.data.Should().Be(_jsonData);
-                payload.encoding.Should().Be("utf-8/json");
+                payload.Data.Should().Be(_jsonData);
+                payload.Encoding.Should().Be("utf-8/json");
             }
 
             [Fact]
@@ -103,8 +103,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = EncodePayload(_arrayData);
 
-                payload.data.Should().Be(_jsonArrayData);
-                payload.encoding.Should().Be("json");
+                payload.Data.Should().Be(_jsonArrayData);
+                payload.Encoding.Should().Be("json");
             }
 
             [Fact]
@@ -112,8 +112,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = EncodePayload("test");
 
-                payload.data.Should().Be("test");
-                payload.encoding.Should().BeEmpty();
+                payload.Data.Should().Be("test");
+                payload.Encoding.Should().BeEmpty();
             }
 
             [Fact]
@@ -121,8 +121,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = EncodePayload(null);
 
-                payload.data.Should().BeNull();
-                payload.encoding.Should().BeEmpty();
+                payload.Data.Should().BeNull();
+                payload.Encoding.Should().BeEmpty();
             }
         }
 

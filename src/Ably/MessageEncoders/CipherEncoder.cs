@@ -9,9 +9,9 @@ namespace Ably.MessageEncoders
             get { return "cipher"; }
         }
 
-        public override void Decode(MessagePayload payload, ChannelOptions options)
+        public override void Decode(IEncodedMessage payload, ChannelOptions options)
         {
-            if (IsEmpty(payload.data))
+            if (IsEmpty(payload.Data))
                 return;
 
             var currentEncoding = GetCurrentEncoding(payload);
@@ -30,7 +30,7 @@ namespace Ably.MessageEncoders
             }
 
             var cipher = Crypto.GetCipher(options);
-            payload.data = cipher.Decrypt(payload.data as byte[]);
+            payload.Data = cipher.Decrypt(payload.Data as byte[]);
             RemoveCurrentEncodingPart(payload);
         }
 
@@ -42,28 +42,28 @@ namespace Ably.MessageEncoders
             return "";
         }
 
-        public override void Encode(MessagePayload payload, ChannelOptions options)
+        public override void Encode(IEncodedMessage payload, ChannelOptions options)
         {
-            if (IsEmpty(payload.data) || IsEncrypted(payload))
+            if (IsEmpty(payload.Data) || IsEncrypted(payload))
                 return;
 
             if (options.Encrypted == false)
                 return;
 
-            if (payload.data is string)
+            if (payload.Data is string)
             {
-                payload.data = ((string)payload.data).GetBytes();
+                payload.Data = ((string)payload.Data).GetBytes();
                 AddEncoding(payload, "utf-8");
             }
 
             var cipher = Crypto.GetCipher(options);
-            payload.data = cipher.Encrypt(payload.data as byte[]);
+            payload.Data = cipher.Encrypt(payload.Data as byte[]);
             AddEncoding(payload, string.Format("{0}+{1}", EncodingName, options.CipherParams.CipherType.ToLower()));
         }
 
-        private bool IsEncrypted(MessagePayload payload)
+        private bool IsEncrypted(IEncodedMessage payload)
         {
-            return payload.encoding.IsNotEmpty() && payload.encoding.Contains(EncodingName);
+            return payload.Encoding.IsNotEmpty() && payload.Encoding.Contains(EncodingName);
         }
 
         public CipherEncoder(Protocol protocol)

@@ -12,17 +12,17 @@
             get { return "utf-8"; }
         }
 
-        public override void Encode(MessagePayload payload, ChannelOptions options)
+        public override void Encode(IEncodedMessage payload, ChannelOptions options)
         {
 
         }
 
-        public override void Decode(MessagePayload payload, ChannelOptions options)
+        public override void Decode(IEncodedMessage payload, ChannelOptions options)
         {
             //Assume all the other steps will always work with Utf8
             if (CurrentEncodingIs(payload, EncodingName))
             {
-                payload.data = (payload.data as byte[]).GetText();
+                payload.Data = (payload.Data as byte[]).GetText();
                 RemoveCurrentEncodingPart(payload);
             }
         }

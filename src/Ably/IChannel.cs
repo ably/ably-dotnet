@@ -6,9 +6,11 @@ namespace Ably
     {
         void Publish(string name, object data);
         void Publish(IEnumerable<Message> messages);
-        IPartialResult<Message> History();
-        IPartialResult<Message> History(HistoryDataRequestQuery query);
+        IPaginatedResource<Message> History();
+        IPaginatedResource<Message> History(DataRequestQuery query);
         string Name { get; }
-        IList<PresenceMessage> Presence();
+        IPaginatedResource<PresenceMessage> Presence();
+        IPaginatedResource<PresenceMessage> PresenceHistory();
+        IPaginatedResource<PresenceMessage> PresenceHistory(DataRequestQuery query);
     }
 }

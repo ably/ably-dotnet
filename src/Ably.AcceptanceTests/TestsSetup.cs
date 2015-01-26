@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
@@ -13,7 +15,7 @@ namespace Ably.AcceptanceTests
 
         private static TestVars GetTestData() 
         {
-            return new TestVars() { tls = true, keys = new List<Key>(), Environment = AblyEnvironment.Sandbox};
+            return new TestVars { tls = true, keys = new List<Key>(), Environment = AblyEnvironment.Sandbox};
         }
 
         public static AblyOptions GetDefaultOptions()
@@ -28,15 +30,16 @@ namespace Ably.AcceptanceTests
         public void RunBeforeAllTests()
         {
             TestData = GetTestData();
+            TestData.TestAppSpec = JObject.Parse(File.ReadAllText("testAppSpec.json"));
             AblyHttpClient client = new AblyHttpClient(TestData.restHost, null, TestData.tls);
             AblyRequest request = new AblyRequest("/apps", HttpMethod.Post);
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
-            request.PostData = JToken.Parse(File.ReadAllText("testAppSpec.json"));
+            request.RequestBody = TestData.TestAppSpec.ToString().GetBytes();
             var response = client.Execute(request);
             var json = JObject.Parse(response.TextResponse);
 
-            string appId = TestData.appId = (string)json["id"];
+            string appId = TestData.appId = (string)json["appId"];
             foreach (var key in json["keys"])
             {
                 var testkey = new Key();
@@ -46,18 +49,35 @@ namespace Ably.AcceptanceTests
                 testkey.capability = (string)key["capability"];
                 TestData.keys.Add(testkey);
             }
+
+            SetupSampleStats();
+        }
+
+        public void SetupSampleStats()
+        {
+            var lastInterval = StatsAcceptanceTests.StartInterval;
+            var interval1 = lastInterval - TimeSpan.FromMinutes(120);
+            var interval2 = lastInterval - TimeSpan.FromMinutes(60);
+            var interval3 = lastInterval;
+            var json = File.ReadAllText("StatsFixture.json");
+            json = json.Replace("[[Interval1]]", interval1.ToString("yyyy-MM-dd:HH:mm"));
+            json = json.Replace("[[Interval2]]", interval2.ToString("yyyy-MM-dd:HH:mm"));
+            json = json.Replace("[[Interval3]]", interval3.ToString("yyyy-MM-dd:HH:mm"));
+
+            Rest rest = new Rest(TestData.keys.First().keyStr);
+            AblyHttpClient client = new AblyHttpClient(TestsSetup.TestData.restHost, null, TestsSetup.TestData.tls);
+            AblyRequest request = new AblyRequest("/stats", HttpMethod.Post);
+            request.Headers.Add("Accept", "application/json");
+            request.Headers.Add("Content-Type", "application/json");
+            rest.AddAuthHeader(request);
+            request.RequestBody = json.GetBytes();
+
+            var response = client.Execute(request);
         }
 
         [TearDown]
         public void RunAfterAllTests()
         {
-            var options = new AblyOptions { Key = TestData.keys[0].keyStr };
-
-            var rest = new Rest(options);
-
-            AblyRequest request = new AblyRequest("/apps/" + TestData.appId, HttpMethod.Delete);
-            request.Headers.Add("Accept", "application/json");
-            rest.ExecuteRequest(request);
         }
     }
 }

@@ -1,51 +1,46 @@
-﻿namespace Ably
-{
-    public class PresenceMessage
-    {
+﻿using System;
+using MsgPack.Serialization;
+using Newtonsoft.Json;
 
-        /**
-         * Presence ActionType: the event signified by a PresenceMessage
-         */
+namespace Ably
+{
+    public class PresenceMessage : IEncodedMessage
+    {
         public enum ActionType
         {
-            Enter = 0,
-            Leave = 1,
-            Update = 2
+            Absent,
+		    Present,
+		    Enter,
+		    Leave,
+		    Update
         }
 
+        [JsonProperty("id")]
+        [MessagePackMember(0, Name = "id")]
+        public string Id { get; set; }
 
+        [JsonProperty("action")]
+        [MessagePackMember(1, Name = "action")]
         public ActionType Action { get; set; }
 
-        /**
-         * The clientId associated with this presence action.
-         */
+        [JsonProperty("clientId")]
+        [MessagePackMember(2, Name = "clientId")]
         public string ClientId { get; set; }
 
-        /**
-         * A unique member identifier, disambiguating situations where a given
-         * clientId is present on multiple connections simultaneously.
-         */
-        public string MemberId { get; set; }
+        [JsonProperty("connectionId")]
+        [MessagePackMember(3, Name = "connectionId")]
+        public string ConnectionId { get; set; }
 
-        /**
-         * Optional client-defined status or other event payload associated with this action.
-         */
-        public object ClientData { get; set; }
+        [JsonProperty("data")]
+        [MessagePackMember(4, Name = "data")]
+        public object Data { get; set; }
 
-        public PresenceMessage()
-        {
-        }
+        [JsonProperty("encoding")]
+        [MessagePackMember(5, Name = "encoding")]
+        public string Encoding { get; set; }
 
-        public PresenceMessage(ActionType action, string clientId)
-            : this(action, clientId, null)
-        {
-        }
-
-        public PresenceMessage(ActionType action, string clientId, object clientData)
-        {
-            Action = action;
-            ClientId = clientId;
-            ClientData = clientData;
-        }
+        [JsonProperty("timestamp")]
+        [MessagePackMember(6, Name = "timestamp")]
+        public DateTimeOffset TimeStamp { get; set; }
     }
 }

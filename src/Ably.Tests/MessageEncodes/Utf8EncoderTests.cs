@@ -17,9 +17,9 @@ namespace Ably.Tests.MessageEncodes
             encoder = new Utf8Encoder(Protocol.MsgPack);
         }
 
-        private MessagePayload DecodePayload(object data, string encoding = "")
+        private Message DecodePayload(object data, string encoding = "")
         {
-            var payload = new MessagePayload() { data = data, encoding = encoding };
+            var payload = new Message() { Data = data, Encoding = encoding };
             encoder.Decode(payload, new ChannelOptions());
             return payload;
         }
@@ -31,8 +31,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = DecodePayload(_byteData, "utf-8");
 
-                payload.data.Should().Be(_stringData);
-                payload.encoding.Should().BeEmpty();
+                payload.Data.Should().Be(_stringData);
+                payload.Encoding.Should().BeEmpty();
             }
 
             [Fact]
@@ -40,8 +40,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = DecodePayload(_byteData, "json/utf-8");
 
-                payload.data.Should().Be(_stringData);
-                payload.encoding.Should().Be("json");
+                payload.Data.Should().Be(_stringData);
+                payload.Encoding.Should().Be("json");
             }
 
             [Fact]
@@ -49,8 +49,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = DecodePayload("test", "json");
 
-                payload.data.Should().Be("test");
-                payload.encoding.Should().Be("json");
+                payload.Data.Should().Be("test");
+                payload.Encoding.Should().Be("json");
             }
         }
     }

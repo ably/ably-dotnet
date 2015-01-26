@@ -5,11 +5,11 @@ namespace Ably.Tests
     public class DataRequestQueryParseFacts
     {
         private DataRequestQuery _query;
-        public const string QueryString = "?start=1380794880000&end=1380794881058&limit=100&by=minute&direction=forwards&format=json&first_start=1380794880000";
+        public const string HeaderValue = "?start=1380794880000&end=1380794881058&limit=100&by=minute&direction=forwards&format=json&first_start=1380794880000";
 
         public DataRequestQueryParseFacts()
         {
-            _query = DataRequestQuery.Parse(QueryString);
+            _query = DataRequestQuery.Parse(HeaderValue);
         }
 
         [Fact]

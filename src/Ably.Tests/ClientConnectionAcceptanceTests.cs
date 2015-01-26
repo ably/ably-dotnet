@@ -4,12 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ably.SelfHost
+namespace Ably.Tests
 {
-    class Program
+    public class ClientConnectionAcceptanceTests
     {
-        static void Main(string[] args)
-        {
-        }
     }
 }

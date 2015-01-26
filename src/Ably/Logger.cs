@@ -1,12 +1,14 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
 
 namespace Ably
 {
-    internal class Logger : ILogger
+    /// <summary>
+    /// Default Ably logger. It logs Info and Error information as TraceEvents
+    /// The Debug call writes a line in the debug console.
+    /// </summary>
+    public class Logger : ILogger
     {
         private static readonly ExtendedSource trace = new ExtendedSource("Ably", SourceLevels.Error);
         public static Logger Current = new Logger();
@@ -16,27 +18,27 @@ namespace Ably
 
         }
 
-        public void Error(string message, Exception ex)
+        public virtual void Error(string message, Exception ex)
         {
             trace.TraceEvent(TraceEventType.Error, 0, String.Format("{0} {1}", message, GetExceptionDetails(ex)));
         }
 
-        public void Error(string message, params object[] args)
+        public virtual void Error(string message, params object[] args)
         {
             trace.TraceEvent(TraceEventType.Error, 0, String.Format(message, args));
         }
 
-        public void Info(string message, params object[] args)
+        public virtual void Info(string message, params object[] args)
         {
             trace.TraceEvent(TraceEventType.Information, 0, String.Format(message, args));
         }
 
-        public IDisposable ProfileOperation(string format, params object[] args)
+        public virtual IDisposable ProfileOperation(string format, params object[] args)
         {
             return trace.ProfileOperation(format, args);
         }
 
-        public void Debug(string message)
+        public virtual void Debug(string message)
         {
             System.Diagnostics.Debug.WriteLine(message);
         }

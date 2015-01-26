@@ -1,16 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
 
 namespace Ably.AcceptanceTests
 {
+    [TestFixture(Protocol.MsgPack)]
+    [TestFixture(Protocol.Json)]
     public class AuthRequestTokenTests
     {
+        private readonly bool _binaryProtocol;
+
+        public AuthRequestTokenTests(Protocol binaryProtocol)
+        {
+            _binaryProtocol = binaryProtocol == Protocol.MsgPack;
+        }
 
         [Test]
         public void ShouldReturnTheRequestedToken()
@@ -20,18 +24,27 @@ namespace Ably.AcceptanceTests
             var capability = new Capability();
             capability.AddResource("foo").AllowPublish();
 
-            var options = TestsSetup.GetDefaultOptions();
-            var ably = new Rest(options);
-
+            Rest ably = GetRestClient();
+            var options = ably.Options;
+            
             //Act
-            var token = ably.Auth.RequestToken(new TokenRequest { Capability = capability, Ttl = ttl }, options);
+            var token = ably.Auth.RequestToken(new TokenRequest { Capability = capability, Ttl = ttl }, null);
 
             //Assert
 
-            token.Id.Should().MatchRegex(string.Format(@"^{0}\.[\w-]+$", options.AppId));
+            token.Id.Should().MatchRegex(string.Format(@"^{0}\.[\w-]+$", options.KeyId));
             token.KeyId.Should().Be(options.KeyId);
             token.IssuedAt.Should().BeWithin(TimeSpan.FromSeconds(2)).Before(DateTime.Now);
             token.ExpiresAt.Should().BeWithin(TimeSpan.FromSeconds(2)).Before(DateTime.Now  + ttl);
+        }
+
+        private Rest GetRestClient(Action<AblyOptions> opAction = null)
+        {
+            var options = TestsSetup.GetDefaultOptions();
+            if (opAction != null)
+                opAction(options);
+            options.UseBinaryProtocol = _binaryProtocol;
+            return new Rest(options);
         }
 
         [Test]
@@ -41,8 +54,7 @@ namespace Ably.AcceptanceTests
             var capability = new Capability();
             capability.AddResource("foo").AllowPublish();
 
-            var options = TestsSetup.GetDefaultOptions();
-            var ably = new Rest(options);
+            var ably = GetRestClient();
             var token = ably.Auth.RequestToken(new TokenRequest() { Capability = capability }, null);
 
             var tokenAbly = new Rest(new AblyOptions {AuthToken = token.Id, Environment = TestsSetup.TestData.Environment});
@@ -58,8 +70,8 @@ namespace Ably.AcceptanceTests
             var capability = new Capability();
             capability.AddResource("foo").AllowPublish();
 
-            var options = TestsSetup.GetDefaultOptions();
-            var ably = new Rest(options);
+            var ably = GetRestClient();
+
             var token = ably.Auth.RequestToken(new TokenRequest() { Capability = capability }, null);
 
             var tokenAbly = new Rest(new AblyOptions { AuthToken = token.Id , Environment = AblyEnvironment.Sandbox});
@@ -70,7 +82,7 @@ namespace Ably.AcceptanceTests
             error.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
-        [Test]
+        [Test] 
         public void WithInvalidTimeStamp_Throws()
         {
             //Arrange
@@ -90,14 +102,13 @@ namespace Ably.AcceptanceTests
         public void WithClientId_RequestsATokenOnFirstMessageWithCorrectDefaults()
         {
             //Arrange
-            var options = TestsSetup.GetDefaultOptions();
-            options.ClientId = "123";
-            var ably = new Rest(options);
+            var ably = GetRestClient(ablyOptions => ablyOptions.ClientId = "123");
             
             ably.Channels.Get("test").Publish("test", true);
 
             var token = ably.CurrentToken;
 
+            token.Should().NotBeNull();
             token.ClientId.Should().Be("123");
             token.ExpiresAt.Should().BeWithin(TimeSpan.FromSeconds(2)).Before(DateTime.UtcNow + TokenRequest.Defaults.Ttl);
             token.Capability.ToJson().Should().Be(TokenRequest.Defaults.Capability.ToJson());

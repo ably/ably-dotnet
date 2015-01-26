@@ -30,8 +30,9 @@ namespace Ably.Tests
             var channel = rest.Channels.Get("Test");
             channel.Publish("event", "data");
 
-            Assert.IsType<Message>(_currentRequest.PostData);
-            var data = _currentRequest.PostData as Message;
+            Assert.IsType<List<Message>>(_currentRequest.PostData);
+            var messages = _currentRequest.PostData as List<Message>;
+            var data = messages.First();
             Assert.Equal("data", data.Data);
             Assert.Equal("event", data.Name);
         }
@@ -104,20 +105,18 @@ namespace Ably.Tests
                 return new AblyResponse() { TextResponse = "[]" };
             };
             var channel = rest.Channels.Get("Test");
-            var query = new HistoryDataRequestQuery();
+            var query = new DataRequestQuery();
             DateTime now = DateTime.Now;
             query.Start = now.AddHours(-1);
             query.End = now;
             query.Direction = QueryDirection.Forwards;
             query.Limit = 1000;
-            query.By = HistoryBy.Bundle;
             channel.History(query);
 
             _currentRequest.AssertContainsParameter("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
             _currentRequest.AssertContainsParameter("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
             _currentRequest.AssertContainsParameter("direction", query.Direction.ToString().ToLower());
             _currentRequest.AssertContainsParameter("limit", query.Limit.Value.ToString());
-            _currentRequest.AssertContainsParameter("by", query.By.Value.ToString().ToLower());
         }
 
         [Theory]
@@ -127,7 +126,7 @@ namespace Ably.Tests
         {
             var rest = GetRestClient();
             var channel = rest.Channels.Get("Test");
-            var query = new HistoryDataRequestQuery() { Limit = limit };
+            var query = new DataRequestQuery() { Limit = limit };
 
             Assert.Throws<AblyException>(delegate { channel.History(query); });
         }
@@ -138,7 +137,7 @@ namespace Ably.Tests
         {
             var rest = GetRestClient();
             var channel = rest.Channels.Get("Test");
-            var query = new HistoryDataRequestQuery() { Start = start, End = end };
+            var query = new DataRequestQuery() { Start = start, End = end };
 
              Assert.Throws<AblyException>(delegate { channel.History(query); });
         }
@@ -165,8 +164,8 @@ namespace Ably.Tests
 
             //Assert
             Assert.NotNull(result.NextQuery);
-            Assert.NotNull(result.CurrentResultQuery);
-            Assert.NotNull(result.InitialResultQuery);
+            Assert.NotNull(result.CurrentQuery);
+            Assert.NotNull(result.FirstQuery);
         }
 
         [Fact]
@@ -176,20 +175,13 @@ namespace Ably.Tests
             var rest = GetRestClient();
             var message = new Message() {Name = "test", Data = "Test"};
             var defaultParams = Crypto.GetDefaultParams();
-            var payload1 = new MessagePayload()
-            {
-                name = message.Name,
-                timestamp = message.TimeStamp.DateTime.ToUnixTime(),
-                data = message.Data
-            };
-            var payload = payload1;
 
             rest.ExecuteHttpRequest = request =>
             {
                 var response = new AblyResponse()
                 {
                     Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
-                    TextResponse = string.Format("[{0}]", JsonConvert.SerializeObject(payload))
+                    TextResponse = string.Format("[{0}]", JsonConvert.SerializeObject(message))
                 };
                 return response;
             };

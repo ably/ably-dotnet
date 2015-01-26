@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably", "Ably\Ably.csproj", "{E70140AC-4132-44C0-85BB-9BD1B910A719}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.Tests", "Ably.Tests\Ably.Tests.csproj", "{4E136C14-03D4-4194-8DE7-3E9A26C5B028}"
@@ -12,8 +14,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1EA29F
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.IntegrationTests", "Ably.IntegrationTests\Ably.IntegrationTests.csproj", "{50B70469-A7CD-46F5-AAE8-EE9C24CFA206}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.AcceptanceTests", "Ably.AcceptanceTests\Ably.AcceptanceTests.csproj", "{B5FA2120-6451-4A54-86FE-1F367A72C04D}"
 EndProject
@@ -31,10 +31,6 @@ Global
 		{4E136C14-03D4-4194-8DE7-3E9A26C5B028}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4E136C14-03D4-4194-8DE7-3E9A26C5B028}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4E136C14-03D4-4194-8DE7-3E9A26C5B028}.Release|Any CPU.Build.0 = Release|Any CPU
-		{50B70469-A7CD-46F5-AAE8-EE9C24CFA206}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{50B70469-A7CD-46F5-AAE8-EE9C24CFA206}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{50B70469-A7CD-46F5-AAE8-EE9C24CFA206}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{50B70469-A7CD-46F5-AAE8-EE9C24CFA206}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B5FA2120-6451-4A54-86FE-1F367A72C04D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B5FA2120-6451-4A54-86FE-1F367A72C04D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5FA2120-6451-4A54-86FE-1F367A72C04D}.Release|Any CPU.ActiveCfg = Release|Any CPU

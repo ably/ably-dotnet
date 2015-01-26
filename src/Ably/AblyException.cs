@@ -1,68 +1,14 @@
-using System.Diagnostics;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 
 namespace Ably
 {
-    public class ErrorInfo
-    {
-        public int Code { get; set; }
-        public HttpStatusCode? StatusCode { get; set; }
-        public string Reason { get; set; }
 
-        public ErrorInfo(string reason, int code)
-        {
-            Code = code;
-            Reason = reason;
-        }
-
-        public ErrorInfo(string reason, int code, HttpStatusCode? statusCode = null)
-        {
-            Code = code;
-            StatusCode = statusCode;
-            Reason = reason;
-        }
-
-        public override string ToString()
-        {
-            if (StatusCode.HasValue == false)
-            {
-               return string.Format("Reason: {0}; Code: {1}", Reason, Code);
-            }
-            return string.Format("Reason: {0}; Code: {1}; HttpStatusCode: ({2}){3}", Reason, Code, (int)StatusCode.Value, StatusCode);
-        }
-
-        internal static ErrorInfo Parse(AblyResponse response)
-        {
-            string reason = "";
-            int errorCode = 500;
-
-            if (response.Type == ResponseType.Json)
-            {
-
-                try
-                {
-                    var json = JObject.Parse(response.TextResponse);
-                    if (json["error"] != null)
-                    {
-                        reason = (string)json["error"]["message"];
-                        errorCode = (int)json["error"]["code"];
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.Write(ex.Message);
-                    //If there is no json or there is something wrong we don't want to throw from here. The
-                }
-            }
-            return new ErrorInfo(reason.IsEmpty() ? "Unknown error" : reason, errorCode, response.StatusCode);
-        }
-    }
-
+    /// <summary>
+    /// Ably exception wrapper class. It includes error information <see cref="Ably.ErrorInfo"/> used by ably. 
+    /// All inner exceptions are wrapped in this class. Always check the inner exception property of the caught exception.
+    /// </summary>
     public class AblyException : Exception
     {
         public AblyException()
@@ -70,30 +16,46 @@ namespace Ably
 
         }
 
+        /// <summary>
+        /// Creates AblyException
+        /// </summary>
+        /// <param name="reason">Reason passed to the error info class</param>
         public AblyException(string reason)
             : this(new ErrorInfo(reason, 500, null))
         {
 
         }
 
+        /// <summary>
+        /// Creates AblyException. ErrorInfo is automatically generated based on the inner exception message. StatusCode is set to 50000
+        /// </summary>
+        /// <param name="ex">Original exception to be wrapped.</param>
         public AblyException(Exception ex)
-            : this(new ErrorInfo("Unexpected error :" + ex.Message, 50000, HttpStatusCode.InternalServerError), ex)
+            : this(new ErrorInfo("Unexpected error :" + ex.Message, 50000), ex)
             {
                 
             }
 
+        /// <summary>
+        /// Creates AblyException and populates ErrorInfo with the supplied parameters.
+        /// </summary>
         public AblyException(string reason, int code, HttpStatusCode? statusCode = null) : this(new ErrorInfo(reason, code, statusCode))
         {
             
         }
 
+        /// <summary>
+        /// Creates AblyException with supplied error info.
+        /// </summary>
         public AblyException(ErrorInfo info)
             : base(info.ToString())
         {
             ErrorInfo = info;
         }
 
-
+        /// <summary>
+        /// Creates AblyException with ErrorInfo and sets the supplied exception as innerException
+        /// </summary>
         public AblyException(ErrorInfo info, Exception innerException)
             : base(info.ToString(), innerException)
         {

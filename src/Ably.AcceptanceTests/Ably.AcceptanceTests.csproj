@@ -59,8 +59,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AuthRequestTokenTests.cs" />
+    <Compile Include="ChannelMessagesAcceptanceTests.cs" />
     <Compile Include="Key.cs" />
     <Compile Include="MessageEncodersAcceptanceTests.cs" />
+    <Compile Include="PresenceAcceptanceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RestAcceptanceTests.cs" />
     <Compile Include="TestsSetup.cs" />
@@ -68,6 +70,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="StatsFixture.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="crypto-data-256.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="crypto-data-128.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
     <None Include="testAppSpec.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

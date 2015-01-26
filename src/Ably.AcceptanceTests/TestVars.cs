@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 
 namespace Ably.AcceptanceTests
 {
@@ -7,6 +8,7 @@ namespace Ably.AcceptanceTests
     {
         public String appId;
         public List<Key> keys;
+        public JObject TestAppSpec;
 
         public string restHost
         {
@@ -14,7 +16,7 @@ namespace Ably.AcceptanceTests
         }
         public int? restPort;
         public bool tls;
-        public AblyEnvironment Environment;
+        internal AblyEnvironment Environment;
 
         public AblyOptions CreateOptions(string key) {
 			var opts = new AblyOptions() { Key = key};

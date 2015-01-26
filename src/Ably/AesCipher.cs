@@ -4,40 +4,39 @@ using System.Security.Cryptography;
 
 namespace Ably
 {
-    internal static class DateService
-    {
-        internal static Func<DateTimeOffset> Now = () => DateTimeOffset.UtcNow;
-
-        internal static long NowInUnixMilliseconds 
-        {
-            get { return Now().ToUnixTimeInMilliseconds(); }
-        }
-
-        internal static long NowInUnixSecond
-        {
-            get { return Now().ToUnixTime(); }
-        }
-    }
-
+    /// <summary>
+    /// Cipher implementation using RinjaelManaged class under the hood. 
+    /// The Cipher params decide the Cipher mode and key
+    /// The Iv vector is generated on each encryption request and added to the encrypted data stream.
+    /// </summary>
     public class AesCipher : IChannelCipher
     {
         private readonly CipherParams _params;
 
+        /// <summary>
+        /// Creates a new instance of AesCipther.
+        /// </summary>
+        /// <param name="params">Cipher params used to configure the RinjaelManaged algorithm</param>
         public AesCipher(CipherParams @params)
         {
             _params = @params;
         }
 
-        private static byte[] Encrypt(byte[] input, byte[] key, int keySize, CipherMode mode)
+        private static byte[] Encrypt(byte[] input, byte[] key, int keySize, CipherMode mode, byte[] iv = null)
         {
             using (var aesEncryption = new RijndaelManaged())
             {
-                aesEncryption.GenerateIV();
+                if(iv == null)
+                    aesEncryption.GenerateIV();
+                else
+                {
+                    aesEncryption.IV = iv;
+                }
+
                 aesEncryption.KeySize = keySize;
                 aesEncryption.BlockSize = Crypto.DefaultBlocklength * 8;
                 aesEncryption.Mode = mode;
                 aesEncryption.Padding = PaddingMode.PKCS7;
-                aesEncryption.IV = aesEncryption.IV;
                 aesEncryption.Key = key;
                 ICryptoTransform crypto = aesEncryption.CreateEncryptor();
 
@@ -73,11 +72,16 @@ namespace Ably
             get { return "AES"; }
         }
 
+        /// <summary>
+        /// Encypts a byte[] using the CipherParams provided in the constructor
+        /// </summary>
+        /// <param name="input">byte[] to be encrypted</param>
+        /// <returns>Encrypted result</returns>
         public byte[] Encrypt(byte[] input)
         {
             try
             {
-                return Encrypt(input, _params.Key, _params.KeyLength, _params.Mode);
+                return Encrypt(input, _params.Key, _params.KeyLength, _params.Mode, _params.Iv);
             }
             catch (Exception ex)
             {
@@ -85,6 +89,11 @@ namespace Ably
             }
         }
 
+        /// <summary>
+        /// Decrypts an encrypted byte[] using the CipherParams provided in the constructor
+        /// </summary>
+        /// <param name="input">encrypted byte[]</param>
+        /// <returns>decrypted byte[]</returns>
         public byte[] Decrypt(byte[] input)
         {
             try

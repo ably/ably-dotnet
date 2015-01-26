@@ -1,40 +1,62 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Ably
 {
+    /// <summary>
+    /// Ably options class. It is used to instantiate Ably.Rest.Client
+    /// </summary>
     public class AblyOptions : AuthOptions
     {
-        public string AppId { get; set; }
+        /// <summary>
+        /// The id of the client represented by this instance. The clientId is relevant
+	    /// to presence operations, where the clientId is the principal identifier of the
+	    /// client in presence update messages. The clientId is also relevant to
+	    /// authentication; a token issued for a specific client may be used to authenticate
+	    /// the bearer of that token to the service.
+        /// </summary>
         public string ClientId { get; set; }
 
+        /// <summary>
+        /// For development environments only. Allows a non default host to be specified
+        /// </summary>
         public string Host { get; set; }
+        
+        /// <summary>
+        ///  For development environments only; allows a non-default Ably port to be specified.
+        /// </summary>
         public int? Port { get; set; }
+        
+        /// <summary>
+	    ///Encrypted transport: if true, TLS will be used for all connections (whether REST/HTTP
+	    ///or Realtime WebSocket or Comet connections).
+	    /// Default: true
+        ///</summary>
         public bool Tls { get; set; }
+
+        ///<summary>
+        /// If false, forces the library to use the JSON encoding for REST and Realtime operations,
+	    /// instead of the default binary msgpack encoding.
+	    /// Default: true
+        /// </summary>
         public bool UseBinaryProtocol { get; set; }
+
+        /// <summary>
+        /// Provides Channels Setting for all Channels created. For more information see <see cref="ChannelOptions"/> 
+        /// </summary>
         public ChannelOptions ChannelDefaults { get; set; }
-        public bool EchoMessages { get; set; }
-        public string Recover { get; set; }
-        public int? TlsPort { get; set; }
-        public bool QueueMessages { get; set; }
-        public Protocol? Protocol { get; set; }
-        public AblyEnvironment? Environment { get; set; }
+
+        internal AblyEnvironment? Environment { get; set; }
 
         public AblyOptions()
         {
             Tls = true;
-            QueueMessages = true;
             UseBinaryProtocol = true;
-            EchoMessages = false;
             ChannelDefaults = new ChannelOptions();
         }
-    }
 
-    public enum AblyEnvironment
-    {
-        Live, 
-        Uat,
-        Sandbox
+        public AblyOptions(string key) : base(key)
+        {
+            Tls = true;
+            UseBinaryProtocol = true;
+            ChannelDefaults = new ChannelOptions();
+        }
     }
 }

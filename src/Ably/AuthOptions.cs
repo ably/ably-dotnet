@@ -6,14 +6,30 @@ using Ably.Auth;
 
 namespace Ably
 {
+
+    /// <summary>
+    /// Authentication options
+    /// </summary>
     public class AuthOptions
     {
+        /// <summary>
+        /// Callback used when requesting a new token. A <see cref="TokenRequest"/> is passed and it needs to return <see cref="Token"/>
+        /// </summary>
         public Func<TokenRequest, Token> AuthCallback;
+
+        /// <summary>
+        /// A URL to query to obtain either a signed token request (<see cref="TokenRequestPostData"/>) or a valid <see cref="Token"/>
+        /// This enables a client to obtain token requests from
+        /// another entity, so tokens can be renewed without the
+        /// client requiring access to keys.
+        ///</summary>
         public string AuthUrl { get; set; }
+        
         /// <summary>
         /// Used in conjunction with AuthUrl. Default is GET.
         /// </summary>
         public HttpMethod AuthMethod { get; set; }
+
         public string Key { get; set; }
         public string KeyId { get; set; }
         public string KeyValue { get; set; }
@@ -30,6 +46,18 @@ namespace Ably
             AuthHeaders = new Dictionary<string,string>();
             AuthParams = new Dictionary<string, string>();
             AuthMethod = HttpMethod.Get;
+        }
+
+        /// <summary>
+        /// Initialised a new instance of AuthOptions by populating the KeyId and KeyValue properties from the full Key
+        /// </summary>
+        /// <param name="key">Full ably key string</param>
+        public AuthOptions(string key)
+        {
+            var apiKey = ApiKey.Parse(key);
+            Key = apiKey.ToString();
+            KeyId = apiKey.KeyId;
+            KeyValue = apiKey.KeyValue;
         }
 
         public AuthOptions Merge(AuthOptions defaults)

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Ably.Tests
@@ -10,7 +6,7 @@ namespace Ably.Tests
     public class TokenRequestDataTests
     {
         private const string ApiKey = "AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob";
-        public readonly DateTime Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc);
+        public readonly DateTimeOffset Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc).ToDateTimeOffset();
 
         private static string GetKeyId()
         {
@@ -91,7 +87,7 @@ namespace Ably.Tests
             var request = GetTokenRequest();
             var data = request.GetPostData(GetKeyValue());
 
-            Assert.Equal(Now.ToUnixTime().ToString(), data.timestamp);
+            Assert.Equal(Now.ToUnixTimeInMilliseconds().ToString(), data.timestamp);
         }
 
         [Fact]

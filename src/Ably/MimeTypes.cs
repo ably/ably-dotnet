@@ -13,9 +13,7 @@ namespace Ably
         public MimeTypes()
         {
             Add("json", "application/json");
-            Add("xml", "application/xml");
-            Add("html", "text/html");
-            Add("binary", "application/x-thrift");
+            Add("binary", "application/x-msgpack");
         }
 
         public string GetHeaderValue(params string[] keys)

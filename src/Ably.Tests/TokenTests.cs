@@ -34,7 +34,7 @@ namespace Ably.Tests
 	                            }
                             }";
 
-                var token = Token.FromJson((JObject)JObject.Parse(json)["access_token"]);
+                var token = ((JObject)JObject.Parse(json)["access_token"]).ToObject<Token>();
 
                 Assert.Equal("QF_CjTvDs2kFQMKLwpccEhIkNcKpw5ovPsOnLsOgJMKow5ACXHvCgGzCtcK7", token.Id);
                 //Assert.Equal("3lJG9Q", token.ClientId

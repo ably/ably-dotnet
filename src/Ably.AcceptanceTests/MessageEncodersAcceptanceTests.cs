@@ -20,15 +20,15 @@ namespace Ably.AcceptanceTests
             private Rest _client;
             private AblyRequest currentRequest;
 
-            private MessagePayload GetPayload()
+            private Message GetPayload()
             {
-                var payloads = JsonConvert.DeserializeObject<List<MessagePayload>>(currentRequest.RequestBody.GetText());
+                var payloads = JsonConvert.DeserializeObject<List<Message>>(currentRequest.RequestBody.GetText());
                 return payloads.FirstOrDefault();
             }
 
             public WithTextProtocolWithoutEncryption()
             {
-                _client = new Rest(new AblyOptions() { Key = fakeKey, Protocol = Protocol.Json});
+                _client = new Rest(new AblyOptions() { Key = fakeKey, UseBinaryProtocol = false});
                 _client.ExecuteHttpRequest = request =>
                 {
                     currentRequest = request;
@@ -44,8 +44,8 @@ namespace Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                payload.data.Should().Be("test");
-                payload.encoding.Should().BeNull();
+                payload.Data.Should().Be("test");
+                payload.Encoding.Should().BeNull();
             }
 
             [Test]
@@ -57,8 +57,8 @@ namespace Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                (payload.data as string).FromBase64().Should().BeEquivalentTo(bytes);
-                payload.encoding.Should().Be("base64");
+                (payload.Data as string).FromBase64().Should().BeEquivalentTo(bytes);
+                payload.Encoding.Should().Be("base64");
             }
 
             [Test]
@@ -72,8 +72,8 @@ namespace Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                payload.data.Should().Be(JsonConvert.SerializeObject(obj));
-                payload.encoding.Should().Be("json");
+                payload.Data.Should().Be(JsonConvert.SerializeObject(obj));
+                payload.Encoding.Should().Be("json");
             }
         }
 
@@ -87,7 +87,7 @@ namespace Ably.AcceptanceTests
             public WithTextProtocolWithEncryption()
             {
                 options = new ChannelOptions(Crypto.GetDefaultParams());
-                _client = new Rest(new AblyOptions() { Key = fakeKey, Protocol = Protocol.Json});
+                _client = new Rest(new AblyOptions() { Key = fakeKey, UseBinaryProtocol = false});
                 _client.ExecuteHttpRequest = request =>
                 {
                     currentRequest = request;
@@ -95,9 +95,9 @@ namespace Ably.AcceptanceTests
                 };
             }
 
-            private MessagePayload GetPayload()
+            private Message GetPayload()
             {
-                var payloads = JsonConvert.DeserializeObject<List<MessagePayload>>(currentRequest.RequestBody.GetText());
+                var payloads = JsonConvert.DeserializeObject<List<Message>>(currentRequest.RequestBody.GetText());
                 return payloads.FirstOrDefault();
             }
 
@@ -113,8 +113,8 @@ namespace Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                payload.encoding.Should().Be("cipher+aes-128-cbc/base64");
-                var encryptedBytes = (payload.data as string).FromBase64();
+                payload.Encoding.Should().Be("cipher+aes-128-cbc/base64");
+                var encryptedBytes = (payload.Data as string).FromBase64();
                 Crypto.GetCipher(options).Decrypt(encryptedBytes).Should().BeEquivalentTo(bytes);
             }
 
@@ -126,8 +126,8 @@ namespace Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                payload.encoding.Should().Be("utf-8/cipher+aes-128-cbc/base64");
-                var encryptedBytes = (payload.data as string).FromBase64();
+                payload.Encoding.Should().Be("utf-8/cipher+aes-128-cbc/base64");
+                var encryptedBytes = (payload.Data as string).FromBase64();
                 Crypto.GetCipher(options).Decrypt(encryptedBytes).GetText().Should().BeEquivalentTo("test");
             }
 
@@ -140,8 +140,8 @@ namespace Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                payload.encoding.Should().Be("json/utf-8/cipher+aes-128-cbc/base64");
-                var encryptedBytes = (payload.data as string).FromBase64();
+                payload.Encoding.Should().Be("json/utf-8/cipher+aes-128-cbc/base64");
+                var encryptedBytes = (payload.Data as string).FromBase64();
                 var decryptedString = Crypto.GetCipher(options).Decrypt(encryptedBytes).GetText();
                 decryptedString.Should().Be(JsonConvert.SerializeObject(obj));
             }
@@ -153,20 +153,20 @@ namespace Ably.AcceptanceTests
             private Rest _client;
             private AblyRequest currentRequest;
 
-            private MessagePayload GetPayload()
+            private Message GetPayload()
             {
                 using (var stream = new MemoryStream(currentRequest.RequestBody))
                 {
-                    var context = SerializationContext.Default.GetSerializer<List<MessagePayload>>();
+                    var context = SerializationContext.Default.GetSerializer<List<Message>>();
                     var payload = context.Unpack(stream).FirstOrDefault();
-                    payload.data = ((MessagePackObject)payload.data).ToObject();
+                    payload.Data = ((MessagePackObject)payload.Data).ToObject();
                     return payload;
                 }
             }
 
             public WithBinaryProtocolWithoutEncryption()
             {
-                _client = new Rest(new AblyOptions() { Key = fakeKey, Protocol = Protocol.MsgPack});
+                _client = new Rest(new AblyOptions() { Key = fakeKey, UseBinaryProtocol = true});
                 _client.ExecuteHttpRequest = request =>
                 {
                     currentRequest = request;
@@ -182,8 +182,8 @@ namespace Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                payload.data.Should().Be("test");
-                payload.encoding.Should().BeNull();
+                payload.Data.Should().Be("test");
+                payload.Encoding.Should().BeNull();
             }
 
             [Test]
@@ -195,8 +195,8 @@ namespace Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                (payload.data as byte[]).Should().BeEquivalentTo(bytes);
-                payload.encoding.Should().BeNull();
+                (payload.Data as byte[]).Should().BeEquivalentTo(bytes);
+                payload.Encoding.Should().BeNull();
             }
 
             [Test]
@@ -210,8 +210,8 @@ namespace Ably.AcceptanceTests
                 
                 //Assert
                 var payload = GetPayload();
-                payload.data.Should().Be(JsonConvert.SerializeObject(obj));
-                payload.encoding.Should().Be("json");
+                payload.Data.Should().Be(JsonConvert.SerializeObject(obj));
+                payload.Encoding.Should().Be("json");
             }
         }
 
@@ -225,7 +225,7 @@ namespace Ably.AcceptanceTests
             public WithBinaryProtocolWithEncryption()
             {
                 options = new ChannelOptions(Crypto.GetDefaultParams());
-                _client = new Rest(new AblyOptions() { Key = fakeKey, Protocol = Protocol.MsgPack});
+                _client = new Rest(new AblyOptions() { Key = fakeKey, UseBinaryProtocol = true});
                 _client.ExecuteHttpRequest = request =>
                 {
                     currentRequest = request;
@@ -233,13 +233,13 @@ namespace Ably.AcceptanceTests
                 };
             }
 
-            private MessagePayload GetPayload()
+            private Message GetPayload()
             {
                 using (var stream = new MemoryStream(currentRequest.RequestBody))
                 {
-                    var context = SerializationContext.Default.GetSerializer<List<MessagePayload>>();
+                    var context = SerializationContext.Default.GetSerializer<List<Message>>();
                     var payload = context.Unpack(stream).FirstOrDefault();
-                    payload.data = ((MessagePackObject) payload.data).ToObject();
+                    payload.Data = ((MessagePackObject) payload.Data).ToObject();
                     return payload;
                 }
             }
@@ -255,8 +255,8 @@ namespace Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                payload.encoding.Should().Be("cipher+aes-128-cbc");
-                var encryptedBytes = (payload.data as byte[]);
+                payload.Encoding.Should().Be("cipher+aes-128-cbc");
+                var encryptedBytes = (payload.Data as byte[]);
                 Crypto.GetCipher(options).Decrypt(encryptedBytes).Should().BeEquivalentTo(bytes);
             }
 
@@ -268,8 +268,8 @@ namespace Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                payload.encoding.Should().Be("utf-8/cipher+aes-128-cbc");
-                var encryptedBytes = (payload.data as byte[]);
+                payload.Encoding.Should().Be("utf-8/cipher+aes-128-cbc");
+                var encryptedBytes = (payload.Data as byte[]);
                 Crypto.GetCipher(options).Decrypt(encryptedBytes).GetText().Should().BeEquivalentTo("test");
             }
 
@@ -282,8 +282,8 @@ namespace Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                payload.encoding.Should().Be("json/utf-8/cipher+aes-128-cbc");
-                var encryptedBytes = (payload.data as byte[]);
+                payload.Encoding.Should().Be("json/utf-8/cipher+aes-128-cbc");
+                var encryptedBytes = (payload.Data as byte[]);
                 var decryptedString = Crypto.GetCipher(options).Decrypt(encryptedBytes).GetText();
                 decryptedString.Should().Be(JsonConvert.SerializeObject(obj));
             }

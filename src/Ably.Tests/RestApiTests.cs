@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Ably.Tests
@@ -11,12 +7,12 @@ namespace Ably.Tests
     public abstract class RestApiTests
     {
         protected const string ValidKey = "AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob";
-        protected AblyRequest _currentRequest;
+        internal AblyRequest _currentRequest;
         internal MimeTypes mimeTypes = new MimeTypes();
         
         protected Rest GetRestClient()
         {
-            var rest = new Rest(ValidKey);
+            var rest = new Rest(opts => { opts.Key = ValidKey; opts.UseBinaryProtocol = false; });
         
             rest.ExecuteHttpRequest = x => { _currentRequest = x; return new AblyResponse(); };
             return rest;
@@ -49,7 +45,7 @@ namespace Ably.Tests
         public const string ContentType = "Content-Type";
     }
 
-    public static class TestHelpers
+    internal static class TestHelpers
     {
         public static void AssertContainsHeader(this AblyRequest request, string key, string value)
         {

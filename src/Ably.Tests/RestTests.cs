@@ -8,38 +8,6 @@ using Xunit;
 
 namespace Ably.Tests
 {
-
-    public class RestProtocolTests
-    {
-        [Fact]
-        public void WhenProtocolIsNotDefined_DefaultsToMsgPack()
-        {
-            var rest = new Rest(new AblyOptions());
-            rest.Protocol.Should().Be(Protocol.MsgPack);
-        }
-
-        [Fact]
-        public void WhenProtocolIsJson_RestProtocolIsSetToJson()
-        {
-            var rest = new Rest(new AblyOptions() {Protocol = Protocol.Json});
-            rest.Protocol.Should().Be(Protocol.Json);
-        }
-
-        [Fact]
-        public void WhenUseBinaryIsFalse_ProtocolIsSetToJson()
-        {
-            var rest = new Rest(new AblyOptions() {UseBinaryProtocol = false});
-            rest.Protocol.Should().Be(Protocol.Json);
-        }
-
-        [Fact]
-        public void WhenProtocolIsMsgPack_ProtocolIsSetToMsgPack()
-        {
-            var rest = new Rest(new AblyOptions() { Protocol = Protocol.MsgPack});
-            rest.Protocol.Should().Be(Protocol.MsgPack);
-        }
-    }
-
     public class RestTests
     {
         private const string ValidKey = "1iZPfA.BjcI_g:wpNhw5RCw6rDjisl";
@@ -64,7 +32,7 @@ namespace Ably.Tests
 
         private static Rest GetRestClient()
         {
-            return new Rest(ValidKey);
+            return new Rest(new AblyOptions() { UseBinaryProtocol = false, Key = ValidKey });
         }
 
         [Fact]
@@ -107,13 +75,6 @@ namespace Ably.Tests
         }
 
         [Fact]
-        public void Init_WithAppIdInOptions_InitialisesClient()
-        {
-            var client = new Rest(opts => opts.AppId = Key.AppId);
-            Assert.NotNull(client);
-        }
-
-        [Fact]
         public void Init_WithKeyAndNoClientId_SetsAuthMethodToBasic()
         {
             var client = new Rest(ValidKey);
@@ -143,7 +104,6 @@ namespace Ably.Tests
             {
                 opts.KeyValue = "blah";
                 opts.ClientId = "123";
-                opts.AppId = "123";
             });
 
             Assert.Equal(AuthMethod.Token, client.AuthMethod);
@@ -155,19 +115,93 @@ namespace Ably.Tests
             bool called = false;
             var options = new AblyOptions
             {
-                AuthCallback = (x) => { called = true; return new Token(); },
-                AppId = "-NyOAA" //Random
+                AuthCallback = (x) => { called = true; return new Token() { ExpiresAt = DateTimeOffset.UtcNow.AddHours(1) }; },
+                UseBinaryProtocol = false
             };
 
             var rest = new Rest(options);
 
-            var httpClient = new FakeHttpClient();
-            httpClient.ExecuteFunc = delegate { return new AblyResponse() {TextResponse = "{}"}; };
-            rest._httpClient = httpClient;
+            rest.ExecuteHttpRequest = delegate { return new AblyResponse() {TextResponse = "[{}]"}; };
 
             rest.Stats();
 
             Assert.True(called, "Rest with Callback needs to request token using callback");
+        }
+
+        [Fact]
+        public void Init_WithAuthUrl_CallsTheUrlOnFirstRequest()
+        {
+            bool called = false;
+            var options = new AblyOptions
+            {
+                AuthUrl = "http://testUrl",
+                UseBinaryProtocol = false
+            };
+
+            var rest = new Rest(options);
+
+            rest.ExecuteHttpRequest = request =>
+            {
+                if (request.Url.Contains(options.AuthUrl))
+                {
+                    called = true;
+                    return new AblyResponse() { TextResponse = "{}" };
+                }
+
+                if (request.Url.Contains("requestToken"))
+                {
+                    return new AblyResponse { TextResponse = "{ \"access_token\": { \"expires\": \"" + DateTimeOffset.UtcNow.AddHours(1).ToUnixTime() + "\"}}" };
+                }
+
+                return new AblyResponse() { TextResponse = "[{}]"};
+            };
+
+            rest.Stats();
+
+            Assert.True(called, "Rest with Callback needs to request token using callback");
+        }
+
+        [Fact]
+        public void ClientWithExpiredTokenAutomaticallyCreatesANewOne()
+        {
+            var newTokenRequested = false;
+            var options = new AblyOptions
+            {
+                AuthCallback = (x) => { newTokenRequested = true; return new Token("new.token") { ExpiresAt = DateTimeOffset.UtcNow.AddDays(1)}; },
+                UseBinaryProtocol = false
+            };
+            var rest = new Rest(options);
+            rest.ExecuteHttpRequest = request => new AblyResponse() {TextResponse = "[{}]"};
+            rest.CurrentToken = new Token() { ExpiresAt = DateTimeOffset.UtcNow.AddDays(-1) };
+
+            rest.Stats();
+            newTokenRequested.Should().BeTrue();
+            rest.CurrentToken.Id.Should().Be("new.token");
+        }
+
+        [Fact]
+        public void ClientWithExistingTokenReusesItForMakingRequests()
+        {
+            var options = new AblyOptions
+            {
+                ClientId = "test", 
+                KeyId = "best",
+                UseBinaryProtocol = false
+            };
+            var rest = new Rest(options);
+            var token = new Token("123") { ExpiresAt = DateTimeOffset.UtcNow.AddHours(1) };
+            rest.CurrentToken = token;
+
+            rest.ExecuteHttpRequest = request =>
+            {
+                //Assert
+                request.Headers["Authorization"].Should().Contain(token.Id.ToBase64());
+                return new AblyResponse() { TextResponse = "[{}]" };
+            };
+
+            rest.Stats();
+            rest.Stats();
+            rest.Stats();
         }
 
         [Fact]
@@ -213,7 +247,7 @@ namespace Ably.Tests
             var rest = GetRestClient();
             
             AblyRequest request = null;
-            rest.ExecuteHttpRequest = x => { request = x; return new AblyResponse { Type = ResponseType.Json, TextResponse = "{  }" }; };
+            rest.ExecuteHttpRequest = x => { request = x; return new AblyResponse { Type = ResponseType.Json, TextResponse = "[{  }]" }; };
             rest.Stats();
 
             Assert.Equal(HttpMethod.Get, request.Method);
@@ -226,7 +260,7 @@ namespace Ably.Tests
         {
             var rest = GetRestClient();
             AblyRequest request = null;
-            rest.ExecuteHttpRequest = x => { request = x; return new AblyResponse { TextResponse = "{}" }; };
+            rest.ExecuteHttpRequest = x => { request = x; return new AblyResponse { TextResponse = "[{}]" }; };
             var query = new StatsDataRequestQuery();
             DateTime now = DateTime.Now;
             query.Start = now.AddHours(-1);
@@ -252,7 +286,7 @@ namespace Ably.Tests
                 var response = new AblyResponse()
                 {
                     Headers = DataRequestQueryTests.GetSampleStatsRequestHeaders(),
-                    TextResponse = "{}"
+                    TextResponse = "[{}]"
                 };
                 return response;
             };
@@ -262,7 +296,7 @@ namespace Ably.Tests
 
             //Assert
             Assert.NotNull(result.NextQuery);
-            Assert.NotNull(result.InitialResultQuery);
+            Assert.NotNull(result.FirstQuery);
         }
     }
 }

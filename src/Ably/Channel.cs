@@ -1,20 +1,7 @@
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Diagnostics.Contracts;
-using System.Net;
-using System.Net.NetworkInformation;
-using System.Text.RegularExpressions;
-using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
 
 namespace Ably
 {
-    internal interface IResponseHandler
-    {
-        T ParseMessagesResponse<T>(AblyResponse response) where T : class;
-        IEnumerable<Message> ParseMessagesResponse(AblyResponse response, ChannelOptions options);
-    }
-
     public class Channel : IChannel
     {
         public string Name { get; private set; }
@@ -48,7 +35,7 @@ namespace Ably
         {
             var request = _restClient.CreatePostRequest(basePath + "/messages", _options);
 
-            request.PostData = new Message() { Name = name, Data = data };
+            request.PostData = new List<Message> { new Message(name, data)};
             _restClient.ExecuteRequest(request);
         }
 
@@ -59,41 +46,39 @@ namespace Ably
             _restClient.ExecuteRequest(request);
         }
 
-        public IList<PresenceMessage> Presence()
+        public IPaginatedResource<PresenceMessage> Presence()
         {
-            var request = _restClient.CreateGetRequest(basePath + "/presence");
-            var response = _restClient.ExecuteRequest(request);
-
-            return _handler.ParseMessagesResponse<List<PresenceMessage>>(response);
+            var request = _restClient.CreateGetRequest(basePath + "/presence", _options);
+            return _restClient.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
         }
 
-        public IPartialResult<Message> History()
+        public IPaginatedResource<PresenceMessage> PresenceHistory()
         {
-            return History(new HistoryDataRequestQuery());
+            var request = _restClient.CreateGetRequest(basePath + "/presence", _options);
+            return _restClient.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
         }
 
-        public IPartialResult<Message> History(DataRequestQuery query)
+        public IPaginatedResource<PresenceMessage> PresenceHistory(DataRequestQuery query)
+        {
+            var request = _restClient.CreateGetRequest(basePath + "/presence", _options);
+            request.AddQueryParameters(query.GetParameters());
+            return _restClient.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
+        }
+
+        public IPaginatedResource<Message> History()
+        {
+            return History(new DataRequestQuery());
+        }
+
+        public IPaginatedResource<Message> History(DataRequestQuery query)
         {
             query.Validate();
 
-            var request = _restClient.CreateGetRequest(basePath + "/messages");
+            var request = _restClient.CreateGetRequest(basePath + "/messages", _options);
 
             request.AddQueryParameters(query.GetParameters());
 
-            var response = _restClient.ExecuteRequest(request);
-
-            var result = new PartialResult<Message>(limit: query.Limit ?? 100);
-            result.CurrentResultQuery = DataRequestQuery.Parse(response.Headers["current"]);
-            result.NextQuery = DataRequestQuery.Parse(response.Headers["next"]);
-            result.InitialResultQuery = DataRequestQuery.Parse(response.Headers["initial"]);
-
-            result.AddRange(_handler.ParseMessagesResponse(response, _options));
-            return result;
-        }
-
-        public IPartialResult<Message> History(HistoryDataRequestQuery query)
-        {
-            return History(query as DataRequestQuery);
+            return _restClient.ExecuteRequest<PaginatedResource<Message>>(request);
         }
     }
 }

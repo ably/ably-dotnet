@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 
 namespace Ably
 {
+    /// <summary>
+    /// Internal class used to parse ApiKeys
+    /// </summary>
     public class ApiKey
     {
         private string _KeyValue;
@@ -26,11 +27,6 @@ namespace Ably
             get { return _KeyValue; }
         }
         
-        internal ApiKey(string appId)
-        {
-            _AppId = appId;
-        }
-
         private ApiKey() { }
         public override string ToString()
         {
