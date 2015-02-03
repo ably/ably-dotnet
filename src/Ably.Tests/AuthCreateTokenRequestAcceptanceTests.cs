@@ -10,16 +10,16 @@ namespace Ably.Tests
         private const string ApiKey = "AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob";
         internal AblyRequest CurrentRequest { get; set; }
         public readonly DateTime Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc);
-        public Rest Client { get; set; }
+        public RestClient Client { get; set; }
 
         public AuthCreateTokenRequestAcceptanceTests()
         {
             Client = GetRestClient();
         }
 
-        private Rest GetRestClient()
+        private RestClient GetRestClient()
         {
-            var rest = new Rest(new AblyOptions() { Key = ApiKey, UseBinaryProtocol = false});
+            var rest = new RestClient(new AblyOptions() { Key = ApiKey, UseBinaryProtocol = false});
             rest.ExecuteHttpRequest = (request) =>
             {
                 CurrentRequest = request;
@@ -113,14 +113,14 @@ namespace Ably.Tests
         [Fact]
         public void WithOutKeyIdThrowsException()
         {
-            var client = new Rest(new AblyOptions());
+            var client = new RestClient(new AblyOptions());
             Assert.Throws<AblyException>(delegate { client.Auth.CreateTokenRequest(null, null); });
         }
 
         [Fact]
         public void WithOutKeyValueThrowsException()
         {
-            var client = new Rest(new AblyOptions() { KeyId = "111.222"});
+            var client = new RestClient(new AblyOptions() { KeyId = "111.222"});
             Assert.Throws<AblyException>(delegate { client.Auth.CreateTokenRequest(null, null); });
         }
 

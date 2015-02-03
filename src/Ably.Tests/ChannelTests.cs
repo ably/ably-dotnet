@@ -6,6 +6,8 @@ using System.Net.Http;
 using Newtonsoft.Json;
 using Xunit;
 using System.Threading;
+using Ably.Encryption;
+using Ably.Rest;
 using Xunit.Extensions;
 
 namespace Ably.Tests

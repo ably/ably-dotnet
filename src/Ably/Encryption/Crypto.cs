@@ -1,10 +1,11 @@
 using System;
 using System.Net;
 using System.Security.Cryptography;
+using Ably.Rest;
 
-namespace Ably
+namespace Ably.Encryption
 {
-    public class Crypto
+    internal class Crypto
     {
         public const String DefaultAlgorithm = "AES";
         public const int DefaultKeylength = 128; // bits

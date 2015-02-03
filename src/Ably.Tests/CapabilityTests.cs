@@ -75,7 +75,7 @@ namespace Ably.Tests
             var capabilityString = "{ \"first\": [ \"*\" ], \"second\": [ \"publish\" ] }";
             var capability = new Capability(capabilityString);
 
-            Assert.Equal(2, capability.Resources.Count);
+            Assert.Equal(2, capability.Resources.Count);    
             Assert.Equal("first", capability.Resources.First().Name);
             Assert.Equal("*", capability.Resources.First().AllowedOperations.First());
         }

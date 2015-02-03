@@ -1,4 +1,5 @@
 ﻿using System;
+using Ably.Rest;
 using Newtonsoft.Json;
 
 namespace Ably.MessageEncoders

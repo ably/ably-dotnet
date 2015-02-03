@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using Ably;
+using Ably.Rest;
 using FluentAssertions;
 
 namespace Ably.AcceptanceTests
@@ -27,7 +28,7 @@ namespace Ably.AcceptanceTests
             _protocol = protocol;
         }
 
-        private Rest GetAbly()
+        private RestClient GetAbly()
         {
             var testData = TestsSetup.TestData;
 
@@ -37,7 +38,7 @@ namespace Ably.AcceptanceTests
                 UseBinaryProtocol = _protocol == Protocol.MsgPack,
                 Environment = AblyEnvironment.Sandbox
             };
-            var ably = new Rest(options);
+            var ably = new RestClient(options);
             return ably;
         }
 
@@ -145,7 +146,7 @@ namespace Ably.AcceptanceTests
             _protocol = protocol;
         }
 
-        private Rest GetAbly()
+        private RestClient GetAbly()
         {
             var testData = TestsSetup.TestData;
 
@@ -155,7 +156,7 @@ namespace Ably.AcceptanceTests
                 UseBinaryProtocol = _protocol == Protocol.MsgPack,
                 Environment = AblyEnvironment.Sandbox
             };
-            var ably = new Rest(options);
+            var ably = new RestClient(options);
             return ably;
         }
 
@@ -181,7 +182,7 @@ namespace Ably.AcceptanceTests
         {
             var items = (JArray) examples["items"];
             
-            Ably.Rest ably = GetAbly();
+            Ably.RestClient ably = GetAbly();
             IChannel channel = ably.Channels.Get("persisted:test", GetOptions());
             var count = 0;
             foreach (var item in items)
@@ -205,7 +206,7 @@ namespace Ably.AcceptanceTests
         public void Send20MessagesAndThenPaginateHistory()
         {
             //Arrange
-            Ably.Rest ably = GetAbly();
+            Ably.RestClient ably = GetAbly();
 
             IChannel channel = ably.Channels.Get("persisted:historyTest:" + _protocol.ToString());
             //Act

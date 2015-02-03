@@ -5,8 +5,23 @@ using System.Text.RegularExpressions;
 
 namespace Ably
 {
+    /// <summary>
+    /// Capability class that wraps the Ably capability string and provides a fluent interface in defining 
+    /// capability objects
+    /// <code>
+    /// var capability = new Capability();
+    ///
+    /// capability.AddResource("second").AllowPublish();
+    /// capability.AddResource("first").AllowAll();
+    ///
+    /// Assert.Equal("{ \"first\": [ \"*\" ], \"second\": [ \"publish\" ] }", capability.ToJson());
+    /// </code>
+    /// </summary>
     public class Capability
     {
+        /// <summary>
+        /// Capability to allow all actions. This is the default passed to requests where the capability is not explicitly set
+        /// </summary>
         public readonly static Capability AllowAll = new Capability("{ \"*\": [ \"*\" ] }");
 
         public List<CapabilityResource> Resources { get; set; }
@@ -16,6 +31,10 @@ namespace Ably
             Resources = new List<CapabilityResource>();            
         }
 
+        /// <summary>
+        /// Creates a capability object by parsing an ably capability string
+        /// </summary>
+        /// <param name="capabilityString">Valid json capability string</param>
         public Capability(string capabilityString)
         {
             Resources = new List<CapabilityResource>();
@@ -37,6 +56,19 @@ namespace Ably
             return resource;
         }
 
+
+        /// <summary>
+        /// Adds a capability resource. The resource returned can be used to define the actions allowed for it by chaining the Allow methods
+        /// Possible options are: AllowAll, AllowPublish, AllowPresence and AllowSubscribe
+        /// A Resource can be a channel "channel" or a namespace "namespace:*". Please consult the rest documentation
+        /// </summary>
+        /// <code>
+        /// var capability = new Capability();
+        ///
+        /// capability.AddResource("name").AllowPublish();
+        /// </code>
+        /// <param name="name">name of the resource</param>
+        /// <returns>CapabilityResource</returns>
         public CapabilityResource AddResource(string name)
         {
             var resource = new CapabilityResource(name);
@@ -45,6 +77,10 @@ namespace Ably
             return resource;
         }
 
+        /// <summary>
+        /// Returns the Ably capability json based on the current object.
+        /// </summary>
+        /// <returns></returns>
         public string ToJson()
         {
             var result = new JObject();
@@ -62,10 +98,9 @@ namespace Ably
         {
             if (resource.AllowsAll)
                 return new JArray(CapabilityResource.AllowedOps.All);
-            else if (resource.AllowedOperations.Count == 1)
+            if (resource.AllowedOperations.Count == 1)
                 return new JArray(resource.AllowedOperations.First());
-            else
-                return new JArray(resource.AllowedOperations.ToArray());
+            return new JArray(resource.AllowedOperations.ToArray());
         }
 
         private string CleanUpWhiteSpace(string jsonString)

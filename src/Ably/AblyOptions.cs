@@ -1,3 +1,5 @@
+using Ably.Rest;
+
 namespace Ably
 {
     /// <summary>
@@ -45,6 +47,9 @@ namespace Ably
 
         internal AblyEnvironment? Environment { get; set; }
 
+        /// <summary>
+        /// Defaul constructor for AblyOptions
+        /// </summary>
         public AblyOptions()
         {
             Tls = true;
@@ -52,6 +57,11 @@ namespace Ably
             ChannelDefaults = new ChannelOptions();
         }
 
+        /// <summary>
+        /// Construct AblyOptions class and set the Key
+        /// It automatically parses the key to ensure the correct format is used and sets the KeyId and KeyValue properties
+        /// </summary>
+        /// <param name="key">Ably authentication key</param>
         public AblyOptions(string key) : base(key)
         {
             Tls = true;

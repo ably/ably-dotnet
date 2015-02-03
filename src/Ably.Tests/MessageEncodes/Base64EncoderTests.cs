@@ -1,5 +1,6 @@
 ﻿using Ably.MessageEncoders;
 using Ably;
+using Ably.Rest;
 using FluentAssertions;
 using Xunit;
 

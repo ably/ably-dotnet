@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Ably.Encryption;
 
 namespace Ably
 {

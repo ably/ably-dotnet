@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using Ably.Encryption;
+using Ably.Rest;
 using FluentAssertions;
 using MsgPack;
 using MsgPack.Serialization;
@@ -17,7 +19,7 @@ namespace Ably.AcceptanceTests
         [TestFixture]
         public class WithTextProtocolWithoutEncryption
         {
-            private Rest _client;
+            private RestClient _client;
             private AblyRequest currentRequest;
 
             private Message GetPayload()
@@ -28,7 +30,7 @@ namespace Ably.AcceptanceTests
 
             public WithTextProtocolWithoutEncryption()
             {
-                _client = new Rest(new AblyOptions() { Key = fakeKey, UseBinaryProtocol = false});
+                _client = new RestClient(new AblyOptions() { Key = fakeKey, UseBinaryProtocol = false});
                 _client.ExecuteHttpRequest = request =>
                 {
                     currentRequest = request;
@@ -80,14 +82,14 @@ namespace Ably.AcceptanceTests
         [TestFixture]
         public class WithTextProtocolWithEncryption
         {
-            private Rest _client;
+            private RestClient _client;
             private AblyRequest currentRequest;
             private ChannelOptions options;
 
             public WithTextProtocolWithEncryption()
             {
                 options = new ChannelOptions(Crypto.GetDefaultParams());
-                _client = new Rest(new AblyOptions() { Key = fakeKey, UseBinaryProtocol = false});
+                _client = new RestClient(new AblyOptions() { Key = fakeKey, UseBinaryProtocol = false});
                 _client.ExecuteHttpRequest = request =>
                 {
                     currentRequest = request;
@@ -150,7 +152,7 @@ namespace Ably.AcceptanceTests
         [TestFixture]
         public class WithBinaryProtocolWithoutEncryption
         {
-            private Rest _client;
+            private RestClient _client;
             private AblyRequest currentRequest;
 
             private Message GetPayload()
@@ -166,7 +168,7 @@ namespace Ably.AcceptanceTests
 
             public WithBinaryProtocolWithoutEncryption()
             {
-                _client = new Rest(new AblyOptions() { Key = fakeKey, UseBinaryProtocol = true});
+                _client = new RestClient(new AblyOptions() { Key = fakeKey, UseBinaryProtocol = true});
                 _client.ExecuteHttpRequest = request =>
                 {
                     currentRequest = request;
@@ -218,14 +220,14 @@ namespace Ably.AcceptanceTests
         [TestFixture]
         public class WithBinaryProtocolWithEncryption
         {
-            private Rest _client;
+            private RestClient _client;
             private AblyRequest currentRequest;
             private ChannelOptions options;
 
             public WithBinaryProtocolWithEncryption()
             {
                 options = new ChannelOptions(Crypto.GetDefaultParams());
-                _client = new Rest(new AblyOptions() { Key = fakeKey, UseBinaryProtocol = true});
+                _client = new RestClient(new AblyOptions() { Key = fakeKey, UseBinaryProtocol = true});
                 _client.ExecuteHttpRequest = request =>
                 {
                     currentRequest = request;

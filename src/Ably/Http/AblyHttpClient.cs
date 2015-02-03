@@ -37,10 +37,13 @@ namespace Ably
             while (currentTry <= hosts.Length)
             {
                 var requestTime = Config.Now();
-                if((requestTime - startTime).TotalSeconds > Config.CommulativeFailedRequestTimeOutInSeconds)
+                if ((requestTime - startTime).TotalSeconds > Config.CommulativeFailedRequestTimeOutInSeconds)
+                {
+                    Logger.Current.Error("Cumulative retry timeout of {0}s was exceeded", Config.CommulativeFailedRequestTimeOutInSeconds);   
                     throw new AblyException(
                         new ErrorInfo(string.Format("Commulative retry timeout of {0}s was exceeded.", 
                             Config.CommulativeFailedRequestTimeOutInSeconds), 500, null));
+                }
 
                 try
                 {

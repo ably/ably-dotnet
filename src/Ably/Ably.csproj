@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -63,27 +64,28 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AblyEnvironment.cs" />
-    <Compile Include="AblyHttpClient.cs" />
+    <Compile Include="CustomSerialisers\CapabilityJsonConverter.cs" />
+    <Compile Include="CustomSerialisers\DateTimeOffsetJsonConverter.cs" />
+    <Compile Include="CustomSerialisers\StatsJsonDateConverter.cs" />
+    <Compile Include="Http\AblyHttpClient.cs" />
     <Compile Include="AblyOptions.cs" />
     <Compile Include="AblyException.cs" />
-    <Compile Include="AblyRequest.cs" />
-    <Compile Include="AblyResponse.cs" />
-    <Compile Include="AesCipher.cs" />
+    <Compile Include="Http\AblyRequest.cs" />
+    <Compile Include="Http\AblyResponse.cs" />
+    <Compile Include="Encryption\AesCipher.cs" />
     <Compile Include="ApiKey.cs" />
-    <Compile Include="Assert.cs" />
     <Compile Include="AuthMethod.cs" />
     <Compile Include="AuthOptions.cs" />
     <Compile Include="Auth\Token.cs" />
     <Compile Include="Capability.cs" />
     <Compile Include="CustomSerialisers\CapabilityMessagePackSerializer.cs" />
     <Compile Include="CapabilityResource.cs" />
-    <Compile Include="Channel.cs" />
-    <Compile Include="ChannelOptions.cs" />
-    <Compile Include="CipherData.cs" />
+    <Compile Include="IRestClient.cs" />
+    <Compile Include="Rest\Channel.cs" />
+    <Compile Include="Rest\ChannelOptions.cs" />
     <Compile Include="CipherParams.cs" />
     <Compile Include="Config.cs" />
-    <Compile Include="ConfigurationMissingException.cs" />
-    <Compile Include="Crypto.cs" />
+    <Compile Include="Encryption\Crypto.cs" />
     <Compile Include="CustomSerialisers\DateTimeOffsetMessagePackSerializer.cs" />
     <Compile Include="DataRequestQuery.cs" />
     <Compile Include="ErrorInfo.cs" />
@@ -94,13 +96,13 @@
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="IAblyHttpClient.cs" />
     <Compile Include="IAuthCommands.cs" />
-    <Compile Include="IChannel.cs" />
+    <Compile Include="Rest\IChannel.cs" />
     <Compile Include="IChannelCipher.cs" />
-    <Compile Include="IChannelCommands.cs" />
+    <Compile Include="Rest\IChannelCommands.cs" />
     <Compile Include="IEncodedMessage.cs" />
     <Compile Include="ILogger.cs" />
     <Compile Include="IPaginatedResource.cs" />
-    <Compile Include="IResponseHandler.cs" />
+    <Compile Include="MessageEncoders\IMessageHandler.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="MessageEncoders\Base64Encoder.cs" />
     <Compile Include="MessageEncoders\CipherEncoder.cs" />
@@ -108,27 +110,28 @@
     <Compile Include="MessageEncoders\MessageEncoder.cs" />
     <Compile Include="MessageEncoders\Utf8Encoder.cs" />
     <Compile Include="Message.cs" />
-    <Compile Include="MimeTypes.cs" />
+    <Compile Include="Http\MimeTypes.cs" />
     <Compile Include="MsgPackHelper.cs" />
     <Compile Include="NullLogger.cs" />
-    <Compile Include="Outcome.cs" />
     <Compile Include="PresenceMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Protocol.cs" />
     <Compile Include="QueryDirection.cs" />
-    <Compile Include="MessageHandler.cs" />
-    <Compile Include="RequestTokenData.cs" />
-    <Compile Include="Rest.cs" />
+    <Compile Include="MessageEncoders\MessageHandler.cs" />
+    <Compile Include="TokenRequest.cs" />
+    <Compile Include="RestClient.cs" />
     <Compile Include="Statistics.cs" />
     <Compile Include="StringUtils.cs" />
     <Compile Include="TokenRequestPostData.cs" />
-    <Compile Include="TypedBuffer.cs" />
+    <Compile Include="TokenResponse.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Utils\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

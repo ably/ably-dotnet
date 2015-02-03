@@ -10,13 +10,13 @@ namespace Ably.Tests
         private string _clientId;
         private const string ApiKey = "AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob";
         internal AblyRequest CurrentRequest { get; set; }
-        public Rest Client { get; set; }
+        public RestClient Client { get; set; }
         public int ExecutionCount { get; set; }
 
         public ImplicitTokenAuthWithClientId()
         {
             _clientId = "123";
-            Client = new Rest(new AblyOptions() {Key = ApiKey, ClientId = _clientId, UseBinaryProtocol = false});
+            Client = new RestClient(new AblyOptions() {Key = ApiKey, ClientId = _clientId, UseBinaryProtocol = false});
             Client.ExecuteHttpRequest = request =>
             {
                 ExecutionCount++;

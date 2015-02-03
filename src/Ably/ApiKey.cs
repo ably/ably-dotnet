@@ -4,7 +4,8 @@ using System.Net;
 namespace Ably
 {
     /// <summary>
-    /// Internal class used to parse ApiKeys
+    /// Internal class used to parse ApiKeys. The api key has the following parts {app}.{key}:{KeyValue} 
+    /// The app and key parts form the KeyId
     /// </summary>
     public class ApiKey
     {

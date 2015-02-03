@@ -5,6 +5,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using Ably.Auth;
+using Ably.CustomSerialisers;
+using Ably.MessageEncoders;
+using Ably.Rest;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -13,9 +16,9 @@ namespace Ably
     /// <summary>
     /// Client for the ably rest API
     /// </summary>
-    public class Rest : IAuthCommands, IChannelCommands
+    public sealed class RestClient : IRestClient
     {
-        static Rest()
+        static RestClient()
         {
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
             {
@@ -30,7 +33,7 @@ namespace Ably
 
         internal IAblyHttpClient _httpClient;
         private AblyOptions _options;
-        private ILogger Logger = Config.AblyLogger;
+        private readonly ILogger Logger = Config.AblyLogger;
         internal AuthMethod AuthMethod;
         internal Token CurrentToken;
         internal MessageHandler _messageHandler;
@@ -50,7 +53,8 @@ namespace Ably
         /// <summary>
         /// Initialises the RestClient by reading the Key from a connection string with key 'Ably'
         /// </summary>
-        public Rest()
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public RestClient()
         {
             var key = GetConnectionString();
             if (string.IsNullOrEmpty(key))
@@ -67,7 +71,7 @@ namespace Ably
         /// Initialises the RestClient using the api key provided
         /// </summary>
         /// <param name="apiKey">Full api key</param>
-        public Rest(string apiKey)
+        public RestClient(string apiKey)
             : this(new AblyOptions(apiKey))
         {
 
@@ -83,7 +87,7 @@ namespace Ably
         /// </example>
         /// </summary>
         /// <param name="init">Action delegate which receives a empty options object.</param>
-        public Rest(Action<AblyOptions> init)
+        public RestClient(Action<AblyOptions> init)
         {
             _options = new AblyOptions();
             init(_options);
@@ -94,7 +98,7 @@ namespace Ably
         /// Initialise the library with a custom set of options
         /// </summary>
         /// <param name="ablyOptions"></param>
-        public Rest(AblyOptions ablyOptions)
+        public RestClient(AblyOptions ablyOptions)
         {
             _options = ablyOptions;
             InitialiseAbly();
@@ -105,7 +109,7 @@ namespace Ably
         /// Retrieves the ably connection string from app.config / web.config
         /// </summary>
         /// <returns>Ably connections string. Empty if connection string does not exist.</returns>
-        internal virtual string GetConnectionString()
+        internal string GetConnectionString()
         {
             var connString = ConfigurationManager.ConnectionStrings["Ably"];
             if (connString == null)
@@ -135,7 +139,7 @@ namespace Ably
             }
 
             _protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
-
+            Logger.Debug("Protocol set to: " + _protocol);
             _messageHandler = new MessageHandler(_protocol);
 
             string host = GetHost();
@@ -225,6 +229,8 @@ namespace Ably
 
         internal AblyResponse ExecuteRequest(AblyRequest request)
         {
+            Logger.Info("Sending {0} request to {1}", request.Method, request.Url);
+            
             if (request.SkipAuthentication == false)
                 AddAuthHeader(request);
 
@@ -236,6 +242,12 @@ namespace Ably
         internal T ExecuteRequest<T>(AblyRequest request) where T : class
         {
             var response = ExecuteRequest(request);
+            Logger.Debug("Response received. Status: " + response.StatusCode);
+            Logger.Debug("Content type: " + response.ContentType);
+            Logger.Debug("Encoding: " + response.Encoding);
+            if(response.Body != null)
+                Logger.Debug("Raw response (base64):" + response.Body.ToBase64());
+
             return _messageHandler.ParseResponse<T>(request, response);
         }
 
@@ -265,6 +277,7 @@ namespace Ably
             {
                 var authInfo = Convert.ToBase64String(Options.Key.GetBytes());
                 request.Headers["Authorization"] = "Basic " + authInfo;
+                Logger.Debug("Adding Authorisation header with Basic authentication.");
             }
             else
             {
@@ -276,6 +289,7 @@ namespace Ably
                 if (HasValidToken())
                 {
                     request.Headers["Authorization"] = "Bearer " + CurrentToken.Id.ToBase64();
+                    Logger.Debug("Adding Authorization headir with Token authentication");
                 }
                 else
                     throw new AblyException("Invalid token credentials", 40100, HttpStatusCode.Unauthorized);
@@ -504,14 +518,19 @@ namespace Ably
             return new AblyRequest(path, HttpMethod.Post, Protocol) { ChannelOptions = options };
         }
 
+        IChannel IChannelCommands.this[string name]
+        {
+            get { return ((IChannelCommands) this).Get(name); }
+        }
+
         IChannel IChannelCommands.Get(string name)
         {
-            return new Channel(this, name, _messageHandler, Options.ChannelDefaults);
+            return new Channel(this, name, Options.ChannelDefaults);
         }
 
         IChannel IChannelCommands.Get(string name, ChannelOptions options)
         {
-            return new Channel(this, name, _messageHandler, options);
+            return new Channel(this, name, options);
         }
     }
 }

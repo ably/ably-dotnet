@@ -1,4 +1,6 @@
-﻿namespace Ably.MessageEncoders
+﻿using Ably.Rest;
+
+namespace Ably.MessageEncoders
 {
     internal class Utf8Encoder : MessageEncoder
     {

@@ -1,13 +1,14 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using Ably.MessageEncoders;
+using Ably.Rest;
 using MsgPack;
 using Newtonsoft.Json;
 
-namespace Ably
+namespace Ably.MessageEncoders
 {
-    internal class MessageHandler : IResponseHandler
+    internal class MessageHandler : IMessageHandler
     {
         private readonly Protocol _protocol;
         public List<MessageEncoder> Encoders = new List<MessageEncoder>();
@@ -31,6 +32,8 @@ namespace Ably
             Encoders.Add(new Utf8Encoder(protocol));
             Encoders.Add(new CipherEncoder(protocol));
             Encoders.Add(new Base64Encoder(protocol));
+
+            Logger.Current.Debug(string.Format("Initialising message encodings. {0} initialised", string.Join(",", Encoders.Select( x=> x.EncodingName))));
         }
 
         public T ParseMessagesResponse<T>(AblyResponse response) where T : class
@@ -92,12 +95,15 @@ namespace Ably
 
         public byte[] GetRequestBody(AblyRequest request)
         {
+            Logger.Current.Debug("Encoding request body.");
             if (request.PostData == null)
                 return new byte[] { };
 
             if (request.PostData is IEnumerable<Message>)
                 return GetMessagesRequestBody(request.PostData as IEnumerable<Message>,
                     request.ChannelOptions);
+
+            Logger.Current.Debug(string.Format("Payload: {0}", JsonConvert.SerializeObject(request.PostData)));
 
             if (_protocol == Protocol.Json)
                 return JsonConvert.SerializeObject(request.PostData).GetBytes();
@@ -145,6 +151,7 @@ namespace Ably
 
         public T ParseResponse<T>(AblyRequest request, AblyResponse response) where T : class
         {
+            LogResponse(response);
             if (typeof(T) == typeof(PaginatedResource<Message>))
             {
                 var result = PaginatedResource.InitialisePartialResult<Message>(response.Headers, GetLimit(request));
@@ -174,6 +181,25 @@ namespace Ably
             }
 
             return (T)JsonConvert.DeserializeObject(responseText, typeof(T));
+        }
+
+        private void LogResponse(AblyResponse response)
+        {
+            Logger.Current.Info("Protocol:" + _protocol);
+            try
+            {
+                var responseBody = response.TextResponse;
+                if (_protocol == Protocol.MsgPack && response.Body != null)
+                {
+                    responseBody = MsgPackHelper.DeSerialise(response.Body, typeof(MessagePackObject)).ToString();
+                }
+                Logger.Current.Debug("Response: " + responseBody);
+            }
+            catch (Exception ex)
+            {
+                Logger.Current.Error("Error while logging response body.", ex);   
+            }
+            
         }
 
         private IEnumerable<Stats> ParseStatsResponse(AblyResponse response)

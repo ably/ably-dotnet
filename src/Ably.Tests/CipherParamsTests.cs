@@ -1,4 +1,5 @@
 ﻿using System;
+using Ably.Encryption;
 using Xunit;
 
 namespace Ably.Tests

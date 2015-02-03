@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Ably
+namespace Ably.Rest
 {
     public interface IChannel
     {

@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Security.Cryptography;
 
-namespace Ably
+namespace Ably.Encryption
 {
     /// <summary>
     /// Cipher implementation using RinjaelManaged class under the hood. 

@@ -24,7 +24,7 @@ namespace Ably.AcceptanceTests
             var capability = new Capability();
             capability.AddResource("foo").AllowPublish();
 
-            Rest ably = GetRestClient();
+            RestClient ably = GetRestClient();
             var options = ably.Options;
             
             //Act
@@ -38,13 +38,13 @@ namespace Ably.AcceptanceTests
             token.ExpiresAt.Should().BeWithin(TimeSpan.FromSeconds(2)).Before(DateTime.Now  + ttl);
         }
 
-        private Rest GetRestClient(Action<AblyOptions> opAction = null)
+        private RestClient GetRestClient(Action<AblyOptions> opAction = null)
         {
             var options = TestsSetup.GetDefaultOptions();
             if (opAction != null)
                 opAction(options);
             options.UseBinaryProtocol = _binaryProtocol;
-            return new Rest(options);
+            return new RestClient(options);
         }
 
         [Test]
@@ -57,7 +57,7 @@ namespace Ably.AcceptanceTests
             var ably = GetRestClient();
             var token = ably.Auth.RequestToken(new TokenRequest() { Capability = capability }, null);
 
-            var tokenAbly = new Rest(new AblyOptions {AuthToken = token.Id, Environment = TestsSetup.TestData.Environment});
+            var tokenAbly = new RestClient(new AblyOptions {AuthToken = token.Id, Environment = TestsSetup.TestData.Environment});
 
             //Act & Assert
             Assert.DoesNotThrow(delegate { tokenAbly.Channels.Get("foo").Publish("test", true); });
@@ -74,7 +74,7 @@ namespace Ably.AcceptanceTests
 
             var token = ably.Auth.RequestToken(new TokenRequest() { Capability = capability }, null);
 
-            var tokenAbly = new Rest(new AblyOptions { AuthToken = token.Id , Environment = AblyEnvironment.Sandbox});
+            var tokenAbly = new RestClient(new AblyOptions { AuthToken = token.Id , Environment = AblyEnvironment.Sandbox});
 
             //Act & Assert
             var error = Assert.Throws<AblyException>(delegate { tokenAbly.Channels.Get("boo").Publish("test", true); });
@@ -87,7 +87,7 @@ namespace Ably.AcceptanceTests
         {
             //Arrange
             var options = TestsSetup.GetDefaultOptions();
-            var ably = new Rest(options);
+            var ably = new RestClient(options);
             
             //Act
             var error = Assert.Throws<AblyException>(

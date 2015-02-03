@@ -1,7 +1,9 @@
 using System.Reflection;
 using System.Security.Cryptography;
 using Ably;
+using Ably.Encryption;
 using Ably.MessageEncoders;
+using Ably.Rest;
 using FluentAssertions;
 using Xunit;
 

@@ -11,10 +11,10 @@ namespace Ably.Tests
     public class AblyResponseTests
     {
         [Theory]
-        [InlineData("application/jSon", ResponseType.Json)]
-        [InlineData("application/binary", ResponseType.Thrift)]
-        [InlineData("", ResponseType.Thrift)]
-        public void Ctor_WithContentType_SetsTypeCorrectly(string type, ResponseType responseType)
+        [InlineData("application/json", ResponseType.Json)]
+        [InlineData("application/x-msgpack", ResponseType.Binary)]
+        [InlineData("", ResponseType.Binary)]
+        public void Ctor_WithContentType_SetsTypeCorrectly(string type, object responseType)
         {
             //Arrange
                         
@@ -23,7 +23,7 @@ namespace Ably.Tests
             var response = new AblyResponse("", type, new byte[0]);
 
             //Assert
-            Assert.Equal(responseType, response.Type);
+            Assert.Equal((ResponseType)responseType, response.Type);
         }
 
         [Theory]

@@ -10,9 +10,9 @@ namespace Ably.Tests
         internal AblyRequest _currentRequest;
         internal MimeTypes mimeTypes = new MimeTypes();
         
-        protected Rest GetRestClient()
+        protected RestClient GetRestClient()
         {
-            var rest = new Rest(opts => { opts.Key = ValidKey; opts.UseBinaryProtocol = false; });
+            var rest = new RestClient(opts => { opts.Key = ValidKey; opts.UseBinaryProtocol = false; });
         
             rest.ExecuteHttpRequest = x => { _currentRequest = x; return new AblyResponse(); };
             return rest;

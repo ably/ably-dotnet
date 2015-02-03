@@ -3,14 +3,13 @@ using System.Net;
 
 namespace Ably
 {
-    public enum ResponseType
+    internal enum ResponseType
     {
         Json,
-        Thrift,
-        Other
+        Binary
     }
 
-    public class AblyResponse
+    internal class AblyResponse
     {
         internal NameValueCollection Headers { get; set; } 
         internal ResponseType Type { get; set; }
@@ -30,7 +29,7 @@ namespace Ably
         internal AblyResponse(string encoding, string contentType, byte[] body)
         {
             ContentType = contentType;
-            Type = contentType.ToLower() == "application/json" ? ResponseType.Json : ResponseType.Thrift;
+            Type = contentType.ToLower() == "application/json" ? ResponseType.Json : ResponseType.Binary;
             Encoding = encoding.IsNotEmpty() ? encoding : "utf-8";
             if (Type == ResponseType.Json)
             {

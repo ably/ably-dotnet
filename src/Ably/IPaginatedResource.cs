@@ -19,6 +19,8 @@ namespace Ably
         DataRequestQuery CurrentQuery { get; set;  }
     }
 
+
+
     public class PaginatedResource<T> : List<T>, IPaginatedResource<T>, IPaginatedResource
     {
         private readonly int _limit;

@@ -1,80 +1,9 @@
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using Newtonsoft.Json.Linq;
+using Ably.CustomSerialisers;
+using Newtonsoft.Json;
 
 namespace Ably
 {
-    public class StatsJsonDateConverter : DateTimeConverterBase
-    {
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            var value = reader.Value as string;
-            return DateTimeOffset.ParseExact(value, "yyyy-MM-dd:HH:mm", CultureInfo.InvariantCulture);
-        }
-
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class CapabilityJsonConverter : JsonConverter
-    {
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            writer.WriteValue((value as Capability).ToJson());
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            var capToken = JToken.Load(reader);
-            return new Capability(capToken.ToString());
-        }
-
-        public override bool CanConvert(Type objectType)
-        {
-            return objectType == typeof (Capability);
-        }
-    }
-
-    public class DateTimeOffsetJsonConverter : JsonConverter
-    {
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            var date = (DateTimeOffset)value;
-            writer.WriteValue(date.ToUnixTime());
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            var token = JToken.Load(reader);
-            if (token.Type == JTokenType.Integer)
-            {
-                var value = (long) token;
-                if (ValueIsInMilliseconds(value))
-                    return value.FromUnixTimeInMilliseconds();
-                return value.FromUnixTime();
-            }
-            return DateTimeOffset.MinValue;
-        }
-
-        private bool ValueIsInMilliseconds(long value)
-        {
-            long num = (long) (value * 1000 + (value >= 0.0 ? 0.5 : -0.5));
-            return num <= -315537897600000L || num >= 315537897600000L;
-        }
-
-        public override bool CanConvert(Type objectType)
-        {
-            return objectType == typeof (DateTimeOffset) || objectType == typeof(DateTimeOffset?);
-        }
-    }
-
     public class Stats
     {
         public MessageTypes All { get; set; }

@@ -16,9 +16,9 @@ namespace Ably.Tests
         public readonly DateTimeOffset Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc).ToDateTimeOffset();
         private readonly string _dummyTokenResponse = "{ \"access_token\": {}}";
 
-        private Rest GetRestClient()
+        private RestClient GetRestClient()
         {
-            var rest = new Rest(new AblyOptions() { Key = ApiKey, UseBinaryProtocol = false});
+            var rest = new RestClient(new AblyOptions() { Key = ApiKey, UseBinaryProtocol = false});
             rest.ExecuteHttpRequest = (request) =>
             {
                 CurrentRequest = request;
@@ -361,7 +361,7 @@ namespace Ably.Tests
             {
                 AuthUrl = "http://authUrl"
             };
-            rest.ExecuteHttpRequest = (x) => new AblyResponse { Type = ResponseType.Other };
+            rest.ExecuteHttpRequest = (x) => new AblyResponse { Type = ResponseType.Binary };
 
             var tokenRequest = new TokenRequest { Id = GetKeyId(), Capability = new Capability() };
 

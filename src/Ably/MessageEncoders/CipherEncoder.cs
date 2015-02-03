@@ -1,4 +1,6 @@
 using System;
+using Ably.Encryption;
+using Ably.Rest;
 
 namespace Ably.MessageEncoders
 {
