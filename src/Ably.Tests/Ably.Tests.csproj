@@ -121,6 +121,7 @@
   <ItemGroup>
     <None Include="App.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
     <None Include="Json\StatsInterval.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
