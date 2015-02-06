@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Ably</id>
+    <version>0.7.1</version>
+    <title>Ably Realtime library</title>
+    <description>A .net library for the ably.io realtime service</description>
+    <authors>Martin Georgiev</authors>
+    <language>en</language>
+    <projectUrl>https://github.com/ably/ably-dotnet</projectUrl>
+    <licenseUrl>https://raw.github.com/ably/ably-dotnet/LICENSE.txt</licenseUrl>
+    <tags>ably realtime</tags>
+  </metadata>
+	<files>
+		<file src="bin\release\net40\Ably*.*" target="lib\net40" />
+    <file src="bin\release\net45\Ably*.*" target="lib\net45" />
+	</files>
+</package>
