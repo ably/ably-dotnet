@@ -6,15 +6,14 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Ably")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Client for the ably.io realtime service")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Ably")]
 [assembly: AssemblyProduct("Ably")]
-[assembly: AssemblyCopyright("Copyright ©  2012")]
+[assembly: AssemblyCopyright("Copyright © 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: InternalsVisibleTo("Ably.Tests")]
-[assembly: InternalsVisibleTo("Ably.IntegrationTests")]
 [assembly: InternalsVisibleTo("Ably.AcceptanceTests")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 

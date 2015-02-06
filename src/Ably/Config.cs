@@ -12,7 +12,7 @@ namespace Ably
         /// </summary>
         public static Func<CipherParams, IChannelCipher> GetCipher = @params => new AesCipher(@params);
         internal static string DefaultHost = "rest.ably.io";
-        internal static Func<DateTimeOffset> Now = () => DateTimeOffset.Now;
+        internal static Func<DateTimeOffset> Now = () => DateTimeOffset.UtcNow;
 
         public static string Host = "rest.ably.io";
         public const int Port = 80;

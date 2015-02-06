@@ -53,6 +53,35 @@ function global:run_tests($test_result_file, $xunit_console_dir, $solution_dir, 
 	}
 }
 
+function global:run_nunit_tests($test_result_folder, $console_dir, $test_root, $testType)
+{
+	Write-Host "Test Result Folder: $test_result_folder"
+	Write-Host "Console dir: $console_dir"
+	Write-Host "Test root: $test_root"
+	Write-Host "Test type: $testType"
+	
+	$testAssemblies = @()
+	$testDlls = (get-childitem "$test_root\" -r -i "*$testType.dll" -exclude "*.config")
+	$nunit_console = "$console_dir\nunit-console.exe"
+	
+	try {
+		foreach($testDll in $testDlls) {
+			
+				$resultsFile = "$test_result_folder" + [System.IO.Path]::GetFileNameWithoutExtension($testDll) + ".xml"
+				& "$nunit_console" $testDll /noshadow /xml:"$resultsFile"
+				Write-Output "##teamcity[importData type='nunit' path='$resultsFile']"
+			
+		}
+	
+	}
+	catch {
+		Write-Output "##teamcity[buildStatus text='Error running unit tests' status='ERROR']"
+		Write-Host $_
+		Write-Host ("************************ Unit Test failure ***************************")
+		exit 1
+	}
+}
+
 
 function global:clear-obj-artifacts($directory)
 {

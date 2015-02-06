@@ -8,7 +8,6 @@ properties {
 	$configuration = 'debug'
 	$sln_dir = "src"
 	$sln_name = "Ably.sln"
-	$db_project = "PaymentsDB"
 	
 	$project_name = "Ably"
 	$build_number = "1.0.0.0"
@@ -53,12 +52,13 @@ task Build -depends Assembly_Info, Init {
 
 task Unit_Tests {
 
-	$base_dir = "$build_script_dir\$sln_dir"
+	$base_dir = "$build_script_dir\$sln_dir\Ably.Tests\bin\$configuration"
 
 	$xunit_runner = "$build_script_dir\tools\xunit-runners\tools"
 
 	setup_folder $build_output_dir
 
-	run_tests "$build_output_dir\UnitTestsResults.xml" $xunit_runner $base_dir $configuration "Tests"
+	run_tests "$build_output_dir\TestResults.xml" $xunit_runner $base_dir $configuration ".Tests"
+	run_nunit_tests "$build_output_dir\AcceptanceTestResults.xml" "$build_script_dir\tools\nunit-runners" $base_dir $configuration ".AcceptanceTests"
 	Write-Host "Running unit tests"
 }

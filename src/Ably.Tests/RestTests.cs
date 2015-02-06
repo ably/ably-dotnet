@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -151,16 +152,28 @@ namespace Ably.Tests
         [Fact]
         public void ClientWithExpiredTokenAutomaticallyCreatesANewOne()
         {
+            Config.Now = () => DateTimeOffset.UtcNow;
             var newTokenRequested = false;
             var options = new AblyOptions
             {
-                AuthCallback = (x) => { newTokenRequested = true; return new Token("new.token") { ExpiresAt = DateTimeOffset.UtcNow.AddDays(1) }; },
+                AuthCallback = (x) => { 
+                    
+                    Console.WriteLine("Getting new token.");
+                    newTokenRequested = true; return new Token("new.token")
+                {
+                    ExpiresAt = DateTimeOffset.UtcNow.AddDays(1)
+                }; },
                 UseBinaryProtocol = false
             };
             var rest = new RestClient(options);
-            rest.ExecuteHttpRequest = request => new AblyResponse() { TextResponse = "[{}]" };
-            rest.CurrentToken = new Token() { ExpiresAt = DateTimeOffset.UtcNow.AddDays(-1) };
+            rest.ExecuteHttpRequest = request =>
+            {
+                Console.WriteLine("Getting an AblyResponse.");
+                return new AblyResponse() {TextResponse = "[{}]"};
+            };
+            rest.CurrentToken = new Token() { ExpiresAt = DateTimeOffset.UtcNow.AddDays(-2) };
 
+            Console.WriteLine("Current time:" + Config.Now());
             rest.Stats();
             newTokenRequested.Should().BeTrue();
             rest.CurrentToken.Id.Should().Be("new.token");

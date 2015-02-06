@@ -70,5 +70,10 @@ namespace Ably.Auth
         {
             return json != null && json["issued_at"] != null;
         }
+
+        public override string ToString()
+        {
+            return string.Format("Id: {0}, KeyId: {1}, ExpiresAt: {2}, IssuedAt: {3}, Capability: {4}, ClientId: {5}", Id, KeyId, ExpiresAt, IssuedAt, Capability, ClientId);
+        }
     }
 }

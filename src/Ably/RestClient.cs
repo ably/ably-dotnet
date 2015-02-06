@@ -292,7 +292,7 @@ namespace Ably
                     Logger.Debug("Adding Authorization headir with Token authentication");
                 }
                 else
-                    throw new AblyException("Invalid token credentials", 40100, HttpStatusCode.Unauthorized);
+                    throw new AblyException("Invalid token credentials: " + CurrentToken, 40100, HttpStatusCode.Unauthorized);
             }
         }
 
