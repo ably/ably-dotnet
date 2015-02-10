@@ -71,9 +71,9 @@ namespace Ably
             else
                 data.ttl = Defaults.Ttl.TotalSeconds.ToString(CultureInfo.InvariantCulture);
             if (Timestamp.HasValue)
-                data.timestamp = Timestamp.Value.ToUnixTimeInMilliseconds().ToString();
+                data.timestamp = Timestamp.Value.ToUnixTime().ToString();
             else
-                data.timestamp = now.ToUnixTimeInMilliseconds().ToString();
+                data.timestamp = now.ToUnixTime().ToString();
             data.CalculateMac(keyValue);
             
             return data;

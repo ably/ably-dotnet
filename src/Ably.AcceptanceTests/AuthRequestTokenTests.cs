@@ -103,7 +103,6 @@ namespace Ably.AcceptanceTests
         {
             //Arrange
             var ably = GetRestClient(ablyOptions => ablyOptions.ClientId = "123");
-            
             ably.Channels.Get("test").Publish("test", true);
 
             var token = ably.CurrentToken;
@@ -114,6 +113,4 @@ namespace Ably.AcceptanceTests
             token.Capability.ToJson().Should().Be(TokenRequest.Defaults.Capability.ToJson());
         }
     }
-
-
 }
