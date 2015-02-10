@@ -35,8 +35,8 @@ namespace Ably.AcceptanceTests
             var appId = options.KeyId.Split('.').First();
             token.Id.Should().MatchRegex(string.Format(@"^{0}\.[\w-]+$", appId));
             token.KeyId.Should().Be(options.KeyId);
-            token.IssuedAt.Should().BeWithin(TimeSpan.FromSeconds(2)).Before(DateTime.Now);
-            token.ExpiresAt.Should().BeWithin(TimeSpan.FromSeconds(2)).Before(DateTime.Now  + ttl);
+            token.IssuedAt.Should().BeWithin(TimeSpan.FromSeconds(20)).Before(DateTime.Now);
+            token.ExpiresAt.Should().BeWithin(TimeSpan.FromSeconds(20)).Before(DateTime.Now  + ttl);
         }
 
         private RestClient GetRestClient(Action<AblyOptions> opAction = null)
