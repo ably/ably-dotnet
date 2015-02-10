@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using FluentAssertions;
 using NUnit.Framework;
@@ -31,8 +32,8 @@ namespace Ably.AcceptanceTests
             var token = ably.Auth.RequestToken(new TokenRequest { Capability = capability, Ttl = ttl }, null);
 
             //Assert
-
-            token.Id.Should().MatchRegex(string.Format(@"^{0}\.[\w-]+$", options.KeyId));
+            var appId = options.KeyId.Split('.').First();
+            token.Id.Should().MatchRegex(string.Format(@"^{0}\.[\w-]+$", appId));
             token.KeyId.Should().Be(options.KeyId);
             token.IssuedAt.Should().BeWithin(TimeSpan.FromSeconds(2)).Before(DateTime.Now);
             token.ExpiresAt.Should().BeWithin(TimeSpan.FromSeconds(2)).Before(DateTime.Now  + ttl);
@@ -109,7 +110,7 @@ namespace Ably.AcceptanceTests
 
             token.Should().NotBeNull();
             token.ClientId.Should().Be("123");
-            token.ExpiresAt.Should().BeWithin(TimeSpan.FromSeconds(2)).Before(DateTime.UtcNow + TokenRequest.Defaults.Ttl);
+            token.ExpiresAt.Should().BeWithin(TimeSpan.FromSeconds(20)).Before(DateTime.UtcNow + TokenRequest.Defaults.Ttl);
             token.Capability.ToJson().Should().Be(TokenRequest.Defaults.Capability.ToJson());
         }
     }
