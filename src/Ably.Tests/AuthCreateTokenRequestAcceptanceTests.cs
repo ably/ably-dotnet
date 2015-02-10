@@ -90,7 +90,7 @@ namespace Ably.Tests
         {
             var date = new DateTime(2014, 1, 1).ToDateTimeOffset();
             var data = Client.Auth.CreateTokenRequest(new TokenRequest() { Timestamp= date }, null);
-            data.timestamp.Should().Be(date.ToUnixTimeInMilliseconds().ToString());
+            data.timestamp.Should().Be(date.ToUnixTime().ToString());
         }
 
         [Fact]
