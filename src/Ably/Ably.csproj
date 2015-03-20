@@ -40,6 +40,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -48,8 +49,12 @@
     <Reference Include="Thrift">
       <HintPath>..\packages\Thrift.0.9.1.1\lib\net35\Thrift.dll</HintPath>
     </Reference>
+    <Reference Include="WebSocket4Net">
+      <HintPath>..\packages\WebSocket4Net.0.11\lib\net45\WebSocket4Net.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AblyRealtime.cs" />
     <Compile Include="Auth\Token.cs" />
     <Compile Include="Extensions\DateExtensions.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
@@ -78,6 +83,14 @@
     <Compile Include="Protocol\TType.cs" />
     <Compile Include="Protocol\WWebhookMessage.cs" />
     <Compile Include="Protocol\WWebhookMessageArray.cs" />
+    <Compile Include="Realtime\Channel.cs" />
+    <Compile Include="Realtime\ChannelList.cs" />
+    <Compile Include="Realtime\ChannelState.cs" />
+    <Compile Include="Realtime\ChannelStateChangedEventArgs.cs" />
+    <Compile Include="Realtime\Connection.cs" />
+    <Compile Include="Realtime\ConnectionState.cs" />
+    <Compile Include="Realtime\ConnectionStateChangedEventArgs.cs" />
+    <Compile Include="Realtime\Presence.cs" />
     <Compile Include="Rest.cs" />
     <Compile Include="Rest\AblyException.cs" />
     <Compile Include="Rest\AblyHttpClient.cs" />
@@ -121,6 +134,17 @@
     <Compile Include="Rest\StringUtils.cs" />
     <Compile Include="Rest\TokenRequestPostData.cs" />
     <Compile Include="Rest\TypedBuffer.cs" />
+    <Compile Include="Transport\ConnectionManager.cs" />
+    <Compile Include="Transport\Defaults.cs" />
+    <Compile Include="Transport\IConnectionManager.cs" />
+    <Compile Include="Transport\ITransport.cs" />
+    <Compile Include="Transport\TransportParams.cs" />
+    <Compile Include="Transport\WebSocketTransport.cs" />
+    <Compile Include="Types\AblyException.cs" />
+    <Compile Include="Types\AuthOptions.cs" />
+    <Compile Include="Types\ErrorInfo.cs" />
+    <Compile Include="Types\Options.cs" />
+    <Compile Include="Types\ProtocolMessage.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
