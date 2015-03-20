@@ -17,7 +17,7 @@ namespace Ably.Transport
             this.transport = transport;
         }
 
-        public ConnectionManager(Options options)
+        public ConnectionManager(AblyOptions options)
             : this()
         {
             TransportParams transportParams = CreateTransportParameters(options);
@@ -57,7 +57,7 @@ namespace Ably.Transport
             // TODO: Implement
         }
 
-        private static TransportParams CreateTransportParameters(Options options)
+        private static TransportParams CreateTransportParameters(AblyOptions options)
         {
             TransportParams transportParams = new TransportParams(options);
             transportParams.Host = Defaults.RealtimeHost;

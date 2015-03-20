@@ -17,12 +17,12 @@ namespace Ably.Transport
 
     public class TransportParams
     {
-        public TransportParams(Options options)
+        public TransportParams(AblyOptions options)
         {
             this.Options = options;
         }
 
-        public Options Options { get; set; }
+        public AblyOptions Options { get; set; }
         public string Host { get; set; }
         public string[] FallbackHosts { get; set; }
         public int Port { get; set; }
@@ -37,7 +37,7 @@ namespace Ably.Transport
             collection["key_value"] = Options.KeyValue;
 
             // connection
-            if (Options.UseBinaryProtocol)
+            if (!Options.UseTextProtocol)
             {
                 collection["format"] = "msgpack";
             }

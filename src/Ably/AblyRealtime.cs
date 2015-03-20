@@ -16,14 +16,14 @@ namespace Ably
         /// </summary>
         /// <param name="key"></param>
         public AblyRealtime(string key)
-            : this(new Options(key))
+            : this(new AblyOptions(key))
         { }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="options"></param>
-        public AblyRealtime(Options options)
+        public AblyRealtime(AblyOptions options)
         {
             IConnectionManager connectionManager = new ConnectionManager(options);
             this.Channels = new ChannelList(connectionManager);

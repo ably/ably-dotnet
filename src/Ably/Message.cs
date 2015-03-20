@@ -5,6 +5,15 @@ namespace Ably
 {
     public class Message
     {
+        public Message()
+        { }
+
+        public Message(string name, object data)
+        {
+            this.Name = name;
+            this.Data = data;
+        }
+
         public string Name { get; set; }
         public string ChannelId { get; set; }
         public object Data { get; set; }

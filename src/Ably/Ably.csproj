@@ -54,12 +54,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AblyException.cs" />
+    <Compile Include="AblyOptions.cs" />
     <Compile Include="AblyRealtime.cs" />
+    <Compile Include="AuthOptions.cs" />
     <Compile Include="Auth\Token.cs" />
     <Compile Include="Extensions\DateExtensions.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\JTokenExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Message.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Protocol\SConnectionTypes.cs" />
     <Compile Include="Protocol\SMessageCount.cs" />
@@ -92,16 +96,13 @@
     <Compile Include="Realtime\ConnectionStateChangedEventArgs.cs" />
     <Compile Include="Realtime\Presence.cs" />
     <Compile Include="Rest.cs" />
-    <Compile Include="Rest\AblyException.cs" />
     <Compile Include="Rest\AblyHttpClient.cs" />
-    <Compile Include="Rest\AblyOptions.cs" />
     <Compile Include="Rest\AblyRequest.cs" />
     <Compile Include="Rest\AblyResponse.cs" />
     <Compile Include="Rest\AesCipher.cs" />
     <Compile Include="Rest\ApiKey.cs" />
     <Compile Include="Rest\Assert.cs" />
     <Compile Include="Rest\AuthMethod.cs" />
-    <Compile Include="Rest\AuthOptions.cs" />
     <Compile Include="Rest\Capability.cs" />
     <Compile Include="Rest\CapabilityResource.cs" />
     <Compile Include="Rest\Channel.cs" />
@@ -115,14 +116,11 @@
     <Compile Include="Rest\ExtendedSource.cs" />
     <Compile Include="Rest\IAblyHttpClient.cs" />
     <Compile Include="Rest\IAuthCommands.cs" />
-    <Compile Include="Rest\IChannel.cs" />
     <Compile Include="Rest\IChannelCipher.cs" />
-    <Compile Include="Rest\IChannelCommands.cs" />
     <Compile Include="Rest\ILogger.cs" />
     <Compile Include="Rest\ILoggerImplementer1.cs" />
     <Compile Include="Rest\IPartialResult.cs" />
     <Compile Include="Rest\Logger.cs" />
-    <Compile Include="Rest\Message.cs" />
     <Compile Include="Rest\MessagePayload.cs" />
     <Compile Include="Rest\MimeTypes.cs" />
     <Compile Include="Rest\PresenceMessage.cs" />
@@ -140,10 +138,8 @@
     <Compile Include="Transport\ITransport.cs" />
     <Compile Include="Transport\TransportParams.cs" />
     <Compile Include="Transport\WebSocketTransport.cs" />
-    <Compile Include="Types\AblyException.cs" />
-    <Compile Include="Types\AuthOptions.cs" />
-    <Compile Include="Types\ErrorInfo.cs" />
-    <Compile Include="Types\Options.cs" />
+    <Compile Include="Types\IChannel.cs" />
+    <Compile Include="Types\IChannelCommands.cs" />
     <Compile Include="Types\ProtocolMessage.cs" />
   </ItemGroup>
   <ItemGroup>

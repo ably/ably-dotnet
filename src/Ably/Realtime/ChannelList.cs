@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ably.Realtime
 {
-    public class ChannelList : IEnumerable<KeyValuePair<string, Channel>>
+    public class ChannelList : IEnumerable<KeyValuePair<string, Channel>>, IChannelCommands
     {
         public ChannelList(IConnectionManager connection)
         {
@@ -15,7 +15,7 @@ namespace Ably.Realtime
         private Dictionary<string, Channel> channels;
         private IConnectionManager connection;
 
-        public Channel Get(string name)
+        public IChannel Get(string name)
         {
             Channel channel = null;
             if (!this.channels.TryGetValue(name, out channel))
@@ -24,6 +24,12 @@ namespace Ably.Realtime
                 this.channels.Add(name, channel);
             }
             return channel;
+        }
+
+        public IChannel Get(string name, ChannelOptions options)
+        {
+            // TODO: Implement
+            throw new NotImplementedException();
         }
 
         public void Release(string name)

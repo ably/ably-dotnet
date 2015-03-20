@@ -5,14 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ably.Types
+namespace Ably
 {
     /// <summary>
     /// Ably library options for REST and Realtime APIs
     /// </summary>
-    public class Options : AuthOptions
+    public class AblyOptions : AuthOptions
     {
-        public Options() { }
+        public AblyOptions() { }
 
         /// <summary>
         /// Construct an options with a single key string. The key string is obtained
@@ -20,15 +20,27 @@ namespace Ably.Types
         /// </summary>
         /// <param name="key">the key string</param>
         /// <exception cref="AblyException" />
-        public Options(string key) : base(key)
+        public AblyOptions(string key)
+            : base(key)
         {
             this.Transports = new HashSet<ITransport>();
         }
 
         /// <summary>
+        /// The application id. This option is only required if the application id 
+        /// cannot be inferred either from a key or token option. If given, it is the 
+        /// application id as indicated on the application dashboard.
+        /// </summary>
+        public string AppId { get; set; }
+
+        /// <summary>
         /// Indicates whether or not a TLS (“SSL”) secure connection should be used.
         /// </summary>
         public bool Tls { get; set; }
+
+        public string Host { get; set; }
+
+        public int? Port { get; set; }
 
         /// <summary>
         /// A client id, used for identifying this client for presence purposes. The clientId can be any string. 
@@ -50,10 +62,10 @@ namespace Ably.Types
         public ISet<ITransport> Transports { get; private set; }
 
         /// <summary>
-        /// If <c>false</c>, forces the library to use the JSON encoding for REST and Realtime operations,
+        /// If <c>true</c>, forces the library to use the JSON encoding for REST and Realtime operations,
         /// instead of the default binary msgpack encoding.
         /// </summary>
-        public bool UseBinaryProtocol { get; set; }
+        public bool UseTextProtocol { get; set; }
 
         /// <summary>
         /// If <c>false</c>, this disables the default behaviour whereby the library queues messages on a 
@@ -76,5 +88,7 @@ namespace Ably.Types
         /// Realtime API documentation for further information on connection state recovery.
         /// </summary>
         public string Recover { get; set; }
+
+        public ChannelOptions ChannelDefaults { get; set; }
     }
 }

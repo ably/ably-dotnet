@@ -43,10 +43,13 @@ namespace Ably.Types
         internal ProtocolMessage(Action action, string channel)
         {
             this.action = action;
+            this.channel = channel;
         }
 
         private Action action;
         private string channel;
+
+        public Message[] Messages { get; set; }
 
         public string ToJSON()
         {

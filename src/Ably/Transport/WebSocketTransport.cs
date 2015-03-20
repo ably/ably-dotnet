@@ -12,7 +12,7 @@ namespace Ably.Transport
             {
                 WebSocketTransport socketTransport = new WebSocketTransport();
                 socketTransport.Host = parameters.Host;
-                socketTransport.channelBinaryMode = parameters.Options.UseBinaryProtocol;
+                socketTransport.channelBinaryMode = !parameters.Options.UseTextProtocol;
                 socketTransport.socket = CreateSocket(parameters);
                 socketTransport.socket.Opened += socketTransport.socket_Opened;
                 socketTransport.socket.Closed += socketTransport.socket_Closed;

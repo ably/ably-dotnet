@@ -47,7 +47,7 @@ namespace Ably
             //Parse it when I know how things work
         }
 
-        public Rest(string apiKey) : this(new AblyOptions { Key = apiKey})
+        public Rest(string apiKey) : this(new AblyOptions(apiKey))
         {
 
         }
