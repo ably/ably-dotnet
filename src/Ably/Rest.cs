@@ -20,7 +20,7 @@ namespace Ably
 
     }
 
-    public class Rest : IAuthCommands, IChannelCommands, IRestCommands
+    public class Rest : IAuthCommands, IChannelCommands<IChannel>, IRestCommands
     {
         internal IAblyHttpClient _client;
         private AblyOptions _options;
@@ -159,7 +159,7 @@ namespace Ably
             get { return this; }
         }
 
-        public IChannelCommands Channels
+        public IChannelCommands<IChannel> Channels
         {
             get { return this; }
         }
@@ -326,12 +326,12 @@ namespace Ably
             return request;
         }
 
-        IChannel IChannelCommands.Get(string name)
+        IChannel IChannelCommands<IChannel>.Get(string name)
         {
             return new Channel(this, name, new ResponseHandler(), Options.ChannelDefaults); 
         }
 
-        IChannel IChannelCommands.Get(string name, ChannelOptions options)
+        IChannel IChannelCommands<IChannel>.Get(string name, ChannelOptions options)
         {
             return new Channel(this, name, new ResponseHandler(), options);
         }

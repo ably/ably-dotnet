@@ -4,7 +4,7 @@ namespace Ably.Types
 {
     public class ProtocolMessage
     {
-        public enum Action
+        public enum MessageAction : int
         {
             Heartbeat,
             Ack,
@@ -25,7 +25,8 @@ namespace Ably.Types
             Sync
         }
 
-        public enum Flag
+        [Flags]
+        public enum MessageFlag : byte
         {
             Has_Presence,
             Has_Backlog
@@ -35,30 +36,30 @@ namespace Ably.Types
         {
         }
 
-        internal ProtocolMessage(Action action)
+        internal ProtocolMessage(MessageAction action)
         {
-            this.action = action;
+            this.Action = action;
         }
 
-        internal ProtocolMessage(Action action, string channel)
+        internal ProtocolMessage(MessageAction action, string channel)
         {
-            this.action = action;
-            this.channel = channel;
+            this.Action = action;
+            this.Channel = channel;
         }
 
-        private Action action;
-        private string channel;
-
+        public MessageAction Action { get; set; }
+        public MessageFlag Flags { get; set; }
+        public int Count { get; set; }
+        public ErrorInfo Error { get; set; }
+        public string Id { get; set; }
+        public string Channel { get; set; }
+        public string ChannelSerial { get; set; }
+        public string ConnectionId { get; set; }
+        public string ConnectionKey { get; set; }
+        public long ConnectionSerial { get; set; }
+        public long MsgSerial { get; set; }
+        public long Timestamp { get; set; }
         public Message[] Messages { get; set; }
-
-        public string ToJSON()
-        {
-            return "";
-        }
-
-        public byte[] ToMsgpack()
-        {
-            return new byte[0];
-        }
+        public PresenceMessage[] Presence { get; set; }
     }
 }

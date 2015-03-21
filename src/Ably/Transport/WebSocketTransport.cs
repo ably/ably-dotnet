@@ -10,7 +10,16 @@ namespace Ably.Transport
         {
             public ITransport CreateTransport(TransportParams parameters)
             {
-                WebSocketTransport socketTransport = new WebSocketTransport();
+                IMessageSerializer serializer = null;
+                if (parameters.Options.UseTextProtocol)
+                {
+                    serializer = new JsonMessageSerializer();
+                }
+                else
+                {
+                    // TODO: Implement
+                }
+                WebSocketTransport socketTransport = new WebSocketTransport(serializer);
                 socketTransport.Host = parameters.Host;
                 socketTransport.channelBinaryMode = !parameters.Options.UseTextProtocol;
                 socketTransport.socket = CreateSocket(parameters);
@@ -22,10 +31,14 @@ namespace Ably.Transport
             }
         }
 
-        private WebSocketTransport() { }
+        private WebSocketTransport(IMessageSerializer serializer)
+        {
+            this.serializer = serializer;
+        }
 
         private WebSocket socket;
         private bool channelBinaryMode;
+        private IMessageSerializer serializer;
 
         public string Host { get; private set; }
 
@@ -45,7 +58,7 @@ namespace Ably.Transport
 
             if (sendDisconnect)
             {
-                this.Send(new ProtocolMessage(ProtocolMessage.Action.Close));
+                this.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
             }
             this.socket.Close();
         }
@@ -57,14 +70,16 @@ namespace Ably.Transport
 
         public void Send(ProtocolMessage message)
         {
+            object serializedMessage = this.serializer.SerializeProtocolMessage(message);
+
             if (this.channelBinaryMode)
             {
-                byte[] data = message.ToMsgpack();
+                byte[] data = (byte[])serializedMessage;
                 this.socket.Send(data, 0, data.Length);
             }
             else
             {
-                this.socket.Send(message.ToJSON());
+                this.socket.Send((string)serializedMessage);
             }
         }
 
@@ -110,8 +125,7 @@ namespace Ably.Transport
         {
             if (this.Listener != null)
             {
-                ProtocolMessage message = null;
-                // TODO: Read message
+                ProtocolMessage message = this.serializer.DeserializeProtocolMessage(e.Message);
                 this.Listener.OnTransportMessageReceived(message);
             }
         }

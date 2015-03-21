@@ -6,10 +6,11 @@ using System.Linq;
 
 namespace Ably.Realtime
 {
-    public class Channel : IChannel
+    public class Channel : IRealtimeChannel
     {
-        internal Channel(IConnectionManager connection)
+        internal Channel(string name, IConnectionManager connection)
         {
+            this.Name = name;
             this.connection = connection;
             this.connection.MessageReceived += OnConnectionMessageReceived;
         }
@@ -19,7 +20,7 @@ namespace Ably.Realtime
         /// <summary>
         /// 
         /// </summary>
-        public event MessageReceivedDelegate MessageReceived;
+        public event EventHandler<MessageReceivedEventArgs> MessageReceived;
 
         public event EventHandler<ChannelStateChangedEventArgs> ChannelStateChanged;
 
@@ -50,7 +51,7 @@ namespace Ably.Realtime
             }
 
             this.SetChannelState(ChannelState.Attaching);
-            this.connection.Send(new ProtocolMessage(ProtocolMessage.Action.Attach, this.Name));
+            this.connection.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, this.Name));
         }
 
         /// <summary>
@@ -71,7 +72,7 @@ namespace Ably.Realtime
             }
 
             this.SetChannelState(ChannelState.Detaching);
-            this.connection.Send(new ProtocolMessage(ProtocolMessage.Action.Detach, this.Name));
+            this.connection.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, this.Name));
         }
 
         /// <summary>
@@ -90,7 +91,7 @@ namespace Ably.Realtime
         /// <param name="messages"></param>
         public void Publish(IEnumerable<Message> messages)
         {
-            ProtocolMessage message = new ProtocolMessage(ProtocolMessage.Action.Message);
+            ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Message, this.Name);
             message.Messages = messages.ToArray();
             if (this.State == ChannelState.Initialised || this.State == ChannelState.Attaching)
             {
@@ -130,11 +131,11 @@ namespace Ably.Realtime
             this.OnChannelStateChanged(new ChannelStateChangedEventArgs(state));
         }
 
-        private void OnMessageReceived()
+        private void OnMessageReceived(MessageReceivedEventArgs eventArgs)
         {
             if (this.MessageReceived != null)
             {
-                this.MessageReceived();
+                this.MessageReceived(this, eventArgs);
             }
         }
 
@@ -146,9 +147,49 @@ namespace Ably.Realtime
             }
         }
 
-        private void OnConnectionMessageReceived()
+        private void OnConnectionMessageReceived(ProtocolMessage message)
         {
-            this.OnMessageReceived();
+            switch (message.Action)
+            {
+                case ProtocolMessage.MessageAction.Attached:
+                    this.SetChannelState(ChannelState.Attached);
+                    break;
+                case ProtocolMessage.MessageAction.Detached:
+                    this.SetChannelState(ChannelState.Detached);
+                    break;
+                case ProtocolMessage.MessageAction.Message:
+                    this.OnMessage(message);
+                    break;
+                case ProtocolMessage.MessageAction.Presence:
+                    this.OnPresence(message, null);
+                    break;
+                case ProtocolMessage.MessageAction.Sync:
+                    this.OnSync(message);
+                    break;
+                case ProtocolMessage.MessageAction.Error:
+                    this.SetChannelState(ChannelState.Failed);
+                    break;
+                default:
+                    // TODO: Log error
+                    break;
+            }
+        }
+
+        private void OnMessage(ProtocolMessage message)
+        {
+            Message[] messages = message.Messages;
+            this.OnMessageReceived(new MessageReceivedEventArgs(messages));
+        }
+
+        private void OnPresence(ProtocolMessage message, string channelSerial)
+        {
+            // TODO: Implement
+        }
+
+        private void OnSync(ProtocolMessage message)
+        {
+            // TODO: Implement
+            this.OnPresence(message, "");
         }
     }
 }

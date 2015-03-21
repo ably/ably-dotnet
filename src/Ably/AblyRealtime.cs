@@ -33,7 +33,7 @@ namespace Ably
         /// <summary>
         /// The collection of channels instanced, indexed by channel name.
         /// </summary>
-        public ChannelList Channels { get; private set; }
+        public IChannelCommands<IRealtimeChannel> Channels { get; private set; }
 
         /// <summary>
         /// A reference to the connection object for this library instance.

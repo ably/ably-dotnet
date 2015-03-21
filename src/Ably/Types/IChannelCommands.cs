@@ -1,8 +1,9 @@
 namespace Ably
 {
-    public interface IChannelCommands
+    public interface IChannelCommands<TChannel>
+        where TChannel : IChannel
     {
-        IChannel Get(string name);
-        IChannel Get(string name, ChannelOptions options);
+        TChannel Get(string name);
+        TChannel Get(string name, ChannelOptions options);
     }
 }

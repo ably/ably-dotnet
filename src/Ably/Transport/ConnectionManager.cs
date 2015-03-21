@@ -49,12 +49,12 @@ namespace Ably.Transport
 
         public void Ping()
         {
-            // TODO: Implement
+            this.transport.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
         }
 
         public void Send(ProtocolMessage message)
         {
-            // TODO: Implement
+            this.transport.Send(message);
         }
 
         private static TransportParams CreateTransportParameters(AblyOptions options)
@@ -66,9 +66,30 @@ namespace Ably.Transport
             return transportParams;
         }
 
+        //
+        // ConnectionManager communication
+        //
+        private void OnStateChanged(ConnectionState state, ConnectionInfo info = null)
+        {
+            if (this.StateChanged != null)
+            {
+                this.StateChanged(state, info);
+            }
+        }
+
+        private void OnMessageReceived(ProtocolMessage message)
+        {
+            if (this.MessageReceived != null)
+            {
+                this.MessageReceived(message);
+            }
+        }
+
+        //
+        // Transport communication
+        //
         void ITransportListener.OnTransportConnected()
         {
-            this.sync.Send(new System.Threading.SendOrPostCallback(o => this.OnStateChanged(ConnectionState.Connected)), null);
         }
 
         void ITransportListener.OnTransportDisconnected()
@@ -83,23 +104,83 @@ namespace Ably.Transport
 
         void ITransportListener.OnTransportMessageReceived(ProtocolMessage message)
         {
-            this.sync.Send(new System.Threading.SendOrPostCallback(o => this.OnMessageReceived()), null);
+            this.sync.Send(new System.Threading.SendOrPostCallback(o => this.ProcessProtocolMessage(message)), null);
         }
 
-        private void OnStateChanged(ConnectionState state)
+        private void ProcessProtocolMessage(ProtocolMessage message)
         {
-            if (this.StateChanged != null)
+            switch (message.Action)
             {
-                this.StateChanged(state);
+                case ProtocolMessage.MessageAction.Heartbeat:
+                    this.OnMessage_Heartbeat(message);
+                    break;
+                case ProtocolMessage.MessageAction.Error:
+                    this.OnMessage_Error(message);
+                    break;
+                case ProtocolMessage.MessageAction.Connected:
+                    this.OnMessage_Connected(message);
+                    break;
+                case ProtocolMessage.MessageAction.Disconnect:
+                    this.OnMessage_Disconnected(message);
+                    break;
+                case ProtocolMessage.MessageAction.Closed:
+                    this.OnMessage_Closed(message);
+                    break;
+                case ProtocolMessage.MessageAction.Ack:
+                    this.OnMessage_Ack(message);
+                    break;
+                case ProtocolMessage.MessageAction.Nack:
+                    this.OnMessage_Nack(message);
+                    break;
+                default:
+                    this.OnMessageReceived(message);
+                    break;
             }
         }
 
-        private void OnMessageReceived()
+        private void OnMessage_Heartbeat(ProtocolMessage message)
         {
-            if (this.MessageReceived != null)
+        }
+
+        private void OnMessage_Error(ProtocolMessage message)
+        {
+            this.OnStateChanged(ConnectionState.Failed);
+        }
+
+        private void OnMessage_Connected(ProtocolMessage message)
+        {
+            ConnectionInfo info = new ConnectionInfo()
             {
-                this.MessageReceived();
+                ConnectionId = message.ConnectionId,
+                ConnectionKey = message.ConnectionKey,
+                ConnectionSerial = message.ConnectionSerial
+            };
+            this.OnStateChanged(ConnectionState.Connected, info);
+        }
+
+        private void OnMessage_Disconnected(ProtocolMessage message)
+        {
+            this.OnStateChanged(ConnectionState.Disconnected);
+        }
+
+        private void OnMessage_Closed(ProtocolMessage message)
+        {
+            if (message.Error != null)
+            {
+                this.OnStateChanged(ConnectionState.Failed);
             }
+            else
+            {
+                this.OnStateChanged(ConnectionState.Closed);
+            }
+        }
+
+        private void OnMessage_Ack(ProtocolMessage message)
+        {
+        }
+
+        private void OnMessage_Nack(ProtocolMessage message)
+        {
         }
     }
 }

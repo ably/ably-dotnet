@@ -4,8 +4,15 @@ using System;
 
 namespace Ably.Transport
 {
-    public delegate void StateChangedDelegate(ConnectionState state);
-    public delegate void MessageReceivedDelegate();
+    public class ConnectionInfo
+    {
+        public string ConnectionId { get; set; }
+        public long ConnectionSerial { get; set; }
+        public string ConnectionKey { get; set; }
+    }
+
+    public delegate void StateChangedDelegate(ConnectionState state, ConnectionInfo info);
+    public delegate void MessageReceivedDelegate(ProtocolMessage message);
 
     public interface IConnectionManager
     {

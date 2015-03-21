@@ -94,6 +94,8 @@
     <Compile Include="Realtime\Connection.cs" />
     <Compile Include="Realtime\ConnectionState.cs" />
     <Compile Include="Realtime\ConnectionStateChangedEventArgs.cs" />
+    <Compile Include="Realtime\IRealtimeChannel.cs" />
+    <Compile Include="Realtime\MessageReceivedEventArgs.cs" />
     <Compile Include="Realtime\Presence.cs" />
     <Compile Include="Rest.cs" />
     <Compile Include="Rest\AblyHttpClient.cs" />
@@ -140,10 +142,14 @@
     <Compile Include="Transport\WebSocketTransport.cs" />
     <Compile Include="Types\IChannel.cs" />
     <Compile Include="Types\IChannelCommands.cs" />
+    <Compile Include="Types\IMessageSerializer.cs" />
+    <Compile Include="Types\JsonMessageSerializer.cs" />
     <Compile Include="Types\ProtocolMessage.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
