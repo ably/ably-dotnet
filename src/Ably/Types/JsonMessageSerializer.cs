@@ -10,17 +10,28 @@ namespace Ably.Types
         {
             JObject json = new JObject();
             json.Add("action", new JValue(message.Action));
-            json.Add("channel", new JValue(message.Channel));
+            if (!string.IsNullOrEmpty(message.Channel))
+            {
+                json.Add("channel", new JValue(message.Channel));
+            }
+            json.Add("msgSerial", new JValue(message.MsgSerial));
             if (message.Messages != null)
             {
                 JArray messagesArr = new JArray();
 
                 foreach (Message m in message.Messages)
                 {
-                    messagesArr.Add(this.SerializeMessage(m));
+                    JObject mJson = this.SerializeMessage(m);
+                    if (mJson.HasValues)
+                    {
+                        messagesArr.Add(mJson);
+                    }
                 }
 
-                json.Add("messages", messagesArr);
+                if (messagesArr.HasValues)
+                {
+                    json.Add("messages", messagesArr);
+                }
             }
 
             return json.ToString(Newtonsoft.Json.Formatting.None);
