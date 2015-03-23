@@ -1,4 +1,6 @@
 ﻿using Ably.Types;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,6 +29,14 @@ namespace Ably.Tests
                 yield return new object[] { "[]", new Message[] { } };
                 yield return new object[] { "[{\"name\":\"test\"}]", new Message[] { new Message("test", null) } };
                 yield return new object[] { "[{\"name\":\"test\"},{\"name\":\"attach\"}]", new Message[] { new Message("test", null),  new Message("attach", null) } };
+                yield return new object[] { "[{\"data\":\"test\"}]", new Message[] { new Message(null, "test") } };
+                yield return new object[] { "[{\"data\":\"2012-04-23T18:25:43.511Z\"}]", new Message[] { new Message(null, new DateTime(2012, 4, 23, 18, 25, 43, 511)) } };
+                yield return new object[] { "[{\"data\":1234}]", new Message[] { new Message(null, 1234) } };
+                yield return new object[] { "[{\"data\":1234.00}]", new Message[] { new Message(null, 1234f) } };
+                yield return new object[] { "[{\"data\":true}]", new Message[] { new Message(null, true) } };
+                yield return new object[] { "[{\"data\":undefined}]", new Message[] { new Message(null, null) } };
+                yield return new object[] { "[{\"data\":[1234,4321]}]", new Message[] { new Message(null, new JArray(1234, 4321)) } };
+                yield return new object[] { "[{\"data\":\"bXkgYmluYXJ5IHBheWxvYWQ=\",\"encoding\":\"base64\"}]", new Message[] { new Message(null, Convert.FromBase64String("bXkgYmluYXJ5IHBheWxvYWQ=")) } };
             }
         }
 
@@ -374,6 +384,7 @@ namespace Ably.Tests
             for (int i = 0; i < expectedMessages.Length; i++)
             {
                 Assert.Equal<string>(expectedMessages[i].Name, target.Messages[i].Name);
+                Assert.Equal(expectedMessages[i].Data, target.Messages[i].Data);
             }
         }
     }

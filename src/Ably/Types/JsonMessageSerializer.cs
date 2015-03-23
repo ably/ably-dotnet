@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Text;
 
 namespace Ably.Types
 {
@@ -111,12 +112,26 @@ namespace Ably.Types
             {
                 json.Add("name", new JValue(message.Name));
             }
+            if (message.Data != null)
+            {
+                if (message.Data is byte[])
+                {
+                    string encodedData = message.Value<byte[]>().ToBase64();
+                    json.Add("data", new JValue(encodedData));
+                    json.Add("encoding", new JValue("base64"));
+                }
+                else
+                {
+                    json.Add("data", new JValue(message.Data));
+                }
+            }
             return json;
         }
 
         private Message DeserializeMessage(JObject obj)
         {
             Message message = new Message();
+            string encoding = "utf8";
 
             JToken token;
             if (obj.TryGetValue("name", out token))
@@ -125,10 +140,58 @@ namespace Ably.Types
             }
             if (obj.TryGetValue("timestamp", out token))
             {
-                //message.TimeStamp = token.Value<long>().FromUnixTime();
+                long timestamp = token.Value<long>();
+                message.TimeStamp = timestamp.FromUnixTimeInMilliseconds().ToLocalTime();
+            }
+            if (obj.TryGetValue("encoding", out token))
+            {
+                encoding = token.Value<string>();
+            }
+            if (obj.TryGetValue("data", out token))
+            {
+                message.Data = this.ParseToken(token, encoding);
             }
 
             return message;
+        }
+
+        private object ParseToken(JToken token, string encoding)
+        {
+            switch (token.Type)
+            {
+                case JTokenType.None:
+                case JTokenType.Null:
+                case JTokenType.Undefined:
+                    return null;
+                case JTokenType.Boolean:
+                    return token.Value<bool>();
+                case JTokenType.Bytes:
+                    return token.Value<byte[]>();
+                case JTokenType.Date:
+                    return token.Value<DateTime>();
+                case JTokenType.Float:
+                    return token.Value<float>();
+                case JTokenType.Guid:
+                    return token.Value<Guid>();
+                case JTokenType.Integer:
+                    return token.Value<int>();
+                case JTokenType.String:
+                    string value = token.Value<string>();
+                    if (string.Equals(encoding, "BASE64", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        return value.FromBase64();
+                    }
+                    else
+                    {
+                        return value;
+                    }
+                case JTokenType.TimeSpan:
+                    return token.Value<TimeSpan>();
+                case JTokenType.Uri:
+                    return token.Value<Uri>();
+                default:
+                    return token;
+            }
         }
     }
 }
