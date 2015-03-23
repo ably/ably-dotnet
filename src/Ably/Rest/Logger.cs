@@ -31,6 +31,11 @@ namespace Ably
             trace.TraceEvent(TraceEventType.Information, 0, String.Format(message, args));
         }
 
+        public void Verbose(string message, params object[] args)
+        {
+            trace.TraceEvent(TraceEventType.Verbose, 0, String.Format(message, args));
+        }
+
         public IDisposable ProfileOperation(string format, params object[] args)
         {
             return trace.ProfileOperation(format, args);

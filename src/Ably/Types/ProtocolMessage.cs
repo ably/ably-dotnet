@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace Ably.Types
 {
@@ -61,5 +62,23 @@ namespace Ably.Types
         public long Timestamp { get; set; }
         public Message[] Messages { get; set; }
         public PresenceMessage[] Presence { get; set; }
+
+        public override string ToString()
+        {
+            StringBuilder text = new StringBuilder();
+            text.Append("{ ")
+                .AppendFormat("action={0}", this.Action);
+            if (this.Messages != null && this.Messages.Length > 0)
+            {
+                text.Append(", mesasages=[ ");
+                foreach (Message message in this.Messages)
+                {
+                    text.AppendFormat("{{ name={0}, data={1}}}", message.Name, message.Data);
+                }
+                text.Append(" ]");
+            }
+            text.Append(" }");
+            return text.ToString();
+        }
     }
 }

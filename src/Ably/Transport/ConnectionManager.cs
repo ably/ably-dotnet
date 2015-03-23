@@ -27,6 +27,7 @@ namespace Ably.Transport
 
         internal ITransport transport;
         private System.Threading.SynchronizationContext sync;
+        private ILogger Logger = Config.AblyLogger;
 
         public event StateChangedDelegate StateChanged;
 
@@ -54,6 +55,7 @@ namespace Ably.Transport
 
         public void Send(ProtocolMessage message)
         {
+            this.Logger.Info("ConnectionManager: Sending Message: {0}", message);
             this.transport.Send(message);
         }
 
@@ -69,8 +71,9 @@ namespace Ably.Transport
         //
         // ConnectionManager communication
         //
-        private void OnStateChanged(ConnectionState state, ConnectionInfo info = null)
+        private void SetState(ConnectionState state, ConnectionInfo info = null)
         {
+            this.Logger.Info("ConnectionManager: StateChanged: {0}", state);
             if (this.StateChanged != null)
             {
                 this.StateChanged(state, info);
@@ -90,16 +93,17 @@ namespace Ably.Transport
         //
         void ITransportListener.OnTransportConnected()
         {
+            this.sync.Send(new System.Threading.SendOrPostCallback(o => this.Logger.Info("ConnectionManager: Transport Connected")), null);
         }
 
         void ITransportListener.OnTransportDisconnected()
         {
-            this.sync.Send(new System.Threading.SendOrPostCallback(o => this.OnStateChanged(ConnectionState.Disconnected)), null);
+            this.sync.Send(new System.Threading.SendOrPostCallback(o => this.SetState(ConnectionState.Disconnected)), null);
         }
 
         void ITransportListener.OnTransportError()
         {
-            this.sync.Send(new System.Threading.SendOrPostCallback(o => this.OnStateChanged(ConnectionState.Failed)), null);
+            this.sync.Send(new System.Threading.SendOrPostCallback(o => this.SetState(ConnectionState.Failed)), null);
         }
 
         void ITransportListener.OnTransportMessageReceived(ProtocolMessage message)
@@ -109,6 +113,8 @@ namespace Ably.Transport
 
         private void ProcessProtocolMessage(ProtocolMessage message)
         {
+            this.Logger.Verbose("ConnectionManager: Message Received {0}", message);
+
             switch (message.Action)
             {
                 case ProtocolMessage.MessageAction.Heartbeat:
@@ -144,7 +150,7 @@ namespace Ably.Transport
 
         private void OnMessage_Error(ProtocolMessage message)
         {
-            this.OnStateChanged(ConnectionState.Failed);
+            this.SetState(ConnectionState.Failed);
         }
 
         private void OnMessage_Connected(ProtocolMessage message)
@@ -155,23 +161,23 @@ namespace Ably.Transport
                 ConnectionKey = message.ConnectionKey,
                 ConnectionSerial = message.ConnectionSerial
             };
-            this.OnStateChanged(ConnectionState.Connected, info);
+            this.SetState(ConnectionState.Connected, info);
         }
 
         private void OnMessage_Disconnected(ProtocolMessage message)
         {
-            this.OnStateChanged(ConnectionState.Disconnected);
+            this.SetState(ConnectionState.Disconnected);
         }
 
         private void OnMessage_Closed(ProtocolMessage message)
         {
             if (message.Error != null)
             {
-                this.OnStateChanged(ConnectionState.Failed);
+                this.SetState(ConnectionState.Failed);
             }
             else
             {
-                this.OnStateChanged(ConnectionState.Closed);
+                this.SetState(ConnectionState.Closed);
             }
         }
 

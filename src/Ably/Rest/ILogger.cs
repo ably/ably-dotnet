@@ -9,6 +9,7 @@ namespace Ably
         void Error(string message, Exception ex);
         void Error(string message, params object[] args);
         void Info(string message, params object[] args);
+        void Verbose(string message, params object[] args);
         void Debug(string message);
     }
 }

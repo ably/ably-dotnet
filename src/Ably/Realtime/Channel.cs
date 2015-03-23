@@ -16,6 +16,7 @@ namespace Ably.Realtime
         }
 
         private IConnectionManager connection;
+        private ILogger Logger = Config.AblyLogger;
 
         /// <summary>
         /// 
@@ -170,7 +171,7 @@ namespace Ably.Realtime
                     this.SetChannelState(ChannelState.Failed);
                     break;
                 default:
-                    // TODO: Log error
+                    Logger.Error("Channel::OnConnectionMessageReceived(): Unexpected message action {0}", message.Action);
                     break;
             }
         }
