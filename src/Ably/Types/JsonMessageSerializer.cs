@@ -62,7 +62,11 @@ namespace Ably.Types
             }
             if (json.TryGetValue("error", out token))
             {
-                // TODO: Implement
+                JObject errorJObject = token.Value<JObject>();
+                string reason = errorJObject.OptValue<string>("message");
+                int statusCode = errorJObject.OptValue<int>("statusCode");
+                int code = errorJObject.OptValue<int>("code");
+                message.Error = new ErrorInfo(reason, code, code == 0 ? null : (System.Net.HttpStatusCode?)statusCode);
             }
             if (json.TryGetValue("id", out token))
             {
@@ -99,7 +103,7 @@ namespace Ably.Types
             }
             if (json.TryGetValue("presence", out token))
             {
-                // TODO: Implement
+                // TODO: Implement json parsing of presence
             }
 
             return message;

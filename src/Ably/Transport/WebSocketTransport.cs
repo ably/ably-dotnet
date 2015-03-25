@@ -17,7 +17,7 @@ namespace Ably.Transport
                 }
                 else
                 {
-                    // TODO: Implement
+                    // TODO: Implement Commet protocol
                 }
                 WebSocketTransport socketTransport = new WebSocketTransport(serializer);
                 socketTransport.Host = parameters.Host;

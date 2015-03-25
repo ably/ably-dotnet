@@ -71,12 +71,12 @@ namespace Ably.Transport
         //
         // ConnectionManager communication
         //
-        private void SetState(ConnectionState state, ConnectionInfo info = null)
+        private void SetState(ConnectionState state, ConnectionInfo info = null, ErrorInfo error = null)
         {
             this.Logger.Info("ConnectionManager: StateChanged: {0}", state);
             if (this.StateChanged != null)
             {
-                this.StateChanged(state, info);
+                this.StateChanged(state, info, error);
             }
         }
 
@@ -121,7 +121,19 @@ namespace Ably.Transport
                     this.OnMessage_Heartbeat(message);
                     break;
                 case ProtocolMessage.MessageAction.Error:
-                    this.OnMessage_Error(message);
+                    AblyException transportException = new AblyException(message.Error);
+                    if (message.Error == null)
+                    {
+                        this.Logger.Error("OnTransportMessageReceived(): ERROR message received", transportException);
+                    }
+                    if (!string.IsNullOrEmpty(message.Channel))
+                    {
+                        OnMessageReceived(message);
+                    }
+                    else
+                    {
+                        OnMessage_Error(message);
+                    }
                     break;
                 case ProtocolMessage.MessageAction.Connected:
                     this.OnMessage_Connected(message);
@@ -150,7 +162,7 @@ namespace Ably.Transport
 
         private void OnMessage_Error(ProtocolMessage message)
         {
-            this.SetState(ConnectionState.Failed);
+            this.SetState(ConnectionState.Failed, error: message.Error);
         }
 
         private void OnMessage_Connected(ProtocolMessage message)
@@ -161,19 +173,19 @@ namespace Ably.Transport
                 ConnectionKey = message.ConnectionKey,
                 ConnectionSerial = message.ConnectionSerial
             };
-            this.SetState(ConnectionState.Connected, info);
+            this.SetState(ConnectionState.Connected, info: info, error: message.Error);
         }
 
         private void OnMessage_Disconnected(ProtocolMessage message)
         {
-            this.SetState(ConnectionState.Disconnected);
+            this.SetState(ConnectionState.Disconnected, error: message.Error);
         }
 
         private void OnMessage_Closed(ProtocolMessage message)
         {
             if (message.Error != null)
             {
-                this.SetState(ConnectionState.Failed);
+                this.SetState(ConnectionState.Failed, error: message.Error);
             }
             else
             {

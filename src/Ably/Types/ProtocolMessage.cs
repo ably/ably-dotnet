@@ -73,7 +73,12 @@ namespace Ably.Types
                 text.Append(", mesasages=[ ");
                 foreach (Message message in this.Messages)
                 {
-                    text.AppendFormat("{{ name={0}, data={1}}}", message.Name, message.Data);
+                    text.AppendFormat("{{ name=\"{0}\"", message.Name);
+                    if (message.TimeStamp.Ticks > 0)
+                    {
+                        text.AppendFormat(", timestamp=\"{0}\"}}", message.TimeStamp);
+                    }
+                    text.AppendFormat(", data={0}}}", message.Data);
                 }
                 text.Append(" ]");
             }

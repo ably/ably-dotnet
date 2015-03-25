@@ -8,6 +8,6 @@ namespace Ably.Realtime
 {
     public class Presence
     {
-        // TODO: Implement
+        // TODO: Implement Presence
     }
 }

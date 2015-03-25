@@ -86,12 +86,12 @@ namespace Ably.Realtime
             this.Close();
         }
 
-        protected void SetConnectionState(ConnectionState state)
+        protected void SetConnectionState(ConnectionState state, ErrorInfo error = null)
         {
             ConnectionState oldState = this.State;
             this.State = state;
-            // TODO: Add proper arguments
-            this.OnConnectionStateChanged(new ConnectionStateChangedEventArgs(oldState, state, -1, null));
+            // TODO: Add proper arguments in Connection.ConnectionStateChanged
+            this.OnConnectionStateChanged(new ConnectionStateChangedEventArgs(oldState, state, -1, error));
         }
 
         protected void OnConnectionStateChanged(ConnectionStateChangedEventArgs args)
@@ -102,7 +102,7 @@ namespace Ably.Realtime
             }
         }
 
-        private void ConnectionManagerStateChanged(ConnectionState newState, ConnectionInfo info)
+        private void ConnectionManagerStateChanged(ConnectionState newState, ConnectionInfo info, ErrorInfo error)
         {
             if (newState == ConnectionState.Connected)
             {
@@ -115,7 +115,7 @@ namespace Ably.Realtime
                 this.Key = null;
             }
 
-            this.SetConnectionState(newState);
+            this.SetConnectionState(newState, error);
         }
     }
 }

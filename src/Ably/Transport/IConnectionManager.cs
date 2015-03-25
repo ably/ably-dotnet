@@ -11,7 +11,7 @@ namespace Ably.Transport
         public string ConnectionKey { get; set; }
     }
 
-    public delegate void StateChangedDelegate(ConnectionState state, ConnectionInfo info);
+    public delegate void StateChangedDelegate(ConnectionState state, ConnectionInfo info, ErrorInfo error);
     public delegate void MessageReceivedDelegate(ProtocolMessage message);
 
     public interface IConnectionManager

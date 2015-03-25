@@ -28,7 +28,7 @@ namespace Ably.Realtime
 
         public IRealtimeChannel Get(string name, ChannelOptions options)
         {
-            // TODO: Implement
+            // TODO: Implement ChannelList.Get
             throw new NotImplementedException();
         }
 

@@ -110,19 +110,19 @@ namespace Ably.Realtime
 
         public IPartialResult<Message> History()
         {
-            // TODO: Implement
+            // TODO: Implement Channel.History
             throw new NotImplementedException();
         }
 
         public IPartialResult<Message> History(HistoryDataRequestQuery query)
         {
-            // TODO: Implement
+            // TODO: Implement Channel.History
             throw new NotImplementedException();
         }
 
         public IList<PresenceMessage> Presence()
         {
-            // TODO: Implement
+            // TODO: Implement Channel.Presence
             throw new NotImplementedException();
         }
 
@@ -184,12 +184,12 @@ namespace Ably.Realtime
 
         private void OnPresence(ProtocolMessage message, string channelSerial)
         {
-            // TODO: Implement
+            // TODO: Implement Channel.OnPresence
         }
 
         private void OnSync(ProtocolMessage message)
         {
-            // TODO: Implement
+            // TODO: Implement Channel.OnSync
             this.OnPresence(message, "");
         }
     }
