@@ -40,12 +40,16 @@ namespace Ably.Transport
 
         public void Connect()
         {
+            if (this.transport.State == TransportState.Connected)
+            {
+                return;
+            }
             this.transport.Connect();
         }
 
         public void Close()
         {
-            this.transport.Close(true);
+            this.transport.Close(this.transport.State == TransportState.Connected);
         }
 
         public void Ping()
@@ -167,12 +171,7 @@ namespace Ably.Transport
 
         private void OnMessage_Connected(ProtocolMessage message)
         {
-            ConnectionInfo info = new ConnectionInfo()
-            {
-                ConnectionId = message.ConnectionId,
-                ConnectionKey = message.ConnectionKey,
-                ConnectionSerial = message.ConnectionSerial
-            };
+            ConnectionInfo info = new ConnectionInfo(message.ConnectionId, message.ConnectionSerial, message.ConnectionKey);
             this.SetState(ConnectionState.Connected, info: info, error: message.Error);
         }
 

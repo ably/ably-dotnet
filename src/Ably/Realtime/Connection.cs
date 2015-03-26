@@ -52,7 +52,7 @@ namespace Ably.Realtime
         /// message and, in the failed state in particular, provides diagnostic
         /// error information.
         /// </summary>
-        public long Reason { get; private set; }
+        public ErrorInfo Reason { get; private set; }
 
         /// <summary>
         /// </summary>
@@ -114,6 +114,7 @@ namespace Ably.Realtime
             {
                 this.Key = null;
             }
+            this.Reason = error;
 
             this.SetConnectionState(newState, error);
         }

@@ -3,9 +3,20 @@ using System;
 
 namespace Ably.Transport
 {
+    public enum TransportState
+    {
+        Initialized,
+        Connecting,
+        Connected,
+        Closing,
+        Closed,
+    }
+
     public interface ITransport
     {
         string Host { get; }
+
+        TransportState State { get; }
 
         ITransportListener Listener { get; set; }
 

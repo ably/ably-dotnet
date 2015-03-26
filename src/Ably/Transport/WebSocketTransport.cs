@@ -1,5 +1,6 @@
 ﻿using Ably.Types;
 using System;
+using System.Collections.Generic;
 using WebSocket4Net;
 
 namespace Ably.Transport
@@ -39,8 +40,28 @@ namespace Ably.Transport
         private WebSocket socket;
         private bool channelBinaryMode;
         private IMessageSerializer serializer;
+        private static readonly Dictionary<WebSocketState, TransportState> stateDict = new Dictionary<WebSocketState, TransportState>()
+        {
+            { WebSocketState.None, TransportState.Initialized },
+            { WebSocketState.Connecting, TransportState.Connecting },
+            { WebSocketState.Open, TransportState.Connected },
+            { WebSocketState.Closing, TransportState.Closing },
+            { WebSocketState.Closed, TransportState.Closed }
+        };
 
         public string Host { get; private set; }
+
+        public TransportState State
+        {
+            get
+            {
+                if (this.socket == null)
+                {
+                    return TransportState.Initialized;
+                }
+                return stateDict[this.socket.State];
+            }
+        }
 
         public ITransportListener Listener { get; set; }
 

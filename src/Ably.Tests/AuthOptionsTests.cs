@@ -84,5 +84,26 @@ namespace Ably.Tests
             Assert.NotEqual(otherComplete.KeyValue, complete.KeyValue);
         }
 
+        [Fact]
+        public void Can_Create_AuthOptions_DefaultConstructor()
+        {
+            AuthOptions o = new AuthOptions();
+        }
+
+        [Fact]
+        public void Can_Create_AuthOptions_Key()
+        {
+            string key = "123:456";
+            AuthOptions o = new AuthOptions(key);
+
+            Assert.Equal<string>("123", o.KeyId);
+            Assert.Equal<string>("456", o.KeyValue);
+        }
+
+        [Fact]
+        public void AuthOptions_WrongKey_ThrowsException()
+        {
+            Assert.Throws<AblyException>(() => new AuthOptions("123"));
+        }
     }
 }

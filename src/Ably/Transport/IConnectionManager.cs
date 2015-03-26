@@ -6,9 +6,16 @@ namespace Ably.Transport
 {
     public class ConnectionInfo
     {
-        public string ConnectionId { get; set; }
-        public long ConnectionSerial { get; set; }
-        public string ConnectionKey { get; set; }
+        public ConnectionInfo(string connectionId, long connectionSerial, string connectionKey)
+        {
+            this.ConnectionId = connectionId;
+            this.ConnectionSerial = connectionSerial;
+            this.ConnectionKey = connectionKey;
+        }
+
+        public string ConnectionId { get; private set; }
+        public long ConnectionSerial { get; private set; }
+        public string ConnectionKey { get; private set; }
     }
 
     public delegate void StateChangedDelegate(ConnectionState state, ConnectionInfo info, ErrorInfo error);
