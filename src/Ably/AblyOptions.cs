@@ -12,7 +12,11 @@ namespace Ably
     /// </summary>
     public class AblyOptions : AuthOptions
     {
-        public AblyOptions() { }
+        public AblyOptions()
+        {
+            this.Transports = new HashSet<ITransport>();
+            this.AutoConnect = true;
+        }
 
         /// <summary>
         /// Construct an options with a single key string. The key string is obtained
@@ -24,6 +28,7 @@ namespace Ably
             : base(key)
         {
             this.Transports = new HashSet<ITransport>();
+            this.AutoConnect = true;
         }
 
         /// <summary>
@@ -88,6 +93,11 @@ namespace Ably
         /// Realtime API documentation for further information on connection state recovery.
         /// </summary>
         public string Recover { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool AutoConnect { get; set; }
 
         public ChannelOptions ChannelDefaults { get; set; }
     }

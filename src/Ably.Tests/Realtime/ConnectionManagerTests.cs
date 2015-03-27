@@ -15,7 +15,7 @@ namespace Ably.Tests.Realtime
             // Arrange
             Mock<ITransport> mock = new Mock<ITransport>();
             mock.SetupGet(c => c.State).Returns(TransportState.Initialized);
-            ConnectionManager target = CreateConnectionManager(mock.Object);
+            ConnectionManager target = new ConnectionManager(mock.Object);
 
             // Act
             target.Connect();
@@ -30,7 +30,7 @@ namespace Ably.Tests.Realtime
             // Arrange
             Mock<ITransport> mock = new Mock<ITransport>();
             mock.SetupGet(c => c.State).Returns(TransportState.Connected);
-            ConnectionManager target = CreateConnectionManager(mock.Object);
+            ConnectionManager target = new ConnectionManager(mock.Object);
 
             // Act
             target.Connect();
@@ -45,7 +45,7 @@ namespace Ably.Tests.Realtime
             // Arrange
             Mock<ITransport> mock = new Mock<ITransport>();
             mock.SetupGet(c => c.State).Returns(TransportState.Initialized);
-            ConnectionManager target = CreateConnectionManager(mock.Object);
+            ConnectionManager target = new ConnectionManager(mock.Object);
 
             // Act
             target.Close();
@@ -61,7 +61,7 @@ namespace Ably.Tests.Realtime
             // Arrange
             Mock<ITransport> mock = new Mock<ITransport>();
             mock.SetupGet(c => c.State).Returns(TransportState.Connected);
-            ConnectionManager target = CreateConnectionManager(mock.Object);
+            ConnectionManager target = new ConnectionManager(mock.Object);
 
             // Act
             target.Close();
@@ -79,19 +79,13 @@ namespace Ably.Tests.Realtime
             Mock<ITransport> mock = new Mock<ITransport>();
             mock.SetupGet(c => c.State).Returns(TransportState.Connected);
             mock.Setup(c => c.Send(It.IsAny<ProtocolMessage>())).Callback<ProtocolMessage>(cc => result = cc);
-            ConnectionManager target = CreateConnectionManager(mock.Object);
+            ConnectionManager target = new ConnectionManager(mock.Object);
 
             // Act
             target.Ping();
 
             // Assert
             Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Heartbeat, result.Action);
-        }
-
-        private ConnectionManager CreateConnectionManager(ITransport transport)
-        {
-            var constructor = typeof(ConnectionManager).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, new Type[] { typeof(ITransport) }, null);
-            return constructor.Invoke(new object[] { transport }) as ConnectionManager;
         }
     }
 }

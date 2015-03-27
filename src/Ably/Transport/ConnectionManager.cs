@@ -40,11 +40,10 @@ namespace Ably.Transport
 
         public void Connect()
         {
-            if (this.transport.State == TransportState.Connected)
+            if (this.transport.State == TransportState.Initialized || this.transport.State == TransportState.Closed)
             {
-                return;
+                this.transport.Connect();
             }
-            this.transport.Connect();
         }
 
         public void Close()

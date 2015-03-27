@@ -1,4 +1,6 @@
 ﻿using Ably.Realtime;
+using Ably.Transport;
+using Moq;
 using Xunit;
 
 namespace Ably.Tests.Realtime
@@ -22,10 +24,33 @@ namespace Ably.Tests.Realtime
         }
 
         [Fact]
-        public void New_Realtime_HasInitializedConnection()
+        public void New_Realtime_WithConnectAutomatically_False_DoesNotConnect()
         {
-            AblyRealtime realtime = new AblyRealtime(Debug_Key);
+            // Arrange
+            Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
+            AblyOptions options = new AblyOptions(Debug_Key) { AutoConnect = false };
+
+            // Act
+            AblyRealtime realtime = new AblyRealtime(options, mock.Object);
+
+            // Assert
             Assert.Equal<ConnectionState>(ConnectionState.Initialized, realtime.Connection.State);
+            mock.Verify(c => c.Connect(), Times.Never());
+        }
+
+        [Fact]
+        public void New_Realtime_WithConnectAutomatically_True_ConnectsAutomatically()
+        {
+            // Arrange
+            Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
+            AblyOptions options = new AblyOptions(Debug_Key);
+
+            // Act
+            AblyRealtime realtime = new AblyRealtime(options, mock.Object);
+
+            // Assert
+            Assert.Equal<ConnectionState>(ConnectionState.Connecting, realtime.Connection.State);
+            mock.Verify(c => c.Connect(), Times.Once());
         }
     }
 }

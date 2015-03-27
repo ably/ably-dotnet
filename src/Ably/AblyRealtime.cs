@@ -24,10 +24,16 @@ namespace Ably
         /// </summary>
         /// <param name="options"></param>
         public AblyRealtime(AblyOptions options)
+            : this(options, new ConnectionManager(options)) { }
+
+        internal AblyRealtime(AblyOptions options, IConnectionManager connectionManager)
         {
-            IConnectionManager connectionManager = new ConnectionManager(options);
             this.Channels = new ChannelList(connectionManager);
             this.Connection = new Connection(connectionManager);
+            if (options.AutoConnect)
+            {
+                this.Connection.Connect();
+            }
         }
 
         /// <summary>

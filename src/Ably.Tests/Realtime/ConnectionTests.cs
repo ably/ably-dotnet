@@ -15,7 +15,7 @@ namespace Ably.Tests
             Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
 
             // Act
-            Connection target = CreateConnection(mock.Object);
+            Connection target = new Connection(mock.Object);
 
             // Assert
             Assert.Equal<ConnectionState>(ConnectionState.Initialized, target.State);
@@ -26,7 +26,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
-            Connection target = CreateConnection(mock.Object);
+            Connection target = new Connection(mock.Object);
 
             // Act
             target.Connect();
@@ -41,7 +41,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
             mock.Setup(m => m.Connect()).Raises(m => m.StateChanged += null, ConnectionState.Connected, new ConnectionInfo("1", 2, "3"), null);
-            Connection target = CreateConnection(mock.Object);
+            Connection target = new Connection(mock.Object);
 
             // Act
             target.Connect();
@@ -57,7 +57,7 @@ namespace Ably.Tests
             string connectionIdTarget = "123";
             Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
             mock.Setup(m => m.Connect()).Raises(m => m.StateChanged += null, ConnectionState.Connected, new ConnectionInfo(connectionIdTarget, 2, "3"), null);
-            Connection target = CreateConnection(mock.Object);
+            Connection target = new Connection(mock.Object);
 
             // Act
             target.Connect();
@@ -73,7 +73,7 @@ namespace Ably.Tests
             long connectionSerialTarget = 123;
             Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
             mock.Setup(m => m.Connect()).Raises(m => m.StateChanged += null, ConnectionState.Connected, new ConnectionInfo("1", connectionSerialTarget, "3"), null);
-            Connection target = CreateConnection(mock.Object);
+            Connection target = new Connection(mock.Object);
 
             // Act
             target.Connect();
@@ -89,7 +89,7 @@ namespace Ably.Tests
             string connectionKeyTarget = "123";
             Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
             mock.Setup(m => m.Connect()).Raises(m => m.StateChanged += null, ConnectionState.Connected, new ConnectionInfo("1", 2, connectionKeyTarget), null);
-            Connection target = CreateConnection(mock.Object);
+            Connection target = new Connection(mock.Object);
 
             // Act
             target.Connect();
@@ -105,7 +105,7 @@ namespace Ably.Tests
             ErrorInfo errorTarget = new ErrorInfo("Error!", 123);
             Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
             mock.Setup(m => m.Connect()).Raises(m => m.StateChanged += null, ConnectionState.Failed, new ConnectionInfo("1", 2, "123"), errorTarget);
-            Connection target = CreateConnection(mock.Object);
+            Connection target = new Connection(mock.Object);
 
             // Act
             target.Connect();
@@ -119,7 +119,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
-            Connection target = CreateConnection(mock.Object);
+            Connection target = new Connection(mock.Object);
 
             // Act
             target.Close();
@@ -134,7 +134,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
             mock.Setup(m => m.Close()).Raises(m => m.StateChanged += null, ConnectionState.Closed, null, null);
-            Connection target = CreateConnection(mock.Object);
+            Connection target = new Connection(mock.Object);
 
             // Act
             target.Close();
@@ -148,19 +148,13 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
-            Connection target = CreateConnection(mock.Object);
+            Connection target = new Connection(mock.Object);
 
             // Act
             target.Ping();
 
             // Assert
             mock.Verify(c => c.Ping(), Times.Once());
-        }
-
-        private Connection CreateConnection(IConnectionManager connectionManager)
-        {
-            var constructor = typeof(Connection).GetConstructor(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, new Type[] { typeof(IConnectionManager) }, null);
-            return constructor.Invoke(new object[] { connectionManager }) as Connection;
         }
     }
 }
