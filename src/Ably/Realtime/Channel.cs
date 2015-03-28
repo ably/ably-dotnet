@@ -48,7 +48,7 @@ namespace Ably.Realtime
 
             if (!this.connection.IsActive)
             {
-                // TODO: Throw error with details
+                this.connection.Connect();
             }
 
             this.SetChannelState(ChannelState.Attaching);
@@ -67,9 +67,9 @@ namespace Ably.Realtime
                 return;
             }
 
-            if (!this.connection.IsActive)
+            if (this.State == ChannelState.Failed)
             {
-                // TODO: Throw error with details
+                throw new AblyException("Channel is Failed");
             }
 
             this.SetChannelState(ChannelState.Detaching);
@@ -153,10 +153,12 @@ namespace Ably.Realtime
             switch (message.Action)
             {
                 case ProtocolMessage.MessageAction.Attached:
-                    this.SetChannelState(ChannelState.Attached);
+                    if (this.State == ChannelState.Attaching)
+                        this.SetChannelState(ChannelState.Attached);
                     break;
                 case ProtocolMessage.MessageAction.Detached:
-                    this.SetChannelState(ChannelState.Detached);
+                    if (this.State == ChannelState.Detaching)
+                        this.SetChannelState(ChannelState.Detached);
                     break;
                 case ProtocolMessage.MessageAction.Message:
                     this.OnMessage(message);
