@@ -1,10 +1,11 @@
 ﻿using Ably.Transport;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Ably.Realtime
 {
-    public class ChannelList : IEnumerable<KeyValuePair<string, Channel>>, IChannelCommands<IRealtimeChannel>
+    public class ChannelList : IEnumerable<Channel>, IChannelCommands<IRealtimeChannel>
     {
         public ChannelList(IConnectionManager connection)
         {
@@ -44,20 +45,21 @@ namespace Ably.Realtime
 
         public void ReleaseAll()
         {
-            foreach (string channelName in this.channels.Keys)
+            string[] channelList = this.channels.Keys.ToArray();
+            foreach (string channelName in channelList)
             {
                 this.Release(channelName);
             }
         }
 
-        public IEnumerator<KeyValuePair<string, Channel>> GetEnumerator()
+        public IEnumerator<Channel> GetEnumerator()
         {
-            return this.channels.GetEnumerator();
+            return this.channels.Values.GetEnumerator();
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            return this.channels.GetEnumerator();
+            return this.GetEnumerator();
         }
     }
 }

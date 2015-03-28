@@ -5,7 +5,7 @@ using Moq;
 using System;
 using Xunit;
 
-namespace Ably.Tests.Realtime
+namespace Ably.Tests
 {
     public class ConnectionManagerTests
     {

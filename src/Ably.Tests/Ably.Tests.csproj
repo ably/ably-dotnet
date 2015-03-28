@@ -67,6 +67,7 @@
     <Compile Include="DataRequestQueryTests.cs" />
     <Compile Include="ErrorInfoTests.cs" />
     <Compile Include="MessageTests.cs" />
+    <Compile Include="Realtime\ChannelListTests.cs" />
     <Compile Include="Realtime\ConnectionManagerTests.cs" />
     <Compile Include="Realtime\ConnectionTests.cs" />
     <Compile Include="Realtime\JsonMessageSerializerTests.cs" />

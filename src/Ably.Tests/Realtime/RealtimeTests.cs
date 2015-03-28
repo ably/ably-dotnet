@@ -3,7 +3,7 @@ using Ably.Transport;
 using Moq;
 using Xunit;
 
-namespace Ably.Tests.Realtime
+namespace Ably.Tests
 {
     public class RealtimeTests
     {
