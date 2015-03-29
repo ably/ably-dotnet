@@ -87,5 +87,38 @@ namespace Ably.Tests
             // Assert
             Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Heartbeat, result.Action);
         }
+
+        [Fact]
+        public void WhenConnecting_OutboundMessagesAreNotSend()
+        {
+            // Arrange
+            Mock<ITransport> mock = new Mock<ITransport>();
+            mock.SetupGet(c => c.State).Returns(TransportState.Connecting);
+            ConnectionManager target = new ConnectionManager(mock.Object);
+
+            // Act
+            target.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, "Test"));
+
+            // Assert
+            mock.Verify(c => c.Send(It.IsAny<ProtocolMessage>()), Times.Never());
+        }
+
+        [Fact]
+        public void WhenConnected_OutboundMessagesAreSend()
+        {
+            // Arrange
+            Mock<ITransport> mock = new Mock<ITransport>();
+            mock.SetupProperty(c => c.Listener);
+            mock.SetupGet(c => c.State).Returns(TransportState.Connecting);
+            ConnectionManager target = new ConnectionManager(mock.Object);
+
+            // Act
+            target.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, "Test"));
+            target.Ping();
+            mock.Object.Listener.OnTransportConnected();
+
+            // Assert
+            mock.Verify(c => c.Send(It.IsAny<ProtocolMessage>()), Times.Exactly(2));
+        }
     }
 }

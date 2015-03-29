@@ -29,16 +29,15 @@ namespace RealtimeChat
             }
 
             string key = RealtimeChat.Properties.Settings.Default.ApiKey;
-            AblyOptions options = new AblyOptions(key) { UseTextProtocol = true, Tls = true };
+            AblyOptions options = new AblyOptions(key) { UseTextProtocol = true, Tls = true, AutoConnect = false };
             this.client = new AblyRealtime(options);
-            this.client.Connection.ConnectionStateChanged += (s, args) =>
-            {
-                if (args.CurrentState == ConnectionState.Connected)
-                {
-                    this.AttachChannel(channelName);
-                }
-            };
+            this.client.Connection.ConnectionStateChanged += this.connection_ConnectionStateChanged;
             this.client.Connect();
+
+            this.channel = this.client.Channels.Get(channelName);
+            this.channel.ChannelStateChanged += channel_ChannelStateChanged;
+            this.channel.MessageReceived += channel_MessageReceived;
+            this.channel.Attach();
         }
 
         private void Trigger_Click(object sender, RoutedEventArgs e)
@@ -54,6 +53,11 @@ namespace RealtimeChat
             this.channel.Publish(eventName, payload);
         }
 
+        private void connection_ConnectionStateChanged(object sender, ConnectionStateChangedEventArgs e)
+        {
+            outputBox.Items.Add(string.Format("Connection: {0}", e.CurrentState));
+        }
+
         private void channel_ChannelStateChanged(object sender, ChannelStateChangedEventArgs e)
         {
             outputBox.Items.Add(string.Format("Channel: {0}", e.NewState));
@@ -65,14 +69,6 @@ namespace RealtimeChat
             {
                 outputBox.Items.Add(string.Format("{0}: {1}", message.Name, message.Data));
             }
-        }
-
-        private void AttachChannel(string channelName)
-        {
-            this.channel = this.client.Channels.Get(channelName);
-            this.channel.ChannelStateChanged += channel_ChannelStateChanged;
-            this.channel.MessageReceived += channel_MessageReceived;
-            this.channel.Attach();
         }
     }
 }

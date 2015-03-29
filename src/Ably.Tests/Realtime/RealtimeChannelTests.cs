@@ -305,7 +305,7 @@ namespace Ably.Tests
             Assert.Same(messages[1], sendMessage.Messages[1]);
         }
 
-        [Fact(Skip="TODO")]
+        [Fact]
         public void Publish_WhenNotAttached_PublishesQueuedMessageOnceAttached()
         {            
             // Arrange
@@ -324,7 +324,7 @@ namespace Ably.Tests
                 message.Messages.Length == 1 && message.Messages[0].Name == "message")));
         }
 
-        [Fact(Skip = "TODO")]
+        [Fact]
         public void Publish_WhenNotAttached_PublishesQueuedMessageOnceAttached_AsSingleMessage()
         {
             // Arrange

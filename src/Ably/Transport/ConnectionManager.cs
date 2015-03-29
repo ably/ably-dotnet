@@ -1,6 +1,7 @@
 ﻿using Ably.Realtime;
 using Ably.Types;
 using System;
+using System.Collections.Generic;
 
 namespace Ably.Transport
 {
@@ -9,12 +10,14 @@ namespace Ably.Transport
         internal ConnectionManager()
         {
             this.sync = System.Threading.SynchronizationContext.Current;
+            this.pendingMessages = new Queue<ProtocolMessage>();
         }
 
         internal ConnectionManager(ITransport transport)
             : this()
         {
             this.transport = transport;
+            this.transport.Listener = this;
         }
 
         public ConnectionManager(AblyOptions options)
@@ -28,6 +31,7 @@ namespace Ably.Transport
         internal ITransport transport;
         private System.Threading.SynchronizationContext sync;
         private ILogger Logger = Config.AblyLogger;
+        private Queue<ProtocolMessage> pendingMessages;
 
         public event StateChangedDelegate StateChanged;
 
@@ -53,13 +57,19 @@ namespace Ably.Transport
 
         public void Ping()
         {
-            this.transport.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
+            this.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
         }
 
         public void Send(ProtocolMessage message)
         {
-            this.Logger.Info("ConnectionManager: Sending Message: {0}", message);
-            this.transport.Send(message);
+            if (this.transport.State == TransportState.Connected)
+            {
+                this.SendDirect(message);
+            }
+            else
+            {
+                this.pendingMessages.Enqueue(message);
+            }
         }
 
         private static TransportParams CreateTransportParameters(AblyOptions options)
@@ -74,6 +84,11 @@ namespace Ably.Transport
         //
         // ConnectionManager communication
         //
+        private void SetState(object state)
+        {
+            this.SetState((ConnectionState)state);
+        }
+
         private void SetState(ConnectionState state, ConnectionInfo info = null, ErrorInfo error = null)
         {
             this.Logger.Info("ConnectionManager: StateChanged: {0}", state);
@@ -96,22 +111,65 @@ namespace Ably.Transport
         //
         void ITransportListener.OnTransportConnected()
         {
-            this.sync.Send(new System.Threading.SendOrPostCallback(o => this.Logger.Info("ConnectionManager: Transport Connected")), null);
+            if (this.sync != null && this.sync.IsWaitNotificationRequired())
+            {
+                this.sync.Send(new System.Threading.SendOrPostCallback(o => this.OnTransportConnected()), null);
+            }
+            else
+            {
+                this.OnTransportConnected();
+            }
         }
 
         void ITransportListener.OnTransportDisconnected()
         {
-            this.sync.Send(new System.Threading.SendOrPostCallback(o => this.SetState(ConnectionState.Disconnected)), null);
+            if (this.sync != null && this.sync.IsWaitNotificationRequired())
+            {
+                this.sync.Send(new System.Threading.SendOrPostCallback(this.SetState), ConnectionState.Disconnected);
+            }
+            else
+            {
+                this.SetState(ConnectionState.Disconnected);
+            }
         }
 
         void ITransportListener.OnTransportError()
         {
-            this.sync.Send(new System.Threading.SendOrPostCallback(o => this.SetState(ConnectionState.Failed)), null);
+            if (this.sync != null && this.sync.IsWaitNotificationRequired())
+            {
+                this.sync.Send(new System.Threading.SendOrPostCallback(this.SetState), ConnectionState.Failed);
+            }
+            else
+            {
+                this.SetState(ConnectionState.Failed);
+            }
         }
 
         void ITransportListener.OnTransportMessageReceived(ProtocolMessage message)
         {
-            this.sync.Send(new System.Threading.SendOrPostCallback(o => this.ProcessProtocolMessage(message)), null);
+            if (this.sync != null && this.sync.IsWaitNotificationRequired())
+            {
+                this.sync.Send(new System.Threading.SendOrPostCallback(this.ProcessProtocolMessage), message);
+            }
+            else
+            {
+                this.ProcessProtocolMessage(message);
+            }
+        }
+
+        private void OnTransportConnected()
+        {
+            this.Logger.Info("ConnectionManager: Transport Connected");
+            foreach (ProtocolMessage message in this.pendingMessages)
+            {
+                this.SendDirect(message);
+            }
+            this.pendingMessages.Clear();
+        }
+
+        private void ProcessProtocolMessage(object message)
+        {
+            this.ProcessProtocolMessage(message as ProtocolMessage);
         }
 
         private void ProcessProtocolMessage(ProtocolMessage message)
@@ -197,6 +255,12 @@ namespace Ably.Transport
 
         private void OnMessage_Nack(ProtocolMessage message)
         {
+        }
+
+        private void SendDirect(ProtocolMessage message)
+        {
+            this.Logger.Info("ConnectionManager: Sending Message: {0}", message);
+            this.transport.Send(message);
         }
     }
 }

@@ -10,6 +10,7 @@ namespace Ably.Realtime
     {
         internal Channel(string name, IConnectionManager connection)
         {
+            this.queuedMessages = new List<Message>();
             this.Name = name;
             this.connection = connection;
             this.connection.MessageReceived += OnConnectionMessageReceived;
@@ -17,6 +18,7 @@ namespace Ably.Realtime
 
         private IConnectionManager connection;
         private ILogger Logger = Config.AblyLogger;
+        private List<Message> queuedMessages;
 
         /// <summary>
         /// 
@@ -92,14 +94,14 @@ namespace Ably.Realtime
         /// <param name="messages"></param>
         public void Publish(IEnumerable<Message> messages)
         {
-            ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Message, this.Name);
-            message.Messages = messages.ToArray();
             if (this.State == ChannelState.Initialised || this.State == ChannelState.Attaching)
             {
-                // TODO: Queue messages
+                this.queuedMessages.AddRange(messages);
             }
             else if (this.State == ChannelState.Attached)
             {
+                ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Message, this.Name);
+                message.Messages = messages.ToArray();
                 this.connection.Send(message);
             }
             else
@@ -154,7 +156,10 @@ namespace Ably.Realtime
             {
                 case ProtocolMessage.MessageAction.Attached:
                     if (this.State == ChannelState.Attaching)
+                    {
                         this.SetChannelState(ChannelState.Attached);
+                        this.SendQueuedMessages();
+                    }
                     break;
                 case ProtocolMessage.MessageAction.Detached:
                     if (this.State == ChannelState.Detaching)
@@ -193,6 +198,17 @@ namespace Ably.Realtime
         {
             // TODO: Implement Channel.OnSync
             this.OnPresence(message, "");
+        }
+
+        private void SendQueuedMessages()
+        {
+            if (this.queuedMessages.Count == 0)
+                return;
+
+            ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Message, this.Name);
+            message.Messages = this.queuedMessages.ToArray();
+            this.queuedMessages.Clear();
+            this.connection.Send(message);
         }
     }
 }
