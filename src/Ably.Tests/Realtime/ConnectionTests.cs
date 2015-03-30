@@ -1,5 +1,6 @@
 ﻿using Ably.Realtime;
 using Ably.Transport;
+using Ably.Types;
 using Moq;
 using System;
 using Xunit;
@@ -154,7 +155,7 @@ namespace Ably.Tests
             target.Ping();
 
             // Assert
-            mock.Verify(c => c.Ping(), Times.Once());
+            mock.Verify(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Heartbeat), null), Times.Once());
         }
     }
 }

@@ -119,7 +119,6 @@
     <Compile Include="Realtime\ConnectionState.cs" />
     <Compile Include="Realtime\ConnectionStateChangedEventArgs.cs" />
     <Compile Include="Realtime\IRealtimeChannel.cs" />
-    <Compile Include="Realtime\MessageReceivedEventArgs.cs" />
     <Compile Include="Realtime\Presence.cs" />
     <Compile Include="Rest.cs" />
     <Compile Include="Rest\AblyHttpClient.cs" />

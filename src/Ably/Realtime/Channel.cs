@@ -11,6 +11,7 @@ namespace Ably.Realtime
         internal Channel(string name, IConnectionManager connection)
         {
             this.queuedMessages = new List<Message>();
+            this.eventListeners = new Dictionary<string, List<Action<Message[]>>>();
             this.Name = name;
             this.connection = connection;
             this.connection.MessageReceived += OnConnectionMessageReceived;
@@ -19,11 +20,12 @@ namespace Ably.Realtime
         private IConnectionManager connection;
         private ILogger Logger = Config.AblyLogger;
         private List<Message> queuedMessages;
+        private Dictionary<string, List<Action<Message[]>>> eventListeners;
 
         /// <summary>
         /// 
         /// </summary>
-        public event EventHandler<MessageReceivedEventArgs> MessageReceived;
+        public event Action<Message[]> MessageReceived;
 
         public event EventHandler<ChannelStateChangedEventArgs> ChannelStateChanged;
 
@@ -54,7 +56,7 @@ namespace Ably.Realtime
             }
 
             this.SetChannelState(ChannelState.Attaching);
-            this.connection.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, this.Name));
+            this.connection.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, this.Name), null);
         }
 
         /// <summary>
@@ -75,7 +77,27 @@ namespace Ably.Realtime
             }
 
             this.SetChannelState(ChannelState.Detaching);
-            this.connection.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, this.Name));
+            this.connection.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, this.Name), null);
+        }
+
+        public void Subscribe(string eventName, Action<Message[]> listener)
+        {
+            List<Action<Message[]>> messageDelegate;
+            if (!this.eventListeners.TryGetValue(eventName, out messageDelegate))
+            {
+                messageDelegate = new List<Action<Message[]>>();
+                this.eventListeners.Add(eventName, messageDelegate);
+            }
+            messageDelegate.Add(listener);
+        }
+
+        public void Unsubscribe(string eventName, Action<Message[]> listener)
+        {
+            List<Action<Message[]>> messageDelegate;
+            if (this.eventListeners.TryGetValue(eventName, out messageDelegate))
+            {
+                messageDelegate.Remove(listener);
+            }
         }
 
         /// <summary>
@@ -85,7 +107,12 @@ namespace Ably.Realtime
         /// <param name="data">The payload of the message.</param>
         public void Publish(string name, object data)
         {
-            this.Publish(new Message[] { new Message(name, data) });
+            this.Publish(name, data, null);
+        }
+
+        public void Publish(string name, object data, Action<ErrorInfo> callback)
+        {
+            this.Publish(new Message[] { new Message(name, data) }, callback);
         }
 
         /// <summary>
@@ -93,6 +120,11 @@ namespace Ably.Realtime
         /// </summary>
         /// <param name="messages"></param>
         public void Publish(IEnumerable<Message> messages)
+        {
+            this.Publish(messages, null);
+        }
+
+        public void Publish(IEnumerable<Message> messages, Action<ErrorInfo> callback)
         {
             if (this.State == ChannelState.Initialised || this.State == ChannelState.Attaching)
             {
@@ -102,7 +134,7 @@ namespace Ably.Realtime
             {
                 ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Message, this.Name);
                 message.Messages = messages.ToArray();
-                this.connection.Send(message);
+                this.connection.Send(message, callback);
             }
             else
             {
@@ -132,14 +164,6 @@ namespace Ably.Realtime
         {
             this.State = state;
             this.OnChannelStateChanged(new ChannelStateChangedEventArgs(state));
-        }
-
-        private void OnMessageReceived(MessageReceivedEventArgs eventArgs)
-        {
-            if (this.MessageReceived != null)
-            {
-                this.MessageReceived(this, eventArgs);
-            }
         }
 
         private void OnChannelStateChanged(ChannelStateChangedEventArgs eventArgs)
@@ -186,7 +210,24 @@ namespace Ably.Realtime
         private void OnMessage(ProtocolMessage message)
         {
             Message[] messages = message.Messages;
-            this.OnMessageReceived(new MessageReceivedEventArgs(messages));
+            for (int i = 0; i < messages.Length; i++)
+            {
+                Message msg = messages[i];
+                // TODO: populate fields derived from protocol message
+                List<Action<Message[]>> listeners = eventListeners.Get(msg.Name, null);
+                if (listeners != null)
+                {
+                    Message[] singleMessage = new Message[] { msg };
+                    foreach (var listener in listeners)
+                    {
+                        listener(singleMessage);
+                    }
+                }
+            }
+            if (this.MessageReceived != null)
+            {
+                this.MessageReceived(messages);
+            }
         }
 
         private void OnPresence(ProtocolMessage message, string channelSerial)
@@ -208,7 +249,8 @@ namespace Ably.Realtime
             ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Message, this.Name);
             message.Messages = this.queuedMessages.ToArray();
             this.queuedMessages.Clear();
-            this.connection.Send(message);
+            // TODO: Add callbacks
+            this.connection.Send(message, null);
         }
     }
 }

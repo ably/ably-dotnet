@@ -55,13 +55,9 @@ namespace Ably.Transport
             this.transport.Close(this.transport.State == TransportState.Connected);
         }
 
-        public void Ping()
+        public void Send(ProtocolMessage message, Action<ErrorInfo> callback)
         {
-            this.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
-        }
-
-        public void Send(ProtocolMessage message)
-        {
+            // TODO: Implement callback
             if (this.transport.State == TransportState.Connected)
             {
                 this.SendDirect(message);

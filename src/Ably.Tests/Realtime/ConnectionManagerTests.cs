@@ -72,23 +72,6 @@ namespace Ably.Tests
         }
 
         [Fact]
-        public void Ping_Sends_Heartbeat()
-        {
-            // Arrange
-            ProtocolMessage result = null;
-            Mock<ITransport> mock = new Mock<ITransport>();
-            mock.SetupGet(c => c.State).Returns(TransportState.Connected);
-            mock.Setup(c => c.Send(It.IsAny<ProtocolMessage>())).Callback<ProtocolMessage>(cc => result = cc);
-            ConnectionManager target = new ConnectionManager(mock.Object);
-
-            // Act
-            target.Ping();
-
-            // Assert
-            Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Heartbeat, result.Action);
-        }
-
-        [Fact]
         public void WhenConnecting_OutboundMessagesAreNotSend()
         {
             // Arrange
@@ -97,7 +80,7 @@ namespace Ably.Tests
             ConnectionManager target = new ConnectionManager(mock.Object);
 
             // Act
-            target.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, "Test"));
+            target.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, "Test"), null);
 
             // Assert
             mock.Verify(c => c.Send(It.IsAny<ProtocolMessage>()), Times.Never());
@@ -113,8 +96,8 @@ namespace Ably.Tests
             ConnectionManager target = new ConnectionManager(mock.Object);
 
             // Act
-            target.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, "Test"));
-            target.Ping();
+            target.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, "Test"), null);
+            target.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat), null);
             mock.Object.Listener.OnTransportConnected();
 
             // Assert

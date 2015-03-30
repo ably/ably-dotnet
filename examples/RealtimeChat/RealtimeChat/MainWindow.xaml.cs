@@ -36,7 +36,7 @@ namespace RealtimeChat
 
             this.channel = this.client.Channels.Get(channelName);
             this.channel.ChannelStateChanged += channel_ChannelStateChanged;
-            this.channel.MessageReceived += channel_MessageReceived;
+            this.channel.MessageReceived += this.channel_MessageReceived;
             this.channel.Attach();
         }
 
@@ -63,9 +63,9 @@ namespace RealtimeChat
             outputBox.Items.Add(string.Format("Channel: {0}", e.NewState));
         }
 
-        private void channel_MessageReceived(object sender, MessageReceivedEventArgs e)
+        private void channel_MessageReceived(Message[] messages)
         {
-            foreach (Message message in e.Messages)
+            foreach (Message message in messages)
             {
                 outputBox.Items.Add(string.Format("{0}: {1}", message.Name, message.Data));
             }
