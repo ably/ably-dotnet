@@ -1,8 +1,10 @@
 ﻿using Ably.Realtime;
 using Ably.Transport;
+using Ably.Types;
 using Moq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace Ably.Tests
@@ -40,7 +42,7 @@ namespace Ably.Tests
         }
 
         [Fact]
-        public void ReleaseDetachesChannel()
+        public void Release_DetachesChannel()
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
@@ -57,7 +59,60 @@ namespace Ably.Tests
         }
 
         [Fact]
-        public void ReleaseAllDetachesChannel()
+        public void Release_DoesNotRemoveChannelBeforeDetached()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
+            ChannelList target = new ChannelList(manager.Object);
+            var channel = target.Get("test");
+            channel.Attach();
+
+            // Act
+            target.Release("test");
+
+            // Assert
+            Assert.Same(channel, target.Single());
+        }
+
+        [Fact]
+        public void Release_RemovesChannelWhenDetached()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
+            ChannelList target = new ChannelList(manager.Object);
+            var channel = target.Get("test");
+            channel.Attach();
+            target.Release("test");
+
+            // Act
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Detached, "test"));
+
+            // Assert
+            Assert.False(target.Any());
+        }
+
+        [Fact]
+        public void Release_RemovesChannelWhenFailded()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
+            ChannelList target = new ChannelList(manager.Object);
+            var channel = target.Get("test");
+            channel.Attach();
+            target.Release("test");
+
+            // Act
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
+
+            // Assert
+            Assert.False(target.Any());
+        }
+
+        [Fact]
+        public void ReleaseAll_DetachesChannel()
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
@@ -71,6 +126,59 @@ namespace Ably.Tests
 
             // Assert
             Assert.Equal(ChannelState.Detaching, channel.State);
+        }
+
+        [Fact]
+        public void ReleaseAll_DoesNotRemoveChannelBeforeDetached()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
+            ChannelList target = new ChannelList(manager.Object);
+            var channel = target.Get("test");
+            channel.Attach();
+
+            // Act
+            target.ReleaseAll();
+
+            // Assert
+            Assert.Same(channel, target.Single());
+        }
+
+        [Fact]
+        public void ReleaseAll_RemovesChannelWhenDetached()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
+            ChannelList target = new ChannelList(manager.Object);
+            var channel = target.Get("test");
+            channel.Attach();
+            target.ReleaseAll();
+
+            // Act
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Detached, "test"));
+
+            // Assert
+            Assert.False(target.Any());
+        }
+
+        [Fact]
+        public void ReleaseAll_RemovesChannelWhenFailded()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
+            ChannelList target = new ChannelList(manager.Object);
+            var channel = target.Get("test");
+            channel.Attach();
+            target.ReleaseAll();
+
+            // Act
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
+
+            // Assert
+            Assert.False(target.Any());
         }
 
         [Fact]

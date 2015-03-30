@@ -38,8 +38,17 @@ namespace Ably.Realtime
             Channel channel = null;
             if (this.channels.TryGetValue(name, out channel))
             {
+                EventHandler<ChannelStateChangedEventArgs> eventHandler = null;
+                eventHandler = (s, args) =>
+                {
+                    if (args.NewState == ChannelState.Detached || args.NewState == ChannelState.Failed)
+                    {
+                        channel.ChannelStateChanged -= eventHandler;
+                        this.channels.Remove(name);
+                    }
+                };
+                channel.ChannelStateChanged += eventHandler;
                 channel.Detach();
-                this.channels.Remove(name);
             }
         }
 
