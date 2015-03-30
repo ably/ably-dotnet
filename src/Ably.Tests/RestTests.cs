@@ -2,9 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 using System.Runtime.Serialization;
 using Xunit.Extensions;
@@ -162,10 +160,7 @@ namespace Ably.Tests
             rest.AddAuthHeader(request);
 
             //Assert
-            var authHeader = request.Headers.First();
-            Assert.Equal("Authorization", authHeader.Key);
-
-            Assert.Equal(expectedValue, authHeader.Value);
+            Assert.Single(request.Headers, authHeader => authHeader.Key == "Authorization" && authHeader.Value == expectedValue);
         }
   
         [Fact]

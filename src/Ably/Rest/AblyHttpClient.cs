@@ -66,7 +66,7 @@ namespace Ably
             finally
             {
                 if (response != null)
-                    response.Dispose();
+                    response.Close();
             }
         }
 
