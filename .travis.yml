@@ -1,4 +1,7 @@
 language: csharp
+mono:
+  - latest
+  - 3.12.1
 solution: Ably.sln
 install:
   - nuget restore ./src/Ably.sln
