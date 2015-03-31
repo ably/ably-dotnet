@@ -1,7 +1,7 @@
 language: csharp
 solution: Ably.sln
 install:
-  - nuget restore Ably.sln
+  - nuget restore ./src/Ably.sln
   - nuget install xunit.runners -Version 1.9.2 -OutputDirectory testrunner
 script:
   - xbuild /p:Configuration=Release ./src/Ably.sln
