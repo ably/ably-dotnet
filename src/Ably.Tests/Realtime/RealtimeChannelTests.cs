@@ -132,7 +132,7 @@ namespace Ably.Tests
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
             Task detachingTask = null;
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Detach), null))
-                .Callback(() => detachingTask = Task.Run(() => Thread.Sleep(50)).ContinueWith(c => manager.Raise(cc => cc.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Detached))));
+                .Callback(() => detachingTask = Task.Factory.StartNew(() => Thread.Sleep(50)).ContinueWith(c => manager.Raise(cc => cc.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Detached))));
             Realtime.Channel target = new Realtime.Channel("test", manager.Object);
             target.Attach();
             target.Detach();
@@ -235,7 +235,7 @@ namespace Ably.Tests
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Detach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Detached));
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
-                .Callback(() => attachingTask = Task.Run(() => Thread.Sleep(50)).ContinueWith(c => manager.Raise(cc => cc.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached))));
+                .Callback(() => attachingTask = Task.Factory.StartNew(() => Thread.Sleep(50)).ContinueWith(c => manager.Raise(cc => cc.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached))));
             Realtime.Channel target = new Realtime.Channel("test", manager.Object);
             target.Attach();
 
