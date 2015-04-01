@@ -31,7 +31,7 @@ namespace Ably.AcceptanceTests
         {
             TestData = GetTestData();
             TestData.TestAppSpec = JObject.Parse(File.ReadAllText("testAppSpec.json"));
-            AblyHttpClient client = new AblyHttpClient(TestData.restHost, null, TestData.tls);
+            AblyHttpClient client = new AblyHttpClient(TestData.restHost, null, TestData.tls, null);
             AblyRequest request = new AblyRequest("/apps", HttpMethod.Post);
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
@@ -65,7 +65,7 @@ namespace Ably.AcceptanceTests
             json = json.Replace("[[Interval3]]", interval3.ToString("yyyy-MM-dd:HH:mm"));
 
             RestClient restClient = new RestClient(TestData.keys.First().keyStr);
-            AblyHttpClient client = new AblyHttpClient(TestsSetup.TestData.restHost, null, TestsSetup.TestData.tls);
+            AblyHttpClient client = new AblyHttpClient(TestsSetup.TestData.restHost, null, TestsSetup.TestData.tls, null);
             AblyRequest request = new AblyRequest("/stats", HttpMethod.Post);
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
