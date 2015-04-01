@@ -15,7 +15,7 @@ var realtime = new Ably.Realtime("<api key>");
 
 ### Connection
 
-Connecting and observing connection status
+Connecting and observing connection state changes
 
 ```csharp
 realtime.Connection.ConnectionStateChanged += (s, args) =>
