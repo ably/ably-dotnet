@@ -220,7 +220,7 @@ namespace Ably
         /// <summary>
         /// Channel methods
         /// </summary>
-        public IChannelCommands Channels
+        public IChannelCommands<IChannel> Channels
         {
             get { return this; }
         }
@@ -518,17 +518,17 @@ namespace Ably
             return new AblyRequest(path, HttpMethod.Post, Protocol) { ChannelOptions = options };
         }
 
-        IChannel IChannelCommands.this[string name]
+        IChannel IChannelCommands<IChannel>.this[string name]
         {
-            get { return ((IChannelCommands) this).Get(name); }
+            get { return ((IChannelCommands<IChannel>)this).Get(name); }
         }
 
-        IChannel IChannelCommands.Get(string name)
+        IChannel IChannelCommands<IChannel>.Get(string name)
         {
             return new Channel(this, name, Options.ChannelDefaults);
         }
 
-        IChannel IChannelCommands.Get(string name, ChannelOptions options)
+        IChannel IChannelCommands<IChannel>.Get(string name, ChannelOptions options)
         {
             return new Channel(this, name, options);
         }
