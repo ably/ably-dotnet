@@ -94,7 +94,7 @@ namespace Ably.Tests
         }
 
         [Fact]
-        public void Release_RemovesChannelWhenFailded()
+        public void Release_RemovesChannelWhenFailed()
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();

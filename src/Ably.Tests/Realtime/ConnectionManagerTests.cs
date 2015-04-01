@@ -72,7 +72,7 @@ namespace Ably.Tests
         }
 
         [Fact]
-        public void WhenConnecting_OutboundMessagesAreNotSend()
+        public void WhenConnecting_OutboundMessagesAreNotSent()
         {
             // Arrange
             Mock<ITransport> mock = new Mock<ITransport>();
@@ -87,7 +87,7 @@ namespace Ably.Tests
         }
 
         [Fact]
-        public void WhenConnected_OutboundMessagesAreSend()
+        public void WhenConnected_OutboundMessagesAreSent()
         {
             // Arrange
             Mock<ITransport> mock = new Mock<ITransport>();
