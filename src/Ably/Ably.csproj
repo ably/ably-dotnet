@@ -118,6 +118,7 @@
     <Compile Include="Realtime\ConnectionState.cs" />
     <Compile Include="Realtime\ConnectionStateChangedEventArgs.cs" />
     <Compile Include="Realtime\IRealtimeChannel.cs" />
+    <Compile Include="Realtime\IRealtimeChannelCommands.cs" />
     <Compile Include="Realtime\Presence.cs" />
     <Compile Include="Rest\Channel.cs" />
     <Compile Include="Rest\ChannelOptions.cs" />

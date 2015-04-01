@@ -209,7 +209,7 @@ namespace Ably.Tests
             var channel = target.Get("test");
 
             // Act
-            IEnumerator<Realtime.Channel> enumerator = (target as IEnumerable<Realtime.Channel>).GetEnumerator();
+            IEnumerator<Realtime.IRealtimeChannel> enumerator = (target as IEnumerable<Realtime.IRealtimeChannel>).GetEnumerator();
             enumerator.MoveNext();
 
             // Assert

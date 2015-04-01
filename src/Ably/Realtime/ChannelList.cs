@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Ably.Realtime
 {
-    public class ChannelList : IEnumerable<Channel>, Ably.Rest.IChannelCommands<IRealtimeChannel>
+    public class ChannelList : IRealtimeChannelCommands<IRealtimeChannel>
     {
         public ChannelList(IConnectionManager connection)
         {
@@ -66,7 +66,7 @@ namespace Ably.Realtime
             }
         }
 
-        public IEnumerator<Channel> GetEnumerator()
+        public IEnumerator<IRealtimeChannel> GetEnumerator()
         {
             return this.channels.Values.GetEnumerator();
         }
