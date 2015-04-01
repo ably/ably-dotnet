@@ -37,7 +37,7 @@ namespace Ably.Transport
             {
                 collection["format"] = "msgpack";
             }
-            if (Options.EchoMessages)
+            if (!Options.EchoMessages)
             {
                 collection["echo"] = "false";
             }
