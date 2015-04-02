@@ -1,5 +1,7 @@
 # ably-dotnet
 
+[![Build Status](https://travis-ci.org/ably/ably-dotnet.svg?branch=master)](https://travis-ci.org/ably/ably-dotnet)
+
 This repo contains the ably .NET client library.
 
 For complete API documentation, see the [ably documentation](https://ably.io/documentation).
