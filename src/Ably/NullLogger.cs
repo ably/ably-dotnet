@@ -31,5 +31,9 @@ namespace Ably
         public void Debug(string message)
         {
         }
+
+        public void Verbose(string message, params object[] args)
+        {
+        }
     }
 }
