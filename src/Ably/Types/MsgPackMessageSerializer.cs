@@ -37,6 +37,28 @@ namespace Ably.Types
             });
             unpackActions.Add("error", (unpacker, message) =>
             {
+                long fields;
+                unpacker.ReadMapLength(out fields);
+                string reason = "";
+                int statusCode = 0, code = 0;
+                string fieldName;
+                for (int i = 0; i < fields; i++)
+                {
+                    unpacker.ReadString(out fieldName);
+                    switch (fieldName)
+                    {
+                        case "message" :
+                            unpacker.ReadString(out reason);
+                            break;
+                        case "statusCode":
+                            unpacker.ReadInt32(out statusCode);
+                            break;
+                        case "code":
+                            unpacker.ReadInt32(out code);
+                            break;
+                    }
+                }
+                message.Error = new ErrorInfo(reason, code, statusCode == 0 ? null : (System.Net.HttpStatusCode?)statusCode);
             });
             unpackActions.Add("id", (unpacker, message) =>
             {
@@ -82,6 +104,13 @@ namespace Ably.Types
             });
             unpackActions.Add("messages", (unpacker, message) =>
             {
+                long arrayLength;
+                unpacker.ReadArrayLength(out arrayLength);
+                message.Messages = new Message[arrayLength];
+                for (int i = 0; i < arrayLength; i++)
+                {
+                    message.Messages[i] = DeserializeMessage(unpacker);
+                }
             });
             unpackActions.Add("presence", (unpacker, message) =>
             {
@@ -113,6 +142,16 @@ namespace Ably.Types
 
                     packer.PackString("msgSerial");
                     packer.Pack<long>(message.MsgSerial);
+
+                    if (message.Messages != null)
+                    {
+                        packer.PackString("messages");
+                        packer.PackArrayHeader(message.Messages.Length);
+                        foreach (Message msg in message.Messages)
+                        {
+                            SerializeMessage(msg, packer);
+                        }
+                    }
                 }
                 result = stream.ToArray();
             }
@@ -136,6 +175,75 @@ namespace Ably.Types
                     }
                 }
             }
+            return message;
+        }
+
+        private static void SerializeMessage(Message message, Packer packer)
+        {
+            int fieldCount = 0;
+            if (!string.IsNullOrEmpty(message.Name)) fieldCount++;
+            if (message.Data != null) fieldCount++;
+
+            packer.PackMapHeader(fieldCount);
+
+            if (!string.IsNullOrEmpty(message.Name))
+            {
+                packer.PackString("name");
+                packer.PackString(message.Name);
+            }
+            if (message.Data != null)
+            {
+                packer.PackString("data");
+                if (message.Data is byte[])
+                {
+                    packer.PackRaw(message.Data as byte[]);
+                }
+                else
+                {
+                    packer.PackString(message.Data.ToString());
+                }
+            }
+        }
+
+        private static Message DeserializeMessage(Unpacker unpacker)
+        {
+            Message message = new Message();
+
+            long fields;
+            unpacker.ReadMapLength(out fields);
+            string fieldName;
+            for (int i = 0; i < fields; i++)
+            {
+                unpacker.ReadString(out fieldName);
+                switch (fieldName)
+                {
+                    case "name":
+                        {
+                            string result;
+                            unpacker.ReadString(out result);
+                            message.Name = result;
+                        }
+                        break;
+                    case "timestamp":
+                        {
+                            long result;
+                            unpacker.ReadInt64(out result);
+                            message.Timestamp = result.FromUnixTimeInMilliseconds();
+                        }
+                        break;
+                    case "data":
+                        {
+                            MessagePackObject result;
+                            unpacker.ReadObject(out result);
+                            if (result.IsTypeOf<string>().GetValueOrDefault(false))
+                            {
+                                message.Data = result.AsStringUtf8();
+                            }
+                        }
+                        break;
+                }
+            }
+
             return message;
         }
     }
