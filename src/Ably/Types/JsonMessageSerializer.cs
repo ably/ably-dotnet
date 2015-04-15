@@ -66,7 +66,7 @@ namespace Ably.Types
                 string reason = errorJObject.OptValue<string>("message");
                 int statusCode = errorJObject.OptValue<int>("statusCode");
                 int code = errorJObject.OptValue<int>("code");
-                message.Error = new ErrorInfo(reason, code, code == 0 ? null : (System.Net.HttpStatusCode?)statusCode);
+                message.Error = new ErrorInfo(reason, code, statusCode == 0 ? null : (System.Net.HttpStatusCode?)statusCode);
             }
             if (json.TryGetValue("id", out token))
             {
@@ -94,7 +94,7 @@ namespace Ably.Types
             }
             if (json.TryGetValue("timestamp", out token))
             {
-                message.Timestamp = token.Value<long>();
+                message.Timestamp = token.Value<long>().FromUnixTimeInMilliseconds();
             }
             if (json.TryGetValue("messages", out token))
             {
@@ -145,7 +145,7 @@ namespace Ably.Types
             if (obj.TryGetValue("timestamp", out token))
             {
                 long timestamp = token.Value<long>();
-                message.Timestamp = timestamp.FromUnixTimeInMilliseconds().ToLocalTime();
+                message.Timestamp = timestamp.FromUnixTimeInMilliseconds();
             }
             if (obj.TryGetValue("encoding", out token))
             {

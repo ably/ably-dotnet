@@ -59,7 +59,7 @@ namespace Ably.Types
         public string ConnectionKey { get; set; }
         public long ConnectionSerial { get; set; }
         public long MsgSerial { get; set; }
-        public long Timestamp { get; set; }
+        public DateTimeOffset? Timestamp { get; set; }
         public Message[] Messages { get; set; }
         public PresenceMessage[] Presence { get; set; }
 

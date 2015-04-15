@@ -78,7 +78,7 @@ namespace Ably.Types
             {
                 long result;
                 unpacker.ReadInt64(out result);
-                message.Timestamp = result;
+                message.Timestamp = result.FromUnixTimeInMilliseconds();
             });
             unpackActions.Add("messages", (unpacker, message) =>
             {
