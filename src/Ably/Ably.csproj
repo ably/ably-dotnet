@@ -179,6 +179,7 @@
     <Compile Include="Transport\WebSocketTransport.cs" />
     <Compile Include="Types\IMessageSerializer.cs" />
     <Compile Include="Types\JsonMessageSerializer.cs" />
+    <Compile Include="Types\MsgPackMessageSerializer.cs" />
     <Compile Include="Types\ProtocolMessage.cs" />
   </ItemGroup>
   <ItemGroup>
