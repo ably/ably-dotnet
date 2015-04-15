@@ -29,7 +29,7 @@ namespace RealtimeChat
             }
 
             string key = RealtimeChat.Properties.Settings.Default.ApiKey;
-            AblyRealtimeOptions options = new AblyRealtimeOptions(key) { UseBinaryProtocol = true, Tls = true, AutoConnect = false };
+            AblyRealtimeOptions options = new AblyRealtimeOptions(key) { UseBinaryProtocol = false, Tls = true, AutoConnect = false };
             this.client = new AblyRealtime(options);
             this.client.Connection.ConnectionStateChanged += this.connection_ConnectionStateChanged;
             this.client.Connect();
