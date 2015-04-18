@@ -1,12 +1,15 @@
 ﻿using System;
-using MsgPack;
 using System.IO;
+using System.Linq;
+using MsgPack;
+using System.Collections.Generic;
 
 namespace Ably.Types
 {
     public class MsgPackMessageSerializer : IMessageSerializer
     {
         private static System.Collections.Generic.Dictionary<string, Action<Unpacker, ProtocolMessage>> unpackActions;
+        private static Dictionary<Type, Func<MessagePackObject, object>> resolver;
 
         static MsgPackMessageSerializer()
         {
@@ -115,6 +118,20 @@ namespace Ably.Types
             unpackActions.Add("presence", (unpacker, message) =>
             {
             });
+
+            resolver = new Dictionary<Type, Func<MessagePackObject, object>>();
+            resolver.Add(typeof(Byte), r => r.AsByte());
+            resolver.Add(typeof(SByte), r => r.AsSByte());
+            resolver.Add(typeof(Boolean), r => r.AsBoolean());
+            resolver.Add(typeof(UInt16), r => r.AsUInt16());
+            resolver.Add(typeof(UInt32), r => r.AsUInt32());
+            resolver.Add(typeof(UInt64), r => r.AsUInt64());
+            resolver.Add(typeof(Int16), r => r.AsInt16());
+            resolver.Add(typeof(Int32), r => r.AsInt32());
+            resolver.Add(typeof(Int64), r => r.AsInt64());
+            resolver.Add(typeof(Single), r => r.AsSingle());
+            resolver.Add(typeof(Double), r => r.AsDouble());
+            resolver.Add(typeof(String), r => r.AsStringUtf8());
         }
 
         public object SerializeProtocolMessage(ProtocolMessage message)
@@ -126,7 +143,7 @@ namespace Ably.Types
                 {
                     int fieldCount = 2; //action & msgSerial
                     if (!string.IsNullOrEmpty(message.Channel)) fieldCount++;
-                    if (message.Messages != null) fieldCount++;
+                    if (message.Messages != null && message.Messages.Any(c => GetFieldCount(c) > 0)) fieldCount++;
 
                     // serialize message
                     packer.PackMapHeader(fieldCount);
@@ -145,11 +162,15 @@ namespace Ably.Types
 
                     if (message.Messages != null)
                     {
-                        packer.PackString("messages");
-                        packer.PackArrayHeader(message.Messages.Length);
-                        foreach (Message msg in message.Messages)
+                        var validMessages = message.Messages.Where(c => GetFieldCount(c) > 0);
+                        if (validMessages.Any())
                         {
-                            SerializeMessage(msg, packer);
+                            packer.PackString("messages");
+                            packer.PackArrayHeader(validMessages.Count());
+                            foreach (Message msg in validMessages)
+                            {
+                                SerializeMessage(msg, packer);
+                            }
                         }
                     }
                 }
@@ -178,12 +199,17 @@ namespace Ably.Types
             return message;
         }
 
-        private static void SerializeMessage(Message message, Packer packer)
+        private static int GetFieldCount(Message message)
         {
             int fieldCount = 0;
             if (!string.IsNullOrEmpty(message.Name)) fieldCount++;
             if (message.Data != null) fieldCount++;
+            return fieldCount;
+        }
 
+        private static void SerializeMessage(Message message, Packer packer)
+        {
+            int fieldCount = GetFieldCount(message);
             packer.PackMapHeader(fieldCount);
 
             if (!string.IsNullOrEmpty(message.Name))
@@ -233,18 +259,44 @@ namespace Ably.Types
                         break;
                     case "data":
                         {
-                            MessagePackObject result;
-                            unpacker.ReadObject(out result);
-                            if (result.IsTypeOf<string>().GetValueOrDefault(false))
-                            {
-                                message.Data = result.AsStringUtf8();
-                            }
+                            MessagePackObject result = unpacker.ReadItemData();
+                            message.Data = ParseResult(result);
                         }
                         break;
                 }
             }
 
             return message;
+        }
+
+        private static object ParseResult(MessagePackObject obj)
+        {
+            if (obj.IsList)
+            {
+                List<object> data = new List<object>();
+                foreach (MessagePackObject objItem in obj.AsList())
+                {
+                    data.Add(ParseResult(objItem));
+                }
+                return data.ToArray();
+            }
+            else if (obj.IsMap)
+            {
+                System.Collections.Hashtable data = new System.Collections.Hashtable();
+                foreach (var objItem in obj.AsDictionary())
+                {
+                    data.Add(ParseResult(objItem.Key), ParseResult(objItem.Value));
+                }
+                return data;
+            }
+            else
+            {
+                if (obj.UnderlyingType != null && resolver.ContainsKey(obj.UnderlyingType))
+                {
+                    return resolver[obj.UnderlyingType](obj);
+                }
+            }
+            return null;
         }
     }
 }
