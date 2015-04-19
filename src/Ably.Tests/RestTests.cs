@@ -82,7 +82,7 @@ namespace Ably.Tests
             AblyOptions options = new AblyOptions { Key = ValidKey, ClientId = "123", AuthToken = "222" };
             var client = new RestClient(options);
 
-            Assert.Equal(options.AuthToken, client.CurrentToken.Id);
+            Assert.Equal(options.AuthToken, client.CurrentToken.Token);
         }
 
         [Fact]
@@ -103,7 +103,7 @@ namespace Ably.Tests
             bool called = false;
             var options = new AblyOptions
             {
-                AuthCallback = (x) => { called = true; return new Token() { ExpiresAt = DateTimeOffset.UtcNow.AddHours(1) }; },
+                AuthCallback = (x) => { called = true; return new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddHours(1) }; },
                 UseBinaryProtocol = false
             };
 
@@ -159,9 +159,9 @@ namespace Ably.Tests
                 AuthCallback = (x) => { 
                     
                     Console.WriteLine("Getting new token.");
-                    newTokenRequested = true; return new Token("new.token")
+                    newTokenRequested = true; return new TokenDetails("new.token")
                 {
-                    ExpiresAt = DateTimeOffset.UtcNow.AddDays(1)
+                    Expires = DateTimeOffset.UtcNow.AddDays(1)
                 }; },
                 UseBinaryProtocol = false
             };
@@ -171,12 +171,12 @@ namespace Ably.Tests
                 Console.WriteLine("Getting an AblyResponse.");
                 return new AblyResponse() {TextResponse = "[{}]"};
             };
-            rest.CurrentToken = new Token() { ExpiresAt = DateTimeOffset.UtcNow.AddDays(-2) };
+            rest.CurrentToken = new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddDays(-2) };
 
             Console.WriteLine("Current time:" + Config.Now());
             rest.Stats();
             newTokenRequested.Should().BeTrue();
-            rest.CurrentToken.Id.Should().Be("new.token");
+            rest.CurrentToken.Token.Should().Be("new.token");
         }
 
         [Fact]
@@ -189,13 +189,13 @@ namespace Ably.Tests
                 UseBinaryProtocol = false
             };
             var rest = new RestClient(options);
-            var token = new Token("123") { ExpiresAt = DateTimeOffset.UtcNow.AddHours(1) };
+            var token = new TokenDetails("123") { Expires = DateTimeOffset.UtcNow.AddHours(1) };
             rest.CurrentToken = token;
 
             rest.ExecuteHttpRequest = request =>
             {
                 //Assert
-                request.Headers["Authorization"].Should().Contain(token.Id.ToBase64());
+                request.Headers["Authorization"].Should().Contain(token.Token.ToBase64());
                 return new AblyResponse() { TextResponse = "[{}]" };
             };
 

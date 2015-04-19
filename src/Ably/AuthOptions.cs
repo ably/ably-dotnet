@@ -12,12 +12,12 @@ namespace Ably
     public class AuthOptions
     {
         /// <summary>
-        /// Callback used when requesting a new token. A <see cref="TokenRequest"/> is passed and it needs to return <see cref="Token"/>
+        /// Callback used when requesting a new token. A <see cref="TokenRequest"/> is passed and it needs to return <see cref="TokenDetails"/>
         /// </summary>
-        public Func<TokenRequest, Token> AuthCallback;
+        public Func<TokenRequest, TokenDetails> AuthCallback;
 
         /// <summary>
-        /// A URL to query to obtain either a signed token request (<see cref="TokenRequestPostData"/>) or a valid <see cref="Token"/>
+        /// A URL to query to obtain either a signed token request (<see cref="TokenRequestPostData"/>) or a valid <see cref="TokenDetails"/>
         /// This enables a client to obtain token requests from
         /// another entity, so tokens can be renewed without the
         /// client requiring access to keys.

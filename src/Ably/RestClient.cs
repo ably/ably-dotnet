@@ -35,7 +35,7 @@ namespace Ably
         private AblyOptions _options;
         private readonly ILogger Logger = Config.AblyLogger;
         internal AuthMethod AuthMethod;
-        internal Token CurrentToken;
+        internal TokenDetails CurrentToken;
         internal MessageHandler _messageHandler;
         private TokenRequest _lastTokenRequest;
         private Protocol _protocol;
@@ -177,7 +177,7 @@ namespace Ably
             Logger.Info("Using token authentication.");
             if (Options.AuthToken.IsNotEmpty())
             {
-                CurrentToken = new Token(Options.AuthToken);
+                CurrentToken = new TokenDetails(Options.AuthToken);
             }
             LogCurrentAuthenticationMethod();
         }
@@ -288,7 +288,7 @@ namespace Ably
 
                 if (HasValidToken())
                 {
-                    request.Headers["Authorization"] = "Bearer " + CurrentToken.Id.ToBase64();
+                    request.Headers["Authorization"] = "Bearer " + CurrentToken.Token.ToBase64();
                     Logger.Debug("Adding Authorization headir with Token authentication");
                 }
                 else
@@ -299,7 +299,7 @@ namespace Ably
         private bool HasValidToken()
         {
             return CurrentToken != null &&
-                   (CurrentToken.ExpiresAt == DateTimeOffset.MinValue || CurrentToken.ExpiresAt >= DateTimeOffset.UtcNow);
+                   (CurrentToken.Expires == DateTimeOffset.MinValue || CurrentToken.Expires >= DateTimeOffset.UtcNow);
         }
 
 
@@ -311,7 +311,7 @@ namespace Ably
         /// <param name="options">Extra <see cref="AuthOptions"/> used for creating a token </param>
         /// <returns>A valid ably token</returns>
         /// <exception cref="AblyException"></exception>
-        Token IAuthCommands.RequestToken(TokenRequest requestData, AuthOptions options)
+        TokenDetails IAuthCommands.RequestToken(TokenRequest requestData, AuthOptions options)
         {
             var mergedOptions = options != null ? options.Merge(Options) : Options;
 
@@ -364,8 +364,8 @@ namespace Ably
 
                 var signedData = response.TextResponse;
                 var jData = JObject.Parse(signedData);
-                if (Token.IsToken(jData))
-                    return jData.ToObject<Token>();
+                if (TokenDetails.IsToken(jData))
+                    return jData.ToObject<TokenDetails>();
 
                 postData = JsonConvert.DeserializeObject<TokenRequestPostData>(signedData);
             }
@@ -399,11 +399,11 @@ namespace Ably
         /// <param name="force">Force the client request a new token even if it has a valid one.</param>
         /// <returns>Returns a valid token</returns>
         /// <exception cref="AblyException">Throws an ably exception representing the server response</exception>
-        Token IAuthCommands.Authorise(TokenRequest request, AuthOptions options, bool force)
+        TokenDetails IAuthCommands.Authorise(TokenRequest request, AuthOptions options, bool force)
         {
             if (CurrentToken != null)
             {
-                if (CurrentToken.ExpiresAt > Config.Now())
+                if (CurrentToken.Expires > Config.Now())
                 {
                     if (force == false)
                         return CurrentToken;

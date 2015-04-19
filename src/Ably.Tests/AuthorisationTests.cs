@@ -191,7 +191,7 @@ namespace Ably.Tests
             var tokenRequest = new TokenRequest { Id = GetKeyId(), Capability = new Capability() };
 
             var authCallbackCalled = false;
-            var token = new Token();
+            var token = new TokenDetails();
             var options = new AuthOptions
             {
                 AuthCallback = (x) =>
@@ -372,7 +372,7 @@ namespace Ably.Tests
         public void Authorise_WithNotExpiredCurrentTokenAndForceFalse_ReturnsCurrentToken()
         {
             var client = GetRestClient();
-            client.CurrentToken = new Token() { ExpiresAt = Config.Now().AddHours(1) };
+            client.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(1) };
 
             var token = client.Auth.Authorise(null, null, false);
 
@@ -394,7 +394,7 @@ namespace Ably.Tests
         public void Authorise_WithNotExpiredCurrentTokenAndForceTrue_RequestsNewToken()
         {
             var client = GetRestClient();
-            client.CurrentToken = new Token() { ExpiresAt = Config.Now().AddHours(1) };
+            client.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(1) };
 
             var token = client.Auth.Authorise(new TokenRequest() { ClientId = "123", Capability = new Capability(), Id = "123" }, null, true);
 
@@ -406,7 +406,7 @@ namespace Ably.Tests
         public void Authorise_WithExpiredCurrentToken_RequestsNewToken()
         {
             var client = GetRestClient();
-            client.CurrentToken = new Token() { ExpiresAt = Config.Now().AddHours(-1) };
+            client.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(-1) };
 
             var token = client.Auth.Authorise(null, null, false);
 

@@ -8,14 +8,14 @@ namespace Ably.Auth
     /// <summary>
     /// A class providing details of a token and its associated metadata
     /// </summary>
-    public sealed class Token
+    public sealed class TokenDetails
     {
         /// <summary>
         /// The token itself
         /// </summary>
-        [JsonProperty("id")]
-        [MessagePackMember(10, Name = "id")]
-        public string Id { get; set; }
+        [JsonProperty("token")]
+        [MessagePackMember(10, Name = "token")]
+        public string Token { get; set; }
 
         /// <summary>
         /// 
@@ -29,7 +29,7 @@ namespace Ably.Auth
         /// </summary>
         [JsonProperty("expires")]
         [MessagePackMember(30, Name = "expires")]
-        public DateTimeOffset ExpiresAt { get; set; }
+        public DateTimeOffset Expires { get; set; }
 
         /// <summary>
         /// Date and time when the token was issued in UTC
@@ -52,13 +52,13 @@ namespace Ably.Auth
         [MessagePackMember(60, Name = "clientId")]
         public string ClientId { get; set; }
 
-        public Token()
+        public TokenDetails()
         {
         }
 
-        public Token(string id)
+        public TokenDetails(string id)
         {
-            Id = id;
+            Token = id;
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace Ably.Auth
 
         public override string ToString()
         {
-            return string.Format("Id: {0}, KeyId: {1}, ExpiresAt: {2}, IssuedAt: {3}, Capability: {4}, ClientId: {5}", Id, KeyId, ExpiresAt, IssuedAt, Capability, ClientId);
+            return string.Format("Id: {0}, KeyId: {1}, ExpiresAt: {2}, IssuedAt: {3}, Capability: {4}, ClientId: {5}", Token, KeyId, Expires, IssuedAt, Capability, ClientId);
         }
     }
 }
