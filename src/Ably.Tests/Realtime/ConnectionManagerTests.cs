@@ -3,6 +3,7 @@ using Ably.Transport;
 using Ably.Types;
 using Moq;
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Ably.Tests
@@ -102,6 +103,28 @@ namespace Ably.Tests
 
             // Assert
             mock.Verify(c => c.Send(It.IsAny<ProtocolMessage>()), Times.Exactly(2));
+        }
+
+        [Fact]
+        public void When_TransportError_CallsStateChanged_Failed()
+        {
+            // Arrange
+            Mock<ITransport> transport = new Mock<ITransport>();
+            transport.SetupProperty(c => c.Listener);
+            ConnectionManager manager = new ConnectionManager(transport.Object);
+            List<Tuple<ConnectionState, ConnectionInfo, ErrorInfo>> args = new List<Tuple<ConnectionState, ConnectionInfo, ErrorInfo>>();
+            manager.StateChanged += (s, i, e) =>
+            {
+                args.Add(new Tuple<ConnectionState, ConnectionInfo, ErrorInfo>(s, i, e));
+            };
+            Exception targetException = new Exception("reason");
+
+            // Act
+            transport.Object.Listener.OnTransportError(targetException);
+
+            // Assert
+            Assert.Single(args, t => t.Item1 == ConnectionState.Failed && t.Item2 == null && t.Item3 != null &&
+                t.Item3.Reason == targetException.Message && t.Item3.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable);
         }
     }
 }

@@ -139,7 +139,7 @@ namespace Ably.Transport
         {
             if (this.Listener != null)
             {
-                this.Listener.OnTransportError();
+                this.Listener.OnTransportError(e.Exception);
             }
         }
 

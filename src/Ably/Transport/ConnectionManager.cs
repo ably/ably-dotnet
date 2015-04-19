@@ -82,7 +82,8 @@ namespace Ably.Transport
         //
         private void SetState(object state)
         {
-            this.SetState((ConnectionState)state);
+            object[] stateArgs = (object[])state;
+            this.SetState((ConnectionState)stateArgs[0], (ConnectionInfo)stateArgs[1], (ErrorInfo)stateArgs[2]);
         }
 
         private void SetState(ConnectionState state, ConnectionInfo info = null, ErrorInfo error = null)
@@ -121,7 +122,7 @@ namespace Ably.Transport
         {
             if (this.sync != null && this.sync.IsWaitNotificationRequired())
             {
-                this.sync.Send(new System.Threading.SendOrPostCallback(this.SetState), ConnectionState.Disconnected);
+                this.sync.Send(new System.Threading.SendOrPostCallback(this.SetState), new object[] { ConnectionState.Disconnected, null, null });
             }
             else
             {
@@ -129,15 +130,17 @@ namespace Ably.Transport
             }
         }
 
-        void ITransportListener.OnTransportError()
+        void ITransportListener.OnTransportError(Exception e)
         {
+            ErrorInfo error = new ErrorInfo(e.Message, 80000, System.Net.HttpStatusCode.ServiceUnavailable);
+
             if (this.sync != null && this.sync.IsWaitNotificationRequired())
             {
-                this.sync.Send(new System.Threading.SendOrPostCallback(this.SetState), ConnectionState.Failed);
+                this.sync.Send(new System.Threading.SendOrPostCallback(this.SetState), new object[] { ConnectionState.Failed, null, error });
             }
             else
             {
-                this.SetState(ConnectionState.Failed);
+                this.SetState(ConnectionState.Failed, error: error);
             }
         }
 

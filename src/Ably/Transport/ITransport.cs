@@ -38,7 +38,7 @@ namespace Ably.Transport
     {
         void OnTransportConnected();
         void OnTransportDisconnected();
-        void OnTransportError();
+        void OnTransportError(Exception error);
         void OnTransportMessageReceived(ProtocolMessage message);
     }
 }
