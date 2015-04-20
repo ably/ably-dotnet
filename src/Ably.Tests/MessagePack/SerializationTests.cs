@@ -50,7 +50,7 @@ namespace Ably.Tests.MessagePack
         public void CanDeserialiseTokenResponse()
         {
             var value =
-                "gaxhY2Nlc3NfdG9rZW6Gomlk2YhnNFg2UVEuRHlCYzlMZUdvdy1saWVEcG4zTXRsd09uUEhoN2VtN3MyQ3JTZ1pLM2NUNkRvZUo1dlQxWXRwNDFvaTVWUUtNUkxuSVdDckFadHVOb3F5Q0lvVFphQjFfb1FFX0Utb3c2Y3hKX1EwcFUyZ3lpb2xRNGp1VDM1TjI0Qzgzd0p6aUI5o2tlea1nNFg2UVEudXR6R2xnqWlzc3VlZF9hdM5UwQ/Wp2V4cGlyZXPOVMEd5qpjYXBhYmlsaXR5gaEqkaEqqGNsaWVudElkozEyMw==";
+                "gaxhY2Nlc3NfdG9rZW6GpXRva2Vu2gCIZzRYNlFRLkR5QmM5TGVHb3ctbGllRHBuM010bHdPblBIaDdlbTdzMkNyU2daSzNjVDZEb2VKNXZUMVl0cDQxb2k1VlFLTVJMbklXQ3JBWnR1Tm9xeUNJb1RaYUIxX29RRV9FLW93NmN4Sl9RMHBVMmd5aW9sUTRqdVQzNU4yNEM4M3dKemlCOaNrZXmtZzRYNlFRLnV0ekdsZ6lpc3N1ZWRfYXTOVMEP1qdleHBpcmVzzlTBHeaqY2FwYWJpbGl0eYGhKpGhKqhjbGllbnRJZKMxMjM=";
 
             var decodedMessagePack = MsgPackHelper.DeSerialise(value.FromBase64(), typeof (MessagePackObject)).ToString();
 
@@ -82,7 +82,7 @@ namespace Ably.Tests.MessagePack
         {
             var value = @"{
 	""access_token"": {
-		""id"": ""_SYo4Q.D3WmHhU"",
+		""token"": ""_SYo4Q.D3WmHhU"",
 		""key"": ""_SYo4Q.j8mhAQ"",
 		""issued_at"": 1421937735,
 		""expires"": 1421941335,

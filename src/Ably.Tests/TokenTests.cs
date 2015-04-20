@@ -22,7 +22,7 @@ namespace Ably.Tests
             {
                 string json = @"{
 	                            ""access_token"": {
-		                            ""id"": ""QF_CjTvDs2kFQMKLwpccEhIkNcKpw5ovPsOnLsOgJMKow5ACXHvCgGzCtcK7"",
+		                            ""token"": ""QF_CjTvDs2kFQMKLwpccEhIkNcKpw5ovPsOnLsOgJMKow5ACXHvCgGzCtcK7"",
 		                            ""key"": ""3lJG9Q"",
 		                            ""issued_at"": 1359555878,
 		                            ""expires"": 1359559478,
