@@ -79,10 +79,10 @@ namespace Ably.Tests
         [Fact]
         public void Init_WithKeyNoClientIdAndAuthTokenId_SetsCurrentTokenWithSuppliedId()
         {
-            AblyOptions options = new AblyOptions { Key = ValidKey, ClientId = "123", AuthToken = "222" };
+            AblyOptions options = new AblyOptions { Key = ValidKey, ClientId = "123", Token = "222" };
             var client = new RestClient(options);
 
-            Assert.Equal(options.AuthToken, client.CurrentToken.Token);
+            Assert.Equal(options.Token, client.CurrentToken.Token);
         }
 
         [Fact]
@@ -90,7 +90,7 @@ namespace Ably.Tests
         {
             var client = new RestClient(opts =>
             {
-                opts.KeyValue = "blah";
+                opts.Token = "blah";
                 opts.ClientId = "123";
             });
 
@@ -185,7 +185,7 @@ namespace Ably.Tests
             var options = new AblyOptions
             {
                 ClientId = "test",
-                KeyId = "best",
+                Key = "best",
                 UseBinaryProtocol = false
             };
             var rest = new RestClient(options);
@@ -207,7 +207,7 @@ namespace Ably.Tests
         [Fact]
         public void Init_WithTokenId_SetsTokenRenewableToFalse()
         {
-            var rest = new RestClient(new AblyOptions() { AuthToken = "token_id" });
+            var rest = new RestClient(new AblyOptions() { Token = "token_id" });
 
             rest.TokenRenewable.Should().BeFalse();
         }

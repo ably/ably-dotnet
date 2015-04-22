@@ -57,7 +57,7 @@ namespace Ably.Tests.MessagePack
             var response = JsonConvert.DeserializeObject<TokenResponse>(decodedMessagePack);
 
             response.AccessToken.Should().NotBeNull();
-            response.AccessToken.KeyId.Should().Be("g4X6QQ.utzGlg");
+            response.AccessToken.KeyName.Should().Be("g4X6QQ.utzGlg");
             response.AccessToken.Capability.ToJson().Should().Be("{ \"*\": [ \"*\" ] }");
             response.AccessToken.ClientId.Should().Be("123");
             response.AccessToken.Token.Should().Be("g4X6QQ.DyBc9LeGow-lieDpn3MtlwOnPHh7em7s2CrSgZK3cT6DoeJ5vT1Ytp41oi5VQKMRLnIWCrAZtuNoqyCIoTZaB1_oQE_E-ow6cxJ_Q0pU2gyiolQ4juT35N24C83wJziB9");
@@ -83,8 +83,8 @@ namespace Ably.Tests.MessagePack
             var value = @"{
 	""access_token"": {
 		""token"": ""_SYo4Q.D3WmHhU"",
-		""key"": ""_SYo4Q.j8mhAQ"",
-		""issued_at"": 1421937735,
+		""keyName"": ""_SYo4Q.j8mhAQ"",
+		""issued"": 1421937735,
 		""expires"": 1421941335,
 		""capability"": {
 			""*"": [
@@ -100,7 +100,7 @@ namespace Ably.Tests.MessagePack
             var response = JsonConvert.DeserializeObject<TokenResponse>(value);
 
             response.AccessToken.Should().NotBeNull();
-            response.AccessToken.KeyId.Should().Be("_SYo4Q.j8mhAQ");
+            response.AccessToken.KeyName.Should().Be("_SYo4Q.j8mhAQ");
             response.AccessToken.Capability.ToJson().Should().Be("{ \"*\": [ \"*\" ] }");
             response.AccessToken.ClientId.Should().Be("123");
             response.AccessToken.Token.Should().Be("_SYo4Q.D3WmHhU");

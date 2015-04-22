@@ -24,7 +24,7 @@ namespace Ably.Tests
 	                            ""access_token"": {
 		                            ""token"": ""QF_CjTvDs2kFQMKLwpccEhIkNcKpw5ovPsOnLsOgJMKow5ACXHvCgGzCtcK7"",
 		                            ""key"": ""3lJG9Q"",
-		                            ""issued_at"": 1359555878,
+		                            ""issued"": 1359555878,
 		                            ""expires"": 1359559478,
 		                            ""capability"": {
 			                            ""*"": [

@@ -30,9 +30,8 @@ namespace Ably
         public HttpMethod AuthMethod { get; set; }
 
         public string Key { get; set; }
-        public string KeyId { get; set; }
-        public string KeyValue { get; set; }
-        public string AuthToken { get; set; }
+        public string Token { get; set; }
+        public TokenDetails TokenDetails { get; set; }
         public Dictionary<string, string> AuthHeaders { get; set; }
         public Dictionary<string, string> AuthParams { get; set; }
         public bool QueryTime { get; set; }
@@ -55,20 +54,21 @@ namespace Ably
         {
             var apiKey = ApiKey.Parse(key);
             Key = apiKey.ToString();
-            KeyId = apiKey.KeyId;
-            KeyValue = apiKey.KeyValue;
         }
 
         public AuthOptions Merge(AuthOptions defaults)
         {
             if (AuthCallback == null) AuthCallback = defaults.AuthCallback;
             if (AuthUrl == null) AuthUrl = defaults.AuthUrl;
-            if (KeyId == null) KeyId = defaults.KeyId;
-            if (KeyValue == null) KeyValue = defaults.KeyValue;
             if (AuthHeaders.Count == 0) AuthHeaders = defaults.AuthHeaders;
             if (AuthParams.Count == 0) AuthParams = defaults.AuthParams;
             QueryTime = QueryTime || defaults.QueryTime;
             return this;
+        }
+        
+        internal ApiKey ParseKey()
+        {
+            return ApiKey.Parse(this.Key);
         }
     }
 }

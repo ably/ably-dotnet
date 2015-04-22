@@ -20,9 +20,9 @@ namespace Ably.Auth
         /// <summary>
         /// 
         /// </summary>
-        [JsonProperty("key")]
-        [MessagePackMember(20, Name = "key")]
-        public string KeyId { get; set; }
+        [JsonProperty("keyName")]
+        [MessagePackMember(20, Name = "keyName")]
+        public string KeyName { get; set; }
 
         /// <summary>
         /// Absolute token expiry date in UTC
@@ -34,8 +34,8 @@ namespace Ably.Auth
         /// <summary>
         /// Date and time when the token was issued in UTC
         /// </summary>
-        [JsonProperty("issued_at")]
-        [MessagePackMember(40, Name = "issued_at")]
+        [JsonProperty("issued")]
+        [MessagePackMember(40, Name = "issued")]
         public DateTimeOffset IssuedAt { get; set; }
 
         /// <summary>
@@ -62,18 +62,18 @@ namespace Ably.Auth
         }
 
         /// <summary>
-        /// Checks if a json object is a token. It does it by ensuring the existance of "issued_at" property
+        /// Checks if a json object is a token. It does it by ensuring the existance of "issued" property
         /// </summary>
         /// <param name="json">Json object to check</param>
-        /// <returns>true if json object contains "issued_at"</returns>
+        /// <returns>true if json object contains "issued"</returns>
         public static bool IsToken(JObject json)
         {
-            return json != null && json["issued_at"] != null;
+            return json != null && json["issued"] != null;
         }
 
         public override string ToString()
         {
-            return string.Format("Id: {0}, KeyId: {1}, ExpiresAt: {2}, IssuedAt: {3}, Capability: {4}, ClientId: {5}", Token, KeyId, Expires, IssuedAt, Capability, ClientId);
+            return string.Format("Id: {0}, KeyId: {1}, ExpiresAt: {2}, IssuedAt: {3}, Capability: {4}, ClientId: {5}", Token, KeyName, Expires, IssuedAt, Capability, ClientId);
         }
     }
 }

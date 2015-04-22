@@ -34,7 +34,7 @@ namespace Ably.Tests
         public void UsesKeyIdFromTheClient()
         {
             var data = Client.Auth.CreateTokenRequest(null, null);
-            data.id.Should().Be(Client.Options.KeyId);
+            data.keyName.Should().Be(Client.Options.ParseKey().KeyId);
         }
 
         [Fact]
@@ -120,7 +120,7 @@ namespace Ably.Tests
         [Fact]
         public void WithOutKeyValueThrowsException()
         {
-            var client = new RestClient(new AblyOptions() { KeyId = "111.222"});
+            var client = new RestClient(new AblyOptions() { Key = "111.222"});
             Assert.Throws<AblyException>(delegate { client.Auth.CreateTokenRequest(null, null); });
         }
 

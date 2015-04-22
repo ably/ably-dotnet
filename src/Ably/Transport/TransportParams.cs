@@ -29,8 +29,9 @@ namespace Ably.Transport
         public void StoreParams(NameValueCollection collection)
         {
             // auth
-            collection["key_id"] = Options.KeyId;
-            collection["key_value"] = Options.KeyValue;
+            ApiKey key = Options.ParseKey();
+            collection["key_id"] = key.KeyId;
+            collection["key_value"] = key.KeyValue;
 
             // connection
             if (Options.UseBinaryProtocol)

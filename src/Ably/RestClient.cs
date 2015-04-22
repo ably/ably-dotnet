@@ -131,13 +131,6 @@ namespace Ably
                 throw new AblyException("Invalid options");
             }
 
-            if (_options.Key.IsNotEmpty())
-            {
-                var key = ApiKey.Parse(_options.Key);
-                _options.KeyId = key.KeyId;
-                _options.KeyValue = key.KeyValue;
-            }
-
             _protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
             Logger.Debug("Protocol set to: " + _protocol);
             _messageHandler = new MessageHandler(_protocol);
@@ -175,9 +168,9 @@ namespace Ably
 
             AuthMethod = AuthMethod.Token;
             Logger.Info("Using token authentication.");
-            if (Options.AuthToken.IsNotEmpty())
+            if (Options.Token.IsNotEmpty())
             {
-                CurrentToken = new TokenDetails(Options.AuthToken);
+                CurrentToken = new TokenDetails(Options.Token);
             }
             LogCurrentAuthenticationMethod();
         }
@@ -193,11 +186,11 @@ namespace Ably
             {
                 Logger.Info("Authentication will be done using token auth with authUrl");
             }
-            else if (Options.KeyValue.IsNotEmpty())
+            else if (Options.Key.IsNotEmpty())
             {
                 Logger.Info("Authentication will be done using token auth with client-side signing");
             }
-            else if (Options.AuthToken.IsNotEmpty())
+            else if (Options.Token.IsNotEmpty())
             {
                 Logger.Info("Authentication will be done using token auth with supplied token only");
             }
@@ -258,12 +251,12 @@ namespace Ably
 
         private bool HasApiKey
         {
-            get { return Options.KeyId.IsNotEmpty() && Options.KeyValue.IsNotEmpty(); }
+            get { return Options.Key.IsNotEmpty(); }
         }
 
         private bool HasTokenId
         {
-            get { return Options.AuthToken.IsNotEmpty(); }
+            get { return Options.Token.IsNotEmpty(); }
         }
 
         public bool TokenRenewable
@@ -314,10 +307,17 @@ namespace Ably
         TokenDetails IAuthCommands.RequestToken(TokenRequest requestData, AuthOptions options)
         {
             var mergedOptions = options != null ? options.Merge(Options) : Options;
+            string keyId = "", keyValue = "";
+            if (!string.IsNullOrEmpty(mergedOptions.Key))
+            {
+                var key = mergedOptions.ParseKey();
+                keyId = key.KeyId;
+                keyValue = key.KeyValue;
+            }
 
             var data = requestData ?? new TokenRequest
             {
-                Id = mergedOptions.KeyId,
+                KeyName = keyId,
                 ClientId = Options.ClientId
             };
 
@@ -326,11 +326,11 @@ namespace Ably
                 data = _lastTokenRequest;
             }
 
-            data.Id = data.Id ?? mergedOptions.KeyId;
+            data.KeyName = data.KeyName ?? keyId;
 
             _lastTokenRequest = data;
 
-            var request = CreatePostRequest(String.Format("/keys/{0}/requestToken", data.Id));
+            var request = CreatePostRequest(String.Format("/keys/{0}/requestToken", data.KeyName));
             request.SkipAuthentication = true;
             TokenRequestPostData postData = null;
             if (mergedOptions.AuthCallback != null)
@@ -371,7 +371,7 @@ namespace Ably
             }
             else
             {
-                postData = data.GetPostData(mergedOptions.KeyValue);
+                postData = data.GetPostData(keyValue);
             }
 
             if (mergedOptions.QueryTime)
@@ -427,7 +427,7 @@ namespace Ably
         {
             var mergedOptions = options != null ? options.Merge(Options) : Options;
 
-            if (mergedOptions.KeyId == null || mergedOptions.KeyValue == null)
+            if (string.IsNullOrEmpty(mergedOptions.Key))
                 throw new AblyException("No key specified", 40101, HttpStatusCode.Unauthorized);
 
             var data = requestData ?? new TokenRequest
@@ -435,9 +435,10 @@ namespace Ably
                 ClientId = Options.ClientId
             };
 
-            data.Id = data.Id ?? mergedOptions.KeyId;
+            ApiKey key = mergedOptions.ParseKey();
+            data.KeyName = data.KeyName ?? key.KeyId;
 
-            if (data.Id != mergedOptions.KeyId)
+            if (data.KeyName != key.KeyId)
                 throw new AblyException("Incompatible keys specified", 40102, HttpStatusCode.Unauthorized);
 
             if (requestData == null && options == null && _lastTokenRequest != null)
@@ -445,9 +446,9 @@ namespace Ably
                 data = _lastTokenRequest;
             }
 
-            data.Id = data.Id ?? mergedOptions.KeyId;
+            data.KeyName = data.KeyName ?? key.KeyId;
 
-            var postData = data.GetPostData(mergedOptions.KeyValue);
+            var postData = data.GetPostData(key.KeyValue);
             if (mergedOptions.QueryTime)
                 postData.timestamp = Time().ToUnixTime().ToString();
 
