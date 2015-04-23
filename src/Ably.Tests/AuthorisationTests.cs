@@ -62,7 +62,7 @@ namespace Ably.Tests
             client.Auth.RequestToken(request, null);
 
             var data = CurrentRequest.PostData as TokenRequestPostData;
-            Assert.Equal(client.Options.ParseKey().KeyId, data.keyName);
+            Assert.Equal(client.Options.ParseKey().KeyName, data.keyName);
         }
 
         [Fact]
@@ -75,7 +75,7 @@ namespace Ably.Tests
             var data = CurrentRequest.PostData as TokenRequestPostData;
             Assert.Equal(GetKeyId(), data.keyName);
             Assert.Equal(Capability.AllowAll.ToJson(), data.capability);
-            Assert.Equal(client.Options.ParseKey().KeyId, data.clientId);
+            Assert.Equal(client.Options.ParseKey().KeyName, data.clientId);
         }
 
         [Fact]
@@ -125,27 +125,6 @@ namespace Ably.Tests
 
             Assert.IsType<TokenRequestPostData>(CurrentRequest.PostData);
         }
-
-        //[Fact]
-        //public void RequestToken_WithExplicitKeyIdAndKeyValue_UsesCorrectKeyIdAndValueToCreateTheRequest()
-        //{
-        //    var request = new TokenRequest();
-        //    var options = new AuthOptions()
-        //    {
-        //        KeyId = "AAAAAA.BBBBBB",
-        //        KeyValue = "keyvalue"
-        //    };
-        //    var client = GetRestClient();
-
-        //    client.Auth.RequestToken(request, options);
-
-        //    var data = CurrentRequest.PostData as TokenRequestPostData;
-        //    Assert.Equal(options.KeyId, data.keyName);
-        //    var currentMac = data.mac;
-
-        //    data.CalculateMac(options.KeyValue);
-        //    Assert.Equal(data.mac, currentMac);
-        //}
 
         [Fact]
         public void RequestToken_WithQueryTime_SendsTimeRequestAndUsesReturnedTimeForTheRequest()
@@ -306,7 +285,7 @@ namespace Ably.Tests
 
             var token = rest.Auth.RequestToken(tokenRequest, options);
             Assert.NotNull(token);
-            dateTime.Should().BeWithin(TimeSpan.FromSeconds(1)).After(token.IssuedAt);
+            dateTime.Should().BeWithin(TimeSpan.FromSeconds(1)).After(token.Issued);
         }
 
         [Fact]

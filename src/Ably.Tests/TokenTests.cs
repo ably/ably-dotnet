@@ -38,7 +38,7 @@ namespace Ably.Tests
 
                 Assert.Equal("QF_CjTvDs2kFQMKLwpccEhIkNcKpw5ovPsOnLsOgJMKow5ACXHvCgGzCtcK7", token.Token);
                 //Assert.Equal("3lJG9Q", token.ClientId
-                Assert.Equal(1359555878, token.IssuedAt.ToUnixTime());
+                Assert.Equal(1359555878, token.Issued.ToUnixTime());
                 Assert.Equal(1359559478, token.Expires.ToUnixTime());
                 var expectedCapability = new Capability();
                 expectedCapability.AddResource("*").AllowAll();

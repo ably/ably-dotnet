@@ -1,6 +1,7 @@
 ﻿using Ably.Types;
 using System;
 using System.Collections.Specialized;
+using System.Web;
 
 namespace Ably.Transport
 {
@@ -29,9 +30,7 @@ namespace Ably.Transport
         public void StoreParams(NameValueCollection collection)
         {
             // auth
-            ApiKey key = Options.ParseKey();
-            collection["key_id"] = key.KeyId;
-            collection["key_value"] = key.KeyValue;
+            collection["key"] = HttpUtility.UrlEncode(Options.Key);
 
             // connection
             if (Options.UseBinaryProtocol)

@@ -61,7 +61,7 @@ namespace Ably.Tests.MessagePack
             response.AccessToken.Capability.ToJson().Should().Be("{ \"*\": [ \"*\" ] }");
             response.AccessToken.ClientId.Should().Be("123");
             response.AccessToken.Token.Should().Be("g4X6QQ.DyBc9LeGow-lieDpn3MtlwOnPHh7em7s2CrSgZK3cT6DoeJ5vT1Ytp41oi5VQKMRLnIWCrAZtuNoqyCIoTZaB1_oQE_E-ow6cxJ_Q0pU2gyiolQ4juT35N24C83wJziB9");
-            response.AccessToken.IssuedAt.Should().Be(((long)1421938646).FromUnixTime());
+            response.AccessToken.Issued.Should().Be(((long)1421938646).FromUnixTime());
             response.AccessToken.Expires.Should().Be(((long)1421942246).FromUnixTime());
         }
     }
@@ -104,7 +104,7 @@ namespace Ably.Tests.MessagePack
             response.AccessToken.Capability.ToJson().Should().Be("{ \"*\": [ \"*\" ] }");
             response.AccessToken.ClientId.Should().Be("123");
             response.AccessToken.Token.Should().Be("_SYo4Q.D3WmHhU");
-            response.AccessToken.IssuedAt.Should().Be(((long)1421937735).FromUnixTime());
+            response.AccessToken.Issued.Should().Be(((long)1421937735).FromUnixTime());
             response.AccessToken.Expires.Should().Be(((long)1421941335).FromUnixTime());
         }
     }

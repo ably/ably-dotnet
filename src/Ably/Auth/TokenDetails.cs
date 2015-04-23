@@ -36,7 +36,7 @@ namespace Ably.Auth
         /// </summary>
         [JsonProperty("issued")]
         [MessagePackMember(40, Name = "issued")]
-        public DateTimeOffset IssuedAt { get; set; }
+        public DateTimeOffset Issued { get; set; }
 
         /// <summary>
         /// The allowed capabilities for this token. <see cref="Capability"/>
@@ -73,7 +73,7 @@ namespace Ably.Auth
 
         public override string ToString()
         {
-            return string.Format("Id: {0}, KeyId: {1}, ExpiresAt: {2}, IssuedAt: {3}, Capability: {4}, ClientId: {5}", Token, KeyName, Expires, IssuedAt, Capability, ClientId);
+            return string.Format("Token: {0}, KeyName: {1}, Expires: {2}, Issued: {3}, Capability: {4}, ClientId: {5}", Token, KeyName, Expires, Issued, Capability, ClientId);
         }
     }
 }

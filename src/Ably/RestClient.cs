@@ -311,8 +311,8 @@ namespace Ably
             if (!string.IsNullOrEmpty(mergedOptions.Key))
             {
                 var key = mergedOptions.ParseKey();
-                keyId = key.KeyId;
-                keyValue = key.KeyValue;
+                keyId = key.KeyName;
+                keyValue = key.KeySecret;
             }
 
             var data = requestData ?? new TokenRequest
@@ -436,9 +436,9 @@ namespace Ably
             };
 
             ApiKey key = mergedOptions.ParseKey();
-            data.KeyName = data.KeyName ?? key.KeyId;
+            data.KeyName = data.KeyName ?? key.KeyName;
 
-            if (data.KeyName != key.KeyId)
+            if (data.KeyName != key.KeyName)
                 throw new AblyException("Incompatible keys specified", 40102, HttpStatusCode.Unauthorized);
 
             if (requestData == null && options == null && _lastTokenRequest != null)
@@ -446,9 +446,9 @@ namespace Ably
                 data = _lastTokenRequest;
             }
 
-            data.KeyName = data.KeyName ?? key.KeyId;
+            data.KeyName = data.KeyName ?? key.KeyName;
 
-            var postData = data.GetPostData(key.KeyValue);
+            var postData = data.GetPostData(key.KeySecret);
             if (mergedOptions.QueryTime)
                 postData.timestamp = Time().ToUnixTime().ToString();
 

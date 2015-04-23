@@ -34,7 +34,7 @@ namespace Ably.Tests
         public void UsesKeyIdFromTheClient()
         {
             var data = Client.Auth.CreateTokenRequest(null, null);
-            data.keyName.Should().Be(Client.Options.ParseKey().KeyId);
+            data.keyName.Should().Be(Client.Options.ParseKey().KeyName);
         }
 
         [Fact]
