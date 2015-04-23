@@ -71,10 +71,20 @@ namespace Ably.Transport
         private static TransportParams CreateTransportParameters(AblyRealtimeOptions options)
         {
             TransportParams transportParams = new TransportParams(options);
-            transportParams.Host = Defaults.RealtimeHost;
+            transportParams.Host = GetHost(options);
             transportParams.Port = options.Tls ? Defaults.TlsPort : Transport.Defaults.Port;
             transportParams.FallbackHosts = Defaults.FallbackHosts;
             return transportParams;
+        }
+
+        private static string GetHost(AblyRealtimeOptions options)
+        {
+            string host = !string.IsNullOrEmpty(options.Host) ? options.Host : Defaults.RealtimeHost;
+            if (options.Environment.HasValue && options.Environment != AblyEnvironment.Live)
+            {
+                return string.Format("{0}-{1}", options.Environment.ToString().ToLower(), host);
+            }
+            return host;
         }
 
         //

@@ -18,14 +18,22 @@ namespace Ably.AcceptanceTests
             return new TestVars { tls = true, keys = new List<Key>(), Environment = AblyEnvironment.Sandbox};
         }
 
-        public static AblyOptions GetDefaultOptions()
+        public static T GetDefaultOptions<T>()
+            where T : AblyOptions, new()
         {
-            return new AblyOptions
+            return new T
             {
                 Key = TestData.keys[0].keyStr,
-                Environment = TestData.Environment
+                Environment = TestData.Environment,
+                Tls = TestData.tls
             };
         }
+
+        public static AblyOptions GetDefaultOptions()
+        {
+            return GetDefaultOptions<AblyOptions>();
+        }
+
         [SetUp]
         public void RunBeforeAllTests()
         {
