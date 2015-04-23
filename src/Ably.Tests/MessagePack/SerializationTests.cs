@@ -50,19 +50,19 @@ namespace Ably.Tests.MessagePack
         public void CanDeserialiseTokenResponse()
         {
             var value =
-                "gaxhY2Nlc3NfdG9rZW6Gomlk2YhnNFg2UVEuRHlCYzlMZUdvdy1saWVEcG4zTXRsd09uUEhoN2VtN3MyQ3JTZ1pLM2NUNkRvZUo1dlQxWXRwNDFvaTVWUUtNUkxuSVdDckFadHVOb3F5Q0lvVFphQjFfb1FFX0Utb3c2Y3hKX1EwcFUyZ3lpb2xRNGp1VDM1TjI0Qzgzd0p6aUI5o2tlea1nNFg2UVEudXR6R2xnqWlzc3VlZF9hdM5UwQ/Wp2V4cGlyZXPOVMEd5qpjYXBhYmlsaXR5gaEqkaEqqGNsaWVudElkozEyMw==";
+                "gaxhY2Nlc3NfdG9rZW6GpXRva2Vu2gCIZzRYNlFRLkR5QmM5TGVHb3ctbGllRHBuM010bHdPblBIaDdlbTdzMkNyU2daSzNjVDZEb2VKNXZUMVl0cDQxb2k1VlFLTVJMbklXQ3JBWnR1Tm9xeUNJb1RaYUIxX29RRV9FLW93NmN4Sl9RMHBVMmd5aW9sUTRqdVQzNU4yNEM4M3dKemlCOaNrZXmtZzRYNlFRLnV0ekdsZ6lpc3N1ZWRfYXTOVMEP1qdleHBpcmVzzlTBHeaqY2FwYWJpbGl0eYGhKpGhKqhjbGllbnRJZKMxMjM=";
 
             var decodedMessagePack = MsgPackHelper.DeSerialise(value.FromBase64(), typeof (MessagePackObject)).ToString();
 
             var response = JsonConvert.DeserializeObject<TokenResponse>(decodedMessagePack);
 
             response.AccessToken.Should().NotBeNull();
-            response.AccessToken.KeyId.Should().Be("g4X6QQ.utzGlg");
+            response.AccessToken.KeyName.Should().Be("g4X6QQ.utzGlg");
             response.AccessToken.Capability.ToJson().Should().Be("{ \"*\": [ \"*\" ] }");
             response.AccessToken.ClientId.Should().Be("123");
-            response.AccessToken.Id.Should().Be("g4X6QQ.DyBc9LeGow-lieDpn3MtlwOnPHh7em7s2CrSgZK3cT6DoeJ5vT1Ytp41oi5VQKMRLnIWCrAZtuNoqyCIoTZaB1_oQE_E-ow6cxJ_Q0pU2gyiolQ4juT35N24C83wJziB9");
-            response.AccessToken.IssuedAt.Should().Be(((long)1421938646).FromUnixTime());
-            response.AccessToken.ExpiresAt.Should().Be(((long)1421942246).FromUnixTime());
+            response.AccessToken.Token.Should().Be("g4X6QQ.DyBc9LeGow-lieDpn3MtlwOnPHh7em7s2CrSgZK3cT6DoeJ5vT1Ytp41oi5VQKMRLnIWCrAZtuNoqyCIoTZaB1_oQE_E-ow6cxJ_Q0pU2gyiolQ4juT35N24C83wJziB9");
+            response.AccessToken.Issued.Should().Be(((long)1421938646).FromUnixTime());
+            response.AccessToken.Expires.Should().Be(((long)1421942246).FromUnixTime());
         }
     }
 
@@ -82,9 +82,9 @@ namespace Ably.Tests.MessagePack
         {
             var value = @"{
 	""access_token"": {
-		""id"": ""_SYo4Q.D3WmHhU"",
-		""key"": ""_SYo4Q.j8mhAQ"",
-		""issued_at"": 1421937735,
+		""token"": ""_SYo4Q.D3WmHhU"",
+		""keyName"": ""_SYo4Q.j8mhAQ"",
+		""issued"": 1421937735,
 		""expires"": 1421941335,
 		""capability"": {
 			""*"": [
@@ -100,12 +100,12 @@ namespace Ably.Tests.MessagePack
             var response = JsonConvert.DeserializeObject<TokenResponse>(value);
 
             response.AccessToken.Should().NotBeNull();
-            response.AccessToken.KeyId.Should().Be("_SYo4Q.j8mhAQ");
+            response.AccessToken.KeyName.Should().Be("_SYo4Q.j8mhAQ");
             response.AccessToken.Capability.ToJson().Should().Be("{ \"*\": [ \"*\" ] }");
             response.AccessToken.ClientId.Should().Be("123");
-            response.AccessToken.Id.Should().Be("_SYo4Q.D3WmHhU");
-            response.AccessToken.IssuedAt.Should().Be(((long)1421937735).FromUnixTime());
-            response.AccessToken.ExpiresAt.Should().Be(((long)1421941335).FromUnixTime());
+            response.AccessToken.Token.Should().Be("_SYo4Q.D3WmHhU");
+            response.AccessToken.Issued.Should().Be(((long)1421937735).FromUnixTime());
+            response.AccessToken.Expires.Should().Be(((long)1421941335).FromUnixTime());
         }
     }
 }

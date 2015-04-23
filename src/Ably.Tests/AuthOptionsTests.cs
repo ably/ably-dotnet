@@ -18,11 +18,9 @@ namespace Ably.Tests
             {
                 AuthHeaders = new Dictionary<string, string> { {"Test", "Test"} },
                 AuthParams = new Dictionary<string, string> { {"Test", "Test"} },
-                AuthToken = "Token",
+                Token = "Token",
                 AuthUrl = "http://www.google.com",
                 Key = "key",
-                KeyId = "keyId",
-                KeyValue = "keyValue",
                 QueryTime = true,
                 AuthCallback = param => null
             };
@@ -42,8 +40,6 @@ namespace Ably.Tests
             Assert.Equal(blankOptions.AuthUrl, complete.AuthUrl);
             Assert.Equal(blankOptions.AuthCallback, complete.AuthCallback);
             
-            Assert.Equal(blankOptions.KeyId, complete.KeyId);
-            Assert.Equal(blankOptions.KeyValue, complete.KeyValue);
             Assert.Equal(blankOptions.QueryTime, complete.QueryTime);
         }
 
@@ -65,11 +61,9 @@ namespace Ably.Tests
             {
                 AuthHeaders = new Dictionary<string, string> { {"Complete", "Test"} },
                 AuthParams = new Dictionary<string, string> { {"Complete", "Test"} },
-                AuthToken = "Complete",
+                Token = "Complete",
                 AuthUrl = "http://www.ably.io",
                 Key = "completeKey",
-                KeyId = "CompleteKeyId",
-                KeyValue = "CompleteKeyValue",
                 QueryTime = true,
                 AuthCallback = param => null
             };
@@ -80,8 +74,6 @@ namespace Ably.Tests
             Assert.NotEqual(otherComplete.AuthParams, complete.AuthParams);
             Assert.NotEqual(otherComplete.AuthUrl, complete.AuthUrl);
             Assert.NotEqual(otherComplete.AuthCallback, complete.AuthCallback);
-            Assert.NotEqual(otherComplete.KeyId, complete.KeyId);
-            Assert.NotEqual(otherComplete.KeyValue, complete.KeyValue);
         }
 
     }

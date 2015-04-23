@@ -21,8 +21,8 @@ namespace Ably.Tests
             var key = ApiKey.Parse("AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob");
 
             Assert.Equal(key.AppId, "AHSz6w");
-            Assert.Equal(key.KeyId, "AHSz6w.uQXPNQ");
-            Assert.Equal(key.KeyValue, "FGBZbsKSwqbCpkob");
+            Assert.Equal(key.KeyName, "AHSz6w.uQXPNQ");
+            Assert.Equal(key.KeySecret, "FGBZbsKSwqbCpkob");
         }
 
         [Fact]
@@ -31,8 +31,8 @@ namespace Ably.Tests
             var key = ApiKey.Parse(" AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob ");
 
             Assert.Equal(key.AppId, "AHSz6w");
-            Assert.Equal(key.KeyId, "AHSz6w.uQXPNQ");
-            Assert.Equal(key.KeyValue, "FGBZbsKSwqbCpkob");
+            Assert.Equal(key.KeyName, "AHSz6w.uQXPNQ");
+            Assert.Equal(key.KeySecret, "FGBZbsKSwqbCpkob");
         }
     }
 }

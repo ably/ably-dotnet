@@ -9,7 +9,7 @@ namespace Ably
             nonce = Guid.NewGuid().ToString("N").ToLower();
         }
 
-        public string id { get; set; }
+        public string keyName { get; set; }
         public string ttl { get; set; }
         public string capability { get; set; }
         public string clientId { get; set; }
@@ -21,7 +21,7 @@ namespace Ably
         {
             var values = new[] 
                 { 
-                    id, 
+                    keyName, 
                     ttl,
                     capability, 
                     clientId, 
@@ -36,7 +36,7 @@ namespace Ably
 
         public override int GetHashCode()
         {
-            return id.GetHashCode();
+            return keyName.GetHashCode();
         }
 
         public override bool Equals(object obj)
@@ -44,7 +44,7 @@ namespace Ably
             var other = obj as TokenRequestPostData;
             if (other == null)
                 return false;
-            return id == other.id
+            return keyName == other.keyName
                 && ttl == other.ttl
                 && capability == other.capability
                 && clientId == other.clientId

@@ -9,8 +9,8 @@ namespace Ably
     /// </summary>
     public class ApiKey
     {
-        private string _KeyValue;
-        private string _KeyId;
+        private string _KeySecret;
+        private string _KeyName;
         private string _AppId;
 
         public string AppId
@@ -18,20 +18,20 @@ namespace Ably
             get { return _AppId; }
         }
 
-        public string KeyId
+        public string KeyName
         {
-            get { return _KeyId; }
+            get { return _KeyName; }
         }
 
-        public string KeyValue
+        public string KeySecret
         {
-            get { return _KeyValue; }
+            get { return _KeySecret; }
         }
         
         private ApiKey() { }
         public override string ToString()
         {
-            return string.Format("{0}:{1}", KeyId, KeyValue);
+            return string.Format("{0}:{1}", KeyName, KeySecret);
         }
 
         public static ApiKey Parse(string key)
@@ -44,7 +44,7 @@ namespace Ably
             if (parts.Length == 2)
             {
                 var keyParts = parts[0].Split(".".ToCharArray());
-                return new ApiKey() { _AppId = keyParts[0], _KeyId = keyParts[0] + "." + keyParts[1], _KeyValue = parts[1] };
+                return new ApiKey() { _AppId = keyParts[0], _KeyName = keyParts[0] + "." + keyParts[1], _KeySecret = parts[1] };
             }
 
             throw new AblyException("Invalid ably key. Ably key must be in the following format [AppId].[keyId]:[keyValue]", 40101, HttpStatusCode.Unauthorized);

@@ -99,10 +99,19 @@ namespace Ably
 
     public class ResourceCount
     {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double Opened { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double Peak { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double Mean { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double Min { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double Refused { get; set; }
     }
 }

@@ -32,11 +32,12 @@ namespace Ably.AcceptanceTests
             var token = ably.Auth.RequestToken(new TokenRequest { Capability = capability, Ttl = ttl }, null);
 
             //Assert
-            var appId = options.KeyId.Split('.').First();
-            token.Id.Should().MatchRegex(string.Format(@"^{0}\.[\w-]+$", appId));
-            token.KeyId.Should().Be(options.KeyId);
-            token.IssuedAt.Should().BeWithin(TimeSpan.FromSeconds(20)).Before(DateTime.Now);
-            token.ExpiresAt.Should().BeWithin(TimeSpan.FromSeconds(20)).Before(DateTime.Now  + ttl);
+            var key = options.ParseKey();
+            var appId = key.KeyName.Split('.').First();
+            token.Token.Should().MatchRegex(string.Format(@"^{0}\.[\w-]+$", appId));
+            token.KeyName.Should().Be(key.KeyName);
+            token.Issued.Should().BeWithin(TimeSpan.FromSeconds(20)).Before(DateTime.Now);
+            token.Expires.Should().BeWithin(TimeSpan.FromSeconds(20)).Before(DateTime.Now  + ttl);
         }
 
         private RestClient GetRestClient(Action<AblyOptions> opAction = null)
@@ -58,7 +59,7 @@ namespace Ably.AcceptanceTests
             var ably = GetRestClient();
             var token = ably.Auth.RequestToken(new TokenRequest() { Capability = capability }, null);
 
-            var tokenAbly = new RestClient(new AblyOptions {AuthToken = token.Id, Environment = TestsSetup.TestData.Environment});
+            var tokenAbly = new RestClient(new AblyOptions {Token = token.Token, Environment = TestsSetup.TestData.Environment});
 
             //Act & Assert
             Assert.DoesNotThrow(delegate { tokenAbly.Channels.Get("foo").Publish("test", true); });
@@ -75,7 +76,7 @@ namespace Ably.AcceptanceTests
 
             var token = ably.Auth.RequestToken(new TokenRequest() { Capability = capability }, null);
 
-            var tokenAbly = new RestClient(new AblyOptions { AuthToken = token.Id , Environment = AblyEnvironment.Sandbox});
+            var tokenAbly = new RestClient(new AblyOptions { Token = token.Token , Environment = AblyEnvironment.Sandbox});
 
             //Act & Assert
             var error = Assert.Throws<AblyException>(delegate { tokenAbly.Channels.Get("boo").Publish("test", true); });
@@ -110,7 +111,7 @@ namespace Ably.AcceptanceTests
 
             token.Should().NotBeNull();
             token.ClientId.Should().Be("123");
-            token.ExpiresAt.Should().BeWithin(TimeSpan.FromSeconds(20)).Before(DateTime.UtcNow + TokenRequest.Defaults.Ttl);
+            token.Expires.Should().BeWithin(TimeSpan.FromSeconds(20)).Before(DateTime.UtcNow + TokenRequest.Defaults.Ttl);
             token.Capability.ToJson().Should().Be(TokenRequest.Defaults.Capability.ToJson());
         }
     }

@@ -4,8 +4,8 @@ namespace Ably.AcceptanceTests
 {
     public class Key
     {
-        public String keyId;
-        public String keyValue;
+        public String keyName;
+        public String keySecret;
         public String keyStr;
         public String capability;
     }

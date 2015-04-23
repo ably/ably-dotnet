@@ -21,7 +21,7 @@ namespace Ably
         /// <summary>
         /// The Id against which the request is made
         /// </summary>
-        public string Id { get; set;}
+        public string KeyName { get; set;}
 
         /// <summary>
         /// Requested time to live for the token. If the token request
@@ -60,7 +60,7 @@ namespace Ably
         internal TokenRequestPostData GetPostData(string keyValue)
         {
             var data = new TokenRequestPostData();
-            data.id = Id;
+            data.keyName = KeyName;
             data.capability = (Capability ?? Defaults.Capability).ToJson();
             data.clientId = ClientId ?? "";
             DateTimeOffset now = Config.Now();
