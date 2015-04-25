@@ -32,6 +32,7 @@ namespace Ably.Transport
         private System.Threading.SynchronizationContext sync;
         private ILogger Logger = Config.AblyLogger;
         private Queue<ProtocolMessage> pendingMessages;
+        private ConnectionState connectionState;
 
         public event StateChangedDelegate StateChanged;
 
@@ -99,6 +100,7 @@ namespace Ably.Transport
         private void SetState(ConnectionState state, ConnectionInfo info = null, ErrorInfo error = null)
         {
             this.Logger.Info("ConnectionManager: StateChanged: {0}", state);
+            this.connectionState = state;
             if (this.StateChanged != null)
             {
                 this.StateChanged(state, info, error);
@@ -132,11 +134,11 @@ namespace Ably.Transport
         {
             if (this.sync != null && this.sync.IsWaitNotificationRequired())
             {
-                this.sync.Send(new System.Threading.SendOrPostCallback(this.SetState), new object[] { ConnectionState.Disconnected, null, null });
+                this.sync.Send(new System.Threading.SendOrPostCallback(o => this.ProcessTransportDisconnected()), null);
             }
             else
             {
-                this.SetState(ConnectionState.Disconnected);
+                this.ProcessTransportDisconnected();
             }
         }
 
@@ -224,6 +226,16 @@ namespace Ably.Transport
                     this.OnMessageReceived(message);
                     break;
             }
+        }
+
+        private void ProcessTransportDisconnected()
+        {
+            if (this.connectionState == ConnectionState.Closed)
+            {
+                return;
+            }
+
+            this.SetState(ConnectionState.Disconnected);
         }
 
         private void OnMessage_Heartbeat(ProtocolMessage message)
