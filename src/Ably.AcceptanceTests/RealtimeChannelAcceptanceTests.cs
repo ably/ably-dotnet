@@ -73,5 +73,84 @@ namespace Ably.AcceptanceTests
             args[1].Reason.ShouldBeEquivalentTo(null);
             target.State.ShouldBeEquivalentTo(Realtime.ChannelState.Attached);
         }
+
+        [Test]
+        public void TestAttachChannel_SendingMessage_EchoesItBack()
+        {
+            // Arrange
+            var client = GetRealtimeClient();
+            AutoResetEvent signal = new AutoResetEvent(false);
+            Realtime.IRealtimeChannel target = client.Channels.Get("test");
+            target.Attach();
+            List<Message> messagesReceived = new List<Message>();
+            target.MessageReceived += (messages) =>
+            {
+                messagesReceived.AddRange(messages);
+                signal.Set();
+            };
+
+            // Act
+            target.Publish("test", "test data");
+            signal.WaitOne(10000);
+
+            // Assert
+            messagesReceived.Count.ShouldBeEquivalentTo(1);
+            messagesReceived[0].Name.ShouldBeEquivalentTo("test");
+            messagesReceived[0].Data.ShouldBeEquivalentTo("test data");
+        }
+
+        [Test]
+        public void TestAttachChannel_Sending3Messages_EchoesItBack()
+        {
+            // Arrange
+            var client = GetRealtimeClient();
+            AutoResetEvent signal = new AutoResetEvent(false);
+            Realtime.IRealtimeChannel target = client.Channels.Get("test");
+            target.Attach();
+            List<Message> messagesReceived = new List<Message>();
+            target.MessageReceived += (messages) =>
+            {
+                messagesReceived.AddRange(messages);
+                signal.Set();
+            };
+
+            // Act
+            target.Publish("test1", "test 12");
+            target.Publish("test2", "test 123");
+            target.Publish("test3", "test 321");
+            signal.WaitOne(10000);
+
+            // Assert
+            messagesReceived.Count.ShouldBeEquivalentTo(3);
+            messagesReceived[0].Name.ShouldBeEquivalentTo("test1");
+            messagesReceived[0].Data.ShouldBeEquivalentTo("test 12");
+            messagesReceived[1].Name.ShouldBeEquivalentTo("test2");
+            messagesReceived[1].Data.ShouldBeEquivalentTo("test 123");
+            messagesReceived[2].Name.ShouldBeEquivalentTo("test3");
+            messagesReceived[2].Data.ShouldBeEquivalentTo("test 321");
+        }
+
+        [Test]
+        public void TestAttachChannel_SendingMessage_Doesnt_EchoesItBack()
+        {
+            // Arrange
+            var client = GetRealtimeClient(o => o.EchoMessages = false);
+            AutoResetEvent signal = new AutoResetEvent(false);
+            Realtime.IRealtimeChannel target = client.Channels.Get("test");
+            target.Attach();
+            List<Message> messagesReceived = new List<Message>();
+            target.MessageReceived += (messages) =>
+            {
+                messagesReceived.AddRange(messages);
+                signal.Set();
+            };
+
+            // Act
+            target.Publish("test", "test data");
+            signal.WaitOne(10000);
+
+            // Assert
+            messagesReceived.Count.ShouldBeEquivalentTo(0);
+        }
     }
 }
