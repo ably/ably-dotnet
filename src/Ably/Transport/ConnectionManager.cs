@@ -11,6 +11,7 @@ namespace Ably.Transport
         {
             this.sync = System.Threading.SynchronizationContext.Current;
             this.pendingMessages = new Queue<ProtocolMessage>();
+            this.ackQueue = new Dictionary<long, Action<bool, ErrorInfo>>();
         }
 
         internal ConnectionManager(ITransport transport)
@@ -33,6 +34,8 @@ namespace Ably.Transport
         private ILogger Logger = Config.AblyLogger;
         private Queue<ProtocolMessage> pendingMessages;
         private ConnectionState connectionState;
+        private long msgSerial;
+        private Dictionary<long, Action<bool, ErrorInfo>> ackQueue;
 
         public event StateChangedDelegate StateChanged;
 
@@ -56,9 +59,13 @@ namespace Ably.Transport
             this.transport.Close(this.transport.State == TransportState.Connected);
         }
 
-        public void Send(ProtocolMessage message, Action<ErrorInfo> callback)
+        public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback)
         {
-            // TODO: Implement callback
+            message.MsgSerial = this.msgSerial++;
+            if (callback != null)
+            {
+                this.ackQueue.Add(message.MsgSerial, callback);
+            }
             if (this.transport.State == TransportState.Connected)
             {
                 this.SendDirect(message);
@@ -217,10 +224,10 @@ namespace Ably.Transport
                     this.OnMessage_Closed(message);
                     break;
                 case ProtocolMessage.MessageAction.Ack:
-                    this.OnMessage_Ack(message);
+                    this.HandleMessageAcknowledgement(message);
                     break;
                 case ProtocolMessage.MessageAction.Nack:
-                    this.OnMessage_Nack(message);
+                    this.HandleMessageAcknowledgement(message);
                     break;
                 default:
                     this.OnMessageReceived(message);
@@ -250,6 +257,7 @@ namespace Ably.Transport
         private void OnMessage_Connected(ProtocolMessage message)
         {
             ConnectionInfo info = new ConnectionInfo(message.ConnectionId, message.ConnectionSerial, message.ConnectionKey);
+            this.ResetMsgAcknowledgement();
             this.SetState(ConnectionState.Connected, info: info, error: message.Error);
         }
 
@@ -260,6 +268,7 @@ namespace Ably.Transport
 
         private void OnMessage_Closed(ProtocolMessage message)
         {
+            this.ResetMsgAcknowledgement();
             if (message.Error != null)
             {
                 this.SetState(ConnectionState.Failed, error: message.Error);
@@ -270,12 +279,33 @@ namespace Ably.Transport
             }
         }
 
-        private void OnMessage_Ack(ProtocolMessage message)
+        private void ResetMsgAcknowledgement()
         {
+            this.msgSerial = 0;
+            this.ackQueue.Clear();
         }
 
-        private void OnMessage_Nack(ProtocolMessage message)
+        private void HandleMessageAcknowledgement(ProtocolMessage message)
         {
+            long startSerial = message.MsgSerial;
+            long endSerial = message.MsgSerial + (message.Count - 1);
+            ErrorInfo reason = new ErrorInfo("Unknown error", 50000, System.Net.HttpStatusCode.InternalServerError);
+            for (long i = startSerial; i <= endSerial; i++)
+            {
+                Action<bool, ErrorInfo> callback;
+                if (this.ackQueue.TryGetValue(i, out callback))
+                {
+                    if (message.Action == ProtocolMessage.MessageAction.Ack)
+                    {
+                        callback(true, null);
+                    }
+                    else
+                    {
+                        callback(false, message.Error ?? reason);
+                    }
+                    this.ackQueue.Remove(i);
+                }
+            }
         }
 
         private void SendDirect(ProtocolMessage message)

@@ -295,7 +295,7 @@ namespace Ably.Tests
             };
             ProtocolMessage sendMessage = null;
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(cc => cc.Action == ProtocolMessage.MessageAction.Message), null))
-                .Callback<ProtocolMessage, Action<ErrorInfo>>((m, e) => sendMessage = m);
+                .Callback<ProtocolMessage, Action<bool, ErrorInfo>>((m, e) => sendMessage = m);
 
             // Act
             target.Publish(messages);

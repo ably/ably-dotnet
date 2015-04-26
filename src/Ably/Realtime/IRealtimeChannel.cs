@@ -14,7 +14,7 @@ namespace Ably.Realtime
         void Detach();
         void Subscribe(string eventName, Action<Message[]> listener);
         void Unsubscribe(string eventName, Action<Message[]> listener);
-        void Publish(string eventName, object data, Action<ErrorInfo> callback);
-        void Publish(IEnumerable<Message> messages, Action<ErrorInfo> callback);
+        void Publish(string eventName, object data, Action<bool, ErrorInfo> callback);
+        void Publish(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback);
     }
 }

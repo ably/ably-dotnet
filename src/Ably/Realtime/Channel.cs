@@ -110,7 +110,7 @@ namespace Ably.Realtime
             this.Publish(name, data, null);
         }
 
-        public void Publish(string name, object data, Action<ErrorInfo> callback)
+        public void Publish(string name, object data, Action<bool, ErrorInfo> callback)
         {
             this.Publish(new Message[] { new Message(name, data) }, callback);
         }
@@ -124,7 +124,7 @@ namespace Ably.Realtime
             this.Publish(messages, null);
         }
 
-        public void Publish(IEnumerable<Message> messages, Action<ErrorInfo> callback)
+        public void Publish(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback)
         {
             if (this.State == ChannelState.Initialised || this.State == ChannelState.Attaching)
             {
