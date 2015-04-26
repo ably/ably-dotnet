@@ -378,5 +378,57 @@ namespace Ably.Tests
             Assert.Equal<int>(1, receivedMessage.Length);
             Assert.Equal<Message>(targetMessages[0], receivedMessage[0]);
         }
+
+        [Fact]
+        public void WhenReceiveMessage_WithDifferentName_MessageSubscribersNotCalled()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Message[] receivedMessage = null;
+
+            // Act
+            target.Subscribe("test 2", (m) => receivedMessage = m);
+
+            Message[] targetMessages = new Message[] { new Message("test", null), new Message("test2", null) };
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Message, "test") { Messages = targetMessages });
+
+            // Assert
+            Assert.Null(receivedMessage);
+        }
+
+        [Fact]
+        public void WhenUnsubscribe_MessageSubscribersNotCalled()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Message[] receivedMessage = null;
+            Action<Message[]> action = (m) => receivedMessage = m;
+            target.Subscribe("test", action);
+
+            // Act
+            target.Unsubscribe("test", action);
+
+            Message[] targetMessages = new Message[] { new Message("test", null), new Message("test2", null) };
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Message, "test") { Messages = targetMessages });
+
+            // Assert
+            Assert.Null(receivedMessage);
+        }
+
+        [Fact]
+        public void WhenUnsubscribe_WithWrongName_NoException()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Message[] receivedMessage = null;
+            Action<Message[]> action = (m) => receivedMessage = m;
+            target.Subscribe("test", action);
+
+            // Act
+            target.Unsubscribe("test test", action);
+        }
     }
 }
