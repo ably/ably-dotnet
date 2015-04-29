@@ -34,6 +34,24 @@ namespace Ably.Types
                     json.Add("messages", messagesArr);
                 }
             }
+            if (message.Presence != null)
+            {
+                JArray messagesArr = new JArray();
+
+                foreach (PresenceMessage m in message.Presence)
+                {
+                    JObject mJson = this.SerializePresenceMessage(m);
+                    if (mJson.HasValues)
+                    {
+                        messagesArr.Add(mJson);
+                    }
+                }
+
+                if (messagesArr.HasValues)
+                {
+                    json.Add("presence", messagesArr);
+                }
+            }
 
             return json.ToString(Newtonsoft.Json.Formatting.None);
         }
@@ -103,7 +121,8 @@ namespace Ably.Types
             }
             if (json.TryGetValue("presence", out token))
             {
-                // TODO: Implement json parsing of presence
+                JArray messagesArray = (JArray)token;
+                message.Presence = messagesArray.Select(c => DeserializePresenceMessage(c as JObject)).ToArray();
             }
 
             return message;
@@ -136,7 +155,6 @@ namespace Ably.Types
         {
             Message message = new Message();
             string encoding = "utf8";
-
             JToken token;
             if (obj.TryGetValue("name", out token))
             {
@@ -156,6 +174,79 @@ namespace Ably.Types
                 message.Data = this.ParseToken(token, encoding);
             }
 
+            return message;
+        }
+
+        private JObject SerializePresenceMessage(PresenceMessage message)
+        {
+            JObject json = new JObject();
+            json.Add("action", new JValue(message.Action));
+            if (!string.IsNullOrEmpty(message.Id))
+            {
+                json.Add("id", new JValue(message.Id));
+            }
+            if (!string.IsNullOrEmpty(message.ClientId))
+            {
+                json.Add("clientId", new JValue(message.ClientId));
+            }
+            if (!string.IsNullOrEmpty(message.ConnectionId))
+            {
+                json.Add("connectionId", new JValue(message.ConnectionId));
+            }
+            if (message.TimeStamp.Ticks > 0)
+            {
+                json.Add("timestamp", new JValue(message.TimeStamp.ToUnixTimeInMilliseconds()));
+            }
+            if (message.Data != null)
+            {
+                if (message.Data is byte[])
+                {
+                    string encodedData = (message.Data as byte[]).ToBase64();
+                    json.Add("data", new JValue(encodedData));
+                    json.Add("encoding", new JValue("base64"));
+                }
+                else
+                {
+                    json.Add("data", new JValue(message.Data));
+                }
+            }
+            return json;
+        }
+
+        private PresenceMessage DeserializePresenceMessage(JObject obj)
+        {
+            PresenceMessage message = new PresenceMessage();
+            string encoding = "utf8";
+            JToken token;
+            if (obj.TryGetValue("action", out token))
+            {
+                message.Action = (PresenceMessage.ActionType)token.Value<int>();
+            }
+            if (obj.TryGetValue("id", out token))
+            {
+                message.Id = token.Value<string>();
+            }
+            if (obj.TryGetValue("clientId", out token))
+            {
+                message.ClientId = token.Value<string>();
+            }
+            if (obj.TryGetValue("connectionId", out token))
+            {
+                message.ConnectionId = token.Value<string>();
+            }
+            if (obj.TryGetValue("timestamp", out token))
+            {
+                long timestamp = token.Value<long>();
+                message.TimeStamp = timestamp.FromUnixTimeInMilliseconds();
+            }
+            if (obj.TryGetValue("encoding", out token))
+            {
+                encoding = token.Value<string>();
+            }
+            if (obj.TryGetValue("data", out token))
+            {
+                message.Data = this.ParseToken(token, encoding);
+            }
             return message;
         }
 

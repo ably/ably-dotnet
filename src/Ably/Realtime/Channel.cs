@@ -13,6 +13,7 @@ namespace Ably.Realtime
             this.queuedMessages = new List<Message>();
             this.eventListeners = new Dictionary<string, List<Action<Message[]>>>();
             this.Name = name;
+            this.Presence = new Presence(connection, name);
             this.connection = connection;
             this.connection.MessageReceived += OnConnectionMessageReceived;
         }
@@ -38,6 +39,8 @@ namespace Ably.Realtime
         /// Indicates the current state of this channel.
         /// </summary>
         public ChannelState State { get; private set; }
+
+        public Presence Presence { get; private set; }
 
         /// <summary>
         /// Attach to this channel. Any resulting channel state change will be indicated to any registered 
@@ -140,31 +143,6 @@ namespace Ably.Realtime
             {
                 throw new AblyException(new ErrorInfo("Unable to publish in detached or failed state", 40000, System.Net.HttpStatusCode.BadRequest));
             }
-        }
-
-        public IPaginatedResource<Message> History()
-        {
-            throw new NotImplementedException();
-        }
-
-        public IPaginatedResource<Message> History(DataRequestQuery query)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IPaginatedResource<PresenceMessage> Presence()
-        {
-            throw new NotImplementedException();
-        }
-
-        public IPaginatedResource<PresenceMessage> PresenceHistory()
-        {
-            throw new NotImplementedException();
-        }
-
-        public IPaginatedResource<PresenceMessage> PresenceHistory(DataRequestQuery query)
-        {
-            throw new NotImplementedException();
         }
 
         protected void SetChannelState(ChannelState state)

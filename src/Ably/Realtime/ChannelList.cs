@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Ably.Realtime
 {
-    public class ChannelList : IRealtimeChannelCommands<IRealtimeChannel>
+    public class ChannelList : IRealtimeChannelCommands
     {
         public ChannelList(IConnectionManager connection)
         {

@@ -15,6 +15,20 @@ namespace Ably
 		    Update
         }
 
+        public PresenceMessage()
+        { }
+
+        public PresenceMessage(ActionType action, string clientId)
+            : this(action, clientId, null)
+        { }
+
+        public PresenceMessage(ActionType action, string clientId, object data)
+        {
+            this.Action = action;
+            this.ClientId = clientId;
+            this.Data = data;
+        }
+
         [JsonProperty("id")]
         [MessagePackMember(0, Name = "id")]
         public string Id { get; set; }
