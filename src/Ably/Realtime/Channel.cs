@@ -177,12 +177,6 @@ namespace Ably.Realtime
                 case ProtocolMessage.MessageAction.Message:
                     this.OnMessage(message);
                     break;
-                case ProtocolMessage.MessageAction.Presence:
-                    this.OnPresence(message, null);
-                    break;
-                case ProtocolMessage.MessageAction.Sync:
-                    this.OnSync(message);
-                    break;
                 case ProtocolMessage.MessageAction.Error:
                     this.SetChannelState(ChannelState.Failed);
                     break;
@@ -213,17 +207,6 @@ namespace Ably.Realtime
             {
                 this.MessageReceived(messages);
             }
-        }
-
-        private void OnPresence(ProtocolMessage message, string channelSerial)
-        {
-            // TODO: Implement Channel.OnPresence
-        }
-
-        private void OnSync(ProtocolMessage message)
-        {
-            // TODO: Implement Channel.OnSync
-            this.OnPresence(message, "");
         }
 
         private void SendQueuedMessages()
