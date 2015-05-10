@@ -8,12 +8,12 @@ namespace Ably.Realtime
 {
     public class Channel : IRealtimeChannel
     {
-        internal Channel(string name, IConnectionManager connection)
+        internal Channel(string name, IConnectionManager connection, IPresenceFactory presenceFactory)
         {
             this.queuedMessages = new List<Message>();
             this.eventListeners = new Dictionary<string, List<Action<Message[]>>>();
             this.Name = name;
-            this.Presence = new Presence(connection, name);
+            this.Presence = presenceFactory.Create(name);
             this.connection = connection;
             this.connection.MessageReceived += OnConnectionMessageReceived;
         }

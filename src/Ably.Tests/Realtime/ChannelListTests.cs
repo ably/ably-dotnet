@@ -16,7 +16,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            ChannelList target = new ChannelList(manager.Object);
+            ChannelList target = new ChannelList(manager.Object, new Mock<IPresenceFactory>().Object);
 
             // Act
             var channel = target.Get("test");
@@ -30,7 +30,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            ChannelList target = new ChannelList(manager.Object);
+            ChannelList target = new ChannelList(manager.Object, new Mock<IPresenceFactory>().Object);
             var channel = target.Get("test");
 
             // Act
@@ -47,7 +47,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
-            ChannelList target = new ChannelList(manager.Object);
+            ChannelList target = new ChannelList(manager.Object, new Mock<IPresenceFactory>().Object);
             var channel = target.Get("test");
             channel.Attach();
 
@@ -64,7 +64,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
-            ChannelList target = new ChannelList(manager.Object);
+            ChannelList target = new ChannelList(manager.Object, new Mock<IPresenceFactory>().Object);
             var channel = target.Get("test");
             channel.Attach();
 
@@ -81,7 +81,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
-            ChannelList target = new ChannelList(manager.Object);
+            ChannelList target = new ChannelList(manager.Object, new Mock<IPresenceFactory>().Object);
             var channel = target.Get("test");
             channel.Attach();
             target.Release("test");
@@ -99,7 +99,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
-            ChannelList target = new ChannelList(manager.Object);
+            ChannelList target = new ChannelList(manager.Object, new Mock<IPresenceFactory>().Object);
             var channel = target.Get("test");
             channel.Attach();
             target.Release("test");
@@ -117,7 +117,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
-            ChannelList target = new ChannelList(manager.Object);
+            ChannelList target = new ChannelList(manager.Object, new Mock<IPresenceFactory>().Object);
             var channel = target.Get("test");
             channel.Attach();
 
@@ -134,7 +134,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
-            ChannelList target = new ChannelList(manager.Object);
+            ChannelList target = new ChannelList(manager.Object, new Mock<IPresenceFactory>().Object);
             var channel = target.Get("test");
             channel.Attach();
 
@@ -151,7 +151,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
-            ChannelList target = new ChannelList(manager.Object);
+            ChannelList target = new ChannelList(manager.Object, new Mock<IPresenceFactory>().Object);
             var channel = target.Get("test");
             channel.Attach();
             target.ReleaseAll();
@@ -169,7 +169,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
-            ChannelList target = new ChannelList(manager.Object);
+            ChannelList target = new ChannelList(manager.Object, new Mock<IPresenceFactory>().Object);
             var channel = target.Get("test");
             channel.Attach();
             target.ReleaseAll();
@@ -187,7 +187,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
-            ChannelList target = new ChannelList(manager.Object);
+            ChannelList target = new ChannelList(manager.Object, new Mock<IPresenceFactory>().Object);
             var channel = target.Get("test");
 
             // Act
@@ -205,7 +205,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
-            ChannelList target = new ChannelList(manager.Object);
+            ChannelList target = new ChannelList(manager.Object, new Mock<IPresenceFactory>().Object);
             var channel = target.Get("test");
 
             // Act

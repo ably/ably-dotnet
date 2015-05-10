@@ -5,17 +5,35 @@ using System.Collections.Generic;
 
 namespace Ably.Realtime
 {
+    public interface IPresenceFactory
+    {
+        Presence Create(string channel);
+    }
+
+    public class PresenceFactory : IPresenceFactory
+    {
+        public IConnectionManager ConnectionManager { get; set; }
+        public AblyRealtimeOptions Options { get; set; }
+
+        public Presence Create(string channel)
+        {
+            return new Presence(this.ConnectionManager, channel, this.Options.ClientId);
+        }
+    }
+
     public class Presence
     {
-        public Presence(IConnectionManager connection, string channel)
+        public Presence(IConnectionManager connection, string channel, string cliendId)
         {
             this.connection = connection;
             this.connection.MessageReceived += OnConnectionMessageReceived;
             this.channel = channel;
+            this.clientId = cliendId;
         }
 
         private IConnectionManager connection;
         private string channel;
+        private string clientId;
 
         public event Action<PresenceMessage[]> MessageReceived;
 
@@ -23,7 +41,7 @@ namespace Ably.Realtime
 
         public void Enter(object clientData, Action<bool, ErrorInfo> callback)
         {
-            // TODO: Implement
+            this.EnterClient(this.clientId, clientData, callback);
         }
 
         public void EnterClient(string clientId, object clientData, Action<bool, ErrorInfo> callback)
@@ -33,7 +51,7 @@ namespace Ably.Realtime
 
         public void Update(object clientData, Action<bool, ErrorInfo> callback)
         {
-            // TODO: Implement
+            this.UpdateClient(this.clientId, clientData, callback);
         }
 
         public void UpdateClient(string clientId, object clientData, Action<bool, ErrorInfo> callback)
@@ -41,14 +59,19 @@ namespace Ably.Realtime
             this.UpdatePresence(new PresenceMessage(PresenceMessage.ActionType.Update, clientId, clientData), callback);
         }
 
-        public void Leave(Action<bool, ErrorInfo> callback)
+        public void Leave(object clientData, Action<bool, ErrorInfo> callback)
         {
-            // TODO: Implement
+            this.LeaveClient(this.clientId, clientData, callback);
         }
 
-        public void LeaveClient(string clientId, Action<bool, ErrorInfo> callback)
+        public void Leave(Action<bool, ErrorInfo> callback)
         {
-            this.UpdatePresence(new PresenceMessage(PresenceMessage.ActionType.Leave, clientId), callback);
+            this.LeaveClient(this.clientId, null, callback);
+        }
+
+        public void LeaveClient(string clientId, object clientData, Action<bool, ErrorInfo> callback)
+        {
+            this.UpdatePresence(new PresenceMessage(PresenceMessage.ActionType.Leave, clientId, clientData), callback);
         }
 
         private void UpdatePresence(PresenceMessage msg, Action<bool, ErrorInfo> callback)

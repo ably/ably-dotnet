@@ -19,7 +19,7 @@ namespace Ably.Tests
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
 
             // Act
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
 
             // Assert
             Assert.NotNull(target.Presence);
@@ -32,7 +32,7 @@ namespace Ably.Tests
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
 
             // Act
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
 
             // Assert
             Assert.Equal(ChannelState.Initialised, target.State);
@@ -43,7 +43,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
 
             // Act
             target.Attach();
@@ -58,7 +58,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.SetupGet(c => c.IsActive).Returns(true);
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
 
             // Act
             target.Attach();
@@ -73,7 +73,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.SetupGet(c => c.IsActive).Returns(true);
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
             List<ChannelState> states = new List<ChannelState>();
             target.ChannelStateChanged += (s, e) => states.Add(e.NewState);
 
@@ -90,7 +90,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.SetupGet(c => c.IsActive).Returns(true);
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
             List<ChannelState> states = new List<ChannelState>();
             target.ChannelStateChanged += (s, e) => states.Add(e.NewState);
 
@@ -108,7 +108,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.SetupGet(c => c.IsActive).Returns(true);
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
 
             // Act
             target.Attach();
@@ -126,7 +126,7 @@ namespace Ably.Tests
             manager.SetupGet(c => c.IsActive).Returns(true);
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
 
             // Act
             target.Attach();
@@ -146,7 +146,7 @@ namespace Ably.Tests
             Task detachingTask = null;
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Detach), null))
                 .Callback(() => detachingTask = Task.Factory.StartNew(() => Thread.Sleep(50)).ContinueWith(c => manager.Raise(cc => cc.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Detached))));
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
             target.Attach();
             target.Detach();
 
@@ -166,7 +166,7 @@ namespace Ably.Tests
             manager.SetupGet(c => c.IsActive).Returns(true);
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
             List<ChannelState> states = new List<ChannelState>();
             target.Attach();
             target.ChannelStateChanged += (s, e) => states.Add(e.NewState);
@@ -186,7 +186,7 @@ namespace Ably.Tests
             manager.SetupGet(c => c.IsActive).Returns(true);
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
             List<ChannelState> states = new List<ChannelState>();
             target.Attach();
             target.ChannelStateChanged += (s, e) => states.Add(e.NewState);
@@ -207,7 +207,7 @@ namespace Ably.Tests
             manager.SetupGet(c => c.IsActive).Returns(true);
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
             target.Attach();
 
             // Act
@@ -228,7 +228,7 @@ namespace Ably.Tests
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Detach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Detached));
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
             target.Attach();
 
             // Act
@@ -249,7 +249,7 @@ namespace Ably.Tests
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Detached));
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
                 .Callback(() => attachingTask = Task.Factory.StartNew(() => Thread.Sleep(50)).ContinueWith(c => manager.Raise(cc => cc.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached))));
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
             target.Attach();
 
             // Act
@@ -265,7 +265,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Error));
 
             // Act
@@ -280,7 +280,7 @@ namespace Ably.Tests
             manager.SetupGet(c => c.IsActive).Returns(true);
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
             target.Attach();
 
             // Act
@@ -299,7 +299,7 @@ namespace Ably.Tests
             manager.SetupGet(c => c.IsActive).Returns(true);
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
             target.Attach();
             Message[] messages = new Message[]
             {
@@ -327,7 +327,7 @@ namespace Ably.Tests
             manager.SetupGet(c => c.IsActive).Returns(true);
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
 
             // Act
             target.Publish("message", null);
@@ -346,7 +346,7 @@ namespace Ably.Tests
             manager.SetupGet(c => c.IsActive).Returns(true);
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
 
             // Act
             target.Publish("message", null);
@@ -362,7 +362,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
             Message[] receivedMessage = null;
             target.MessageReceived += (m) => receivedMessage = m;
 
@@ -379,7 +379,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
             Message[] receivedMessage = null;
             target.Subscribe("test", (m) => receivedMessage = m);
 
@@ -397,7 +397,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
             Message[] receivedMessage = null;
 
             // Act
@@ -415,7 +415,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
             Message[] receivedMessage = null;
             Action<Message[]> action = (m) => receivedMessage = m;
             target.Subscribe("test", action);
@@ -435,7 +435,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
             Message[] receivedMessage = null;
             Action<Message[]> action = (m) => receivedMessage = m;
             target.Subscribe("test", action);

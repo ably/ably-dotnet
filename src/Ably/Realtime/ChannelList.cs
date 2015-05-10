@@ -7,14 +7,16 @@ namespace Ably.Realtime
 {
     public class ChannelList : IRealtimeChannelCommands
     {
-        public ChannelList(IConnectionManager connection)
+        internal ChannelList(IConnectionManager connection, IPresenceFactory factory)
         {
             this.connection = connection;
             this.channels = new Dictionary<string, Channel>();
+            this.presenceFactory = factory;
         }
         
         private Dictionary<string, Channel> channels;
         private IConnectionManager connection;
+        private IPresenceFactory presenceFactory;
 
         public IRealtimeChannel this[string name]
         {
@@ -26,7 +28,7 @@ namespace Ably.Realtime
             Channel channel = null;
             if (!this.channels.TryGetValue(name, out channel))
             {
-                channel = new Channel(name, this.connection);
+                channel = new Channel(name, this.connection, this.presenceFactory);
                 this.channels.Add(name, channel);
             }
             return channel;
