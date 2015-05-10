@@ -2,6 +2,7 @@
 using Ably.Types;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Ably.Realtime
 {
@@ -25,6 +26,7 @@ namespace Ably.Realtime
     {
         public Presence(IConnectionManager connection, string channel, string cliendId)
         {
+            this.presence = new PresenceMap();
             this.connection = connection;
             this.connection.MessageReceived += OnConnectionMessageReceived;
             this.channel = channel;
@@ -32,12 +34,17 @@ namespace Ably.Realtime
         }
 
         private IConnectionManager connection;
+        private PresenceMap presence;
         private string channel;
         private string clientId;
 
         public event Action<PresenceMessage[]> MessageReceived;
-
         // TODO: Subscribe with an action specifier
+
+        public PresenceMessage[] Get()
+        {
+            return this.presence.Values;
+        }
 
         public void Enter(object clientData, Action<bool, ErrorInfo> callback)
         {
@@ -96,8 +103,25 @@ namespace Ably.Realtime
 
         private void OnPresence(ProtocolMessage message, string channelSerial)
         {
-            // TODO: Implement
-            this.Publish(message.Presence);
+            bool broadcast = true;
+
+            foreach (PresenceMessage update in message.Presence)
+            {
+                if (update.Action == PresenceMessage.ActionType.Enter || update.Action == PresenceMessage.ActionType.Update ||
+                    update.Action == PresenceMessage.ActionType.Present)
+                {
+                    broadcast &= this.presence.Put(update);
+                }
+                else if (update.Action == PresenceMessage.ActionType.Leave)
+                {
+                    broadcast &= this.presence.Remove(update);
+                }
+            }
+
+            if (broadcast)
+            {
+                this.Publish(message.Presence);
+            }
         }
 
         private void OnSync(ProtocolMessage message)
@@ -111,6 +135,60 @@ namespace Ably.Realtime
             if (this.MessageReceived != null)
             {
                 this.MessageReceived(messages);
+            }
+        }
+
+        class PresenceMap
+        {
+            public PresenceMap()
+            {
+                this.members = new Dictionary<string, PresenceMessage>();
+            }
+
+            private Dictionary<string, PresenceMessage> members;
+
+
+            public PresenceMessage[] Values
+            {
+                get
+                {
+                    return this.members.Values.Where(c => c.Action != PresenceMessage.ActionType.Absent)
+                        .ToArray();
+                }
+            }
+
+            public bool Put(PresenceMessage item)
+            {
+                string key = MemberKey(item);
+
+                // compare the timestamp of the new item with any existing member (or ABSENT witness)
+                PresenceMessage existingItem;
+                if (members.TryGetValue(key, out existingItem) && item.Timestamp < existingItem.Timestamp)
+                {
+                    // no item supersedes a newer item with the same key
+                    return false;
+                }
+
+                members.Add(key, item);
+                return true;
+            }
+
+            public bool Remove(PresenceMessage item)
+            {
+                string key = MemberKey(item);
+                PresenceMessage existingItem;
+                if (members.TryGetValue(key, out existingItem) && existingItem.Action == PresenceMessage.ActionType.Absent)
+                {
+                    return false;
+                }
+
+                members.Remove(key);
+                return true;
+            }
+
+            private string MemberKey(PresenceMessage message)
+            {
+                return string.Format("{0}:{1}", message.ConnectionId, message.ClientId);
             }
         }
     }
