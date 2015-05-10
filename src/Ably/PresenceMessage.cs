@@ -6,6 +6,14 @@ namespace Ably
 {
     public class PresenceMessage : IEncodedMessage
     {
+        internal const string IdPropertyName = "id";
+        internal const string ActionPropertyName = "action";
+        internal const string ClientIdPropertyName = "clientId";
+        internal const string ConnectionIdPropertyName = "connectionId";
+        internal const string DataPropertyName = "data";
+        internal const string EncodingPropertyName = "encoding";
+        internal const string TimestampPropertyName = "timestamp";
+
         public enum ActionType
         {
             Absent,
@@ -29,32 +37,32 @@ namespace Ably
             this.Data = data;
         }
 
-        [JsonProperty("id")]
-        [MessagePackMember(0, Name = "id")]
+        [JsonProperty(IdPropertyName)]
+        [MessagePackMember(0, Name = IdPropertyName)]
         public string Id { get; set; }
 
-        [JsonProperty("action")]
-        [MessagePackMember(1, Name = "action")]
+        [JsonProperty(ActionPropertyName)]
+        [MessagePackMember(1, Name = ActionPropertyName)]
         public ActionType Action { get; set; }
 
-        [JsonProperty("clientId")]
-        [MessagePackMember(2, Name = "clientId")]
+        [JsonProperty(ClientIdPropertyName)]
+        [MessagePackMember(2, Name = ClientIdPropertyName)]
         public string ClientId { get; set; }
 
-        [JsonProperty("connectionId")]
-        [MessagePackMember(3, Name = "connectionId")]
+        [JsonProperty(ConnectionIdPropertyName)]
+        [MessagePackMember(3, Name = ConnectionIdPropertyName)]
         public string ConnectionId { get; set; }
 
-        [JsonProperty("data")]
-        [MessagePackMember(4, Name = "data")]
+        [JsonProperty(DataPropertyName)]
+        [MessagePackMember(4, Name = DataPropertyName)]
         public object Data { get; set; }
 
-        [JsonProperty("encoding")]
-        [MessagePackMember(5, Name = "encoding")]
+        [JsonProperty(EncodingPropertyName)]
+        [MessagePackMember(5, Name = EncodingPropertyName)]
         public string Encoding { get; set; }
 
-        [JsonProperty("timestamp")]
-        [MessagePackMember(6, Name = "timestamp")]
-        public DateTimeOffset TimeStamp { get; set; }
+        [JsonProperty(TimestampPropertyName)]
+        [MessagePackMember(6, Name = TimestampPropertyName)]
+        public DateTimeOffset Timestamp { get; set; }
     }
 }

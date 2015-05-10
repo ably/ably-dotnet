@@ -14,35 +14,35 @@ namespace Ably.Types
         static MsgPackMessageSerializer()
         {
             unpackActions = new System.Collections.Generic.Dictionary<string, Action<Unpacker, ProtocolMessage>>();
-            unpackActions.Add("action", (unpacker, message) =>
+            unpackActions.Add(ProtocolMessage.ActionPropertyName, (unpacker, message) =>
             {
                 int result;
                 unpacker.ReadInt32(out result);
                 message.Action = (ProtocolMessage.MessageAction)result;
             });
-            unpackActions.Add("flags", (unpacker, message) =>
+            unpackActions.Add(ProtocolMessage.FlagsPropertyName, (unpacker, message) =>
             {
                 int result;
                 unpacker.ReadInt32(out result);
                 message.Flags = (ProtocolMessage.MessageFlag)result;
             });
-            unpackActions.Add("count", (unpacker, message) =>
+            unpackActions.Add(ProtocolMessage.CountPropertyName, (unpacker, message) =>
             {
                 int result;
                 unpacker.ReadInt32(out result);
                 message.Count = result;
             });
-            unpackActions.Add("msgSerial", (unpacker, message) =>
+            unpackActions.Add(ProtocolMessage.MsgSerialPropertyName, (unpacker, message) =>
             {
                 long result;
                 unpacker.ReadInt64(out result);
                 message.MsgSerial = result;
             });
-            unpackActions.Add("error", (unpacker, message) =>
+            unpackActions.Add(ProtocolMessage.ErrorPropertyName, (unpacker, message) =>
             {
                 long fields;
                 unpacker.ReadMapLength(out fields);
-                string reason = "";
+                string reason = string.Empty;
                 int statusCode = 0, code = 0;
                 string fieldName;
                 for (int i = 0; i < fields; i++)
@@ -50,62 +50,62 @@ namespace Ably.Types
                     unpacker.ReadString(out fieldName);
                     switch (fieldName)
                     {
-                        case "message" :
+                        case ErrorInfo.ReasonPropertyName :
                             unpacker.ReadString(out reason);
                             break;
-                        case "statusCode":
+                        case ErrorInfo.StatusCodePropertyName :
                             unpacker.ReadInt32(out statusCode);
                             break;
-                        case "code":
+                        case ErrorInfo.CodePropertyName :
                             unpacker.ReadInt32(out code);
                             break;
                     }
                 }
                 message.Error = new ErrorInfo(reason, code, statusCode == 0 ? null : (System.Net.HttpStatusCode?)statusCode);
             });
-            unpackActions.Add("id", (unpacker, message) =>
+            unpackActions.Add(ProtocolMessage.IdPropertyName, (unpacker, message) =>
             {
                 string result;
                 unpacker.ReadString(out result);
                 message.Id = result;
             });
-            unpackActions.Add("channel", (unpacker, message) =>
+            unpackActions.Add(ProtocolMessage.ChannelPropertyName, (unpacker, message) =>
             {
                 string result;
                 unpacker.ReadString(out result);
                 message.Channel = result;
             });
-            unpackActions.Add("channelSerial", (unpacker, message) =>
+            unpackActions.Add(ProtocolMessage.ChannelSerialPropertyName, (unpacker, message) =>
             {
                 string result;
                 unpacker.ReadString(out result);
                 message.ChannelSerial = result;
             });
-            unpackActions.Add("connectionId", (unpacker, message) =>
+            unpackActions.Add(ProtocolMessage.ConnectionIdPropertyName, (unpacker, message) =>
             {
                 string result;
                 unpacker.ReadString(out result);
                 message.ConnectionId = result;
             });
-            unpackActions.Add("connectionKey", (unpacker, message) =>
+            unpackActions.Add(ProtocolMessage.ConnectionKeyPropertyName, (unpacker, message) =>
             {
                 string result;
                 unpacker.ReadString(out result);
                 message.ConnectionKey = result;
             });
-            unpackActions.Add("connectionSerial", (unpacker, message) =>
+            unpackActions.Add(ProtocolMessage.ConnectionSerialPropertyName, (unpacker, message) =>
             {
                 long result;
                 unpacker.ReadInt64(out result);
                 message.ConnectionSerial = result;
             });
-            unpackActions.Add("timestamp", (unpacker, message) =>
+            unpackActions.Add(ProtocolMessage.TimestampPropertyName, (unpacker, message) =>
             {
                 long result;
                 unpacker.ReadInt64(out result);
                 message.Timestamp = result.FromUnixTimeInMilliseconds();
             });
-            unpackActions.Add("messages", (unpacker, message) =>
+            unpackActions.Add(ProtocolMessage.MessagesPropertyName, (unpacker, message) =>
             {
                 long arrayLength;
                 unpacker.ReadArrayLength(out arrayLength);
@@ -115,8 +115,15 @@ namespace Ably.Types
                     message.Messages[i] = DeserializeMessage(unpacker);
                 }
             });
-            unpackActions.Add("presence", (unpacker, message) =>
+            unpackActions.Add(ProtocolMessage.PresencePropertyName, (unpacker, message) =>
             {
+                long arrayLength;
+                unpacker.ReadArrayLength(out arrayLength);
+                message.Presence = new PresenceMessage[arrayLength];
+                for (int i = 0; i < arrayLength; i++)
+                {
+                    message.Presence[i] = DeserializePresenceMessage(unpacker);
+                }
             });
 
             resolver = new Dictionary<Type, Func<MessagePackObject, object>>();
@@ -141,23 +148,21 @@ namespace Ably.Types
             {
                 using (Packer packer = Packer.Create(stream))
                 {
-                    int fieldCount = 2; //action & msgSerial
-                    if (!string.IsNullOrEmpty(message.Channel)) fieldCount++;
-                    if (message.Messages != null && message.Messages.Any(c => GetFieldCount(c) > 0)) fieldCount++;
+                    int fieldCount = GetFieldCount(message);
 
                     // serialize message
                     packer.PackMapHeader(fieldCount);
 
-                    packer.PackString("action");
+                    packer.PackString(ProtocolMessage.ActionPropertyName);
                     packer.Pack<int>((int)message.Action);
 
                     if (!string.IsNullOrEmpty(message.Channel))
                     {
-                        packer.PackString("channel");
+                        packer.PackString(ProtocolMessage.ChannelPropertyName);
                         packer.PackString(message.Channel);
                     }
 
-                    packer.PackString("msgSerial");
+                    packer.PackString(ProtocolMessage.MsgSerialPropertyName);
                     packer.Pack<long>(message.MsgSerial);
 
                     if (message.Messages != null)
@@ -165,11 +170,25 @@ namespace Ably.Types
                         var validMessages = message.Messages.Where(c => GetFieldCount(c) > 0);
                         if (validMessages.Any())
                         {
-                            packer.PackString("messages");
+                            packer.PackString(ProtocolMessage.MessagesPropertyName);
                             packer.PackArrayHeader(validMessages.Count());
                             foreach (Message msg in validMessages)
                             {
                                 SerializeMessage(msg, packer);
+                            }
+                        }
+                    }
+
+                    if (message.Presence != null)
+                    {
+                        var validMessages = message.Presence.Where(c => GetFieldCount(c) > 0);
+                        if (validMessages.Any())
+                        {
+                            packer.PackString(ProtocolMessage.PresencePropertyName);
+                            packer.PackArrayHeader(validMessages.Count());
+                            foreach (PresenceMessage msg in validMessages)
+                            {
+                                SerializePresenceMessage(msg, packer);
                             }
                         }
                     }
@@ -207,6 +226,27 @@ namespace Ably.Types
             return fieldCount;
         }
 
+        private static int GetFieldCount(ProtocolMessage message)
+        {
+            int fieldCount = 2; //action & msgSerial
+            if (!string.IsNullOrEmpty(message.Channel)) fieldCount++;
+            if (message.Messages != null && message.Messages.Any(c => GetFieldCount(c) > 0)) fieldCount++;
+            if (message.Presence != null) fieldCount++;
+            return fieldCount;
+        }
+
+        private static int GetFieldCount(PresenceMessage message)
+        {
+            int fieldCount = 1; //action
+            if (!string.IsNullOrEmpty(message.ClientId)) fieldCount++;
+            if (!string.IsNullOrEmpty(message.ConnectionId)) fieldCount++;
+            if (message.Data != null) fieldCount++;
+            if (!string.IsNullOrEmpty(message.Encoding)) fieldCount++;
+            if (!string.IsNullOrEmpty(message.Id)) fieldCount++;
+            if (message.Timestamp.Ticks > 0) fieldCount++;
+            return fieldCount;
+        }
+
         private static void SerializeMessage(Message message, Packer packer)
         {
             int fieldCount = GetFieldCount(message);
@@ -214,12 +254,54 @@ namespace Ably.Types
 
             if (!string.IsNullOrEmpty(message.Name))
             {
-                packer.PackString("name");
+                packer.PackString(Message.NamePropertyName);
                 packer.PackString(message.Name);
             }
             if (message.Data != null)
             {
-                packer.PackString("data");
+                packer.PackString(Message.DataPropertyName);
+                if (message.Data is byte[])
+                {
+                    packer.PackRaw(message.Data as byte[]);
+                }
+                else
+                {
+                    packer.PackString(message.Data.ToString());
+                }
+            }
+        }
+
+        private static void SerializePresenceMessage(PresenceMessage message, Packer packer)
+        {
+            int fieldCount = GetFieldCount(message);
+            packer.PackMapHeader(fieldCount);
+
+            packer.PackString(PresenceMessage.ActionPropertyName);
+            packer.Pack<int>((int)message.Action);
+
+            if (!string.IsNullOrEmpty(message.Id))
+            {
+                packer.PackString(PresenceMessage.IdPropertyName);
+                packer.Pack(message.Id);
+            }
+            if (!string.IsNullOrEmpty(message.ClientId))
+            {
+                packer.PackString(PresenceMessage.ClientIdPropertyName);
+                packer.Pack(message.ClientId);
+            }
+            if (!string.IsNullOrEmpty(message.ConnectionId))
+            {
+                packer.PackString(PresenceMessage.ConnectionIdPropertyName);
+                packer.Pack(message.ConnectionId);
+            }
+            if (message.Timestamp.Ticks > 0)
+            {
+                packer.PackString(PresenceMessage.TimestampPropertyName);
+                packer.Pack(message.Timestamp.ToUnixTimeInMilliseconds());
+            }
+            if (message.Data != null)
+            {
+                packer.PackString(PresenceMessage.DataPropertyName);
                 if (message.Data is byte[])
                 {
                     packer.PackRaw(message.Data as byte[]);
@@ -243,21 +325,80 @@ namespace Ably.Types
                 unpacker.ReadString(out fieldName);
                 switch (fieldName)
                 {
-                    case "name":
+                    case Message.NamePropertyName:
                         {
                             string result;
                             unpacker.ReadString(out result);
                             message.Name = result;
                         }
                         break;
-                    case "timestamp":
+                    case Message.TimestampPropertyName:
                         {
                             long result;
                             unpacker.ReadInt64(out result);
                             message.Timestamp = result.FromUnixTimeInMilliseconds();
                         }
                         break;
-                    case "data":
+                    case Message.DataPropertyName:
+                        {
+                            MessagePackObject result = unpacker.ReadItemData();
+                            message.Data = ParseResult(result);
+                        }
+                        break;
+                }
+            }
+
+            return message;
+        }
+
+        private static PresenceMessage DeserializePresenceMessage(Unpacker unpacker)
+        {
+            PresenceMessage message = new PresenceMessage();
+
+            long fields;
+            unpacker.ReadMapLength(out fields);
+            string fieldName;
+            for (int i = 0; i < fields; i++)
+            {
+                unpacker.ReadString(out fieldName);
+                switch (fieldName)
+                {
+                    case PresenceMessage.ActionPropertyName :
+                        {
+                            int result;
+                            unpacker.ReadInt32(out result);
+                            message.Action = (PresenceMessage.ActionType)result;
+                        }
+                        break;
+                    case PresenceMessage.IdPropertyName :
+                        {
+                            string result;
+                            unpacker.ReadString(out result);
+                            message.Id = result;
+                        }
+                        break;
+                    case PresenceMessage.ClientIdPropertyName :
+                        {
+                            string result;
+                            unpacker.ReadString(out result);
+                            message.ClientId = result;
+                        }
+                        break;
+                    case PresenceMessage.ConnectionIdPropertyName :
+                        {
+                            string result;
+                            unpacker.ReadString(out result);
+                            message.ConnectionId = result;
+                        }
+                        break;
+                    case PresenceMessage.TimestampPropertyName :
+                        {
+                            long result;
+                            unpacker.ReadInt64(out result);
+                            message.Timestamp = result.FromUnixTimeInMilliseconds();
+                        }
+                        break;
+                    case PresenceMessage.DataPropertyName :
                         {
                             MessagePackObject result = unpacker.ReadItemData();
                             message.Data = ParseResult(result);

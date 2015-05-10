@@ -20,6 +20,17 @@ namespace Ably.Tests
             }
         }
 
+        public static IEnumerable<object[]> Presence
+        {
+            get
+            {
+                yield return new object[] { new PresenceMessage[] { new PresenceMessage() } }; // 1 empty message
+                yield return new object[] { new PresenceMessage[] { new PresenceMessage(), new PresenceMessage() } }; // 2 empty messages
+                yield return new object[] { new PresenceMessage[] { new PresenceMessage(), new PresenceMessage(PresenceMessage.ActionType.Enter, "test") } }; // 1 empty, 1 mesage
+                yield return new object[] { new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Enter, "test"), new PresenceMessage(PresenceMessage.ActionType.Enter, "test2") } }; // 2 messages
+            }
+        }
+
         public static IEnumerable<object[]> BinMessages
         {
             get
@@ -154,6 +165,46 @@ namespace Ably.Tests
                     expectedMessage.AddRange(SerializeString("name"));
                     expectedMessage.AddRange(SerializeString(msg.Name));
                     
+                }
+            }
+
+            // Act
+            object result = serializer.SerializeProtocolMessage(message);
+
+            // Assert
+            Assert.IsType<byte[]>(result);
+            Assert.Equal<byte[]>(expectedMessage.ToArray(), result as byte[]);
+        }
+
+        [Theory]
+        [PropertyData("Presence")]
+        public void SerializesMessageCorrectly_Presence(params PresenceMessage[] messages)
+        {
+            // Arrange
+            MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
+            ProtocolMessage message = new ProtocolMessage() { Presence = messages };
+            List<byte> expectedMessage = new List<byte>();
+            expectedMessage.Add(0x82);
+            expectedMessage.AddRange(SerializeString("action"));
+            expectedMessage.Add(0);
+            expectedMessage.AddRange(SerializeString("msgSerial"));
+            expectedMessage.Add(0);
+            if (messages.Length > 0)
+            {
+                expectedMessage[0]++;
+                expectedMessage.AddRange(SerializeString("presence"));
+                expectedMessage.Add((byte)((0x09 << 4) + messages.Length));
+                foreach (PresenceMessage msg in messages)
+                {
+                    expectedMessage.Add((0x08 << 4) + 1);
+                    expectedMessage[expectedMessage.Count - 1] += (byte)(string.IsNullOrEmpty(msg.ClientId) ? 0 : 1);
+                    expectedMessage.AddRange(SerializeString("action"));
+                    expectedMessage.Add((byte)msg.Action);
+                    if (!string.IsNullOrEmpty(msg.ClientId))
+                    {
+                        expectedMessage.AddRange(SerializeString("clientId"));
+                        expectedMessage.AddRange(SerializeString(msg.ClientId));
+                    }
                 }
             }
 

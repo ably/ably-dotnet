@@ -10,6 +10,10 @@ namespace Ably
     /// </summary>
     public class ErrorInfo
     {
+        internal const string CodePropertyName = "code";
+        internal const string StatusCodePropertyName = "statusCode";
+        internal const string ReasonPropertyName = "message";
+
         /// <summary>
         /// Ably error code (see https://github.com/ably/ably-common/blob/master/protocol/errors.json)
         /// </summary>

@@ -58,7 +58,7 @@ namespace Ably.Tests
                 yield return new object[] { "[{\"action\":2,\"clientId\":\"test\"}, {\"action\":2,\"clientId\":\"test2\"}]", new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Enter, "test"), new PresenceMessage(PresenceMessage.ActionType.Enter, "test2") } };
                 yield return new object[] { "[{\"connectionId\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { ConnectionId = "test" } } };
                 yield return new object[] { "[{\"data\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { Data = "test" } } };
-                yield return new object[] { "[{\"timestamp\":1430773200000}]", new PresenceMessage[] { new PresenceMessage() { TimeStamp = new DateTimeOffset(new DateTime(2015, 5, 5)) } } };
+                yield return new object[] { "[{\"timestamp\":1430773200000}]", new PresenceMessage[] { new PresenceMessage() { Timestamp = new DateTimeOffset(new DateTime(2015, 5, 5)) } } };
             }
         }
 
@@ -456,7 +456,7 @@ namespace Ably.Tests
                 Assert.Equal<string>(expectedMessages[i].ConnectionId, target.Presence[i].ConnectionId);
                 Assert.Equal<PresenceMessage.ActionType>(expectedMessages[i].Action, target.Presence[i].Action);
                 Assert.Equal<string>(expectedMessages[i].Id, target.Presence[i].Id);
-                Assert.Equal<DateTimeOffset>(expectedMessages[i].TimeStamp, target.Presence[i].TimeStamp);
+                Assert.Equal<DateTimeOffset>(expectedMessages[i].Timestamp, target.Presence[i].Timestamp);
                 Assert.Equal(expectedMessages[i].Data, target.Presence[i].Data);
             }
         }
