@@ -13,6 +13,19 @@ namespace Ably.Tests
     public class RealtimeChannelTests
     {
         [Fact]
+        public void New_Channel_HasPresence()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+
+            // Act
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object);
+
+            // Assert
+            Assert.NotNull(target.Presence);
+        }
+
+        [Fact]
         public void WhenCreated_StateInitialized()
         {
             // Arrange
