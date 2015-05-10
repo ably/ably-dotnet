@@ -30,6 +30,8 @@ namespace Ably.Realtime
 
         public event EventHandler<ChannelStateChangedEventArgs> ChannelStateChanged;
 
+        public Rest.ChannelOptions Options { get; set; }
+
         /// <summary>
         /// The channel name
         /// </summary>

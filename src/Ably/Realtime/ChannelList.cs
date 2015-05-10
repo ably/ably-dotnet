@@ -34,8 +34,9 @@ namespace Ably.Realtime
 
         public IRealtimeChannel Get(string name, Rest.ChannelOptions options)
         {
-            // TODO: Implement ChannelList.Get
-            throw new NotImplementedException();
+            Channel channel = this.Get(name) as Channel;
+            channel.Options = options;
+            return channel;
         }
 
         public void Release(string name)

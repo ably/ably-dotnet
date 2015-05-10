@@ -19,9 +19,11 @@ namespace Ably.Realtime
 
         public event Action<PresenceMessage[]> MessageReceived;
 
+        // TODO: Subscribe with an action specifier
+
         public void Enter(object clientData, Action<bool, ErrorInfo> callback)
         {
-
+            // TODO: Implement
         }
 
         public void EnterClient(string clientId, object clientData, Action<bool, ErrorInfo> callback)
@@ -31,7 +33,7 @@ namespace Ably.Realtime
 
         public void Update(object clientData, Action<bool, ErrorInfo> callback)
         {
-
+            // TODO: Implement
         }
 
         public void UpdateClient(string clientId, object clientData, Action<bool, ErrorInfo> callback)
@@ -41,7 +43,7 @@ namespace Ably.Realtime
 
         public void Leave(Action<bool, ErrorInfo> callback)
         {
-
+            // TODO: Implement
         }
 
         public void LeaveClient(string clientId, Action<bool, ErrorInfo> callback)
