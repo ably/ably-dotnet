@@ -64,5 +64,89 @@ namespace Ably.Tests
             Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Enter, msg.Presence[0].Action);
             Assert.Equal<string>("newClient", msg.Presence[0].ClientId);
         }
+
+        [Fact]
+        public void Leave_SendsCorrectMessage()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Stack<ProtocolMessage> messages = new Stack<ProtocolMessage>();
+            manager.Setup(c => c.Send(It.IsAny<ProtocolMessage>(), null)).Callback<ProtocolMessage, Action<bool, ErrorInfo>>((m, c) => messages.Push(m));
+            var target = new Presence(manager.Object, "testChannel", "testClient");
+
+            // Act
+            target.Leave(null, null);
+
+            // Assert
+            Assert.Equal<int>(1, messages.Count);
+            ProtocolMessage msg = messages.Pop();
+            Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.Action);
+            Assert.Equal<int>(1, msg.Presence.Length);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Leave, msg.Presence[0].Action);
+            Assert.Equal<string>("testClient", msg.Presence[0].ClientId);
+        }
+
+        [Fact]
+        public void LeaveClient_SendsCorrectMessage()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Stack<ProtocolMessage> messages = new Stack<ProtocolMessage>();
+            manager.Setup(c => c.Send(It.IsAny<ProtocolMessage>(), null)).Callback<ProtocolMessage, Action<bool, ErrorInfo>>((m, c) => messages.Push(m));
+            var target = new Presence(manager.Object, "testChannel", "testClient");
+
+            // Act
+            target.LeaveClient("newClient", null, null);
+
+            // Assert
+            Assert.Equal<int>(1, messages.Count);
+            ProtocolMessage msg = messages.Pop();
+            Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.Action);
+            Assert.Equal<int>(1, msg.Presence.Length);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Leave, msg.Presence[0].Action);
+            Assert.Equal<string>("newClient", msg.Presence[0].ClientId);
+        }
+
+        [Fact]
+        public void Update_SendsCorrectMessage()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Stack<ProtocolMessage> messages = new Stack<ProtocolMessage>();
+            manager.Setup(c => c.Send(It.IsAny<ProtocolMessage>(), null)).Callback<ProtocolMessage, Action<bool, ErrorInfo>>((m, c) => messages.Push(m));
+            var target = new Presence(manager.Object, "testChannel", "testClient");
+
+            // Act
+            target.Update(null, null);
+
+            // Assert
+            Assert.Equal<int>(1, messages.Count);
+            ProtocolMessage msg = messages.Pop();
+            Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.Action);
+            Assert.Equal<int>(1, msg.Presence.Length);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Update, msg.Presence[0].Action);
+            Assert.Equal<string>("testClient", msg.Presence[0].ClientId);
+        }
+
+        [Fact]
+        public void UpdateClient_SendsCorrectMessage()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Stack<ProtocolMessage> messages = new Stack<ProtocolMessage>();
+            manager.Setup(c => c.Send(It.IsAny<ProtocolMessage>(), null)).Callback<ProtocolMessage, Action<bool, ErrorInfo>>((m, c) => messages.Push(m));
+            var target = new Presence(manager.Object, "testChannel", "testClient");
+
+            // Act
+            target.UpdateClient("newClient", null, null);
+
+            // Assert
+            Assert.Equal<int>(1, messages.Count);
+            ProtocolMessage msg = messages.Pop();
+            Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.Action);
+            Assert.Equal<int>(1, msg.Presence.Length);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Update, msg.Presence[0].Action);
+            Assert.Equal<string>("newClient", msg.Presence[0].ClientId);
+        }
     }
 }
