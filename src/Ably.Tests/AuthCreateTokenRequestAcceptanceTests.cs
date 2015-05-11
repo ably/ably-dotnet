@@ -90,7 +90,7 @@ namespace Ably.Tests
         {
             var date = new DateTime(2014, 1, 1).ToDateTimeOffset();
             var data = Client.Auth.CreateTokenRequest(new TokenRequest() { Timestamp= date }, null);
-            data.timestamp.Should().Be(date.ToUnixTime().ToString());
+            data.timestamp.Should().Be(date.ToUnixTimeInMilliseconds().ToString());
         }
 
         [Fact]
@@ -107,7 +107,7 @@ namespace Ably.Tests
             Client.ExecuteHttpRequest = x => 
                 new AblyResponse { TextResponse = "[" + currentTime.ToUnixTimeInMilliseconds() + "]", Type = ResponseType.Json };
             var data = Client.Auth.CreateTokenRequest(null, new AuthOptions() {QueryTime = true});
-            data.timestamp.Should().Be(currentTime.ToUnixTime().ToString());
+            data.timestamp.Should().Be(currentTime.ToUnixTimeInMilliseconds().ToString());
         }
 
         [Fact]
