@@ -35,7 +35,7 @@ namespace Ably
         private AblyOptions _options;
         private readonly ILogger Logger = Config.AblyLogger;
         internal AuthMethod AuthMethod;
-        internal Token CurrentToken;
+        internal TokenDetails CurrentToken;
         internal MessageHandler _messageHandler;
         private TokenRequest _lastTokenRequest;
         private Protocol _protocol;
@@ -131,13 +131,6 @@ namespace Ably
                 throw new AblyException("Invalid options");
             }
 
-            if (_options.Key.IsNotEmpty())
-            {
-                var key = ApiKey.Parse(_options.Key);
-                _options.KeyId = key.KeyId;
-                _options.KeyValue = key.KeyValue;
-            }
-
             _protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
             Logger.Debug("Protocol set to: " + _protocol);
             _messageHandler = new MessageHandler(_protocol);
@@ -175,9 +168,9 @@ namespace Ably
 
             AuthMethod = AuthMethod.Token;
             Logger.Info("Using token authentication.");
-            if (Options.AuthToken.IsNotEmpty())
+            if (Options.Token.IsNotEmpty())
             {
-                CurrentToken = new Token(Options.AuthToken);
+                CurrentToken = new TokenDetails(Options.Token);
             }
             LogCurrentAuthenticationMethod();
         }
@@ -193,11 +186,11 @@ namespace Ably
             {
                 Logger.Info("Authentication will be done using token auth with authUrl");
             }
-            else if (Options.KeyValue.IsNotEmpty())
+            else if (Options.Key.IsNotEmpty())
             {
                 Logger.Info("Authentication will be done using token auth with client-side signing");
             }
-            else if (Options.AuthToken.IsNotEmpty())
+            else if (Options.Token.IsNotEmpty())
             {
                 Logger.Info("Authentication will be done using token auth with supplied token only");
             }
@@ -258,12 +251,12 @@ namespace Ably
 
         private bool HasApiKey
         {
-            get { return Options.KeyId.IsNotEmpty() && Options.KeyValue.IsNotEmpty(); }
+            get { return Options.Key.IsNotEmpty(); }
         }
 
         private bool HasTokenId
         {
-            get { return Options.AuthToken.IsNotEmpty(); }
+            get { return Options.Token.IsNotEmpty(); }
         }
 
         public bool TokenRenewable
@@ -288,7 +281,7 @@ namespace Ably
 
                 if (HasValidToken())
                 {
-                    request.Headers["Authorization"] = "Bearer " + CurrentToken.Id.ToBase64();
+                    request.Headers["Authorization"] = "Bearer " + CurrentToken.Token.ToBase64();
                     Logger.Debug("Adding Authorization headir with Token authentication");
                 }
                 else
@@ -299,7 +292,7 @@ namespace Ably
         private bool HasValidToken()
         {
             return CurrentToken != null &&
-                   (CurrentToken.ExpiresAt == DateTimeOffset.MinValue || CurrentToken.ExpiresAt >= DateTimeOffset.UtcNow);
+                   (CurrentToken.Expires == DateTimeOffset.MinValue || CurrentToken.Expires >= DateTimeOffset.UtcNow);
         }
 
 
@@ -311,13 +304,20 @@ namespace Ably
         /// <param name="options">Extra <see cref="AuthOptions"/> used for creating a token </param>
         /// <returns>A valid ably token</returns>
         /// <exception cref="AblyException"></exception>
-        Token IAuthCommands.RequestToken(TokenRequest requestData, AuthOptions options)
+        TokenDetails IAuthCommands.RequestToken(TokenRequest requestData, AuthOptions options)
         {
             var mergedOptions = options != null ? options.Merge(Options) : Options;
+            string keyId = "", keyValue = "";
+            if (!string.IsNullOrEmpty(mergedOptions.Key))
+            {
+                var key = mergedOptions.ParseKey();
+                keyId = key.KeyName;
+                keyValue = key.KeySecret;
+            }
 
             var data = requestData ?? new TokenRequest
             {
-                Id = mergedOptions.KeyId,
+                KeyName = keyId,
                 ClientId = Options.ClientId
             };
 
@@ -326,11 +326,11 @@ namespace Ably
                 data = _lastTokenRequest;
             }
 
-            data.Id = data.Id ?? mergedOptions.KeyId;
+            data.KeyName = data.KeyName ?? keyId;
 
             _lastTokenRequest = data;
 
-            var request = CreatePostRequest(String.Format("/keys/{0}/requestToken", data.Id));
+            var request = CreatePostRequest(String.Format("/keys/{0}/requestToken", data.KeyName));
             request.SkipAuthentication = true;
             TokenRequestPostData postData = null;
             if (mergedOptions.AuthCallback != null)
@@ -364,14 +364,14 @@ namespace Ably
 
                 var signedData = response.TextResponse;
                 var jData = JObject.Parse(signedData);
-                if (Token.IsToken(jData))
-                    return jData.ToObject<Token>();
+                if (TokenDetails.IsToken(jData))
+                    return jData.ToObject<TokenDetails>();
 
                 postData = JsonConvert.DeserializeObject<TokenRequestPostData>(signedData);
             }
             else
             {
-                postData = data.GetPostData(mergedOptions.KeyValue);
+                postData = data.GetPostData(keyValue);
             }
 
             if (mergedOptions.QueryTime)
@@ -379,12 +379,12 @@ namespace Ably
 
             request.PostData = postData;
 
-            var result = ExecuteRequest<TokenResponse>(request);
+            var result = ExecuteRequest<TokenDetails>(request);
 
-            if (result == null || result.AccessToken == null)
+            if (result == null )
                 throw new AblyException(new ErrorInfo("Invalid token response returned", 500));
 
-            return result.AccessToken;
+            return result;
         }
 
         /// <summary>
@@ -399,11 +399,11 @@ namespace Ably
         /// <param name="force">Force the client request a new token even if it has a valid one.</param>
         /// <returns>Returns a valid token</returns>
         /// <exception cref="AblyException">Throws an ably exception representing the server response</exception>
-        Token IAuthCommands.Authorise(TokenRequest request, AuthOptions options, bool force)
+        TokenDetails IAuthCommands.Authorise(TokenRequest request, AuthOptions options, bool force)
         {
             if (CurrentToken != null)
             {
-                if (CurrentToken.ExpiresAt > Config.Now())
+                if (CurrentToken.Expires > Config.Now())
                 {
                     if (force == false)
                         return CurrentToken;
@@ -427,7 +427,7 @@ namespace Ably
         {
             var mergedOptions = options != null ? options.Merge(Options) : Options;
 
-            if (mergedOptions.KeyId == null || mergedOptions.KeyValue == null)
+            if (string.IsNullOrEmpty(mergedOptions.Key))
                 throw new AblyException("No key specified", 40101, HttpStatusCode.Unauthorized);
 
             var data = requestData ?? new TokenRequest
@@ -435,9 +435,10 @@ namespace Ably
                 ClientId = Options.ClientId
             };
 
-            data.Id = data.Id ?? mergedOptions.KeyId;
+            ApiKey key = mergedOptions.ParseKey();
+            data.KeyName = data.KeyName ?? key.KeyName;
 
-            if (data.Id != mergedOptions.KeyId)
+            if (data.KeyName != key.KeyName)
                 throw new AblyException("Incompatible keys specified", 40102, HttpStatusCode.Unauthorized);
 
             if (requestData == null && options == null && _lastTokenRequest != null)
@@ -445,9 +446,9 @@ namespace Ably
                 data = _lastTokenRequest;
             }
 
-            data.Id = data.Id ?? mergedOptions.KeyId;
+            data.KeyName = data.KeyName ?? key.KeyName;
 
-            var postData = data.GetPostData(mergedOptions.KeyValue);
+            var postData = data.GetPostData(key.KeySecret);
             if (mergedOptions.QueryTime)
                 postData.timestamp = Time().ToUnixTime().ToString();
 

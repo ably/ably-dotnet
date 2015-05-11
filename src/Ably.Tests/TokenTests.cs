@@ -22,9 +22,9 @@ namespace Ably.Tests
             {
                 string json = @"{
 	                            ""access_token"": {
-		                            ""id"": ""QF_CjTvDs2kFQMKLwpccEhIkNcKpw5ovPsOnLsOgJMKow5ACXHvCgGzCtcK7"",
+		                            ""token"": ""QF_CjTvDs2kFQMKLwpccEhIkNcKpw5ovPsOnLsOgJMKow5ACXHvCgGzCtcK7"",
 		                            ""key"": ""3lJG9Q"",
-		                            ""issued_at"": 1359555878,
+		                            ""issued"": 1359555878,
 		                            ""expires"": 1359559478,
 		                            ""capability"": {
 			                            ""*"": [
@@ -34,12 +34,12 @@ namespace Ably.Tests
 	                            }
                             }";
 
-                var token = ((JObject)JObject.Parse(json)["access_token"]).ToObject<Token>();
+                var token = ((JObject)JObject.Parse(json)["access_token"]).ToObject<TokenDetails>();
 
-                Assert.Equal("QF_CjTvDs2kFQMKLwpccEhIkNcKpw5ovPsOnLsOgJMKow5ACXHvCgGzCtcK7", token.Id);
+                Assert.Equal("QF_CjTvDs2kFQMKLwpccEhIkNcKpw5ovPsOnLsOgJMKow5ACXHvCgGzCtcK7", token.Token);
                 //Assert.Equal("3lJG9Q", token.ClientId
-                Assert.Equal(1359555878, token.IssuedAt.ToUnixTime());
-                Assert.Equal(1359559478, token.ExpiresAt.ToUnixTime());
+                Assert.Equal(1359555878, token.Issued.ToUnixTime());
+                Assert.Equal(1359559478, token.Expires.ToUnixTime());
                 var expectedCapability = new Capability();
                 expectedCapability.AddResource("*").AllowAll();
                 Assert.Equal(expectedCapability.ToJson(), token.Capability.ToJson());

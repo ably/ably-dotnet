@@ -43,9 +43,9 @@ namespace Ably.AcceptanceTests
             foreach (var key in json["keys"])
             {
                 var testkey = new Key();
-                testkey.keyId = appId + "." + (string)key["id"];
-                testkey.keyValue = (string)key["value"];
-                testkey.keyStr = testkey.keyId + ":" + testkey.keyValue;
+                testkey.keyName = appId + "." + (string)key["keyName"];
+                testkey.keySecret = (string)key["keySecret"];
+                testkey.keyStr = (string)key["keyStr"];
                 testkey.capability = (string)key["capability"];
                 TestData.keys.Add(testkey);
             }
