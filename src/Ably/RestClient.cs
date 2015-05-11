@@ -379,12 +379,12 @@ namespace Ably
 
             request.PostData = postData;
 
-            var result = ExecuteRequest<TokenResponse>(request);
+            var result = ExecuteRequest<TokenDetails>(request);
 
-            if (result == null || result.AccessToken == null)
+            if (result == null )
                 throw new AblyException(new ErrorInfo("Invalid token response returned", 500));
 
-            return result.AccessToken;
+            return result;
         }
 
         /// <summary>

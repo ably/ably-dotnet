@@ -87,7 +87,7 @@ namespace Ably.Tests
             var request = GetTokenRequest();
             var data = request.GetPostData(GetKeyValue());
 
-            Assert.Equal(Now.ToUnixTime().ToString(), data.timestamp);
+            Assert.Equal(Now.ToUnixTimeInMilliseconds().ToString(), data.timestamp);
         }
 
         [Fact]
