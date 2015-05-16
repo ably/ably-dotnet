@@ -93,7 +93,7 @@ namespace Ably.Realtime
             switch (message.Action)
             {
                 case ProtocolMessage.MessageAction.Presence:
-                    this.OnPresence(message, null);
+                    this.OnPresence(message.Presence, null);
                     break;
                 case ProtocolMessage.MessageAction.Sync:
                     this.OnSync(message);
@@ -101,33 +101,47 @@ namespace Ably.Realtime
             }
         }
 
-        private void OnPresence(ProtocolMessage message, string channelSerial)
+        private void OnPresence(PresenceMessage[] messages, string syncChannelSerial)
         {
+            string syncCursor = null;
             bool broadcast = true;
-
-            foreach (PresenceMessage update in message.Presence)
+            if (syncChannelSerial != null)
             {
-                if (update.Action == PresenceMessage.ActionType.Enter || update.Action == PresenceMessage.ActionType.Update ||
-                    update.Action == PresenceMessage.ActionType.Present)
+                syncCursor = syncChannelSerial.Substring(syncChannelSerial.IndexOf(':'));
+                if (syncCursor.Length > 1)
                 {
-                    broadcast &= this.presence.Put(update);
+                    presence.StartSync();
                 }
-                else if (update.Action == PresenceMessage.ActionType.Leave)
+            }
+            foreach (PresenceMessage update in messages)
+            {
+                switch (update.Action)
                 {
-                    broadcast &= this.presence.Remove(update);
+                    case PresenceMessage.ActionType.Enter:
+                    case PresenceMessage.ActionType.Update:
+                    case PresenceMessage.ActionType.Present:
+                        broadcast &= presence.Put(update);
+                        break;
+                    case PresenceMessage.ActionType.Leave:
+                        broadcast &= presence.Remove(update);
+                        break;
                 }
+            }
+            // if this is the last message in a sequence of sync updates, end the sync
+            if (syncChannelSerial == null || syncCursor.Length <= 1)
+            {
+                presence.EndSync();
             }
 
             if (broadcast)
             {
-                this.Publish(message.Presence);
+                this.Publish(messages);
             }
         }
 
         private void OnSync(ProtocolMessage message)
         {
-            // TODO: Implement Channel.OnSync
-            this.OnPresence(message, "");
+            this.OnPresence(message.Presence, message.ChannelSerial);
         }
 
         private void Publish(params PresenceMessage[] messages)
@@ -146,7 +160,8 @@ namespace Ably.Realtime
             }
 
             private Dictionary<string, PresenceMessage> members;
-
+            private bool isSyncInProgress;
+            private ICollection<string> residualMembers;
 
             public PresenceMessage[] Values
             {
@@ -184,6 +199,48 @@ namespace Ably.Realtime
 
                 members.Remove(key);
                 return true;
+            }
+
+            public void StartSync()
+            {
+                if (!this.isSyncInProgress)
+                {
+                    residualMembers = new HashSet<string>(members.Keys);
+                    this.isSyncInProgress = true;
+                }
+            }
+
+            public void EndSync()
+            {
+                if (!this.isSyncInProgress)
+                {
+                    return;
+                }
+
+                try
+                {
+                    // We can now strip out the ABSENT members, as we have
+                    // received all of the out-of-order sync messages
+                    foreach (KeyValuePair<string, PresenceMessage> member in this.members.ToArray())
+                    {
+                        if (member.Value.Action == PresenceMessage.ActionType.Present)
+                        {
+                            this.members.Remove(member.Key);
+                        }
+                    }
+
+                    // Any members that were present at the start of the sync,
+                    // and have not been seen in sync, can be removed
+                    foreach (string member in this.residualMembers)
+                    {
+                        this.members.Remove(member);
+                    }
+                    residualMembers = null;
+                }
+                finally
+                {
+                    this.isSyncInProgress = false;
+                }
             }
 
             private string MemberKey(PresenceMessage message)
