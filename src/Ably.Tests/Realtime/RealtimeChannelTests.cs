@@ -17,9 +17,11 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<IPresenceFactory> presenceFactory = new Mock<IPresenceFactory>();
+            presenceFactory.Setup(c => c.Create(It.IsAny<string>())).Returns(new Presence(manager.Object, "test", "client`"));
 
             // Act
-            Realtime.Channel target = new Realtime.Channel("test", manager.Object, new Mock<IPresenceFactory>().Object);
+            Realtime.Channel target = new Realtime.Channel("test", manager.Object, presenceFactory.Object);
 
             // Assert
             Assert.NotNull(target.Presence);
