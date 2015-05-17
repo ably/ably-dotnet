@@ -16,9 +16,10 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
 
             // Act
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Assert
             Assert.NotNull(target);
@@ -29,9 +30,11 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            channel.SetupGet(c => c.State).Returns(ChannelState.Attached);
             Stack<ProtocolMessage> messages = new Stack<ProtocolMessage>();
             manager.Setup(c => c.Send(It.IsAny<ProtocolMessage>(), null)).Callback<ProtocolMessage, Action<bool, ErrorInfo>>((m, c) => messages.Push(m));
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             target.Enter(null, null);
@@ -50,9 +53,11 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            channel.SetupGet(c => c.State).Returns(ChannelState.Attached);
             Stack<ProtocolMessage> messages = new Stack<ProtocolMessage>();
             manager.Setup(c => c.Send(It.IsAny<ProtocolMessage>(), null)).Callback<ProtocolMessage, Action<bool, ErrorInfo>>((m, c) => messages.Push(m));
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             target.EnterClient("newClient", null, null);
@@ -71,9 +76,11 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            channel.SetupGet(c => c.State).Returns(ChannelState.Attached);
             Stack<ProtocolMessage> messages = new Stack<ProtocolMessage>();
             manager.Setup(c => c.Send(It.IsAny<ProtocolMessage>(), null)).Callback<ProtocolMessage, Action<bool, ErrorInfo>>((m, c) => messages.Push(m));
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             target.Leave(null, null);
@@ -92,9 +99,11 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            channel.SetupGet(c => c.State).Returns(ChannelState.Attached);
             Stack<ProtocolMessage> messages = new Stack<ProtocolMessage>();
             manager.Setup(c => c.Send(It.IsAny<ProtocolMessage>(), null)).Callback<ProtocolMessage, Action<bool, ErrorInfo>>((m, c) => messages.Push(m));
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             target.LeaveClient("newClient", null, null);
@@ -113,9 +122,11 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            channel.SetupGet(c => c.State).Returns(ChannelState.Attached);
             Stack<ProtocolMessage> messages = new Stack<ProtocolMessage>();
             manager.Setup(c => c.Send(It.IsAny<ProtocolMessage>(), null)).Callback<ProtocolMessage, Action<bool, ErrorInfo>>((m, c) => messages.Push(m));
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             target.Update(null, null);
@@ -134,9 +145,11 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            channel.SetupGet(c => c.State).Returns(ChannelState.Attached);
             Stack<ProtocolMessage> messages = new Stack<ProtocolMessage>();
             manager.Setup(c => c.Send(It.IsAny<ProtocolMessage>(), null)).Callback<ProtocolMessage, Action<bool, ErrorInfo>>((m, c) => messages.Push(m));
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             target.UpdateClient("newClient", null, null);
@@ -155,7 +168,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Assert
             Assert.NotNull(target.Get());
@@ -171,7 +185,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            var target = new Presence(manager.Object, channel.Object, "testClient");
             List<PresenceMessage> broadcastMessages = new List<PresenceMessage>();
             target.MessageReceived += (msg) => broadcastMessages.AddRange(msg);
 
@@ -192,7 +207,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
@@ -213,7 +229,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
@@ -234,7 +251,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
@@ -255,7 +273,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
@@ -274,7 +293,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
@@ -297,7 +317,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
@@ -316,7 +337,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
@@ -340,7 +362,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
@@ -365,7 +388,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
@@ -390,7 +414,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
@@ -415,7 +440,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
@@ -438,7 +464,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
@@ -461,7 +488,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Sync)
@@ -488,7 +516,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Sync)
@@ -513,7 +542,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            var target = new Presence(manager.Object, "testChannel", "testClient");
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Sync)
@@ -535,6 +565,200 @@ namespace Ably.Tests
             Assert.Equal<string>("client1", presence[1].ClientId);
             Assert.Equal<string>("connAnn332", presence[1].ConnectionId);
             Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[1].Action);
+        }
+
+        [Theory]
+        [InlineData(ChannelState.Detached)]
+        [InlineData(ChannelState.Detaching)]
+        [InlineData(ChannelState.Failed)]
+        public void UpdatingPresence_WhenConnection_InvalidState_ThrowsError(ChannelState state)
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            channel.SetupGet(c => c.State).Returns(state);
+            var target = new Presence(manager.Object, channel.Object, "testClient");
+
+            // Act
+            Assert.Throws<AblyException>(() => target.Enter(null, null));
+        }
+
+        [Fact]
+        public void UpdatingPresence_WhenConnection_Initialized_AttachesChannel()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            channel.SetupGet(c => c.State).Returns(ChannelState.Initialised);
+            var target = new Presence(manager.Object, channel.Object, "testClient");
+
+            // Act
+            target.Enter(null, null);
+
+            // Assert
+            channel.Verify(c => c.Attach(), Times.Once());
+        }
+
+        [Theory]
+        [InlineData(ChannelState.Initialised)]
+        [InlineData(ChannelState.Attaching)]
+        public void UpdatingPresence_WhenConnectionIsConnecting_QueuesMessages(ChannelState state)
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            channel.SetupGet(c => c.State).Returns(state);
+            var target = new Presence(manager.Object, channel.Object, "testClient");
+
+            // Act
+            target.Enter(null, null);
+
+            // Assert
+            manager.Verify(c => c.Send(It.IsAny<ProtocolMessage>(), null), Times.Never());
+        }
+
+        [Theory]
+        [InlineData(ChannelState.Initialised)]
+        [InlineData(ChannelState.Attaching)]
+        public void UpdatingPresence_WhenChannelIsAttached_SendsQueuedMessages(ChannelState state)
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            channel.SetupGet(c => c.State).Returns(state);
+            var target = new Presence(manager.Object, channel.Object, "testClient");
+            target.Enter(null, null);
+
+            // Act
+            channel.Raise(c => c.ChannelStateChanged += null, new ChannelStateChangedEventArgs(ChannelState.Attached));
+
+            // Assert
+            manager.Verify(c => c.Send(It.IsAny<ProtocolMessage>(), It.IsAny<Action<bool, ErrorInfo>>()), Times.Once());
+        }
+
+        [Theory]
+        [InlineData(ChannelState.Initialised)]
+        [InlineData(ChannelState.Attaching)]
+        public void UpdatingPresence_WhenChannelIsAttached_SendsQueuedMessages_CallsCallbacks(ChannelState state)
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            channel.SetupGet(c => c.State).Returns(state);
+            manager.Setup(c => c.Send(It.IsAny<ProtocolMessage>(), It.IsAny<Action<bool, ErrorInfo>>()))
+                .Callback<ProtocolMessage, Action<bool, ErrorInfo>>((pm, act) => act(true, null));
+            var target = new Presence(manager.Object, channel.Object, "testClient");
+            List<Tuple<bool, ErrorInfo>> callbacks = new List<Tuple<bool, ErrorInfo>>();
+            target.Enter(null, (s, e) =>
+            {
+                callbacks.Add(Tuple.Create(s, e));
+            });
+
+            // Act
+            channel.Raise(c => c.ChannelStateChanged += null, new ChannelStateChangedEventArgs(ChannelState.Attached));
+
+            // Assert
+            Assert.Equal<int>(1, callbacks.Count);
+            Assert.True(callbacks[0].Item1);
+            Assert.Null(callbacks[0].Item2);
+        }
+
+        [Theory]
+        [InlineData(ChannelState.Initialised)]
+        [InlineData(ChannelState.Attaching)]
+        public void UpdatingPresence_WhenChannelIsAttached_SendsQueuedMessages_AsASingleMessage(ChannelState state)
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            channel.SetupGet(c => c.State).Returns(state);
+            var target = new Presence(manager.Object, channel.Object, "testClient");
+            target.Enter(null, null);
+            target.Update(null, null);
+
+            // Act
+            channel.Raise(c => c.ChannelStateChanged += null, new ChannelStateChangedEventArgs(ChannelState.Attached));
+
+            // Assert
+            manager.Verify(c => c.Send(It.IsAny<ProtocolMessage>(), It.IsAny<Action<bool, ErrorInfo>>()), Times.Once());
+        }
+
+        [Theory]
+        [InlineData(ChannelState.Initialised)]
+        [InlineData(ChannelState.Attaching)]
+        public void UpdatingPresence_WhenChannelIsAttached_SendsQueuedMessages_AsASingleMessage_CallsCallbacks(ChannelState state)
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            channel.SetupGet(c => c.State).Returns(state);
+            manager.Setup(c => c.Send(It.IsAny<ProtocolMessage>(), It.IsAny<Action<bool, ErrorInfo>>()))
+                .Callback<ProtocolMessage, Action<bool, ErrorInfo>>((pm, act) => act(true, null));
+            var target = new Presence(manager.Object, channel.Object, "testClient");
+            List<Tuple<bool, ErrorInfo>> callbacks = new List<Tuple<bool, ErrorInfo>>();
+            target.Enter(null, (s, e) =>
+            {
+                callbacks.Add(Tuple.Create(s, e));
+            });
+            target.Update(null, (s, e) =>
+            {
+                callbacks.Add(Tuple.Create(s, e));
+            });
+
+            // Act
+            channel.Raise(c => c.ChannelStateChanged += null, new ChannelStateChangedEventArgs(ChannelState.Attached));
+
+            // Assert
+            Assert.Equal<int>(2, callbacks.Count);
+            Assert.True(callbacks[0].Item1);
+            Assert.Null(callbacks[0].Item2);
+            Assert.True(callbacks[1].Item1);
+            Assert.Null(callbacks[1].Item2);
+        }
+
+        [Theory]
+        [InlineData(ChannelState.Initialised)]
+        [InlineData(ChannelState.Attaching)]
+        public void UpdatingPresence_WhenChannelIsFailed_FailsQueuedMessages(ChannelState state)
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            channel.SetupGet(c => c.State).Returns(state);
+            var target = new Presence(manager.Object, channel.Object, "testClient");
+            target.Enter(null, null);
+
+            // Act
+            channel.Raise(c => c.ChannelStateChanged += null, new ChannelStateChangedEventArgs(ChannelState.Failed));
+
+            // Assert
+            manager.Verify(c => c.Send(It.IsAny<ProtocolMessage>(), null), Times.Never());
+        }
+
+        [Theory]
+        [InlineData(ChannelState.Initialised)]
+        [InlineData(ChannelState.Attaching)]
+        public void UpdatingPresence_WhenChannelIsFailed_FailsQueuedMessages_CallsCallbacks(ChannelState state)
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
+            channel.SetupGet(c => c.State).Returns(state);
+            var target = new Presence(manager.Object, channel.Object, "testClient");
+            ErrorInfo targetError = new ErrorInfo("rrr", 12);
+            List<Tuple<bool, ErrorInfo>> callbacks = new List<Tuple<bool, ErrorInfo>>();
+            target.Enter(null, (s, e) =>
+            {
+                callbacks.Add(Tuple.Create(s, e));
+            });
+
+            // Act
+            channel.Raise(c => c.ChannelStateChanged += null, new ChannelStateChangedEventArgs(ChannelState.Failed, targetError));
+
+            // Assert
+            Assert.Equal<int>(1, callbacks.Count);
+            Assert.False(callbacks[0].Item1);
+            Assert.Same(targetError, callbacks[0].Item2);
         }
     }
 }

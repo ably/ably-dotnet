@@ -7,16 +7,16 @@ namespace Ably.Realtime
 {
     public class ChannelList : IRealtimeChannelCommands
     {
-        internal ChannelList(IConnectionManager connection, IPresenceFactory factory)
+        internal ChannelList(IConnectionManager connection, IChannelFactory factory)
         {
             this.connection = connection;
-            this.channels = new Dictionary<string, Channel>();
-            this.presenceFactory = factory;
+            this.channels = new Dictionary<string, IRealtimeChannel>();
+            this.channelFactory = factory;
         }
-        
-        private Dictionary<string, Channel> channels;
+
+        private Dictionary<string, IRealtimeChannel> channels;
         private IConnectionManager connection;
-        private IPresenceFactory presenceFactory;
+        private IChannelFactory channelFactory;
 
         public IRealtimeChannel this[string name]
         {
@@ -25,10 +25,10 @@ namespace Ably.Realtime
 
         public IRealtimeChannel Get(string name)
         {
-            Channel channel = null;
+            IRealtimeChannel channel = null;
             if (!this.channels.TryGetValue(name, out channel))
             {
-                channel = new Channel(name, this.connection, this.presenceFactory);
+                channel = this.channelFactory.Create(name);
                 this.channels.Add(name, channel);
             }
             return channel;
@@ -36,14 +36,14 @@ namespace Ably.Realtime
 
         public IRealtimeChannel Get(string name, Rest.ChannelOptions options)
         {
-            Channel channel = this.Get(name) as Channel;
+            IRealtimeChannel channel = this.Get(name);
             channel.Options = options;
             return channel;
         }
 
         public void Release(string name)
         {
-            Channel channel = null;
+            IRealtimeChannel channel = null;
             if (this.channels.TryGetValue(name, out channel))
             {
                 EventHandler<ChannelStateChangedEventArgs> eventHandler = null;

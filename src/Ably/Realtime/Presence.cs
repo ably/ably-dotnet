@@ -6,37 +6,24 @@ using System.Linq;
 
 namespace Ably.Realtime
 {
-    public interface IPresenceFactory
-    {
-        Presence Create(string channel);
-    }
-
-    public class PresenceFactory : IPresenceFactory
-    {
-        public IConnectionManager ConnectionManager { get; set; }
-        public AblyRealtimeOptions Options { get; set; }
-
-        public Presence Create(string channel)
-        {
-            return new Presence(this.ConnectionManager, channel, this.Options.ClientId);
-        }
-    }
-
     public class Presence
     {
-        public Presence(IConnectionManager connection, string channel, string cliendId)
+        public Presence(IConnectionManager connection, IRealtimeChannel channel, string cliendId)
         {
             this.presence = new PresenceMap();
+            this.pendingPresence = new List<QueuedPresenceMessage>();
             this.connection = connection;
             this.connection.MessageReceived += OnConnectionMessageReceived;
             this.channel = channel;
+            this.channel.ChannelStateChanged += this.OnChannelStateChanged;
             this.clientId = cliendId;
         }
 
         private IConnectionManager connection;
         private PresenceMap presence;
-        private string channel;
+        private IRealtimeChannel channel;
         private string clientId;
+        private List<QueuedPresenceMessage> pendingPresence;
 
         public event Action<PresenceMessage[]> MessageReceived;
         // TODO: Subscribe with an action specifier
@@ -83,9 +70,24 @@ namespace Ably.Realtime
 
         private void UpdatePresence(PresenceMessage msg, Action<bool, ErrorInfo> callback)
         {
-            ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, this.channel);
-            message.Presence = new PresenceMessage[] { msg };
-            this.connection.Send(message, callback);
+            if (this.channel.State == ChannelState.Initialised || this.channel.State == ChannelState.Attaching)
+            {
+                if (this.channel.State == ChannelState.Initialised)
+                {
+                    this.channel.Attach();
+                }
+                this.pendingPresence.Add(new QueuedPresenceMessage(msg, callback));
+            }
+            else if (this.channel.State == ChannelState.Attached)
+            {
+                ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, this.channel.Name);
+                message.Presence = new PresenceMessage[] { msg };
+                this.connection.Send(message, callback);
+            }
+            else
+            {
+                throw new AblyException("Unable to enter presence channel in detached or failed state", 91001, System.Net.HttpStatusCode.BadRequest);
+            }
         }
 
         private void OnConnectionMessageReceived(ProtocolMessage message)
@@ -145,6 +147,55 @@ namespace Ably.Realtime
             {
                 this.MessageReceived(messages);
             }
+        }
+
+        private void OnChannelStateChanged(object sender, ChannelStateChangedEventArgs e)
+        {
+            if (e.NewState == ChannelState.Attached)
+            {
+                this.SendQueuedMessages();
+            }
+            else if (e.NewState == ChannelState.Detached || e.NewState == ChannelState.Failed)
+            {
+                this.FailQueuedMessages(e.Reason);
+            }
+        }
+
+        private void SendQueuedMessages()
+        {
+            if (this.pendingPresence.Count == 0)
+                return;
+
+            ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, this.channel.Name);
+            message.Presence = new PresenceMessage[this.pendingPresence.Count];
+            List<Action<bool, ErrorInfo>> callbacks = new List<Action<bool, ErrorInfo>>();
+            int i = 0;
+            foreach (QueuedPresenceMessage presenceMessage in this.pendingPresence)
+            {
+                message.Presence[i++] = presenceMessage.Message;
+                if (presenceMessage.Callback != null)
+                {
+                    callbacks.Add(presenceMessage.Callback);
+                }
+            }
+            this.pendingPresence.Clear();
+
+            this.connection.Send(message, (s, e) =>
+            {
+                foreach (var callback in callbacks)
+                {
+                    callback(s, e);
+                }
+            });
+        }
+
+        private void FailQueuedMessages(ErrorInfo reason)
+        {
+            foreach (QueuedPresenceMessage presenceMessage in this.pendingPresence.Where(c => c.Callback != null))
+            {
+                presenceMessage.Callback(false, reason);
+            }
+            this.pendingPresence.Clear();
         }
 
         class PresenceMap
@@ -258,5 +309,17 @@ namespace Ably.Realtime
                 return string.Format("{0}:{1}", message.ConnectionId, message.ClientId);
             }
         }
+    }
+
+    internal class QueuedPresenceMessage
+    {
+        public QueuedPresenceMessage(PresenceMessage message, Action<bool, ErrorInfo> callback)
+        {
+            this.Message = message;
+            this.Callback = callback;
+        }
+
+        public PresenceMessage Message { get; private set; }
+        public Action<bool, ErrorInfo> Callback { get; private set; }
     }
 }

@@ -6,14 +6,30 @@ using System.Linq;
 
 namespace Ably.Realtime
 {
+    public interface IChannelFactory
+    {
+        IRealtimeChannel Create(string channelName);
+    }
+
+    public class ChannelFactory : IChannelFactory
+    {
+        public IConnectionManager ConnectionManager { get; set; }
+        public AblyRealtimeOptions Options { get; set; }
+
+        public IRealtimeChannel Create(string channelName)
+        {
+            return new Channel(channelName, this.Options.ClientId, this.ConnectionManager);
+        }
+    }
+
     public class Channel : IRealtimeChannel
     {
-        internal Channel(string name, IConnectionManager connection, IPresenceFactory presenceFactory)
+        internal Channel(string name, string clientId, IConnectionManager connection)
         {
             this.queuedMessages = new List<Message>();
             this.eventListeners = new Dictionary<string, List<Action<Message[]>>>();
             this.Name = name;
-            this.Presence = presenceFactory.Create(name);
+            this.Presence = new Presence(connection, this, clientId);
             this.connection = connection;
             this.connection.MessageReceived += OnConnectionMessageReceived;
         }
@@ -133,6 +149,7 @@ namespace Ably.Realtime
         {
             if (this.State == ChannelState.Initialised || this.State == ChannelState.Attaching)
             {
+                // TODO: Add callback
                 this.queuedMessages.AddRange(messages);
             }
             else if (this.State == ChannelState.Attached)
@@ -222,5 +239,17 @@ namespace Ably.Realtime
             // TODO: Add callbacks
             this.connection.Send(message, null);
         }
+    }
+
+    internal class QueuedProtocolMessage
+    {
+        public QueuedProtocolMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
+        {
+            this.Message = message;
+            this.Callback = callback;
+        }
+
+        public ProtocolMessage Message { get; private set; }
+        public Action<bool, ErrorInfo> Callback { get; private set; }
     }
 }

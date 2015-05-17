@@ -28,7 +28,7 @@ namespace Ably
 
         internal AblyRealtime(AblyRealtimeOptions options, IConnectionManager connectionManager)
         {
-            IPresenceFactory factory = new PresenceFactory() { ConnectionManager = connectionManager, Options = options };
+            IChannelFactory factory = new ChannelFactory() { ConnectionManager = connectionManager, Options = options };
             this.Channels = new ChannelList(connectionManager, factory);
             this.Connection = new Connection(connectionManager);
             if (options.AutoConnect)

@@ -11,6 +11,7 @@ namespace Ably.Realtime
         ChannelState State { get; }
         string Name { get; }
         Presence Presence { get; }
+        Rest.ChannelOptions Options { get; set; }
 
         void Attach();
         void Detach();
