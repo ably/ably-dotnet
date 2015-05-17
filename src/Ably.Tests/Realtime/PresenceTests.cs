@@ -334,5 +334,126 @@ namespace Ably.Tests
             Assert.Equal<string>("client1", presence[0].ClientId);
             Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Enter, presence[0].Action);
         }
+
+        [Fact]
+        public void OnPresence_Enter_TwiceWithTheSameClientId_NoError()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            var target = new Presence(manager.Object, "testChannel", "testClient");
+
+            // Act
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
+            {
+                Presence = new PresenceMessage[]
+                {
+                    new PresenceMessage(PresenceMessage.ActionType.Enter, "client1"),
+                    new PresenceMessage(PresenceMessage.ActionType.Enter, "client1"),
+                }
+            });
+
+            // Assert
+            PresenceMessage[] presence = target.Get();
+            Assert.NotNull(presence);
+            Assert.Equal<int>(1, presence.Length);
+            Assert.Equal<string>("client1", presence[0].ClientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Enter, presence[0].Action);
+        }
+
+        [Fact]
+        public void OnPresence_Present_TwiceWithTheSameClientId_NoError()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            var target = new Presence(manager.Object, "testChannel", "testClient");
+
+            // Act
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
+            {
+                Presence = new PresenceMessage[]
+                {
+                    new PresenceMessage(PresenceMessage.ActionType.Present, "client1"),
+                    new PresenceMessage(PresenceMessage.ActionType.Present, "client1"),
+                }
+            });
+
+            // Assert
+            PresenceMessage[] presence = target.Get();
+            Assert.NotNull(presence);
+            Assert.Equal<int>(1, presence.Length);
+            Assert.Equal<string>("client1", presence[0].ClientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[0].Action);
+        }
+
+        [Fact]
+        public void OnPresence_Update_TwiceWithTheSameClientId_NoError()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            var target = new Presence(manager.Object, "testChannel", "testClient");
+
+            // Act
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
+            {
+                Presence = new PresenceMessage[]
+                {
+                    new PresenceMessage(PresenceMessage.ActionType.Update, "client1"),
+                    new PresenceMessage(PresenceMessage.ActionType.Update, "client1"),
+                }
+            });
+
+            // Assert
+            PresenceMessage[] presence = target.Get();
+            Assert.NotNull(presence);
+            Assert.Equal<int>(1, presence.Length);
+            Assert.Equal<string>("client1", presence[0].ClientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Update, presence[0].Action);
+        }
+
+        [Fact]
+        public void OnPresence_Leave_TwiceWithTheSameClientId_NoError()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            var target = new Presence(manager.Object, "testChannel", "testClient");
+
+            // Act
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
+            {
+                Presence = new PresenceMessage[]
+                {
+                    new PresenceMessage(PresenceMessage.ActionType.Leave, "client1"),
+                    new PresenceMessage(PresenceMessage.ActionType.Leave, "client1")
+                }
+            });
+
+            // Assert
+            PresenceMessage[] presence = target.Get();
+            Assert.NotNull(presence);
+            Assert.Equal<int>(0, presence.Length);
+        }
+
+        [Fact]
+        public void OnPresence_Absent_TwiceWithTheSameClientId_NoError()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            var target = new Presence(manager.Object, "testChannel", "testClient");
+
+            // Act
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
+            {
+                Presence = new PresenceMessage[]
+                {
+                    new PresenceMessage(PresenceMessage.ActionType.Absent, "client1"),
+                    new PresenceMessage(PresenceMessage.ActionType.Absent, "client1")
+                }
+            });
+
+            // Assert
+            PresenceMessage[] presence = target.Get();
+            Assert.NotNull(presence);
+            Assert.Equal<int>(0, presence.Length);
+        }
     }
 }

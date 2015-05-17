@@ -96,7 +96,7 @@ namespace Ably.Realtime
                     this.OnPresence(message.Presence, null);
                     break;
                 case ProtocolMessage.MessageAction.Sync:
-                    this.OnSync(message);
+                    this.OnPresence(message.Presence, message.ChannelSerial);
                     break;
             }
         }
@@ -139,11 +139,6 @@ namespace Ably.Realtime
             }
         }
 
-        private void OnSync(ProtocolMessage message)
-        {
-            this.OnPresence(message.Presence, message.ChannelSerial);
-        }
-
         private void Publish(params PresenceMessage[] messages)
         {
             if (this.MessageReceived != null)
@@ -176,6 +171,12 @@ namespace Ably.Realtime
             {
                 string key = MemberKey(item);
 
+                // we've seen this member, so do not remove it at the end of sync
+                if (residualMembers != null)
+                {
+                    residualMembers.Remove(key);
+                }
+
                 // compare the timestamp of the new item with any existing member (or ABSENT witness)
                 PresenceMessage existingItem;
                 if (members.TryGetValue(key, out existingItem) && item.Timestamp < existingItem.Timestamp)
@@ -184,7 +185,16 @@ namespace Ably.Realtime
                     return false;
                 }
 
-                members.Add(key, item);
+                // add or update
+                if (!members.ContainsKey(key))
+                {
+                    members.Add(key, item);
+                }
+                else
+                {
+                    members[key] = item;
+                }
+                
                 return true;
             }
 
