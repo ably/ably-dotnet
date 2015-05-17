@@ -455,5 +455,86 @@ namespace Ably.Tests
             Assert.NotNull(presence);
             Assert.Equal<int>(0, presence.Length);
         }
+
+        [Fact]
+        public void OnSync_2ClientsPresent()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            var target = new Presence(manager.Object, "testChannel", "testClient");
+
+            // Act
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Sync)
+            {
+                Presence = new PresenceMessage[]
+                {
+                    new PresenceMessage(PresenceMessage.ActionType.Present, "client1"),
+                    new PresenceMessage(PresenceMessage.ActionType.Present, "client2")
+                }
+            });
+
+            // Assert
+            PresenceMessage[] presence = target.Get();
+            Assert.NotNull(presence);
+            Assert.Equal<int>(2, presence.Length);
+            Assert.Equal<string>("client1", presence[0].ClientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[0].Action);
+            Assert.Equal<string>("client2", presence[1].ClientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[1].Action);
+        }
+
+        [Fact]
+        public void OnSync_1ClientPresentTwice()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            var target = new Presence(manager.Object, "testChannel", "testClient");
+
+            // Act
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Sync)
+            {
+                Presence = new PresenceMessage[]
+                {
+                    new PresenceMessage(PresenceMessage.ActionType.Present, "client1"),
+                    new PresenceMessage(PresenceMessage.ActionType.Present, "client1")
+                }
+            });
+
+            // Assert
+            PresenceMessage[] presence = target.Get();
+            Assert.NotNull(presence);
+            Assert.Equal<int>(1, presence.Length);
+            Assert.Equal<string>("client1", presence[0].ClientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[0].Action);
+        }
+
+        [Fact]
+        public void OnSync_1ClientPresentTwice_DifferentConnections()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            var target = new Presence(manager.Object, "testChannel", "testClient");
+
+            // Act
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Sync)
+            {
+                Presence = new PresenceMessage[]
+                {
+                    new PresenceMessage(PresenceMessage.ActionType.Present, "client1") { ConnectionId = "conn123" },
+                    new PresenceMessage(PresenceMessage.ActionType.Present, "client1") { ConnectionId = "connAnn332" }
+                }
+            });
+
+            // Assert
+            PresenceMessage[] presence = target.Get();
+            Assert.NotNull(presence);
+            Assert.Equal<int>(2, presence.Length);
+            Assert.Equal<string>("client1", presence[0].ClientId);
+            Assert.Equal<string>("conn123", presence[0].ConnectionId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[0].Action);
+            Assert.Equal<string>("client1", presence[1].ClientId);
+            Assert.Equal<string>("connAnn332", presence[1].ConnectionId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[1].Action);
+        }
     }
 }
