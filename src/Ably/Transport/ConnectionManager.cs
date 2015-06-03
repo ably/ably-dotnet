@@ -11,6 +11,7 @@ namespace Ably.Transport
         {
             this.sync = System.Threading.SynchronizationContext.Current;
             this.pendingMessages = new Queue<ProtocolMessage>();
+            this.ackQueue = new Dictionary<long, Action<bool, ErrorInfo>>();
         }
 
         internal ConnectionManager(ITransport transport)
@@ -32,6 +33,9 @@ namespace Ably.Transport
         private System.Threading.SynchronizationContext sync;
         private ILogger Logger = Config.AblyLogger;
         private Queue<ProtocolMessage> pendingMessages;
+        private ConnectionState connectionState;
+        private long msgSerial;
+        private Dictionary<long, Action<bool, ErrorInfo>> ackQueue;
 
         public event StateChangedDelegate StateChanged;
 
@@ -55,9 +59,13 @@ namespace Ably.Transport
             this.transport.Close(this.transport.State == TransportState.Connected);
         }
 
-        public void Send(ProtocolMessage message, Action<ErrorInfo> callback)
+        public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback)
         {
-            // TODO: Implement callback
+            message.MsgSerial = this.msgSerial++;
+            if (callback != null)
+            {
+                this.ackQueue.Add(message.MsgSerial, callback);
+            }
             if (this.transport.State == TransportState.Connected)
             {
                 this.SendDirect(message);
@@ -71,10 +79,20 @@ namespace Ably.Transport
         private static TransportParams CreateTransportParameters(AblyRealtimeOptions options)
         {
             TransportParams transportParams = new TransportParams(options);
-            transportParams.Host = Defaults.RealtimeHost;
+            transportParams.Host = GetHost(options);
             transportParams.Port = options.Tls ? Defaults.TlsPort : Transport.Defaults.Port;
             transportParams.FallbackHosts = Defaults.FallbackHosts;
             return transportParams;
+        }
+
+        private static string GetHost(AblyRealtimeOptions options)
+        {
+            string host = !string.IsNullOrEmpty(options.Host) ? options.Host : Defaults.RealtimeHost;
+            if (options.Environment.HasValue && options.Environment != AblyEnvironment.Live)
+            {
+                return string.Format("{0}-{1}", options.Environment.ToString().ToLower(), host);
+            }
+            return host;
         }
 
         //
@@ -82,12 +100,14 @@ namespace Ably.Transport
         //
         private void SetState(object state)
         {
-            this.SetState((ConnectionState)state);
+            object[] stateArgs = (object[])state;
+            this.SetState((ConnectionState)stateArgs[0], (ConnectionInfo)stateArgs[1], (ErrorInfo)stateArgs[2]);
         }
 
         private void SetState(ConnectionState state, ConnectionInfo info = null, ErrorInfo error = null)
         {
             this.Logger.Info("ConnectionManager: StateChanged: {0}", state);
+            this.connectionState = state;
             if (this.StateChanged != null)
             {
                 this.StateChanged(state, info, error);
@@ -121,23 +141,25 @@ namespace Ably.Transport
         {
             if (this.sync != null && this.sync.IsWaitNotificationRequired())
             {
-                this.sync.Send(new System.Threading.SendOrPostCallback(this.SetState), ConnectionState.Disconnected);
+                this.sync.Send(new System.Threading.SendOrPostCallback(o => this.ProcessTransportDisconnected()), null);
             }
             else
             {
-                this.SetState(ConnectionState.Disconnected);
+                this.ProcessTransportDisconnected();
             }
         }
 
-        void ITransportListener.OnTransportError()
+        void ITransportListener.OnTransportError(Exception e)
         {
+            ErrorInfo error = new ErrorInfo(e.Message, 80000, System.Net.HttpStatusCode.ServiceUnavailable);
+
             if (this.sync != null && this.sync.IsWaitNotificationRequired())
             {
-                this.sync.Send(new System.Threading.SendOrPostCallback(this.SetState), ConnectionState.Failed);
+                this.sync.Send(new System.Threading.SendOrPostCallback(this.SetState), new object[] { ConnectionState.Failed, null, error });
             }
             else
             {
-                this.SetState(ConnectionState.Failed);
+                this.SetState(ConnectionState.Failed, error: error);
             }
         }
 
@@ -202,15 +224,25 @@ namespace Ably.Transport
                     this.OnMessage_Closed(message);
                     break;
                 case ProtocolMessage.MessageAction.Ack:
-                    this.OnMessage_Ack(message);
+                    this.HandleMessageAcknowledgement(message);
                     break;
                 case ProtocolMessage.MessageAction.Nack:
-                    this.OnMessage_Nack(message);
+                    this.HandleMessageAcknowledgement(message);
                     break;
                 default:
                     this.OnMessageReceived(message);
                     break;
             }
+        }
+
+        private void ProcessTransportDisconnected()
+        {
+            if (this.connectionState == ConnectionState.Closed)
+            {
+                return;
+            }
+
+            this.SetState(ConnectionState.Disconnected);
         }
 
         private void OnMessage_Heartbeat(ProtocolMessage message)
@@ -225,6 +257,7 @@ namespace Ably.Transport
         private void OnMessage_Connected(ProtocolMessage message)
         {
             ConnectionInfo info = new ConnectionInfo(message.ConnectionId, message.ConnectionSerial, message.ConnectionKey);
+            this.ResetMsgAcknowledgement();
             this.SetState(ConnectionState.Connected, info: info, error: message.Error);
         }
 
@@ -235,6 +268,7 @@ namespace Ably.Transport
 
         private void OnMessage_Closed(ProtocolMessage message)
         {
+            this.ResetMsgAcknowledgement();
             if (message.Error != null)
             {
                 this.SetState(ConnectionState.Failed, error: message.Error);
@@ -245,12 +279,33 @@ namespace Ably.Transport
             }
         }
 
-        private void OnMessage_Ack(ProtocolMessage message)
+        private void ResetMsgAcknowledgement()
         {
+            this.msgSerial = 0;
+            this.ackQueue.Clear();
         }
 
-        private void OnMessage_Nack(ProtocolMessage message)
+        private void HandleMessageAcknowledgement(ProtocolMessage message)
         {
+            long startSerial = message.MsgSerial;
+            long endSerial = message.MsgSerial + (message.Count - 1);
+            ErrorInfo reason = new ErrorInfo("Unknown error", 50000, System.Net.HttpStatusCode.InternalServerError);
+            for (long i = startSerial; i <= endSerial; i++)
+            {
+                Action<bool, ErrorInfo> callback;
+                if (this.ackQueue.TryGetValue(i, out callback))
+                {
+                    if (message.Action == ProtocolMessage.MessageAction.Ack)
+                    {
+                        callback(true, null);
+                    }
+                    else
+                    {
+                        callback(false, message.Error ?? reason);
+                    }
+                    this.ackQueue.Remove(i);
+                }
+            }
         }
 
         private void SendDirect(ProtocolMessage message)

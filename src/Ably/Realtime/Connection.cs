@@ -73,7 +73,7 @@ namespace Ably.Realtime
         /// <summary>
         /// 
         /// </summary>
-        public void Ping(Action<ErrorInfo> callback)
+        public void Ping(Action<bool, ErrorInfo> callback)
         {
             this.connection.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat), callback);
         }

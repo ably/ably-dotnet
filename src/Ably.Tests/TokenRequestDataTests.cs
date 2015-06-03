@@ -20,7 +20,7 @@ namespace Ably.Tests
 
         private static TokenRequest GetTokenRequest()
         {
-            return new TokenRequest { Id = GetKeyId(), ClientId = "123", Capability = new Capability(), Ttl = TimeSpan.FromMinutes(10) };
+            return new TokenRequest { KeyName = GetKeyId(), ClientId = "123", Capability = new Capability(), Ttl = TimeSpan.FromMinutes(10) };
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace Ably.Tests
 
             var data = tokenRequest.GetPostData(GetKeyValue());
 
-            Assert.Equal(tokenRequest.Id, data.id);
+            Assert.Equal(tokenRequest.KeyName, data.keyName);
         }
 
         [Fact]
@@ -55,7 +55,7 @@ namespace Ably.Tests
         [Fact]
         public void GetPostData_WhenTtlIsNotSet_SetsItToOneHourFromNow()
         {
-            var request = new TokenRequest { Id = "123", Capability = new Capability() };
+            var request = new TokenRequest { KeyName = "123", Capability = new Capability() };
             var data = request.GetPostData(GetKeyValue());
 
             var expectedTtl = TimeSpan.FromHours(1).TotalSeconds;
@@ -87,7 +87,7 @@ namespace Ably.Tests
             var request = GetTokenRequest();
             var data = request.GetPostData(GetKeyValue());
 
-            Assert.Equal(Now.ToUnixTime().ToString(), data.timestamp);
+            Assert.Equal(Now.ToUnixTimeInMilliseconds().ToString(), data.timestamp);
         }
 
         [Fact]
@@ -111,7 +111,7 @@ namespace Ably.Tests
             var data = request.GetPostData(GetKeyValue());
             var values = new[] 
             { 
-                data.id, 
+                data.keyName, 
                 data.ttl,
                 data.capability, 
                 data.clientId, 

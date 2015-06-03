@@ -113,7 +113,7 @@
     <Compile Include="ApiKey.cs" />
     <Compile Include="AuthMethod.cs" />
     <Compile Include="AuthOptions.cs" />
-    <Compile Include="Auth\Token.cs" />
+    <Compile Include="Auth\TokenDetails.cs" />
     <Compile Include="Capability.cs" />
     <Compile Include="CustomSerialisers\CapabilityMessagePackSerializer.cs" />
     <Compile Include="CapabilityResource.cs" />
@@ -179,6 +179,7 @@
     <Compile Include="Transport\WebSocketTransport.cs" />
     <Compile Include="Types\IMessageSerializer.cs" />
     <Compile Include="Types\JsonMessageSerializer.cs" />
+    <Compile Include="Types\MsgPackMessageSerializer.cs" />
     <Compile Include="Types\ProtocolMessage.cs" />
   </ItemGroup>
   <ItemGroup>

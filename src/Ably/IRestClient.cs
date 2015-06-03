@@ -3,7 +3,7 @@ using Ably.Rest;
 
 namespace Ably
 {
-    public interface IRestClient : IAuthCommands, IChannelCommands<IChannel>
+    public interface IRestClient : IAuthCommands, IChannelCommands
     {
         /// <summary>
         /// Authentication methods
@@ -13,7 +13,7 @@ namespace Ably
         /// <summary>
         /// Channel methods
         /// </summary>
-        IChannelCommands<IChannel> Channels { get; }
+        IChannelCommands Channels { get; }
 
         /// <summary>
         /// Retrieves the ably service time

@@ -3,7 +3,10 @@
   <Profiles />
   <Settings>
     <Setting Name="ApiKey" Type="System.String" Scope="User">
-      <Value Profile="(Default)"></Value>
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ClientId" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>

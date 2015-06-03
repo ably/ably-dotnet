@@ -8,6 +8,6 @@ namespace Ably
     {
         [JsonProperty("access_token")]
         [MessagePackMember(1, Name = "access_token")]
-        public Token AccessToken { get; set; }
+        public TokenDetails AccessToken { get; set; }
     }
 }

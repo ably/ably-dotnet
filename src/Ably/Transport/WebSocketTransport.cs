@@ -12,13 +12,13 @@ namespace Ably.Transport
             public ITransport CreateTransport(TransportParams parameters)
             {
                 IMessageSerializer serializer = null;
-                if (!parameters.Options.UseBinaryProtocol)
+                if (parameters.Options.UseBinaryProtocol)
                 {
-                    serializer = new JsonMessageSerializer();
+                    serializer = new MsgPackMessageSerializer();
                 }
                 else
                 {
-                    // TODO: Implement Commet protocol
+                    serializer = new JsonMessageSerializer();
                 }
                 WebSocketTransport socketTransport = new WebSocketTransport(serializer);
                 socketTransport.Host = parameters.Host;
@@ -28,6 +28,7 @@ namespace Ably.Transport
                 socketTransport.socket.Closed += socketTransport.socket_Closed;
                 socketTransport.socket.Error += socketTransport.socket_Error;
                 socketTransport.socket.MessageReceived += socketTransport.socket_MessageReceived;
+                socketTransport.socket.DataReceived += socketTransport.socket_DataReceived;
                 return socketTransport;
             }
         }
@@ -138,7 +139,7 @@ namespace Ably.Transport
         {
             if (this.Listener != null)
             {
-                this.Listener.OnTransportError();
+                this.Listener.OnTransportError(e.Exception);
             }
         }
 
@@ -147,6 +148,15 @@ namespace Ably.Transport
             if (this.Listener != null)
             {
                 ProtocolMessage message = this.serializer.DeserializeProtocolMessage(e.Message);
+                this.Listener.OnTransportMessageReceived(message);
+            }
+        }
+
+        private void socket_DataReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (this.Listener != null)
+            {
+                ProtocolMessage message = this.serializer.DeserializeProtocolMessage(e.Data);
                 this.Listener.OnTransportMessageReceived(message);
             }
         }

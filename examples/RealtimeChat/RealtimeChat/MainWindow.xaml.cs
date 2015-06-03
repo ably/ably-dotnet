@@ -29,7 +29,8 @@ namespace RealtimeChat
             }
 
             string key = RealtimeChat.Properties.Settings.Default.ApiKey;
-            AblyRealtimeOptions options = new AblyRealtimeOptions(key) { UseBinaryProtocol = false, Tls = true, AutoConnect = false };
+            string clientId = RealtimeChat.Properties.Settings.Default.ClientId;
+            AblyRealtimeOptions options = new AblyRealtimeOptions(key) { UseBinaryProtocol = false, Tls = true, AutoConnect = false, ClientId = clientId };
             this.client = new AblyRealtime(options);
             this.client.Connection.ConnectionStateChanged += this.connection_ConnectionStateChanged;
             this.client.Connect();
@@ -37,7 +38,9 @@ namespace RealtimeChat
             this.channel = this.client.Channels.Get(channelName);
             this.channel.ChannelStateChanged += channel_ChannelStateChanged;
             this.channel.MessageReceived += this.channel_MessageReceived;
+            this.channel.Presence.MessageReceived += this.Presence_MessageReceived;
             this.channel.Attach();
+            this.channel.Presence.Enter(null, null);
         }
 
         private void Trigger_Click(object sender, RoutedEventArgs e)
@@ -68,6 +71,14 @@ namespace RealtimeChat
             foreach (Message message in messages)
             {
                 outputBox.Items.Add(string.Format("{0}: {1}", message.Name, message.Data));
+            }
+        }
+
+        void Presence_MessageReceived(PresenceMessage[] messages)
+        {
+            foreach (PresenceMessage message in messages)
+            {
+                outputBox.Items.Add(string.Format("{0}: {1} {2}", message.Data, message.Action, message.ClientId));
             }
         }
     }

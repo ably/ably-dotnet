@@ -5,16 +5,18 @@ using System.Linq;
 
 namespace Ably.Realtime
 {
-    public class ChannelList : IRealtimeChannelCommands<IRealtimeChannel>
+    public class ChannelList : IRealtimeChannelCommands
     {
-        public ChannelList(IConnectionManager connection)
+        internal ChannelList(IConnectionManager connection, IChannelFactory factory)
         {
             this.connection = connection;
-            this.channels = new Dictionary<string, Channel>();
+            this.channels = new Dictionary<string, IRealtimeChannel>();
+            this.channelFactory = factory;
         }
-        
-        private Dictionary<string, Channel> channels;
+
+        private Dictionary<string, IRealtimeChannel> channels;
         private IConnectionManager connection;
+        private IChannelFactory channelFactory;
 
         public IRealtimeChannel this[string name]
         {
@@ -23,10 +25,10 @@ namespace Ably.Realtime
 
         public IRealtimeChannel Get(string name)
         {
-            Channel channel = null;
+            IRealtimeChannel channel = null;
             if (!this.channels.TryGetValue(name, out channel))
             {
-                channel = new Channel(name, this.connection);
+                channel = this.channelFactory.Create(name);
                 this.channels.Add(name, channel);
             }
             return channel;
@@ -34,13 +36,14 @@ namespace Ably.Realtime
 
         public IRealtimeChannel Get(string name, Rest.ChannelOptions options)
         {
-            // TODO: Implement ChannelList.Get
-            throw new NotImplementedException();
+            IRealtimeChannel channel = this.Get(name);
+            channel.Options = options;
+            return channel;
         }
 
         public void Release(string name)
         {
-            Channel channel = null;
+            IRealtimeChannel channel = null;
             if (this.channels.TryGetValue(name, out channel))
             {
                 EventHandler<ChannelStateChangedEventArgs> eventHandler = null;

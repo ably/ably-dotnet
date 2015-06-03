@@ -8,35 +8,35 @@ namespace Ably.Auth
     /// <summary>
     /// A class providing details of a token and its associated metadata
     /// </summary>
-    public sealed class Token
+    public sealed class TokenDetails
     {
         /// <summary>
         /// The token itself
         /// </summary>
-        [JsonProperty("id")]
-        [MessagePackMember(10, Name = "id")]
-        public string Id { get; set; }
+        [JsonProperty("token")]
+        [MessagePackMember(10, Name = "token")]
+        public string Token { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        [JsonProperty("key")]
-        [MessagePackMember(20, Name = "key")]
-        public string KeyId { get; set; }
+        [JsonProperty("keyName")]
+        [MessagePackMember(20, Name = "keyName")]
+        public string KeyName { get; set; }
 
         /// <summary>
         /// Absolute token expiry date in UTC
         /// </summary>
         [JsonProperty("expires")]
         [MessagePackMember(30, Name = "expires")]
-        public DateTimeOffset ExpiresAt { get; set; }
+        public DateTimeOffset Expires { get; set; }
 
         /// <summary>
         /// Date and time when the token was issued in UTC
         /// </summary>
-        [JsonProperty("issued_at")]
-        [MessagePackMember(40, Name = "issued_at")]
-        public DateTimeOffset IssuedAt { get; set; }
+        [JsonProperty("issued")]
+        [MessagePackMember(40, Name = "issued")]
+        public DateTimeOffset Issued { get; set; }
 
         /// <summary>
         /// The allowed capabilities for this token. <see cref="Capability"/>
@@ -52,28 +52,28 @@ namespace Ably.Auth
         [MessagePackMember(60, Name = "clientId")]
         public string ClientId { get; set; }
 
-        public Token()
+        public TokenDetails()
         {
         }
 
-        public Token(string id)
+        public TokenDetails(string id)
         {
-            Id = id;
+            Token = id;
         }
 
         /// <summary>
-        /// Checks if a json object is a token. It does it by ensuring the existance of "issued_at" property
+        /// Checks if a json object is a token. It does it by ensuring the existance of "issued" property
         /// </summary>
         /// <param name="json">Json object to check</param>
-        /// <returns>true if json object contains "issued_at"</returns>
+        /// <returns>true if json object contains "issued"</returns>
         public static bool IsToken(JObject json)
         {
-            return json != null && json["issued_at"] != null;
+            return json != null && json["issued"] != null;
         }
 
         public override string ToString()
         {
-            return string.Format("Id: {0}, KeyId: {1}, ExpiresAt: {2}, IssuedAt: {3}, Capability: {4}, ClientId: {5}", Id, KeyId, ExpiresAt, IssuedAt, Capability, ClientId);
+            return string.Format("Token: {0}, KeyName: {1}, Expires: {2}, Issued: {3}, Capability: {4}, ClientId: {5}", Token, KeyName, Expires, Issued, Capability, ClientId);
         }
     }
 }

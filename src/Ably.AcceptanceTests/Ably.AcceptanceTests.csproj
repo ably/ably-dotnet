@@ -111,6 +111,8 @@
     <Compile Include="MessageEncodersAcceptanceTests.cs" />
     <Compile Include="PresenceAcceptanceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RealtimeAcceptanceTests.cs" />
+    <Compile Include="RealtimeChannelAcceptanceTests.cs" />
     <Compile Include="RestAcceptanceTests.cs" />
     <Compile Include="TestsSetup.cs" />
     <Compile Include="TestVars.cs" />

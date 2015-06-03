@@ -6,13 +6,30 @@ using System.Linq;
 
 namespace Ably.Realtime
 {
+    public interface IChannelFactory
+    {
+        IRealtimeChannel Create(string channelName);
+    }
+
+    public class ChannelFactory : IChannelFactory
+    {
+        public IConnectionManager ConnectionManager { get; set; }
+        public AblyRealtimeOptions Options { get; set; }
+
+        public IRealtimeChannel Create(string channelName)
+        {
+            return new Channel(channelName, this.Options.ClientId, this.ConnectionManager);
+        }
+    }
+
     public class Channel : IRealtimeChannel
     {
-        internal Channel(string name, IConnectionManager connection)
+        internal Channel(string name, string clientId, IConnectionManager connection)
         {
             this.queuedMessages = new List<Message>();
             this.eventListeners = new Dictionary<string, List<Action<Message[]>>>();
             this.Name = name;
+            this.Presence = new Presence(connection, this, clientId);
             this.connection = connection;
             this.connection.MessageReceived += OnConnectionMessageReceived;
         }
@@ -29,6 +46,8 @@ namespace Ably.Realtime
 
         public event EventHandler<ChannelStateChangedEventArgs> ChannelStateChanged;
 
+        public Rest.ChannelOptions Options { get; set; }
+
         /// <summary>
         /// The channel name
         /// </summary>
@@ -38,6 +57,8 @@ namespace Ably.Realtime
         /// Indicates the current state of this channel.
         /// </summary>
         public ChannelState State { get; private set; }
+
+        public Presence Presence { get; private set; }
 
         /// <summary>
         /// Attach to this channel. Any resulting channel state change will be indicated to any registered 
@@ -110,7 +131,7 @@ namespace Ably.Realtime
             this.Publish(name, data, null);
         }
 
-        public void Publish(string name, object data, Action<ErrorInfo> callback)
+        public void Publish(string name, object data, Action<bool, ErrorInfo> callback)
         {
             this.Publish(new Message[] { new Message(name, data) }, callback);
         }
@@ -124,10 +145,11 @@ namespace Ably.Realtime
             this.Publish(messages, null);
         }
 
-        public void Publish(IEnumerable<Message> messages, Action<ErrorInfo> callback)
+        public void Publish(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback)
         {
             if (this.State == ChannelState.Initialised || this.State == ChannelState.Attaching)
             {
+                // TODO: Add callback
                 this.queuedMessages.AddRange(messages);
             }
             else if (this.State == ChannelState.Attached)
@@ -140,31 +162,6 @@ namespace Ably.Realtime
             {
                 throw new AblyException(new ErrorInfo("Unable to publish in detached or failed state", 40000, System.Net.HttpStatusCode.BadRequest));
             }
-        }
-
-        public IPaginatedResource<Message> History()
-        {
-            throw new NotImplementedException();
-        }
-
-        public IPaginatedResource<Message> History(DataRequestQuery query)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IPaginatedResource<PresenceMessage> Presence()
-        {
-            throw new NotImplementedException();
-        }
-
-        public IPaginatedResource<PresenceMessage> PresenceHistory()
-        {
-            throw new NotImplementedException();
-        }
-
-        public IPaginatedResource<PresenceMessage> PresenceHistory(DataRequestQuery query)
-        {
-            throw new NotImplementedException();
         }
 
         protected void SetChannelState(ChannelState state)
@@ -199,12 +196,6 @@ namespace Ably.Realtime
                 case ProtocolMessage.MessageAction.Message:
                     this.OnMessage(message);
                     break;
-                case ProtocolMessage.MessageAction.Presence:
-                    this.OnPresence(message, null);
-                    break;
-                case ProtocolMessage.MessageAction.Sync:
-                    this.OnSync(message);
-                    break;
                 case ProtocolMessage.MessageAction.Error:
                     this.SetChannelState(ChannelState.Failed);
                     break;
@@ -237,17 +228,6 @@ namespace Ably.Realtime
             }
         }
 
-        private void OnPresence(ProtocolMessage message, string channelSerial)
-        {
-            // TODO: Implement Channel.OnPresence
-        }
-
-        private void OnSync(ProtocolMessage message)
-        {
-            // TODO: Implement Channel.OnSync
-            this.OnPresence(message, "");
-        }
-
         private void SendQueuedMessages()
         {
             if (this.queuedMessages.Count == 0)
@@ -259,5 +239,17 @@ namespace Ably.Realtime
             // TODO: Add callbacks
             this.connection.Send(message, null);
         }
+    }
+
+    internal class QueuedProtocolMessage
+    {
+        public QueuedProtocolMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
+        {
+            this.Message = message;
+            this.Callback = callback;
+        }
+
+        public ProtocolMessage Message { get; private set; }
+        public Action<bool, ErrorInfo> Callback { get; private set; }
     }
 }

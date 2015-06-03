@@ -33,6 +33,6 @@ namespace Ably.Transport
 
         void Close();
 
-        void Send(ProtocolMessage message, Action<ErrorInfo> listener);
+        void Send(ProtocolMessage message, Action<bool, ErrorInfo> listener);
     }
 }

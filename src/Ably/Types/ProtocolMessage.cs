@@ -33,6 +33,21 @@ namespace Ably.Types
             Has_Backlog
         }
 
+        internal const string ActionPropertyName = "action";
+        internal const string FlagsPropertyName = "flags";
+        internal const string CountPropertyName = "count";
+        internal const string ErrorPropertyName = "error";
+        internal const string IdPropertyName = "id";
+        internal const string ChannelPropertyName = "channel";
+        internal const string ChannelSerialPropertyName = "channelSerial";
+        internal const string ConnectionIdPropertyName = "connectionId";
+        internal const string ConnectionKeyPropertyName = "connectionKey";
+        internal const string ConnectionSerialPropertyName = "connectionSerial";
+        internal const string MsgSerialPropertyName = "msgSerial";
+        internal const string TimestampPropertyName = "timestamp";
+        internal const string MessagesPropertyName = "messages";
+        internal const string PresencePropertyName = "presence";
+
         internal ProtocolMessage()
         {
         }
@@ -59,7 +74,7 @@ namespace Ably.Types
         public string ConnectionKey { get; set; }
         public long ConnectionSerial { get; set; }
         public long MsgSerial { get; set; }
-        public long Timestamp { get; set; }
+        public DateTimeOffset? Timestamp { get; set; }
         public Message[] Messages { get; set; }
         public PresenceMessage[] Presence { get; set; }
 

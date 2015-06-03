@@ -22,6 +22,15 @@ namespace Ably.Tests
             }
         }
 
+        public static IEnumerable<object[]> PresenceMessages
+        {
+            get
+            {
+                yield return new object[] { new PresenceMessage[] { new PresenceMessage() } }; // 1 empty message
+                yield return new object[] { new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Enter, null) } }; // 1 empty message
+            }
+        }
+
         public static IEnumerable<object[]> JsonMessages
         {
             get
@@ -37,6 +46,19 @@ namespace Ably.Tests
                 yield return new object[] { "[{\"data\":undefined}]", new Message[] { new Message(null, null) } };
                 yield return new object[] { "[{\"data\":[1234,4321]}]", new Message[] { new Message(null, new JArray(1234, 4321)) } };
                 yield return new object[] { "[{\"data\":\"bXkgYmluYXJ5IHBheWxvYWQ=\",\"encoding\":\"base64\"}]", new Message[] { new Message(null, Convert.FromBase64String("bXkgYmluYXJ5IHBheWxvYWQ=")) } };
+            }
+        }
+
+        public static IEnumerable<object[]> JsonPresence
+        {
+            get
+            {
+                yield return new object[] { "[]", new PresenceMessage[] { } };
+                yield return new object[] { "[{\"action\":2,\"clientId\":\"test\"}]", new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Enter, "test") } };
+                yield return new object[] { "[{\"action\":2,\"clientId\":\"test\"}, {\"action\":2,\"clientId\":\"test2\"}]", new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Enter, "test"), new PresenceMessage(PresenceMessage.ActionType.Enter, "test2") } };
+                yield return new object[] { "[{\"connectionId\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { ConnectionId = "test" } } };
+                yield return new object[] { "[{\"data\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { Data = "test" } } };
+                yield return new object[] { "[{\"timestamp\":1430773200000}]", new PresenceMessage[] { new PresenceMessage() { Timestamp = new DateTimeOffset(new DateTime(2015, 5, 5)) } } };
             }
         }
 
@@ -151,6 +173,30 @@ namespace Ably.Tests
                     .Append("]");
             }
             expectedMessage.Append("}");
+
+            // Act
+            object result = serializer.SerializeProtocolMessage(message);
+
+            // Assert
+            Assert.IsType<string>(result);
+            Assert.Equal<string>(expectedMessage.ToString(), result as string);
+        }
+
+        [Theory]
+        [PropertyData("PresenceMessages")]
+        public void SerializesMessageCorrectly_Presence(params PresenceMessage[] messages)
+        {
+            // Arrange
+            JsonMessageSerializer serializer = new JsonMessageSerializer();
+            ProtocolMessage message = new ProtocolMessage() { Presence = messages };
+            StringBuilder expectedMessage = new StringBuilder("{\"action\":0,\"msgSerial\":0");
+            expectedMessage.Append(",\"presence\":[");
+            foreach (PresenceMessage msg in messages)
+            {
+                expectedMessage.AppendFormat("{{\"action\":{0}}},", (byte)msg.Action);
+            }
+            expectedMessage.Remove(expectedMessage.Length - 1, 1) // last comma
+                .Append("]}");
 
             // Act
             object result = serializer.SerializeProtocolMessage(message);
@@ -385,6 +431,33 @@ namespace Ably.Tests
             {
                 Assert.Equal<string>(expectedMessages[i].Name, target.Messages[i].Name);
                 Assert.Equal(expectedMessages[i].Data, target.Messages[i].Data);
+            }
+        }
+
+        [Theory]
+        [PropertyData("JsonPresence")]
+        public void DeserializesMessageCorrectly_Presence(string messageJson, params PresenceMessage[] expectedMessages)
+        {
+            // Arrange
+            JsonMessageSerializer serializer = new JsonMessageSerializer();
+            StringBuilder message = new StringBuilder("{\"presence\":")
+                .Append(messageJson).Append("}");
+
+            // Act
+            ProtocolMessage target = serializer.DeserializeProtocolMessage(message.ToString());
+
+            // Assert
+            Assert.NotNull(target);
+            Assert.NotNull(target.Presence);
+            Assert.Equal<int>(expectedMessages.Length, target.Presence.Length);
+            for (int i = 0; i < expectedMessages.Length; i++)
+            {
+                Assert.Equal<string>(expectedMessages[i].ClientId, target.Presence[i].ClientId);
+                Assert.Equal<string>(expectedMessages[i].ConnectionId, target.Presence[i].ConnectionId);
+                Assert.Equal<PresenceMessage.ActionType>(expectedMessages[i].Action, target.Presence[i].Action);
+                Assert.Equal<string>(expectedMessages[i].Id, target.Presence[i].Id);
+                Assert.Equal<DateTimeOffset>(expectedMessages[i].Timestamp, target.Presence[i].Timestamp);
+                Assert.Equal(expectedMessages[i].Data, target.Presence[i].Data);
             }
         }
     }
