@@ -9,14 +9,15 @@ namespace Ably.Rest
     internal class AblySimpleRestClient : IAblyRest
     {
         public AblySimpleRestClient(AblyOptions options)
+            : this(options, new AblyHttpClient(GetHost(options), options.Port, options.Tls, options.Environment))
+        { }
+
+        public AblySimpleRestClient(AblyOptions options, IAblyHttpClient httpClient)
         {
             _options = options;
+            _httpClient = httpClient;
             _protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
-
             _messageHandler = new MessageHandler(_protocol);
-
-            string host = GetHost();
-            _httpClient = new AblyHttpClient(host, _options.Port, _options.Tls, _options.Environment);
         }
 
         private AblyOptions _options;
@@ -59,10 +60,10 @@ namespace Ably.Rest
             return response.First().FromUnixTimeInMilliseconds();
         }
 
-        private string GetHost()
+        private static string GetHost(AblyOptions options)
         {
-            if (_options.Host.IsNotEmpty()) 
-                return _options.Host;
+            if (options.Host.IsNotEmpty()) 
+                return options.Host;
 
             return Config.DefaultHost;
         }

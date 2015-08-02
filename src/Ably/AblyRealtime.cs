@@ -28,6 +28,7 @@ namespace Ably
 
         internal AblyRealtime(AblyRealtimeOptions options, IConnectionManager connectionManager)
         {
+            Options = options;
             IChannelFactory factory = new ChannelFactory() { ConnectionManager = connectionManager, Options = options };
             this.Channels = new ChannelList(connectionManager, factory);
             this.Connection = new Connection(connectionManager);
@@ -39,7 +40,9 @@ namespace Ably
             }
         }
 
-        public IAuthCommands Auth { get; private set; }
+        public AblyRealtimeOptions Options { get; private set; }
+
+        public IAuthCommands Auth { get; internal set; }
 
         /// <summary>
         /// The collection of channels instanced, indexed by channel name.
