@@ -16,12 +16,12 @@ namespace Ably.Tests
         public readonly DateTimeOffset Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc).ToDateTimeOffset();
         private readonly string _dummyTokenResponse = "{ \"access_token\": {}}";
 
-        //[Fact]
-        //public void TokenShouldNotBeSetBeforeAuthoriseIsCalled()
-        //{
-        //    var client = GetClient();
-        //    client.CurrentToken.Should().BeNull();
-        //}
+        [Fact]
+        public void TokenShouldNotBeSetBeforeAuthoriseIsCalled()
+        {
+            var client = GetClient();
+            client.CurrentToken.Should().BeNull();
+        }
 
         [Fact]
         public void RequestToken_CreatesPostRequestWithCorrectUrl()
@@ -327,51 +327,51 @@ namespace Ably.Tests
             Assert.Throws<AblyException>(delegate { rest.Auth.RequestToken(tokenRequest, options); });
         }
 
-        //[Fact]
-        //public void Authorise_WithNotExpiredCurrentTokenAndForceFalse_ReturnsCurrentToken()
-        //{
-        //    var client = GetClient();
-        //    client.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(1) };
+        [Fact]
+        public void Authorise_WithNotExpiredCurrentTokenAndForceFalse_ReturnsCurrentToken()
+        {
+            var client = GetClient();
+            client.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(1) };
 
-        //    var token = client.Auth.Authorise(null, null, false);
+            var token = client.Auth.Authorise(null, null, false);
 
-        //    Assert.Same(client.CurrentToken, token);
-        //}
+            Assert.Same(client.CurrentToken, token);
+        }
 
-        //[Fact]
-        //public void Authorise_PreservesTokenRequestOptionsForSubsequentRequests()
-        //{
-        //    var client = GetClient();
-        //    client.Auth.Authorise(new TokenRequest() { Ttl = TimeSpan.FromMinutes(260) }, null, false);
+        [Fact]
+        public void Authorise_PreservesTokenRequestOptionsForSubsequentRequests()
+        {
+            var client = GetClient();
+            client.Auth.Authorise(new TokenRequest() { Ttl = TimeSpan.FromMinutes(260) }, null, false);
 
-        //    client.Auth.Authorise(null, null, false);
-        //    var data = CurrentRequest.PostData as TokenRequestPostData;
-        //    data.ttl.Should().Be(TimeSpan.FromMinutes(260).TotalSeconds.ToString());
-        //}
+            client.Auth.Authorise(null, null, false);
+            var data = CurrentRequest.PostData as TokenRequestPostData;
+            data.ttl.Should().Be(TimeSpan.FromMinutes(260).TotalSeconds.ToString());
+        }
 
-        //[Fact]
-        //public void Authorise_WithNotExpiredCurrentTokenAndForceTrue_RequestsNewToken()
-        //{
-        //    var client = GetClient();
-        //    client.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(1) };
+        [Fact]
+        public void Authorise_WithNotExpiredCurrentTokenAndForceTrue_RequestsNewToken()
+        {
+            var client = GetClient();
+            client.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(1) };
 
-        //    var token = client.Auth.Authorise(new TokenRequest() { ClientId = "123", Capability = new Capability(), KeyName = "123" }, null, true);
+            var token = client.Auth.Authorise(new TokenRequest() { ClientId = "123", Capability = new Capability(), KeyName = "123" }, null, true);
 
-        //    Assert.Contains("requestToken", CurrentRequest.Url);
-        //    token.Should().NotBeNull();
-        //}
+            Assert.Contains("requestToken", CurrentRequest.Url);
+            token.Should().NotBeNull();
+        }
 
-        //[Fact]
-        //public void Authorise_WithExpiredCurrentToken_RequestsNewToken()
-        //{
-        //    var client = GetClient();
-        //    client.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(-1) };
+        [Fact]
+        public void Authorise_WithExpiredCurrentToken_RequestsNewToken()
+        {
+            var client = GetClient();
+            client.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(-1) };
 
-        //    var token = client.Auth.Authorise(null, null, false);
+            var token = client.Auth.Authorise(null, null, false);
 
-        //    Assert.Contains("requestToken", CurrentRequest.Url);
-        //    token.Should().NotBeNull();
-        //}
+            Assert.Contains("requestToken", CurrentRequest.Url);
+            token.Should().NotBeNull();
+        }
 
         private TokenRequest SendRequestTokenWithValidOptions()
         {
