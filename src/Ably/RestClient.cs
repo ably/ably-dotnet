@@ -157,6 +157,8 @@ namespace Ably
         /// </summary>
         private void InitAuth()
         {
+            _auth = new AblyTokenAuth(Options, this);
+
             if (Options.Key.IsNotEmpty())
             {
                 if (Options.ClientId.IsEmpty())
@@ -174,8 +176,6 @@ namespace Ably
                 CurrentToken = new TokenDetails(Options.Token);
             }
             LogCurrentAuthenticationMethod();
-
-            _auth = new AblyTokenAuth(Options, this);
         }
 
         private void LogCurrentAuthenticationMethod()
