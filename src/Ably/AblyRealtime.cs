@@ -31,11 +31,15 @@ namespace Ably
             IChannelFactory factory = new ChannelFactory() { ConnectionManager = connectionManager, Options = options };
             this.Channels = new ChannelList(connectionManager, factory);
             this.Connection = new Connection(connectionManager);
+            this.Auth = new AblyTokenAuth(options, new Rest.AblySimpleRestClient(options));
+
             if (options.AutoConnect)
             {
                 this.Connection.Connect();
             }
         }
+
+        public IAuthCommands Auth { get; private set; }
 
         /// <summary>
         /// The collection of channels instanced, indexed by channel name.
