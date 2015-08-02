@@ -3,7 +3,7 @@ using Ably.Rest;
 
 namespace Ably
 {
-    public interface IRestClient : IAuthCommands, IChannelCommands
+    public interface IRestClient : IChannelCommands
     {
         /// <summary>
         /// Authentication methods
