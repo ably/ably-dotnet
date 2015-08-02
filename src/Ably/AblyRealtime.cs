@@ -48,13 +48,16 @@ namespace Ably
             IChannelFactory factory = new ChannelFactory() { ConnectionManager = connectionManager, Options = options };
             this.Channels = new ChannelList(connectionManager, factory);
             this.Connection = new Connection(connectionManager);
-            InitAuth(new Rest.AblySimpleRestClient(options));
+            _simpleRest = new Rest.AblySimpleRestClient(options);
+            InitAuth(_simpleRest);
 
             if (options.AutoConnect)
             {
                 this.Connection.Connect();
             }
         }
+
+        private Rest.AblySimpleRestClient _simpleRest;
 
         /// <summary>
         /// The collection of channels instanced, indexed by channel name.
@@ -83,6 +86,15 @@ namespace Ably
         public void Close()
         {
             this.Connection.Close();
+        }
+
+        /// <summary>
+        /// Retrieves the ably service time
+        /// </summary>
+        /// <returns></returns>
+        public DateTimeOffset Time()
+        {
+            return this._simpleRest.Time();
         }
     }
 }
