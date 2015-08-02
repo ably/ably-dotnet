@@ -9,7 +9,7 @@ namespace Ably
     /// <summary>
     /// 
     /// </summary>
-    public class AblyRealtime
+    public class AblyRealtime : AblyBase
     {
         /// <summary>
         /// 
@@ -28,21 +28,18 @@ namespace Ably
 
         internal AblyRealtime(AblyRealtimeOptions options, IConnectionManager connectionManager)
         {
-            Options = options;
+            _options = options;
+            _protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
             IChannelFactory factory = new ChannelFactory() { ConnectionManager = connectionManager, Options = options };
             this.Channels = new ChannelList(connectionManager, factory);
             this.Connection = new Connection(connectionManager);
-            this.Auth = new AblyTokenAuth(options, new Rest.AblySimpleRestClient(options));
+            InitAuth(new Rest.AblySimpleRestClient(options));
 
             if (options.AutoConnect)
             {
                 this.Connection.Connect();
             }
         }
-
-        public AblyRealtimeOptions Options { get; private set; }
-
-        public IAuthCommands Auth { get; internal set; }
 
         /// <summary>
         /// The collection of channels instanced, indexed by channel name.

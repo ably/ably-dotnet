@@ -16,7 +16,7 @@ namespace Ably
     /// <summary>
     /// Client for the ably rest API
     /// </summary>
-    public sealed class RestClient : IRestClient, IAblyRest
+    public sealed class RestClient : AblyBase, IRestClient, IAblyRest
     {
         static RestClient()
         {
@@ -32,24 +32,7 @@ namespace Ably
 
 
         internal IAblyHttpClient _httpClient;
-        private AblyOptions _options;
-        private readonly ILogger Logger = Config.AblyLogger;
-        internal AuthMethod AuthMethod;
-        internal TokenDetails CurrentToken;
         internal MessageHandler _messageHandler;
-        private TokenRequest _lastTokenRequest;
-        private Protocol _protocol;
-        private IAuthCommands _auth;
-
-        internal Protocol Protocol
-        {
-            get { return _protocol; }
-        }
-
-        internal AblyOptions Options
-        {
-            get { return _options; }
-        }
 
         /// <summary>
         /// Initialises the RestClient by reading the Key from a connection string with key 'Ably'
@@ -140,7 +123,7 @@ namespace Ably
             _httpClient = new AblyHttpClient(host, _options.Port, _options.Tls, _options.Environment);
             ExecuteHttpRequest = _httpClient.Execute;
 
-            InitAuth();
+            InitAuth(this);
         }
 
 
@@ -150,66 +133,6 @@ namespace Ably
                 return _options.Host;
 
             return Config.DefaultHost;
-        }
-
-        /// <summary>
-        /// Initialises the Ably Auth type based on the options passed.
-        /// </summary>
-        private void InitAuth()
-        {
-            _auth = new AblyTokenAuth(Options, this);
-
-            if (Options.Key.IsNotEmpty())
-            {
-                if (Options.ClientId.IsEmpty())
-                {
-                    AuthMethod = AuthMethod.Basic;
-                    Logger.Info("Using basic authentication.");
-                    return;
-                }
-            }
-
-            AuthMethod = AuthMethod.Token;
-            Logger.Info("Using token authentication.");
-            if (Options.Token.IsNotEmpty())
-            {
-                CurrentToken = new TokenDetails(Options.Token);
-            }
-            LogCurrentAuthenticationMethod();
-        }
-
-        private void LogCurrentAuthenticationMethod()
-        {
-            if (Options.AuthCallback != null)
-            {
-                Logger.Info("Authentication will be done using token auth with authCallback");
-            }
-            else if (Options.AuthUrl.IsNotEmpty())
-            {
-                Logger.Info("Authentication will be done using token auth with authUrl");
-            }
-            else if (Options.Key.IsNotEmpty())
-            {
-                Logger.Info("Authentication will be done using token auth with client-side signing");
-            }
-            else if (Options.Token.IsNotEmpty())
-            {
-                Logger.Info("Authentication will be done using token auth with supplied token only");
-            }
-            else
-            {
-                /* this is not a hard error - but any operation that requires
-                 * authentication will fail */
-                Logger.Info("Authentication will fail because no authentication parameters supplied");
-            }
-        }
-
-        /// <summary>
-        /// Authentication methods
-        /// </summary>
-        public IAuthCommands Auth
-        {
-            get { return _auth; }
         }
 
         /// <summary>

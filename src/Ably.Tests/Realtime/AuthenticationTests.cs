@@ -390,7 +390,7 @@ namespace Ably.Tests
             var httpClientMock = new Moq.Mock<IAblyHttpClient>();
             httpClientMock.Setup(c => c.Execute(Moq.It.IsAny<AblyRequest>())).Returns(executeHttpRequest);
 
-            client.Auth = new AblyTokenAuth(options, new Rest.AblySimpleRestClient(options, httpClientMock.Object));
+            client.InitAuth(new Rest.AblySimpleRestClient(options, httpClientMock.Object));
 
             Config.Now = () => Now;
             return client;
@@ -400,7 +400,7 @@ namespace Ably.Tests
         {
             var options = new AblyRealtimeOptions() { Key = ApiKey, UseBinaryProtocol = false };
             var client = new AblyRealtime(options);
-            client.Auth = new AblyTokenAuth(options, new Rest.AblySimpleRestClient(options));
+            client.InitAuth(new Rest.AblySimpleRestClient(options));
 
             Config.Now = () => Now;
             return client;

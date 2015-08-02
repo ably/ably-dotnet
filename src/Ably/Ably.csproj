@@ -98,6 +98,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AblyBase.cs" />
     <Compile Include="AblyTokenAuth.cs" />
     <Compile Include="AblyEnvironment.cs" />
     <Compile Include="AblyRealtime.cs" />
