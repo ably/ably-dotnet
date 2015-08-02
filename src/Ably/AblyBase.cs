@@ -36,18 +36,12 @@ namespace Ably
         internal void InitAuth(IAblyRest restClient)
         {
             _auth = new AblyTokenAuth(Options, restClient);
-
-            if (Options.Key.IsNotEmpty())
+            AuthMethod = Options.Method;
+            if (AuthMethod == AuthMethod.Basic)
             {
-                if (Options.ClientId.IsEmpty())
-                {
-                    AuthMethod = AuthMethod.Basic;
-                    Logger.Info("Using basic authentication.");
-                    return;
-                }
+                Logger.Info("Using basic authentication.");
+                return;
             }
-
-            AuthMethod = AuthMethod.Token;
             Logger.Info("Using token authentication.");
             if (Options.Token.IsNotEmpty())
             {
