@@ -5,7 +5,7 @@ namespace Ably.Tests
 {
     public class TokenRequestDataTests
     {
-        private const string ApiKey = "AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob";
+        private const string ApiKey = "123.456:789";
         public readonly DateTimeOffset Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc).ToDateTimeOffset();
 
         private static string GetKeyId()

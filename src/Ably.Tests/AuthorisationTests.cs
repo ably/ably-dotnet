@@ -11,7 +11,7 @@ namespace Ably.Tests
 {
     public class AuthorisationTests
     {
-        private const string ApiKey = "AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob";
+        private const string ApiKey = "123.456:789";
         internal AblyRequest CurrentRequest { get; set; }
         public readonly DateTimeOffset Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc).ToDateTimeOffset();
         private readonly string _dummyTokenResponse = "{ \"access_token\": {}}";
@@ -102,7 +102,7 @@ namespace Ably.Tests
             client.Auth.RequestToken(request, null);
 
             var data = CurrentRequest.PostData as TokenRequestPostData;
-            Assert.Equal(date.ToUnixTime().ToString(), data.timestamp);
+            Assert.Equal(date.ToUnixTimeInMilliseconds().ToString(), data.timestamp);
         }
 
         [Fact]
@@ -115,7 +115,7 @@ namespace Ably.Tests
             client.Auth.RequestToken(request, null);
 
             var data = CurrentRequest.PostData as TokenRequestPostData;
-            Assert.Equal(Now.ToUnixTime().ToString(), data.timestamp);
+            Assert.Equal(Now.ToUnixTimeInMilliseconds().ToString(), data.timestamp);
         }
 
         [Fact]

@@ -135,7 +135,7 @@ namespace Ably.Tests
 
         [Theory]
         [PropertyData("InvalidHistoryDates")]
-        public void History_WithInvalidStartOrEnd_Throws(DateTime start, DateTime end)
+        public void History_WithInvalidStartOrEnd_Throws(DateTime? start, DateTime? end)
         {
             var rest = GetRestClient();
             var channel = rest.Channels.Get("Test");

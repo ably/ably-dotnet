@@ -84,7 +84,7 @@ namespace Ably.Tests
             client.Auth.RequestToken(request, null);
 
             var data = CurrentRequest.PostData as TokenRequestPostData;
-            Assert.Equal(date.ToUnixTime().ToString(), data.timestamp);
+            Assert.Equal(date.ToUnixTimeInMilliseconds().ToString(), data.timestamp);
         }
 
         [Fact]
@@ -97,7 +97,7 @@ namespace Ably.Tests
             client.Auth.RequestToken(request, null);
 
             var data = CurrentRequest.PostData as TokenRequestPostData;
-            Assert.Equal(Now.ToUnixTime().ToString(), data.timestamp);
+            Assert.Equal(Now.ToUnixTimeInMilliseconds().ToString(), data.timestamp);
         }
 
         [Fact]

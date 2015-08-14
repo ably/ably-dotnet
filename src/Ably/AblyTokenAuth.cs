@@ -178,7 +178,7 @@ namespace Ably
 
             var postData = data.GetPostData(key.KeySecret);
             if (mergedOptions.QueryTime)
-                postData.timestamp = _rest.Time().ToUnixTime().ToString();
+                postData.timestamp = _rest.Time().ToUnixTimeInMilliseconds().ToString();
 
             return postData;
         }

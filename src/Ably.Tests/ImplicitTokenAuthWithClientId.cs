@@ -8,7 +8,7 @@ namespace Ably.Tests
     public class ImplicitTokenAuthWithClientId
     {
         private string _clientId;
-        private const string ApiKey = "AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob";
+        private const string ApiKey = "123.456:789";
         internal AblyRequest CurrentRequest { get; set; }
         public RestClient Client { get; set; }
         public int ExecutionCount { get; set; }

@@ -68,7 +68,7 @@ namespace Ably.Tests
             var timeStamp = new DateTime(2015, 1, 1).ToDateTimeOffset();
             var tokenRequest = new TokenRequest {Timestamp = timeStamp};
             RequestToken(tokenRequest, null,
-                (data, request) => Assert.Equal(timeStamp.ToUnixTime().ToString(), data.timestamp));
+                (data, request) => Assert.Equal(timeStamp.ToUnixTimeInMilliseconds().ToString(), data.timestamp));
         }
 
         [Fact]
