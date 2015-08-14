@@ -5,7 +5,7 @@ namespace Ably.Tests
 {
     public class AuthRequestTokenAcceptanceTests
     {
-        private const string ApiKey = "AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob";
+        private const string ApiKey = "123.456:789";
         internal AblyRequest CurrentRequest { get; set; }
         public readonly DateTime Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc);
         private readonly string _dummyTokenResponse = "{ \"access_token\": {}}";

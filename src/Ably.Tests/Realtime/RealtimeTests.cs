@@ -7,7 +7,7 @@ namespace Ably.Tests
 {
     public class RealtimeTests
     {
-        private static readonly string Debug_Key = "1iZPfA.BjcI_g:wpNhw5RCw6rDjisl";
+        private static readonly string Debug_Key = "123.456:789";
 
         [Fact]
         public void New_Realtime_HasConnection()
