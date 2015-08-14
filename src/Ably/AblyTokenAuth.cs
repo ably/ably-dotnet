@@ -18,6 +18,8 @@ namespace Ably
         private AblyOptions _options;
         private TokenRequest _lastTokenRequest;
         private Rest.IAblyRest _rest;
+        // Buffer in seconds before a token is considered unusable
+        private const int TokenExpireBufer = 15;
 
         internal TokenDetails CurrentToken;
 
@@ -129,7 +131,7 @@ namespace Ably
         {
             if (CurrentToken != null)
             {
-                if (CurrentToken.Expires > Config.Now())
+                if (CurrentToken.Expires > (Config.Now().AddSeconds(TokenExpireBufer)))
                 {
                     if (force == false)
                         return CurrentToken;
