@@ -12,14 +12,14 @@ namespace Ably.Rest
     public class Channel : IChannel
     {
         public string Name { get; private set; }
-        private readonly RestClient _restClientClient;
+        private readonly RestClient _restClient;
         private readonly ChannelOptions _options;
         private readonly string basePath;
 
         internal Channel(RestClient restClientClient, string name,  ChannelOptions options)
         {
             Name = name;
-            _restClientClient = restClientClient;
+            _restClient = restClientClient;
             _options = GetOptions(options);
             basePath = string.Format("/channels/{0}", name.EncodeUriPart());
         }
@@ -43,10 +43,10 @@ namespace Ably.Rest
         /// <param name="data">The message payload. Allowed payloads are string, objects and byte[]</param>
         public void Publish(string name, object data) 
         {
-            var request = _restClientClient.RestMethods.CreatePostRequest(basePath + "/messages", _options);
+            var request = _restClient.RestMethods.CreatePostRequest(basePath + "/messages", _options);
 
             request.PostData = new List<Message> { new Message(name, data)};
-            _restClientClient.RestMethods.ExecuteRequest(request);
+            _restClient.RestMethods.ExecuteRequest(request);
         }
 
         /// <summary>
@@ -55,9 +55,9 @@ namespace Ably.Rest
         /// <param name="messages">a list of messages</param>
         public void Publish(IEnumerable<Message> messages)
         {
-            var request = _restClientClient.RestMethods.CreatePostRequest(basePath + "/messages", _options);
+            var request = _restClient.RestMethods.CreatePostRequest(basePath + "/messages", _options);
             request.PostData = messages;
-            _restClientClient.RestMethods.ExecuteRequest(request);
+            _restClient.RestMethods.ExecuteRequest(request);
         }
 
         /// <summary>
@@ -66,8 +66,8 @@ namespace Ably.Rest
         /// <returns><see cref="PaginatedResource{T}"/> of the PresenseMessages</returns>
         public IPaginatedResource<PresenceMessage> Presence()
         {
-            var request = _restClientClient.RestMethods.CreateGetRequest(basePath + "/presence", _options);
-            return _restClientClient.RestMethods.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
+            var request = _restClient.RestMethods.CreateGetRequest(basePath + "/presence", _options);
+            return _restClient.RestMethods.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
         }
 
         /// <summary>
@@ -76,8 +76,8 @@ namespace Ably.Rest
         /// <returns><see cref="PaginatedResource{PresenceMessage}"/></returns>
         public IPaginatedResource<PresenceMessage> PresenceHistory()
         {
-            var request = _restClientClient.RestMethods.CreateGetRequest(basePath + "/presence", _options);
-            return _restClientClient.RestMethods.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
+            var request = _restClient.RestMethods.CreateGetRequest(basePath + "/presence", _options);
+            return _restClient.RestMethods.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
         }
 
         /// <summary>
@@ -86,9 +86,9 @@ namespace Ably.Rest
         /// <returns><see cref="PaginatedResource{PresenceMessage}"/></returns>
         public IPaginatedResource<PresenceMessage> PresenceHistory(DataRequestQuery query)
         {
-            var request = _restClientClient.RestMethods.CreateGetRequest(basePath + "/presence", _options);
+            var request = _restClient.RestMethods.CreateGetRequest(basePath + "/presence", _options);
             request.AddQueryParameters(query.GetParameters());
-            return _restClientClient.RestMethods.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
+            return _restClient.RestMethods.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
         }
 
         /// <summary>
@@ -109,11 +109,11 @@ namespace Ably.Rest
         {
             query.Validate();
 
-            var request = _restClientClient.RestMethods.CreateGetRequest(basePath + "/messages", _options);
+            var request = _restClient.RestMethods.CreateGetRequest(basePath + "/messages", _options);
 
             request.AddQueryParameters(query.GetParameters());
 
-            return _restClientClient.RestMethods.ExecuteRequest<PaginatedResource<Message>>(request);
+            return _restClient.RestMethods.ExecuteRequest<PaginatedResource<Message>>(request);
         }
     }
 }
