@@ -275,6 +275,49 @@ namespace Ably.Tests
         }
 
         [Fact]
+        public void WhenTransportConnected_StateIsNotChanged()
+        {
+            // Arrange
+            Mock<ITransport> mock = new Mock<ITransport>();
+            mock.SetupProperty(c => c.Listener);
+            ConnectionManager manager = new ConnectionManager(mock.Object);
+            List<Tuple<ConnectionState, ConnectionInfo, ErrorInfo>> args = new List<Tuple<ConnectionState, ConnectionInfo, ErrorInfo>>();
+            manager.Connect();
+            manager.StateChanged += (s, i, e) =>
+            {
+                args.Add(new Tuple<ConnectionState, ConnectionInfo, ErrorInfo>(s, i, e));
+            };
+
+            // Act
+            mock.Object.Listener.OnTransportConnected();
+
+            // Assert
+            Assert.Equal<int>(0, args.Count);
+        }
+
+        [Fact]
+        public void WhenTransportReceivesConnectedMessage_StateIsConnected()
+        {
+            // Arrange
+            Mock<ITransport> mock = new Mock<ITransport>();
+            mock.SetupProperty(c => c.Listener);
+            ConnectionManager manager = new ConnectionManager(mock.Object);
+            List<Tuple<ConnectionState, ConnectionInfo, ErrorInfo>> args = new List<Tuple<ConnectionState, ConnectionInfo, ErrorInfo>>();
+            manager.Connect();
+            manager.StateChanged += (s, i, e) =>
+            {
+                args.Add(new Tuple<ConnectionState, ConnectionInfo, ErrorInfo>(s, i, e));
+            };
+
+            // Act
+            mock.Object.Listener.OnTransportMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+
+            // Assert
+            Assert.Equal<int>(1, args.Count);
+            Assert.Equal<ConnectionState>(ConnectionState.Connected, args[0].Item1);
+        }
+
+        [Fact]
         public void When_TransportError_CallsStateChanged_Failed()
         {
             // Arrange
