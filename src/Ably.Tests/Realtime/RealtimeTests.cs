@@ -24,6 +24,13 @@ namespace Ably.Tests
         }
 
         [Fact]
+        public void New_Realtime_HasAuth()
+        {
+            AblyRealtime realtime = new AblyRealtime(Debug_Key);
+            Assert.NotNull(realtime.Auth);
+        }
+
+        [Fact]
         public void New_Realtime_WithConnectAutomatically_False_DoesNotConnect()
         {
             // Arrange
