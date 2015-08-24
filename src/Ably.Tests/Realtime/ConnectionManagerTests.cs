@@ -294,5 +294,19 @@ namespace Ably.Tests
             Assert.Single(args, t => t.Item1 == ConnectionState.Failed && t.Item2 == null && t.Item3 != null &&
                 t.Item3.Reason == targetException.Message && t.Item3.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable);
         }
+
+        [Fact]
+        public void When_HostSetInOptions_CreateTransportParameters_DoesNotModifyIt()
+        {
+            // Arrange
+            AblyRealtimeOptions options = new AblyRealtimeOptions();
+            options.Host = "http://test";
+
+            // Act
+            TransportParams target = ConnectionManager.CreateTransportParameters(options);
+
+            // Assert
+            Assert.Equal<string>(options.Host, target.Host);
+        }
     }
 }

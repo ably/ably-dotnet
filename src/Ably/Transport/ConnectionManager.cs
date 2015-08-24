@@ -82,7 +82,7 @@ namespace Ably.Transport
             }
         }
 
-        private static TransportParams CreateTransportParameters(AblyRealtimeOptions options)
+        internal static TransportParams CreateTransportParameters(AblyRealtimeOptions options)
         {
             TransportParams transportParams = new TransportParams(options);
             transportParams.Host = GetHost(options);
