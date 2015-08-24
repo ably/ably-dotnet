@@ -5,6 +5,7 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using Xunit;
+using Xunit.Extensions;
 
 namespace Ably.Tests
 {
@@ -301,6 +302,38 @@ namespace Ably.Tests
             // Arrange
             AblyRealtimeOptions options = new AblyRealtimeOptions();
             options.Host = "http://test";
+
+            // Act
+            TransportParams target = ConnectionManager.CreateTransportParameters(options);
+
+            // Assert
+            Assert.Equal<string>(options.Host, target.Host);
+        }
+
+        [Theory]
+        [InlineData(AblyEnvironment.Sandbox)]
+        [InlineData(AblyEnvironment.Uat)]
+        public void When_EnvironmentSetInOptions_CreateCorrectTransportParameters(AblyEnvironment environment)
+        {
+            // Arrange
+            AblyRealtimeOptions options = new AblyRealtimeOptions();
+            options.Environment = environment;
+            options.Host = "test";
+
+            // Act
+            TransportParams target = ConnectionManager.CreateTransportParameters(options);
+
+            // Assert
+            Assert.Equal<string>(string.Format("{0}-{1}", environment, options.Host).ToLower(), target.Host);
+        }
+
+        [Fact]
+        public void When_EnvironmentSetInOptions_Live_CreateCorrectTransportParameters()
+        {
+            // Arrange
+            AblyRealtimeOptions options = new AblyRealtimeOptions();
+            options.Environment = AblyEnvironment.Live;
+            options.Host = "test";
 
             // Act
             TransportParams target = ConnectionManager.CreateTransportParameters(options);
