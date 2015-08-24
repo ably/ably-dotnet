@@ -297,6 +297,19 @@ namespace Ably.Tests
         }
 
         [Fact]
+        public void When_HostNotSetInOptions_CreateTransportParameters_UsingDefault()
+        {
+            // Arrange
+            AblyRealtimeOptions options = new AblyRealtimeOptions();
+
+            // Act
+            TransportParams target = ConnectionManager.CreateTransportParameters(options);
+
+            // Assert
+            Assert.Equal<string>("realtime.ably.io", target.Host);
+        }
+
+        [Fact]
         public void When_HostSetInOptions_CreateTransportParameters_DoesNotModifyIt()
         {
             // Arrange
