@@ -5,6 +5,7 @@ using Ably.Types;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Ably
 {
@@ -92,9 +93,27 @@ namespace Ably
         /// Retrieves the ably service time
         /// </summary>
         /// <returns></returns>
-        public DateTimeOffset Time()
+        public void Time()
         {
-            return this._simpleRest.Time();
+            System.Threading.SynchronizationContext sync = System.Threading.SynchronizationContext.Current;
+
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                DateTimeOffset result = _simpleRest.Time();
+                if (TimeReceived != null)
+                {
+                    if (sync != null)
+                    {
+                        sync.Send(new SendOrPostCallback(o => TimeReceived(result)), null);
+                    }
+                    else
+                    {
+                        TimeReceived(result);
+                    }
+                }
+            });
         }
+
+        public event Action<DateTimeOffset> TimeReceived;
     }
 }

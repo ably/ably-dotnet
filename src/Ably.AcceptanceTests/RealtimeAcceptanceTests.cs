@@ -132,5 +132,27 @@ namespace Ably.AcceptanceTests
             args[2].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionState.Closed);
             args[2].Reason.ShouldBeEquivalentTo(null);
         }
+
+        [Test]
+        public void TestRealtimeClient_Time()
+        {
+            // Arrange
+            var client = GetRealtimeClient();
+            AutoResetEvent signal = new AutoResetEvent(false);
+
+            DateTimeOffset result = DateTimeOffset.MinValue;
+            client.TimeReceived+= (time) =>
+            {
+                result = time;
+                signal.Set();
+            };
+
+            // Act
+            client.Time();
+
+            // Assert
+            signal.WaitOne(10000);
+            Assert.IsTrue((DateTime.UtcNow - result.DateTime).TotalSeconds < 3);
+        }
     }
 }
