@@ -10,6 +10,16 @@ namespace Ably.Tests
         private static readonly string Debug_Key = "123.456:789";
 
         [Fact]
+        public void When_HostNotSetInOptions_UseBinaryProtocol_TrueByDefault()
+        {
+            // Arrange
+            AblyRealtimeOptions options = new AblyRealtimeOptions();
+
+            // Act
+            Assert.True(options.UseBinaryProtocol);
+        }
+
+        [Fact]
         public void New_Realtime_HasConnection()
         {
             AblyRealtime realtime = new AblyRealtime(Debug_Key);
