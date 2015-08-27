@@ -141,14 +141,14 @@ namespace Ably.AcceptanceTests
             AutoResetEvent signal = new AutoResetEvent(false);
 
             DateTimeOffset result = DateTimeOffset.MinValue;
-            client.TimeReceived+= (time) =>
+            Action<DateTimeOffset> callback = (time) =>
             {
                 result = time;
                 signal.Set();
             };
 
             // Act
-            client.Time();
+            client.Time(callback);
 
             // Assert
             signal.WaitOne(10000);

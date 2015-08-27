@@ -93,27 +93,25 @@ namespace Ably
         /// Retrieves the ably service time
         /// </summary>
         /// <returns></returns>
-        public void Time()
+        public void Time(Action<DateTimeOffset> callback)
         {
             System.Threading.SynchronizationContext sync = System.Threading.SynchronizationContext.Current;
 
             ThreadPool.QueueUserWorkItem(state =>
             {
                 DateTimeOffset result = _simpleRest.Time();
-                if (TimeReceived != null)
+                if (callback != null)
                 {
                     if (sync != null)
                     {
-                        sync.Send(new SendOrPostCallback(o => TimeReceived(result)), null);
+                        sync.Send(new SendOrPostCallback(o => callback(result)), null);
                     }
                     else
                     {
-                        TimeReceived(result);
+                        callback(result);
                     }
                 }
             });
         }
-
-        public event Action<DateTimeOffset> TimeReceived;
     }
 }
