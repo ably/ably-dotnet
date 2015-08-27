@@ -56,6 +56,7 @@ namespace Ably.Transport.States.Connection
         public override void OnAttachedToContext()
         {
             this.context.Transport.Close();
+            // TODO: If a reply is not received within a time frame, force close.
         }
     }
 }

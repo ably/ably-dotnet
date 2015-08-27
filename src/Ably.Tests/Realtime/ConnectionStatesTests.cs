@@ -61,8 +61,7 @@ namespace Ably.Tests
         public void InitializedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
             // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionInitializedState state = new ConnectionInitializedState(context.Object);
+            ConnectionInitializedState state = new ConnectionInitializedState(null);
 
             // Act
             bool result = state.OnMessageReceived(new ProtocolMessage(action));
@@ -75,8 +74,7 @@ namespace Ably.Tests
         public void InitializedState_DoesNotListenToTransportChanges()
         {
             // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionInitializedState state = new ConnectionInitializedState(context.Object);
+            ConnectionInitializedState state = new ConnectionInitializedState(null);
 
             // Act
             state.OnTransportStateChanged(null);
@@ -86,8 +84,7 @@ namespace Ably.Tests
         public void InitializedState_Close_DoesNothing()
         {
             // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionInitializedState state = new ConnectionInitializedState(context.Object);
+            ConnectionInitializedState state = new ConnectionInitializedState(null);
 
             // Act
             state.Close();
@@ -157,8 +154,7 @@ namespace Ably.Tests
         public void ConnectingState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
             // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
+            ConnectionConnectingState state = new ConnectionConnectingState(null);
 
             // Act
             bool result = state.OnMessageReceived(new ProtocolMessage(action));
@@ -257,8 +253,7 @@ namespace Ably.Tests
         public void ConnectingState_Connect_DoesNothing()
         {
             // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
+            ConnectionConnectingState state = new ConnectionConnectingState(null);
 
             // Act
             state.Connect();
@@ -379,8 +374,7 @@ namespace Ably.Tests
         public void ConnectedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
             // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, null);
+            ConnectionConnectedState state = new ConnectionConnectedState(null, null);
 
             // Act
             bool result = state.OnMessageReceived(new ProtocolMessage(action));
@@ -450,8 +444,7 @@ namespace Ably.Tests
         public void ConnectedState_Connect_DoesNothing()
         {
             // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, null);
+            ConnectionConnectedState state = new ConnectionConnectedState(null, null);
 
             // Act
             state.Connect();
@@ -540,6 +533,278 @@ namespace Ably.Tests
 
             // Assert
             context.Verify(c => c.SetState(It.IsAny<ConnectionDisconnectedState>()), Times.Once());
+        }
+        #endregion
+
+        //
+        // Disconnected state
+        //
+        #region Disconnected
+        [Fact]
+        public void DisconnectedState_CorrectState()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            ConnectionDisconnectedState state = new ConnectionDisconnectedState(context.Object, ErrorInfo.ReasonClosed);
+
+            // Assert
+            Assert.Equal<Ably.Realtime.ConnectionState>(Ably.Realtime.ConnectionState.Disconnected, state.State);
+        }
+        #endregion
+
+        //
+        // Suspended state
+        //
+        #region Suspended
+        [Fact]
+        public void SuspendedState_CorrectState()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            ConnectionSuspendedState state = new ConnectionSuspendedState(context.Object);
+
+            // Assert
+            Assert.Equal<Ably.Realtime.ConnectionState>(Ably.Realtime.ConnectionState.Suspended, state.State);
+        }
+        #endregion
+
+        //
+        // Closing state
+        //
+        #region Closing
+        [Fact]
+        public void ClosingState_CorrectState()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            ConnectionClosingState state = new ConnectionClosingState(context.Object);
+
+            // Assert
+            Assert.Equal<Ably.Realtime.ConnectionState>(Ably.Realtime.ConnectionState.Closing, state.State);
+        }
+
+        [Fact]
+        public void ClosingState_SendMessage_DoesNothing()
+        {
+            // Arrange
+            ConnectionClosingState state = new ConnectionClosingState(null);
+
+            // Act
+            state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
+        }
+        #endregion
+
+        //
+        // Closed state
+        //
+        #region Closed
+        [Fact]
+        public void ClosedState_CorrectState()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            ConnectionClosedState state = new ConnectionClosedState(context.Object);
+
+            // Assert
+            Assert.Equal<Ably.Realtime.ConnectionState>(Ably.Realtime.ConnectionState.Closed, state.State);
+        }
+
+        [Fact]
+        public void ClosedState_Connect_GoesToConnecting()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            ConnectionClosedState state = new ConnectionClosedState(context.Object);
+
+            // Act
+            state.Connect();
+
+            // Assert
+            context.Verify(c => c.SetState(It.IsAny<ConnectionConnectingState>()), Times.Once());
+        }
+
+        [Fact]
+        public void ClosedState_Close_DoesNothing()
+        {
+            // Arrange
+            ConnectionClosedState state = new ConnectionClosedState(null);
+
+            // Act
+            state.Close();
+        }
+
+        [Fact]
+        public void ClosedState_SendMessage_DoesNothing()
+        {
+            // Arrange
+            ConnectionClosedState state = new ConnectionClosedState(null);
+
+            // Act
+            state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
+        }
+
+        [Fact]
+        public void ClosedState_AttachToContext_DestroysTransport()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            Mock<ITransport> transport = new Mock<ITransport>();
+            context.Setup(c => c.CreateTransport()).Callback(() =>
+                context.Setup(c => c.Transport).Returns(transport.Object));
+            ConnectionClosedState state = new ConnectionClosedState(context.Object);
+
+            // Act
+            state.OnAttachedToContext();
+
+            // Assert
+            context.Verify(c => c.DestroyTransport(), Times.Once());
+        }
+
+        [Theory]
+        [InlineData(ProtocolMessage.MessageAction.Ack)]
+        [InlineData(ProtocolMessage.MessageAction.Attach)]
+        [InlineData(ProtocolMessage.MessageAction.Attached)]
+        [InlineData(ProtocolMessage.MessageAction.Close)]
+        [InlineData(ProtocolMessage.MessageAction.Closed)]
+        [InlineData(ProtocolMessage.MessageAction.Connect)]
+        [InlineData(ProtocolMessage.MessageAction.Connected)]
+        [InlineData(ProtocolMessage.MessageAction.Detach)]
+        [InlineData(ProtocolMessage.MessageAction.Detached)]
+        [InlineData(ProtocolMessage.MessageAction.Disconnect)]
+        [InlineData(ProtocolMessage.MessageAction.Disconnected)]
+        [InlineData(ProtocolMessage.MessageAction.Error)]
+        [InlineData(ProtocolMessage.MessageAction.Heartbeat)]
+        [InlineData(ProtocolMessage.MessageAction.Message)]
+        [InlineData(ProtocolMessage.MessageAction.Nack)]
+        [InlineData(ProtocolMessage.MessageAction.Presence)]
+        [InlineData(ProtocolMessage.MessageAction.Sync)]
+        public void ClosedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
+        {
+            // Arrange
+            ConnectionClosedState state = new ConnectionClosedState(null);
+
+            // Act
+            bool result = state.OnMessageReceived(new ProtocolMessage(action));
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void ClosedState_DoesNotListenToTransportChanges()
+        {
+            // Arrange
+            ConnectionClosedState state = new ConnectionClosedState(null);
+
+            // Act
+            state.OnTransportStateChanged(null);
+        }
+        #endregion
+
+        //
+        // Failed state
+        //
+        #region Failed
+        [Fact]
+        public void FailedState_CorrectState()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            ConnectionFailedState state = new ConnectionFailedState(context.Object, ErrorInfo.ReasonNeverConnected);
+
+            // Assert
+            Assert.Equal<Ably.Realtime.ConnectionState>(Ably.Realtime.ConnectionState.Failed, state.State);
+        }
+
+        [Fact]
+        public void FailedState_Connect_GoesToConnecting()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            ConnectionFailedState state = new ConnectionFailedState(context.Object, ErrorInfo.ReasonNeverConnected);
+
+            // Act
+            state.Connect();
+
+            // Assert
+            context.Verify(c => c.SetState(It.IsAny<ConnectionConnectingState>()), Times.Once());
+        }
+
+        [Fact]
+        public void FailedState_Close_DoesNothing()
+        {
+            // Arrange
+            ConnectionFailedState state = new ConnectionFailedState(null, ErrorInfo.ReasonNeverConnected);
+
+            // Act
+            state.Close();
+        }
+
+        [Fact]
+        public void FailedState_SendMessage_DoesNothing()
+        {
+            // Arrange
+            ConnectionFailedState state = new ConnectionFailedState(null, ErrorInfo.ReasonNeverConnected);
+
+            // Act
+            state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
+        }
+
+        [Fact]
+        public void FailedState_AttachToContext_DestroysTransport()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            Mock<ITransport> transport = new Mock<ITransport>();
+            context.Setup(c => c.CreateTransport()).Callback(() =>
+                context.Setup(c => c.Transport).Returns(transport.Object));
+            ConnectionFailedState state = new ConnectionFailedState(context.Object, ErrorInfo.ReasonNeverConnected);
+
+            // Act
+            state.OnAttachedToContext();
+
+            // Assert
+            context.Verify(c => c.DestroyTransport(), Times.Once());
+        }
+
+        [Theory]
+        [InlineData(ProtocolMessage.MessageAction.Ack)]
+        [InlineData(ProtocolMessage.MessageAction.Attach)]
+        [InlineData(ProtocolMessage.MessageAction.Attached)]
+        [InlineData(ProtocolMessage.MessageAction.Close)]
+        [InlineData(ProtocolMessage.MessageAction.Closed)]
+        [InlineData(ProtocolMessage.MessageAction.Connect)]
+        [InlineData(ProtocolMessage.MessageAction.Connected)]
+        [InlineData(ProtocolMessage.MessageAction.Detach)]
+        [InlineData(ProtocolMessage.MessageAction.Detached)]
+        [InlineData(ProtocolMessage.MessageAction.Disconnect)]
+        [InlineData(ProtocolMessage.MessageAction.Disconnected)]
+        [InlineData(ProtocolMessage.MessageAction.Error)]
+        [InlineData(ProtocolMessage.MessageAction.Heartbeat)]
+        [InlineData(ProtocolMessage.MessageAction.Message)]
+        [InlineData(ProtocolMessage.MessageAction.Nack)]
+        [InlineData(ProtocolMessage.MessageAction.Presence)]
+        [InlineData(ProtocolMessage.MessageAction.Sync)]
+        public void FailedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
+        {
+            // Arrange
+            ConnectionFailedState state = new ConnectionFailedState(null, ErrorInfo.ReasonNeverConnected);
+
+            // Act
+            bool result = state.OnMessageReceived(new ProtocolMessage(action));
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void FailedState_DoesNotListenToTransportChanges()
+        {
+            // Arrange
+            ConnectionFailedState state = new ConnectionFailedState(null, ErrorInfo.ReasonNeverConnected);
+
+            // Act
+            state.OnTransportStateChanged(null);
         }
         #endregion
     }

@@ -40,7 +40,7 @@ namespace Ably.Transport.States.Connection
 
         public override void Close()
         {
-            throw new NotImplementedException();
+            // does nothing
         }
 
         public override bool OnMessageReceived(ProtocolMessage message)
