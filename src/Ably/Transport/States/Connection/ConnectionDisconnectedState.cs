@@ -8,7 +8,7 @@ namespace Ably.Transport.States.Connection
         public ConnectionDisconnectedState(IConnectionContext context, TransportStateInfo transportState) :
             base(context)
         {
-            this.Error = new ErrorInfo(transportState.Error.Message, 80000, System.Net.HttpStatusCode.ServiceUnavailable);
+            this.Error = CreateError(transportState);
         }
 
         public ConnectionDisconnectedState(IConnectionContext context, ErrorInfo error) :
@@ -51,6 +51,11 @@ namespace Ably.Transport.States.Connection
         public override void OnTransportStateChanged(TransportStateInfo state)
         {
             throw new NotImplementedException();
+        }
+
+        private static ErrorInfo CreateError(TransportStateInfo state)
+        {
+            return ErrorInfo.ReasonDisconnected;
         }
     }
 }

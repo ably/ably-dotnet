@@ -41,38 +41,6 @@ namespace Ably.Tests
             mock.Verify(c => c.Connect(), Times.Never());
         }
 
-        //[Fact]
-        //public void Close_When_Initialized_DoesNotSendDisconnect()
-        //{
-        //    // Arrange
-        //    Mock<ITransport> mock = new Mock<ITransport>();
-        //    mock.SetupGet(c => c.State).Returns(TransportState.Initialized);
-        //    ConnectionManager target = new ConnectionManager(mock.Object);
-
-        //    // Act
-        //    target.Close();
-
-        //    // Assert
-        //    mock.Verify(c => c.Close(true), Times.Never());
-        //    mock.Verify(c => c.Close(false), Times.Once());
-        //}
-
-        //[Fact]
-        //public void Close_When_Connected_SendsDisconnect()
-        //{
-        //    // Arrange
-        //    Mock<ITransport> mock = new Mock<ITransport>();
-        //    mock.SetupGet(c => c.State).Returns(TransportState.Connected);
-        //    ConnectionManager target = new ConnectionManager(mock.Object);
-
-        //    // Act
-        //    target.Close();
-
-        //    // Assert
-        //    mock.Verify(c => c.Close(true), Times.Once());
-        //    mock.Verify(c => c.Close(false), Times.Never());
-        //}
-
         [Fact]
         public void WhenConnecting_OutboundMessagesAreNotSent()
         {
@@ -410,6 +378,16 @@ namespace Ably.Tests
 
             // Assert
             Assert.Equal<string>(options.Host, target.Host);
+        }
+
+        [Fact]
+        public void When_Created_StateIsInitialized()
+        {
+            // Arrange
+            IConnectionContext manager = new ConnectionManager();
+
+            // Assert
+            Assert.Equal<ConnectionState>(ConnectionState.Initialized, manager.State.State);
         }
     }
 }

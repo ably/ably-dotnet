@@ -134,10 +134,10 @@ namespace Ably.Transport
         {
             if (this.sync != null && this.sync.IsWaitNotificationRequired())
             {
-                this.sync.Post(new System.Threading.SendOrPostCallback(o => this.OnTransportError(e)), null);
+                this.sync.Post(new System.Threading.SendOrPostCallback(o => this.OnTransportError(transport.State, e)), null);
                 return;
             }
-            this.OnTransportError(e);
+            this.OnTransportError(transport.State, e);
         }
 
         void ITransportListener.OnTransportMessageReceived(ProtocolMessage message)
@@ -152,17 +152,17 @@ namespace Ably.Transport
 
         private void OnTransportConnected()
         {
-            this.state.OnTransportStateChanged(new States.Connection.ConnectionState.TransportStateInfo(transport.State));
+            this.state.OnTransportStateChanged(new States.Connection.ConnectionState.TransportStateInfo(TransportState.Connected));
         }
 
         private void OnTransportDisconnected()
         {
-            this.state.OnTransportStateChanged(new States.Connection.ConnectionState.TransportStateInfo(transport.State));
+            this.state.OnTransportStateChanged(new States.Connection.ConnectionState.TransportStateInfo(TransportState.Closed));
         }
 
-        private void OnTransportError(Exception e)
+        private void OnTransportError(TransportState state, Exception e)
         {
-            this.state.OnTransportStateChanged(new States.Connection.ConnectionState.TransportStateInfo(transport.State, e));
+            this.state.OnTransportStateChanged(new States.Connection.ConnectionState.TransportStateInfo(state, e));
         }
 
         private void OnTransportMessageReceived(ProtocolMessage message)

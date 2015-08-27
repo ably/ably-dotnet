@@ -71,11 +71,14 @@ namespace Ably.Transport.States.Connection
 
         public override void OnAttachedToContext()
         {
-            foreach (ProtocolMessage message in this.context.QueuedMessages)
+            if (this.context.QueuedMessages != null && this.context.QueuedMessages.Count > 0)
             {
-                this.SendMessage(message);
+                foreach (ProtocolMessage message in this.context.QueuedMessages)
+                {
+                    this.SendMessage(message);
+                }
+                this.context.QueuedMessages.Clear();
             }
-            this.context.QueuedMessages.Clear();
         }
     }
 }

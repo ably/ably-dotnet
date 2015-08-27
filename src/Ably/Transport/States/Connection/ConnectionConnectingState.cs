@@ -39,8 +39,16 @@ namespace Ably.Transport.States.Connection
         {
             if (message.Action == ProtocolMessage.MessageAction.Connected)
             {
-                ConnectionInfo info = new ConnectionInfo(message.ConnectionId, message.ConnectionSerial, message.ConnectionKey);
-                this.context.SetState(new ConnectionConnectedState(this.context, info));
+                if (context.Transport.State == TransportState.Connected)
+                {
+                    ConnectionInfo info = new ConnectionInfo(message.ConnectionId, message.ConnectionSerial, message.ConnectionKey);
+                    this.context.SetState(new ConnectionConnectedState(this.context, info));
+                }
+                return true;
+            }
+            else if (message.Action == ProtocolMessage.MessageAction.Error)
+            {
+                this.context.SetState(new ConnectionFailedState(this.context, message.Error));
                 return true;
             }
             return false;
@@ -51,12 +59,6 @@ namespace Ably.Transport.States.Connection
             if (state.State == TransportState.Closed)
             {
                 this.context.SetState(new ConnectionDisconnectedState(this.context, state));
-            }
-            //else if (state.Error is )
-            if (state.State != TransportState.Connected)
-            {
-                // failed state?
-                this.context.SetState(new ConnectionFailedState(this.context, state));
             }
         }
 
