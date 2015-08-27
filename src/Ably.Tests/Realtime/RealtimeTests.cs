@@ -66,7 +66,6 @@ namespace Ably.Tests
             AblyRealtime realtime = new AblyRealtime(options, mock.Object);
 
             // Assert
-            Assert.Equal<ConnectionState>(ConnectionState.Connecting, realtime.Connection.State);
             mock.Verify(c => c.Connect(), Times.Once());
         }
     }

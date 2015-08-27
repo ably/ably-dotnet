@@ -22,7 +22,7 @@ namespace Ably.Transport
 
         void Connect();
 
-        void Close(bool sendDisconnect);
+        void Close();
 
         void Abort(string reason);
 

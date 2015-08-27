@@ -1,0 +1,72 @@
+﻿using Ably.Types;
+using System;
+
+namespace Ably.Transport.States.Connection
+{
+    internal class ConnectionConnectingState : ConnectionState
+    {
+        public ConnectionConnectingState(IConnectionContext context) :
+            base(context)
+        { }
+
+        public override Realtime.ConnectionState State
+        {
+            get
+            {
+                return Realtime.ConnectionState.Connecting;
+            }
+        }
+
+        protected override bool CanQueueMessages
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public override void Connect()
+        {
+            // do nothing
+        }
+
+        public override void Close()
+        {
+            this.context.SetState(new ConnectionClosingState(this.context));
+        }
+
+        public override bool OnMessageReceived(ProtocolMessage message)
+        {
+            if (message.Action == ProtocolMessage.MessageAction.Connected)
+            {
+                ConnectionInfo info = new ConnectionInfo(message.ConnectionId, message.ConnectionSerial, message.ConnectionKey);
+                this.context.SetState(new ConnectionConnectedState(this.context, info));
+                return true;
+            }
+            return false;
+        }
+
+        public override void OnTransportStateChanged(TransportStateInfo state)
+        {
+            if (state.State == TransportState.Closed)
+            {
+                this.context.SetState(new ConnectionDisconnectedState(this.context, state));
+            }
+            //else if (state.Error is )
+            if (state.State != TransportState.Connected)
+            {
+                // failed state?
+                this.context.SetState(new ConnectionFailedState(this.context, state));
+            }
+        }
+
+        public override void OnAttachedToContext()
+        {
+            if (context.Transport == null)
+            {
+                context.CreateTransport();
+            }
+            this.context.Transport.Connect();
+        }
+    }
+}

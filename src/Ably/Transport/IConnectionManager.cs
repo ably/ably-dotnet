@@ -1,6 +1,7 @@
 ﻿using Ably.Realtime;
 using Ably.Types;
 using System;
+using System.Collections.Generic;
 
 namespace Ably.Transport
 {
@@ -34,5 +35,16 @@ namespace Ably.Transport
         void Close();
 
         void Send(ProtocolMessage message, Action<bool, ErrorInfo> listener);
+    }
+
+    internal interface IConnectionContext
+    {
+        States.Connection.ConnectionState State { get; }
+        ITransport Transport { get; }
+        Queue<ProtocolMessage> QueuedMessages { get; }
+
+        void SetState(States.Connection.ConnectionState state);
+        void CreateTransport();
+        void DestroyTransport();
     }
 }

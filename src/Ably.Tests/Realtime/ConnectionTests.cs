@@ -4,6 +4,7 @@ using Ably.Types;
 using Moq;
 using System;
 using Xunit;
+using Xunit.Extensions;
 
 namespace Ably.Tests
 {
@@ -22,33 +23,25 @@ namespace Ably.Tests
             Assert.Equal<ConnectionState>(ConnectionState.Initialized, target.State);
         }
 
-        [Fact]
-        public void When_Connect_StateIsConnecting()
+        [Theory]
+        [InlineData(ConnectionState.Closed)]
+        [InlineData(ConnectionState.Closing)]
+        [InlineData(ConnectionState.Connecting)]
+        [InlineData(ConnectionState.Disconnected)]
+        [InlineData(ConnectionState.Failed)]
+        [InlineData(ConnectionState.Initialized)]
+        [InlineData(ConnectionState.Suspended)]
+        public void When_ConnectionManagerChangesState_StateIsChanged(ConnectionState state)
         {
             // Arrange
             Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
             Connection target = new Connection(mock.Object);
 
             // Act
-            target.Connect();
+            mock.Raise(m => m.StateChanged += null, state, null, null);
 
             // Assert
-            Assert.Equal<ConnectionState>(ConnectionState.Connecting, target.State);
-        }
-
-        [Fact]
-        public void When_Connect_StateIsConnected()
-        {
-            // Arrange
-            Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
-            mock.Setup(m => m.Connect()).Raises(m => m.StateChanged += null, ConnectionState.Connected, new ConnectionInfo("1", 2, "3"), null);
-            Connection target = new Connection(mock.Object);
-
-            // Act
-            target.Connect();
-
-            // Assert
-            Assert.Equal<ConnectionState>(ConnectionState.Connected, target.State);
+            Assert.Equal<ConnectionState>(state, target.State);
         }
 
         [Fact]
@@ -113,35 +106,6 @@ namespace Ably.Tests
 
             // Assert
             Assert.Same(errorTarget, target.Reason);
-        }
-
-        [Fact]
-        public void Close_When_Initialized_GoesToClosing()
-        {
-            // Arrange
-            Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
-            Connection target = new Connection(mock.Object);
-
-            // Act
-            target.Close();
-
-            // Assert
-            Assert.Equal<ConnectionState>(ConnectionState.Closing, target.State);
-        }
-
-        [Fact]
-        public void Close_When_Initialized_GoesToClosed()
-        {
-            // Arrange
-            Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
-            mock.Setup(m => m.Close()).Raises(m => m.StateChanged += null, ConnectionState.Closed, null, null);
-            Connection target = new Connection(mock.Object);
-
-            // Act
-            target.Close();
-
-            // Assert
-            Assert.Equal<ConnectionState>(ConnectionState.Closed, target.State);
         }
 
         [Fact]

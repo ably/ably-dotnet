@@ -58,7 +58,6 @@ namespace Ably.Realtime
         /// </summary>
         public void Connect()
         {
-            this.SetConnectionState(ConnectionState.Connecting);
             this.connection.Connect();
         }
 
@@ -85,7 +84,6 @@ namespace Ably.Realtime
         /// </summary>
         public void Close()
         {
-            this.SetConnectionState(ConnectionState.Closing);
             this.connection.Close();
         }
 
