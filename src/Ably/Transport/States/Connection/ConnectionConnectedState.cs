@@ -34,7 +34,6 @@ namespace Ably.Transport.States.Connection
         public override void Close()
         {
             // Notify ably service
-            this.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
             this.context.SetState(new ConnectionClosingState(this.context));
         }
 

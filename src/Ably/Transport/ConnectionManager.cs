@@ -200,6 +200,7 @@ namespace Ably.Transport
             if (this.transport == null)
                 return;
 
+            this.transport.Close();
             this.transport.Listener = null;
             this.transport = null;
         }
