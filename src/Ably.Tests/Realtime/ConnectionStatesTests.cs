@@ -145,7 +145,6 @@ namespace Ably.Tests
         [InlineData(ProtocolMessage.MessageAction.Detach)]
         [InlineData(ProtocolMessage.MessageAction.Detached)]
         [InlineData(ProtocolMessage.MessageAction.Disconnect)]
-        [InlineData(ProtocolMessage.MessageAction.Disconnected)]
         [InlineData(ProtocolMessage.MessageAction.Heartbeat)]
         [InlineData(ProtocolMessage.MessageAction.Message)]
         [InlineData(ProtocolMessage.MessageAction.Nack)]
@@ -247,6 +246,34 @@ namespace Ably.Tests
 
             // Assert
             context.Verify(c => c.SetState(It.Is<ConnectionFailedState>(ss => object.ReferenceEquals(ss.Error, targetError))), Times.Once());
+        }
+
+        [Fact]
+        public void ConnectingState_HandlesInboundDisconnectedMessage()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
+
+            // Act
+            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void ConnectingState_HandlesInboundDisconnectedMessage_GoesToDisconnected()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
+
+            // Act
+            state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+
+            // Assert
+            context.Verify(c => c.SetState(It.IsAny<ConnectionDisconnectedState>()), Times.Once());
         }
 
         [Fact]
@@ -448,7 +475,7 @@ namespace Ably.Tests
         }
 
         [Fact]
-        public void ConnectingState_HandlesInboundDisconnectedMessage_GoesToDisconnected()
+        public void ConnectedState_HandlesInboundDisconnectedMessage_GoesToDisconnected()
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
@@ -693,7 +720,6 @@ namespace Ably.Tests
         [InlineData(ProtocolMessage.MessageAction.Detach)]
         [InlineData(ProtocolMessage.MessageAction.Detached)]
         [InlineData(ProtocolMessage.MessageAction.Disconnect)]
-        [InlineData(ProtocolMessage.MessageAction.Disconnected)]
         [InlineData(ProtocolMessage.MessageAction.Heartbeat)]
         [InlineData(ProtocolMessage.MessageAction.Message)]
         [InlineData(ProtocolMessage.MessageAction.Nack)]
@@ -766,6 +792,34 @@ namespace Ably.Tests
 
             // Assert
             context.Verify(c => c.SetState(It.Is<ConnectionFailedState>(ss => object.ReferenceEquals(ss.Error, targetError))), Times.Once());
+        }
+
+        [Fact]
+        public void ClosingState_HandlesInboundDisconnectedMessage()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            ConnectionClosingState state = new ConnectionClosingState(context.Object);
+
+            // Act
+            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void ClosingState_HandlesInboundDisconnectedMessage_GoesToDisconnected()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            ConnectionClosingState state = new ConnectionClosingState(context.Object);
+
+            // Act
+            state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+
+            // Assert
+            context.Verify(c => c.SetState(It.IsAny<ConnectionDisconnectedState>()), Times.Once());
         }
 
         [Fact]

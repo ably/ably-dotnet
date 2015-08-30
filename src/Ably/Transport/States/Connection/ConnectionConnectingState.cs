@@ -37,19 +37,27 @@ namespace Ably.Transport.States.Connection
 
         public override bool OnMessageReceived(ProtocolMessage message)
         {
-            if (message.Action == ProtocolMessage.MessageAction.Connected)
+            switch (message.Action)
             {
-                if (context.Transport.State == TransportState.Connected)
-                {
-                    ConnectionInfo info = new ConnectionInfo(message.ConnectionId, message.ConnectionSerial, message.ConnectionKey);
-                    this.context.SetState(new ConnectionConnectedState(this.context, info));
-                }
-                return true;
-            }
-            else if (message.Action == ProtocolMessage.MessageAction.Error)
-            {
-                this.context.SetState(new ConnectionFailedState(this.context, message.Error));
-                return true;
+                case ProtocolMessage.MessageAction.Connected:
+                    {
+                        if (context.Transport.State == TransportState.Connected)
+                        {
+                            ConnectionInfo info = new ConnectionInfo(message.ConnectionId, message.ConnectionSerial, message.ConnectionKey);
+                            this.context.SetState(new ConnectionConnectedState(this.context, info));
+                        }
+                        return true;
+                    }
+                case ProtocolMessage.MessageAction.Disconnected:
+                    {
+                        this.context.SetState(new ConnectionDisconnectedState(this.context, message.Error));
+                        return true;
+                    }
+                case ProtocolMessage.MessageAction.Error:
+                    {
+                        this.context.SetState(new ConnectionFailedState(this.context, message.Error));
+                        return true;
+                    }
             }
             return false;
         }

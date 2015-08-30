@@ -46,17 +46,25 @@ namespace Ably.Transport.States.Connection
 
         public override bool OnMessageReceived(ProtocolMessage message)
         {
-            if (message.Action == ProtocolMessage.MessageAction.Closed)
+            switch (message.Action)
             {
-                _timer.Abort();
-                this.context.SetState(new ConnectionClosedState(this.context));
-                return true;
-            }
-            else if (message.Action == ProtocolMessage.MessageAction.Error)
-            {
-                _timer.Abort();
-                this.context.SetState(new ConnectionFailedState(this.context, message.Error));
-                return true;
+                case ProtocolMessage.MessageAction.Closed:
+                    {
+                        _timer.Abort();
+                        this.context.SetState(new ConnectionClosedState(this.context));
+                        return true;
+                    }
+                case ProtocolMessage.MessageAction.Disconnected:
+                    {
+                        this.context.SetState(new ConnectionDisconnectedState(this.context, message.Error));
+                        return true;
+                    }
+                case ProtocolMessage.MessageAction.Error:
+                    {
+                        _timer.Abort();
+                        this.context.SetState(new ConnectionFailedState(this.context, message.Error));
+                        return true;
+                    }
             }
             return false;
         }
