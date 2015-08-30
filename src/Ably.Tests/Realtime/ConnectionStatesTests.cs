@@ -814,13 +814,15 @@ namespace Ably.Tests
             Mock<ITransport> transport = new Mock<ITransport>();
             transport.SetupGet(c => c.State).Returns(TransportState.Connected);
             context.SetupGet(c => c.Transport).Returns(transport.Object);
-            ConnectionClosingState state = new ConnectionClosingState(context.Object);
+            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
+            timer.Setup(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>())).Callback<int, System.Action>((t, c) => c());
+            ConnectionClosingState state = new ConnectionClosingState(context.Object, timer.Object);
 
             // Act
             state.OnAttachedToContext();
-            System.Threading.Thread.Sleep(3000);
 
             // Assert
+            timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>()), Times.Once);
             context.Verify(c => c.SetState(It.IsAny<ConnectionClosedState>()), Times.Once());
         }
 
@@ -832,14 +834,16 @@ namespace Ably.Tests
             Mock<ITransport> transport = new Mock<ITransport>();
             transport.SetupGet(c => c.State).Returns(TransportState.Connected);
             context.SetupGet(c => c.Transport).Returns(transport.Object);
-            ConnectionClosingState state = new ConnectionClosingState(context.Object);
+            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
+            ConnectionClosingState state = new ConnectionClosingState(context.Object, timer.Object);
 
             // Act
             state.OnAttachedToContext();
             state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
-            System.Threading.Thread.Sleep(3000);
 
             // Assert
+            timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>()), Times.Once);
+            timer.Verify(c => c.Abort(), Times.Once);
             context.Verify(c => c.SetState(It.IsAny<ConnectionClosedState>()), Times.Once());
         }
 
@@ -851,14 +855,16 @@ namespace Ably.Tests
             Mock<ITransport> transport = new Mock<ITransport>();
             transport.SetupGet(c => c.State).Returns(TransportState.Connected);
             context.SetupGet(c => c.Transport).Returns(transport.Object);
-            ConnectionClosingState state = new ConnectionClosingState(context.Object);
+            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
+            ConnectionClosingState state = new ConnectionClosingState(context.Object, timer.Object);
 
             // Act
             state.OnAttachedToContext();
             state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
-            System.Threading.Thread.Sleep(3000);
 
             // Assert
+            timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>()), Times.Once);
+            timer.Verify(c => c.Abort(), Times.Once);
             context.Verify(c => c.SetState(It.IsAny<ConnectionFailedState>()), Times.Once());
         }
         #endregion
@@ -1076,5 +1082,77 @@ namespace Ably.Tests
             state.OnTransportStateChanged(null);
         }
         #endregion
+
+        [Fact]
+        public void CountdownTimer_Start_StartsCountdown()
+        {
+            // Arrange
+            CountdownTimer timer = new CountdownTimer();
+            int timeout = 10;
+            int called = 0;
+            System.Action callback = () => called++;
+
+            // Act
+            timer.Start(timeout, callback);
+            System.Threading.Thread.Sleep(50);
+
+            // Assert
+            Assert.Equal<int>(1, called);
+        }
+
+        [Fact]
+        public void CountdownTimer_Abort_StopsCountdown()
+        {
+            // Arrange
+            CountdownTimer timer = new CountdownTimer();
+            int timeout = 10;
+            int called = 0;
+            System.Action callback = () => called++;
+            timer.Start(timeout, callback);
+
+            // Act
+            timer.Abort();
+            System.Threading.Thread.Sleep(50);
+
+            // Assert
+            Assert.Equal<int>(0, called);
+        }
+
+        [Fact]
+        public void CountdownTimer_AbortStart_StartsNewCountdown()
+        {
+            // Arrange
+            CountdownTimer timer = new CountdownTimer();
+            int timeout = 10;
+            int called = 0;
+            System.Action callback = () => called++;
+            timer.Start(timeout, callback);
+
+            // Act
+            timer.Abort();
+            timer.Start(timeout, callback);
+            System.Threading.Thread.Sleep(50);
+
+            // Assert
+            Assert.Equal<int>(1, called);
+        }
+
+        [Fact]
+        public void CountdownTimer_StartTwice_AbortsOldTimer()
+        {
+            // Arrange
+            CountdownTimer timer = new CountdownTimer();
+            int timeout = 10;
+            int called = 0;
+            System.Action callback = () => called++;
+
+            // Act
+            timer.Start(timeout, callback);
+            timer.Start(timeout, callback);
+            System.Threading.Thread.Sleep(50);
+
+            // Assert
+            Assert.Equal<int>(1, called);
+        }
     }
 }

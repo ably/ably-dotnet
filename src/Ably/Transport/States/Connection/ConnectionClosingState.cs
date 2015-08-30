@@ -6,11 +6,17 @@ namespace Ably.Transport.States.Connection
     internal class ConnectionClosingState : ConnectionState
     {
         public ConnectionClosingState(IConnectionContext context) :
-            base(context)
+            this(context, new CountdownTimer())
         { }
 
+        public ConnectionClosingState(IConnectionContext context, ICountdownTimer timer) :
+            base(context)
+        {
+            _timer = timer;
+        }
+
         private const int CloseTimeout = 1000;
-        private System.Threading.Timer _timer;
+        private ICountdownTimer _timer;
 
         public override Realtime.ConnectionState State
         {
@@ -42,13 +48,13 @@ namespace Ably.Transport.States.Connection
         {
             if (message.Action == ProtocolMessage.MessageAction.Closed)
             {
-                StopTimer();
+                _timer.Abort();
                 this.context.SetState(new ConnectionClosedState(this.context));
                 return true;
             }
             else if (message.Action == ProtocolMessage.MessageAction.Error)
             {
-                StopTimer();
+                _timer.Abort();
                 this.context.SetState(new ConnectionFailedState(this.context, message.Error));
                 return true;
             }
@@ -59,7 +65,7 @@ namespace Ably.Transport.States.Connection
         {
             if (state.State == TransportState.Closed)
             {
-                StopTimer();
+                _timer.Abort();
                 this.context.SetState(new ConnectionClosedState(this.context));
             }
         }
@@ -69,30 +75,12 @@ namespace Ably.Transport.States.Connection
             if (this.context.Transport.State == TransportState.Connected)
             {
                 this.context.Transport.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
-                StartTimer();
+                _timer.Start(CloseTimeout, () => this.context.SetState(new ConnectionClosedState(this.context)));
             }
             else
             {
                 this.context.SetState(new ConnectionClosedState(this.context));
             }
-        }
-
-        private void StartTimer()
-        {
-            _timer = new System.Threading.Timer(OnTimeOut, null, CloseTimeout, System.Threading.Timeout.Infinite);
-        }
-
-        private void StopTimer()
-        {
-            if (_timer != null)
-            {
-                _timer.Dispose();
-            }
-        }
-
-        private void OnTimeOut(object o)
-        {
-            this.context.SetState(new ConnectionClosedState(this.context));
         }
     }
 }

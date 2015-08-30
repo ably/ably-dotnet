@@ -188,6 +188,7 @@
     <Compile Include="Transport\States\Connection\ConnectionConnectingState.cs" />
     <Compile Include="Transport\States\Connection\ConnectionInitializedState.cs" />
     <Compile Include="Transport\States\Connection\ConnectionState.cs" />
+    <Compile Include="Transport\States\Connection\ICountdownTimer.cs" />
     <Compile Include="Transport\TransportParams.cs" />
     <Compile Include="Transport\WebSocketTransport.cs" />
     <Compile Include="Types\IMessageSerializer.cs" />
