@@ -333,22 +333,22 @@ namespace Ably.Tests
             transport.Verify(c => c.Connect(), Times.Once());
         }
 
-        [Fact]
-        public void ConnectingState_AttachToContext_ConnectedTransport_SendsConnect()
-        {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            Mock<ITransport> transport = new Mock<ITransport>();
-            context.SetupGet(c => c.Transport).Returns(transport.Object);
-            transport.SetupGet(c => c.State).Returns(TransportState.Connected);
-            ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
+        //[Fact]
+        //public void ConnectingState_AttachToContext_ConnectedTransport_SendsConnect()
+        //{
+        //    // Arrange
+        //    Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+        //    Mock<ITransport> transport = new Mock<ITransport>();
+        //    context.SetupGet(c => c.Transport).Returns(transport.Object);
+        //    transport.SetupGet(c => c.State).Returns(TransportState.Connected);
+        //    ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
 
-            // Act
-            state.OnAttachedToContext();
+        //    // Act
+        //    state.OnAttachedToContext();
 
-            // Assert
-            transport.Verify(c => c.Send(It.Is<ProtocolMessage>(ss => ss.Action == ProtocolMessage.MessageAction.Connect)), Times.Once());
-        }
+        //    // Assert
+        //    transport.Verify(c => c.Send(It.Is<ProtocolMessage>(ss => ss.Action == ProtocolMessage.MessageAction.Connect)), Times.Once());
+        //}
 
         [Theory]
         [InlineData(TransportState.Closing)]
@@ -370,21 +370,21 @@ namespace Ably.Tests
             context.Verify(c => c.SetState(It.IsAny<ConnectionState>()), Times.Never());
         }
 
-        [Fact]
-        public void ConnectingState_TransportGoesConnected_SendsConnect()
-        {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            Mock<ITransport> transport = new Mock<ITransport>();
-            context.SetupGet(c => c.Transport).Returns(transport.Object);
-            ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
+        //[Fact]
+        //public void ConnectingState_TransportGoesConnected_SendsConnect()
+        //{
+        //    // Arrange
+        //    Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+        //    Mock<ITransport> transport = new Mock<ITransport>();
+        //    context.SetupGet(c => c.Transport).Returns(transport.Object);
+        //    ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
 
-            // Act
-            state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Connected));
+        //    // Act
+        //    state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Connected));
 
-            // Assert
-            transport.Verify(c => c.Send(It.Is<ProtocolMessage>(ss => ss.Action == ProtocolMessage.MessageAction.Connect)), Times.Once());
-        }
+        //    // Assert
+        //    transport.Verify(c => c.Send(It.Is<ProtocolMessage>(ss => ss.Action == ProtocolMessage.MessageAction.Connect)), Times.Once());
+        //}
 
         [Fact]
         public void ConnectingState_TransportGoesDisconnected_SwitchesToDisconnected()

@@ -64,11 +64,7 @@ namespace Ably.Transport.States.Connection
 
         public override void OnTransportStateChanged(TransportStateInfo state)
         {
-            if (state.State == TransportState.Connected)
-            {
-                this.context.Transport.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Connect));
-            }
-            else if (state.State == TransportState.Closed)
+            if (state.State == TransportState.Closed)
             {
                 this.context.SetState(new ConnectionDisconnectedState(this.context, state));
             }
@@ -81,11 +77,7 @@ namespace Ably.Transport.States.Connection
                 context.CreateTransport();
             }
 
-            if (context.Transport.State == TransportState.Connected)
-            {
-                this.context.Transport.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Connect));
-            }
-            else
+            if (context.Transport.State != TransportState.Connected)
             {
                 this.context.Transport.Connect();
             }
