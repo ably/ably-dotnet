@@ -134,7 +134,7 @@ namespace Ably.Transport
         {
             if (this.sync != null && this.sync.IsWaitNotificationRequired())
             {
-                this.sync.Post(new System.Threading.SendOrPostCallback(o => this.OnTransportError(transport.State, e)), null);
+                this.sync.Post(new System.Threading.SendOrPostCallback(o => this.OnTransportError((TransportState)o, e)), transport.State);
                 return;
             }
             this.OnTransportError(transport.State, e);
