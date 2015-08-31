@@ -50,19 +50,17 @@ namespace Ably.Transport.States.Connection
             {
                 case ProtocolMessage.MessageAction.Closed:
                     {
-                        _timer.Abort();
-                        this.context.SetState(new ConnectionClosedState(this.context));
+                        this.TransitionState(new ConnectionClosedState(this.context));
                         return true;
                     }
                 case ProtocolMessage.MessageAction.Disconnected:
                     {
-                        this.context.SetState(new ConnectionDisconnectedState(this.context, message.Error));
+                        this.TransitionState(new ConnectionDisconnectedState(this.context, message.Error));
                         return true;
                     }
                 case ProtocolMessage.MessageAction.Error:
                     {
-                        _timer.Abort();
-                        this.context.SetState(new ConnectionFailedState(this.context, message.Error));
+                        this.TransitionState(new ConnectionFailedState(this.context, message.Error));
                         return true;
                     }
             }
@@ -73,8 +71,7 @@ namespace Ably.Transport.States.Connection
         {
             if (state.State == TransportState.Closed)
             {
-                _timer.Abort();
-                this.context.SetState(new ConnectionClosedState(this.context));
+                this.TransitionState(new ConnectionClosedState(this.context));
             }
         }
 
@@ -89,6 +86,12 @@ namespace Ably.Transport.States.Connection
             {
                 this.context.SetState(new ConnectionClosedState(this.context));
             }
+        }
+
+        private void TransitionState(ConnectionState newState)
+        {
+            this.context.SetState(newState);
+            _timer.Abort();
         }
     }
 }

@@ -6,8 +6,17 @@ namespace Ably.Transport.States.Connection
     internal class ConnectionConnectingState : ConnectionState
     {
         public ConnectionConnectingState(IConnectionContext context) :
-            base(context)
+            this(context, new CountdownTimer())
         { }
+
+        public ConnectionConnectingState(IConnectionContext context, ICountdownTimer timer) :
+            base(context)
+        {
+            _timer = timer;
+        }
+
+        private ICountdownTimer _timer;
+        private const int ConnectTimeout = 15 * 1000;
 
         public override Realtime.ConnectionState State
         {
@@ -32,7 +41,7 @@ namespace Ably.Transport.States.Connection
 
         public override void Close()
         {
-            this.context.SetState(new ConnectionClosingState(this.context));
+            this.TransitionState(new ConnectionClosingState(this.context));
         }
 
         public override bool OnMessageReceived(ProtocolMessage message)
@@ -44,18 +53,18 @@ namespace Ably.Transport.States.Connection
                         if (context.Transport.State == TransportState.Connected)
                         {
                             ConnectionInfo info = new ConnectionInfo(message.ConnectionId, message.ConnectionSerial, message.ConnectionKey);
-                            this.context.SetState(new ConnectionConnectedState(this.context, info));
+                            this.TransitionState(new ConnectionConnectedState(this.context, info));
                         }
                         return true;
                     }
                 case ProtocolMessage.MessageAction.Disconnected:
                     {
-                        this.context.SetState(new ConnectionDisconnectedState(this.context, message.Error));
+                        this.TransitionState(new ConnectionDisconnectedState(this.context, message.Error));
                         return true;
                     }
                 case ProtocolMessage.MessageAction.Error:
                     {
-                        this.context.SetState(new ConnectionFailedState(this.context, message.Error));
+                        this.TransitionState(new ConnectionFailedState(this.context, message.Error));
                         return true;
                     }
             }
@@ -66,7 +75,7 @@ namespace Ably.Transport.States.Connection
         {
             if (state.State == TransportState.Closed)
             {
-                this.context.SetState(new ConnectionDisconnectedState(this.context, state));
+                this.TransitionState(new ConnectionDisconnectedState(this.context, state));
             }
         }
 
@@ -80,7 +89,14 @@ namespace Ably.Transport.States.Connection
             if (context.Transport.State != TransportState.Connected)
             {
                 this.context.Transport.Connect();
+                _timer.Start(ConnectTimeout, () => this.context.SetState(new ConnectionDisconnectedState(this.context)));
             }
+        }
+
+        private void TransitionState(ConnectionState newState)
+        {
+            this.context.SetState(newState);
+            _timer.Abort();
         }
     }
 }

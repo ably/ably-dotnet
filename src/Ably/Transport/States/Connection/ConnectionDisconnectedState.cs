@@ -5,25 +5,27 @@ namespace Ably.Transport.States.Connection
 {
     internal class ConnectionDisconnectedState : ConnectionState
     {
-        public ConnectionDisconnectedState(IConnectionContext context, TransportStateInfo transportState) :
-            this(context, transportState, new CountdownTimer())
+        public ConnectionDisconnectedState(IConnectionContext context) :
+            this(context, null, new CountdownTimer())
         { }
 
-        public ConnectionDisconnectedState(IConnectionContext context, TransportStateInfo transportState, ICountdownTimer timer) :
+        public ConnectionDisconnectedState(IConnectionContext context, TransportStateInfo stateInfo) :
+            this(context, CreateError(stateInfo), new CountdownTimer())
+        { }
+
+        public ConnectionDisconnectedState(IConnectionContext context, ErrorInfo error) :
+            this(context, error, new CountdownTimer())
+        { }
+
+        public ConnectionDisconnectedState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer) :
             base(context)
         {
-            this.Error = CreateError(transportState);
             _timer = timer;
+            this.Error = error ?? ErrorInfo.ReasonDisconnected;
         }
 
         private const int ConnectTimeout = 15 * 1000;
         private ICountdownTimer _timer;
-
-        public ConnectionDisconnectedState(IConnectionContext context, ErrorInfo error) :
-            base(context)
-        {
-            this.Error = error;
-        }
 
         public override Realtime.ConnectionState State
         {
