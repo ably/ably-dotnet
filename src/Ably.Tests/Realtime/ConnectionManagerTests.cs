@@ -278,63 +278,6 @@ namespace Ably.Tests
         }
 
         [Fact]
-        public void WhenTransportReceivesConnectedMessage_StateIsConnected()
-        {
-            // Arrange
-            Mock<ITransport> mock = new Mock<ITransport>();
-            mock.SetupProperty(c => c.Listener);
-            ConnectionManager manager = new ConnectionManager(mock.Object);
-            List<Tuple<ConnectionState, ConnectionInfo, ErrorInfo>> args = new List<Tuple<ConnectionState, ConnectionInfo, ErrorInfo>>();
-            manager.Connect();
-            manager.StateChanged += (s, i, e) =>
-            {
-                args.Add(new Tuple<ConnectionState, ConnectionInfo, ErrorInfo>(s, i, e));
-            };
-
-            // Act
-            mock.Object.Listener.OnTransportMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
-
-            // Assert
-            Assert.Equal<int>(1, args.Count);
-            Assert.Equal<ConnectionState>(ConnectionState.Connected, args[0].Item1);
-        }
-
-        [Fact]
-        public void When_Connecting_TransportError_CallsStateChanged_Failed()
-        {
-            // Arrange
-            Mock<ITransport> transport = new Mock<ITransport>();
-            transport.SetupProperty(c => c.Listener);
-            ConnectionManager manager = new ConnectionManager(transport.Object);
-            manager.Connect();
-            List<Tuple<ConnectionState, ConnectionInfo, ErrorInfo>> args = new List<Tuple<ConnectionState, ConnectionInfo, ErrorInfo>>();
-            manager.StateChanged += (s, i, e) =>
-            {
-                args.Add(new Tuple<ConnectionState, ConnectionInfo, ErrorInfo>(s, i, e));
-            };
-            Exception targetException = new Exception("reason");
-
-            // Act
-            transport.Object.Listener.OnTransportError(targetException);
-
-            // Assert
-            Assert.Single(args, t => t.Item1 == ConnectionState.Failed && t.Item2 == null && t.Item3 != null);
-        }
-
-        [Fact]
-        public void When_HostNotSetInOptions_CreateTransportParameters_UsingDefault()
-        {
-            // Arrange
-            AblyRealtimeOptions options = new AblyRealtimeOptions();
-
-            // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options);
-
-            // Assert
-            Assert.Equal<string>("realtime.ably.io", target.Host);
-        }
-
-        [Fact]
         public void When_HostSetInOptions_CreateTransportParameters_DoesNotModifyIt()
         {
             // Arrange

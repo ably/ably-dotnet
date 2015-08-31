@@ -6,10 +6,18 @@ namespace Ably.Transport.States.Connection
     internal class ConnectionDisconnectedState : ConnectionState
     {
         public ConnectionDisconnectedState(IConnectionContext context, TransportStateInfo transportState) :
+            this(context, transportState, new CountdownTimer())
+        { }
+
+        public ConnectionDisconnectedState(IConnectionContext context, TransportStateInfo transportState, ICountdownTimer timer) :
             base(context)
         {
             this.Error = CreateError(transportState);
+            _timer = timer;
         }
+
+        private const int ConnectTimeout = 15 * 1000;
+        private ICountdownTimer _timer;
 
         public ConnectionDisconnectedState(IConnectionContext context, ErrorInfo error) :
             base(context)
@@ -35,22 +43,33 @@ namespace Ably.Transport.States.Connection
 
         public override void Connect()
         {
-            // do nothing
+            this.context.SetState(new ConnectionConnectingState(this.context));
         }
 
         public override void Close()
         {
-            throw new NotImplementedException();
+            this.context.SetState(new ConnectionClosedState(this.context));
         }
 
         public override bool OnMessageReceived(ProtocolMessage message)
         {
-            throw new NotImplementedException();
+            // could not happen
+            return false;
         }
 
         public override void OnTransportStateChanged(TransportStateInfo state)
         {
-            throw new NotImplementedException();
+            // could not happen
+        }
+
+        public override void OnAttachedToContext()
+        {
+            this._timer.Start(ConnectTimeout, this.OnTimeOut);
+        }
+
+        private void OnTimeOut()
+        {
+            this.context.SetState(new ConnectionConnectingState(this.context));
         }
 
         private static ErrorInfo CreateError(TransportStateInfo state)

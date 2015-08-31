@@ -6,8 +6,17 @@ namespace Ably.Transport.States.Connection
     internal class ConnectionSuspendedState : ConnectionState
     {
         public ConnectionSuspendedState(IConnectionContext context) :
-            base(context)
+            this(context, new CountdownTimer())
         { }
+
+        public ConnectionSuspendedState(IConnectionContext context, ICountdownTimer timer) :
+            base(context)
+        {
+            _timer = timer;
+        }
+
+        private const int ConnectTimeout = 120 * 1000;
+        private ICountdownTimer _timer;
 
         public override Realtime.ConnectionState State
         {
@@ -32,17 +41,28 @@ namespace Ably.Transport.States.Connection
 
         public override void Close()
         {
-            throw new NotImplementedException();
+            this.context.SetState(new ConnectionClosedState(this.context));
         }
 
         public override bool OnMessageReceived(ProtocolMessage message)
         {
-            throw new NotImplementedException();
+            // could not happen
+            return false;
         }
 
         public override void OnTransportStateChanged(TransportStateInfo state)
         {
-            throw new NotImplementedException();
+            // could not happen
+        }
+
+        public override void OnAttachedToContext()
+        {
+            this._timer.Start(ConnectTimeout, this.OnTimeOut);
+        }
+
+        private void OnTimeOut()
+        {
+            this.context.SetState(new ConnectionConnectingState(this.context));
         }
     }
 }
