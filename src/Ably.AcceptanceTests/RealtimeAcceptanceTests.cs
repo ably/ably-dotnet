@@ -304,5 +304,23 @@ namespace Ably.AcceptanceTests
             client.Connection.Reason.Code.ShouldBeEquivalentTo(40400);
             client.Connection.Reason.StatusCode.ShouldBeEquivalentTo(System.Net.HttpStatusCode.NotFound);
         }
+
+        [Test]
+        public void TestRealtimeClient_ConnectionSerialIsMinus1WhenConnected()
+        {
+            // Act
+            var client = GetRealtimeClient();
+            AutoResetEvent signal = new AutoResetEvent(false);
+
+            client.Connection.ConnectionStateChanged += (s, e) =>
+            {
+                signal.Set();
+            };
+
+            // Assert
+            signal.WaitOne(10000);
+
+            client.Connection.Serial.ShouldBeEquivalentTo(-1);
+        }
     }
 }
