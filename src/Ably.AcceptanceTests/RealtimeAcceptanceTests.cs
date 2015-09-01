@@ -278,5 +278,31 @@ namespace Ably.AcceptanceTests
             // Assert
             keys.Count.ShouldBeEquivalentTo(clientCount);
         }
+
+        [Test]
+        public void TestRealtimeClient_InvalidApiKey_GoesFailed()
+        {
+            // Act
+            var client = GetRealtimeClient(o => o.Key = "123.456:789");
+            AutoResetEvent signal = new AutoResetEvent(false);
+            var args = new List<Realtime.ConnectionStateChangedEventArgs>();
+
+            client.Connection.ConnectionStateChanged += (s, e) =>
+            {
+                args.Add(e);
+                signal.Set();
+            };
+
+            // Assert
+            signal.WaitOne(10000);
+
+            args.Count.ShouldBeEquivalentTo(1);
+            args[0].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionState.Failed);
+            args[0].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionState.Connecting);
+            args[0].Reason.ShouldBeEquivalentTo(client.Connection.Reason);
+            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionState.Failed);
+            client.Connection.Reason.Code.ShouldBeEquivalentTo(40400);
+            client.Connection.Reason.StatusCode.ShouldBeEquivalentTo(System.Net.HttpStatusCode.NotFound);
+        }
     }
 }
