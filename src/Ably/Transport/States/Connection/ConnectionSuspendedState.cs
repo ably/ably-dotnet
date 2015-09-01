@@ -15,7 +15,8 @@ namespace Ably.Transport.States.Connection
             _timer = timer;
         }
 
-        private const int ConnectTimeout = 120 * 1000;
+        public const int SuspendTimeout = 120 * 1000; // Time before a connection is considered suspended
+        private const int ConnectTimeout = 120 * 1000; // Time to wait before retrying connection
         private ICountdownTimer _timer;
 
         public override Realtime.ConnectionState State

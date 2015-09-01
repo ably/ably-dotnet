@@ -42,9 +42,13 @@ namespace Ably.Transport
         States.Connection.ConnectionState State { get; }
         ITransport Transport { get; }
         Queue<ProtocolMessage> QueuedMessages { get; }
+        DateTimeOffset? FirstConnectionAttempt { get; }
+        int ConnectionAttempts { get; }
 
         void SetState(States.Connection.ConnectionState state);
         void CreateTransport();
         void DestroyTransport();
+        void AttemptConnection();
+        void ResetConnectionAttempts();
     }
 }

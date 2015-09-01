@@ -33,7 +33,6 @@ namespace Ably.Transport.States.Connection
 
         public override void Close()
         {
-            // Notify ably service
             this.context.SetState(new ConnectionClosingState(this.context));
         }
 
@@ -70,6 +69,8 @@ namespace Ably.Transport.States.Connection
 
         public override void OnAttachedToContext()
         {
+            context.ResetConnectionAttempts();
+
             if (this.context.QueuedMessages != null && this.context.QueuedMessages.Count > 0)
             {
                 foreach (ProtocolMessage message in this.context.QueuedMessages)

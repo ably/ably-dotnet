@@ -59,7 +59,16 @@ namespace Ably.Transport.States.Connection
                     }
                 case ProtocolMessage.MessageAction.Disconnected:
                     {
-                        this.TransitionState(new ConnectionDisconnectedState(this.context, message.Error));
+                        ConnectionState nextState;
+                        if (this.ShouldSuspend())
+                        {
+                            nextState = new ConnectionSuspendedState(this.context);
+                        }
+                        else
+                        {
+                            nextState = new ConnectionDisconnectedState(this.context, message.Error);
+                        }
+                        this.TransitionState(nextState);
                         return true;
                     }
                 case ProtocolMessage.MessageAction.Error:
@@ -75,12 +84,23 @@ namespace Ably.Transport.States.Connection
         {
             if (state.State == TransportState.Closed)
             {
-                this.TransitionState(new ConnectionDisconnectedState(this.context, state));
+                ConnectionState nextState;
+                if (this.ShouldSuspend())
+                {
+                    nextState = new ConnectionSuspendedState(this.context);
+                }
+                else
+                {
+                    nextState = new ConnectionDisconnectedState(this.context, state);
+                }
+                this.TransitionState(nextState);
             }
         }
 
         public override void OnAttachedToContext()
         {
+            context.AttemptConnection();
+
             if (context.Transport == null)
             {
                 context.CreateTransport();
@@ -97,6 +117,13 @@ namespace Ably.Transport.States.Connection
         {
             this.context.SetState(newState);
             _timer.Abort();
+        }
+
+        private bool ShouldSuspend()
+        {
+            return this.context.FirstConnectionAttempt != null &&
+                this.context.FirstConnectionAttempt.Value
+                .AddMilliseconds(ConnectionSuspendedState.SuspendTimeout) < DateTimeOffset.Now;
         }
     }
 }

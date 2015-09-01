@@ -2,6 +2,7 @@
 using Ably.Transport.States.Connection;
 using Ably.Types;
 using Moq;
+using System;
 using System.Collections.Generic;
 using Xunit;
 using Xunit.Extensions;
@@ -118,6 +119,21 @@ namespace Ably.Tests
 
             // Assert
             Assert.Equal<Ably.Realtime.ConnectionState>(Ably.Realtime.ConnectionState.Connecting, state.State);
+        }
+
+        [Fact]
+        public void ConnectingState_AttemptsConnection()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            context.SetupGet(c => c.Transport).Returns(new Mock<ITransport>().Object);
+            ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
+
+            // Act
+            state.OnAttachedToContext();
+
+            // Assert
+            context.Verify(c => c.AttemptConnection(), Times.Once());
         }
 
         [Fact]
@@ -277,6 +293,21 @@ namespace Ably.Tests
         }
 
         [Fact]
+        public void ConnectingState_HandlesInboundDisconnectedMessage_GoesToSuspended()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            context.SetupGet(c => c.FirstConnectionAttempt).Returns(DateTimeOffset.Now.AddHours(-3));
+            ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
+
+            // Act
+            state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+
+            // Assert
+            context.Verify(c => c.SetState(It.IsAny<ConnectionSuspendedState>()), Times.Once());
+        }
+
+        [Fact]
         public void ConnectingState_Connect_DoesNothing()
         {
             // Arrange
@@ -401,6 +432,21 @@ namespace Ably.Tests
         }
 
         [Fact]
+        public void ConnectingState_TransportGoesDisconnected_SwitchesToSuspended()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            context.SetupGet(c => c.FirstConnectionAttempt).Returns(DateTimeOffset.Now.AddHours(-3));
+            ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
+
+            // Act
+            state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
+
+            // Assert
+            context.Verify(c => c.SetState(It.IsAny<ConnectionSuspendedState>()), Times.Once());
+        }
+
+        [Fact]
         public void ConnectingState_ForceDisconnect()
         {
             // Arrange
@@ -478,6 +524,20 @@ namespace Ably.Tests
 
             // Assert
             Assert.Equal<Ably.Realtime.ConnectionState>(Ably.Realtime.ConnectionState.Connected, state.State);
+        }
+
+        [Fact]
+        public void ConnectedState_ResetsConnectionAttempts()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, null);
+
+            // Act
+            state.OnAttachedToContext();
+
+            // Assert
+            context.Verify(c => c.ResetConnectionAttempts(), Times.Once());
         }
 
         [Fact]

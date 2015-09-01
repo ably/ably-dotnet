@@ -35,6 +35,8 @@ namespace Ably.Transport
         private Dictionary<long, Action<bool, ErrorInfo>> ackQueue;
         private AblyRealtimeOptions options;
         private States.Connection.ConnectionState state;
+        private DateTimeOffset? _firstConnectionAttempt;
+        private int _connectionAttempts;
 
         public event StateChangedDelegate StateChanged;
 
@@ -64,6 +66,22 @@ namespace Ably.Transport
             get
             {
                 return this.pendingMessages;
+            }
+        }
+
+        DateTimeOffset? IConnectionContext.FirstConnectionAttempt
+        {
+            get
+            {
+                return _firstConnectionAttempt;
+            }
+        }
+
+        int IConnectionContext.ConnectionAttempts
+        {
+            get
+            {
+                return _connectionAttempts;
             }
         }
 
@@ -203,6 +221,21 @@ namespace Ably.Transport
             this.transport.Close();
             this.transport.Listener = null;
             this.transport = null;
+        }
+
+        void IConnectionContext.AttemptConnection()
+        {
+            if (_firstConnectionAttempt == null)
+            {
+                _firstConnectionAttempt = DateTimeOffset.Now;
+            }
+            _connectionAttempts++;
+        }
+
+        void IConnectionContext.ResetConnectionAttempts()
+        {
+            _firstConnectionAttempt = null;
+            _connectionAttempts = 0;
         }
 
         private void ProcessProtocolMessage(ProtocolMessage message)
