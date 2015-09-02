@@ -10,31 +10,32 @@ namespace Ably.Transport
         {
             this.sync = System.Threading.SynchronizationContext.Current;
             this.pendingMessages = new Queue<ProtocolMessage>();
-            this.ackQueue = new Dictionary<long, Action<bool, ErrorInfo>>();
-            this.state = new States.Connection.ConnectionInitializedState(this);
         }
 
-        internal ConnectionManager(ITransport transport)
+        internal ConnectionManager(ITransport transport, IAcknowledgementProcessor ackProcessor, States.Connection.ConnectionState initialState)
             : this()
         {
             this.transport = transport;
             this.transport.Listener = this;
+            this.state = initialState;
+            this.ackProcessor = ackProcessor;
         }
 
         public ConnectionManager(AblyRealtimeOptions options)
             : this()
         {
             this.options = options;
+            this.state = new States.Connection.ConnectionInitializedState(this);
+            this.ackProcessor = new AcknowledgementProcessor();
         }
 
         private ITransport transport;
         private System.Threading.SynchronizationContext sync;
         private ILogger Logger = Config.AblyLogger;
         private Queue<ProtocolMessage> pendingMessages;
-        private long msgSerial;
-        private Dictionary<long, Action<bool, ErrorInfo>> ackQueue;
         private AblyRealtimeOptions options;
         private States.Connection.ConnectionState state;
+        private IAcknowledgementProcessor ackProcessor;
         private DateTimeOffset? _firstConnectionAttempt;
         private int _connectionAttempts;
 
@@ -97,12 +98,7 @@ namespace Ably.Transport
 
         public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback)
         {
-            message.MsgSerial = this.msgSerial++;
-
-            if (callback != null)
-            {
-                this.ackQueue.Add(message.MsgSerial, callback);
-            }
+            ackProcessor.SendMessage(message, callback);
             state.SendMessage(message);
         }
 
@@ -186,7 +182,10 @@ namespace Ably.Transport
         private void OnTransportMessageReceived(ProtocolMessage message)
         {
             // If the state didn't handle the message, handle it here
-            if (!this.state.OnMessageReceived(message))
+            bool handled = this.state.OnMessageReceived(message);
+            handled |= this.ackProcessor.OnMessageReceived(message);
+
+            if (!handled)
             {
                 ProcessProtocolMessage(message);
             }
@@ -196,6 +195,8 @@ namespace Ably.Transport
         {
             this.state = newState;
             this.state.OnAttachedToContext();
+
+            this.ackProcessor.OnStateChanged(newState);
 
             if (this.StateChanged != null)
             {
@@ -242,57 +243,21 @@ namespace Ably.Transport
         {
             this.Logger.Verbose("ConnectionManager: Message Received {0}", message);
 
-            switch (message.Action)
+            if (message.Action == ProtocolMessage.MessageAction.Heartbeat)
             {
-                case ProtocolMessage.MessageAction.Heartbeat:
-                    this.OnMessage_Heartbeat(message);
-                    break;
-                case ProtocolMessage.MessageAction.Ack:
-                    this.HandleMessageAcknowledgement(message);
-                    break;
-                case ProtocolMessage.MessageAction.Nack:
-                    this.HandleMessageAcknowledgement(message);
-                    break;
-                default:
-                    if (this.MessageReceived != null)
-                    {
-                        this.MessageReceived(message);
-                    }
-                    break;
+                this.OnMessage_Heartbeat(message);
+            }
+            else
+            {
+                if (this.MessageReceived != null)
+                {
+                    this.MessageReceived(message);
+                }
             }
         }
 
         private void OnMessage_Heartbeat(ProtocolMessage message)
         {
-        }
-
-        private void ResetMsgAcknowledgement()
-        {
-            this.msgSerial = 0;
-            this.ackQueue.Clear();
-        }
-
-        private void HandleMessageAcknowledgement(ProtocolMessage message)
-        {
-            long startSerial = message.MsgSerial;
-            long endSerial = message.MsgSerial + (message.Count - 1);
-            ErrorInfo reason = new ErrorInfo("Unknown error", 50000, System.Net.HttpStatusCode.InternalServerError);
-            for (long i = startSerial; i <= endSerial; i++)
-            {
-                Action<bool, ErrorInfo> callback;
-                if (this.ackQueue.TryGetValue(i, out callback))
-                {
-                    if (message.Action == ProtocolMessage.MessageAction.Ack)
-                    {
-                        callback(true, null);
-                    }
-                    else
-                    {
-                        callback(false, message.Error ?? reason);
-                    }
-                    this.ackQueue.Remove(i);
-                }
-            }
         }
     }
 }

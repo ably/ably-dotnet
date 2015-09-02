@@ -7,6 +7,8 @@ namespace Ably.Transport.States.Connection
     [DebuggerDisplay("{State}")]
     internal abstract class ConnectionState
     {
+        internal ConnectionState() { }
+
         public ConnectionState(IConnectionContext context)
         {
             this.context = context;
