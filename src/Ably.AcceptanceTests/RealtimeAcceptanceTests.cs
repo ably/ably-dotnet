@@ -124,13 +124,13 @@ namespace Ably.AcceptanceTests
             args.Count.ShouldBeEquivalentTo(2);
             args[1].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionState.Connected);
             args[1].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionState.Closing);
-            args[1].Reason.ShouldBeEquivalentTo(null);
+            args[1].Reason.ShouldBeEquivalentTo(ErrorInfo.ReasonClosed);
 
             signal.WaitOne(10000);
             args.Count.ShouldBeEquivalentTo(3);
             args[2].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionState.Closing);
             args[2].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionState.Closed);
-            args[2].Reason.ShouldBeEquivalentTo(null);
+            args[2].Reason.ShouldBeEquivalentTo(ErrorInfo.ReasonClosed);
         }
 
         [Test]
