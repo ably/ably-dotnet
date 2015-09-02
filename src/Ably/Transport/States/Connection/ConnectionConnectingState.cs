@@ -109,7 +109,7 @@ namespace Ably.Transport.States.Connection
             if (context.Transport.State != TransportState.Connected)
             {
                 this.context.Transport.Connect();
-                _timer.Start(ConnectTimeout, () => this.context.SetState(new ConnectionDisconnectedState(this.context)));
+                _timer.Start(ConnectTimeout, () => this.context.SetState(new ConnectionDisconnectedState(this.context, ErrorInfo.ReasonTimeout)));
             }
         }
 

@@ -463,7 +463,7 @@ namespace Ably.Tests
 
             // Assert
             timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>()), Times.Once);
-            context.Verify(c => c.SetState(It.IsAny<ConnectionDisconnectedState>()), Times.Once());
+            context.Verify(c => c.SetState(It.Is<ConnectionDisconnectedState>(ss => ss.Error == ErrorInfo.ReasonTimeout)), Times.Once());
         }
 
         [Theory]
