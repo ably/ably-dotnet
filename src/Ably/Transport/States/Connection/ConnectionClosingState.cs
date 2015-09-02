@@ -6,13 +6,18 @@ namespace Ably.Transport.States.Connection
     internal class ConnectionClosingState : ConnectionState
     {
         public ConnectionClosingState(IConnectionContext context) :
-            this(context, new CountdownTimer())
+            this(context, null, new CountdownTimer())
         { }
 
-        public ConnectionClosingState(IConnectionContext context, ICountdownTimer timer) :
+        public ConnectionClosingState(IConnectionContext context, ErrorInfo error) :
+            this(context, error, new CountdownTimer())
+        { }
+
+        public ConnectionClosingState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer) :
             base(context)
         {
             _timer = timer;
+            this.Error = error ?? ErrorInfo.ReasonClosed;
         }
 
         private const int CloseTimeout = 1000;

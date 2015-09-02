@@ -818,6 +818,26 @@ namespace Ably.Tests
             // Assert
             context.Verify(c => c.SetState(It.IsAny<ConnectionConnectingState>()), Times.Once());
         }
+
+        [Fact]
+        public void DisconnectedState_RetriesConnection()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            Mock<ITransport> transport = new Mock<ITransport>();
+            transport.SetupGet(c => c.State).Returns(TransportState.Initialized);
+            context.SetupGet(c => c.Transport).Returns(transport.Object);
+            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
+            timer.Setup(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>())).Callback<int, System.Action>((t, c) => c());
+            ConnectionDisconnectedState state = new ConnectionDisconnectedState(context.Object, ErrorInfo.ReasonClosed, timer.Object);
+
+            // Act
+            state.OnAttachedToContext();
+
+            // Assert
+            timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>()), Times.Once);
+            context.Verify(c => c.SetState(It.IsAny<ConnectionConnectingState>()), Times.Once());
+        }
         #endregion
 
         //
@@ -910,6 +930,26 @@ namespace Ably.Tests
             state.Connect();
 
             // Assert
+            context.Verify(c => c.SetState(It.IsAny<ConnectionConnectingState>()), Times.Once());
+        }
+
+        [Fact]
+        public void SuspendedState_RetriesConnection()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            Mock<ITransport> transport = new Mock<ITransport>();
+            transport.SetupGet(c => c.State).Returns(TransportState.Initialized);
+            context.SetupGet(c => c.Transport).Returns(transport.Object);
+            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
+            timer.Setup(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>())).Callback<int, System.Action>((t, c) => c());
+            ConnectionSuspendedState state = new ConnectionSuspendedState(context.Object, null, timer.Object);
+
+            // Act
+            state.OnAttachedToContext();
+
+            // Assert
+            timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>()), Times.Once);
             context.Verify(c => c.SetState(It.IsAny<ConnectionConnectingState>()), Times.Once());
         }
         #endregion
@@ -1151,7 +1191,7 @@ namespace Ably.Tests
             context.SetupGet(c => c.Transport).Returns(transport.Object);
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             timer.Setup(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>())).Callback<int, System.Action>((t, c) => c());
-            ConnectionClosingState state = new ConnectionClosingState(context.Object, timer.Object);
+            ConnectionClosingState state = new ConnectionClosingState(context.Object, null, timer.Object);
 
             // Act
             state.OnAttachedToContext();
@@ -1170,7 +1210,7 @@ namespace Ably.Tests
             transport.SetupGet(c => c.State).Returns(TransportState.Connected);
             context.SetupGet(c => c.Transport).Returns(transport.Object);
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            ConnectionClosingState state = new ConnectionClosingState(context.Object, timer.Object);
+            ConnectionClosingState state = new ConnectionClosingState(context.Object, null, timer.Object);
 
             // Act
             state.OnAttachedToContext();
@@ -1191,7 +1231,7 @@ namespace Ably.Tests
             transport.SetupGet(c => c.State).Returns(TransportState.Connected);
             context.SetupGet(c => c.Transport).Returns(transport.Object);
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            ConnectionClosingState state = new ConnectionClosingState(context.Object, timer.Object);
+            ConnectionClosingState state = new ConnectionClosingState(context.Object, null, timer.Object);
 
             // Act
             state.OnAttachedToContext();

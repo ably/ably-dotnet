@@ -14,7 +14,7 @@ namespace Ably.Transport.States.Connection
         public ConnectionFailedState(IConnectionContext context, ErrorInfo error) :
             base(context)
         {
-            this.Error = error;
+            this.Error = error ?? ErrorInfo.ReasonFailed;
         }
 
         public override Realtime.ConnectionState State

@@ -62,7 +62,7 @@ namespace Ably.Transport.States.Connection
                         ConnectionState nextState;
                         if (this.ShouldSuspend())
                         {
-                            nextState = new ConnectionSuspendedState(this.context);
+                            nextState = new ConnectionSuspendedState(this.context, message.Error);
                         }
                         else
                         {

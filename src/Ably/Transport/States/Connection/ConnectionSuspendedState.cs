@@ -6,13 +6,18 @@ namespace Ably.Transport.States.Connection
     internal class ConnectionSuspendedState : ConnectionState
     {
         public ConnectionSuspendedState(IConnectionContext context) :
-            this(context, new CountdownTimer())
+            this(context, null, new CountdownTimer())
         { }
 
-        public ConnectionSuspendedState(IConnectionContext context, ICountdownTimer timer) :
+        public ConnectionSuspendedState(IConnectionContext context, ErrorInfo error) :
+            this(context, error, new CountdownTimer())
+        { }
+
+        public ConnectionSuspendedState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer) :
             base(context)
         {
             _timer = timer;
+            this.Error = error ?? ErrorInfo.ReasonSuspended;
         }
 
         public const int SuspendTimeout = 120 * 1000; // Time before a connection is considered suspended

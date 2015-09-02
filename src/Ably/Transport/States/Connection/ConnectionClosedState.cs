@@ -5,8 +5,14 @@ namespace Ably.Transport.States.Connection
     internal class ConnectionClosedState : ConnectionState
     {
         public ConnectionClosedState(IConnectionContext context) :
-            base(context)
+            this(context, null)
         { }
+
+        public ConnectionClosedState(IConnectionContext context, ErrorInfo error) :
+            base(context)
+        {
+            this.Error = error ?? ErrorInfo.ReasonClosed;
+        }
 
         public override Realtime.ConnectionState State
         {
