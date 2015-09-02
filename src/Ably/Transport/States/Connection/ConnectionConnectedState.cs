@@ -7,7 +7,9 @@ namespace Ably.Transport.States.Connection
         public ConnectionConnectedState(IConnectionContext context, ConnectionInfo info) :
             base(context)
         {
-            this.ConnectionInfo = info;
+            this.context.Connection.Id = info.ConnectionId;
+            this.context.Connection.Key = info.ConnectionKey;
+            this.context.Connection.Serial = info.ConnectionSerial;
         }
 
         public override Realtime.ConnectionState State

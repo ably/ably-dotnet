@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Xunit;
 using Xunit.Extensions;
 using Ably.Types;
+using Moq;
 
 namespace Ably.Tests
 {
@@ -245,6 +246,9 @@ namespace Ably.Tests
         public void OnState_Connected_MsgSerialReset()
         {
             // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+
             AcknowledgementProcessor target = new AcknowledgementProcessor();
             ProtocolMessage targetMessage1 = new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test");
             ProtocolMessage targetMessage2 = new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test");
@@ -254,7 +258,7 @@ namespace Ably.Tests
             // Act
             target.SendMessage(targetMessage1, null);
             target.SendMessage(targetMessage2, null);
-            target.OnStateChanged(new States.ConnectionConnectedState(null, null));
+            target.OnStateChanged(new States.ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, "")));
             target.SendMessage(targetMessage3, null);
             target.SendMessage(targetMessage4, null);
 

@@ -1,6 +1,7 @@
 ﻿using Ably.Types;
 using System;
 using System.Collections.Generic;
+using Ably.Realtime;
 
 namespace Ably.Transport
 {
@@ -10,6 +11,7 @@ namespace Ably.Transport
         {
             this.sync = System.Threading.SynchronizationContext.Current;
             this.pendingMessages = new Queue<ProtocolMessage>();
+            this.connection = new Connection(this);
         }
 
         internal ConnectionManager(ITransport transport, IAcknowledgementProcessor ackProcessor, States.Connection.ConnectionState initialState)
@@ -38,8 +40,7 @@ namespace Ably.Transport
         private IAcknowledgementProcessor ackProcessor;
         private DateTimeOffset? _firstConnectionAttempt;
         private int _connectionAttempts;
-
-        public event StateChangedDelegate StateChanged;
+        private Connection connection;
 
         public event MessageReceivedDelegate MessageReceived;
 
@@ -83,6 +84,14 @@ namespace Ably.Transport
             get
             {
                 return _connectionAttempts;
+            }
+        }
+
+        public Connection Connection
+        {
+            get
+            {
+                return connection;
             }
         }
 
@@ -185,6 +194,11 @@ namespace Ably.Transport
             bool handled = this.state.OnMessageReceived(message);
             handled |= this.ackProcessor.OnMessageReceived(message);
 
+            if (message.ConnectionSerial != null)
+            {
+                this.connection.Serial = message.ConnectionSerial.Value;
+            }
+
             if (!handled)
             {
                 ProcessProtocolMessage(message);
@@ -198,10 +212,7 @@ namespace Ably.Transport
 
             this.ackProcessor.OnStateChanged(newState);
 
-            if (this.StateChanged != null)
-            {
-                this.StateChanged(newState.State, newState.ConnectionInfo, newState.Error);
-            }
+            this.connection.OnStateChanged(newState.State, newState.Error);
         }
 
         void IConnectionContext.CreateTransport()

@@ -55,6 +55,7 @@ namespace Ably.Transport.States.Connection
         {
             // This is a terminal state. Clear the transport.
             this.context.DestroyTransport();
+            this.context.Connection.Key = null;
         }
     }
 }

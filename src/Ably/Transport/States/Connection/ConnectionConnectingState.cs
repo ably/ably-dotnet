@@ -52,7 +52,7 @@ namespace Ably.Transport.States.Connection
                     {
                         if (context.Transport.State == TransportState.Connected)
                         {
-                            ConnectionInfo info = new ConnectionInfo(message.ConnectionId, message.ConnectionSerial, message.ConnectionKey);
+                            ConnectionInfo info = new ConnectionInfo(message.ConnectionId, message.ConnectionSerial ?? -1, message.ConnectionKey);
                             this.TransitionState(new ConnectionConnectedState(this.context, info));
                         }
                         return true;

@@ -39,34 +39,5 @@ namespace Ably.Tests
             AblyRealtime realtime = new AblyRealtime(Debug_Key);
             Assert.NotNull(realtime.Auth);
         }
-
-        [Fact]
-        public void New_Realtime_WithConnectAutomatically_False_DoesNotConnect()
-        {
-            // Arrange
-            Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
-            AblyRealtimeOptions options = new AblyRealtimeOptions(Debug_Key) { AutoConnect = false };
-
-            // Act
-            AblyRealtime realtime = new AblyRealtime(options, mock.Object);
-
-            // Assert
-            Assert.Equal<ConnectionState>(ConnectionState.Initialized, realtime.Connection.State);
-            mock.Verify(c => c.Connect(), Times.Never());
-        }
-
-        [Fact]
-        public void New_Realtime_WithConnectAutomatically_True_ConnectsAutomatically()
-        {
-            // Arrange
-            Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
-            AblyRealtimeOptions options = new AblyRealtimeOptions(Debug_Key);
-
-            // Act
-            AblyRealtime realtime = new AblyRealtime(options, mock.Object);
-
-            // Assert
-            mock.Verify(c => c.Connect(), Times.Once());
-        }
     }
 }

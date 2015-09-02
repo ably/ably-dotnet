@@ -10,14 +10,13 @@ namespace Ably.Realtime
     /// </summary>
     public class Connection : IDisposable
     {
-        internal Connection(IConnectionManager connection)
+        internal Connection(IConnectionManager manager)
         {
             this.State = ConnectionState.Initialized;
-            this.connection = connection;
-            this.connection.StateChanged += this.ConnectionManagerStateChanged;
+            this.manager = manager;
         }
 
-        private IConnectionManager connection;
+        private IConnectionManager manager;
 
         /// <summary>
         /// Indicates the current state of this connection.
@@ -33,18 +32,18 @@ namespace Ably.Realtime
         /// The id of the current connection. This string may be
         /// used when recovering connection state.
         /// </summary>
-        public string Id { get; private set; }
+        public string Id { get; internal set; }
 
         /// <summary>
         /// The serial number of the last message received on this connection.
         /// The serial number may be used when recovering connection state.
         /// </summary>
-        public long Serial { get; private set; }
+        public long Serial { get; internal set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public string Key { get; private set; }
+        public string Key { get; internal set; }
 
         /// <summary>
         /// Information relating to the transition to the current state,
@@ -58,7 +57,7 @@ namespace Ably.Realtime
         /// </summary>
         public void Connect()
         {
-            this.connection.Connect();
+            this.manager.Connect();
         }
 
         /// <summary>
@@ -74,7 +73,7 @@ namespace Ably.Realtime
         /// </summary>
         public void Ping(Action<bool, ErrorInfo> callback)
         {
-            this.connection.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat), callback);
+            this.manager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat), callback);
         }
 
         /// <summary>
@@ -84,7 +83,7 @@ namespace Ably.Realtime
         /// </summary>
         public void Close()
         {
-            this.connection.Close();
+            this.manager.Close();
         }
 
         public void Dispose()
@@ -92,37 +91,17 @@ namespace Ably.Realtime
             this.Close();
         }
 
-        protected void SetConnectionState(ConnectionState state, ErrorInfo error = null)
+        internal void OnStateChanged(ConnectionState state, ErrorInfo error = null)
         {
             ConnectionState oldState = this.State;
             this.State = state;
-            // TODO: Add proper arguments in Connection.ConnectionStateChanged
-            this.OnConnectionStateChanged(new ConnectionStateChangedEventArgs(oldState, state, -1, error));
-        }
-
-        protected void OnConnectionStateChanged(ConnectionStateChangedEventArgs args)
-        {
-            if (this.ConnectionStateChanged != null)
-            {
-                this.ConnectionStateChanged(this, args);
-            }
-        }
-
-        private void ConnectionManagerStateChanged(ConnectionState newState, ConnectionInfo info, ErrorInfo error)
-        {
-            if (newState == ConnectionState.Connected)
-            {
-                this.Id = info.ConnectionId;
-                this.Key = info.ConnectionKey;
-                this.Serial = info.ConnectionSerial;
-            }
-            else if (newState == ConnectionState.Closed || newState == ConnectionState.Failed)
-            {
-                this.Key = null;
-            }
             this.Reason = error;
 
-            this.SetConnectionState(newState, error);
+            // TODO: Add proper arguments in Connection.ConnectionStateChanged
+            if (this.ConnectionStateChanged != null)
+            {
+                this.ConnectionStateChanged(this, new ConnectionStateChangedEventArgs(oldState, state, -1, error));
+            }
         }
     }
 }

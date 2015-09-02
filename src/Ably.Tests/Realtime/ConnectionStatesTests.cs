@@ -217,6 +217,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
             Mock<ITransport> transport = new Mock<ITransport>();
             transport.Setup(c => c.State).Returns(TransportState.Connected);
             context.Setup(c => c.Transport).Returns(transport.Object);
@@ -474,6 +475,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
             Mock<ITransport> transport = new Mock<ITransport>();
             transport.SetupGet(c => c.State).Returns(TransportState.Initialized);
             context.SetupGet(c => c.Transport).Returns(transport.Object);
@@ -520,7 +522,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, null);
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Assert
             Assert.Equal<Ably.Realtime.ConnectionState>(Ably.Realtime.ConnectionState.Connected, state.State);
@@ -531,7 +534,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, null);
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
             state.OnAttachedToContext();
@@ -547,7 +551,8 @@ namespace Ably.Tests
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
             Mock<ITransport> transport = new Mock<ITransport>();
             context.Setup(c => c.Transport).Returns(transport.Object);
-            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, null);
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
             state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
@@ -575,13 +580,16 @@ namespace Ably.Tests
         public void ConnectedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
             // Arrange
-            ConnectionConnectedState state = new ConnectionConnectedState(null, null);
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
             bool result = state.OnMessageReceived(new ProtocolMessage(action));
 
             // Assert
             Assert.False(result);
+            context.Verify(c => c.SetState(It.IsAny<ConnectionState>()), Times.Never());
         }
 
         [Fact]
@@ -589,7 +597,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, null);
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
             bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
@@ -603,7 +612,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, null);
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
             state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
@@ -617,7 +627,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, null);
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
             bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
@@ -631,7 +642,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, null);
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
             ErrorInfo targetError = new ErrorInfo("test", 123);
 
             // Act
@@ -645,10 +657,15 @@ namespace Ably.Tests
         public void ConnectedState_Connect_DoesNothing()
         {
             // Arrange
-            ConnectionConnectedState state = new ConnectionConnectedState(null, null);
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
             state.Connect();
+
+            // Asser
+            context.Verify(c => c.SetState(It.IsAny<ConnectionState>()), Times.Never());
         }
 
         [Fact]
@@ -658,7 +675,8 @@ namespace Ably.Tests
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
             Mock<ITransport> transport = new Mock<ITransport>();
             context.Setup(c => c.Transport).Returns(transport.Object);
-            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, null);
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
             state.Close();
@@ -678,7 +696,8 @@ namespace Ably.Tests
             context.Setup(c => c.QueuedMessages).Returns(pendingMessages);
             Mock<ITransport> transport = new Mock<ITransport>();
             context.Setup(c => c.Transport).Returns(transport.Object);
-            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, null);
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
             state.OnAttachedToContext();
@@ -697,7 +716,8 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, null);
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
             state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(transportState));
@@ -711,13 +731,31 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, null);
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
             state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
 
             // Assert
             context.Verify(c => c.SetState(It.IsAny<ConnectionDisconnectedState>()), Times.Once());
+        }
+
+        [Fact]
+        public void ConnectedState_UpdatesConnectionInformation()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            Realtime.Connection target = new Realtime.Connection(null);
+            context.SetupGet(c => c.Connection).Returns(target);
+
+            // Act
+            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("test", 12564, "test test"));
+
+            // Assert
+            Assert.Equal<String>("test", target.Id);
+            Assert.Equal<long>(12564, target.Serial);
+            Assert.Equal<String>("test test", target.Key);
         }
         #endregion
 
@@ -1298,6 +1336,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
             Mock<ITransport> transport = new Mock<ITransport>();
             context.Setup(c => c.CreateTransport()).Callback(() =>
                 context.Setup(c => c.Transport).Returns(transport.Object));
@@ -1348,6 +1387,23 @@ namespace Ably.Tests
 
             // Act
             state.OnTransportStateChanged(null);
+        }
+
+        [Fact]
+        public void ClosedState_UpdatesConnectionInformation()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            Realtime.Connection target = new Realtime.Connection(null);
+            target.Key = "test test";
+            context.SetupGet(c => c.Connection).Returns(target);
+            ConnectionClosedState state = new ConnectionClosedState(context.Object);
+
+            // Act
+            state.OnAttachedToContext();
+
+            // Assert
+            Assert.Null(target.Key);
         }
         #endregion
 
@@ -1405,6 +1461,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
             Mock<ITransport> transport = new Mock<ITransport>();
             context.Setup(c => c.CreateTransport()).Callback(() =>
                 context.Setup(c => c.Transport).Returns(transport.Object));
@@ -1455,6 +1512,23 @@ namespace Ably.Tests
 
             // Act
             state.OnTransportStateChanged(null);
+        }
+
+        [Fact]
+        public void FailedState_UpdatesConnectionInformation()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            Realtime.Connection target = new Realtime.Connection(null);
+            target.Key = "test test";
+            context.SetupGet(c => c.Connection).Returns(target);
+            ConnectionFailedState state = new ConnectionFailedState(context.Object, ErrorInfo.ReasonNeverConnected);
+
+            // Act
+            state.OnAttachedToContext();
+
+            // Assert
+            Assert.Null(target.Key);
         }
         #endregion
 

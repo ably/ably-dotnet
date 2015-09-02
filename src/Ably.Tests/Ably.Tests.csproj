@@ -142,7 +142,6 @@
     <Compile Include="Realtime\ChannelListTests.cs" />
     <Compile Include="Realtime\ConnectionManagerTests.cs" />
     <Compile Include="Realtime\ConnectionStatesTests.cs" />
-    <Compile Include="Realtime\ConnectionTests.cs" />
     <Compile Include="Realtime\JsonMessageSerializerTests.cs" />
     <Compile Include="Realtime\MsgPackMessageSerializerTests.cs" />
     <Compile Include="Realtime\PresenceTests.cs" />

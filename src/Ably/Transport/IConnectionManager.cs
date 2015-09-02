@@ -24,9 +24,9 @@ namespace Ably.Transport
 
     public interface IConnectionManager
     {
-        event StateChangedDelegate StateChanged;
-
         event MessageReceivedDelegate MessageReceived;
+
+        Connection Connection { get; }
 
         bool IsActive { get; }
 
@@ -42,6 +42,7 @@ namespace Ably.Transport
         States.Connection.ConnectionState State { get; }
         ITransport Transport { get; }
         Queue<ProtocolMessage> QueuedMessages { get; }
+        Connection Connection { get; }
         DateTimeOffset? FirstConnectionAttempt { get; }
         int ConnectionAttempts { get; }
 

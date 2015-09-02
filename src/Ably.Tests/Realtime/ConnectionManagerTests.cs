@@ -382,5 +382,89 @@ namespace Ably.Tests
             // Assert
             Assert.Equal<string>(options.Host, target.Host);
         }
+
+        #region Connection
+
+        [Fact]
+        public void ConnectionPing_Calls_ConnectionManager_Ping()
+        {
+            // Arrange
+            Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
+            Connection target = new Connection(mock.Object);
+
+            // Act
+            target.Ping();
+
+            // Assert
+            mock.Verify(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Heartbeat), null), Times.Once());
+        }
+
+        [Fact]
+        public void ConnectionConnect_Calls_ConnectionManager_Connect()
+        {
+            // Arrange
+            Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
+            Connection target = new Connection(mock.Object);
+
+            // Act
+            target.Connect();
+
+            // Assert
+            mock.Verify(c => c.Connect(), Times.Once());
+        }
+
+        [Fact]
+        public void ConnectionClose_Calls_ConnectionManager_Close()
+        {
+            // Arrange
+            Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
+            Connection target = new Connection(mock.Object);
+
+            // Act
+            target.Close();
+
+            // Assert
+            mock.Verify(c => c.Close(), Times.Once());
+        }
+
+        [Fact]
+        public void ConnectionSerialUpdated_WhenProtocolMessageReceived()
+        {
+            // Arrange
+            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
+            Mock<ITransport> transport = new Mock<ITransport>();
+            transport.SetupGet(c => c.State).Returns(TransportState.Closed);
+            transport.SetupProperty(c => c.Listener);
+            Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
+            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
+            ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message) { ConnectionSerial = 123456 };
+
+            // Act
+            transport.Object.Listener.OnTransportMessageReceived(targetMessage);
+
+            // Assert
+            Assert.Equal(123456, target.Connection.Serial);
+        }
+
+        [Fact]
+        public void ConnectionSerialNotUpdated_WhenProtocolMessageReceived()
+        {
+            // Arrange
+            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
+            Mock<ITransport> transport = new Mock<ITransport>();
+            transport.SetupGet(c => c.State).Returns(TransportState.Closed);
+            transport.SetupProperty(c => c.Listener);
+            Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
+            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
+            target.Connection.Serial = 123456;
+            ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
+
+            // Act
+            transport.Object.Listener.OnTransportMessageReceived(targetMessage);
+
+            // Assert
+            Assert.Equal(123456, target.Connection.Serial);
+        }
+        #endregion
     }
 }
