@@ -217,7 +217,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
             Mock<ITransport> transport = new Mock<ITransport>();
             transport.Setup(c => c.State).Returns(TransportState.Connected);
             context.Setup(c => c.Transport).Returns(transport.Object);
@@ -475,7 +475,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
             Mock<ITransport> transport = new Mock<ITransport>();
             transport.SetupGet(c => c.State).Returns(TransportState.Initialized);
             context.SetupGet(c => c.Transport).Returns(transport.Object);
@@ -522,7 +522,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
             ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Assert
@@ -534,7 +534,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
             ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
@@ -551,7 +551,7 @@ namespace Ably.Tests
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
             Mock<ITransport> transport = new Mock<ITransport>();
             context.Setup(c => c.Transport).Returns(transport.Object);
-            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
             ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
@@ -581,7 +581,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
             ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
@@ -597,7 +597,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
             ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
@@ -612,7 +612,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
             ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
@@ -627,7 +627,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
             ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
@@ -642,7 +642,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
             ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
             ErrorInfo targetError = new ErrorInfo("test", 123);
 
@@ -658,7 +658,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
             ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
@@ -675,7 +675,7 @@ namespace Ably.Tests
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
             Mock<ITransport> transport = new Mock<ITransport>();
             context.Setup(c => c.Transport).Returns(transport.Object);
-            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
             ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
@@ -696,7 +696,7 @@ namespace Ably.Tests
             context.Setup(c => c.QueuedMessages).Returns(pendingMessages);
             Mock<ITransport> transport = new Mock<ITransport>();
             context.Setup(c => c.Transport).Returns(transport.Object);
-            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
             ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
@@ -716,7 +716,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
             ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
@@ -731,7 +731,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
             ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
@@ -746,7 +746,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            Realtime.Connection target = new Realtime.Connection(null);
+            Realtime.Connection target = new Realtime.Connection(new Mock<IConnectionManager>().Object);
             context.SetupGet(c => c.Connection).Returns(target);
 
             // Act
@@ -1336,7 +1336,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
             Mock<ITransport> transport = new Mock<ITransport>();
             context.Setup(c => c.CreateTransport()).Callback(() =>
                 context.Setup(c => c.Transport).Returns(transport.Object));
@@ -1394,7 +1394,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            Realtime.Connection target = new Realtime.Connection(null);
+            Realtime.Connection target = new Realtime.Connection(new Mock<IConnectionManager>().Object);
             target.Key = "test test";
             context.SetupGet(c => c.Connection).Returns(target);
             ConnectionClosedState state = new ConnectionClosedState(context.Object);
@@ -1461,7 +1461,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
             Mock<ITransport> transport = new Mock<ITransport>();
             context.Setup(c => c.CreateTransport()).Callback(() =>
                 context.Setup(c => c.Transport).Returns(transport.Object));
@@ -1519,7 +1519,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            Realtime.Connection target = new Realtime.Connection(null);
+            Realtime.Connection target = new Realtime.Connection(new Mock<IConnectionManager>().Object);
             target.Key = "test test";
             context.SetupGet(c => c.Connection).Returns(target);
             ConnectionFailedState state = new ConnectionFailedState(context.Object, ErrorInfo.ReasonNeverConnected);

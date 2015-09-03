@@ -10,10 +10,14 @@ namespace Ably.Realtime
     /// </summary>
     public class Connection : IDisposable
     {
+        internal Connection()
+        {
+        }
+
         internal Connection(IConnectionManager manager)
         {
-            this.State = ConnectionState.Initialized;
             this.manager = manager;
+            this.State = this.manager.ConnectionState;
         }
 
         private IConnectionManager manager;
@@ -21,12 +25,12 @@ namespace Ably.Realtime
         /// <summary>
         /// Indicates the current state of this connection.
         /// </summary>
-        public ConnectionState State { get; private set; }
+        public virtual ConnectionState State { get; private set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public event EventHandler<ConnectionStateChangedEventArgs> ConnectionStateChanged;
+        public virtual event EventHandler<ConnectionStateChangedEventArgs> ConnectionStateChanged;
 
         /// <summary>
         /// The id of the current connection. This string may be
@@ -63,17 +67,9 @@ namespace Ably.Realtime
         /// <summary>
         /// 
         /// </summary>
-        public void Ping()
-        {
-            this.Ping(null);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         public void Ping(Action<bool, ErrorInfo> callback)
         {
-            this.manager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat), callback);
+            this.manager.Ping(callback);
         }
 
         /// <summary>

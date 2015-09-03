@@ -247,7 +247,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(null));
+            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
 
             AcknowledgementProcessor target = new AcknowledgementProcessor();
             ProtocolMessage targetMessage1 = new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test");

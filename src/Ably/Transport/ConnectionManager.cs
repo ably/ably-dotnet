@@ -11,7 +11,6 @@ namespace Ably.Transport
         {
             this.sync = System.Threading.SynchronizationContext.Current;
             this.pendingMessages = new Queue<ProtocolMessage>();
-            this.connection = new Connection(this);
         }
 
         internal ConnectionManager(ITransport transport, IAcknowledgementProcessor ackProcessor, States.Connection.ConnectionState initialState)
@@ -21,6 +20,7 @@ namespace Ably.Transport
             this.transport.Listener = this;
             this.state = initialState;
             this.ackProcessor = ackProcessor;
+            this.connection = new Connection(this);
         }
 
         public ConnectionManager(AblyRealtimeOptions options)
@@ -29,6 +29,7 @@ namespace Ably.Transport
             this.options = options;
             this.state = new States.Connection.ConnectionInitializedState(this);
             this.ackProcessor = new AcknowledgementProcessor();
+            this.connection = new Connection(this);
         }
 
         private ITransport transport;
@@ -95,6 +96,14 @@ namespace Ably.Transport
             }
         }
 
+        public ConnectionState ConnectionState
+        {
+            get
+            {
+                return this.state.State;
+            }
+        }
+
         public void Connect()
         {
             this.state.Connect();
@@ -109,6 +118,11 @@ namespace Ably.Transport
         {
             ackProcessor.SendMessage(message, callback);
             state.SendMessage(message);
+        }
+
+        public void Ping(Action<bool, ErrorInfo> callback)
+        {
+            ConnectionHeartbeatRequest.Execute(this, callback);
         }
 
         internal static TransportParams CreateTransportParameters(AblyRealtimeOptions options)
@@ -191,8 +205,10 @@ namespace Ably.Transport
         private void OnTransportMessageReceived(ProtocolMessage message)
         {
             // If the state didn't handle the message, handle it here
+            // TODO: Chenge with can handle instead of did handle
             bool handled = this.state.OnMessageReceived(message);
             handled |= this.ackProcessor.OnMessageReceived(message);
+            handled |= ConnectionHeartbeatRequest.CanHandleMessage(message); 
 
             if (message.ConnectionSerial != null)
             {
@@ -254,21 +270,10 @@ namespace Ably.Transport
         {
             this.Logger.Verbose("ConnectionManager: Message Received {0}", message);
 
-            if (message.Action == ProtocolMessage.MessageAction.Heartbeat)
+            if (this.MessageReceived != null)
             {
-                this.OnMessage_Heartbeat(message);
+                this.MessageReceived(message);
             }
-            else
-            {
-                if (this.MessageReceived != null)
-                {
-                    this.MessageReceived(message);
-                }
-            }
-        }
-
-        private void OnMessage_Heartbeat(ProtocolMessage message)
-        {
         }
     }
 }

@@ -176,6 +176,7 @@
     <Compile Include="TokenRequestPostData.cs" />
     <Compile Include="TokenResponse.cs" />
     <Compile Include="Transport\AcknowledgementProcessor.cs" />
+    <Compile Include="Transport\ConnectionHeartbeatRequest.cs" />
     <Compile Include="Transport\ConnectionManager.cs" />
     <Compile Include="Transport\Defaults.cs" />
     <Compile Include="Transport\IConnectionManager.cs" />

@@ -28,11 +28,15 @@ namespace Ably.Transport
 
         Connection Connection { get; }
 
+        Realtime.ConnectionState ConnectionState { get; }
+
         bool IsActive { get; }
 
         void Connect();
 
         void Close();
+
+        void Ping(Action<bool, ErrorInfo> callback);
 
         void Send(ProtocolMessage message, Action<bool, ErrorInfo> listener);
     }

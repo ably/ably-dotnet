@@ -200,7 +200,7 @@ namespace Ably.Tests
             Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            IConnectionContext target = new ConnectionManager(transport.Object, ackProcessor.Object, null);
+            IConnectionContext target = new ConnectionManager(transport.Object, ackProcessor.Object, new States.ConnectionInitializedState(null));
             ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
 
             // Act
@@ -284,7 +284,7 @@ namespace Ably.Tests
             Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            IConnectionContext target = new ConnectionManager(transport.Object, ackProcessor.Object, null);
+            IConnectionContext target = new ConnectionManager(transport.Object, ackProcessor.Object, new States.ConnectionInitializedState(null));
             ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
 
             // Act
@@ -389,14 +389,17 @@ namespace Ably.Tests
         public void ConnectionPing_Calls_ConnectionManager_Ping()
         {
             // Arrange
-            Mock<IConnectionManager> mock = new Mock<IConnectionManager>();
-            Connection target = new Connection(mock.Object);
+            Mock<ITransport> mock = new Mock<ITransport>();
+            Mock<IAcknowledgementProcessor> ackmock = new Mock<IAcknowledgementProcessor>();
+            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
+            state.Setup(c => c.State).Returns(ConnectionState.Connected);
+            ConnectionManager target = new ConnectionManager(mock.Object, ackmock.Object, state.Object);
 
             // Act
-            target.Ping();
+            target.Ping(null);
 
             // Assert
-            mock.Verify(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Heartbeat), null), Times.Once());
+            state.Verify(c => c.SendMessage(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Heartbeat)), Times.Once());
         }
 
         [Fact]
@@ -465,6 +468,406 @@ namespace Ably.Tests
             // Assert
             Assert.Equal(123456, target.Connection.Serial);
         }
+        #endregion
+
+        #region ConnectionHeartbeatRequest tests
+
+        [Theory]
+        [InlineData(ConnectionState.Closed)]
+        [InlineData(ConnectionState.Closing)]
+        [InlineData(ConnectionState.Connecting)]
+        [InlineData(ConnectionState.Disconnected)]
+        [InlineData(ConnectionState.Failed)]
+        [InlineData(ConnectionState.Initialized)]
+        [InlineData(ConnectionState.Suspended)]
+        public void ConnectionHeartbeatRequest_FailsWhenNotConnected(ConnectionState state)
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            manager.Setup(c => c.ConnectionState).Returns(state);
+            manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
+            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
+            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+
+            // Act
+            ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, null, callback);
+
+            // Assert
+            Assert.Equal<int>(1, res.Count);
+            Assert.False(res[0].Item1);
+            Assert.NotNull(res[0].Item2);
+        }
+
+        [Theory]
+        [InlineData(ConnectionState.Closed)]
+        [InlineData(ConnectionState.Closing)]
+        [InlineData(ConnectionState.Connecting)]
+        [InlineData(ConnectionState.Disconnected)]
+        [InlineData(ConnectionState.Failed)]
+        [InlineData(ConnectionState.Initialized)]
+        [InlineData(ConnectionState.Suspended)]
+        public void ConnectionHeartbeatRequest_FailsWhenNotConnected_WithNoCallback(ConnectionState state)
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            manager.Setup(c => c.ConnectionState).Returns(state);
+            manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
+
+            // Act
+            ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, null, null);
+        }
+
+        [Fact]
+        public void ConnectionHeartbeatRequest_WithNoCallback_SendsMessage()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
+
+            // Act
+            ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, null, null);
+
+            // Assert
+            manager.Verify(c => c.Send(It.Is<ProtocolMessage>(ss => ss.Action == ProtocolMessage.MessageAction.Heartbeat), null), Times.Once());
+        }
+
+        [Fact]
+        public void ConnectionHeartbeatRequest_WithNoCallback_DoesNotListenForMessages()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
+
+            // Act
+            ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, null, null);
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
+        }
+
+        [Fact]
+        public void ConnectionHeartbeatRequest_WithNoCallback_DoesNotListenForStateChanges()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<Connection> connection = new Mock<Connection>();
+            connection.Setup(c => c.State).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.Connection).Returns(connection.Object);
+
+            // Act
+            ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, null, null);
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionState.Closed, ConnectionState.Connected, 0, null));
+        }
+
+        [Fact]
+        public void ConnectionHeartbeatRequest_SendsMessage()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
+            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
+            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+
+            // Act
+            ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
+
+            // Assert
+            manager.Verify(c => c.Send(It.Is<ProtocolMessage>(ss => ss.Action == ProtocolMessage.MessageAction.Heartbeat), null), Times.Once());
+            Assert.Empty(res);
+        }
+
+        [Fact]
+        public void ConnectionHeartbeatRequest_StartsTimer()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
+            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
+            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+
+            // Act
+            ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
+
+            // Assert
+            timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<Action>()), Times.Once());
+            Assert.Empty(res);
+        }
+
+        [Theory]
+        [InlineData(ProtocolMessage.MessageAction.Ack)]
+        [InlineData(ProtocolMessage.MessageAction.Attach)]
+        [InlineData(ProtocolMessage.MessageAction.Attached)]
+        [InlineData(ProtocolMessage.MessageAction.Close)]
+        [InlineData(ProtocolMessage.MessageAction.Closed)]
+        [InlineData(ProtocolMessage.MessageAction.Connect)]
+        [InlineData(ProtocolMessage.MessageAction.Connected)]
+        [InlineData(ProtocolMessage.MessageAction.Detach)]
+        [InlineData(ProtocolMessage.MessageAction.Detached)]
+        [InlineData(ProtocolMessage.MessageAction.Disconnect)]
+        [InlineData(ProtocolMessage.MessageAction.Disconnected)]
+        [InlineData(ProtocolMessage.MessageAction.Error)]
+        [InlineData(ProtocolMessage.MessageAction.Message)]
+        [InlineData(ProtocolMessage.MessageAction.Nack)]
+        [InlineData(ProtocolMessage.MessageAction.Presence)]
+        [InlineData(ProtocolMessage.MessageAction.Sync)]
+        public void ConnectionHeartbeatRequest_ListensForMessages_DoesNotCallback(ProtocolMessage.MessageAction action)
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
+            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
+            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+
+            // Act
+            ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(action));
+
+            // Assert
+            Assert.Empty(res);
+        }
+
+        [Fact]
+        public void ConnectionHeartbeatRequest_ListensForMessages_Heartbeat()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
+            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
+            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+
+            // Act
+            ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
+
+            // Assert
+            Assert.Equal<int>(1, res.Count);
+            Assert.True(res[0].Item1);
+            Assert.Null(res[0].Item2);
+        }
+
+        [Fact]
+        public void ConnectionHeartbeatRequest_ListensForMessages_Heartbeat_StopsTimer()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
+            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
+            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+
+            // Act
+            ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
+
+            // Assert
+            timer.Verify(c => c.Abort(), Times.Once());
+        }
+
+        [Fact]
+        public void ConnectionHeartbeatRequest_ListensForMessages_Heartbeat_Unsubscribes()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            Mock<Connection> connection = new Mock<Connection>();
+            connection.Setup(c => c.State).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.Connection).Returns(connection.Object);
+            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
+            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+
+            // Act
+            ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionState.Closing, ConnectionState.Closed, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionState.Closing, ConnectionState.Closed, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionState.Closing, ConnectionState.Closed, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionState.Closing, ConnectionState.Closed, 0, null));
+
+            // Assert
+            Assert.Equal<int>(1, res.Count);
+        }
+
+        [Theory]
+        [InlineData(ConnectionState.Closed)]
+        [InlineData(ConnectionState.Closing)]
+        [InlineData(ConnectionState.Connecting)]
+        [InlineData(ConnectionState.Disconnected)]
+        [InlineData(ConnectionState.Failed)]
+        [InlineData(ConnectionState.Initialized)]
+        [InlineData(ConnectionState.Suspended)]
+        public void ConnectionHeartbeatRequest_ListensForStateChanges(ConnectionState state)
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            Mock<Connection> connection = new Mock<Connection>();
+            connection.Setup(c => c.State).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.Connection).Returns(connection.Object);
+            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
+            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+
+            // Act
+            ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(state, state, 0, null));
+
+            // Assert
+            Assert.Equal<int>(1, res.Count);
+            Assert.False(res[0].Item1);
+            Assert.NotNull(res[0].Item2);
+        }
+
+        [Theory]
+        [InlineData(ConnectionState.Closed)]
+        [InlineData(ConnectionState.Closing)]
+        [InlineData(ConnectionState.Connecting)]
+        [InlineData(ConnectionState.Disconnected)]
+        [InlineData(ConnectionState.Failed)]
+        [InlineData(ConnectionState.Initialized)]
+        [InlineData(ConnectionState.Suspended)]
+        public void ConnectionHeartbeatRequest_ListensForStateChanges_StopsTimer(ConnectionState state)
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            Mock<Connection> connection = new Mock<Connection>();
+            connection.SetupGet(c => c.State).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.Connection).Returns(connection.Object);
+            Action<bool, ErrorInfo> callback = (e, err) => { };
+
+            // Act
+            ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(state, state, 0, null));
+
+            // Assert
+            timer.Verify(c => c.Abort(), Times.Once());
+        }
+
+        [Theory]
+        [InlineData(ConnectionState.Closed)]
+        [InlineData(ConnectionState.Closing)]
+        [InlineData(ConnectionState.Connecting)]
+        [InlineData(ConnectionState.Disconnected)]
+        [InlineData(ConnectionState.Failed)]
+        [InlineData(ConnectionState.Initialized)]
+        [InlineData(ConnectionState.Suspended)]
+        public void ConnectionHeartbeatRequest_ListensForStateChanges_Unsubscribes(ConnectionState state)
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            Mock<Connection> connection = new Mock<Connection>();
+            connection.Setup(c => c.State).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.Connection).Returns(connection.Object);
+            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
+            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+
+            // Act
+            ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(state, state, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(state, state, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(state, state, 0, null));
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
+
+            // Assert
+            Assert.Equal<int>(1, res.Count);
+        }
+
+        [Fact]
+        public void ConnectionHeartbeatRequest_TimesOut()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            Mock<Connection> connection = new Mock<Connection>();
+            connection.Setup(c => c.State).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.Connection).Returns(connection.Object);
+            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
+            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            timer.Setup(c => c.Start(It.IsAny<int>(), It.IsAny<Action>())).Callback<int, Action>((c, e) => e());
+
+            // Act
+            ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
+
+            // Assert
+            Assert.Equal<int>(1, res.Count);
+            Assert.False(res[0].Item1);
+            Assert.NotNull(res[0].Item2);
+        }
+
+        [Fact]
+        public void ConnectionHeartbeatRequest_TimeOut_Unsubscribe()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            Mock<Connection> connection = new Mock<Connection>();
+            connection.Setup(c => c.State).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.Connection).Returns(connection.Object);
+            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
+            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            timer.Setup(c => c.Start(It.IsAny<int>(), It.IsAny<Action>())).Callback<int, Action>((c, e) => e());
+
+            // Act
+            ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionState.Closed, ConnectionState.Closed, 0, null));
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
+
+            // Assert
+            Assert.Equal<int>(1, res.Count);
+            Assert.False(res[0].Item1);
+            Assert.NotNull(res[0].Item2);
+        }
+
+        [Fact]
+        public void ConnectionHeartbeatRequest_MultipleRequests()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
+            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
+            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            const int count = 10;
+
+            // Act
+            for (int i = 0; i < count; i++)
+            {
+                ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
+            }
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
+
+            // Assert
+            Assert.Equal<int>(count, res.Count);
+            foreach (var item in res)
+            {
+                Assert.True(item.Item1);
+                Assert.Null(item.Item2);
+            }
+        }
+
         #endregion
     }
 }
