@@ -18,6 +18,7 @@ namespace Ably.Transport.States.Connection
 
         public abstract Realtime.ConnectionState State { get; }
         public ErrorInfo Error { get; protected set; }
+        public int? RetryIn { get; protected set; }
 
         protected abstract bool CanQueueMessages { get; }
 

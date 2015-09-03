@@ -22,6 +22,7 @@ namespace Ably.Transport.States.Connection
         {
             _timer = timer;
             this.Error = error ?? ErrorInfo.ReasonDisconnected;
+            this.RetryIn = ConnectTimeout;
         }
 
         private const int ConnectTimeout = 15 * 1000;

@@ -18,6 +18,7 @@ namespace Ably.Transport.States.Connection
         {
             _timer = timer;
             this.Error = error ?? ErrorInfo.ReasonSuspended;
+            this.RetryIn = ConnectTimeout;
         }
 
         public const int SuspendTimeout = 120 * 1000; // Time before a connection is considered suspended

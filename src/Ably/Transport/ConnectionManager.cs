@@ -228,7 +228,7 @@ namespace Ably.Transport
 
             this.ackProcessor.OnStateChanged(newState);
 
-            this.connection.OnStateChanged(newState.State, newState.Error);
+            this.connection.OnStateChanged(newState.State, newState.Error, newState.RetryIn ?? -1);
         }
 
         void IConnectionContext.CreateTransport()

@@ -87,7 +87,7 @@ namespace Ably.Realtime
             this.Close();
         }
 
-        internal void OnStateChanged(ConnectionState state, ErrorInfo error = null)
+        internal void OnStateChanged(ConnectionState state, ErrorInfo error = null, int retryin = -1)
         {
             ConnectionState oldState = this.State;
             this.State = state;
@@ -96,7 +96,7 @@ namespace Ably.Realtime
             // TODO: Add proper arguments in Connection.ConnectionStateChanged
             if (this.ConnectionStateChanged != null)
             {
-                this.ConnectionStateChanged(this, new ConnectionStateChangedEventArgs(oldState, state, -1, error));
+                this.ConnectionStateChanged(this, new ConnectionStateChangedEventArgs(oldState, state, retryin, error));
             }
         }
     }
