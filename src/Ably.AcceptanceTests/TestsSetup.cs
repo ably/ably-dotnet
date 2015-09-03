@@ -44,7 +44,13 @@ namespace Ably.AcceptanceTests
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
             request.RequestBody = TestData.TestAppSpec.ToString().GetBytes();
-            var response = client.Execute(request);
+
+            AblyResponse response;
+            try
+            {
+                response = client.Execute(request);
+            }
+            catch (Exception) { return; }
             var json = JObject.Parse(response.TextResponse);
 
             string appId = TestData.appId = (string)json["appId"];
