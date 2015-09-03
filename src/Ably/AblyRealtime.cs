@@ -1,16 +1,32 @@
-﻿using Ably.Realtime;
+﻿using Ably.CustomSerialisers;
+using Ably.Realtime;
 using Ably.Transport;
 using Ably.Types;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Ably
 {
     /// <summary>
     /// 
     /// </summary>
-    public class AblyRealtime
+    public class AblyRealtime : AblyBase
     {
+        static AblyRealtime()
+        {
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
+            {
+                Converters = new List<JsonConverter>()
+                {
+                    new DateTimeOffsetJsonConverter(),
+                    new CapabilityJsonConverter()
+                }
+            };
+        }
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -28,14 +44,21 @@ namespace Ably
 
         internal AblyRealtime(AblyRealtimeOptions options, IConnectionManager connectionManager)
         {
+            _options = options;
+            _protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
             IChannelFactory factory = new ChannelFactory() { ConnectionManager = connectionManager, Options = options };
             this.Channels = new ChannelList(connectionManager, factory);
             this.Connection = new Connection(connectionManager);
+            _simpleRest = new Rest.AblySimpleRestClient(options);
+            InitAuth(_simpleRest);
+
             if (options.AutoConnect)
             {
                 this.Connection.Connect();
             }
         }
+
+        private Rest.AblySimpleRestClient _simpleRest;
 
         /// <summary>
         /// The collection of channels instanced, indexed by channel name.
@@ -64,6 +87,45 @@ namespace Ably
         public void Close()
         {
             this.Connection.Close();
+        }
+
+        /// <summary>
+        /// Retrieves the ably service time
+        /// </summary>
+        /// <returns></returns>
+        public void Time(Action<DateTimeOffset?, AblyException> callback)
+        {
+            System.Threading.SynchronizationContext sync = System.Threading.SynchronizationContext.Current;
+
+            Action<DateTimeOffset?, AblyException> invokeCallback = (res, err) =>
+            {
+                if (callback != null)
+                {
+                    if (sync != null)
+                    {
+                        sync.Send(new SendOrPostCallback(o => callback(res, err)), null);
+                    }
+                    else
+                    {
+                        callback(res, err);
+                    }
+                }
+            };
+
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                DateTimeOffset result;
+                try
+                {
+                    result = _simpleRest.Time();
+                }
+                catch (AblyException e)
+                {
+                    invokeCallback(null, e);
+                    return;
+                }
+                invokeCallback(result, null);
+            });
         }
     }
 }

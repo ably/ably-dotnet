@@ -30,7 +30,14 @@ namespace Ably.Transport
         public void StoreParams(NameValueCollection collection)
         {
             // auth
-            collection["key"] = HttpUtility.UrlEncode(Options.Key);
+            if (Options.Method == AuthMethod.Basic)
+            {
+                collection["key"] = HttpUtility.UrlEncode(Options.Key);
+            }
+            else
+            {
+                collection["access_token"] = HttpUtility.UrlEncode(Options.Token);
+            }
 
             // connection
             if (Options.UseBinaryProtocol)

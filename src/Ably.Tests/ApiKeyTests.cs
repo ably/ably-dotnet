@@ -18,21 +18,21 @@ namespace Ably.Tests
         [Fact]
         public void Parse_WithValidKeyReturns_ApiKeyWithAppIdKeyAndValue()
         {
-            var key = ApiKey.Parse("AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob");
+            var key = ApiKey.Parse("123.456:789");
 
-            Assert.Equal(key.AppId, "AHSz6w");
-            Assert.Equal(key.KeyName, "AHSz6w.uQXPNQ");
-            Assert.Equal(key.KeySecret, "FGBZbsKSwqbCpkob");
+            Assert.Equal(key.AppId, "123");
+            Assert.Equal(key.KeyName, "123.456");
+            Assert.Equal(key.KeySecret, "789");
         }
 
         [Fact]
         public void Parse_WithValidKeyWithWhiteSpaceOnBothSides_ReturnsValidApiKeyObject()
         {
-            var key = ApiKey.Parse(" AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob ");
+            var key = ApiKey.Parse(" 123.456:789 ");
 
-            Assert.Equal(key.AppId, "AHSz6w");
-            Assert.Equal(key.KeyName, "AHSz6w.uQXPNQ");
-            Assert.Equal(key.KeySecret, "FGBZbsKSwqbCpkob");
+            Assert.Equal(key.AppId, "123");
+            Assert.Equal(key.KeyName, "123.456");
+            Assert.Equal(key.KeySecret, "789");
         }
     }
 }

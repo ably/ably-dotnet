@@ -7,7 +7,7 @@ namespace Ably.Tests
 {
     public class AuthCreateTokenRequestAcceptanceTests
     {
-        private const string ApiKey = "AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob";
+        private const string ApiKey = "123.456:789";
         internal AblyRequest CurrentRequest { get; set; }
         public readonly DateTime Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc);
         public RestClient Client { get; set; }
@@ -103,11 +103,12 @@ namespace Ably.Tests
         [Fact]
         public void WithQueryTimeQueriesForTimestamp()
         {
-            var currentTime = Config.Now();
-            Client.ExecuteHttpRequest = x => 
-                new AblyResponse { TextResponse = "[" + currentTime.ToUnixTimeInMilliseconds() + "]", Type = ResponseType.Json };
+            var currentTime = Config.Now().ToUnixTimeInMilliseconds();
+            Client.ExecuteHttpRequest = x => {
+                System.Diagnostics.Debugger.Break();
+                return new AblyResponse { TextResponse = "[" + currentTime + "]", Type = ResponseType.Json }; };
             var data = Client.Auth.CreateTokenRequest(null, new AuthOptions() {QueryTime = true});
-            data.timestamp.Should().Be(currentTime.ToUnixTimeInMilliseconds().ToString());
+            data.timestamp.Should().Be(currentTime.ToString());
         }
 
         [Fact]

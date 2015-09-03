@@ -98,6 +98,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AblyBase.cs" />
+    <Compile Include="AblyTokenAuth.cs" />
     <Compile Include="AblyEnvironment.cs" />
     <Compile Include="AblyRealtime.cs" />
     <Compile Include="AblyRealtimeOptions.cs" />
@@ -128,6 +130,7 @@
     <Compile Include="Realtime\IRealtimeChannel.cs" />
     <Compile Include="Realtime\IRealtimeChannelCommands.cs" />
     <Compile Include="Realtime\Presence.cs" />
+    <Compile Include="Rest\AblySimpleRestClient.cs" />
     <Compile Include="Rest\Channel.cs" />
     <Compile Include="Rest\ChannelOptions.cs" />
     <Compile Include="CipherParams.cs" />
@@ -143,6 +146,7 @@
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="IAblyHttpClient.cs" />
     <Compile Include="IAuthCommands.cs" />
+    <Compile Include="Rest\IAblyRest.cs" />
     <Compile Include="Rest\IChannel.cs" />
     <Compile Include="IChannelCipher.cs" />
     <Compile Include="Rest\IChannelCommands.cs" />

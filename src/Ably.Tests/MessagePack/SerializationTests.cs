@@ -50,7 +50,7 @@ namespace Ably.Tests.MessagePack
         public void CanDeserialiseTokenResponse()
         {
             var value =
-                "gaxhY2Nlc3NfdG9rZW6GpXRva2Vu2gCIZzRYNlFRLkR5QmM5TGVHb3ctbGllRHBuM010bHdPblBIaDdlbTdzMkNyU2daSzNjVDZEb2VKNXZUMVl0cDQxb2k1VlFLTVJMbklXQ3JBWnR1Tm9xeUNJb1RaYUIxX29RRV9FLW93NmN4Sl9RMHBVMmd5aW9sUTRqdVQzNU4yNEM4M3dKemlCOaNrZXmtZzRYNlFRLnV0ekdsZ6lpc3N1ZWRfYXTOVMEP1qdleHBpcmVzzlTBHeaqY2FwYWJpbGl0eYGhKpGhKqhjbGllbnRJZKMxMjM=";
+                "gaxhY2Nlc3NfdG9rZW6GpXRva2Vu2YhnNFg2UVEuRHlCYzlMZUdvdy1saWVEcG4zTXRsd09uUEhoN2VtN3MyQ3JTZ1pLM2NUNkRvZUo1dlQxWXRwNDFvaTVWUUtNUkxuSVdDckFadHVOb3F5Q0lvVFphQjFfb1FFX0Utb3c2Y3hKX1EwcFUyZ3lpb2xRNGp1VDM1TjI0Qzgzd0p6aUI5p2tleU5hbWWtZzRYNlFRLnV0ekdsZ6Zpc3N1ZWTOVMEP1qdleHBpcmVzzlTBHeaqY2FwYWJpbGl0eYGhKpGhKqhjbGllbnRJZKMxMjM=";
 
             var decodedMessagePack = MsgPackHelper.DeSerialise(value.FromBase64(), typeof (MessagePackObject)).ToString();
 

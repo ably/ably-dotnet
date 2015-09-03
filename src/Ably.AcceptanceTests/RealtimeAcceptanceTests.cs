@@ -132,5 +132,53 @@ namespace Ably.AcceptanceTests
             args[2].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionState.Closed);
             args[2].Reason.ShouldBeEquivalentTo(null);
         }
+
+        [Test]
+        public void TestRealtimeClient_Time()
+        {
+            // Arrange
+            var client = GetRealtimeClient();
+            AutoResetEvent signal = new AutoResetEvent(false);
+
+            Tuple<DateTimeOffset?, AblyException> result = null;
+            Action<DateTimeOffset?, AblyException> callback = (time, err) =>
+            {
+                result = Tuple.Create(time, err);
+                signal.Set();
+            };
+
+            // Act
+            client.Time(callback);
+
+            // Assert
+            signal.WaitOne(10000);
+            Assert.NotNull(result);
+            Assert.NotNull(result.Item1);
+            Assert.IsTrue((DateTime.UtcNow - result.Item1.Value.DateTime).TotalSeconds < 3);
+            Assert.Null(result.Item2);
+        }
+
+        [Test]
+        public void TestRealtimeClient_Time_WhenError()
+        {
+            // Arrange
+            var client = new AblyRealtime(new AblyRealtimeOptions("123.456:789") { Host = "nohost.tt" });
+            AutoResetEvent signal = new AutoResetEvent(false);
+            Tuple<DateTimeOffset?, AblyException> result = null;
+            Action<DateTimeOffset?, AblyException> callback = (time, err) =>
+            {
+                result = Tuple.Create(time, err);
+                signal.Set();
+            };
+
+            // Act
+            client.Time(callback);
+
+            // Assert
+            signal.WaitOne(10000);
+            Assert.NotNull(result);
+            Assert.Null(result.Item1);
+            Assert.NotNull(result.Item2);
+        }
     }
 }

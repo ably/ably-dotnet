@@ -51,6 +51,7 @@ namespace Ably
         /// </summary>
         /// <param name="key">Full ably key string</param>
         public AuthOptions(string key)
+            : this()
         {
             var apiKey = ApiKey.Parse(key);
             Key = apiKey.ToString();

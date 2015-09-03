@@ -24,9 +24,7 @@ namespace Ably.Transport
         public ConnectionManager(AblyRealtimeOptions options)
             : this()
         {
-            TransportParams transportParams = CreateTransportParameters(options);
-            this.transport = Defaults.TransportFactories["web_socket"].CreateTransport(transportParams);
-            this.transport.Listener = this;
+            this.options = options;
         }
 
         internal ITransport transport;
@@ -36,6 +34,7 @@ namespace Ably.Transport
         private ConnectionState connectionState;
         private long msgSerial;
         private Dictionary<long, Action<bool, ErrorInfo>> ackQueue;
+        private AblyRealtimeOptions options;
 
         public event StateChangedDelegate StateChanged;
 
@@ -48,6 +47,13 @@ namespace Ably.Transport
 
         public void Connect()
         {
+            if (this.transport == null)
+            {
+                TransportParams transportParams = CreateTransportParameters(options);
+                this.transport = Defaults.TransportFactories["web_socket"].CreateTransport(transportParams);
+                this.transport.Listener = this;
+            }
+
             if (this.transport.State == TransportState.Initialized || this.transport.State == TransportState.Closed)
             {
                 this.transport.Connect();

@@ -47,6 +47,22 @@ namespace Ably
 
         internal AblyEnvironment? Environment { get; set; }
 
+        internal AuthMethod Method
+        {
+            get
+            {
+                if (Key.IsNotEmpty())
+                {
+                    if (ClientId.IsEmpty())
+                    {
+                        return Ably.AuthMethod.Basic;
+                    }
+                }
+
+                return Ably.AuthMethod.Token;
+            }
+        }
+
         /// <summary>
         /// Defaul constructor for AblyOptions
         /// </summary>
