@@ -22,6 +22,41 @@ namespace Ably.Tests
             Assert.Equal<ConnectionState>(ConnectionState.Initialized, target.State.State);
         }
 
+        [Theory]
+        [InlineData(ProtocolMessage.MessageAction.Heartbeat)]
+        [InlineData(ProtocolMessage.MessageAction.Ack)]
+        [InlineData(ProtocolMessage.MessageAction.Nack)]
+        [InlineData(ProtocolMessage.MessageAction.Connect)]
+        [InlineData(ProtocolMessage.MessageAction.Connected)]
+        [InlineData(ProtocolMessage.MessageAction.Disconnect)]
+        [InlineData(ProtocolMessage.MessageAction.Disconnected)]
+        [InlineData(ProtocolMessage.MessageAction.Close)]
+        [InlineData(ProtocolMessage.MessageAction.Closed)]
+        [InlineData(ProtocolMessage.MessageAction.Error)]
+        [InlineData(ProtocolMessage.MessageAction.Attach)]
+        [InlineData(ProtocolMessage.MessageAction.Attached)]
+        [InlineData(ProtocolMessage.MessageAction.Detach)]
+        [InlineData(ProtocolMessage.MessageAction.Detached)]
+        [InlineData(ProtocolMessage.MessageAction.Presence)]
+        [InlineData(ProtocolMessage.MessageAction.Message)]
+        [InlineData(ProtocolMessage.MessageAction.Sync)]
+        public void ListensForMessages_CallMessageReceived(ProtocolMessage.MessageAction action)
+        {
+            // Arrange
+            Mock<ITransport> transport = new Mock<ITransport>();
+            transport.SetupProperty(c => c.Listener);
+            ConnectionManager manager = new ConnectionManager(transport.Object, new AcknowledgementProcessor(), new States.ConnectionInitializedState(null));
+            List<ProtocolMessage> res = new List<ProtocolMessage>();
+            manager.MessageReceived += (message) => res.Add(message);
+            ProtocolMessage target = new ProtocolMessage(action);
+
+            // Act
+            transport.Object.Listener.OnTransportMessageReceived(target);
+
+            // Assert
+            Assert.Single(res, target);
+        }
+
         #region StateCommunication
 
         [Fact]
@@ -98,50 +133,6 @@ namespace Ably.Tests
 
             // Assert
             state.Verify(c => c.OnMessageReceived(targetMessage), Times.Once());
-        }
-
-        [Fact]
-        public void WhenTransportMessageReceived_StateHandlesIt_NoMessageReceived()
-        {
-            // Arrange
-            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
-            Mock<ITransport> transport = new Mock<ITransport>();
-            transport.SetupGet(c => c.State).Returns(TransportState.Closed);
-            transport.SetupProperty(c => c.Listener);
-            Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            state.Setup(c => c.OnMessageReceived(It.IsAny<ProtocolMessage>())).Returns(true);
-            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
-            bool eventCalled = false;
-            target.MessageReceived += (m) => eventCalled = true;
-            ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Ack);
-
-            // Act
-            transport.Object.Listener.OnTransportMessageReceived(targetMessage);
-
-            // Assert
-            Assert.False(eventCalled);
-        }
-
-        [Fact]
-        public void WhenTransportMessageReceived_StateNotHandlesIt_MessageReceived()
-        {
-            // Arrange
-            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
-            Mock<ITransport> transport = new Mock<ITransport>();
-            transport.SetupGet(c => c.State).Returns(TransportState.Closed);
-            transport.SetupProperty(c => c.Listener);
-            Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            state.Setup(c => c.OnMessageReceived(It.IsAny<ProtocolMessage>())).Returns(false);
-            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
-            bool eventCalled = false;
-            target.MessageReceived += (m) => eventCalled = true;
-            ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
-
-            // Act
-            transport.Object.Listener.OnTransportMessageReceived(targetMessage);
-
-            // Assert
-            Assert.True(eventCalled);
         }
 
         [Fact]
@@ -231,50 +222,6 @@ namespace Ably.Tests
 
             // Assert
             ackProcessor.Verify(c => c.OnMessageReceived(targetMessage), Times.Once());
-        }
-
-        [Fact]
-        public void WhenTransportMessageReceived_AckHandlesIt_NoMessageReceived()
-        {
-            // Arrange
-            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
-            Mock<ITransport> transport = new Mock<ITransport>();
-            transport.SetupGet(c => c.State).Returns(TransportState.Closed);
-            transport.SetupProperty(c => c.Listener);
-            Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            ackProcessor.Setup(c => c.OnMessageReceived(It.IsAny<ProtocolMessage>())).Returns(true);
-            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
-            bool eventCalled = false;
-            target.MessageReceived += (m) => eventCalled = true;
-            ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Ack);
-
-            // Act
-            transport.Object.Listener.OnTransportMessageReceived(targetMessage);
-
-            // Assert
-            Assert.False(eventCalled);
-        }
-
-        [Fact]
-        public void WhenTransportMessageReceived_AckNotHandlesIt_MessageReceived()
-        {
-            // Arrange
-            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
-            Mock<ITransport> transport = new Mock<ITransport>();
-            transport.SetupGet(c => c.State).Returns(TransportState.Closed);
-            transport.SetupProperty(c => c.Listener);
-            Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            ackProcessor.Setup(c => c.OnMessageReceived(It.IsAny<ProtocolMessage>())).Returns(false);
-            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
-            bool eventCalled = false;
-            target.MessageReceived += (m) => eventCalled = true;
-            ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
-
-            // Act
-            transport.Object.Listener.OnTransportMessageReceived(targetMessage);
-
-            // Assert
-            Assert.True(eventCalled);
         }
 
         [Fact]

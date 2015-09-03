@@ -204,8 +204,8 @@ namespace Ably.Transport
 
         private void OnTransportMessageReceived(ProtocolMessage message)
         {
-            // If the state didn't handle the message, handle it here
-            // TODO: Chenge with can handle instead of did handle
+            this.Logger.Verbose("ConnectionManager: Message Received {0}", message);
+
             bool handled = this.state.OnMessageReceived(message);
             handled |= this.ackProcessor.OnMessageReceived(message);
             handled |= ConnectionHeartbeatRequest.CanHandleMessage(message); 
@@ -215,9 +215,9 @@ namespace Ably.Transport
                 this.connection.Serial = message.ConnectionSerial.Value;
             }
 
-            if (!handled)
+            if (this.MessageReceived != null)
             {
-                ProcessProtocolMessage(message);
+                this.MessageReceived(message);
             }
         }
 
@@ -264,16 +264,6 @@ namespace Ably.Transport
         {
             _firstConnectionAttempt = null;
             _connectionAttempts = 0;
-        }
-
-        private void ProcessProtocolMessage(ProtocolMessage message)
-        {
-            this.Logger.Verbose("ConnectionManager: Message Received {0}", message);
-
-            if (this.MessageReceived != null)
-            {
-                this.MessageReceived(message);
-            }
         }
     }
 }
