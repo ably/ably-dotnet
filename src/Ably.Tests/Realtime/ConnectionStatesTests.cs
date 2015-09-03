@@ -265,6 +265,26 @@ namespace Ably.Tests
             context.Verify(c => c.SetState(It.Is<ConnectionFailedState>(ss => object.ReferenceEquals(ss.Error, targetError))), Times.Once());
         }
 
+        [Theory]
+        [InlineData(System.Net.HttpStatusCode.InternalServerError)]
+        [InlineData(System.Net.HttpStatusCode.GatewayTimeout)]
+        public void ConnectingState_HandlesInboundErrorMessage_GoesToDisconnected(System.Net.HttpStatusCode code)
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            Mock<ITransport> transport = new Mock<ITransport>();
+            transport.Setup(c => c.State).Returns(TransportState.Connected);
+            context.Setup(c => c.Transport).Returns(transport.Object);
+            ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
+            ErrorInfo targetError = new ErrorInfo("test", 123, code);
+
+            // Act
+            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError });
+
+            // Assert
+            context.Verify(c => c.SetState(It.Is<ConnectionDisconnectedState>(ss => ss.UseFallbackHost == true)), Times.Once());
+        }
+
         [Fact]
         public void ConnectingState_HandlesInboundDisconnectedMessage()
         {
@@ -290,7 +310,23 @@ namespace Ably.Tests
             state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
 
             // Assert
-            context.Verify(c => c.SetState(It.IsAny<ConnectionDisconnectedState>()), Times.Once());
+            context.Verify(c => c.SetState(It.Is<ConnectionDisconnectedState>(ss => ss.UseFallbackHost == false)), Times.Once());
+        }
+
+        [Theory]
+        [InlineData(System.Net.HttpStatusCode.InternalServerError)]
+        [InlineData(System.Net.HttpStatusCode.GatewayTimeout)]
+        public void ConnectingState_HandlesInboundDisconnectedMessage_GoesToDisconnected_FallbackHost(System.Net.HttpStatusCode code)
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
+
+            // Act
+            state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = new ErrorInfo("", 0, code) });
+
+            // Assert
+            context.Verify(c => c.SetState(It.Is<ConnectionDisconnectedState>(ss => ss.UseFallbackHost == true)), Times.Once());
         }
 
         [Fact]
@@ -337,7 +373,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.Setup(c => c.CreateTransport())
+            context.Setup(c => c.CreateTransport(It.IsAny<bool>()))
                 .Callback(() => context.Setup(c => c.Transport).Returns(new Mock<ITransport>().Object));
             ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
 
@@ -345,7 +381,23 @@ namespace Ably.Tests
             state.OnAttachedToContext();
 
             // Assert
-            context.Verify(c => c.CreateTransport(), Times.Once());
+            context.Verify(c => c.CreateTransport(false), Times.Once());
+        }
+
+        [Fact]
+        public void ConnectingState_AttachToContext_Fallback_CreatesTransport()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            context.Setup(c => c.CreateTransport(It.IsAny<bool>()))
+                .Callback(() => context.Setup(c => c.Transport).Returns(new Mock<ITransport>().Object));
+            ConnectionConnectingState state = new ConnectionConnectingState(context.Object, true);
+
+            // Act
+            state.OnAttachedToContext();
+
+            // Assert
+            context.Verify(c => c.CreateTransport(true), Times.Once());
         }
 
         [Fact]
@@ -429,7 +481,21 @@ namespace Ably.Tests
             state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
 
             // Assert
-            context.Verify(c => c.SetState(It.IsAny<ConnectionDisconnectedState>()), Times.Once());
+            context.Verify(c => c.SetState(It.Is<ConnectionDisconnectedState>(ss => ss.UseFallbackHost == false)), Times.Once());
+        }
+
+        [Fact]
+        public void ConnectingState_TransportGoesDisconnected_SwitchesToDisconnected_WithError()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
+
+            // Act
+            state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed, new Exception()));
+
+            // Assert
+            context.Verify(c => c.SetState(It.Is<ConnectionDisconnectedState>(ss => ss.UseFallbackHost == true)), Times.Once());
         }
 
         [Fact]
@@ -874,6 +940,26 @@ namespace Ably.Tests
 
             // Assert
             timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>()), Times.Once);
+            context.Verify(c => c.SetState(It.IsAny<ConnectionConnectingState>()), Times.Once());
+        }
+
+        [Fact]
+        public void DisconnectedState_Fallback_RetriesConnectionImmediately()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            Mock<ITransport> transport = new Mock<ITransport>();
+            transport.SetupGet(c => c.State).Returns(TransportState.Initialized);
+            context.SetupGet(c => c.Transport).Returns(transport.Object);
+            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
+            ConnectionDisconnectedState state = new ConnectionDisconnectedState(context.Object, ErrorInfo.ReasonClosed, timer.Object);
+            state.UseFallbackHost = true;
+
+            // Act
+            state.OnAttachedToContext();
+
+            // Assert
+            timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>()), Times.Never());
             context.Verify(c => c.SetState(It.IsAny<ConnectionConnectingState>()), Times.Once());
         }
         #endregion
@@ -1338,7 +1424,7 @@ namespace Ably.Tests
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
             context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
             Mock<ITransport> transport = new Mock<ITransport>();
-            context.Setup(c => c.CreateTransport()).Callback(() =>
+            context.Setup(c => c.CreateTransport(It.IsAny<bool>())).Callback(() =>
                 context.Setup(c => c.Transport).Returns(transport.Object));
             ConnectionClosedState state = new ConnectionClosedState(context.Object);
 
@@ -1463,7 +1549,7 @@ namespace Ably.Tests
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
             context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
             Mock<ITransport> transport = new Mock<ITransport>();
-            context.Setup(c => c.CreateTransport()).Callback(() =>
+            context.Setup(c => c.CreateTransport(It.IsAny<bool>())).Callback(() =>
                 context.Setup(c => c.Transport).Returns(transport.Object));
             ConnectionFailedState state = new ConnectionFailedState(context.Object, ErrorInfo.ReasonNeverConnected);
 

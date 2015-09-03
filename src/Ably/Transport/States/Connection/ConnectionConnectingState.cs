@@ -1,22 +1,36 @@
 ﻿using Ably.Types;
 using System;
+using System.Collections.Generic;
 
 namespace Ably.Transport.States.Connection
 {
     internal class ConnectionConnectingState : ConnectionState
     {
-        public ConnectionConnectingState(IConnectionContext context) :
-            this(context, new CountdownTimer())
+        static ConnectionConnectingState()
+        {
+            FallbackReasons = new HashSet<System.Net.HttpStatusCode>()
+            {
+                System.Net.HttpStatusCode.InternalServerError,
+                System.Net.HttpStatusCode.GatewayTimeout
+            };
+        }
+
+        public ConnectionConnectingState(IConnectionContext context, bool useFallbackHost = false) :
+            this(context, new CountdownTimer(), useFallbackHost)
         { }
 
-        public ConnectionConnectingState(IConnectionContext context, ICountdownTimer timer) :
+        public ConnectionConnectingState(IConnectionContext context, ICountdownTimer timer, bool useFallbackHost = false) :
             base(context)
         {
             _timer = timer;
+            _useFallbackHost = useFallbackHost;
         }
 
-        private ICountdownTimer _timer;
         private const int ConnectTimeout = 15 * 1000;
+        private static readonly ISet<System.Net.HttpStatusCode> FallbackReasons;
+
+        private ICountdownTimer _timer;
+        private bool _useFallbackHost;
 
         public override Realtime.ConnectionState State
         {
@@ -66,13 +80,20 @@ namespace Ably.Transport.States.Connection
                         }
                         else
                         {
-                            nextState = new ConnectionDisconnectedState(this.context, message.Error);
+                            nextState = new ConnectionDisconnectedState(this.context, message.Error)
+                            {
+                                UseFallbackHost = ShouldUseFallbackHost(message.Error)
+                            };
                         }
                         this.TransitionState(nextState);
                         return true;
                     }
                 case ProtocolMessage.MessageAction.Error:
                     {
+                        if (ShouldUseFallbackHost(message.Error))
+                        {
+                            this.TransitionState(new ConnectionDisconnectedState(this.context) { UseFallbackHost = true });
+                        }
                         this.TransitionState(new ConnectionFailedState(this.context, message.Error));
                         return true;
                     }
@@ -82,7 +103,7 @@ namespace Ably.Transport.States.Connection
 
         public override void OnTransportStateChanged(TransportStateInfo state)
         {
-            if (state.State == TransportState.Closed)
+            if (state.Error != null || state.State == TransportState.Closed)
             {
                 ConnectionState nextState;
                 if (this.ShouldSuspend())
@@ -91,7 +112,10 @@ namespace Ably.Transport.States.Connection
                 }
                 else
                 {
-                    nextState = new ConnectionDisconnectedState(this.context, state);
+                    nextState = new ConnectionDisconnectedState(this.context, state)
+                    {
+                        UseFallbackHost = state.Error != null && AblyRealtime.CanConnectToAbly()
+                    };
                 }
                 this.TransitionState(nextState);
             }
@@ -101,16 +125,27 @@ namespace Ably.Transport.States.Connection
         {
             context.AttemptConnection();
 
-            if (context.Transport == null)
+            if (context.Transport == null || _useFallbackHost)
             {
-                context.CreateTransport();
+                context.CreateTransport(_useFallbackHost);
             }
 
             if (context.Transport.State != TransportState.Connected)
             {
                 this.context.Transport.Connect();
-                _timer.Start(ConnectTimeout, () => this.context.SetState(new ConnectionDisconnectedState(this.context, ErrorInfo.ReasonTimeout)));
+                _timer.Start(ConnectTimeout, () =>
+                {
+                    this.context.SetState(new ConnectionDisconnectedState(this.context, ErrorInfo.ReasonTimeout)
+                    {
+                        UseFallbackHost = AblyBase.CanConnectToAbly()
+                    });
+                });
             }
+        }
+
+        private static bool ShouldUseFallbackHost(ErrorInfo error)
+        {
+            return error != null && error.StatusCode != null && FallbackReasons.Contains(error.StatusCode.Value) && AblyRealtime.CanConnectToAbly();
         }
 
         private void TransitionState(ConnectionState newState)

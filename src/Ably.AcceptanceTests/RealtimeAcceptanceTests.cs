@@ -29,6 +29,15 @@ namespace Ably.AcceptanceTests
         }
 
         [Test]
+        public void TestCanConnectToAbly()
+        {
+            // Act
+            bool result = AblyRealtime.CanConnectToAbly();
+
+            Assert.True(result);
+        }
+
+        [Test]
         public void TestCreateRealtimeClient_IsAutoConnecting()
         {
             // Act

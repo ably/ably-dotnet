@@ -125,18 +125,24 @@ namespace Ably.Transport
             ConnectionHeartbeatRequest.Execute(this, callback);
         }
 
-        internal static TransportParams CreateTransportParameters(AblyRealtimeOptions options)
+        internal static TransportParams CreateTransportParameters(AblyRealtimeOptions options, bool useFallbackHost)
         {
             TransportParams transportParams = new TransportParams(options);
-            transportParams.Host = GetHost(options);
+            transportParams.Host = GetHost(options, useFallbackHost);
             transportParams.Port = options.Tls ? Defaults.TlsPort : Transport.Defaults.Port;
             transportParams.FallbackHosts = Defaults.FallbackHosts;
             return transportParams;
         }
 
-        private static string GetHost(AblyRealtimeOptions options)
+        private static string GetHost(AblyRealtimeOptions options, bool useFallbackHost)
         {
-            string host = !string.IsNullOrEmpty(options.Host) ? options.Host : Defaults.RealtimeHost;
+            string defaultHost = Defaults.RealtimeHost;
+            if (useFallbackHost)
+            {
+                Random r = new Random();
+                defaultHost = Defaults.FallbackHosts[r.Next(0, 1000) % Defaults.FallbackHosts.Length];
+            }
+            string host = !string.IsNullOrEmpty(options.Host) ? options.Host : defaultHost;
             if (options.Environment.HasValue && options.Environment != AblyEnvironment.Live)
             {
                 return string.Format("{0}-{1}", options.Environment.ToString().ToLower(), host);
@@ -231,12 +237,12 @@ namespace Ably.Transport
             this.connection.OnStateChanged(newState.State, newState.Error, newState.RetryIn ?? -1);
         }
 
-        void IConnectionContext.CreateTransport()
+        void IConnectionContext.CreateTransport(bool useFallbackHost)
         {
             if (this.transport != null)
                 (this as IConnectionContext).DestroyTransport();
 
-            TransportParams transportParams = CreateTransportParameters(options);
+            TransportParams transportParams = CreateTransportParameters(options, useFallbackHost);
             this.transport = Defaults.TransportFactories["web_socket"].CreateTransport(transportParams);
             this.transport.Listener = this;
         }

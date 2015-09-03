@@ -4,6 +4,7 @@ using States = Ably.Transport.States.Connection;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 using Xunit.Extensions;
 using Ably.Types;
@@ -285,14 +286,42 @@ namespace Ably.Tests
         #endregion
 
         [Fact]
-        public void When_HostSetInOptions_CreateTransportParameters_DoesNotModifyIt()
+        public void CreateCorrectTransportParameters_UsesDefaultHost()
+        {
+            // Arrange
+            AblyRealtimeOptions options = new AblyRealtimeOptions();
+
+            // Act
+            TransportParams target = ConnectionManager.CreateTransportParameters(options, false);
+
+            // Assert
+            Assert.Equal<string>(Defaults.RealtimeHost, target.Host);
+        }
+
+        [Fact]
+        public void CreateCorrectTransportParameters_Fallback_UsesFallbacktHost()
+        {
+            // Arrange
+            AblyRealtimeOptions options = new AblyRealtimeOptions();
+
+            // Act
+            TransportParams target = ConnectionManager.CreateTransportParameters(options, true);
+
+            // Assert
+            Assert.True(Defaults.FallbackHosts.Contains(target.Host));
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void When_HostSetInOptions_CreateTransportParameters_DoesNotModifyIt(bool fallback)
         {
             // Arrange
             AblyRealtimeOptions options = new AblyRealtimeOptions();
             options.Host = "http://test";
 
             // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options);
+            TransportParams target = ConnectionManager.CreateTransportParameters(options, fallback);
 
             // Assert
             Assert.Equal<string>(options.Host, target.Host);
@@ -309,7 +338,24 @@ namespace Ably.Tests
             options.Host = "test";
 
             // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options);
+            TransportParams target = ConnectionManager.CreateTransportParameters(options, false);
+
+            // Assert
+            Assert.Equal<string>(string.Format("{0}-{1}", environment, options.Host).ToLower(), target.Host);
+        }
+
+        [Theory]
+        [InlineData(AblyEnvironment.Sandbox)]
+        [InlineData(AblyEnvironment.Uat)]
+        public void When_EnvironmentSetInOptions_CreateCorrectTransportParameters_Fallback(AblyEnvironment environment)
+        {
+            // Arrange
+            AblyRealtimeOptions options = new AblyRealtimeOptions();
+            options.Environment = environment;
+            options.Host = "test";
+
+            // Act
+            TransportParams target = ConnectionManager.CreateTransportParameters(options, true);
 
             // Assert
             Assert.Equal<string>(string.Format("{0}-{1}", environment, options.Host).ToLower(), target.Host);
@@ -324,7 +370,22 @@ namespace Ably.Tests
             options.Host = "test";
 
             // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options);
+            TransportParams target = ConnectionManager.CreateTransportParameters(options, false);
+
+            // Assert
+            Assert.Equal<string>(options.Host, target.Host);
+        }
+
+        [Fact]
+        public void When_EnvironmentSetInOptions_Live_FallbackDoesNotModifyIt()
+        {
+            // Arrange
+            AblyRealtimeOptions options = new AblyRealtimeOptions();
+            options.Environment = AblyEnvironment.Live;
+            options.Host = "test";
+
+            // Act
+            TransportParams target = ConnectionManager.CreateTransportParameters(options, true);
 
             // Assert
             Assert.Equal<string>(options.Host, target.Host);

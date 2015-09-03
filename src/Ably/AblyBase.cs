@@ -1,10 +1,14 @@
 ﻿using Ably.Auth;
 using Ably.Rest;
+using System;
 
 namespace Ably
 {
     public class AblyBase
     {
+        private static readonly string InternetCheckURL = "https://internet-up.ably-realtime.com/is-the-internet-up.txt";
+        private static readonly string InternetCheckOK = "yes";
+
         protected readonly ILogger Logger = Config.AblyLogger;
         protected Protocol _protocol;
         protected AblyOptions _options;
@@ -48,6 +52,27 @@ namespace Ably
                 CurrentToken = new TokenDetails(Options.Token);
             }
             LogCurrentAuthenticationMethod();
+        }
+
+        public static bool CanConnectToAbly()
+        {
+            System.Net.WebRequest req = System.Net.WebRequest.CreateHttp(InternetCheckURL);
+            System.Net.WebResponse res = null;
+            try
+            {
+                res = req.GetResponse();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            using (var resStream = res.GetResponseStream())
+            {
+                using (System.IO.StreamReader reader = new System.IO.StreamReader(resStream))
+                {
+                    return reader.ReadLine() == InternetCheckOK;
+                }
+            }
         }
 
         private void LogCurrentAuthenticationMethod()

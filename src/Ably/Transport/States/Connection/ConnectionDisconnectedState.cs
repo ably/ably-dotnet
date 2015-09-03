@@ -28,6 +28,8 @@ namespace Ably.Transport.States.Connection
         private const int ConnectTimeout = 15 * 1000;
         private ICountdownTimer _timer;
 
+        public bool UseFallbackHost { get; set; }
+
         public override Realtime.ConnectionState State
         {
             get
@@ -67,7 +69,14 @@ namespace Ably.Transport.States.Connection
 
         public override void OnAttachedToContext()
         {
-            this._timer.Start(ConnectTimeout, this.OnTimeOut);
+            if (UseFallbackHost)
+            {
+                this.context.SetState(new ConnectionConnectingState(this.context));
+            }
+            else
+            {
+                this._timer.Start(ConnectTimeout, this.OnTimeOut);
+            }
         }
 
         private void OnTimeOut()

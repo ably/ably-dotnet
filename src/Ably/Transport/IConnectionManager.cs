@@ -51,7 +51,7 @@ namespace Ably.Transport
         int ConnectionAttempts { get; }
 
         void SetState(States.Connection.ConnectionState state);
-        void CreateTransport();
+        void CreateTransport(bool useFallbackHost);
         void DestroyTransport();
         void AttemptConnection();
         void ResetConnectionAttempts();
