@@ -12,11 +12,6 @@ namespace Ably.Transport
         public static readonly string[] FallbackHosts;
         public const int Port = 80;
         public const int TlsPort = 443;
-        public const int ConnectTimeout = 15000;
-        public const int DisconnectTimeout = 30000;
-        public const int SuspendedTimeout = 120000;
-        public const int CometRecvTimeout = 90000;
-        public const int CometSendTimeout = 10000;
         public static readonly string[] SupportedTransports = new string[]{ "web_socket" };
         public static readonly Dictionary<string, ITransportFactory> TransportFactories;
 
