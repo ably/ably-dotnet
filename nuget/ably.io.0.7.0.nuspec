@@ -28,7 +28,7 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="..\src\Ably\bin\Release\Ably.dll" target="lib\net40\Ably.dll" />
-        <file src="..\src\Ably\bin\Release40\Ably.dll" target="lib\net45\Ably.dll" />
+        <file src="..\src\Ably\bin\Release\Ably.dll" target="lib\net45\Ably.dll" />
+        <file src="..\src\Ably\bin\Release40\Ably.dll" target="lib\net40\Ably.dll" />
     </files>
 </package>
