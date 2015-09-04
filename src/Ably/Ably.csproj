@@ -192,7 +192,6 @@
     <Compile Include="Types\ProtocolMessage.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Ably.nuspec" />
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
