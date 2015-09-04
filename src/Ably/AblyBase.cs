@@ -56,7 +56,7 @@ namespace Ably
 
         public static bool CanConnectToAbly()
         {
-            System.Net.WebRequest req = System.Net.WebRequest.CreateHttp(InternetCheckURL);
+            System.Net.WebRequest req = System.Net.WebRequest.Create(InternetCheckURL);
             System.Net.WebResponse res = null;
             try
             {
