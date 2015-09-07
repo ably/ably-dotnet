@@ -92,6 +92,7 @@ namespace Ably.Transport.States.Connection
                     {
                         if (ShouldUseFallbackHost(message.Error))
                         {
+                            this.context.Connection.Key = null;
                             this.TransitionState(new ConnectionDisconnectedState(this.context) { UseFallbackHost = true });
                         }
                         this.TransitionState(new ConnectionFailedState(this.context, message.Error));

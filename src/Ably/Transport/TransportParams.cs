@@ -1,6 +1,7 @@
 ﻿using Ably.Types;
 using System;
 using System.Collections.Specialized;
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace Ably.Transport
@@ -48,6 +49,29 @@ namespace Ably.Transport
             {
                 collection["echo"] = "false";
             }
+
+            // recovery
+            if (!string.IsNullOrEmpty(ConnectionKey))
+            {
+                Mode = Mode.Resume;
+                collection["resume"] = ConnectionKey;
+                if (!string.IsNullOrEmpty(ConnectionSerial))
+                {
+                    collection["connection_serial"] = ConnectionSerial;
+                }
+            }
+            else if (!string.IsNullOrEmpty(Options.Recover))
+            {
+                Mode = Mode.Recover;
+                Regex pattern = new Regex(@"^([\w\-]+):(\-?\w+)$");
+                Match match = pattern.Match(Options.Recover);
+                if (match.Success)
+                {
+                    collection["recover"] = match.Groups[1].Value;
+                    collection["connection_serial"] = match.Groups[2].Value;
+                }
+            }
+
             if (!string.IsNullOrEmpty(Options.ClientId))
             {
                 collection["client_id"] = Options.ClientId;

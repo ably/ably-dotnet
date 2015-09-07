@@ -125,12 +125,22 @@ namespace Ably.Transport
             ConnectionHeartbeatRequest.Execute(this, callback);
         }
 
-        internal static TransportParams CreateTransportParameters(AblyRealtimeOptions options, bool useFallbackHost)
+        private TransportParams CreateTransportParameters(bool useFallbackHost)
+        {
+            return CreateTransportParameters(this.options, this.connection, useFallbackHost);
+        }
+
+        internal static TransportParams CreateTransportParameters(AblyRealtimeOptions options, Connection connection, bool useFallbackHost)
         {
             TransportParams transportParams = new TransportParams(options);
             transportParams.Host = GetHost(options, useFallbackHost);
             transportParams.Port = options.Tls ? Defaults.TlsPort : Transport.Defaults.Port;
             transportParams.FallbackHosts = Defaults.FallbackHosts;
+            if (connection != null)
+            {
+                transportParams.ConnectionKey = connection.Key;
+                transportParams.ConnectionSerial = connection.Serial.ToString();
+            }
             return transportParams;
         }
 
@@ -242,7 +252,7 @@ namespace Ably.Transport
             if (this.transport != null)
                 (this as IConnectionContext).DestroyTransport();
 
-            TransportParams transportParams = CreateTransportParameters(options, useFallbackHost);
+            TransportParams transportParams = CreateTransportParameters(useFallbackHost);
             this.transport = Defaults.TransportFactories["web_socket"].CreateTransport(transportParams);
             this.transport.Listener = this;
         }

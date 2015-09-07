@@ -36,18 +36,18 @@ namespace Ably.Realtime
         /// The id of the current connection. This string may be
         /// used when recovering connection state.
         /// </summary>
-        public string Id { get; internal set; }
+        public virtual string Id { get; internal set; }
 
         /// <summary>
         /// The serial number of the last message received on this connection.
         /// The serial number may be used when recovering connection state.
         /// </summary>
-        public long Serial { get; internal set; }
+        public virtual long Serial { get; internal set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public string Key { get; internal set; }
+        public virtual string Key { get; internal set; }
 
         /// <summary>
         /// Information relating to the transition to the current state,
@@ -55,7 +55,7 @@ namespace Ably.Realtime
         /// message and, in the failed state in particular, provides diagnostic
         /// error information.
         /// </summary>
-        public ErrorInfo Reason { get; private set; }
+        public virtual ErrorInfo Reason { get; private set; }
 
         /// <summary>
         /// </summary>

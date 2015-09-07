@@ -286,13 +286,43 @@ namespace Ably.Tests
         #endregion
 
         [Fact]
+        public void CreateCorrectTransportParameters_UsesConnectionKey()
+        {
+            // Arrange
+            AblyRealtimeOptions options = new AblyRealtimeOptions();
+            Mock<Connection> connection = new Mock<Connection>();
+            connection.SetupProperty(c => c.Key, "123");
+
+            // Act
+            TransportParams target = ConnectionManager.CreateTransportParameters(options, connection.Object, false);
+
+            // Assert
+            Assert.Equal<string>("123", target.ConnectionKey);
+        }
+
+        [Fact]
+        public void CreateCorrectTransportParameters_UsesConnectionSerial()
+        {
+            // Arrange
+            AblyRealtimeOptions options = new AblyRealtimeOptions();
+            Mock<Connection> connection = new Mock<Connection>();
+            connection.SetupProperty(c => c.Serial, 123);
+
+            // Act
+            TransportParams target = ConnectionManager.CreateTransportParameters(options, connection.Object, false);
+
+            // Assert
+            Assert.Equal<string>("123", target.ConnectionSerial);
+        }
+
+        [Fact]
         public void CreateCorrectTransportParameters_UsesDefaultHost()
         {
             // Arrange
             AblyRealtimeOptions options = new AblyRealtimeOptions();
 
             // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options, false);
+            TransportParams target = ConnectionManager.CreateTransportParameters(options, null, false);
 
             // Assert
             Assert.Equal<string>(Defaults.RealtimeHost, target.Host);
@@ -305,7 +335,7 @@ namespace Ably.Tests
             AblyRealtimeOptions options = new AblyRealtimeOptions();
 
             // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options, true);
+            TransportParams target = ConnectionManager.CreateTransportParameters(options, null, true);
 
             // Assert
             Assert.True(Defaults.FallbackHosts.Contains(target.Host));
@@ -321,7 +351,7 @@ namespace Ably.Tests
             options.Host = "http://test";
 
             // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options, fallback);
+            TransportParams target = ConnectionManager.CreateTransportParameters(options, null, fallback);
 
             // Assert
             Assert.Equal<string>(options.Host, target.Host);
@@ -338,7 +368,7 @@ namespace Ably.Tests
             options.Host = "test";
 
             // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options, false);
+            TransportParams target = ConnectionManager.CreateTransportParameters(options, null, false);
 
             // Assert
             Assert.Equal<string>(string.Format("{0}-{1}", environment, options.Host).ToLower(), target.Host);
@@ -355,7 +385,7 @@ namespace Ably.Tests
             options.Host = "test";
 
             // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options, true);
+            TransportParams target = ConnectionManager.CreateTransportParameters(options, null, true);
 
             // Assert
             Assert.Equal<string>(string.Format("{0}-{1}", environment, options.Host).ToLower(), target.Host);
@@ -370,7 +400,7 @@ namespace Ably.Tests
             options.Host = "test";
 
             // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options, false);
+            TransportParams target = ConnectionManager.CreateTransportParameters(options, null, false);
 
             // Assert
             Assert.Equal<string>(options.Host, target.Host);
@@ -385,10 +415,173 @@ namespace Ably.Tests
             options.Host = "test";
 
             // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options, true);
+            TransportParams target = ConnectionManager.CreateTransportParameters(options, null, true);
 
             // Assert
             Assert.Equal<string>(options.Host, target.Host);
+        }
+
+        [Fact]
+        public void StoreTransportParams_Key()
+        {
+            // Arrange
+            string target = "123.456:789";
+            TransportParams parameters = new TransportParams(new AblyRealtimeOptions(target));
+            var table = new System.Collections.Specialized.NameValueCollection();
+
+            // Act
+            parameters.StoreParams(table);
+
+            // Assert
+            Assert.Equal<string>(target.Replace(":", "%3a"), table["key"]);
+        }
+
+        [Fact]
+        public void StoreTransportParams_Token()
+        {
+            // Arrange
+            string target = "afafmasfasmsafnqwqff";
+            TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { Token = target });
+            var table = new System.Collections.Specialized.NameValueCollection();
+
+            // Act
+            parameters.StoreParams(table);
+
+            // Assert
+            Assert.Equal<string>(target, table["access_token"]);
+        }
+
+        [Fact]
+        public void StoreTransportParams_Format_MsgPack()
+        {
+            // Arrange
+            TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { UseBinaryProtocol = true });
+            var table = new System.Collections.Specialized.NameValueCollection();
+
+            // Act
+            parameters.StoreParams(table);
+
+            // Assert
+            Assert.Equal<string>("msgpack", table["format"]);
+        }
+
+        [Fact]
+        public void StoreTransportParams_Format_Text()
+        {
+            // Arrange
+            TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { UseBinaryProtocol = false });
+            var table = new System.Collections.Specialized.NameValueCollection();
+
+            // Act
+            parameters.StoreParams(table);
+
+            // Assert
+            Assert.Null(table["format"]);
+        }
+
+        [Fact]
+        public void StoreTransportParams_Resume()
+        {
+            // Arrange
+            string target = "123456789";
+            TransportParams parameters = new TransportParams(new AblyRealtimeOptions()) { ConnectionKey = target };
+            var table = new System.Collections.Specialized.NameValueCollection();
+
+            // Act
+            parameters.StoreParams(table);
+
+            // Assert
+            Assert.Equal<Mode>(Mode.Resume, parameters.Mode);
+        }
+
+        [Fact]
+        public void StoreTransportParams_Resume_Key()
+        {
+            // Arrange
+            string target = "123456789";
+            TransportParams parameters = new TransportParams(new AblyRealtimeOptions()) { ConnectionKey = target };
+            var table = new System.Collections.Specialized.NameValueCollection();
+
+            // Act
+            parameters.StoreParams(table);
+
+            // Assert
+            Assert.Equal<string>(target, table["resume"]);
+        }
+
+        [Fact]
+        public void StoreTransportParams_Resume_Serial()
+        {
+            // Arrange
+            string target = "123456789";
+            TransportParams parameters = new TransportParams(new AblyRealtimeOptions()) { ConnectionKey = "123", ConnectionSerial = target };
+            var table = new System.Collections.Specialized.NameValueCollection();
+
+            // Act
+            parameters.StoreParams(table);
+
+            // Assert
+            Assert.Equal<string>(target, table["connection_serial"]);
+        }
+
+        [Fact]
+        public void StoreTransportParams_Recover()
+        {
+            // Arrange
+            string target = "test-:123";
+            TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { Recover = target });
+            var table = new System.Collections.Specialized.NameValueCollection();
+
+            // Act
+            parameters.StoreParams(table);
+
+            // Assert
+            Assert.Equal<Mode>(Mode.Recover, parameters.Mode);
+        }
+
+        [Fact]
+        public void StoreTransportParams_Recover_Key()
+        {
+            // Arrange
+            string target = "test-:123";
+            TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { Recover = target });
+            var table = new System.Collections.Specialized.NameValueCollection();
+
+            // Act
+            parameters.StoreParams(table);
+
+            // Assert
+            Assert.Equal<string>("test-", table["recover"]);
+        }
+
+        [Fact]
+        public void StoreTransportParams_Recover_Serial()
+        {
+            // Arrange
+            string target = "test-:123";
+            TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { Recover = target });
+            var table = new System.Collections.Specialized.NameValueCollection();
+
+            // Act
+            parameters.StoreParams(table);
+
+            // Assert
+            Assert.Equal<string>("123", table["connection_serial"]);
+        }
+
+        [Fact]
+        public void StoreTransportParams_ClientID()
+        {
+            // Arrange
+            string target = "test123";
+            TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { ClientId = target });
+            var table = new System.Collections.Specialized.NameValueCollection();
+
+            // Act
+            parameters.StoreParams(table);
+
+            // Assert
+            Assert.Equal<string>(target, table["client_id"]);
         }
 
         #region Connection

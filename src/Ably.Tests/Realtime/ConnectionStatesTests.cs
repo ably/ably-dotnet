@@ -272,6 +272,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            context.Setup(c => c.Connection).Returns(new Realtime.Connection());
             Mock<ITransport> transport = new Mock<ITransport>();
             transport.Setup(c => c.State).Returns(TransportState.Connected);
             context.Setup(c => c.Transport).Returns(transport.Object);
@@ -283,6 +284,26 @@ namespace Ably.Tests
 
             // Assert
             context.Verify(c => c.SetState(It.Is<ConnectionDisconnectedState>(ss => ss.UseFallbackHost == true)), Times.Once());
+        }
+
+        [Fact]
+        public void ConnectingState_HandlesInboundErrorMessage_ClearsConnectionKey()
+        {
+            // Arrange
+            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
+            Mock<Realtime.Connection> connection = new Mock<Realtime.Connection>();
+            connection.SetupProperty(c => c.Key);
+            context.Setup(c => c.Connection).Returns(connection.Object);
+            Mock<ITransport> transport = new Mock<ITransport>();
+            transport.Setup(c => c.State).Returns(TransportState.Connected);
+            context.Setup(c => c.Transport).Returns(transport.Object);
+            ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
+
+            // Act
+            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("test", 123, System.Net.HttpStatusCode.InternalServerError) });
+
+            // Assert
+            connection.VerifySet(c => c.Key = null);
         }
 
         [Fact]
@@ -812,16 +833,16 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            Realtime.Connection target = new Realtime.Connection(new Mock<IConnectionManager>().Object);
-            context.SetupGet(c => c.Connection).Returns(target);
+            Mock<Realtime.Connection> target = new Mock<Realtime.Connection>();
+            context.SetupGet(c => c.Connection).Returns(target.Object);
 
             // Act
             ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("test", 12564, "test test"));
 
             // Assert
-            Assert.Equal<String>("test", target.Id);
-            Assert.Equal<long>(12564, target.Serial);
-            Assert.Equal<String>("test test", target.Key);
+            target.VerifySet(c => c.Id = "test");
+            target.VerifySet(c => c.Serial = 12564);
+            target.VerifySet(c => c.Key = "test test");
         }
         #endregion
 
@@ -1480,16 +1501,16 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            Realtime.Connection target = new Realtime.Connection(new Mock<IConnectionManager>().Object);
-            target.Key = "test test";
-            context.SetupGet(c => c.Connection).Returns(target);
+            Mock<Realtime.Connection> target = new Mock<Realtime.Connection>();
+            target.SetupProperty(c => c.Key, "test test");
+            context.SetupGet(c => c.Connection).Returns(target.Object);
             ConnectionClosedState state = new ConnectionClosedState(context.Object);
 
             // Act
             state.OnAttachedToContext();
 
             // Assert
-            Assert.Null(target.Key);
+            target.VerifySet(c => c.Key = null);
         }
         #endregion
 
@@ -1605,16 +1626,16 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            Realtime.Connection target = new Realtime.Connection(new Mock<IConnectionManager>().Object);
-            target.Key = "test test";
-            context.SetupGet(c => c.Connection).Returns(target);
+            Mock<Realtime.Connection> target = new Mock<Realtime.Connection>();
+            target.SetupProperty(c => c.Key, "test test");
+            context.SetupGet(c => c.Connection).Returns(target.Object);
             ConnectionFailedState state = new ConnectionFailedState(context.Object, ErrorInfo.ReasonNeverConnected);
 
             // Act
             state.OnAttachedToContext();
 
             // Assert
-            Assert.Null(target.Key);
+            target.VerifySet(c => c.Key = null);
         }
         #endregion
 
