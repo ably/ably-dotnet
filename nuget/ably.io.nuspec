@@ -10,8 +10,8 @@
         <projectUrl>https://github.com/ably/ably-dotnet</projectUrl>
         <iconUrl>http://docs.ably.io/assets/ably-logo.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>My package description.</description>
-        <summary>ably .NET client library.</summary>
+        <description>ably .NET client library.</description>
+        <summary>Ably is a hugely scalable, superfast and secure hosted real-time messaging service for web-enabled devices.</summary>
         <copyright>2015 Ably</copyright>
         <language />
         <dependencies>
