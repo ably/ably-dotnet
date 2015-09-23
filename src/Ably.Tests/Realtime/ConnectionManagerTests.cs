@@ -1070,5 +1070,21 @@ namespace Ably.Tests
         }
 
         #endregion
+
+        [Fact]
+        public void WhenRestoringConnection_UsesLastKnownConnectionSerial()
+        {
+            // Arrange
+            long targetSerial = 1234567;
+            Mock<ConnectionManager> target = new Mock<ConnectionManager>(new AblyRealtimeOptions());
+            target.Object.Connection.Serial = targetSerial;
+            target.Setup(c => c.CreateTransport(It.IsAny<TransportParams>())).Returns(new Mock<ITransport>().Object);
+
+            // Act
+            (target.Object as IConnectionContext).CreateTransport(false);
+
+            // Assert
+            target.Verify(c => c.CreateTransport(It.Is<TransportParams>(tp => tp.ConnectionSerial == targetSerial.ToString())), Times.Once()); 
+        }
     }
 }

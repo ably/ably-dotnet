@@ -160,6 +160,11 @@ namespace Ably.Transport
             return host;
         }
 
+        internal virtual ITransport CreateTransport(TransportParams transportParams)
+        {
+            return Defaults.TransportFactories["web_socket"].CreateTransport(transportParams);
+        }
+
         //
         // Transport communication
         //
@@ -253,7 +258,7 @@ namespace Ably.Transport
                 (this as IConnectionContext).DestroyTransport();
 
             TransportParams transportParams = CreateTransportParameters(useFallbackHost);
-            this.transport = Defaults.TransportFactories["web_socket"].CreateTransport(transportParams);
+            this.transport = CreateTransport(transportParams);
             this.transport.Listener = this;
         }
 
