@@ -1086,5 +1086,21 @@ namespace Ably.Tests
             // Assert
             target.Verify(c => c.CreateTransport(It.Is<TransportParams>(tp => tp.ConnectionSerial == targetSerial.ToString())), Times.Once()); 
         }
+
+        [Fact]
+        public void WhenRestoringConnection_UsesConnectionKey()
+        {
+            // Arrange
+            string targetKey = "1234567";
+            Mock<ConnectionManager> target = new Mock<ConnectionManager>(new AblyRealtimeOptions());
+            target.Object.Connection.Key = targetKey;
+            target.Setup(c => c.CreateTransport(It.IsAny<TransportParams>())).Returns(new Mock<ITransport>().Object);
+
+            // Act
+            (target.Object as IConnectionContext).CreateTransport(false);
+
+            // Assert
+            target.Verify(c => c.CreateTransport(It.Is<TransportParams>(tp => tp.ConnectionKey == targetKey.ToString())), Times.Once());
+        }
     }
 }
