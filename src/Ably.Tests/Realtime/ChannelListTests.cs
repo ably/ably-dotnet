@@ -50,7 +50,6 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
             factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
@@ -69,7 +68,6 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
             factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
@@ -88,7 +86,6 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
             factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
@@ -108,7 +105,6 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
             factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
@@ -128,7 +124,6 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
             factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
@@ -147,7 +142,6 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
             factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
@@ -166,7 +160,6 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
             factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
@@ -186,7 +179,6 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
             factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
@@ -206,7 +198,6 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
             factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
@@ -226,7 +217,6 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            manager.Setup(c => c.Connect()).Raises(c => c.StateChanged += null, ConnectionState.Connected, null, null);
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
             factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);

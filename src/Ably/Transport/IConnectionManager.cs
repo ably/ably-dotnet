@@ -1,6 +1,7 @@
 ﻿using Ably.Realtime;
 using Ably.Types;
 using System;
+using System.Collections.Generic;
 
 namespace Ably.Transport
 {
@@ -23,9 +24,11 @@ namespace Ably.Transport
 
     public interface IConnectionManager
     {
-        event StateChangedDelegate StateChanged;
-
         event MessageReceivedDelegate MessageReceived;
+
+        Connection Connection { get; }
+
+        Realtime.ConnectionState ConnectionState { get; }
 
         bool IsActive { get; }
 
@@ -33,6 +36,24 @@ namespace Ably.Transport
 
         void Close();
 
+        void Ping(Action<bool, ErrorInfo> callback);
+
         void Send(ProtocolMessage message, Action<bool, ErrorInfo> listener);
+    }
+
+    internal interface IConnectionContext
+    {
+        States.Connection.ConnectionState State { get; }
+        ITransport Transport { get; }
+        Queue<ProtocolMessage> QueuedMessages { get; }
+        Connection Connection { get; }
+        DateTimeOffset? FirstConnectionAttempt { get; }
+        int ConnectionAttempts { get; }
+
+        void SetState(States.Connection.ConnectionState state);
+        void CreateTransport(bool useFallbackHost);
+        void DestroyTransport();
+        void AttemptConnection();
+        void ResetConnectionAttempts();
     }
 }

@@ -45,7 +45,7 @@ namespace Ably
         /// </summary>
         public ChannelOptions ChannelDefaults { get; set; }
 
-        internal AblyEnvironment? Environment { get; set; }
+        public AblyEnvironment? Environment { get; set; }
 
         internal AuthMethod Method
         {

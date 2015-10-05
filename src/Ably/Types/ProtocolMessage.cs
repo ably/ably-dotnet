@@ -72,7 +72,7 @@ namespace Ably.Types
         public string ChannelSerial { get; set; }
         public string ConnectionId { get; set; }
         public string ConnectionKey { get; set; }
-        public long ConnectionSerial { get; set; }
+        public long? ConnectionSerial { get; set; }
         public long MsgSerial { get; set; }
         public DateTimeOffset? Timestamp { get; set; }
         public Message[] Messages { get; set; }

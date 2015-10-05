@@ -71,16 +71,11 @@ namespace Ably.Transport
             this.socket.Open();
         }
 
-        public void Close(bool sendDisconnect)
+        public void Close()
         {
             if (this.socket == null)
             {
                 return;
-            }
-
-            if (sendDisconnect)
-            {
-                this.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
             }
             this.socket.Close();
         }

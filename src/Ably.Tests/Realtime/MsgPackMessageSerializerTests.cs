@@ -383,7 +383,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<long>(connectionSerial, target.ConnectionSerial);
+            Assert.Equal<long>(connectionSerial, target.ConnectionSerial.Value);
         }
 
         [Theory]

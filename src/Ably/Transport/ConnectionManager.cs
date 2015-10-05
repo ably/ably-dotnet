@@ -1,99 +1,158 @@
-﻿using Ably.Realtime;
-using Ably.Types;
+﻿using Ably.Types;
 using System;
 using System.Collections.Generic;
+using Ably.Realtime;
 
 namespace Ably.Transport
 {
-    public class ConnectionManager : IConnectionManager, ITransportListener
+    public class ConnectionManager : IConnectionManager, ITransportListener, IConnectionContext
     {
         internal ConnectionManager()
         {
             this.sync = System.Threading.SynchronizationContext.Current;
             this.pendingMessages = new Queue<ProtocolMessage>();
-            this.ackQueue = new Dictionary<long, Action<bool, ErrorInfo>>();
         }
 
-        internal ConnectionManager(ITransport transport)
+        internal ConnectionManager(ITransport transport, IAcknowledgementProcessor ackProcessor, States.Connection.ConnectionState initialState)
             : this()
         {
             this.transport = transport;
             this.transport.Listener = this;
+            this.state = initialState;
+            this.ackProcessor = ackProcessor;
+            this.connection = new Connection(this);
         }
 
         public ConnectionManager(AblyRealtimeOptions options)
             : this()
         {
             this.options = options;
+            this.state = new States.Connection.ConnectionInitializedState(this);
+            this.ackProcessor = new AcknowledgementProcessor();
+            this.connection = new Connection(this);
         }
 
-        internal ITransport transport;
+        private ITransport transport;
         private System.Threading.SynchronizationContext sync;
         private ILogger Logger = Config.AblyLogger;
         private Queue<ProtocolMessage> pendingMessages;
-        private ConnectionState connectionState;
-        private long msgSerial;
-        private Dictionary<long, Action<bool, ErrorInfo>> ackQueue;
         private AblyRealtimeOptions options;
-
-        public event StateChangedDelegate StateChanged;
+        private States.Connection.ConnectionState state;
+        private IAcknowledgementProcessor ackProcessor;
+        private DateTimeOffset? _firstConnectionAttempt;
+        private int _connectionAttempts;
+        private Connection connection;
 
         public event MessageReceivedDelegate MessageReceived;
 
+        // TODO: Find out why is this?
         public bool IsActive
         {
             get { return false; }
         }
 
+        States.Connection.ConnectionState IConnectionContext.State
+        {
+            get { return state; }
+        }
+
+        ITransport IConnectionContext.Transport
+        {
+            get
+            {
+                return this.transport;
+            }
+        }
+
+        Queue<ProtocolMessage> IConnectionContext.QueuedMessages
+        {
+            get
+            {
+                return this.pendingMessages;
+            }
+        }
+
+        DateTimeOffset? IConnectionContext.FirstConnectionAttempt
+        {
+            get
+            {
+                return _firstConnectionAttempt;
+            }
+        }
+
+        int IConnectionContext.ConnectionAttempts
+        {
+            get
+            {
+                return _connectionAttempts;
+            }
+        }
+
+        public Connection Connection
+        {
+            get
+            {
+                return connection;
+            }
+        }
+
+        public ConnectionState ConnectionState
+        {
+            get
+            {
+                return this.state.State;
+            }
+        }
+
         public void Connect()
         {
-            if (this.transport == null)
-            {
-                TransportParams transportParams = CreateTransportParameters(options);
-                this.transport = Defaults.TransportFactories["web_socket"].CreateTransport(transportParams);
-                this.transport.Listener = this;
-            }
-
-            if (this.transport.State == TransportState.Initialized || this.transport.State == TransportState.Closed)
-            {
-                this.transport.Connect();
-            }
+            this.state.Connect();
         }
 
         public void Close()
         {
-            this.transport.Close(this.transport.State == TransportState.Connected);
+            this.state.Close();
         }
 
         public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback)
         {
-            message.MsgSerial = this.msgSerial++;
-            if (callback != null)
-            {
-                this.ackQueue.Add(message.MsgSerial, callback);
-            }
-            if (this.transport.State == TransportState.Connected)
-            {
-                this.SendDirect(message);
-            }
-            else
-            {
-                this.pendingMessages.Enqueue(message);
-            }
+            ackProcessor.SendMessage(message, callback);
+            state.SendMessage(message);
         }
 
-        private static TransportParams CreateTransportParameters(AblyRealtimeOptions options)
+        public void Ping(Action<bool, ErrorInfo> callback)
+        {
+            ConnectionHeartbeatRequest.Execute(this, callback);
+        }
+
+        private TransportParams CreateTransportParameters(bool useFallbackHost)
+        {
+            return CreateTransportParameters(this.options, this.connection, useFallbackHost);
+        }
+
+        internal static TransportParams CreateTransportParameters(AblyRealtimeOptions options, Connection connection, bool useFallbackHost)
         {
             TransportParams transportParams = new TransportParams(options);
-            transportParams.Host = GetHost(options);
+            transportParams.Host = GetHost(options, useFallbackHost);
             transportParams.Port = options.Tls ? Defaults.TlsPort : Transport.Defaults.Port;
             transportParams.FallbackHosts = Defaults.FallbackHosts;
+            if (connection != null)
+            {
+                transportParams.ConnectionKey = connection.Key;
+                transportParams.ConnectionSerial = connection.Serial.ToString();
+            }
             return transportParams;
         }
 
-        private static string GetHost(AblyRealtimeOptions options)
+        private static string GetHost(AblyRealtimeOptions options, bool useFallbackHost)
         {
-            string host = !string.IsNullOrEmpty(options.Host) ? options.Host : Defaults.RealtimeHost;
+            string defaultHost = Defaults.RealtimeHost;
+            if (useFallbackHost)
+            {
+                Random r = new Random();
+                defaultHost = Defaults.FallbackHosts[r.Next(0, 1000) % Defaults.FallbackHosts.Length];
+            }
+            string host = !string.IsNullOrEmpty(options.Host) ? options.Host : defaultHost;
             if (options.Environment.HasValue && options.Environment != AblyEnvironment.Live)
             {
                 return string.Format("{0}-{1}", options.Environment.ToString().ToLower(), host);
@@ -101,31 +160,9 @@ namespace Ably.Transport
             return host;
         }
 
-        //
-        // ConnectionManager communication
-        //
-        private void SetState(object state)
+        internal virtual ITransport CreateTransport(TransportParams transportParams)
         {
-            object[] stateArgs = (object[])state;
-            this.SetState((ConnectionState)stateArgs[0], (ConnectionInfo)stateArgs[1], (ErrorInfo)stateArgs[2]);
-        }
-
-        private void SetState(ConnectionState state, ConnectionInfo info = null, ErrorInfo error = null)
-        {
-            this.Logger.Info("ConnectionManager: StateChanged: {0}", state);
-            this.connectionState = state;
-            if (this.StateChanged != null)
-            {
-                this.StateChanged(state, info, error);
-            }
-        }
-
-        private void OnMessageReceived(ProtocolMessage message)
-        {
-            if (this.MessageReceived != null)
-            {
-                this.MessageReceived(message);
-            }
+            return Defaults.TransportFactories["web_socket"].CreateTransport(transportParams);
         }
 
         //
@@ -135,189 +172,119 @@ namespace Ably.Transport
         {
             if (this.sync != null && this.sync.IsWaitNotificationRequired())
             {
-                this.sync.Send(new System.Threading.SendOrPostCallback(o => this.OnTransportConnected()), null);
+                this.sync.Post(new System.Threading.SendOrPostCallback(o => this.OnTransportConnected()), null);
+                return;
             }
-            else
-            {
-                this.OnTransportConnected();
-            }
+            this.OnTransportConnected();
         }
 
         void ITransportListener.OnTransportDisconnected()
         {
             if (this.sync != null && this.sync.IsWaitNotificationRequired())
             {
-                this.sync.Send(new System.Threading.SendOrPostCallback(o => this.ProcessTransportDisconnected()), null);
+                this.sync.Post(new System.Threading.SendOrPostCallback(o => this.OnTransportDisconnected()), null);
+                return;
             }
-            else
-            {
-                this.ProcessTransportDisconnected();
-            }
+            this.OnTransportDisconnected();
         }
 
         void ITransportListener.OnTransportError(Exception e)
         {
-            ErrorInfo error = new ErrorInfo(e.Message, 80000, System.Net.HttpStatusCode.ServiceUnavailable);
-
             if (this.sync != null && this.sync.IsWaitNotificationRequired())
             {
-                this.sync.Send(new System.Threading.SendOrPostCallback(this.SetState), new object[] { ConnectionState.Failed, null, error });
+                this.sync.Post(new System.Threading.SendOrPostCallback(o => this.OnTransportError((TransportState)o, e)), transport.State);
+                return;
             }
-            else
-            {
-                this.SetState(ConnectionState.Failed, error: error);
-            }
+            this.OnTransportError(transport.State, e);
         }
 
         void ITransportListener.OnTransportMessageReceived(ProtocolMessage message)
         {
             if (this.sync != null && this.sync.IsWaitNotificationRequired())
             {
-                this.sync.Send(new System.Threading.SendOrPostCallback(this.ProcessProtocolMessage), message);
+                this.sync.Post(new System.Threading.SendOrPostCallback(o => this.OnTransportMessageReceived(message)), null);
+                return;
             }
-            else
-            {
-                this.ProcessProtocolMessage(message);
-            }
+            this.OnTransportMessageReceived(message);
         }
 
         private void OnTransportConnected()
         {
-            this.Logger.Info("ConnectionManager: Transport Connected");
-            foreach (ProtocolMessage message in this.pendingMessages)
-            {
-                this.SendDirect(message);
-            }
-            this.pendingMessages.Clear();
+            this.state.OnTransportStateChanged(new States.Connection.ConnectionState.TransportStateInfo(TransportState.Connected));
         }
 
-        private void ProcessProtocolMessage(object message)
+        private void OnTransportDisconnected()
         {
-            this.ProcessProtocolMessage(message as ProtocolMessage);
+            this.state.OnTransportStateChanged(new States.Connection.ConnectionState.TransportStateInfo(TransportState.Closed));
         }
 
-        private void ProcessProtocolMessage(ProtocolMessage message)
+        private void OnTransportError(TransportState state, Exception e)
+        {
+            this.state.OnTransportStateChanged(new States.Connection.ConnectionState.TransportStateInfo(state, e));
+        }
+
+        private void OnTransportMessageReceived(ProtocolMessage message)
         {
             this.Logger.Verbose("ConnectionManager: Message Received {0}", message);
 
-            switch (message.Action)
+            bool handled = this.state.OnMessageReceived(message);
+            handled |= this.ackProcessor.OnMessageReceived(message);
+            handled |= ConnectionHeartbeatRequest.CanHandleMessage(message); 
+
+            if (message.ConnectionSerial != null)
             {
-                case ProtocolMessage.MessageAction.Heartbeat:
-                    this.OnMessage_Heartbeat(message);
-                    break;
-                case ProtocolMessage.MessageAction.Error:
-                    AblyException transportException = new AblyException(message.Error);
-                    if (message.Error == null)
-                    {
-                        this.Logger.Error("OnTransportMessageReceived(): ERROR message received", transportException);
-                    }
-                    if (!string.IsNullOrEmpty(message.Channel))
-                    {
-                        OnMessageReceived(message);
-                    }
-                    else
-                    {
-                        OnMessage_Error(message);
-                    }
-                    break;
-                case ProtocolMessage.MessageAction.Connected:
-                    this.OnMessage_Connected(message);
-                    break;
-                case ProtocolMessage.MessageAction.Disconnect:
-                    this.OnMessage_Disconnected(message);
-                    break;
-                case ProtocolMessage.MessageAction.Closed:
-                    this.OnMessage_Closed(message);
-                    break;
-                case ProtocolMessage.MessageAction.Ack:
-                    this.HandleMessageAcknowledgement(message);
-                    break;
-                case ProtocolMessage.MessageAction.Nack:
-                    this.HandleMessageAcknowledgement(message);
-                    break;
-                default:
-                    this.OnMessageReceived(message);
-                    break;
+                this.connection.Serial = message.ConnectionSerial.Value;
+            }
+
+            if (this.MessageReceived != null)
+            {
+                this.MessageReceived(message);
             }
         }
 
-        private void ProcessTransportDisconnected()
+        void IConnectionContext.SetState(States.Connection.ConnectionState newState)
         {
-            if (this.connectionState == ConnectionState.Closed)
-            {
+            this.state = newState;
+            this.state.OnAttachedToContext();
+
+            this.ackProcessor.OnStateChanged(newState);
+
+            this.connection.OnStateChanged(newState.State, newState.Error, newState.RetryIn ?? -1);
+        }
+
+        void IConnectionContext.CreateTransport(bool useFallbackHost)
+        {
+            if (this.transport != null)
+                (this as IConnectionContext).DestroyTransport();
+
+            TransportParams transportParams = CreateTransportParameters(useFallbackHost);
+            this.transport = CreateTransport(transportParams);
+            this.transport.Listener = this;
+        }
+
+        void IConnectionContext.DestroyTransport()
+        {
+            if (this.transport == null)
                 return;
-            }
 
-            this.SetState(ConnectionState.Disconnected);
+            this.transport.Close();
+            this.transport.Listener = null;
+            this.transport = null;
         }
 
-        private void OnMessage_Heartbeat(ProtocolMessage message)
+        void IConnectionContext.AttemptConnection()
         {
-        }
-
-        private void OnMessage_Error(ProtocolMessage message)
-        {
-            this.SetState(ConnectionState.Failed, error: message.Error);
-        }
-
-        private void OnMessage_Connected(ProtocolMessage message)
-        {
-            ConnectionInfo info = new ConnectionInfo(message.ConnectionId, message.ConnectionSerial, message.ConnectionKey);
-            this.ResetMsgAcknowledgement();
-            this.SetState(ConnectionState.Connected, info: info, error: message.Error);
-        }
-
-        private void OnMessage_Disconnected(ProtocolMessage message)
-        {
-            this.SetState(ConnectionState.Disconnected, error: message.Error);
-        }
-
-        private void OnMessage_Closed(ProtocolMessage message)
-        {
-            this.ResetMsgAcknowledgement();
-            if (message.Error != null)
+            if (_firstConnectionAttempt == null)
             {
-                this.SetState(ConnectionState.Failed, error: message.Error);
+                _firstConnectionAttempt = DateTimeOffset.Now;
             }
-            else
-            {
-                this.SetState(ConnectionState.Closed);
-            }
+            _connectionAttempts++;
         }
 
-        private void ResetMsgAcknowledgement()
+        void IConnectionContext.ResetConnectionAttempts()
         {
-            this.msgSerial = 0;
-            this.ackQueue.Clear();
-        }
-
-        private void HandleMessageAcknowledgement(ProtocolMessage message)
-        {
-            long startSerial = message.MsgSerial;
-            long endSerial = message.MsgSerial + (message.Count - 1);
-            ErrorInfo reason = new ErrorInfo("Unknown error", 50000, System.Net.HttpStatusCode.InternalServerError);
-            for (long i = startSerial; i <= endSerial; i++)
-            {
-                Action<bool, ErrorInfo> callback;
-                if (this.ackQueue.TryGetValue(i, out callback))
-                {
-                    if (message.Action == ProtocolMessage.MessageAction.Ack)
-                    {
-                        callback(true, null);
-                    }
-                    else
-                    {
-                        callback(false, message.Error ?? reason);
-                    }
-                    this.ackQueue.Remove(i);
-                }
-            }
-        }
-
-        private void SendDirect(ProtocolMessage message)
-        {
-            this.Logger.Info("ConnectionManager: Sending Message: {0}", message);
-            this.transport.Send(message);
+            _firstConnectionAttempt = null;
+            _connectionAttempts = 0;
         }
     }
 }

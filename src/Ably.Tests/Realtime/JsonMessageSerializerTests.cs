@@ -345,7 +345,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<long>(long.Parse(connectionSerial.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.ConnectionSerial);
+            Assert.Equal<long>(long.Parse(connectionSerial.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.ConnectionSerial.Value);
         }
 
         [Theory]

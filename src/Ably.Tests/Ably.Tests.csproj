@@ -137,10 +137,11 @@
     <Compile Include="MessageEncodes\JsonEncoderTests.cs" />
     <Compile Include="MessageEncodes\Utf8EncoderTests.cs" />
     <Compile Include="MessagePack\SerializationTests.cs" />
+    <Compile Include="Realtime\AckProtocolTests.cs" />
     <Compile Include="Realtime\AuthenticationTests.cs" />
     <Compile Include="Realtime\ChannelListTests.cs" />
     <Compile Include="Realtime\ConnectionManagerTests.cs" />
-    <Compile Include="Realtime\ConnectionTests.cs" />
+    <Compile Include="Realtime\ConnectionStatesTests.cs" />
     <Compile Include="Realtime\JsonMessageSerializerTests.cs" />
     <Compile Include="Realtime\MsgPackMessageSerializerTests.cs" />
     <Compile Include="Realtime\PresenceTests.cs" />

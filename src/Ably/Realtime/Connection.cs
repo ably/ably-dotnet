@@ -10,41 +10,44 @@ namespace Ably.Realtime
     /// </summary>
     public class Connection : IDisposable
     {
-        internal Connection(IConnectionManager connection)
+        internal Connection()
         {
-            this.State = ConnectionState.Initialized;
-            this.connection = connection;
-            this.connection.StateChanged += this.ConnectionManagerStateChanged;
         }
 
-        private IConnectionManager connection;
+        internal Connection(IConnectionManager manager)
+        {
+            this.manager = manager;
+            this.State = this.manager.ConnectionState;
+        }
+
+        private IConnectionManager manager;
 
         /// <summary>
         /// Indicates the current state of this connection.
         /// </summary>
-        public ConnectionState State { get; private set; }
+        public virtual ConnectionState State { get; private set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public event EventHandler<ConnectionStateChangedEventArgs> ConnectionStateChanged;
+        public virtual event EventHandler<ConnectionStateChangedEventArgs> ConnectionStateChanged;
 
         /// <summary>
         /// The id of the current connection. This string may be
         /// used when recovering connection state.
         /// </summary>
-        public string Id { get; private set; }
+        public virtual string Id { get; internal set; }
 
         /// <summary>
         /// The serial number of the last message received on this connection.
         /// The serial number may be used when recovering connection state.
         /// </summary>
-        public long Serial { get; private set; }
+        public virtual long Serial { get; internal set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public string Key { get; private set; }
+        public virtual string Key { get; internal set; }
 
         /// <summary>
         /// Information relating to the transition to the current state,
@@ -52,22 +55,13 @@ namespace Ably.Realtime
         /// message and, in the failed state in particular, provides diagnostic
         /// error information.
         /// </summary>
-        public ErrorInfo Reason { get; private set; }
+        public virtual ErrorInfo Reason { get; private set; }
 
         /// <summary>
         /// </summary>
         public void Connect()
         {
-            this.SetConnectionState(ConnectionState.Connecting);
-            this.connection.Connect();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void Ping()
-        {
-            this.Ping(null);
+            this.manager.Connect();
         }
 
         /// <summary>
@@ -75,7 +69,7 @@ namespace Ably.Realtime
         /// </summary>
         public void Ping(Action<bool, ErrorInfo> callback)
         {
-            this.connection.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat), callback);
+            this.manager.Ping(callback);
         }
 
         /// <summary>
@@ -85,8 +79,7 @@ namespace Ably.Realtime
         /// </summary>
         public void Close()
         {
-            this.SetConnectionState(ConnectionState.Closing);
-            this.connection.Close();
+            this.manager.Close();
         }
 
         public void Dispose()
@@ -94,37 +87,17 @@ namespace Ably.Realtime
             this.Close();
         }
 
-        protected void SetConnectionState(ConnectionState state, ErrorInfo error = null)
+        internal void OnStateChanged(ConnectionState state, ErrorInfo error = null, int retryin = -1)
         {
             ConnectionState oldState = this.State;
             this.State = state;
-            // TODO: Add proper arguments in Connection.ConnectionStateChanged
-            this.OnConnectionStateChanged(new ConnectionStateChangedEventArgs(oldState, state, -1, error));
-        }
-
-        protected void OnConnectionStateChanged(ConnectionStateChangedEventArgs args)
-        {
-            if (this.ConnectionStateChanged != null)
-            {
-                this.ConnectionStateChanged(this, args);
-            }
-        }
-
-        private void ConnectionManagerStateChanged(ConnectionState newState, ConnectionInfo info, ErrorInfo error)
-        {
-            if (newState == ConnectionState.Connected)
-            {
-                this.Id = info.ConnectionId;
-                this.Key = info.ConnectionKey;
-                this.Serial = info.ConnectionSerial;
-            }
-            else if (newState == ConnectionState.Closed || newState == ConnectionState.Failed)
-            {
-                this.Key = null;
-            }
             this.Reason = error;
 
-            this.SetConnectionState(newState, error);
+            // TODO: Add proper arguments in Connection.ConnectionStateChanged
+            if (this.ConnectionStateChanged != null)
+            {
+                this.ConnectionStateChanged(this, new ConnectionStateChangedEventArgs(oldState, state, retryin, error));
+            }
         }
     }
 }

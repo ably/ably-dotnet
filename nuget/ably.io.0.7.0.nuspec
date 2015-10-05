@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>ably.io</id>
+        <version>0.7.0</version>
+        <title>ably.io</title>
+        <authors>Yavor Ivanov,Martin Georgiev</authors>
+        <owners>Matthew O'Riordan</owners>
+        <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
+        <projectUrl>https://github.com/ably/ably-dotnet</projectUrl>
+        <iconUrl>http://docs.ably.io/assets/ably-logo.png</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>My package description.</description>
+        <summary>ably .NET client library.</summary>
+        <copyright>2015 Ably</copyright>
+        <language />
+        <dependencies>
+            <group targetFramework=".NETFramework4.5">
+                <dependency id="Newtonsoft.Json" version="6.0.8" />
+                <dependency id="WebSocket4Net" version="0.12" />
+                <dependency id="MsgPack.Cli" version="0.5.8" />
+            </group>
+            <group targetFramework=".NETFramework4.0">
+                <dependency id="Newtonsoft.Json" version="6.0.8" />
+                <dependency id="WebSocket4Net" version="0.12" />
+                <dependency id="MsgPack.Cli" version="0.5.8" />
+            </group>
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\src\Ably\bin\Release\Ably.dll" target="lib\net45\Ably.dll" />
+        <file src="..\src\Ably\bin\Release40\Ably.dll" target="lib\net40\Ably.dll" />
+    </files>
+</package>

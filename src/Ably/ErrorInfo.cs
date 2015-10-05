@@ -6,10 +6,20 @@ using Newtonsoft.Json.Linq;
 namespace Ably
 {
     /// <summary>
-    /// An exception type encapsulating error informaiton containing an ABlysspecific error code and generic status code
+    /// An exception type encapsulating error informaiton containing an Ably specific error code and generic status code
     /// </summary>
     public class ErrorInfo
     {
+        internal static readonly ErrorInfo ReasonClosed = new ErrorInfo("Connection closed by client", 10000);
+        internal static readonly ErrorInfo ReasonDisconnected = new ErrorInfo("Connection temporarily unavailable", 80003);
+        internal static readonly ErrorInfo ReasonSuspended = new ErrorInfo("Connection unavailable", 80002);
+        internal static readonly ErrorInfo ReasonFailed = new ErrorInfo("Connection failed", 80000);
+        internal static readonly ErrorInfo ReasonRefused = new ErrorInfo("Access refused", 40100);
+        internal static readonly ErrorInfo ReasonTooBig = new ErrorInfo("Connection closed; message too large", 40000);
+        internal static readonly ErrorInfo ReasonNeverConnected = new ErrorInfo("Unable to establish connection", 80002);
+        internal static readonly ErrorInfo ReasonTimeout = new ErrorInfo("Unable to establish connection", 80014);
+        internal static readonly ErrorInfo ReasonUnknown = new ErrorInfo("Unknown error", 50000, System.Net.HttpStatusCode.InternalServerError);
+
         internal const string CodePropertyName = "code";
         internal const string StatusCodePropertyName = "statusCode";
         internal const string ReasonPropertyName = "message";

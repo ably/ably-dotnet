@@ -48,7 +48,7 @@ namespace Ably
             _protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
             IChannelFactory factory = new ChannelFactory() { ConnectionManager = connectionManager, Options = options };
             this.Channels = new ChannelList(connectionManager, factory);
-            this.Connection = new Connection(connectionManager);
+            this.Connection = connectionManager.Connection;
             _simpleRest = new Rest.AblySimpleRestClient(options);
             InitAuth(_simpleRest);
 
