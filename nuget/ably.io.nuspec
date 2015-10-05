@@ -5,7 +5,7 @@
         <version>0.7.0</version>
         <title>ably.io</title>
         <authors>Yavor Ivanov,Martin Georgiev</authors>
-        <owners>Matthew O'Riordan</owners>
+        <owners>Ably Real-time Ltd</owners>
         <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
         <projectUrl>https://github.com/ably/ably-dotnet</projectUrl>
         <iconUrl>http://docs.ably.io/assets/ably-logo.png</iconUrl>
