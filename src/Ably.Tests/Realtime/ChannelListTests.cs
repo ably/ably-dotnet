@@ -46,6 +46,42 @@ namespace Ably.Tests
         }
 
         [Fact]
+        public void GetCreatesChannel_WithOptions()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
+            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
+            ChannelList target = new ChannelList(manager.Object, factory.Object);
+            Rest.ChannelOptions options = new Rest.ChannelOptions();
+
+            // Act
+            var channel = target.Get("test", options);
+
+            // Assert
+            Assert.Same(options, channel.Options);
+        }
+
+        [Fact]
+        public void GetWillReuseChannelObject_UpdateOptions()
+        {
+            // Arrange
+            Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
+            Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
+            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
+            ChannelList target = new ChannelList(manager.Object, factory.Object);
+            Rest.ChannelOptions options = new Rest.ChannelOptions();
+            var channel = target.Get("test");
+
+            // Act
+            var channel2 = target.Get("test", options);
+
+            // Assert
+            Assert.NotNull(channel2);
+            Assert.Same(options, channel2.Options);
+        }
+
+        [Fact]
         public void Release_DetachesChannel()
         {
             // Arrange
