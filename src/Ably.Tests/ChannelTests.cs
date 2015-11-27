@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Net.Http;
 using Newtonsoft.Json;
 using Xunit;
 using System.Threading;

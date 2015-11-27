@@ -4,7 +4,6 @@ using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Net.Http;
 using Xunit;
 
 namespace Ably.Tests

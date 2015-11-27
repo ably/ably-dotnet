@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Xunit;
 using System.Runtime.Serialization;
 using Xunit.Extensions;
-using System.Net.Http;
 using Moq;
 using Ably.Auth;
 using Newtonsoft.Json.Linq;
