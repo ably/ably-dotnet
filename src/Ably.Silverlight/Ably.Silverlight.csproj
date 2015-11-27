@@ -48,11 +48,15 @@
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="MsgPack, Version=0.6.0.0, Culture=neutral, PublicKeyToken=a2625990d5dc0167, processorArchitecture=MSIL">
-      <HintPath>..\packages\MsgPack.Cli.0.6.5\lib\sl5\MsgPack.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\MsgPack.Cli.0.6.5\lib\sl5\MsgPack.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\portable-net40+sl5+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\Newtonsoft.Json.7.0.1\lib\portable-net40+sl5+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>$(SolutionDir)packages\RestSharp.105.2.3\lib\sl5\RestSharp.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Windows" />
@@ -315,6 +319,36 @@
     <Compile Include="..\Ably\Transport\ITransport.cs">
       <Link>Transport\ITransport.cs</Link>
     </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ConnectionClosedState.cs">
+      <Link>Transport\States\Connection\ConnectionClosedState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ConnectionClosingState.cs">
+      <Link>Transport\States\Connection\ConnectionClosingState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ConnectionConnectedState.cs">
+      <Link>Transport\States\Connection\ConnectionConnectedState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ConnectionConnectingState.cs">
+      <Link>Transport\States\Connection\ConnectionConnectingState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ConnectionDisconnectedState.cs">
+      <Link>Transport\States\Connection\ConnectionDisconnectedState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ConnectionFailedState.cs">
+      <Link>Transport\States\Connection\ConnectionFailedState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ConnectionInitializedState.cs">
+      <Link>Transport\States\Connection\ConnectionInitializedState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ConnectionState.cs">
+      <Link>Transport\States\Connection\ConnectionState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ConnectionSuspendedState.cs">
+      <Link>Transport\States\Connection\ConnectionSuspendedState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ICountdownTimer.cs">
+      <Link>Transport\States\Connection\ICountdownTimer.cs</Link>
+    </Compile>
     <Compile Include="..\Ably\Transport\TransportParams.cs">
       <Link>Transport\TransportParams.cs</Link>
     </Compile>
@@ -332,6 +366,9 @@
     </Compile>
     <Compile Include="..\Ably\Types\ProtocolMessage.cs">
       <Link>Types\ProtocolMessage.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Utils\HttpUtility.cs">
+      <Link>Utils\HttpUtility.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

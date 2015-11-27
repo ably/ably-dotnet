@@ -35,7 +35,7 @@ namespace Ably.Tests
                 //ignore processing errors and only care about the request
             }
             Assert.Equal("/time", _currentRequest.Url);
-            Assert.Equal(HttpMethod.Get, _currentRequest.Method);
+            Assert.Equal("GET", _currentRequest.Method);
         }
     }
 

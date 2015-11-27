@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using Ably.Auth;
 using Ably.CustomSerialisers;
 using Ably.MessageEncoders;
@@ -34,22 +33,22 @@ namespace Ably
         internal IAblyHttpClient _httpClient;
         internal MessageHandler _messageHandler;
 
-        /// <summary>
-        /// Initialises the RestClient by reading the Key from a connection string with key 'Ably'
-        /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public RestClient()
-        {
-            var key = GetConnectionString();
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new AblyException(
-                    "A connection string with key 'Ably' doesn't exist in the application configuration");
-            }
+        ///// <summary>
+        ///// Initialises the RestClient by reading the Key from a connection string with key 'Ably'
+        ///// </summary>
+        //[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        //public RestClient()
+        //{
+        //    var key = GetConnectionString();
+        //    if (string.IsNullOrEmpty(key))
+        //    {
+        //        throw new AblyException(
+        //            "A connection string with key 'Ably' doesn't exist in the application configuration");
+        //    }
 
-            _options = new AblyOptions(key);
-            InitialiseAbly();
-        }
+        //    _options = new AblyOptions(key);
+        //    InitialiseAbly();
+        //}
 
         /// <summary>
         /// Initialises the RestClient using the api key provided
@@ -89,20 +88,20 @@ namespace Ably
         }
 
 
-        /// <summary>
-        /// Retrieves the ably connection string from app.config / web.config
-        /// </summary>
-        /// <returns>Ably connections string. Empty if connection string does not exist.</returns>
-        internal string GetConnectionString()
-        {
-            var connString = ConfigurationManager.ConnectionStrings["Ably"];
-            if (connString == null)
-            {
-                return string.Empty;
-            }
+        ///// <summary>
+        ///// Retrieves the ably connection string from app.config / web.config
+        ///// </summary>
+        ///// <returns>Ably connections string. Empty if connection string does not exist.</returns>
+        //internal string GetConnectionString()
+        //{
+        //    var connString = ConfigurationManager.ConnectionStrings["Ably"];
+        //    if (connString == null)
+        //    {
+        //        return string.Empty;
+        //    }
 
-            return connString.ConnectionString;
-        }
+        //    return connString.ConnectionString;
+        //}
 
         /// <summary>
         /// Initialises the rest client and validates the passed in options
@@ -281,12 +280,12 @@ namespace Ably
 
         AblyRequest IAblyRest.CreateGetRequest(string path, ChannelOptions options = null)
         {
-            return new AblyRequest(path, HttpMethod.Get, Protocol) { ChannelOptions = options };
+            return new AblyRequest(path, "GET", Protocol) { ChannelOptions = options };
         }
 
         AblyRequest IAblyRest.CreatePostRequest(string path, ChannelOptions options = null)
         {
-            return new AblyRequest(path, HttpMethod.Post, Protocol) { ChannelOptions = options };
+            return new AblyRequest(path, "POST", Protocol) { ChannelOptions = options };
         }
 
         IChannel IChannelCommands.this[string name]

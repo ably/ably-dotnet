@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 
 namespace Ably.Rest
 {
@@ -27,12 +26,12 @@ namespace Ably.Rest
 
         public AblyRequest CreateGetRequest(string path, ChannelOptions options = null)
         {
-            return new AblyRequest(path, HttpMethod.Get, _protocol) { ChannelOptions = options };
+            return new AblyRequest(path, "GET", _protocol) { ChannelOptions = options };
         }
 
         public AblyRequest CreatePostRequest(string path, ChannelOptions options = null)
         {
-            return new AblyRequest(path, HttpMethod.Post, _protocol) { ChannelOptions = options };
+            return new AblyRequest(path, "POST", _protocol) { ChannelOptions = options };
         }
 
         public AblyResponse ExecuteRequest(AblyRequest request)

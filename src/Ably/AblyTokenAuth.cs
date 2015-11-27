@@ -1,7 +1,6 @@
 ﻿using System;
 using Ably.Auth;
 using System.Net;
-using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 
@@ -73,7 +72,7 @@ namespace Ably
                 var url = mergedOptions.AuthUrl;
                 var protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
                 var authRequest = new AblyRequest(url, mergedOptions.AuthMethod, protocol);
-                if (mergedOptions.AuthMethod == HttpMethod.Get)
+                if (mergedOptions.AuthMethod.ToUpper() == "GET")
                 {
                     authRequest.AddQueryParameters(mergedOptions.AuthParams);
                 }

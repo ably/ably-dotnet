@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using Ably.Auth;
 
 namespace Ably
@@ -27,7 +26,7 @@ namespace Ably
         /// <summary>
         /// Used in conjunction with AuthUrl. Default is GET.
         /// </summary>
-        public HttpMethod AuthMethod { get; set; }
+        public string AuthMethod { get; set; }
 
         public string Key { get; set; }
         public string Token { get; set; }
@@ -43,7 +42,7 @@ namespace Ably
         {
             AuthHeaders = new Dictionary<string,string>();
             AuthParams = new Dictionary<string, string>();
-            AuthMethod = HttpMethod.Get;
+            AuthMethod = "GET";
         }
 
         /// <summary>

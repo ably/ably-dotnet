@@ -40,7 +40,7 @@ namespace Ably.AcceptanceTests
             TestData = GetTestData();
             TestData.TestAppSpec = JObject.Parse(File.ReadAllText("testAppSpec.json"));
             AblyHttpClient client = new AblyHttpClient(TestData.restHost, null, TestData.tls, null);
-            AblyRequest request = new AblyRequest("/apps", HttpMethod.Post);
+            AblyRequest request = new AblyRequest("/apps", "POST");
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
             request.RequestBody = TestData.TestAppSpec.ToString().GetBytes();
@@ -80,7 +80,7 @@ namespace Ably.AcceptanceTests
 
             RestClient restClient = new RestClient(TestData.keys.First().keyStr);
             AblyHttpClient client = new AblyHttpClient(TestsSetup.TestData.restHost, null, TestsSetup.TestData.tls, null);
-            AblyRequest request = new AblyRequest("/stats", HttpMethod.Post);
+            AblyRequest request = new AblyRequest("/stats", "Post");
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
             restClient.AddAuthHeader(request);
