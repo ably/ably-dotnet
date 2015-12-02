@@ -145,9 +145,6 @@
     <Compile Include="..\Ably\ErrorInfo.cs">
       <Link>ErrorInfo.cs</Link>
     </Compile>
-    <Compile Include="..\Ably\ExtendedSource.cs">
-      <Link>ExtendedSource.cs</Link>
-    </Compile>
     <Compile Include="..\Ably\Extensions\DateExtensions.cs">
       <Link>Extensions\DateExtensions.cs</Link>
     </Compile>
@@ -192,9 +189,6 @@
     </Compile>
     <Compile Include="..\Ably\IRestClient.cs">
       <Link>IRestClient.cs</Link>
-    </Compile>
-    <Compile Include="..\Ably\Logger.cs">
-      <Link>Logger.cs</Link>
     </Compile>
     <Compile Include="..\Ably\Message.cs">
       <Link>Message.cs</Link>
@@ -370,6 +364,7 @@
     <Compile Include="..\Ably\Utils\HttpUtility.cs">
       <Link>Utils\HttpUtility.cs</Link>
     </Compile>
+    <Compile Include="Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

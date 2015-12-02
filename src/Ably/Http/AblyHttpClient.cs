@@ -51,7 +51,7 @@ namespace Ably
                             Config.CommulativeFailedRequestTimeOutInSeconds), 500, null));
                 }
 
-                RestSharp.Method method = (RestSharp.Method)Enum.Parse(typeof(RestSharp.Method), request.Method);
+                RestSharp.Method method = (RestSharp.Method)Enum.Parse(typeof(RestSharp.Method), request.Method, true);
                 RestSharp.RestRequest restRequest = new RestSharp.RestRequest(request.Url, method);
 
                 PopulateDefaultHeaders(request, method, restRequest);

@@ -423,7 +423,11 @@ namespace Ably.Types
             }
             else if (obj.IsMap)
             {
+#if SILVERLIGHT
+                var data = new System.Collections.Generic.Dictionary<object, object>();
+#else
                 System.Collections.Hashtable data = new System.Collections.Hashtable();
+#endif
                 foreach (var objItem in obj.AsDictionary())
                 {
                     data.Add(ParseResult(objItem.Key), ParseResult(objItem.Value));

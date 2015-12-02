@@ -9,14 +9,11 @@ namespace Ably
     /// Ably exception wrapper class. It includes error information <see cref="Ably.ErrorInfo"/> used by ably. 
     /// All inner exceptions are wrapped in this class. Always check the inner exception property of the caught exception.
     /// </summary>
+#if NET
     [Serializable]
+#endif
     public class AblyException : Exception
     {
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            base.GetObjectData(info, context);
-        }
-
         public AblyException()
         {
 
@@ -68,11 +65,18 @@ namespace Ably
             ErrorInfo = info;
         }
 
+#if NET
         protected AblyException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
 
         }
+
+        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            base.GetObjectData(info, context);
+        }
+#endif
 
         public ErrorInfo ErrorInfo { get; set; }
 
