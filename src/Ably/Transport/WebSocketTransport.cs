@@ -110,7 +110,11 @@ namespace Ably.Transport
             UriBuilder uriBuilder = new UriBuilder(wsScheme, parameters.Host, parameters.Port);
             uriBuilder.Query = queryCollection.ToString();
 
+#if SILVERLIGHT
+            WebSocket socket = new WebSocket(uriBuilder.ToString(), "", "", version: WebSocketVersion.Rfc6455);
+#else
             WebSocket socket = new WebSocket(uriBuilder.ToString(), "", WebSocketVersion.Rfc6455);
+#endif
             return socket;
         }
 
