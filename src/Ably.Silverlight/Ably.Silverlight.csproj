@@ -112,9 +112,6 @@
     <Compile Include="..\Ably\CapabilityResource.cs">
       <Link>CapabilityResource.cs</Link>
     </Compile>
-    <Compile Include="..\Ably\CipherParams.cs">
-      <Link>CipherParams.cs</Link>
-    </Compile>
     <Compile Include="..\Ably\Config.cs">
       <Link>Config.cs</Link>
     </Compile>
@@ -135,9 +132,6 @@
     </Compile>
     <Compile Include="..\Ably\DataRequestQuery.cs">
       <Link>DataRequestQuery.cs</Link>
-    </Compile>
-    <Compile Include="..\Ably\Encryption\AesCipher.cs">
-      <Link>Encryption\AesCipher.cs</Link>
     </Compile>
     <Compile Include="..\Ably\Encryption\Crypto.cs">
       <Link>Encryption\Crypto.cs</Link>
@@ -364,6 +358,8 @@
     <Compile Include="..\Ably\Utils\HttpUtility.cs">
       <Link>Utils\HttpUtility.cs</Link>
     </Compile>
+    <Compile Include="CipherParams.cs" />
+    <Compile Include="Encryption\AesCipher.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

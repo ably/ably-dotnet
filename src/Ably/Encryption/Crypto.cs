@@ -10,15 +10,23 @@ namespace Ably.Encryption
         public const String DefaultAlgorithm = "AES";
         public const int DefaultKeylength = 128; // bits
         public const int DefaultBlocklength = 16; // bytes
+#if !SILVERLIGHT
         public const CipherMode DefaultMode = CipherMode.CBC;
+#endif
 
         public static CipherParams GetDefaultParams()
         {
+#if SILVERLIGHT
+            using (var aes = new AesManaged())
+#else
             using (var aes = new AesCryptoServiceProvider())
+#endif
             {
                 aes.KeySize = DefaultKeylength;
+#if !SILVERLIGHT
                 aes.Mode = CipherMode.CBC;
                 aes.Padding = PaddingMode.PKCS7;
+#endif
                 aes.BlockSize = DefaultBlocklength * 8;
                 aes.GenerateKey();
                 return new CipherParams(aes.Key);
