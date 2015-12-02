@@ -56,17 +56,17 @@
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFrameworkVersion)' == 'v4.5'">
-    <Reference Include="MsgPack">
+      <Reference Include="MsgPack">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SolutionDir)packages\MsgPack.Cli.0.5.8\lib\net45\MsgPack.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\MsgPack.Cli.0.6.5\lib\net45\MsgPack.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SolutionDir)packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="WebSocket4Net">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SolutionDir)packages\WebSocket4Net.0.12\lib\net45\WebSocket4Net.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\WebSocket4Net.0.14.1\lib\net45\WebSocket4Net.dll</HintPath>
     </Reference>
     <Reference Include="RestSharp">
       <SpecificVersion>False</SpecificVersion>
@@ -76,15 +76,15 @@
   <ItemGroup Condition="'$(TargetFrameworkVersion)' == 'v4.0'">
     <Reference Include="MsgPack">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SolutionDir)packages\MsgPack.Cli.0.5.8\lib\net40-client\MsgPack.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\MsgPack.Cli.0.6.5\lib\net40-client\MsgPack.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SolutionDir)packages\Newtonsoft.Json.6.0.8\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\Newtonsoft.Json.7.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="WebSocket4Net">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SolutionDir)packages\WebSocket4Net.0.12\lib\net40\WebSocket4Net.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\WebSocket4Net.0.14.1\lib\net40\WebSocket4Net.dll</HintPath>
     </Reference>
     <Reference Include="RestSharp">
       <SpecificVersion>False</SpecificVersion>
