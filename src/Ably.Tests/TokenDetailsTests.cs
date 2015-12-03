@@ -60,6 +60,7 @@ namespace Ably.Tests
 
             var jobject = JObject.Parse(json);
             ((string) jobject["expires"]).Should().Be(details.Expires.ToUnixTimeInMilliseconds().ToString());
+            ((string) jobject["issued"]).Should().Be(details.Issued.ToUnixTimeInMilliseconds().ToString());
         }
 
         [Fact]
