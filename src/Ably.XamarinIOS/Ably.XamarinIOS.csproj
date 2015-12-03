@@ -353,8 +353,8 @@
     <Compile Include="..\Ably\Utils\CollectionUtility.cs">
       <Link>Utils\CollectionUtility.cs</Link>
     </Compile>
-    <Compile Include="..\Ably\Utils\HttpUtility.cs">
-      <Link>Utils\HttpUtility.cs</Link>
+    <Compile Include="..\Ably\Utils\QueryStringUtility.cs">
+      <Link>Utils\QueryStringUtility.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>
