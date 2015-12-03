@@ -1,5 +1,9 @@
-using System.Collections.Specialized;
 using System.Net;
+#if SILVERLIGHT
+using SCS = Ably.Utils;
+#else
+using SCS = System.Collections.Specialized;
+#endif
 
 namespace Ably
 {
@@ -11,7 +15,7 @@ namespace Ably
 
     internal class AblyResponse
     {
-        internal NameValueCollection Headers { get; set; } 
+        internal SCS.NameValueCollection Headers { get; set; } 
         internal ResponseType Type { get; set; }
         internal HttpStatusCode StatusCode { get; set; }
         internal string TextResponse { get; set; }
@@ -23,7 +27,7 @@ namespace Ably
 
         internal AblyResponse()
         {
-            Headers = new NameValueCollection();
+            Headers = new SCS.NameValueCollection();
         }
 
         internal AblyResponse(string encoding, string contentType, byte[] body)
@@ -33,7 +37,7 @@ namespace Ably
             Encoding = encoding.IsNotEmpty() ? encoding : "utf-8";
             if (Type == ResponseType.Json)
             {
-                TextResponse = System.Text.Encoding.GetEncoding(Encoding).GetString(body);
+                TextResponse = System.Text.Encoding.GetEncoding(Encoding).GetString(body, 0, body.Length);
             }
             Body = body;
         }

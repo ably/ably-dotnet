@@ -14,12 +14,16 @@ namespace Ably
             public const string All = "*";
         }
         public string Name { get; set; }
-        public SortedSet<string> AllowedOperations { get; set; }
+        public ISet<string> AllowedOperations { get; set; }
 
         public CapabilityResource(string name)
         {
             Name = name;
+#if SILVERLIGHT
+            AllowedOperations = new HashSet<string>();
+#else
             AllowedOperations = new SortedSet<string>();
+#endif
         }
 
         public bool AllowsAll

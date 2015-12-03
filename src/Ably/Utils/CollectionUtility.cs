@@ -1,15 +1,19 @@
 ﻿using RestSharp;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
+#if SILVERLIGHT
+using SCS = Ably.Utils;
+#else
+using SCS = System.Collections.Specialized;
+#endif
 
 namespace Ably.Utils
 {
     internal static class CollectionUtility
     {
-        public static NameValueCollection ToNameValueCollection(IList<Parameter> collection)
+        public static SCS.NameValueCollection ToNameValueCollection(IList<Parameter> collection)
         {
-            NameValueCollection dict = new NameValueCollection();
+            SCS.NameValueCollection dict = new SCS.NameValueCollection();
             foreach (var item in collection)
             {
                 dict.Add(item.Name, Convert.ToString(item.Value));

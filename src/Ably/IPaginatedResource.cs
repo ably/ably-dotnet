@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
+#if SILVERLIGHT
+using SCS = Ably.Utils;
+#else
+using SCS = System.Collections.Specialized;
+#endif
 
 namespace Ably
 {
@@ -43,7 +47,7 @@ namespace Ably
 
     public class PaginatedResource
     {
-        public static PaginatedResource<T> InitialisePartialResult<T>(NameValueCollection headers, int? limit = null)
+        public static PaginatedResource<T> InitialisePartialResult<T>(SCS.NameValueCollection headers, int? limit = null)
         {
             var result = new PaginatedResource<T>(limit ?? Config.Limit);
             result.CurrentQuery = DataRequestQuery.GetLinkQuery(headers, DataRequestLinkType.Current);

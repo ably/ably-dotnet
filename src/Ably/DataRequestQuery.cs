@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Text.RegularExpressions;
+#if SILVERLIGHT
+using SCS = Ably.Utils;
+#else
+using SCS = System.Collections.Specialized;
+#endif
 
 namespace Ably
 {
@@ -202,7 +206,7 @@ namespace Ably
             return query;
         }
 
-        internal static DataRequestQuery GetLinkQuery(NameValueCollection headers, string link)
+        internal static DataRequestQuery GetLinkQuery(SCS.NameValueCollection headers, string link)
         {
             var linkPattern = "\\s*<(.*)>;\\s*rel=\"(.*)\"";
             var linkHeaders = headers.GetValues("Link") ?? new string[] {};
@@ -227,7 +231,7 @@ namespace Ably
 
             try
             {
-                long miliseconds = (long)Convert.ChangeType(value, TypeCode.Int64);
+                long miliseconds = (long)Convert.ToInt64(value, System.Globalization.CultureInfo.InvariantCulture);
                 return miliseconds.FromUnixTimeInMilliseconds();
             }
             catch (Exception)

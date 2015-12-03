@@ -30,7 +30,7 @@ namespace Ably
 
         internal static string GetText(this byte[] bytes)
         {
-            return Encoding.UTF8.GetString(bytes);
+            return Encoding.UTF8.GetString(bytes, 0, bytes.Length);
         }
 
         internal static string ToBase64(this byte[] bytes)

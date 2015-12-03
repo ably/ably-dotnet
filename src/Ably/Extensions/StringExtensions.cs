@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
+#if SILVERLIGHT
+using SCS = Ably.Utils;
+#else
+using SCS = System.Collections.Specialized;
+#endif
 
 namespace Ably
 {
@@ -27,12 +31,12 @@ namespace Ably
                    || input.StartsWith("[") && input.EndsWith("]");
         }
 
-        public static NameValueCollection ParseQueryString(this string text)
+        public static SCS.NameValueCollection ParseQueryString(this string text)
         {
             if(text.IsEmpty())
-                return new NameValueCollection();
+                return new SCS.NameValueCollection();
 
-            var queryParameters = new NameValueCollection();
+            var queryParameters = new SCS.NameValueCollection();
             string[] querySegments = text.Split('&');
             foreach (string segment in querySegments)
             {
