@@ -67,9 +67,9 @@ namespace Ably
             if (Nonce.IsNotEmpty())
                 data.nonce = Nonce;
             if (Ttl.HasValue)
-                data.ttl = Ttl.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture);
+                data.ttl = Ttl.Value.TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
             else
-                data.ttl = Defaults.Ttl.TotalSeconds.ToString(CultureInfo.InvariantCulture);
+                data.ttl = Defaults.Ttl.TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
             if (Timestamp.HasValue)
                 data.timestamp = Timestamp.Value.ToUnixTimeInMilliseconds().ToString();
             else

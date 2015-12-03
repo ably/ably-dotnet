@@ -348,7 +348,7 @@ namespace Ably.Tests
 
             client.Auth.Authorise(null, null, false);
             var data = CurrentRequest.PostData as TokenRequestPostData;
-            data.ttl.Should().Be(TimeSpan.FromMinutes(260).TotalSeconds.ToString());
+            data.ttl.Should().Be(TimeSpan.FromMinutes(260).TotalMilliseconds.ToString());
         }
 
         [Fact]

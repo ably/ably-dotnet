@@ -47,7 +47,7 @@ namespace Ably.Tests
             var request = GetTokenRequest();
             var data = request.GetPostData(GetKeyValue());
 
-            var expectedTtl = request.Ttl.Value.TotalSeconds;
+            var expectedTtl = request.Ttl.Value.TotalMilliseconds;
 
             Assert.Equal(expectedTtl.ToString(), data.ttl);
         }
@@ -58,7 +58,7 @@ namespace Ably.Tests
             var request = new TokenRequest { KeyName = "123", Capability = new Capability() };
             var data = request.GetPostData(GetKeyValue());
 
-            var expectedTtl = TimeSpan.FromHours(1).TotalSeconds;
+            var expectedTtl = TimeSpan.FromHours(1).TotalMilliseconds;
 
             Assert.Equal(expectedTtl.ToString(), data.ttl);
         }
