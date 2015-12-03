@@ -103,7 +103,7 @@ namespace Ably
             }
 
             if (mergedOptions.QueryTime)
-                postData.timestamp = _rest.Time().ToUnixTime().ToString();
+                postData.timestamp = _rest.Time().ToUnixTimeInMilliseconds().ToString();
 
             request.PostData = postData;
 

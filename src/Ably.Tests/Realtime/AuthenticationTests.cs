@@ -120,7 +120,7 @@ namespace Ably.Tests
 
                 //Assert
                 var data = x.PostData as TokenRequestPostData;
-                Assert.Equal(data.timestamp, currentTime.ToUnixTime().ToString());
+                Assert.Equal(data.timestamp, currentTime.ToUnixTimeInMilliseconds().ToString());
                 return new AblyResponse() { TextResponse = _dummyTokenResponse };
             };
             var rest = GetClient(executeHttpRequest);
@@ -253,8 +253,8 @@ namespace Ably.Tests
                     {
                         TextResponse = "{ " +
                                        "\"keyName\":\"123\"," +
-                                       "\"expires\":" + dateTime.ToUnixTime() + "," +
-                                       "\"issued\":" + dateTime.ToUnixTime() + "," +
+                                       "\"expires\":" + dateTime.ToUnixTimeInMilliseconds() + "," +
+                                       "\"issued\":" + dateTime.ToUnixTimeInMilliseconds() + "," +
                                        "\"capability\":\"{}\"," +
                                        "\"clientId\":\"111\"" +
                                        "}"

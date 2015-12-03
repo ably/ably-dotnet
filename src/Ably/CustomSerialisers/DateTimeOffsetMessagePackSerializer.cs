@@ -10,13 +10,13 @@ namespace Ably.CustomSerialisers
 
         protected override void PackToCore(Packer packer, DateTimeOffset objectTree)
         {
-            packer.Pack(objectTree.ToUnixTime());
+            packer.Pack(objectTree.ToUnixTimeInMilliseconds());
         }
 
         protected override DateTimeOffset UnpackFromCore(Unpacker unpacker)
         {
             var data = unpacker.LastReadData;
-            return data.AsInt64().FromUnixTime();
+            return data.AsInt64().FromUnixTimeInMilliseconds();
         }
     }
 }

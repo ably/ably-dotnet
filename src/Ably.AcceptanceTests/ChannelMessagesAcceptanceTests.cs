@@ -20,7 +20,6 @@ namespace Ably.AcceptanceTests
 
         //Stats fixtures can be found in StatsFixture.json which is posted to /stats in TestsSetup.cs
 
-        private static bool _statsSetup = false;
         private readonly Protocol _protocol;
 
         public StatsAcceptanceTests(Protocol protocol)

@@ -54,6 +54,8 @@ namespace Ably.Tests.MessagePack
 
             var decodedMessagePack = MsgPackHelper.DeSerialise(value.FromBase64(), typeof (MessagePackObject)).ToString();
 
+            Console.WriteLine(DateTimeOffset.Now.ToUnixTimeInMilliseconds());
+
             var response = JsonConvert.DeserializeObject<TokenResponse>(decodedMessagePack);
 
             response.AccessToken.Should().NotBeNull();
@@ -61,8 +63,8 @@ namespace Ably.Tests.MessagePack
             response.AccessToken.Capability.ToJson().Should().Be("{ \"*\": [ \"*\" ] }");
             response.AccessToken.ClientId.Should().Be("123");
             response.AccessToken.Token.Should().Be("g4X6QQ.DyBc9LeGow-lieDpn3MtlwOnPHh7em7s2CrSgZK3cT6DoeJ5vT1Ytp41oi5VQKMRLnIWCrAZtuNoqyCIoTZaB1_oQE_E-ow6cxJ_Q0pU2gyiolQ4juT35N24C83wJziB9");
-            response.AccessToken.Issued.Should().Be(((long)1421938646).FromUnixTime());
-            response.AccessToken.Expires.Should().Be(((long)1421942246).FromUnixTime());
+            response.AccessToken.Issued.Should().Be(((long)1421938646).FromUnixTimeInMilliseconds());
+            response.AccessToken.Expires.Should().Be(((long)1421942246).FromUnixTimeInMilliseconds());
         }
     }
 
@@ -84,8 +86,8 @@ namespace Ably.Tests.MessagePack
 	""access_token"": {
 		""token"": ""_SYo4Q.D3WmHhU"",
 		""keyName"": ""_SYo4Q.j8mhAQ"",
-		""issued"": 1421937735,
-		""expires"": 1421941335,
+		""issued"": 1449163326485,
+		""expires"": 1449163326485,
 		""capability"": {
 			""*"": [
 				""*""
@@ -104,8 +106,8 @@ namespace Ably.Tests.MessagePack
             response.AccessToken.Capability.ToJson().Should().Be("{ \"*\": [ \"*\" ] }");
             response.AccessToken.ClientId.Should().Be("123");
             response.AccessToken.Token.Should().Be("_SYo4Q.D3WmHhU");
-            response.AccessToken.Issued.Should().Be(((long)1421937735).FromUnixTime());
-            response.AccessToken.Expires.Should().Be(((long)1421941335).FromUnixTime());
+            response.AccessToken.Issued.Should().Be(((long)1449163326485).FromUnixTimeInMilliseconds());
+            response.AccessToken.Expires.Should().Be(((long)1449163326485).FromUnixTimeInMilliseconds());
         }
     }
 }

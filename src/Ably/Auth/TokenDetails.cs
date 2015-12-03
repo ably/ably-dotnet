@@ -30,7 +30,7 @@ namespace Ably.Auth
         /// </summary>
         [JsonProperty("expires")]
         [MessagePackMember(30, Name = "expires")]
-        [JsonConverter(typeof(DateTimeOffsetMilisecondJsonConverter))]
+        [JsonConverter(typeof(DateTimeOffsetJsonConverter))]
         public DateTimeOffset Expires { get; set; }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace Ably.Auth
         /// </summary>
         [JsonProperty("issued")]
         [MessagePackMember(40, Name = "issued")]
-        [JsonConverter(typeof(DateTimeOffsetMilisecondJsonConverter))]
+        [JsonConverter(typeof(DateTimeOffsetJsonConverter))]
         public DateTimeOffset Issued { get; set; }
 
         /// <summary>
@@ -46,6 +46,7 @@ namespace Ably.Auth
         /// </summary>
         [JsonProperty("capability")]
         [MessagePackMember(50, Name ="capability", NilImplication = NilImplication.MemberDefault)]
+        [JsonConverter(typeof(CapabilityJsonConverter))]
         public Capability Capability { get; set; }
 
         /// <summary>
