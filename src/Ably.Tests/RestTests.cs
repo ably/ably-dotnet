@@ -138,7 +138,7 @@ namespace Ably.Tests
 
                 if (request.Url.Contains("requestToken"))
                 {
-                    return new AblyResponse { TextResponse = "{ \"access_token\": { \"expires\": \"" + DateTimeOffset.UtcNow.AddHours(1).ToUnixTime() + "\"}}" };
+                    return new AblyResponse { TextResponse = "{ \"access_token\": { \"expires\": \"" + DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeInMilliseconds() + "\"}}" };
                 }
 
                 return new AblyResponse() { TextResponse = "[{}]" };

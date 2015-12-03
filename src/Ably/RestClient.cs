@@ -279,12 +279,12 @@ namespace Ably
             return RestMethods.ExecuteRequest<PaginatedResource<Stats>>(request);
         }
 
-        AblyRequest IAblyRest.CreateGetRequest(string path, ChannelOptions options = null)
+        AblyRequest IAblyRest.CreateGetRequest(string path, ChannelOptions options)
         {
             return new AblyRequest(path, HttpMethod.Get, Protocol) { ChannelOptions = options };
         }
 
-        AblyRequest IAblyRest.CreatePostRequest(string path, ChannelOptions options = null)
+        AblyRequest IAblyRest.CreatePostRequest(string path, ChannelOptions options)
         {
             return new AblyRequest(path, HttpMethod.Post, Protocol) { ChannelOptions = options };
         }

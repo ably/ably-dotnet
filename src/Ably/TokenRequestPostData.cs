@@ -1,4 +1,5 @@
 using System;
+using Newtonsoft.Json;
 
 namespace Ably
 {
@@ -11,7 +12,9 @@ namespace Ably
 
         public string keyName { get; set; }
         public string ttl { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string capability { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string clientId { get; set; }
         public string timestamp { get; set; }
         public string nonce { get; set; }

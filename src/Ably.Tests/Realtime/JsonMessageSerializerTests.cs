@@ -58,7 +58,7 @@ namespace Ably.Tests
                 yield return new object[] { "[{\"action\":2,\"clientId\":\"test\"}, {\"action\":2,\"clientId\":\"test2\"}]", new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Enter, "test"), new PresenceMessage(PresenceMessage.ActionType.Enter, "test2") } };
                 yield return new object[] { "[{\"connectionId\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { ConnectionId = "test" } } };
                 yield return new object[] { "[{\"data\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { Data = "test" } } };
-                yield return new object[] { "[{\"timestamp\":1430773200000}]", new PresenceMessage[] { new PresenceMessage() { Timestamp = new DateTimeOffset(new DateTime(2015, 5, 5)) } } };
+                yield return new object[] { "[{\"timestamp\":1430784000000}]", new PresenceMessage[] { new PresenceMessage() { Timestamp = new DateTimeOffset(new DateTime(2015, 5, 5, 0, 0, 0, DateTimeKind.Utc)) } } };
             }
         }
 
@@ -442,6 +442,8 @@ namespace Ably.Tests
             JsonMessageSerializer serializer = new JsonMessageSerializer();
             StringBuilder message = new StringBuilder("{\"presence\":")
                 .Append(messageJson).Append("}");
+
+            Console.WriteLine(new DateTimeOffset(new DateTime(2015, 5, 5, 0, 0, 0, DateTimeKind.Utc)).ToUnixTimeInMilliseconds());
 
             // Act
             ProtocolMessage target = serializer.DeserializeProtocolMessage(message.ToString());
