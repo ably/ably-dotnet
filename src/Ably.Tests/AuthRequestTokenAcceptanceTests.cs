@@ -75,7 +75,7 @@ namespace Ably.Tests
         public void WithOverridingTtl_OverridesTheDefault()
         {
             RequestToken(new TokenRequest {Ttl = TimeSpan.FromSeconds(2)}, null,
-                (data, request) => Assert.Equal(TimeSpan.FromSeconds(2).TotalSeconds.ToString(), data.ttl));
+                (data, request) => Assert.Equal(TimeSpan.FromSeconds(2).TotalMilliseconds.ToString(), data.ttl));
         }
     }
 }

@@ -41,7 +41,7 @@ namespace Ably.Tests
         public void UsesDefaultTtlWhenNoneIsSpecified()
         {
             var data = Client.Auth.CreateTokenRequest(null, null);
-            data.ttl.Should().Be(TokenRequest.Defaults.Ttl.TotalSeconds.ToString());
+            data.ttl.Should().Be(TokenRequest.Defaults.Ttl.TotalMilliseconds.ToString());
         }
 
         [Fact]
@@ -75,7 +75,7 @@ namespace Ably.Tests
         {
             var data = Client.Auth.CreateTokenRequest(new TokenRequest() {Ttl = TimeSpan.FromHours(2)}, null);
 
-            data.ttl.Should().Be(TimeSpan.FromHours(2).TotalSeconds.ToString());
+            data.ttl.Should().Be(TimeSpan.FromHours(2).TotalMilliseconds.ToString());
         }
 
         [Fact]
