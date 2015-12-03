@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using Ably.Rest;
 
 namespace Ably
@@ -9,7 +8,7 @@ namespace Ably
     {
         private ChannelOptions _channelOptions;
 
-        public AblyRequest(string path, HttpMethod method, Protocol protocol = Protocol.MsgPack)
+        public AblyRequest(string path, string method, Protocol protocol = Protocol.MsgPack)
         {
             Url = path;
             QueryParameters = new Dictionary<string, string>();
@@ -23,7 +22,7 @@ namespace Ably
         }
 
         public string Url { get; private set; }
-        public HttpMethod Method { get; private set; }
+        public string Method { get; private set; }
 
         public Dictionary<string, string> Headers { get; private set; }
         public Dictionary<string, string> QueryParameters { get; private set; }

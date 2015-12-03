@@ -1,0 +1,389 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{4D28824E-4C80-40A5-A776-EBF05F260685}</ProjectGuid>
+    <ProjectTypeGuids>{A1591282-1198-4647-A2B1-27E5FF5F6F3B};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Ably.Silverlight</RootNamespace>
+    <AssemblyName>Ably</AssemblyName>
+    <TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+    <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
+    <SilverlightApplication>false</SilverlightApplication>
+    <ValidateXaml>true</ValidateXaml>
+    <ThrowErrorsInValidation>true</ThrowErrorsInValidation>
+  </PropertyGroup>
+  <!-- This property group is only here to support building this project using the 
+       MSBuild 3.5 toolset. In order to work correctly with this older toolset, it needs 
+       to set the TargetFrameworkVersion to v3.5 -->
+  <PropertyGroup Condition="'$(MSBuildToolsVersion)' == '3.5'">
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;TRACE;SILVERLIGHT</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>Bin\Release</OutputPath>
+    <DefineConstants>TRACE;SILVERLIGHT</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="MsgPack, Version=0.6.0.0, Culture=neutral, PublicKeyToken=a2625990d5dc0167, processorArchitecture=MSIL">
+      <HintPath>$(SolutionDir)packages\MsgPack.Cli.0.6.5\lib\sl5\MsgPack.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>$(SolutionDir)packages\Newtonsoft.Json.7.0.1\lib\portable-net40+sl5+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>$(SolutionDir)packages\RestSharp.105.2.3\lib\sl5\RestSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Windows" />
+    <Reference Include="system" />
+    <Reference Include="System.Core">
+      <HintPath>$(TargetFrameworkDirectory)System.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Windows.Browser" />
+    <Reference Include="WebSocket4Net, Version=0.14.1.0, Culture=neutral, PublicKeyToken=eb4e154b696bf72a, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebSocket4Net.0.14.1\lib\sl50\WebSocket4Net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Ably\AblyBase.cs">
+      <Link>AblyBase.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\AblyEnvironment.cs">
+      <Link>AblyEnvironment.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\AblyException.cs">
+      <Link>AblyException.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\AblyOptions.cs">
+      <Link>AblyOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\AblyRealtime.cs">
+      <Link>AblyRealtime.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\AblyRealtimeOptions.cs">
+      <Link>AblyRealtimeOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\AblyTokenAuth.cs">
+      <Link>AblyTokenAuth.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\ApiKey.cs">
+      <Link>ApiKey.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\AuthMethod.cs">
+      <Link>AuthMethod.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\AuthOptions.cs">
+      <Link>AuthOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Auth\TokenDetails.cs">
+      <Link>Auth\TokenDetails.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Capability.cs">
+      <Link>Capability.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\CapabilityResource.cs">
+      <Link>CapabilityResource.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Config.cs">
+      <Link>Config.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\CustomSerialisers\CapabilityJsonConverter.cs">
+      <Link>CustomSerialisers\CapabilityJsonConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\CustomSerialisers\CapabilityMessagePackSerializer.cs">
+      <Link>CustomSerialisers\CapabilityMessagePackSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\CustomSerialisers\DateTimeOffsetJsonConverter.cs">
+      <Link>CustomSerialisers\DateTimeOffsetJsonConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\CustomSerialisers\DateTimeOffsetMessagePackSerializer.cs">
+      <Link>CustomSerialisers\DateTimeOffsetMessagePackSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\CustomSerialisers\StatsJsonDateConverter.cs">
+      <Link>CustomSerialisers\StatsJsonDateConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\DataRequestQuery.cs">
+      <Link>DataRequestQuery.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Encryption\Crypto.cs">
+      <Link>Encryption\Crypto.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\ErrorInfo.cs">
+      <Link>ErrorInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Extensions\DateExtensions.cs">
+      <Link>Extensions\DateExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Extensions\DictionaryExtensions.cs">
+      <Link>Extensions\DictionaryExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Extensions\JTokenExtensions.cs">
+      <Link>Extensions\JTokenExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Extensions\StringExtensions.cs">
+      <Link>Extensions\StringExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Http\AblyHttpClient.cs">
+      <Link>Http\AblyHttpClient.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Http\AblyRequest.cs">
+      <Link>Http\AblyRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Http\AblyResponse.cs">
+      <Link>Http\AblyResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Http\MimeTypes.cs">
+      <Link>Http\MimeTypes.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\IAblyHttpClient.cs">
+      <Link>IAblyHttpClient.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\IAuthCommands.cs">
+      <Link>IAuthCommands.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\IChannelCipher.cs">
+      <Link>IChannelCipher.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\IEncodedMessage.cs">
+      <Link>IEncodedMessage.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\ILogger.cs">
+      <Link>ILogger.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\IPaginatedResource.cs">
+      <Link>IPaginatedResource.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\IRestClient.cs">
+      <Link>IRestClient.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Message.cs">
+      <Link>Message.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\MessageEncoders\Base64Encoder.cs">
+      <Link>MessageEncoders\Base64Encoder.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\MessageEncoders\CipherEncoder.cs">
+      <Link>MessageEncoders\CipherEncoder.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\MessageEncoders\IMessageHandler.cs">
+      <Link>MessageEncoders\IMessageHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\MessageEncoders\JsonEncoder.cs">
+      <Link>MessageEncoders\JsonEncoder.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\MessageEncoders\MessageEncoder.cs">
+      <Link>MessageEncoders\MessageEncoder.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\MessageEncoders\MessageHandler.cs">
+      <Link>MessageEncoders\MessageHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\MessageEncoders\Utf8Encoder.cs">
+      <Link>MessageEncoders\Utf8Encoder.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\MsgPackHelper.cs">
+      <Link>MsgPackHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\NullLogger.cs">
+      <Link>NullLogger.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\PresenceMessage.cs">
+      <Link>PresenceMessage.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Protocol.cs">
+      <Link>Protocol.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\QueryDirection.cs">
+      <Link>QueryDirection.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Realtime\Channel.cs">
+      <Link>Realtime\Channel.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Realtime\ChannelList.cs">
+      <Link>Realtime\ChannelList.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Realtime\ChannelState.cs">
+      <Link>Realtime\ChannelState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Realtime\ChannelStateChangedEventArgs.cs">
+      <Link>Realtime\ChannelStateChangedEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Realtime\Connection.cs">
+      <Link>Realtime\Connection.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Realtime\ConnectionState.cs">
+      <Link>Realtime\ConnectionState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Realtime\ConnectionStateChangedEventArgs.cs">
+      <Link>Realtime\ConnectionStateChangedEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Realtime\IRealtimeChannel.cs">
+      <Link>Realtime\IRealtimeChannel.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Realtime\IRealtimeChannelCommands.cs">
+      <Link>Realtime\IRealtimeChannelCommands.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Realtime\Presence.cs">
+      <Link>Realtime\Presence.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\RestClient.cs">
+      <Link>RestClient.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Rest\AblySimpleRestClient.cs">
+      <Link>Rest\AblySimpleRestClient.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Rest\Channel.cs">
+      <Link>Rest\Channel.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Rest\ChannelOptions.cs">
+      <Link>Rest\ChannelOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Rest\IAblyRest.cs">
+      <Link>Rest\IAblyRest.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Rest\IChannel.cs">
+      <Link>Rest\IChannel.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Rest\IChannelCommands.cs">
+      <Link>Rest\IChannelCommands.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Statistics.cs">
+      <Link>Statistics.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\StringUtils.cs">
+      <Link>StringUtils.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\TokenRequest.cs">
+      <Link>TokenRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\TokenRequestPostData.cs">
+      <Link>TokenRequestPostData.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\TokenResponse.cs">
+      <Link>TokenResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\AcknowledgementProcessor.cs">
+      <Link>Transport\AcknowledgementProcessor.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\ConnectionHeartbeatRequest.cs">
+      <Link>Transport\ConnectionHeartbeatRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\ConnectionManager.cs">
+      <Link>Transport\ConnectionManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\Defaults.cs">
+      <Link>Transport\Defaults.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\IConnectionManager.cs">
+      <Link>Transport\IConnectionManager.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\ITransport.cs">
+      <Link>Transport\ITransport.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ConnectionClosedState.cs">
+      <Link>Transport\States\Connection\ConnectionClosedState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ConnectionClosingState.cs">
+      <Link>Transport\States\Connection\ConnectionClosingState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ConnectionConnectedState.cs">
+      <Link>Transport\States\Connection\ConnectionConnectedState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ConnectionConnectingState.cs">
+      <Link>Transport\States\Connection\ConnectionConnectingState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ConnectionDisconnectedState.cs">
+      <Link>Transport\States\Connection\ConnectionDisconnectedState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ConnectionFailedState.cs">
+      <Link>Transport\States\Connection\ConnectionFailedState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ConnectionInitializedState.cs">
+      <Link>Transport\States\Connection\ConnectionInitializedState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ConnectionState.cs">
+      <Link>Transport\States\Connection\ConnectionState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ConnectionSuspendedState.cs">
+      <Link>Transport\States\Connection\ConnectionSuspendedState.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\States\Connection\ICountdownTimer.cs">
+      <Link>Transport\States\Connection\ICountdownTimer.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\TransportParams.cs">
+      <Link>Transport\TransportParams.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Transport\WebSocketTransport.cs">
+      <Link>Transport\WebSocketTransport.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Types\IMessageSerializer.cs">
+      <Link>Types\IMessageSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Types\JsonMessageSerializer.cs">
+      <Link>Types\JsonMessageSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Types\MsgPackMessageSerializer.cs">
+      <Link>Types\MsgPackMessageSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Types\ProtocolMessage.cs">
+      <Link>Types\ProtocolMessage.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Utils\CollectionUtility.cs">
+      <Link>Utils\CollectionUtility.cs</Link>
+    </Compile>
+    <Compile Include="..\Ably\Utils\QueryStringUtility.cs">
+      <Link>Utils\QueryStringUtility.cs</Link>
+    </Compile>
+    <Compile Include="CipherParams.cs" />
+    <Compile Include="Encryption\AesCipher.cs" />
+    <Compile Include="Logger.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\NameValueCollection.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">
+        <SilverlightProjectProperties />
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

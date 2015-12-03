@@ -78,7 +78,7 @@ namespace Ably
                 }
                 catch (Exception ex)
                 {
-                    Debug.Write(ex.Message);
+                    Logger.Current.Debug(ex.Message);
                     //If there is no json or there is something wrong we don't want to throw from here. The
                 }
             }

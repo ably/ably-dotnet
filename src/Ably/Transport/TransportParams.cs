@@ -2,7 +2,13 @@
 using System;
 using System.Collections.Specialized;
 using System.Text.RegularExpressions;
-using System.Web;
+#if SILVERLIGHT
+using SW = System.Windows.Browser;
+using SCS = Ably.Utils;
+#else
+using SW = RestSharp.Extensions.MonoHttp;
+using SCS = System.Collections.Specialized;
+#endif
 
 namespace Ably.Transport
 {
@@ -28,16 +34,16 @@ namespace Ably.Transport
         public string ConnectionSerial { get; set; }
         public Mode Mode { get; set; }
 
-        public void StoreParams(NameValueCollection collection)
+        public void StoreParams(SCS.NameValueCollection collection)
         {
             // auth
             if (Options.Method == AuthMethod.Basic)
             {
-                collection["key"] = HttpUtility.UrlEncode(Options.Key);
+                collection["key"] = SW.HttpUtility.UrlEncode(Options.Key);
             }
             else
             {
-                collection["access_token"] = HttpUtility.UrlEncode(Options.Token);
+                collection["access_token"] = SW.HttpUtility.UrlEncode(Options.Token);
             }
 
             // connection

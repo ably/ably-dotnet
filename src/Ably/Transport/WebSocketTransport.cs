@@ -2,6 +2,11 @@
 using System;
 using System.Collections.Generic;
 using WebSocket4Net;
+#if SILVERLIGHT
+using SCS = Ably.Utils;
+#else
+using SCS = System.Collections.Specialized;
+#endif
 
 namespace Ably.Transport
 {
@@ -104,13 +109,17 @@ namespace Ably.Transport
         {
             bool isTls = parameters.Options.Tls;
 			string wsScheme = isTls ? "wss://" : "ws://";
-            var queryCollection = System.Web.HttpUtility.ParseQueryString("");
+            SCS.NameValueCollection queryCollection = Utils.QueryStringUtility.CreateQueryCollection();
             parameters.StoreParams(queryCollection);
 
             UriBuilder uriBuilder = new UriBuilder(wsScheme, parameters.Host, parameters.Port);
-            uriBuilder.Query = queryCollection.ToString();
+            uriBuilder.Query = Utils.QueryStringUtility.ToQueryString(queryCollection);
 
+#if SILVERLIGHT
+            WebSocket socket = new WebSocket(uriBuilder.ToString(), "", "", version: WebSocketVersion.Rfc6455);
+#else
             WebSocket socket = new WebSocket(uriBuilder.ToString(), "", WebSocketVersion.Rfc6455);
+#endif
             return socket;
         }
 

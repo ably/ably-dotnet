@@ -4,7 +4,6 @@ using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Net.Http;
 using Xunit;
 
 namespace Ably.Tests
@@ -31,7 +30,7 @@ namespace Ably.Tests
 
             //Assert
             Assert.Equal("/keys/" + GetKeyId() + "/requestToken", CurrentRequest.Url);
-            Assert.Equal(HttpMethod.Post, CurrentRequest.Method);
+            Assert.Equal("POST", CurrentRequest.Method);
         }
 
         [Fact]
@@ -197,7 +196,7 @@ namespace Ably.Tests
             rest.Auth.RequestToken(tokenRequest, options);
 
             //Assert
-            Assert.Equal(HttpMethod.Get, authRequest.Method);
+            Assert.Equal("GET", authRequest.Method);
             Assert.Equal(options.AuthHeaders, authRequest.Headers);
             Assert.Equal(options.AuthParams, authRequest.QueryParameters);
         }
@@ -210,7 +209,7 @@ namespace Ably.Tests
                 AuthUrl = "http://authUrl",
                 AuthHeaders = new Dictionary<string, string> { { "Test", "Test" } },
                 AuthParams = new Dictionary<string, string> { { "Test", "Test" } },
-                AuthMethod = HttpMethod.Post
+                AuthMethod = "POST"
             };
             AblyRequest authRequest = null;
             var requestdata = new TokenRequestPostData { keyName = GetKeyId(), capability = "123" };
@@ -229,7 +228,7 @@ namespace Ably.Tests
 
             rest.Auth.RequestToken(tokenRequest, options);
 
-            Assert.Equal(HttpMethod.Post, authRequest.Method);
+            Assert.Equal("POST", authRequest.Method);
 
             Assert.Equal(options.AuthHeaders, authRequest.Headers);
             Assert.Equal(options.AuthParams, authRequest.PostParameters);

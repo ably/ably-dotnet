@@ -67,13 +67,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(SolutionDir)packages\Moq.4.2.1409.1722\lib\net40\Moq.dll</HintPath>
     </Reference>
-    <Reference Include="MsgPack">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SolutionDir)packages\MsgPack.Cli.0.5.8\lib\net45\MsgPack.dll</HintPath>
+  <Reference Include="MsgPack">
+  	  <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(SolutionDir)packages\MsgPack.Cli.0.6.5\lib\net45\MsgPack.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SolutionDir)packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkVersion)' == 'v4.0'">
@@ -164,7 +164,9 @@
     <None Include="Json\StatsInterval.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ably\Ably.csproj">

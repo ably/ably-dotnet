@@ -12,31 +12,31 @@
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug 4.5|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <OutputPath>bin\Debug45\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NET;NET45</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release 4.5|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <OutputPath>bin\Release45\</OutputPath>
+    <DefineConstants>TRACE;NET;NET45</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\Release\Ably.XML</DocumentationFile>
+    <DocumentationFile>bin\Release45\Ably.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release 4.0|AnyCPU'">
     <OutputPath>bin\Release40\</OutputPath>
-    <DefineConstants>TRACE;NET40</DefineConstants>
+    <DefineConstants>TRACE;NET;NET40</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -48,7 +48,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug 4.0|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug40\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;NET40</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;NET;NET40</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <RunCodeAnalysis>true</RunCodeAnalysis>
@@ -58,37 +58,41 @@
   <ItemGroup Condition="'$(TargetFrameworkVersion)' == 'v4.5'">
     <Reference Include="MsgPack">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SolutionDir)packages\MsgPack.Cli.0.5.8\lib\net45\MsgPack.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\MsgPack.Cli.0.6.5\lib\net45\MsgPack.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SolutionDir)packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="WebSocket4Net">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SolutionDir)packages\WebSocket4Net.0.12\lib\net45\WebSocket4Net.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\WebSocket4Net.0.14.1\lib\net45\WebSocket4Net.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(SolutionDir)packages\RestSharp.105.2.3\lib\net45\RestSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkVersion)' == 'v4.0'">
     <Reference Include="MsgPack">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SolutionDir)packages\MsgPack.Cli.0.5.8\lib\net40-client\MsgPack.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\MsgPack.Cli.0.6.5\lib\net40-client\MsgPack.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SolutionDir)packages\Newtonsoft.Json.6.0.8\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\Newtonsoft.Json.7.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="WebSocket4Net">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SolutionDir)packages\WebSocket4Net.0.12\lib\net40\WebSocket4Net.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\WebSocket4Net.0.14.1\lib\net40\WebSocket4Net.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(SolutionDir)packages\RestSharp.105.2.3\lib\net4\RestSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AblyBase.cs" />
@@ -190,14 +194,16 @@
     <Compile Include="Types\JsonMessageSerializer.cs" />
     <Compile Include="Types\MsgPackMessageSerializer.cs" />
     <Compile Include="Types\ProtocolMessage.cs" />
+    <Compile Include="Utils\CollectionUtility.cs" />
+    <Compile Include="Utils\QueryStringUtility.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Utils\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

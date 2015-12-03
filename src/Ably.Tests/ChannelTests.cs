@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Net.Http;
 using Newtonsoft.Json;
 using Xunit;
 using System.Threading;
@@ -21,7 +20,7 @@ namespace Ably.Tests
             var channel = rest.Channels.Get("Test");
             channel.Publish("event", "data");
 
-            Assert.Equal(HttpMethod.Post, _currentRequest.Method);
+            Assert.Equal("POST", _currentRequest.Method);
             Assert.Equal(String.Format("/channels/{0}/messages", channel.Name), _currentRequest.Url);
         }
 
@@ -60,7 +59,7 @@ namespace Ably.Tests
             var message = new Message() { Name = "event" , Data = "data"};
             channel.Publish(new List<Message> {message });
 
-            Assert.Equal(HttpMethod.Post, _currentRequest.Method);
+            Assert.Equal("POST", _currentRequest.Method);
             Assert.Equal(String.Format("/channels/{0}/messages", channel.Name), _currentRequest.Url);
         }
 
@@ -93,7 +92,7 @@ namespace Ably.Tests
             };
             channel.History();
 
-            Assert.Equal(HttpMethod.Get, _currentRequest.Method);
+            Assert.Equal("GET", _currentRequest.Method);
             Assert.Equal(String.Format("/channels/{0}/messages", channel.Name), _currentRequest.Url);
         }
 
@@ -222,7 +221,7 @@ namespace Ably.Tests
 
             channel.Presence();
 
-            Assert.Equal(HttpMethod.Get, _currentRequest.Method);
+            Assert.Equal("GET", _currentRequest.Method);
             Assert.Equal(String.Format("/channels/{0}/presence", channel.Name), _currentRequest.Url);
         }
     }
