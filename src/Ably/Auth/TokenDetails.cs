@@ -1,4 +1,5 @@
 ﻿using System;
+using Ably.CustomSerialisers;
 using MsgPack.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -29,6 +30,7 @@ namespace Ably.Auth
         /// </summary>
         [JsonProperty("expires")]
         [MessagePackMember(30, Name = "expires")]
+        [JsonConverter(typeof(DateTimeOffsetMilisecondJsonConverter))]
         public DateTimeOffset Expires { get; set; }
 
         /// <summary>
@@ -36,6 +38,7 @@ namespace Ably.Auth
         /// </summary>
         [JsonProperty("issued")]
         [MessagePackMember(40, Name = "issued")]
+        [JsonConverter(typeof(DateTimeOffsetMilisecondJsonConverter))]
         public DateTimeOffset Issued { get; set; }
 
         /// <summary>
@@ -48,7 +51,8 @@ namespace Ably.Auth
         /// <summary>
         /// The clientId associated with the token
         /// </summary>
-        [JsonProperty("clientId")]
+        [JsonProperty("clientId", NullValueHandling = NullValueHandling.Ignore)]
+        
         [MessagePackMember(60, Name = "clientId")]
         public string ClientId { get; set; }
 

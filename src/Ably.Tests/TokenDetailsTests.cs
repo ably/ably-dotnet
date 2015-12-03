@@ -10,11 +10,13 @@ using Xunit.Extensions;
 using System.Net.Http;
 using Moq;
 using Ably.Auth;
+using FluentAssertions;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Ably.Tests
 {
-    public class TokenTests
+    public class TokenDetailsTests
     {
 
         [Fact]
@@ -44,5 +46,28 @@ namespace Ably.Tests
                 expectedCapability.AddResource("*").AllowAll();
                 Assert.Equal(expectedCapability.ToJson(), token.Capability.ToJson());
             }
+
+        [Fact]
+        public void ShouldSerializeDatesInMilliseconds()
+        {
+            var details = new TokenDetails()
+            {
+                Expires = DateTimeOffset.Now,
+                Issued = DateTimeOffset.Now.AddSeconds(1),
+            };
+
+            var json = JsonConvert.SerializeObject(details);
+
+            var jobject = JObject.Parse(json);
+            ((string) jobject["expires"]).Should().Be(details.Expires.ToUnixTimeInMilliseconds().ToString());
+        }
+
+        [Fact]
+        public void ShouldExcludeClientIdWhenNull()
+        {
+            var details = new TokenDetails("123");
+            var json = JsonConvert.SerializeObject(details);
+            json.Should().NotContain("clientId");
+        }
     }
 }

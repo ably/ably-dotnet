@@ -4,6 +4,15 @@ using Newtonsoft.Json.Linq;
 
 namespace Ably.CustomSerialisers
 {
+    public class DateTimeOffsetMilisecondJsonConverter : DateTimeOffsetJsonConverter
+    {
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            var date = (DateTimeOffset)value;
+            writer.WriteValue(date.ToUnixTimeInMilliseconds());
+        }
+    }
+
     public class DateTimeOffsetJsonConverter : JsonConverter
     {
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
