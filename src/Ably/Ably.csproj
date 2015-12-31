@@ -66,7 +66,7 @@
     </Reference>
     <Reference Include="WebSocket4Net">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SolutionDir)packages\WebSocket4Net.0.12\lib\net45\WebSocket4Net.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\WebSocket4Net.0.14.1\lib\net45\WebSocket4Net.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkVersion)' == 'v4.0'">
@@ -80,7 +80,7 @@
     </Reference>
     <Reference Include="WebSocket4Net">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(SolutionDir)packages\WebSocket4Net.0.12\lib\net40\WebSocket4Net.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\WebSocket4Net.0.14.1\lib\net40\WebSocket4Net.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
