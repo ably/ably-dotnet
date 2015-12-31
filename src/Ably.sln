@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.AcceptanceTests", "Abl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.XamarinAndroid", "Ably.XamarinAndroid\Ably.XamarinAndroid.csproj", "{4DD56A51-3F41-4B39-843F-CC58C5EDF6F9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.XamarinIOS", "Ably.XamarinIOS\Ably.XamarinIOS.csproj", "{E5AE1E7C-9553-4E96-8EA0-72EC6D22DFD6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug 4.0|Any CPU = Debug 4.0|Any CPU
@@ -57,6 +59,14 @@ Global
 		{4DD56A51-3F41-4B39-843F-CC58C5EDF6F9}.Release 4.0|Any CPU.Build.0 = Release|Any CPU
 		{4DD56A51-3F41-4B39-843F-CC58C5EDF6F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4DD56A51-3F41-4B39-843F-CC58C5EDF6F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5AE1E7C-9553-4E96-8EA0-72EC6D22DFD6}.Debug 4.0|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5AE1E7C-9553-4E96-8EA0-72EC6D22DFD6}.Debug 4.0|Any CPU.Build.0 = Debug|Any CPU
+		{E5AE1E7C-9553-4E96-8EA0-72EC6D22DFD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5AE1E7C-9553-4E96-8EA0-72EC6D22DFD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5AE1E7C-9553-4E96-8EA0-72EC6D22DFD6}.Release 4.0|Any CPU.ActiveCfg = Release|Any CPU
+		{E5AE1E7C-9553-4E96-8EA0-72EC6D22DFD6}.Release 4.0|Any CPU.Build.0 = Release|Any CPU
+		{E5AE1E7C-9553-4E96-8EA0-72EC6D22DFD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5AE1E7C-9553-4E96-8EA0-72EC6D22DFD6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
