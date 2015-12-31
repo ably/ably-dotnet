@@ -34,6 +34,7 @@ namespace Ably
         internal IAblyHttpClient _httpClient;
         internal MessageHandler _messageHandler;
 
+#if !XAMARIN
         /// <summary>
         /// Initialises the RestClient by reading the Key from a connection string with key 'Ably'
         /// </summary>
@@ -50,6 +51,7 @@ namespace Ably
             _options = new AblyOptions(key);
             InitialiseAbly();
         }
+#endif
 
         /// <summary>
         /// Initialises the RestClient using the api key provided
@@ -88,7 +90,7 @@ namespace Ably
             InitialiseAbly();
         }
 
-
+#if !XAMARIN
         /// <summary>
         /// Retrieves the ably connection string from app.config / web.config
         /// </summary>
@@ -103,6 +105,7 @@ namespace Ably
 
             return connString.ConnectionString;
         }
+#endif
 
         /// <summary>
         /// Initialises the rest client and validates the passed in options
