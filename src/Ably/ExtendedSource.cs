@@ -10,7 +10,7 @@ namespace Ably
     /// Inherits from <see cref="TraceSource" /> and adds additional methods for profiling methods (i.e. tracing Start and Stop).
     /// </summary>
     /// <remarks>
-    /// In use you can utilise the ProfileOperation methods on this trace source to simply output start and stop events for methods. These methods
+    /// In use you can utilize the ProfileOperation methods on this trace source to simply output start and stop events for methods. These methods
     /// return an object that implements the <see cref="System.IDisposable">IDisposable</see> method, so are designed to be utilised within a
     /// 'using' clause, such as in the following example code.
     /// <code>
@@ -22,7 +22,7 @@ namespace Ably
     ///     }
     /// }
     /// </code>
-    /// Here I have assumned that there is a trace source called MySource available to the code. When executed this code will emit
+    /// Here I have assumed that there is a trace source called MySource available to the code. When executed this code will emit
     /// start and stop events into the log. There are various overloads of the ProfileOperation() method which take different parameters.
     /// </remarks>
     internal class ExtendedSource : TraceSource
