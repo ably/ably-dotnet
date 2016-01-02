@@ -23,8 +23,7 @@ namespace Ably.AcceptanceTests
 
         public LoggerTests()
         {
-            Logger.logLevel = LogLevel.Debug;
-            Logger.SetDestination( sink );
+
         }
 
 
@@ -34,6 +33,16 @@ namespace Ably.AcceptanceTests
             sink.lastLevel.ShouldBeEquivalentTo( null );
             sink.lastMessage.ShouldBeEquivalentTo( null );
 
+            Logger.logLevel.ShouldBeEquivalentTo( Config.DefaultLogLevel );
+            Logger.logLevel = LogLevel.Debug;
+
+            // null destination shouldn't throw
+            Logger.SetDestination( null );
+            Logger.Info( "msg" );
+
+            Logger.SetDestination( sink );
+
+            // Basic messages
             Logger.Error( "Test Error Message" );
             sink.lastLevel.ShouldBeEquivalentTo( LogLevel.Error );
             sink.lastMessage.ShouldBeEquivalentTo( "Test Error Message" );
@@ -46,6 +55,7 @@ namespace Ably.AcceptanceTests
             sink.lastLevel.ShouldBeEquivalentTo( LogLevel.Debug );
             sink.lastMessage.ShouldBeEquivalentTo( "Test Debug Message" );
 
+            // Verify the log level works
             Logger.logLevel = LogLevel.Warning;
             Logger.Error( "Test Error Message" );
             Logger.Info( "Test Info Message" );

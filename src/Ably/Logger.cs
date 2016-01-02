@@ -43,12 +43,12 @@ namespace Ably
 
         static Logger()
         {
-            logLevel = LogLevel.Warning;
+            logLevel = Config.DefaultLogLevel;
             impl = new DefaultLoggerSink();
         }
 
         /// <summary>Override logging destination.</summary>
-        /// <param name="i">The new destination where to log thise messages.</param>
+        /// <param name="i">The new destination where to log thise messages. Pass null to disable logging completely.</param>
         /// <remarks>This method is mainly for unit tests. However, if in your product you're using some logging infrastructure like nlog or custom logging,
         /// you may want to provide your own <see cref="ILoggerSink"/> implementation to have messages from Ably logged along with your own ones.</remarks>
         public static void SetDestination( ILoggerSink i )
@@ -58,7 +58,7 @@ namespace Ably
 
         static void Message( LogLevel level, string message, params object[] args )
         {
-            if( level > logLevel )
+            if( level > logLevel || null == impl )
                 return;
             impl.LogEvent( level, string.Format( message, args ) );
         }

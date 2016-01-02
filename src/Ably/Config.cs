@@ -12,6 +12,8 @@ namespace Ably
         public static Func<CipherParams, IChannelCipher> GetCipher = @params => new AesCipher(@params);
         internal static string DefaultHost = "rest.ably.io";
 
+        internal const LogLevel DefaultLogLevel = LogLevel.Info;
+
         /// <summary>X-Ably-Version HTTP request header value</summary>
         internal const string AblyVersion = "0.8";
 
