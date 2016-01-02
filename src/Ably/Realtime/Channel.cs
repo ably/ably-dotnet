@@ -35,12 +35,11 @@ namespace Ably.Realtime
         }
 
         private IConnectionManager connection;
-        private ILogger Logger = Config.AblyLogger;
         private List<Message> queuedMessages;
         private Dictionary<string, List<Action<Message[]>>> eventListeners;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public event Action<Message[]> MessageReceived;
 
@@ -61,7 +60,7 @@ namespace Ably.Realtime
         public Presence Presence { get; private set; }
 
         /// <summary>
-        /// Attach to this channel. Any resulting channel state change will be indicated to any registered 
+        /// Attach to this channel. Any resulting channel state change will be indicated to any registered
         /// <see cref="ChannelStateChanged"/> listener.
         /// </summary>
         public void Attach()
@@ -81,7 +80,7 @@ namespace Ably.Realtime
         }
 
         /// <summary>
-        /// Detach from this channel. Any resulting channel state change will be indicated to any registered 
+        /// Detach from this channel. Any resulting channel state change will be indicated to any registered
         /// <see cref="ChannelStateChanged"/> listener.
         /// </summary>
         public void Detach()
@@ -137,7 +136,7 @@ namespace Ably.Realtime
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="messages"></param>
         public void Publish(IEnumerable<Message> messages)

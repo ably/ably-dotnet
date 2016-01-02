@@ -5,7 +5,6 @@ namespace Ably
 {
     public static class Config
     {
-        public static ILogger AblyLogger = Logger.Current;
         /// <summary>
         /// Http connection timeout in ms.
         /// Default value: 15000 ms

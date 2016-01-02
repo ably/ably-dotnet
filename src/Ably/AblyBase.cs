@@ -9,7 +9,6 @@ namespace Ably
         private static readonly string InternetCheckURL = "https://internet-up.ably-realtime.com/is-the-internet-up.txt";
         private static readonly string InternetCheckOK = "yes";
 
-        protected readonly ILogger Logger = Config.AblyLogger;
         protected Protocol _protocol;
         protected AblyOptions _options;
         internal AuthMethod AuthMethod;

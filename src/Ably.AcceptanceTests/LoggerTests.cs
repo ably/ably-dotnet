@@ -14,9 +14,9 @@ namespace Ably.AcceptanceTests
         [Test]
         public void TestLogger()
         {
-            Logger.Current.Error( "Test Error Message" );
-            Logger.Current.Info( "Test Info Message" );
-            Logger.Current.Debug( "Test Debug Message" );
+            Logger.Error( "Test Error Message" );
+            Logger.Info( "Test Info Message" );
+            Logger.Debug( "Test Debug Message" );
         }
     }
 }

@@ -7,15 +7,12 @@ namespace Ably
     /// <summary>Default Ably logger.</summary>
     /// <remarks>It logs messages as TraceEvents. In addition, the Debug call writes a line in the debug console.</remarks>
     /// </summary>
-    public class Logger : ILogger
+    public class Logger
     {
         readonly SourceLevels levels;
         readonly ExtendedSource trace;
 
         static Logger s_current;
-
-        /// <summary>An object you can write log messages to.</summary>
-        public static ILogger Current { get { return s_current; } }
 
         const SourceLevels defaultLogLevels = SourceLevels.Error;
 
@@ -41,39 +38,29 @@ namespace Ably
             this.trace = new ExtendedSource( "Ably", this.levels );
         }
 
-        public virtual void Error(string message, Exception ex)
+        public static void Error(string message, Exception ex)
         {
-            trace.TraceEvent(TraceEventType.Error, 0, String.Format("{0} {1}", message, GetExceptionDetails(ex)));
+            s_current.trace.TraceEvent(TraceEventType.Error, 0, String.Format("{0} {1}", message, GetExceptionDetails(ex)));
         }
 
-        public virtual void Error(string message, params object[] args)
+        public static void Error(string message, params object[] args)
         {
-            trace.TraceEvent(TraceEventType.Error, 0, String.Format(message, args));
+            s_current.trace.TraceEvent(TraceEventType.Error, 0, String.Format(message, args));
         }
 
-        public virtual void Info(string message, params object[] args)
+        public static void Info(string message, params object[] args)
         {
-            trace.TraceEvent(TraceEventType.Information, 0, String.Format(message, args));
+            s_current.trace.TraceEvent(TraceEventType.Information, 0, String.Format(message, args));
         }
 
-        public void Verbose(string message, params object[] args)
+        public static void Debug(string message, params object[] args )
         {
-            trace.TraceEvent(TraceEventType.Verbose, 0, String.Format(message, args));
+            s_current.trace.TraceEvent( TraceEventType.Verbose, 0, String.Format( message, args ) );
+            if( 0 != ( s_current.levels & SourceLevels.Verbose ) )
+                System.Diagnostics.Debug.WriteLine( message, args );
         }
 
-        public virtual IDisposable ProfileOperation(string format, params object[] args)
-        {
-            return trace.ProfileOperation(format, args);
-        }
-
-        public virtual void Debug(string message)
-        {
-            trace.TraceEvent( TraceEventType.Verbose, 0, message );
-            if( 0 != ( this.levels & SourceLevels.Verbose ) )
-                System.Diagnostics.Debug.WriteLine( message );
-        }
-
-        private string GetExceptionDetails(Exception ex)
+        static string GetExceptionDetails(Exception ex)
         {
             var message = new StringBuilder();
             var webException = ex as AblyException;

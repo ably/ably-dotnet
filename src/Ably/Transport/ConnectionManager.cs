@@ -34,7 +34,6 @@ namespace Ably.Transport
 
         private ITransport transport;
         private System.Threading.SynchronizationContext sync;
-        private ILogger Logger = Config.AblyLogger;
         private Queue<ProtocolMessage> pendingMessages;
         private AblyRealtimeOptions options;
         private States.Connection.ConnectionState state;
@@ -225,11 +224,11 @@ namespace Ably.Transport
 
         private void OnTransportMessageReceived(ProtocolMessage message)
         {
-            this.Logger.Verbose("ConnectionManager: Message Received {0}", message);
+            Logger.Debug("ConnectionManager: Message Received {0}", message);
 
             bool handled = this.state.OnMessageReceived(message);
             handled |= this.ackProcessor.OnMessageReceived(message);
-            handled |= ConnectionHeartbeatRequest.CanHandleMessage(message); 
+            handled |= ConnectionHeartbeatRequest.CanHandleMessage(message);
 
             if (message.ConnectionSerial != null)
             {

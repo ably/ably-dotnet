@@ -33,7 +33,7 @@ namespace Ably.MessageEncoders
             Encoders.Add(new CipherEncoder(protocol));
             Encoders.Add(new Base64Encoder(protocol));
 
-            Logger.Current.Debug(string.Format("Initialising message encodings. {0} initialised", string.Join(",", Encoders.Select( x=> x.EncodingName))));
+            Logger.Debug(string.Format("Initialising message encodings. {0} initialised", string.Join(",", Encoders.Select( x=> x.EncodingName))));
         }
 
         public T ParseMessagesResponse<T>(AblyResponse response) where T : class
@@ -95,7 +95,7 @@ namespace Ably.MessageEncoders
 
         public byte[] GetRequestBody(AblyRequest request)
         {
-            Logger.Current.Debug("Encoding request body.");
+            Logger.Debug("Encoding request body.");
             if (request.PostData == null)
                 return new byte[] { };
 
@@ -103,7 +103,7 @@ namespace Ably.MessageEncoders
                 return GetMessagesRequestBody(request.PostData as IEnumerable<Message>,
                     request.ChannelOptions);
 
-            Logger.Current.Debug(string.Format("Payload: {0}", JsonConvert.SerializeObject(request.PostData)));
+            Logger.Debug(string.Format("Payload: {0}", JsonConvert.SerializeObject(request.PostData)));
 
             if (_protocol == Protocol.Json)
                 return JsonConvert.SerializeObject(request.PostData).GetBytes();
@@ -185,7 +185,7 @@ namespace Ably.MessageEncoders
 
         private void LogResponse(AblyResponse response)
         {
-            Logger.Current.Info("Protocol:" + _protocol);
+            Logger.Info("Protocol:" + _protocol);
             try
             {
                 var responseBody = response.TextResponse;
@@ -193,13 +193,13 @@ namespace Ably.MessageEncoders
                 {
                     responseBody = MsgPackHelper.DeSerialise(response.Body, typeof(MessagePackObject)).ToString();
                 }
-                Logger.Current.Debug("Response: " + responseBody);
+                Logger.Debug("Response: " + responseBody);
             }
             catch (Exception ex)
             {
-                Logger.Current.Error("Error while logging response body.", ex);   
+                Logger.Error("Error while logging response body.", ex);
             }
-            
+
         }
 
         private IEnumerable<Stats> ParseStatsResponse(AblyResponse response)
