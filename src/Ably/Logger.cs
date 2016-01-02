@@ -4,18 +4,41 @@ using System.Text;
 
 namespace Ably
 {
-    /// <summary>
-    /// Default Ably logger. It logs Info and Error information as TraceEvents
-    /// The Debug call writes a line in the debug console.
+    /// <summary>Default Ably logger.</summary>
+    /// <remarks>It logs messages as TraceEvents. In addition, the Debug call writes a line in the debug console.</remarks>
     /// </summary>
     public class Logger : ILogger
     {
-        private static readonly ExtendedSource trace = new ExtendedSource("Ably", SourceLevels.Error);
-        public static Logger Current = new Logger();
+        readonly SourceLevels levels;
+        readonly ExtendedSource trace;
 
-        private Logger()
+        static Logger s_current;
+
+        /// <summary>An object you can write log messages to.</summary>
+        public static ILogger Current { get { return s_current; } }
+
+        const SourceLevels defaultLogLevels = SourceLevels.Error;
+
+        static Logger()
         {
+            s_current = new Logger( defaultLogLevels );
+        }
 
+        /// <summary> A bitwise combination of the enumeration values that specifies the source level at which to log.</summary>
+        public static SourceLevels logLevel
+        {
+            get { return s_current.levels; }
+            set
+            {
+                if( s_current.levels != value )
+                    s_current = new Logger( value );
+            }
+        }
+
+        private Logger( SourceLevels levels )
+        {
+            this.levels = levels;
+            this.trace = new ExtendedSource( "Ably", this.levels );
         }
 
         public virtual void Error(string message, Exception ex)
@@ -45,7 +68,9 @@ namespace Ably
 
         public virtual void Debug(string message)
         {
-            System.Diagnostics.Debug.WriteLine(message);
+            trace.TraceEvent( TraceEventType.Verbose, 0, message );
+            if( 0 != ( this.levels & SourceLevels.Verbose ) )
+                System.Diagnostics.Debug.WriteLine( message );
         }
 
         private string GetExceptionDetails(Exception ex)
