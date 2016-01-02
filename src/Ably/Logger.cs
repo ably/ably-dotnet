@@ -63,22 +63,22 @@ namespace Ably
             impl.LogEvent( level, string.Format( message, args ) );
         }
 
-        public static void Error( string message, Exception ex )
+        internal static void Error( string message, Exception ex )
         {
             Message( LogLevel.Error, "{0} {1}", message, GetExceptionDetails( ex ) );
         }
 
-        public static void Error( string message, params object[] args )
+        internal static void Error( string message, params object[] args )
         {
             Message( LogLevel.Error, message, args );
         }
 
-        public static void Info( string message, params object[] args )
+        internal static void Info( string message, params object[] args )
         {
             Message( LogLevel.Info, message, args );
         }
 
-        public static void Debug( string message, params object[] args )
+        internal static void Debug( string message, params object[] args )
         {
             Message( LogLevel.Debug, message, args );
         }
