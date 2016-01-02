@@ -172,9 +172,6 @@
     <Compile Include="..\Ably\IEncodedMessage.cs">
       <Link>IEncodedMessage.cs</Link>
     </Compile>
-    <Compile Include="..\Ably\ILogger.cs">
-      <Link>ILogger.cs</Link>
-    </Compile>
     <Compile Include="..\Ably\IPaginatedResource.cs">
       <Link>IPaginatedResource.cs</Link>
     </Compile>
@@ -210,9 +207,6 @@
     </Compile>
     <Compile Include="..\Ably\MsgPackHelper.cs">
       <Link>MsgPackHelper.cs</Link>
-    </Compile>
-    <Compile Include="..\Ably\NullLogger.cs">
-      <Link>NullLogger.cs</Link>
     </Compile>
     <Compile Include="..\Ably\PresenceMessage.cs">
       <Link>PresenceMessage.cs</Link>
