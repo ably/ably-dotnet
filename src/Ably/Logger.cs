@@ -4,79 +4,102 @@ using System.Text;
 
 namespace Ably
 {
-    /// <summary>Default Ably logger.</summary>
-    /// <remarks>It logs messages as TraceEvents. In addition, the Debug call writes a line in the debug console.</remarks>
-    /// </summary>
-    public class Logger
+    /// <summary>Level of a log message.</summary>
+    public enum LogLevel : byte
     {
-        readonly SourceLevels levels;
-        readonly ExtendedSource trace;
+        Error = 0,
+        Warning = 1,
+        Info = 2,
+        Debug = 3,
+    }
 
-        static Logger s_current;
+    /// <summary>An interface that actually logs that messages somewhere.</summary>
+    public interface ILoggerSink
+    {
+        void LogEvent( LogLevel level, string message );
+    }
 
-        const SourceLevels defaultLogLevels = SourceLevels.Error;
+    /// <summary>The default logger implementation, that writes to debug output.</summary>
+    internal class DefaultLoggerSink : ILoggerSink
+    {
+        readonly object syncRoot = new object();
+
+        public void LogEvent( LogLevel level, string message )
+        {
+            lock ( syncRoot )
+            {
+                Debug.WriteLine( "Ably: [{0}] {1}", level, message );
+            }
+        }
+    }
+
+    /// <summary>An utility class for logging various messages.</summary>
+    public static class Logger
+    {
+        /// <summary>Maximum level to log.</summary>
+        /// <remarks>E.g. set to LogLevel.Warning to have only errors and warnings in the log.</remarks>
+        public static LogLevel logLevel { get; set; }
+        static ILoggerSink impl;
 
         static Logger()
         {
-            s_current = new Logger( defaultLogLevels );
+            logLevel = LogLevel.Warning;
+            impl = new DefaultLoggerSink();
         }
 
-        /// <summary> A bitwise combination of the enumeration values that specifies the source level at which to log.</summary>
-        public static SourceLevels logLevel
+        /// <summary>Override logging destination.</summary>
+        /// <param name="i">The new destination where to log thise messages.</param>
+        /// <remarks>This method is mainly for unit tests. However, if in your product you're using some logging infrastructure like nlog or custom logging,
+        /// you may want to provide your own <see cref="ILoggerSink"/> implementation to have messages from Ably logged along with your own ones.</remarks>
+        public static void SetDestination( ILoggerSink i )
         {
-            get { return s_current.levels; }
-            set
-            {
-                if( s_current.levels != value )
-                    s_current = new Logger( value );
-            }
+            impl = i;
         }
 
-        private Logger( SourceLevels levels )
+        static void Message( LogLevel level, string message, params object[] args )
         {
-            this.levels = levels;
-            this.trace = new ExtendedSource( "Ably", this.levels );
+            if( level > logLevel )
+                return;
+            impl.LogEvent( level, string.Format( message, args ) );
         }
 
-        public static void Error(string message, Exception ex)
+        public static void Error( string message, Exception ex )
         {
-            s_current.trace.TraceEvent(TraceEventType.Error, 0, String.Format("{0} {1}", message, GetExceptionDetails(ex)));
+            Message( LogLevel.Error, "{0} {1}", message, GetExceptionDetails( ex ) );
         }
 
-        public static void Error(string message, params object[] args)
+        public static void Error( string message, params object[] args )
         {
-            s_current.trace.TraceEvent(TraceEventType.Error, 0, String.Format(message, args));
+            Message( LogLevel.Error, message, args );
         }
 
-        public static void Info(string message, params object[] args)
+        public static void Info( string message, params object[] args )
         {
-            s_current.trace.TraceEvent(TraceEventType.Information, 0, String.Format(message, args));
+            Message( LogLevel.Info, message, args );
         }
 
-        public static void Debug(string message, params object[] args )
+        public static void Debug( string message, params object[] args )
         {
-            s_current.trace.TraceEvent( TraceEventType.Verbose, 0, String.Format( message, args ) );
-            if( 0 != ( s_current.levels & SourceLevels.Verbose ) )
-                System.Diagnostics.Debug.WriteLine( message, args );
+            Message( LogLevel.Debug, message, args );
         }
 
-        static string GetExceptionDetails(Exception ex)
+        static string GetExceptionDetails( Exception ex )
         {
             var message = new StringBuilder();
             var webException = ex as AblyException;
-            if (webException != null)
+            if( webException != null )
             {
-                message.AppendLine("Error code: " + webException.ErrorInfo.Code);
-                message.AppendLine("Status code: " + webException.ErrorInfo.StatusCode);
-                message.AppendLine("Reason: " + webException.ErrorInfo.Reason);
+                message.AppendLine( "Error code: " + webException.ErrorInfo.Code );
+                message.AppendLine( "Status code: " + webException.ErrorInfo.StatusCode );
+                message.AppendLine( "Reason: " + webException.ErrorInfo.Reason );
             }
 
-            message.AppendLine(ex.Message);
-            message.AppendLine(ex.StackTrace);
-            if (ex.InnerException != null)
+            message.AppendLine( ex.Message );
+            message.AppendLine( ex.StackTrace );
+            if( ex.InnerException != null )
             {
-                message.AppendLine("Inner exception:");
-                message.AppendLine(GetExceptionDetails(ex.InnerException));
+                message.AppendLine( "Inner exception:" );
+                message.AppendLine( GetExceptionDetails( ex.InnerException ) );
             }
             return message.ToString();
         }
