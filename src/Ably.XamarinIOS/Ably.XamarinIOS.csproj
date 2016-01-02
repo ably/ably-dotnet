@@ -133,9 +133,6 @@
     <Compile Include="..\Ably\ErrorInfo.cs">
       <Link>ErrorInfo.cs</Link>
     </Compile>
-    <Compile Include="..\Ably\ExtendedSource.cs">
-      <Link>ExtendedSource.cs</Link>
-    </Compile>
     <Compile Include="..\Ably\Extensions\DateExtensions.cs">
       <Link>Extensions\DateExtensions.cs</Link>
     </Compile>

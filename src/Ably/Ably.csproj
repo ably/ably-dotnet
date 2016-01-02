@@ -133,7 +133,6 @@
     <Compile Include="DataRequestQuery.cs" />
     <Compile Include="ErrorInfo.cs" />
     <Compile Include="Extensions\DateExtensions.cs" />
-    <Compile Include="ExtendedSource.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\JTokenExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
