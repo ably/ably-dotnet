@@ -39,9 +39,9 @@ namespace Ably
                 var requestTime = Config.Now();
                 if ((requestTime - startTime).TotalSeconds > Config.CommulativeFailedRequestTimeOutInSeconds)
                 {
-                    Logger.Current.Error("Cumulative retry timeout of {0}s was exceeded", Config.CommulativeFailedRequestTimeOutInSeconds);   
+                    Logger.Current.Error("Cumulative retry timeout of {0}s was exceeded", Config.CommulativeFailedRequestTimeOutInSeconds);
                     throw new AblyException(
-                        new ErrorInfo(string.Format("Commulative retry timeout of {0}s was exceeded.", 
+                        new ErrorInfo(string.Format("Commulative retry timeout of {0}s was exceeded.",
                             Config.CommulativeFailedRequestTimeOutInSeconds), 500, null));
                 }
 
@@ -60,7 +60,7 @@ namespace Ably
                         currentTry++;
                         continue;
                     }
-                    
+
                     if (errorResponse != null)
                         throw AblyException.FromResponse(GetAblyResponse(errorResponse));
 
@@ -85,6 +85,7 @@ namespace Ably
             webRequest.Timeout = Config.ConnectTimeout;
             HttpWebResponse response = null;
 
+            webRequest.Headers[ "X-Ably-Version" ] = Config.AblyVersion;
             PopulateDefaultHeaders(request, webRequest);
             PopulateWebRequestHeaders(webRequest, request.Headers);
 
