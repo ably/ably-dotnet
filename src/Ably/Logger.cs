@@ -58,9 +58,10 @@ namespace Ably
 
         static void Message( LogLevel level, string message, params object[] args )
         {
-            if( level > logLevel || null == impl )
+            ILoggerSink i = impl;
+            if( level > logLevel || null == i )
                 return;
-            impl.LogEvent( level, string.Format( message, args ) );
+            i.LogEvent( level, string.Format( message, args ) );
         }
 
         /// <summary>Log an error message.</summary>
