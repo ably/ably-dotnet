@@ -5,13 +5,19 @@ namespace Ably
 {
     public static class Config
     {
-        public static ILogger AblyLogger = Logger.Current;
         /// <summary>
         /// Http connection timeout in ms.
         /// Default value: 15000 ms
         /// </summary>
         public static Func<CipherParams, IChannelCipher> GetCipher = @params => new AesCipher(@params);
         internal static string DefaultHost = "rest.ably.io";
+
+        /// <summary>The default log level you'll see in the debug output.</summary>
+        internal const LogLevel DefaultLogLevel = LogLevel.Info;
+
+        /// <summary>X-Ably-Version HTTP request header value</summary>
+        internal const string AblyVersion = "0.8";
+
         internal static Func<DateTimeOffset> Now = () => DateTimeOffset.UtcNow;
 
         public static string Host = "rest.ably.io";

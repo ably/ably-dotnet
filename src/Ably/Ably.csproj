@@ -133,7 +133,6 @@
     <Compile Include="DataRequestQuery.cs" />
     <Compile Include="ErrorInfo.cs" />
     <Compile Include="Extensions\DateExtensions.cs" />
-    <Compile Include="ExtendedSource.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\JTokenExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
@@ -144,7 +143,6 @@
     <Compile Include="IChannelCipher.cs" />
     <Compile Include="Rest\IChannelCommands.cs" />
     <Compile Include="IEncodedMessage.cs" />
-    <Compile Include="ILogger.cs" />
     <Compile Include="IPaginatedResource.cs" />
     <Compile Include="MessageEncoders\IMessageHandler.cs" />
     <Compile Include="Logger.cs" />
@@ -156,7 +154,6 @@
     <Compile Include="Message.cs" />
     <Compile Include="Http\MimeTypes.cs" />
     <Compile Include="MsgPackHelper.cs" />
-    <Compile Include="NullLogger.cs" />
     <Compile Include="PresenceMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Protocol.cs" />
