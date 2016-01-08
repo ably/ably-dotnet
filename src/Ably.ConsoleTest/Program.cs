@@ -1,13 +1,41 @@
 ﻿using Ably.AcceptanceTests;
 using System.Collections.Generic;
 using System.Reflection;
+using System;
 
 namespace Ably.ConsoleTest
 {
+    class MyLogger : ILoggerSink
+    {
+        readonly object syncRoot = new object();
+
+        static readonly Dictionary<LogLevel, ConsoleColor> s_colors = new Dictionary<LogLevel, ConsoleColor>()
+        {
+            { LogLevel.Error, ConsoleColor.DarkRed },
+            { LogLevel.Warning, ConsoleColor.DarkYellow },
+            { LogLevel.Info, ConsoleColor.DarkGreen },
+            { LogLevel.Debug, ConsoleColor.DarkBlue },
+        };
+
+        void ILoggerSink.LogEvent( LogLevel level, string message )
+        {
+            ConsoleColor cc = s_colors[ level ];
+            lock ( syncRoot )
+            {
+                ConsoleColor oc = Console.ForegroundColor;
+                Console.ForegroundColor = cc;
+                Console.WriteLine( message );
+                Console.ForegroundColor = oc;
+            }
+        }
+    }
+
     class Program
     {
         static void Main( string[] args )
         {
+            Logger.SetDestination( new MyLogger() );
+
             Assembly ass = typeof(LoggerTests).Assembly;
             string path = ass.Location;
 

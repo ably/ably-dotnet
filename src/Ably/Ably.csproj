@@ -162,7 +162,8 @@
     <Compile Include="TokenRequest.cs" />
     <Compile Include="RestClient.cs" />
     <Compile Include="Statistics.cs" />
-    <Compile Include="StringUtils.cs" />
+    <Compile Include="Utils\ActionOnDispose.cs" />
+    <Compile Include="Utils\StringUtils.cs" />
     <Compile Include="TokenRequestPostData.cs" />
     <Compile Include="TokenResponse.cs" />
     <Compile Include="Transport\AcknowledgementProcessor.cs" />
@@ -192,9 +193,7 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Utils\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -57,6 +57,13 @@ namespace Ably
             impl = i;
         }
 
+        internal static IDisposable SetTempDestination( ILoggerSink i )
+        {
+            ILoggerSink o = impl;
+            impl = i;
+            return new ActionOnDispose( () => impl = o );
+        }
+
         static void Message( LogLevel level, string message, params object[] args )
         {
             ILoggerSink i = impl;
