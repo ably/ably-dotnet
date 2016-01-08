@@ -163,6 +163,7 @@ namespace Ably.AcceptanceTests
             signal.WaitOne( 10000 );
             Assert.NotNull( result );
             Assert.NotNull( result.Item1 );
+            Logger.Info( "Local {0}, server {1}", DateTime.UtcNow, result.Item1.Value.DateTime );
             Assert.IsTrue( ( DateTime.UtcNow - result.Item1.Value.DateTime ).TotalSeconds < 3 );
             Assert.Null( result.Item2 );
         }
