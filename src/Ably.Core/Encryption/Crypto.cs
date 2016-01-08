@@ -81,7 +81,13 @@ namespace Ably.Encryption
 
         internal static IChannelCipher GetCipher( ChannelOptions opts )
         {
-            return Platform.IoC.crypto.GetCipher( opts );
+            CipherParams p = opts.CipherParams ?? GetDefaultParams();
+            return Platform.IoC.crypto.GetCipher( p );
+        }
+
+        internal static IChannelCipher GetCipher( CipherParams p )
+        {
+            return Platform.IoC.crypto.GetCipher( p );
         }
 
         internal static string ComputeHMacSha256( string text, string key )

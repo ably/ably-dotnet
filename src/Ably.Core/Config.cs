@@ -9,7 +9,7 @@ namespace Ably
         /// Http connection timeout in ms.
         /// Default value: 15000 ms
         /// </summary>
-        public static Func<CipherParams, IChannelCipher> GetCipher = @params => new AesCipher(@params);
+        public static Func<CipherParams, IChannelCipher> GetCipher = Crypto.GetCipher;
         internal static string DefaultHost = "rest.ably.io";
 
         /// <summary>The default log level you'll see in the debug output.</summary>
