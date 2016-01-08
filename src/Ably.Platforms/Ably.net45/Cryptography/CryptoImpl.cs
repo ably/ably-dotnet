@@ -1,10 +1,8 @@
-﻿using Ably.Platform;
+﻿using Ably.Encryption;
+using Ably.Platform;
 using System;
-using System.Security.Cryptography;
-using System.Text;
-using Ably.Rest;
 using System.Net;
-using Ably.Encryption;
+using System.Security.Cryptography;
 
 namespace Ably.Cryptography
 {
