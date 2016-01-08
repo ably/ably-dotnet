@@ -17,6 +17,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.ConsoleTest", "Ably.Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.Core", "Ably.Core\Ably.Core.csproj", "{EF341E0A-733D-4F79-8303-FD1B10D778EB}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ably.Platforms", "Ably.Platforms", "{90C978EA-2B78-429D-8C12-766DE0A99A21}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.net45", "Ably.Platforms\Ably.net45\Ably.net45.csproj", "{021875BE-63FD-4FF4-B34F-0B77CCD1919E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug 4.0|Any CPU = Debug 4.0|Any CPU
@@ -56,8 +60,19 @@ Global
 		{EF341E0A-733D-4F79-8303-FD1B10D778EB}.Release 4.0|Any CPU.Build.0 = Release|Any CPU
 		{EF341E0A-733D-4F79-8303-FD1B10D778EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF341E0A-733D-4F79-8303-FD1B10D778EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{021875BE-63FD-4FF4-B34F-0B77CCD1919E}.Debug 4.0|Any CPU.ActiveCfg = Debug|Any CPU
+		{021875BE-63FD-4FF4-B34F-0B77CCD1919E}.Debug 4.0|Any CPU.Build.0 = Debug|Any CPU
+		{021875BE-63FD-4FF4-B34F-0B77CCD1919E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{021875BE-63FD-4FF4-B34F-0B77CCD1919E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{021875BE-63FD-4FF4-B34F-0B77CCD1919E}.Release 4.0|Any CPU.ActiveCfg = Release|Any CPU
+		{021875BE-63FD-4FF4-B34F-0B77CCD1919E}.Release 4.0|Any CPU.Build.0 = Release|Any CPU
+		{021875BE-63FD-4FF4-B34F-0B77CCD1919E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{021875BE-63FD-4FF4-B34F-0B77CCD1919E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{021875BE-63FD-4FF4-B34F-0B77CCD1919E} = {90C978EA-2B78-429D-8C12-766DE0A99A21}
 	EndGlobalSection
 EndGlobal
