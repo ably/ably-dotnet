@@ -6,6 +6,8 @@ using System.Collections.Generic;
 
 namespace Ably.Types
 {
+    // TODO [high]: drop this whole class, and instead use something else to generate those [de]serializers automatically, based on the .NET type information.
+    // Could be reflection in runtime, Roslyn/T4 in design time, reflection/mono.cecil in custom build step, etc.
     public class MsgPackMessageSerializer : IMessageSerializer
     {
         private static System.Collections.Generic.Dictionary<string, Action<Unpacker, ProtocolMessage>> unpackActions;
@@ -126,6 +128,48 @@ namespace Ably.Types
                 }
             });
 
+            unpackActions.Add( "connectionDetails", ( unpacker, message ) =>
+            {
+                long fields;
+                unpacker.ReadMapLength( out fields );
+                if( fields <= 0 )
+                    return;
+
+                ConnectionDetailsMessage cdm = new ConnectionDetailsMessage();
+
+                for( int i = 0; i < fields; i++ )
+                {
+                    string fieldName;
+                    string s; long l;
+                    unpacker.ReadString( out fieldName );
+                    switch( fieldName )
+                    {
+                        case "clientId":
+                            if( unpacker.ReadString( out s ) )
+                                cdm.clientId = s;
+                            break;
+                        case "connectionKey":
+                            if( unpacker.ReadString( out s ) )
+                                cdm.connectionKey = s;
+                            break;
+                        case "maxMessageSize":
+                            if( unpacker.ReadInt64( out l ) )
+                                cdm.maxMessageSize = l;
+                            break;
+                        case "maxInboundRate":
+                            if( unpacker.ReadInt64( out l ) )
+                                cdm.maxInboundRate = l;
+                            break;
+                        case "maxFrameSize":
+                            if( unpacker.ReadInt64( out l ) )
+                                cdm.maxFrameSize = l;
+                            break;
+                    }
+                    message.connectionDetails = cdm;
+                }
+            } );
+
+
             resolver = new Dictionary<Type, Func<MessagePackObject, object>>();
             resolver.Add(typeof(Byte), r => r.AsByte());
             resolver.Add(typeof(SByte), r => r.AsSByte());
@@ -191,6 +235,11 @@ namespace Ably.Types
                                 SerializePresenceMessage(msg, packer);
                             }
                         }
+                    }
+
+                    if( null != message.connectionDetails )
+                    {
+                        // TODO: implement this
                     }
                 }
                 result = stream.ToArray();

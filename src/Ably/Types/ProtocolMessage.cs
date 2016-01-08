@@ -78,6 +78,8 @@ namespace Ably.Types
         public Message[] Messages { get; set; }
         public PresenceMessage[] Presence { get; set; }
 
+        public ConnectionDetailsMessage connectionDetails { get; set; }
+
         public override string ToString()
         {
             StringBuilder text = new StringBuilder();
