@@ -17,6 +17,16 @@ namespace Ably.AcceptanceTests
             _binaryProtocol = binaryProtocol == Protocol.MsgPack;
         }
 
+        static TokenRequest createTokenRequest( Capability capability, TimeSpan? ttl = null )
+        {
+            TokenRequest res = new TokenRequest();
+            res.ClientId = "John";
+            res.Capability = capability;
+            if( ttl.HasValue )
+                res.Ttl = ttl.Value;
+            return res;
+        }
+
         [Test]
         public void ShouldReturnTheRequestedToken()
         {
@@ -27,7 +37,7 @@ namespace Ably.AcceptanceTests
             RestClient ably = GetRestClient();
             var options = ably.Options;
 
-            var token = ably.Auth.RequestToken(new TokenRequest { Capability = capability, Ttl = ttl }, null);
+            var token = ably.Auth.RequestToken(createTokenRequest( capability, ttl ), null);
 
             var key = options.ParseKey();
             var appId = key.KeyName.Split('.').First();
@@ -53,7 +63,7 @@ namespace Ably.AcceptanceTests
             capability.AddResource( "foo" ).AllowPublish();
 
             var ably = GetRestClient();
-            var token = ably.Auth.RequestToken(new TokenRequest() { Capability = capability }, null);
+            var token = ably.Auth.RequestToken(createTokenRequest( capability ), null);
 
             var tokenAbly = new RestClient(new AblyOptions {Token = token.Token, Environment = TestsSetup.TestData.Environment});
 
@@ -68,7 +78,7 @@ namespace Ably.AcceptanceTests
 
             var ably = GetRestClient();
 
-            var token = ably.Auth.RequestToken(new TokenRequest() { Capability = capability }, null);
+            var token = ably.Auth.RequestToken(createTokenRequest(capability), null);
 
             var tokenAbly = new RestClient(new AblyOptions { Token = token.Token , Environment = AblyEnvironment.Sandbox});
 
@@ -83,8 +93,12 @@ namespace Ably.AcceptanceTests
             var options = TestsSetup.GetDefaultOptions();
             var ably = new RestClient(options);
 
-            var error = Assert.Throws<AblyException>(
-                delegate { ably.Auth.RequestToken(new TokenRequest() { Timestamp = DateTime.UtcNow.AddDays(-1)}, null); });
+            var error = Assert.Throws<AblyException>( delegate
+            {
+                TokenRequest req = createTokenRequest( null );
+                req.Timestamp = DateTime.UtcNow.AddDays( -1 );
+                ably.Auth.RequestToken( req, null );
+            } );
 
             error.ErrorInfo.Code.Should().Be( 40101 );
             error.ErrorInfo.StatusCode.Should().Be( HttpStatusCode.Unauthorized );
