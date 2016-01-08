@@ -33,28 +33,18 @@ namespace Ably
         internal IAblyHttpClient _httpClient;
         internal MessageHandler _messageHandler;
 
-#if !XAMARIN
-        /// <summary>
-        /// Initialises the RestClient by reading the Key from a connection string with key 'Ably'
-        /// </summary>
+        /// <summary>Initialises the RestClient by reading the Key from a connection string with key 'Ably'</summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public RestClient()
         {
-            var key = GetConnectionString();
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new AblyException(
-                    "A connection string with key 'Ably' doesn't exist in the application configuration");
-            }
-
-            _options = new AblyOptions(key);
+            var key = Platform.IoC.getConnectionString();
+            if( string.IsNullOrEmpty( key ) )
+                throw new AblyException( "A connection string with key 'Ably' doesn't exist in the application configuration" );
+            _options = new AblyOptions( key );
             InitialiseAbly();
         }
-#endif
 
-        /// <summary>
-        /// Initialises the RestClient using the api key provided
-        /// </summary>
+        /// <summary>Initialises the RestClient using the api key provided</summary>
         /// <param name="apiKey">Full api key</param>
         public RestClient(string apiKey)
             : this(new AblyOptions(apiKey))
@@ -89,26 +79,7 @@ namespace Ably
             InitialiseAbly();
         }
 
-#if !XAMARIN
-        /// <summary>
-        /// Retrieves the ably connection string from app.config / web.config
-        /// </summary>
-        /// <returns>Ably connections string. Empty if connection string does not exist.</returns>
-        internal string GetConnectionString()
-        {
-            var connString = ConfigurationManager.ConnectionStrings["Ably"];
-            if (connString == null)
-            {
-                return string.Empty;
-            }
-
-            return connString.ConnectionString;
-        }
-#endif
-
-        /// <summary>
-        /// Initialises the rest client and validates the passed in options
-        /// </summary>
+        /// <summary>Initialises the rest client and validates the passed in options</summary>
         private void InitialiseAbly()
         {
             if (_options == null)
