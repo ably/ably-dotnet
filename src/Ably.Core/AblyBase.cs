@@ -1,6 +1,9 @@
 ﻿using Ably.Auth;
 using Ably.Rest;
 using System;
+using System.IO;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Ably
 {
@@ -55,19 +58,20 @@ namespace Ably
 
         public static bool CanConnectToAbly()
         {
-            System.Net.WebRequest req = System.Net.WebRequest.Create(InternetCheckURL);
-            System.Net.WebResponse res = null;
+            WebRequest req = WebRequest.Create(InternetCheckURL);
+            WebResponse res = null;
             try
             {
-                res = req.GetResponse();
+                Func<Task<WebResponse>> fn = () => req.GetResponseAsync();
+                res = Task.Run( fn ).Result;
             }
             catch (Exception)
             {
                 return false;
             }
-            using (var resStream = res.GetResponseStream())
+            using( var resStream = res.GetResponseStream() )
             {
-                using (System.IO.StreamReader reader = new System.IO.StreamReader(resStream))
+                using( StreamReader reader = new StreamReader( resStream ) )
                 {
                     return reader.ReadLine() == InternetCheckOK;
                 }

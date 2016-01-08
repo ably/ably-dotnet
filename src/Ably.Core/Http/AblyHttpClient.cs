@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Ably
 {
@@ -76,16 +77,14 @@ namespace Ably
 
         private bool IsRetryable(WebException ex)
         {
-            return
-                ex.Status == WebExceptionStatus.ReceiveFailure ||
-                ex.Status == WebExceptionStatus.ConnectFailure ||
-                ex.Status == WebExceptionStatus.Timeout ||
-                ex.Status == WebExceptionStatus.KeepAliveFailure;
+            return ex.Status == WebExceptionStatus.ConnectFailure || ex.Status == WebExceptionStatus.SendFailure;
         }
 
         private AblyResponse ExecuteInternal(AblyRequest request)
         {
-            var webRequest = HttpWebRequest.Create(GetRequestUrl(request)) as HttpWebRequest;
+            Func<Task<AblyResponse>> fn = () =>execImpl( request );
+            return Task.Run( fn ).Result;
+            /* var webRequest = HttpWebRequest.Create(GetRequestUrl(request)) as HttpWebRequest;
             webRequest.Timeout = Config.ConnectTimeout;
             HttpWebResponse response = null;
 
@@ -120,8 +119,56 @@ namespace Ably
             {
                 if (response != null)
                     response.Close();
-            }
+            } */
+        }
 
+        static async Task withTimeout( Task useful, Task timeout )
+        {
+            if( timeout == await Task.WhenAny( useful, timeout ) )
+                throw new TimeoutException();
+        }
+
+        static async Task<T> withTimeout<T>( Task<T> useful, Task timeout )
+        {
+            if( timeout == await Task.WhenAny( useful, timeout ) )
+                throw new TimeoutException();
+            return useful.Result;
+        }
+
+        async Task<AblyResponse> execImpl( AblyRequest request )
+        {
+            var webRequest = HttpWebRequest.Create(GetRequestUrl(request)) as HttpWebRequest;
+            HttpWebResponse response = null;
+            Task tTimeout = Task.Delay( Config.ConnectTimeout );
+
+            webRequest.Headers[ "X-Ably-Version" ] = Config.AblyVersion;
+            PopulateDefaultHeaders( request, webRequest );
+            PopulateWebRequestHeaders( webRequest, request.Headers );
+
+            webRequest.Method = request.Method.Method;
+
+            try
+            {
+                if( webRequest.Method == "POST" )
+                {
+                    var requestBody = request.RequestBody;
+
+                    webRequest.Headers[ HttpRequestHeader.ContentLength ] = requestBody.Length.ToString();
+                    if( requestBody.Length > 0 )
+                    {
+                        using( Stream stream = await withTimeout( webRequest.GetRequestStreamAsync(), tTimeout ) )
+                            await withTimeout( stream.WriteAsync( requestBody, 0, requestBody.Length ), tTimeout );
+                    }
+                }
+
+                response = ( HttpWebResponse ) await withTimeout( webRequest.GetResponseAsync(), tTimeout );
+                return GetAblyResponse( response );
+            }
+            finally
+            {
+                if( response != null )
+                    response.Dispose();
+            }
         }
 
         private void PopulateDefaultHeaders(AblyRequest request, HttpWebRequest webRequest)
