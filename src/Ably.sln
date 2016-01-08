@@ -19,6 +19,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.XamarinAndroid", "Ably
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.XamarinIOS", "Ably.XamarinIOS\Ably.XamarinIOS.csproj", "{E5AE1E7C-9553-4E96-8EA0-72EC6D22DFD6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.ConsoleTest", "Ably.ConsoleTest\Ably.ConsoleTest.csproj", "{9B0AFCA5-07B5-419C-A7C7-B27BE4C9B760}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E70140AC-4132-44C0-85BB-9BD1B910A719} = {E70140AC-4132-44C0-85BB-9BD1B910A719}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug 4.0|Any CPU = Debug 4.0|Any CPU
@@ -38,7 +43,6 @@ Global
 		{4E136C14-03D4-4194-8DE7-3E9A26C5B028}.Debug 4.0|Any CPU.ActiveCfg = Debug 4.0|Any CPU
 		{4E136C14-03D4-4194-8DE7-3E9A26C5B028}.Debug 4.0|Any CPU.Build.0 = Debug 4.0|Any CPU
 		{4E136C14-03D4-4194-8DE7-3E9A26C5B028}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4E136C14-03D4-4194-8DE7-3E9A26C5B028}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4E136C14-03D4-4194-8DE7-3E9A26C5B028}.Release 4.0|Any CPU.ActiveCfg = Release 4.0|Any CPU
 		{4E136C14-03D4-4194-8DE7-3E9A26C5B028}.Release 4.0|Any CPU.Build.0 = Release 4.0|Any CPU
 		{4E136C14-03D4-4194-8DE7-3E9A26C5B028}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -54,7 +58,6 @@ Global
 		{4DD56A51-3F41-4B39-843F-CC58C5EDF6F9}.Debug 4.0|Any CPU.ActiveCfg = Debug|Any CPU
 		{4DD56A51-3F41-4B39-843F-CC58C5EDF6F9}.Debug 4.0|Any CPU.Build.0 = Debug|Any CPU
 		{4DD56A51-3F41-4B39-843F-CC58C5EDF6F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4DD56A51-3F41-4B39-843F-CC58C5EDF6F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4DD56A51-3F41-4B39-843F-CC58C5EDF6F9}.Release 4.0|Any CPU.ActiveCfg = Release|Any CPU
 		{4DD56A51-3F41-4B39-843F-CC58C5EDF6F9}.Release 4.0|Any CPU.Build.0 = Release|Any CPU
 		{4DD56A51-3F41-4B39-843F-CC58C5EDF6F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -62,11 +65,18 @@ Global
 		{E5AE1E7C-9553-4E96-8EA0-72EC6D22DFD6}.Debug 4.0|Any CPU.ActiveCfg = Debug|Any CPU
 		{E5AE1E7C-9553-4E96-8EA0-72EC6D22DFD6}.Debug 4.0|Any CPU.Build.0 = Debug|Any CPU
 		{E5AE1E7C-9553-4E96-8EA0-72EC6D22DFD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E5AE1E7C-9553-4E96-8EA0-72EC6D22DFD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E5AE1E7C-9553-4E96-8EA0-72EC6D22DFD6}.Release 4.0|Any CPU.ActiveCfg = Release|Any CPU
 		{E5AE1E7C-9553-4E96-8EA0-72EC6D22DFD6}.Release 4.0|Any CPU.Build.0 = Release|Any CPU
 		{E5AE1E7C-9553-4E96-8EA0-72EC6D22DFD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E5AE1E7C-9553-4E96-8EA0-72EC6D22DFD6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B0AFCA5-07B5-419C-A7C7-B27BE4C9B760}.Debug 4.0|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B0AFCA5-07B5-419C-A7C7-B27BE4C9B760}.Debug 4.0|Any CPU.Build.0 = Debug|Any CPU
+		{9B0AFCA5-07B5-419C-A7C7-B27BE4C9B760}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B0AFCA5-07B5-419C-A7C7-B27BE4C9B760}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B0AFCA5-07B5-419C-A7C7-B27BE4C9B760}.Release 4.0|Any CPU.ActiveCfg = Release|Any CPU
+		{9B0AFCA5-07B5-419C-A7C7-B27BE4C9B760}.Release 4.0|Any CPU.Build.0 = Release|Any CPU
+		{9B0AFCA5-07B5-419C-A7C7-B27BE4C9B760}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B0AFCA5-07B5-419C-A7C7-B27BE4C9B760}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
