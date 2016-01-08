@@ -44,8 +44,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AesCipher.cs" />
-    <Compile Include="Misc.cs" />
+    <Compile Include="Cryptography\AesCipher.cs" />
+    <Compile Include="Cryptography\CryptoImpl.cs" />
+    <Compile Include="PlatformImpl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WebSocketTransport.cs" />
   </ItemGroup>
