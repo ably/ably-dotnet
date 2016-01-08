@@ -104,7 +104,7 @@ namespace Ably.Transport
         {
             bool isTls = parameters.Options.Tls;
 			string wsScheme = isTls ? "wss://" : "ws://";
-            var queryCollection = System.Web.HttpUtility.ParseQueryString("");
+            var queryCollection = System.Web.WebUtility.ParseQueryString("");
             parameters.StoreParams(queryCollection);
 
             UriBuilder uriBuilder = new UriBuilder(wsScheme, parameters.Host, parameters.Port);

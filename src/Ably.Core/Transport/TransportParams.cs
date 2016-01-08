@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Specialized;
 using System.Text.RegularExpressions;
-using System.Web;
+using System.Net;
 
 namespace Ably.Transport
 {
@@ -33,11 +33,11 @@ namespace Ably.Transport
             // auth
             if (Options.Method == AuthMethod.Basic)
             {
-                collection["key"] = HttpUtility.UrlEncode(Options.Key);
+                collection["key"] = WebUtility.UrlEncode(Options.Key);
             }
             else
             {
-                collection["access_token"] = HttpUtility.UrlEncode(Options.Token);
+                collection["access_token"] = WebUtility.UrlEncode(Options.Token);
             }
 
             // connection
