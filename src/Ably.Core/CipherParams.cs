@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using Ably.Encryption;
 
 namespace Ably
@@ -18,7 +17,7 @@ namespace Ably
 
         public CipherParams(byte[] key) : this(Crypto.DefaultAlgorithm, key)
         {
-            
+
         }
 
         public CipherParams(string algorithm, byte[] key, CipherMode? mode = null, int? keyLength = null, byte[] iv = null)
