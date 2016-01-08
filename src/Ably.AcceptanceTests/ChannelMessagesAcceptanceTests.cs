@@ -1,19 +1,15 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Security.Cryptography;
-using System.Threading;
+using Ably.Encryption;
+using Ably.Rest;
+using FluentAssertions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
-using Ably;
-using Ably.Rest;
-using FluentAssertions;
+using System;
+using System.IO;
+using System.Linq;
 
 namespace Ably.AcceptanceTests
 {
-    
     public class StatsAcceptanceTests
     {
         public readonly static DateTimeOffset StartInterval = new DateTimeOffset(DateTime.Now.Year  -1, 2, 3, 15, 5, 0, TimeSpan.Zero);
@@ -54,7 +50,7 @@ namespace Ably.AcceptanceTests
             {
                 var client = GetAbly();
                 Stats =  client.Stats(new StatsDataRequestQuery() {Start = StartInterval.AddMinutes(-30), Limit = 1});
-                
+
                 TestStats = Stats.First();
             }
 
@@ -180,7 +176,7 @@ namespace Ably.AcceptanceTests
         public void CanPublishAMessageAndRetrieveIt()
         {
             var items = (JArray) examples["items"];
-            
+
             Ably.RestClient ably = GetAbly();
             IChannel channel = ably.Channels.Get("persisted:test", GetOptions());
             var count = 0;
@@ -209,10 +205,10 @@ namespace Ably.AcceptanceTests
 
             IChannel channel = ably.Channels.Get("persisted:historyTest:" + _protocol.ToString());
             //Act
-            
+
             for (int i = 0; i < 20; i++)
             {
-                channel.Publish("name" + i, "data" + i);    
+                channel.Publish("name" + i, "data" + i);
             }
 
             //Assert
