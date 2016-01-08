@@ -5,7 +5,7 @@ using WebSocket4Net;
 
 namespace Ably.Transport
 {
-    public class WebSocketTransport : ITransport
+    internal class WebSocketTransport : ITransport
     {
         public class WebSocketTransportFactory : ITransportFactory
         {

@@ -9,7 +9,7 @@ namespace Ably.Cryptography
     /// <summary>Cipher implementation using RinjaelManaged class under the hood.
     /// The Cipher params decide the Cipher mode and key
     /// The Iv vector is generated on each encryption request and added to the encrypted data stream.</summary>
-    public class AesCipher : IChannelCipher
+    internal class AesCipher : IChannelCipher
     {
         private readonly CipherParams _params;
 
