@@ -61,7 +61,6 @@
     <Compile Include="CustomSerialisers\DateTimeOffsetMessagePackSerializer.cs" />
     <Compile Include="CustomSerialisers\StatsJsonDateConverter.cs" />
     <Compile Include="DataRequestQuery.cs" />
-    <Compile Include="Encryption\AesCipher.cs" />
     <Compile Include="Encryption\Crypto.cs" />
     <Compile Include="ErrorInfo.cs" />
     <Compile Include="Extensions\DateExtensions.cs" />

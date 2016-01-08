@@ -1,29 +1,11 @@
 using System;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace Ably
 {
-    internal static class StringUtils
+    public static class StringUtils
     {
-
-        /// <summary>
-        /// Computes a HMAC SHA256 Hash and return the result as base64 encoded string
-        /// </summary>
-        /// <param name="text">string for which the hash is computed</param>
-        /// <returns>Base64 encoded string of computed HMAC SHA256 hash</returns>
-        internal static string ComputeHMacSha256(this string text, string key)
-        {
-            byte[] bytes = text.GetBytes();
-            byte[] keyBytes = key.GetBytes();
-            using (var hmac = new HMACSHA256(keyBytes))
-            {
-                hmac.ComputeHash(bytes);
-                return Convert.ToBase64String(hmac.Hash);
-            }
-        }
-
-        internal static byte[] GetBytes(this string text)
+        public static byte[] GetBytes(this string text)
         {
             return Encoding.UTF8.GetBytes(text);
         }
