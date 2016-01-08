@@ -2,7 +2,7 @@
 using Ably.Transport;
 using System.Configuration;
 
-namespace Ably
+namespace AblyPlatform
 {
     public class PlatformImpl : IPlatform
     {

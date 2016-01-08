@@ -7,8 +7,8 @@
     <ProjectGuid>{021875BE-63FD-4FF4-B34F-0B77CCD1919E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Ably</RootNamespace>
-    <AssemblyName>Ably</AssemblyName>
+    <RootNamespace>AblyPlatform</RootNamespace>
+    <AssemblyName>AblyPlatform</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

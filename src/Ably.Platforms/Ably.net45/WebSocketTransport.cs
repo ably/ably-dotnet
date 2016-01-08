@@ -1,19 +1,20 @@
-﻿using Ably.Types;
+﻿using Ably.Transport;
+using Ably.Types;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using WebSocket4Net;
 
-namespace Ably.Transport
+namespace AblyPlatform
 {
     internal class WebSocketTransport : ITransport
     {
         public class WebSocketTransportFactory : ITransportFactory
         {
-            public ITransport CreateTransport(TransportParams parameters)
+            public ITransport CreateTransport( TransportParams parameters )
             {
                 IMessageSerializer serializer = null;
-                if (parameters.Options.UseBinaryProtocol)
+                if( parameters.Options.UseBinaryProtocol )
                 {
                     serializer = new MsgPackMessageSerializer();
                 }
@@ -24,7 +25,7 @@ namespace Ably.Transport
                 WebSocketTransport socketTransport = new WebSocketTransport(serializer);
                 socketTransport.Host = parameters.Host;
                 socketTransport.channelBinaryMode = parameters.Options.UseBinaryProtocol;
-                socketTransport.socket = CreateSocket(parameters);
+                socketTransport.socket = CreateSocket( parameters );
                 socketTransport.socket.Opened += socketTransport.socket_Opened;
                 socketTransport.socket.Closed += socketTransport.socket_Closed;
                 socketTransport.socket.Error += socketTransport.socket_Error;
@@ -34,7 +35,7 @@ namespace Ably.Transport
             }
         }
 
-        private WebSocketTransport(IMessageSerializer serializer)
+        private WebSocketTransport( IMessageSerializer serializer )
         {
             this.serializer = serializer;
         }
@@ -57,11 +58,11 @@ namespace Ably.Transport
         {
             get
             {
-                if (this.socket == null)
+                if( this.socket == null )
                 {
                     return TransportState.Initialized;
                 }
-                return stateDict[this.socket.State];
+                return stateDict[ this.socket.State ];
             }
         }
 
@@ -74,34 +75,34 @@ namespace Ably.Transport
 
         public void Close()
         {
-            if (this.socket == null)
+            if( this.socket == null )
             {
                 return;
             }
             this.socket.Close();
         }
 
-        public void Abort(string reason)
+        public void Abort( string reason )
         {
-            this.socket.Close(reason);
+            this.socket.Close( reason );
         }
 
-        public void Send(ProtocolMessage message)
+        public void Send( ProtocolMessage message )
         {
             object serializedMessage = this.serializer.SerializeProtocolMessage(message);
 
-            if (this.channelBinaryMode)
+            if( this.channelBinaryMode )
             {
                 byte[] data = (byte[])serializedMessage;
-                this.socket.Send(data, 0, data.Length);
+                this.socket.Send( data, 0, data.Length );
             }
             else
             {
-                this.socket.Send((string)serializedMessage);
+                this.socket.Send( (string)serializedMessage );
             }
         }
 
-        private static WebSocket CreateSocket(TransportParams parameters)
+        private static WebSocket CreateSocket( TransportParams parameters )
         {
             bool isTls = parameters.Options.Tls;
             string wsScheme = isTls ? "wss://" : "ws://";
@@ -115,45 +116,45 @@ namespace Ably.Transport
             return socket;
         }
 
-        private void socket_Opened(object sender, EventArgs e)
+        private void socket_Opened( object sender, EventArgs e )
         {
-            if (this.Listener != null)
+            if( this.Listener != null )
             {
                 this.Listener.OnTransportConnected();
             }
         }
 
-        private void socket_Closed(object sender, EventArgs e)
+        private void socket_Closed( object sender, EventArgs e )
         {
-            if (this.Listener != null)
+            if( this.Listener != null )
             {
                 this.Listener.OnTransportDisconnected();
             }
         }
 
-        private void socket_Error(object sender, SuperSocket.ClientEngine.ErrorEventArgs e)
+        private void socket_Error( object sender, SuperSocket.ClientEngine.ErrorEventArgs e )
         {
-            if (this.Listener != null)
+            if( this.Listener != null )
             {
-                this.Listener.OnTransportError(e.Exception);
+                this.Listener.OnTransportError( e.Exception );
             }
         }
 
-        private void socket_MessageReceived(object sender, MessageReceivedEventArgs e)
+        private void socket_MessageReceived( object sender, MessageReceivedEventArgs e )
         {
-            if (this.Listener != null)
+            if( this.Listener != null )
             {
                 ProtocolMessage message = this.serializer.DeserializeProtocolMessage(e.Message);
-                this.Listener.OnTransportMessageReceived(message);
+                this.Listener.OnTransportMessageReceived( message );
             }
         }
 
-        private void socket_DataReceived(object sender, DataReceivedEventArgs e)
+        private void socket_DataReceived( object sender, DataReceivedEventArgs e )
         {
-            if (this.Listener != null)
+            if( this.Listener != null )
             {
                 ProtocolMessage message = this.serializer.DeserializeProtocolMessage(e.Data);
-                this.Listener.OnTransportMessageReceived(message);
+                this.Listener.OnTransportMessageReceived( message );
             }
         }
     }
