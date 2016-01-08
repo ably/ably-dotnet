@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably", "Ably\Ably.csproj", "{E70140AC-4132-44C0-85BB-9BD1B910A719}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably", "Ably.Core\Ably.csproj", "{E70140AC-4132-44C0-85BB-9BD1B910A719}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.Tests", "Ably.Tests\Ably.Tests.csproj", "{4E136C14-03D4-4194-8DE7-3E9A26C5B028}"
 EndProject
