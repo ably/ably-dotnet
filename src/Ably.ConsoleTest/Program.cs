@@ -15,6 +15,9 @@ namespace Ably.ConsoleTest
             options.Add( path );
             options.Add( "/domain:None" );
             options.Add( "/nothread" );
+            options.Add( "/nologo" );
+            options.Add( "/labels" );
+            options.Add( "/stoponerror" );
 
             NUnit.ConsoleRunner.Runner.Main( options.ToArray() );
         }
