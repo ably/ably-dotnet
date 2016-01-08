@@ -32,26 +32,43 @@ namespace Ably.ConsoleTest
 
     class Program
     {
-        static void Main( string[] args )
+        static void RunTests( Assembly ass, bool stopOnErrors, bool printLabels, bool logToConsole, string singleTest = null )
         {
-            Logger.SetDestination( new MyLogger() );
+            if( logToConsole )
+                Logger.SetDestination( new MyLogger() );
 
-            Assembly ass = typeof(LoggerTests).Assembly;
+
             string path = ass.Location;
 
             List<string> options = new List<string>();
             // http://www.nunit.org/index.php?p=consoleCommandLine&r=2.6.3
 
-            // options.Add( "/run:Ably.AcceptanceTests.RealtimeAcceptanceTests(MsgPack).TestCreateRealtimeClient_AutoConnect_False_ConnectsSuccessfuly" );
+            if( null != singleTest )
+                options.Add( "/run:" + singleTest );
 
             options.Add( path );
             options.Add( "/domain:None" );
             options.Add( "/nothread" );
             options.Add( "/nologo" );
-            options.Add( "/labels" );
-            options.Add( "/stoponerror" );
+            if( printLabels )
+                options.Add( "/labels" );
+            if( stopOnErrors )
+                options.Add( "/stoponerror" );
 
             NUnit.ConsoleRunner.Runner.Main( options.ToArray() );
+        }
+
+        static void Main( string[] args )
+        {
+            Assembly ass = typeof(LoggerTests).Assembly;
+            // Run all of them, with brief output
+            RunTests( ass, false, false, false );
+
+            // Run all of them, with verbose output, and stop on errors
+            // RunTests( ass, true, true, true );
+
+            // Run the single test
+            // RunTests( ass, true, true, true, "Ably.AcceptanceTests.RealtimeAcceptanceTests(MsgPack).TestCreateRealtimeClient_AutoConnect_False_ConnectsSuccessfuly" );
         }
     }
 }
