@@ -28,7 +28,7 @@ namespace Ably.Transport
         public string ConnectionSerial { get; set; }
         public Mode Mode { get; set; }
 
-        public void StoreParams(NameValueCollection collection)
+        public void StoreParams( WebHeaderCollection collection )
         {
             // auth
             if (Options.Method == AuthMethod.Basic)

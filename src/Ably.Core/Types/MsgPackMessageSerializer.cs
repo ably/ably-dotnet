@@ -472,7 +472,7 @@ namespace Ably.Types
             }
             else if (obj.IsMap)
             {
-                System.Collections.Hashtable data = new System.Collections.Hashtable();
+                Dictionary< object ,object> data = new Dictionary< object ,object>();
                 foreach (var objItem in obj.AsDictionary())
                 {
                     data.Add(ParseResult(objItem.Key), ParseResult(objItem.Value));

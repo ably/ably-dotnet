@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Net;
 
 namespace Ably
 {
@@ -27,7 +28,7 @@ namespace Ably
 
         public PaginatedResource() : this(Config.Limit)
         {
-            
+
         }
 
         public PaginatedResource(int limit)
@@ -43,7 +44,7 @@ namespace Ably
 
     public class PaginatedResource
     {
-        public static PaginatedResource<T> InitialisePartialResult<T>(NameValueCollection headers, int? limit = null)
+        public static PaginatedResource<T> InitialisePartialResult<T>( WebHeaderCollection headers, int? limit = null)
         {
             var result = new PaginatedResource<T>(limit ?? Config.Limit);
             result.CurrentQuery = DataRequestQuery.GetLinkQuery(headers, DataRequestLinkType.Current);
