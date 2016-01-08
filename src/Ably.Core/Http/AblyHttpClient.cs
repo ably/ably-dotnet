@@ -153,10 +153,11 @@ namespace Ably
                 {
                     var requestBody = request.RequestBody;
 
-                    webRequest.Headers[ HttpRequestHeader.ContentLength ] = requestBody.Length.ToString();
-                    if( requestBody.Length > 0 )
+                    using( Stream stream = await withTimeout( webRequest.GetRequestStreamAsync(), tTimeout ) )
                     {
-                        using( Stream stream = await withTimeout( webRequest.GetRequestStreamAsync(), tTimeout ) )
+                        // Need GetRequestStreamAsync() to have 0 ContentLength
+                        // http://stackoverflow.com/a/13692598/126995
+                        if( requestBody.Length > 0 )
                             await withTimeout( stream.WriteAsync( requestBody, 0, requestBody.Length ), tTimeout );
                     }
                 }
@@ -224,7 +225,7 @@ namespace Ably
 
         private static AblyResponse GetAblyResponse(HttpWebResponse response)
         {
-            return new AblyResponse( response.Headers[ HttpRequestHeader.ContentEncoding ], response.ContentType, ReadFully( response.GetResponseStream() ) )
+            return new AblyResponse( response.Headers[ "Content-Encoding" ], response.ContentType, ReadFully( response.GetResponseStream() ) )
             {
                 StatusCode = response.StatusCode,
                 Headers = response.Headers
