@@ -169,7 +169,7 @@ namespace Ably.Transport
         //
         void ITransportListener.OnTransportConnected()
         {
-            if (this.sync != null && this.sync.IsWaitNotificationRequired())
+            if (this.sync != null )
             {
                 this.sync.Post(new System.Threading.SendOrPostCallback(o => this.OnTransportConnected()), null);
                 return;
@@ -179,7 +179,7 @@ namespace Ably.Transport
 
         void ITransportListener.OnTransportDisconnected()
         {
-            if (this.sync != null && this.sync.IsWaitNotificationRequired())
+            if (this.sync != null )
             {
                 this.sync.Post(new System.Threading.SendOrPostCallback(o => this.OnTransportDisconnected()), null);
                 return;
@@ -189,7 +189,7 @@ namespace Ably.Transport
 
         void ITransportListener.OnTransportError(Exception e)
         {
-            if (this.sync != null && this.sync.IsWaitNotificationRequired())
+            if (this.sync != null )
             {
                 this.sync.Post(new System.Threading.SendOrPostCallback(o => this.OnTransportError((TransportState)o, e)), transport.State);
                 return;
@@ -199,7 +199,7 @@ namespace Ably.Transport
 
         void ITransportListener.OnTransportMessageReceived(ProtocolMessage message)
         {
-            if (this.sync != null && this.sync.IsWaitNotificationRequired())
+            if (this.sync != null )
             {
                 this.sync.Post(new System.Threading.SendOrPostCallback(o => this.OnTransportMessageReceived(message)), null);
                 return;

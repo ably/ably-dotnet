@@ -1,6 +1,7 @@
 ﻿using Ably.Types;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using WebSocket4Net;
 
 namespace Ably.Transport
@@ -103,9 +104,9 @@ namespace Ably.Transport
         private static WebSocket CreateSocket(TransportParams parameters)
         {
             bool isTls = parameters.Options.Tls;
-			string wsScheme = isTls ? "wss://" : "ws://";
-            var queryCollection = System.Web.WebUtility.ParseQueryString("");
-            parameters.StoreParams(queryCollection);
+            string wsScheme = isTls ? "wss://" : "ws://";
+            WebHeaderCollection queryCollection = new WebHeaderCollection();
+            parameters.StoreParams( queryCollection );
 
             UriBuilder uriBuilder = new UriBuilder(wsScheme, parameters.Host, parameters.Port);
             uriBuilder.Query = queryCollection.ToString();
