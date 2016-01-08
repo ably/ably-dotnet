@@ -3,6 +3,8 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 using Ably.Rest;
+using System.Net;
+using Ably.Encryption;
 
 namespace Ably.Cryptography
 {
@@ -19,14 +21,25 @@ namespace Ably.Cryptography
             }
         }
 
-        IChannelCipher ICrypto.GetCipher( ChannelOptions opts )
+        IChannelCipher ICrypto.GetCipher( CipherParams p )
         {
-            throw new NotImplementedException();
+            if( string.Equals( p.Algorithm, Crypto.DefaultAlgorithm, StringComparison.CurrentCultureIgnoreCase ) )
+                return new AesCipher( p );
+
+            throw new AblyException( "Currently only the AES encryption algorithm is supported", 50000, HttpStatusCode.InternalServerError );
         }
 
         CipherParams ICrypto.GetDefaultParams()
         {
-            throw new NotImplementedException();
+            using( var aes = new AesCryptoServiceProvider() )
+            {
+                aes.KeySize = Crypto.DefaultKeylength;
+                aes.Mode = System.Security.Cryptography.CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+                aes.BlockSize = Crypto.DefaultBlocklength * 8;
+                aes.GenerateKey();
+                return new CipherParams( aes.Key );
+            }
         }
     }
 }

@@ -6,7 +6,7 @@ namespace Ably.Platform
     {
         CipherParams GetDefaultParams();
 
-        IChannelCipher GetCipher( ChannelOptions opts );
+        IChannelCipher GetCipher( CipherParams p );
 
         string ComputeHMacSha256( string text, string key );
     }
