@@ -61,8 +61,12 @@ namespace Ably
                         continue;
                     }
 
-                    if (errorResponse != null)
-                        throw AblyException.FromResponse(GetAblyResponse(errorResponse));
+                    if( errorResponse != null )
+                    {
+                        AblyResponse ablyResponse = GetAblyResponse( errorResponse );
+                        Logger.ErrorResponse( ablyResponse );
+                        throw AblyException.FromResponse( ablyResponse );
+                    }
 
                     throw new AblyException(new ErrorInfo("Unexpected error. Check the inner exception for details", 500, null), exception);
                 }

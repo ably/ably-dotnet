@@ -56,5 +56,25 @@ namespace Ably
         {
             return Uri.EscapeDataString(text);
         }
+
+        /// <summary>Append a formatted text to StringBuilder. If the StringBuilder already contains something, the delimiter will be inserted before the new part.</summary>
+        internal static void appendAfterDelim( this StringBuilder sb, string delim, string fmt, params object[] args )
+        {
+            if( sb.Length > 0 )
+                sb.Append( delim );
+            sb.AppendFormat( fmt, args );
+        }
+
+        /// <summary>true if the string is null or empty</summary>
+        internal static bool isEmpty(this string text )
+        {
+            return String.IsNullOrEmpty( text );
+        }
+
+        /// <summary>true if the string is neither null nor empty</summary>
+        internal static bool notEmpty( this string text )
+        {
+            return !String.IsNullOrEmpty( text );
+        }
     }
 }
