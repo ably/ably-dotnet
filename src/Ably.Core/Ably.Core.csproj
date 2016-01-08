@@ -88,6 +88,8 @@
     <Compile Include="MessageEncoders\Utf8Encoder.cs" />
     <Compile Include="MsgPackHelper.cs" />
     <Compile Include="Platform\HttpUtility.cs" />
+    <Compile Include="Platform\ICrypto.cs" />
+    <Compile Include="Platform\IoC.cs" />
     <Compile Include="PresenceMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Protocol.cs" />
