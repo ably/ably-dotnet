@@ -40,6 +40,10 @@ namespace Ably.ConsoleTest
             string path = ass.Location;
 
             List<string> options = new List<string>();
+            // http://www.nunit.org/index.php?p=consoleCommandLine&r=2.6.3
+
+            // options.Add( "/run:Ably.AcceptanceTests.RealtimeAcceptanceTests(Json).TestRealtimeClient_Time" );
+
             options.Add( path );
             options.Add( "/domain:None" );
             options.Add( "/nothread" );
