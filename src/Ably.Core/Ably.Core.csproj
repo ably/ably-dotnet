@@ -129,7 +129,6 @@
     <Compile Include="Transport\States\Connection\ConnectionSuspendedState.cs" />
     <Compile Include="Transport\States\Connection\ICountdownTimer.cs" />
     <Compile Include="Transport\TransportParams.cs" />
-    <Compile Include="Transport\WebSocketTransport.cs" />
     <Compile Include="Types\IMessageSerializer.cs" />
     <Compile Include="Types\JsonMessageSerializer.cs" />
     <Compile Include="Types\MsgPackMessageSerializer.cs" />
