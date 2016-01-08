@@ -6,9 +6,11 @@ namespace AblyPlatform
 {
     public class PlatformImpl : IPlatform
     {
+        public PlatformImpl() { }
+
         string IPlatform.getConnectionString()
         {
-            var connString = ConfigurationManager.ConnectionStrings["Ably"];
+            var connString = ConfigurationManager.ConnectionStrings[ "Ably" ];
             if( connString == null )
             {
                 return string.Empty;
