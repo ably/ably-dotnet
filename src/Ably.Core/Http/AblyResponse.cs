@@ -11,7 +11,7 @@ namespace Ably
 
     internal class AblyResponse
     {
-        internal NameValueCollection Headers { get; set; } 
+        internal WebHeaderCollection Headers { get; set; }
         internal ResponseType Type { get; set; }
         internal HttpStatusCode StatusCode { get; set; }
         internal string TextResponse { get; set; }
@@ -23,7 +23,7 @@ namespace Ably
 
         internal AblyResponse()
         {
-            Headers = new NameValueCollection();
+            Headers = new WebHeaderCollection();
         }
 
         internal AblyResponse(string encoding, string contentType, byte[] body)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Net;
 
 namespace Ably
 {
@@ -25,27 +26,6 @@ namespace Ably
             input = input.Trim();
             return input.StartsWith("{") && input.EndsWith("}")
                    || input.StartsWith("[") && input.EndsWith("]");
-        }
-
-        public static NameValueCollection ParseQueryString(this string text)
-        {
-            if(text.IsEmpty())
-                return new NameValueCollection();
-
-            var queryParameters = new NameValueCollection();
-            string[] querySegments = text.Split('&');
-            foreach (string segment in querySegments)
-            {
-                string[] parts = segment.Split('=');
-                if (parts.Length > 0)
-                {
-                    string key = parts[0].Trim(new char[] { '?', ' ' });
-                    string val = parts[1].Trim();
-
-                    queryParameters.Add(key, Uri.UnescapeDataString(val));
-                }
-            }
-            return queryParameters;
         }
 
         public static string JoinStrings(this IEnumerable<string> input, string delimiter = ", ")

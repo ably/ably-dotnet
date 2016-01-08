@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 
 namespace Ably
@@ -55,10 +56,10 @@ namespace Ably
     {
         protected bool Equals(DataRequestQuery other)
         {
-            return Start.Equals(other.Start) 
-                && End.Equals(other.End) 
-                && Limit == other.Limit 
-                && Direction == other.Direction 
+            return Start.Equals(other.Start)
+                && End.Equals(other.End)
+                && Limit == other.Limit
+                && Direction == other.Direction
                 && ExtraParameters.SequenceEqual(other.ExtraParameters);
         }
 
@@ -95,9 +96,9 @@ namespace Ably
         /// Query directions. It determines the order in which results are returned. <see cref="QueryDirection"/>
         /// </summary>
         public QueryDirection Direction { get; set; }
-        
+
         /// <summary>
-        /// Used mainly when parsing query strings to hold extra parameters that need to be passed back to the service. 
+        /// Used mainly when parsing query strings to hold extra parameters that need to be passed back to the service.
         /// </summary>
         public Dictionary<string, string> ExtraParameters { get; set; }
 
@@ -173,7 +174,7 @@ namespace Ably
         {
             var query = new DataRequestQuery();
             query.QueryString = querystring;
-            var queryParameters = querystring.ParseQueryString();
+            HttpValueCollection queryParameters = HttpUtility.ParseQueryString( querystring );
             foreach (var key in queryParameters.AllKeys)
             {
                 switch (key.ToLower())
@@ -202,14 +203,14 @@ namespace Ably
             return query;
         }
 
-        internal static DataRequestQuery GetLinkQuery(NameValueCollection headers, string link)
+        internal static DataRequestQuery GetLinkQuery( WebHeaderCollection headers, string link)
         {
             var linkPattern = "\\s*<(.*)>;\\s*rel=\"(.*)\"";
             var linkHeaders = headers.GetValues("Link") ?? new string[] {};
             foreach (var header in linkHeaders)
             {
                 var match = Regex.Match(header, linkPattern);
-                if (match.Success && match.Groups[2].Value.Equals(link, StringComparison.InvariantCultureIgnoreCase))
+                if (match.Success && match.Groups[2].Value.Equals(link, StringComparison.OrdinalIgnoreCase))
                 {
                     var url = match.Groups[1].Value;
                     var queryString = url.Split('?')[1];

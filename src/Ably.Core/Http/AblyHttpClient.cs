@@ -140,12 +140,12 @@ namespace Ably
         {
             foreach (var header in headers)
             {
-                if (header.Key == "Accept")
+                if( header.Key == "Accept" )
                     webRequest.Accept = header.Value;
-                else if (header.Key == "Content-Type")
+                else if( header.Key == "Content-Type" )
                     webRequest.ContentType = header.Value;
                 else
-                    webRequest.Headers.Add(header.Key, header.Value);
+                    webRequest.Headers[ header.Key ] = header.Value;
             }
         }
 
@@ -177,7 +177,7 @@ namespace Ably
 
         private static AblyResponse GetAblyResponse(HttpWebResponse response)
         {
-            return new AblyResponse(response.ContentEncoding, response.ContentType, ReadFully(response.GetResponseStream()))
+            return new AblyResponse( response.Headers[ HttpRequestHeader.ContentEncoding ], response.ContentType, ReadFully( response.GetResponseStream() ) )
             {
                 StatusCode = response.StatusCode,
                 Headers = response.Headers

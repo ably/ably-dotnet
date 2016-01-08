@@ -87,7 +87,7 @@
     <Compile Include="MessageEncoders\MessageHandler.cs" />
     <Compile Include="MessageEncoders\Utf8Encoder.cs" />
     <Compile Include="MsgPackHelper.cs" />
-    <Compile Include="Platform\NameValueCollection.cs" />
+    <Compile Include="Platform\HttpUtility.cs" />
     <Compile Include="PresenceMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Protocol.cs" />
@@ -147,6 +147,7 @@
       <Private>True</Private>
     </Reference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
