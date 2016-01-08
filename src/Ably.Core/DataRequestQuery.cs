@@ -203,10 +203,18 @@ namespace Ably
             return query;
         }
 
+        static string[] GetValues( WebHeaderCollection headers, string key )
+        {
+            string h = headers[key];
+            if( String.IsNullOrEmpty( h ) )
+                return null;
+            return h.Split( ',' );
+        }
+
         internal static DataRequestQuery GetLinkQuery( WebHeaderCollection headers, string link)
         {
             var linkPattern = "\\s*<(.*)>;\\s*rel=\"(.*)\"";
-            var linkHeaders = headers.GetValues("Link") ?? new string[] {};
+            var linkHeaders = GetValues( headers, "Link" ) ?? new string[] {};
             foreach (var header in linkHeaders)
             {
                 var match = Regex.Match(header, linkPattern);
