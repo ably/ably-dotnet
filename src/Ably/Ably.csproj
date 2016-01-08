@@ -96,6 +96,7 @@
     <Compile Include="AblyEnvironment.cs" />
     <Compile Include="AblyRealtime.cs" />
     <Compile Include="AblyRealtimeOptions.cs" />
+    <Compile Include="ConnectionDetailsMessage.cs" />
     <Compile Include="CustomSerialisers\CapabilityJsonConverter.cs" />
     <Compile Include="CustomSerialisers\DateTimeOffsetJsonConverter.cs" />
     <Compile Include="CustomSerialisers\StatsJsonDateConverter.cs" />

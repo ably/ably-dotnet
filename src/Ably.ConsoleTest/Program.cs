@@ -42,7 +42,7 @@ namespace Ably.ConsoleTest
             List<string> options = new List<string>();
             // http://www.nunit.org/index.php?p=consoleCommandLine&r=2.6.3
 
-            // options.Add( "/run:Ably.AcceptanceTests.RealtimeAcceptanceTests(Json).TestRealtimeClient_Time" );
+            // options.Add( "/run:Ably.AcceptanceTests.RealtimeAcceptanceTests(MsgPack).TestCreateRealtimeClient_AutoConnect_False_ConnectsSuccessfuly" );
 
             options.Add( path );
             options.Add( "/domain:None" );
