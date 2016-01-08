@@ -3,11 +3,22 @@ using Ably.Platform;
 using System;
 using System.Net;
 using System.Security.Cryptography;
+using Ably;
 
-namespace Ably.Cryptography
+namespace AblyPlatform.Cryptography
 {
     internal class CryptoImpl : ICrypto
     {
+        public IChannelCipher GetCipher( CipherParams p )
+        {
+            throw new NotImplementedException();
+        }
+
+        public CipherParams GetDefaultParams()
+        {
+            throw new NotImplementedException();
+        }
+
         string ICrypto.ComputeHMacSha256( string text, string key )
         {
             byte[] bytes = text.GetBytes();

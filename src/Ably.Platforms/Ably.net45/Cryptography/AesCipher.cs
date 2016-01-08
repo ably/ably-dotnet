@@ -1,10 +1,11 @@
-﻿using Ably.Encryption;
+﻿using Ably;
+using Ably.Encryption;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 
-namespace Ably.Cryptography
+namespace AblyPlatform.Cryptography
 {
     /// <summary>Cipher implementation using RinjaelManaged class under the hood.
     /// The Cipher params decide the Cipher mode and key
@@ -20,13 +21,13 @@ namespace Ably.Cryptography
             _params = @params;
         }
 
-        static readonly Dictionary<Encryption.CipherMode, System.Security.Cryptography.CipherMode> s_modes = new Dictionary<Encryption.CipherMode, System.Security.Cryptography.CipherMode>()
+        static readonly Dictionary<Ably.Encryption.CipherMode, System.Security.Cryptography.CipherMode> s_modes = new Dictionary<Ably.Encryption.CipherMode, System.Security.Cryptography.CipherMode>()
         {
-            { Encryption.CipherMode.CBC, System.Security.Cryptography.CipherMode.CBC },
-            { Encryption.CipherMode.ECB, System.Security.Cryptography.CipherMode.ECB },
-            { Encryption.CipherMode.OFB, System.Security.Cryptography.CipherMode.OFB },
-            { Encryption.CipherMode.CFB , System.Security.Cryptography.CipherMode.CFB },
-            { Encryption.CipherMode.CTS , System.Security.Cryptography.CipherMode.CTS },
+            { Ably.Encryption.CipherMode.CBC, System.Security.Cryptography.CipherMode.CBC },
+            { Ably.Encryption.CipherMode.ECB, System.Security.Cryptography.CipherMode.ECB },
+            { Ably.Encryption.CipherMode.OFB, System.Security.Cryptography.CipherMode.OFB },
+            { Ably.Encryption.CipherMode.CFB , System.Security.Cryptography.CipherMode.CFB },
+            { Ably.Encryption.CipherMode.CTS , System.Security.Cryptography.CipherMode.CTS },
         };
 
         private static byte[] Encrypt( byte[] input, byte[] key, int keySize, System.Security.Cryptography.CipherMode mode, byte[] iv = null )
