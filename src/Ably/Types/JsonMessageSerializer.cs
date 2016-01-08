@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Ably.Types
 {
+    // TODO: drop this whole class, instead use Newtonsoft.Json attributes like [JsonObject], [JsonProperty]
     public class JsonMessageSerializer : IMessageSerializer
     {
         public object SerializeProtocolMessage(ProtocolMessage message)
