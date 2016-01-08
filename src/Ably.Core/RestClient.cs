@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -64,7 +63,7 @@ namespace Ably
         }
 
         /// <summary>
-        /// Convenience method for initialising the RestClient by passing a Action{AblyOptions} 
+        /// Convenience method for initialising the RestClient by passing a Action{AblyOptions}
         /// <example>
         /// var rest = new RestClient(opt => {
         ///  opt.Key = "fake.key:value";
@@ -132,7 +131,7 @@ namespace Ably
 
         private string GetHost()
         {
-            if (_options.Host.IsNotEmpty()) 
+            if (_options.Host.IsNotEmpty())
                 return _options.Host;
 
             return Config.DefaultHost;
@@ -156,7 +155,7 @@ namespace Ably
         AblyResponse IAblyRest.ExecuteRequest(AblyRequest request)
         {
             Logger.Info("Sending {0} request to {1}", request.Method, request.Url);
-            
+
             if (request.SkipAuthentication == false)
                 AddAuthHeader(request);
 
