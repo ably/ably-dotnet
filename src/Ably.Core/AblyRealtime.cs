@@ -6,11 +6,12 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ably
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class AblyRealtime : AblyBase
     {
@@ -28,7 +29,7 @@ namespace Ably
 
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="key"></param>
         public AblyRealtime(string key)
@@ -36,7 +37,7 @@ namespace Ably
         { }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="options"></param>
         public AblyRealtime(AblyRealtimeOptions options)
@@ -71,7 +72,7 @@ namespace Ably
         public Connection Connection { get; private set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public Connection Connect()
@@ -81,7 +82,7 @@ namespace Ably
         }
 
         /// <summary>
-        /// This simply calls connection.close. Causes the connection to close, entering the closed state. Once 
+        /// This simply calls connection.close. Causes the connection to close, entering the closed state. Once
         /// closed, the library will not attempt to re-establish the connection without a call to connect().
         /// </summary>
         public void Close()
@@ -112,7 +113,7 @@ namespace Ably
                 }
             };
 
-            ThreadPool.QueueUserWorkItem(state =>
+            Action act = () =>
             {
                 DateTimeOffset result;
                 try
@@ -125,7 +126,8 @@ namespace Ably
                     return;
                 }
                 invokeCallback(result, null);
-            });
+            };
+            Task.Run( act );
         }
     }
 }
