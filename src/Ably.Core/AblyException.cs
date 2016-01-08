@@ -6,16 +6,16 @@ namespace Ably
 {
 
     /// <summary>
-    /// Ably exception wrapper class. It includes error information <see cref="Ably.ErrorInfo"/> used by ably. 
+    /// Ably exception wrapper class. It includes error information <see cref="Ably.ErrorInfo"/> used by ably.
     /// All inner exceptions are wrapped in this class. Always check the inner exception property of the caught exception.
     /// </summary>
-    [Serializable]
+    // [Serializable]
     public class AblyException : Exception
     {
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        /* public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);
-        }
+        } */
 
         public AblyException()
         {
@@ -39,7 +39,7 @@ namespace Ably
         public AblyException(Exception ex)
             : this(new ErrorInfo("Unexpected error :" + ex.Message, 50000), ex)
             {
-                
+
             }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Ably
         /// </summary>
         public AblyException(string reason, int code, HttpStatusCode? statusCode = null) : this(new ErrorInfo(reason, code, statusCode))
         {
-            
+
         }
 
         /// <summary>
@@ -68,11 +68,11 @@ namespace Ably
             ErrorInfo = info;
         }
 
-        protected AblyException(SerializationInfo info, StreamingContext context)
+        /* protected AblyException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
 
-        }
+        } */
 
         public ErrorInfo ErrorInfo { get; set; }
 
