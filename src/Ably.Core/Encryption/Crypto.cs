@@ -74,6 +74,21 @@ namespace Ably.Encryption
         public const int DefaultBlocklength = 16; ///bytes
         public const CipherMode DefaultMode = CipherMode.CBC;
 
+        public static CipherParams GetDefaultParams()
+        {
+            return Platform.IoC.crypto.GetDefaultParams();
+        }
+
+        public static IChannelCipher GetCipher( ChannelOptions opts )
+        {
+            return Platform.IoC.crypto.GetCipher( opts );
+        }
+
+        internal static string ComputeHMacSha256( string text, string key )
+        {
+            return Platform.IoC.crypto.ComputeHMacSha256( text, key );
+        }
+
         /* public static CipherParams GetDefaultParams()
         {
             using (var aes = new AesCryptoServiceProvider())

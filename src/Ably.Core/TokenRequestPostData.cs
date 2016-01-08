@@ -22,19 +22,18 @@ namespace Ably
 
         public void CalculateMac(string key)
         {
-            var values = new[] 
-                { 
-                    keyName, 
+            var values = new[]
+                {
+                    keyName,
                     ttl,
-                    capability, 
-                    clientId, 
+                    capability,
+                    clientId,
                     timestamp,
                     nonce
                 };
 
             var signText = string.Join("\n", values) + "\n";
-
-            mac = signText.ComputeHMacSha256(key);
+            mac = Encryption.Crypto.ComputeHMacSha256( signText, key );
         }
 
         public override int GetHashCode()
