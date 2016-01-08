@@ -8,7 +8,7 @@
     <ProjectGuid>{EF341E0A-733D-4F79-8303-FD1B10D778EB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Ably.Core</RootNamespace>
+    <RootNamespace>Ably</RootNamespace>
     <AssemblyName>Ably.Core</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
