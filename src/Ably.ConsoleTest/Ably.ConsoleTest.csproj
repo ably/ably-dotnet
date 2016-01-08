@@ -62,10 +62,6 @@
       <Project>{b5fa2120-6451-4a54-86fe-1f367a72c04d}</Project>
       <Name>Ably.AcceptanceTests</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Ably\Ably.csproj">
-      <Project>{e70140ac-4132-44c0-85bb-9bd1b910a719}</Project>
-      <Name>Ably</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
