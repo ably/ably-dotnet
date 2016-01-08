@@ -273,7 +273,7 @@ namespace Ably.Types
                     return token.Value<int>();
                 case JTokenType.String:
                     string value = token.Value<string>();
-                    if (string.Equals(encoding, "BASE64", StringComparison.InvariantCultureIgnoreCase))
+                    if (string.Equals(encoding, "BASE64", StringComparison.OrdinalIgnoreCase))
                     {
                         return value.FromBase64();
                     }
