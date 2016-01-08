@@ -67,19 +67,19 @@ namespace Ably.Encryption
         CTS = 5
     }
 
-    internal class Crypto
+    public class Crypto
     {
         public const String DefaultAlgorithm = "AES";
         public const int DefaultKeylength = 128; ///bits
         public const int DefaultBlocklength = 16; ///bytes
         public const CipherMode DefaultMode = CipherMode.CBC;
 
-        public static CipherParams GetDefaultParams()
+        internal static CipherParams GetDefaultParams()
         {
             return Platform.IoC.crypto.GetDefaultParams();
         }
 
-        public static IChannelCipher GetCipher( ChannelOptions opts )
+        internal static IChannelCipher GetCipher( ChannelOptions opts )
         {
             return Platform.IoC.crypto.GetCipher( opts );
         }

@@ -236,7 +236,7 @@ namespace Ably
 
             try
             {
-                long miliseconds = (long)Convert.ChangeType(value, TypeCode.Int64);
+                long miliseconds = (long)Convert.ChangeType(value, typeof(long));
                 return miliseconds.FromUnixTimeInMilliseconds();
             }
             catch (Exception)

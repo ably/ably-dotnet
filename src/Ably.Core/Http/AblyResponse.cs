@@ -33,7 +33,7 @@ namespace Ably
             Encoding = encoding.IsNotEmpty() ? encoding : "utf-8";
             if (Type == ResponseType.Json)
             {
-                TextResponse = System.Text.Encoding.GetEncoding(Encoding).GetString(body);
+                TextResponse = System.Text.Encoding.GetEncoding( Encoding ).GetString( body, 0, body.Length );
             }
             Body = body;
         }
