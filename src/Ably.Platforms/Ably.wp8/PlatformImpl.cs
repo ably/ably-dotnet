@@ -13,12 +13,9 @@ namespace AblyPlatform
             throw new NotSupportedException();
         }
 
-        ICrypto IPlatform.crypto
+        ICrypto IPlatform.getCrypto()
         {
-            get
-            {
-                return new Cryptography.CryptoImpl();
-            }
+            return new Cryptography.CryptoImpl();
         }
 
         class WebSocketTransportFactory : ITransportFactory
@@ -29,12 +26,9 @@ namespace AblyPlatform
             }
         }
 
-        ITransportFactory IPlatform.webSockets
+        ITransportFactory IPlatform.getWebSocketsFactory()
         {
-            get
-            {
-                return new WebSocketTransportFactory();
-            }
+            return new WebSocketTransportFactory();
         }
     }
 }

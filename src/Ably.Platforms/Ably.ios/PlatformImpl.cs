@@ -13,20 +13,14 @@ namespace AblyPlatform
             throw new NotSupportedException();
         }
 
-        ICrypto IPlatform.crypto
+        ICrypto IPlatform.getCrypto()
         {
-            get
-            {
-                return new Cryptography.CryptoImpl();
-            }
+            return new Cryptography.CryptoImpl();
         }
 
-        ITransportFactory IPlatform.webSockets
+        ITransportFactory IPlatform.getWebSocketsFactory()
         {
-            get
-            {
-                return new WebSocketTransport.WebSocketTransportFactory();
-            }
+            return new WebSocketTransport.WebSocketTransportFactory();
         }
     }
 }

@@ -6,8 +6,8 @@ namespace Ably.Platform
     {
         string getConnectionString();
 
-        ICrypto crypto { get; }
+        ICrypto getCrypto();
 
-        ITransportFactory webSockets { get; }
+        ITransportFactory getWebSocketsFactory();
     }
 }
