@@ -9,13 +9,14 @@ namespace Ably.Platform
     {
         static IPlatform s_platform;
 
+        /// <summary>Load AblyPlatform.dll, instantiate AblyPlatform.PlatformImpl type.</summary>
         static IoC()
         {
             AssemblyName aname = new AssemblyName( "AblyPlatform" );
             Assembly ass = Assembly.Load( aname );
             Type tpImpl = ass.GetType( "AblyPlatform.PlatformImpl" );
             if( null == tpImpl )
-                throw new Exception( "Fatal error: AblyPlatform.dll doesn't contain the AblyPlatform.PlatformImpl type" );
+                throw new Exception( "Fatal error: AblyPlatform.dll doesn't contain AblyPlatform.PlatformImpl type" );
             object obj = Activator.CreateInstance( tpImpl );
             s_platform = obj as IPlatform;
         }
