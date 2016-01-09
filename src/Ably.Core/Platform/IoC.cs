@@ -4,6 +4,7 @@ using System.Reflection;
 
 namespace Ably.Platform
 {
+    /// <summary>This class initializes dynamically-injected platform dependencies.</summary>
     public static class IoC
     {
         static IPlatform s_platform;
