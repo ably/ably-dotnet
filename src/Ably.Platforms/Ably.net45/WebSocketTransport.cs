@@ -3,6 +3,7 @@ using Ably.Types;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text;
 using WebSocket4Net;
 
 namespace AblyPlatform
@@ -102,6 +103,26 @@ namespace AblyPlatform
             }
         }
 
+        /// <summary>Convert names+values from WebHeaderCollection into HTTP GET request arguments</summary>
+        static void setQuery( UriBuilder ub, WebHeaderCollection q )
+        {
+            StringBuilder sb = new StringBuilder();
+            for( int i = 0; i < q.Count; i++ )
+            {
+                string key = q.GetKey(i);
+                string val = q.Get(i);
+
+                if( String.IsNullOrEmpty( key ) )
+                    continue;
+                if( sb.Length > 0 )
+                    sb.Append( '&' );
+                sb.Append( WebUtility.UrlEncode( key ) );
+                sb.Append( '=' );
+                sb.Append( WebUtility.UrlEncode( val ) );
+            }
+            ub.Query = sb.ToString();
+        }
+
         private static WebSocket CreateSocket( TransportParams parameters )
         {
             bool isTls = parameters.Options.Tls;
@@ -110,9 +131,8 @@ namespace AblyPlatform
             parameters.StoreParams( queryCollection );
 
             UriBuilder uriBuilder = new UriBuilder(wsScheme, parameters.Host, parameters.Port);
-            uriBuilder.Query = queryCollection.ToString();
-
-            WebSocket socket = new WebSocket(uriBuilder.ToString(), "", WebSocketVersion.Rfc6455);
+            setQuery( uriBuilder, queryCollection );
+            WebSocket socket = new WebSocket( uriBuilder.ToString(), "", WebSocketVersion.Rfc6455 );
             return socket;
         }
 
