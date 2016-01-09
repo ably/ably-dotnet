@@ -29,7 +29,7 @@ namespace Ably.Platform
         {
             get
             {
-                return s_platform.crypto;
+                return s_platform.getCrypto();
             }
         }
 
@@ -37,7 +37,7 @@ namespace Ably.Platform
         {
             get
             {
-                return s_platform.webSockets;
+                return s_platform.getWebSocketsFactory();
             }
         }
     }
