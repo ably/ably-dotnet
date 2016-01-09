@@ -60,7 +60,8 @@ namespace Ably.ConsoleTest
 
         static void Main( string[] args )
         {
-            Assembly ass = typeof(LoggerTests).Assembly;
+            // Assembly ass = typeof(LoggerTests).Assembly;
+            Assembly ass = typeof(Ably.Tests.AblyResponseTests).Assembly;
             // Run all of them, with brief output
             RunTests( ass, false, false, false );
 
