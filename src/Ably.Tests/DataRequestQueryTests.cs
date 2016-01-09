@@ -1,13 +1,14 @@
 ﻿using System.Collections.Specialized;
+using System.Net;
 using Xunit;
 
 namespace Ably.Tests
 {
     public class DataRequestQueryTests
     {
-        public static NameValueCollection GetSampleHistoryRequestHeaders()
+        public static WebHeaderCollection GetSampleHistoryRequestHeaders()
         {
-            var headers = new NameValueCollection();
+            var headers = new WebHeaderCollection();
 
             headers.Add("Link", string.Format("<./history{0}>; rel=\"first\"", FirstQueryString));
             headers.Add("Link", string.Format("<./history{0}>; rel=\"next\"", NextQueryString));
@@ -15,15 +16,15 @@ namespace Ably.Tests
             return headers;
         }
 
-        public static NameValueCollection GetSampleStatsRequestHeaders()
+        public static WebHeaderCollection GetSampleStatsRequestHeaders()
         {
-            var headers = new NameValueCollection();
+            var headers = new WebHeaderCollection();
 
             headers.Add("Link", string.Format("<./stats{0}>; rel=\"first\"", FirstQueryString));
             headers.Add("Link", string.Format("<./stats{0}>; rel=\"next\"", NextQueryString));
             return headers;
         }
-        
+
         public const string FirstQueryString = "?start=1380794880000&end=1380794881058&limit=100&by=minute&direction=forwards&format=json&first_start=1380794880000";
         public const string CurrentQueryString = "?start=1380794880000&end=1380794881058&limit=100&by=minute&direction=forwards&format=json&first_start=1380794880000";
         public const string NextQueryString = "?start=1380794881111&end=1380794881058&limit=100&by=minute&direction=forwards&format=json&first_start=1380794880000";
@@ -32,7 +33,7 @@ namespace Ably.Tests
         public void GetLinkQuery_WithHeadersAndAskingForNextLink_ReturnsCorrectRequestQuery()
         {
             //Arrange
-            
+
             var nextDataRequest = DataRequestQuery.Parse(NextQueryString);
 
             //Act
