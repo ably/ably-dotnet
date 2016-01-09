@@ -83,7 +83,16 @@ namespace Ably
         private AblyResponse ExecuteInternal(AblyRequest request)
         {
             Func<Task<AblyResponse>> fn = () =>execImpl( request );
-            return Task.Run( fn ).Result;
+            try
+            {
+                return Task.Run( fn ).Result;
+            }
+            catch( AggregateException aex )
+            {
+                Exception ex = aex.Flatten().InnerExceptions.First();
+                throw ex;
+            }
+
             /* var webRequest = HttpWebRequest.Create(GetRequestUrl(request)) as HttpWebRequest;
             webRequest.Timeout = Config.ConnectTimeout;
             HttpWebResponse response = null;
