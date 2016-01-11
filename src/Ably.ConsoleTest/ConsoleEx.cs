@@ -32,6 +32,19 @@ namespace Ably.ConsoleTest
             }
         }
 
+        public static void write( ConsoleColor cc, string message )
+        {
+            if( silent )
+                return;
+            lock ( syncRoot )
+            {
+                ConsoleColor oc = Console.ForegroundColor;
+                Console.ForegroundColor = cc;
+                Console.Write( message );
+                Console.ForegroundColor = oc;
+            }
+        }
+
         public static bool silent = false;
     }
 }

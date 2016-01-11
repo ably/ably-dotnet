@@ -17,6 +17,7 @@ namespace Ably.ConsoleTest
             readonly ManualResetEvent completed = new ManualResetEvent( false );
 
             public bool stopOnErrors = false;
+            public bool verbose = true;
             public string strTest = null;
 
             public Runner( AssemblyRunner ar )
@@ -43,6 +44,9 @@ namespace Ably.ConsoleTest
             // Run complete
             void ExecutionComplete( ExecutionCompleteInfo eci )
             {
+                if( !verbose )
+                    Console.WriteLine();
+
                 int nTotal = eci.TotalTests - eci.TestsSkipped;
 
                 ConsoleColor cc = ( 0 == eci.TestsFailed ) ? ConsoleColor.Green : ConsoleColor.Red;
@@ -54,12 +58,18 @@ namespace Ably.ConsoleTest
             // Individual tests
             void TestStarting( TestStartingInfo tsi )
             {
+                if( !verbose )
+                    return;
                 ConsoleEx.writeLine( ConsoleColor.DarkGreen, "{0} - starting..", tsi.TestDisplayName );
             }
 
             void TestFailed( TestFailedInfo tfi )
             {
-                ConsoleEx.writeLine( ConsoleColor.Red, "{0} - failed :-(", tfi.TestDisplayName );
+                if( verbose )
+                    ConsoleEx.writeLine( ConsoleColor.Red, "{0} - failed :-(", tfi.TestDisplayName );
+                else
+                    ConsoleEx.write( ConsoleColor.Red, "F" );
+
                 if( stopOnErrors )
                 {
                     ConsoleEx.silent = true;
@@ -71,7 +81,10 @@ namespace Ably.ConsoleTest
 
             void TestPassed( TestPassedInfo tpi )
             {
-                ConsoleEx.writeLine( ConsoleColor.Green, "{0} - passed", tpi.TestDisplayName );
+                if( verbose )
+                    ConsoleEx.writeLine( ConsoleColor.Green, "{0} - passed", tpi.TestDisplayName );
+                else
+                    ConsoleEx.write( ConsoleColor.Green, "." );
             }
 
             void TestFinished( TestFinishedInfo tfi )
@@ -94,9 +107,10 @@ namespace Ably.ConsoleTest
                 ConsoleEx.writeLine( ConsoleColor.Yellow, emi.ExceptionMessage );
             }
 
-
             void TestOutput( TestOutputInfo toi )
             {
+                if( !verbose )
+                    return;
                 ConsoleEx.writeLine( ConsoleColor.DarkGray, toi.Output );
             }
 
@@ -134,6 +148,7 @@ namespace Ably.ConsoleTest
 
             r.strTest = single;
             r.stopOnErrors = stopOnErrors;
+            r.verbose = logToConsole;
 
             r.Run();
 
