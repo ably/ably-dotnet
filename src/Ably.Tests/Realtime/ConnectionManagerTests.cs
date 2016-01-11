@@ -8,6 +8,7 @@ using System.Linq;
 using Xunit;
 using Xunit.Extensions;
 using Ably.Types;
+using System.Net;
 
 namespace Ably.Tests
 {
@@ -424,16 +425,13 @@ namespace Ably.Tests
         [Fact]
         public void StoreTransportParams_Key()
         {
-            // Arrange
             string target = "123.456:789";
-            TransportParams parameters = new TransportParams(new AblyRealtimeOptions(target));
+            TransportParams parameters = new TransportParams( new AblyRealtimeOptions( target ) );
             var table = new System.Net.WebHeaderCollection();
 
-            // Act
-            parameters.StoreParams(table);
+            parameters.StoreParams( table );
 
-            // Assert
-            Assert.Equal<string>(target.Replace(":", "%3a"), table["key"]);
+            Assert.Equal<string>( target, WebUtility.UrlDecode( table[ "key" ] ) );
         }
 
         [Fact]
