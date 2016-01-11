@@ -26,7 +26,7 @@ namespace Ably.ConsoleTest
             XUnit.Run( x, null, true );
 
             // Run the single test
-            // XUnit.Run( x, "MsgPackMessageSerializerTests.DeserializesMessageCorrectly_Messages", true );
+            // XUnit.Run( x, "RestTests.Ctor_WithNoParametersAndAblyConnectionString_RetrievesApiKeyFromConnectionString", true );
         }
     }
 }
