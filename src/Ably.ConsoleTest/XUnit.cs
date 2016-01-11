@@ -3,24 +3,32 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 using Xunit;
+using Xunit.Abstractions;
 using Xunit.Runners;
 
 namespace Ably.ConsoleTest
 {
+    /// <summary>A static class that runs XUnit tests from the specified assembly, and outputs result to console.</summary>
     static class XUnit
     {
-        class Runner: IDisposable
+        class Runner : IDisposable
         {
             readonly AssemblyRunner impl;
             readonly ManualResetEvent completed = new ManualResetEvent( false );
 
             public bool stopOnErrors = false;
+            public string strTest = null;
 
             public Runner( AssemblyRunner ar )
             {
                 impl = ar;
+
+                // Perfect example why you should never use delegates for more then 2-3 events, if you expect your user will need to handle many of them.
+                // An interface or abstract class would be more appropiriate here.
+
                 ar.OnExecutionComplete = this.ExecutionComplete;
 
+                ar.OnTestStarting = this.TestStarting;
                 ar.OnTestFinished = this.TestFinished;
                 ar.OnTestFailed = this.TestFailed;
                 ar.OnTestPassed = this.TestPassed;
@@ -28,6 +36,8 @@ namespace Ably.ConsoleTest
                 ar.OnErrorMessage = this.OnErrorMessage;
                 ar.OnTestOutput = this.TestOutput;
                 ar.OnDiagnosticMessage = this.DiagnosticMessage;
+
+                ar.TestCaseFilter = this.TestCaseFilter;
             }
 
             // Run complete
@@ -36,15 +46,20 @@ namespace Ably.ConsoleTest
                 int nTotal = eci.TotalTests - eci.TestsSkipped;
 
                 ConsoleColor cc = ( 0 == eci.TestsFailed ) ? ConsoleColor.Green : ConsoleColor.Red;
-                ConsoleEx.writeLine( cc, "OnExecutionComplete: {0} / {1} OK",
+                ConsoleEx.writeLine( cc, "==== Complete: {0} / {1} OK ====",
                     nTotal - eci.TestsFailed, nTotal );
                 completed.Set();
             }
 
-            // Test complete
+            // Individual tests
+            void TestStarting( TestStartingInfo tsi )
+            {
+                ConsoleEx.writeLine( ConsoleColor.DarkGreen, "{0} - starting..", tsi.TestDisplayName );
+            }
+
             void TestFailed( TestFailedInfo tfi )
             {
-                ConsoleEx.writeLine( ConsoleColor.Red, "{0} failed", tfi.TestDisplayName );
+                ConsoleEx.writeLine( ConsoleColor.Red, "{0} - failed :-(", tfi.TestDisplayName );
                 if( stopOnErrors )
                 {
                     completed.Set();
@@ -55,12 +70,20 @@ namespace Ably.ConsoleTest
 
             void TestPassed( TestPassedInfo tpi )
             {
-                ConsoleEx.writeLine( ConsoleColor.Green, "{0} passed", tpi.TestDisplayName );
+                ConsoleEx.writeLine( ConsoleColor.Green, "{0} - passed", tpi.TestDisplayName );
             }
 
             void TestFinished( TestFinishedInfo tfi )
             {
                 // ConsoleEx.writeLine( ConsoleColor.Gray, tfi.TestDisplayName );
+            }
+
+            // Filter
+            bool TestCaseFilter( ITestCase itc )
+            {
+                if( null == this.strTest )
+                    return true;
+                return itc.DisplayName.ToLowerInvariant().EndsWith( this.strTest.ToLowerInvariant() );
             }
 
             // Various messages
@@ -101,12 +124,14 @@ namespace Ably.ConsoleTest
             }
         }
 
-        public static void Run( Assembly ass, bool stopOnErrors, bool logToConsole = true )
+        public static void Run( Assembly ass, string single, bool stopOnErrors, bool logToConsole = true )
         {
-            Runner r = new Runner(AssemblyRunner.WithoutAppDomain( ass.Location ));
+            Runner r = new Runner( AssemblyRunner.WithoutAppDomain( ass.Location ) );
 
             if( logToConsole )
                 Logger.SetDestination( new MyLogger() );
+
+            r.strTest = single;
             r.stopOnErrors = stopOnErrors;
 
             r.Run();

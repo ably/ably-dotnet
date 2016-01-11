@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace Ably.ConsoleTest
 {
+    /// <summary>ILoggerSink implementation that outputs colored messages to console.</summary>
     class MyLogger : ILoggerSink
     {
         static readonly Dictionary<LogLevel, ConsoleColor> s_colors = new Dictionary<LogLevel, ConsoleColor>()
