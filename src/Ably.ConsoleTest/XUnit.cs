@@ -62,6 +62,7 @@ namespace Ably.ConsoleTest
                 ConsoleEx.writeLine( ConsoleColor.Red, "{0} - failed :-(", tfi.TestDisplayName );
                 if( stopOnErrors )
                 {
+                    ConsoleEx.silent = true;
                     completed.Set();
                     if( Debugger.IsAttached )
                         Debugger.Break();
