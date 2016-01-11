@@ -8,6 +8,8 @@ namespace Ably.ConsoleTest
 
         public static void writeLine( ConsoleColor cc, string message )
         {
+            if( silent )
+                return;
             lock ( syncRoot )
             {
                 ConsoleColor oc = Console.ForegroundColor;
@@ -19,6 +21,8 @@ namespace Ably.ConsoleTest
 
         public static void writeLine( ConsoleColor cc, string message, params object[] args )
         {
+            if( silent )
+                return;
             lock ( syncRoot )
             {
                 ConsoleColor oc = Console.ForegroundColor;
@@ -27,5 +31,7 @@ namespace Ably.ConsoleTest
                 Console.ForegroundColor = oc;
             }
         }
+
+        public static bool silent = false;
     }
 }
