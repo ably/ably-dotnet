@@ -26,7 +26,7 @@ namespace Ably.ConsoleTest
             XUnit.Run( x, null, true );
 
             // Run the single test
-            // XUnit.Run( x, "ConnectionManagerTests.StoreTransportParams_Key", true );
+            // XUnit.Run( x, "MsgPackMessageSerializerTests.DeserializesMessageCorrectly_Messages", true );
         }
     }
 }
