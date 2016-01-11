@@ -83,7 +83,7 @@ namespace Ably.Tests.MessageEncodes
                     encoder.Encode(new Message() { Data = "string" }, options);
                 });
 
-                error.Message.Should().Contain("Currently only the AES encryption algorith is supported");
+                error.Message.Should().Contain("Currently only the AES encryption algorithm is supported");
             }
         }
 

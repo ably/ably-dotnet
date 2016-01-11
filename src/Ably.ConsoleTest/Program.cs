@@ -9,6 +9,7 @@ namespace Ably.ConsoleTest
 
         static void Main( string[] args )
         {
+            // === NUnit ===
             // Assembly ass = typeof(LoggerTests).Assembly;
 
             // Run all of them, with brief output
@@ -20,13 +21,11 @@ namespace Ably.ConsoleTest
             // Run the single test
             // NUnit.Run( ass, true, true, true, "Ably.AcceptanceTests.RealtimeAcceptanceTests(MsgPack).TestCreateRealtimeClient_AutoConnect_False_ConnectsSuccessfuly" );
 
+            // === XUnit ===
             Assembly x = typeof( AuthOptionsMergeTests ).Assembly;
-
-            // Run all of them, with verbose output, and stop on errors
-            XUnit.Run( x, null, true );
-
-            // Run the single test
-            // XUnit.Run( x, "RestTests.Ctor_WithNoParametersAndAblyConnectionString_RetrievesApiKeyFromConnectionString", true );
+            string strTest = null;
+            // strTest = "CipherEncoderTests+WithInvalidChannelOptions.WithInvalidAlgorithm_Throws";
+            XUnit.Run( x, strTest, true );
         }
     }
 }
