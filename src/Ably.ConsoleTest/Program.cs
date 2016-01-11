@@ -21,7 +21,12 @@ namespace Ably.ConsoleTest
             // NUnit.Run( ass, true, true, true, "Ably.AcceptanceTests.RealtimeAcceptanceTests(MsgPack).TestCreateRealtimeClient_AutoConnect_False_ConnectsSuccessfuly" );
 
             Assembly x = typeof( AuthOptionsMergeTests ).Assembly;
-            XUnit.Run( x, true );
+
+            // Run all of them, with verbose output, and stop on errors
+            XUnit.Run( x, null, true );
+
+            // Run the single test
+            // XUnit.Run( x, "AuthCreateTokenRequestAcceptanceTests.WithQueryTimeQueriesForTimestamp", true );
         }
     }
 }
