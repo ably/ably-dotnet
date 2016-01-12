@@ -60,13 +60,13 @@ namespace Ably.Transport.States.Connection
 
         public override bool OnMessageReceived(ProtocolMessage message)
         {
-            switch (message.Action)
+            switch (message.action)
             {
                 case ProtocolMessage.MessageAction.Connected:
                     {
                         if (context.Transport.State == TransportState.Connected)
                         {
-                            ConnectionInfo info = new ConnectionInfo(message.ConnectionId, message.ConnectionSerial ?? -1, message.ConnectionKey);
+                            ConnectionInfo info = new ConnectionInfo(message.connectionId, message.connectionSerial ?? -1, message.connectionKey);
                             this.TransitionState(new ConnectionConnectedState(this.context, info));
                         }
                         return true;
@@ -76,13 +76,13 @@ namespace Ably.Transport.States.Connection
                         ConnectionState nextState;
                         if (this.ShouldSuspend())
                         {
-                            nextState = new ConnectionSuspendedState(this.context, message.Error);
+                            nextState = new ConnectionSuspendedState(this.context, message.error);
                         }
                         else
                         {
-                            nextState = new ConnectionDisconnectedState(this.context, message.Error)
+                            nextState = new ConnectionDisconnectedState(this.context, message.error)
                             {
-                                UseFallbackHost = ShouldUseFallbackHost(message.Error)
+                                UseFallbackHost = ShouldUseFallbackHost(message.error)
                             };
                         }
                         this.TransitionState(nextState);
@@ -90,12 +90,12 @@ namespace Ably.Transport.States.Connection
                     }
                 case ProtocolMessage.MessageAction.Error:
                     {
-                        if (ShouldUseFallbackHost(message.Error))
+                        if (ShouldUseFallbackHost(message.error))
                         {
                             this.context.Connection.Key = null;
                             this.TransitionState(new ConnectionDisconnectedState(this.context) { UseFallbackHost = true });
                         }
-                        this.TransitionState(new ConnectionFailedState(this.context, message.Error));
+                        this.TransitionState(new ConnectionFailedState(this.context, message.error));
                         return true;
                     }
             }
@@ -146,7 +146,7 @@ namespace Ably.Transport.States.Connection
 
         private static bool ShouldUseFallbackHost(ErrorInfo error)
         {
-            return error != null && error.StatusCode != null && FallbackReasons.Contains(error.StatusCode.Value) && AblyRealtime.CanConnectToAbly();
+            return error != null && error.statusCode != null && FallbackReasons.Contains(error.statusCode.Value) && AblyRealtime.CanConnectToAbly();
         }
 
         private void TransitionState(ConnectionState newState)

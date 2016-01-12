@@ -20,25 +20,25 @@ namespace Ably.Types
             {
                 int result;
                 unpacker.ReadInt32(out result);
-                message.Action = (ProtocolMessage.MessageAction)result;
+                message.action = (ProtocolMessage.MessageAction)result;
             });
             unpackActions.Add(ProtocolMessage.FlagsPropertyName, (unpacker, message) =>
             {
                 int result;
                 unpacker.ReadInt32(out result);
-                message.Flags = (ProtocolMessage.MessageFlag)result;
+                message.flags = (ProtocolMessage.MessageFlag)result;
             });
             unpackActions.Add(ProtocolMessage.CountPropertyName, (unpacker, message) =>
             {
                 int result;
                 unpacker.ReadInt32(out result);
-                message.Count = result;
+                message.count = result;
             });
             unpackActions.Add(ProtocolMessage.MsgSerialPropertyName, (unpacker, message) =>
             {
                 long result;
                 unpacker.ReadInt64(out result);
-                message.MsgSerial = result;
+                message.msgSerial = result;
             });
             unpackActions.Add(ProtocolMessage.ErrorPropertyName, (unpacker, message) =>
             {
@@ -63,68 +63,68 @@ namespace Ably.Types
                             break;
                     }
                 }
-                message.Error = new ErrorInfo(reason, code, statusCode == 0 ? null : (System.Net.HttpStatusCode?)statusCode);
+                message.error = new ErrorInfo(reason, code, statusCode == 0 ? null : (System.Net.HttpStatusCode?)statusCode);
             });
             unpackActions.Add(ProtocolMessage.IdPropertyName, (unpacker, message) =>
             {
                 string result;
                 unpacker.ReadString(out result);
-                message.Id = result;
+                message.id = result;
             });
             unpackActions.Add(ProtocolMessage.ChannelPropertyName, (unpacker, message) =>
             {
                 string result;
                 unpacker.ReadString(out result);
-                message.Channel = result;
+                message.channel = result;
             });
             unpackActions.Add(ProtocolMessage.ChannelSerialPropertyName, (unpacker, message) =>
             {
                 string result;
                 unpacker.ReadString(out result);
-                message.ChannelSerial = result;
+                message.channelSerial = result;
             });
             unpackActions.Add(ProtocolMessage.ConnectionIdPropertyName, (unpacker, message) =>
             {
                 string result;
                 unpacker.ReadString(out result);
-                message.ConnectionId = result;
+                message.connectionId = result;
             });
             unpackActions.Add(ProtocolMessage.ConnectionKeyPropertyName, (unpacker, message) =>
             {
                 string result;
                 unpacker.ReadString(out result);
-                message.ConnectionKey = result;
+                message.connectionKey = result;
             });
             unpackActions.Add(ProtocolMessage.ConnectionSerialPropertyName, (unpacker, message) =>
             {
                 long result;
                 unpacker.ReadInt64(out result);
-                message.ConnectionSerial = result;
+                message.connectionSerial = result;
             });
             unpackActions.Add(ProtocolMessage.TimestampPropertyName, (unpacker, message) =>
             {
                 long result;
                 unpacker.ReadInt64(out result);
-                message.Timestamp = result.FromUnixTimeInMilliseconds();
+                message.timestamp = result.FromUnixTimeInMilliseconds();
             });
             unpackActions.Add(ProtocolMessage.MessagesPropertyName, (unpacker, message) =>
             {
                 long arrayLength;
                 unpacker.ReadArrayLength(out arrayLength);
-                message.Messages = new Message[arrayLength];
+                message.messages = new Message[arrayLength];
                 for (int i = 0; i < arrayLength; i++)
                 {
-                    message.Messages[i] = DeserializeMessage(unpacker);
+                    message.messages[i] = DeserializeMessage(unpacker);
                 }
             });
             unpackActions.Add(ProtocolMessage.PresencePropertyName, (unpacker, message) =>
             {
                 long arrayLength;
                 unpacker.ReadArrayLength(out arrayLength);
-                message.Presence = new PresenceMessage[arrayLength];
+                message.presence = new PresenceMessage[arrayLength];
                 for (int i = 0; i < arrayLength; i++)
                 {
-                    message.Presence[i] = DeserializePresenceMessage(unpacker);
+                    message.presence[i] = DeserializePresenceMessage(unpacker);
                 }
             });
 
@@ -198,20 +198,20 @@ namespace Ably.Types
                     packer.PackMapHeader(fieldCount);
 
                     packer.PackString(ProtocolMessage.ActionPropertyName);
-                    packer.Pack<int>((int)message.Action);
+                    packer.Pack<int>((int)message.action);
 
-                    if (!string.IsNullOrEmpty(message.Channel))
+                    if (!string.IsNullOrEmpty(message.channel))
                     {
                         packer.PackString(ProtocolMessage.ChannelPropertyName);
-                        packer.PackString(message.Channel);
+                        packer.PackString(message.channel);
                     }
 
                     packer.PackString(ProtocolMessage.MsgSerialPropertyName);
-                    packer.Pack<long>(message.MsgSerial);
+                    packer.Pack<long>(message.msgSerial);
 
-                    if (message.Messages != null)
+                    if (message.messages != null)
                     {
-                        var validMessages = message.Messages.Where(c => GetFieldCount(c) > 0);
+                        var validMessages = message.messages.Where(c => GetFieldCount(c) > 0);
                         if (validMessages.Any())
                         {
                             packer.PackString(ProtocolMessage.MessagesPropertyName);
@@ -223,9 +223,9 @@ namespace Ably.Types
                         }
                     }
 
-                    if (message.Presence != null)
+                    if (message.presence != null)
                     {
-                        var validMessages = message.Presence.Where(c => GetFieldCount(c) > 0);
+                        var validMessages = message.presence.Where(c => GetFieldCount(c) > 0);
                         if (validMessages.Any())
                         {
                             packer.PackString(ProtocolMessage.PresencePropertyName);
@@ -278,9 +278,9 @@ namespace Ably.Types
         private static int GetFieldCount(ProtocolMessage message)
         {
             int fieldCount = 2; //action & msgSerial
-            if (!string.IsNullOrEmpty(message.Channel)) fieldCount++;
-            if (message.Messages != null && message.Messages.Any(c => GetFieldCount(c) > 0)) fieldCount++;
-            if (message.Presence != null) fieldCount++;
+            if (!string.IsNullOrEmpty(message.channel)) fieldCount++;
+            if (message.messages != null && message.messages.Any(c => GetFieldCount(c) > 0)) fieldCount++;
+            if (message.presence != null) fieldCount++;
             return fieldCount;
         }
 

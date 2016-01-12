@@ -597,7 +597,7 @@ namespace Ably.Tests
             target.Ping(null);
 
             // Assert
-            state.Verify(c => c.SendMessage(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Heartbeat)), Times.Once());
+            state.Verify(c => c.SendMessage(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Heartbeat)), Times.Once());
         }
 
         [Fact]
@@ -638,7 +638,7 @@ namespace Ably.Tests
             transport.SetupProperty(c => c.Listener);
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
             ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
-            ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message) { ConnectionSerial = 123456 };
+            ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message) { connectionSerial = 123456 };
 
             // Act
             transport.Object.Listener.OnTransportMessageReceived(targetMessage);
@@ -727,7 +727,7 @@ namespace Ably.Tests
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, null, null);
 
             // Assert
-            manager.Verify(c => c.Send(It.Is<ProtocolMessage>(ss => ss.Action == ProtocolMessage.MessageAction.Heartbeat), null), Times.Once());
+            manager.Verify(c => c.Send(It.Is<ProtocolMessage>(ss => ss.action == ProtocolMessage.MessageAction.Heartbeat), null), Times.Once());
         }
 
         [Fact]
@@ -773,7 +773,7 @@ namespace Ably.Tests
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
 
             // Assert
-            manager.Verify(c => c.Send(It.Is<ProtocolMessage>(ss => ss.Action == ProtocolMessage.MessageAction.Heartbeat), null), Times.Once());
+            manager.Verify(c => c.Send(It.Is<ProtocolMessage>(ss => ss.action == ProtocolMessage.MessageAction.Heartbeat), null), Times.Once());
             Assert.Empty(res);
         }
 

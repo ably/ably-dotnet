@@ -11,17 +11,17 @@ namespace Ably.Types
         public object SerializeProtocolMessage(ProtocolMessage message)
         {
             JObject json = new JObject();
-            json.Add(ProtocolMessage.ActionPropertyName, new JValue(message.Action));
-            if (!string.IsNullOrEmpty(message.Channel))
+            json.Add(ProtocolMessage.ActionPropertyName, new JValue(message.action));
+            if (!string.IsNullOrEmpty(message.channel))
             {
-                json.Add(ProtocolMessage.ChannelPropertyName, new JValue(message.Channel));
+                json.Add(ProtocolMessage.ChannelPropertyName, new JValue(message.channel));
             }
-            json.Add(ProtocolMessage.MsgSerialPropertyName, new JValue(message.MsgSerial));
-            if (message.Messages != null)
+            json.Add(ProtocolMessage.MsgSerialPropertyName, new JValue(message.msgSerial));
+            if (message.messages != null)
             {
                 JArray messagesArr = new JArray();
 
-                foreach (Message m in message.Messages)
+                foreach (Message m in message.messages)
                 {
                     JObject mJson = this.SerializeMessage(m);
                     if (mJson.HasValues)
@@ -35,11 +35,11 @@ namespace Ably.Types
                     json.Add(ProtocolMessage.MessagesPropertyName, messagesArr);
                 }
             }
-            if (message.Presence != null)
+            if (message.presence != null)
             {
                 JArray messagesArr = new JArray();
 
-                foreach (PresenceMessage m in message.Presence)
+                foreach (PresenceMessage m in message.presence)
                 {
                     JObject mJson = this.SerializePresenceMessage(m);
                     if (mJson.HasValues)
@@ -65,19 +65,19 @@ namespace Ably.Types
             JToken token;
             if (json.TryGetValue(ProtocolMessage.ActionPropertyName, out token))
             {
-                message.Action = (ProtocolMessage.MessageAction)token.Value<int>();
+                message.action = (ProtocolMessage.MessageAction)token.Value<int>();
             }
             if (json.TryGetValue(ProtocolMessage.FlagsPropertyName, out token))
             {
-                message.Flags = (ProtocolMessage.MessageFlag)token.Value<int>();
+                message.flags = (ProtocolMessage.MessageFlag)token.Value<int>();
             }
             if (json.TryGetValue(ProtocolMessage.CountPropertyName, out token))
             {
-                message.Count = token.Value<int>();
+                message.count = token.Value<int>();
             }
             if (json.TryGetValue(ProtocolMessage.MsgSerialPropertyName, out token))
             {
-                message.MsgSerial = token.Value<long>();
+                message.msgSerial = token.Value<long>();
             }
             if (json.TryGetValue(ProtocolMessage.ErrorPropertyName, out token))
             {
@@ -85,45 +85,45 @@ namespace Ably.Types
                 string reason = errorJObject.OptValue<string>(ErrorInfo.ReasonPropertyName);
                 int statusCode = errorJObject.OptValue<int>(ErrorInfo.StatusCodePropertyName);
                 int code = errorJObject.OptValue<int>(ErrorInfo.CodePropertyName);
-                message.Error = new ErrorInfo(reason, code, statusCode == 0 ? null : (System.Net.HttpStatusCode?)statusCode);
+                message.error = new ErrorInfo(reason, code, statusCode == 0 ? null : (System.Net.HttpStatusCode?)statusCode);
             }
             if (json.TryGetValue(ProtocolMessage.IdPropertyName, out token))
             {
-                message.Id = token.Value<string>();
+                message.id = token.Value<string>();
             }
             if (json.TryGetValue(ProtocolMessage.ChannelPropertyName, out token))
             {
-                message.Channel = token.Value<string>();
+                message.channel = token.Value<string>();
             }
             if (json.TryGetValue(ProtocolMessage.ChannelSerialPropertyName, out token))
             {
-                message.ChannelSerial = token.Value<string>();
+                message.channelSerial = token.Value<string>();
             }
             if (json.TryGetValue(ProtocolMessage.ConnectionIdPropertyName, out token))
             {
-                message.ConnectionId = token.Value<string>();
+                message.connectionId = token.Value<string>();
             }
             if (json.TryGetValue(ProtocolMessage.ConnectionKeyPropertyName, out token))
             {
-                message.ConnectionKey = token.Value<string>();
+                message.connectionKey = token.Value<string>();
             }
             if (json.TryGetValue(ProtocolMessage.ConnectionSerialPropertyName, out token))
             {
-                message.ConnectionSerial = token.Value<long>();
+                message.connectionSerial = token.Value<long>();
             }
             if (json.TryGetValue(ProtocolMessage.TimestampPropertyName, out token))
             {
-                message.Timestamp = token.Value<long>().FromUnixTimeInMilliseconds();
+                message.timestamp = token.Value<long>().FromUnixTimeInMilliseconds();
             }
             if (json.TryGetValue(ProtocolMessage.MessagesPropertyName, out token))
             {
                 JArray messagesArray = (JArray)token;
-                message.Messages = messagesArray.Select(c => DeserializeMessage(c as JObject)).ToArray();
+                message.messages = messagesArray.Select(c => DeserializeMessage(c as JObject)).ToArray();
             }
             if (json.TryGetValue(ProtocolMessage.PresencePropertyName, out token))
             {
                 JArray messagesArray = (JArray)token;
-                message.Presence = messagesArray.Select(c => DeserializePresenceMessage(c as JObject)).ToArray();
+                message.presence = messagesArray.Select(c => DeserializePresenceMessage(c as JObject)).ToArray();
             }
 
             return message;

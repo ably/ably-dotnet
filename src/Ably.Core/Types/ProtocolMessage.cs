@@ -54,41 +54,40 @@ namespace Ably.Types
 
         internal ProtocolMessage(MessageAction action)
         {
-            this.Action = action;
+            this.action = action;
         }
 
         internal ProtocolMessage(MessageAction action, string channel)
         {
-            this.Action = action;
-            this.Channel = channel;
+            this.action = action;
+            this.channel = channel;
         }
 
-        public MessageAction Action { get; set; }
-        public MessageFlag Flags { get; set; }
-        public int Count { get; set; }
-        public ErrorInfo Error { get; set; }
-        public string Id { get; set; }
-        public string Channel { get; set; }
-        public string ChannelSerial { get; set; }
-        public string ConnectionId { get; set; }
-        public string ConnectionKey { get; set; }
-        public long? ConnectionSerial { get; set; }
-        public long MsgSerial { get; set; }
-        public DateTimeOffset? Timestamp { get; set; }
-        public Message[] Messages { get; set; }
-        public PresenceMessage[] Presence { get; set; }
-
+        public MessageAction action { get; set; }
+        public MessageFlag flags { get; set; }
+        public int count { get; set; }
+        public ErrorInfo error { get; set; }
+        public string id { get; set; }
+        public string channel { get; set; }
+        public string channelSerial { get; set; }
+        public string connectionId { get; set; }
+        public string connectionKey { get; set; }
+        public long? connectionSerial { get; set; }
+        public long msgSerial { get; set; }
+        public DateTimeOffset? timestamp { get; set; }
+        public Message[] messages { get; set; }
+        public PresenceMessage[] presence { get; set; }
         public ConnectionDetailsMessage connectionDetails { get; set; }
 
         public override string ToString()
         {
             StringBuilder text = new StringBuilder();
             text.Append("{ ")
-                .AppendFormat("action={0}", this.Action);
-            if (this.Messages != null && this.Messages.Length > 0)
+                .AppendFormat("action={0}", this.action);
+            if (this.messages != null && this.messages.Length > 0)
             {
                 text.Append(", mesasages=[ ");
-                foreach (Message message in this.Messages)
+                foreach (Message message in this.messages)
                 {
                     text.AppendFormat("{{ name=\"{0}\"", message.Name);
                     if (message.Timestamp.HasValue && message.Timestamp.Value.Ticks > 0)

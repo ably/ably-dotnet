@@ -42,10 +42,10 @@ namespace Ably.Tests
             // Assert
             Assert.Equal<int>(1, messages.Count);
             ProtocolMessage msg = messages.Pop();
-            Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.Action);
-            Assert.Equal<int>(1, msg.Presence.Length);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Enter, msg.Presence[0].Action);
-            Assert.Equal<string>("testClient", msg.Presence[0].ClientId);
+            Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.action);
+            Assert.Equal<int>(1, msg.presence.Length);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Enter, msg.presence[0].Action);
+            Assert.Equal<string>("testClient", msg.presence[0].ClientId);
         }
 
         [Fact]
@@ -65,10 +65,10 @@ namespace Ably.Tests
             // Assert
             Assert.Equal<int>(1, messages.Count);
             ProtocolMessage msg = messages.Pop();
-            Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.Action);
-            Assert.Equal<int>(1, msg.Presence.Length);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Enter, msg.Presence[0].Action);
-            Assert.Equal<string>("newClient", msg.Presence[0].ClientId);
+            Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.action);
+            Assert.Equal<int>(1, msg.presence.Length);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Enter, msg.presence[0].Action);
+            Assert.Equal<string>("newClient", msg.presence[0].ClientId);
         }
 
         [Fact]
@@ -88,10 +88,10 @@ namespace Ably.Tests
             // Assert
             Assert.Equal<int>(1, messages.Count);
             ProtocolMessage msg = messages.Pop();
-            Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.Action);
-            Assert.Equal<int>(1, msg.Presence.Length);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Leave, msg.Presence[0].Action);
-            Assert.Equal<string>("testClient", msg.Presence[0].ClientId);
+            Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.action);
+            Assert.Equal<int>(1, msg.presence.Length);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Leave, msg.presence[0].Action);
+            Assert.Equal<string>("testClient", msg.presence[0].ClientId);
         }
 
         [Fact]
@@ -111,10 +111,10 @@ namespace Ably.Tests
             // Assert
             Assert.Equal<int>(1, messages.Count);
             ProtocolMessage msg = messages.Pop();
-            Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.Action);
-            Assert.Equal<int>(1, msg.Presence.Length);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Leave, msg.Presence[0].Action);
-            Assert.Equal<string>("newClient", msg.Presence[0].ClientId);
+            Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.action);
+            Assert.Equal<int>(1, msg.presence.Length);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Leave, msg.presence[0].Action);
+            Assert.Equal<string>("newClient", msg.presence[0].ClientId);
         }
 
         [Fact]
@@ -134,10 +134,10 @@ namespace Ably.Tests
             // Assert
             Assert.Equal<int>(1, messages.Count);
             ProtocolMessage msg = messages.Pop();
-            Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.Action);
-            Assert.Equal<int>(1, msg.Presence.Length);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Update, msg.Presence[0].Action);
-            Assert.Equal<string>("testClient", msg.Presence[0].ClientId);
+            Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.action);
+            Assert.Equal<int>(1, msg.presence.Length);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Update, msg.presence[0].Action);
+            Assert.Equal<string>("testClient", msg.presence[0].ClientId);
         }
 
         [Fact]
@@ -157,10 +157,10 @@ namespace Ably.Tests
             // Assert
             Assert.Equal<int>(1, messages.Count);
             ProtocolMessage msg = messages.Pop();
-            Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.Action);
-            Assert.Equal<int>(1, msg.Presence.Length);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Update, msg.Presence[0].Action);
-            Assert.Equal<string>("newClient", msg.Presence[0].ClientId);
+            Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.action);
+            Assert.Equal<int>(1, msg.presence.Length);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Update, msg.presence[0].Action);
+            Assert.Equal<string>("newClient", msg.presence[0].ClientId);
         }
 
         [Fact]
@@ -193,7 +193,7 @@ namespace Ably.Tests
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
             {
-                Presence = new PresenceMessage[] { new PresenceMessage(action, "client1") }
+                presence = new PresenceMessage[] { new PresenceMessage(action, "client1") }
             });
 
             // Assert
@@ -213,7 +213,7 @@ namespace Ably.Tests
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
             {
-                Presence = new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Enter, "client1") }
+                presence = new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Enter, "client1") }
             });
 
             // Assert
@@ -235,7 +235,7 @@ namespace Ably.Tests
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
             {
-                Presence = new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Present, "client1") }
+                presence = new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Present, "client1") }
             });
 
             // Assert
@@ -257,7 +257,7 @@ namespace Ably.Tests
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
             {
-                Presence = new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Update, "client1") }
+                presence = new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Update, "client1") }
             });
 
             // Assert
@@ -279,7 +279,7 @@ namespace Ably.Tests
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
             {
-                Presence = new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Leave, "client1") }
+                presence = new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Leave, "client1") }
             });
 
             // Assert
@@ -299,11 +299,11 @@ namespace Ably.Tests
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
             {
-                Presence = new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Enter, "client1") }
+                presence = new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Enter, "client1") }
             });
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
             {
-                Presence = new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Leave, "client1") }
+                presence = new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Leave, "client1") }
             });
 
             // Assert
@@ -323,7 +323,7 @@ namespace Ably.Tests
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
             {
-                Presence = new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Absent, "client1") }
+                presence = new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Absent, "client1") }
             });
 
             // Assert
@@ -343,11 +343,11 @@ namespace Ably.Tests
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
             {
-                Presence = new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Enter, "client1") }
+                presence = new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Enter, "client1") }
             });
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
             {
-                Presence = new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Absent, "client1") }
+                presence = new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Absent, "client1") }
             });
 
             // Assert
@@ -368,7 +368,7 @@ namespace Ably.Tests
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
             {
-                Presence = new PresenceMessage[]
+                presence = new PresenceMessage[]
                 {
                     new PresenceMessage(PresenceMessage.ActionType.Enter, "client1"),
                     new PresenceMessage(PresenceMessage.ActionType.Enter, "client1"),
@@ -394,7 +394,7 @@ namespace Ably.Tests
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
             {
-                Presence = new PresenceMessage[]
+                presence = new PresenceMessage[]
                 {
                     new PresenceMessage(PresenceMessage.ActionType.Present, "client1"),
                     new PresenceMessage(PresenceMessage.ActionType.Present, "client1"),
@@ -420,7 +420,7 @@ namespace Ably.Tests
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
             {
-                Presence = new PresenceMessage[]
+                presence = new PresenceMessage[]
                 {
                     new PresenceMessage(PresenceMessage.ActionType.Update, "client1"),
                     new PresenceMessage(PresenceMessage.ActionType.Update, "client1"),
@@ -446,7 +446,7 @@ namespace Ably.Tests
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
             {
-                Presence = new PresenceMessage[]
+                presence = new PresenceMessage[]
                 {
                     new PresenceMessage(PresenceMessage.ActionType.Leave, "client1"),
                     new PresenceMessage(PresenceMessage.ActionType.Leave, "client1")
@@ -470,7 +470,7 @@ namespace Ably.Tests
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
             {
-                Presence = new PresenceMessage[]
+                presence = new PresenceMessage[]
                 {
                     new PresenceMessage(PresenceMessage.ActionType.Absent, "client1"),
                     new PresenceMessage(PresenceMessage.ActionType.Absent, "client1")
@@ -494,7 +494,7 @@ namespace Ably.Tests
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Sync)
             {
-                Presence = new PresenceMessage[]
+                presence = new PresenceMessage[]
                 {
                     new PresenceMessage(PresenceMessage.ActionType.Present, "client1"),
                     new PresenceMessage(PresenceMessage.ActionType.Present, "client2")
@@ -522,7 +522,7 @@ namespace Ably.Tests
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Sync)
             {
-                Presence = new PresenceMessage[]
+                presence = new PresenceMessage[]
                 {
                     new PresenceMessage(PresenceMessage.ActionType.Present, "client1"),
                     new PresenceMessage(PresenceMessage.ActionType.Present, "client1")
@@ -548,7 +548,7 @@ namespace Ably.Tests
             // Act
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Sync)
             {
-                Presence = new PresenceMessage[]
+                presence = new PresenceMessage[]
                 {
                     new PresenceMessage(PresenceMessage.ActionType.Present, "client1") { ConnectionId = "conn123" },
                     new PresenceMessage(PresenceMessage.ActionType.Present, "client1") { ConnectionId = "connAnn332" }
