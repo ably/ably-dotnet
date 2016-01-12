@@ -59,7 +59,8 @@ namespace Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                (payload.data as string).FromBase64().Should().BeEquivalentTo(bytes);
+                byte[] data = (byte[])payload.data;
+                data.ShouldBeEquivalentTo( bytes );
                 payload.encoding.Should().Be("base64");
             }
 
