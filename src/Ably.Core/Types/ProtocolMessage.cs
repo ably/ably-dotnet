@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
+using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Ably.Types
@@ -64,8 +67,18 @@ namespace Ably.Types
         }
 
         public MessageAction action { get; set; }
+
+        // http://stackoverflow.com/a/24224465/126995
+        [JsonIgnore]
         public MessageFlag flags { get; set; }
+        [JsonProperty( "flags" )]
+        public MessageFlag flag_setOnly { set { this.flags = value; } }
+
+        [JsonIgnore]
         public int count { get; set; }
+        [JsonProperty( "count" )]
+        public int count_setOnly { set { this.count = value; } }
+
         public ErrorInfo error { get; set; }
         public string id { get; set; }
         public string channel { get; set; }
@@ -76,6 +89,21 @@ namespace Ably.Types
         public long msgSerial { get; set; }
         public DateTimeOffset? timestamp { get; set; }
         public Message[] messages { get; set; }
+
+        [OnSerializing]
+        internal void onSerializing( StreamingContext context )
+        {
+            if( "" == channel )
+                channel = null;
+
+            // Filter out empty messages
+            if( null == this.messages )
+                return;
+            this.messages = this.messages.Where( m => !m.isEmpty() ).ToArray();
+            if( this.messages.Length <= 0 )
+                this.messages = null;
+        }
+
         public PresenceMessage[] presence { get; set; }
         public ConnectionDetailsMessage connectionDetails { get; set; }
 
