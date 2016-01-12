@@ -132,21 +132,21 @@ namespace Ably.Types
         private JObject SerializeMessage(Message message)
         {
             JObject json = new JObject();
-            if (!string.IsNullOrEmpty(message.Name))
+            if (!string.IsNullOrEmpty(message.name))
             {
-                json.Add(Message.NamePropertyName, new JValue(message.Name));
+                json.Add(Message.NamePropertyName, new JValue(message.name));
             }
-            if (message.Data != null)
+            if (message.data != null)
             {
-                if (message.Data is byte[])
+                if (message.data is byte[])
                 {
-                    string encodedData = (message.Data as byte[]).ToBase64();
+                    string encodedData = (message.data as byte[]).ToBase64();
                     json.Add(Message.DataPropertyName, new JValue(encodedData));
                     json.Add(Message.EncodingPropertyName, new JValue("base64"));
                 }
                 else
                 {
-                    json.Add(Message.DataPropertyName, new JValue(message.Data));
+                    json.Add(Message.DataPropertyName, new JValue(message.data));
                 }
             }
             return json;
@@ -159,12 +159,12 @@ namespace Ably.Types
             JToken token;
             if (obj.TryGetValue(Message.NamePropertyName, out token))
             {
-                message.Name = token.Value<string>();
+                message.name = token.Value<string>();
             }
             if (obj.TryGetValue(Message.TimestampPropertyName, out token))
             {
                 long timestamp = token.Value<long>();
-                message.Timestamp = timestamp.FromUnixTimeInMilliseconds();
+                message.timestamp = timestamp.FromUnixTimeInMilliseconds();
             }
             if (obj.TryGetValue(Message.EncodingPropertyName, out token))
             {
@@ -172,7 +172,7 @@ namespace Ably.Types
             }
             if (obj.TryGetValue(Message.DataPropertyName, out token))
             {
-                message.Data = this.ParseToken(token, encoding);
+                message.data = this.ParseToken(token, encoding);
             }
 
             return message;
@@ -181,34 +181,34 @@ namespace Ably.Types
         private JObject SerializePresenceMessage(PresenceMessage message)
         {
             JObject json = new JObject();
-            json.Add(PresenceMessage.ActionPropertyName, new JValue(message.Action));
-            if (!string.IsNullOrEmpty(message.Id))
+            json.Add(PresenceMessage.ActionPropertyName, new JValue(message.action));
+            if (!string.IsNullOrEmpty(message.id))
             {
-                json.Add(Message.IdPropertyName, new JValue(message.Id));
+                json.Add(Message.IdPropertyName, new JValue(message.id));
             }
-            if (!string.IsNullOrEmpty(message.ClientId))
+            if (!string.IsNullOrEmpty(message.clientId))
             {
-                json.Add(Message.ClientIdPropertyName, new JValue(message.ClientId));
+                json.Add(Message.ClientIdPropertyName, new JValue(message.clientId));
             }
-            if (!string.IsNullOrEmpty(message.ConnectionId))
+            if (!string.IsNullOrEmpty(message.connectionId))
             {
-                json.Add(Message.ConnectionIdPropertyName, new JValue(message.ConnectionId));
+                json.Add(Message.ConnectionIdPropertyName, new JValue(message.connectionId));
             }
-            if (message.Timestamp.Ticks > 0)
+            if (message.timestamp.Ticks > 0)
             {
-                json.Add(Message.TimestampPropertyName, new JValue(message.Timestamp.ToUnixTimeInMilliseconds()));
+                json.Add(Message.TimestampPropertyName, new JValue(message.timestamp.ToUnixTimeInMilliseconds()));
             }
-            if (message.Data != null)
+            if (message.data != null)
             {
-                if (message.Data is byte[])
+                if (message.data is byte[])
                 {
-                    string encodedData = (message.Data as byte[]).ToBase64();
+                    string encodedData = (message.data as byte[]).ToBase64();
                     json.Add(Message.DataPropertyName, new JValue(encodedData));
                     json.Add(Message.EncodingPropertyName, new JValue("base64"));
                 }
                 else
                 {
-                    json.Add(Message.DataPropertyName, new JValue(message.Data));
+                    json.Add(Message.DataPropertyName, new JValue(message.data));
                 }
             }
             return json;
@@ -221,24 +221,24 @@ namespace Ably.Types
             JToken token;
             if (obj.TryGetValue(PresenceMessage.ActionPropertyName, out token))
             {
-                message.Action = (PresenceMessage.ActionType)token.Value<int>();
+                message.action = (PresenceMessage.ActionType)token.Value<int>();
             }
             if (obj.TryGetValue(PresenceMessage.IdPropertyName, out token))
             {
-                message.Id = token.Value<string>();
+                message.id = token.Value<string>();
             }
             if (obj.TryGetValue(PresenceMessage.ClientIdPropertyName, out token))
             {
-                message.ClientId = token.Value<string>();
+                message.clientId = token.Value<string>();
             }
             if (obj.TryGetValue(PresenceMessage.ConnectionIdPropertyName, out token))
             {
-                message.ConnectionId = token.Value<string>();
+                message.connectionId = token.Value<string>();
             }
             if (obj.TryGetValue(PresenceMessage.TimestampPropertyName, out token))
             {
                 long timestamp = token.Value<long>();
-                message.Timestamp = timestamp.FromUnixTimeInMilliseconds();
+                message.timestamp = timestamp.FromUnixTimeInMilliseconds();
             }
             if (obj.TryGetValue(PresenceMessage.EncodingPropertyName, out token))
             {
@@ -246,7 +246,7 @@ namespace Ably.Types
             }
             if (obj.TryGetValue(PresenceMessage.DataPropertyName, out token))
             {
-                message.Data = this.ParseToken(token, encoding);
+                message.data = this.ParseToken(token, encoding);
             }
             return message;
         }

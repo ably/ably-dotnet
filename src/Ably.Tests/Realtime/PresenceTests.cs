@@ -44,8 +44,8 @@ namespace Ably.Tests
             ProtocolMessage msg = messages.Pop();
             Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.action);
             Assert.Equal<int>(1, msg.presence.Length);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Enter, msg.presence[0].Action);
-            Assert.Equal<string>("testClient", msg.presence[0].ClientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Enter, msg.presence[0].action);
+            Assert.Equal<string>("testClient", msg.presence[0].clientId);
         }
 
         [Fact]
@@ -67,8 +67,8 @@ namespace Ably.Tests
             ProtocolMessage msg = messages.Pop();
             Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.action);
             Assert.Equal<int>(1, msg.presence.Length);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Enter, msg.presence[0].Action);
-            Assert.Equal<string>("newClient", msg.presence[0].ClientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Enter, msg.presence[0].action);
+            Assert.Equal<string>("newClient", msg.presence[0].clientId);
         }
 
         [Fact]
@@ -90,8 +90,8 @@ namespace Ably.Tests
             ProtocolMessage msg = messages.Pop();
             Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.action);
             Assert.Equal<int>(1, msg.presence.Length);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Leave, msg.presence[0].Action);
-            Assert.Equal<string>("testClient", msg.presence[0].ClientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Leave, msg.presence[0].action);
+            Assert.Equal<string>("testClient", msg.presence[0].clientId);
         }
 
         [Fact]
@@ -113,8 +113,8 @@ namespace Ably.Tests
             ProtocolMessage msg = messages.Pop();
             Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.action);
             Assert.Equal<int>(1, msg.presence.Length);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Leave, msg.presence[0].Action);
-            Assert.Equal<string>("newClient", msg.presence[0].ClientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Leave, msg.presence[0].action);
+            Assert.Equal<string>("newClient", msg.presence[0].clientId);
         }
 
         [Fact]
@@ -136,8 +136,8 @@ namespace Ably.Tests
             ProtocolMessage msg = messages.Pop();
             Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.action);
             Assert.Equal<int>(1, msg.presence.Length);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Update, msg.presence[0].Action);
-            Assert.Equal<string>("testClient", msg.presence[0].ClientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Update, msg.presence[0].action);
+            Assert.Equal<string>("testClient", msg.presence[0].clientId);
         }
 
         [Fact]
@@ -159,8 +159,8 @@ namespace Ably.Tests
             ProtocolMessage msg = messages.Pop();
             Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.action);
             Assert.Equal<int>(1, msg.presence.Length);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Update, msg.presence[0].Action);
-            Assert.Equal<string>("newClient", msg.presence[0].ClientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Update, msg.presence[0].action);
+            Assert.Equal<string>("newClient", msg.presence[0].clientId);
         }
 
         [Fact]
@@ -198,8 +198,8 @@ namespace Ably.Tests
 
             // Assert
             Assert.Equal<int>(1, broadcastMessages.Count);
-            Assert.Equal<PresenceMessage.ActionType>(action, broadcastMessages[0].Action);
-            Assert.Equal<string>("client1", broadcastMessages[0].ClientId);
+            Assert.Equal<PresenceMessage.ActionType>(action, broadcastMessages[0].action);
+            Assert.Equal<string>("client1", broadcastMessages[0].clientId);
         }
 
         [Fact]
@@ -220,8 +220,8 @@ namespace Ably.Tests
             PresenceMessage[] presence = target.Get();
             Assert.NotNull(presence);
             Assert.Equal<int>(1, presence.Length);
-            Assert.Equal<string>("client1", presence[0].ClientId);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Enter, presence[0].Action);
+            Assert.Equal<string>("client1", presence[0].clientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Enter, presence[0].action);
         }
 
         [Fact]
@@ -242,8 +242,8 @@ namespace Ably.Tests
             PresenceMessage[] presence = target.Get();
             Assert.NotNull(presence);
             Assert.Equal<int>(1, presence.Length);
-            Assert.Equal<string>("client1", presence[0].ClientId);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[0].Action);
+            Assert.Equal<string>("client1", presence[0].clientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[0].action);
         }
 
         [Fact]
@@ -264,8 +264,8 @@ namespace Ably.Tests
             PresenceMessage[] presence = target.Get();
             Assert.NotNull(presence);
             Assert.Equal<int>(1, presence.Length);
-            Assert.Equal<string>("client1", presence[0].ClientId);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Update, presence[0].Action);
+            Assert.Equal<string>("client1", presence[0].clientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Update, presence[0].action);
         }
 
         [Fact]
@@ -353,8 +353,8 @@ namespace Ably.Tests
             // Assert
             PresenceMessage[] presence = target.Get();
             Assert.Equal<int>(1, presence.Length);
-            Assert.Equal<string>("client1", presence[0].ClientId);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Enter, presence[0].Action);
+            Assert.Equal<string>("client1", presence[0].clientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Enter, presence[0].action);
         }
 
         [Fact]
@@ -379,8 +379,8 @@ namespace Ably.Tests
             PresenceMessage[] presence = target.Get();
             Assert.NotNull(presence);
             Assert.Equal<int>(1, presence.Length);
-            Assert.Equal<string>("client1", presence[0].ClientId);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Enter, presence[0].Action);
+            Assert.Equal<string>("client1", presence[0].clientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Enter, presence[0].action);
         }
 
         [Fact]
@@ -405,8 +405,8 @@ namespace Ably.Tests
             PresenceMessage[] presence = target.Get();
             Assert.NotNull(presence);
             Assert.Equal<int>(1, presence.Length);
-            Assert.Equal<string>("client1", presence[0].ClientId);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[0].Action);
+            Assert.Equal<string>("client1", presence[0].clientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[0].action);
         }
 
         [Fact]
@@ -431,8 +431,8 @@ namespace Ably.Tests
             PresenceMessage[] presence = target.Get();
             Assert.NotNull(presence);
             Assert.Equal<int>(1, presence.Length);
-            Assert.Equal<string>("client1", presence[0].ClientId);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Update, presence[0].Action);
+            Assert.Equal<string>("client1", presence[0].clientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Update, presence[0].action);
         }
 
         [Fact]
@@ -505,10 +505,10 @@ namespace Ably.Tests
             PresenceMessage[] presence = target.Get();
             Assert.NotNull(presence);
             Assert.Equal<int>(2, presence.Length);
-            Assert.Equal<string>("client1", presence[0].ClientId);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[0].Action);
-            Assert.Equal<string>("client2", presence[1].ClientId);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[1].Action);
+            Assert.Equal<string>("client1", presence[0].clientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[0].action);
+            Assert.Equal<string>("client2", presence[1].clientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[1].action);
         }
 
         [Fact]
@@ -533,8 +533,8 @@ namespace Ably.Tests
             PresenceMessage[] presence = target.Get();
             Assert.NotNull(presence);
             Assert.Equal<int>(1, presence.Length);
-            Assert.Equal<string>("client1", presence[0].ClientId);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[0].Action);
+            Assert.Equal<string>("client1", presence[0].clientId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[0].action);
         }
 
         [Fact]
@@ -550,8 +550,8 @@ namespace Ably.Tests
             {
                 presence = new PresenceMessage[]
                 {
-                    new PresenceMessage(PresenceMessage.ActionType.Present, "client1") { ConnectionId = "conn123" },
-                    new PresenceMessage(PresenceMessage.ActionType.Present, "client1") { ConnectionId = "connAnn332" }
+                    new PresenceMessage(PresenceMessage.ActionType.Present, "client1") { connectionId = "conn123" },
+                    new PresenceMessage(PresenceMessage.ActionType.Present, "client1") { connectionId = "connAnn332" }
                 }
             });
 
@@ -559,12 +559,12 @@ namespace Ably.Tests
             PresenceMessage[] presence = target.Get();
             Assert.NotNull(presence);
             Assert.Equal<int>(2, presence.Length);
-            Assert.Equal<string>("client1", presence[0].ClientId);
-            Assert.Equal<string>("conn123", presence[0].ConnectionId);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[0].Action);
-            Assert.Equal<string>("client1", presence[1].ClientId);
-            Assert.Equal<string>("connAnn332", presence[1].ConnectionId);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[1].Action);
+            Assert.Equal<string>("client1", presence[0].clientId);
+            Assert.Equal<string>("conn123", presence[0].connectionId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[0].action);
+            Assert.Equal<string>("client1", presence[1].clientId);
+            Assert.Equal<string>("connAnn332", presence[1].connectionId);
+            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Present, presence[1].action);
         }
 
         [Theory]

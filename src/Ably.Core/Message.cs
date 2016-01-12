@@ -21,71 +21,63 @@ namespace Ably
 
         public Message()
         {
-            
-        }
 
+        }
 
         public Message(string name, object data)
         {
-            Name = name;
-            Data = data;
+            this.name = name;
+            this.data = data;
         }
 
         /// <summary>
         /// A globally unique message id
         /// </summary>
-        [JsonProperty(IdPropertyName, NullValueHandling = NullValueHandling.Ignore)]
         [MessagePackMember(7, Name = IdPropertyName)]
-        public string Id { get; set; }
+        public string id { get; set; }
 
         /// <summary>
         /// The id of the publisher of this message
         /// </summary>
-        [JsonProperty(ClientIdPropertyName, NullValueHandling = NullValueHandling.Ignore)]
         [MessagePackMember(8, Name = ClientIdPropertyName)]
-        public string ClientId { get; set; }
+        public string clientId { get; set; }
 
         /// <summary>
         /// The connection id of the publisher of the message
         /// </summary>
-        [JsonProperty(ConnectionIdPropertyName, NullValueHandling = NullValueHandling.Ignore)]
         [MessagePackMember(9, Name = ConnectionIdPropertyName)]
-        public string ConnectionId { get; set; }
+        public string connection_id { get; set; }
 
         /// <summary>
         /// The event name, if avaible
         /// </summary>
         [MessagePackMember(10, Name = NamePropertyName)]
-        [JsonProperty(NamePropertyName)]
-        public string Name { get; set; }
+        public string name { get; set; }
 
         /// <summary>
         /// The message payload. Supported data types are objects, byte[] and strings
         /// </summary>
         [MessagePackMember(20, Name = DataPropertyName)]
-        [JsonProperty(DataPropertyName)]
-        public object Data { get; set; }
+        public object data { get; set; }
 
         /// <summary>
         /// The encoding for the message data. Encoding and decoding of messages is handled automatically by the client library.
         ///Therefore, the `encoding` attribute should always be nil unless an Ably library decoding error has occurred.
         /// </summary>
         [MessagePackMember(30, Name = EncodingPropertyName)]
-        [JsonProperty(EncodingPropertyName, NullValueHandling = NullValueHandling.Ignore)]
-        public string Encoding { get; set; }
+        public string encoding { get; set; }
 
         /// <summary>
         /// Timestamp when the message was received by the Ably real-time service
         /// </summary>
         [MessagePackMember(40, Name = TimestampPropertyName)]
-        [JsonProperty(TimestampPropertyName, NullValueHandling = NullValueHandling.Ignore)]
-        public DateTimeOffset? Timestamp { get; set; }
+        public DateTimeOffset? timestamp { get; set; }
 
         public override string ToString()
         {
-            var result = string.Format("Name: {0}, Data: {1}, Encoding: {2}, Timestamp: {3}", Name, Data, Encoding, Timestamp);
-            if (Id.IsNotEmpty())
-                return "Id: " + Id + ", " + result;
+            var result = string.Format("Name: {0}, Data: {1}, Encoding: {2}, Timestamp: {3}", name, data, encoding, timestamp);
+            if (id.IsNotEmpty())
+                return "Id: " + id + ", " + result;
             return result;
         }
     }

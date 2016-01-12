@@ -56,9 +56,9 @@ namespace Ably.Tests
                 yield return new object[] { "[]", new PresenceMessage[] { } };
                 yield return new object[] { "[{\"action\":2,\"clientId\":\"test\"}]", new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Enter, "test") } };
                 yield return new object[] { "[{\"action\":2,\"clientId\":\"test\"}, {\"action\":2,\"clientId\":\"test2\"}]", new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Enter, "test"), new PresenceMessage(PresenceMessage.ActionType.Enter, "test2") } };
-                yield return new object[] { "[{\"connectionId\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { ConnectionId = "test" } } };
-                yield return new object[] { "[{\"data\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { Data = "test" } } };
-                yield return new object[] { "[{\"timestamp\":1430784000000}]", new PresenceMessage[] { new PresenceMessage() { Timestamp = new DateTimeOffset(new DateTime(2015, 5, 5, 0, 0, 0, DateTimeKind.Utc)) } } };
+                yield return new object[] { "[{\"connectionId\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { connectionId = "test" } } };
+                yield return new object[] { "[{\"data\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { data = "test" } } };
+                yield return new object[] { "[{\"timestamp\":1430784000000}]", new PresenceMessage[] { new PresenceMessage() { timestamp = new DateTimeOffset(new DateTime(2015, 5, 5, 0, 0, 0, DateTimeKind.Utc)) } } };
             }
         }
 
@@ -161,13 +161,13 @@ namespace Ably.Tests
             JsonMessageSerializer serializer = new JsonMessageSerializer();
             ProtocolMessage message = new ProtocolMessage() { messages = messages };
             StringBuilder expectedMessage = new StringBuilder("{\"action\":0,\"msgSerial\":0");
-            var validMessages = messages.Where(c => !string.IsNullOrEmpty(c.Name));
+            var validMessages = messages.Where(c => !string.IsNullOrEmpty(c.name));
             if (validMessages.Any())
             {
                 expectedMessage.Append(",\"messages\":[");
                 foreach (Message msg in validMessages)
                 {
-                    expectedMessage.AppendFormat("{{\"name\":\"{0}\"}},", msg.Name);
+                    expectedMessage.AppendFormat("{{\"name\":\"{0}\"}},", msg.name);
                 }
                 expectedMessage.Remove(expectedMessage.Length - 1, 1) // last comma
                     .Append("]");
@@ -193,7 +193,7 @@ namespace Ably.Tests
             expectedMessage.Append(",\"presence\":[");
             foreach (PresenceMessage msg in messages)
             {
-                expectedMessage.AppendFormat("{{\"action\":{0}}},", (byte)msg.Action);
+                expectedMessage.AppendFormat("{{\"action\":{0}}},", (byte)msg.action);
             }
             expectedMessage.Remove(expectedMessage.Length - 1, 1) // last comma
                 .Append("]}");
@@ -429,8 +429,8 @@ namespace Ably.Tests
             Assert.Equal<int>(expectedMessages.Length, target.messages.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
-                Assert.Equal<string>(expectedMessages[i].Name, target.messages[i].Name);
-                Assert.Equal(expectedMessages[i].Data, target.messages[i].Data);
+                Assert.Equal<string>(expectedMessages[i].name, target.messages[i].name);
+                Assert.Equal(expectedMessages[i].data, target.messages[i].data);
             }
         }
 
@@ -454,12 +454,12 @@ namespace Ably.Tests
             Assert.Equal<int>(expectedMessages.Length, target.presence.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
-                Assert.Equal<string>(expectedMessages[i].ClientId, target.presence[i].ClientId);
-                Assert.Equal<string>(expectedMessages[i].ConnectionId, target.presence[i].ConnectionId);
-                Assert.Equal<PresenceMessage.ActionType>(expectedMessages[i].Action, target.presence[i].Action);
-                Assert.Equal<string>(expectedMessages[i].Id, target.presence[i].Id);
-                Assert.Equal<DateTimeOffset>(expectedMessages[i].Timestamp, target.presence[i].Timestamp);
-                Assert.Equal(expectedMessages[i].Data, target.presence[i].Data);
+                Assert.Equal<string>(expectedMessages[i].clientId, target.presence[i].clientId);
+                Assert.Equal<string>(expectedMessages[i].connectionId, target.presence[i].connectionId);
+                Assert.Equal<PresenceMessage.ActionType>(expectedMessages[i].action, target.presence[i].action);
+                Assert.Equal<string>(expectedMessages[i].id, target.presence[i].id);
+                Assert.Equal<DateTimeOffset>(expectedMessages[i].timestamp, target.presence[i].timestamp);
+                Assert.Equal(expectedMessages[i].data, target.presence[i].data);
             }
         }
     }

@@ -24,14 +24,14 @@ namespace Ably.Tests.MessageEncodes
 
         private Message EncodePayload(object data, string encoding = "")
         {
-            var payload = new Message() {Data = data, Encoding = encoding};
+            var payload = new Message() {data = data, encoding = encoding};
             encoder.Encode(payload, new ChannelOptions());
             return payload;
         }
 
         private Message DecodePayload(object data, string encoding = "")
         {
-            var payload = new Message() { Data = data, Encoding = encoding };
+            var payload = new Message() { data = data, encoding = encoding };
             encoder.Decode(payload, new ChannelOptions());
             return payload;
         }
@@ -43,12 +43,12 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = DecodePayload(_jsonData, "json");
 
-                payload.Data.Should().BeOfType<JObject>();
+                payload.data.Should().BeOfType<JObject>();
 
-                var obj =(payload.Data as JObject).ToObject(_objectData.GetType());
+                var obj =(payload.data as JObject).ToObject(_objectData.GetType());
                 obj.Should().Be(_objectData);
 
-                payload.Encoding.Should().BeEmpty();
+                payload.encoding.Should().BeEmpty();
             }
 
             [Fact]
@@ -56,8 +56,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = DecodePayload(_jsonData, "utf-8/json");
 
-                payload.Data.Should().BeOfType<JObject>();
-                payload.Encoding.Should().Be("utf-8");
+                payload.data.Should().BeOfType<JObject>();
+                payload.encoding.Should().Be("utf-8");
             }
 
             [Fact]
@@ -65,8 +65,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = DecodePayload("test", "utf-8");
 
-                payload.Data.Should().Be("test");
-                payload.Encoding.Should().Be("utf-8");
+                payload.data.Should().Be("test");
+                payload.encoding.Should().Be("utf-8");
             }
 
             [Fact]
@@ -86,8 +86,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = EncodePayload(_objectData);
 
-                payload.Data.Should().Be(_jsonData);
-                payload.Encoding.Should().Be("json");
+                payload.data.Should().Be(_jsonData);
+                payload.encoding.Should().Be("json");
             }
 
             [Fact]
@@ -95,8 +95,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = EncodePayload(_objectData, "utf-8");
 
-                payload.Data.Should().Be(_jsonData);
-                payload.Encoding.Should().Be("utf-8/json");
+                payload.data.Should().Be(_jsonData);
+                payload.encoding.Should().Be("utf-8/json");
             }
 
             [Fact]
@@ -104,8 +104,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = EncodePayload(_arrayData);
 
-                payload.Data.Should().Be(_jsonArrayData);
-                payload.Encoding.Should().Be("json");
+                payload.data.Should().Be(_jsonArrayData);
+                payload.encoding.Should().Be("json");
             }
 
             [Fact]
@@ -113,8 +113,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = EncodePayload("test");
 
-                payload.Data.Should().Be("test");
-                payload.Encoding.Should().BeEmpty();
+                payload.data.Should().Be("test");
+                payload.encoding.Should().BeEmpty();
             }
 
             [Fact]
@@ -122,8 +122,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = EncodePayload(null);
 
-                payload.Data.Should().BeNull();
-                payload.Encoding.Should().BeEmpty();
+                payload.data.Should().BeNull();
+                payload.encoding.Should().BeEmpty();
             }
         }
 

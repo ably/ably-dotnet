@@ -19,7 +19,7 @@ namespace Ably.ConsoleTest
             // NUnit.Run( ass, true, true, true );
 
             // Run the single test
-            // NUnit.Run( ass, true, true, true, "Ably.AcceptanceTests.RealtimeAcceptanceTests(MsgPack).TestCreateRealtimeClient_AutoConnect_False_ConnectsSuccessfuly" );
+            // NUnit.Run( ass, true, true, true, "Ably.AcceptanceTests.ChannelMessagesAcceptanceTests(Json).CanPublishAMessageAndRetrieveIt" ); return;
 
             // === XUnit ===
             Assembly x = typeof( AuthOptionsMergeTests ).Assembly;

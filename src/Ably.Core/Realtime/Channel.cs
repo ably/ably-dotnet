@@ -211,7 +211,7 @@ namespace Ably.Realtime
             {
                 Message msg = messages[i];
                 // TODO: populate fields derived from protocol message
-                List<Action<Message[]>> listeners = eventListeners.Get(msg.Name, null);
+                List<Action<Message[]>> listeners = eventListeners.Get(msg.name, null);
                 if (listeners != null)
                 {
                     Message[] singleMessage = new Message[] { msg };
