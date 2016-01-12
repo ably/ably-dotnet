@@ -136,7 +136,9 @@
     <Compile Include="Types\IMessageSerializer.cs" />
     <Compile Include="Types\JsonMessageSerializer.cs" />
     <Compile Include="Types\MsgPackMessageSerializer.cs" />
+    <Compile Include="Types\PropertyMetadata.cs" />
     <Compile Include="Types\ProtocolMessage.cs" />
+    <Compile Include="Types\TypeMetadata.cs" />
     <Compile Include="Utils\ActionOnDispose.cs" />
     <Compile Include="Utils\ReflectionUtils.cs" />
     <Compile Include="Utils\StringUtils.cs" />
@@ -151,7 +153,9 @@
       <Private>True</Private>
     </Reference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
