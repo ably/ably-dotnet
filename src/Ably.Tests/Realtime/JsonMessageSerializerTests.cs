@@ -98,7 +98,7 @@ namespace Ably.Tests
         {
             // Arrange
             JsonMessageSerializer serializer = new JsonMessageSerializer();
-            ProtocolMessage message = new ProtocolMessage() { Channel = channel };
+            ProtocolMessage message = new ProtocolMessage() { channel = channel };
             StringBuilder expectedMessage = new StringBuilder();
             expectedMessage.Append("{\"action\":0");
             if (!string.IsNullOrEmpty(channel))
@@ -124,7 +124,7 @@ namespace Ably.Tests
         {
             // Arrange
             JsonMessageSerializer serializer = new JsonMessageSerializer();
-            ProtocolMessage message = new ProtocolMessage() { MsgSerial = msgSerial };
+            ProtocolMessage message = new ProtocolMessage() { msgSerial = msgSerial };
             StringBuilder expectedMessage = new StringBuilder();
             expectedMessage.Append("{\"action\":0")
                 .AppendFormat(",\"msgSerial\":{0}", msgSerial)
@@ -143,7 +143,7 @@ namespace Ably.Tests
         {
             // Arrange
             JsonMessageSerializer serializer = new JsonMessageSerializer();
-            ProtocolMessage message = new ProtocolMessage() { Messages = null };
+            ProtocolMessage message = new ProtocolMessage() { messages = null };
 
             // Act
             object result = serializer.SerializeProtocolMessage(message);
@@ -159,7 +159,7 @@ namespace Ably.Tests
         {
             // Arrange
             JsonMessageSerializer serializer = new JsonMessageSerializer();
-            ProtocolMessage message = new ProtocolMessage() { Messages = messages };
+            ProtocolMessage message = new ProtocolMessage() { messages = messages };
             StringBuilder expectedMessage = new StringBuilder("{\"action\":0,\"msgSerial\":0");
             var validMessages = messages.Where(c => !string.IsNullOrEmpty(c.Name));
             if (validMessages.Any())
@@ -188,7 +188,7 @@ namespace Ably.Tests
         {
             // Arrange
             JsonMessageSerializer serializer = new JsonMessageSerializer();
-            ProtocolMessage message = new ProtocolMessage() { Presence = messages };
+            ProtocolMessage message = new ProtocolMessage() { presence = messages };
             StringBuilder expectedMessage = new StringBuilder("{\"action\":0,\"msgSerial\":0");
             expectedMessage.Append(",\"presence\":[");
             foreach (PresenceMessage msg in messages)
@@ -228,7 +228,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<ProtocolMessage.MessageAction>(action, target.Action);
+            Assert.Equal<ProtocolMessage.MessageAction>(action, target.action);
         }
 
         [Theory]
@@ -248,7 +248,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(channel, target.Channel);
+            Assert.Equal<string>(channel, target.channel);
         }
 
         [Theory]
@@ -267,7 +267,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(serial, target.ChannelSerial);
+            Assert.Equal<string>(serial, target.channelSerial);
         }
 
         [Theory]
@@ -286,7 +286,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(connectionId, target.ConnectionId);
+            Assert.Equal<string>(connectionId, target.connectionId);
         }
 
         [Theory]
@@ -305,7 +305,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(connectionKey, target.ConnectionKey);
+            Assert.Equal<string>(connectionKey, target.connectionKey);
         }
 
         [Theory]
@@ -324,7 +324,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(id, target.Id);
+            Assert.Equal<string>(id, target.id);
         }
 
         [Theory]
@@ -345,7 +345,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<long>(long.Parse(connectionSerial.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.ConnectionSerial.Value);
+            Assert.Equal<long>(long.Parse(connectionSerial.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.connectionSerial.Value);
         }
 
         [Theory]
@@ -366,7 +366,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<int>(int.Parse(count.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.Count);
+            Assert.Equal<int>(int.Parse(count.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.count);
         }
 
         [Theory]
@@ -387,7 +387,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<long>(long.Parse(serial.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.MsgSerial);
+            Assert.Equal<long>(long.Parse(serial.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.msgSerial);
         }
 
         [Theory]
@@ -408,7 +408,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<byte>(byte.Parse(flags.ToString(), System.Globalization.CultureInfo.InstalledUICulture), (byte)target.Flags);
+            Assert.Equal<byte>(byte.Parse(flags.ToString(), System.Globalization.CultureInfo.InstalledUICulture), (byte)target.flags);
         }
 
         [Theory]
@@ -425,12 +425,12 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.NotNull(target.Messages);
-            Assert.Equal<int>(expectedMessages.Length, target.Messages.Length);
+            Assert.NotNull(target.messages);
+            Assert.Equal<int>(expectedMessages.Length, target.messages.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
-                Assert.Equal<string>(expectedMessages[i].Name, target.Messages[i].Name);
-                Assert.Equal(expectedMessages[i].Data, target.Messages[i].Data);
+                Assert.Equal<string>(expectedMessages[i].Name, target.messages[i].Name);
+                Assert.Equal(expectedMessages[i].Data, target.messages[i].Data);
             }
         }
 
@@ -450,16 +450,16 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.NotNull(target.Presence);
-            Assert.Equal<int>(expectedMessages.Length, target.Presence.Length);
+            Assert.NotNull(target.presence);
+            Assert.Equal<int>(expectedMessages.Length, target.presence.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
-                Assert.Equal<string>(expectedMessages[i].ClientId, target.Presence[i].ClientId);
-                Assert.Equal<string>(expectedMessages[i].ConnectionId, target.Presence[i].ConnectionId);
-                Assert.Equal<PresenceMessage.ActionType>(expectedMessages[i].Action, target.Presence[i].Action);
-                Assert.Equal<string>(expectedMessages[i].Id, target.Presence[i].Id);
-                Assert.Equal<DateTimeOffset>(expectedMessages[i].Timestamp, target.Presence[i].Timestamp);
-                Assert.Equal(expectedMessages[i].Data, target.Presence[i].Data);
+                Assert.Equal<string>(expectedMessages[i].ClientId, target.presence[i].ClientId);
+                Assert.Equal<string>(expectedMessages[i].ConnectionId, target.presence[i].ConnectionId);
+                Assert.Equal<PresenceMessage.ActionType>(expectedMessages[i].Action, target.presence[i].Action);
+                Assert.Equal<string>(expectedMessages[i].Id, target.presence[i].Id);
+                Assert.Equal<DateTimeOffset>(expectedMessages[i].Timestamp, target.presence[i].Timestamp);
+                Assert.Equal(expectedMessages[i].Data, target.presence[i].Data);
             }
         }
     }

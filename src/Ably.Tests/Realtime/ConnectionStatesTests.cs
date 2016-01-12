@@ -259,7 +259,7 @@ namespace Ably.Tests
             ErrorInfo targetError = new ErrorInfo("test", 123);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError });
+            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
 
             // Assert
             context.Verify(c => c.SetState(It.Is<ConnectionFailedState>(ss => object.ReferenceEquals(ss.Error, targetError))), Times.Once());
@@ -280,7 +280,7 @@ namespace Ably.Tests
             ErrorInfo targetError = new ErrorInfo("test", 123, code);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError });
+            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
 
             // Assert
             context.Verify(c => c.SetState(It.Is<ConnectionDisconnectedState>(ss => ss.UseFallbackHost == true)), Times.Once());
@@ -300,7 +300,7 @@ namespace Ably.Tests
             ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("test", 123, System.Net.HttpStatusCode.InternalServerError) });
+            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("test", 123, System.Net.HttpStatusCode.InternalServerError) });
 
             // Assert
             connection.VerifySet(c => c.Key = null);
@@ -344,7 +344,7 @@ namespace Ably.Tests
             ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
 
             // Act
-            state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = new ErrorInfo("", 0, code) });
+            state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { error = new ErrorInfo("", 0, code) });
 
             // Assert
             context.Verify(c => c.SetState(It.Is<ConnectionDisconnectedState>(ss => ss.UseFallbackHost == true)), Times.Once());
@@ -645,7 +645,7 @@ namespace Ably.Tests
             state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
 
             // Assert
-            transport.Verify(c => c.Send(It.Is<ProtocolMessage>(ss => ss.Action == ProtocolMessage.MessageAction.Attach)), Times.Once());
+            transport.Verify(c => c.Send(It.Is<ProtocolMessage>(ss => ss.action == ProtocolMessage.MessageAction.Attach)), Times.Once());
         }
 
         [Theory]
@@ -734,7 +734,7 @@ namespace Ably.Tests
             ErrorInfo targetError = new ErrorInfo("test", 123);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError });
+            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
 
             // Assert
             context.Verify(c => c.SetState(It.Is<ConnectionFailedState>(ss => object.ReferenceEquals(ss.Error, targetError))), Times.Once());
@@ -1254,7 +1254,7 @@ namespace Ably.Tests
             ErrorInfo targetError = new ErrorInfo("test", 123);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError });
+            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
 
             // Assert
             context.Verify(c => c.SetState(It.Is<ConnectionFailedState>(ss => object.ReferenceEquals(ss.Error, targetError))), Times.Once());
@@ -1302,7 +1302,7 @@ namespace Ably.Tests
             state.OnAttachedToContext();
 
             // Assert
-            transport.Verify(c => c.Send(It.Is<ProtocolMessage>(ss => ss.Action == ProtocolMessage.MessageAction.Close)), Times.Once());
+            transport.Verify(c => c.Send(It.Is<ProtocolMessage>(ss => ss.action == ProtocolMessage.MessageAction.Close)), Times.Once());
         }
 
         [Theory]

@@ -28,9 +28,9 @@ namespace Ably.Tests
             target.SendMessage(targetMessage3, null);
 
             // Assert
-            Assert.Equal(0, targetMessage1.MsgSerial);
-            Assert.Equal(1, targetMessage2.MsgSerial);
-            Assert.Equal(2, targetMessage3.MsgSerial);
+            Assert.Equal(0, targetMessage1.msgSerial);
+            Assert.Equal(1, targetMessage2.msgSerial);
+            Assert.Equal(2, targetMessage3.msgSerial);
         }
 
         [Theory]
@@ -63,9 +63,9 @@ namespace Ably.Tests
             target.SendMessage(targetMessage3, null);
 
             // Assert
-            Assert.Equal(0, targetMessage1.MsgSerial);
-            Assert.Equal(0, targetMessage2.MsgSerial);
-            Assert.Equal(0, targetMessage3.MsgSerial);
+            Assert.Equal(0, targetMessage1.msgSerial);
+            Assert.Equal(0, targetMessage2.msgSerial);
+            Assert.Equal(0, targetMessage3.msgSerial);
         }
 
         [Theory]
@@ -121,13 +121,13 @@ namespace Ably.Tests
 
             // Act
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 0) callbacks.Add(Tuple.Create(ack, err)); });
-            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = msgSerial++, Count = 1 });
+            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { msgSerial = msgSerial++, count = 1 });
 
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 1) callbacks.Add(Tuple.Create(ack, err)); });
-            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = msgSerial++, Count = 1 });
+            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { msgSerial = msgSerial++, count = 1 });
 
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 2) callbacks.Add(Tuple.Create(ack, err)); });
-            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = msgSerial++, Count = 1 });
+            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { msgSerial = msgSerial++, count = 1 });
 
             // Assert
             Assert.Equal(3, callbacks.Count);
@@ -146,7 +146,7 @@ namespace Ably.Tests
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 0) callbacks.Add(Tuple.Create(ack, err)); });
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 1) callbacks.Add(Tuple.Create(ack, err)); });
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 2) callbacks.Add(Tuple.Create(ack, err)); });
-            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = 0, Count = 3 });
+            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { msgSerial = 0, count = 3 });
 
             // Assert
             Assert.Equal(3, callbacks.Count);
@@ -164,13 +164,13 @@ namespace Ably.Tests
 
             // Act
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 0) callbacks.Add(Tuple.Create(ack, err)); });
-            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = msgSerial++, Count = 1 });
+            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { msgSerial = msgSerial++, count = 1 });
 
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 1) callbacks.Add(Tuple.Create(ack, err)); });
-            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = msgSerial++, Count = 1 });
+            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { msgSerial = msgSerial++, count = 1 });
 
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 2) callbacks.Add(Tuple.Create(ack, err)); });
-            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = msgSerial++, Count = 1 });
+            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { msgSerial = msgSerial++, count = 1 });
 
             // Assert
             Assert.Equal(3, callbacks.Count);
@@ -189,7 +189,7 @@ namespace Ably.Tests
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 0) callbacks.Add(Tuple.Create(ack, err)); });
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 1) callbacks.Add(Tuple.Create(ack, err)); });
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 2) callbacks.Add(Tuple.Create(ack, err)); });
-            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 0, Count = 3 });
+            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { msgSerial = 0, count = 3 });
 
             // Assert
             Assert.Equal(3, callbacks.Count);
@@ -208,13 +208,13 @@ namespace Ably.Tests
 
             // Act
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 0) callbacks.Add(Tuple.Create(ack, err)); });
-            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = msgSerial++, Count = 1, Error = error });
+            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { msgSerial = msgSerial++, count = 1, error = error });
 
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 1) callbacks.Add(Tuple.Create(ack, err)); });
-            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = msgSerial++, Count = 1, Error = error });
+            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { msgSerial = msgSerial++, count = 1, error = error });
 
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 2) callbacks.Add(Tuple.Create(ack, err)); });
-            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = msgSerial++, Count = 1, Error = error });
+            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { msgSerial = msgSerial++, count = 1, error = error });
 
             // Assert
             Assert.Equal(3, callbacks.Count);
@@ -234,7 +234,7 @@ namespace Ably.Tests
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 0) callbacks.Add(Tuple.Create(ack, err)); });
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 1) callbacks.Add(Tuple.Create(ack, err)); });
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 2) callbacks.Add(Tuple.Create(ack, err)); });
-            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 0, Count = 3, Error = error });
+            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { msgSerial = 0, count = 3, error = error });
 
             // Assert
             Assert.Equal(3, callbacks.Count);
@@ -263,10 +263,10 @@ namespace Ably.Tests
             target.SendMessage(targetMessage4, null);
 
             // Assert
-            Assert.Equal(0, targetMessage1.MsgSerial);
-            Assert.Equal(1, targetMessage2.MsgSerial);
-            Assert.Equal(0, targetMessage3.MsgSerial);
-            Assert.Equal(1, targetMessage4.MsgSerial);
+            Assert.Equal(0, targetMessage1.msgSerial);
+            Assert.Equal(1, targetMessage2.msgSerial);
+            Assert.Equal(0, targetMessage3.msgSerial);
+            Assert.Equal(1, targetMessage4.msgSerial);
         }
 
         [Fact]

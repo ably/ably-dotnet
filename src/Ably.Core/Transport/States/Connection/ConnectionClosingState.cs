@@ -51,7 +51,7 @@ namespace Ably.Transport.States.Connection
 
         public override bool OnMessageReceived(ProtocolMessage message)
         {
-            switch (message.Action)
+            switch (message.action)
             {
                 case ProtocolMessage.MessageAction.Closed:
                     {
@@ -60,12 +60,12 @@ namespace Ably.Transport.States.Connection
                     }
                 case ProtocolMessage.MessageAction.Disconnected:
                     {
-                        this.TransitionState(new ConnectionDisconnectedState(this.context, message.Error));
+                        this.TransitionState(new ConnectionDisconnectedState(this.context, message.error));
                         return true;
                     }
                 case ProtocolMessage.MessageAction.Error:
                     {
-                        this.TransitionState(new ConnectionFailedState(this.context, message.Error));
+                        this.TransitionState(new ConnectionFailedState(this.context, message.error));
                         return true;
                     }
             }

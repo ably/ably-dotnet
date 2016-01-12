@@ -86,7 +86,7 @@ namespace Ably.Tests
         {
             // Arrange
             MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
-            ProtocolMessage message = new ProtocolMessage() { Channel = channel };
+            ProtocolMessage message = new ProtocolMessage() { channel = channel };
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x82);
             expectedMessage.AddRange(SerializeString("action"));
@@ -117,7 +117,7 @@ namespace Ably.Tests
         {
             // Arrange
             MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
-            ProtocolMessage message = new ProtocolMessage() { MsgSerial = msgSerial };
+            ProtocolMessage message = new ProtocolMessage() { msgSerial = msgSerial };
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x82);
             expectedMessage.AddRange(SerializeString("action"));
@@ -147,7 +147,7 @@ namespace Ably.Tests
         {
             // Arrange
             MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
-            ProtocolMessage message = new ProtocolMessage() { Messages = messages };
+            ProtocolMessage message = new ProtocolMessage() { messages = messages };
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x82);
             expectedMessage.AddRange(SerializeString("action"));
@@ -182,7 +182,7 @@ namespace Ably.Tests
         {
             // Arrange
             MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
-            ProtocolMessage message = new ProtocolMessage() { Presence = messages };
+            ProtocolMessage message = new ProtocolMessage() { presence = messages };
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x82);
             expectedMessage.AddRange(SerializeString("action"));
@@ -237,7 +237,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<ProtocolMessage.MessageAction>(action, target.Action);
+            Assert.Equal<ProtocolMessage.MessageAction>(action, target.action);
         }
 
         [Theory]
@@ -267,7 +267,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(channel, target.Channel);
+            Assert.Equal<string>(channel, target.channel);
         }
 
         [Theory]
@@ -296,7 +296,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(serial, target.ChannelSerial);
+            Assert.Equal<string>(serial, target.channelSerial);
         }
 
         [Theory]
@@ -318,7 +318,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(connectionId, target.ConnectionId);
+            Assert.Equal<string>(connectionId, target.connectionId);
         }
 
         [Theory]
@@ -340,7 +340,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(connectionKey, target.ConnectionKey);
+            Assert.Equal<string>(connectionKey, target.connectionKey);
         }
 
         [Theory]
@@ -362,7 +362,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(id, target.Id);
+            Assert.Equal<string>(id, target.id);
         }
 
         [Theory]
@@ -383,7 +383,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<long>(connectionSerial, target.ConnectionSerial.Value);
+            Assert.Equal<long>(connectionSerial, target.connectionSerial.Value);
         }
 
         [Theory]
@@ -404,7 +404,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<int>(count, target.Count);
+            Assert.Equal<int>(count, target.count);
         }
 
         [Theory]
@@ -425,7 +425,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<long>(serial, target.MsgSerial);
+            Assert.Equal<long>(serial, target.msgSerial);
         }
 
         [Theory]
@@ -446,7 +446,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<byte>((byte)flags, (byte)target.Flags);
+            Assert.Equal<byte>((byte)flags, (byte)target.flags);
         }
 
         [Theory]
@@ -465,12 +465,12 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.NotNull(target.Messages);
-            Assert.Equal<int>(expectedMessages.Length, target.Messages.Length);
+            Assert.NotNull(target.messages);
+            Assert.Equal<int>(expectedMessages.Length, target.messages.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
-                Assert.Equal<string>(expectedMessages[i].Name, target.Messages[i].Name);
-                Assert.Equal(expectedMessages[i].Data, target.Messages[i].Data);
+                Assert.Equal<string>(expectedMessages[i].Name, target.messages[i].Name);
+                Assert.Equal(expectedMessages[i].Data, target.messages[i].Data);
             }
         }
 

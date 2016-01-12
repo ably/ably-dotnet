@@ -42,7 +42,7 @@ namespace Ably.Tests.MessageEncodes
             public void WithJsonPayload_ConvertsDataToJObjectAndStripsEncoding()
             {
                 var payload = DecodePayload(_jsonData, "json");
-                
+
                 payload.Data.Should().BeOfType<JObject>();
 
                 var obj =(payload.Data as JObject).ToObject(_objectData.GetType());
@@ -73,9 +73,9 @@ namespace Ably.Tests.MessageEncodes
             public void WithInvalidJsonPayload_ThrowsAblyException()
             {
                 var error = Assert.Throws<AblyException>(delegate { DecodePayload("test", "json"); });
-                error.ErrorInfo.Reason.Should().Be("Invalid Json data: 'test'");
+                error.ErrorInfo.message.Should().Be("Invalid Json data: 'test'");
             }
-           
+
 
         }
 

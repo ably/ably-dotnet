@@ -217,10 +217,10 @@ namespace Ably.Tests.MessageEncodes
 
                 var error = Assert.Throws<AblyException>(delegate { encoder.Decode(payload, new ChannelOptions()); });
 
-                error.ErrorInfo.Reason.Should()
+                error.ErrorInfo.message.Should()
                     .Be("Message cannot be decrypted as the channel is not set up for encryption & decryption");
 
-                error.ErrorInfo.Code.Should().Be(92001);
+                error.ErrorInfo.code.Should().Be(92001);
             }
 
             [Fact]
@@ -230,11 +230,11 @@ namespace Ably.Tests.MessageEncodes
 
                 var error = Assert.Throws<AblyException>(delegate { encoder.Decode(payload, _channelOptions); });
 
-                error.ErrorInfo.Reason.Should()
+                error.ErrorInfo.message.Should()
                     .Be(string.Format("Cipher algorithm {0} does not match message cipher algorithm of {1}",
                         _channelOptions.CipherParams.CipherType.ToLower(), "cipher+aes-256-cbc"));
 
-                error.ErrorInfo.Code.Should().Be(92002);
+                error.ErrorInfo.code.Should().Be(92002);
             }
         }
 

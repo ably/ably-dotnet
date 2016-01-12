@@ -230,9 +230,9 @@ namespace Ably.Transport
             handled |= this.ackProcessor.OnMessageReceived(message);
             handled |= ConnectionHeartbeatRequest.CanHandleMessage(message);
 
-            if (message.ConnectionSerial != null)
+            if (message.connectionSerial != null)
             {
-                this.connection.Serial = message.ConnectionSerial.Value;
+                this.connection.Serial = message.connectionSerial.Value;
             }
 
             if (this.MessageReceived != null)
