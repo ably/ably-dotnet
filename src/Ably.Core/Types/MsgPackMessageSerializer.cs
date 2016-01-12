@@ -270,8 +270,8 @@ namespace Ably.Types
         private static int GetFieldCount(Message message)
         {
             int fieldCount = 0;
-            if (!string.IsNullOrEmpty(message.Name)) fieldCount++;
-            if (message.Data != null) fieldCount++;
+            if (!string.IsNullOrEmpty(message.name)) fieldCount++;
+            if (message.data != null) fieldCount++;
             return fieldCount;
         }
 
@@ -287,12 +287,12 @@ namespace Ably.Types
         private static int GetFieldCount(PresenceMessage message)
         {
             int fieldCount = 1; //action
-            if (!string.IsNullOrEmpty(message.ClientId)) fieldCount++;
-            if (!string.IsNullOrEmpty(message.ConnectionId)) fieldCount++;
-            if (message.Data != null) fieldCount++;
-            if (!string.IsNullOrEmpty(message.Encoding)) fieldCount++;
-            if (!string.IsNullOrEmpty(message.Id)) fieldCount++;
-            if (message.Timestamp.Ticks > 0) fieldCount++;
+            if (!string.IsNullOrEmpty(message.clientId)) fieldCount++;
+            if (!string.IsNullOrEmpty(message.connectionId)) fieldCount++;
+            if (message.data != null) fieldCount++;
+            if (!string.IsNullOrEmpty(message.encoding)) fieldCount++;
+            if (!string.IsNullOrEmpty(message.id)) fieldCount++;
+            if (message.timestamp.Ticks > 0) fieldCount++;
             return fieldCount;
         }
 
@@ -301,21 +301,21 @@ namespace Ably.Types
             int fieldCount = GetFieldCount(message);
             packer.PackMapHeader(fieldCount);
 
-            if (!string.IsNullOrEmpty(message.Name))
+            if (!string.IsNullOrEmpty(message.name))
             {
                 packer.PackString(Message.NamePropertyName);
-                packer.PackString(message.Name);
+                packer.PackString(message.name);
             }
-            if (message.Data != null)
+            if (message.data != null)
             {
                 packer.PackString(Message.DataPropertyName);
-                if (message.Data is byte[])
+                if (message.data is byte[])
                 {
-                    packer.PackRaw(message.Data as byte[]);
+                    packer.PackRaw(message.data as byte[]);
                 }
                 else
                 {
-                    packer.PackString(message.Data.ToString());
+                    packer.PackString(message.data.ToString());
                 }
             }
         }
@@ -326,38 +326,38 @@ namespace Ably.Types
             packer.PackMapHeader(fieldCount);
 
             packer.PackString(PresenceMessage.ActionPropertyName);
-            packer.Pack<int>((int)message.Action);
+            packer.Pack<int>((int)message.action);
 
-            if (!string.IsNullOrEmpty(message.Id))
+            if (!string.IsNullOrEmpty(message.id))
             {
                 packer.PackString(PresenceMessage.IdPropertyName);
-                packer.Pack(message.Id);
+                packer.Pack(message.id);
             }
-            if (!string.IsNullOrEmpty(message.ClientId))
+            if (!string.IsNullOrEmpty(message.clientId))
             {
                 packer.PackString(PresenceMessage.ClientIdPropertyName);
-                packer.Pack(message.ClientId);
+                packer.Pack(message.clientId);
             }
-            if (!string.IsNullOrEmpty(message.ConnectionId))
+            if (!string.IsNullOrEmpty(message.connectionId))
             {
                 packer.PackString(PresenceMessage.ConnectionIdPropertyName);
-                packer.Pack(message.ConnectionId);
+                packer.Pack(message.connectionId);
             }
-            if (message.Timestamp.Ticks > 0)
+            if (message.timestamp.Ticks > 0)
             {
                 packer.PackString(PresenceMessage.TimestampPropertyName);
-                packer.Pack(message.Timestamp.ToUnixTimeInMilliseconds());
+                packer.Pack(message.timestamp.ToUnixTimeInMilliseconds());
             }
-            if (message.Data != null)
+            if (message.data != null)
             {
                 packer.PackString(PresenceMessage.DataPropertyName);
-                if (message.Data is byte[])
+                if (message.data is byte[])
                 {
-                    packer.PackRaw(message.Data as byte[]);
+                    packer.PackRaw(message.data as byte[]);
                 }
                 else
                 {
-                    packer.PackString(message.Data.ToString());
+                    packer.PackString(message.data.ToString());
                 }
             }
         }
@@ -378,20 +378,20 @@ namespace Ably.Types
                         {
                             string result;
                             unpacker.ReadString(out result);
-                            message.Name = result;
+                            message.name = result;
                         }
                         break;
                     case Message.TimestampPropertyName:
                         {
                             long result;
                             unpacker.ReadInt64(out result);
-                            message.Timestamp = result.FromUnixTimeInMilliseconds();
+                            message.timestamp = result.FromUnixTimeInMilliseconds();
                         }
                         break;
                     case Message.DataPropertyName:
                         {
                             MessagePackObject result = unpacker.ReadItemData();
-                            message.Data = ParseResult(result);
+                            message.data = ParseResult(result);
                         }
                         break;
                 }
@@ -416,41 +416,41 @@ namespace Ably.Types
                         {
                             int result;
                             unpacker.ReadInt32(out result);
-                            message.Action = (PresenceMessage.ActionType)result;
+                            message.action = (PresenceMessage.ActionType)result;
                         }
                         break;
                     case PresenceMessage.IdPropertyName :
                         {
                             string result;
                             unpacker.ReadString(out result);
-                            message.Id = result;
+                            message.id = result;
                         }
                         break;
                     case PresenceMessage.ClientIdPropertyName :
                         {
                             string result;
                             unpacker.ReadString(out result);
-                            message.ClientId = result;
+                            message.clientId = result;
                         }
                         break;
                     case PresenceMessage.ConnectionIdPropertyName :
                         {
                             string result;
                             unpacker.ReadString(out result);
-                            message.ConnectionId = result;
+                            message.connectionId = result;
                         }
                         break;
                     case PresenceMessage.TimestampPropertyName :
                         {
                             long result;
                             unpacker.ReadInt64(out result);
-                            message.Timestamp = result.FromUnixTimeInMilliseconds();
+                            message.timestamp = result.FromUnixTimeInMilliseconds();
                         }
                         break;
                     case PresenceMessage.DataPropertyName :
                         {
                             MessagePackObject result = unpacker.ReadItemData();
-                            message.Data = ParseResult(result);
+                            message.data = ParseResult(result);
                         }
                         break;
                 }

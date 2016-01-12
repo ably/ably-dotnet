@@ -187,12 +187,12 @@ namespace Ably.AcceptanceTests
                 var decodedData = DecodeData((string)encoded["data"], encoding);
                 channel.Publish((string)encoded["name"], decodedData);
                 var message = channel.History().First();
-                if(message.Data is byte[])
-                    (message.Data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
+                if(message.data is byte[])
+                    (message.data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
                 else if (encoding == "json")
-                    JToken.DeepEquals((JToken) message.Data, (JToken) decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
+                    JToken.DeepEquals((JToken) message.data, (JToken) decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
                 else
-                    message.Data.Should().Be(decodedData, "Item number {0} data does not match decoded data", count);
+                    message.data.Should().Be(decodedData, "Item number {0} data does not match decoded data", count);
                 count++;
             }
         }
@@ -215,11 +215,11 @@ namespace Ably.AcceptanceTests
             var history = channel.History(new DataRequestQuery() {Limit = 10});
             history.Should().HaveCount(10);
             history.HasNext.Should().BeTrue();
-            history.First().Name.Should().Be("name19");
+            history.First().name.Should().Be("name19");
 
             var secondPage = channel.History(history.NextQuery);
             secondPage.Should().HaveCount(10);
-            secondPage.First().Name.Should().Be("name9");
+            secondPage.First().name.Should().Be("name9");
 
 
         }

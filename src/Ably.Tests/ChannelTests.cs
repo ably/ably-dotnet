@@ -35,12 +35,12 @@ namespace Ably.Tests
             Assert.IsType<List<Message>>(_currentRequest.PostData);
             var messages = _currentRequest.PostData as List<Message>;
             var data = messages.First();
-            Assert.Equal("data", data.Data);
-            Assert.Equal("event", data.Name);
+            Assert.Equal("data", data.data);
+            Assert.Equal("event", data.name);
         }
 
         //TODO: Move test to RequestHandlerTests
-        //[Fact] 
+        //[Fact]
         //public void Publish_WithBinaryArrayData_AddsBase64EncodingToRequest()
         //{
         //    var rest = GetRestClient();
@@ -57,7 +57,7 @@ namespace Ably.Tests
         {
             var rest = GetRestClient();
             var channel = rest.Channels.Get("Test");
-            var message = new Message() { Name = "event" , Data = "data"};
+            var message = new Message() { name = "event" , data = "data"};
             channel.Publish(new List<Message> {message });
 
             Assert.Equal(HttpMethod.Post, _currentRequest.Method);
@@ -70,15 +70,15 @@ namespace Ably.Tests
             var rest = GetRestClient();
             var channel = rest.Channels.Get("Test");
 
-            var message = new Message() { Name = "event", Data = "data" };
+            var message = new Message() { name = "event", data = "data" };
             channel.Publish(new List<Message> { message });
 
             var data = _currentRequest.PostData as IEnumerable<Message>;
             Assert.NotNull(data);
             Assert.Equal(1, data.Count());
             var payloadMessage = data.First();
-            Assert.Equal("data", payloadMessage.Data);
-            Assert.Equal("event", payloadMessage.Name);
+            Assert.Equal("data", payloadMessage.data);
+            Assert.Equal("event", payloadMessage.name);
         }
 
         [Fact]
@@ -160,7 +160,7 @@ namespace Ably.Tests
                     return response;
                 };
             var channel = rest.Channels.Get("test");
-            
+
             //Act
             var result = channel.History();
 
@@ -175,7 +175,7 @@ namespace Ably.Tests
         {
             //Arrange
             var rest = GetRestClient();
-            var message = new Message() {Name = "test", Data = "Test"};
+            var message = new Message() {name = "test", data = "Test"};
             var defaultParams = Crypto.GetDefaultParams();
 
             rest.ExecuteHttpRequest = request =>
@@ -196,7 +196,7 @@ namespace Ably.Tests
             //Assert
             Assert.NotEmpty(result);
             var firstMessage = result.First();
-            Assert.Equal(message.Data, firstMessage.Data);
+            Assert.Equal(message.data, firstMessage.data);
         }
 
         public static IEnumerable<object[]> InvalidHistoryDates

@@ -95,8 +95,8 @@ namespace Ably.AcceptanceTests
 
             // Assert
             messagesReceived.Count.ShouldBeEquivalentTo(1);
-            messagesReceived[0].Name.ShouldBeEquivalentTo("test");
-            messagesReceived[0].Data.ShouldBeEquivalentTo("test data");
+            messagesReceived[0].name.ShouldBeEquivalentTo("test");
+            messagesReceived[0].data.ShouldBeEquivalentTo("test data");
         }
 
         [Test]
@@ -122,12 +122,12 @@ namespace Ably.AcceptanceTests
 
             // Assert
             messagesReceived.Count.ShouldBeEquivalentTo(3);
-            messagesReceived[0].Name.ShouldBeEquivalentTo("test1");
-            messagesReceived[0].Data.ShouldBeEquivalentTo("test 12");
-            messagesReceived[1].Name.ShouldBeEquivalentTo("test2");
-            messagesReceived[1].Data.ShouldBeEquivalentTo("test 123");
-            messagesReceived[2].Name.ShouldBeEquivalentTo("test3");
-            messagesReceived[2].Data.ShouldBeEquivalentTo("test 321");
+            messagesReceived[0].name.ShouldBeEquivalentTo("test1");
+            messagesReceived[0].data.ShouldBeEquivalentTo("test 12");
+            messagesReceived[1].name.ShouldBeEquivalentTo("test2");
+            messagesReceived[1].data.ShouldBeEquivalentTo("test 123");
+            messagesReceived[2].name.ShouldBeEquivalentTo("test3");
+            messagesReceived[2].data.ShouldBeEquivalentTo("test 321");
         }
 
         [Test]

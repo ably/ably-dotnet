@@ -288,7 +288,7 @@ namespace Ably.Tests
 
             // Assert
             manager.Verify(c => c.Send(It.Is<ProtocolMessage>(message => message.action == ProtocolMessage.MessageAction.Message &&
-                message.messages.Length == 1 && message.messages[0].Name == "message"), null));
+                message.messages.Length == 1 && message.messages[0].name == "message"), null));
         }
 
         [Fact]
@@ -335,7 +335,7 @@ namespace Ably.Tests
 
             // Assert
             manager.Verify(c => c.Send(It.Is<ProtocolMessage>(message => message.action == ProtocolMessage.MessageAction.Message &&
-                message.messages.Length == 1 && message.messages[0].Name == "message"), null));
+                message.messages.Length == 1 && message.messages[0].name == "message"), null));
         }
 
         [Fact]

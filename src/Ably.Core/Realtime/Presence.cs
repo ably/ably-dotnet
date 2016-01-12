@@ -117,7 +117,7 @@ namespace Ably.Realtime
             }
             foreach (PresenceMessage update in messages)
             {
-                switch (update.Action)
+                switch (update.action)
                 {
                     case PresenceMessage.ActionType.Enter:
                     case PresenceMessage.ActionType.Update:
@@ -213,7 +213,7 @@ namespace Ably.Realtime
             {
                 get
                 {
-                    return this.members.Values.Where(c => c.Action != PresenceMessage.ActionType.Absent)
+                    return this.members.Values.Where(c => c.action != PresenceMessage.ActionType.Absent)
                         .ToArray();
                 }
             }
@@ -230,7 +230,7 @@ namespace Ably.Realtime
 
                 // compare the timestamp of the new item with any existing member (or ABSENT witness)
                 PresenceMessage existingItem;
-                if (members.TryGetValue(key, out existingItem) && item.Timestamp < existingItem.Timestamp)
+                if (members.TryGetValue(key, out existingItem) && item.timestamp < existingItem.timestamp)
                 {
                     // no item supersedes a newer item with the same key
                     return false;
@@ -253,7 +253,7 @@ namespace Ably.Realtime
             {
                 string key = MemberKey(item);
                 PresenceMessage existingItem;
-                if (members.TryGetValue(key, out existingItem) && existingItem.Action == PresenceMessage.ActionType.Absent)
+                if (members.TryGetValue(key, out existingItem) && existingItem.action == PresenceMessage.ActionType.Absent)
                 {
                     return false;
                 }
@@ -284,7 +284,7 @@ namespace Ably.Realtime
                     // received all of the out-of-order sync messages
                     foreach (KeyValuePair<string, PresenceMessage> member in this.members.ToArray())
                     {
-                        if (member.Value.Action == PresenceMessage.ActionType.Present)
+                        if (member.Value.action == PresenceMessage.ActionType.Present)
                         {
                             this.members.Remove(member.Key);
                         }
@@ -306,7 +306,7 @@ namespace Ably.Realtime
 
             private string MemberKey(PresenceMessage message)
             {
-                return string.Format("{0}:{1}", message.ConnectionId, message.ClientId);
+                return string.Format("{0}:{1}", message.connectionId, message.clientId);
             }
         }
     }
