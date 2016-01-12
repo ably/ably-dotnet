@@ -83,8 +83,8 @@ namespace Ably.AcceptanceTests
             var tokenAbly = new RestClient(new AblyOptions { Token = token.Token , Environment = AblyEnvironment.Sandbox});
 
             var error = Assert.Throws<AblyException>(delegate { tokenAbly.Channels.Get("boo").Publish("test", true); });
-            error.ErrorInfo.Code.Should().Be( 40160 );
-            error.ErrorInfo.StatusCode.Should().Be( HttpStatusCode.Unauthorized );
+            error.ErrorInfo.code.Should().Be( 40160 );
+            error.ErrorInfo.statusCode.Should().Be( HttpStatusCode.Unauthorized );
         }
 
         [Test]
@@ -100,8 +100,8 @@ namespace Ably.AcceptanceTests
                 ably.Auth.RequestToken( req, null );
             } );
 
-            error.ErrorInfo.Code.Should().Be( 40101 );
-            error.ErrorInfo.StatusCode.Should().Be( HttpStatusCode.Unauthorized );
+            error.ErrorInfo.code.Should().Be( 40101 );
+            error.ErrorInfo.statusCode.Should().Be( HttpStatusCode.Unauthorized );
         }
 
         [Test]

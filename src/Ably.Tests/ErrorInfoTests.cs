@@ -15,9 +15,9 @@ namespace Ably.Tests
             var errorInfo = ErrorInfo.Parse(response);
 
             //Assert
-            Assert.Equal("Unknown error", errorInfo.Reason);
-            Assert.Equal(500, errorInfo.Code);
-            Assert.Equal(response.StatusCode, errorInfo.StatusCode);
+            Assert.Equal("Unknown error", errorInfo.message);
+            Assert.Equal(500, errorInfo.code);
+            Assert.Equal(response.StatusCode, errorInfo.statusCode);
         }
 
         [Fact]
@@ -32,8 +32,8 @@ namespace Ably.Tests
             var errorInfo = ErrorInfo.Parse(response);
 
             //Assert
-            Assert.Equal(reason, errorInfo.Reason);
-            Assert.Equal(code, errorInfo.Code);
+            Assert.Equal(reason, errorInfo.message);
+            Assert.Equal(code, errorInfo.code);
         }
 
         [Fact]

@@ -81,7 +81,7 @@ namespace Ably.Realtime
             else if (this.channel.State == ChannelState.Attached)
             {
                 ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, this.channel.Name);
-                message.Presence = new PresenceMessage[] { msg };
+                message.presence = new PresenceMessage[] { msg };
                 this.connection.Send(message, callback);
             }
             else
@@ -92,13 +92,13 @@ namespace Ably.Realtime
 
         private void OnConnectionMessageReceived(ProtocolMessage message)
         {
-            switch (message.Action)
+            switch (message.action)
             {
                 case ProtocolMessage.MessageAction.Presence:
-                    this.OnPresence(message.Presence, null);
+                    this.OnPresence(message.presence, null);
                     break;
                 case ProtocolMessage.MessageAction.Sync:
-                    this.OnPresence(message.Presence, message.ChannelSerial);
+                    this.OnPresence(message.presence, message.channelSerial);
                     break;
             }
         }
@@ -167,12 +167,12 @@ namespace Ably.Realtime
                 return;
 
             ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, this.channel.Name);
-            message.Presence = new PresenceMessage[this.pendingPresence.Count];
+            message.presence = new PresenceMessage[this.pendingPresence.Count];
             List<Action<bool, ErrorInfo>> callbacks = new List<Action<bool, ErrorInfo>>();
             int i = 0;
             foreach (QueuedPresenceMessage presenceMessage in this.pendingPresence)
             {
-                message.Presence[i++] = presenceMessage.Message;
+                message.presence[i++] = presenceMessage.Message;
                 if (presenceMessage.Callback != null)
                 {
                     callbacks.Add(presenceMessage.Callback);
@@ -245,7 +245,7 @@ namespace Ably.Realtime
                 {
                     members[key] = item;
                 }
-                
+
                 return true;
             }
 
