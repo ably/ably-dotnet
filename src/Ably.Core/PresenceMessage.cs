@@ -56,8 +56,20 @@ namespace Ably
         [MessagePackMember(5, Name = EncodingPropertyName)]
         public string encoding { get; set; }
 
-        [JsonProperty(TimestampPropertyName)]
+        [JsonIgnore]
         [MessagePackMember(6, Name = TimestampPropertyName)]
         public DateTimeOffset timestamp { get; set; }
+
+        [JsonProperty( "timestamp" )]
+        public long timestamp_raw
+        {
+            get { return timestamp.ToUnixTimeInMilliseconds(); }
+            set { timestamp = value.FromUnixTimeInMilliseconds(); }
+        }
+
+        public bool ShouldSerializetimestamp_raw()
+        {
+            return timestamp.Ticks > 0;
+        }
     }
 }
