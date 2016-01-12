@@ -51,7 +51,7 @@ namespace Ably.Types
         internal const string MessagesPropertyName = "messages";
         internal const string PresencePropertyName = "presence";
 
-        internal ProtocolMessage()
+        public ProtocolMessage()
         {
         }
 

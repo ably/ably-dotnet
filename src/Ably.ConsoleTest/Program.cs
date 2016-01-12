@@ -13,7 +13,7 @@ namespace Ably.ConsoleTest
             Assembly ass = typeof(LoggerTests).Assembly;
 
             // Run all of them, with brief output
-            NUnit.Run( ass, false, false, false );
+            // NUnit.Run( ass, false, false, false );
 
             // Run all of them, with verbose output, and stop on errors
             // NUnit.Run( ass, true, true, true );
@@ -26,11 +26,11 @@ namespace Ably.ConsoleTest
             // string strTest = null;
 
             // Run all of them, with brief output
-            XUnit.Run( x, null, false, false );
+            // XUnit.Run( x, null, false, false );
             // XUnit.Run( x, null, true, true );
 
-            // strTest = "DeserializesMessageCorrectly_Messages";
-            // XUnit.Run( x, strTest, true );
+            string strTest = "MsgPack";
+            XUnit.Run( x, strTest, true );
         }
     }
 }
