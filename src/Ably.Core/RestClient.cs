@@ -1,35 +1,16 @@
+using Ably.MessageEncoders;
+using Ably.Rest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using Ably.Auth;
-using Ably.CustomSerialisers;
-using Ably.MessageEncoders;
-using Ably.Rest;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Ably
 {
-    /// <summary>
-    /// Client for the ably rest API
-    /// </summary>
+    /// <summary>Client for the ably rest API</summary>
     public sealed class RestClient : AblyBase, IRestClient, IAblyRest
     {
-        static RestClient()
-        {
-            JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
-            {
-                Converters = new List<JsonConverter>()
-                {
-                    new DateTimeOffsetJsonConverter(),
-                    new CapabilityJsonConverter()
-                }
-            };
-        }
-
-
         internal IAblyHttpClient _httpClient;
         internal MessageHandler _messageHandler;
 

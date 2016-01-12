@@ -138,6 +138,7 @@
     <Compile Include="Types\MsgPackMessageSerializer.cs" />
     <Compile Include="Types\ProtocolMessage.cs" />
     <Compile Include="Utils\ActionOnDispose.cs" />
+    <Compile Include="Utils\ReflectionUtils.cs" />
     <Compile Include="Utils\StringUtils.cs" />
   </ItemGroup>
   <ItemGroup>

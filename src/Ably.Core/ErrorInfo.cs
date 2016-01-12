@@ -28,10 +28,11 @@ namespace Ably
         /// <summary>Ably error code (see https://github.com/ably/ably-common/blob/master/protocol/errors.json) </summary>
         public int code { get; set; }
         /// <summary>The http status code corresponding to this error</summary>
-        [JsonIgnore]
         public HttpStatusCode? statusCode { get; set; }
         /// <summary>Additional reason information, where available</summary>
         public string message { get; set; }
+
+        public ErrorInfo() { }
 
         public ErrorInfo(string reason, int code)
         {

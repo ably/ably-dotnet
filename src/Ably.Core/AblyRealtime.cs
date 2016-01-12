@@ -1,10 +1,6 @@
-﻿using Ably.CustomSerialisers;
-using Ably.Realtime;
+﻿using Ably.Realtime;
 using Ably.Transport;
-using Ably.Types;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,22 +11,7 @@ namespace Ably
     /// </summary>
     public class AblyRealtime : AblyBase
     {
-        static AblyRealtime()
-        {
-            JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
-            {
-                Converters = new List<JsonConverter>()
-                {
-                    new DateTimeOffsetJsonConverter(),
-                    new CapabilityJsonConverter()
-                }
-            };
-        }
-
-
-        /// <summary>
-        ///
-        /// </summary>
+        /// <summary></summary>
         /// <param name="key"></param>
         public AblyRealtime(string key)
             : this(new AblyRealtimeOptions(key))
