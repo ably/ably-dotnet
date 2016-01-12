@@ -24,7 +24,7 @@ namespace Ably.MessageEncoders
             //Assume all the other steps will always work with Utf8
             if (CurrentEncodingIs(payload, EncodingName))
             {
-                payload.Data = (payload.Data as byte[]).GetText();
+                payload.data = (payload.data as byte[]).GetText();
                 RemoveCurrentEncodingPart(payload);
             }
         }

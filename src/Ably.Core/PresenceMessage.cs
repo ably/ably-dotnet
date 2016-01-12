@@ -32,37 +32,32 @@ namespace Ably
 
         public PresenceMessage(ActionType action, string clientId, object data)
         {
-            this.Action = action;
-            this.ClientId = clientId;
-            this.Data = data;
+            this.action = action;
+            this.clientId = clientId;
+            this.data = data;
         }
 
-        [JsonProperty(IdPropertyName)]
         [MessagePackMember(0, Name = IdPropertyName)]
-        public string Id { get; set; }
+        public string id { get; set; }
 
-        [JsonProperty(ActionPropertyName)]
         [MessagePackMember(1, Name = ActionPropertyName)]
-        public ActionType Action { get; set; }
+        public ActionType action { get; set; }
 
-        [JsonProperty(ClientIdPropertyName)]
         [MessagePackMember(2, Name = ClientIdPropertyName)]
-        public string ClientId { get; set; }
+        public string clientId { get; set; }
 
-        [JsonProperty(ConnectionIdPropertyName)]
         [MessagePackMember(3, Name = ConnectionIdPropertyName)]
-        public string ConnectionId { get; set; }
+        public string connectionId { get; set; }
 
-        [JsonProperty(DataPropertyName)]
         [MessagePackMember(4, Name = DataPropertyName)]
-        public object Data { get; set; }
+        public object data { get; set; }
 
         [JsonProperty(EncodingPropertyName)]
         [MessagePackMember(5, Name = EncodingPropertyName)]
-        public string Encoding { get; set; }
+        public string encoding { get; set; }
 
         [JsonProperty(TimestampPropertyName)]
         [MessagePackMember(6, Name = TimestampPropertyName)]
-        public DateTimeOffset Timestamp { get; set; }
+        public DateTimeOffset timestamp { get; set; }
     }
 }

@@ -13,7 +13,7 @@ namespace Ably.MessageEncoders
 
         public override void Decode(IEncodedMessage payload, ChannelOptions options)
         {
-            if (IsEmpty(payload.Data))
+            if (IsEmpty(payload.data))
                 return;
 
             var currentEncoding = GetCurrentEncoding(payload);
@@ -32,7 +32,7 @@ namespace Ably.MessageEncoders
             }
 
             var cipher = Crypto.GetCipher(options);
-            payload.Data = cipher.Decrypt(payload.Data as byte[]);
+            payload.data = cipher.Decrypt(payload.data as byte[]);
             RemoveCurrentEncodingPart(payload);
         }
 
@@ -46,26 +46,26 @@ namespace Ably.MessageEncoders
 
         public override void Encode(IEncodedMessage payload, ChannelOptions options)
         {
-            if (IsEmpty(payload.Data) || IsEncrypted(payload))
+            if (IsEmpty(payload.data) || IsEncrypted(payload))
                 return;
 
             if (options.Encrypted == false)
                 return;
 
-            if (payload.Data is string)
+            if (payload.data is string)
             {
-                payload.Data = ((string)payload.Data).GetBytes();
+                payload.data = ((string)payload.data).GetBytes();
                 AddEncoding(payload, "utf-8");
             }
 
             var cipher = Crypto.GetCipher(options);
-            payload.Data = cipher.Encrypt(payload.Data as byte[]);
+            payload.data = cipher.Encrypt(payload.data as byte[]);
             AddEncoding(payload, string.Format("{0}+{1}", EncodingName, options.CipherParams.CipherType.ToLower()));
         }
 
         private bool IsEncrypted(IEncodedMessage payload)
         {
-            return payload.Encoding.IsNotEmpty() && payload.Encoding.Contains(EncodingName);
+            return payload.encoding.IsNotEmpty() && payload.encoding.Contains(EncodingName);
         }
 
         public CipherEncoder(Protocol protocol)
