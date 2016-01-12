@@ -97,7 +97,7 @@ namespace Ably.ConsoleTest
             {
                 if( null == this.strTest )
                     return true;
-                return itc.DisplayName.ToLowerInvariant().EndsWith( this.strTest.ToLowerInvariant() );
+                return itc.DisplayName.ToLowerInvariant().Contains( this.strTest.ToLowerInvariant() );
             }
 
             // Various messages
