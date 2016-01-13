@@ -90,6 +90,13 @@ namespace Ably.Types
         public DateTimeOffset? timestamp { get; set; }
         public Message[] messages { get; set; }
 
+        public bool ShouldSerializemessages()
+        {
+            if( null == messages )
+                return false;
+            return messages.Any( m => !m.isEmpty() );
+        }
+
         [OnSerializing]
         internal void onSerializing( StreamingContext context )
         {

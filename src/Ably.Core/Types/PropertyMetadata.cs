@@ -9,7 +9,7 @@ namespace Ably.Types
     {
         readonly PropertyInfo pi;
         public readonly string name;
-        readonly Func<object, bool> shouldSerializeMethod;
+        public Func<object, bool> shouldSerializeMethod;
         readonly bool canRead, canWrite;
 
         public Action<Unpacker, object> deserialize;
@@ -72,7 +72,7 @@ namespace Ably.Types
                     unp.ReadString( out s );
                     pi.SetValue( obj, s );
                 };
-                this.serialize = ( obj, p ) => p.Pack( (long)pi.GetValue( obj ) );
+                this.serialize = ( obj, p ) => p.Pack( (string)pi.GetValue( obj ) );
                 return;
             }
         }
