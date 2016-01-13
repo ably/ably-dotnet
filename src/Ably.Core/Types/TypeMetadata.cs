@@ -101,6 +101,15 @@ namespace Ably.Types
                 PropertyMetadata meta;
                 if( !dict.TryGetValue( propName, out meta ) )
                 {
+                    Logger.Warning( "Deserializing {0}: unknown property {1}", this.type.FullName, propName );
+                    MessagePackObject obj;
+                    unpacker.ReadObject( out obj );
+                    continue;
+                }
+
+                if( null == meta.deserialize )
+                {
+                    Logger.Error( "Deserializing {0}: no deserializer for property {1}", this.type.FullName, propName );
                     MessagePackObject obj;
                     unpacker.ReadObject( out obj );
                     continue;
