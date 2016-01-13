@@ -1,4 +1,5 @@
-﻿using MsgPack;
+﻿using Ably.Types.MsgPack;
+using MsgPack;
 using System;
 using System.Linq;
 using System.Net;

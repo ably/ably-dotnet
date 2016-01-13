@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace Ably.Types
+namespace Ably.Types.MsgPack
 {
     class TypeMetadata
     {

@@ -135,11 +135,11 @@
     <Compile Include="Transport\TransportParams.cs" />
     <Compile Include="Types\IMessageSerializer.cs" />
     <Compile Include="Types\JsonMessageSerializer.cs" />
-    <Compile Include="Types\MsgPackMessageSerializer.cs" />
-    <Compile Include="Types\MsgPackUtils.cs" />
-    <Compile Include="Types\PropertyMetadata.cs" />
+    <Compile Include="Types\MsgPack\MsgPackMessageSerializer.cs" />
+    <Compile Include="Types\MsgPack\MsgPackUtils.cs" />
+    <Compile Include="Types\MsgPack\PropertyMetadata.cs" />
     <Compile Include="Types\ProtocolMessage.cs" />
-    <Compile Include="Types\TypeMetadata.cs" />
+    <Compile Include="Types\MsgPack\TypeMetadata.cs" />
     <Compile Include="Utils\ActionOnDispose.cs" />
     <Compile Include="Utils\ReflectionUtils.cs" />
     <Compile Include="Utils\StringUtils.cs" />
