@@ -62,7 +62,7 @@
     <Compile Include="CustomSerialisers\StatsJsonDateConverter.cs" />
     <Compile Include="DataRequestQuery.cs" />
     <Compile Include="Encryption\Crypto.cs" />
-    <Compile Include="ErrorInfo.cs" />
+    <Compile Include="Types\ErrorInfo.cs" />
     <Compile Include="Extensions\DateExtensions.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\JTokenExtensions.cs" />
