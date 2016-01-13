@@ -54,11 +54,13 @@ namespace Ably.Types
             dict.Add( pm.name, pm );
         }
 
-        public void setCustom( string name, Action<object, Packer> serialize, Action<Unpacker, object> deserialize )
+        public void setCustom( string name, Action<object, Packer> serialize, Action<Unpacker, object> deserialize, Func<object, bool> shouldSerialize = null)
         {
             PropertyMetadata meta = dict[ name ];
             meta.serialize = serialize;
             meta.deserialize = deserialize;
+            if( null != shouldSerialize )
+                meta.shouldSerializeMethod = shouldSerialize;
         }
 
         public byte[] serialize( object val )
@@ -69,41 +71,52 @@ namespace Ably.Types
             {
                 using( Packer packer = Packer.Create( stream ) )
                 {
-                    packer.PackMapHeader( props.Length );
-                    foreach( PropertyMetadata meta in props )
-                    {
-                        packer.PackString( meta.name );
-                        meta.serialize( val, packer );
-                    }
+                    this.serialize( val, packer );
                 }
                 return stream.ToArray();
             }
         }
 
-        public object deserialize( byte[] bytes )
+        public void serialize( object val, Packer packer )
+        {
+            PropertyMetadata[] props = list.Where( pm => pm.shouldSerialize( val ) ).ToArray();
+            packer.PackMapHeader( props.Length );
+            foreach( PropertyMetadata meta in props )
+            {
+                packer.PackString( meta.name );
+                meta.serialize( val, packer );
+            }
+        }
+
+        public object deserialize( Unpacker unpacker )
         {
             object res = Activator.CreateInstance( type );
 
+            long fieldCount = 0;
+            unpacker.ReadMapLength( out fieldCount );
+            for( int i = 0; i < fieldCount; i++ )
+            {
+                string propName;
+                unpacker.ReadString( out propName );
+                PropertyMetadata meta;
+                if( !dict.TryGetValue( propName, out meta ) )
+                {
+                    MessagePackObject obj;
+                    unpacker.ReadObject( out obj );
+                    continue;
+                }
+
+                meta.deserialize( unpacker, res );
+            }
+            return res;
+        }
+
+        public object deserialize( byte[] bytes )
+        {
             using( MemoryStream stream = new MemoryStream( bytes ) )
             using( Unpacker unpacker = Unpacker.Create( stream ) )
             {
-                long fieldCount = 0;
-                unpacker.ReadMapLength( out fieldCount );
-                for( int i = 0; i < fieldCount; i++ )
-                {
-                    string propName;
-                    unpacker.ReadString( out propName );
-                    PropertyMetadata meta;
-                    if( !dict.TryGetValue( propName, out meta ) )
-                    {
-                        MessagePackObject obj;
-                        unpacker.ReadObject( out obj );
-                        continue;
-                    }
-
-                    meta.deserialize( unpacker, res );
-                }
-                return res;
+                return this.deserialize( unpacker );
             }
         }
     }
