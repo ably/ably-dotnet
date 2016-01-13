@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Ably.Types;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using Xunit.Extensions;
-using Ably.Types;
 
 namespace Ably.Tests
 {
@@ -44,7 +44,8 @@ namespace Ably.Tests
                 yield return new object[] { new byte[] { 0x91, 0x81, 0xa4, 0x64, 0x61, 0x74, 0x61, 0xc3 }, new Message[] { new Message(null, true) } };
                 yield return new object[] { new byte[] { 0x91, 0x81, 0xa4, 0x64, 0x61, 0x74, 0x61, 0xc0 }, new Message[] { new Message(null, null) } };
                 yield return new object[] { new byte[] { 0x91, 0x81, 0xa4, 0x64, 0x61, 0x74, 0x61, 0x92, 0xcd, 0x04, 0xd2, 0xcd, 0x10, 0xe1 }, new Message[] { new Message(null, new object[] { (ushort)1234, (ushort)4321 }) } };
-                yield return new object[] { new byte[] { 0x91, 0x81, 0xa4, 0x64, 0x61, 0x74, 0x61, 0x82, 0xa1, 0x61, 0xcd, 0x04, 0xd2, 0xa1, 0x62, 0xcd, 0x10, 0xe1 }, new Message[] { new Message(null, new System.Collections.Hashtable() { { "a", (ushort)1234 }, { "b", (ushort)4321 } }) } }; 
+                yield return new object[] { new byte[] { 0x91, 0x81, 0xa4, 0x64, 0x61, 0x74, 0x61, 0x82, 0xa1, 0x61, 0xcd, 0x04, 0xd2, 0xa1, 0x62, 0xcd, 0x10, 0xe1 },
+                    new Message[] { new Message(null, new Dictionary<object,object>() { { "a", (ushort)1234 }, { "b", (ushort)4321 } }) } };
             }
         }
 
@@ -85,7 +86,7 @@ namespace Ably.Tests
         {
             // Arrange
             MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
-            ProtocolMessage message = new ProtocolMessage() { Channel = channel };
+            ProtocolMessage message = new ProtocolMessage() { channel = channel };
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x82);
             expectedMessage.AddRange(SerializeString("action"));
@@ -116,7 +117,7 @@ namespace Ably.Tests
         {
             // Arrange
             MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
-            ProtocolMessage message = new ProtocolMessage() { MsgSerial = msgSerial };
+            ProtocolMessage message = new ProtocolMessage() { msgSerial = msgSerial };
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x82);
             expectedMessage.AddRange(SerializeString("action"));
@@ -146,14 +147,14 @@ namespace Ably.Tests
         {
             // Arrange
             MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
-            ProtocolMessage message = new ProtocolMessage() { Messages = messages };
+            ProtocolMessage message = new ProtocolMessage() { messages = messages };
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x82);
             expectedMessage.AddRange(SerializeString("action"));
             expectedMessage.Add(0);
             expectedMessage.AddRange(SerializeString("msgSerial"));
             expectedMessage.Add(0);
-            var validMessages = messages.Where(c => !string.IsNullOrEmpty(c.Name));
+            var validMessages = messages.Where(c => !string.IsNullOrEmpty(c.name));
             if (validMessages.Any())
             {
                 expectedMessage[0]++;
@@ -163,8 +164,7 @@ namespace Ably.Tests
                 {
                     expectedMessage.Add((0x08 << 4) + 1);
                     expectedMessage.AddRange(SerializeString("name"));
-                    expectedMessage.AddRange(SerializeString(msg.Name));
-                    
+                    expectedMessage.AddRange(SerializeString(msg.name));
                 }
             }
 
@@ -182,7 +182,7 @@ namespace Ably.Tests
         {
             // Arrange
             MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
-            ProtocolMessage message = new ProtocolMessage() { Presence = messages };
+            ProtocolMessage message = new ProtocolMessage() { presence = messages };
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x82);
             expectedMessage.AddRange(SerializeString("action"));
@@ -197,13 +197,13 @@ namespace Ably.Tests
                 foreach (PresenceMessage msg in messages)
                 {
                     expectedMessage.Add((0x08 << 4) + 1);
-                    expectedMessage[expectedMessage.Count - 1] += (byte)(string.IsNullOrEmpty(msg.ClientId) ? 0 : 1);
+                    expectedMessage[expectedMessage.Count - 1] += (byte)(string.IsNullOrEmpty(msg.clientId) ? 0 : 1);
                     expectedMessage.AddRange(SerializeString("action"));
-                    expectedMessage.Add((byte)msg.Action);
-                    if (!string.IsNullOrEmpty(msg.ClientId))
+                    expectedMessage.Add((byte)msg.action);
+                    if (!string.IsNullOrEmpty(msg.clientId))
                     {
                         expectedMessage.AddRange(SerializeString("clientId"));
-                        expectedMessage.AddRange(SerializeString(msg.ClientId));
+                        expectedMessage.AddRange(SerializeString(msg.clientId));
                     }
                 }
             }
@@ -237,7 +237,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<ProtocolMessage.MessageAction>(action, target.Action);
+            Assert.Equal<ProtocolMessage.MessageAction>(action, target.action);
         }
 
         [Theory]
@@ -267,7 +267,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(channel, target.Channel);
+            Assert.Equal<string>(channel, target.channel);
         }
 
         [Theory]
@@ -296,7 +296,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(serial, target.ChannelSerial);
+            Assert.Equal<string>(serial, target.channelSerial);
         }
 
         [Theory]
@@ -318,7 +318,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(connectionId, target.ConnectionId);
+            Assert.Equal<string>(connectionId, target.connectionId);
         }
 
         [Theory]
@@ -340,7 +340,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(connectionKey, target.ConnectionKey);
+            Assert.Equal<string>(connectionKey, target.connectionKey);
         }
 
         [Theory]
@@ -362,7 +362,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(id, target.Id);
+            Assert.Equal<string>(id, target.id);
         }
 
         [Theory]
@@ -383,7 +383,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<long>(connectionSerial, target.ConnectionSerial.Value);
+            Assert.Equal<long>(connectionSerial, target.connectionSerial.Value);
         }
 
         [Theory]
@@ -404,7 +404,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<int>(count, target.Count);
+            Assert.Equal<int>(count, target.count);
         }
 
         [Theory]
@@ -425,7 +425,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<long>(serial, target.MsgSerial);
+            Assert.Equal<long>(serial, target.msgSerial);
         }
 
         [Theory]
@@ -446,7 +446,7 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<byte>((byte)flags, (byte)target.Flags);
+            Assert.Equal<byte>((byte)flags, (byte)target.flags);
         }
 
         [Theory]
@@ -465,12 +465,12 @@ namespace Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.NotNull(target.Messages);
-            Assert.Equal<int>(expectedMessages.Length, target.Messages.Length);
+            Assert.NotNull(target.messages);
+            Assert.Equal<int>(expectedMessages.Length, target.messages.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
-                Assert.Equal<string>(expectedMessages[i].Name, target.Messages[i].Name);
-                Assert.Equal(expectedMessages[i].Data, target.Messages[i].Data);
+                Assert.Equal<string>(expectedMessages[i].name, target.messages[i].name);
+                Assert.Equal(expectedMessages[i].data, target.messages[i].data);
             }
         }
 

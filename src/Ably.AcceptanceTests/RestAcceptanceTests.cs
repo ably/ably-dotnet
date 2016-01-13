@@ -7,7 +7,7 @@ namespace Ably.AcceptanceTests
 {
     public class ChannelAcceptanceTests
     {
-        
+
     }
 
     [TestFixture]
@@ -23,8 +23,8 @@ namespace Ably.AcceptanceTests
             //Act
             var error = Assert.Throws<AblyException>(delegate { ably.Channels.Get("Test").Publish("test", true); });
 
-            error.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-            error.ErrorInfo.Code.Should().Be(40100);
+            error.ErrorInfo.statusCode.Should().Be(HttpStatusCode.Unauthorized);
+            error.ErrorInfo.code.Should().Be(40100);
         }
     }
 }

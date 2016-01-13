@@ -40,7 +40,7 @@ namespace Ably.AcceptanceTests
             presence.Should().HaveCount(4);
             foreach (var pMessage in presence)
             {
-                pMessage.Action.Should().Be(PresenceMessage.ActionType.Present);
+                pMessage.action.Should().Be(PresenceMessage.ActionType.Present);
             }
         }
 
