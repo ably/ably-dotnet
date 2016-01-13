@@ -8,42 +8,40 @@ namespace Ably.Types
     {
         static readonly TypeMetadata meta;
 
-        static void packArray<tElt>( Packer packer, TypeMetadata mdMessage, tElt[] arr )
-        {
-            packer.PackArrayHeader( arr.Length );
-            foreach( var m in arr )
-                mdMessage.serialize( m, packer );
-        }
-
-        static tElt[] unpackArray<tElt>( Unpacker unpacker, TypeMetadata mdMessage )
-        {
-            long ll;
-            unpacker.ReadArrayLength( out ll );
-            int l = (int)ll;
-            tElt[] arr = new tElt[ l ];
-            for( int i = 0; i < l; i++ )
-            {
-                arr[ i ] = (tElt)mdMessage.deserialize( unpacker );
-            }
-            return arr;
-        }
-
         static MsgPackMessageSerializer()
         {
             meta = new TypeMetadata( typeof( ProtocolMessage ) );
 
             TypeMetadata mdMessage = new TypeMetadata( typeof( Message ) );
+
+            mdMessage.remove( "data" );
+            mdMessage.add( "data" );
+            mdMessage.setCustom( "data",
+                ( obj, packer ) =>
+                {
+                    object data = ((Message)obj).data;
+                    if( data is byte[] )
+                        packer.PackRaw( data as byte[] );
+                    else
+                        packer.PackString( data.ToString() );
+                },
+                ( unpacker, obj ) =>
+                {
+                    MessagePackObject result = unpacker.ReadItemData();
+                    ( (Message)obj ).data = result.unpack();
+                } );
+
             TypeMetadata mdPresence = new TypeMetadata( typeof( PresenceMessage ) );
 
             meta.setCustom( "messages",
                 ( obj, packer ) =>
                 {
                     Message[] arr = ((ProtocolMessage)obj).messages.Where( m => !m.isEmpty() ).ToArray();
-                    packArray( packer, mdMessage, arr );
+                    packer.packArray( mdMessage, arr );
                 },
                 ( unp, obj ) =>
                 {
-                    Message[] arr = unpackArray<Message>( unp, mdMessage );
+                    Message[] arr = unp.unpackArray<Message>( mdMessage );
                     ( (ProtocolMessage)obj ).messages = arr;
                 } );
 
@@ -51,11 +49,11 @@ namespace Ably.Types
                 ( obj, packer ) =>
                 {
                     PresenceMessage[] arr = ((ProtocolMessage)obj).presence;
-                    packArray( packer, mdPresence, arr );
+                    packer.packArray( mdPresence, arr );
                 },
                 ( unp, obj ) =>
                 {
-                    PresenceMessage[] arr = unpackArray<PresenceMessage>( unp, mdPresence );
+                    PresenceMessage[] arr = unp.unpackArray<PresenceMessage>( mdPresence );
                     ( (ProtocolMessage)obj ).presence = arr;
                 } );
 
@@ -68,7 +66,6 @@ namespace Ably.Types
                     ProtocolMessage.MessageFlag flags = (ProtocolMessage.MessageFlag)(byte)(i);
                     ( (ProtocolMessage)obj ).flags = flags;
                 } );
-
         }
         public ProtocolMessage DeserializeProtocolMessage( object value )
         {

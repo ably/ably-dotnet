@@ -136,6 +136,7 @@
     <Compile Include="Types\IMessageSerializer.cs" />
     <Compile Include="Types\JsonMessageSerializer.cs" />
     <Compile Include="Types\MsgPackMessageSerializer.cs" />
+    <Compile Include="Types\MsgPackUtils.cs" />
     <Compile Include="Types\PropertyMetadata.cs" />
     <Compile Include="Types\ProtocolMessage.cs" />
     <Compile Include="Types\TypeMetadata.cs" />
