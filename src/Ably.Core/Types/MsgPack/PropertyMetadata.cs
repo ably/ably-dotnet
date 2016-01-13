@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Reflection;
 
-namespace Ably.Types
+namespace Ably.Types.MsgPack
 {
     internal class PropertyMetadata
     {
