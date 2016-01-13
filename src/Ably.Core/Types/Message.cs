@@ -32,30 +32,19 @@ namespace Ably
             this.data = data;
         }
 
-        /// <summary>
-        /// A globally unique message id
-        /// </summary>
-        [MessagePackMember( 7, Name = IdPropertyName )]
+        /// <summary>A globally unique message id</summary>
         public string id { get; set; }
 
-        /// <summary>
-        /// The id of the publisher of this message
-        /// </summary>
-        [MessagePackMember( 8, Name = ClientIdPropertyName )]
+        /// <summary>The id of the publisher of this message</summary>
         public string clientId { get; set; }
 
-        /// <summary>
-        /// The connection id of the publisher of the message
-        /// </summary>
-        [MessagePackMember( 9, Name = ConnectionIdPropertyName )]
+        /// <summary>The connection id of the publisher of the message</summary>
         public string connection_id { get; set; }
 
         /// <summary>The event name, if available</summary>
-        [MessagePackMember( 10, Name = NamePropertyName )]
         public string name { get; set; }
 
         /// <summary>The message payload. Supported data types are objects, byte[] and strings.</summary>
-        [MessagePackMember( 20, Name = DataPropertyName )]
         [JsonIgnore]
         public object data { get; set; }
 
@@ -96,17 +85,11 @@ namespace Ably
                 this.data = ( (string)this.data ).FromBase64();
         }
 
-        /// <summary>
-        /// The encoding for the message data. Encoding and decoding of messages is handled automatically by the client library.
-        ///Therefore, the `encoding` attribute should always be nil unless an Ably library decoding error has occurred.
-        /// </summary>
-        [MessagePackMember( 30, Name = EncodingPropertyName )]
+        /// <summary>The encoding for the message data. Encoding and decoding of messages is handled automatically by the client library.
+        /// Therefore, the `encoding` attribute should always be nil unless an Ably library decoding error has occurred.</summary>
         public string encoding { get; set; }
 
-        /// <summary>
-        /// Timestamp when the message was received by the Ably real-time service
-        /// </summary>
-        [MessagePackMember( 40, Name = TimestampPropertyName )]
+        /// <summary>Timestamp when the message was received by the Ably real-time service</summary>
         public DateTimeOffset? timestamp { get; set; }
 
         public override string ToString()
