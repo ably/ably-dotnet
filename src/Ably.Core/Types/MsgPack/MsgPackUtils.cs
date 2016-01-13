@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Ably.Types
+namespace Ably.Types.MsgPack
 {
     static class MsgPackUtils
     {
