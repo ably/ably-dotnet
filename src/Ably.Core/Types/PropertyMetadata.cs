@@ -64,6 +64,17 @@ namespace Ably.Types
                 this.serialize = ( obj, p ) => p.Pack( (long)pi.GetValue( obj ) );
                 return;
             }
+            if( pi.PropertyType == typeof( long? ) )
+            {
+                this.deserialize = ( unp, obj ) =>
+                {
+                    long? i;
+                    unp.ReadNullableInt64( out i );
+                    pi.SetValue( obj, i );
+                };
+                this.serialize = ( obj, p ) => p.Pack( (long?)pi.GetValue( obj ) );
+                return;
+            }
             if( pi.PropertyType == typeof( string ) )
             {
                 this.deserialize = ( unp, obj ) =>
