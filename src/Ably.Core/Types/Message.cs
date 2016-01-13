@@ -13,14 +13,6 @@ namespace Ably
     [DebuggerDisplay( "{ToString()}" )]
     public class Message : IEncodedMessage
     {
-        internal const string IdPropertyName = "id";
-        internal const string ClientIdPropertyName = "clientId";
-        internal const string ConnectionIdPropertyName = "connection_id";
-        internal const string NamePropertyName = "name";
-        internal const string DataPropertyName = "data";
-        internal const string EncodingPropertyName = "encoding";
-        internal const string TimestampPropertyName = "timestamp";
-
         public Message()
         {
 
