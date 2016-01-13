@@ -128,6 +128,12 @@ namespace Ably
             Message( LogLevel.Error, message, args );
         }
 
+        /// <summary>Log a warning message</summary>
+        internal static void Warning( string message, params object[] args )
+        {
+            Message( LogLevel.Warning, message, args );
+        }
+
         /// <summary>Log an informational message.</summary>
         internal static void Info( string message, params object[] args )
         {
