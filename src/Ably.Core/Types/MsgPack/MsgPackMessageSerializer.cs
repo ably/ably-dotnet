@@ -69,6 +69,19 @@ namespace Ably.Types
                     ( (ProtocolMessage)obj ).flags = flags;
                 } );
 
+            meta.setCustom( "timestamp",
+                ( obj, packer ) =>
+                {
+                    DateTimeOffset dto = ( (ProtocolMessage)obj ).timestamp.Value;
+                    packer.Pack( dto.ToUnixTimeInMilliseconds() );
+                },
+                ( unp, obj ) =>
+                {
+                    long ms;
+                    unp.ReadInt64( out ms );
+                    ( (ProtocolMessage)obj ).timestamp = ms.FromUnixTimeInMilliseconds();
+                } );
+
             TypeMetadata mdErrorInfo = new TypeMetadata( typeof( ErrorInfo ) );
             mdErrorInfo.setCustom( "statusCode",
                 ( obj, packer ) =>
@@ -88,11 +101,22 @@ namespace Ably.Types
             meta.setCustom( "error",
                 ( obj, packer ) =>
                 {
-                    mdErrorInfo.serialize( ( (ProtocolMessage)obj ).error );
+                    mdErrorInfo.serialize( ( (ProtocolMessage)obj ).error, packer );
                 },
                 ( unp, obj ) =>
                 {
                     ( (ProtocolMessage)obj ).error = (ErrorInfo)mdErrorInfo.deserialize( unp );
+                } );
+
+            TypeMetadata mdConnectionDetails = new TypeMetadata( typeof( ConnectionDetailsMessage ) );
+            meta.setCustom( "connectionDetails",
+                ( obj, packer ) =>
+                {
+                    mdConnectionDetails.serialize( ( (ProtocolMessage)obj ).connectionDetails, packer );
+                },
+                ( unp, obj ) =>
+                {
+                    ( (ProtocolMessage)obj ).connectionDetails = (ConnectionDetailsMessage)mdConnectionDetails.deserialize( unp );
                 } );
         }
         public ProtocolMessage DeserializeProtocolMessage( object value )
