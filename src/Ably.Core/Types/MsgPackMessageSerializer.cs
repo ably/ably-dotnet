@@ -1,6 +1,7 @@
 ﻿using MsgPack;
 using System;
 using System.Linq;
+using System.Net;
 
 namespace Ably.Types
 {
@@ -65,6 +66,32 @@ namespace Ably.Types
                     unp.ReadInt32( out i );
                     ProtocolMessage.MessageFlag flags = (ProtocolMessage.MessageFlag)(byte)(i);
                     ( (ProtocolMessage)obj ).flags = flags;
+                } );
+
+            TypeMetadata mdErrorInfo = new TypeMetadata( typeof( ErrorInfo ) );
+            mdErrorInfo.setCustom( "statusCode",
+                ( obj, packer ) =>
+                {
+                    HttpStatusCode code = ((ErrorInfo)obj).statusCode.Value;
+                    int iCode =(int) code;
+                    mdErrorInfo.serialize( iCode );
+                },
+                ( unp, obj ) =>
+                {
+                    int iCode;
+                    unp.ReadInt32( out iCode );
+                    HttpStatusCode code = (HttpStatusCode)iCode;
+                    ( (ErrorInfo)obj ).statusCode = code;
+                } );
+
+            meta.setCustom( "error",
+                ( obj, packer ) =>
+                {
+                    mdErrorInfo.serialize( ( (ProtocolMessage)obj ).error );
+                },
+                ( unp, obj ) =>
+                {
+                    ( (ProtocolMessage)obj ).error = (ErrorInfo)mdErrorInfo.deserialize( unp );
                 } );
         }
         public ProtocolMessage DeserializeProtocolMessage( object value )
