@@ -173,12 +173,6 @@ namespace Ably
             }
         }
 
-        private bool HasValidToken()
-        {
-            return CurrentToken != null &&
-                   (CurrentToken.Expires == DateTimeOffset.MinValue || CurrentToken.Expires >= DateTimeOffset.UtcNow);
-        }
-
         /// <summary>
         /// Retrieves the ably service time
         /// </summary>
