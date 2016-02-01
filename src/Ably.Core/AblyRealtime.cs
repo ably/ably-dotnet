@@ -48,11 +48,8 @@ namespace Ably
         {
             if( null == this.Channels || null == this.Connection )
             {
-                // bool wasBinary = _options.UseBinaryProtocol;
-                // _options.UseBinaryProtocol = false;
                 _simpleRest = new Rest.AblySimpleRestClient( _options );
                 InitAuth( _simpleRest );
-                // _options.UseBinaryProtocol = wasBinary;
 
                 IConnectionManager connectionManager = new ConnectionManager( options );
                 _protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
@@ -84,13 +81,15 @@ namespace Ably
             throw new Exception( "Unexpected AuthMethod value" );
         }
 
+        /// <summary>Request auth token, set options</summary>
         void InitTokenAuth()
         {
             CurrentToken = Auth.Authorise( null, null, false );
 
             if( HasValidToken() )
             {
-                options.AuthHeaders[ "Authorization" ] = "Bearer " + CurrentToken.Token.ToBase64();
+                // WebSockets use Token from Options.Token
+                this.Options.Token = CurrentToken.Token;
                 Logger.Debug( "Adding Authorization header with Token authentication" );
             }
             else
