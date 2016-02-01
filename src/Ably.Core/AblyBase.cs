@@ -36,9 +36,7 @@ namespace Ably
             get { return _options; }
         }
 
-        /// <summary>
-        /// Initialises the Ably Auth type based on the options passed.
-        /// </summary>
+        /// <summary>Initialises the Ably Auth type based on the options passed.</summary>
         internal void InitAuth(IAblyRest restClient)
         {
             _auth = new AblyTokenAuth(Options, restClient);
@@ -78,30 +76,23 @@ namespace Ably
             }
         }
 
+        internal TokenAuthMethod GetTokenAuthMethod()
+        {
+            if( null != Options.AuthCallback )
+                return TokenAuthMethod.Callback;
+            if( Options.AuthUrl.IsNotEmpty() )
+                return TokenAuthMethod.Url;
+            if( Options.Key.IsNotEmpty() )
+                return TokenAuthMethod.Signing;
+            if( Options.Token.IsNotEmpty() )
+                return TokenAuthMethod.JustToken;
+            return TokenAuthMethod.None;
+        }
+
         private void LogCurrentAuthenticationMethod()
         {
-            if (Options.AuthCallback != null)
-            {
-                Logger.Info("Authentication will be done using token auth with authCallback");
-            }
-            else if (Options.AuthUrl.IsNotEmpty())
-            {
-                Logger.Info( "Authentication will be done using token auth with url {0}", Options.AuthUrl );
-            }
-            else if (Options.Key.IsNotEmpty())
-            {
-                Logger.Info("Authentication will be done using token auth with client-side signing");
-            }
-            else if (Options.Token.IsNotEmpty())
-            {
-                Logger.Info("Authentication will be done using token auth with supplied token only");
-            }
-            else
-            {
-                /* this is not a hard error - but any operation that requires
-                 * authentication will fail */
-                Logger.Info("Authentication will fail because no authentication parameters supplied");
-            }
+            TokenAuthMethod method = GetTokenAuthMethod();
+            Logger.Info( "Authentication method: {0}", method.description() );
         }
     }
 }
