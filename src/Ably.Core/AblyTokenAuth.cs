@@ -96,6 +96,8 @@ namespace Ably
                     return jData.ToObject<TokenDetails>();
 
                 postData = JsonConvert.DeserializeObject<TokenRequestPostData>(signedData);
+
+                request.Url = String.Format( "/keys/{0}/requestToken", postData.keyName );
             }
             else
             {
