@@ -96,5 +96,14 @@ namespace Ably
             TokenAuthMethod method = GetTokenAuthMethod();
             Logger.Info( "Authentication method: {0}", method.description() );
         }
+
+        /// <summary>True if CurrentToken is still valid.</summary>
+        protected bool HasValidToken()
+        {
+            if ( null == CurrentToken )
+                return false;
+            DateTimeOffset exp = CurrentToken.Expires;
+            return ( exp == DateTimeOffset.MinValue ) || ( exp >= DateTimeOffset.UtcNow );
+        }
     }
 }
