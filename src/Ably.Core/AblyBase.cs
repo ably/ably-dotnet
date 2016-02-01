@@ -86,7 +86,7 @@ namespace Ably
             }
             else if (Options.AuthUrl.IsNotEmpty())
             {
-                Logger.Info("Authentication will be done using token auth with authUrl");
+                Logger.Info( "Authentication will be done using token auth with url {0}", Options.AuthUrl );
             }
             else if (Options.Key.IsNotEmpty())
             {
