@@ -1,6 +1,8 @@
 ﻿using Ably.Realtime;
+using Ably.Rest;
 using Ably.Transport;
 using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -46,18 +48,53 @@ namespace Ably
         {
             if( null == this.Channels || null == this.Connection )
             {
+                // bool wasBinary = _options.UseBinaryProtocol;
+                // _options.UseBinaryProtocol = false;
+                _simpleRest = new Rest.AblySimpleRestClient( _options );
                 InitAuth( _simpleRest );
+                // _options.UseBinaryProtocol = wasBinary;
 
                 IConnectionManager connectionManager = new ConnectionManager( options );
                 _protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
                 IChannelFactory factory = new ChannelFactory() { ConnectionManager = connectionManager, Options = options };
                 this.Channels = new ChannelList( connectionManager, factory );
                 this.Connection = connectionManager.Connection;
-                _simpleRest = new Rest.AblySimpleRestClient( _options );
             }
 
             this.Connection.Connect();
             return this.Connection;
+        }
+
+        new internal void InitAuth( IAblyRest restClient )
+        {
+            base.InitAuth( restClient );
+
+            if( AuthMethod == AuthMethod.Basic )
+            {
+                string authHeader = Convert.ToBase64String(Options.Key.GetBytes());
+                options.AuthHeaders[ "Authorization" ] = "Basic " + authHeader;
+                return;
+            }
+            if( AuthMethod == AuthMethod.Token )
+            {
+                InitTokenAuth();
+                return;
+            }
+
+            throw new Exception( "Unexpected AuthMethod value" );
+        }
+
+        void InitTokenAuth()
+        {
+            CurrentToken = Auth.Authorise( null, null, false );
+
+            if( HasValidToken() )
+            {
+                options.AuthHeaders[ "Authorization" ] = "Bearer " + CurrentToken.Token.ToBase64();
+                Logger.Debug( "Adding Authorization header with Token authentication" );
+            }
+            else
+                throw new AblyException( "Invalid token credentials: " + CurrentToken, 40100, HttpStatusCode.Unauthorized );
         }
 
         /// <summary>
