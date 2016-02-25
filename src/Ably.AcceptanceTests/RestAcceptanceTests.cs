@@ -18,7 +18,7 @@ namespace IO.Ably.AcceptanceTests
         {
             //Arrange
             var fakeKey = "AppId.KeyId:KeyValue";
-            var ably = new RestClient(new AblyOptions() { Key = fakeKey, Environment = AblyEnvironment.Sandbox });
+            var ably = new AblyRest(new AblyOptions() { Key = fakeKey, Environment = AblyEnvironment.Sandbox });
 
             //Act
             var error = Assert.Throws<AblyException>(delegate { ably.Channels.Get("Test").Publish("test", true); });
