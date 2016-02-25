@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Ably
+namespace IO.Ably
 {
     using kvp = KeyValuePair<string, string>;
 

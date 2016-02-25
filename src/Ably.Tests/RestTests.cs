@@ -3,11 +3,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using Ably.Auth;
 using FluentAssertions;
+using IO.Ably.Auth;
 using Xunit;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public class RestTests
     {

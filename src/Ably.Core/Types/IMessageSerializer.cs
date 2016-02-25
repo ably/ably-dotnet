@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ably.Types
+namespace IO.Ably.Types
 {
     public interface IMessageSerializer
     {

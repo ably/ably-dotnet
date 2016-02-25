@@ -1,10 +1,10 @@
-﻿using Ably.Transport;
-using Ably.Types;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using IO.Ably.Transport;
+using IO.Ably.Types;
 
-namespace Ably.Realtime
+namespace IO.Ably.Realtime
 {
     public interface IChannelFactory
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Ably.Realtime
+namespace IO.Ably.Realtime
 {
     public interface IRealtimeChannel
     {

@@ -2,7 +2,7 @@
 using System.Net.Http;
 using Xunit;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public abstract class RestApiTests
     {

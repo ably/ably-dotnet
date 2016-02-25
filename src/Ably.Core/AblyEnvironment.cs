@@ -1,4 +1,4 @@
-namespace Ably
+namespace IO.Ably
 {
     /// <summary>
     /// Represents the different ably environments

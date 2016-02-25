@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Ably.CustomSerialisers;
 using FluentAssertions;
+using IO.Ably.CustomSerialisers;
 using MsgPack;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Ably.Tests.MessagePack
+namespace IO.Ably.Tests.MessagePack
 {
     public class MessagePackSerializationTests
     {

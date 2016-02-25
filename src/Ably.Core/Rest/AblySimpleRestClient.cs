@@ -1,10 +1,10 @@
-﻿using Ably.MessageEncoders;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using IO.Ably.MessageEncoders;
 
-namespace Ably.Rest
+namespace IO.Ably.Rest
 {
     internal class AblySimpleRestClient : IAblyRest
     {

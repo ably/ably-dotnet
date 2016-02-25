@@ -1,8 +1,8 @@
 ﻿using System;
-using Ably.Rest;
+using IO.Ably.Rest;
 using Newtonsoft.Json;
 
-namespace Ably.MessageEncoders
+namespace IO.Ably.MessageEncoders
 {
     internal class JsonEncoder : MessageEncoder
     {

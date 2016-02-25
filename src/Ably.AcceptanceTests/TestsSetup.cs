@@ -6,7 +6,7 @@ using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
-namespace Ably.AcceptanceTests
+namespace IO.Ably.AcceptanceTests
 {
     [SetUpFixture]
     public class TestsSetup

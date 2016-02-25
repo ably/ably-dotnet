@@ -1,6 +1,6 @@
-using Ably.Auth;
+using IO.Ably.Auth;
 
-namespace Ably
+namespace IO.Ably
 {
     public interface IAuthCommands
     {

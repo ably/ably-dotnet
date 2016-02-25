@@ -1,12 +1,12 @@
-using Ably.MessageEncoders;
-using Ably.Rest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using IO.Ably.MessageEncoders;
+using IO.Ably.Rest;
 
-namespace Ably
+namespace IO.Ably
 {
     /// <summary>Client for the ably rest API</summary>
     public sealed class RestClient : AblyBase, IRestClient, IAblyRest

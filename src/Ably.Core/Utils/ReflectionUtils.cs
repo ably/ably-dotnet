@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace Ably.Utils
+namespace IO.Ably.Utils
 {
     static class ReflectionUtils
     {

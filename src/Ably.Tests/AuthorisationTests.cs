@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using Ably.Auth;
 using FluentAssertions;
+using IO.Ably.Auth;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public class AuthorisationTests
     {

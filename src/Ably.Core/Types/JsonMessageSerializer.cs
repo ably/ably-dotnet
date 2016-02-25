@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Ably.Types
+namespace IO.Ably.Types
 {
     public class JsonMessageSerializer : IMessageSerializer
     {

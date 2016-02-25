@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json.Linq;
 
-namespace Ably
+namespace IO.Ably
 {
     internal static class JTokenExtensions
     {

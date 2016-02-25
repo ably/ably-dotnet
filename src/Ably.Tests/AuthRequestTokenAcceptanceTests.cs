@@ -1,7 +1,7 @@
 using System;
 using Xunit;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public class AuthRequestTokenAcceptanceTests
     {

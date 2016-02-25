@@ -4,7 +4,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
 
-namespace Ably
+namespace IO.Ably
 {
     internal static class StringExtensions
     {

@@ -1,4 +1,4 @@
-namespace Ably
+namespace IO.Ably
 {
     public enum QueryDirection
     {

@@ -1,11 +1,11 @@
-﻿using Ably.Auth;
-using Ably.Rest;
-using System;
+﻿using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using IO.Ably.Auth;
+using IO.Ably.Rest;
 
-namespace Ably
+namespace IO.Ably
 {
     public class AblyBase
     {

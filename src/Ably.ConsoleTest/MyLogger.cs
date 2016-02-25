@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Ably.ConsoleTest
+namespace IO.Ably.ConsoleTest
 {
     /// <summary>ILoggerSink implementation that outputs colored messages to console.</summary>
     class MyLogger : ILoggerSink

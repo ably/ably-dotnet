@@ -1,9 +1,9 @@
-using Ably.MessageEncoders;
-using Ably.Rest;
 using FluentAssertions;
+using IO.Ably.MessageEncoders;
+using IO.Ably.Rest;
 using Xunit;
 
-namespace Ably.Tests.MessageEncodes
+namespace IO.Ably.Tests.MessageEncodes
 {
     public class Utf8EncoderTests
     {

@@ -1,8 +1,8 @@
-﻿using Ably.Types;
-using System;
+﻿using System;
 using System.Diagnostics;
+using IO.Ably.Types;
 
-namespace Ably.Transport.States.Connection
+namespace IO.Ably.Transport.States.Connection
 {
     [DebuggerDisplay("{State}")]
     internal abstract class ConnectionState

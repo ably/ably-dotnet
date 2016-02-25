@@ -1,8 +1,8 @@
-﻿using Ably.Rest;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using IO.Ably.Rest;
 
-namespace Ably.Realtime
+namespace IO.Ably.Realtime
 {
     public interface IRealtimeChannelCommands : IEnumerable<IRealtimeChannel>
     {

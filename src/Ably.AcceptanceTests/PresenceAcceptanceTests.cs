@@ -2,7 +2,7 @@ using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Ably.AcceptanceTests
+namespace IO.Ably.AcceptanceTests
 {
     [TestFixture(Protocol.Json)]
     [TestFixture(Protocol.MsgPack)]

@@ -1,13 +1,14 @@
-﻿using Ably.Transport;
-using States = Ably.Transport.States.Connection;
+﻿using States = IO.Ably.Transport.States.Connection;
 using System;
 using System.Collections.Generic;
 using Xunit;
 using Xunit.Extensions;
-using Ably.Types;
+using IO.Ably.Transport;
+using IO.Ably.Transport.States.Connection;
+using IO.Ably.Types;
 using Moq;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public class AckProtocolTests
     {
@@ -258,7 +259,7 @@ namespace Ably.Tests
             // Act
             target.SendMessage(targetMessage1, null);
             target.SendMessage(targetMessage2, null);
-            target.OnStateChanged(new States.ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, "")));
+            target.OnStateChanged(new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, "")));
             target.SendMessage(targetMessage3, null);
             target.SendMessage(targetMessage4, null);
 
@@ -281,7 +282,7 @@ namespace Ably.Tests
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 0) callbacks.Add(Tuple.Create(ack, err)); });
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 1) callbacks.Add(Tuple.Create(ack, err)); });
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 2) callbacks.Add(Tuple.Create(ack, err)); });
-            target.OnStateChanged(new States.ConnectionClosedState(null, error));
+            target.OnStateChanged(new ConnectionClosedState(null, error));
 
             // Assert
             Assert.Equal(3, callbacks.Count);
@@ -301,7 +302,7 @@ namespace Ably.Tests
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 0) callbacks.Add(Tuple.Create(ack, err)); });
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 1) callbacks.Add(Tuple.Create(ack, err)); });
             target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 2) callbacks.Add(Tuple.Create(ack, err)); });
-            target.OnStateChanged(new States.ConnectionFailedState(null, error));
+            target.OnStateChanged(new ConnectionFailedState(null, error));
 
             // Assert
             Assert.Equal(3, callbacks.Count);

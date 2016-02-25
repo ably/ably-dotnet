@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using Ably.Rest;
+using IO.Ably.Rest;
 using MsgPack;
 using Newtonsoft.Json;
 
-namespace Ably.MessageEncoders
+namespace IO.Ably.MessageEncoders
 {
     internal class MessageHandler : IMessageHandler
     {

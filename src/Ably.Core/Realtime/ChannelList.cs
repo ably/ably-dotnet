@@ -1,9 +1,9 @@
-﻿using Ably.Transport;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using IO.Ably.Transport;
 
-namespace Ably.Realtime
+namespace IO.Ably.Realtime
 {
     public class ChannelList : IRealtimeChannelCommands
     {

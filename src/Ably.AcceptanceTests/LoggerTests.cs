@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using FluentAssertions;
 
-namespace Ably.AcceptanceTests
+namespace IO.Ably.AcceptanceTests
 {
     [TestFixture]
     class LoggerTests

@@ -1,6 +1,6 @@
-﻿using Ably;
-using Ably.Encryption;
-using Ably.Platform;
+﻿using IO.Ably;
+using IO.Ably.Encryption;
+using IO.Ably.Platform;
 using System;
 using System.Net;
 using System.Runtime.InteropServices.WindowsRuntime;

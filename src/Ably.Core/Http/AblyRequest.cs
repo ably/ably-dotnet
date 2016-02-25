@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Ably.Rest;
+using IO.Ably.Rest;
 
-namespace Ably
+namespace IO.Ably
 {
     internal class AblyRequest
     {
