@@ -1,10 +1,10 @@
-﻿using Ably.Types.MsgPack;
-using MsgPack;
+﻿using MsgPack;
 using System;
 using System.Linq;
 using System.Net;
+using IO.Ably.Types.MsgPack;
 
-namespace Ably.Types
+namespace IO.Ably.Types
 {
     public class MsgPackMessageSerializer : IMessageSerializer
     {

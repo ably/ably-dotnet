@@ -6,11 +6,11 @@ using System.Net.Http;
 using Newtonsoft.Json;
 using Xunit;
 using System.Threading;
-using Ably.Encryption;
-using Ably.Rest;
+using IO.Ably.Encryption;
+using IO.Ably.Rest;
 using Xunit.Extensions;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public class ChannelTests : RestApiTests
     {

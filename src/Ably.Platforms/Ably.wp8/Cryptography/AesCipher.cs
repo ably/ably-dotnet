@@ -1,4 +1,4 @@
-﻿using Ably;
+﻿using IO.Ably;
 using System;
 
 namespace AblyPlatform.Cryptography

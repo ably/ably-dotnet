@@ -1,8 +1,8 @@
-﻿using Ably.Transport.States.Connection;
-using Ably.Types;
-using System;
+﻿using System;
+using IO.Ably.Transport.States.Connection;
+using IO.Ably.Types;
 
-namespace Ably.Transport
+namespace IO.Ably.Transport
 {
     internal class ConnectionHeartbeatRequest
     {

@@ -1,5 +1,3 @@
-using Ably.Encryption;
-using Ably.Rest;
 using FluentAssertions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -7,8 +5,10 @@ using NUnit.Framework;
 using System;
 using System.IO;
 using System.Linq;
+using IO.Ably.Encryption;
+using IO.Ably.Rest;
 
-namespace Ably.AcceptanceTests
+namespace IO.Ably.AcceptanceTests
 {
     public class StatsAcceptanceTests
     {

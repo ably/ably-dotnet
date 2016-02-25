@@ -1,12 +1,12 @@
-﻿using Ably.Realtime;
-using Ably.Rest;
-using Ably.Transport;
-using System;
+﻿using System;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using IO.Ably.Realtime;
+using IO.Ably.Rest;
+using IO.Ably.Transport;
 
-namespace Ably
+namespace IO.Ably
 {
     /// <summary>
     ///

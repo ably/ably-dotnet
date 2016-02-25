@@ -1,13 +1,13 @@
-﻿using Ably.Realtime;
-using Ably.Transport;
-using Ably.Types;
-using Moq;
+﻿using Moq;
 using System;
 using System.Collections.Generic;
+using IO.Ably.Realtime;
+using IO.Ably.Transport;
+using IO.Ably.Types;
 using Xunit;
 using Xunit.Extensions;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public class PresenceTests
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 
-namespace Ably
+namespace IO.Ably
 {
     internal class MimeTypes : Dictionary<string, string>
     {

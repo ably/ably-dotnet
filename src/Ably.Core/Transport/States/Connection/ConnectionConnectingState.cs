@@ -1,8 +1,8 @@
-﻿using Ably.Types;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using IO.Ably.Types;
 
-namespace Ably.Transport.States.Connection
+namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionConnectingState : ConnectionState
     {

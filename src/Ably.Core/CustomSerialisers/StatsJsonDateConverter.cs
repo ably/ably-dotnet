@@ -3,7 +3,7 @@ using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Ably.CustomSerialisers
+namespace IO.Ably.CustomSerialisers
 {
     public class StatsJsonDateConverter : DateTimeConverterBase
     {

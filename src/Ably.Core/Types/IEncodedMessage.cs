@@ -1,4 +1,4 @@
-namespace Ably
+namespace IO.Ably
 {
     internal interface IEncodedMessage
     {

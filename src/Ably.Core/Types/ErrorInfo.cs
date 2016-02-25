@@ -4,7 +4,7 @@ using System.Net;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 
-namespace Ably
+namespace IO.Ably
 {
     /// <summary>
     /// An exception type encapsulating error informaiton containing an Ably specific error code and generic status code

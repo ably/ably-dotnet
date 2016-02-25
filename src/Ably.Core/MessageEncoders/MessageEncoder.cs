@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using Ably.Rest;
+using IO.Ably.Rest;
 
-namespace Ably.MessageEncoders
+namespace IO.Ably.MessageEncoders
 {
     internal abstract class MessageEncoder
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace Ably
+namespace IO.Ably
 {
     /// <summary>
     /// Internal class used to parse ApiKeys. The api key has the following parts {app}.{key}:{KeyValue} 

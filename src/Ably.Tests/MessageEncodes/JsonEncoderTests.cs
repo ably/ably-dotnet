@@ -1,11 +1,11 @@
-using Ably.MessageEncoders;
-using Ably.Rest;
 using FluentAssertions;
+using IO.Ably.MessageEncoders;
+using IO.Ably.Rest;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace Ably.Tests.MessageEncodes
+namespace IO.Ably.Tests.MessageEncodes
 {
     public class JsonEncoderTests
     {

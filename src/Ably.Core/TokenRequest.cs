@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-namespace Ably
+namespace IO.Ably
 {
     /// <summary>
     /// This is a convenience class for making Token requests. The data held here is used to generate a TokenRequestPostData 

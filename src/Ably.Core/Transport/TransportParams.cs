@@ -1,10 +1,10 @@
-﻿using Ably.Types;
+﻿using IO.Ably.Types;
 using System;
 using System.Collections.Specialized;
 using System.Text.RegularExpressions;
 using System.Net;
 
-namespace Ably.Transport
+namespace IO.Ably.Transport
 {
     public enum Mode
     {

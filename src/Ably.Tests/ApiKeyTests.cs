@@ -1,7 +1,7 @@
 using Xunit;
 using Xunit.Extensions;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public class ApiKeyTests
     {

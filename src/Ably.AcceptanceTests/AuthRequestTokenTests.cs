@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Net;
 
-namespace Ably.AcceptanceTests
+namespace IO.Ably.AcceptanceTests
 {
     [TestFixture( Protocol.MsgPack )]
     [TestFixture( Protocol.Json )]

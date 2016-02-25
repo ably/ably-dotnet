@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Ably.Transport.States.Connection
+namespace IO.Ably.Transport.States.Connection
 {
     public interface ICountdownTimer
     {

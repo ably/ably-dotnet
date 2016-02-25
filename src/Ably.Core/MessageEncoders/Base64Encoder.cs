@@ -1,7 +1,7 @@
 ﻿using System;
-using Ably.Rest;
+using IO.Ably.Rest;
 
-namespace Ably.MessageEncoders
+namespace IO.Ably.MessageEncoders
 {
     internal class Base64Encoder : MessageEncoder
     {

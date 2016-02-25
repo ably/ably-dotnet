@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
 
-namespace Ably
+namespace IO.Ably
 {
     public interface IPaginatedResource<out T> : IEnumerable<T>
     {

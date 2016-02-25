@@ -3,7 +3,7 @@ using System.Net;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Ably.AcceptanceTests
+namespace IO.Ably.AcceptanceTests
 {
     public class ChannelAcceptanceTests
     {

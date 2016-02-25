@@ -1,7 +1,7 @@
-﻿using Ably.Types;
+﻿using IO.Ably.Types;
 using System;
 
-namespace Ably.Realtime
+namespace IO.Ably.Realtime
 {
     /// <summary>
     /// 

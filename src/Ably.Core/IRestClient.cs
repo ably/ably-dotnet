@@ -1,7 +1,7 @@
 using System;
-using Ably.Rest;
+using IO.Ably.Rest;
 
-namespace Ably
+namespace IO.Ably
 {
     public interface IRestClient : IChannelCommands
     {

@@ -1,16 +1,18 @@
-﻿using Ably.Realtime;
-using Ably.Transport;
-using States = Ably.Transport.States.Connection;
+﻿using States = IO.Ably.Transport.States.Connection;
 using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using Xunit.Extensions;
-using Ably.Types;
 using System.Net;
+using IO.Ably.Realtime;
+using IO.Ably.Transport;
+using IO.Ably.Transport.States.Connection;
+using IO.Ably.Types;
+using ConnectionState = IO.Ably.Realtime.ConnectionState;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public class ConnectionManagerTests
     {
@@ -47,7 +49,7 @@ namespace Ably.Tests
             // Arrange
             Mock<ITransport> transport = new Mock<ITransport>();
             transport.SetupProperty(c => c.Listener);
-            ConnectionManager manager = new ConnectionManager(transport.Object, new AcknowledgementProcessor(), new States.ConnectionInitializedState(null));
+            ConnectionManager manager = new ConnectionManager(transport.Object, new AcknowledgementProcessor(), new ConnectionInitializedState(null));
             List<ProtocolMessage> res = new List<ProtocolMessage>();
             manager.MessageReceived += (message) => res.Add(message);
             ProtocolMessage target = new ProtocolMessage(action);
@@ -65,7 +67,7 @@ namespace Ably.Tests
         public void WhenTransportConnected_StateCallbackCalled()
         {
             // Arrange
-            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
+            Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             transport.SetupGet(c => c.State).Returns(TransportState.Closing);
             transport.SetupProperty(c => c.Listener);
@@ -76,14 +78,14 @@ namespace Ably.Tests
             transport.Object.Listener.OnTransportConnected();
 
             // Assert
-            state.Verify(c => c.OnTransportStateChanged(It.Is<States.ConnectionState.TransportStateInfo>(ss => ss.State == TransportState.Connected)), Times.Once());
+            state.Verify(c => c.OnTransportStateChanged(It.Is<Transport.States.Connection.ConnectionState.TransportStateInfo>(ss => ss.State == TransportState.Connected)), Times.Once());
         }
 
         [Fact]
         public void WhenTransportDisconnected_StateCallbackCalled()
         {
             // Arrange
-            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
+            Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             transport.SetupGet(c => c.State).Returns(TransportState.Closing);
             transport.SetupProperty(c => c.Listener);
@@ -94,7 +96,7 @@ namespace Ably.Tests
             transport.Object.Listener.OnTransportDisconnected();
 
             // Assert
-            state.Verify(c => c.OnTransportStateChanged(It.Is<States.ConnectionState.TransportStateInfo>(ss =>
+            state.Verify(c => c.OnTransportStateChanged(It.Is<Transport.States.Connection.ConnectionState.TransportStateInfo>(ss =>
                 ss.State == TransportState.Closed)), Times.Once());
         }
 
@@ -102,7 +104,7 @@ namespace Ably.Tests
         public void WhenTransportError_StateCallbackCalled()
         {
             // Arrange
-            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
+            Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             transport.SetupGet(c => c.State).Returns(TransportState.Closed);
             transport.SetupProperty(c => c.Listener);
@@ -114,7 +116,7 @@ namespace Ably.Tests
             transport.Object.Listener.OnTransportError(targetError);
 
             // Assert
-            state.Verify(c => c.OnTransportStateChanged(It.Is<States.ConnectionState.TransportStateInfo>(ss =>
+            state.Verify(c => c.OnTransportStateChanged(It.Is<Transport.States.Connection.ConnectionState.TransportStateInfo>(ss =>
                 ss.Error == targetError && ss.State == TransportState.Closed)), Times.Once());
         }
 
@@ -122,7 +124,7 @@ namespace Ably.Tests
         public void WhenTransportMessageReceived_StateCallbackCalled()
         {
             // Arrange
-            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
+            Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             transport.SetupGet(c => c.State).Returns(TransportState.Closed);
             transport.SetupProperty(c => c.Listener);
@@ -141,7 +143,7 @@ namespace Ably.Tests
         public void WhenConnect_StateCallbackCalled()
         {
             // Arrange
-            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
+            Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
             ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
@@ -157,7 +159,7 @@ namespace Ably.Tests
         public void WhenClose_StateCallbackCalled()
         {
             // Arrange
-            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
+            Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
             ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
@@ -173,7 +175,7 @@ namespace Ably.Tests
         public void WhenSend_StateCallbackCalled()
         {
             // Arrange
-            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
+            Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
             ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
@@ -190,10 +192,10 @@ namespace Ably.Tests
         public void WhenSetState_OnAttachedToContextCalled()
         {
             // Arrange
-            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
+            Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            IConnectionContext target = new ConnectionManager(transport.Object, ackProcessor.Object, new States.ConnectionInitializedState(null));
+            IConnectionContext target = new ConnectionManager(transport.Object, ackProcessor.Object, new ConnectionInitializedState(null));
             ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
 
             // Act
@@ -211,7 +213,7 @@ namespace Ably.Tests
         public void WhenTransportMessageReceived_AckCallbackCalled()
         {
             // Arrange
-            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
+            Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             transport.SetupGet(c => c.State).Returns(TransportState.Closed);
             transport.SetupProperty(c => c.Listener);
@@ -230,10 +232,10 @@ namespace Ably.Tests
         public void WhenSetState_AckCallbackCalled()
         {
             // Arrange
-            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
+            Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            IConnectionContext target = new ConnectionManager(transport.Object, ackProcessor.Object, new States.ConnectionInitializedState(null));
+            IConnectionContext target = new ConnectionManager(transport.Object, ackProcessor.Object, new ConnectionInitializedState(null));
             ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
 
             // Act
@@ -247,7 +249,7 @@ namespace Ably.Tests
         public void WhenSend_AckCallbackCalled()
         {
             // Arrange
-            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
+            Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
             ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
@@ -265,7 +267,7 @@ namespace Ably.Tests
         public void WhenSend_AckCalledBeforeState()
         {
             // Arrange
-            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
+            Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
             string firstCall = null;
@@ -589,7 +591,7 @@ namespace Ably.Tests
             // Arrange
             Mock<ITransport> mock = new Mock<ITransport>();
             Mock<IAcknowledgementProcessor> ackmock = new Mock<IAcknowledgementProcessor>();
-            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
+            Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             state.Setup(c => c.State).Returns(ConnectionState.Connected);
             ConnectionManager target = new ConnectionManager(mock.Object, ackmock.Object, state.Object);
 
@@ -632,7 +634,7 @@ namespace Ably.Tests
         public void ConnectionSerialUpdated_WhenProtocolMessageReceived()
         {
             // Arrange
-            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
+            Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             transport.SetupGet(c => c.State).Returns(TransportState.Closed);
             transport.SetupProperty(c => c.Listener);
@@ -651,7 +653,7 @@ namespace Ably.Tests
         public void ConnectionSerialNotUpdated_WhenProtocolMessageReceived()
         {
             // Arrange
-            Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
+            Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             transport.SetupGet(c => c.State).Returns(TransportState.Closed);
             transport.SetupProperty(c => c.Listener);
@@ -763,7 +765,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
@@ -782,7 +784,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
@@ -817,7 +819,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
@@ -836,7 +838,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
@@ -857,7 +859,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
@@ -876,7 +878,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             Mock<Connection> connection = new Mock<Connection>();
             connection.Setup(c => c.State).Returns(ConnectionState.Connected);
             manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
@@ -911,7 +913,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             Mock<Connection> connection = new Mock<Connection>();
             connection.Setup(c => c.State).Returns(ConnectionState.Connected);
             manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
@@ -941,7 +943,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             Mock<Connection> connection = new Mock<Connection>();
             connection.SetupGet(c => c.State).Returns(ConnectionState.Connected);
             manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
@@ -968,7 +970,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             Mock<Connection> connection = new Mock<Connection>();
             connection.Setup(c => c.State).Returns(ConnectionState.Connected);
             manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
@@ -995,7 +997,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             Mock<Connection> connection = new Mock<Connection>();
             connection.Setup(c => c.State).Returns(ConnectionState.Connected);
             manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
@@ -1018,7 +1020,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             Mock<Connection> connection = new Mock<Connection>();
             connection.Setup(c => c.State).Returns(ConnectionState.Connected);
             manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
@@ -1043,7 +1045,7 @@ namespace Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Mock<States.ICountdownTimer> timer = new Mock<States.ICountdownTimer>();
+            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();

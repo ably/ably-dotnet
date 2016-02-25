@@ -1,10 +1,10 @@
-﻿using Ably.MessageEncoders;
-using Ably;
-using Ably.Rest;
+﻿using IO.Ably;
 using FluentAssertions;
+using IO.Ably.MessageEncoders;
+using IO.Ably.Rest;
 using Xunit;
 
-namespace Ably.Tests.MessageEncodes
+namespace IO.Ably.Tests.MessageEncodes
 {
     public class Base64EncoderTests
     {

@@ -1,9 +1,9 @@
-﻿using Ably.Encryption;
-using Ably.Platform;
+﻿using IO.Ably.Encryption;
+using IO.Ably.Platform;
 using System;
 using System.Net;
 using System.Security.Cryptography;
-using Ably;
+using IO.Ably;
 
 namespace AblyPlatform.Cryptography
 {

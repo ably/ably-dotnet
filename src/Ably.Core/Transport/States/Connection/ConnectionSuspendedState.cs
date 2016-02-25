@@ -1,7 +1,7 @@
-﻿using Ably.Types;
-using System;
+﻿using System;
+using IO.Ably.Types;
 
-namespace Ably.Transport.States.Connection
+namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionSuspendedState : ConnectionState
     {

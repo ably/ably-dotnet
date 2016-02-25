@@ -1,8 +1,8 @@
 ﻿using System;
-using Ably.Encryption;
+using IO.Ably.Encryption;
 using Xunit;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public class CipherParamsTests
     {
