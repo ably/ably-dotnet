@@ -1,8 +1,8 @@
 using System;
-using Ably.Encryption;
-using Ably.Rest;
+using IO.Ably.Encryption;
+using IO.Ably.Rest;
 
-namespace Ably.MessageEncoders
+namespace IO.Ably.MessageEncoders
 {
     internal class CipherEncoder : MessageEncoder
     {

@@ -1,9 +1,9 @@
-﻿using Ably.Transport.States.Connection;
-using Ably.Types;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using IO.Ably.Transport.States.Connection;
+using IO.Ably.Types;
 
-namespace Ably.Transport
+namespace IO.Ably.Transport
 {
     internal interface IAcknowledgementProcessor
     {

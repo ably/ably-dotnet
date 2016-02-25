@@ -1,11 +1,11 @@
-﻿using Ably.Types;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using IO.Ably.Types;
 using Xunit;
 using Xunit.Extensions;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public class MsgPackMessageSerializerTests
     {

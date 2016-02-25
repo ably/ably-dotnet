@@ -3,7 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Text;
 
-namespace Ably
+namespace IO.Ably
 {
     /// <summary>Level of a log message.</summary>
     public enum LogLevel : byte

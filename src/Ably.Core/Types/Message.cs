@@ -3,9 +3,9 @@ using System.Diagnostics;
 using MsgPack.Serialization;
 using Newtonsoft.Json;
 using System.Runtime.Serialization;
-using Ably.Utils;
+using IO.Ably.Utils;
 
-namespace Ably
+namespace IO.Ably
 {
     /// <summary>
     /// A class representing an individual message to be sent or received via the Ably realtime service

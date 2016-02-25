@@ -2,7 +2,7 @@
 using MsgPack.Serialization;
 using Newtonsoft.Json;
 
-namespace Ably
+namespace IO.Ably
 {
     public class PresenceMessage : IEncodedMessage
     {

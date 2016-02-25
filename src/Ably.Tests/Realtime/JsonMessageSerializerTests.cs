@@ -1,13 +1,13 @@
-﻿using Ably.Types;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using IO.Ably.Types;
 using Xunit;
 using Xunit.Extensions;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public class JsonMessageSerializerTests
     {

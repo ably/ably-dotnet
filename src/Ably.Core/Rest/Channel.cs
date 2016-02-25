@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using Ably.Encryption;
+using IO.Ably.Encryption;
 
-namespace Ably.Rest
+namespace IO.Ably.Rest
 {
     /// <summary>
     /// The Ably Realtime service organises the traffic within any application into named channels.

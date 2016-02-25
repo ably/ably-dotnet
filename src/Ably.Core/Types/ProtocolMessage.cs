@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace Ably.Types
+namespace IO.Ably.Types
 {
     public class ProtocolMessage
     {

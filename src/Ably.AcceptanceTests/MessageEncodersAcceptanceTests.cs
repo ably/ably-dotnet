@@ -2,15 +2,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using Ably.Encryption;
-using Ably.Rest;
 using FluentAssertions;
+using IO.Ably.Encryption;
+using IO.Ably.Rest;
 using MsgPack;
 using MsgPack.Serialization;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
-namespace Ably.AcceptanceTests
+namespace IO.Ably.AcceptanceTests
 {
     public class MessageEncodersAcceptanceTests
     {

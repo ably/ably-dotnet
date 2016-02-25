@@ -1,8 +1,8 @@
 using System;
-using Ably.CustomSerialisers;
+using IO.Ably.CustomSerialisers;
 using Newtonsoft.Json;
 
-namespace Ably
+namespace IO.Ably
 {
     public class Stats
     {

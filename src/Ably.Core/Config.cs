@@ -1,10 +1,10 @@
 using System;
-using Ably.Encryption;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using Ably.CustomSerialisers;
+using IO.Ably.CustomSerialisers;
+using IO.Ably.Encryption;
 
-namespace Ably
+namespace IO.Ably
 {
     public static class Config
     {

@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Ably
+namespace IO.Ably
 {
     internal class AblyHttpClient : IAblyHttpClient
     {

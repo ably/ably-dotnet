@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 
-namespace Ably.ConsoleTest
+namespace IO.Ably.ConsoleTest
 {
     /// <summary>A static class that runs NUnit tests from the specified assembly, and outputs result to console.</summary>
     static class NUnit

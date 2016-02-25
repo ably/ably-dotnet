@@ -1,13 +1,13 @@
-﻿using Ably.Transport;
-using Ably.Transport.States.Connection;
-using Ably.Types;
-using Moq;
+﻿using Moq;
 using System;
 using System.Collections.Generic;
+using IO.Ably.Transport;
+using IO.Ably.Transport.States.Connection;
+using IO.Ably.Types;
 using Xunit;
 using Xunit.Extensions;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public class ConnectionStatesTests
     {

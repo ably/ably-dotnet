@@ -1,9 +1,9 @@
-﻿using Ably.Transport;
-using Ably.Types;
+﻿using IO.Ably.Types;
 using System;
 using System.Collections.Generic;
+using IO.Ably.Transport;
 
-namespace Ably.Realtime
+namespace IO.Ably.Realtime
 {
     /// <summary>
     /// 

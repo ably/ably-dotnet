@@ -1,8 +1,8 @@
-﻿using Ably.AcceptanceTests;
-using Ably.Tests;
-using System.Reflection;
+﻿using System.Reflection;
+using IO.Ably.AcceptanceTests;
+using IO.Ably.Tests;
 
-namespace Ably.ConsoleTest
+namespace IO.Ably.ConsoleTest
 {
     static class Program
     {

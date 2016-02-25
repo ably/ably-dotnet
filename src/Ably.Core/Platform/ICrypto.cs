@@ -1,6 +1,6 @@
-﻿using Ably.Rest;
+﻿using IO.Ably.Rest;
 
-namespace Ably.Platform
+namespace IO.Ably.Platform
 {
     public interface ICrypto
     {
