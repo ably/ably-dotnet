@@ -80,9 +80,9 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
-    <ProjectReference Include="..\..\Ably.Core\Ably.Core.csproj">
+    <ProjectReference Include="..\..\Ably.Core\IO.Ably.csproj">
       <Project>{ef341e0a-733d-4f79-8303-fd1b10d778eb}</Project>
-      <Name>Ably.Core</Name>
+      <Name>IO.Ably</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -8,8 +8,8 @@
     <ProjectGuid>{EF341E0A-733D-4F79-8303-FD1B10D778EB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Ably</RootNamespace>
-    <AssemblyName>Ably.Core</AssemblyName>
+    <RootNamespace>IO.Ably</RootNamespace>
+    <AssemblyName>IO.Ably</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>

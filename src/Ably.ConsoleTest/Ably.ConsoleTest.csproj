@@ -74,13 +74,13 @@
       <Project>{b5fa2120-6451-4a54-86fe-1f367a72c04d}</Project>
       <Name>Ably.AcceptanceTests</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Ably.Core\Ably.Core.csproj">
+    <ProjectReference Include="..\Ably.Core\IO.Ably.csproj">
       <Project>{ef341e0a-733d-4f79-8303-fd1b10d778eb}</Project>
-      <Name>Ably.Core</Name>
+      <Name>IO.Ably</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Ably.Platforms\Ably.net45\Ably.net45.csproj">
+    <ProjectReference Include="..\Ably.Platforms\Ably.net45\IO.Ably.net45.csproj">
       <Project>{021875be-63fd-4ff4-b34f-0b77ccd1919e}</Project>
-      <Name>Ably.net45</Name>
+      <Name>IO.Ably.net45</Name>
     </ProjectReference>
     <ProjectReference Include="..\Ably.Tests\Ably.Tests.csproj">
       <Project>{4e136c14-03d4-4194-8de7-3e9a26c5b028}</Project>
