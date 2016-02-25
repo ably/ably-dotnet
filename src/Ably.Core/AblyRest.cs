@@ -9,14 +9,14 @@ using IO.Ably.Rest;
 namespace IO.Ably
 {
     /// <summary>Client for the ably rest API</summary>
-    public sealed class RestClient : AblyBase, IRestClient, IAblyRest
+    public sealed class AblyRest : AblyBase, IRestClient, IAblyRest
     {
         internal IAblyHttpClient _httpClient;
         internal MessageHandler _messageHandler;
 
-        /// <summary>Initialises the RestClient by reading the Key from a connection string with key 'Ably'</summary>
+        /// <summary>Initialises the AblyRest by reading the Key from a connection string with key 'Ably'</summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public RestClient()
+        public AblyRest()
         {
             var key = Platform.IoC.getConnectionString();
             if( string.IsNullOrEmpty( key ) )
@@ -25,25 +25,25 @@ namespace IO.Ably
             InitialiseAbly();
         }
 
-        /// <summary>Initialises the RestClient using the api key provided</summary>
+        /// <summary>Initialises the AblyRest using the api key provided</summary>
         /// <param name="apiKey">Full api key</param>
-        public RestClient(string apiKey)
+        public AblyRest(string apiKey)
             : this(new AblyOptions(apiKey))
         {
 
         }
 
         /// <summary>
-        /// Convenience method for initialising the RestClient by passing a Action{AblyOptions}
+        /// Convenience method for initialising the AblyRest by passing a Action{AblyOptions}
         /// <example>
-        /// var rest = new RestClient(opt => {
+        /// var rest = new AblyRest(opt => {
         ///  opt.Key = "fake.key:value";
         ///  opt.ClientId = "123";
         /// });
         /// </example>
         /// </summary>
         /// <param name="init">Action delegate which receives a empty options object.</param>
-        public RestClient(Action<AblyOptions> init)
+        public AblyRest(Action<AblyOptions> init)
         {
             _options = new AblyOptions();
             init(_options);
@@ -54,7 +54,7 @@ namespace IO.Ably
         /// Initialise the library with a custom set of options
         /// </summary>
         /// <param name="ablyOptions"></param>
-        public RestClient(AblyOptions ablyOptions)
+        public AblyRest(AblyOptions ablyOptions)
         {
             _options = ablyOptions;
             InitialiseAbly();
@@ -207,10 +207,10 @@ namespace IO.Ably
 
         /// <summary>
         /// Retrieves the stats for the application based on a custom query. It should be used with <see cref="DataRequestQuery"/>.
-        /// It is mainly because of the way a PaginatedResource defines its queries. For retrieving Stats with special parameters use <see cref="RestClient.Stats(StatsDataRequestQuery query)"/>
+        /// It is mainly because of the way a PaginatedResource defines its queries. For retrieving Stats with special parameters use <see cref="AblyRest.Stats(StatsDataRequestQuery query)"/>
         /// </summary>
         /// <example>
-        /// var client = new RestClient("validkey");
+        /// var client = new AblyRest("validkey");
         /// var stats = client.Stats();
         /// var nextPage = cliest.Stats(stats.NextQuery);
         /// </example>

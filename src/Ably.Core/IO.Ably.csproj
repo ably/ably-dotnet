@@ -105,7 +105,7 @@
     <Compile Include="Realtime\IRealtimeChannel.cs" />
     <Compile Include="Realtime\IRealtimeChannelCommands.cs" />
     <Compile Include="Realtime\Presence.cs" />
-    <Compile Include="RestClient.cs" />
+    <Compile Include="AblyRest.cs" />
     <Compile Include="Rest\AblySimpleRestClient.cs" />
     <Compile Include="Rest\Channel.cs" />
     <Compile Include="Rest\ChannelOptions.cs" />

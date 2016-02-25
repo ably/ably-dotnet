@@ -78,12 +78,12 @@ namespace IO.Ably.AcceptanceTests
             json = json.Replace("[[Interval2]]", interval2.ToString("yyyy-MM-dd:HH:mm"));
             json = json.Replace("[[Interval3]]", interval3.ToString("yyyy-MM-dd:HH:mm"));
 
-            RestClient restClient = new RestClient(TestData.keys.First().keyStr);
+            AblyRest ablyRest = new AblyRest(TestData.keys.First().keyStr);
             AblyHttpClient client = new AblyHttpClient(TestsSetup.TestData.restHost, null, TestsSetup.TestData.tls, null);
             AblyRequest request = new AblyRequest("/stats", HttpMethod.Post);
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
-            restClient.AddAuthHeader(request);
+            ablyRest.AddAuthHeader(request);
             request.RequestBody = json.GetBytes();
 
             var response = client.Execute(request);

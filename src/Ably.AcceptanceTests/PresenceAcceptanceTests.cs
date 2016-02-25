@@ -15,7 +15,7 @@ namespace IO.Ably.AcceptanceTests
             _protocol = protocol;
         }
 
-        private RestClient GetAbly()
+        private AblyRest GetAbly()
         {
             var testData = TestsSetup.TestData;
 
@@ -25,7 +25,7 @@ namespace IO.Ably.AcceptanceTests
                 UseBinaryProtocol = _protocol == Protocol.MsgPack,
                 Environment = AblyEnvironment.Sandbox
             };
-            var ably = new RestClient(options);
+            var ably = new AblyRest(options);
             return ably;
         }
 
