@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Ably.Types;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using Xunit.Extensions;
-using Ably.Types;
 
 namespace Ably.Tests
 {
@@ -44,7 +44,8 @@ namespace Ably.Tests
                 yield return new object[] { new byte[] { 0x91, 0x81, 0xa4, 0x64, 0x61, 0x74, 0x61, 0xc3 }, new Message[] { new Message(null, true) } };
                 yield return new object[] { new byte[] { 0x91, 0x81, 0xa4, 0x64, 0x61, 0x74, 0x61, 0xc0 }, new Message[] { new Message(null, null) } };
                 yield return new object[] { new byte[] { 0x91, 0x81, 0xa4, 0x64, 0x61, 0x74, 0x61, 0x92, 0xcd, 0x04, 0xd2, 0xcd, 0x10, 0xe1 }, new Message[] { new Message(null, new object[] { (ushort)1234, (ushort)4321 }) } };
-                yield return new object[] { new byte[] { 0x91, 0x81, 0xa4, 0x64, 0x61, 0x74, 0x61, 0x82, 0xa1, 0x61, 0xcd, 0x04, 0xd2, 0xa1, 0x62, 0xcd, 0x10, 0xe1 }, new Message[] { new Message(null, new System.Collections.Hashtable() { { "a", (ushort)1234 }, { "b", (ushort)4321 } }) } }; 
+                yield return new object[] { new byte[] { 0x91, 0x81, 0xa4, 0x64, 0x61, 0x74, 0x61, 0x82, 0xa1, 0x61, 0xcd, 0x04, 0xd2, 0xa1, 0x62, 0xcd, 0x10, 0xe1 },
+                    new Message[] { new Message(null, new Dictionary<object,object>() { { "a", (ushort)1234 }, { "b", (ushort)4321 } }) } };
             }
         }
 
@@ -164,7 +165,6 @@ namespace Ably.Tests
                     expectedMessage.Add((0x08 << 4) + 1);
                     expectedMessage.AddRange(SerializeString("name"));
                     expectedMessage.AddRange(SerializeString(msg.Name));
-                    
                 }
             }
 

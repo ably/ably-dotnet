@@ -25,7 +25,7 @@ namespace Ably.Tests.MessageEncodes
             _stringData = "random-string";
             _key = GenerateKey(keyLength);
             _channelOptions =
-                new ChannelOptions(new CipherParams(Crypto.DefaultAlgorithm, _key, CipherMode.CBC, keyLength))
+                new ChannelOptions(new CipherParams(Crypto.DefaultAlgorithm, _key, Encryption.CipherMode.CBC, keyLength))
                 {
                     Encrypted = encrypt
                 };
@@ -83,7 +83,7 @@ namespace Ably.Tests.MessageEncodes
                     encoder.Encode(new Message() { Data = "string" }, options);
                 });
 
-                error.Message.Should().Contain("Currently only the AES encryption algorith is supported");
+                error.Message.Should().Contain("Currently only the AES encryption algorithm is supported");
             }
         }
 
@@ -111,7 +111,7 @@ namespace Ably.Tests.MessageEncodes
             }
         }
 
-        
+
 
         public class EncodeWithDefaultCipherParams : CipherEncoderTests
         {
@@ -174,7 +174,7 @@ namespace Ably.Tests.MessageEncodes
         {
             public DecodeWithDefaultCipherParams() : base(encrypt: true)
             {
-                
+
             }
 
             [Fact]
@@ -242,7 +242,7 @@ namespace Ably.Tests.MessageEncodes
         {
             public DecodeWith256KeyLength() : base(keyLength: 256, encrypt: true)
             {
-                
+
             }
 
             [Fact]

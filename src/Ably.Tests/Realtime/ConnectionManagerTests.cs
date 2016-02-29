@@ -8,6 +8,7 @@ using System.Linq;
 using Xunit;
 using Xunit.Extensions;
 using Ably.Types;
+using System.Net;
 
 namespace Ably.Tests
 {
@@ -424,16 +425,13 @@ namespace Ably.Tests
         [Fact]
         public void StoreTransportParams_Key()
         {
-            // Arrange
             string target = "123.456:789";
-            TransportParams parameters = new TransportParams(new AblyRealtimeOptions(target));
-            var table = new System.Collections.Specialized.NameValueCollection();
+            TransportParams parameters = new TransportParams( new AblyRealtimeOptions( target ) );
+            var table = new System.Net.WebHeaderCollection();
 
-            // Act
-            parameters.StoreParams(table);
+            parameters.StoreParams( table );
 
-            // Assert
-            Assert.Equal<string>(target.Replace(":", "%3a"), table["key"]);
+            Assert.Equal<string>( target, WebUtility.UrlDecode( table[ "key" ] ) );
         }
 
         [Fact]
@@ -442,7 +440,7 @@ namespace Ably.Tests
             // Arrange
             string target = "afafmasfasmsafnqwqff";
             TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { Token = target });
-            var table = new System.Collections.Specialized.NameValueCollection();
+            var table = new System.Net.WebHeaderCollection();
 
             // Act
             parameters.StoreParams(table);
@@ -456,7 +454,7 @@ namespace Ably.Tests
         {
             // Arrange
             TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { UseBinaryProtocol = true });
-            var table = new System.Collections.Specialized.NameValueCollection();
+            var table = new System.Net.WebHeaderCollection();
 
             // Act
             parameters.StoreParams(table);
@@ -470,8 +468,7 @@ namespace Ably.Tests
         {
             // Arrange
             TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { UseBinaryProtocol = false });
-            var table = new System.Collections.Specialized.NameValueCollection();
-
+            var table = new System.Net.WebHeaderCollection();
             // Act
             parameters.StoreParams(table);
 
@@ -485,7 +482,7 @@ namespace Ably.Tests
             // Arrange
             string target = "123456789";
             TransportParams parameters = new TransportParams(new AblyRealtimeOptions()) { ConnectionKey = target };
-            var table = new System.Collections.Specialized.NameValueCollection();
+            var table = new System.Net.WebHeaderCollection();
 
             // Act
             parameters.StoreParams(table);
@@ -500,7 +497,7 @@ namespace Ably.Tests
             // Arrange
             string target = "123456789";
             TransportParams parameters = new TransportParams(new AblyRealtimeOptions()) { ConnectionKey = target };
-            var table = new System.Collections.Specialized.NameValueCollection();
+            var table = new System.Net.WebHeaderCollection();
 
             // Act
             parameters.StoreParams(table);
@@ -515,7 +512,7 @@ namespace Ably.Tests
             // Arrange
             string target = "123456789";
             TransportParams parameters = new TransportParams(new AblyRealtimeOptions()) { ConnectionKey = "123", ConnectionSerial = target };
-            var table = new System.Collections.Specialized.NameValueCollection();
+            var table = new System.Net.WebHeaderCollection();
 
             // Act
             parameters.StoreParams(table);
@@ -530,7 +527,7 @@ namespace Ably.Tests
             // Arrange
             string target = "test-:123";
             TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { Recover = target });
-            var table = new System.Collections.Specialized.NameValueCollection();
+            var table = new System.Net.WebHeaderCollection();
 
             // Act
             parameters.StoreParams(table);
@@ -545,7 +542,7 @@ namespace Ably.Tests
             // Arrange
             string target = "test-:123";
             TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { Recover = target });
-            var table = new System.Collections.Specialized.NameValueCollection();
+            var table = new System.Net.WebHeaderCollection();
 
             // Act
             parameters.StoreParams(table);
@@ -560,7 +557,7 @@ namespace Ably.Tests
             // Arrange
             string target = "test-:123";
             TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { Recover = target });
-            var table = new System.Collections.Specialized.NameValueCollection();
+            var table = new System.Net.WebHeaderCollection();
 
             // Act
             parameters.StoreParams(table);
@@ -575,7 +572,7 @@ namespace Ably.Tests
             // Arrange
             string target = "test123";
             TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { ClientId = target });
-            var table = new System.Collections.Specialized.NameValueCollection();
+            var table = new System.Net.WebHeaderCollection();
 
             // Act
             parameters.StoreParams(table);
@@ -1084,7 +1081,7 @@ namespace Ably.Tests
             (target.Object as IConnectionContext).CreateTransport(false);
 
             // Assert
-            target.Verify(c => c.CreateTransport(It.Is<TransportParams>(tp => tp.ConnectionSerial == targetSerial.ToString())), Times.Once()); 
+            target.Verify(c => c.CreateTransport(It.Is<TransportParams>(tp => tp.ConnectionSerial == targetSerial.ToString())), Times.Once());
         }
 
         [Fact]
