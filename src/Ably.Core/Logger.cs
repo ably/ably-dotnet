@@ -3,7 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Text;
 
-namespace Ably
+namespace IO.Ably
 {
     /// <summary>Level of a log message.</summary>
     public enum LogLevel : byte
@@ -128,6 +128,12 @@ namespace Ably
             Message( LogLevel.Error, message, args );
         }
 
+        /// <summary>Log a warning message</summary>
+        internal static void Warning( string message, params object[] args )
+        {
+            Message( LogLevel.Warning, message, args );
+        }
+
         /// <summary>Log an informational message.</summary>
         internal static void Info( string message, params object[] args )
         {
@@ -147,9 +153,9 @@ namespace Ably
             var webException = ex as AblyException;
             if( webException != null )
             {
-                message.AppendLine( "Error code: " + webException.ErrorInfo.Code );
-                message.AppendLine( "Status code: " + webException.ErrorInfo.StatusCode );
-                message.AppendLine( "Reason: " + webException.ErrorInfo.Reason );
+                message.AppendLine( "Error code: " + webException.ErrorInfo.code );
+                message.AppendLine( "Status code: " + webException.ErrorInfo.statusCode );
+                message.AppendLine( "Reason: " + webException.ErrorInfo.message );
             }
 
             message.AppendLine( ex.Message );

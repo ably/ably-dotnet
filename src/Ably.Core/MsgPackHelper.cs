@@ -1,10 +1,10 @@
 using System;
 using System.IO;
-using Ably.CustomSerialisers;
+using IO.Ably.CustomSerialisers;
 using MsgPack;
 using MsgPack.Serialization;
 
-namespace Ably
+namespace IO.Ably
 {
     internal class MsgPackHelper
     {

@@ -1,10 +1,10 @@
-﻿using Ably.Transport;
-using Ably.Types;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using IO.Ably.Transport;
+using IO.Ably.Types;
 
-namespace Ably.Realtime
+namespace IO.Ably.Realtime
 {
     public interface IChannelFactory
     {
@@ -154,7 +154,7 @@ namespace Ably.Realtime
             else if (this.State == ChannelState.Attached)
             {
                 ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Message, this.Name);
-                message.Messages = messages.ToArray();
+                message.messages = messages.ToArray();
                 this.connection.Send(message, callback);
             }
             else
@@ -179,7 +179,7 @@ namespace Ably.Realtime
 
         private void OnConnectionMessageReceived(ProtocolMessage message)
         {
-            switch (message.Action)
+            switch (message.action)
             {
                 case ProtocolMessage.MessageAction.Attached:
                     if (this.State == ChannelState.Attaching)
@@ -199,19 +199,19 @@ namespace Ably.Realtime
                     this.SetChannelState(ChannelState.Failed);
                     break;
                 default:
-                    Logger.Error("Channel::OnConnectionMessageReceived(): Unexpected message action {0}", message.Action);
+                    Logger.Error("Channel::OnConnectionMessageReceived(): Unexpected message action {0}", message.action);
                     break;
             }
         }
 
         private void OnMessage(ProtocolMessage message)
         {
-            Message[] messages = message.Messages;
+            Message[] messages = message.messages;
             for (int i = 0; i < messages.Length; i++)
             {
                 Message msg = messages[i];
                 // TODO: populate fields derived from protocol message
-                List<Action<Message[]>> listeners = eventListeners.Get(msg.Name, null);
+                List<Action<Message[]>> listeners = eventListeners.Get(msg.name, null);
                 if (listeners != null)
                 {
                     Message[] singleMessage = new Message[] { msg };
@@ -233,7 +233,7 @@ namespace Ably.Realtime
                 return;
 
             ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Message, this.Name);
-            message.Messages = this.queuedMessages.ToArray();
+            message.messages = this.queuedMessages.ToArray();
             this.queuedMessages.Clear();
             // TODO: Add callbacks
             this.connection.Send(message, null);

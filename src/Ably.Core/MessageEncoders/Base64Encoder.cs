@@ -1,7 +1,7 @@
 ﻿using System;
-using Ably.Rest;
+using IO.Ably.Rest;
 
-namespace Ably.MessageEncoders
+namespace IO.Ably.MessageEncoders
 {
     internal class Base64Encoder : MessageEncoder
     {
@@ -12,23 +12,23 @@ namespace Ably.MessageEncoders
 
         public override void Decode(IEncodedMessage payload, ChannelOptions options)
         {
-            if (CurrentEncodingIs(payload, EncodingName) && payload.Data is string)
+            if (CurrentEncodingIs(payload, EncodingName) && payload.data is string)
             {
-                payload.Data = ((string) payload.Data).FromBase64();
+                payload.data = ((string) payload.data).FromBase64();
                 RemoveCurrentEncodingPart(payload);
             }
         }
 
         public override void Encode(IEncodedMessage payload, ChannelOptions options)
         {
-            var data = payload.Data;
+            var data = payload.data;
             if (IsEmpty(data))
                 return;
 
             var bytes = data as byte[];
             if (bytes != null && Protocol == Protocol.Json)
             {
-                payload.Data = bytes.ToBase64();
+                payload.data = bytes.ToBase64();
                 AddEncoding(payload, EncodingName);
             }
         }

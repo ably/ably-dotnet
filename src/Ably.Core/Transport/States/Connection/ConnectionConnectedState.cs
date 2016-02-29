@@ -1,6 +1,6 @@
-﻿using Ably.Types;
+﻿using IO.Ably.Types;
 
-namespace Ably.Transport.States.Connection
+namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionConnectedState : ConnectionState
     {
@@ -40,16 +40,16 @@ namespace Ably.Transport.States.Connection
 
         public override bool OnMessageReceived(ProtocolMessage message)
         {
-            switch (message.Action)
+            switch (message.action)
             {
                 case ProtocolMessage.MessageAction.Disconnected:
                     {
-                        this.context.SetState(new ConnectionDisconnectedState(this.context, message.Error));
+                        this.context.SetState(new ConnectionDisconnectedState(this.context, message.error));
                         return true;
                     }
                 case ProtocolMessage.MessageAction.Error:
                     {
-                        this.context.SetState(new ConnectionFailedState(this.context, message.Error));
+                        this.context.SetState(new ConnectionFailedState(this.context, message.error));
                         return true;
                     }
             }

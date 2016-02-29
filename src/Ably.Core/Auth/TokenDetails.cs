@@ -1,10 +1,10 @@
 ﻿using System;
-using Ably.CustomSerialisers;
+using IO.Ably.CustomSerialisers;
 using MsgPack.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Ably.Auth
+namespace IO.Ably.Auth
 {
     /// <summary>
     /// A class providing details of a token and its associated metadata

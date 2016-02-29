@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ably.ConsoleTest
+namespace IO.Ably.ConsoleTest
 {
     static class ConsoleEx
     {

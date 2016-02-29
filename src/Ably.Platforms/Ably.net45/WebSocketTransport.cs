@@ -1,5 +1,5 @@
-﻿using Ably.Transport;
-using Ably.Types;
+﻿using IO.Ably.Transport;
+using IO.Ably.Types;
 using System;
 using System.Collections.Generic;
 using System.Net;

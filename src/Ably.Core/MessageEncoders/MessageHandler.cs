@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using Ably.Rest;
+using IO.Ably.Rest;
 using MsgPack;
 using Newtonsoft.Json;
 
-namespace Ably.MessageEncoders
+namespace IO.Ably.MessageEncoders
 {
     internal class MessageHandler : IMessageHandler
     {
@@ -53,10 +53,10 @@ namespace Ably.MessageEncoders
             }
 
             var payloads = MsgPackHelper.DeSerialise(response.Body, typeof(List<PresenceMessage>)) as List<PresenceMessage>;
-            foreach (var payload in payloads.Where(x => x.Data != null))
+            foreach (var payload in payloads.Where(x => x.data != null))
             {
                 //Unwrap the data objects because message pack leaves them as a MessagePackObject
-                payload.Data = ((MessagePackObject)payload.Data).ToObject();
+                payload.data = ((MessagePackObject)payload.data).ToObject();
             }
             ProcessMessages(payloads, new ChannelOptions());
             return payloads;
@@ -74,10 +74,10 @@ namespace Ably.MessageEncoders
             }
 
             var payloads = MsgPackHelper.DeSerialise(response.Body, typeof(List<Message>)) as List<Message>;
-            foreach (var payload in payloads.Where(x => x.Data != null))
+            foreach (var payload in payloads.Where(x => x.data != null))
             {
                 //Unwrap the data objects because message pack leaves them as a MessagePackObject
-                payload.Data = ((MessagePackObject)payload.Data).ToObject();
+                payload.data = ((MessagePackObject)payload.data).ToObject();
             }
             ProcessMessages(payloads, options);
             return payloads;

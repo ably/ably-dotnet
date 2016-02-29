@@ -1,9 +1,9 @@
-﻿using Ably.Types;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Ably.Realtime;
+using IO.Ably.Realtime;
+using IO.Ably.Types;
 
-namespace Ably.Transport
+namespace IO.Ably.Transport
 {
     public class ConnectionManager : IConnectionManager, ITransportListener, IConnectionContext
     {
@@ -230,9 +230,9 @@ namespace Ably.Transport
             handled |= this.ackProcessor.OnMessageReceived(message);
             handled |= ConnectionHeartbeatRequest.CanHandleMessage(message);
 
-            if (message.ConnectionSerial != null)
+            if (message.connectionSerial != null)
             {
-                this.connection.Serial = message.ConnectionSerial.Value;
+                this.connection.Serial = message.connectionSerial.Value;
             }
 
             if (this.MessageReceived != null)

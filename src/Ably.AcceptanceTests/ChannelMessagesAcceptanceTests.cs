@@ -1,5 +1,3 @@
-using Ably.Encryption;
-using Ably.Rest;
 using FluentAssertions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -7,8 +5,10 @@ using NUnit.Framework;
 using System;
 using System.IO;
 using System.Linq;
+using IO.Ably.Encryption;
+using IO.Ably.Rest;
 
-namespace Ably.AcceptanceTests
+namespace IO.Ably.AcceptanceTests
 {
     public class StatsAcceptanceTests
     {
@@ -23,7 +23,7 @@ namespace Ably.AcceptanceTests
             _protocol = protocol;
         }
 
-        private RestClient GetAbly()
+        private AblyRest GetAbly()
         {
             var testData = TestsSetup.TestData;
 
@@ -33,7 +33,7 @@ namespace Ably.AcceptanceTests
                 UseBinaryProtocol = _protocol == Protocol.MsgPack,
                 Environment = AblyEnvironment.Sandbox
             };
-            var ably = new RestClient(options);
+            var ably = new AblyRest(options);
             return ably;
         }
 
@@ -141,7 +141,7 @@ namespace Ably.AcceptanceTests
             _protocol = protocol;
         }
 
-        private RestClient GetAbly()
+        private AblyRest GetAbly()
         {
             var testData = TestsSetup.TestData;
 
@@ -151,7 +151,7 @@ namespace Ably.AcceptanceTests
                 UseBinaryProtocol = _protocol == Protocol.MsgPack,
                 Environment = AblyEnvironment.Sandbox
             };
-            var ably = new RestClient(options);
+            var ably = new AblyRest(options);
             return ably;
         }
 
@@ -177,7 +177,7 @@ namespace Ably.AcceptanceTests
         {
             var items = (JArray) examples["items"];
 
-            Ably.RestClient ably = GetAbly();
+            Ably.AblyRest ably = GetAbly();
             IChannel channel = ably.Channels.Get("persisted:test", GetOptions());
             var count = 0;
             foreach (var item in items)
@@ -187,12 +187,12 @@ namespace Ably.AcceptanceTests
                 var decodedData = DecodeData((string)encoded["data"], encoding);
                 channel.Publish((string)encoded["name"], decodedData);
                 var message = channel.History().First();
-                if(message.Data is byte[])
-                    (message.Data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
+                if(message.data is byte[])
+                    (message.data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
                 else if (encoding == "json")
-                    JToken.DeepEquals((JToken) message.Data, (JToken) decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
+                    JToken.DeepEquals((JToken) message.data, (JToken) decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
                 else
-                    message.Data.Should().Be(decodedData, "Item number {0} data does not match decoded data", count);
+                    message.data.Should().Be(decodedData, "Item number {0} data does not match decoded data", count);
                 count++;
             }
         }
@@ -201,7 +201,7 @@ namespace Ably.AcceptanceTests
         public void Send20MessagesAndThenPaginateHistory()
         {
             //Arrange
-            Ably.RestClient ably = GetAbly();
+            Ably.AblyRest ably = GetAbly();
 
             IChannel channel = ably.Channels.Get("persisted:historyTest:" + _protocol.ToString());
             //Act
@@ -215,11 +215,11 @@ namespace Ably.AcceptanceTests
             var history = channel.History(new DataRequestQuery() {Limit = 10});
             history.Should().HaveCount(10);
             history.HasNext.Should().BeTrue();
-            history.First().Name.Should().Be("name19");
+            history.First().name.Should().Be("name19");
 
             var secondPage = channel.History(history.NextQuery);
             secondPage.Should().HaveCount(10);
-            secondPage.First().Name.Should().Be("name9");
+            secondPage.First().name.Should().Be("name9");
 
 
         }

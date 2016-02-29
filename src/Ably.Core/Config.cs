@@ -1,7 +1,10 @@
 using System;
-using Ably.Encryption;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using IO.Ably.CustomSerialisers;
+using IO.Ably.Encryption;
 
-namespace Ably
+namespace IO.Ably
 {
     public static class Config
     {
@@ -33,5 +36,25 @@ namespace Ably
 
         public const int Limit = 100;
         public static int ProtocolVersion = 1;
+
+        static Config()
+        {
+            // Configure JSON serializer/de-serializer
+            JsonConvert.DefaultSettings = getJsonSettings;
+        }
+
+        static JsonSerializerSettings getJsonSettings()
+        {
+            JsonSerializerSettings res = new JsonSerializerSettings();
+            res.Converters = new List<JsonConverter>()
+            {
+                new DateTimeOffsetJsonConverter(),
+                new CapabilityJsonConverter()
+            };
+            res.NullValueHandling = NullValueHandling.Ignore;
+            return res;
+        }
+
+        public static void ensureInitialized() { }
     }
 }

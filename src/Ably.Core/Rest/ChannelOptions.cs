@@ -1,4 +1,4 @@
-namespace Ably.Rest
+namespace IO.Ably.Rest
 {
     public class ChannelOptions
     {

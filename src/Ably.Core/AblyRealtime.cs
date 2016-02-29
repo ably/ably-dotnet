@@ -1,36 +1,19 @@
-﻿using Ably.CustomSerialisers;
-using Ably.Realtime;
-using Ably.Transport;
-using Ably.Types;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
+﻿using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using IO.Ably.Realtime;
+using IO.Ably.Rest;
+using IO.Ably.Transport;
 
-namespace Ably
+namespace IO.Ably
 {
     /// <summary>
     ///
     /// </summary>
     public class AblyRealtime : AblyBase
     {
-        static AblyRealtime()
-        {
-            JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
-            {
-                Converters = new List<JsonConverter>()
-                {
-                    new DateTimeOffsetJsonConverter(),
-                    new CapabilityJsonConverter()
-                }
-            };
-        }
-
-
-        /// <summary>
-        ///
-        /// </summary>
+        /// <summary></summary>
         /// <param name="key"></param>
         public AblyRealtime(string key)
             : this(new AblyRealtimeOptions(key))
@@ -41,35 +24,21 @@ namespace Ably
         /// </summary>
         /// <param name="options"></param>
         public AblyRealtime(AblyRealtimeOptions options)
-            : this(options, new ConnectionManager(options)) { }
-
-        internal AblyRealtime(AblyRealtimeOptions options, IConnectionManager connectionManager)
         {
             _options = options;
-            _protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
-            IChannelFactory factory = new ChannelFactory() { ConnectionManager = connectionManager, Options = options };
-            this.Channels = new ChannelList(connectionManager, factory);
-            this.Connection = connectionManager.Connection;
-            _simpleRest = new Rest.AblySimpleRestClient(options);
-            InitAuth(_simpleRest);
-
             if (options.AutoConnect)
-            {
-                this.Connection.Connect();
-            }
+                this.Connect();
         }
 
-        private Rest.AblySimpleRestClient _simpleRest;
+        Rest.AblySimpleRestClient _simpleRest;
 
-        /// <summary>
-        /// The collection of channels instanced, indexed by channel name.
-        /// </summary>
+        /// <summary>The collection of channels instanced, indexed by channel name.</summary>
         public IRealtimeChannelCommands Channels { get; private set; }
 
-        /// <summary>
-        /// A reference to the connection object for this library instance.
-        /// </summary>
+        /// <summary>A reference to the connection object for this library instance.</summary>
         public Connection Connection { get; private set; }
+
+        AblyRealtimeOptions options { get { return _options as AblyRealtimeOptions; } }
 
         /// <summary>
         ///
@@ -77,8 +46,54 @@ namespace Ably
         /// <returns></returns>
         public Connection Connect()
         {
+            if( null == this.Channels || null == this.Connection )
+            {
+                _simpleRest = new Rest.AblySimpleRestClient( _options );
+                InitAuth( _simpleRest );
+
+                IConnectionManager connectionManager = new ConnectionManager( options );
+                _protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
+                IChannelFactory factory = new ChannelFactory() { ConnectionManager = connectionManager, Options = options };
+                this.Channels = new ChannelList( connectionManager, factory );
+                this.Connection = connectionManager.Connection;
+            }
+
             this.Connection.Connect();
             return this.Connection;
+        }
+
+        new internal void InitAuth( IAblyRest restClient )
+        {
+            base.InitAuth( restClient );
+
+            if( AuthMethod == AuthMethod.Basic )
+            {
+                string authHeader = Convert.ToBase64String(Options.Key.GetBytes());
+                options.AuthHeaders[ "Authorization" ] = "Basic " + authHeader;
+                return;
+            }
+            if( AuthMethod == AuthMethod.Token )
+            {
+                InitTokenAuth();
+                return;
+            }
+
+            throw new Exception( "Unexpected AuthMethod value" );
+        }
+
+        /// <summary>Request auth token, set options</summary>
+        void InitTokenAuth()
+        {
+            CurrentToken = Auth.Authorise( null, null, false );
+
+            if( HasValidToken() )
+            {
+                // WebSockets use Token from Options.Token
+                this.Options.Token = CurrentToken.Token;
+                Logger.Debug( "Adding Authorization header with Token authentication" );
+            }
+            else
+                throw new AblyException( "Invalid token credentials: " + CurrentToken, 40100, HttpStatusCode.Unauthorized );
         }
 
         /// <summary>

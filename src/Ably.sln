@@ -15,13 +15,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.AcceptanceTests", "Abl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.ConsoleTest", "Ably.ConsoleTest\Ably.ConsoleTest.csproj", "{9B0AFCA5-07B5-419C-A7C7-B27BE4C9B760}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.Core", "Ably.Core\Ably.Core.csproj", "{EF341E0A-733D-4F79-8303-FD1B10D778EB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably", "Ably.Core\IO.Ably.csproj", "{EF341E0A-733D-4F79-8303-FD1B10D778EB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ably.Platforms", "Ably.Platforms", "{90C978EA-2B78-429D-8C12-766DE0A99A21}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.net45", "Ably.Platforms\Ably.net45\Ably.net45.csproj", "{021875BE-63FD-4FF4-B34F-0B77CCD1919E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.net45", "Ably.Platforms\Ably.net45\IO.Ably.net45.csproj", "{021875BE-63FD-4FF4-B34F-0B77CCD1919E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.wp8", "Ably.Platforms\Ably.wp8\Ably.wp8.csproj", "{8685C04E-DC1C-4947-83AF-42145C6937B4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.wp8", "Ably.Platforms\Ably.wp8\IO.Ably.wp8.csproj", "{8685C04E-DC1C-4947-83AF-42145C6937B4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.ios", "Ably.Platforms\Ably.ios\Ably.ios.csproj", "{E59720A7-9C94-4191-A073-23724FA34994}"
 	ProjectSection(ProjectDependencies) = postProject

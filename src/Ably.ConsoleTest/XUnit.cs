@@ -6,7 +6,7 @@ using Xunit;
 using Xunit.Abstractions;
 using Xunit.Runners;
 
-namespace Ably.ConsoleTest
+namespace IO.Ably.ConsoleTest
 {
     /// <summary>A static class that runs XUnit tests from the specified assembly, and outputs result to console.</summary>
     static class XUnit
@@ -97,7 +97,7 @@ namespace Ably.ConsoleTest
             {
                 if( null == this.strTest )
                     return true;
-                return itc.DisplayName.ToLowerInvariant().EndsWith( this.strTest.ToLowerInvariant() );
+                return itc.DisplayName.ToLowerInvariant().Contains( this.strTest.ToLowerInvariant() );
             }
 
             // Various messages

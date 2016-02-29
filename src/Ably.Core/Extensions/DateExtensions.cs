@@ -1,6 +1,6 @@
 using System;
 
-namespace Ably
+namespace IO.Ably
 {
     public static class DateExtensions
     {

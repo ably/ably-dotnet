@@ -2,8 +2,9 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
-namespace Ably
+namespace IO.Ably
 {
     /// <summary>
     /// An exception type encapsulating error informaiton containing an Ably specific error code and generic status code
@@ -24,39 +25,35 @@ namespace Ably
         internal const string StatusCodePropertyName = "statusCode";
         internal const string ReasonPropertyName = "message";
 
-        /// <summary>
-        /// Ably error code (see https://github.com/ably/ably-common/blob/master/protocol/errors.json)
-        /// </summary>
-        public int Code { get; set; }
-        /// <summary>
-        /// The http status code corresponding to this error
-        /// </summary>
-        public HttpStatusCode? StatusCode { get; set; }
-        /// <summary>
-        /// Additional reason information, where available
-        /// </summary>
-        public string Reason { get; set; }
+        /// <summary>Ably error code (see https://github.com/ably/ably-common/blob/master/protocol/errors.json) </summary>
+        public int code { get; set; }
+        /// <summary>The http status code corresponding to this error</summary>
+        public HttpStatusCode? statusCode { get; set; }
+        /// <summary>Additional reason information, where available</summary>
+        public string message { get; set; }
+
+        public ErrorInfo() { }
 
         public ErrorInfo(string reason, int code)
         {
-            Code = code;
-            Reason = reason;
+            this.code = code;
+            this.message = reason;
         }
 
         public ErrorInfo(string reason, int code, HttpStatusCode? statusCode = null)
         {
-            Code = code;
-            StatusCode = statusCode;
-            Reason = reason;
+            this.code = code;
+            this.statusCode = statusCode;
+            this.message = reason;
         }
 
         public override string ToString()
         {
-            if (StatusCode.HasValue == false)
+            if (statusCode.HasValue == false)
             {
-                return string.Format("Reason: {0}; Code: {1}", Reason, Code);
+                return string.Format("Reason: {0}; Code: {1}", message, code);
             }
-            return string.Format("Reason: {0}; Code: {1}; HttpStatusCode: ({2}){3}", Reason, Code, (int)StatusCode.Value, StatusCode);
+            return string.Format("Reason: {0}; Code: {1}; HttpStatusCode: ({2}){3}", message, code, (int)statusCode.Value, statusCode);
         }
 
         internal static ErrorInfo Parse(AblyResponse response)

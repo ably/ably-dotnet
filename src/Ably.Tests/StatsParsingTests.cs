@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using Xunit;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public class StatsParsingTests
     {

@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 
-namespace Ably
+namespace IO.Ably
 {
     public static class StringUtils
     {

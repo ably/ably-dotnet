@@ -3,23 +3,23 @@ using FluentAssertions;
 using FluentAssertions.Common;
 using Xunit;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public class AuthCreateTokenRequestAcceptanceTests
     {
         private const string ApiKey = "123.456:789";
         internal AblyRequest CurrentRequest { get; set; }
         public readonly DateTime Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc);
-        public RestClient Client { get; set; }
+        public AblyRest Client { get; set; }
 
         public AuthCreateTokenRequestAcceptanceTests()
         {
             Client = GetRestClient();
         }
 
-        private RestClient GetRestClient()
+        private AblyRest GetRestClient()
         {
-            var rest = new RestClient(new AblyOptions() { Key = ApiKey, UseBinaryProtocol = false});
+            var rest = new AblyRest(new AblyOptions() { Key = ApiKey, UseBinaryProtocol = false});
             rest.ExecuteHttpRequest = (request) =>
             {
                 CurrentRequest = request;
@@ -113,14 +113,14 @@ namespace Ably.Tests
         [Fact]
         public void WithOutKeyIdThrowsException()
         {
-            var client = new RestClient(new AblyOptions());
+            var client = new AblyRest(new AblyOptions());
             Assert.Throws<AblyException>(delegate { client.Auth.CreateTokenRequest(null, null); });
         }
 
         [Fact]
         public void WithOutKeyValueThrowsException()
         {
-            var client = new RestClient(new AblyOptions() { Key = "111.222"});
+            var client = new AblyRest(new AblyOptions() { Key = "111.222"});
             Assert.Throws<AblyException>(delegate { client.Auth.CreateTokenRequest(null, null); });
         }
 
