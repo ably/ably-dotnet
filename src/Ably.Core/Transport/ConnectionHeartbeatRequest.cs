@@ -1,8 +1,8 @@
-﻿using Ably.Transport.States.Connection;
-using Ably.Types;
-using System;
+﻿using System;
+using IO.Ably.Transport.States.Connection;
+using IO.Ably.Types;
 
-namespace Ably.Transport
+namespace IO.Ably.Transport
 {
     internal class ConnectionHeartbeatRequest
     {
@@ -15,7 +15,7 @@ namespace Ably.Transport
 
         public static bool CanHandleMessage(ProtocolMessage message)
         {
-            return message.Action == ProtocolMessage.MessageAction.Heartbeat;
+            return message.action == ProtocolMessage.MessageAction.Heartbeat;
         }
 
         public static ConnectionHeartbeatRequest Execute(IConnectionManager manager, Action<bool, ErrorInfo> callback)

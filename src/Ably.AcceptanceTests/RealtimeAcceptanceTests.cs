@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Ably.AcceptanceTests
+namespace IO.Ably.AcceptanceTests
 {
     [TestFixture( Protocol.MsgPack )]
     [TestFixture( Protocol.Json )]
@@ -337,8 +337,8 @@ namespace Ably.AcceptanceTests
             args[ 0 ].PreviousState.ShouldBeEquivalentTo( Realtime.ConnectionState.Connecting );
             args[ 0 ].Reason.ShouldBeEquivalentTo( client.Connection.Reason );
             client.Connection.State.ShouldBeEquivalentTo( Realtime.ConnectionState.Failed );
-            client.Connection.Reason.Code.ShouldBeEquivalentTo( 40400 );
-            client.Connection.Reason.StatusCode.ShouldBeEquivalentTo( System.Net.HttpStatusCode.NotFound );
+            client.Connection.Reason.code.ShouldBeEquivalentTo( 40400 );
+            client.Connection.Reason.statusCode.ShouldBeEquivalentTo( System.Net.HttpStatusCode.NotFound );
         }
 
         [Test]

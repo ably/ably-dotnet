@@ -1,14 +1,14 @@
-﻿using Ably.Realtime;
-using Ably.Transport;
-using Ably.Types;
-using Moq;
+﻿using Moq;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using IO.Ably.Realtime;
+using IO.Ably.Transport;
+using IO.Ably.Types;
 using Xunit;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public class RealtimeChannelTests
     {
@@ -114,8 +114,8 @@ namespace Ably.Tests
             target.Attach();
 
             // Assert
-            manager.Verify(c => c.Send(It.Is<ProtocolMessage>(message => message.Action == ProtocolMessage.MessageAction.Attach &&
-                message.Channel == target.Name), null), Times.Once());
+            manager.Verify(c => c.Send(It.Is<ProtocolMessage>(message => message.action == ProtocolMessage.MessageAction.Attach &&
+                message.channel == target.Name), null), Times.Once());
         }
 
         [Fact]
@@ -124,7 +124,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.SetupGet(c => c.IsActive).Returns(true);
-            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
+            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
             Realtime.Channel target = new Realtime.Channel("test", "client", manager.Object);
 
@@ -141,10 +141,10 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.SetupGet(c => c.IsActive).Returns(true);
-            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
+            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
             Task detachingTask = null;
-            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Detach), null))
+            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Detach), null))
                 .Callback(() => detachingTask = Task.Factory.StartNew(() => Thread.Sleep(50)).ContinueWith(c => manager.Raise(cc => cc.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Detached))));
             Realtime.Channel target = new Realtime.Channel("test", "client", manager.Object);
             target.Attach();
@@ -164,7 +164,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.SetupGet(c => c.IsActive).Returns(true);
-            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
+            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
             Realtime.Channel target = new Realtime.Channel("test", "client", manager.Object);
             List<ChannelState> states = new List<ChannelState>();
@@ -184,7 +184,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.SetupGet(c => c.IsActive).Returns(true);
-            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
+            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
             Realtime.Channel target = new Realtime.Channel("test", "client", manager.Object);
             List<ChannelState> states = new List<ChannelState>();
@@ -205,7 +205,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.SetupGet(c => c.IsActive).Returns(true);
-            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
+            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
             Realtime.Channel target = new Realtime.Channel("test", "client", manager.Object);
             target.Attach();
@@ -214,8 +214,8 @@ namespace Ably.Tests
             target.Detach();
 
             // Assert
-            manager.Verify(c => c.Send(It.Is<ProtocolMessage>(message => message.Action == ProtocolMessage.MessageAction.Detach &&
-                message.Channel == target.Name), null), Times.Once());
+            manager.Verify(c => c.Send(It.Is<ProtocolMessage>(message => message.action == ProtocolMessage.MessageAction.Detach &&
+                message.channel == target.Name), null), Times.Once());
         }
 
         [Fact]
@@ -224,9 +224,9 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.SetupGet(c => c.IsActive).Returns(true);
-            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
+            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
-            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Detach), null))
+            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Detach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Detached));
             Realtime.Channel target = new Realtime.Channel("test", "client", manager.Object);
             target.Attach();
@@ -245,9 +245,9 @@ namespace Ably.Tests
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.SetupGet(c => c.IsActive).Returns(true);
             Task attachingTask = null;
-            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Detach), null))
+            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Detach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Detached));
-            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
+            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Callback(() => attachingTask = Task.Factory.StartNew(() => Thread.Sleep(50)).ContinueWith(c => manager.Raise(cc => cc.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached))));
             Realtime.Channel target = new Realtime.Channel("test", "client", manager.Object);
             target.Attach();
@@ -278,7 +278,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.SetupGet(c => c.IsActive).Returns(true);
-            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
+            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
             Realtime.Channel target = new Realtime.Channel("test", "client", manager.Object);
             target.Attach();
@@ -287,8 +287,8 @@ namespace Ably.Tests
             target.Publish("message", null);
 
             // Assert
-            manager.Verify(c => c.Send(It.Is<ProtocolMessage>(message => message.Action == ProtocolMessage.MessageAction.Message &&
-                message.Messages.Length == 1 && message.Messages[0].Name == "message"), null));
+            manager.Verify(c => c.Send(It.Is<ProtocolMessage>(message => message.action == ProtocolMessage.MessageAction.Message &&
+                message.messages.Length == 1 && message.messages[0].name == "message"), null));
         }
 
         [Fact]
@@ -297,7 +297,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.SetupGet(c => c.IsActive).Returns(true);
-            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
+            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
             Realtime.Channel target = new Realtime.Channel("test", "client", manager.Object);
             target.Attach();
@@ -307,25 +307,25 @@ namespace Ably.Tests
                 new Message("message2", "payload"),
             };
             ProtocolMessage sendMessage = null;
-            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(cc => cc.Action == ProtocolMessage.MessageAction.Message), null))
+            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(cc => cc.action == ProtocolMessage.MessageAction.Message), null))
                 .Callback<ProtocolMessage, Action<bool, ErrorInfo>>((m, e) => sendMessage = m);
 
             // Act
             target.Publish(messages);
 
             // Assert
-            Assert.Equal(2, sendMessage.Messages.Length);
-            Assert.Same(messages[0], sendMessage.Messages[0]);
-            Assert.Same(messages[1], sendMessage.Messages[1]);
+            Assert.Equal(2, sendMessage.messages.Length);
+            Assert.Same(messages[0], sendMessage.messages[0]);
+            Assert.Same(messages[1], sendMessage.messages[1]);
         }
 
         [Fact]
         public void Publish_WhenNotAttached_PublishesQueuedMessageOnceAttached()
-        {            
+        {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.SetupGet(c => c.IsActive).Returns(true);
-            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
+            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
             Realtime.Channel target = new Realtime.Channel("test", "client", manager.Object);
 
@@ -334,8 +334,8 @@ namespace Ably.Tests
             target.Attach();
 
             // Assert
-            manager.Verify(c => c.Send(It.Is<ProtocolMessage>(message => message.Action == ProtocolMessage.MessageAction.Message &&
-                message.Messages.Length == 1 && message.Messages[0].Name == "message"), null));
+            manager.Verify(c => c.Send(It.Is<ProtocolMessage>(message => message.action == ProtocolMessage.MessageAction.Message &&
+                message.messages.Length == 1 && message.messages[0].name == "message"), null));
         }
 
         [Fact]
@@ -344,7 +344,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.SetupGet(c => c.IsActive).Returns(true);
-            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.Action == ProtocolMessage.MessageAction.Attach), null))
+            manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
             Realtime.Channel target = new Realtime.Channel("test", "client", manager.Object);
 
@@ -354,7 +354,7 @@ namespace Ably.Tests
             target.Attach();
 
             // Assert
-            manager.Verify(c => c.Send(It.Is<ProtocolMessage>(message => message.Action == ProtocolMessage.MessageAction.Message), null), Times.Once());
+            manager.Verify(c => c.Send(It.Is<ProtocolMessage>(message => message.action == ProtocolMessage.MessageAction.Message), null), Times.Once());
         }
 
         [Fact]
@@ -368,7 +368,7 @@ namespace Ably.Tests
 
             // Act
             Message[] targetMessages = new Message[] { new Message("test", null) };
-            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Message, "test") { Messages = targetMessages });
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Message, "test") { messages = targetMessages });
 
             // Assert
             Assert.Equal(targetMessages, receivedMessage);
@@ -385,7 +385,7 @@ namespace Ably.Tests
 
             // Act
             Message[] targetMessages = new Message[] { new Message("test", null), new Message("test2", null) };
-            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Message, "test") { Messages = targetMessages });
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Message, "test") { messages = targetMessages });
 
             // Assert
             Assert.Equal<int>(1, receivedMessage.Length);
@@ -404,7 +404,7 @@ namespace Ably.Tests
             target.Subscribe("test 2", (m) => receivedMessage = m);
 
             Message[] targetMessages = new Message[] { new Message("test", null), new Message("test2", null) };
-            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Message, "test") { Messages = targetMessages });
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Message, "test") { messages = targetMessages });
 
             // Assert
             Assert.Null(receivedMessage);
@@ -424,7 +424,7 @@ namespace Ably.Tests
             target.Unsubscribe("test", action);
 
             Message[] targetMessages = new Message[] { new Message("test", null), new Message("test2", null) };
-            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Message, "test") { Messages = targetMessages });
+            manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Message, "test") { messages = targetMessages });
 
             // Assert
             Assert.Null(receivedMessage);

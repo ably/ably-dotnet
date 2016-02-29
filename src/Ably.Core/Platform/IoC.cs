@@ -1,8 +1,8 @@
-﻿using Ably.Transport;
-using System;
+﻿using System;
 using System.Reflection;
+using IO.Ably.Transport;
 
-namespace Ably.Platform
+namespace IO.Ably.Platform
 {
     /// <summary>This class initializes dynamically-injected platform dependencies.</summary>
     public static class IoC

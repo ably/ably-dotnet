@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ably.Rest
+namespace IO.Ably.Rest
 {
     internal interface IAblyRest
     {

@@ -2,7 +2,7 @@ using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Ably.CustomSerialisers
+namespace IO.Ably.CustomSerialisers
 {
     public class DateTimeOffsetJsonConverter : JsonConverter
     {

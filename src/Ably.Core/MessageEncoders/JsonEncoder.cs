@@ -1,8 +1,8 @@
 ﻿using System;
-using Ably.Rest;
+using IO.Ably.Rest;
 using Newtonsoft.Json;
 
-namespace Ably.MessageEncoders
+namespace IO.Ably.MessageEncoders
 {
     internal class JsonEncoder : MessageEncoder
     {
@@ -13,26 +13,26 @@ namespace Ably.MessageEncoders
 
         public override void Decode(IEncodedMessage payload, ChannelOptions options)
         {
-            if (IsEmpty(payload.Data) || CurrentEncodingIs(payload, EncodingName) == false) return;
+            if (IsEmpty(payload.data) || CurrentEncodingIs(payload, EncodingName) == false) return;
 
             try
             {
-                payload.Data = JsonConvert.DeserializeObject(payload.Data as string);
+                payload.data = JsonConvert.DeserializeObject(payload.data as string);
             }
             catch (Exception ex)
             {
-                throw new AblyException(new ErrorInfo(string.Format("Invalid Json data: '{0}'", payload.Data), 50000), ex);
+                throw new AblyException(new ErrorInfo(string.Format("Invalid Json data: '{0}'", payload.data), 50000), ex);
             }
             RemoveCurrentEncodingPart(payload);
         }
 
         public override void Encode(IEncodedMessage payload, ChannelOptions options)
         {
-            if (IsEmpty(payload.Data)) return;
+            if (IsEmpty(payload.data)) return;
 
             if (NeedsJsonEncoding(payload))
             {
-                payload.Data = JsonConvert.SerializeObject(payload.Data);
+                payload.data = JsonConvert.SerializeObject(payload.data);
                 AddEncoding(payload, EncodingName);
             }
         }
@@ -40,7 +40,7 @@ namespace Ably.MessageEncoders
 
         public bool NeedsJsonEncoding(IEncodedMessage payload)
         {
-            return payload.Data is string == false && payload.Data is byte[] == false;
+            return payload.data is string == false && payload.data is byte[] == false;
         }
 
         public JsonEncoder(Protocol protocol)

@@ -1,11 +1,11 @@
 ﻿using System;
-using Ably.Auth;
 using System.Net;
 using System.Net.Http;
+using IO.Ably.Auth;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 
-namespace Ably
+namespace IO.Ably
 {
     public class AblyTokenAuth : IAuthCommands
     {
@@ -96,6 +96,8 @@ namespace Ably
                     return jData.ToObject<TokenDetails>();
 
                 postData = JsonConvert.DeserializeObject<TokenRequestPostData>(signedData);
+
+                request.Url = String.Format( "/keys/{0}/requestToken", postData.keyName );
             }
             else
             {

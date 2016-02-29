@@ -2,7 +2,7 @@ using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Ably.AcceptanceTests
+namespace IO.Ably.AcceptanceTests
 {
     [TestFixture(Protocol.Json)]
     [TestFixture(Protocol.MsgPack)]
@@ -15,7 +15,7 @@ namespace Ably.AcceptanceTests
             _protocol = protocol;
         }
 
-        private RestClient GetAbly()
+        private AblyRest GetAbly()
         {
             var testData = TestsSetup.TestData;
 
@@ -25,7 +25,7 @@ namespace Ably.AcceptanceTests
                 UseBinaryProtocol = _protocol == Protocol.MsgPack,
                 Environment = AblyEnvironment.Sandbox
             };
-            var ably = new RestClient(options);
+            var ably = new AblyRest(options);
             return ably;
         }
 
@@ -40,7 +40,7 @@ namespace Ably.AcceptanceTests
             presence.Should().HaveCount(4);
             foreach (var pMessage in presence)
             {
-                pMessage.Action.Should().Be(PresenceMessage.ActionType.Present);
+                pMessage.action.Should().Be(PresenceMessage.ActionType.Present);
             }
         }
 

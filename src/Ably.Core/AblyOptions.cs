@@ -1,6 +1,6 @@
-using Ably.Rest;
+using IO.Ably.Rest;
 
-namespace Ably
+namespace IO.Ably
 {
     /// <summary>
     /// Ably options class. It is used to instantiate Ably.Rest.Client

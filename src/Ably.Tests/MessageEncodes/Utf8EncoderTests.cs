@@ -1,9 +1,9 @@
-using Ably.MessageEncoders;
-using Ably.Rest;
 using FluentAssertions;
+using IO.Ably.MessageEncoders;
+using IO.Ably.Rest;
 using Xunit;
 
-namespace Ably.Tests.MessageEncodes
+namespace IO.Ably.Tests.MessageEncodes
 {
     public class Utf8EncoderTests
     {
@@ -20,7 +20,7 @@ namespace Ably.Tests.MessageEncodes
 
         private Message DecodePayload(object data, string encoding = "")
         {
-            var payload = new Message() { Data = data, Encoding = encoding };
+            var payload = new Message() { data = data, encoding = encoding };
             encoder.Decode(payload, new ChannelOptions());
             return payload;
         }
@@ -32,8 +32,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = DecodePayload(_byteData, "utf-8");
 
-                payload.Data.Should().Be(_stringData);
-                payload.Encoding.Should().BeEmpty();
+                payload.data.Should().Be(_stringData);
+                payload.encoding.Should().BeEmpty();
             }
 
             [Fact]
@@ -41,8 +41,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = DecodePayload(_byteData, "json/utf-8");
 
-                payload.Data.Should().Be(_stringData);
-                payload.Encoding.Should().Be("json");
+                payload.data.Should().Be(_stringData);
+                payload.encoding.Should().Be("json");
             }
 
             [Fact]
@@ -50,8 +50,8 @@ namespace Ably.Tests.MessageEncodes
             {
                 var payload = DecodePayload("test", "json");
 
-                payload.Data.Should().Be("test");
-                payload.Encoding.Should().Be("json");
+                payload.data.Should().Be("test");
+                payload.encoding.Should().Be("json");
             }
         }
     }

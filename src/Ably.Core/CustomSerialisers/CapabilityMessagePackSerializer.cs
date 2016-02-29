@@ -1,7 +1,7 @@
 using MsgPack;
 using MsgPack.Serialization;
 
-namespace Ably.CustomSerialisers
+namespace IO.Ably.CustomSerialisers
 {
     public class CapabilityMessagePackSerializer : MessagePackSerializer<Capability>
     {

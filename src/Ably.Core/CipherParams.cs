@@ -1,6 +1,6 @@
-using Ably.Encryption;
+using IO.Ably.Encryption;
 
-namespace Ably
+namespace IO.Ably
 {
     public class CipherParams
     {

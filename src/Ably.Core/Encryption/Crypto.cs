@@ -1,8 +1,8 @@
 using System;
 using System.Net;
-using Ably.Rest;
+using IO.Ably.Rest;
 
-namespace Ably.Encryption
+namespace IO.Ably.Encryption
 {
     ///<summary>Specifies the block cipher mode to use for encryption.</summary>
     public enum CipherMode

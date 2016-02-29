@@ -1,9 +1,9 @@
-﻿using Ably.Transport.States.Connection;
-using Ably.Types;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using IO.Ably.Transport.States.Connection;
+using IO.Ably.Types;
 
-namespace Ably.Transport
+namespace IO.Ably.Transport
 {
     internal interface IAcknowledgementProcessor
     {
@@ -28,18 +28,18 @@ namespace Ably.Transport
             if (!AckRequired(message))
                 return;
 
-            message.MsgSerial = this.msgSerial++;
+            message.msgSerial = this.msgSerial++;
 
             if (callback != null)
             {
-                this.ackQueue.Add(message.MsgSerial, callback);
+                this.ackQueue.Add(message.msgSerial, callback);
             }
         }
 
         public bool OnMessageReceived(ProtocolMessage message)
         {
-            if (message.Action == ProtocolMessage.MessageAction.Ack ||
-                message.Action == ProtocolMessage.MessageAction.Nack)
+            if (message.action == ProtocolMessage.MessageAction.Ack ||
+                message.action == ProtocolMessage.MessageAction.Nack)
             {
                 HandleMessageAcknowledgement(message);
                 return true;
@@ -75,26 +75,26 @@ namespace Ably.Transport
 
         private static bool AckRequired(ProtocolMessage msg)
         {
-            return (msg.Action == ProtocolMessage.MessageAction.Message ||
-                msg.Action == ProtocolMessage.MessageAction.Presence);
+            return (msg.action == ProtocolMessage.MessageAction.Message ||
+                msg.action == ProtocolMessage.MessageAction.Presence);
         }
 
         private void HandleMessageAcknowledgement(ProtocolMessage message)
         {
-            long startSerial = message.MsgSerial;
-            long endSerial = message.MsgSerial + (message.Count - 1);
+            long startSerial = message.msgSerial;
+            long endSerial = message.msgSerial + (message.count - 1);
             for (long i = startSerial; i <= endSerial; i++)
             {
                 Action<bool, ErrorInfo> callback;
                 if (this.ackQueue.TryGetValue(i, out callback))
                 {
-                    if (message.Action == ProtocolMessage.MessageAction.Ack)
+                    if (message.action == ProtocolMessage.MessageAction.Ack)
                     {
                         callback(true, null);
                     }
                     else
                     {
-                        callback(false, message.Error ?? ErrorInfo.ReasonUnknown);
+                        callback(false, message.error ?? ErrorInfo.ReasonUnknown);
                     }
                     this.ackQueue.Remove(i);
                 }

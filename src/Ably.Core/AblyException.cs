@@ -2,7 +2,7 @@ using System;
 using System.Net;
 using System.Runtime.Serialization;
 
-namespace Ably
+namespace IO.Ably
 {
 
     /// <summary>

@@ -1,8 +1,8 @@
-using Ably.Auth;
+using IO.Ably.Auth;
 using MsgPack.Serialization;
 using Newtonsoft.Json;
 
-namespace Ably
+namespace IO.Ably
 {
     internal class TokenResponse
     {

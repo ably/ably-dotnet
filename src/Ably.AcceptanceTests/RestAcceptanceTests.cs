@@ -3,11 +3,11 @@ using System.Net;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Ably.AcceptanceTests
+namespace IO.Ably.AcceptanceTests
 {
     public class ChannelAcceptanceTests
     {
-        
+
     }
 
     [TestFixture]
@@ -18,13 +18,13 @@ namespace Ably.AcceptanceTests
         {
             //Arrange
             var fakeKey = "AppId.KeyId:KeyValue";
-            var ably = new RestClient(new AblyOptions() { Key = fakeKey, Environment = AblyEnvironment.Sandbox });
+            var ably = new AblyRest(new AblyOptions() { Key = fakeKey, Environment = AblyEnvironment.Sandbox });
 
             //Act
             var error = Assert.Throws<AblyException>(delegate { ably.Channels.Get("Test").Publish("test", true); });
 
-            error.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-            error.ErrorInfo.Code.Should().Be(40100);
+            error.ErrorInfo.statusCode.Should().Be(HttpStatusCode.Unauthorized);
+            error.ErrorInfo.code.Should().Be(40100);
         }
     }
 }

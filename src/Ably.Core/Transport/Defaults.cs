@@ -1,8 +1,8 @@
-﻿using Ably.Types;
+﻿using IO.Ably.Types;
 using System;
 using System.Collections.Generic;
 
-namespace Ably.Transport
+namespace IO.Ably.Transport
 {
     internal static class Defaults
     {

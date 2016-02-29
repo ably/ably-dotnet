@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Ably.Rest;
+using IO.Ably.Rest;
 
-namespace Ably
+namespace IO.Ably
 {
     internal class AblyRequest
     {
@@ -22,12 +22,12 @@ namespace Ably
             ResponseDataType = typeof (object);
         }
 
-        public string Url { get; private set; }
+        public string Url { get; set; }
         public HttpMethod Method { get; private set; }
 
         public Dictionary<string, string> Headers { get; private set; }
         public Dictionary<string, string> QueryParameters { get; private set; }
-        
+
         public void AddQueryParameters(IEnumerable<KeyValuePair<string, string>> parameters)
         {
             foreach (var keyValuePair in parameters)
@@ -35,7 +35,7 @@ namespace Ably
                 QueryParameters.Add(keyValuePair.Key, keyValuePair.Value);
             }
         }
-        
+
         public Protocol Protocol { get; set; }
         public object PostData { get; set; }
         public Type ResponseDataType { get; set; }

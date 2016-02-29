@@ -1,9 +1,9 @@
-﻿using Ably.Realtime;
-using Ably.Transport;
+﻿using IO.Ably.Realtime;
+using IO.Ably.Transport;
 using Moq;
 using Xunit;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public class RealtimeTests
     {

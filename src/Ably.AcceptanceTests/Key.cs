@@ -1,6 +1,6 @@
 using System;
 
-namespace Ably.AcceptanceTests
+namespace IO.Ably.AcceptanceTests
 {
     public class Key
     {

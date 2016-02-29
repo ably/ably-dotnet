@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Ably.Auth;
+using IO.Ably.Auth;
 
-namespace Ably
+namespace IO.Ably
 {
 
     /// <summary>

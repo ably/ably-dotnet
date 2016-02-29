@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace Ably
+namespace IO.Ably
 {
     public class TokenRequestPostData
     {

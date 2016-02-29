@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using Ably.Auth;
 using FluentAssertions;
+using IO.Ably.Auth;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public class AuthorisationTests
     {
@@ -16,9 +16,9 @@ namespace Ably.Tests
         public readonly DateTimeOffset Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc).ToDateTimeOffset();
         private readonly string _dummyTokenResponse = "{ \"access_token\": {}}";
 
-        private RestClient GetRestClient()
+        private AblyRest GetRestClient()
         {
-            var rest = new RestClient(new AblyOptions() { Key = ApiKey, UseBinaryProtocol = false});
+            var rest = new AblyRest(new AblyOptions() { Key = ApiKey, UseBinaryProtocol = false});
             rest.ExecuteHttpRequest = (request) =>
             {
                 CurrentRequest = request;

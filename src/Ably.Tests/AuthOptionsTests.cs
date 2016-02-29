@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public class AuthOptionsMergeTests
     {

@@ -1,11 +1,11 @@
 using System;
 using Xunit;
-using Ably.Auth;
 using FluentAssertions;
+using IO.Ably.Auth;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Ably.Tests
+namespace IO.Ably.Tests
 {
     public class TokenDetailsTests
     {

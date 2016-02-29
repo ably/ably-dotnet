@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Ably
+namespace IO.Ably
 {
     public class CapabilityResource
     {

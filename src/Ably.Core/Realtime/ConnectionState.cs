@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ably.Realtime
+namespace IO.Ably.Realtime
 {
     /// <summary>
     /// A series of connection states.

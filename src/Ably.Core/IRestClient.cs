@@ -1,7 +1,7 @@
 using System;
-using Ably.Rest;
+using IO.Ably.Rest;
 
-namespace Ably
+namespace IO.Ably
 {
     public interface IRestClient : IChannelCommands
     {
@@ -36,10 +36,10 @@ namespace Ably
 
         /// <summary>
         /// Retrieves the stats for the application based on a custom query. It should be used with <see cref="DataRequestQuery"/>.
-        /// It is mainly because of the way a PaginatedResource defines its queries. For retrieving Stats with special parameters use <see cref="RestClient.Stats(StatsDataRequestQuery query)"/>
+        /// It is mainly because of the way a PaginatedResource defines its queries. For retrieving Stats with special parameters use <see cref="AblyRest.Stats(StatsDataRequestQuery query)"/>
         /// </summary>
         /// <example>
-        /// var client = new RestClient("validkey");
+        /// var client = new AblyRest("validkey");
         /// var stats = client.Stats();
         /// var nextPage = cliest.Stats(stats.NextQuery);
         /// </example>

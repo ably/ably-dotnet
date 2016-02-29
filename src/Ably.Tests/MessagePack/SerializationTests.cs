@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Ably.CustomSerialisers;
 using FluentAssertions;
+using IO.Ably.CustomSerialisers;
 using MsgPack;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Ably.Tests.MessagePack
+namespace IO.Ably.Tests.MessagePack
 {
     public class MessagePackSerializationTests
     {
@@ -15,7 +15,7 @@ namespace Ably.Tests.MessagePack
         {
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
             {
-                Converters = new List<JsonConverter>() {  new DateTimeOffsetJsonConverter(), 
+                Converters = new List<JsonConverter>() {  new DateTimeOffsetJsonConverter(),
                     new CapabilityJsonConverter() }
             };
         }
@@ -28,22 +28,22 @@ namespace Ably.Tests.MessagePack
 
             var result = MsgPackHelper.DeSerialise(serialised, typeof (List<Message>)) as List<Message>;
             var resultMessage = result.First();
-            
-            ((MessagePackObject)resultMessage.Data).ToObject().Should().Be(message.Data);
-            resultMessage.Name.Should().Be(message.Name);
+
+            ((MessagePackObject)resultMessage.data).ToObject().Should().Be(message.data);
+            resultMessage.name.Should().Be(message.name);
 
         }
-            
+
         [Fact]
         public void CanSerialiseAndDeserialiseBase64ByteArray()
         {
-            var message = new Message() {Name = "example", Data = "AAECAwQFBgcICQoLDA0ODw==".FromBase64()};
+            var message = new Message() {name = "example", data = "AAECAwQFBgcICQoLDA0ODw==".FromBase64()};
             var serialised = MsgPackHelper.Serialise(new List<Message> { message });
             Console.WriteLine(serialised.ToBase64());
             var resultMessage = MsgPackHelper.DeSerialise(serialised, typeof(List<Message>)) as List<Message>;
-            var data = ((MessagePackObject)resultMessage.First().Data).ToObject() as byte[];
-            data.Should().BeEquivalentTo(message.Data as byte[]);
-            resultMessage.First().Name.Should().Be(message.Name);
+            var data = ((MessagePackObject)resultMessage.First().data).ToObject() as byte[];
+            data.Should().BeEquivalentTo(message.data as byte[]);
+            resultMessage.First().name.Should().Be(message.name);
         }
 
         [Fact]
@@ -74,7 +74,7 @@ namespace Ably.Tests.MessagePack
         {
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
             {
-                Converters = new List<JsonConverter>() {  new DateTimeOffsetJsonConverter(), 
+                Converters = new List<JsonConverter>() {  new DateTimeOffsetJsonConverter(),
                     new CapabilityJsonConverter() }
             };
         }
@@ -96,7 +96,7 @@ namespace Ably.Tests.MessagePack
 		""clientId"": ""123""
 	}
 }";
-            
+
 
 
             var response = JsonConvert.DeserializeObject<TokenResponse>(value);
