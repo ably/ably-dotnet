@@ -1,28 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
+﻿using System.Collections.Generic;
 using System.Net;
 
 namespace IO.Ably
 {
-    public interface IPaginatedResource<out T> : IEnumerable<T>
-    {
-        bool HasNext { get; }
-        DataRequestQuery NextQuery { get; }
-        DataRequestQuery FirstQuery { get; }
-        DataRequestQuery CurrentQuery { get; }
-    }
-
-    internal interface IPaginatedResource
-    {
-        DataRequestQuery NextQuery { get; set; }
-        DataRequestQuery FirstQuery { get; set;  }
-        DataRequestQuery CurrentQuery { get; set;  }
-    }
-
-
-
-    public class PaginatedResource<T> : List<T>, IPaginatedResource<T>, IPaginatedResource
+    public class PaginatedResource<T> : List<T>
     {
         private readonly int _limit;
 
