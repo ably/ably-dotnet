@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1EA29F
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.AcceptanceTests", "Ably.AcceptanceTests\Ably.AcceptanceTests.csproj", "{B5FA2120-6451-4A54-86FE-1F367A72C04D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.ConsoleTest", "Ably.ConsoleTest\Ably.ConsoleTest.csproj", "{9B0AFCA5-07B5-419C-A7C7-B27BE4C9B760}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.ConsoleUnitTests", "Ably.ConsoleTest\Ably.ConsoleUnitTests.csproj", "{9B0AFCA5-07B5-419C-A7C7-B27BE4C9B760}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably", "Ably.Core\IO.Ably.csproj", "{EF341E0A-733D-4F79-8303-FD1B10D778EB}"
 EndProject
