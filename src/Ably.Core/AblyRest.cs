@@ -214,7 +214,7 @@ namespace IO.Ably
         /// </example>
         /// <param name="query"><see cref="DataRequestQuery"/> and <see cref="StatsDataRequestQuery"/></param>
         /// <returns></returns>
-        public IPaginatedResource<Stats> Stats(DataRequestQuery query)
+        public Task<PaginatedResource<Stats>> Stats(DataRequestQuery query)
         {
             query.Validate();
 

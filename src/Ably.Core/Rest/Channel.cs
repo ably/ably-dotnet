@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using IO.Ably.Encryption;
+using System.Threading.Tasks;
 
 namespace IO.Ably.Rest
 {
     /// <summary>
     /// The Ably Realtime service organises the traffic within any application into named channels.
-    /// Channels are the "unit" of message distribution; clients attach to channels to subscribe to messages, 
+    /// Channels are the "unit" of message distribution; clients attach to channels to subscribe to messages,
     /// and every message broadcast by the service is associated with a unique channel.
     /// A channel cannot be instantiated but needs to be created using the AblyRest.Channels.Get("channelname")
     /// </summary>
@@ -41,7 +42,7 @@ namespace IO.Ably.Rest
         /// </summary>
         /// <param name="name">The event name of the message to publish</param>
         /// <param name="data">The message payload. Allowed payloads are string, objects and byte[]</param>
-        public void Publish(string name, object data) 
+        public void Publish(string name, object data)
         {
             var request = _ablyRest.RestMethods.CreatePostRequest(basePath + "/messages", _options);
 
@@ -64,17 +65,17 @@ namespace IO.Ably.Rest
         /// Obtain the set of members currently present for a channel
         /// </summary>
         /// <returns><see cref="PaginatedResource{T}"/> of the PresenseMessages</returns>
-        public IPaginatedResource<PresenceMessage> Presence()
+        public Task<PaginatedResource<PresenceMessage>> Presence()
         {
             var request = _ablyRest.RestMethods.CreateGetRequest(basePath + "/presence", _options);
-            return _ablyRest.RestMethods.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
+            return await _ablyRest.RestMethods.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
         }
 
         /// <summary>
         /// Get the presence messages history for the channel
         /// </summary>
         /// <returns><see cref="PaginatedResource{PresenceMessage}"/></returns>
-        public IPaginatedResource<PresenceMessage> PresenceHistory()
+        public Task<PaginatedResource<PresenceMessage>> PresenceHistory()
         {
             var request = _ablyRest.RestMethods.CreateGetRequest(basePath + "/presence", _options);
             return _ablyRest.RestMethods.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
@@ -84,7 +85,7 @@ namespace IO.Ably.Rest
         /// Get the presence messages history for the channel by specifying a query
         /// </summary>
         /// <returns><see cref="PaginatedResource{PresenceMessage}"/></returns>
-        public IPaginatedResource<PresenceMessage> PresenceHistory(DataRequestQuery query)
+        public Task<PaginatedResource<PresenceMessage>> PresenceHistory(DataRequestQuery query)
         {
             var request = _ablyRest.RestMethods.CreateGetRequest(basePath + "/presence", _options);
             request.AddQueryParameters(query.GetParameters());
@@ -95,7 +96,7 @@ namespace IO.Ably.Rest
         /// Return the message history of the channel
         /// </summary>
         /// <returns><see cref="PaginatedResource{T}"/> of Messages</returns>
-        public IPaginatedResource<Message> History()
+        public Task<PaginatedResource<Message>> History()
         {
             return History(new DataRequestQuery());
         }
@@ -105,7 +106,7 @@ namespace IO.Ably.Rest
         /// </summary>
         /// <param name="query"><see cref="DataRequestQuery"/></param>
         /// <returns><see cref="PaginatedResource{T}"/> of Messages</returns>
-        public IPaginatedResource<Message> History(DataRequestQuery query)
+        public Task<PaginatedResource<Message>> History(DataRequestQuery query)
         {
             query.Validate();
 

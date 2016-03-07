@@ -82,9 +82,9 @@ namespace IO.Ably
         }
 
         /// <summary>Request auth token, set options</summary>
-        void InitTokenAuth()
+        async Task InitTokenAuth()
         {
-            CurrentToken = Auth.Authorise( null, null, false );
+            CurrentToken = await Auth.Authorise( null, null, false );
 
             if( HasValidToken() )
             {
@@ -105,44 +105,10 @@ namespace IO.Ably
             this.Connection.Close();
         }
 
-        /// <summary>
-        /// Retrieves the ably service time
-        /// </summary>
-        /// <returns></returns>
-        public void Time(Action<DateTime?, AblyException> callback)
+        /// <summary>Retrieves the ably service time</summary>
+        public Task<DateTime> Time()
         {
-            System.Threading.SynchronizationContext sync = System.Threading.SynchronizationContext.Current;
-
-            Action<DateTime?, AblyException> invokeCallback = (res, err) =>
-            {
-                if (callback != null)
-                {
-                    if (sync != null)
-                    {
-                        sync.Send(new SendOrPostCallback(o => callback(res, err)), null);
-                    }
-                    else
-                    {
-                        callback(res, err);
-                    }
-                }
-            };
-
-            Action act = () =>
-            {
-                DateTime result;
-                try
-                {
-                    result = _simpleRest.Time();
-                }
-                catch (AblyException e)
-                {
-                    invokeCallback(null, e);
-                    return;
-                }
-                invokeCallback(result, null);
-            };
-            Task.Run( act );
+            return _simpleRest.Time();
         }
     }
 }

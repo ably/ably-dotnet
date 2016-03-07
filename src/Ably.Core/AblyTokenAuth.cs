@@ -4,6 +4,7 @@ using System.Net.Http;
 using IO.Ably.Auth;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 namespace IO.Ably
 {
@@ -31,7 +32,7 @@ namespace IO.Ably
         /// <param name="options">Extra <see cref="AuthOptions"/> used for creating a token </param>
         /// <returns>A valid ably token</returns>
         /// <exception cref="AblyException"></exception>
-        public TokenDetails RequestToken(TokenRequest requestData, AuthOptions options)
+        public async Task<TokenDetails> RequestToken( TokenRequest requestData, AuthOptions options )
         {
             var mergedOptions = options != null ? options.Merge(_options) : _options;
             string keyId = "", keyValue = "";
@@ -83,7 +84,7 @@ namespace IO.Ably
                 }
                 authRequest.Headers.Merge(mergedOptions.AuthHeaders);
                 authRequest.SkipAuthentication = true;
-                var response = _rest.ExecuteRequest(authRequest);
+                AblyResponse response = await _rest.ExecuteRequest(authRequest);
                 if (response.Type != ResponseType.Json)
                     throw new AblyException(
                         new ErrorInfo(
@@ -104,16 +105,15 @@ namespace IO.Ably
                 postData = data.GetPostData(keyValue);
             }
 
-            if (mergedOptions.QueryTime)
-                postData.timestamp = _rest.Time().ToUnixTimeInMilliseconds().ToString();
+            if( mergedOptions.QueryTime )
+                postData.timestamp = (await _rest.Time()).ToUnixTimeInMilliseconds().ToString();
 
             request.PostData = postData;
 
-            var result = _rest.ExecuteRequest<TokenDetails>(request);
+            TokenDetails result = await _rest.ExecuteRequest<TokenDetails>(request);
 
-            if (result == null)
+            if( null == result )
                 throw new AblyException(new ErrorInfo("Invalid token response returned", 500));
-
             return result;
         }
 
@@ -129,7 +129,7 @@ namespace IO.Ably
         /// <param name="force">Force the client request a new token even if it has a valid one.</param>
         /// <returns>Returns a valid token</returns>
         /// <exception cref="AblyException">Throws an ably exception representing the server response</exception>
-        public TokenDetails Authorise(TokenRequest request, AuthOptions options, bool force)
+        public async Task<TokenDetails> Authorise(TokenRequest request, AuthOptions options, bool force)
         {
             if (CurrentToken != null)
             {
@@ -141,7 +141,7 @@ namespace IO.Ably
                 CurrentToken = null;
             }
 
-            CurrentToken = RequestToken(request, options);
+            CurrentToken = await RequestToken(request, options);
             return CurrentToken;
         }
 
@@ -153,7 +153,7 @@ namespace IO.Ably
         /// <param name="requestData"><see cref="TokenRequest"/>. If null a token request is generated from options passed when the client was created.</param>
         /// <param name="options"><see cref="AuthOptions"/>. If null the default AuthOptions are used.</param>
         /// <returns></returns>
-        public TokenRequestPostData CreateTokenRequest(TokenRequest requestData, AuthOptions options)
+        public async Task<TokenRequestPostData> CreateTokenRequest(TokenRequest requestData, AuthOptions options)
         {
             var mergedOptions = options != null ? options.Merge(_options) : _options;
 
@@ -179,8 +179,8 @@ namespace IO.Ably
             data.KeyName = data.KeyName ?? key.KeyName;
 
             var postData = data.GetPostData(key.KeySecret);
-            if (mergedOptions.QueryTime)
-                postData.timestamp = _rest.Time().ToUnixTimeInMilliseconds().ToString();
+            if( mergedOptions.QueryTime )
+                postData.timestamp = ( await _rest.Time() ).ToUnixTimeInMilliseconds().ToString();
 
             return postData;
         }
