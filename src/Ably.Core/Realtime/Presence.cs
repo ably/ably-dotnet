@@ -70,9 +70,9 @@ namespace Ably.Realtime
 
         private void UpdatePresence(PresenceMessage msg, Action<bool, ErrorInfo> callback)
         {
-            if (this.channel.State == ChannelState.Initialised || this.channel.State == ChannelState.Attaching)
+            if (this.channel.State == ChannelState.Initialized || this.channel.State == ChannelState.Attaching)
             {
-                if (this.channel.State == ChannelState.Initialised)
+                if (this.channel.State == ChannelState.Initialized)
                 {
                     this.channel.Attach();
                 }

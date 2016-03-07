@@ -24,7 +24,7 @@ namespace Ably
         public bool EchoMessages { get; set; }
 
         /// <summary>
-        /// A connection recovery string, specified by a client when initialising the library 
+        /// A connection recovery string, specified by a client when initializing the library 
         /// with the intention of inheriting the state of an earlier connection. See the Ably 
         /// Realtime API documentation for further information on connection state recovery.
         /// </summary>

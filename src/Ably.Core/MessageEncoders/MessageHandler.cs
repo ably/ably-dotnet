@@ -23,17 +23,17 @@ namespace Ably.MessageEncoders
         {
             _protocol = protocol;
 
-            InitialiseMessageEncoders(protocol);
+            InitializeMessageEncoders(protocol);
         }
 
-        private void InitialiseMessageEncoders(Protocol protocol)
+        private void InitializeMessageEncoders(Protocol protocol)
         {
             Encoders.Add(new JsonEncoder(protocol));
             Encoders.Add(new Utf8Encoder(protocol));
             Encoders.Add(new CipherEncoder(protocol));
             Encoders.Add(new Base64Encoder(protocol));
 
-            Logger.Debug(string.Format("Initialising message encodings. {0} initialised", string.Join(",", Encoders.Select( x=> x.EncodingName))));
+            Logger.Debug(string.Format("Initializing message encodings. {0} initialized", string.Join(",", Encoders.Select( x=> x.EncodingName))));
         }
 
         public T ParseMessagesResponse<T>(AblyResponse response) where T : class
@@ -154,21 +154,21 @@ namespace Ably.MessageEncoders
             LogResponse(response);
             if (typeof(T) == typeof(PaginatedResource<Message>))
             {
-                var result = PaginatedResource.InitialisePartialResult<Message>(response.Headers, GetLimit(request));
+                var result = PaginatedResource.InitializePartialResult<Message>(response.Headers, GetLimit(request));
                 result.AddRange(ParseMessagesResponse(response, request.ChannelOptions));
                 return result as T;
             }
 
             if (typeof(T) == typeof(PaginatedResource<Stats>))
             {
-                var result = PaginatedResource.InitialisePartialResult<Stats>(response.Headers, GetLimit(request));
+                var result = PaginatedResource.InitializePartialResult<Stats>(response.Headers, GetLimit(request));
                 result.AddRange(ParseStatsResponse(response));
                 return result as T;
             }
 
             if (typeof(T) == typeof(PaginatedResource<PresenceMessage>))
             {
-                var result = PaginatedResource.InitialisePartialResult<PresenceMessage>(response.Headers, GetLimit(request));
+                var result = PaginatedResource.InitializePartialResult<PresenceMessage>(response.Headers, GetLimit(request));
                 result.AddRange(ParsePresenceMessages(response));
                 return result as T;
             }

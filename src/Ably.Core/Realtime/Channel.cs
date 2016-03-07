@@ -85,7 +85,7 @@ namespace Ably.Realtime
         /// </summary>
         public void Detach()
         {
-            if (this.State == ChannelState.Initialised || this.State == ChannelState.Detaching ||
+            if (this.State == ChannelState.Initialized || this.State == ChannelState.Detaching ||
                 this.State == ChannelState.Detached)
             {
                 return;
@@ -146,7 +146,7 @@ namespace Ably.Realtime
 
         public void Publish(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback)
         {
-            if (this.State == ChannelState.Initialised || this.State == ChannelState.Attaching)
+            if (this.State == ChannelState.Initialized || this.State == ChannelState.Attaching)
             {
                 // TODO: Add callback
                 this.queuedMessages.AddRange(messages);

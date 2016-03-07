@@ -37,7 +37,7 @@ namespace Ably
         }
 
         /// <summary>
-        /// Initialises the Ably Auth type based on the options passed.
+        /// Initializes the Ably Auth type based on the options passed.
         /// </summary>
         internal void InitAuth(IAblyRest restClient)
         {

@@ -47,7 +47,7 @@ namespace Ably
         }
 
         /// <summary>
-        /// Initialised a new instance of AuthOptions by populating the KeyId and KeyValue properties from the full Key
+        /// Initialized a new instance of AuthOptions by populating the KeyId and KeyValue properties from the full Key
         /// </summary>
         /// <param name="key">Full ably key string</param>
         public AuthOptions(string key)

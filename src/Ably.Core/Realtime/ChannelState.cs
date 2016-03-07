@@ -8,10 +8,10 @@ namespace Ably.Realtime
     public enum ChannelState
     {
         /// <summary>
-        /// A channel object having this state has been initialised but no attach has 
+        /// A channel object having this state has been initialized but no attach has 
         /// yet been attempted.
         /// </summary>
-        Initialised,
+        Initialized,
 
         /// <summary>
         /// An attach has been initiated by sending a request to the service. This is a 

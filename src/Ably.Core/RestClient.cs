@@ -33,7 +33,7 @@ namespace Ably
         internal IAblyHttpClient _httpClient;
         internal MessageHandler _messageHandler;
 
-        /// <summary>Initialises the RestClient by reading the Key from a connection string with key 'Ably'</summary>
+        /// <summary>Initializes the RestClient by reading the Key from a connection string with key 'Ably'</summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public RestClient()
         {
@@ -41,10 +41,10 @@ namespace Ably
             if( string.IsNullOrEmpty( key ) )
                 throw new AblyException( "A connection string with key 'Ably' doesn't exist in the application configuration" );
             _options = new AblyOptions( key );
-            InitialiseAbly();
+            InitializeAbly();
         }
 
-        /// <summary>Initialises the RestClient using the api key provided</summary>
+        /// <summary>Initializes the RestClient using the api key provided</summary>
         /// <param name="apiKey">Full api key</param>
         public RestClient(string apiKey)
             : this(new AblyOptions(apiKey))
@@ -53,7 +53,7 @@ namespace Ably
         }
 
         /// <summary>
-        /// Convenience method for initialising the RestClient by passing a Action{AblyOptions}
+        /// Convenience method for initializing the RestClient by passing a Action{AblyOptions}
         /// <example>
         /// var rest = new RestClient(opt => {
         ///  opt.Key = "fake.key:value";
@@ -66,21 +66,21 @@ namespace Ably
         {
             _options = new AblyOptions();
             init(_options);
-            InitialiseAbly();
+            InitializeAbly();
         }
 
         /// <summary>
-        /// Initialise the library with a custom set of options
+        /// Initialize the library with a custom set of options
         /// </summary>
         /// <param name="ablyOptions"></param>
         public RestClient(AblyOptions ablyOptions)
         {
             _options = ablyOptions;
-            InitialiseAbly();
+            InitializeAbly();
         }
 
-        /// <summary>Initialises the rest client and validates the passed in options</summary>
-        private void InitialiseAbly()
+        /// <summary>Initializes the rest client and validates the passed in options</summary>
+        private void InitializeAbly()
         {
             if (_options == null)
             {

@@ -70,7 +70,7 @@ namespace Ably.Tests
         }
 
         [Fact]
-        public void Capability_InitialisedWith2Resources_AddsThemCorrectlyToAllowedResourced()
+        public void Capability_InitializedWith2Resources_AddsThemCorrectlyToAllowedResourced()
         {
             var capabilityString = "{ \"first\": [ \"*\" ], \"second\": [ \"publish\" ] }";
             var capability = new Capability(capabilityString);

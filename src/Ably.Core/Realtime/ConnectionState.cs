@@ -8,14 +8,14 @@ namespace Ably.Realtime
     public enum ConnectionState
     {
         /// <summary>
-        /// A connection object having this state has been initialised but no connection has yet been 
+        /// A connection object having this state has been initialized but no connection has yet been 
         /// attempted.
         /// </summary>
         Initialized,
 
         /// <summary>
         /// A connection attempt has been initiated. The connecting state is entered as soon as the library 
-        /// has completed initialisation, and is reentered each time connection is re-attempted following 
+        /// has completed initialization, and is reentered each time connection is re-attempted following 
         /// disconnection.
         /// </summary>
         Connecting,
