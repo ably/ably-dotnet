@@ -1,10 +1,10 @@
+using IO.Ably.Rest;
+using MsgPack;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using IO.Ably.Rest;
-using MsgPack;
-using Newtonsoft.Json;
 
 namespace IO.Ably.MessageEncoders
 {
@@ -43,7 +43,7 @@ namespace IO.Ably.MessageEncoders
             return default(T);
         }
 
-        public IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response)
+        public IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response, ChannelOptions options )
         {
             if (response.Type == ResponseType.Json)
             {
@@ -149,37 +149,37 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
+        /// <summary>Parse paginated response using specified parser function.</summary>
+        /// <typeparam name="T">Item type</typeparam>
+        /// <param name="request"></param>
+        /// <param name="response"></param>
+        /// <param name="funcParse">Function to parse HTTP response into a sequence of items.</param>
+        /// <returns></returns>
+        internal PaginatedResource<T> paginated<T>( AblyRequest request, AblyResponse response, Func<AblyResponse, ChannelOptions, IEnumerable<T>> funcParse )
+        {
+            PaginatedResource<T> res = new PaginatedResource<T>( response.Headers, GetLimit( request ) );
+            res.AddRange( funcParse( response, request.ChannelOptions ) );
+            return res;
+        }
+
         public T ParseResponse<T>(AblyRequest request, AblyResponse response) where T : class
         {
             LogResponse(response);
-            if (typeof(T) == typeof(PaginatedResource<Message>))
-            {
-                var result = PaginatedResource.InitializePartialResult<Message>(response.Headers, GetLimit(request));
-                result.AddRange(ParseMessagesResponse(response, request.ChannelOptions));
-                return result as T;
-            }
+            if( typeof( T ) == typeof( PaginatedResource<Message> ) )
+                return paginated( request, response, ParseMessagesResponse ) as T;
 
             if (typeof(T) == typeof(PaginatedResource<Stats>))
-            {
-                var result = PaginatedResource.InitializePartialResult<Stats>(response.Headers, GetLimit(request));
-                result.AddRange(ParseStatsResponse(response));
-                return result as T;
-            }
+                return paginated( request, response, ParseStatsResponse ) as T;
 
             if (typeof(T) == typeof(PaginatedResource<PresenceMessage>))
-            {
-                var result = PaginatedResource.InitializePartialResult<PresenceMessage>(response.Headers, GetLimit(request));
-                result.AddRange(ParsePresenceMessages(response));
-                return result as T;
-            }
+                return paginated( request, response, ParsePresenceMessages ) as T;
 
             var responseText = response.TextResponse;
             if (_protocol == Protocol.MsgPack)
             {
-                //A bit of a hack. Message pack serialiser does not like capability objects
+                // A bit of a hack. Message pack serializer does not like capability objects
                 responseText = MsgPackHelper.DeSerialise(response.Body, typeof (MessagePackObject)).ToString();
             }
-
             return (T)JsonConvert.DeserializeObject(responseText, typeof(T));
         }
 
@@ -202,7 +202,7 @@ namespace IO.Ably.MessageEncoders
 
         }
 
-        private IEnumerable<Stats> ParseStatsResponse(AblyResponse response)
+        private IEnumerable<Stats> ParseStatsResponse(AblyResponse response, ChannelOptions options )
         {
             var body = response.TextResponse;
             if (_protocol == Protocol.MsgPack)
@@ -225,5 +225,4 @@ namespace IO.Ably.MessageEncoders
             return Config.Limit;
         }
     }
-
 }

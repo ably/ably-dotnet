@@ -7,29 +7,23 @@ namespace IO.Ably
     {
         private readonly int _limit;
 
-        public PaginatedResource() : this(Config.Limit)
+        public PaginatedResource() : this( null, Config.Limit )
         {}
 
-        public PaginatedResource(int limit)
+        public PaginatedResource( WebHeaderCollection headers, int limit)
         {
             _limit = limit;
+            if( null != headers )
+            {
+                CurrentQuery = DataRequestQuery.GetLinkQuery( headers, DataRequestLinkType.Current );
+                NextQuery = DataRequestQuery.GetLinkQuery( headers, DataRequestLinkType.Next );
+                FirstQuery = DataRequestQuery.GetLinkQuery( headers, DataRequestLinkType.First );
+            }
         }
 
-        public bool HasNext { get { return NextQuery.IsEmpty == false; } }
-        public DataRequestQuery NextQuery { get; set; }
-        public DataRequestQuery FirstQuery { get; set; }
-        public DataRequestQuery CurrentQuery { get; set; }
-    }
-
-    internal static class PaginatedResource
-    {
-        public static PaginatedResource<T> InitializePartialResult<T>( WebHeaderCollection headers, int? limit = null)
-        {
-            var result = new PaginatedResource<T>(limit ?? Config.Limit);
-            result.CurrentQuery = DataRequestQuery.GetLinkQuery(headers, DataRequestLinkType.Current);
-            result.NextQuery = DataRequestQuery.GetLinkQuery(headers, DataRequestLinkType.Next);
-            result.FirstQuery = DataRequestQuery.GetLinkQuery(headers, DataRequestLinkType.First);
-            return result;
-        }
+        public bool HasNext { get { return null != NextQuery && NextQuery.IsEmpty == false; } }
+        public DataRequestQuery NextQuery { get; private set; }
+        public DataRequestQuery FirstQuery { get; private set; }
+        public DataRequestQuery CurrentQuery { get; private set; }
     }
 }
