@@ -6,7 +6,7 @@ using IO.Ably.Transport;
 namespace IO.Ably.Realtime
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class Connection : IDisposable
     {
@@ -28,7 +28,7 @@ namespace IO.Ably.Realtime
         public virtual ConnectionState State { get; private set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public virtual event EventHandler<ConnectionStateChangedEventArgs> ConnectionStateChanged;
 
@@ -45,7 +45,7 @@ namespace IO.Ably.Realtime
         public virtual long Serial { get; internal set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public virtual string Key { get; internal set; }
 
@@ -65,7 +65,7 @@ namespace IO.Ably.Realtime
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void Ping(Action<bool, ErrorInfo> callback)
         {
@@ -87,16 +87,16 @@ namespace IO.Ably.Realtime
             this.Close();
         }
 
-        internal void OnStateChanged(ConnectionState state, ErrorInfo error = null, int retryin = -1)
+        internal void OnStateChanged( ConnectionState state, ErrorInfo error = null, int retryin = -1 )
         {
             ConnectionState oldState = this.State;
             this.State = state;
             this.Reason = error;
-
-            // TODO: Add proper arguments in Connection.ConnectionStateChanged
-            if (this.ConnectionStateChanged != null)
+            var eh = this.ConnectionStateChanged;
+            if( null != eh )
             {
-                this.ConnectionStateChanged(this, new ConnectionStateChangedEventArgs(oldState, state, retryin, error));
+                // TODO: Add proper arguments in Connection.ConnectionStateChanged
+                eh( this, new ConnectionStateChangedEventArgs( oldState, state, retryin, error ) );
             }
         }
     }
