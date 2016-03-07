@@ -149,25 +149,25 @@ namespace IO.Ably
             get { return TokenCreatedExternally || (HasApiKey && HasTokenId == false); }
         }
 
-        internal void AddAuthHeader(AblyRequest request)
+        internal async Task AddAuthHeader(AblyRequest request)
         {
             if (AuthMethod == AuthMethod.Basic)
             {
                 var authInfo = Convert.ToBase64String(Options.Key.GetBytes());
                 request.Headers["Authorization"] = "Basic " + authInfo;
-                Logger.Debug("Adding Authorisation header with Basic authentication.");
+                Logger.Debug("Adding Authorization header with Basic authentication.");
             }
             else
             {
                 if (HasValidToken() == false && TokenRenewable)
                 {
-                    CurrentToken = Auth.Authorise(null, null, false);
+                    CurrentToken = await Auth.Authorise(null, null, false);
                 }
 
                 if (HasValidToken())
                 {
                     request.Headers["Authorization"] = "Bearer " + CurrentToken.Token.ToBase64();
-                    Logger.Debug("Adding Authorization headir with Token authentication");
+                    Logger.Debug("Adding Authorization header with Token authentication");
                 }
                 else
                     throw new AblyException("Invalid token credentials: " + CurrentToken, 40100, HttpStatusCode.Unauthorized);
@@ -188,7 +188,7 @@ namespace IO.Ably
         /// Retrieves the stats for the application. Passed default <see cref="StatsDataRequestQuery"/> for the request
         /// </summary>
         /// <returns></returns>
-        public IPaginatedResource<Stats> Stats()
+        public Task<PaginatedResource<Stats>> Stats()
         {
             return Stats(new StatsDataRequestQuery());
         }
@@ -198,7 +198,7 @@ namespace IO.Ably
         /// </summary>
         /// <param name="query">stats query</param>
         /// <returns></returns>
-        public IPaginatedResource<Stats> Stats(StatsDataRequestQuery query)
+        public Task<PaginatedResource<Stats>> Stats(StatsDataRequestQuery query)
         {
             return Stats(query as DataRequestQuery);
         }

@@ -68,7 +68,7 @@ namespace IO.Ably.Rest
         public Task<PaginatedResource<PresenceMessage>> Presence()
         {
             var request = _ablyRest.RestMethods.CreateGetRequest(basePath + "/presence", _options);
-            return await _ablyRest.RestMethods.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
+            return _ablyRest.RestMethods.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
         }
 
         /// <summary>

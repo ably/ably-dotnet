@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace IO.Ably.Rest
 {
@@ -6,11 +7,12 @@ namespace IO.Ably.Rest
     {
         void Publish(string name, object data);
         void Publish(IEnumerable<Message> messages);
-        IPaginatedResource<Message> History();
-        IPaginatedResource<Message> History(DataRequestQuery query);
+
+        Task<PaginatedResource<Message>> History();
+        Task<PaginatedResource<Message>> History(DataRequestQuery query);
         string Name { get; }
-        IPaginatedResource<PresenceMessage> Presence();
-        IPaginatedResource<PresenceMessage> PresenceHistory();
-        IPaginatedResource<PresenceMessage> PresenceHistory(DataRequestQuery query);
+        Task<PaginatedResource<PresenceMessage>> Presence();
+        Task<PaginatedResource<PresenceMessage>> PresenceHistory();
+        Task<PaginatedResource<PresenceMessage>> PresenceHistory(DataRequestQuery query);
     }
 }
