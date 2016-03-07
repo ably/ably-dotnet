@@ -23,7 +23,7 @@ namespace IO.Ably
         /// client requiring access to keys.
         ///</summary>
         public string AuthUrl { get; set; }
-        
+
         /// <summary>
         /// Used in conjunction with AuthUrl. Default is GET.
         /// </summary>
@@ -67,7 +67,7 @@ namespace IO.Ably
             QueryTime = QueryTime || defaults.QueryTime;
             return this;
         }
-        
+
         internal ApiKey ParseKey()
         {
             return ApiKey.Parse(this.Key);
