@@ -105,16 +105,16 @@ namespace IO.Ably
 
         internal Func<AblyRequest, Task<AblyResponse>> ExecuteHttpRequest;
 
-        Task<AblyResponse> IAblyRest.ExecuteRequest(AblyRequest request)
+        async Task<AblyResponse> IAblyRest.ExecuteRequest(AblyRequest request)
         {
             Logger.Info("Sending {0} request to {1}", request.Method, request.Url);
 
             if (request.SkipAuthentication == false)
-                AddAuthHeader(request);
+                await AddAuthHeader(request);
 
             _messageHandler.SetRequestBody(request);
 
-            return ExecuteHttpRequest(request);
+            return await ExecuteHttpRequest(request);
         }
 
         async Task<T> IAblyRest.ExecuteRequest<T>(AblyRequest request)
