@@ -1,10 +1,9 @@
-﻿using System;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using IO.Ably.Realtime;
+﻿using IO.Ably.Realtime;
 using IO.Ably.Rest;
 using IO.Ably.Transport;
+using System;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace IO.Ably
 {
