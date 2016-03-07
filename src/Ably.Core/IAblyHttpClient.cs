@@ -1,7 +1,9 @@
+using System.Threading.Tasks;
+
 namespace IO.Ably
 {
     internal interface IAblyHttpClient
     {
-        AblyResponse Execute(AblyRequest request);
+        Task<AblyResponse> Execute(AblyRequest request);
     }
 }
