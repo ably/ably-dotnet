@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Rest;
+using System.Threading.Tasks;
 
 namespace IO.Ably
 {
@@ -102,9 +103,9 @@ namespace IO.Ably
             get { return this;}
         }
 
-        internal Func<AblyRequest, AblyResponse> ExecuteHttpRequest;
+        internal Func<AblyRequest, Task<AblyResponse>> ExecuteHttpRequest;
 
-        AblyResponse IAblyRest.ExecuteRequest(AblyRequest request)
+        Task<AblyResponse> IAblyRest.ExecuteRequest(AblyRequest request)
         {
             Logger.Info("Sending {0} request to {1}", request.Method, request.Url);
 
@@ -116,9 +117,9 @@ namespace IO.Ably
             return ExecuteHttpRequest(request);
         }
 
-        T IAblyRest.ExecuteRequest<T>(AblyRequest request)
+        async Task<T> IAblyRest.ExecuteRequest<T>(AblyRequest request)
         {
-            var response = RestMethods.ExecuteRequest(request);
+            var response = await RestMethods.ExecuteRequest(request);
             Logger.Debug("Response received. Status: " + response.StatusCode);
             Logger.Debug("Content type: " + response.ContentType);
             Logger.Debug("Encoding: " + response.Encoding);
@@ -173,16 +174,13 @@ namespace IO.Ably
             }
         }
 
-        /// <summary>
-        /// Retrieves the ably service time
-        /// </summary>
+        /// <summary>/// Retrieves the ably service time/// </summary>
         /// <returns></returns>
-        public DateTime Time()
+        public async Task<DateTime> Time()
         {
-            var request = RestMethods.CreateGetRequest("/time");
+            AblyRequest request = RestMethods.CreateGetRequest("/time");
             request.SkipAuthentication = true;
-            var response = RestMethods.ExecuteRequest<List<long>>(request);
-
+            List<long> response = await RestMethods.ExecuteRequest<List<long>>(request);
             return response.First().FromUnixTimeInMilliseconds();
         }
 

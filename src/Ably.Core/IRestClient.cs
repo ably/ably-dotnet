@@ -1,5 +1,6 @@
 using System;
 using IO.Ably.Rest;
+using System.Threading.Tasks;
 
 namespace IO.Ably
 {
@@ -19,7 +20,7 @@ namespace IO.Ably
         /// Retrieves the ably service time
         /// </summary>
         /// <returns></returns>
-        DateTime Time();
+        Task<DateTime> Time();
 
         /// <summary>
         /// Retrieves the stats for the application. Passed default <see cref="StatsDataRequestQuery"/> for the request

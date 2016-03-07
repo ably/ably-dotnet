@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace IO.Ably.Rest
 {
@@ -8,10 +9,10 @@ namespace IO.Ably.Rest
 
         AblyRequest CreatePostRequest(string path, ChannelOptions options = null);
 
-        AblyResponse ExecuteRequest(AblyRequest request);
+        Task<AblyResponse> ExecuteRequest(AblyRequest request);
 
-        T ExecuteRequest<T>(AblyRequest request) where T : class;
+        Task<T> ExecuteRequest<T>(AblyRequest request) where T : class;
 
-        DateTime Time();
+        Task<DateTime> Time();
     }
 }

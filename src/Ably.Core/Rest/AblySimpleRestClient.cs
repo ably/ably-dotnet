@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using IO.Ably.MessageEncoders;
+using System.Threading.Tasks;
 
 namespace IO.Ably.Rest
 {
@@ -35,7 +36,7 @@ namespace IO.Ably.Rest
             return new AblyRequest(path, HttpMethod.Post, _protocol) { ChannelOptions = options };
         }
 
-        public AblyResponse ExecuteRequest(AblyRequest request)
+        public Task<AblyResponse> ExecuteRequest(AblyRequest request)
         {
             if (!request.SkipAuthentication)
                 throw new InvalidOperationException("AblySimpleRestClient does not support authenticated requests");
@@ -45,17 +46,17 @@ namespace IO.Ably.Rest
             return _httpClient.Execute(request);
         }
 
-        public T ExecuteRequest<T>(AblyRequest request) where T : class
+        async public Task<T> ExecuteRequest<T>(AblyRequest request) where T : class
         {
-            var response = ExecuteRequest(request);
+            var response = await ExecuteRequest(request);
             return _messageHandler.ParseResponse<T>(request, response);
         }
 
-        public DateTime Time()
+        public async Task<DateTime> Time()
         {
             var request = CreateGetRequest("/time");
             request.SkipAuthentication = true;
-            var response = ExecuteRequest<List<long>>(request);
+            var response = await ExecuteRequest<List<long>>(request);
 
             return response.First().FromUnixTimeInMilliseconds();
         }

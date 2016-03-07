@@ -29,7 +29,7 @@ namespace IO.Ably
             _isDefaultHost = host == Config.DefaultHost;
         }
 
-        public AblyResponse Execute(AblyRequest request)
+        public Task<AblyResponse> Execute(AblyRequest request)
         {
             var hosts = Config.FallbackHosts;
 
@@ -80,57 +80,6 @@ namespace IO.Ably
             return ex.Status == WebExceptionStatus.ConnectFailure || ex.Status == WebExceptionStatus.SendFailure;
         }
 
-        private AblyResponse ExecuteInternal(AblyRequest request)
-        {
-            Func<Task<AblyResponse>> fn = () =>execImpl( request );
-            try
-            {
-                return Task.Run( fn ).Result;
-            }
-            catch( AggregateException aex )
-            {
-                Exception ex = aex.Flatten().InnerExceptions.First();
-                throw ex;
-            }
-
-            /* var webRequest = HttpWebRequest.Create(GetRequestUrl(request)) as HttpWebRequest;
-            webRequest.Timeout = Config.ConnectTimeout;
-            HttpWebResponse response = null;
-
-            webRequest.Headers[ "X-Ably-Version" ] = Config.AblyVersion;
-            PopulateDefaultHeaders(request, webRequest);
-            PopulateWebRequestHeaders(webRequest, request.Headers);
-
-            webRequest.UserAgent = "Ably.net library";
-            webRequest.Method = request.Method.Method;
-
-            try
-            {
-                if (webRequest.Method == "POST")
-                {
-                    var requestBody = request.RequestBody;
-
-                    webRequest
-                        .ContentLength = requestBody.Length;
-                    if (requestBody.Any())
-                    {
-                        using (Stream stream = webRequest.GetRequestStream())
-                        {
-                            stream.Write(requestBody, 0, requestBody.Length);
-                        }
-                    }
-                }
-
-                response = webRequest.GetResponse() as HttpWebResponse;
-                return GetAblyResponse(response);
-            }
-            finally
-            {
-                if (response != null)
-                    response.Close();
-            } */
-        }
-
         static async Task withTimeout( Task useful, Task timeout )
         {
             if( timeout == await Task.WhenAny( useful, timeout ) )
@@ -144,7 +93,7 @@ namespace IO.Ably
             return useful.Result;
         }
 
-        async Task<AblyResponse> execImpl( AblyRequest request )
+        async Task<AblyResponse> ExecuteInternal( AblyRequest request )
         {
             var webRequest = HttpWebRequest.Create(GetRequestUrl(request)) as HttpWebRequest;
             HttpWebResponse response = null;
