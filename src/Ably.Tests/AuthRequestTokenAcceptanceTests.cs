@@ -65,7 +65,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void WithOverridingTimeStamp_OverridesTheDefault()
         {
-            var timeStamp = new DateTime(2015, 1, 1).ToDateTimeOffset();
+            var timeStamp = DateTime.SpecifyKind(new DateTime(2015, 1, 1), DateTimeKind.Utc);
             var tokenRequest = new TokenRequest {Timestamp = timeStamp};
             RequestToken(tokenRequest, null,
                 (data, request) => Assert.Equal(timeStamp.ToUnixTimeInMilliseconds().ToString(), data.timestamp));

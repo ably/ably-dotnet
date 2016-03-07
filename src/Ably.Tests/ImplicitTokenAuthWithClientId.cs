@@ -27,7 +27,7 @@ namespace IO.Ably.Tests
                         TextResponse =
                             string.Format(
                                 "{{ \"access_token\": {{ \"id\": \"unique-token-id\", \"expires\": \"{0}\"}}}}",
-                                DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeInMilliseconds())
+                                DateTime.UtcNow.AddDays(1).ToUnixTimeInMilliseconds())
                     };
                 }
                 return new AblyResponse() {TextResponse = "{}"};

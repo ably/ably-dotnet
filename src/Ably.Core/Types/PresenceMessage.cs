@@ -50,7 +50,7 @@ namespace IO.Ably
 
         [JsonIgnore]
         [MessagePackMember( 6 )]
-        public DateTimeOffset timestamp { get; set; }
+        public DateTime timestamp { get; set; }
 
         [JsonProperty( "timestamp" )]
         public long timestamp_raw

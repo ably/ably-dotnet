@@ -10,7 +10,7 @@ namespace IO.Ably.CustomSerialisers
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             var value = reader.Value as string;
-            return DateTimeOffset.ParseExact(value, "yyyy-MM-dd:HH:mm", CultureInfo.InvariantCulture);
+            return DateTime.ParseExact(value, "yyyy-MM-dd:HH:mm", CultureInfo.InvariantCulture);
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

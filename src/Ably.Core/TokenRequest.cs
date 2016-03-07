@@ -4,7 +4,7 @@ using System.Globalization;
 namespace IO.Ably
 {
     /// <summary>
-    /// This is a convenience class for making Token requests. The data held here is used to generate a TokenRequestPostData 
+    /// This is a convenience class for making Token requests. The data held here is used to generate a TokenRequestPostData
     /// object which in turn is serialized and sent to Ably
     /// </summary>
     public class TokenRequest
@@ -48,7 +48,7 @@ namespace IO.Ably
 		/// Timestamps, in conjunction with the nonce, are used to prevent
 		/// token requests from being replayed.
         /// </summary>
-        public DateTimeOffset? Timestamp { get; set; }
+        public DateTime? Timestamp { get; set; }
 
         /// <summary>
 		/// An opaque nonce string of at least 16 characters to ensure
@@ -63,7 +63,7 @@ namespace IO.Ably
             data.keyName = KeyName;
             data.capability = (Capability ?? Defaults.Capability).ToJson();
             data.clientId = ClientId ?? "";
-            DateTimeOffset now = Config.Now();
+            DateTime now = Config.Now();
             if (Nonce.IsNotEmpty())
                 data.nonce = Nonce;
             if (Ttl.HasValue)
@@ -75,7 +75,7 @@ namespace IO.Ably
             else
                 data.timestamp = now.ToUnixTimeInMilliseconds().ToString();
             data.CalculateMac(keyValue);
-            
+
             return data;
         }
     }

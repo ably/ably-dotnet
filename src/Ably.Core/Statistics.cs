@@ -16,7 +16,7 @@ namespace IO.Ably
         public RequestCount TokenRequests { get; set; }
         [JsonProperty("intervalId")]
         [JsonConverter(typeof(StatsJsonDateConverter))]
-        public DateTimeOffset Interval { get; set; }
+        public DateTime Interval { get; set; }
 
         public Stats()
         {

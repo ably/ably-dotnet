@@ -88,7 +88,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void WithTimeStampOverridesDefault()
         {
-            var date = new DateTime(2014, 1, 1).ToDateTimeOffset();
+            var date = DateTime.SpecifyKind(new DateTime(2014, 1, 1), DateTimeKind.Utc);
             var data = Client.Auth.CreateTokenRequest(new TokenRequest() { Timestamp= date }, null);
             data.timestamp.Should().Be(date.ToUnixTimeInMilliseconds().ToString());
         }

@@ -19,7 +19,7 @@ namespace IO.Ably.Auth
         public string Token { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         [JsonProperty("keyName")]
         [MessagePackMember(20, Name = "keyName")]
@@ -31,7 +31,7 @@ namespace IO.Ably.Auth
         [JsonProperty("expires")]
         [MessagePackMember(30, Name = "expires")]
         [JsonConverter(typeof(DateTimeOffsetJsonConverter))]
-        public DateTimeOffset Expires { get; set; }
+        public DateTime Expires { get; set; }
 
         /// <summary>
         /// Date and time when the token was issued in UTC
@@ -39,7 +39,7 @@ namespace IO.Ably.Auth
         [JsonProperty("issued")]
         [MessagePackMember(40, Name = "issued")]
         [JsonConverter(typeof(DateTimeOffsetJsonConverter))]
-        public DateTimeOffset Issued { get; set; }
+        public DateTime Issued { get; set; }
 
         /// <summary>
         /// The allowed capabilities for this token. <see cref="Capability"/>
@@ -53,7 +53,7 @@ namespace IO.Ably.Auth
         /// The clientId associated with the token
         /// </summary>
         [JsonProperty("clientId", NullValueHandling = NullValueHandling.Ignore)]
-        
+
         [MessagePackMember(60, Name = "clientId")]
         public string ClientId { get; set; }
 

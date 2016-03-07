@@ -13,7 +13,7 @@ namespace IO.Ably.Tests
     {
         private const string ApiKey = "123.456:789";
         internal AblyRequest CurrentRequest { get; set; }
-        public readonly DateTimeOffset Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc).ToDateTimeOffset();
+        public readonly DateTime Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc);
         private readonly string _dummyTokenResponse = "{ \"access_token\": {}}";
 
         [Fact]
@@ -77,7 +77,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void RequestToken_TimeStamp_SetsTimestampOnTheDataRequest()
         {
-            var date = new DateTime(2014, 1, 1).ToDateTimeOffset();
+            var date = DateTime.SpecifyKind(new DateTime(2014, 1, 1), DateTimeKind.Utc);
             var request = new TokenRequest() { Timestamp = date };
 
             var client = GetClient();
@@ -112,7 +112,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void RequestToken_WithQueryTime_SendsTimeRequestAndUsesReturnedTimeForTheRequest()
         {
-            var currentTime = DateTimeOffset.UtcNow;
+            var currentTime = DateTime.UtcNow;
             Func<AblyRequest, AblyResponse> executeHttpRequest = x =>
             {
                 if (x.Url.Contains("time"))
@@ -244,7 +244,7 @@ namespace IO.Ably.Tests
                 AuthUrl = "http://authUrl"
             };
 
-            var dateTime = DateTimeOffset.UtcNow;
+            var dateTime = DateTime.UtcNow;
             Func<AblyRequest, AblyResponse> executeHttpRequest = (x) =>
             {
                 if (x.Url == options.AuthUrl)
