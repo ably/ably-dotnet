@@ -8,9 +8,7 @@ namespace IO.Ably
         private readonly int _limit;
 
         public PaginatedResource() : this(Config.Limit)
-        {
-
-        }
+        {}
 
         public PaginatedResource(int limit)
         {
@@ -23,7 +21,7 @@ namespace IO.Ably
         public DataRequestQuery CurrentQuery { get; set; }
     }
 
-    public class PaginatedResource
+    internal static class PaginatedResource
     {
         public static PaginatedResource<T> InitialisePartialResult<T>( WebHeaderCollection headers, int? limit = null)
         {
