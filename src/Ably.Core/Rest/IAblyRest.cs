@@ -12,6 +12,6 @@ namespace IO.Ably.Rest
 
         T ExecuteRequest<T>(AblyRequest request) where T : class;
 
-        DateTimeOffset Time();
+        DateTime Time();
     }
 }

@@ -51,7 +51,7 @@ namespace IO.Ably.Rest
             return _messageHandler.ParseResponse<T>(request, response);
         }
 
-        public DateTimeOffset Time()
+        public DateTime Time()
         {
             var request = CreateGetRequest("/time");
             request.SkipAuthentication = true;
@@ -62,7 +62,7 @@ namespace IO.Ably.Rest
 
         private static string GetHost(AblyOptions options)
         {
-            if (options.Host.IsNotEmpty()) 
+            if (options.Host.IsNotEmpty())
                 return options.Host;
 
             return Config.DefaultHost;

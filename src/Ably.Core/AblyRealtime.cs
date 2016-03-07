@@ -109,11 +109,11 @@ namespace IO.Ably
         /// Retrieves the ably service time
         /// </summary>
         /// <returns></returns>
-        public void Time(Action<DateTimeOffset?, AblyException> callback)
+        public void Time(Action<DateTime?, AblyException> callback)
         {
             System.Threading.SynchronizationContext sync = System.Threading.SynchronizationContext.Current;
 
-            Action<DateTimeOffset?, AblyException> invokeCallback = (res, err) =>
+            Action<DateTime?, AblyException> invokeCallback = (res, err) =>
             {
                 if (callback != null)
                 {
@@ -130,7 +130,7 @@ namespace IO.Ably
 
             Action act = () =>
             {
-                DateTimeOffset result;
+                DateTime result;
                 try
                 {
                     result = _simpleRest.Time();

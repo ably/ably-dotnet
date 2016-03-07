@@ -19,7 +19,7 @@ namespace IO.Ably
         /// Retrieves the ably service time
         /// </summary>
         /// <returns></returns>
-        DateTimeOffset Time();
+        DateTime Time();
 
         /// <summary>
         /// Retrieves the stats for the application. Passed default <see cref="StatsDataRequestQuery"/> for the request

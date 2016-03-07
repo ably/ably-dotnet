@@ -58,7 +58,7 @@ namespace IO.Ably.Tests
                 yield return new object[] { "[{\"action\":2,\"clientId\":\"test\"}, {\"action\":2,\"clientId\":\"test2\"}]", new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Enter, "test"), new PresenceMessage(PresenceMessage.ActionType.Enter, "test2") } };
                 yield return new object[] { "[{\"connectionId\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { connectionId = "test" } } };
                 yield return new object[] { "[{\"data\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { data = "test" } } };
-                yield return new object[] { "[{\"timestamp\":1430784000000}]", new PresenceMessage[] { new PresenceMessage() { timestamp = new DateTimeOffset(new DateTime(2015, 5, 5, 0, 0, 0, DateTimeKind.Utc)) } } };
+                yield return new object[] { "[{\"timestamp\":1430784000000}]", new PresenceMessage[] { new PresenceMessage() { timestamp = new DateTime(2015, 5, 5, 0, 0, 0, DateTimeKind.Utc) } } };
             }
         }
 
@@ -443,7 +443,7 @@ namespace IO.Ably.Tests
             StringBuilder message = new StringBuilder("{\"presence\":")
                 .Append(messageJson).Append("}");
 
-            Console.WriteLine(new DateTimeOffset(new DateTime(2015, 5, 5, 0, 0, 0, DateTimeKind.Utc)).ToUnixTimeInMilliseconds());
+            Console.WriteLine(new DateTime(2015, 5, 5, 0, 0, 0, DateTimeKind.Utc).ToUnixTimeInMilliseconds());
 
             // Act
             ProtocolMessage target = serializer.DeserializeProtocolMessage(message.ToString());
@@ -458,7 +458,7 @@ namespace IO.Ably.Tests
                 Assert.Equal<string>(expectedMessages[i].connectionId, target.presence[i].connectionId);
                 Assert.Equal<PresenceMessage.ActionType>(expectedMessages[i].action, target.presence[i].action);
                 Assert.Equal<string>(expectedMessages[i].id, target.presence[i].id);
-                Assert.Equal<DateTimeOffset>(expectedMessages[i].timestamp, target.presence[i].timestamp);
+                Assert.Equal<DateTime>(expectedMessages[i].timestamp, target.presence[i].timestamp);
                 Assert.Equal(expectedMessages[i].data, target.presence[i].data);
             }
         }

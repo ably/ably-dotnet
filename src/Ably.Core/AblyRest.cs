@@ -177,7 +177,7 @@ namespace IO.Ably
         /// Retrieves the ably service time
         /// </summary>
         /// <returns></returns>
-        public DateTimeOffset Time()
+        public DateTime Time()
         {
             var request = RestMethods.CreateGetRequest("/time");
             request.SkipAuthentication = true;

@@ -77,15 +77,15 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// Start of the query interval as UTC DateTimeOffset.
+        /// Start of the query interval as UTC DateTime.
         /// Default: null
         /// </summary>
-        public DateTimeOffset? Start { get; set; }
+        public DateTime? Start { get; set; }
         /// <summary>
-        /// End of the query interval as UTC DateTimeOffset
+        /// End of the query interval as UTC DateTime
         /// Default: null
         /// </summary>
-        public DateTimeOffset? End { get; set; }
+        public DateTime? End { get; set; }
 
         /// <summary>
         /// The number of the results returned by the server. If there are more result the NextQuery on the PaginatedResource will be populated
@@ -229,7 +229,7 @@ namespace IO.Ably
         }
 
 
-        private static DateTimeOffset? ToDateTime(object value)
+        private static DateTime? ToDateTime(object value)
         {
             if (value == null)
                 return null;

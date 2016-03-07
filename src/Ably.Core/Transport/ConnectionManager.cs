@@ -38,7 +38,7 @@ namespace IO.Ably.Transport
         private AblyRealtimeOptions options;
         private States.Connection.ConnectionState state;
         private IAcknowledgementProcessor ackProcessor;
-        private DateTimeOffset? _firstConnectionAttempt;
+        private DateTime? _firstConnectionAttempt;
         private int _connectionAttempts;
         private Connection connection;
 
@@ -71,7 +71,7 @@ namespace IO.Ably.Transport
             }
         }
 
-        DateTimeOffset? IConnectionContext.FirstConnectionAttempt
+        DateTime? IConnectionContext.FirstConnectionAttempt
         {
             get
             {
@@ -275,7 +275,7 @@ namespace IO.Ably.Transport
         {
             if (_firstConnectionAttempt == null)
             {
-                _firstConnectionAttempt = DateTimeOffset.Now;
+                _firstConnectionAttempt = DateTime.Now;
             }
             _connectionAttempts++;
         }

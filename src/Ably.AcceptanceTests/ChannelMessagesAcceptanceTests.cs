@@ -12,7 +12,7 @@ namespace IO.Ably.AcceptanceTests
 {
     public class StatsAcceptanceTests
     {
-        public readonly static DateTimeOffset StartInterval = new DateTimeOffset(DateTime.Now.Year  -1, 2, 3, 15, 5, 0, TimeSpan.Zero);
+        public readonly static DateTime StartInterval = new DateTime(DateTime.Now.Year  -1, 2, 3, 15, 5, 0, DateTimeKind.Utc);
 
         //Stats fixtures can be found in StatsFixture.json which is posted to /stats in TestsSetup.cs
 

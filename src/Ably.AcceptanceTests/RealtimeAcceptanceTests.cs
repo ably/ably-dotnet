@@ -149,8 +149,8 @@ namespace IO.Ably.AcceptanceTests
             var client = GetRealtimeClient();
             AutoResetEvent signal = new AutoResetEvent(false);
 
-            Tuple<DateTimeOffset?, AblyException> result = null;
-            Action<DateTimeOffset?, AblyException> callback = (time, err) =>
+            Tuple<DateTime?, AblyException> result = null;
+            Action<DateTime?, AblyException> callback = (time, err) =>
             {
                 result = Tuple.Create(time, err);
                 signal.Set();
@@ -163,8 +163,8 @@ namespace IO.Ably.AcceptanceTests
             signal.WaitOne( 10000 );
             Assert.NotNull( result );
             Assert.NotNull( result.Item1 );
-            Logger.Info( "Local {0}, server {1}", DateTime.UtcNow, result.Item1.Value.DateTime );
-            Assert.IsTrue( ( DateTime.UtcNow - result.Item1.Value.DateTime ).TotalSeconds < 3 );
+            Logger.Info( "Local {0}, server {1}", DateTime.UtcNow, result.Item1.Value );
+            Assert.IsTrue( ( DateTime.UtcNow - result.Item1.Value ).TotalSeconds < 3 );
             Assert.Null( result.Item2 );
         }
 
@@ -174,8 +174,8 @@ namespace IO.Ably.AcceptanceTests
             // Arrange
             var client = new AblyRealtime(new AblyRealtimeOptions("123.456:789") { Host = "nohost.tt" });
             AutoResetEvent signal = new AutoResetEvent(false);
-            Tuple<DateTimeOffset?, AblyException> result = null;
-            Action<DateTimeOffset?, AblyException> callback = (time, err) =>
+            Tuple<DateTime?, AblyException> result = null;
+            Action<DateTime?, AblyException> callback = (time, err) =>
             {
                 result = Tuple.Create(time, err);
                 signal.Set();

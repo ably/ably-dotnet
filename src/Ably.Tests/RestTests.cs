@@ -103,7 +103,7 @@ namespace IO.Ably.Tests
             bool called = false;
             var options = new AblyOptions
             {
-                AuthCallback = (x) => { called = true; return new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddHours(1) }; },
+                AuthCallback = (x) => { called = true; return new TokenDetails() { Expires = DateTime.UtcNow.AddHours(1) }; },
                 UseBinaryProtocol = false
             };
 
@@ -138,7 +138,7 @@ namespace IO.Ably.Tests
 
                 if (request.Url.Contains("requestToken"))
                 {
-                    return new AblyResponse { TextResponse = "{ \"access_token\": { \"expires\": \"" + DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeInMilliseconds() + "\"}}" };
+                    return new AblyResponse { TextResponse = "{ \"access_token\": { \"expires\": \"" + DateTime.UtcNow.AddHours(1).ToUnixTimeInMilliseconds() + "\"}}" };
                 }
 
                 return new AblyResponse() { TextResponse = "[{}]" };
@@ -152,16 +152,16 @@ namespace IO.Ably.Tests
         [Fact]
         public void ClientWithExpiredTokenAutomaticallyCreatesANewOne()
         {
-            Config.Now = () => DateTimeOffset.UtcNow;
+            Config.Now = () => DateTime.UtcNow;
             var newTokenRequested = false;
             var options = new AblyOptions
             {
-                AuthCallback = (x) => { 
-                    
+                AuthCallback = (x) => {
+
                     Console.WriteLine("Getting new token.");
                     newTokenRequested = true; return new TokenDetails("new.token")
                 {
-                    Expires = DateTimeOffset.UtcNow.AddDays(1)
+                    Expires = DateTime.UtcNow.AddDays(1)
                 }; },
                 UseBinaryProtocol = false
             };
@@ -171,7 +171,7 @@ namespace IO.Ably.Tests
                 Console.WriteLine("Getting an AblyResponse.");
                 return new AblyResponse() {TextResponse = "[{}]"};
             };
-            rest.CurrentToken = new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddDays(-2) };
+            rest.CurrentToken = new TokenDetails() { Expires = DateTime.UtcNow.AddDays(-2) };
 
             Console.WriteLine("Current time:" + Config.Now());
             rest.Stats();
@@ -189,7 +189,7 @@ namespace IO.Ably.Tests
                 UseBinaryProtocol = false
             };
             var rest = new AblyRest(options);
-            var token = new TokenDetails("123") { Expires = DateTimeOffset.UtcNow.AddHours(1) };
+            var token = new TokenDetails("123") { Expires = DateTime.UtcNow.AddHours(1) };
             rest.CurrentToken = token;
 
             rest.ExecuteHttpRequest = request =>
