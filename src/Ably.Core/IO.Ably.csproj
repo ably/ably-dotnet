@@ -37,6 +37,7 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
     <None Include="app.config" />
     <None Include="packages.config" />
+    <EmbeddedResource Include="Sandbox\TestAppSpec.json.gz" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AblyBase.cs" />
@@ -58,6 +59,9 @@
     <Compile Include="Realtime\ConnStateAwaitor.cs" />
     <Compile Include="Realtime\Handlers.cs" />
     <Compile Include="Realtime\IMessageHandler.cs" />
+    <Compile Include="Sandbox\AblySandbox.cs" />
+    <Compile Include="Sandbox\TestApp.cs" />
+    <Compile Include="Sandbox\Unzip.cs" />
     <Compile Include="Transport\TaskWrapper.cs" />
     <Compile Include="Types\ConnectionDetailsMessage.cs" />
     <Compile Include="CustomSerialisers\CapabilityJsonConverter.cs" />
@@ -163,6 +167,7 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
