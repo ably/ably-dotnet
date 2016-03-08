@@ -19,12 +19,15 @@ namespace IO.Ably.Realtime
         }
 
         readonly IConnectionManager connection;
-        readonly List<Message> queuedMessages = new List<Message>(16);
+        List<QueuedProtocolMessage> queuedMessages = null;
         readonly Handlers handlersAll = new Handlers();
         readonly Dictionary<string, Handlers> handlersSpecific = new Dictionary<string, Handlers>();
 
         /// <summary>A lock object to protect subscribers. Only locked while subscribing, unsubscribing, or receiving those messages.</summary>
-        readonly object syncRoot = new object();
+        readonly object lockSubscribers = new object();
+
+        /// <summary>A lock object to protect queued messages</summary>
+        readonly object lockQueue = new object();
 
         public event EventHandler<ChannelStateChangedEventArgs> ChannelStateChanged;
 
@@ -85,13 +88,13 @@ namespace IO.Ably.Realtime
 
         public void Subscribe( IMessageHandler handler )
         {
-            lock ( syncRoot )
+            lock ( lockSubscribers )
                 handlersAll.add( handler );
         }
 
         public void Subscribe( string eventName, IMessageHandler handler )
         {
-            lock ( syncRoot )
+            lock ( lockSubscribers )
             {
                 Handlers handlers;
                 if( !this.handlersSpecific.TryGetValue( eventName, out handlers ) )
@@ -105,7 +108,7 @@ namespace IO.Ably.Realtime
 
         public void Unsubscribe( IMessageHandler handler )
         {
-            lock ( syncRoot )
+            lock ( lockSubscribers )
             {
                 if( handlersAll.remove( handler ) )
                     return;
@@ -115,7 +118,7 @@ namespace IO.Ably.Realtime
 
         public void Unsubscribe( string eventName, IMessageHandler handler )
         {
-            lock ( syncRoot )
+            lock ( lockSubscribers )
             {
                 Handlers handlers;
                 if( this.handlersSpecific.TryGetValue( eventName, out handlers ) )
@@ -148,21 +151,35 @@ namespace IO.Ably.Realtime
         /// <summary>Publish several messages on this channel.</summary>
         public Task PublishAsync( IEnumerable<Message> messages )
         {
+            TaskWrapper tw = new TaskWrapper();
+            publishImpl( messages, tw );
+            return tw;
+        }
+
+        void publishImpl( IEnumerable<Message> messages, Action<bool, ErrorInfo> callback )
+        {
+            // Create protocol message
+            ProtocolMessage msg = new ProtocolMessage(ProtocolMessage.MessageAction.Message, this.Name);
+            msg.messages = messages.ToArray();
+
             if( this.State == ChannelState.Initialised || this.State == ChannelState.Attaching )
             {
-                this.queuedMessages.AddRange( messages );
-                // TODO: implement callback
-                return Task<bool>.FromResult( true );
+                // Not connected, queue the message
+                lock ( lockQueue )
+                {
+                    if( null == this.queuedMessages )
+                        this.queuedMessages = new List<QueuedProtocolMessage>( 16 );
+                    this.queuedMessages.Add( new QueuedProtocolMessage( msg, callback ) );
+                    return;
+                }
             }
-
             if( this.State == ChannelState.Attached )
             {
-                ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Message, this.Name);
-                message.messages = messages.ToArray();
-                TaskWrapper tw = new TaskWrapper();
-                this.connection.Send( message, tw.callback );
-                return tw;
+                // Connected, send right now
+                this.connection.Send( msg, callback );
+                return;
             }
+            // Invalid state, throw
             throw new AblyException( new ErrorInfo( "Unable to publish in detached or failed state", 40000, System.Net.HttpStatusCode.BadRequest ) );
         }
 
@@ -211,7 +228,7 @@ namespace IO.Ably.Realtime
         {
             foreach( Message msg in message.messages )
             {
-                lock ( syncRoot )
+                lock ( lockSubscribers )
                 {
                     foreach( IMessageHandler h in handlersAll.alive() )
                         h.Handle( msg );
@@ -225,28 +242,34 @@ namespace IO.Ably.Realtime
             }
         }
 
-        private void SendQueuedMessages()
+        int SendQueuedMessages()
         {
-            if( this.queuedMessages.Count == 0 )
-                return;
+            List<QueuedProtocolMessage> list = null;
+            lock ( lockQueue )
+            {
+                if( null == this.queuedMessages || this.queuedMessages.Count <= 0 )
+                    return 0;
 
-            ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Message, this.Name);
-            message.messages = this.queuedMessages.ToArray();
-            this.queuedMessages.Clear();
-            // TODO: Add callbacks
-            this.connection.Send( message, null );
-        }
-    }
+                // Swap the list.
+                list = this.queuedMessages;
+                this.queuedMessages = null;
+            }
 
-    internal class QueuedProtocolMessage
-    {
-        public QueuedProtocolMessage( ProtocolMessage message, Action<bool, ErrorInfo> callback )
-        {
-            this.Message = message;
-            this.Callback = callback;
+            foreach( QueuedProtocolMessage qpm in list )
+                this.connection.Send( qpm.message, qpm.callback );
+            return list.Count;
         }
 
-        public ProtocolMessage Message { get; private set; }
-        public Action<bool, ErrorInfo> Callback { get; private set; }
+        internal class QueuedProtocolMessage
+        {
+            public QueuedProtocolMessage( ProtocolMessage message, Action<bool, ErrorInfo> callback )
+            {
+                this.message = message;
+                this.callback = callback;
+            }
+
+            public readonly ProtocolMessage message;
+            public readonly Action<bool, ErrorInfo> callback;
+        }
     }
 }
