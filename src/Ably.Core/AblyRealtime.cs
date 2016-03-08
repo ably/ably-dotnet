@@ -43,12 +43,12 @@ namespace IO.Ably
         ///
         /// </summary>
         /// <returns></returns>
-        public Connection Connect()
+        public async Task<Connection> Connect()
         {
             if( null == this.Channels || null == this.Connection )
             {
                 _simpleRest = new Rest.AblySimpleRestClient( _options );
-                InitAuth( _simpleRest );
+                await InitAuth( _simpleRest );
 
                 IConnectionManager connectionManager = new ConnectionManager( options );
                 _protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
@@ -57,11 +57,18 @@ namespace IO.Ably
                 this.Connection = connectionManager.Connection;
             }
 
-            this.Connection.Connect();
-            return this.Connection;
+            ConnectionState state = this.Connection.State;
+            if( state == ConnectionState.Connected )
+                return this.Connection;
+
+            using( ConnStateAwaitor awaitor = new ConnStateAwaitor( this.Connection ) )
+            {
+                awaitor.connection.Connect();
+                return await awaitor.wait();
+            }
         }
 
-        new internal void InitAuth( IAblyRest restClient )
+        new internal async Task InitAuth( IAblyRest restClient )
         {
             base.InitAuth( restClient );
 
@@ -73,7 +80,7 @@ namespace IO.Ably
             }
             if( AuthMethod == AuthMethod.Token )
             {
-                InitTokenAuth();
+                await InitTokenAuth();
                 return;
             }
 

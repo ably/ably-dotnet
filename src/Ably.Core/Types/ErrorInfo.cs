@@ -81,5 +81,11 @@ namespace IO.Ably
             }
             return new ErrorInfo(reason.IsEmpty() ? "Unknown error" : reason, errorCode, response.StatusCode);
         }
+
+        public Exception AsException()
+        {
+            // TODO: implement own exception class instead, to have both codes in the exception
+            return new Exception( this.message );
+        }
     }
 }
