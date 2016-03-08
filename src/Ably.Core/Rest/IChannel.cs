@@ -5,8 +5,8 @@ namespace IO.Ably.Rest
 {
     public interface IChannel
     {
-        void Publish(string name, object data);
-        void Publish(IEnumerable<Message> messages);
+        Task Publish(string name, object data);
+        Task Publish(IEnumerable<Message> messages);
 
         Task<PaginatedResource<Message>> History();
         Task<PaginatedResource<Message>> History(DataRequestQuery query);

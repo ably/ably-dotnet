@@ -42,23 +42,23 @@ namespace IO.Ably.Rest
         /// </summary>
         /// <param name="name">The event name of the message to publish</param>
         /// <param name="data">The message payload. Allowed payloads are string, objects and byte[]</param>
-        public void Publish(string name, object data)
+        public Task Publish(string name, object data)
         {
             var request = _ablyRest.RestMethods.CreatePostRequest(basePath + "/messages", _options);
 
             request.PostData = new List<Message> { new Message(name, data)};
-            _ablyRest.RestMethods.ExecuteRequest(request);
+            return _ablyRest.RestMethods.ExecuteRequest(request);
         }
 
         /// <summary>
         /// Publish a list of messages to the channel
         /// </summary>
         /// <param name="messages">a list of messages</param>
-        public void Publish(IEnumerable<Message> messages)
+        public Task Publish(IEnumerable<Message> messages)
         {
             var request = _ablyRest.RestMethods.CreatePostRequest(basePath + "/messages", _options);
             request.PostData = messages;
-            _ablyRest.RestMethods.ExecuteRequest(request);
+            return _ablyRest.RestMethods.ExecuteRequest(request);
         }
 
         /// <summary>
