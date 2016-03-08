@@ -6,7 +6,7 @@ namespace IO.Ably.Realtime
 {
     public interface IRealtimeChannel
     {
-        event Action<Message[]> MessageReceived;
+        // event Action<Message[]> MessageReceived;
         event EventHandler<ChannelStateChangedEventArgs> ChannelStateChanged;
 
         ChannelState State { get; }
@@ -16,11 +16,20 @@ namespace IO.Ably.Realtime
 
         void Attach();
         void Detach();
-        void Subscribe(string eventName, Action<Message[]> listener);
-        void Unsubscribe(string eventName, Action<Message[]> listener);
-        void Publish(string name, object data);
-        Task PublishAsync(string eventName, object data);
-        void Publish(IEnumerable<Message> messages);
+
+        /// <summary>Subscribe a listener to all messages.</summary>
+        void Subscribe( IMessageHandler handler );
+
+        /// <summary>Subscribe a listener to only messages whose name member matches the string name.</summary>
+        /// <param name="eventName"></param>
+        /// <param name="handler"></param>
+        void Subscribe( string eventName, IMessageHandler handler );
+
+        void Unsubscribe( IMessageHandler handler );
+        void Unsubscribe( string eventName, IMessageHandler handler );
+        void Publish( string name, object data );
+        Task PublishAsync( string eventName, object data );
+        void Publish( IEnumerable<Message> messages );
         Task PublishAsync( IEnumerable<Message> messages );
     }
 }
