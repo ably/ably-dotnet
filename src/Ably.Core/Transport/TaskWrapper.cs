@@ -10,6 +10,8 @@ namespace IO.Ably.Transport
 
         public static implicit operator Task( TaskWrapper wrapper ) { return wrapper.m_tcs.Task; }
 
+        public static implicit operator Action<bool, ErrorInfo>( TaskWrapper wrapper ) { return wrapper.callback; }
+
         public void callback( bool res, ErrorInfo ei)
         {
             if( res )
