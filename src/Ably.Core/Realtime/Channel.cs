@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using IO.Ably.Transport;
 using IO.Ably.Types;
+using System.Threading.Tasks;
 
 namespace IO.Ably.Realtime
 {
     public interface IChannelFactory
     {
-        IRealtimeChannel Create(string channelName);
+        IRealtimeChannel Create( string channelName );
     }
 
     public class ChannelFactory : IChannelFactory
@@ -16,20 +17,20 @@ namespace IO.Ably.Realtime
         public IConnectionManager ConnectionManager { get; set; }
         public AblyRealtimeOptions Options { get; set; }
 
-        public IRealtimeChannel Create(string channelName)
+        public IRealtimeChannel Create( string channelName )
         {
-            return new Channel(channelName, this.Options.ClientId, this.ConnectionManager);
+            return new Channel( channelName, this.Options.ClientId, this.ConnectionManager );
         }
     }
 
     public class Channel : IRealtimeChannel
     {
-        internal Channel(string name, string clientId, IConnectionManager connection)
+        internal Channel( string name, string clientId, IConnectionManager connection )
         {
             this.queuedMessages = new List<Message>();
             this.eventListeners = new Dictionary<string, List<Action<Message[]>>>();
             this.Name = name;
-            this.Presence = new Presence(connection, this, clientId);
+            this.Presence = new Presence( connection, this, clientId );
             this.connection = connection;
             this.connection.MessageReceived += OnConnectionMessageReceived;
         }
@@ -65,18 +66,18 @@ namespace IO.Ably.Realtime
         /// </summary>
         public void Attach()
         {
-            if (this.State == ChannelState.Attaching || this.State == ChannelState.Attached)
+            if( this.State == ChannelState.Attaching || this.State == ChannelState.Attached )
             {
                 return;
             }
 
-            if (!this.connection.IsActive)
+            if( !this.connection.IsActive )
             {
                 this.connection.Connect();
             }
 
-            this.SetChannelState(ChannelState.Attaching);
-            this.connection.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, this.Name), null);
+            this.SetChannelState( ChannelState.Attaching );
+            this.connection.Send( new ProtocolMessage( ProtocolMessage.MessageAction.Attach, this.Name ), null );
         }
 
         /// <summary>
@@ -85,164 +86,162 @@ namespace IO.Ably.Realtime
         /// </summary>
         public void Detach()
         {
-            if (this.State == ChannelState.Initialised || this.State == ChannelState.Detaching ||
-                this.State == ChannelState.Detached)
+            if( this.State == ChannelState.Initialised || this.State == ChannelState.Detaching ||
+                this.State == ChannelState.Detached )
             {
                 return;
             }
 
-            if (this.State == ChannelState.Failed)
+            if( this.State == ChannelState.Failed )
             {
-                throw new AblyException("Channel is Failed");
+                throw new AblyException( "Channel is Failed" );
             }
 
-            this.SetChannelState(ChannelState.Detaching);
-            this.connection.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, this.Name), null);
+            this.SetChannelState( ChannelState.Detaching );
+            this.connection.Send( new ProtocolMessage( ProtocolMessage.MessageAction.Detach, this.Name ), null );
         }
 
-        public void Subscribe(string eventName, Action<Message[]> listener)
+        public void Subscribe( string eventName, Action<Message[]> listener )
         {
             List<Action<Message[]>> messageDelegate;
-            if (!this.eventListeners.TryGetValue(eventName, out messageDelegate))
+            if( !this.eventListeners.TryGetValue( eventName, out messageDelegate ) )
             {
                 messageDelegate = new List<Action<Message[]>>();
-                this.eventListeners.Add(eventName, messageDelegate);
+                this.eventListeners.Add( eventName, messageDelegate );
             }
-            messageDelegate.Add(listener);
+            messageDelegate.Add( listener );
         }
 
-        public void Unsubscribe(string eventName, Action<Message[]> listener)
+        public void Unsubscribe( string eventName, Action<Message[]> listener )
         {
             List<Action<Message[]>> messageDelegate;
-            if (this.eventListeners.TryGetValue(eventName, out messageDelegate))
+            if( this.eventListeners.TryGetValue( eventName, out messageDelegate ) )
             {
-                messageDelegate.Remove(listener);
+                messageDelegate.Remove( listener );
             }
         }
 
-        /// <summary>
-        /// Publish a single message on this channel based on a given event name and payload.
-        /// </summary>
+        /// <summary>Publish a single message on this channel based on a given event name and payload.</summary>
         /// <param name="name">The event name.</param>
         /// <param name="data">The payload of the message.</param>
-        public void Publish(string name, object data)
+        public void Publish( string name, object data )
         {
-            this.Publish(name, data, null);
+            this.PublishAsync( name, data ).IgnoreExceptions();
         }
 
-        public void Publish(string name, object data, Action<bool, ErrorInfo> callback)
+        /// <summary>Publish a single message on this channel based on a given event name and payload.</summary>
+        public Task PublishAsync( string name, object data )
         {
-            this.Publish(new Message[] { new Message(name, data) }, callback);
+            return this.PublishAsync( new Message[] { new Message( name, data ) } );
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="messages"></param>
-        public void Publish(IEnumerable<Message> messages)
+        /// <summary>Publish several messages on this channel.</summary>
+        public void Publish( IEnumerable<Message> messages )
         {
-            this.Publish(messages, null);
+            this.PublishAsync( messages ).IgnoreExceptions();
         }
 
-        public void Publish(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback)
+        /// <summary>Publish several messages on this channel.</summary>
+        public Task PublishAsync( IEnumerable<Message> messages )
         {
-            if (this.State == ChannelState.Initialised || this.State == ChannelState.Attaching)
+            if( this.State == ChannelState.Initialised || this.State == ChannelState.Attaching )
             {
-                // TODO: Add callback
-                this.queuedMessages.AddRange(messages);
+                this.queuedMessages.AddRange( messages );
+                // TODO: implement callback
+                return Task<bool>.FromResult( true );
             }
-            else if (this.State == ChannelState.Attached)
+
+            if( this.State == ChannelState.Attached )
             {
                 ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Message, this.Name);
                 message.messages = messages.ToArray();
-                this.connection.Send(message, callback);
+                TaskWrapper tw = new TaskWrapper();
+                this.connection.Send( message, tw.callback );
+                return tw;
             }
-            else
-            {
-                throw new AblyException(new ErrorInfo("Unable to publish in detached or failed state", 40000, System.Net.HttpStatusCode.BadRequest));
-            }
+            throw new AblyException( new ErrorInfo( "Unable to publish in detached or failed state", 40000, System.Net.HttpStatusCode.BadRequest ) );
         }
 
-        protected void SetChannelState(ChannelState state)
+        protected void SetChannelState( ChannelState state )
         {
             this.State = state;
-            this.OnChannelStateChanged(new ChannelStateChangedEventArgs(state));
+            this.OnChannelStateChanged( new ChannelStateChangedEventArgs( state ) );
         }
 
-        private void OnChannelStateChanged(ChannelStateChangedEventArgs eventArgs)
+        private void OnChannelStateChanged( ChannelStateChangedEventArgs eventArgs )
         {
-            if (this.ChannelStateChanged != null)
+            if( this.ChannelStateChanged != null )
             {
-                this.ChannelStateChanged(this, eventArgs);
+                this.ChannelStateChanged( this, eventArgs );
             }
         }
 
-        private void OnConnectionMessageReceived(ProtocolMessage message)
+        private void OnConnectionMessageReceived( ProtocolMessage message )
         {
-            switch (message.action)
+            switch( message.action )
             {
                 case ProtocolMessage.MessageAction.Attached:
-                    if (this.State == ChannelState.Attaching)
+                    if( this.State == ChannelState.Attaching )
                     {
-                        this.SetChannelState(ChannelState.Attached);
+                        this.SetChannelState( ChannelState.Attached );
                         this.SendQueuedMessages();
                     }
                     break;
                 case ProtocolMessage.MessageAction.Detached:
-                    if (this.State == ChannelState.Detaching)
-                        this.SetChannelState(ChannelState.Detached);
+                    if( this.State == ChannelState.Detaching )
+                        this.SetChannelState( ChannelState.Detached );
                     break;
                 case ProtocolMessage.MessageAction.Message:
-                    this.OnMessage(message);
+                    this.OnMessage( message );
                     break;
                 case ProtocolMessage.MessageAction.Error:
-                    this.SetChannelState(ChannelState.Failed);
+                    this.SetChannelState( ChannelState.Failed );
                     break;
                 default:
-                    Logger.Error("Channel::OnConnectionMessageReceived(): Unexpected message action {0}", message.action);
+                    Logger.Error( "Channel::OnConnectionMessageReceived(): Unexpected message action {0}", message.action );
                     break;
             }
         }
 
-        private void OnMessage(ProtocolMessage message)
+        private void OnMessage( ProtocolMessage message )
         {
             Message[] messages = message.messages;
-            for (int i = 0; i < messages.Length; i++)
+            for( int i = 0; i < messages.Length; i++ )
             {
                 Message msg = messages[i];
                 // TODO: populate fields derived from protocol message
                 List<Action<Message[]>> listeners = eventListeners.Get(msg.name, null);
-                if (listeners != null)
+                if( listeners != null )
                 {
                     Message[] singleMessage = new Message[] { msg };
-                    foreach (var listener in listeners)
+                    foreach( var listener in listeners )
                     {
-                        listener(singleMessage);
+                        listener( singleMessage );
                     }
                 }
             }
-            if (this.MessageReceived != null)
+            if( this.MessageReceived != null )
             {
-                this.MessageReceived(messages);
+                this.MessageReceived( messages );
             }
         }
 
         private void SendQueuedMessages()
         {
-            if (this.queuedMessages.Count == 0)
+            if( this.queuedMessages.Count == 0 )
                 return;
 
             ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Message, this.Name);
             message.messages = this.queuedMessages.ToArray();
             this.queuedMessages.Clear();
             // TODO: Add callbacks
-            this.connection.Send(message, null);
+            this.connection.Send( message, null );
         }
     }
 
     internal class QueuedProtocolMessage
     {
-        public QueuedProtocolMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
+        public QueuedProtocolMessage( ProtocolMessage message, Action<bool, ErrorInfo> callback )
         {
             this.Message = message;
             this.Callback = callback;
