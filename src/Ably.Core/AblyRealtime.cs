@@ -14,18 +14,18 @@ namespace IO.Ably
     {
         /// <summary></summary>
         /// <param name="key"></param>
-        public AblyRealtime(string key)
-            : this(new AblyRealtimeOptions(key))
+        public AblyRealtime( string key )
+            : this( new AblyRealtimeOptions( key ) )
         { }
 
         /// <summary>
         ///
         /// </summary>
         /// <param name="options"></param>
-        public AblyRealtime(AblyRealtimeOptions options)
+        public AblyRealtime( AblyRealtimeOptions options )
         {
             _options = options;
-            if (options.AutoConnect)
+            if( options.AutoConnect )
                 this.Connect().IgnoreExceptions();
         }
 
