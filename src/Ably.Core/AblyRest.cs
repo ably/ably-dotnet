@@ -82,7 +82,7 @@ namespace IO.Ably
         }
 
 
-        private string GetHost()
+        string GetHost()
         {
             if (_options.Host.IsNotEmpty())
                 return _options.Host;
@@ -129,17 +129,17 @@ namespace IO.Ably
             return _messageHandler.ParseResponse<T>(request, response);
         }
 
-        private bool TokenCreatedExternally
+        bool TokenCreatedExternally
         {
             get { return Options.AuthUrl.IsNotEmpty() || Options.AuthCallback != null; }
         }
 
-        private bool HasApiKey
+        bool HasApiKey
         {
             get { return Options.Key.IsNotEmpty(); }
         }
 
-        private bool HasTokenId
+        bool HasTokenId
         {
             get { return Options.Token.IsNotEmpty(); }
         }
