@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using IO.Ably.Transport;
 using IO.Ably.Types;
+using System.Threading.Tasks;
 
 namespace IO.Ably.Realtime
 {
     public class Presence
     {
-        public Presence(IConnectionManager connection, IRealtimeChannel channel, string cliendId)
+        public Presence( IConnectionManager connection, IRealtimeChannel channel, string cliendId )
         {
             this.presence = new PresenceMap();
             this.pendingPresence = new List<QueuedPresenceMessage>();
@@ -33,42 +34,42 @@ namespace IO.Ably.Realtime
             return this.presence.Values;
         }
 
-        public void Enter(object clientData, Action<bool, ErrorInfo> callback)
+        public Task Enter( object clientData )
         {
-            this.EnterClient(this.clientId, clientData, callback);
+            return this.EnterClient( this.clientId, clientData );
         }
 
-        public void EnterClient(string clientId, object clientData, Action<bool, ErrorInfo> callback)
+        public Task EnterClient( string clientId, object clientData )
         {
-            this.UpdatePresence(new PresenceMessage(PresenceMessage.ActionType.Enter, clientId, clientData), callback);
+            return this.UpdatePresence( new PresenceMessage( PresenceMessage.ActionType.Enter, clientId, clientData ) );
         }
 
-        public void Update(object clientData, Action<bool, ErrorInfo> callback)
+        public Task Update( object clientData )
         {
-            this.UpdateClient(this.clientId, clientData, callback);
+            return this.UpdateClient( this.clientId, clientData );
         }
 
-        public void UpdateClient(string clientId, object clientData, Action<bool, ErrorInfo> callback)
+        public Task UpdateClient( string clientId, object clientData )
         {
-            this.UpdatePresence(new PresenceMessage(PresenceMessage.ActionType.Update, clientId, clientData), callback);
+            return this.UpdatePresence( new PresenceMessage( PresenceMessage.ActionType.Update, clientId, clientData ) );
         }
 
-        public void Leave(object clientData, Action<bool, ErrorInfo> callback)
+        public Task Leave( object clientData )
         {
-            this.LeaveClient(this.clientId, clientData, callback);
+            return this.LeaveClient( this.clientId, clientData );
         }
 
-        public void Leave(Action<bool, ErrorInfo> callback)
+        public Task Leave()
         {
-            this.LeaveClient(this.clientId, null, callback);
+            return this.LeaveClient( this.clientId, null );
         }
 
-        public void LeaveClient(string clientId, object clientData, Action<bool, ErrorInfo> callback)
+        public Task LeaveClient( string clientId, object clientData )
         {
-            this.UpdatePresence(new PresenceMessage(PresenceMessage.ActionType.Leave, clientId, clientData), callback);
+            return this.UpdatePresence( new PresenceMessage( PresenceMessage.ActionType.Leave, clientId, clientData ) );
         }
 
-        private void UpdatePresence(PresenceMessage msg, Action<bool, ErrorInfo> callback)
+        private Task UpdatePresence( PresenceMessage msg )
         {
             if (this.channel.State == ChannelState.Initialized || this.channel.State == ChannelState.Attaching)
             {
@@ -76,124 +77,123 @@ namespace IO.Ably.Realtime
                 {
                     this.channel.Attach();
                 }
-                this.pendingPresence.Add(new QueuedPresenceMessage(msg, callback));
+                TaskWrapper tw = new TaskWrapper();
+                this.pendingPresence.Add( new QueuedPresenceMessage( msg, tw.callback ) );
+                return tw;
             }
-            else if (this.channel.State == ChannelState.Attached)
+            if( this.channel.State == ChannelState.Attached )
             {
                 ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, this.channel.Name);
                 message.presence = new PresenceMessage[] { msg };
-                this.connection.Send(message, callback);
+                return this.connection.SendAsync( message );
             }
-            else
-            {
-                throw new AblyException("Unable to enter presence channel in detached or failed state", 91001, System.Net.HttpStatusCode.BadRequest);
-            }
+            throw new AblyException( "Unable to enter presence channel in detached or failed state", 91001, System.Net.HttpStatusCode.BadRequest );
         }
 
-        private void OnConnectionMessageReceived(ProtocolMessage message)
+        private void OnConnectionMessageReceived( ProtocolMessage message )
         {
-            switch (message.action)
+            switch( message.action )
             {
                 case ProtocolMessage.MessageAction.Presence:
-                    this.OnPresence(message.presence, null);
+                    this.OnPresence( message.presence, null );
                     break;
                 case ProtocolMessage.MessageAction.Sync:
-                    this.OnPresence(message.presence, message.channelSerial);
+                    this.OnPresence( message.presence, message.channelSerial );
                     break;
             }
         }
 
-        private void OnPresence(PresenceMessage[] messages, string syncChannelSerial)
+        private void OnPresence( PresenceMessage[] messages, string syncChannelSerial )
         {
             string syncCursor = null;
             bool broadcast = true;
-            if (syncChannelSerial != null)
+            if( syncChannelSerial != null )
             {
-                syncCursor = syncChannelSerial.Substring(syncChannelSerial.IndexOf(':'));
-                if (syncCursor.Length > 1)
+                syncCursor = syncChannelSerial.Substring( syncChannelSerial.IndexOf( ':' ) );
+                if( syncCursor.Length > 1 )
                 {
                     presence.StartSync();
                 }
             }
-            foreach (PresenceMessage update in messages)
+            foreach( PresenceMessage update in messages )
             {
-                switch (update.action)
+                switch( update.action )
                 {
                     case PresenceMessage.ActionType.Enter:
                     case PresenceMessage.ActionType.Update:
                     case PresenceMessage.ActionType.Present:
-                        broadcast &= presence.Put(update);
+                        broadcast &= presence.Put( update );
                         break;
                     case PresenceMessage.ActionType.Leave:
-                        broadcast &= presence.Remove(update);
+                        broadcast &= presence.Remove( update );
                         break;
                 }
             }
             // if this is the last message in a sequence of sync updates, end the sync
-            if (syncChannelSerial == null || syncCursor.Length <= 1)
+            if( syncChannelSerial == null || syncCursor.Length <= 1 )
             {
                 presence.EndSync();
             }
 
-            if (broadcast)
+            if( broadcast )
             {
-                this.Publish(messages);
+                this.Publish( messages );
             }
         }
 
-        private void Publish(params PresenceMessage[] messages)
+        private void Publish( params PresenceMessage[] messages )
         {
-            if (this.MessageReceived != null)
+            if( this.MessageReceived != null )
             {
-                this.MessageReceived(messages);
+                this.MessageReceived( messages );
             }
         }
 
-        private void OnChannelStateChanged(object sender, ChannelStateChangedEventArgs e)
+        private void OnChannelStateChanged( object sender, ChannelStateChangedEventArgs e )
         {
-            if (e.NewState == ChannelState.Attached)
+            if( e.NewState == ChannelState.Attached )
             {
                 this.SendQueuedMessages();
             }
-            else if (e.NewState == ChannelState.Detached || e.NewState == ChannelState.Failed)
+            else if( e.NewState == ChannelState.Detached || e.NewState == ChannelState.Failed )
             {
-                this.FailQueuedMessages(e.Reason);
+                this.FailQueuedMessages( e.Reason );
             }
         }
 
         private void SendQueuedMessages()
         {
-            if (this.pendingPresence.Count == 0)
+            if( this.pendingPresence.Count == 0 )
                 return;
 
             ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, this.channel.Name);
-            message.presence = new PresenceMessage[this.pendingPresence.Count];
+            message.presence = new PresenceMessage[ this.pendingPresence.Count ];
             List<Action<bool, ErrorInfo>> callbacks = new List<Action<bool, ErrorInfo>>();
             int i = 0;
-            foreach (QueuedPresenceMessage presenceMessage in this.pendingPresence)
+            foreach( QueuedPresenceMessage presenceMessage in this.pendingPresence )
             {
-                message.presence[i++] = presenceMessage.Message;
-                if (presenceMessage.Callback != null)
+                message.presence[ i++ ] = presenceMessage.Message;
+                if( presenceMessage.Callback != null )
                 {
-                    callbacks.Add(presenceMessage.Callback);
+                    callbacks.Add( presenceMessage.Callback );
                 }
             }
             this.pendingPresence.Clear();
 
-            this.connection.Send(message, (s, e) =>
+            this.connection.Send( message, ( s, e ) =>
             {
-                foreach (var callback in callbacks)
+                foreach( var callback in callbacks )
                 {
-                    callback(s, e);
+                    callback( s, e );
                 }
-            });
+            } );
         }
 
-        private void FailQueuedMessages(ErrorInfo reason)
+        private void FailQueuedMessages( ErrorInfo reason )
         {
-            foreach (QueuedPresenceMessage presenceMessage in this.pendingPresence.Where(c => c.Callback != null))
+            foreach( QueuedPresenceMessage presenceMessage in this.pendingPresence.Where( c => c.Callback != null ) )
             {
-                presenceMessage.Callback(false, reason);
+                presenceMessage.Callback( false, reason );
             }
             this.pendingPresence.Clear();
         }
@@ -213,67 +213,67 @@ namespace IO.Ably.Realtime
             {
                 get
                 {
-                    return this.members.Values.Where(c => c.action != PresenceMessage.ActionType.Absent)
+                    return this.members.Values.Where( c => c.action != PresenceMessage.ActionType.Absent )
                         .ToArray();
                 }
             }
 
-            public bool Put(PresenceMessage item)
+            public bool Put( PresenceMessage item )
             {
                 string key = MemberKey(item);
 
                 // we've seen this member, so do not remove it at the end of sync
-                if (residualMembers != null)
+                if( residualMembers != null )
                 {
-                    residualMembers.Remove(key);
+                    residualMembers.Remove( key );
                 }
 
                 // compare the timestamp of the new item with any existing member (or ABSENT witness)
                 PresenceMessage existingItem;
-                if (members.TryGetValue(key, out existingItem) && item.timestamp < existingItem.timestamp)
+                if( members.TryGetValue( key, out existingItem ) && item.timestamp < existingItem.timestamp )
                 {
                     // no item supersedes a newer item with the same key
                     return false;
                 }
 
                 // add or update
-                if (!members.ContainsKey(key))
+                if( !members.ContainsKey( key ) )
                 {
-                    members.Add(key, item);
+                    members.Add( key, item );
                 }
                 else
                 {
-                    members[key] = item;
+                    members[ key ] = item;
                 }
 
                 return true;
             }
 
-            public bool Remove(PresenceMessage item)
+            public bool Remove( PresenceMessage item )
             {
                 string key = MemberKey(item);
                 PresenceMessage existingItem;
-                if (members.TryGetValue(key, out existingItem) && existingItem.action == PresenceMessage.ActionType.Absent)
+                if( members.TryGetValue( key, out existingItem ) && existingItem.action == PresenceMessage.ActionType.Absent )
                 {
                     return false;
                 }
 
-                members.Remove(key);
+                members.Remove( key );
                 return true;
             }
 
             public void StartSync()
             {
-                if (!this.isSyncInProgress)
+                if( !this.isSyncInProgress )
                 {
-                    residualMembers = new HashSet<string>(members.Keys);
+                    residualMembers = new HashSet<string>( members.Keys );
                     this.isSyncInProgress = true;
                 }
             }
 
             public void EndSync()
             {
-                if (!this.isSyncInProgress)
+                if( !this.isSyncInProgress )
                 {
                     return;
                 }
@@ -282,19 +282,19 @@ namespace IO.Ably.Realtime
                 {
                     // We can now strip out the ABSENT members, as we have
                     // received all of the out-of-order sync messages
-                    foreach (KeyValuePair<string, PresenceMessage> member in this.members.ToArray())
+                    foreach( KeyValuePair<string, PresenceMessage> member in this.members.ToArray() )
                     {
-                        if (member.Value.action == PresenceMessage.ActionType.Present)
+                        if( member.Value.action == PresenceMessage.ActionType.Present )
                         {
-                            this.members.Remove(member.Key);
+                            this.members.Remove( member.Key );
                         }
                     }
 
                     // Any members that were present at the start of the sync,
                     // and have not been seen in sync, can be removed
-                    foreach (string member in this.residualMembers)
+                    foreach( string member in this.residualMembers )
                     {
-                        this.members.Remove(member);
+                        this.members.Remove( member );
                     }
                     residualMembers = null;
                 }
@@ -304,16 +304,16 @@ namespace IO.Ably.Realtime
                 }
             }
 
-            private string MemberKey(PresenceMessage message)
+            private string MemberKey( PresenceMessage message )
             {
-                return string.Format("{0}:{1}", message.connectionId, message.clientId);
+                return string.Format( "{0}:{1}", message.connectionId, message.clientId );
             }
         }
     }
 
     internal class QueuedPresenceMessage
     {
-        public QueuedPresenceMessage(PresenceMessage message, Action<bool, ErrorInfo> callback)
+        public QueuedPresenceMessage( PresenceMessage message, Action<bool, ErrorInfo> callback )
         {
             this.Message = message;
             this.Callback = callback;

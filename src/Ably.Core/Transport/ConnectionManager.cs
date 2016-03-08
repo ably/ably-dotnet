@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using IO.Ably.Realtime;
 using IO.Ably.Types;
+using System.Threading.Tasks;
 
 namespace IO.Ably.Transport
 {
@@ -113,15 +114,24 @@ namespace IO.Ably.Transport
             this.state.Close();
         }
 
-        public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback)
+        public void Send( ProtocolMessage message, Action<bool, ErrorInfo> callback )
         {
-            ackProcessor.SendMessage(message, callback);
-            state.SendMessage(message);
+            ackProcessor.SendMessage( message, callback );
+            state.SendMessage( message );
         }
 
-        public void Ping(Action<bool, ErrorInfo> callback)
+        public Task SendAsync( ProtocolMessage message )
         {
-            ConnectionHeartbeatRequest.Execute(this, callback);
+            TaskWrapper tw = new TaskWrapper();
+            this.Send( message, tw.callback );
+            return tw;
+        }
+
+        public Task Ping()
+        {
+            TaskWrapper res = new TaskWrapper();
+            ConnectionHeartbeatRequest.Execute( this, res.callback );
+            return res;
         }
 
         private TransportParams CreateTransportParameters(bool useFallbackHost)

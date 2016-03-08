@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using IO.Ably.Transport;
+using System.Threading.Tasks;
 
 namespace IO.Ably.Realtime
 {
@@ -14,7 +15,7 @@ namespace IO.Ably.Realtime
         {
         }
 
-        internal Connection(IConnectionManager manager)
+        internal Connection( IConnectionManager manager )
         {
             this.manager = manager;
             this.State = this.manager.ConnectionState;
@@ -67,9 +68,9 @@ namespace IO.Ably.Realtime
         /// <summary>
         ///
         /// </summary>
-        public void Ping(Action<bool, ErrorInfo> callback)
+        public Task Ping()
         {
-            this.manager.Ping(callback);
+            return this.manager.Ping();
         }
 
         /// <summary>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using IO.Ably.Realtime;
 using IO.Ably.Types;
+using System.Threading.Tasks;
 
 namespace IO.Ably.Transport
 {
@@ -36,9 +37,10 @@ namespace IO.Ably.Transport
 
         void Close();
 
-        void Ping(Action<bool, ErrorInfo> callback);
+        Task Ping();
 
-        void Send(ProtocolMessage message, Action<bool, ErrorInfo> listener);
+        void Send( ProtocolMessage message, Action<bool, ErrorInfo> callback );
+        Task SendAsync( ProtocolMessage message );
     }
 
     internal interface IConnectionContext

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace IO.Ably.Realtime
 {
@@ -18,8 +19,8 @@ namespace IO.Ably.Realtime
         void Subscribe(string eventName, Action<Message[]> listener);
         void Unsubscribe(string eventName, Action<Message[]> listener);
         void Publish(string name, object data);
-        void Publish(string eventName, object data, Action<bool, ErrorInfo> callback);
+        Task PublishAsync(string eventName, object data);
         void Publish(IEnumerable<Message> messages);
-        void Publish(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback);
+        Task PublishAsync( IEnumerable<Message> messages );
     }
 }

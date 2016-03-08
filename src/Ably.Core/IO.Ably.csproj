@@ -55,6 +55,7 @@
     <Compile Include="CipherParams.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Realtime\ConnStateAwaitor.cs" />
+    <Compile Include="Transport\TaskWrapper.cs" />
     <Compile Include="Types\ConnectionDetailsMessage.cs" />
     <Compile Include="CustomSerialisers\CapabilityJsonConverter.cs" />
     <Compile Include="CustomSerialisers\CapabilityMessagePackSerializer.cs" />
@@ -144,6 +145,7 @@
     <Compile Include="Utils\ActionOnDispose.cs" />
     <Compile Include="Utils\ReflectionUtils.cs" />
     <Compile Include="Utils\StringUtils.cs" />
+    <Compile Include="Utils\TaskUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MsgPack, Version=0.5.0.0, Culture=neutral, PublicKeyToken=a2625990d5dc0167, processorArchitecture=MSIL">
