@@ -1,22 +1,16 @@
+using IO.Ably.Utils;
+using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
-using MsgPack.Serialization;
-using Newtonsoft.Json;
 using System.Runtime.Serialization;
-using IO.Ably.Utils;
 
 namespace IO.Ably
 {
-    /// <summary>
-    /// A class representing an individual message to be sent or received via the Ably realtime service
-    /// </summary>
+    /// <summary>A class representing an individual message to be sent or received via the Ably realtime service</summary>
     [DebuggerDisplay( "{ToString()}" )]
     public class Message : IEncodedMessage
     {
-        public Message()
-        {
-
-        }
+        public Message(){ }
 
         public Message( string name, object data )
         {
