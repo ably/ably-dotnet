@@ -49,14 +49,14 @@ namespace Ably.Tests
         }
 
         [Fact]
-        public void Ctor_WithKeyPassedInOptions_InitialisesClient()
+        public void Ctor_WithKeyPassedInOptions_InitializesClient()
         {
             var client = new RestClient(opts => opts.Key = ValidKey);
             Assert.NotNull(client);
         }
 
         [Fact]
-        public void Init_WithKeyInOptions_InitialisesClient()
+        public void Init_WithKeyInOptions_InitializesClient()
         {
             var client = new RestClient(opts => opts.Key = ValidKey);
             Assert.NotNull(client);

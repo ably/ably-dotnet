@@ -44,7 +44,7 @@ namespace Ably
 
     public class PaginatedResource
     {
-        public static PaginatedResource<T> InitialisePartialResult<T>( WebHeaderCollection headers, int? limit = null)
+        public static PaginatedResource<T> InitializePartialResult<T>( WebHeaderCollection headers, int? limit = null)
         {
             var result = new PaginatedResource<T>(limit ?? Config.Limit);
             result.CurrentQuery = DataRequestQuery.GetLinkQuery(headers, DataRequestLinkType.Current);

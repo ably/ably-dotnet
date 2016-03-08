@@ -35,7 +35,7 @@ namespace Ably.Tests
             Realtime.Channel target = new Realtime.Channel("test", "client", manager.Object);
 
             // Assert
-            Assert.Equal(ChannelState.Initialised, target.State);
+            Assert.Equal(ChannelState.Initialized, target.State);
         }
 
         [Fact]
