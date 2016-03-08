@@ -6,6 +6,7 @@ namespace IO.Ably.ConsoleTest
     {
         static void Main( string[] args )
         {
+            IO.Ably.Logger.SetDestination( new MyLogger() );
             try
             {
                 Rest.test().Wait();

@@ -16,7 +16,7 @@ namespace IO.Ably.ConsoleTest
 
         void ILoggerSink.LogEvent( LogLevel level, string message )
         {
-            ConsoleEx.writeLine( s_colors[ level ], message );
+            ConsoleEx.writeLine( s_colors[ level ], "    " + message );
         }
     }
 }
