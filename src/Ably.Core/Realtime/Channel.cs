@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace IO.Ably.Realtime
 {
+    /// <summary>Implement realtime channel.</summary>
     internal class Channel : IRealtimeChannel
     {
         internal Channel( string name, string clientId, IConnectionManager connection )

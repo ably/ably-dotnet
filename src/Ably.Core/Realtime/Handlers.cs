@@ -6,6 +6,7 @@ namespace IO.Ably.Realtime
     using TheSet = HashSet<WeakReference<IMessageHandler>>;
 
     /// <summary>This specialized collection keeps a set of weak references to IMessageHandler instances.</summary>
+    /// <remarks>The collection is not thread safe.</remarks>
     internal class Handlers
     {
         readonly TheSet m_set = new TheSet();
