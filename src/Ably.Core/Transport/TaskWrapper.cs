@@ -8,11 +8,13 @@ namespace IO.Ably.Transport
     {
         readonly TaskCompletionSource<bool> m_tcs = new TaskCompletionSource<bool>();
 
+        /// <summary>Operator that casts to <see cref="Task" />.</summary>
         public static implicit operator Task( TaskWrapper wrapper ) { return wrapper.m_tcs.Task; }
 
+        /// <summary>Operator that casts to the callback action type.</summary>
         public static implicit operator Action<bool, ErrorInfo>( TaskWrapper wrapper ) { return wrapper.callback; }
 
-        public void callback( bool res, ErrorInfo ei)
+        void callback( bool res, ErrorInfo ei)
         {
             if( res )
                 m_tcs.SetResult( true );
