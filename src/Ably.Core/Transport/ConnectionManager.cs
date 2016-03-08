@@ -123,14 +123,14 @@ namespace IO.Ably.Transport
         public Task SendAsync( ProtocolMessage message )
         {
             TaskWrapper tw = new TaskWrapper();
-            this.Send( message, tw.callback );
+            this.Send( message, tw );
             return tw;
         }
 
         public Task Ping()
         {
             TaskWrapper res = new TaskWrapper();
-            ConnectionHeartbeatRequest.Execute( this, res.callback );
+            ConnectionHeartbeatRequest.Execute( this, res );
             return res;
         }
 
