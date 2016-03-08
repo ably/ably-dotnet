@@ -8,7 +8,8 @@ namespace IO.Ably.ConsoleTest
         {
             try
             {
-                Rest.test().Wait();
+                // Rest.test().Wait();
+                Realtime.test().Wait();
                 ConsoleColor.Green.writeLine( "Success!" );
             }
             catch( Exception ex )
