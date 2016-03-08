@@ -26,7 +26,7 @@ namespace IO.Ably
         {
             _options = options;
             if (options.AutoConnect)
-                this.Connect();
+                this.Connect().IgnoreExceptions();
         }
 
         Rest.AblySimpleRestClient _simpleRest;
