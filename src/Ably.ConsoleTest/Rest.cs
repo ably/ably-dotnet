@@ -41,6 +41,8 @@ namespace IO.Ably.ConsoleTest
             // Verify we can publish
             IChannel channel = ably.Channels.Get( "persisted:presence_fixtures" );
             await channel.Publish( "test", true );
+
+            ConsoleColor.DarkGreen.writeLine( "Publish succeeded" );
         }
     }
 }

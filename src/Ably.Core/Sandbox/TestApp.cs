@@ -40,12 +40,12 @@ namespace IO.Ably.Sandbox
         /// <summary>Construct <see cref="AblyOptions" /> targeting this sandbox application.</summary>
         public AblyOptions ToAblyOptions()
         {
-            return new AblyOptions
-            {
-                Key = keys[ 0 ].keyStr,
-                Environment = environment,
-                Tls = tls
-            };
+            AblyOptions res = new AblyOptions();
+            res.Key = keys[ 0 ].keyStr;
+            res.Environment = environment;
+            res.Tls = tls;
+            res.UseBinaryProtocol = false;
+            return res;
         }
     }
 }
