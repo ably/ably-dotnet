@@ -1,48 +1,29 @@
-﻿using System;
+﻿using IO.Ably.Transport;
+using IO.Ably.Types;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using IO.Ably.Transport;
-using IO.Ably.Types;
 using System.Threading.Tasks;
 
 namespace IO.Ably.Realtime
 {
-    public interface IChannelFactory
-    {
-        IRealtimeChannel Create( string channelName );
-    }
-
-    public class ChannelFactory : IChannelFactory
-    {
-        public IConnectionManager ConnectionManager { get; set; }
-        public AblyRealtimeOptions Options { get; set; }
-
-        public IRealtimeChannel Create( string channelName )
-        {
-            return new Channel( channelName, this.Options.ClientId, this.ConnectionManager );
-        }
-    }
-
-    public class Channel : IRealtimeChannel
+    internal class Channel : IRealtimeChannel
     {
         internal Channel( string name, string clientId, IConnectionManager connection )
         {
-            this.queuedMessages = new List<Message>();
-            this.eventListeners = new Dictionary<string, List<Action<Message[]>>>();
             this.Name = name;
             this.Presence = new Presence( connection, this, clientId );
             this.connection = connection;
             this.connection.MessageReceived += OnConnectionMessageReceived;
         }
 
-        private IConnectionManager connection;
-        private List<Message> queuedMessages;
-        private Dictionary<string, List<Action<Message[]>>> eventListeners;
+        readonly IConnectionManager connection;
+        readonly List<Message> queuedMessages = new List<Message>(16);
+        readonly Handlers handlersAll = new Handlers();
+        readonly Dictionary<string, Handlers> handlersSpecific = new Dictionary<string, Handlers>();
 
-        /// <summary>
-        ///
-        /// </summary>
-        public event Action<Message[]> MessageReceived;
+        /// <summary>A lock object to protect subscribers. Only locked while subscribing, unsubscribing, or receiving those messages.</summary>
+        readonly object syncRoot = new object();
 
         public event EventHandler<ChannelStateChangedEventArgs> ChannelStateChanged;
 
@@ -101,24 +82,46 @@ namespace IO.Ably.Realtime
             this.connection.Send( new ProtocolMessage( ProtocolMessage.MessageAction.Detach, this.Name ), null );
         }
 
-        public void Subscribe( string eventName, Action<Message[]> listener )
+        public void Subscribe( IMessageHandler handler )
         {
-            List<Action<Message[]>> messageDelegate;
-            if( !this.eventListeners.TryGetValue( eventName, out messageDelegate ) )
-            {
-                messageDelegate = new List<Action<Message[]>>();
-                this.eventListeners.Add( eventName, messageDelegate );
-            }
-            messageDelegate.Add( listener );
+            lock ( syncRoot )
+                handlersAll.add( handler );
         }
 
-        public void Unsubscribe( string eventName, Action<Message[]> listener )
+        public void Subscribe( string eventName, IMessageHandler handler )
         {
-            List<Action<Message[]>> messageDelegate;
-            if( this.eventListeners.TryGetValue( eventName, out messageDelegate ) )
+            lock ( syncRoot )
             {
-                messageDelegate.Remove( listener );
+                Handlers handlers;
+                if( !this.handlersSpecific.TryGetValue( eventName, out handlers ) )
+                {
+                    handlers = new Handlers();
+                    this.handlersSpecific.Add( eventName, handlers );
+                }
+                handlers.add( handler );
             }
+        }
+
+        public void Unsubscribe( IMessageHandler handler )
+        {
+            lock ( syncRoot )
+            {
+                if( handlersAll.remove( handler ) )
+                    return;
+            }
+            Logger.Warning( "Unsubscribe failed: was not subscribed" );
+        }
+
+        public void Unsubscribe( string eventName, IMessageHandler handler )
+        {
+            lock ( syncRoot )
+            {
+                Handlers handlers;
+                if( this.handlersSpecific.TryGetValue( eventName, out handlers ) )
+                    if( handlers.remove( handler ) )
+                        return;
+            }
+            Logger.Warning( "Unsubscribe failed: was not subscribed" );
         }
 
         /// <summary>Publish a single message on this channel based on a given event name and payload.</summary>
@@ -172,7 +175,7 @@ namespace IO.Ably.Realtime
             this.OnChannelStateChanged( new ChannelStateChangedEventArgs( state ) );
         }
 
-        private void OnChannelStateChanged( ChannelStateChangedEventArgs eventArgs )
+        void OnChannelStateChanged( ChannelStateChangedEventArgs eventArgs )
         {
             if( this.ChannelStateChanged != null )
             {
@@ -180,7 +183,7 @@ namespace IO.Ably.Realtime
             }
         }
 
-        private void OnConnectionMessageReceived( ProtocolMessage message )
+        void OnConnectionMessageReceived( ProtocolMessage message )
         {
             switch( message.action )
             {
@@ -209,24 +212,19 @@ namespace IO.Ably.Realtime
 
         private void OnMessage( ProtocolMessage message )
         {
-            Message[] messages = message.messages;
-            for( int i = 0; i < messages.Length; i++ )
+            foreach( Message msg in message.messages )
             {
-                Message msg = messages[i];
-                // TODO: populate fields derived from protocol message
-                List<Action<Message[]>> listeners = eventListeners.Get(msg.name, null);
-                if( listeners != null )
+                lock ( syncRoot )
                 {
-                    Message[] singleMessage = new Message[] { msg };
-                    foreach( var listener in listeners )
-                    {
-                        listener( singleMessage );
-                    }
+                    foreach( IMessageHandler h in handlersAll.alive() )
+                        h.Handle( msg );
+
+                    Handlers handlers;
+                    if( !handlersSpecific.TryGetValue( msg.name, out handlers ) )
+                        continue;
+                    foreach( IMessageHandler h in handlers.alive() )
+                        h.Handle( msg );
                 }
-            }
-            if( this.MessageReceived != null )
-            {
-                this.MessageReceived( messages );
             }
         }
 

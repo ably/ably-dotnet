@@ -23,7 +23,7 @@ namespace IO.Ably.Transport
     public delegate void StateChangedDelegate(ConnectionState state, ConnectionInfo info, ErrorInfo error);
     public delegate void MessageReceivedDelegate(ProtocolMessage message);
 
-    public interface IConnectionManager
+    internal interface IConnectionManager
     {
         event MessageReceivedDelegate MessageReceived;
 

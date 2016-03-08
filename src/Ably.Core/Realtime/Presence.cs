@@ -9,7 +9,7 @@ namespace IO.Ably.Realtime
 {
     public class Presence
     {
-        public Presence( IConnectionManager connection, IRealtimeChannel channel, string cliendId )
+        internal Presence( IConnectionManager connection, IRealtimeChannel channel, string cliendId )
         {
             this.presence = new PresenceMap();
             this.pendingPresence = new List<QueuedPresenceMessage>();
