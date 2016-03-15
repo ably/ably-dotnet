@@ -589,7 +589,7 @@ namespace Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<IRealtimeChannel> channel = new Mock<IRealtimeChannel>();
-            channel.SetupGet(c => c.State).Returns(ChannelState.Initialised);
+            channel.SetupGet(c => c.State).Returns(ChannelState.Initialized);
             var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
@@ -600,7 +600,7 @@ namespace Ably.Tests
         }
 
         [Theory]
-        [InlineData(ChannelState.Initialised)]
+        [InlineData(ChannelState.Initialized)]
         [InlineData(ChannelState.Attaching)]
         public void UpdatingPresence_WhenConnectionIsConnecting_QueuesMessages(ChannelState state)
         {
@@ -618,7 +618,7 @@ namespace Ably.Tests
         }
 
         [Theory]
-        [InlineData(ChannelState.Initialised)]
+        [InlineData(ChannelState.Initialized)]
         [InlineData(ChannelState.Attaching)]
         public void UpdatingPresence_WhenChannelIsAttached_SendsQueuedMessages(ChannelState state)
         {
@@ -637,7 +637,7 @@ namespace Ably.Tests
         }
 
         [Theory]
-        [InlineData(ChannelState.Initialised)]
+        [InlineData(ChannelState.Initialized)]
         [InlineData(ChannelState.Attaching)]
         public void UpdatingPresence_WhenChannelIsAttached_SendsQueuedMessages_CallsCallbacks(ChannelState state)
         {
@@ -664,7 +664,7 @@ namespace Ably.Tests
         }
 
         [Theory]
-        [InlineData(ChannelState.Initialised)]
+        [InlineData(ChannelState.Initialized)]
         [InlineData(ChannelState.Attaching)]
         public void UpdatingPresence_WhenChannelIsAttached_SendsQueuedMessages_AsASingleMessage(ChannelState state)
         {
@@ -684,7 +684,7 @@ namespace Ably.Tests
         }
 
         [Theory]
-        [InlineData(ChannelState.Initialised)]
+        [InlineData(ChannelState.Initialized)]
         [InlineData(ChannelState.Attaching)]
         public void UpdatingPresence_WhenChannelIsAttached_SendsQueuedMessages_AsASingleMessage_CallsCallbacks(ChannelState state)
         {
@@ -717,7 +717,7 @@ namespace Ably.Tests
         }
 
         [Theory]
-        [InlineData(ChannelState.Initialised)]
+        [InlineData(ChannelState.Initialized)]
         [InlineData(ChannelState.Attaching)]
         public void UpdatingPresence_WhenChannelIsFailed_FailsQueuedMessages(ChannelState state)
         {
@@ -736,7 +736,7 @@ namespace Ably.Tests
         }
 
         [Theory]
-        [InlineData(ChannelState.Initialised)]
+        [InlineData(ChannelState.Initialized)]
         [InlineData(ChannelState.Attaching)]
         public void UpdatingPresence_WhenChannelIsFailed_FailsQueuedMessages_CallsCallbacks(ChannelState state)
         {

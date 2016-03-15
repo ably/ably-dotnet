@@ -40,7 +40,7 @@ namespace Ably.AcceptanceTests
 
             // Assert
             target.Name.ShouldBeEquivalentTo("test");
-            target.State.ShouldBeEquivalentTo(Realtime.ChannelState.Initialised);
+            target.State.ShouldBeEquivalentTo(Realtime.ChannelState.Initialized);
         }
 
         [Test]

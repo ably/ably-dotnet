@@ -108,6 +108,7 @@
     <Compile Include="AuthRequestTokenTests.cs" />
     <Compile Include="ChannelMessagesAcceptanceTests.cs" />
     <Compile Include="Key.cs" />
+    <Compile Include="LoggerTests.cs" />
     <Compile Include="MessageEncodersAcceptanceTests.cs" />
     <Compile Include="PresenceAcceptanceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -134,9 +135,16 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Ably\Ably.csproj">
-      <Project>{e70140ac-4132-44c0-85bb-9bd1b910a719}</Project>
-      <Name>Ably</Name>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ably.Core\Ably.Core.csproj">
+      <Project>{ef341e0a-733d-4f79-8303-fd1b10d778eb}</Project>
+      <Name>Ably.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Ably.Platforms\Ably.net45\Ably.net45.csproj">
+      <Project>{021875be-63fd-4ff4-b34f-0b77ccd1919e}</Project>
+      <Name>Ably.net45</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

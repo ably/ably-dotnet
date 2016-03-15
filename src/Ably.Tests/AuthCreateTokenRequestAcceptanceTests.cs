@@ -105,7 +105,6 @@ namespace Ably.Tests
         {
             var currentTime = Config.Now().ToUnixTimeInMilliseconds();
             Client.ExecuteHttpRequest = x => {
-                System.Diagnostics.Debugger.Break();
                 return new AblyResponse { TextResponse = "[" + currentTime + "]", Type = ResponseType.Json }; };
             var data = Client.Auth.CreateTokenRequest(null, new AuthOptions() {QueryTime = true});
             data.timestamp.Should().Be(currentTime.ToString());

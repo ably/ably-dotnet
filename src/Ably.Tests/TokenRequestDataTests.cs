@@ -109,18 +109,18 @@ namespace Ably.Tests
         {
             var request = GetTokenRequest();
             var data = request.GetPostData(GetKeyValue());
-            var values = new[] 
-            { 
-                data.keyName, 
+            var values = new[]
+            {
+                data.keyName,
                 data.ttl,
-                data.capability, 
-                data.clientId, 
+                data.capability,
+                data.clientId,
                 data.timestamp,
                 data.nonce
             };
             var signText = string.Join("\n", values) + "\n";
 
-            string mac = signText.ComputeHMacSha256(GetKeyValue());
+            string mac = Encryption.Crypto.ComputeHMacSha256(signText, GetKeyValue());
 
             Assert.Equal(mac, data.mac);
         }
