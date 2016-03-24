@@ -37,7 +37,7 @@ namespace IO.Ably.AcceptanceTests
             AblyRest ably = GetRestClient();
             var options = ably.Options;
 
-            var token = ably.Auth.RequestToken(createTokenRequest( capability, ttl ), null);
+            var token = ably.Auth.RequestToken(createTokenRequest( capability, ttl ), null).Result;
 
             var key = options.ParseKey();
             var appId = key.KeyName.Split('.').First();
@@ -63,7 +63,7 @@ namespace IO.Ably.AcceptanceTests
             capability.AddResource( "foo" ).AllowPublish();
 
             var ably = GetRestClient();
-            var token = ably.Auth.RequestToken(createTokenRequest( capability ), null);
+            var token = ably.Auth.RequestToken(createTokenRequest( capability ), null).Result;
 
             var tokenAbly = new AblyRest(new AblyOptions {Token = token.Token, Environment = TestsSetup.TestData.Environment});
 
@@ -78,7 +78,7 @@ namespace IO.Ably.AcceptanceTests
 
             var ably = GetRestClient();
 
-            var token = ably.Auth.RequestToken(createTokenRequest(capability), null);
+            var token = ably.Auth.RequestToken(createTokenRequest(capability), null).Result;
 
             var tokenAbly = new AblyRest(new AblyOptions { Token = token.Token , Environment = AblyEnvironment.Sandbox});
 

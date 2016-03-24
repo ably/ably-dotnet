@@ -13,7 +13,7 @@ namespace IO.Ably.AcceptanceTests
     {
         public static TestVars TestData;
 
-        private static TestVars GetTestData() 
+        private static TestVars GetTestData()
         {
             return new TestVars { tls = true, keys = new List<Key>(), Environment = AblyEnvironment.Sandbox};
         }
@@ -48,7 +48,7 @@ namespace IO.Ably.AcceptanceTests
             AblyResponse response;
             try
             {
-                response = client.Execute(request);
+                response = client.Execute(request).Result;
             }
             catch (Exception) { return; }
             var json = JObject.Parse(response.TextResponse);

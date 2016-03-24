@@ -49,12 +49,12 @@ namespace IO.Ably.AcceptanceTests
             public void GetStats()
             {
                 var client = GetAbly();
-                Stats =  client.Stats(new StatsDataRequestQuery() {Start = StartInterval.AddMinutes(-30), Limit = 1});
+                Stats = client.Stats(new StatsDataRequestQuery() {Start = StartInterval.AddMinutes(-30), Limit = 1}).Result;
 
                 TestStats = Stats.First();
             }
 
-            public IPaginatedResource<Stats> Stats { get; set; }
+            public PaginatedResource<Stats> Stats { get; set; }
             public Stats TestStats { get; set; }
 
             [Test]
@@ -186,7 +186,7 @@ namespace IO.Ably.AcceptanceTests
                 var encoding = (string)encoded["encoding"];
                 var decodedData = DecodeData((string)encoded["data"], encoding);
                 channel.Publish((string)encoded["name"], decodedData);
-                var message = channel.History().First();
+                var message = channel.History().Result.First();
                 if(message.data is byte[])
                     (message.data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
                 else if (encoding == "json")
@@ -212,12 +212,12 @@ namespace IO.Ably.AcceptanceTests
             }
 
             //Assert
-            var history = channel.History(new DataRequestQuery() {Limit = 10});
+            var history = channel.History(new DataRequestQuery() {Limit = 10}).Result;
             history.Should().HaveCount(10);
             history.HasNext.Should().BeTrue();
             history.First().name.Should().Be("name19");
 
-            var secondPage = channel.History(history.NextQuery);
+            var secondPage = channel.History(history.NextQuery).Result;
             secondPage.Should().HaveCount(10);
             secondPage.First().name.Should().Be("name9");
 

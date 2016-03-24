@@ -142,6 +142,19 @@ namespace IO.Ably.AcceptanceTests
             args[ 2 ].Reason.ShouldBeEquivalentTo( ErrorInfo.ReasonClosed );
         }
 
+        static Tuple<DateTime?, AblyException> time( AblyRealtime client )
+        {
+            try
+            {
+                DateTime? dt = client.Time().Result;
+                return new Tuple<DateTime?, AblyException>( dt, null );
+            }
+            catch( Exception ex )
+            {
+                return new Tuple<DateTime?, AblyException>( null, new AblyException( ex ) );
+            }
+        }
+
         [Test]
         public void TestRealtimeClient_Time()
         {
@@ -149,18 +162,8 @@ namespace IO.Ably.AcceptanceTests
             var client = GetRealtimeClient();
             AutoResetEvent signal = new AutoResetEvent(false);
 
-            Tuple<DateTime?, AblyException> result = null;
-            Action<DateTime?, AblyException> callback = (time, err) =>
-            {
-                result = Tuple.Create(time, err);
-                signal.Set();
-            };
+            Tuple<DateTime?, AblyException> result = time( client );
 
-            // Act
-            client.Time( callback );
-
-            // Assert
-            signal.WaitOne( 10000 );
             Assert.NotNull( result );
             Assert.NotNull( result.Item1 );
             Logger.Info( "Local {0}, server {1}", DateTime.UtcNow, result.Item1.Value );
@@ -174,15 +177,8 @@ namespace IO.Ably.AcceptanceTests
             // Arrange
             var client = new AblyRealtime(new AblyRealtimeOptions("123.456:789") { Host = "nohost.tt" });
             AutoResetEvent signal = new AutoResetEvent(false);
-            Tuple<DateTime?, AblyException> result = null;
-            Action<DateTime?, AblyException> callback = (time, err) =>
-            {
-                result = Tuple.Create(time, err);
-                signal.Set();
-            };
 
-            // Act
-            client.Time( callback );
+            Tuple<DateTime?, AblyException> result = time( client );
 
             // Assert
             signal.WaitOne( 10000 );

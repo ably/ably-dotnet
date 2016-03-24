@@ -1,12 +1,8 @@
-﻿using IO.Ably;
-using IO.Ably.Realtime;
+﻿using IO.Ably.Realtime;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace IO.Ably.Tests
+namespace IO.Ably
 {
     static class MiscUtils
     {
@@ -35,17 +31,17 @@ namespace IO.Ably.Tests
             return new MessageHandlerAction( a2 );
         }
 
-        public static void Subscribe( this Channel target, string eventName, Action<Message[]> act )
+        public static void Subscribe( this IRealtimeChannel target, string eventName, Action<Message[]> act )
         {
             target.Subscribe( eventName, handler( act ) );
         }
 
-        public static void sub( this Channel target, Action<Message[]> act )
+        public static void sub( this IRealtimeChannel target, Action<Message[]> act )
         {
             target.Subscribe( handler( act ) );
         }
 
-        public static void Unsubscribe( this Channel target, string eventName, Action<Message[]> act )
+        public static void Unsubscribe( this IRealtimeChannel target, string eventName, Action<Message[]> act )
         { }
     }
 }

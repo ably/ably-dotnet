@@ -83,11 +83,11 @@ namespace IO.Ably.AcceptanceTests
             Realtime.IRealtimeChannel target = client.Channels.Get("test");
             target.Attach();
             List<Message> messagesReceived = new List<Message>();
-            target.MessageReceived += (messages) =>
+            target.sub( messages =>
             {
-                messagesReceived.AddRange(messages);
+                messagesReceived.AddRange( messages );
                 signal.Set();
-            };
+            } );
 
             // Act
             target.Publish("test", "test data");
@@ -108,11 +108,11 @@ namespace IO.Ably.AcceptanceTests
             Realtime.IRealtimeChannel target = client.Channels.Get("test");
             target.Attach();
             List<Message> messagesReceived = new List<Message>();
-            target.MessageReceived += (messages) =>
+            target.sub( messages =>
             {
-                messagesReceived.AddRange(messages);
+                messagesReceived.AddRange( messages );
                 signal.Set();
-            };
+            } );
 
             // Act
             target.Publish("test1", "test 12");
@@ -139,11 +139,11 @@ namespace IO.Ably.AcceptanceTests
             Realtime.IRealtimeChannel target = client.Channels.Get("test");
             target.Attach();
             List<Message> messagesReceived = new List<Message>();
-            target.MessageReceived += (messages) =>
+            target.sub( messages =>
             {
-                messagesReceived.AddRange(messages);
+                messagesReceived.AddRange( messages );
                 signal.Set();
-            };
+            } );
 
             // Act
             target.Publish("test", "test data");
