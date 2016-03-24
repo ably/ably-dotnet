@@ -89,7 +89,7 @@ namespace IO.Ably.Tests
             rest.ExecuteHttpRequest = delegate(AblyRequest request)
             {
                 _currentRequest = request;
-                return new AblyResponse() { TextResponse = "[]"};
+                return "[]".response();
             };
             channel.History();
 
@@ -104,7 +104,7 @@ namespace IO.Ably.Tests
             rest.ExecuteHttpRequest = delegate(AblyRequest request)
             {
                 _currentRequest = request;
-                return new AblyResponse() { TextResponse = "[]" };
+                return "[]".response();
             };
             var channel = rest.Channels.Get("Test");
             var query = new DataRequestQuery();
@@ -157,12 +157,12 @@ namespace IO.Ably.Tests
                             Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
                             TextResponse = "[]"
                         };
-                    return response;
+                    return response.task();
                 };
             var channel = rest.Channels.Get("test");
 
             //Act
-            var result = channel.History();
+            var result = channel.History().Result;
 
             //Assert
             Assert.NotNull(result.NextQuery);
@@ -185,13 +185,13 @@ namespace IO.Ably.Tests
                     Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
                     TextResponse = string.Format("[{0}]", JsonConvert.SerializeObject(message))
                 };
-                return response;
+                return response.task();
             };
 
             var channel = rest.Channels.Get("test", new ChannelOptions(defaultParams));
 
             //Act
-            var result = channel.History();
+            var result = channel.History().Result;
 
             //Assert
             Assert.NotEmpty(result);
@@ -216,7 +216,7 @@ namespace IO.Ably.Tests
             rest.ExecuteHttpRequest = request =>
                 {
                     _currentRequest = request;
-                    return new AblyResponse() {TextResponse = "[]"};
+                    return "[]".response();
                 };
             var channel = rest.Channels.Get("Test");
 

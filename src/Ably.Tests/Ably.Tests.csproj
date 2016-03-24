@@ -137,6 +137,7 @@
     <Compile Include="MessageEncodes\JsonEncoderTests.cs" />
     <Compile Include="MessageEncodes\Utf8EncoderTests.cs" />
     <Compile Include="MessagePack\SerializationTests.cs" />
+    <Compile Include="MiscUtils.cs" />
     <Compile Include="Realtime\AckProtocolTests.cs" />
     <Compile Include="Realtime\AuthenticationTests.cs" />
     <Compile Include="Realtime\ChannelListTests.cs" />

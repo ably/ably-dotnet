@@ -23,7 +23,7 @@ namespace IO.Ably.Tests
             rest.ExecuteHttpRequest = (request) =>
             {
                 CurrentRequest = request;
-                return new AblyResponse() {TextResponse = "{}"};
+                return "{}".response();
             };
 
             Config.Now = () => Now;
@@ -33,29 +33,29 @@ namespace IO.Ably.Tests
         [Fact]
         public void UsesKeyIdFromTheClient()
         {
-            var data = Client.Auth.CreateTokenRequest(null, null);
+            var data = Client.Auth.CreateTokenRequest(null, null).Result;
             data.keyName.Should().Be(Client.Options.ParseKey().KeyName);
         }
 
         [Fact]
         public void UsesDefaultTtlWhenNoneIsSpecified()
         {
-            var data = Client.Auth.CreateTokenRequest(null, null);
+            var data = Client.Auth.CreateTokenRequest(null, null).Result;
             data.ttl.Should().Be(TokenRequest.Defaults.Ttl.TotalMilliseconds.ToString());
         }
 
         [Fact]
         public void UsesTheDefaultCapability()
         {
-            var data = Client.Auth.CreateTokenRequest(null, null);
+            var data = Client.Auth.CreateTokenRequest(null, null).Result;
             data.capability.Should().Be(TokenRequest.Defaults.Capability.ToJson());
         }
 
         [Fact]
         public void UsesUniqueNonseWhichIsMoreThan16Characters()
         {
-            var data = Client.Auth.CreateTokenRequest(null, null);
-            var secondTime = Client.Auth.CreateTokenRequest(null, null);
+            var data = Client.Auth.CreateTokenRequest(null, null).Result;
+            var secondTime = Client.Auth.CreateTokenRequest(null, null).Result;
             data.nonce.Should().NotBe(secondTime.nonce);
             data.nonce.Length.Should().BeGreaterOrEqualTo(16);
         }
@@ -66,14 +66,14 @@ namespace IO.Ably.Tests
             var capability = new Capability();
             capability.AddResource("test").AllowAll();
 
-            var data = Client.Auth.CreateTokenRequest(new TokenRequest() {Capability = capability}, null);
+            var data = Client.Auth.CreateTokenRequest(new TokenRequest() {Capability = capability}, null).Result;
             data.capability.Should().Be(capability.ToJson());
         }
 
         [Fact]
         public void WithTtlOverridesDefault()
         {
-            var data = Client.Auth.CreateTokenRequest(new TokenRequest() {Ttl = TimeSpan.FromHours(2)}, null);
+            var data = Client.Auth.CreateTokenRequest(new TokenRequest() {Ttl = TimeSpan.FromHours(2)}, null).Result;
 
             data.ttl.Should().Be(TimeSpan.FromHours(2).TotalMilliseconds.ToString());
         }
@@ -81,7 +81,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void WithNonceOverridesDefault()
         {
-            var data = Client.Auth.CreateTokenRequest(new TokenRequest() { Nonce = "Blah" }, null);
+            var data = Client.Auth.CreateTokenRequest(new TokenRequest() { Nonce = "Blah" }, null).Result;
             data.nonce.Should().Be("Blah");
         }
 
@@ -89,14 +89,14 @@ namespace IO.Ably.Tests
         public void WithTimeStampOverridesDefault()
         {
             var date = DateTime.SpecifyKind(new DateTime(2014, 1, 1), DateTimeKind.Utc);
-            var data = Client.Auth.CreateTokenRequest(new TokenRequest() { Timestamp= date }, null);
+            var data = Client.Auth.CreateTokenRequest(new TokenRequest() { Timestamp= date }, null).Result;
             data.timestamp.Should().Be(date.ToUnixTimeInMilliseconds().ToString());
         }
 
         [Fact]
         public void WithClientIdOverridesDefault()
         {
-            var data = Client.Auth.CreateTokenRequest(new TokenRequest() { ClientId = "123"}, null);
+            var data = Client.Auth.CreateTokenRequest(new TokenRequest() { ClientId = "123"}, null).Result;
             data.clientId.Should().Be("123");
         }
 
@@ -104,9 +104,8 @@ namespace IO.Ably.Tests
         public void WithQueryTimeQueriesForTimestamp()
         {
             var currentTime = Config.Now().ToUnixTimeInMilliseconds();
-            Client.ExecuteHttpRequest = x => {
-                return new AblyResponse { TextResponse = "[" + currentTime + "]", Type = ResponseType.Json }; };
-            var data = Client.Auth.CreateTokenRequest(null, new AuthOptions() {QueryTime = true});
+            Client.ExecuteHttpRequest = x => ( "[" + currentTime + "]" ).jsonResponse();
+            var data = Client.Auth.CreateTokenRequest(null, new AuthOptions() {QueryTime = true}).Result;
             data.timestamp.Should().Be(currentTime.ToString());
         }
 
@@ -127,7 +126,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void GeneratesHMac()
         {
-            var data = Client.Auth.CreateTokenRequest(null, null);
+            var data = Client.Auth.CreateTokenRequest(null, null).Result;
             data.mac.Should().NotBeEmpty();
         }
     }

@@ -16,7 +16,7 @@ namespace IO.Ably.Tests
             rest.ExecuteHttpRequest = (request) =>
             {
                 CurrentRequest = request;
-                return new AblyResponse() {TextResponse = _dummyTokenResponse};
+                return _dummyTokenResponse.response();
             };
 
             Config.Now = () => Now;
@@ -33,7 +33,7 @@ namespace IO.Ably.Tests
                 //Assert
                 var data = x.PostData as TokenRequestPostData;
                 action(data, x);
-                return new AblyResponse() {TextResponse = _dummyTokenResponse};
+                return _dummyTokenResponse.response();
             };
 
             rest.Auth.RequestToken(request, authOptions);

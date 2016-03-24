@@ -364,7 +364,7 @@ namespace IO.Ably.Tests
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Realtime.Channel target = new Realtime.Channel("test", "client", manager.Object);
             Message[] receivedMessage = null;
-            target.MessageReceived += (m) => receivedMessage = m;
+            target.sub( ( m ) => receivedMessage = m );
 
             // Act
             Message[] targetMessages = new Message[] { new Message("test", null) };

@@ -20,17 +20,13 @@ namespace IO.Ably.Tests
             Client.ExecuteHttpRequest = request =>
             {
                 ExecutionCount++;
-                if (request.Url.Contains("requestToken"))
+                if( request.Url.Contains( "requestToken" ) )
                 {
-                    return new AblyResponse()
-                    {
-                        TextResponse =
-                            string.Format(
+                    return string.Format(
                                 "{{ \"access_token\": {{ \"id\": \"unique-token-id\", \"expires\": \"{0}\"}}}}",
-                                DateTime.UtcNow.AddDays(1).ToUnixTimeInMilliseconds())
-                    };
+                                DateTime.UtcNow.AddDays( 1 ).ToUnixTimeInMilliseconds() ).response();
                 }
-                return new AblyResponse() {TextResponse = "{}"};
+                return "{}".response();
             };
         }
 

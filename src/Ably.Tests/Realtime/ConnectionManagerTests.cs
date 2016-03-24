@@ -596,7 +596,7 @@ namespace IO.Ably.Tests
             ConnectionManager target = new ConnectionManager(mock.Object, ackmock.Object, state.Object);
 
             // Act
-            target.Ping(null);
+            target.Ping().Wait();
 
             // Assert
             state.Verify(c => c.SendMessage(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Heartbeat)), Times.Once());

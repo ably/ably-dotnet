@@ -6,6 +6,7 @@ using FluentAssertions;
 using IO.Ably.Auth;
 using Newtonsoft.Json;
 using Xunit;
+using System.Threading.Tasks;
 
 namespace IO.Ably.Tests
 {
@@ -14,7 +15,9 @@ namespace IO.Ably.Tests
         private const string ApiKey = "123.456:789";
         internal AblyRequest CurrentRequest { get; set; }
         public readonly DateTime Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc);
-        private readonly string _dummyTokenResponse = "{ \"access_token\": {}}";
+        const string _dummyTokenResponse = "{ \"access_token\": {}}";
+
+        static Task<AblyResponse> dummyTokenResponse { get { return _dummyTokenResponse.response(); } }
 
         private AblyRest GetRestClient()
         {
@@ -22,7 +25,7 @@ namespace IO.Ably.Tests
             rest.ExecuteHttpRequest = (request) =>
             {
                 CurrentRequest = request;
-                return new AblyResponse() { TextResponse = _dummyTokenResponse };
+                return dummyTokenResponse;
             };
 
             Config.Now = () => Now;
@@ -134,13 +137,13 @@ namespace IO.Ably.Tests
             var currentTime = DateTime.UtcNow;
             rest.ExecuteHttpRequest = x =>
                 {
-                    if (x.Url.Contains("time"))
-                        return new AblyResponse { TextResponse = "[" + currentTime.ToUnixTimeInMilliseconds() + "]", Type = ResponseType.Json };
+                    if( x.Url.Contains( "time" ) )
+                        return ( "[" + currentTime.ToUnixTimeInMilliseconds() + "]" ).jsonResponse();
 
                     //Assert
                     var data = x.PostData as TokenRequestPostData;
                     Assert.Equal(data.timestamp, currentTime.ToUnixTimeInMilliseconds().ToString());
-                    return new AblyResponse() { TextResponse = _dummyTokenResponse };
+                    return dummyTokenResponse;
                 };
             var request = new TokenRequest { Capability = new Capability(), ClientId = "ClientId", Ttl = TimeSpan.FromMinutes(10), KeyName = GetKeyId() };
 
@@ -155,7 +158,7 @@ namespace IO.Ably.Tests
             rest.ExecuteHttpRequest = x =>
             {
                 Assert.False(x.Url.Contains("time"));
-                return new AblyResponse() { TextResponse = _dummyTokenResponse };
+                return dummyTokenResponse;
             };
 
             var request = new TokenRequest { Capability = new Capability(), ClientId = "ClientId", Ttl = TimeSpan.FromMinutes(10), KeyName = GetKeyId() };
@@ -204,9 +207,9 @@ namespace IO.Ably.Tests
                 if (x.Url == options.AuthUrl)
                 {
                     authRequest = x;
-                    return new AblyResponse { TextResponse = JsonConvert.SerializeObject(requestdata) };
+                    return JsonConvert.SerializeObject( requestdata ).response();
                 }
-                return new AblyResponse { TextResponse = _dummyTokenResponse };
+                return dummyTokenResponse;
             };
 
             var tokenRequest = new TokenRequest { KeyName = GetKeyId(), Capability = new Capability() };
@@ -238,9 +241,9 @@ namespace IO.Ably.Tests
                 if (x.Url == options.AuthUrl)
                 {
                     authRequest = x;
-                    return new AblyResponse { TextResponse = JsonConvert.SerializeObject(requestdata) };
+                    return JsonConvert.SerializeObject( requestdata ).response();
                 }
-                return new AblyResponse { TextResponse = _dummyTokenResponse };
+                return dummyTokenResponse;
             };
 
             var tokenRequest = new TokenRequest { KeyName = GetKeyId(), Capability = new Capability() };
@@ -268,23 +271,20 @@ namespace IO.Ably.Tests
             {
                 if (x.Url == options.AuthUrl)
                 {
-                    return new AblyResponse
-                    {
-                        TextResponse = "{ " +
+                    return ( "{ " +
                                        "\"keyName\":\"123\"," +
                                        "\"expires\":" + dateTime.ToUnixTimeInMilliseconds() + "," +
                                        "\"issued\":" + dateTime.ToUnixTimeInMilliseconds() + "," +
                                        "\"capability\":\"{}\"," +
                                        "\"clientId\":\"111\"" +
-                                       "}"
-                    };
+                                       "}" ).response();
                 }
-                return new AblyResponse { TextResponse = "{}" };
+                return "{}".response();
             };
 
             var tokenRequest = new TokenRequest { KeyName = GetKeyId(), Capability = new Capability() };
 
-            var token = rest.Auth.RequestToken(tokenRequest, options);
+            var token = rest.Auth.RequestToken(tokenRequest, options).Result;
             Assert.NotNull(token);
             dateTime.Should().BeWithin(TimeSpan.FromSeconds(1)).After(token.Issued);
         }
@@ -304,9 +304,9 @@ namespace IO.Ably.Tests
                 requests.Add(x);
                 if (x.Url == options.AuthUrl)
                 {
-                    return new AblyResponse { TextResponse = JsonConvert.SerializeObject(requestdata) };
+                    return JsonConvert.SerializeObject( requestdata ).response();
                 }
-                return new AblyResponse { TextResponse = _dummyTokenResponse };
+                return dummyTokenResponse;
             };
 
             var tokenRequest = new TokenRequest { KeyName = GetKeyId(), Capability = new Capability() };
@@ -341,7 +341,7 @@ namespace IO.Ably.Tests
             {
                 AuthUrl = "http://authUrl"
             };
-            rest.ExecuteHttpRequest = (x) => new AblyResponse { Type = ResponseType.Binary };
+            rest.ExecuteHttpRequest = ( x ) => Task<AblyResponse>.FromResult( new AblyResponse { Type = ResponseType.Binary } );
 
             var tokenRequest = new TokenRequest { KeyName = GetKeyId(), Capability = new Capability() };
 

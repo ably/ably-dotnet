@@ -9,12 +9,12 @@ namespace IO.Ably.Tests
         protected const string ValidKey = "AHSz6w.uQXPNQ:FGBZbsKSwqbCpkob";
         internal AblyRequest _currentRequest;
         internal MimeTypes mimeTypes = new MimeTypes();
-        
+
         protected AblyRest GetRestClient()
         {
             var rest = new AblyRest(opts => { opts.Key = ValidKey; opts.UseBinaryProtocol = false; });
-        
-            rest.ExecuteHttpRequest = x => { _currentRequest = x; return new AblyResponse(); };
+
+            rest.ExecuteHttpRequest = x => { _currentRequest = x; return new AblyResponse().task(); };
             return rest;
         }
 
@@ -49,7 +49,7 @@ namespace IO.Ably.Tests
     {
         public static void AssertContainsHeader(this AblyRequest request, string key, string value)
         {
-            Assert.True(request.Headers.ContainsKey(key), 
+            Assert.True(request.Headers.ContainsKey(key),
                 String.Format("Header '{0}' doesn't exist in request", key));
             Assert.Equal(value, request.Headers[key]);
         }

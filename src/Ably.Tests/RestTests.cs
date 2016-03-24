@@ -6,6 +6,7 @@ using System.Text;
 using FluentAssertions;
 using IO.Ably.Auth;
 using Xunit;
+using System.Threading.Tasks;
 
 namespace IO.Ably.Tests
 {
@@ -17,9 +18,9 @@ namespace IO.Ably.Tests
         class FakeHttpClient : IAblyHttpClient
         {
             public Func<AblyRequest, AblyResponse> ExecuteFunc = delegate { return new AblyResponse(); };
-            public AblyResponse Execute(AblyRequest request)
+            public Task<AblyResponse> Execute(AblyRequest request)
             {
-                return ExecuteFunc(request);
+                return Task<AblyResponse>.FromResult( ExecuteFunc( request ) );
             }
         }
 
@@ -109,7 +110,7 @@ namespace IO.Ably.Tests
 
             var rest = new AblyRest(options);
 
-            rest.ExecuteHttpRequest = delegate { return new AblyResponse() { TextResponse = "[{}]" }; };
+            rest.ExecuteHttpRequest = delegate { return "[{}]".response(); };
 
             rest.Stats();
 
@@ -133,15 +134,15 @@ namespace IO.Ably.Tests
                 if (request.Url.Contains(options.AuthUrl))
                 {
                     called = true;
-                    return new AblyResponse() { TextResponse = "{}" };
+                    return "{}".response();
                 }
 
                 if (request.Url.Contains("requestToken"))
                 {
-                    return new AblyResponse { TextResponse = "{ \"access_token\": { \"expires\": \"" + DateTime.UtcNow.AddHours(1).ToUnixTimeInMilliseconds() + "\"}}" };
+                    return ( "{ \"access_token\": { \"expires\": \"" + DateTime.UtcNow.AddHours( 1 ).ToUnixTimeInMilliseconds() + "\"}}" ).response();
                 }
 
-                return new AblyResponse() { TextResponse = "[{}]" };
+                return "[{}]".response();
             };
 
             rest.Stats();
@@ -169,7 +170,7 @@ namespace IO.Ably.Tests
             rest.ExecuteHttpRequest = request =>
             {
                 Console.WriteLine("Getting an AblyResponse.");
-                return new AblyResponse() {TextResponse = "[{}]"};
+                return "[{}]".response();
             };
             rest.CurrentToken = new TokenDetails() { Expires = DateTime.UtcNow.AddDays(-2) };
 
@@ -196,7 +197,7 @@ namespace IO.Ably.Tests
             {
                 //Assert
                 request.Headers["Authorization"].Should().Contain(token.Token.ToBase64());
-                return new AblyResponse() { TextResponse = "[{}]" };
+                return "[{}]".response();
             };
 
             rest.Stats();
@@ -222,7 +223,7 @@ namespace IO.Ably.Tests
             var expectedValue = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(key.ToString()));
 
             //Act
-            rest.AddAuthHeader(request);
+            rest.AddAuthHeader(request).Wait();
 
             //Assert
             var authHeader = request.Headers.First();
@@ -247,7 +248,7 @@ namespace IO.Ably.Tests
             var rest = GetRestClient();
 
             AblyRequest request = null;
-            rest.ExecuteHttpRequest = x => { request = x; return new AblyResponse { Type = ResponseType.Json, TextResponse = "[{  }]" }; };
+            rest.ExecuteHttpRequest = x => { request = x; return "[{  }]".jsonResponse(); };
             rest.Stats();
 
             Assert.Equal(HttpMethod.Get, request.Method);
@@ -260,7 +261,7 @@ namespace IO.Ably.Tests
         {
             var rest = GetRestClient();
             AblyRequest request = null;
-            rest.ExecuteHttpRequest = x => { request = x; return new AblyResponse { TextResponse = "[{}]" }; };
+            rest.ExecuteHttpRequest = x => { request = x; return "[{}]".response(); };
             var query = new StatsDataRequestQuery();
             DateTime now = DateTime.Now;
             query.Start = now.AddHours(-1);
@@ -288,11 +289,11 @@ namespace IO.Ably.Tests
                     Headers = DataRequestQueryTests.GetSampleStatsRequestHeaders(),
                     TextResponse = "[{}]"
                 };
-                return response;
+                return response.task();
             };
 
             //Act
-            var result = rest.Stats();
+            var result = rest.Stats().Result;
 
             //Assert
             Assert.NotNull(result.NextQuery);

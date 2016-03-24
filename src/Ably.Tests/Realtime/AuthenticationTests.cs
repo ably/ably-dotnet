@@ -266,7 +266,7 @@ namespace IO.Ably.Tests
 
             var tokenRequest = new TokenRequest { KeyName = GetKeyId(), Capability = new Capability() };
 
-            var token = rest.Auth.RequestToken(tokenRequest, options);
+            var token = rest.Auth.RequestToken(tokenRequest, options).Result;
             Assert.NotNull(token);
             dateTime.Should().BeWithin(TimeSpan.FromSeconds(1)).After(token.Issued);
         }
@@ -390,9 +390,9 @@ namespace IO.Ably.Tests
             var options = new AblyRealtimeOptions() { Key = ApiKey, UseBinaryProtocol = false };
             var client = new AblyRealtime(options);
             var httpClientMock = new Moq.Mock<IAblyHttpClient>();
-            httpClientMock.Setup(c => c.Execute(Moq.It.IsAny<AblyRequest>())).Returns(executeHttpRequest);
+            httpClientMock.Setup(c => c.Execute(Moq.It.IsAny<AblyRequest>()).Result).Returns(executeHttpRequest);
 
-            client.InitAuth(new Rest.AblySimpleRestClient(options, httpClientMock.Object));
+            client.InitAuth( new Rest.AblySimpleRestClient( options, httpClientMock.Object ) ).Wait();
 
             Config.Now = () => Now;
             return client;
@@ -402,7 +402,7 @@ namespace IO.Ably.Tests
         {
             var options = new AblyRealtimeOptions() { Key = ApiKey, UseBinaryProtocol = false };
             var client = new AblyRealtime(options);
-            client.InitAuth(new Rest.AblySimpleRestClient(options));
+            client.InitAuth( new Rest.AblySimpleRestClient( options ) ).Wait();
 
             Config.Now = () => Now;
             return client;
