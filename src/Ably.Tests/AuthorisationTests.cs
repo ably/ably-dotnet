@@ -7,6 +7,7 @@ using IO.Ably.Auth;
 using Newtonsoft.Json;
 using Xunit;
 using System.Threading.Tasks;
+using Ably.Tests;
 
 namespace IO.Ably.Tests
 {
@@ -17,7 +18,7 @@ namespace IO.Ably.Tests
         public readonly DateTime Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc);
         const string _dummyTokenResponse = "{ \"access_token\": {}}";
 
-        static Task<AblyResponse> dummyTokenResponse { get { return _dummyTokenResponse.response(); } }
+        static Task<AblyResponse> dummyTokenResponse { get { return _dummyTokenResponse.ToAblyResponse(); } }
 
         private AblyRest GetRestClient()
         {
@@ -45,14 +46,22 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void RequestToken_CreatesPostRequestWithCorrectUrl()
+        public async Task RequestToken_CreatesPostRequestWithCorrectUrl()
         {
             //Arrange
-            SendRequestTokenWithValidOptions();
+            await SendRequestTokenWithValidOptions();
 
             //Assert
             Assert.Equal("/keys/" + GetKeyId() + "/requestToken", CurrentRequest.Url);
             Assert.Equal(HttpMethod.Post, CurrentRequest.Method);
+        }
+
+        [Fact]
+        public async Task RequestToken_SetsRequestTokenRequestToRequestPostData()
+        {
+            await SendRequestTokenWithValidOptions();
+
+            Assert.IsType<TokenRequestPostData>(CurrentRequest.PostData);
         }
 
         [Fact]
@@ -68,77 +77,70 @@ namespace IO.Ably.Tests
             Assert.Equal(client.Options.ParseKey().KeyName, data.keyName);
         }
 
-        // TODO: This test fails
-        //[Fact]
-        //public void RequestToken_WithNoRequestAndNoExtraOptions_CreatesDefaultRequestWithIdClientIdAndBlankCapability()
-        //{
-        //    var client = GetRestClient();
-        //    client.Options.ClientId = "Test";
-        //    client.Auth.RequestToken(null, null);
+        [Fact]
+        public async Task RequestToken_WithNoRequestAndNoExtraOptions_CreatesDefaultRequestWithIdClientIdAndBlankCapability()
+        {
+            var client = GetRestClient();
+            client.Options.ClientId = "Test";
+            await client.Auth.RequestToken(null, null);
 
-        //    var data = CurrentRequest.PostData as TokenRequestPostData;
-        //    Assert.Equal(GetKeyId(), data.keyName);
-        //    Assert.Equal(Capability.AllowAll.ToJson(), data.capability);
-        //    Assert.Equal(client.Options.ParseKey().KeyName, data.clientId);
-        //}
+            var data = CurrentRequest.PostData as TokenRequestPostData;
+            Assert.Equal(GetKeyId(), data.keyName);
+            Assert.Equal(Capability.AllowAll.ToJson(), data.capability);
+            Assert.Equal(client.Options.ParseKey().KeyName, data.clientId);
+        }
 
         [Fact]
-        public void RequestToken_WithTokenRequestWithoutCapability_SetsBlankCapability()
+        public async Task RequestToken_WithTokenRequestWithoutCapability_SetsBlankCapability()
         {
             var request = new TokenRequest() { KeyName = "123" };
 
             var client = GetRestClient();
 
-            client.Auth.RequestToken(request, null);
+            await client.Auth.RequestToken(request, null);
 
             var data = CurrentRequest.PostData as TokenRequestPostData;
             Assert.Equal(Capability.AllowAll.ToJson(), data.capability);
         }
 
         [Fact]
-        public void RequestToken_TimeStamp_SetsTimestampOnTheDataRequest()
+        public async Task RequestToken_TimeStamp_SetsTimestampOnTheDataRequest()
         {
             var date = DateTime.SpecifyKind(new DateTime(2014, 1, 1), DateTimeKind.Utc);
             var request = new TokenRequest() { Timestamp = date };
 
             var client = GetRestClient();
 
-            client.Auth.RequestToken(request, null);
+            await client.Auth.RequestToken(request, null);
 
             var data = CurrentRequest.PostData as TokenRequestPostData;
             Assert.Equal(date.ToUnixTimeInMilliseconds().ToString(), data.timestamp);
         }
 
         [Fact]
-        public void RequestToken_WithoutTimeStamp_SetsCurrentTimeOnTheRequest()
+        public async Task RequestToken_WithoutTimeStamp_SetsCurrentTimeOnTheRequest()
         {
             var request = new TokenRequest();
 
             var client = GetRestClient();
 
-            client.Auth.RequestToken(request, null);
+            await client.Auth.RequestToken(request, null);
 
             var data = CurrentRequest.PostData as TokenRequestPostData;
             Assert.Equal(Now.ToUnixTimeInMilliseconds().ToString(), data.timestamp);
         }
 
-        [Fact]
-        public void RequestToken_SetsRequestTokenRequestToRequestPostData()
-        {
-            SendRequestTokenWithValidOptions();
-
-            Assert.IsType<TokenRequestPostData>(CurrentRequest.PostData);
-        }
+        
 
         [Fact]
-        public void RequestToken_WithQueryTime_SendsTimeRequestAndUsesReturnedTimeForTheRequest()
+        public async Task RequestToken_WithQueryTime_SendsTimeRequestAndUsesReturnedTimeForTheRequest()
         {
             var rest = GetRestClient();
             var currentTime = DateTime.UtcNow;
             rest.ExecuteHttpRequest = x =>
                 {
                     if( x.Url.Contains( "time" ) )
-                        return ( "[" + currentTime.ToUnixTimeInMilliseconds() + "]" ).jsonResponse();
+                        return ( "[" + currentTime.ToUnixTimeInMilliseconds() + "]" ).ToAblyJsonResponse();
 
                     //Assert
                     var data = x.PostData as TokenRequestPostData;
@@ -148,11 +150,11 @@ namespace IO.Ably.Tests
             var request = new TokenRequest { Capability = new Capability(), ClientId = "ClientId", Ttl = TimeSpan.FromMinutes(10), KeyName = GetKeyId() };
 
             //Act
-            rest.Auth.RequestToken(request, new AuthOptions() { QueryTime = true });
+            await rest.Auth.RequestToken(request, new AuthOptions() { QueryTime = true });
         }
 
         [Fact]
-        public void RequestToken_WithoutQueryTime_SendsTimeRequestAndUsesReturnedTimeForTheRequest()
+        public async Task RequestToken_WithoutQueryTime_SendsTimeRequestAndUsesReturnedTimeForTheRequest()
         {
             var rest = GetRestClient();
             rest.ExecuteHttpRequest = x =>
@@ -164,11 +166,11 @@ namespace IO.Ably.Tests
             var request = new TokenRequest { Capability = new Capability(), ClientId = "ClientId", Ttl = TimeSpan.FromMinutes(10), KeyName = GetKeyId() };
 
             //Act
-            rest.Auth.RequestToken(request, new AuthOptions() { QueryTime = false });
+            await rest.Auth.RequestToken(request, new AuthOptions() { QueryTime = false });
         }
 
         [Fact]
-        public void RequestToken_WithRequestCallback_RetrievesTokenFromCallback()
+        public async Task RequestToken_WithRequestCallback_RetrievesTokenFromCallback()
         {
             var rest = GetRestClient();
             var tokenRequest = new TokenRequest { KeyName = GetKeyId(), Capability = new Capability() };
@@ -183,14 +185,14 @@ namespace IO.Ably.Tests
                     return token;
                 }
             };
-            var result = rest.Auth.RequestToken(tokenRequest, options);
+            var result = await rest.Auth.RequestToken(tokenRequest, options);
 
             Assert.True(authCallbackCalled);
             Assert.Same(token, result);
         }
 
         [Fact]
-        public void RequestToken_WithAuthUrlAndDefaultAuthMethod_SendsGetRequestToTheUrl()
+        public async Task RequestToken_WithAuthUrlAndDefaultAuthMethod_SendsGetRequestToTheUrl()
         {
             var rest = GetRestClient();
             var options = new AuthOptions
@@ -207,7 +209,7 @@ namespace IO.Ably.Tests
                 if (x.Url == options.AuthUrl)
                 {
                     authRequest = x;
-                    return JsonConvert.SerializeObject( requestdata ).response();
+                    return JsonConvert.SerializeObject( requestdata ).ToAblyResponse();
                 }
                 return dummyTokenResponse;
             };
@@ -215,7 +217,7 @@ namespace IO.Ably.Tests
             var tokenRequest = new TokenRequest { KeyName = GetKeyId(), Capability = new Capability() };
 
             //Act
-            rest.Auth.RequestToken(tokenRequest, options);
+            await rest.Auth.RequestToken(tokenRequest, options);
 
             //Assert
             Assert.Equal(HttpMethod.Get, authRequest.Method);
@@ -224,7 +226,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void RequestToken_WithAuthUrl_SendPostRequestToAuthUrl()
+        public async Task RequestToken_WithAuthUrl_SendPostRequestToAuthUrl()
         {
             var rest = GetRestClient();
             var options = new AuthOptions
@@ -241,14 +243,14 @@ namespace IO.Ably.Tests
                 if (x.Url == options.AuthUrl)
                 {
                     authRequest = x;
-                    return JsonConvert.SerializeObject( requestdata ).response();
+                    return JsonConvert.SerializeObject( requestdata ).ToAblyResponse();
                 }
                 return dummyTokenResponse;
             };
 
             var tokenRequest = new TokenRequest { KeyName = GetKeyId(), Capability = new Capability() };
 
-            rest.Auth.RequestToken(tokenRequest, options);
+            await rest.Auth.RequestToken(tokenRequest, options);
 
             Assert.Equal(HttpMethod.Post, authRequest.Method);
 
@@ -258,7 +260,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void RequestToken_WithAuthUrlWhenTokenIsReturned_ReturnsToken()
+        public async Task RequestToken_WithAuthUrlWhenTokenIsReturned_ReturnsToken()
         {
             var rest = GetRestClient();
             var options = new AuthOptions
@@ -277,20 +279,20 @@ namespace IO.Ably.Tests
                                        "\"issued\":" + dateTime.ToUnixTimeInMilliseconds() + "," +
                                        "\"capability\":\"{}\"," +
                                        "\"clientId\":\"111\"" +
-                                       "}" ).response();
+                                       "}" ).ToAblyResponse();
                 }
-                return "{}".response();
+                return "{}".ToAblyResponse();
             };
 
             var tokenRequest = new TokenRequest { KeyName = GetKeyId(), Capability = new Capability() };
 
-            var token = rest.Auth.RequestToken(tokenRequest, options).Result;
+            var token = await rest.Auth.RequestToken(tokenRequest, options);
             Assert.NotNull(token);
             dateTime.Should().BeWithin(TimeSpan.FromSeconds(1)).After(token.Issued);
         }
 
         [Fact]
-        public void RequestToken_WithAuthUrl_GetsResultAndPostToRetrieveToken()
+        public async Task RequestToken_WithAuthUrl_GetsResultAndPostToRetrieveToken()
         {
             var rest = GetRestClient();
             var options = new AuthOptions
@@ -304,21 +306,21 @@ namespace IO.Ably.Tests
                 requests.Add(x);
                 if (x.Url == options.AuthUrl)
                 {
-                    return JsonConvert.SerializeObject( requestdata ).response();
+                    return JsonConvert.SerializeObject( requestdata ).ToAblyResponse();
                 }
                 return dummyTokenResponse;
             };
 
             var tokenRequest = new TokenRequest { KeyName = GetKeyId(), Capability = new Capability() };
 
-            rest.Auth.RequestToken(tokenRequest, options);
+            await rest.Auth.RequestToken(tokenRequest, options);
 
             Assert.Equal(2, requests.Count);
             Assert.Equal(requestdata, requests.Last().PostData);
         }
 
         [Fact]
-        public void RequestToken_WithAuthUrlWhichReturnsAnErrorThrowsAblyException()
+        public async Task RequestToken_WithAuthUrlWhichReturnsAnErrorThrowsAblyException()
         {
             var rest = GetRestClient();
             var options = new AuthOptions
@@ -330,79 +332,77 @@ namespace IO.Ably.Tests
 
             var tokenRequest = new TokenRequest { KeyName = GetKeyId(), Capability = new Capability() };
 
-            Assert.Throws<AblyException>(delegate { rest.Auth.RequestToken(tokenRequest, options); });
+            var ex = await AssertEx.ThrowsAsync<AblyException>(() => rest.Auth.RequestToken(tokenRequest, options));
         }
 
         [Fact]
-        public void RequestToken_WithAuthUrlWhichReturnsNonJsonContentType_ThrowsException()
+        public async Task RequestToken_WithAuthUrlWhichReturnsNonJsonContentType_ThrowsException()
         {
             var rest = GetRestClient();
             var options = new AuthOptions
             {
                 AuthUrl = "http://authUrl"
             };
-            rest.ExecuteHttpRequest = ( x ) => Task<AblyResponse>.FromResult( new AblyResponse { Type = ResponseType.Binary } );
+            rest.ExecuteHttpRequest = ( x ) => Task.FromResult( new AblyResponse { Type = ResponseType.Binary } );
 
             var tokenRequest = new TokenRequest { KeyName = GetKeyId(), Capability = new Capability() };
 
-            Assert.Throws<AblyException>(delegate { rest.Auth.RequestToken(tokenRequest, options); });
+            var ex = await AssertEx.ThrowsAsync<AblyException>(() => rest.Auth.RequestToken(tokenRequest, options));
         }
 
-        // TODO: This test fails
-        //[Fact]
-        //public void Authorise_WithNotExpiredCurrentTokenAndForceFalse_ReturnsCurrentToken()
-        //{
-        //    var client = GetRestClient();
-        //    client.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(1) };
-
-        //    var token = client.Auth.Authorise(null, null, false);
-
-        //    Assert.Same(client.CurrentToken, token);
-        //}
-
         [Fact]
-        public void Authorise_PreservesTokenRequestOptionsForSubsequentRequests()
+        public async Task Authorise_WithNotExpiredCurrentTokenAndForceFalse_ReturnsCurrentToken()
         {
             var client = GetRestClient();
-            client.Auth.Authorise(new TokenRequest() {Ttl = TimeSpan.FromMinutes(260)}, null, false);
+            client.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(1) };
 
-            client.Auth.Authorise(null, null, false);
+            var token = await client.Auth.Authorise(null, null, false);
+
+            Assert.Same(client.CurrentToken, token);
+        }
+
+        [Fact]
+        public async Task Authorise_PreservesTokenRequestOptionsForSubsequentRequests()
+        {
+            var client = GetRestClient();
+            await client.Auth.Authorise(new TokenRequest() {Ttl = TimeSpan.FromMinutes(260)}, null, false);
+
+            await client.Auth.Authorise(null, null, false);
             var data = CurrentRequest.PostData as TokenRequestPostData;
             data.ttl.Should().Be(TimeSpan.FromMinutes(260).TotalMilliseconds.ToString());
         }
 
         [Fact]
-        public void Authorise_WithNotExpiredCurrentTokenAndForceTrue_RequestsNewToken()
+        public async Task Authorise_WithNotExpiredCurrentTokenAndForceTrue_RequestsNewToken()
         {
             var client = GetRestClient();
             client.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(1) };
 
-            var token = client.Auth.Authorise(new TokenRequest() { ClientId = "123", Capability = new Capability(), KeyName = "123" }, null, true);
+            var token = await client.Auth.Authorise(new TokenRequest() { ClientId = "123", Capability = new Capability(), KeyName = "123" }, null, true);
 
             Assert.Contains("requestToken", CurrentRequest.Url);
             token.Should().NotBeNull();
         }
 
         [Fact]
-        public void Authorise_WithExpiredCurrentToken_RequestsNewToken()
+        public async Task Authorise_WithExpiredCurrentToken_RequestsNewToken()
         {
             var client = GetRestClient();
             client.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(-1) };
 
-            var token = client.Auth.Authorise(null, null, false);
+            var token = await client.Auth.Authorise(null, null, false);
 
             Assert.Contains("requestToken", CurrentRequest.Url);
             token.Should().NotBeNull();
         }
 
-        private TokenRequest SendRequestTokenWithValidOptions()
+        private async Task SendRequestTokenWithValidOptions()
         {
             var rest = GetRestClient();
             var request = new TokenRequest { Capability = new Capability(), ClientId = "ClientId", Ttl = TimeSpan.FromMinutes(10), KeyName = GetKeyId() };
 
             //Act
-            rest.Auth.RequestToken(request, null);
-            return request;
+            await rest.Auth.RequestToken(request, null);
         }
     }
 }
