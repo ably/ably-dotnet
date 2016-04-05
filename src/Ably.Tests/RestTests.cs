@@ -32,17 +32,6 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void Ctor_WithNoParametersAndAblyConnectionString_RetrievesApiKeyFromConnectionString()
-        {
-            Assert.DoesNotThrow(delegate
-            {
-                var rest = new AblyRest();
-
-                Assert.NotNull(rest);
-            });
-        }
-
-        [Fact]
         public void Ctor_WithNoParametersWithInvalidKey_ThrowsInvalidKeyException()
         {
             Assert.Throws<AblyException>(delegate

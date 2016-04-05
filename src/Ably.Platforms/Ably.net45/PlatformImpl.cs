@@ -8,7 +8,7 @@ namespace AblyPlatform
     {
         public PlatformImpl() { }
 
-        string IPlatform.getConnectionString()
+        string IPlatform.GetConnectionString()
         {
             var connString = ConfigurationManager.ConnectionStrings[ "Ably" ];
             if( connString == null )
@@ -18,12 +18,12 @@ namespace AblyPlatform
             return connString.ConnectionString;
         }
 
-        ICrypto IPlatform.getCrypto()
+        ICrypto IPlatform.GetCrypto()
         {
             return new Cryptography.CryptoImpl();
         }
 
-        ITransportFactory IPlatform.getWebSocketsFactory()
+        ITransportFactory IPlatform.GetWebSocketsFactory()
         {
             return new WebSocketTransport.WebSocketTransportFactory();
         }

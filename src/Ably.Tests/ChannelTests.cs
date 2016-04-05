@@ -132,7 +132,7 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [PropertyData("InvalidHistoryDates")]
+        [MemberData("InvalidHistoryDates")]
         public void History_WithInvalidStartOrEnd_Throws(DateTime? start, DateTime? end)
         {
             var rest = GetRestClient();

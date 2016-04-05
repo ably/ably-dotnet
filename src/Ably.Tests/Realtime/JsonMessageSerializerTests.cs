@@ -154,7 +154,7 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [PropertyData("Messages")]
+        [MemberData("Messages")]
         public void SerializesMessageCorrectly_Messages(params Message[] messages)
         {
             // Arrange
@@ -183,7 +183,7 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [PropertyData("PresenceMessages")]
+        [MemberData("PresenceMessages")]
         public void SerializesMessageCorrectly_Presence(params PresenceMessage[] messages)
         {
             // Arrange
@@ -412,7 +412,7 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [PropertyData("JsonMessages")]
+        [MemberData("JsonMessages")]
         public void DeserializesMessageCorrectly_Messages(string messageJson, params Message[] expectedMessages)
         {
             // Arrange
@@ -435,7 +435,7 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [PropertyData("JsonPresence")]
+        [MemberData("JsonPresence")]
         public void DeserializesMessageCorrectly_Presence(string messageJson, params PresenceMessage[] expectedMessages)
         {
             // Arrange

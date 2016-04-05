@@ -142,7 +142,7 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [PropertyData("Messages")]
+        [MemberData("Messages")]
         public void SerializesMessageCorrectly_Messages(params Message[] messages)
         {
             // Arrange
@@ -177,7 +177,7 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [PropertyData("Presence")]
+        [MemberData("Presence")]
         public void SerializesMessageCorrectly_Presence(params PresenceMessage[] messages)
         {
             // Arrange
@@ -450,7 +450,7 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [PropertyData("BinMessages")]
+        [MemberData("BinMessages")]
         public void DeserializesMessageCorrectly_Messages(byte[] messageBin, params Message[] expectedMessages)
         {
             // Arrange

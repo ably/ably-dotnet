@@ -580,7 +580,7 @@ namespace IO.Ably.Tests
             var target = new Presence(manager.Object, channel.Object, "testClient");
 
             // Act
-            Assert.Throws<AblyException>(() => target.Enter(null));
+            Assert.ThrowsAsync<AblyException>(() => target.Enter(null));
         }
 
         [Fact]

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Ably.Tests;
 using IO.Ably.Auth;
 using Xunit;
 
@@ -311,7 +310,7 @@ namespace IO.Ably.Tests
 
             var tokenRequest = new TokenRequest { KeyName = GetKeyId(), Capability = new Capability() };
 
-            var ex = await AssertEx.ThrowsAsync<AblyException>(() => rest.Auth.RequestToken(tokenRequest, options));
+            await Assert.ThrowsAsync<AblyException>(() => rest.Auth.RequestToken(tokenRequest, options));
         }
 
         [Fact]
@@ -326,7 +325,7 @@ namespace IO.Ably.Tests
 
             var tokenRequest = new TokenRequest { KeyName = GetKeyId(), Capability = new Capability() };
 
-            var ex = await AssertEx.ThrowsAsync<AblyException>(() => rest.Auth.RequestToken(tokenRequest, options));
+            await Assert.ThrowsAsync<AblyException>(() => rest.Auth.RequestToken(tokenRequest, options));
         }
 
         [Fact]

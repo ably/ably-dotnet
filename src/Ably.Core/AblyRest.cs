@@ -19,7 +19,7 @@ namespace IO.Ably
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public AblyRest()
         {
-            var key = Platform.IoC.getConnectionString();
+            var key = Platform.IoC.GetConnectionString();
             if( string.IsNullOrEmpty( key ) )
                 throw new AblyException( "A connection string with key 'Ably' doesn't exist in the application configuration" );
             _options = new AblyOptions( key );

@@ -6,19 +6,17 @@ namespace AblyPlatform
 {
     public class PlatformImpl : IPlatform
     {
-        public PlatformImpl() { }
-
-        string IPlatform.getConnectionString()
+        string IPlatform.GetConnectionString()
         {
             throw new NotSupportedException();
         }
 
-        ICrypto IPlatform.getCrypto()
+        ICrypto IPlatform.GetCrypto()
         {
             return new Cryptography.CryptoImpl();
         }
 
-        ITransportFactory IPlatform.getWebSocketsFactory()
+        ITransportFactory IPlatform.GetWebSocketsFactory()
         {
             return new WebSocketTransport.WebSocketTransportFactory();
         }

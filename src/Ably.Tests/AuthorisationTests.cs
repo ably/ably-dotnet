@@ -7,7 +7,6 @@ using IO.Ably.Auth;
 using Newtonsoft.Json;
 using Xunit;
 using System.Threading.Tasks;
-using Ably.Tests;
 
 namespace IO.Ably.Tests
 {
@@ -332,7 +331,7 @@ namespace IO.Ably.Tests
 
             var tokenRequest = new TokenRequest { KeyName = GetKeyId(), Capability = new Capability() };
 
-            var ex = await AssertEx.ThrowsAsync<AblyException>(() => rest.Auth.RequestToken(tokenRequest, options));
+            await Assert.ThrowsAsync<AblyException>(() => rest.Auth.RequestToken(tokenRequest, options));
         }
 
         [Fact]
@@ -347,7 +346,7 @@ namespace IO.Ably.Tests
 
             var tokenRequest = new TokenRequest { KeyName = GetKeyId(), Capability = new Capability() };
 
-            var ex = await AssertEx.ThrowsAsync<AblyException>(() => rest.Auth.RequestToken(tokenRequest, options));
+            await Assert.ThrowsAsync<AblyException>(() => rest.Auth.RequestToken(tokenRequest, options));
         }
 
         [Fact]

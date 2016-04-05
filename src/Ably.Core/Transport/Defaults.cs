@@ -1,5 +1,4 @@
-﻿using IO.Ably.Types;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace IO.Ably.Transport
@@ -20,7 +19,7 @@ namespace IO.Ably.Transport
             Defaults.FallbackHosts = new string[] { "A.ably-realtime.com", "B.ably-realtime.com", "C.ably-realtime.com", "D.ably-realtime.com", "E.ably-realtime.com" };
             Defaults.TransportFactories = new Dictionary<string, ITransportFactory>()
             {
-                { "web_socket", Platform.IoC.webSockets }
+                { "web_socket", Platform.IoC.WebSockets }
             };
         }
     }

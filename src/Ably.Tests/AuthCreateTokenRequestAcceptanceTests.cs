@@ -1,7 +1,5 @@
 using System;
-using Ably.Tests;
 using FluentAssertions;
-using FluentAssertions.Common;
 using Xunit;
 
 namespace IO.Ably.Tests
@@ -114,14 +112,14 @@ namespace IO.Ably.Tests
         public async void WithOutKeyIdThrowsException()
         {
             var client = new AblyRest(new AblyOptions());
-            var ex = await AssertEx.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequest(null, null));
+            await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequest(null, null));
         }
 
         [Fact]
         public async void WithOutKeyValueThrowsException()
         {
             var client = new AblyRest(new AblyOptions() { Key = "111.222"});
-            var ex = await AssertEx.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequest(null, null));
+            await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequest(null, null));
         }
 
         [Fact]
