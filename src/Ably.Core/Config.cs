@@ -43,7 +43,7 @@ namespace IO.Ably
             JsonConvert.DefaultSettings = GetJsonSettings;
         }
 
-        static JsonSerializerSettings GetJsonSettings()
+        internal static JsonSerializerSettings GetJsonSettings()
         {
             JsonSerializerSettings res = new JsonSerializerSettings();
             res.Converters = new List<JsonConverter>()

@@ -29,10 +29,8 @@ namespace IO.Ably.Transport
 
             if (manager.Connection.State != Realtime.ConnectionState.Connected)
             {
-                if (callback != null)
-                {
-                    callback(false, DefaultError);
-                }
+                callback?.Invoke(false, DefaultError);
+
                 return request;
             }
 
@@ -44,6 +42,7 @@ namespace IO.Ably.Transport
                 request.timer = timer;
                 request.callback = callback;
             }
+
             manager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat), null);
             if (callback != null)
             {

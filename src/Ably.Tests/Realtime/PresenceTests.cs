@@ -42,9 +42,9 @@ namespace IO.Ably.Tests
             // Assert
             Assert.Equal<int>(1, messages.Count);
             ProtocolMessage msg = messages.Pop();
-            Assert.Equal<ProtocolMessage.MessageAction>(ProtocolMessage.MessageAction.Presence, msg.action);
-            Assert.Equal<int>(1, msg.presence.Length);
-            Assert.Equal<PresenceMessage.ActionType>(PresenceMessage.ActionType.Enter, msg.presence[0].action);
+            Assert.Equal(ProtocolMessage.MessageAction.Presence, msg.action);
+            Assert.Equal(1, msg.presence.Length);
+            Assert.Equal(PresenceMessage.ActionType.Enter, msg.presence[0].action);
             Assert.Equal<string>("testClient", msg.presence[0].clientId);
         }
 
