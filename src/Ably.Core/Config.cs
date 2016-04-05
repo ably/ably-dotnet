@@ -40,10 +40,10 @@ namespace IO.Ably
         static Config()
         {
             // Configure JSON serializer/de-serializer
-            JsonConvert.DefaultSettings = getJsonSettings;
+            JsonConvert.DefaultSettings = GetJsonSettings;
         }
 
-        static JsonSerializerSettings getJsonSettings()
+        static JsonSerializerSettings GetJsonSettings()
         {
             JsonSerializerSettings res = new JsonSerializerSettings();
             res.Converters = new List<JsonConverter>()
@@ -55,6 +55,6 @@ namespace IO.Ably
             return res;
         }
 
-        public static void ensureInitialized() { }
+        public static void EnsureInitialized() { }
     }
 }

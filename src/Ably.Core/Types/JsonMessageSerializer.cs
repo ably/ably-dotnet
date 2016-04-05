@@ -6,7 +6,7 @@ namespace IO.Ably.Types
     {
         static JsonMessageSerializer()
         {
-            Config.ensureInitialized();
+            Config.EnsureInitialized();
         }
 
         public ProtocolMessage DeserializeProtocolMessage( object value )
