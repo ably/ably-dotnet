@@ -1,14 +1,14 @@
 ﻿using IO.Ably.Rest;
-using IO.Ably.Sandbox;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using IO.Ably.ConsoleTest.Sandbox;
 
 namespace IO.Ably.ConsoleTest
 {
     static class Rest
     {
-        static AblyRest getRestClient()
+        static AblyRest GetRestClient()
         {
             AblyOptions options = new AblyOptions();
             options.Environment = AblyEnvironment.Sandbox;
@@ -17,7 +17,7 @@ namespace IO.Ably.ConsoleTest
             return new AblyRest( options );
         }
 
-        static TokenRequest createTokenRequest( Capability capability, TimeSpan? ttl = null )
+        static TokenRequest CreateTokenRequest( Capability capability, TimeSpan? ttl = null )
         {
             TokenRequest res = new TokenRequest();
             res.ClientId = "John";
@@ -27,7 +27,7 @@ namespace IO.Ably.ConsoleTest
             return res;
         }
 
-        public static async Task test()
+        public static async Task Test()
         {
             ConsoleColor.DarkGreen.writeLine( "Creating sandbox app.." );
             TestApp sandboxTestData = await AblySandbox.CreateApp();

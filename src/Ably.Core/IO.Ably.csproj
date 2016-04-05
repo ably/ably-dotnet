@@ -37,7 +37,6 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
     <None Include="app.config" />
     <None Include="packages.config" />
-    <EmbeddedResource Include="Sandbox\TestAppSpec.json.gz" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AblyBase.cs" />
@@ -59,9 +58,6 @@
     <Compile Include="Realtime\ConnStateAwaitor.cs" />
     <Compile Include="Realtime\Handlers.cs" />
     <Compile Include="Realtime\IMessageHandler.cs" />
-    <Compile Include="Sandbox\AblySandbox.cs" />
-    <Compile Include="Sandbox\TestApp.cs" />
-    <Compile Include="Sandbox\Unzip.cs" />
     <Compile Include="Transport\TaskWrapper.cs" />
     <Compile Include="Types\ConnectionDetailsMessage.cs" />
     <Compile Include="CustomSerialisers\CapabilityJsonConverter.cs" />

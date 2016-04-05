@@ -4,7 +4,7 @@ namespace IO.Ably.ConsoleTest
 {
     class Realtime
     {
-        public static async Task test()
+        public static async Task Test()
         {
             var options = new AblyRealtimeOptions()
             {

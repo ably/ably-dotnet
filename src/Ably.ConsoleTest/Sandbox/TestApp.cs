@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
-using System.Linq;
+﻿using System.Linq;
+using Newtonsoft.Json.Linq;
 
-namespace IO.Ably.Sandbox
+namespace IO.Ably.ConsoleTest.Sandbox
 {
     /// <summary>This readonly class represents test application created in the sandbox.</summary>
     public class TestApp
