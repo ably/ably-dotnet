@@ -87,7 +87,7 @@ namespace IO.Ably.Tests
             rest.ExecuteHttpRequest = delegate(AblyRequest request)
             {
                 _currentRequest = request;
-                return "[]".response();
+                return "[]".ToAblyResponse();
             };
             channel.History();
 
@@ -102,7 +102,7 @@ namespace IO.Ably.Tests
             rest.ExecuteHttpRequest = delegate(AblyRequest request)
             {
                 _currentRequest = request;
-                return "[]".response();
+                return "[]".ToAblyResponse();
             };
             var channel = rest.Channels.Get("Test");
             var query = new DataRequestQuery();
@@ -155,7 +155,7 @@ namespace IO.Ably.Tests
                             Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
                             TextResponse = "[]"
                         };
-                    return response.task();
+                    return response.ToTask();
                 };
             var channel = rest.Channels.Get("test");
 
@@ -183,7 +183,7 @@ namespace IO.Ably.Tests
                     Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
                     TextResponse = string.Format("[{0}]", JsonConvert.SerializeObject(message))
                 };
-                return response.task();
+                return response.ToTask();
             };
 
             var channel = rest.Channels.Get("test", new ChannelOptions(defaultParams));
@@ -214,7 +214,7 @@ namespace IO.Ably.Tests
             rest.ExecuteHttpRequest = request =>
                 {
                     _currentRequest = request;
-                    return "[]".response();
+                    return "[]".ToAblyResponse();
                 };
             var channel = rest.Channels.Get("Test");
 

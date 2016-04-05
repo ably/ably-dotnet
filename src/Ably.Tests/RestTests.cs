@@ -112,7 +112,7 @@ namespace IO.Ably.Tests
 
             var rest = new AblyRest(options);
 
-            rest.ExecuteHttpRequest = delegate { return "[{}]".response(); };
+            rest.ExecuteHttpRequest = delegate { return "[{}]".ToAblyResponse(); };
 
             rest.Stats();
 
@@ -136,15 +136,15 @@ namespace IO.Ably.Tests
                 if (request.Url.Contains(options.AuthUrl))
                 {
                     called = true;
-                    return "{}".response();
+                    return "{}".ToAblyResponse();
                 }
 
                 if (request.Url.Contains("requestToken"))
                 {
-                    return ( "{ \"access_token\": { \"expires\": \"" + DateTime.UtcNow.AddHours( 1 ).ToUnixTimeInMilliseconds() + "\"}}" ).response();
+                    return ( "{ \"access_token\": { \"expires\": \"" + DateTime.UtcNow.AddHours( 1 ).ToUnixTimeInMilliseconds() + "\"}}" ).ToAblyResponse();
                 }
 
-                return "[{}]".response();
+                return "[{}]".ToAblyResponse();
             };
 
             rest.Stats();
@@ -172,7 +172,7 @@ namespace IO.Ably.Tests
             rest.ExecuteHttpRequest = request =>
             {
                 Console.WriteLine("Getting an AblyResponse.");
-                return "[{}]".response();
+                return "[{}]".ToAblyResponse();
             };
             rest.CurrentToken = new TokenDetails() { Expires = DateTime.UtcNow.AddDays(-2) };
 
@@ -199,7 +199,7 @@ namespace IO.Ably.Tests
             {
                 //Assert
                 request.Headers["Authorization"].Should().Contain(token.Token.ToBase64());
-                return "[{}]".response();
+                return "[{}]".ToAblyResponse();
             };
 
             rest.Stats();
@@ -250,7 +250,7 @@ namespace IO.Ably.Tests
             var rest = GetRestClient();
 
             AblyRequest request = null;
-            rest.ExecuteHttpRequest = x => { request = x; return "[{  }]".jsonResponse(); };
+            rest.ExecuteHttpRequest = x => { request = x; return "[{  }]".ToAblyJsonResponse(); };
             rest.Stats();
 
             Assert.Equal(HttpMethod.Get, request.Method);
@@ -263,7 +263,7 @@ namespace IO.Ably.Tests
         {
             var rest = GetRestClient();
             AblyRequest request = null;
-            rest.ExecuteHttpRequest = x => { request = x; return "[{}]".response(); };
+            rest.ExecuteHttpRequest = x => { request = x; return "[{}]".ToAblyResponse(); };
             var query = new StatsDataRequestQuery();
             DateTime now = DateTime.Now;
             query.Start = now.AddHours(-1);
@@ -291,7 +291,7 @@ namespace IO.Ably.Tests
                     Headers = DataRequestQueryTests.GetSampleStatsRequestHeaders(),
                     TextResponse = "[{}]"
                 };
-                return response.task();
+                return response.ToTask();
             };
 
             //Act

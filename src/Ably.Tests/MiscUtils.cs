@@ -6,19 +6,19 @@ namespace IO.Ably
 {
     static class MiscUtils
     {
-        public static Task<AblyResponse> response( this string txt )
+        public static Task<AblyResponse> ToAblyResponse( this string txt )
         {
-            return Task<AblyResponse>.FromResult( new AblyResponse() { TextResponse = txt } );
+            return Task.FromResult( new AblyResponse() { TextResponse = txt } );
         }
 
-        public static Task<AblyResponse> jsonResponse( this string txt )
+        public static Task<AblyResponse> ToAblyJsonResponse( this string txt )
         {
-            return Task<AblyResponse>.FromResult( new AblyResponse() { TextResponse = txt, Type = ResponseType.Json } );
+            return Task.FromResult( new AblyResponse() { TextResponse = txt, Type = ResponseType.Json } );
         }
 
-        public static Task<AblyResponse> task( this AblyResponse r )
+        public static Task<AblyResponse> ToTask( this AblyResponse r )
         {
-            return Task<AblyResponse>.FromResult( r );
+            return Task.FromResult( r );
         }
 
         static IMessageHandler handler( Action<Message[]> act )
@@ -36,7 +36,7 @@ namespace IO.Ably
             target.Subscribe( eventName, handler( act ) );
         }
 
-        public static void sub( this IRealtimeChannel target, Action<Message[]> act )
+        public static void Subscribe( this IRealtimeChannel target, Action<Message[]> act )
         {
             target.Subscribe( handler( act ) );
         }

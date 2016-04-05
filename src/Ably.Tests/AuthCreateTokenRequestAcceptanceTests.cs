@@ -24,7 +24,7 @@ namespace IO.Ably.Tests
             rest.ExecuteHttpRequest = (request) =>
             {
                 CurrentRequest = request;
-                return "{}".response();
+                return "{}".ToAblyResponse();
             };
 
             Config.Now = () => Now;
@@ -105,7 +105,7 @@ namespace IO.Ably.Tests
         public void WithQueryTimeQueriesForTimestamp()
         {
             var currentTime = Config.Now().ToUnixTimeInMilliseconds();
-            Client.ExecuteHttpRequest = x => ( "[" + currentTime + "]" ).jsonResponse();
+            Client.ExecuteHttpRequest = x => ( "[" + currentTime + "]" ).ToAblyJsonResponse();
             var data = Client.Auth.CreateTokenRequest(null, new AuthOptions() {QueryTime = true}).Result;
             data.timestamp.Should().Be(currentTime.ToString());
         }

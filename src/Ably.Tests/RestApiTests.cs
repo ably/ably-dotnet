@@ -14,7 +14,7 @@ namespace IO.Ably.Tests
         {
             var rest = new AblyRest(opts => { opts.Key = ValidKey; opts.UseBinaryProtocol = false; });
 
-            rest.ExecuteHttpRequest = x => { _currentRequest = x; return new AblyResponse().task(); };
+            rest.ExecuteHttpRequest = x => { _currentRequest = x; return new AblyResponse().ToTask(); };
             return rest;
         }
 
