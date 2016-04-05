@@ -47,7 +47,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Ably.Core\Ably.Core.csproj">
+    <ProjectReference Include="..\..\Ably.Core\IO.Ably.csproj">
       <Project>{ef341e0a-733d-4f79-8303-fd1b10d778eb}</Project>
       <Name>Ably.Core</Name>
     </ProjectReference>

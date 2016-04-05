@@ -1,6 +1,6 @@
-﻿using Ably.Platform;
-using Ably.Transport;
-using System;
+﻿using System;
+using IO.Ably.Platform;
+using IO.Ably.Transport;
 
 namespace AblyPlatform
 {
