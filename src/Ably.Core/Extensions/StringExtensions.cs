@@ -20,7 +20,7 @@ namespace IO.Ably
 
         public static bool IsJson(this string input)
         {
-            if (input.IsEmpty())
+            if (IsEmpty(input))
                 return false;
 
             input = input.Trim();
@@ -30,7 +30,7 @@ namespace IO.Ably
 
         public static string JoinStrings(this IEnumerable<string> input, string delimiter = ", ")
         {
-            return string.Join(delimiter, input.Where(x => x.IsNotEmpty()));
+            return string.Join(delimiter, input.Where(x => IsNotEmpty(x)));
         }
 
         public static string Join<T>(this IEnumerable<T> listOfTs, Func<T, string> selector, string delimiter = ",") where T : class

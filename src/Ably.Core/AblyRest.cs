@@ -84,7 +84,7 @@ namespace IO.Ably
 
         string GetHost()
         {
-            if (_options.Host.IsNotEmpty())
+            if (StringExtensions.IsNotEmpty(_options.Host))
                 return _options.Host;
 
             return Config.DefaultHost;
@@ -131,17 +131,17 @@ namespace IO.Ably
 
         bool TokenCreatedExternally
         {
-            get { return Options.AuthUrl.IsNotEmpty() || Options.AuthCallback != null; }
+            get { return StringExtensions.IsNotEmpty(Options.AuthUrl) || Options.AuthCallback != null; }
         }
 
         bool HasApiKey
         {
-            get { return Options.Key.IsNotEmpty(); }
+            get { return StringExtensions.IsNotEmpty(Options.Key); }
         }
 
         bool HasTokenId
         {
-            get { return Options.Token.IsNotEmpty(); }
+            get { return StringExtensions.IsNotEmpty(Options.Token); }
         }
 
         public bool TokenRenewable

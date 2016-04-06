@@ -218,7 +218,7 @@ namespace IO.Ably.MessageEncoders
             {
                 var limitQuery = request.QueryParameters["limit"];
                 var limit = Config.Limit;
-                if (limitQuery.IsNotEmpty())
+                if (StringExtensions.IsNotEmpty(limitQuery))
                     limit = int.Parse(limitQuery);
                 return limit;
             }

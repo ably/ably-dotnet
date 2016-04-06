@@ -122,6 +122,7 @@
     <Compile Include="DataRequestQueryParseFacts.cs" />
     <Compile Include="DataRequestQueryTests.cs" />
     <Compile Include="ErrorInfoTests.cs" />
+    <Compile Include="FakeResponseHandler.cs" />
     <Compile Include="ImplicitTokenAuthWithClientId.cs" />
     <Compile Include="MessageEncodes\Base64EncoderTests.cs" />
     <Compile Include="MessageEncodes\CipherEncoderTests.cs" />

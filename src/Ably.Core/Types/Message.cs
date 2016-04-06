@@ -81,7 +81,7 @@ namespace IO.Ably
         public override string ToString()
         {
             var result = string.Format("Name: {0}, Data: {1}, Encoding: {2}, Timestamp: {3}", name, data, encoding, timestamp);
-            if( id.IsNotEmpty() )
+            if( StringExtensions.IsNotEmpty(id) )
                 return "Id: " + id + ", " + result;
             return result;
         }

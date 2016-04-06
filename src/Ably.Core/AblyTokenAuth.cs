@@ -74,7 +74,7 @@ namespace IO.Ably
                 throw new AblyException("AuthCallback returned an invalid token");
             }
 
-            if (mergedOptions.AuthUrl.IsNotEmpty())
+            if (StringExtensions.IsNotEmpty(mergedOptions.AuthUrl))
             {
                 var url = mergedOptions.AuthUrl;
                 var protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;

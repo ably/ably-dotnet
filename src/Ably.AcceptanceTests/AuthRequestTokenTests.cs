@@ -3,6 +3,7 @@ using NUnit.Framework;
 using System;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace IO.Ably.AcceptanceTests
 {
@@ -47,11 +48,10 @@ namespace IO.Ably.AcceptanceTests
             token.Expires.Should().BeWithin( TimeSpan.FromSeconds( 30 ) ).Before( DateTime.UtcNow + ttl );
         }
 
-        private AblyRest GetRestClient( Action<AblyOptions> opAction = null )
+        private AblyRest GetRestClient( Action<AblyOptions> action = null )
         {
             var options = TestsSetup.GetDefaultOptions();
-            if( opAction != null )
-                opAction( options );
+            action?.Invoke(options);
             options.UseBinaryProtocol = _binaryProtocol;
             return new AblyRest( options );
         }
@@ -82,8 +82,8 @@ namespace IO.Ably.AcceptanceTests
 
             var tokenAbly = new AblyRest(new AblyOptions { Token = token.Token , Environment = AblyEnvironment.Sandbox});
 
-            var error = Assert.Throws<AblyException>(delegate { tokenAbly.Channels.Get("boo").Publish("test", true); });
-            error.ErrorInfo.code.Should().Be( 40160 );
+            var error = Assert.ThrowsAsync<AblyException>(() => tokenAbly.Channels.Get("boo").Publish("test", true));
+            error.ErrorInfo.code.Should().Be( 40101 );
             error.ErrorInfo.statusCode.Should().Be( HttpStatusCode.Unauthorized );
         }
 
@@ -93,22 +93,23 @@ namespace IO.Ably.AcceptanceTests
             var options = TestsSetup.GetDefaultOptions();
             var ably = new AblyRest(options);
 
-            var error = Assert.Throws<AblyException>( delegate
+            var error = Assert.ThrowsAsync<AblyException>(() =>
             {
-                TokenRequest req = createTokenRequest( null );
-                req.Timestamp = DateTime.UtcNow.AddDays( -1 );
-                ably.Auth.RequestToken( req, null );
-            } );
+                TokenRequest req = createTokenRequest(null);
+                req.Timestamp = DateTime.UtcNow.AddDays(-1);
+                return ably.Auth.RequestToken(req, null);
+            });
 
             error.ErrorInfo.code.Should().Be( 40101 );
             error.ErrorInfo.statusCode.Should().Be( HttpStatusCode.Unauthorized );
         }
 
         [Test]
-        public void WithClientId_RequestsATokenOnFirstMessageWithCorrectDefaults()
+        public async Task WithClientId_RequestsATokenOnFirstMessageWithCorrectDefaults()
         {
             var ably = GetRestClient(ablyOptions => ablyOptions.ClientId = "123");
-            ably.Channels.Get( "test" ).Publish( "test", true );
+            var channel = ably.Channels.Get( "test" );
+            await channel.Publish("test", true);
 
             var token = ably.CurrentToken;
 

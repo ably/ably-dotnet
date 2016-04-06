@@ -101,11 +101,11 @@ namespace IO.Ably
                     return base.ToString();
                 StringBuilder sb = new StringBuilder( 128 );
                 if( error.statusCode.HasValue )
-                    sb.appendAfterDelim(", ", "statusCode = {0}", error.statusCode.Value );
+                    sb.AppendFormat("statusCode = {0}", error.statusCode.Value );
                 if( error.code.HasValue )
-                    sb.appendAfterDelim( ", ", "code = {0}", error.code.Value );
-                if( error.message.notEmpty() )
-                    sb.appendAfterDelim( ", ", "message = {0}", error.message );
+                    sb.AppendFormat("code = {0}", error.code.Value );
+                if( error.message.IsNotEmpty() )
+                    sb.AppendFormat("message = {0}", error.message );
                 return sb.ToString();
             }
         }

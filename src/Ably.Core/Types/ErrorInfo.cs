@@ -79,7 +79,7 @@ namespace IO.Ably
                     //If there is no json or there is something wrong we don't want to throw from here. The
                 }
             }
-            return new ErrorInfo(reason.IsEmpty() ? "Unknown error" : reason, errorCode, response.StatusCode);
+            return new ErrorInfo(StringExtensions.IsEmpty(reason) ? "Unknown error" : reason, errorCode, response.StatusCode);
         }
 
         public Exception AsException()

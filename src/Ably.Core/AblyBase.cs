@@ -49,13 +49,14 @@ namespace IO.Ably
                 return;
             }
             Logger.Info("Using token authentication.");
-            if (Options.Token.IsNotEmpty())
+            if (StringExtensions.IsNotEmpty(Options.Token))
             {
                 CurrentToken = new TokenDetails(Options.Token);
             }
             LogCurrentAuthenticationMethod();
         }
 
+        //TODO: MG Move to use the AblyHttpClient
         public static bool CanConnectToAbly()
         {
             WebRequest req = WebRequest.Create(InternetCheckURL);
@@ -82,11 +83,11 @@ namespace IO.Ably
         {
             if( null != Options.AuthCallback )
                 return TokenAuthMethod.Callback;
-            if( Options.AuthUrl.IsNotEmpty() )
+            if( StringExtensions.IsNotEmpty(Options.AuthUrl) )
                 return TokenAuthMethod.Url;
-            if( Options.Key.IsNotEmpty() )
+            if( StringExtensions.IsNotEmpty(Options.Key) )
                 return TokenAuthMethod.Signing;
-            if( Options.Token.IsNotEmpty() )
+            if( StringExtensions.IsNotEmpty(Options.Token) )
                 return TokenAuthMethod.JustToken;
             return TokenAuthMethod.None;
         }

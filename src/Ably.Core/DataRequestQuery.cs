@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 
 namespace IO.Ably
@@ -110,12 +111,9 @@ namespace IO.Ably
 
         public bool IsEmpty
         {
-            get { return QueryString.IsEmpty(); }
+            get { return StringExtensions.IsEmpty(QueryString); }
         }
 
-        /// <summary>
-        /// An empty Query
-        /// </summary>
         public readonly static DataRequestQuery Empty = new DataRequestQuery();
 
 
@@ -203,18 +201,10 @@ namespace IO.Ably
             return query;
         }
 
-        static string[] GetValues( WebHeaderCollection headers, string key )
-        {
-            string h = headers[key];
-            if( String.IsNullOrEmpty( h ) )
-                return null;
-            return h.Split( ',' );
-        }
-
-        internal static DataRequestQuery GetLinkQuery( WebHeaderCollection headers, string link)
+        internal static DataRequestQuery GetLinkQuery( HttpHeaders headers, string link)
         {
             var linkPattern = "\\s*<(.*)>;\\s*rel=\"(.*)\"";
-            var linkHeaders = GetValues( headers, "Link" ) ?? new string[] {};
+            var linkHeaders = headers.GetValues("Link");
             foreach (var header in linkHeaders)
             {
                 var match = Regex.Match(header, linkPattern);
@@ -244,7 +234,5 @@ namespace IO.Ably
                 return null;
             }
         }
-
-
     }
 }

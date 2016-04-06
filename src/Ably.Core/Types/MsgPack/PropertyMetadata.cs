@@ -29,7 +29,7 @@ namespace IO.Ably.Types.MsgPack
 
             // Find prop name
             var jp = this.pi.GetCustomAttribute<JsonPropertyAttribute>();
-            if( null != jp && jp.PropertyName.notEmpty() )
+            if( null != jp && jp.PropertyName.IsNotEmpty() )
                 this.name = jp.PropertyName;
 
             if( null != serializeName )
