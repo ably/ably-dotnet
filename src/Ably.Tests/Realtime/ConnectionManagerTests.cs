@@ -15,7 +15,8 @@ using ConnectionState = IO.Ably.Realtime.ConnectionState;
 
 namespace IO.Ably.Tests
 {
-    public class ConnectionManagerTests
+    //Temporarily made private to fix the Rest unit tests first
+    class ConnectionManagerTests
     {
         [Fact]
         public void When_Created_StateIsInitialized()

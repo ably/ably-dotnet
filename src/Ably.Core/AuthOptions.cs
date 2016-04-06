@@ -70,7 +70,7 @@ namespace IO.Ably
 
         internal ApiKey ParseKey()
         {
-            return ApiKey.Parse(this.Key);
+            return ApiKey.Parse(Key);
         }
     }
 }

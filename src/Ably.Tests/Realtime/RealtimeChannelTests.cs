@@ -10,7 +10,8 @@ using Xunit;
 
 namespace IO.Ably.Tests
 {
-    public class RealtimeChannelTests
+    //TODO: Make public after fixing Rest tests
+    class RealtimeChannelTests
     {
         [Fact]
         public void New_Channel_HasPresence()

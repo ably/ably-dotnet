@@ -37,18 +37,17 @@ namespace IO.Ably.Tests
             Assert.Equal("event", data.name);
         }
 
-        //TODO: Move test to RequestHandlerTests
-        //[Fact]
-        //public void Publish_WithBinaryArrayData_AddsBase64EncodingToRequest()
-        //{
-        //    var rest = GetRestClient();
-        //    var channel = rest.Channels.Get("Test");
-        //    channel.Publish("event", new byte[] { 1, 2});
+        [Fact]
+        public void Publish_WithBinaryArrayData_AddsBase64EncodingToRequest()
+        {
+            var rest = GetRestClient();
+            var channel = rest.Channels.Get("Test");
+            channel.Publish("event", new byte[] { 1, 2 });
 
-        //    Assert.IsType<Message>(_currentRequest.PostData);
-        //    var postData = _currentRequest.PostData as Message;
-        //    Assert.Equal("base64", postData.Encoding);
-        //}
+            Assert.IsType<List<Message>>(_currentRequest.PostData);
+            var postData = (_currentRequest.PostData as IList<Message>).First();
+            Assert.Equal("base64", postData.encoding);
+        }
 
         [Fact]
         public void Publish_WithMessages_CreatesPostRequestToMessagesRoute()
