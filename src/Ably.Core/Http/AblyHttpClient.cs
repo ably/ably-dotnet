@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using ModernHttpClient;
 
 namespace IO.Ably
 {
@@ -29,7 +28,7 @@ namespace IO.Ably
             _environment = environment;
             _port = port;
             _host = host;
-            _client = new HttpClient(new NativeMessageHandler());
+            _client = new HttpClient();
             _client.DefaultRequestHeaders.Add("X-Ably-Version", Config.AblyVersion);
             _client.Timeout = TimeSpan.FromSeconds(Config.ConnectTimeout);
         }
