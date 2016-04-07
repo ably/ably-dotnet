@@ -13,7 +13,7 @@ namespace IO.Ably.Tests
 
         public StatsParsingTests()
         {
-           _stats = JsonConvert.DeserializeObject<List<Stats>>(File.ReadAllText(@"Json\StatsInterval.json")).First(); 
+           _stats = JsonConvert.DeserializeObject<List<Stats>>(ResourceHelper.GetResource(@"StatsInterval.json")).First(); 
         }        
 
         [Fact]

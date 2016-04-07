@@ -130,6 +130,7 @@
     <Compile Include="Realtime\PresenceTests.cs" />
     <Compile Include="Realtime\RealtimeChannelTests.cs" />
     <Compile Include="Realtime\RealtimeTests.cs" />
+    <Compile Include="ResourceHelper.cs" />
     <Compile Include="RestApiTests.cs" />
     <Compile Include="RestProtocolTests.cs" />
     <Compile Include="RestTests.cs" />
@@ -144,9 +145,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </None>
-    <None Include="Json\StatsInterval.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <EmbeddedResource Include="StatsInterval.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
