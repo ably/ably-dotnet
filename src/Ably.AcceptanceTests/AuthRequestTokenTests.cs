@@ -83,7 +83,7 @@ namespace IO.Ably.AcceptanceTests
             var tokenAbly = new AblyRest(new AblyOptions { Token = token.Token , Environment = AblyEnvironment.Sandbox});
 
             var error = Assert.ThrowsAsync<AblyException>(() => tokenAbly.Channels.Get("boo").Publish("test", true));
-            error.ErrorInfo.code.Should().Be( 40101 );
+            error.ErrorInfo.code.Should().Be(40160);
             error.ErrorInfo.statusCode.Should().Be( HttpStatusCode.Unauthorized );
         }
 

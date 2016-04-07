@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
@@ -92,22 +90,6 @@ namespace IO.Ably.AcceptanceTests
         [OneTimeTearDown]
         public void RunAfterAllTests()
         {
-        }
-    }
-
-    public static class ResourceHelper
-    {
-        public static string GetResource(string localResName)
-        {
-            Assembly ass = typeof(TestsSetup).GetTypeInfo().Assembly;
-            string defaultNamespace = ass.GetName().Name;
-            string resName = $"{defaultNamespace}.{localResName}";
-            Stream resourceStream = ass.GetManifestResourceStream(resName);
-            if (resourceStream == null)
-                throw new Exception("Resource not found: " + resName);
-
-            using (var reader = new StreamReader(resourceStream))
-                return reader.ReadToEnd();
         }
     }
 }

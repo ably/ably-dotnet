@@ -86,6 +86,12 @@ namespace IO.Ably
         private HttpRequestMessage GetRequestMessage(AblyRequest request)
         {
             var message = new HttpRequestMessage(request.Method, GetRequestUrl(request));
+
+            foreach (var header in request.Headers)
+            {
+                message.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            }
+
             message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(request.Protocol)));
             if (message.Method == HttpMethod.Post)
             {

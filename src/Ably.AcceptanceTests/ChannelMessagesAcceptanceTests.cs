@@ -5,6 +5,7 @@ using NUnit.Framework;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using IO.Ably.Encryption;
 using IO.Ably.Rest;
 
@@ -161,7 +162,7 @@ namespace IO.Ably.AcceptanceTests
         [SetUp]
         public void Setup()
         {
-             examples = JObject.Parse(File.ReadAllText("crypto-data-128.json"));
+             examples = JObject.Parse(ResourceHelper.GetResource("crypto-data-128.json"));
         }
 
         public ChannelOptions GetOptions()
@@ -174,7 +175,7 @@ namespace IO.Ably.AcceptanceTests
         }
 
         [Test]
-        public void CanPublishAMessageAndRetrieveIt()
+        public async Task CanPublishAMessageAndRetrieveIt()
         {
             var items = (JArray) examples["items"];
 
@@ -186,9 +187,9 @@ namespace IO.Ably.AcceptanceTests
                 var encoded = item["encoded"];
                 var encoding = (string)encoded["encoding"];
                 var decodedData = DecodeData((string)encoded["data"], encoding);
-                channel.Publish((string)encoded["name"], decodedData);
-                var message = channel.History().Result.First();
-                if(message.data is byte[])
+                await channel.Publish((string)encoded["name"], decodedData);
+                var message = (await channel.History()).First();
+                if (message.data is byte[])
                     (message.data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
                 else if (encoding == "json")
                     JToken.DeepEquals((JToken) message.data, (JToken) decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
@@ -199,7 +200,7 @@ namespace IO.Ably.AcceptanceTests
         }
 
         [Test]
-        public void Send20MessagesAndThenPaginateHistory()
+        public async Task Send20MessagesAndThenPaginateHistory()
         {
             //Arrange
             Ably.AblyRest ably = GetAbly();
@@ -209,20 +210,18 @@ namespace IO.Ably.AcceptanceTests
 
             for (int i = 0; i < 20; i++)
             {
-                channel.Publish("name" + i, "data" + i);
+                await channel.Publish("name" + i, "data" + i);
             }
 
             //Assert
-            var history = channel.History(new DataRequestQuery() {Limit = 10}).Result;
+            var history = await channel.History(new DataRequestQuery() {Limit = 10});
             history.Should().HaveCount(10);
             history.HasNext.Should().BeTrue();
             history.First().name.Should().Be("name19");
 
-            var secondPage = channel.History(history.NextQuery).Result;
+            var secondPage = await channel.History(history.NextQuery);
             secondPage.Should().HaveCount(10);
             secondPage.First().name.Should().Be("name9");
-
-
         }
 
         private object DecodeData(string data, string encoding)
@@ -231,12 +230,10 @@ namespace IO.Ably.AcceptanceTests
             {
                 return JsonConvert.DeserializeObject(data);
             }
-            else if (encoding == "base64")
+            if (encoding == "base64")
                 return data.FromBase64();
-            else
-            {
-                return data;
-            }
+
+            return data;
         }
     }
 }
