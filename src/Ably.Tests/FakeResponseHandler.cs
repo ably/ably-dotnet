@@ -17,7 +17,9 @@ namespace IO.Ably
             _FakeResponses.Add(uri, responseMessage);
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         protected async override Task<HttpResponseMessage> SendAsync(
+
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
@@ -30,7 +32,7 @@ namespace IO.Ably
                 return new HttpResponseMessage(HttpStatusCode.NotFound)
                 { RequestMessage = request };
             }
-
         }
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     }
 }

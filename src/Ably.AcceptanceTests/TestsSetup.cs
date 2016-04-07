@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
@@ -65,7 +66,7 @@ namespace IO.Ably.AcceptanceTests
             //SetupSampleStats();
         }
 
-        public void SetupSampleStats()
+        public async Task SetupSampleStats()
         {
             var lastInterval = StatsAcceptanceTests.StartInterval;
             var interval1 = lastInterval - TimeSpan.FromMinutes(120);
@@ -81,7 +82,7 @@ namespace IO.Ably.AcceptanceTests
             AblyRequest request = new AblyRequest("/stats", HttpMethod.Post);
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
-            ablyRest.AddAuthHeader(request);
+            await ablyRest.AddAuthHeader(request);
             request.RequestBody = json.GetBytes();
 
             var response = client.Execute(request).Result;

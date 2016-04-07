@@ -8,7 +8,7 @@ namespace IO.Ably.AcceptanceTests
     {
         public static string GetResource(string localResName)
         {
-            Assembly ass = typeof(TestsSetup).GetTypeInfo().Assembly;
+            Assembly ass = typeof(TestsSetup).Assembly;
             string defaultNamespace = ass.GetName().Name;
             string resName = $"{defaultNamespace}.{localResName}";
             Stream resourceStream = ass.GetManifestResourceStream(resName);

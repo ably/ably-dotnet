@@ -36,7 +36,7 @@ namespace IO.Ably.ConsoleTest.Sandbox
 
         static byte[] GetTestAppsJson(string localResName)
         {
-            Assembly ass = typeof(AblySandbox).GetTypeInfo().Assembly;
+            Assembly ass = typeof(AblySandbox).Assembly;
             string defaultNamespace = ass.GetName().Name;
             string resName = String.Format("{0}.{1}", defaultNamespace, localResName);
             Stream stm = ass.GetManifestResourceStream(resName);

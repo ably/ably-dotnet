@@ -42,7 +42,7 @@ namespace IO.Ably.Types.MsgPack
                 this.shouldSerializeMethod = ( obj ) => (bool)mi.Invoke( obj, null );
 
             // Fill those delegates
-            if( pi.PropertyType == typeof( int ) || pi.PropertyType.GetTypeInfo().IsEnum )
+            if( pi.PropertyType == typeof( int ) || pi.PropertyType.IsEnum )
             {
                 this.deserialize = ( unp, obj ) =>
                 {

@@ -10,7 +10,7 @@ namespace IO.Ably.AcceptanceTests
     public class RestAcceptanceTests
     {
         [Test]
-        public async Task PublishingAMessageWithInvalidKey_ReturnsUnAuthorized()
+        public void PublishingAMessageWithInvalidKey_ReturnsUnAuthorized()
         {
             //Arrange
             var fakeKey = $"{TestsSetup.TestData.appId}.KeyId:KeyValue";

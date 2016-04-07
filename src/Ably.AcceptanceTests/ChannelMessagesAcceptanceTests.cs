@@ -47,7 +47,7 @@ namespace IO.Ably.AcceptanceTests
             {
             }
 
-            [TestFixtureSetUp]
+            [OneTimeSetUp]
             public void GetStats()
             {
                 var client = GetAbly();
