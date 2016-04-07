@@ -4,4 +4,4 @@ solution: Ably.sln
 install:
   - nuget restore ./src/Ably.sln
 script:
-  - xbuild /p:Configuration='Release 4.0' ./src/Ably.sln
+  - xbuild /p:Configuration='Release' ./src/Ably.sln
