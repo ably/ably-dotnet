@@ -6,25 +6,13 @@ using System.Text;
 using FluentAssertions;
 using IO.Ably.Auth;
 using Xunit;
-using System.Threading.Tasks;
 
 namespace IO.Ably.Tests
 {
-    internal class FakeHttpClient : IAblyHttpClient
-    {
-        public Func<AblyRequest, AblyResponse> ExecuteFunc = delegate { return new AblyResponse(); };
-        public Task<AblyResponse> Execute(AblyRequest request)
-        {
-            return Task.FromResult(ExecuteFunc(request));
-        }
-    }
-
     public class RestTests
     {
         private const string ValidKey = "1iZPfA.BjcI_g:wpNhw5RCw6rDjisl";
         private readonly ApiKey Key = ApiKey.Parse(ValidKey);
-
-
 
         private static AblyRest GetRestClient()
         {
