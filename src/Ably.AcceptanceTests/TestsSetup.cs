@@ -15,7 +15,7 @@ namespace IO.Ably.AcceptanceTests
 
         private static TestVars GetTestData()
         {
-            return new TestVars { tls = false, keys = new List<Key>(), Environment = AblyEnvironment.Sandbox};
+            return new TestVars { tls = true, keys = new List<Key>(), Environment = AblyEnvironment.Sandbox};
         }
 
         public static T GetDefaultOptions<T>()
@@ -35,7 +35,7 @@ namespace IO.Ably.AcceptanceTests
         }
 
         [OneTimeSetUp]
-        public void RunBeforeAllTests()
+        public async Task RunBeforeAllTests()
         {
             TestData = GetTestData();
             
@@ -63,7 +63,7 @@ namespace IO.Ably.AcceptanceTests
                 TestData.keys.Add(testkey);
             }
 
-            //SetupSampleStats();
+            await SetupSampleStats();
         }
 
         public async Task SetupSampleStats()
@@ -80,6 +80,7 @@ namespace IO.Ably.AcceptanceTests
             AblyRest ablyRest = new AblyRest(TestData.keys.First().keyStr);
             AblyHttpClient client = new AblyHttpClient(TestsSetup.TestData.restHost, null, TestsSetup.TestData.tls, null);
             AblyRequest request = new AblyRequest("/stats", HttpMethod.Post);
+            request.Protocol = Protocol.Json;
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
             await ablyRest.AddAuthHeader(request);
