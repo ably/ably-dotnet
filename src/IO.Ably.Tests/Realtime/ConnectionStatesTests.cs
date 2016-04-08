@@ -1681,7 +1681,7 @@ namespace IO.Ably.Tests
             CountdownTimer timer = new CountdownTimer();
             int timeout = 10;
             int called = 0;
-            System.Action callback = () => called++;
+            Action callback = () => called++;
             timer.Start(timeout, callback);
 
             // Act

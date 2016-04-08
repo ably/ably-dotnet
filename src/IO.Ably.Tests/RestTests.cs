@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Auth;
 using Xunit;
@@ -12,8 +13,7 @@ namespace IO.Ably.Tests
     public class RestTests
     {
         private const string ValidKey = "1iZPfA.BjcI_g:wpNhw5RCw6rDjisl";
-        private readonly ApiKey Key = ApiKey.Parse(ValidKey);
-
+        
         private static AblyRest GetRestClient()
         {
             return new AblyRest(new ClientOptions() { UseBinaryProtocol = false, Key = ValidKey });
@@ -78,7 +78,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void Init_WithCallback_ExecutesCallbackOnFirstRequest()
+        public async Task Init_WithCallback_ExecutesCallbackOnFirstRequest()
         {
             bool called = false;
             var options = new ClientOptions
@@ -91,13 +91,13 @@ namespace IO.Ably.Tests
 
             rest.ExecuteHttpRequest = delegate { return "[{}]".ToAblyResponse(); };
 
-            rest.Stats();
+            await rest.Stats();
 
             Assert.True(called, "Rest with Callback needs to request token using callback");
         }
 
         [Fact]
-        public void Init_WithAuthUrl_CallsTheUrlOnFirstRequest()
+        public async Task Init_WithAuthUrl_CallsTheUrlOnFirstRequest()
         {
             bool called = false;
             var options = new ClientOptions
@@ -124,23 +124,22 @@ namespace IO.Ably.Tests
                 return "[{}]".ToAblyResponse();
             };
 
-            rest.Stats();
+            await rest.Stats();
 
             Assert.True(called, "Rest with Callback needs to request token using callback");
         }
 
         [Fact]
-        public void ClientWithExpiredTokenAutomaticallyCreatesANewOne()
+        public async Task ClientWithExpiredTokenAutomaticallyCreatesANewOne()
         {
             Config.Now = () => DateTimeOffset.UtcNow;
-            var newTokenRequested = false;
+            bool newTokenRequested = false;
             var options = new ClientOptions
             {
                 AuthCallback = (x) =>
                 {
-
-                    Console.WriteLine("Getting new token.");
-                    newTokenRequested = true; return new TokenDetails("new.token")
+                    newTokenRequested = true;
+                    return new TokenDetails("new.token")
                     {
                         Expires = DateTimeOffset.UtcNow.AddDays(1)
                     };
@@ -148,21 +147,16 @@ namespace IO.Ably.Tests
                 UseBinaryProtocol = false
             };
             var rest = new AblyRest(options);
-            rest.ExecuteHttpRequest = request =>
-            {
-                Console.WriteLine("Getting an AblyResponse.");
-                return "[{}]".ToAblyResponse();
-            };
+            rest.ExecuteHttpRequest = request => "[{}]".ToAblyResponse();
             rest.CurrentToken = new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddDays(-2) };
 
-            Console.WriteLine("Current time:" + Config.Now());
-            rest.Stats();
+            await rest.Stats();
             newTokenRequested.Should().BeTrue();
             rest.CurrentToken.Token.Should().Be("new.token");
         }
 
         [Fact]
-        public void ClientWithExistingTokenReusesItForMakingRequests()
+        public async Task ClientWithExistingTokenReusesItForMakingRequests()
         {
             var options = new ClientOptions
             {
@@ -181,9 +175,9 @@ namespace IO.Ably.Tests
                 return "[{}]".ToAblyResponse();
             };
 
-            rest.Stats();
-            rest.Stats();
-            rest.Stats();
+            await rest.Stats();
+            await rest.Stats();
+            await rest.Stats();
         }
 
         [Fact]

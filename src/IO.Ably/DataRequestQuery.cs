@@ -69,10 +69,10 @@ namespace IO.Ably
             unchecked
             {
                 var hashCode = Start.GetHashCode();
-                hashCode = (hashCode*397) ^ End.GetHashCode();
-                hashCode = (hashCode*397) ^ Limit.GetHashCode();
-                hashCode = (hashCode*397) ^ (int) Direction;
-                hashCode = (hashCode*397) ^ (ExtraParameters != null ? ExtraParameters.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ End.GetHashCode();
+                hashCode = (hashCode * 397) ^ Limit.GetHashCode();
+                hashCode = (hashCode * 397) ^ (int)Direction;
+                hashCode = (hashCode * 397) ^ (ExtraParameters != null ? ExtraParameters.GetHashCode() : 0);
                 return hashCode;
             }
         }
@@ -165,14 +165,14 @@ namespace IO.Ably
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((DataRequestQuery) obj);
+            return Equals((DataRequestQuery)obj);
         }
 
         internal static DataRequestQuery Parse(string querystring)
         {
             var query = new DataRequestQuery();
             query.QueryString = querystring;
-            HttpValueCollection queryParameters = HttpUtility.ParseQueryString( querystring );
+            HttpValueCollection queryParameters = HttpUtility.ParseQueryString(querystring);
             foreach (var key in queryParameters.AllKeys)
             {
                 switch (key.ToLower())
@@ -201,18 +201,21 @@ namespace IO.Ably
             return query;
         }
 
-        internal static DataRequestQuery GetLinkQuery( HttpHeaders headers, string link)
+        internal static DataRequestQuery GetLinkQuery(HttpHeaders headers, string link)
         {
             var linkPattern = "\\s*<(.*)>;\\s*rel=\"(.*)\"";
-            var linkHeaders = headers.GetValues("Link");
-            foreach (var header in linkHeaders)
+            IEnumerable<string> linkHeaders;
+            if (headers.TryGetValues("Link", out linkHeaders))
             {
-                var match = Regex.Match(header, linkPattern);
-                if (match.Success && match.Groups[2].Value.Equals(link, StringComparison.OrdinalIgnoreCase))
+                foreach (var header in linkHeaders)
                 {
-                    var url = match.Groups[1].Value;
-                    var queryString = url.Split('?')[1];
-                    return Parse(queryString);
+                    var match = Regex.Match(header, linkPattern);
+                    if (match.Success && match.Groups[2].Value.Equals(link, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var url = match.Groups[1].Value;
+                        var queryString = url.Split('?')[1];
+                        return Parse(queryString);
+                    }
                 }
             }
             return Empty;
