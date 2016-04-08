@@ -12,7 +12,7 @@ namespace IO.Ably.Transport
     public class ConnectionManager : IConnectionManager, ITransportListener, IConnectionContext
     {
         private readonly IAcknowledgementProcessor _ackProcessor;
-        private readonly AblyRealtimeOptions _options;
+        private readonly ClientOptions _options;
         private readonly Queue<ProtocolMessage> _pendingMessages;
         private readonly SynchronizationContext _sync;
         private int _connectionAttempts;
@@ -38,7 +38,7 @@ namespace IO.Ably.Transport
             Connection = new Connection(this);
         }
 
-        public ConnectionManager(AblyRealtimeOptions options)
+        public ConnectionManager(ClientOptions options)
             : this()
         {
             _options = options;
@@ -210,7 +210,7 @@ namespace IO.Ably.Transport
             return CreateTransportParameters(_options, Connection, useFallbackHost);
         }
 
-        internal static TransportParams CreateTransportParameters(AblyRealtimeOptions options, Connection connection,
+        internal static TransportParams CreateTransportParameters(ClientOptions options, Connection connection,
             bool useFallbackHost)
         {
             var transportParams = new TransportParams(options);
@@ -225,7 +225,7 @@ namespace IO.Ably.Transport
             return transportParams;
         }
 
-        private static string GetHost(AblyRealtimeOptions options, bool useFallbackHost)
+        private static string GetHost(ClientOptions options, bool useFallbackHost)
         {
             var defaultHost = Defaults.RealtimeHost;
             if (useFallbackHost)
@@ -233,7 +233,7 @@ namespace IO.Ably.Transport
                 var r = new Random();
                 defaultHost = Defaults.FallbackHosts[r.Next(0, 1000) % Defaults.FallbackHosts.Length];
             }
-            var host = !string.IsNullOrEmpty(options.Host) ? options.Host : defaultHost;
+            var host = options.RealtimeHost.IsNotEmpty() ? options.RealtimeHost : defaultHost;
             if (options.Environment.HasValue && options.Environment != AblyEnvironment.Live)
             {
                 return string.Format("{0}-{1}", options.Environment.ToString().ToLower(), host);

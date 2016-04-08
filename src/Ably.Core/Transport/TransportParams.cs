@@ -15,12 +15,12 @@ namespace IO.Ably.Transport
 
     public class TransportParams
     {
-        public TransportParams(AblyRealtimeOptions options)
+        public TransportParams(ClientOptions options)
         {
             this.Options = options;
         }
 
-        public AblyRealtimeOptions Options { get; set; }
+        public ClientOptions Options { get; set; }
         public string Host { get; set; }
         public string[] FallbackHosts { get; set; }
         public int Port { get; set; }

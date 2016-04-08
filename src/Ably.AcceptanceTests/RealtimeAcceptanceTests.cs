@@ -19,9 +19,9 @@ namespace IO.Ably.AcceptanceTests
             _binaryProtocol = binaryProtocol == Protocol.MsgPack;
         }
 
-        private AblyRealtime GetRealtimeClient( Action<AblyRealtimeOptions> setup = null )
+        private AblyRealtime GetRealtimeClient( Action<ClientOptions> setup = null )
         {
-            var options = TestsSetup.GetDefaultOptions<AblyRealtimeOptions>();
+            var options = TestsSetup.GetDefaultOptions<ClientOptions>();
             options.UseBinaryProtocol = _binaryProtocol;
             if( setup != null )
             {
@@ -177,7 +177,7 @@ namespace IO.Ably.AcceptanceTests
         public void TestRealtimeClient_Time_WhenError()
         {
             // Arrange
-            var client = new AblyRealtime(new AblyRealtimeOptions("123.456:789") { Host = "nohost.tt" });
+            var client = new AblyRealtime(new ClientOptions("123.456:789") { RealtimeHost = "nohost.tt" });
             AutoResetEvent signal = new AutoResetEvent(false);
 
             Tuple<DateTime?, AblyException> result = time( client );

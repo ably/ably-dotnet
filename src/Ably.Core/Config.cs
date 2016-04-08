@@ -54,7 +54,5 @@ namespace IO.Ably
             res.NullValueHandling = NullValueHandling.Ignore;
             return res;
         }
-
-        public static void EnsureInitialized() { }
     }
 }

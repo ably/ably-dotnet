@@ -6,7 +6,7 @@ namespace IO.Ably.ConsoleTest
     {
         public static async Task Test()
         {
-            var options = new AblyRealtimeOptions()
+            var options = new ClientOptions()
             {
                 AuthUrl = "https://www.ably.io/ably-auth/token-request/demos",
                 ClientId = "stan",

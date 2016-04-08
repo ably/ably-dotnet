@@ -42,9 +42,7 @@
     <Compile Include="AblyBase.cs" />
     <Compile Include="AblyEnvironment.cs" />
     <Compile Include="AblyException.cs" />
-    <Compile Include="AblyOptions.cs" />
     <Compile Include="AblyRealtime.cs" />
-    <Compile Include="AblyRealtimeOptions.cs" />
     <Compile Include="AblyTokenAuth.cs" />
     <Compile Include="ApiKey.cs" />
     <Compile Include="AuthMethod.cs" />
@@ -53,6 +51,7 @@
     <Compile Include="Capability.cs" />
     <Compile Include="CapabilityResource.cs" />
     <Compile Include="CipherParams.cs" />
+    <Compile Include="ClientOptions.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Realtime\ChannelFactory.cs" />
     <Compile Include="Realtime\ConnStateAwaitor.cs" />

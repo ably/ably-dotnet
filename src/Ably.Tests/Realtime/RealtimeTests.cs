@@ -13,7 +13,7 @@ namespace IO.Ably.Tests
         public void When_HostNotSetInOptions_UseBinaryProtocol_TrueByDefault()
         {
             // Arrange
-            AblyRealtimeOptions options = new AblyRealtimeOptions();
+            ClientOptions options = new ClientOptions();
 
             // Act
             Assert.True(options.UseBinaryProtocol);

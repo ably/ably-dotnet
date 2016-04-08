@@ -84,8 +84,8 @@ namespace IO.Ably
 
         string GetHost()
         {
-            if (StringExtensions.IsNotEmpty(_options.Host))
-                return _options.Host;
+            if (_options.RestHost.IsNotEmpty())
+                return _options.RestHost;
 
             return Config.DefaultHost;
         }

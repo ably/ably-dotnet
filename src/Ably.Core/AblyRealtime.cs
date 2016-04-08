@@ -15,14 +15,14 @@ namespace IO.Ably
         /// <summary></summary>
         /// <param name="key"></param>
         public AblyRealtime( string key )
-            : this( new AblyRealtimeOptions( key ) )
+            : this( new ClientOptions( key ) )
         { }
 
         /// <summary>
         ///
         /// </summary>
         /// <param name="options"></param>
-        public AblyRealtime( AblyRealtimeOptions options )
+        public AblyRealtime( ClientOptions options )
         {
             _options = options;
             if( options.AutoConnect )
@@ -37,7 +37,7 @@ namespace IO.Ably
         /// <summary>A reference to the connection object for this library instance.</summary>
         public Connection Connection { get; private set; }
 
-        AblyRealtimeOptions options { get { return _options as AblyRealtimeOptions; } }
+        ClientOptions options { get { return _options as ClientOptions; } }
 
         /// <summary>
         ///

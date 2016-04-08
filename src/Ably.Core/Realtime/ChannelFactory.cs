@@ -10,7 +10,7 @@ namespace IO.Ably.Realtime
     public class ChannelFactory : IChannelFactory
     {
         internal IConnectionManager ConnectionManager { get; set; }
-        public AblyRealtimeOptions Options { get; set; }
+        public ClientOptions Options { get; set; }
 
         public IRealtimeChannel Create( string channelName )
         {

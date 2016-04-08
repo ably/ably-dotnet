@@ -14,7 +14,7 @@ namespace IO.Ably.AcceptanceTests
         {
             get { return Environment.ToString().ToLower() + "-" + Config.DefaultHost; }
         }
-        public int? restPort;
+        public int restPort;
         public bool tls;
         internal AblyEnvironment Environment;
 
@@ -24,7 +24,7 @@ namespace IO.Ably.AcceptanceTests
 			return opts;
 		}
 		public void FillInOptions(ClientOptions opts) {
-			opts.Host = restHost;
+			opts.RestHost = restHost;
 			opts.Port = restPort;
 			opts.Tls = tls;
 		}

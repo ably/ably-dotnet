@@ -387,7 +387,7 @@ namespace IO.Ably.Tests
 
         private AblyRealtime GetClient(Func<AblyRequest, AblyResponse> executeHttpRequest)
         {
-            var options = new AblyRealtimeOptions() { Key = ApiKey, UseBinaryProtocol = false };
+            var options = new ClientOptions() { Key = ApiKey, UseBinaryProtocol = false };
             var client = new AblyRealtime(options);
             var fakeHttpClient = new FakeHttpClient();
             fakeHttpClient.ExecuteFunc = executeHttpRequest;
@@ -400,7 +400,7 @@ namespace IO.Ably.Tests
 
         private AblyRealtime GetNotModifiedClient()
         {
-            var options = new AblyRealtimeOptions() { Key = ApiKey, UseBinaryProtocol = false };
+            var options = new ClientOptions() { Key = ApiKey, UseBinaryProtocol = false };
             var client = new AblyRealtime(options);
             client.InitAuth( new Rest.AblySimpleRestClient( options ) ).Wait();
 

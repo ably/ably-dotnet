@@ -22,7 +22,7 @@ namespace IO.Ably.Tests
         public void When_Created_StateIsInitialized()
         {
             // Arrange
-            IConnectionContext target = new ConnectionManager(new AblyRealtimeOptions());
+            IConnectionContext target = new ConnectionManager(new ClientOptions());
 
             // Assert
             Assert.Equal<ConnectionState>(ConnectionState.Initialized, target.State.State);
@@ -294,7 +294,7 @@ namespace IO.Ably.Tests
         public void CreateCorrectTransportParameters_UsesConnectionKey()
         {
             // Arrange
-            AblyRealtimeOptions options = new AblyRealtimeOptions();
+            ClientOptions options = new ClientOptions();
             Mock<Connection> connection = new Mock<Connection>();
             connection.SetupProperty(c => c.Key, "123");
 
@@ -309,7 +309,7 @@ namespace IO.Ably.Tests
         public void CreateCorrectTransportParameters_UsesConnectionSerial()
         {
             // Arrange
-            AblyRealtimeOptions options = new AblyRealtimeOptions();
+            ClientOptions options = new ClientOptions();
             Mock<Connection> connection = new Mock<Connection>();
             connection.SetupProperty(c => c.Serial, 123);
 
@@ -324,7 +324,7 @@ namespace IO.Ably.Tests
         public void CreateCorrectTransportParameters_UsesDefaultHost()
         {
             // Arrange
-            AblyRealtimeOptions options = new AblyRealtimeOptions();
+            ClientOptions options = new ClientOptions();
 
             // Act
             TransportParams target = ConnectionManager.CreateTransportParameters(options, null, false);
@@ -337,7 +337,7 @@ namespace IO.Ably.Tests
         public void CreateCorrectTransportParameters_Fallback_UsesFallbacktHost()
         {
             // Arrange
-            AblyRealtimeOptions options = new AblyRealtimeOptions();
+            ClientOptions options = new ClientOptions();
 
             // Act
             TransportParams target = ConnectionManager.CreateTransportParameters(options, null, true);
@@ -352,14 +352,14 @@ namespace IO.Ably.Tests
         public void When_HostSetInOptions_CreateTransportParameters_DoesNotModifyIt(bool fallback)
         {
             // Arrange
-            AblyRealtimeOptions options = new AblyRealtimeOptions();
-            options.Host = "http://test";
+            ClientOptions options = new ClientOptions();
+            options.RealtimeHost= "http://test";
 
             // Act
             TransportParams target = ConnectionManager.CreateTransportParameters(options, null, fallback);
 
             // Assert
-            Assert.Equal<string>(options.Host, target.Host);
+            Assert.Equal<string>(options.RealtimeHost, target.Host);
         }
 
         [Theory]
@@ -368,15 +368,15 @@ namespace IO.Ably.Tests
         public void When_EnvironmentSetInOptions_CreateCorrectTransportParameters(AblyEnvironment environment)
         {
             // Arrange
-            AblyRealtimeOptions options = new AblyRealtimeOptions();
+            ClientOptions options = new ClientOptions();
             options.Environment = environment;
-            options.Host = "test";
+            options.RealtimeHost = "test";
 
             // Act
             TransportParams target = ConnectionManager.CreateTransportParameters(options, null, false);
 
             // Assert
-            Assert.Equal<string>(string.Format("{0}-{1}", environment, options.Host).ToLower(), target.Host);
+            Assert.Equal<string>(string.Format("{0}-{1}", environment, options.RealtimeHost).ToLower(), target.Host);
         }
 
         [Theory]
@@ -385,52 +385,52 @@ namespace IO.Ably.Tests
         public void When_EnvironmentSetInOptions_CreateCorrectTransportParameters_Fallback(AblyEnvironment environment)
         {
             // Arrange
-            AblyRealtimeOptions options = new AblyRealtimeOptions();
+            ClientOptions options = new ClientOptions();
             options.Environment = environment;
-            options.Host = "test";
+            options.RealtimeHost = "test";
 
             // Act
             TransportParams target = ConnectionManager.CreateTransportParameters(options, null, true);
 
             // Assert
-            Assert.Equal<string>(string.Format("{0}-{1}", environment, options.Host).ToLower(), target.Host);
+            Assert.Equal<string>(string.Format("{0}-{1}", environment, options.RealtimeHost).ToLower(), target.Host);
         }
 
         [Fact]
         public void When_EnvironmentSetInOptions_Live_CreateCorrectTransportParameters()
         {
             // Arrange
-            AblyRealtimeOptions options = new AblyRealtimeOptions();
+            ClientOptions options = new ClientOptions();
             options.Environment = AblyEnvironment.Live;
-            options.Host = "test";
+            options.RealtimeHost = "test";
 
             // Act
             TransportParams target = ConnectionManager.CreateTransportParameters(options, null, false);
 
             // Assert
-            Assert.Equal<string>(options.Host, target.Host);
+            Assert.Equal<string>(options.RealtimeHost, target.Host);
         }
 
         [Fact]
         public void When_EnvironmentSetInOptions_Live_FallbackDoesNotModifyIt()
         {
             // Arrange
-            AblyRealtimeOptions options = new AblyRealtimeOptions();
+            ClientOptions options = new ClientOptions();
             options.Environment = AblyEnvironment.Live;
-            options.Host = "test";
+            options.RealtimeHost = "test";
 
             // Act
             TransportParams target = ConnectionManager.CreateTransportParameters(options, null, true);
 
             // Assert
-            Assert.Equal<string>(options.Host, target.Host);
+            Assert.Equal<string>(options.RealtimeHost, target.Host);
         }
 
         [Fact]
         public void StoreTransportParams_Key()
         {
             string target = "123.456:789";
-            TransportParams parameters = new TransportParams( new AblyRealtimeOptions( target ) );
+            TransportParams parameters = new TransportParams( new ClientOptions( target ) );
             var table = new System.Net.WebHeaderCollection();
 
             parameters.StoreParams( table );
@@ -443,7 +443,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             string target = "afafmasfasmsafnqwqff";
-            TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { Token = target });
+            TransportParams parameters = new TransportParams(new ClientOptions() { Token = target });
             var table = new System.Net.WebHeaderCollection();
 
             // Act
@@ -457,7 +457,7 @@ namespace IO.Ably.Tests
         public void StoreTransportParams_Format_MsgPack()
         {
             // Arrange
-            TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { UseBinaryProtocol = true });
+            TransportParams parameters = new TransportParams(new ClientOptions() { UseBinaryProtocol = true });
             var table = new System.Net.WebHeaderCollection();
 
             // Act
@@ -471,7 +471,7 @@ namespace IO.Ably.Tests
         public void StoreTransportParams_Format_Text()
         {
             // Arrange
-            TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { UseBinaryProtocol = false });
+            TransportParams parameters = new TransportParams(new ClientOptions() { UseBinaryProtocol = false });
             var table = new System.Net.WebHeaderCollection();
             // Act
             parameters.StoreParams(table);
@@ -485,7 +485,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             string target = "123456789";
-            TransportParams parameters = new TransportParams(new AblyRealtimeOptions()) { ConnectionKey = target };
+            TransportParams parameters = new TransportParams(new ClientOptions()) { ConnectionKey = target };
             var table = new System.Net.WebHeaderCollection();
 
             // Act
@@ -500,7 +500,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             string target = "123456789";
-            TransportParams parameters = new TransportParams(new AblyRealtimeOptions()) { ConnectionKey = target };
+            TransportParams parameters = new TransportParams(new ClientOptions()) { ConnectionKey = target };
             var table = new System.Net.WebHeaderCollection();
 
             // Act
@@ -515,7 +515,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             string target = "123456789";
-            TransportParams parameters = new TransportParams(new AblyRealtimeOptions()) { ConnectionKey = "123", ConnectionSerial = target };
+            TransportParams parameters = new TransportParams(new ClientOptions()) { ConnectionKey = "123", ConnectionSerial = target };
             var table = new System.Net.WebHeaderCollection();
 
             // Act
@@ -530,7 +530,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             string target = "test-:123";
-            TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { Recover = target });
+            TransportParams parameters = new TransportParams(new ClientOptions() { Recover = target });
             var table = new System.Net.WebHeaderCollection();
 
             // Act
@@ -545,7 +545,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             string target = "test-:123";
-            TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { Recover = target });
+            TransportParams parameters = new TransportParams(new ClientOptions() { Recover = target });
             var table = new System.Net.WebHeaderCollection();
 
             // Act
@@ -560,7 +560,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             string target = "test-:123";
-            TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { Recover = target });
+            TransportParams parameters = new TransportParams(new ClientOptions() { Recover = target });
             var table = new System.Net.WebHeaderCollection();
 
             // Act
@@ -575,7 +575,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             string target = "test123";
-            TransportParams parameters = new TransportParams(new AblyRealtimeOptions() { ClientId = target });
+            TransportParams parameters = new TransportParams(new ClientOptions() { ClientId = target });
             var table = new System.Net.WebHeaderCollection();
 
             // Act
@@ -1077,7 +1077,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             long targetSerial = 1234567;
-            Mock<ConnectionManager> target = new Mock<ConnectionManager>(new AblyRealtimeOptions());
+            Mock<ConnectionManager> target = new Mock<ConnectionManager>(new ClientOptions());
             target.Object.Connection.Serial = targetSerial;
             target.Setup(c => c.CreateTransport(It.IsAny<TransportParams>())).Returns(new Mock<ITransport>().Object);
 
@@ -1093,7 +1093,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             string targetKey = "1234567";
-            Mock<ConnectionManager> target = new Mock<ConnectionManager>(new AblyRealtimeOptions());
+            Mock<ConnectionManager> target = new Mock<ConnectionManager>(new ClientOptions());
             target.Object.Connection.Key = targetKey;
             target.Setup(c => c.CreateTransport(It.IsAny<TransportParams>())).Returns(new Mock<ITransport>().Object);
 
