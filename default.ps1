@@ -1,4 +1,4 @@
-Framework "4.0"
+Framework "4.5.1"
 $ErrorActionPreference = 'Stop'
 
 properties { 
@@ -9,7 +9,7 @@ properties {
 	$sln_dir = "src"
 	$sln_name = "IO.Ably.sln"
 	
-	$project_name = "Ably"
+	$project_name = "IO.Ably"
 	$build_number = "1.0.0.0"
 	$solution_dir = "$build_script_dir\$sln_dir"
 	
