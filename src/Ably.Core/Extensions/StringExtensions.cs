@@ -28,6 +28,11 @@ namespace IO.Ably
                    || input.StartsWith("[") && input.EndsWith("]");
         }
 
+        internal static bool IsNotEmpty(object nonce)
+        {
+            throw new NotImplementedException();
+        }
+
         public static string JoinStrings(this IEnumerable<string> input, string delimiter = ", ")
         {
             return string.Join(delimiter, input.Where(x => IsNotEmpty(x)));

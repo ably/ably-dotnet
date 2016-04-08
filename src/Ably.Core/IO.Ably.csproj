@@ -47,7 +47,7 @@
     <Compile Include="ApiKey.cs" />
     <Compile Include="AuthMethod.cs" />
     <Compile Include="AuthOptions.cs" />
-    <Compile Include="Auth\TokenDetails.cs" />
+    <Compile Include="TokenDetails.cs" />
     <Compile Include="Capability.cs" />
     <Compile Include="CapabilityResource.cs" />
     <Compile Include="CipherParams.cs" />
@@ -117,7 +117,7 @@
     <Compile Include="Rest\IChannel.cs" />
     <Compile Include="Rest\IChannelCommands.cs" />
     <Compile Include="Statistics.cs" />
-    <Compile Include="TokenRequest.cs" />
+    <Compile Include="TokenParams.cs" />
     <Compile Include="TokenRequestPostData.cs" />
     <Compile Include="TokenResponse.cs" />
     <Compile Include="Transport\AcknowledgementProcessor.cs" />

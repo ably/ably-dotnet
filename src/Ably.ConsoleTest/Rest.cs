@@ -17,14 +17,14 @@ namespace IO.Ably.ConsoleTest
             return new AblyRest( options );
         }
 
-        static TokenRequest CreateTokenRequest( Capability capability, TimeSpan? ttl = null )
+        static TokenParams CreateTokenRequest( Capability capability, TimeSpan? ttl = null )
         {
-            TokenRequest res = new TokenRequest();
-            res.ClientId = "John";
-            res.Capability = capability;
+            var tokenParams = new TokenParams();
+            tokenParams.ClientId = "John";
+            tokenParams.Capability = capability;
             if( ttl.HasValue )
-                res.Ttl = ttl.Value;
-            return res;
+                tokenParams.Ttl = ttl.Value;
+            return tokenParams;
         }
 
         public static async Task Test()

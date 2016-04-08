@@ -12,7 +12,7 @@ namespace IO.Ably.Tests
 
         private AblyRest GetRestClient()
         {
-            var rest = new AblyRest(new ClientOptions() { Key = ApiKey, UseBinaryProtocol = false});
+            var rest = new AblyRest(new ClientOptions() { Key = ApiKey, UseBinaryProtocol = false });
             rest.ExecuteHttpRequest = (request) =>
             {
                 CurrentRequest = request;
@@ -23,27 +23,27 @@ namespace IO.Ably.Tests
             return rest;
         }
 
-        private void RequestToken(TokenRequest request, AuthOptions authOptions,
-            Action<TokenRequestPostData, AblyRequest> action)
+        private void RequestToken(TokenParams tokenParams, AuthOptions authOptions,
+            Action<TokenRequest, AblyRequest> action)
         {
             var rest = GetRestClient();
 
             rest.ExecuteHttpRequest = x =>
             {
                 //Assert
-                var data = x.PostData as TokenRequestPostData;
+                var data = x.PostData as TokenRequest;
                 action(data, x);
                 return _dummyTokenResponse.ToAblyResponse();
             };
 
-            rest.Auth.RequestToken(request, authOptions);
+            rest.Auth.RequestToken(tokenParams, authOptions);
         }
 
         [Fact]
         public void WithOverridingClientId_OverridesTheDefault()
         {
-            var tokenRequest = new TokenRequest {ClientId = "123"};
-            RequestToken(tokenRequest, null, (data, request) => Assert.Equal("123", data.clientId));
+            var tokenParams = new TokenParams { ClientId = "123" };
+            RequestToken(tokenParams, null, (data, request) => Assert.Equal("123", data.ClientId));
         }
 
         [Fact]
@@ -51,31 +51,31 @@ namespace IO.Ably.Tests
         {
             var capability = new Capability();
             capability.AddResource("test").AllowAll();
-            var tokenRequest = new TokenRequest {Capability = capability};
+            var tokenParams = new TokenParams { Capability = capability };
 
-            RequestToken(tokenRequest, null, (data, request) => Assert.Equal(capability.ToJson(), data.capability));
+            RequestToken(tokenParams, null, (data, request) => Assert.Equal(capability.ToJson(), data.Capability));
         }
 
         [Fact]
         public void WithOverridingNonce_OverridesTheDefault()
         {
-            RequestToken(new TokenRequest {Nonce = "Blah"}, null, (data, request) => Assert.Equal("Blah", data.nonce));
+            RequestToken(new TokenParams { Nonce = "Blah" }, null, (data, request) => Assert.Equal("Blah", data.Nonce));
         }
 
         [Fact]
         public void WithOverridingTimeStamp_OverridesTheDefault()
         {
             var timeStamp = DateTime.SpecifyKind(new DateTime(2015, 1, 1), DateTimeKind.Utc);
-            var tokenRequest = new TokenRequest {Timestamp = timeStamp};
-            RequestToken(tokenRequest, null,
-                (data, request) => Assert.Equal(timeStamp.ToUnixTimeInMilliseconds().ToString(), data.timestamp));
+            var tokenParams = new TokenParams { Timestamp = timeStamp };
+            RequestToken(tokenParams, null,
+                (data, request) => Assert.Equal(timeStamp.ToUnixTimeInMilliseconds().ToString(), data.Timestamp));
         }
 
         [Fact]
         public void WithOverridingTtl_OverridesTheDefault()
         {
-            RequestToken(new TokenRequest {Ttl = TimeSpan.FromSeconds(2)}, null,
-                (data, request) => Assert.Equal(TimeSpan.FromSeconds(2).TotalMilliseconds.ToString(), data.ttl));
+            RequestToken(new TokenParams { Ttl = TimeSpan.FromSeconds(2) }, null,
+                (data, request) => Assert.Equal(TimeSpan.FromSeconds(2).TotalMilliseconds.ToString(), data.Ttl));
         }
     }
 }

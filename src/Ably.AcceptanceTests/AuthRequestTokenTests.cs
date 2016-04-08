@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using IO.Ably.Transport;
 
 namespace IO.Ably.AcceptanceTests
 {
@@ -18,9 +19,9 @@ namespace IO.Ably.AcceptanceTests
             _binaryProtocol = binaryProtocol == Protocol.MsgPack;
         }
 
-        static TokenRequest createTokenRequest( Capability capability, TimeSpan? ttl = null )
+        static TokenParams CreateTokenParams( Capability capability, TimeSpan? ttl = null )
         {
-            TokenRequest res = new TokenRequest();
+            var res = new TokenParams();
             res.ClientId = "John";
             res.Capability = capability;
             if( ttl.HasValue )
@@ -29,7 +30,7 @@ namespace IO.Ably.AcceptanceTests
         }
 
         [Test]
-        public void ShouldReturnTheRequestedToken()
+        public async Task ShouldReturnTheRequestedToken()
         {
             var ttl = TimeSpan.FromSeconds(30*60);
             var capability = new Capability();
@@ -38,7 +39,7 @@ namespace IO.Ably.AcceptanceTests
             AblyRest ably = GetRestClient();
             var options = ably.Options;
 
-            var token = ably.Auth.RequestToken(createTokenRequest( capability, ttl ), null).Result;
+            var token = await ably.Auth.RequestToken(CreateTokenParams( capability, ttl ), null);
 
             var key = options.ParseKey();
             var appId = key.KeyName.Split('.').First();
@@ -62,7 +63,7 @@ namespace IO.Ably.AcceptanceTests
             capability.AddResource( "foo" ).AllowPublish();
 
             var ably = GetRestClient();
-            var token = ably.Auth.RequestToken(createTokenRequest( capability ), null).Result;
+            var token = ably.Auth.RequestToken(CreateTokenParams( capability ), null).Result;
 
             var tokenAbly = new AblyRest(new ClientOptions {Token = token.Token, Environment = TestsSetup.TestData.Environment});
 
@@ -77,7 +78,7 @@ namespace IO.Ably.AcceptanceTests
 
             var ably = GetRestClient();
 
-            var token = ably.Auth.RequestToken(createTokenRequest(capability), null).Result;
+            var token = ably.Auth.RequestToken(CreateTokenParams(capability), null).Result;
 
             var tokenAbly = new AblyRest(new ClientOptions { Token = token.Token , Environment = AblyEnvironment.Sandbox});
 
@@ -94,9 +95,9 @@ namespace IO.Ably.AcceptanceTests
 
             var error = Assert.ThrowsAsync<AblyException>(() =>
             {
-                TokenRequest req = createTokenRequest(null);
-                req.Timestamp = DateTime.UtcNow.AddDays(-1);
-                return ably.Auth.RequestToken(req, null);
+                var tokenParams = CreateTokenParams(null);
+                tokenParams.Timestamp = DateTime.UtcNow.AddDays(-1);
+                return ably.Auth.RequestToken(tokenParams, null);
             });
 
             error.ErrorInfo.code.Should().Be( 40101 );
@@ -114,8 +115,8 @@ namespace IO.Ably.AcceptanceTests
 
             token.Should().NotBeNull();
             token.ClientId.Should().Be( "123" );
-            token.Expires.Should().BeWithin( TimeSpan.FromSeconds( 20 ) ).Before( DateTime.UtcNow + TokenRequest.Defaults.Ttl );
-            token.Capability.ToJson().Should().Be( TokenRequest.Defaults.Capability.ToJson() );
+            token.Expires.Should().BeWithin( TimeSpan.FromSeconds( 20 ) ).Before( DateTime.UtcNow + Defaults.DefaultTokenTtl);
+            token.Capability.ToJson().Should().Be( Defaults.DefaultTokenCapability.ToJson() );
         }
     }
 }

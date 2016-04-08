@@ -1,9 +1,10 @@
 ﻿using System;
+using FluentAssertions;
 using Xunit;
 
 namespace IO.Ably.Tests
 {
-    public class TokenRequestDataTests
+    public class TokenRequestPopulateTests
     {
         private const string ApiKey = "123.456:789";
         public readonly DateTime Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc);
@@ -18,111 +19,117 @@ namespace IO.Ably.Tests
             return ApiKey.Split(':')[1];
         }
 
-        private static TokenRequest GetTokenRequest()
+        private static TokenParams GetTokenParams()
         {
-            return new TokenRequest { KeyName = GetKeyId(), ClientId = "123", Capability = new Capability(), Ttl = TimeSpan.FromMinutes(10) };
+            return new TokenParams() { ClientId = "123", Capability = new Capability(), Ttl = TimeSpan.FromMinutes(10) };
+        }
+
+        private TokenRequest _request;
+
+        private TokenRequest Populate(TokenParams tokenParams)
+        {
+            return _request.Populate(tokenParams, GetKeyId(), GetKeyValue());
         }
 
         /// <summary>
         /// Initializes a new instance of the TokenRequestDataTests class.
         /// </summary>
-        public TokenRequestDataTests()
+        public TokenRequestPopulateTests()
         {
             Config.Now = () => Now;
+            _request = new TokenRequest();
         }
 
         [Fact]
-        public void GetPostData_SetsCorrectId()
+        public void Populate_SetsCorrectId()
         {
-            var tokenRequest = GetTokenRequest();
+            var tokenParams = GetTokenParams();
 
-            var data = tokenRequest.GetPostData(GetKeyValue());
+            var data = _request.Populate(tokenParams, "123", GetKeyValue());
 
-            Assert.Equal(tokenRequest.KeyName, data.keyName);
+            data.KeyName.Should().Be("123");
         }
 
         [Fact]
         public void GetPostData_SetsCorrectTtl()
         {
-            var request = GetTokenRequest();
-            var data = request.GetPostData(GetKeyValue());
+            var tokenParams = GetTokenParams();
 
-            var expectedTtl = request.Ttl.Value.TotalMilliseconds;
+            var request = Populate(tokenParams);
+            var expectedTtl = tokenParams.Ttl.Value.TotalMilliseconds;
 
-            Assert.Equal(expectedTtl.ToString(), data.ttl);
+            request.Ttl.Should().Be(expectedTtl.ToString());
         }
 
         [Fact]
         public void GetPostData_WhenTtlIsNotSet_SetsItToOneHourFromNow()
         {
-            var request = new TokenRequest { KeyName = "123", Capability = new Capability() };
-            var data = request.GetPostData(GetKeyValue());
+            var tokenParams = new TokenParams();
+            var request = Populate(tokenParams);
 
             var expectedTtl = TimeSpan.FromHours(1).TotalMilliseconds;
 
-            Assert.Equal(expectedTtl.ToString(), data.ttl);
+            request.Ttl.Should().Be(expectedTtl.ToString());
         }
 
         [Fact]
         public void GetPostData_SetsCorrectCapability()
         {
-            var request = GetTokenRequest();
-            var data = request.GetPostData(GetKeyValue());
+            var tokenParams = GetTokenParams();
+            var request = Populate(tokenParams);
 
-            Assert.Equal(request.Capability.ToJson(), data.capability);
+            Assert.Equal(tokenParams.Capability.ToJson(), request.Capability);
         }
 
         [Fact]
         public void GetPostData_SetsCorrectClientId()
         {
-            var request = GetTokenRequest();
-            var data = request.GetPostData(GetKeyValue());
+            var tokenParams = GetTokenParams();
+            var request = Populate(tokenParams);
 
-            Assert.Equal(request.ClientId, data.clientId);
+            request.ClientId.Should().Be(tokenParams.ClientId);
         }
 
         [Fact]
         public void GetPostData_DataObjectHasCorrectTimestamp()
         {
-            var request = GetTokenRequest();
-            var data = request.GetPostData(GetKeyValue());
+            var tokenParams = GetTokenParams();
+            var request = Populate(tokenParams);
 
-            Assert.Equal(Now.ToUnixTimeInMilliseconds().ToString(), data.timestamp);
+            request.Timestamp.Should().Be(Now.ToUnixTimeInMilliseconds().ToString());
         }
 
         [Fact]
         public void GetPostData_AlwaysHasRandomNonce()
         {
-            var request = GetTokenRequest();
-
             var currentNonce = "";
             for (int i = 0; i < 10; i++)
             {
-                var data = request.GetPostData(GetKeyValue());
-                Assert.NotEqual(currentNonce, data.nonce);
-                currentNonce = data.nonce;
+                var request = new TokenRequest();
+                request.Nonce.Should().NotBe(currentNonce);
+                currentNonce = request.Nonce;
             }
         }
 
         [Fact]
         public void GetPostData_HasMacBasedOnValueAndKey()
         {
-            var request = GetTokenRequest();
-            var data = request.GetPostData(GetKeyValue());
+            var tokenParams = GetTokenParams();
+            var request = Populate(tokenParams);
             var values = new[]
             {
-                data.keyName,
-                data.ttl,
-                data.capability,
-                data.clientId,
-                data.timestamp,
-                data.nonce
+                request.KeyName,
+                request.Ttl,
+                request.Capability,
+                request.ClientId,
+                request.Timestamp,
+                request.Nonce
             };
             var signText = string.Join("\n", values) + "\n";
 
             string mac = Encryption.Crypto.ComputeHMacSha256(signText, GetKeyValue());
 
-            Assert.Equal(mac, data.mac);
+            Assert.Equal(mac, request.Mac);
         }
     }
 }

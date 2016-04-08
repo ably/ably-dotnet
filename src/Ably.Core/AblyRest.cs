@@ -75,7 +75,8 @@ namespace IO.Ably
             _messageHandler = new MessageHandler(_protocol);
 
             string host = GetHost();
-            _httpClient = new AblyHttpClient(host, _options.Port, _options.Tls, _options.Environment);
+            var port = _options.Tls ? _options.TlsPort : _options.Port;
+            _httpClient = new AblyHttpClient(host, port, _options.Tls, _options.Environment);
             ExecuteHttpRequest = _httpClient.Execute;
 
             InitAuth(this);

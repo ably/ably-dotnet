@@ -17,7 +17,7 @@ namespace IO.Ably
         }
 
         private ClientOptions _options;
-        private TokenRequest _lastTokenRequest;
+        private TokenParams _lastTokenRequest;
         private Rest.IAblyRest _rest;
         // Buffer in seconds before a token is considered unusable
         private const int TokenExpireBufer = 15;
@@ -37,20 +37,19 @@ namespace IO.Ably
         /// <param name="options">Extra <see cref="AuthOptions"/> used for creating a token </param>
         /// <returns>A valid ably token</returns>
         /// <exception cref="AblyException"></exception>
-        public async Task<TokenDetails> RequestToken(TokenRequest requestData, AuthOptions options)
+        public async Task<TokenDetails> RequestToken(TokenParams requestData, AuthOptions options)
         {
             var mergedOptions = options != null ? options.Merge(_options) : _options;
             string keyId = "", keyValue = "";
-            if (!string.IsNullOrEmpty(mergedOptions.Key))
+            if (mergedOptions.Key.IsNotEmpty())
             {
                 var key = mergedOptions.ParseKey();
                 keyId = key.KeyName;
                 keyValue = key.KeySecret;
             }
 
-            var data = requestData ?? new TokenRequest
+            var data = requestData ?? new TokenParams()
             {
-                KeyName = keyId,
                 ClientId = _options.ClientId
             };
 
@@ -59,13 +58,11 @@ namespace IO.Ably
                 data = _lastTokenRequest;
             }
 
-            data.KeyName = data.KeyName ?? keyId;
-
             _lastTokenRequest = data;
 
-            var request = _rest.CreatePostRequest(String.Format("/keys/{0}/requestToken", data.KeyName));
+            var request = _rest.CreatePostRequest($"/keys/{keyId}/requestToken");
             request.SkipAuthentication = true;
-            TokenRequestPostData postData = null;
+            TokenRequest postData = null;
             if (mergedOptions.AuthCallback != null)
             {
                 var token = mergedOptions.AuthCallback(data);
@@ -74,7 +71,7 @@ namespace IO.Ably
                 throw new AblyException("AuthCallback returned an invalid token");
             }
 
-            if (StringExtensions.IsNotEmpty(mergedOptions.AuthUrl))
+            if (mergedOptions.AuthUrl.IsNotEmpty())
             {
                 var url = mergedOptions.AuthUrl;
                 var protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
@@ -101,17 +98,17 @@ namespace IO.Ably
                 if (TokenDetails.IsToken(jData))
                     return jData.ToObject<TokenDetails>();
 
-                postData = JsonConvert.DeserializeObject<TokenRequestPostData>(signedData);
+                postData = JsonConvert.DeserializeObject<TokenRequest>(signedData);
 
-                request.Url = String.Format("/keys/{0}/requestToken", postData.keyName);
+                request.Url = $"/keys/{postData.KeyName}/requestToken";
             }
             else
             {
-                postData = data.GetPostData(keyValue);
+                postData = new TokenRequest().Populate(data, keyId, keyValue);
             }
 
             if (mergedOptions.QueryTime)
-                postData.timestamp = (await _rest.Time()).ToUnixTimeInMilliseconds().ToString();
+                postData.Timestamp = (await _rest.Time()).ToUnixTimeInMilliseconds().ToString();
 
             request.PostData = postData;
 
@@ -129,12 +126,12 @@ namespace IO.Ably
         /// Authorisation will use the parameters supplied on construction except
         /// where overridden with the options supplied in the call.
         /// </summary>
-        /// <param name="request"><see cref="TokenRequest"/> custom parameter. Pass null and default token request options will be generated used the options passed when creating the client</param>
+        /// <param name="tokenParams"><see cref="TokenParams"/> custom parameter. Pass null and default token request options will be generated used the options passed when creating the client</param>
         /// <param name="options"><see cref="AuthOptions"/> custom options.</param>
         /// <param name="force">Force the client request a new token even if it has a valid one.</param>
         /// <returns>Returns a valid token</returns>
         /// <exception cref="AblyException">Throws an ably exception representing the server response</exception>
-        public async Task<TokenDetails> Authorise(TokenRequest request, AuthOptions options, bool force)
+        public async Task<TokenDetails> Authorise(TokenParams tokenParams, AuthOptions options, bool force)
         {
             if (CurrentToken != null)
             {
@@ -146,7 +143,7 @@ namespace IO.Ably
                 CurrentToken = null;
             }
 
-            CurrentToken = await RequestToken(request, options);
+            CurrentToken = await RequestToken(tokenParams, options);
             return CurrentToken;
         }
 
@@ -155,39 +152,33 @@ namespace IO.Ably
         /// and the given token params. This would typically be used if creating
         /// signed requests for submission by another client.
         /// </summary>
-        /// <param name="requestData"><see cref="TokenRequest"/>. If null a token request is generated from options passed when the client was created.</param>
+        /// <param name="tokenParams"><see cref="TokenParams"/>. If null a token request is generated from options passed when the client was created.</param>
         /// <param name="options"><see cref="AuthOptions"/>. If null the default AuthOptions are used.</param>
         /// <returns></returns>
-        public async Task<TokenRequestPostData> CreateTokenRequest(TokenRequest requestData, AuthOptions options)
+        public async Task<TokenRequest> CreateTokenRequest(TokenParams tokenParams, AuthOptions options)
         {
             var mergedOptions = options != null ? options.Merge(_options) : _options;
 
             if (string.IsNullOrEmpty(mergedOptions.Key))
                 throw new AblyException("No key specified", 40101, HttpStatusCode.Unauthorized);
 
-            var data = requestData ?? new TokenRequest
+            var data = tokenParams ?? new TokenParams
             {
                 ClientId = _options.ClientId
             };
-
-            ApiKey key = mergedOptions.ParseKey();
-            data.KeyName = data.KeyName ?? key.KeyName;
-
-            if (data.KeyName != key.KeyName)
-                throw new AblyException("Incompatible keys specified", 40102, HttpStatusCode.Unauthorized);
-
-            if (requestData == null && options == null && _lastTokenRequest != null)
+            
+            if (tokenParams == null && options == null && _lastTokenRequest != null)
             {
                 data = _lastTokenRequest;
             }
 
-            data.KeyName = data.KeyName ?? key.KeyName;
-
-            var postData = data.GetPostData(key.KeySecret);
+            ApiKey key = mergedOptions.ParseKey();
+            var request = new TokenRequest().Populate(data, key.KeyName, key.KeySecret);
+                
             if (mergedOptions.QueryTime)
-                postData.timestamp = (await _rest.Time()).ToUnixTimeInMilliseconds().ToString();
+                request.Timestamp = (await _rest.Time()).ToUnixTimeInMilliseconds().ToString();
 
-            return postData;
+            return request;
         }
     }
 }

@@ -9,6 +9,8 @@ namespace IO.Ably.Transport
         public static readonly string RestHost = "rest.ably.io";
         public static readonly String RealtimeHost = "realtime.ably.io";
         public static readonly string[] FallbackHosts;
+        public static readonly TimeSpan DefaultTokenTtl = TimeSpan.FromHours(1);
+        public static readonly Capability DefaultTokenCapability = Capability.AllowAll;
         public const int Port = 80;
         public const int TlsPort = 443;
         public static readonly string[] SupportedTransports = new string[]{ "web_socket" };

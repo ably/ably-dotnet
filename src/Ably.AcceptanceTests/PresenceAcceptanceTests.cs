@@ -36,7 +36,7 @@ namespace IO.Ably.AcceptanceTests
             string channelName = "persisted:presence_fixtures";
             var ably = GetAbly();
             var channel = ably.Channels.Get(channelName);
-            var presence = await channel.Presence();
+             var presence = await channel.Presence();
 
             presence.Should().HaveCount(4);
             foreach (var presenceMessage in presence)
