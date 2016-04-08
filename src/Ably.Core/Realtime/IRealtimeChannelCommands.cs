@@ -10,7 +10,7 @@ namespace IO.Ably.Realtime
         /// Create a channel with the specified name
         /// </summary>
         /// <param name="name">name of the channel</param>
-        /// <returns>an instance of <see cref="Channel"/></returns>
+        /// <returns>an instance of <see cref="RealtimeChannel"/></returns>
         IRealtimeChannel Get(string name);
 
         /// <summary>
@@ -18,14 +18,14 @@ namespace IO.Ably.Realtime
         /// </summary>
         /// <param name="name">name of the channel</param>
         /// <param name="options"><see cref="ChannelOptions"/></param>
-        /// <returns>an instance of <see cref="Channel"/></returns>
+        /// <returns>an instance of <see cref="RealtimeChannel"/></returns>
         IRealtimeChannel Get(string name, ChannelOptions options);
 
         /// <summary>
         /// Same as the Get(string name)/>
         /// </summary>
         /// <param name="name">name of the channel</param>
-        /// <returns>an instance of <see cref="Channel"/></returns>
+        /// <returns>an instance of <see cref="RealtimeChannel"/></returns>
         IRealtimeChannel this[string name] { get; }
 
         /// <summary>

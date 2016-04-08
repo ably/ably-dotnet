@@ -17,7 +17,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
-            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
+            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new RealtimeChannel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
 
             // Act
@@ -33,7 +33,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
-            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
+            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new RealtimeChannel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
             var channel = target.Get("test");
 
@@ -51,7 +51,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
-            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
+            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new RealtimeChannel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
             Rest.ChannelOptions options = new Rest.ChannelOptions();
 
@@ -68,7 +68,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
-            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
+            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new RealtimeChannel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
             Rest.ChannelOptions options = new Rest.ChannelOptions();
             var channel = target.Get("test");
@@ -87,7 +87,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
-            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
+            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new RealtimeChannel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
             var channel = target.Get("test");
             channel.Attach();
@@ -105,7 +105,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
-            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
+            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new RealtimeChannel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
             var channel = target.Get("test");
             channel.Attach();
@@ -123,7 +123,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
-            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
+            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new RealtimeChannel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
             var channel = target.Get("test");
             channel.Attach();
@@ -142,7 +142,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
-            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
+            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new RealtimeChannel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
             var channel = target.Get("test");
             channel.Attach();
@@ -161,7 +161,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
-            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
+            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new RealtimeChannel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
             var channel = target.Get("test");
             channel.Attach();
@@ -179,7 +179,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
-            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
+            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new RealtimeChannel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
             var channel = target.Get("test");
             channel.Attach();
@@ -197,7 +197,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
-            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
+            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new RealtimeChannel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
             var channel = target.Get("test");
             channel.Attach();
@@ -216,7 +216,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
-            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
+            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new RealtimeChannel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
             var channel = target.Get("test");
             channel.Attach();
@@ -235,7 +235,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
-            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
+            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new RealtimeChannel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
             var channel = target.Get("test");
 
@@ -254,7 +254,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
-            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new Channel(c, "", manager.Object));
+            factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new RealtimeChannel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
             var channel = target.Get("test");
 
