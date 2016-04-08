@@ -8,7 +8,7 @@ namespace IO.Ably.CustomSerialisers
     {
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            var date = (DateTime)value;
+            var date = (DateTimeOffset)value;
             writer.WriteValue(date.ToUnixTimeInMilliseconds());
         }
 
@@ -20,12 +20,12 @@ namespace IO.Ably.CustomSerialisers
                 var value = (long)token;
                 return value.FromUnixTimeInMilliseconds();
             }
-            return DateTime.MinValue;
+            return DateTimeOffset.MinValue;
         }
 
         public override bool CanConvert(Type objectType)
         {
-            return objectType == typeof(DateTime) || objectType == typeof(DateTime?);
+            return objectType == typeof(DateTimeOffset) || objectType == typeof(DateTimeOffset?);
         }
     }
 }

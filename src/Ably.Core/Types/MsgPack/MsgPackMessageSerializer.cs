@@ -72,7 +72,7 @@ namespace IO.Ably.Types
             meta.setCustom( "timestamp",
                 ( obj, packer ) =>
                 {
-                    DateTime dto = ( (ProtocolMessage)obj ).timestamp.Value;
+                    DateTimeOffset dto = ( (ProtocolMessage)obj ).timestamp.Value;
                     packer.Pack( dto.ToUnixTimeInMilliseconds() );
                 },
                 ( unp, obj ) =>

@@ -21,7 +21,7 @@ namespace IO.Ably
         /// <summary>X-Ably-Version HTTP request header value</summary>
         internal const string AblyVersion = "0.8";
 
-        internal static Func<DateTime> Now = () => DateTime.UtcNow;
+        internal static Func<DateTimeOffset> Now = () => DateTimeOffset.UtcNow;
         
         public static string Host = "rest.ably.io";
         public const int Port = 80;
@@ -50,6 +50,7 @@ namespace IO.Ably
                 new DateTimeOffsetJsonConverter(),
                 new CapabilityJsonConverter()
             };
+            res.DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind;
             res.NullValueHandling = NullValueHandling.Ignore;
             return res;
         }

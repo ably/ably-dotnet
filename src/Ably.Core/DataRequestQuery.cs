@@ -78,15 +78,15 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// Start of the query interval as UTC DateTime.
+        /// Start of the query interval as UTC Date.
         /// Default: null
         /// </summary>
-        public DateTime? Start { get; set; }
+        public DateTimeOffset? Start { get; set; }
         /// <summary>
-        /// End of the query interval as UTC DateTime
+        /// End of the query interval as UTC Date
         /// Default: null
         /// </summary>
-        public DateTime? End { get; set; }
+        public DateTimeOffset? End { get; set; }
 
         /// <summary>
         /// The number of the results returned by the server. If there are more result the NextQuery on the PaginatedResource will be populated
@@ -130,12 +130,12 @@ namespace IO.Ably
 
             if (Start.HasValue)
             {
-                if (Start.Value < new DateTime(1970, 1, 1))
+                if (Start.Value < DateExtensions.Epoch)
                     throw new AblyException("Start only supports dates after 1 January 1970");
             }
 
             if (End.HasValue)
-                if (End.Value < new DateTime(1970, 1, 1))
+                if (End.Value < DateExtensions.Epoch)
                     throw new AblyException("End only supports dates after 1 January 1970");
 
             if (Start.HasValue && End.HasValue)
@@ -219,7 +219,7 @@ namespace IO.Ably
         }
 
 
-        private static DateTime? ToDateTime(object value)
+        private static DateTimeOffset? ToDateTime(object value)
         {
             if (value == null)
                 return null;

@@ -7,7 +7,7 @@ namespace IO.Ably.Tests
     public class TokenRequestPopulateTests
     {
         private const string ApiKey = "123.456:789";
-        public readonly DateTime Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc);
+        public readonly DateTimeOffset Now = DateHelper.CreateDate(2012, 12, 12, 10, 10, 10);
 
         private static string GetKeyId()
         {

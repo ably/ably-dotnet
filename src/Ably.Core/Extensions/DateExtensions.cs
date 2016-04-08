@@ -4,16 +4,18 @@ namespace IO.Ably
 {
     public static class DateExtensions
     {
-        public static DateTime FromUnixTimeInMilliseconds(this long unixTime)
+        public readonly static DateTimeOffset Epoch = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+        public static DateTimeOffset FromUnixTimeInMilliseconds(this long unixTime)
         {
-            var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            return epoch.AddMilliseconds(unixTime);
+            return Epoch.AddMilliseconds(unixTime);
         }
 
-        public static long ToUnixTimeInMilliseconds(this DateTime date)
+        public static long ToUnixTimeInMilliseconds(this DateTimeOffset date)
         {
-            var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            return Convert.ToInt64((date - epoch).TotalMilliseconds);
+            return Convert.ToInt64((date - Epoch).TotalMilliseconds);
         }
+
+
     }
 }

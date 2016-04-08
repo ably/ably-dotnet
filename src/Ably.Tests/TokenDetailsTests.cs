@@ -43,8 +43,8 @@ namespace IO.Ably.Tests
         {
             var details = new TokenDetails()
             {
-                Expires = DateTime.Now,
-                Issued = DateTime.Now.AddSeconds(1),
+                Expires = DateTimeOffset.UtcNow,
+                Issued = DateTimeOffset.UtcNow.AddSeconds(1),
             };
 
             var json = JsonConvert.SerializeObject(details);

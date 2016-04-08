@@ -76,7 +76,7 @@ namespace IO.Ably
         public string encoding { get; set; }
 
         /// <summary>Timestamp when the message was received by the Ably real-time service</summary>
-        public DateTime? timestamp { get; set; }
+        public DateTimeOffset? timestamp { get; set; }
 
         public override string ToString()
         {

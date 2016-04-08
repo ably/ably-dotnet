@@ -159,7 +159,7 @@ namespace IO.Ably.Transport.States.Connection
         {
             return this.context.FirstConnectionAttempt != null &&
                 this.context.FirstConnectionAttempt.Value
-                .AddMilliseconds(ConnectionSuspendedState.SuspendTimeout) < DateTime.Now;
+                .AddMilliseconds(ConnectionSuspendedState.SuspendTimeout) < DateTimeOffset.UtcNow;
         }
     }
 }

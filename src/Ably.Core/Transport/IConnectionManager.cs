@@ -49,7 +49,7 @@ namespace IO.Ably.Transport
         ITransport Transport { get; }
         Queue<ProtocolMessage> QueuedMessages { get; }
         Connection Connection { get; }
-        DateTime? FirstConnectionAttempt { get; }
+        DateTimeOffset? FirstConnectionAttempt { get; }
         int ConnectionAttempts { get; }
 
         void SetState(States.Connection.ConnectionState state);

@@ -9,7 +9,7 @@ namespace IO.Ably.Tests
     {
         private const string ApiKey = "123.456:789";
         internal AblyRequest CurrentRequest { get; set; }
-        public readonly DateTime Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc);
+        public readonly DateTimeOffset Now = new DateTimeOffset(2012, 12, 12, 10, 10, 10, TimeSpan.Zero);
         public AblyRest Client { get; set; }
 
         public AuthCreateTokenRequestAcceptanceTests()
@@ -88,7 +88,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void WithTimeStampOverridesDefault()
         {
-            var date = DateTime.SpecifyKind(new DateTime(2014, 1, 1), DateTimeKind.Utc);
+            var date = new DateTimeOffset(2014, 1, 1, 0, 0, 0, TimeSpan.Zero);
             var data = Client.Auth.CreateTokenRequest(new TokenParams() { Timestamp= date }, null).Result;
             data.Timestamp.Should().Be(date.ToUnixTimeInMilliseconds().ToString());
         }

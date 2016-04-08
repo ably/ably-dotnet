@@ -16,7 +16,7 @@ namespace IO.Ably.Transport
         private readonly Queue<ProtocolMessage> _pendingMessages;
         private readonly SynchronizationContext _sync;
         private int _connectionAttempts;
-        private DateTime? _firstConnectionAttempt;
+        private DateTimeOffset? _firstConnectionAttempt;
         private ConnectionState _state;
 
         private ITransport _transport;
@@ -62,7 +62,7 @@ namespace IO.Ably.Transport
             get { return _pendingMessages; }
         }
 
-        DateTime? IConnectionContext.FirstConnectionAttempt
+        DateTimeOffset? IConnectionContext.FirstConnectionAttempt
         {
             get { return _firstConnectionAttempt; }
         }
@@ -106,7 +106,7 @@ namespace IO.Ably.Transport
         {
             if (_firstConnectionAttempt == null)
             {
-                _firstConnectionAttempt = DateTime.Now;
+                _firstConnectionAttempt = DateTimeOffset.UtcNow;
             }
             _connectionAttempts++;
         }

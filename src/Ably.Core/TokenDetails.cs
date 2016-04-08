@@ -24,7 +24,7 @@ namespace IO.Ably.Auth
         [JsonProperty("expires")]
         [MessagePackMember(30, Name = "expires")]
         [JsonConverter(typeof(DateTimeOffsetJsonConverter))]
-        public DateTime Expires { get; set; }
+        public DateTimeOffset Expires { get; set; }
 
         /// <summary>
         /// Date and time when the token was issued in UTC
@@ -32,7 +32,7 @@ namespace IO.Ably.Auth
         [JsonProperty("issued")]
         [MessagePackMember(40, Name = "issued")]
         [JsonConverter(typeof(DateTimeOffsetJsonConverter))]
-        public DateTime Issued { get; set; }
+        public DateTimeOffset Issued { get; set; }
 
         /// <summary>
         /// The allowed capabilities for this token. <see cref="Capability"/>

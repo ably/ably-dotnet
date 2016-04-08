@@ -7,7 +7,7 @@ namespace IO.Ably.Tests
     {
         private const string ApiKey = "123.456:789";
         internal AblyRequest CurrentRequest { get; set; }
-        public readonly DateTime Now = new DateTime(2012, 12, 12, 10, 10, 10, DateTimeKind.Utc);
+        public readonly DateTimeOffset Now = new DateTimeOffset(2012, 12, 12, 10, 10, 10, TimeSpan.Zero);
         private readonly string _dummyTokenResponse = "{ \"access_token\": {}}";
 
         private AblyRest GetRestClient()
@@ -65,7 +65,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void WithOverridingTimeStamp_OverridesTheDefault()
         {
-            var timeStamp = DateTime.SpecifyKind(new DateTime(2015, 1, 1), DateTimeKind.Utc);
+            var timeStamp = new DateTimeOffset(2015, 1, 1, 0, 0, 0, TimeSpan.Zero);
             var tokenParams = new TokenParams { Timestamp = timeStamp };
             RequestToken(tokenParams, null,
                 (data, request) => Assert.Equal(timeStamp.ToUnixTimeInMilliseconds().ToString(), data.Timestamp));

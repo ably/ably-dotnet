@@ -54,8 +54,6 @@ namespace IO.Ably.Tests.MessagePack
 
             var decodedMessagePack = MsgPackHelper.DeSerialise(value.FromBase64(), typeof (MessagePackObject)).ToString();
 
-            Console.WriteLine(DateTime.Now.ToUnixTimeInMilliseconds());
-
             var response = JsonConvert.DeserializeObject<TokenResponse>(decodedMessagePack);
 
             response.AccessToken.Should().NotBeNull();

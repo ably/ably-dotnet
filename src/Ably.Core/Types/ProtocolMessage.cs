@@ -72,7 +72,7 @@ namespace IO.Ably.Types
         public string connectionKey { get; set; }
         public long? connectionSerial { get; set; }
         public long msgSerial { get; set; }
-        public DateTime? timestamp { get; set; }
+        public DateTimeOffset? timestamp { get; set; }
         public Message[] messages { get; set; }
 
         public bool ShouldSerializemessages()

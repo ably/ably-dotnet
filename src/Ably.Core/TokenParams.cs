@@ -29,7 +29,7 @@ namespace IO.Ably
 		/// Timestamps, in conjunction with the nonce, are used to prevent
 		/// token requests from being replayed.
         /// </summary>
-        public DateTime? Timestamp { get; set; }
+        public DateTimeOffset? Timestamp { get; set; }
 
         /// <summary>
 		/// An opaque nonce string of at least 16 characters to ensure

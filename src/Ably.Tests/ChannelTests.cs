@@ -105,7 +105,7 @@ namespace IO.Ably.Tests
             };
             var channel = rest.Channels.Get("Test");
             var query = new DataRequestQuery();
-            DateTime now = DateTime.Now;
+            var now = DateTimeOffset.Now;
             query.Start = now.AddHours(-1);
             query.End = now;
             query.Direction = QueryDirection.Forwards;
@@ -132,7 +132,7 @@ namespace IO.Ably.Tests
 
         [Theory]
         [MemberData("InvalidHistoryDates")]
-        public void History_WithInvalidStartOrEnd_Throws(DateTime? start, DateTime? end)
+        public void History_WithInvalidStartOrEnd_Throws(DateTimeOffset? start, DateTimeOffset? end)
         {
             var rest = GetRestClient();
             var channel = rest.Channels.Get("Test");
@@ -200,9 +200,9 @@ namespace IO.Ably.Tests
         {
             get
             {
-                yield return new object[] { new DateTime(1969, 1, 1), DateTime.Now };
-                yield return new object[] { new DateTime(2000, 1, 1), new DateTime(1999, 12, 31) };
-                yield return new object[] { null, new DateTime(1969, 12, 31) };
+                yield return new object[] { new DateTimeOffset(1969, 1, 1,0,0,0,TimeSpan.Zero), DateTimeOffset.Now };
+                yield return new object[] { new DateTimeOffset(2000, 1, 1, 0,0,0,TimeSpan.Zero), new DateTimeOffset(1999, 12, 31,0,0,0,TimeSpan.Zero) };
+                yield return new object[] { null, new DateTimeOffset(1969, 12, 31, 0,0,0,TimeSpan.Zero) };
             }
         }
 

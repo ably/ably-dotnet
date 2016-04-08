@@ -355,7 +355,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.FirstConnectionAttempt).Returns(DateTime.Now.AddHours(-3));
+            context.SetupGet(c => c.FirstConnectionAttempt).Returns(DateTimeOffset.UtcNow.AddHours(-3));
             ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
 
             // Act
@@ -524,7 +524,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.FirstConnectionAttempt).Returns(DateTime.Now.AddHours(-3));
+            context.SetupGet(c => c.FirstConnectionAttempt).Returns(DateTimeOffset.UtcNow.AddHours(-3));
             ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
 
             // Act

@@ -24,7 +24,7 @@ namespace IO.Ably.Tests
         private const string ValidKey = "1iZPfA.BjcI_g:wpNhw5RCw6rDjisl";
         private readonly ApiKey Key = ApiKey.Parse(ValidKey);
 
-        
+
 
         private static AblyRest GetRestClient()
         {
@@ -95,7 +95,7 @@ namespace IO.Ably.Tests
             bool called = false;
             var options = new ClientOptions
             {
-                AuthCallback = (x) => { called = true; return new TokenDetails() { Expires = DateTime.UtcNow.AddHours(1) }; },
+                AuthCallback = (x) => { called = true; return new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddHours(1) }; },
                 UseBinaryProtocol = false
             };
 
@@ -130,7 +130,7 @@ namespace IO.Ably.Tests
 
                 if (request.Url.Contains("requestToken"))
                 {
-                    return ( "{ \"access_token\": { \"expires\": \"" + DateTime.UtcNow.AddHours( 1 ).ToUnixTimeInMilliseconds() + "\"}}" ).ToAblyResponse();
+                    return ("{ \"access_token\": { \"expires\": \"" + DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeInMilliseconds() + "\"}}").ToAblyResponse();
                 }
 
                 return "[{}]".ToAblyResponse();
@@ -144,17 +144,19 @@ namespace IO.Ably.Tests
         [Fact]
         public void ClientWithExpiredTokenAutomaticallyCreatesANewOne()
         {
-            Config.Now = () => DateTime.UtcNow;
+            Config.Now = () => DateTimeOffset.UtcNow;
             var newTokenRequested = false;
             var options = new ClientOptions
             {
-                AuthCallback = (x) => {
+                AuthCallback = (x) =>
+                {
 
                     Console.WriteLine("Getting new token.");
                     newTokenRequested = true; return new TokenDetails("new.token")
-                {
-                    Expires = DateTime.UtcNow.AddDays(1)
-                }; },
+                    {
+                        Expires = DateTimeOffset.UtcNow.AddDays(1)
+                    };
+                },
                 UseBinaryProtocol = false
             };
             var rest = new AblyRest(options);
@@ -163,7 +165,7 @@ namespace IO.Ably.Tests
                 Console.WriteLine("Getting an AblyResponse.");
                 return "[{}]".ToAblyResponse();
             };
-            rest.CurrentToken = new TokenDetails() { Expires = DateTime.UtcNow.AddDays(-2) };
+            rest.CurrentToken = new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddDays(-2) };
 
             Console.WriteLine("Current time:" + Config.Now());
             rest.Stats();
@@ -181,7 +183,7 @@ namespace IO.Ably.Tests
                 UseBinaryProtocol = false
             };
             var rest = new AblyRest(options);
-            var token = new TokenDetails("123") { Expires = DateTime.UtcNow.AddHours(1) };
+            var token = new TokenDetails("123") { Expires = DateTimeOffset.UtcNow.AddHours(1) };
             rest.CurrentToken = token;
 
             rest.ExecuteHttpRequest = request =>
@@ -254,7 +256,7 @@ namespace IO.Ably.Tests
             AblyRequest request = null;
             rest.ExecuteHttpRequest = x => { request = x; return "[{}]".ToAblyResponse(); };
             var query = new StatsDataRequestQuery();
-            DateTime now = DateTime.Now;
+            var now = DateTimeOffset.UtcNow;
             query.Start = now.AddHours(-1);
             query.End = now;
             query.Direction = QueryDirection.Forwards;

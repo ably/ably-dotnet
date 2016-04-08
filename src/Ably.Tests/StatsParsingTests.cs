@@ -175,7 +175,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void IntervalIDHasCorrectValue()
         {
-            Assert.Equal(new DateTime(2014, 01, 01, 16, 24, 00), _stats.Interval);
+            Assert.Equal(DateHelper.CreateDate(2014, 01, 01, 16, 24), _stats.Interval);
         }
     }
 }

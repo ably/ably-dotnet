@@ -18,7 +18,7 @@ namespace IO.Ably
             this.KeyName = keyName;
             Capability = (tokenParams.Capability ?? Ably.Capability.AllowAll).ToJson();
             ClientId = tokenParams.ClientId ?? "";
-            DateTime now = Config.Now();
+            var now = Config.Now();
 
             if (tokenParams.Nonce.IsNotEmpty())
                 Nonce = tokenParams.Nonce;

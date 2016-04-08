@@ -52,7 +52,7 @@ namespace IO.Ably.Rest
             return _messageHandler.ParseResponse<T>(request, response);
         }
 
-        public async Task<DateTime> Time()
+        public async Task<DateTimeOffset> Time()
         {
             var request = CreateGetRequest("/time");
             request.SkipAuthentication = true;

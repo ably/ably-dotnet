@@ -103,8 +103,8 @@ namespace IO.Ably
         {
             if ( null == CurrentToken )
                 return false;
-            DateTime exp = CurrentToken.Expires;
-            return ( exp == DateTime.MinValue ) || ( exp >= DateTime.UtcNow );
+            var exp = CurrentToken.Expires;
+            return ( exp == DateTimeOffset.MinValue ) || ( exp >= DateTimeOffset.UtcNow );
         }
     }
 }

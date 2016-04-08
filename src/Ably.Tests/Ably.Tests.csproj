@@ -114,6 +114,7 @@
     <Compile Include="ErrorInfoTests.cs" />
     <Compile Include="FakeResponseHandler.cs" />
     <Compile Include="ImplicitTokenAuthWithClientId.cs" />
+    <Compile Include="JsonDeserializationBugTests.cs" />
     <Compile Include="MessageEncodes\Base64EncoderTests.cs" />
     <Compile Include="MessageEncodes\CipherEncoderTests.cs" />
     <Compile Include="MessageEncodes\JsonEncoderTests.cs" />
@@ -125,6 +126,7 @@
     <Compile Include="Realtime\ChannelListTests.cs" />
     <Compile Include="Realtime\ConnectionManagerTests.cs" />
     <Compile Include="Realtime\ConnectionStatesTests.cs" />
+    <Compile Include="Realtime\DateHelper.cs" />
     <Compile Include="Realtime\JsonMessageSerializerTests.cs" />
     <Compile Include="Realtime\MsgPackMessageSerializerTests.cs" />
     <Compile Include="Realtime\PresenceTests.cs" />
