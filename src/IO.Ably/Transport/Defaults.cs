@@ -16,6 +16,9 @@ namespace IO.Ably.Transport
         public static readonly string[] SupportedTransports = new string[]{ "web_socket" };
         public static readonly Dictionary<string, ITransportFactory> TransportFactories;
 
+        /// <summary>The default log level you'll see in the debug output.</summary>
+        internal const LogLevel DefaultLogLevel = LogLevel.Warning;
+
         static Defaults()
         {
             Defaults.FallbackHosts = new string[] { "A.ably-realtime.com", "B.ably-realtime.com", "C.ably-realtime.com", "D.ably-realtime.com", "E.ably-realtime.com" };

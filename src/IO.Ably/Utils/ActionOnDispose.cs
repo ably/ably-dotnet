@@ -5,18 +5,18 @@ namespace IO.Ably
     /// <summary>Utility class that implements IDisposable bu calling the provided action.</summary>
     internal class ActionOnDispose : IDisposable
     {
-        readonly Action m_act;
+        readonly Action _action;
 
-        public ActionOnDispose( Action act )
+        public ActionOnDispose(Action act)
         {
-            if( null == act )
+            if (act == null)
                 throw new ArgumentNullException();
-            m_act = act;
+            _action = act;
         }
 
         void IDisposable.Dispose()
         {
-            m_act();
+            _action();
         }
     }
 }

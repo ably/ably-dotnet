@@ -19,27 +19,61 @@ namespace IO.Ably.Tests
             return new AblyRest(new ClientOptions() { UseBinaryProtocol = false, Key = ValidKey });
         }
 
-        [Fact]
-        public void Ctor_WithNoParametersWithInvalidKey_ThrowsInvalidKeyException()
+        [Trait("spec", "RSC1")]
+        public class WhenInitialisingRestClient
         {
-            Assert.Throws<AblyException>(delegate
+            [Fact]
+            public void WithInvalidKey_ThrowsAnException()
             {
-                new AblyRest("InvalidKey");
-            });
+                Assert.Throws<AblyException>(() => new AblyRest("InvalidKey"));
+            }
+
+            [Fact]
+            public void WithValidKey_InitialisesTheClient()
+            {
+                var client = new AblyRest(ValidKey);
+                Assert.NotNull(client);
+            }
+
+            [Fact]
+            public void WithKeyInOptions_InitialisesTheClient()
+            {
+                var client = new AblyRest(new ClientOptions(ValidKey));
+                Assert.NotNull(client);
+            }
+
+            [Fact]
+            public void Ctor_WithKeyPassedInOptions_InitializesClient()
+            {
+                var client = new AblyRest(opts => opts.Key = ValidKey);
+                Assert.NotNull(client);
+            }
+
+            [Fact]
+            public void WithTokenAndClientId_InitializesClient()
+            {
+                var client = new AblyRest(opts =>
+                {
+                    opts.Token = "blah";
+                    opts.ClientId = "123";
+                });
+
+                Assert.Equal(AuthMethod.Token, client.AuthMethod);
+            }
         }
 
         [Fact]
-        public void Ctor_WithKeyPassedInOptions_InitializesClient()
+        [Trait("spec", "RSC2")]
+        public void DefaultLoggerSinkShouldbeSetup()
         {
-            var client = new AblyRest(opts => opts.Key = ValidKey);
-            Assert.NotNull(client);
+            Logger.LoggerSink.Should().BeOfType<DefaultLoggerSink>();
         }
 
         [Fact]
-        public void Init_WithKeyInOptions_InitializesClient()
+        [Trait("spec", "RSC3")]
+        public void DefaultLogLevelShouldBeWarning()
         {
-            var client = new AblyRest(opts => opts.Key = ValidKey);
-            Assert.NotNull(client);
+            Logger.LogLevel.Should().Be(LogLevel.Warning);
         }
 
         [Fact]
