@@ -5,5 +5,5 @@ install:
   - nuget restore ./src/IO.Ably.sln
 script:
   - xbuild /p:Configuration='Release' ./src/IO.Ably.sln
-  - mono ./tools/xunit-runners/tools/xunit.console.exe ./src/Ably.Tests/bin/Release/Ably.Tests.dll
+  - mono ./tools/xunit-runners/tools/xunit.console.exe ./src/IO.Ably.Tests/bin/Release/IO.Ably.Tests.dll
   - mono ./tools/nunit-runners/tools/nunit3-console.exe ./src/Ably.AcceptanceTests/bin/Release/Ably.AcceptanceTests.dll
