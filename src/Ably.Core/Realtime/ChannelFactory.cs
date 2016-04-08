@@ -14,7 +14,7 @@ namespace IO.Ably.Realtime
 
         public IRealtimeChannel Create( string channelName )
         {
-            return new Channel( channelName, this.Options.ClientId, this.ConnectionManager );
+            return new RealtimeChannel( channelName, this.Options.ClientId, this.ConnectionManager );
         }
     }
 }

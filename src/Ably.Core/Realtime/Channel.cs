@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 namespace IO.Ably.Realtime
 {
     /// <summary>Implement realtime channel.</summary>
-    internal class Channel : IRealtimeChannel
+    internal class RealtimeChannel : IRealtimeChannel
     {
-        internal Channel( string name, string clientId, IConnectionManager connection )
+        internal RealtimeChannel( string name, string clientId, IConnectionManager connection )
         {
             this.Name = name;
             this.Presence = new Presence( connection, this, clientId );

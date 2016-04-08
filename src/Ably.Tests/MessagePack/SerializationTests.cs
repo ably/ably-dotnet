@@ -59,7 +59,6 @@ namespace IO.Ably.Tests.MessagePack
             var response = JsonConvert.DeserializeObject<TokenResponse>(decodedMessagePack);
 
             response.AccessToken.Should().NotBeNull();
-            response.AccessToken.KeyName.Should().Be("g4X6QQ.utzGlg");
             response.AccessToken.Capability.ToJson().Should().Be("{ \"*\": [ \"*\" ] }");
             response.AccessToken.ClientId.Should().Be("123");
             response.AccessToken.Token.Should().Be("g4X6QQ.DyBc9LeGow-lieDpn3MtlwOnPHh7em7s2CrSgZK3cT6DoeJ5vT1Ytp41oi5VQKMRLnIWCrAZtuNoqyCIoTZaB1_oQE_E-ow6cxJ_Q0pU2gyiolQ4juT35N24C83wJziB9");
@@ -102,7 +101,6 @@ namespace IO.Ably.Tests.MessagePack
             var response = JsonConvert.DeserializeObject<TokenResponse>(value);
 
             response.AccessToken.Should().NotBeNull();
-            response.AccessToken.KeyName.Should().Be("_SYo4Q.j8mhAQ");
             response.AccessToken.Capability.ToJson().Should().Be("{ \"*\": [ \"*\" ] }");
             response.AccessToken.ClientId.Should().Be("123");
             response.AccessToken.Token.Should().Be("_SYo4Q.D3WmHhU");

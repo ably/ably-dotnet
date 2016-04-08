@@ -19,13 +19,6 @@ namespace IO.Ably.Auth
         public string Token { get; set; }
 
         /// <summary>
-        ///
-        /// </summary>
-        [JsonProperty("keyName")]
-        [MessagePackMember(20, Name = "keyName")]
-        public string KeyName { get; set; }
-
-        /// <summary>
         /// Absolute token expiry date in UTC
         /// </summary>
         [JsonProperty("expires")]
@@ -78,7 +71,7 @@ namespace IO.Ably.Auth
 
         public override string ToString()
         {
-            return string.Format("Token: {0}, KeyName: {1}, Expires: {2}, Issued: {3}, Capability: {4}, ClientId: {5}", Token, KeyName, Expires, Issued, Capability, ClientId);
+            return string.Format("Token: {0}, Expires: {1}, Issued: {2}, Capability: {3}, ClientId: {4}", Token, Expires, Issued, Capability, ClientId);
         }
     }
 }

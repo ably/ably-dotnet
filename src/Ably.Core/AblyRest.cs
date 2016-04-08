@@ -242,12 +242,12 @@ namespace IO.Ably
 
         IChannel IChannelCommands.Get(string name)
         {
-            return new Channel(this, name, Options.ChannelDefaults);
+            return new RestChannel(this, name, Options.ChannelDefaults);
         }
 
         IChannel IChannelCommands.Get(string name, ChannelOptions options)
         {
-            return new Channel(this, name, options);
+            return new RestChannel(this, name, options);
         }
     }
 }
