@@ -13,7 +13,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright( "Copyright © Ably, 2014-2016" )]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: InternalsVisibleTo("Ably.Tests")]
+[assembly: InternalsVisibleTo("IO.Ably.Tests")]
 [assembly: InternalsVisibleTo("Ably.AcceptanceTests")]
 [assembly: InternalsVisibleTo("Ably.ConsoleTest")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")] // MOQ

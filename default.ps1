@@ -7,7 +7,7 @@ properties {
 	$tools_dir = "$build_script_dir\tools"
 	$configuration = 'debug'
 	$sln_dir = "src"
-	$sln_name = "Ably.sln"
+	$sln_name = "IO.Ably.sln"
 	
 	$project_name = "Ably"
 	$build_number = "1.0.0.0"
@@ -52,7 +52,7 @@ task Build -depends Assembly_Info, Init {
 
 task Unit_Tests {
 
-	$base_dir = "$build_script_dir\$sln_dir\Ably.Tests\bin\$configuration"
+	$base_dir = "$build_script_dir\$sln_dir\IO.Ably.Tests\bin\$configuration"
 
 	$xunit_runner = "$build_script_dir\tools\xunit-runners\tools"
 

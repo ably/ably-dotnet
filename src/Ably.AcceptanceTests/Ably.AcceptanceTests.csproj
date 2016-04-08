@@ -85,7 +85,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Ably.Tests\MiscUtils.cs">
+    <Compile Include="..\IO.Ably.Tests\MiscUtils.cs">
       <Link>MiscUtils.cs</Link>
     </Compile>
     <Compile Include="AuthRequestTokenTests.cs" />
@@ -119,11 +119,11 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Ably.Core\IO.Ably.csproj">
+    <ProjectReference Include="..\IO.Ably\IO.Ably.csproj">
       <Project>{EF341E0A-733D-4F79-8303-FD1B10D778EB}</Project>
       <Name>IO.Ably</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Ably.Platforms\Ably.net45\IO.Ably.net45.csproj">
+    <ProjectReference Include="..\IO.Ably.Platforms\Ably.net45\IO.Ably.net45.csproj">
       <Project>{021875be-63fd-4ff4-b34f-0b77ccd1919e}</Project>
       <Name>IO.Ably.net45</Name>
     </ProjectReference>

@@ -55,7 +55,7 @@
     <Compile Include="WebSocketTransport.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Ably.Core\IO.Ably.csproj">
+    <ProjectReference Include="..\..\IO.Ably\IO.Ably.csproj">
       <Project>{ef341e0a-733d-4f79-8303-fd1b10d778eb}</Project>
       <Name>IO.Ably</Name>
     </ProjectReference>
