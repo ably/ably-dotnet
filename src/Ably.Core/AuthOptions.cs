@@ -63,14 +63,14 @@ namespace IO.Ably
             if (AuthUrl == null) AuthUrl = defaults.AuthUrl;
             if (AuthHeaders.Count == 0) AuthHeaders = defaults.AuthHeaders;
             if (AuthParams.Count == 0) AuthParams = defaults.AuthParams;
-            if (Key.IsEmpty()) Key = defaults.Key;
+            if (StringExtensions.IsEmpty(Key)) Key = defaults.Key;
             QueryTime = QueryTime || defaults.QueryTime;
             return this;
         }
 
         internal ApiKey ParseKey()
         {
-            return ApiKey.Parse(this.Key);
+            return ApiKey.Parse(Key);
         }
     }
 }

@@ -64,7 +64,7 @@ namespace IO.Ably
             data.capability = (Capability ?? Defaults.Capability).ToJson();
             data.clientId = ClientId ?? "";
             DateTime now = Config.Now();
-            if (Nonce.IsNotEmpty())
+            if (StringExtensions.IsNotEmpty(Nonce))
                 data.nonce = Nonce;
             if (Ttl.HasValue)
                 data.ttl = Ttl.Value.TotalMilliseconds.ToString(CultureInfo.InvariantCulture);

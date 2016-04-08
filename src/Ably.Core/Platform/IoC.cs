@@ -7,7 +7,7 @@ namespace IO.Ably.Platform
     /// <summary>This class initializes dynamically-injected platform dependencies.</summary>
     public static class IoC
     {
-        static IPlatform s_platform;
+        static readonly IPlatform Platform;
 
         /// <summary>Load AblyPlatform.dll, instantiate AblyPlatform.PlatformImpl type.</summary>
         static IoC()
@@ -18,28 +18,16 @@ namespace IO.Ably.Platform
             if( null == tpImpl )
                 throw new Exception( "Fatal error: AblyPlatform.dll doesn't contain AblyPlatform.PlatformImpl type" );
             object obj = Activator.CreateInstance( tpImpl );
-            s_platform = obj as IPlatform;
+            Platform = obj as IPlatform;
         }
 
-        public static string getConnectionString()
+        public static string GetConnectionString()
         {
-            return s_platform.getConnectionString();
+            return Platform.GetConnectionString();
         }
 
-        public static ICrypto crypto
-        {
-            get
-            {
-                return s_platform.getCrypto();
-            }
-        }
+        public static ICrypto Crypto => Platform.GetCrypto();
 
-        public static ITransportFactory webSockets
-        {
-            get
-            {
-                return s_platform.getWebSocketsFactory();
-            }
-        }
+        public static ITransportFactory WebSockets => Platform.GetWebSocketsFactory();
     }
 }

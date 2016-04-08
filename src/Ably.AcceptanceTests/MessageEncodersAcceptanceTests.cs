@@ -34,7 +34,7 @@ namespace IO.Ably.AcceptanceTests
                 _client.ExecuteHttpRequest = request =>
                 {
                     currentRequest = request;
-                    return "{}".response();
+                    return "{}".ToAblyResponse();
                 };
             }
 
@@ -94,7 +94,7 @@ namespace IO.Ably.AcceptanceTests
                 _client.ExecuteHttpRequest = request =>
                 {
                     currentRequest = request;
-                    return "{}".response();
+                    return "{}".ToAblyResponse();
                 };
             }
 
@@ -173,7 +173,7 @@ namespace IO.Ably.AcceptanceTests
                 _client.ExecuteHttpRequest = request =>
                 {
                     currentRequest = request;
-                    return "{}".response();
+                    return "{}".ToAblyResponse();
                 };
             }
 
@@ -232,7 +232,7 @@ namespace IO.Ably.AcceptanceTests
                 _client.ExecuteHttpRequest = request =>
                 {
                     currentRequest = request;
-                    return "{}".response();
+                    return "{}".ToAblyResponse();
                 };
             }
 

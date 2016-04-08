@@ -19,7 +19,7 @@ namespace IO.Ably
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public AblyRest()
         {
-            var key = Platform.IoC.getConnectionString();
+            var key = Platform.IoC.GetConnectionString();
             if( string.IsNullOrEmpty( key ) )
                 throw new AblyException( "A connection string with key 'Ably' doesn't exist in the application configuration" );
             _options = new AblyOptions( key );
@@ -84,7 +84,7 @@ namespace IO.Ably
 
         string GetHost()
         {
-            if (_options.Host.IsNotEmpty())
+            if (StringExtensions.IsNotEmpty(_options.Host))
                 return _options.Host;
 
             return Config.DefaultHost;
@@ -131,17 +131,17 @@ namespace IO.Ably
 
         bool TokenCreatedExternally
         {
-            get { return Options.AuthUrl.IsNotEmpty() || Options.AuthCallback != null; }
+            get { return StringExtensions.IsNotEmpty(Options.AuthUrl) || Options.AuthCallback != null; }
         }
 
         bool HasApiKey
         {
-            get { return Options.Key.IsNotEmpty(); }
+            get { return StringExtensions.IsNotEmpty(Options.Key); }
         }
 
         bool HasTokenId
         {
-            get { return Options.Token.IsNotEmpty(); }
+            get { return StringExtensions.IsNotEmpty(Options.Token); }
         }
 
         public bool TokenRenewable

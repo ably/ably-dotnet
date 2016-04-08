@@ -1,14 +1,20 @@
 ﻿using System.Collections.Specialized;
 using System.Net;
+using System.Net.Http.Headers;
 using Xunit;
 
 namespace IO.Ably.Tests
 {
+    public class TestHttpHeaders : HttpHeaders
+    {
+        
+    }
+
     public class DataRequestQueryTests
     {
-        public static WebHeaderCollection GetSampleHistoryRequestHeaders()
+        public static HttpHeaders GetSampleHistoryRequestHeaders()
         {
-            var headers = new WebHeaderCollection();
+            var headers = new TestHttpHeaders();
 
             headers.Add("Link", string.Format("<./history{0}>; rel=\"first\"", FirstQueryString));
             headers.Add("Link", string.Format("<./history{0}>; rel=\"next\"", NextQueryString));
@@ -16,9 +22,9 @@ namespace IO.Ably.Tests
             return headers;
         }
 
-        public static WebHeaderCollection GetSampleStatsRequestHeaders()
+        public static HttpHeaders GetSampleStatsRequestHeaders()
         {
-            var headers = new WebHeaderCollection();
+            var headers = new TestHttpHeaders();
 
             headers.Add("Link", string.Format("<./stats{0}>; rel=\"first\"", FirstQueryString));
             headers.Add("Link", string.Format("<./stats{0}>; rel=\"next\"", NextQueryString));

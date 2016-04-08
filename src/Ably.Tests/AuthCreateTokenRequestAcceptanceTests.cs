@@ -1,6 +1,5 @@
 using System;
 using FluentAssertions;
-using FluentAssertions.Common;
 using Xunit;
 
 namespace IO.Ably.Tests
@@ -23,7 +22,7 @@ namespace IO.Ably.Tests
             rest.ExecuteHttpRequest = (request) =>
             {
                 CurrentRequest = request;
-                return "{}".response();
+                return "{}".ToAblyResponse();
             };
 
             Config.Now = () => Now;
@@ -104,23 +103,23 @@ namespace IO.Ably.Tests
         public void WithQueryTimeQueriesForTimestamp()
         {
             var currentTime = Config.Now().ToUnixTimeInMilliseconds();
-            Client.ExecuteHttpRequest = x => ( "[" + currentTime + "]" ).jsonResponse();
+            Client.ExecuteHttpRequest = x => ( "[" + currentTime + "]" ).ToAblyJsonResponse();
             var data = Client.Auth.CreateTokenRequest(null, new AuthOptions() {QueryTime = true}).Result;
             data.timestamp.Should().Be(currentTime.ToString());
         }
 
         [Fact]
-        public void WithOutKeyIdThrowsException()
+        public async void WithOutKeyIdThrowsException()
         {
             var client = new AblyRest(new AblyOptions());
-            Assert.Throws<AblyException>(delegate { client.Auth.CreateTokenRequest(null, null); });
+            await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequest(null, null));
         }
 
         [Fact]
-        public void WithOutKeyValueThrowsException()
+        public async void WithOutKeyValueThrowsException()
         {
             var client = new AblyRest(new AblyOptions() { Key = "111.222"});
-            Assert.Throws<AblyException>(delegate { client.Auth.CreateTokenRequest(null, null); });
+            await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequest(null, null));
         }
 
         [Fact]

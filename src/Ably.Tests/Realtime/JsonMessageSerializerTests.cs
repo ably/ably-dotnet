@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using FluentAssertions;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Extensions;
@@ -62,6 +63,12 @@ namespace IO.Ably.Tests
             }
         }
 
+        private string Serialize(ProtocolMessage message)
+        {
+            JsonMessageSerializer serializer = new JsonMessageSerializer();
+            return serializer.SerializeProtocolMessage(message) as string;
+        }
+
         //
         // Serialization tests
         //
@@ -76,16 +83,12 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_Action(ProtocolMessage.MessageAction messageAction)
         {
             // Arrange
-            JsonMessageSerializer serializer = new JsonMessageSerializer();
+            
             ProtocolMessage message = new ProtocolMessage(messageAction);
             string expectedMessage = string.Format("{{\"action\":{0},\"msgSerial\":0}}", (int)messageAction);
 
             // Act
-            object result = serializer.SerializeProtocolMessage(message);
-
-            // Assert
-            Assert.IsType<string>(result);
-            Assert.Equal<string>(expectedMessage, result as string);
+            Serialize(message).Should().Be(expectedMessage);
         }
 
         [Theory]
@@ -107,12 +110,8 @@ namespace IO.Ably.Tests
             }
             expectedMessage.Append(",\"msgSerial\":0}");
 
-            // Act
-            object result = serializer.SerializeProtocolMessage(message);
-
-            // Assert
-            Assert.IsType<string>(result);
-            Assert.Equal<string>(expectedMessage.ToString(), result as string);
+            // Act & Assert
+            Serialize(message).Should().Be(expectedMessage.ToString());
         }
 
         [Theory]
@@ -123,7 +122,6 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_MsgSerial(long msgSerial)
         {
             // Arrange
-            JsonMessageSerializer serializer = new JsonMessageSerializer();
             ProtocolMessage message = new ProtocolMessage() { msgSerial = msgSerial };
             StringBuilder expectedMessage = new StringBuilder();
             expectedMessage.Append("{\"action\":0")
@@ -131,11 +129,8 @@ namespace IO.Ably.Tests
                 .Append("}");
 
             // Act
-            object result = serializer.SerializeProtocolMessage(message);
+            Serialize(message).Should().Be(expectedMessage.ToString());
 
-            // Assert
-            Assert.IsType<string>(result);
-            Assert.Equal<string>(expectedMessage.ToString(), result as string);
         }
 
         [Fact]
@@ -145,16 +140,12 @@ namespace IO.Ably.Tests
             JsonMessageSerializer serializer = new JsonMessageSerializer();
             ProtocolMessage message = new ProtocolMessage() { messages = null };
 
-            // Act
-            object result = serializer.SerializeProtocolMessage(message);
-
-            // Assert
-            Assert.IsType<string>(result);
-            Assert.Equal<string>("{\"action\":0,\"msgSerial\":0}", result as string);
+            // Act & Assert
+            Serialize(message).Should().Be("{\"action\":0,\"msgSerial\":0}");
         }
 
         [Theory]
-        [PropertyData("Messages")]
+        [MemberData("Messages")]
         public void SerializesMessageCorrectly_Messages(params Message[] messages)
         {
             // Arrange
@@ -174,16 +165,12 @@ namespace IO.Ably.Tests
             }
             expectedMessage.Append("}");
 
-            // Act
-            object result = serializer.SerializeProtocolMessage(message);
-
-            // Assert
-            Assert.IsType<string>(result);
-            Assert.Equal<string>(expectedMessage.ToString(), result as string);
+            // Act & Assert
+            Serialize(message).Should().Be(expectedMessage.ToString());
         }
 
         [Theory]
-        [PropertyData("PresenceMessages")]
+        [MemberData("PresenceMessages")]
         public void SerializesMessageCorrectly_Presence(params PresenceMessage[] messages)
         {
             // Arrange
@@ -198,12 +185,8 @@ namespace IO.Ably.Tests
             expectedMessage.Remove(expectedMessage.Length - 1, 1) // last comma
                 .Append("]}");
 
-            // Act
-            object result = serializer.SerializeProtocolMessage(message);
-
-            // Assert
-            Assert.IsType<string>(result);
-            Assert.Equal<string>(expectedMessage.ToString(), result as string);
+            // Act & Assert
+            Serialize(message).Should().Be(expectedMessage.ToString());
         }
 
         //
@@ -412,7 +395,7 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [PropertyData("JsonMessages")]
+        [MemberData("JsonMessages")]
         public void DeserializesMessageCorrectly_Messages(string messageJson, params Message[] expectedMessages)
         {
             // Arrange
@@ -435,7 +418,7 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [PropertyData("JsonPresence")]
+        [MemberData("JsonPresence")]
         public void DeserializesMessageCorrectly_Presence(string messageJson, params PresenceMessage[] expectedMessages)
         {
             // Arrange

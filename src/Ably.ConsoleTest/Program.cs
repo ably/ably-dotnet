@@ -9,7 +9,7 @@ namespace IO.Ably.ConsoleTest
             IO.Ably.Logger.SetDestination( new MyLogger() );
             try
             {
-                Rest.test().Wait();
+                Rest.Test().Wait();
                 // Realtime.test().Wait();
                 ConsoleColor.Green.writeLine( "Success!" );
             }

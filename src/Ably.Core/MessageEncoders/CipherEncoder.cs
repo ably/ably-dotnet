@@ -65,7 +65,7 @@ namespace IO.Ably.MessageEncoders
 
         private bool IsEncrypted(IEncodedMessage payload)
         {
-            return payload.encoding.IsNotEmpty() && payload.encoding.Contains(EncodingName);
+            return StringExtensions.IsNotEmpty(payload.encoding) && payload.encoding.Contains(EncodingName);
         }
 
         public CipherEncoder(Protocol protocol)

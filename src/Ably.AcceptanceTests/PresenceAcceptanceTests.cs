@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -30,31 +31,31 @@ namespace IO.Ably.AcceptanceTests
         }
 
         [Test]
-        public void GetsPeoplePresentOnTheChannel()
+        public async Task GetsPeoplePresentOnTheChannel()
         {
             string channelName = "persisted:presence_fixtures";
             var ably = GetAbly();
             var channel = ably.Channels.Get(channelName);
-            var presence = channel.Presence().Result;
+            var presence = await channel.Presence();
 
             presence.Should().HaveCount(4);
-            foreach (var pMessage in presence)
+            foreach (var presenceMessage in presence)
             {
-                pMessage.action.Should().Be(PresenceMessage.ActionType.Present);
+                presenceMessage.action.Should().Be(PresenceMessage.ActionType.Present);
             }
         }
 
         [Test]
-        public void GetsPagedPresenceMessages()
+        public async Task GetsPagedPresenceMessages()
         {
             string channelName = "persisted:presence_fixtures";
             var ably = GetAbly();
             var channel = ably.Channels.Get(channelName);
-            var presence = channel.PresenceHistory(new DataRequestQuery() {Limit=2}).Result;
+            var presence = await channel.PresenceHistory(new DataRequestQuery {Limit=2});
 
             presence.Should().HaveCount(2);
             presence.HasNext.Should().BeTrue();
-            var nextPage = channel.PresenceHistory(presence.NextQuery).Result;
+            var nextPage = await channel.PresenceHistory(presence.NextQuery);
             nextPage.Should().HaveCount(2);
         }
     }

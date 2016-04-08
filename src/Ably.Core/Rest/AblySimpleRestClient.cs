@@ -63,7 +63,7 @@ namespace IO.Ably.Rest
 
         private static string GetHost(AblyOptions options)
         {
-            if (options.Host.IsNotEmpty())
+            if (StringExtensions.IsNotEmpty(options.Host))
                 return options.Host;
 
             return Config.DefaultHost;

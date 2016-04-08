@@ -29,7 +29,7 @@ namespace IO.Ably.Types.MsgPack
 
             // Find prop name
             var jp = this.pi.GetCustomAttribute<JsonPropertyAttribute>();
-            if( null != jp && jp.PropertyName.notEmpty() )
+            if( null != jp && jp.PropertyName.IsNotEmpty() )
                 this.name = jp.PropertyName;
 
             if( null != serializeName )
@@ -42,7 +42,7 @@ namespace IO.Ably.Types.MsgPack
                 this.shouldSerializeMethod = ( obj ) => (bool)mi.Invoke( obj, null );
 
             // Fill those delegates
-            if( pi.PropertyType == typeof( int ) || pi.PropertyType.GetTypeInfo().IsEnum )
+            if( pi.PropertyType == typeof( int ) || pi.PropertyType.IsEnum )
             {
                 this.deserialize = ( unp, obj ) =>
                 {

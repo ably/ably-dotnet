@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace IO.Ably.Tests
@@ -14,7 +15,7 @@ namespace IO.Ably.Tests
         {
             var rest = new AblyRest(opts => { opts.Key = ValidKey; opts.UseBinaryProtocol = false; });
 
-            rest.ExecuteHttpRequest = x => { _currentRequest = x; return new AblyResponse().task(); };
+            rest.ExecuteHttpRequest = x => { _currentRequest = x; return new AblyResponse().ToTask(); };
             return rest;
         }
 
@@ -22,13 +23,13 @@ namespace IO.Ably.Tests
     public class TimeTests : RestApiTests
     {
         [Fact]
-        public void Time_ShouldSendGetRequestToCorrectPathWithCorrectHeaders()
+        public async Task Time_ShouldSendGetRequestToCorrectPathWithCorrectHeaders()
         {
             var rest = GetRestClient();
 
             try
             {
-                rest.Time();
+                await rest.Time();
             }
             catch
             {

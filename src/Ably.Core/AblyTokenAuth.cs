@@ -22,7 +22,12 @@ namespace IO.Ably
         // Buffer in seconds before a token is considered unusable
         private const int TokenExpireBufer = 15;
 
-        internal TokenDetails CurrentToken;
+        //TODO: MG: Temporary ugliness. I want to get the tests passing before fixing this shit.
+        private TokenDetails CurrentToken
+        {
+            get { return (_rest as AblyRest).CurrentToken; }
+            set { (_rest as AblyRest).CurrentToken = value; }
+        }
 
         /// <summary>
         /// Makes a token request. This will make a token request now, even if the library already
@@ -32,7 +37,7 @@ namespace IO.Ably
         /// <param name="options">Extra <see cref="AuthOptions"/> used for creating a token </param>
         /// <returns>A valid ably token</returns>
         /// <exception cref="AblyException"></exception>
-        public async Task<TokenDetails> RequestToken( TokenRequest requestData, AuthOptions options )
+        public async Task<TokenDetails> RequestToken(TokenRequest requestData, AuthOptions options)
         {
             var mergedOptions = options != null ? options.Merge(_options) : _options;
             string keyId = "", keyValue = "";
@@ -69,7 +74,7 @@ namespace IO.Ably
                 throw new AblyException("AuthCallback returned an invalid token");
             }
 
-            if (mergedOptions.AuthUrl.IsNotEmpty())
+            if (StringExtensions.IsNotEmpty(mergedOptions.AuthUrl))
             {
                 var url = mergedOptions.AuthUrl;
                 var protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
@@ -98,21 +103,21 @@ namespace IO.Ably
 
                 postData = JsonConvert.DeserializeObject<TokenRequestPostData>(signedData);
 
-                request.Url = String.Format( "/keys/{0}/requestToken", postData.keyName );
+                request.Url = String.Format("/keys/{0}/requestToken", postData.keyName);
             }
             else
             {
                 postData = data.GetPostData(keyValue);
             }
 
-            if( mergedOptions.QueryTime )
+            if (mergedOptions.QueryTime)
                 postData.timestamp = (await _rest.Time()).ToUnixTimeInMilliseconds().ToString();
 
             request.PostData = postData;
 
             TokenDetails result = await _rest.ExecuteRequest<TokenDetails>(request);
 
-            if( null == result )
+            if (null == result)
                 throw new AblyException(new ErrorInfo("Invalid token response returned", 500));
             return result;
         }
@@ -179,8 +184,8 @@ namespace IO.Ably
             data.KeyName = data.KeyName ?? key.KeyName;
 
             var postData = data.GetPostData(key.KeySecret);
-            if( mergedOptions.QueryTime )
-                postData.timestamp = ( await _rest.Time() ).ToUnixTimeInMilliseconds().ToString();
+            if (mergedOptions.QueryTime)
+                postData.timestamp = (await _rest.Time()).ToUnixTimeInMilliseconds().ToString();
 
             return postData;
         }

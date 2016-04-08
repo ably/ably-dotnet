@@ -10,34 +10,25 @@ using System.Threading.Tasks;
 
 namespace IO.Ably.Tests
 {
+    internal class FakeHttpClient : IAblyHttpClient
+    {
+        public Func<AblyRequest, AblyResponse> ExecuteFunc = delegate { return new AblyResponse(); };
+        public Task<AblyResponse> Execute(AblyRequest request)
+        {
+            return Task.FromResult(ExecuteFunc(request));
+        }
+    }
+
     public class RestTests
     {
         private const string ValidKey = "1iZPfA.BjcI_g:wpNhw5RCw6rDjisl";
         private readonly ApiKey Key = ApiKey.Parse(ValidKey);
 
-        class FakeHttpClient : IAblyHttpClient
-        {
-            public Func<AblyRequest, AblyResponse> ExecuteFunc = delegate { return new AblyResponse(); };
-            public Task<AblyResponse> Execute(AblyRequest request)
-            {
-                return Task<AblyResponse>.FromResult( ExecuteFunc( request ) );
-            }
-        }
+        
 
         private static AblyRest GetRestClient()
         {
             return new AblyRest(new AblyOptions() { UseBinaryProtocol = false, Key = ValidKey });
-        }
-
-        [Fact]
-        public void Ctor_WithNoParametersAndAblyConnectionString_RetrievesApiKeyFromConnectionString()
-        {
-            Assert.DoesNotThrow(delegate
-            {
-                var rest = new AblyRest();
-
-                Assert.NotNull(rest);
-            });
         }
 
         [Fact]
@@ -110,7 +101,7 @@ namespace IO.Ably.Tests
 
             var rest = new AblyRest(options);
 
-            rest.ExecuteHttpRequest = delegate { return "[{}]".response(); };
+            rest.ExecuteHttpRequest = delegate { return "[{}]".ToAblyResponse(); };
 
             rest.Stats();
 
@@ -134,15 +125,15 @@ namespace IO.Ably.Tests
                 if (request.Url.Contains(options.AuthUrl))
                 {
                     called = true;
-                    return "{}".response();
+                    return "{}".ToAblyResponse();
                 }
 
                 if (request.Url.Contains("requestToken"))
                 {
-                    return ( "{ \"access_token\": { \"expires\": \"" + DateTime.UtcNow.AddHours( 1 ).ToUnixTimeInMilliseconds() + "\"}}" ).response();
+                    return ( "{ \"access_token\": { \"expires\": \"" + DateTime.UtcNow.AddHours( 1 ).ToUnixTimeInMilliseconds() + "\"}}" ).ToAblyResponse();
                 }
 
-                return "[{}]".response();
+                return "[{}]".ToAblyResponse();
             };
 
             rest.Stats();
@@ -170,7 +161,7 @@ namespace IO.Ably.Tests
             rest.ExecuteHttpRequest = request =>
             {
                 Console.WriteLine("Getting an AblyResponse.");
-                return "[{}]".response();
+                return "[{}]".ToAblyResponse();
             };
             rest.CurrentToken = new TokenDetails() { Expires = DateTime.UtcNow.AddDays(-2) };
 
@@ -197,7 +188,7 @@ namespace IO.Ably.Tests
             {
                 //Assert
                 request.Headers["Authorization"].Should().Contain(token.Token.ToBase64());
-                return "[{}]".response();
+                return "[{}]".ToAblyResponse();
             };
 
             rest.Stats();
@@ -248,7 +239,7 @@ namespace IO.Ably.Tests
             var rest = GetRestClient();
 
             AblyRequest request = null;
-            rest.ExecuteHttpRequest = x => { request = x; return "[{  }]".jsonResponse(); };
+            rest.ExecuteHttpRequest = x => { request = x; return "[{  }]".ToAblyJsonResponse(); };
             rest.Stats();
 
             Assert.Equal(HttpMethod.Get, request.Method);
@@ -261,7 +252,7 @@ namespace IO.Ably.Tests
         {
             var rest = GetRestClient();
             AblyRequest request = null;
-            rest.ExecuteHttpRequest = x => { request = x; return "[{}]".response(); };
+            rest.ExecuteHttpRequest = x => { request = x; return "[{}]".ToAblyResponse(); };
             var query = new StatsDataRequestQuery();
             DateTime now = DateTime.Now;
             query.Start = now.AddHours(-1);
@@ -289,7 +280,7 @@ namespace IO.Ably.Tests
                     Headers = DataRequestQueryTests.GetSampleStatsRequestHeaders(),
                     TextResponse = "[{}]"
                 };
-                return response.task();
+                return response.ToTask();
             };
 
             //Act

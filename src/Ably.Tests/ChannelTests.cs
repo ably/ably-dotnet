@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Http;
 using Newtonsoft.Json;
 using Xunit;
-using System.Threading;
 using IO.Ably.Encryption;
 using IO.Ably.Rest;
 using Xunit.Extensions;
@@ -39,18 +37,17 @@ namespace IO.Ably.Tests
             Assert.Equal("event", data.name);
         }
 
-        //TODO: Move test to RequestHandlerTests
-        //[Fact]
-        //public void Publish_WithBinaryArrayData_AddsBase64EncodingToRequest()
-        //{
-        //    var rest = GetRestClient();
-        //    var channel = rest.Channels.Get("Test");
-        //    channel.Publish("event", new byte[] { 1, 2});
+        [Fact]
+        public void Publish_WithBinaryArrayData_AddsBase64EncodingToRequest()
+        {
+            var rest = GetRestClient();
+            var channel = rest.Channels.Get("Test");
+            channel.Publish("event", new byte[] { 1, 2 });
 
-        //    Assert.IsType<Message>(_currentRequest.PostData);
-        //    var postData = _currentRequest.PostData as Message;
-        //    Assert.Equal("base64", postData.Encoding);
-        //}
+            Assert.IsType<List<Message>>(_currentRequest.PostData);
+            var postData = (_currentRequest.PostData as IList<Message>).First();
+            Assert.Equal("base64", postData.encoding);
+        }
 
         [Fact]
         public void Publish_WithMessages_CreatesPostRequestToMessagesRoute()
@@ -89,7 +86,7 @@ namespace IO.Ably.Tests
             rest.ExecuteHttpRequest = delegate(AblyRequest request)
             {
                 _currentRequest = request;
-                return "[]".response();
+                return "[]".ToAblyResponse();
             };
             channel.History();
 
@@ -104,7 +101,7 @@ namespace IO.Ably.Tests
             rest.ExecuteHttpRequest = delegate(AblyRequest request)
             {
                 _currentRequest = request;
-                return "[]".response();
+                return "[]".ToAblyResponse();
             };
             var channel = rest.Channels.Get("Test");
             var query = new DataRequestQuery();
@@ -134,7 +131,7 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [PropertyData("InvalidHistoryDates")]
+        [MemberData("InvalidHistoryDates")]
         public void History_WithInvalidStartOrEnd_Throws(DateTime? start, DateTime? end)
         {
             var rest = GetRestClient();
@@ -157,7 +154,7 @@ namespace IO.Ably.Tests
                             Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
                             TextResponse = "[]"
                         };
-                    return response.task();
+                    return response.ToTask();
                 };
             var channel = rest.Channels.Get("test");
 
@@ -185,7 +182,7 @@ namespace IO.Ably.Tests
                     Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
                     TextResponse = string.Format("[{0}]", JsonConvert.SerializeObject(message))
                 };
-                return response.task();
+                return response.ToTask();
             };
 
             var channel = rest.Channels.Get("test", new ChannelOptions(defaultParams));
@@ -216,7 +213,7 @@ namespace IO.Ably.Tests
             rest.ExecuteHttpRequest = request =>
                 {
                     _currentRequest = request;
-                    return "[]".response();
+                    return "[]".ToAblyResponse();
                 };
             var channel = rest.Channels.Get("Test");
 

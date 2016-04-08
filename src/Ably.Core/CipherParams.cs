@@ -22,7 +22,7 @@ namespace IO.Ably
 
         public CipherParams(string algorithm, byte[] key, CipherMode? mode = null, int? keyLength = null, byte[] iv = null)
         {
-            Algorithm = algorithm.IsEmpty() ? Crypto.DefaultAlgorithm : algorithm;
+            Algorithm = StringExtensions.IsEmpty(algorithm) ? Crypto.DefaultAlgorithm : algorithm;
             Key = key;
             Mode = mode ?? Crypto.DefaultMode;
             KeyLength = keyLength ?? Crypto.DefaultKeylength;

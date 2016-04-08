@@ -76,23 +76,23 @@ namespace IO.Ably.Encryption
 
         internal static CipherParams GetDefaultParams()
         {
-            return Platform.IoC.crypto.GetDefaultParams();
+            return Platform.IoC.Crypto.GetDefaultParams();
         }
 
         internal static IChannelCipher GetCipher( ChannelOptions opts )
         {
             CipherParams p = opts.CipherParams ?? GetDefaultParams();
-            return Platform.IoC.crypto.GetCipher( p );
+            return Platform.IoC.Crypto.GetCipher( p );
         }
 
         internal static IChannelCipher GetCipher( CipherParams p )
         {
-            return Platform.IoC.crypto.GetCipher( p );
+            return Platform.IoC.Crypto.GetCipher( p );
         }
 
         internal static string ComputeHMacSha256( string text, string key )
         {
-            return Platform.IoC.crypto.ComputeHMacSha256( text, key );
+            return Platform.IoC.Crypto.ComputeHMacSha256( text, key );
         }
 
         /* public static CipherParams GetDefaultParams()

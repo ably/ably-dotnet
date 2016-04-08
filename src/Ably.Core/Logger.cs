@@ -78,50 +78,6 @@ namespace IO.Ably
             Message( LogLevel.Error, "{0} {1}", message, GetExceptionDetails( ex ) );
         }
 
-        /// <summary>Ably error JSON response</summary>
-        [JsonObject]
-        class jAblyErrorStatus
-        {
-            [JsonObject]
-            public class jError
-            {
-                [JsonProperty]
-                public int? statusCode, code;
-
-                [JsonProperty]
-                public string message;
-            }
-
-            [JsonProperty]
-            public jError error;
-
-            public override string ToString()
-            {
-                if( null == error )
-                    return base.ToString();
-                StringBuilder sb = new StringBuilder( 128 );
-                if( error.statusCode.HasValue )
-                    sb.appendAfterDelim(", ", "statusCode = {0}", error.statusCode.Value );
-                if( error.code.HasValue )
-                    sb.appendAfterDelim( ", ", "code = {0}", error.code.Value );
-                if( error.message.notEmpty() )
-                    sb.appendAfterDelim( ", ", "message = {0}", error.message );
-                return sb.ToString();
-            }
-        }
-
-        /// <summary>Logs an erroneous response received from the server.</summary>
-        /// <param name="response"></param>
-        internal static void ErrorResponse( AblyResponse response )
-        {
-            StringBuilder sb = new StringBuilder( 256 );
-            sb.AppendFormat( "Server sent an error, HTTP status = {0}", response.StatusCode );
-
-            jAblyErrorStatus es = JsonConvert.DeserializeObject<jAblyErrorStatus>( response.TextResponse );
-            sb.AppendFormat( ", {0}", es.ToString() );
-            Error( "{0}", sb.ToString() );
-        }
-
         /// <summary>Log an error message.</summary>
         internal static void Error( string message, params object[] args )
         {
