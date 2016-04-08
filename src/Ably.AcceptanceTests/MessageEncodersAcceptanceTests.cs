@@ -30,7 +30,7 @@ namespace IO.Ably.AcceptanceTests
 
             public WithTextProtocolWithoutEncryption()
             {
-                _client = new AblyRest(new AblyOptions() { Key = fakeKey, UseBinaryProtocol = false});
+                _client = new AblyRest(new ClientOptions() { Key = fakeKey, UseBinaryProtocol = false});
                 _client.ExecuteHttpRequest = request =>
                 {
                     currentRequest = request;
@@ -90,7 +90,7 @@ namespace IO.Ably.AcceptanceTests
             public WithTextProtocolWithEncryption()
             {
                 options = new ChannelOptions(Crypto.GetDefaultParams());
-                _client = new AblyRest(new AblyOptions() { Key = fakeKey, UseBinaryProtocol = false});
+                _client = new AblyRest(new ClientOptions() { Key = fakeKey, UseBinaryProtocol = false});
                 _client.ExecuteHttpRequest = request =>
                 {
                     currentRequest = request;
@@ -169,7 +169,7 @@ namespace IO.Ably.AcceptanceTests
 
             public WithBinaryProtocolWithoutEncryption()
             {
-                _client = new AblyRest(new AblyOptions() { Key = fakeKey, UseBinaryProtocol = true});
+                _client = new AblyRest(new ClientOptions() { Key = fakeKey, UseBinaryProtocol = true});
                 _client.ExecuteHttpRequest = request =>
                 {
                     currentRequest = request;
@@ -228,7 +228,7 @@ namespace IO.Ably.AcceptanceTests
             public WithBinaryProtocolWithEncryption()
             {
                 options = new ChannelOptions(Crypto.GetDefaultParams());
-                _client = new AblyRest(new AblyOptions() { Key = fakeKey, UseBinaryProtocol = true});
+                _client = new AblyRest(new ClientOptions() { Key = fakeKey, UseBinaryProtocol = true});
                 _client.ExecuteHttpRequest = request =>
                 {
                     currentRequest = request;

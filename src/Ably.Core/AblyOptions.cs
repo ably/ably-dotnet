@@ -5,7 +5,7 @@ namespace IO.Ably
     /// <summary>
     /// Ably options class. It is used to instantiate Ably.Rest.Client
     /// </summary>
-    public class AblyOptions : AuthOptions
+    public class ClientOptions : AuthOptions
     {
         /// <summary>
         /// The id of the client represented by this instance. The clientId is relevant
@@ -64,9 +64,9 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// Defaul constructor for AblyOptions
+        /// Defaul constructor for ClientOptions
         /// </summary>
-        public AblyOptions()
+        public ClientOptions()
         {
             Tls = true;
             UseBinaryProtocol = true;
@@ -74,11 +74,11 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// Construct AblyOptions class and set the Key
+        /// Construct ClientOptions class and set the Key
         /// It automatically parses the key to ensure the correct format is used and sets the KeyId and KeyValue properties
         /// </summary>
         /// <param name="key">Ably authentication key</param>
-        public AblyOptions(string key) : base(key)
+        public ClientOptions(string key) : base(key)
         {
             Tls = true;
             UseBinaryProtocol = true;

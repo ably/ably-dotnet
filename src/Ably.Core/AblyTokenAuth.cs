@@ -10,13 +10,13 @@ namespace IO.Ably
 {
     public class AblyTokenAuth : IAuthCommands
     {
-        internal AblyTokenAuth(AblyOptions options, Rest.IAblyRest rest)
+        internal AblyTokenAuth(ClientOptions options, Rest.IAblyRest rest)
         {
             _options = options;
             _rest = rest;
         }
 
-        private AblyOptions _options;
+        private ClientOptions _options;
         private TokenRequest _lastTokenRequest;
         private Rest.IAblyRest _rest;
         // Buffer in seconds before a token is considered unusable

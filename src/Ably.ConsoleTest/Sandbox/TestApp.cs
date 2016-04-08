@@ -37,10 +37,10 @@ namespace IO.Ably.ConsoleTest.Sandbox
                 .ToArray();
         }
 
-        /// <summary>Construct <see cref="AblyOptions" /> targeting this sandbox application.</summary>
-        public AblyOptions ToAblyOptions()
+        /// <summary>Construct <see cref="ClientOptions" /> targeting this sandbox application.</summary>
+        public ClientOptions ToAblyOptions()
         {
-            AblyOptions res = new AblyOptions();
+            ClientOptions res = new ClientOptions();
             res.Key = keys[ 0 ].keyStr;
             res.Environment = environment;
             res.Tls = tls;

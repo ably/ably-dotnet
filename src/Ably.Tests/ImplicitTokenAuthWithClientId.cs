@@ -16,7 +16,7 @@ namespace IO.Ably.Tests
         public ImplicitTokenAuthWithClientId()
         {
             _clientId = "123";
-            Client = new AblyRest(new AblyOptions() {Key = ApiKey, ClientId = _clientId, UseBinaryProtocol = false});
+            Client = new AblyRest(new ClientOptions() {Key = ApiKey, ClientId = _clientId, UseBinaryProtocol = false});
             Client.ExecuteHttpRequest = request =>
             {
                 ExecutionCount++;

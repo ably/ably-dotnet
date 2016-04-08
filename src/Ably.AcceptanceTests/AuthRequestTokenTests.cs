@@ -48,7 +48,7 @@ namespace IO.Ably.AcceptanceTests
             token.Expires.Should().BeWithin( TimeSpan.FromSeconds( 30 ) ).Before( DateTime.UtcNow + ttl );
         }
 
-        private AblyRest GetRestClient( Action<AblyOptions> action = null )
+        private AblyRest GetRestClient( Action<ClientOptions> action = null )
         {
             var options = TestsSetup.GetDefaultOptions();
             action?.Invoke(options);
@@ -65,7 +65,7 @@ namespace IO.Ably.AcceptanceTests
             var ably = GetRestClient();
             var token = ably.Auth.RequestToken(createTokenRequest( capability ), null).Result;
 
-            var tokenAbly = new AblyRest(new AblyOptions {Token = token.Token, Environment = TestsSetup.TestData.Environment});
+            var tokenAbly = new AblyRest(new ClientOptions {Token = token.Token, Environment = TestsSetup.TestData.Environment});
 
             Assert.DoesNotThrow( delegate { tokenAbly.Channels.Get( "foo" ).Publish( "test", true ); } );
         }
@@ -80,7 +80,7 @@ namespace IO.Ably.AcceptanceTests
 
             var token = ably.Auth.RequestToken(createTokenRequest(capability), null).Result;
 
-            var tokenAbly = new AblyRest(new AblyOptions { Token = token.Token , Environment = AblyEnvironment.Sandbox});
+            var tokenAbly = new AblyRest(new ClientOptions { Token = token.Token , Environment = AblyEnvironment.Sandbox});
 
             var error = Assert.ThrowsAsync<AblyException>(() => tokenAbly.Channels.Get("boo").Publish("test", true));
             error.ErrorInfo.code.Should().Be(40160);

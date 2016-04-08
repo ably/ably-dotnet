@@ -19,7 +19,7 @@ namespace IO.Ably.AcceptanceTests
         }
 
         public static T GetDefaultOptions<T>()
-            where T : AblyOptions, new()
+            where T : ClientOptions, new()
         {
             return new T
             {
@@ -29,9 +29,9 @@ namespace IO.Ably.AcceptanceTests
             };
         }
 
-        public static AblyOptions GetDefaultOptions()
+        public static ClientOptions GetDefaultOptions()
         {
-            return GetDefaultOptions<AblyOptions>();
+            return GetDefaultOptions<ClientOptions>();
         }
 
         [OneTimeSetUp]

@@ -22,20 +22,20 @@ namespace IO.Ably
             var key = Platform.IoC.GetConnectionString();
             if( string.IsNullOrEmpty( key ) )
                 throw new AblyException( "A connection string with key 'Ably' doesn't exist in the application configuration" );
-            _options = new AblyOptions( key );
+            _options = new ClientOptions( key );
             InitializeAbly();
         }
 
         /// <summary>Initializes the RestClient using the api key provided</summary>
         /// <param name="apiKey">Full api key</param>
         public AblyRest(string apiKey)
-            : this(new AblyOptions(apiKey))
+            : this(new ClientOptions(apiKey))
         {
 
         }
 
         /// <summary>
-        /// Convenience method for initializing the RestClient by passing a Action{AblyOptions}
+        /// Convenience method for initializing the RestClient by passing a Action{ClientOptions}
         /// <example>
         /// var rest = new AblyRest(opt => {
         ///  opt.Key = "fake.key:value";
@@ -44,9 +44,9 @@ namespace IO.Ably
         /// </example>
         /// </summary>
         /// <param name="init">Action delegate which receives a empty options object.</param>
-        public AblyRest(Action<AblyOptions> init)
+        public AblyRest(Action<ClientOptions> init)
         {
-            _options = new AblyOptions();
+            _options = new ClientOptions();
             init(_options);
             InitializeAbly();
         }
@@ -54,10 +54,10 @@ namespace IO.Ably
         /// <summary>
         /// Initialize the library with a custom set of options
         /// </summary>
-        /// <param name="ablyOptions"></param>
-        public AblyRest(AblyOptions ablyOptions)
+        /// <param name="clientOptions"></param>
+        public AblyRest(ClientOptions clientOptions)
         {
-            _options = ablyOptions;
+            _options = clientOptions;
             InitializeAbly();
         }
 

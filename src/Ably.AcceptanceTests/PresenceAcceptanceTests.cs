@@ -20,7 +20,7 @@ namespace IO.Ably.AcceptanceTests
         {
             var testData = TestsSetup.TestData;
 
-            var options = new AblyOptions
+            var options = new ClientOptions
             {
                 Key = testData.keys.First().keyStr,
                 UseBinaryProtocol = _protocol == Protocol.MsgPack,

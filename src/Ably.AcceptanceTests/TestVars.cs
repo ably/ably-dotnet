@@ -18,12 +18,12 @@ namespace IO.Ably.AcceptanceTests
         public bool tls;
         internal AblyEnvironment Environment;
 
-        public AblyOptions CreateOptions(string key) {
-			var opts = new AblyOptions() { Key = key};
+        public ClientOptions CreateOptions(string key) {
+			var opts = new ClientOptions() { Key = key};
 			FillInOptions(opts);
 			return opts;
 		}
-		public void FillInOptions(AblyOptions opts) {
+		public void FillInOptions(ClientOptions opts) {
 			opts.Host = restHost;
 			opts.Port = restPort;
 			opts.Tls = tls;

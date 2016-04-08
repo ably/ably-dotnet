@@ -10,7 +10,7 @@ namespace IO.Ably.ConsoleTest
     {
         static AblyRest GetRestClient()
         {
-            AblyOptions options = new AblyOptions();
+            ClientOptions options = new ClientOptions();
             options.Environment = AblyEnvironment.Sandbox;
             options.Tls = true;
             options.UseBinaryProtocol = false;

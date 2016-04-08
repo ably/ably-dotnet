@@ -18,7 +18,7 @@ namespace IO.Ably.Tests
 
         private AblyRest GetRestClient()
         {
-            var rest = new AblyRest(new AblyOptions() { Key = ApiKey, UseBinaryProtocol = false});
+            var rest = new AblyRest(new ClientOptions() { Key = ApiKey, UseBinaryProtocol = false});
             rest.ExecuteHttpRequest = (request) =>
             {
                 CurrentRequest = request;
@@ -111,14 +111,14 @@ namespace IO.Ably.Tests
         [Fact]
         public async void WithOutKeyIdThrowsException()
         {
-            var client = new AblyRest(new AblyOptions());
+            var client = new AblyRest(new ClientOptions());
             await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequest(null, null));
         }
 
         [Fact]
         public async void WithOutKeyValueThrowsException()
         {
-            var client = new AblyRest(new AblyOptions() { Key = "111.222"});
+            var client = new AblyRest(new ClientOptions() { Key = "111.222"});
             await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequest(null, null));
         }
 

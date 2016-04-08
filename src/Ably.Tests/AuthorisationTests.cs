@@ -21,7 +21,7 @@ namespace IO.Ably.Tests
 
         private AblyRest GetRestClient()
         {
-            var rest = new AblyRest(new AblyOptions() { Key = ApiKey, UseBinaryProtocol = false});
+            var rest = new AblyRest(new ClientOptions() { Key = ApiKey, UseBinaryProtocol = false});
             rest.ExecuteHttpRequest = (request) =>
             {
                 CurrentRequest = request;

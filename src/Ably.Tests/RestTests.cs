@@ -28,7 +28,7 @@ namespace IO.Ably.Tests
 
         private static AblyRest GetRestClient()
         {
-            return new AblyRest(new AblyOptions() { UseBinaryProtocol = false, Key = ValidKey });
+            return new AblyRest(new ClientOptions() { UseBinaryProtocol = false, Key = ValidKey });
         }
 
         [Fact]
@@ -64,14 +64,14 @@ namespace IO.Ably.Tests
         [Fact]
         public void Init_WithKeyAndClientId_SetsAuthMethodToToken()
         {
-            var client = new AblyRest(new AblyOptions { Key = ValidKey, ClientId = "123" });
+            var client = new AblyRest(new ClientOptions { Key = ValidKey, ClientId = "123" });
             Assert.Equal(AuthMethod.Token, client.AuthMethod);
         }
 
         [Fact]
         public void Init_WithKeyNoClientIdAndAuthTokenId_SetsCurrentTokenWithSuppliedId()
         {
-            AblyOptions options = new AblyOptions { Key = ValidKey, ClientId = "123", Token = "222" };
+            ClientOptions options = new ClientOptions { Key = ValidKey, ClientId = "123", Token = "222" };
             var client = new AblyRest(options);
 
             Assert.Equal(options.Token, client.CurrentToken.Token);
@@ -93,7 +93,7 @@ namespace IO.Ably.Tests
         public void Init_WithCallback_ExecutesCallbackOnFirstRequest()
         {
             bool called = false;
-            var options = new AblyOptions
+            var options = new ClientOptions
             {
                 AuthCallback = (x) => { called = true; return new TokenDetails() { Expires = DateTime.UtcNow.AddHours(1) }; },
                 UseBinaryProtocol = false
@@ -112,7 +112,7 @@ namespace IO.Ably.Tests
         public void Init_WithAuthUrl_CallsTheUrlOnFirstRequest()
         {
             bool called = false;
-            var options = new AblyOptions
+            var options = new ClientOptions
             {
                 AuthUrl = "http://testUrl",
                 UseBinaryProtocol = false
@@ -146,7 +146,7 @@ namespace IO.Ably.Tests
         {
             Config.Now = () => DateTime.UtcNow;
             var newTokenRequested = false;
-            var options = new AblyOptions
+            var options = new ClientOptions
             {
                 AuthCallback = (x) => {
 
@@ -174,7 +174,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void ClientWithExistingTokenReusesItForMakingRequests()
         {
-            var options = new AblyOptions
+            var options = new ClientOptions
             {
                 ClientId = "test",
                 Key = "best",
@@ -199,7 +199,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void Init_WithTokenId_SetsTokenRenewableToFalse()
         {
-            var rest = new AblyRest(new AblyOptions() { Token = "token_id" });
+            var rest = new AblyRest(new ClientOptions() { Token = "token_id" });
 
             rest.TokenRenewable.Should().BeFalse();
         }

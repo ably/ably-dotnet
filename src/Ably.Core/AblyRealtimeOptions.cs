@@ -6,7 +6,7 @@ namespace IO.Ably
     /// <summary>
     /// Ably options class. It is used to instantiate Ably.Realtime.Client
     /// </summary>
-    public class AblyRealtimeOptions : AblyOptions
+    public class AblyRealtimeOptions : ClientOptions
     {
         /// <summary>
         /// If <c>false</c>, this disables the default behaviour whereby the library queues messages on a
@@ -46,7 +46,7 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// Construct AblyOptions class and set the Key
+        /// Construct ClientOptions class and set the Key
         /// It automatically parses the key to ensure the correct format is used and sets the KeyId and KeyValue properties
         /// </summary>
         /// <param name="key">Ably authentication key</param>

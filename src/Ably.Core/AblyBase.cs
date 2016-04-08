@@ -13,7 +13,7 @@ namespace IO.Ably
         private static readonly string InternetCheckOK = "yes";
 
         protected Protocol _protocol;
-        protected AblyOptions _options;
+        protected ClientOptions _options;
         internal AuthMethod AuthMethod;
         internal TokenDetails CurrentToken;
         private IAuthCommands _auth;
@@ -31,7 +31,7 @@ namespace IO.Ably
             get { return _protocol; }
         }
 
-        internal AblyOptions Options
+        internal ClientOptions Options
         {
             get { return _options; }
         }

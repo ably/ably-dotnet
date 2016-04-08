@@ -8,28 +8,28 @@ namespace IO.Ably.Tests
         [Fact]
         public void WhenProtocolIsNotDefined_DefaultsToMsgPack()
         {
-            var rest = new AblyRest(new AblyOptions());
+            var rest = new AblyRest(new ClientOptions());
             rest.Protocol.Should().Be(Protocol.MsgPack);
         }
 
         [Fact]
         public void WhenProtocolIsJson_RestProtocolIsSetToJson()
         {
-            var rest = new AblyRest(new AblyOptions() { UseBinaryProtocol = false});
+            var rest = new AblyRest(new ClientOptions() { UseBinaryProtocol = false});
             rest.Protocol.Should().Be(Protocol.Json);
         }
 
         [Fact]
         public void WhenUseBinaryIsFalse_ProtocolIsSetToJson()
         {
-            var rest = new AblyRest(new AblyOptions() {UseBinaryProtocol = false});
+            var rest = new AblyRest(new ClientOptions() {UseBinaryProtocol = false});
             rest.Protocol.Should().Be(Protocol.Json);
         }
 
         [Fact]
         public void WhenProtocolIsMsgPack_ProtocolIsSetToMsgPack()
         {
-            var rest = new AblyRest(new AblyOptions() { UseBinaryProtocol = true});
+            var rest = new AblyRest(new ClientOptions() { UseBinaryProtocol = true});
             rest.Protocol.Should().Be(Protocol.MsgPack);
         }
     }

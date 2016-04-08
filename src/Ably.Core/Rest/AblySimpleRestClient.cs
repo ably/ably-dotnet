@@ -9,11 +9,11 @@ namespace IO.Ably.Rest
 {
     internal class AblySimpleRestClient : IAblyRest
     {
-        public AblySimpleRestClient(AblyOptions options)
+        public AblySimpleRestClient(ClientOptions options)
             : this(options, new AblyHttpClient(GetHost(options), options.Port, options.Tls, options.Environment))
         { }
 
-        public AblySimpleRestClient(AblyOptions options, IAblyHttpClient httpClient)
+        public AblySimpleRestClient(ClientOptions options, IAblyHttpClient httpClient)
         {
             _options = options;
             _httpClient = httpClient;
@@ -21,7 +21,7 @@ namespace IO.Ably.Rest
             _messageHandler = new MessageHandler(_protocol);
         }
 
-        private AblyOptions _options;
+        private ClientOptions _options;
         private Protocol _protocol;
         private MessageHandler _messageHandler;
         private IAblyHttpClient _httpClient;
@@ -61,7 +61,7 @@ namespace IO.Ably.Rest
             return response.First().FromUnixTimeInMilliseconds();
         }
 
-        private static string GetHost(AblyOptions options)
+        private static string GetHost(ClientOptions options)
         {
             if (StringExtensions.IsNotEmpty(options.Host))
                 return options.Host;
