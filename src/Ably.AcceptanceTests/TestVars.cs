@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using IO.Ably.Transport;
 using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.AcceptanceTests
@@ -10,9 +11,9 @@ namespace IO.Ably.AcceptanceTests
         public List<Key> keys;
         public JObject TestAppSpec;
 
-        public string restHost
+        public string RestHost
         {
-            get { return Environment.ToString().ToLower() + "-" + Config.DefaultHost; }
+            get { return Environment.ToString().ToLower() + "-" + Defaults.RestHost; }
         }
         public int restPort;
         public bool tls;
@@ -24,7 +25,7 @@ namespace IO.Ably.AcceptanceTests
 			return opts;
 		}
 		public void FillInOptions(ClientOptions opts) {
-			opts.RestHost = restHost;
+			opts.RestHost = RestHost;
 			opts.Port = restPort;
 			opts.Tls = tls;
 		}

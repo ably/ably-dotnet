@@ -4,31 +4,36 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using IO.Ably.Transport;
 
 namespace IO.Ably
 {
     internal class AblyHttpClient : IAblyHttpClient
     {
-        internal static readonly MimeTypes MimeTypes = new MimeTypes();
-
-        private string _host;
-        private readonly int? _port;
-        private readonly bool _isSecure;
-        private readonly AblyEnvironment? _environment;
-
         //TODO: MG make sure this handles the fallback hosts as well
-        private bool IsDefaultHost => _host == Config.DefaultHost;
+        private bool IsDefaultHost => Host == Defaults.RestHost;
+
+        public bool IsSecure { get; }
+        public string Host { get; }
+        public int? Port { get; }
+        public AblyEnvironment? Environment { get; }
+
         private HttpClient _client;
 
-        public AblyHttpClient(string host) : this(host, null, true) { }
-
-        public AblyHttpClient(string host, int? port = null, bool isSecure = true, AblyEnvironment? environment = AblyEnvironment.Live)
+        public AblyHttpClient(string host = null, int? port = null, bool isSecure = true, AblyEnvironment? environment = AblyEnvironment.Live) : 
+            this(host, port, isSecure, environment, null)
         {
-            _isSecure = isSecure;
-            _environment = environment;
-            _port = port;
-            _host = host;
-            _client = new HttpClient();
+            
+        }
+
+        internal AblyHttpClient(string host, int? port, bool isSecure, AblyEnvironment? environment, HttpMessageHandler messageHandler)
+        {
+            IsSecure = isSecure;
+            Environment = environment;
+            Port = port;
+            Host = host ?? Defaults.RestHost;
+
+            _client = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
             _client.DefaultRequestHeaders.Add("X-Ably-Version", Config.AblyVersion);
             _client.Timeout = TimeSpan.FromSeconds(Config.ConnectTimeout);
         }
@@ -124,24 +129,24 @@ namespace IO.Ably
             };
         }
 
-        private Uri GetRequestUrl(AblyRequest request)
+        public Uri GetRequestUrl(AblyRequest request)
         {
-            string protocol = _isSecure ? "https://" : "http://";
+            string protocol = IsSecure ? "https://" : "http://";
             if (request.Url.StartsWith("http"))
                 return new Uri(request.Url);
             return new Uri(String.Format("{0}{1}{2}{3}{4}",
                                protocol,
                                GetHost(),
-                               _port.HasValue ? ":" + _port.Value : "",
+                               Port.HasValue ? ":" + Port.Value : "",
                                request.Url,
                                GetQuery(request)));
         }
 
         private string GetHost()
         {
-            if (IsDefaultHost && (_environment.HasValue && _environment != AblyEnvironment.Live))
-                return _environment.ToString().ToLower() + "-" + _host;
-            return _host;
+            if (IsDefaultHost && (Environment.HasValue && Environment != AblyEnvironment.Live))
+                return Environment.ToString().ToLower() + "-" + Host;
+            return Host;
         }
 
         private string GetQuery(AblyRequest request)

@@ -12,19 +12,8 @@ namespace IO.Ably
     /// <summary>Client for the ably rest API</summary>
     public sealed class AblyRest : AblyBase, IRestClient, IAblyRest
     {
-        internal IAblyHttpClient _httpClient;
-        internal MessageHandler _messageHandler;
-
-        /// <summary>Initializes the RestClient by reading the Key from a connection string with key 'Ably'</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public AblyRest()
-        {
-            var key = Platform.IoC.GetConnectionString();
-            if( string.IsNullOrEmpty( key ) )
-                throw new AblyException( "A connection string with key 'Ably' doesn't exist in the application configuration" );
-            _options = new ClientOptions( key );
-            InitializeAbly();
-        }
+        internal AblyHttpClient HttpClient;
+        internal MessageHandler MessageHandler;
 
         /// <summary>Initializes the RestClient using the api key provided</summary>
         /// <param name="apiKey">Full api key</param>
@@ -72,23 +61,13 @@ namespace IO.Ably
 
             _protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
             Logger.Debug("Protocol set to: " + _protocol);
-            _messageHandler = new MessageHandler(_protocol);
+            MessageHandler = new MessageHandler(_protocol);
 
-            string host = GetHost();
             var port = _options.Tls ? _options.TlsPort : _options.Port;
-            _httpClient = new AblyHttpClient(host, port, _options.Tls, _options.Environment);
-            ExecuteHttpRequest = _httpClient.Execute;
+            HttpClient = new AblyHttpClient(_options.RestHost, port, _options.Tls, _options.Environment);
+            ExecuteHttpRequest = HttpClient.Execute;
 
             InitAuth(this);
-        }
-
-
-        string GetHost()
-        {
-            if (_options.RestHost.IsNotEmpty())
-                return _options.RestHost;
-
-            return Config.DefaultHost;
         }
 
         /// <summary>
@@ -113,7 +92,7 @@ namespace IO.Ably
             if (request.SkipAuthentication == false)
                 await AddAuthHeader(request);
 
-            _messageHandler.SetRequestBody(request);
+            MessageHandler.SetRequestBody(request);
 
             return await ExecuteHttpRequest(request);
         }
@@ -127,7 +106,7 @@ namespace IO.Ably
             if(response.Body != null)
                 Logger.Debug("Raw response (base64):" + response.Body.ToBase64());
 
-            return _messageHandler.ParseResponse<T>(request, response);
+            return MessageHandler.ParseResponse<T>(request, response);
         }
 
         bool TokenCreatedExternally

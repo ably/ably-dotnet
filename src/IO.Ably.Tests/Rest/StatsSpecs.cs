@@ -1,4 +1,3 @@
-using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
@@ -6,26 +5,8 @@ using static Xunit.Assert;
 
 namespace IO.Ably.Tests
 {
-    public class StatsSpecs : AblySpecs
+    public class StatsSpecs : MockHttpSpecs
     {
-        private AblyRequest _lastRequest;
-        private const string ValidKey = "1iZPfA.BjcI_g:wpNhw5RCw6rDjisl";
-
-        private AblyRest GetRestClient(Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
-        {
-            var client = new AblyRest(new ClientOptions(ValidKey) { UseBinaryProtocol = false});
-            client.ExecuteHttpRequest = request =>
-            {
-                _lastRequest = request;
-                if (handleRequestFunc != null)
-                {
-                    return handleRequestFunc(request);
-                }
-                return "[{}]".ToAblyResponse();
-            };
-            return client;
-        }
-
         [Fact]
         public async Task ShouldCreateRequestToCorrectPath()
         {
@@ -33,8 +14,8 @@ namespace IO.Ably.Tests
 
             await rest.Stats();
 
-            Equal(HttpMethod.Get, _lastRequest.Method);
-            Equal("/stats", _lastRequest.Url);
+            Equal(HttpMethod.Get, LastRequest.Method);
+            Equal("/stats", LastRequest.Url);
         }
 
 
@@ -53,10 +34,10 @@ namespace IO.Ably.Tests
 
             await rest.Stats(query);
 
-            _lastRequest.AssertContainsParameter("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
-            _lastRequest.AssertContainsParameter("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
-            _lastRequest.AssertContainsParameter("direction", query.Direction.ToString().ToLower());
-            _lastRequest.AssertContainsParameter("limit", query.Limit.Value.ToString());
+            LastRequest.AssertContainsParameter("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
+            LastRequest.AssertContainsParameter("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
+            LastRequest.AssertContainsParameter("direction", query.Direction.ToString().ToLower());
+            LastRequest.AssertContainsParameter("limit", query.Limit.Value.ToString());
         }
 
         [Fact]
@@ -105,8 +86,8 @@ namespace IO.Ably.Tests
 
             await ExecuteStatsQuery(query);
 
-            _lastRequest.AssertContainsParameter("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
-            _lastRequest.AssertContainsParameter("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
+            LastRequest.AssertContainsParameter("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
+            LastRequest.AssertContainsParameter("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
         }
 
         [Theory]
@@ -143,7 +124,7 @@ namespace IO.Ably.Tests
             await ExecuteStatsQuery(query);
 
             var expectedDirection = direction.GetValueOrDefault(QueryDirection.Backwards).ToString().ToLower();
-            _lastRequest.AssertContainsParameter("direction", expectedDirection);
+            LastRequest.AssertContainsParameter("direction", expectedDirection);
         }
 
         [Theory]
@@ -159,7 +140,7 @@ namespace IO.Ably.Tests
 
             await ExecuteStatsQuery(query);
 
-            _lastRequest.AssertContainsParameter("limit", limit.GetValueOrDefault(100).ToString());
+            LastRequest.AssertContainsParameter("limit", limit.GetValueOrDefault(100).ToString());
         }
 
         [Theory]
@@ -186,7 +167,7 @@ namespace IO.Ably.Tests
 
             await ExecuteStatsQuery(query);
 
-            _lastRequest.AssertContainsParameter("by", statsBy.GetValueOrDefault(StatsBy.Minute).ToString().ToLower());
+            LastRequest.AssertContainsParameter("by", statsBy.GetValueOrDefault(StatsBy.Minute).ToString().ToLower());
         }
     }
 }

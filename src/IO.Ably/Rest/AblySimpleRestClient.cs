@@ -10,7 +10,7 @@ namespace IO.Ably.Rest
     internal class AblySimpleRestClient : IAblyRest
     {
         public AblySimpleRestClient(ClientOptions options)
-            : this(options, new AblyHttpClient(GetHost(options), options.Port, options.Tls, options.Environment))
+            : this(options, new AblyHttpClient(options.RestHost, options.Port, options.Tls, options.Environment))
         { }
 
         public AblySimpleRestClient(ClientOptions options, IAblyHttpClient httpClient)
@@ -59,14 +59,6 @@ namespace IO.Ably.Rest
             var response = await ExecuteRequest<List<long>>(request);
 
             return response.First().FromUnixTimeInMilliseconds();
-        }
-
-        private static string GetHost(ClientOptions options)
-        {
-            if (StringExtensions.IsNotEmpty(options.RestHost))
-                return options.RestHost;
-
-            return Config.DefaultHost;
         }
     }
 }

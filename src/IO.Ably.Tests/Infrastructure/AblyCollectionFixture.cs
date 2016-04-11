@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using IO.Ably.Transport;
 using Xunit;
 
 namespace IO.Ably.Tests
@@ -25,9 +26,6 @@ namespace IO.Ably.Tests
 
         public string FirstValidKey => Keys.FirstOrDefault()?.KeyStr;
 
-        public string RestHost => Environment.ToString().ToLower() + "-" + Config.DefaultHost;
-
-        public int RestPort { get; set; }
         public bool Tls { get; set; }
         public AblyEnvironment Environment => AblyEnvironment.Sandbox;
 
@@ -38,20 +36,12 @@ namespace IO.Ably.Tests
 
         internal AblyHttpClient GetHttpClient()
         {
-            return new AblyHttpClient(RestHost, null, Tls, null);
+            return new AblyHttpClient(isSecure: Tls, environment: Environment);
         }
 
         public ClientOptions CreateDefaultOptions()
         {
-            var opts = new ClientOptions() { Key = FirstValidKey};
-            FillInOptions(opts);
-            return opts;
-        }
-        public void FillInOptions(ClientOptions opts)
-        {
-            opts.RestHost = RestHost;
-            opts.Port = RestPort;
-            opts.Tls = Tls;
+            return new ClientOptions() { Key = FirstValidKey, Tls = Tls};
         }
     }
 }

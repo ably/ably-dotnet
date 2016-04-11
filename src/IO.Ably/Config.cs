@@ -13,7 +13,6 @@ namespace IO.Ably
         /// Default value: 15000 ms
         /// </summary>
         public static Func<CipherParams, IChannelCipher> GetCipher = Crypto.GetCipher;
-        internal static string DefaultHost = "rest.ably.io";
 
         /// <summary>X-Ably-Version HTTP request header value</summary>
         internal const string AblyVersion = "0.8";
