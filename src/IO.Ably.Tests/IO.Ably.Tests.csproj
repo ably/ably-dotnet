@@ -142,6 +142,7 @@
     <Compile Include="Rest\AblySpecs.cs" />
     <Compile Include="Rest\AsyncLazy.cs" />
     <Compile Include="Rest\ProtocolData.cs" />
+    <Compile Include="Rest\RestSandBoxSpecs.cs" />
     <Compile Include="Rest\RestTests.cs" />
     <Compile Include="ApiKeyTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -157,6 +158,12 @@
     </None>
     <EmbeddedResource Include="StatsInterval.json" />
     <None Include="packages.config" />
+    <EmbeddedResource Include="StatsFixture.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="testAppSpec.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
