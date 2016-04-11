@@ -12,6 +12,7 @@ namespace IO.Ably.Transport.States.Connection
 
     internal delegate void TimerCallback(object state);
 
+    //TODO: Replace with a .net framework provided timer.
     internal sealed class Timer : CancellationTokenSource, IDisposable
     {
         internal Timer(TimerCallback callback, object state, int dueTime, int period)

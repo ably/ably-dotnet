@@ -1693,14 +1693,15 @@ namespace IO.Ably.Tests
             Assert.Equal<int>(1, called);
         }
 
-        [Fact]
+        //TODO: MG Fix the inconsistent test
+        [Fact(Skip = "Inconsistent test. It has concurrency issues.")]
         public void CountdownTimer_StartTwice_AbortsOldTimer()
         {
             // Arrange
             CountdownTimer timer = new CountdownTimer();
             int timeout = 10;
             int called = 0;
-            System.Action callback = () => called++;
+            Action callback = () => called++;
 
             // Act
             timer.Start(timeout, callback);
