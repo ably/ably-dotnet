@@ -4,7 +4,7 @@ using Xunit;
 
 namespace IO.Ably.Tests
 {
-    [CollectionDefinition("Stats Sandbox Collection")]
+    [CollectionDefinition("Stats SandBox Collection")]
     public class AblyCollectionFixture : ICollectionFixture<AblySandboxFixture>
     {
         

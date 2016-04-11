@@ -31,7 +31,7 @@ namespace IO.Ably.Tests
             request.RequestBody = testAppSpec.ToString().GetBytes();
             request.Protocol = Protocol.Json;
 
-            var response = client.Execute(request).Result;
+            var response = await client.Execute(request);
 
             var json = JObject.Parse(response.TextResponse);
 

@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Xunit;
 using static Xunit.Assert;
 
@@ -188,9 +189,7 @@ namespace IO.Ably.Tests
 
             _lastRequest.AssertContainsParameter("by", statsBy.GetValueOrDefault(StatsBy.Minute).ToString().ToLower());
         }
-
     }
-
 
     [Collection("Stats SandBox Collection")]
     public class StatsSandBoxSpecs
@@ -210,6 +209,18 @@ namespace IO.Ably.Tests
             var defaultOptions = settings.CreateDefaultOptions();
             defaultOptions.UseBinaryProtocol = protocol == Protocol.MsgPack;
             return new AblyRest(defaultOptions);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSC6a")]
+        public async Task GettingStats_ShouldReturnValidPaginatedResultOfStats(Protocol protocol)
+        {
+            var client = await GetRestClient(protocol);
+
+            var stats = await client.Stats(new StatsDataRequestQuery());
+
+            stats.Should().NotBeNull();
         }
     }
 }
