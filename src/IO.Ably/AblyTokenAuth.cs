@@ -12,11 +12,11 @@ namespace IO.Ably
     {
         internal AblyTokenAuth(ClientOptions options, Rest.IAblyRest rest)
         {
-            _options = options;
+            Options = options;
             _rest = rest;
         }
 
-        private ClientOptions _options;
+        internal ClientOptions Options { get; }
         private TokenParams _lastTokenRequest;
         private Rest.IAblyRest _rest;
         // Buffer in seconds before a token is considered unusable
@@ -39,7 +39,7 @@ namespace IO.Ably
         /// <exception cref="AblyException"></exception>
         public async Task<TokenDetails> RequestToken(TokenParams requestData, AuthOptions options)
         {
-            var mergedOptions = options != null ? options.Merge(_options) : _options;
+            var mergedOptions = options != null ? options.Merge(Options) : Options;
             string keyId = "", keyValue = "";
             if (mergedOptions.Key.IsNotEmpty())
             {
@@ -50,7 +50,7 @@ namespace IO.Ably
 
             var data = requestData ?? new TokenParams()
             {
-                ClientId = _options.ClientId
+                ClientId = Options.ClientId
             };
 
             if (requestData == null && options == null && _lastTokenRequest != null)
@@ -74,7 +74,7 @@ namespace IO.Ably
             if (mergedOptions.AuthUrl.IsNotEmpty())
             {
                 var url = mergedOptions.AuthUrl;
-                var protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
+                var protocol = Options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
                 var authRequest = new AblyRequest(url, mergedOptions.AuthMethod, protocol);
                 if (mergedOptions.AuthMethod == HttpMethod.Get)
                 {
@@ -157,14 +157,14 @@ namespace IO.Ably
         /// <returns></returns>
         public async Task<TokenRequest> CreateTokenRequest(TokenParams tokenParams, AuthOptions options)
         {
-            var mergedOptions = options != null ? options.Merge(_options) : _options;
+            var mergedOptions = options != null ? options.Merge(Options) : Options;
 
             if (string.IsNullOrEmpty(mergedOptions.Key))
                 throw new AblyException("No key specified", 40101, HttpStatusCode.Unauthorized);
 
             var data = tokenParams ?? new TokenParams
             {
-                ClientId = _options.ClientId
+                ClientId = Options.ClientId
             };
             
             if (tokenParams == null && options == null && _lastTokenRequest != null)

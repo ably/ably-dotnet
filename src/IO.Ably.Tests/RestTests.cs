@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.AcceptanceTests;
 using IO.Ably.Auth;
 using Xunit;
 
@@ -75,6 +76,30 @@ namespace IO.Ably.Tests
         {
             Logger.LogLevel.Should().Be(LogLevel.Warning);
         }
+
+        [Fact]
+        [Trait("spec", "RSC4")]
+        public void ACustomLoggerCanBeProvided()
+        {
+            var sink = new TestLoggerSink();
+            Logger.LoggerSink = sink;
+            Logger.Error("Boo");
+
+            sink.LastLevel.Should().Be(LogLevel.Error);
+            sink.LastMessage.Should().Be("Boo");
+        }
+        
+        [Fact]
+        [Trait("spec", "RSC5")]
+        public void RestClientProvidesAccessToAuthObjectInstantiatedWithSameOptionsPassedToRestConstructor()
+        {
+            var options = new ClientOptions(ValidKey);
+            var client = new AblyRest(options);
+
+            var auth = client.Auth as AblyTokenAuth;
+            auth.Options.Should().BeSameAs(options);
+        }
+
 
         [Fact]
         public void Init_WithKeyAndNoClientId_SetsAuthMethodToBasic()
