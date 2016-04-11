@@ -6,6 +6,7 @@ using Xunit;
 namespace IO.Ably.Tests
 {
     [Collection("AblyRest SandBox Collection")]
+    [Trait("requires", "sandbox")]
     public class RestSandBoxSpecs
     {
         private readonly AblySandboxFixture _fixture;
@@ -44,7 +45,7 @@ namespace IO.Ably.Tests
 
             var now = await client.Time();
 
-            now.Should().BeCloseTo(Config.Now(), (int)TimeSpan.FromHours(1).TotalMilliseconds);
+            now.Should().BeCloseTo(DateTimeOffset.UtcNow, (int)TimeSpan.FromHours(1).TotalMilliseconds);
         }
     }
 }
