@@ -116,6 +116,7 @@
     <Compile Include="FakeResponseHandler.cs" />
     <Compile Include="ImplicitTokenAuthWithClientId.cs" />
     <Compile Include="JsonDeserializationBugTests.cs" />
+    <Compile Include="LoggerTests.cs" />
     <Compile Include="MessageEncodes\Base64EncoderTests.cs" />
     <Compile Include="MessageEncodes\CipherEncoderTests.cs" />
     <Compile Include="MessageEncodes\JsonEncoderTests.cs" />
@@ -136,9 +137,15 @@
     <Compile Include="ResourceHelper.cs" />
     <Compile Include="RestApiTests.cs" />
     <Compile Include="RestProtocolTests.cs" />
-    <Compile Include="RestTests.cs" />
+    <Compile Include="Rest\AblyCollectionFixture.cs" />
+    <Compile Include="Rest\AblySandboxFixture.cs" />
+    <Compile Include="Rest\AblySpecs.cs" />
+    <Compile Include="Rest\AsyncLazy.cs" />
+    <Compile Include="Rest\ProtocolData.cs" />
+    <Compile Include="Rest\RestTests.cs" />
     <Compile Include="ApiKeyTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rest\StatsSpecs.cs" />
     <Compile Include="StatsParsingTests.cs" />
     <Compile Include="TokenRequestDataTests.cs" />
     <Compile Include="TokenDetailsTests.cs" />
@@ -163,6 +170,9 @@
       <Project>{021875be-63fd-4ff4-b34f-0b77ccd1919e}</Project>
       <Name>IO.Ably.net45</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Setup\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

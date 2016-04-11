@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -11,7 +10,7 @@ using Xunit;
 
 namespace IO.Ably.Tests
 {
-    public class RestTests
+    public class RestSpecs
     {
         private const string ValidKey = "1iZPfA.BjcI_g:wpNhw5RCw6rDjisl";
         
@@ -93,13 +92,16 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC5")]
         public void RestClientProvidesAccessToAuthObjectInstantiatedWithSameOptionsPassedToRestConstructor()
         {
+            //Arrange
             var options = new ClientOptions(ValidKey);
+
+            //Act
             var client = new AblyRest(options);
 
+            //Assert
             var auth = client.Auth as AblyTokenAuth;
             auth.Options.Should().BeSameAs(options);
         }
-
 
         [Fact]
         public void Init_WithKeyAndNoClientId_SetsAuthMethodToBasic()
@@ -274,64 +276,6 @@ namespace IO.Ably.Tests
             var channel = rest.Channels.Get("Test");
 
             Assert.Equal("Test", channel.Name);
-        }
-
-        [Fact]
-        public void Stats_CreatesGetRequestWithCorrectPath()
-        {
-            var rest = GetRestClient();
-
-            AblyRequest request = null;
-            rest.ExecuteHttpRequest = x => { request = x; return "[{  }]".ToAblyJsonResponse(); };
-            rest.Stats();
-
-            Assert.Equal(HttpMethod.Get, request.Method);
-            Assert.Equal("/stats", request.Url);
-        }
-
-
-        [Fact]
-        public void Stats_WithQuery_SetsCorrectRequestHeaders()
-        {
-            var rest = GetRestClient();
-            AblyRequest request = null;
-            rest.ExecuteHttpRequest = x => { request = x; return "[{}]".ToAblyResponse(); };
-            var query = new StatsDataRequestQuery();
-            var now = DateTimeOffset.UtcNow;
-            query.Start = now.AddHours(-1);
-            query.End = now;
-            query.Direction = QueryDirection.Forwards;
-            query.Limit = 1000;
-            rest.Stats(query);
-
-            request.AssertContainsParameter("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
-            request.AssertContainsParameter("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
-            request.AssertContainsParameter("direction", query.Direction.ToString().ToLower());
-            request.AssertContainsParameter("limit", query.Limit.Value.ToString());
-        }
-
-        [Fact]
-        public void Stats_ReturnsCorrectFirstAndNextLinks()
-        {
-            //Arrange
-            var rest = GetRestClient();
-
-            rest.ExecuteHttpRequest = request =>
-            {
-                var response = new AblyResponse()
-                {
-                    Headers = DataRequestQueryTests.GetSampleStatsRequestHeaders(),
-                    TextResponse = "[{}]"
-                };
-                return response.ToTask();
-            };
-
-            //Act
-            var result = rest.Stats().Result;
-
-            //Assert
-            Assert.NotNull(result.NextQuery);
-            Assert.NotNull(result.FirstQuery);
         }
     }
 }

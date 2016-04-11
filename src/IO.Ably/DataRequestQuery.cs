@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
+using IO.Ably.Transport;
 
 namespace IO.Ably
 {
@@ -29,7 +30,8 @@ namespace IO.Ably
         public StatsDataRequestQuery()
         {
             By = StatsBy.Minute;
-            Direction = QueryDirection.Forwards;
+            Direction = QueryDirection.Backwards;
+            Limit = Defaults.QueryLimit;
         }
 
         internal override IEnumerable<KeyValuePair<string, string>> GetParameters()
@@ -114,7 +116,7 @@ namespace IO.Ably
             get { return StringExtensions.IsEmpty(QueryString); }
         }
 
-        public readonly static DataRequestQuery Empty = new DataRequestQuery();
+        public static readonly DataRequestQuery Empty = new DataRequestQuery();
 
 
         public DataRequestQuery()
@@ -220,7 +222,6 @@ namespace IO.Ably
             }
             return Empty;
         }
-
 
         private static DateTimeOffset? ToDateTime(object value)
         {

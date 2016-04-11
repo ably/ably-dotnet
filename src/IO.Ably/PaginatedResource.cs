@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http.Headers;
+using IO.Ably.Transport;
 
 namespace IO.Ably
 {
@@ -7,7 +8,7 @@ namespace IO.Ably
     {
         private readonly int _limit;
 
-        public PaginatedResource() : this(null, Config.Limit)
+        public PaginatedResource() : this(null, Defaults.QueryLimit)
         {
         }
 

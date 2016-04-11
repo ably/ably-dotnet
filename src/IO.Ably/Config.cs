@@ -30,7 +30,6 @@ namespace IO.Ably
         public static string[] Transports = { "web_socket", "comet" };
         public static string[] FallbackHosts = { "A.ably-realtime.com", "B.ably-realtime.com", "C.ably-realtime.com", "D.ably-realtime.com", "E.ably-realtime.com" };
 
-        public const int Limit = 100;
         public static int ProtocolVersion = 1;
 
         static Config()

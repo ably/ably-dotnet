@@ -6,6 +6,7 @@ namespace IO.Ably.Transport
     internal static class Defaults
     {
         public const int ProtocolVersion = 1;
+        public const int QueryLimit = 100;
         public static readonly string RestHost = "rest.ably.io";
         public static readonly String RealtimeHost = "realtime.ably.io";
         public static readonly string[] FallbackHosts;
