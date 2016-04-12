@@ -54,14 +54,11 @@ namespace IO.Ably.Tests
         [Trait("requires", "sandbox")]
         public class WithTokenAuthAndInvalidToken : RestSandBoxSpecs
         {
-            public WithTokenAuthAndInvalidToken(AblySandboxFixture fixture) : base(fixture)
-            {
-
-            }
+            public WithTokenAuthAndInvalidToken(AblySandboxFixture fixture) : base(fixture) { }
 
             [Theory]
             [ProtocolData]
-            [Trait("specs", "RSC9")]
+            [Trait("specs", "RSC10")]
             public async Task WhenTokenIsRenewable_ShouldRenewToken(Protocol protocol)
             {
                 var authClient = await GetRestClient(protocol);
@@ -84,6 +81,5 @@ namespace IO.Ably.Tests
                 client.AblyAuth.HasValidToken().Should().BeTrue();
             }
         }
-        
     }
 }

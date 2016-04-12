@@ -24,9 +24,8 @@ namespace IO.Ably
         public static readonly string[] SupportedTransports = new string[]{ "web_socket" };
         public static readonly Dictionary<string, ITransportFactory> TransportFactories;
 
-        internal const int TokenErrorCode = 40140;
-        internal const int TokenRevokedCode = 40141;
-        internal const int TokenExpiredCode = 40142;
+        internal const int TokenErrorCodesRangeStart = 40140;
+        internal const int TokenErrorCodesRangeEnd = 40149;
 
         /// <summary>The default log level you'll see in the debug output.</summary>
         internal const LogLevel DefaultLogLevel = LogLevel.Warning;

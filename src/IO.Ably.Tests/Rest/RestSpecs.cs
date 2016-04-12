@@ -125,33 +125,52 @@ namespace IO.Ably.Tests
             client.Protocol.Should().Be(Protocol.Json);
         }
 
-        [Fact]
-        [Trait("spec", "RSC9")]
-        public async Task ShouldAutomaticallyTryToRenewTokenIfRequestFailsWithSpecificErrorCodes()
+        public class WithInvalidToken : MockHttpSpecs
         {
-            var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
-            bool firstAttempt = true;
-            var client = GetRestClient(request =>
+            [Theory]
+            [InlineData(Defaults.TokenErrorCodesRangeStart)]
+            [InlineData(Defaults.TokenErrorCodesRangeStart + 1)]
+            [InlineData(Defaults.TokenErrorCodesRangeEnd)]
+            [Trait("spec", "RSC10")]
+            public async Task WhenErrorCodeIsTokenSpecific_ShouldAutomaticallyTryToRenewTokenIfRequestFails(int errorCode)
             {
-                if (request.Url.Contains("/keys"))
-                {
-                    return new TokenDetails("123") { Expires = Now.AddDays(1), ClientId = "123" }.ToJson().ToAblyResponse();
-                }
+                var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
+                bool firstAttempt = true;
+                var client = GetConfiguredRestClient(errorCode, tokenDetails);
 
-                if (firstAttempt)
-                {
-                    firstAttempt = false;
-                    throw new AblyException(new ErrorInfo("", Defaults.TokenErrorCode));
-                }
-                return AblyResponse.EmptyResponse.ToTask();
-            }, opts =>
+                await client.Stats();
+
+                client.Auth.CurrentToken.Expires.Should().BeCloseTo(Now.AddDays(1));
+                client.Auth.CurrentToken.ClientId.Should().Be("123");
+            }
+
+            [Fact]
+            public async Task WhenErrorCodeIsNotTokenSpecific_ShouldThrow()
             {
-                opts.TokenDetails = tokenDetails;
-            });
+                var client = GetConfiguredRestClient(40100, null);
 
-            await client.Stats();
-            client.Auth.CurrentToken.Expires.Should().BeCloseTo(Now.AddDays(1));
-            client.Auth.CurrentToken.ClientId.Should().Be("123");
+                Assert.ThrowsAsync<AblyException>(() => client.Stats());
+            }
+
+            private AblyRest GetConfiguredRestClient(int errorCode, TokenDetails tokenDetails)
+            {
+                bool firstAttempt = true;
+                var client = GetRestClient(request =>
+                {
+                    if (request.Url.Contains("/keys"))
+                    {
+                        return new TokenDetails("123") {Expires = Now.AddDays(1), ClientId = "123"}.ToJson().ToAblyResponse();
+                    }
+
+                    if (firstAttempt)
+                    {
+                        firstAttempt = false;
+                        throw new AblyException(new ErrorInfo("", errorCode));
+                    }
+                    return AblyResponse.EmptyResponse.ToTask();
+                }, opts => { opts.TokenDetails = tokenDetails; });
+                return client;
+            }
         }
 
         [Fact]

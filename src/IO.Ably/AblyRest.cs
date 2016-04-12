@@ -86,7 +86,7 @@ namespace IO.Ably
         public IChannelCommands Channels => this;
 
         internal Func<AblyRequest, Task<AblyResponse>> ExecuteHttpRequest;
-          
+
         internal async Task<AblyResponse> ExecuteRequest(AblyRequest request)
         {
             Logger.Info("Sending {0} request to {1}", request.Method, request.Url);
@@ -103,11 +103,14 @@ namespace IO.Ably
             catch (AblyException ex)
             {
                 //TODO: Check with Matt about TokenRevoked and TokenExpired codes
-                if (ex.ErrorInfo.code != Defaults.TokenErrorCode) throw;
-
-                await AblyAuth.Authorise(null, null, true);
-                await AblyAuth.AddAuthHeader(request);
-                return await ExecuteHttpRequest(request);
+                if (ex.ErrorInfo.code >= Defaults.TokenErrorCodesRangeStart &&
+                    ex.ErrorInfo.code <= Defaults.TokenErrorCodesRangeEnd)
+                {
+                    await AblyAuth.Authorise(null, null, true);
+                    await AblyAuth.AddAuthHeader(request);
+                    return await ExecuteHttpRequest(request);
+                }
+                throw;
             }
         }
 
@@ -117,7 +120,7 @@ namespace IO.Ably
             Logger.Debug("Response received. Status: " + response.StatusCode);
             Logger.Debug("Content type: " + response.ContentType);
             Logger.Debug("Encoding: " + response.Encoding);
-            if(response.Body != null)
+            if (response.Body != null)
                 Logger.Debug("Raw response (base64):" + response.Body.ToBase64());
 
             return MessageHandler.ParseResponse<T>(request, response);
