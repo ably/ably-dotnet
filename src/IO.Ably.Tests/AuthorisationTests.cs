@@ -176,7 +176,7 @@ namespace IO.Ably.Tests
                 AuthCallback = (x) =>
                 {
                     authCallbackCalled = true;
-                    return token;
+                    return Task.FromResult(token);
                 }
             };
             var result = await rest.Auth.RequestToken(tokenRequest, options);

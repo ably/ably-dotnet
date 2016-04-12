@@ -30,7 +30,5 @@ namespace IO.Ably
                 }
             }
         }
-
-        
     }
 }

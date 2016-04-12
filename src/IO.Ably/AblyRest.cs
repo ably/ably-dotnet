@@ -7,11 +7,12 @@ using IO.Ably.MessageEncoders;
 using IO.Ably.Rest;
 using System.Threading.Tasks;
 using IO.Ably.Auth;
+using IO.Ably.Transport;
 
 namespace IO.Ably
 {
     /// <summary>Client for the ably rest API</summary>
-    public sealed class AblyRest : AblyBase, IRestClient, IAblyRest
+    public sealed class AblyRest : AblyBase, IRestClient
     {
         internal AblyHttpClient HttpClient;
         internal MessageHandler MessageHandler;
@@ -84,11 +85,9 @@ namespace IO.Ably
 
         public IChannelCommands Channels => this;
 
-        internal IAblyRest RestMethods => this;
-
         internal Func<AblyRequest, Task<AblyResponse>> ExecuteHttpRequest;
           
-        async Task<AblyResponse> IAblyRest.ExecuteRequest(AblyRequest request)
+        internal async Task<AblyResponse> ExecuteRequest(AblyRequest request)
         {
             Logger.Info("Sending {0} request to {1}", request.Method, request.Url);
 
@@ -97,12 +96,24 @@ namespace IO.Ably
 
             MessageHandler.SetRequestBody(request);
 
-            return await ExecuteHttpRequest(request);
+            try
+            {
+                return await ExecuteHttpRequest(request);
+            }
+            catch (AblyException ex)
+            {
+                //TODO: Check with Matt about TokenRevoked and TokenExpired codes
+                if (ex.ErrorInfo.code != Defaults.TokenErrorCode) throw;
+
+                await AblyAuth.Authorise(null, null, true);
+                await AblyAuth.AddAuthHeader(request);
+                return await ExecuteHttpRequest(request);
+            }
         }
 
-        async Task<T> IAblyRest.ExecuteRequest<T>(AblyRequest request)
+        internal async Task<T> ExecuteRequest<T>(AblyRequest request) where T : class
         {
-            var response = await RestMethods.ExecuteRequest(request);
+            var response = await ExecuteRequest(request);
             Logger.Debug("Response received. Status: " + response.StatusCode);
             Logger.Debug("Content type: " + response.ContentType);
             Logger.Debug("Encoding: " + response.Encoding);
@@ -116,9 +127,9 @@ namespace IO.Ably
         /// <returns></returns>
         public async Task<DateTimeOffset> Time()
         {
-            AblyRequest request = RestMethods.CreateGetRequest("/time");
+            AblyRequest request = CreateGetRequest("/time");
             request.SkipAuthentication = true;
-            List<long> response = await RestMethods.ExecuteRequest<List<long>>(request);
+            List<long> response = await ExecuteRequest<List<long>>(request);
             return response.First().FromUnixTimeInMilliseconds();
         }
 
@@ -156,19 +167,19 @@ namespace IO.Ably
         {
             query.Validate();
 
-            var request = RestMethods.CreateGetRequest("/stats");
+            var request = CreateGetRequest("/stats");
 
             request.AddQueryParameters(query.GetParameters());
 
-            return RestMethods.ExecuteRequest<PaginatedResource<Stats>>(request);
+            return ExecuteRequest<PaginatedResource<Stats>>(request);
         }
 
-        AblyRequest IAblyRest.CreateGetRequest(string path, ChannelOptions options)
+        internal AblyRequest CreateGetRequest(string path, ChannelOptions options = null)
         {
             return new AblyRequest(path, HttpMethod.Get, Protocol) { ChannelOptions = options };
         }
 
-        AblyRequest IAblyRest.CreatePostRequest(string path, ChannelOptions options)
+        internal AblyRequest CreatePostRequest(string path, ChannelOptions options = null)
         {
             return new AblyRequest(path, HttpMethod.Post, Protocol) { ChannelOptions = options };
         }

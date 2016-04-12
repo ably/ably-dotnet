@@ -48,6 +48,7 @@
     <Compile Include="AuthMethod.cs" />
     <Compile Include="AuthOptions.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
+    <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="TokenDetails.cs" />
     <Compile Include="Capability.cs" />
     <Compile Include="CapabilityResource.cs" />
@@ -111,7 +112,6 @@
     <Compile Include="Realtime\IRealtimeChannelCommands.cs" />
     <Compile Include="Realtime\Presence.cs" />
     <Compile Include="AblyRest.cs" />
-    <Compile Include="Rest\AblySimpleRestClient.cs" />
     <Compile Include="Rest\Channel.cs" />
     <Compile Include="Rest\ChannelOptions.cs" />
     <Compile Include="Rest\IAblyRest.cs" />
@@ -124,7 +124,7 @@
     <Compile Include="Transport\AcknowledgementProcessor.cs" />
     <Compile Include="Transport\ConnectionHeartbeatRequest.cs" />
     <Compile Include="Transport\ConnectionManager.cs" />
-    <Compile Include="Transport\Defaults.cs" />
+    <Compile Include="Defaults.cs" />
     <Compile Include="Transport\IConnectionManager.cs" />
     <Compile Include="Transport\ITransport.cs" />
     <Compile Include="Transport\States\Connection\ConnectionClosedState.cs" />

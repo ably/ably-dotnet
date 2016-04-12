@@ -35,7 +35,7 @@ namespace IO.Ably
 
         public static string JoinStrings(this IEnumerable<string> input, string delimiter = ", ")
         {
-            return string.Join(delimiter, input.Where(x => IsNotEmpty(x)));
+            return string.Join(delimiter, input.Where(IsNotEmpty));
         }
 
         public static string Join<T>(this IEnumerable<T> listOfTs, Func<T, string> selector, string delimiter = ",") where T : class

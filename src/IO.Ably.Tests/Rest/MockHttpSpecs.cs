@@ -20,7 +20,7 @@ namespace IO.Ably.Tests
                 {
                     return handleRequestFunc(request);
                 }
-                return "[{}]".ToAblyResponse();
+                return AblyResponse.EmptyResponse.ToTask();
             };
             return client;
         }

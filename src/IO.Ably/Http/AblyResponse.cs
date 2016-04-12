@@ -8,7 +8,7 @@ namespace IO.Ably
 {
     internal class EmptyHttpHeaders : HttpHeaders
     {
-        
+
     }
 
 
@@ -24,31 +24,31 @@ namespace IO.Ably
         internal ResponseType Type { get; set; }
         internal HttpStatusCode StatusCode { get; set; }
         internal string TextResponse { get; set; }
-        internal string ContentType { get; set; }
+        internal string ContentType { get; }
 
-        internal byte[] Body { get; set; }
+        internal byte[] Body { get; }
 
-        internal string Encoding { get; set; }
+        internal string Encoding { get; }
+
+        internal static AblyResponse EmptyResponse => new AblyResponse { TextResponse = "[{}]" };
 
         internal AblyResponse()
         {
             Headers = new EmptyHttpHeaders();
         }
-
-        
-
         internal AblyResponse(string encoding, string contentType, byte[] body)
         {
-            
-
             ContentType = contentType;
             Type = contentType.ToLower() == "application/json" ? ResponseType.Json : ResponseType.Binary;
-            Encoding = StringExtensions.IsNotEmpty(encoding) ? encoding : "utf-8";
+            Encoding = encoding.IsNotEmpty() ? encoding : "utf-8";
+
             if (Type == ResponseType.Json)
             {
-                TextResponse = System.Text.Encoding.GetEncoding( Encoding ).GetString( body, 0, body.Length );
+                TextResponse = System.Text.Encoding.GetEncoding(Encoding).GetString(body, 0, body.Length);
             }
             Body = body;
         }
+
+    
     }
 }

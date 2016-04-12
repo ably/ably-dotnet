@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using IO.Ably.Transport;
 
-namespace IO.Ably.Transport
+namespace IO.Ably
 {
     internal static class Defaults
     {
@@ -22,6 +23,10 @@ namespace IO.Ably.Transport
         public const int TokenExpireBufer = 15;
         public static readonly string[] SupportedTransports = new string[]{ "web_socket" };
         public static readonly Dictionary<string, ITransportFactory> TransportFactories;
+
+        internal const int TokenErrorCode = 40140;
+        internal const int TokenRevokedCode = 40141;
+        internal const int TokenExpiredCode = 40142;
 
         /// <summary>The default log level you'll see in the debug output.</summary>
         internal const LogLevel DefaultLogLevel = LogLevel.Warning;

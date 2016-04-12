@@ -80,7 +80,7 @@ namespace IO.Ably.Tests
             sink.LastLevel.Should().Be(LogLevel.Error);
             sink.LastMessage.Should().Be("Boo");
         }
-        
+
         [Fact]
         [Trait("spec", "RSC5")]
         public void RestClientProvidesAccessToAuthObjectInstantiatedWithSameOptionsPassedToRestConstructor()
@@ -103,7 +103,7 @@ namespace IO.Ably.Tests
         [InlineData(false)]
         public void ShouldInitialiseAblyHttpClientWithCorrectTlsValue(bool tls)
         {
-            var client = new AblyRest(new ClientOptions(ValidKey) { Tls = tls});
+            var client = new AblyRest(new ClientOptions(ValidKey) { Tls = tls });
             client.HttpClient.IsSecure.Should().Be(tls);
         }
 
@@ -126,12 +126,41 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        [Trait("spec", "RSC9")]
+        public async Task ShouldAutomaticallyTryToRenewTokenIfRequestFailsWithSpecificErrorCodes()
+        {
+            var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
+            bool firstAttempt = true;
+            var client = GetRestClient(request =>
+            {
+                if (request.Url.Contains("/keys"))
+                {
+                    return new TokenDetails("123") { Expires = Now.AddDays(1), ClientId = "123" }.ToJson().ToAblyResponse();
+                }
+
+                if (firstAttempt)
+                {
+                    firstAttempt = false;
+                    throw new AblyException(new ErrorInfo("", Defaults.TokenErrorCode));
+                }
+                return AblyResponse.EmptyResponse.ToTask();
+            }, opts =>
+            {
+                opts.TokenDetails = tokenDetails;
+            });
+
+            await client.Stats();
+            client.Auth.CurrentToken.Expires.Should().BeCloseTo(Now.AddDays(1));
+            client.Auth.CurrentToken.ClientId.Should().Be("123");
+        }
+
+        [Fact]
         public async Task Init_WithCallback_ExecutesCallbackOnFirstRequest()
         {
             bool called = false;
             var options = new ClientOptions
             {
-                AuthCallback = (x) => { called = true; return new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddHours(1) }; },
+                AuthCallback = (x) => { called = true; return Task.FromResult(new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddHours(1) }); },
                 UseBinaryProtocol = false
             };
 
@@ -187,10 +216,10 @@ namespace IO.Ably.Tests
                 AuthCallback = (x) =>
                 {
                     newTokenRequested = true;
-                    return new TokenDetails("new.token")
+                    return Task.FromResult(new TokenDetails("new.token")
                     {
                         Expires = DateTimeOffset.UtcNow.AddDays(1)
-                    };
+                    });
                 },
                 UseBinaryProtocol = false
             };
