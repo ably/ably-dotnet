@@ -37,6 +37,7 @@ namespace IO.Ably
         public Dictionary<string, string> AuthHeaders { get; set; }
         public Dictionary<string, string> AuthParams { get; set; }
         public bool QueryTime { get; set; }
+        public bool? UseTokenAuth { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the AuthOptions class.
@@ -66,6 +67,7 @@ namespace IO.Ably
             if (AuthHeaders.Count == 0) AuthHeaders = defaults.AuthHeaders;
             if (AuthParams.Count == 0) AuthParams = defaults.AuthParams;
             if (Key.IsEmpty()) Key = defaults.Key;
+            if (UseTokenAuth.HasValue == false) UseTokenAuth = defaults.UseTokenAuth;
             QueryTime = QueryTime || defaults.QueryTime;
             return this;
         }

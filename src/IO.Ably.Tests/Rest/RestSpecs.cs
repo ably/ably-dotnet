@@ -241,6 +241,39 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        [Trait("spec", "RSC13")]
+        public async Task HttpRequestTimeoutShouldComeFromClientOptions()
+        {
+            var httpRequestTimeout = TimeSpan.FromMinutes(1);
+            var client = new AblyRest(options =>
+            {
+                options.Key = ValidKey;
+                options.HttpRequestTimeout = httpRequestTimeout;
+            });
+
+            client.HttpClient.Client.Timeout.Should().Be(httpRequestTimeout);
+        }
+
+        [Fact]
+        [Trait("spec", "RSC14a")]
+        public async Task AddAuthHeader_WithBasicAuthentication_AddsCorrectAuthorisationHeader()
+        {
+            //Arrange
+            var rest = new AblyRest(ValidKey);
+            ApiKey key = ApiKey.Parse(ValidKey);
+            var request = new AblyRequest("/test", HttpMethod.Get, Protocol.Json);
+            var expectedValue = "Basic " + key.ToString().ToBase64();
+
+            //Act
+            await rest.AblyAuth.AddAuthHeader(request);
+
+            //Assert
+            var authHeader = request.Headers.First();
+            authHeader.Key.Should().Be("Authorization");
+            authHeader.Value.Should().Be(expectedValue);
+        }
+
+        [Fact]
         public async Task Init_WithCallback_ExecutesCallbackOnFirstRequest()
         {
             bool called = false;
@@ -351,24 +384,7 @@ namespace IO.Ably.Tests
             rest.AblyAuth.TokenRenewable.Should().BeFalse();
         }
 
-        [Fact]
-        public void AddAuthHeader_WithBasicAuthentication_AddsCorrectAuthorisationHeader()
-        {
-            //Arrange
-            var rest = new AblyRest(ValidKey);
-            ApiKey key = ApiKey.Parse(ValidKey);
-            var request = new AblyRequest("/test", HttpMethod.Get, Protocol.Json);
-            var expectedValue = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(key.ToString()));
-
-            //Act
-            rest.AblyAuth.AddAuthHeader(request).Wait();
-
-            //Assert
-            var authHeader = request.Headers.First();
-            Assert.Equal("Authorization", authHeader.Key);
-
-            Assert.Equal(expectedValue, authHeader.Value);
-        }
+        
 
         [Fact]
         public void ChannelsGet_ReturnsNewChannelWithName()

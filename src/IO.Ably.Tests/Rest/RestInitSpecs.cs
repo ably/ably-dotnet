@@ -1,4 +1,6 @@
+using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.Auth;
 using IO.Ably.Transport;
 using Xunit;
 
@@ -13,48 +15,88 @@ namespace IO.Ably.Tests
             Assert.Equal(AuthMethod.Basic, client.AblyAuth.AuthMethod);
         }
 
-        [Fact]
-        public void Init_WithKeyAndClientId_SetsAuthMethodToToken()
+        [Trait("spec", "RSA4")]
+        [Trait("spec", "RSC14b")]
+        public class AuthMethodInitTests
         {
-            var client = new AblyRest(new ClientOptions { Key = ValidKey, ClientId = "123" });
-            Assert.Equal(AuthMethod.Token, client.AblyAuth.AuthMethod);
-        }
-
-        [Fact]
-        public void Init_WithKeyNoClientIdAndAuthTokenId_SetsCurrentTokenWithSuppliedId()
-        {
-            ClientOptions options = new ClientOptions { Key = ValidKey, ClientId = "123", Token = "222" };
-            var client = new AblyRest(options);
-
-            Assert.Equal(options.Token, client.AblyAuth.CurrentToken.Token);
-        }
-
-        [Fact]
-        public void Init_WithouthKey_SetsAuthMethodToToken()
-        {
-            var client = new AblyRest(opts =>
+            [Fact]
+            public void WithUseTokenAuthSetToTrue_AuthMethodIsAlwaysTokenAuth()
             {
-                opts.Token = "blah";
-                opts.ClientId = "123";
-            });
+                var client = new AblyRest(new ClientOptions { Key = ValidKey, UseTokenAuth = true });
+                client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
+            }
 
-            Assert.Equal(AuthMethod.Token, client.AblyAuth.AuthMethod);
-        }
-
-        [Fact]
-        public void Init_WithExplicitHost_ShouldInitialiseHttpClientWithCorrectHost()
-        {
-            var client = new AblyRest(opts =>
+            [Fact]
+            public void WithKeyAndClientId_ShouldUseTokenAuth()
             {
-                opts.RestHost = "boo.boo.com";
-            });
-            client.HttpClient.Options.Host.Should().Be("boo.boo.com");
-        }
+                var client = new AblyRest(new ClientOptions { Key = ValidKey, ClientId = "123" });
+                Assert.Equal(AuthMethod.Token, client.AblyAuth.AuthMethod);
+            }
 
-        [Fact]
-        public void Init_WithoutSpecifiedHost_ShouldInitialiseHttpClientWithDefaultHost()
-        {
-            new AblyRest(ValidKey).HttpClient.Options.Host.Should().Be(Defaults.RestHost);
+            [Fact]
+            public void WithKeyNoClientIdAndAuthToken_ShouldSetCurrentToken()
+            {
+                ClientOptions options = new ClientOptions { Key = ValidKey, ClientId = "123", Token = "222" };
+                var client = new AblyRest(options);
+
+                Assert.Equal(options.Token, client.AblyAuth.CurrentToken.Token);
+            }
+
+            [Fact]
+            public void WithouthKey_ShouldUseTokenAuth()
+            {
+                var client = new AblyRest(opts =>
+                {
+                    opts.Token = "blah";
+                    opts.ClientId = "123";
+                });
+
+                Assert.Equal(AuthMethod.Token, client.AblyAuth.AuthMethod);
+            }
+
+            [Fact]
+            public void WithToken_ShouldUseTokenAuth()
+            {
+                var client = new AblyRest(opts =>
+                {
+                    opts.Token = "blah";
+                });
+
+                client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
+            }
+
+            [Fact]
+            public void WithTokenDetails_ShouldUseTokenAuth()
+            {
+                var client = new AblyRest(opts =>
+                {
+                    opts.TokenDetails = new TokenDetails("123");
+                });
+
+                client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
+            }
+
+            [Fact]
+            public void WithAuthUrl_ShouldUseTokenAuth()
+            {
+                var client = new AblyRest(opts =>
+                {
+                    opts.AuthUrl = "http://authUrl";
+                });
+
+                client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
+            }
+
+            [Fact]
+            public void WithAuthCallback_ShouldUseTokenAuth()
+            {
+                var client = new AblyRest(opts =>
+                {
+                    opts.AuthCallback = @params => Task.FromResult(new TokenDetails());
+                });
+
+                client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
+            }
         }
 
         [Fact]
@@ -63,7 +105,8 @@ namespace IO.Ably.Tests
             var client = new AblyRest(opts =>
             {
                 opts.Tls = true;
-                opts.TlsPort = 111; }
+                opts.TlsPort = 111;
+            }
                 );
             client.HttpClient.Options.Port.Should().Be(111);
         }

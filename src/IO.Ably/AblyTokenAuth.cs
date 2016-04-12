@@ -22,7 +22,7 @@ namespace IO.Ably
         internal AuthMethod AuthMethod;
         internal ClientOptions Options { get; }
         private TokenParams _lastTokenRequest;
-        private AblyRest _rest;
+        private readonly AblyRest _rest;
 
         public TokenDetails CurrentToken { get; set; }
 
@@ -44,7 +44,7 @@ namespace IO.Ably
 
         internal void Initialise()
         {
-            AuthMethod = Options.Method;
+            SetAuthMethod();
 
             if (AuthMethod == AuthMethod.Basic)
             {
@@ -62,6 +62,19 @@ namespace IO.Ably
                 CurrentToken = new TokenDetails(Options.Token);
             }
             LogCurrentAuthenticationMethod();
+        }
+
+        private void SetAuthMethod()
+        {
+            if (Options.UseTokenAuth.HasValue)
+            {
+                //ASK: Should I throw an error if a particular auth is not possible
+                AuthMethod = Options.UseTokenAuth.Value ? AuthMethod.Token : AuthMethod.Basic;
+            }
+            else
+            {
+                AuthMethod = Options.Method;
+            }
         }
 
         internal async Task AddAuthHeader(AblyRequest request)

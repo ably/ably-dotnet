@@ -22,7 +22,8 @@ namespace IO.Ably.Tests
                 AuthUrl = "http://www.google.com",
                 Key = "key",
                 QueryTime = true,
-                AuthCallback = param => null
+                AuthCallback = param => null,
+                UseTokenAuth = true
             };
         }
 
@@ -39,20 +40,20 @@ namespace IO.Ably.Tests
             Assert.Equal(blankOptions.AuthParams, complete.AuthParams);
             Assert.Equal(blankOptions.AuthUrl, complete.AuthUrl);
             Assert.Equal(blankOptions.AuthCallback, complete.AuthCallback);
-            
             Assert.Equal(blankOptions.QueryTime, complete.QueryTime);
+            Assert.Equal(blankOptions.UseTokenAuth, complete.UseTokenAuth);
         }
 
-        // TODO: This test fails
-        //[Fact]
-        //public void Merge_WithOptionsNotSet_DoesNotOverwriteKey()
-        //{
-        //    AuthOptions complete = GetCompleteOptions();
-        //    var blankOptions = GetBlankOptions();
-        //    blankOptions.Merge(complete);
 
-        //    Assert.NotEqual(blankOptions.Key, complete.Key);
-        //}
+        [Fact]
+        public void Merge_WithOptionsNotSet_DoesNotOverwriteKey()
+        {
+            AuthOptions complete = GetCompleteOptions();
+            var blankOptions = GetBlankOptions();
+            complete.Merge(blankOptions);
+
+            Assert.NotEqual(blankOptions.Key, complete.Key);
+        }
 
         [Fact]
         public void Merge_WithCompleteOptions_DoesNotOverwriteAnything()
