@@ -48,13 +48,13 @@ namespace IO.Ably.Tests
             {
                 opts.RestHost = "boo.boo.com";
             });
-            client.HttpClient.Host.Should().Be("boo.boo.com");
+            client.HttpClient.Options.Host.Should().Be("boo.boo.com");
         }
 
         [Fact]
         public void Init_WithoutSpecifiedHost_ShouldInitialiseHttpClientWithDefaultHost()
         {
-            new AblyRest(ValidKey).HttpClient.Host.Should().Be(Defaults.RestHost);
+            new AblyRest(ValidKey).HttpClient.Options.Host.Should().Be(Defaults.RestHost);
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace IO.Ably.Tests
                 opts.Tls = true;
                 opts.TlsPort = 111; }
                 );
-            client.HttpClient.Port.Should().Be(111);
+            client.HttpClient.Options.Port.Should().Be(111);
         }
 
         [Fact]
@@ -77,7 +77,7 @@ namespace IO.Ably.Tests
                 opts.Port = 111;
             }
                 );
-            client.HttpClient.Port.Should().Be(111);
+            client.HttpClient.Options.Port.Should().Be(111);
         }
     }
 }

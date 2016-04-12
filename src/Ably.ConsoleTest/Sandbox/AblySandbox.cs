@@ -26,7 +26,9 @@ namespace IO.Ably.ConsoleTest.Sandbox
             request.Headers.Add( "Content-Type", "application/json" );
             request.RequestBody = GetTestAppsJson("Sandbox.TestAppSpec.json");
 
-            AblyHttpClient client = new AblyHttpClient( restHost, null, tls, null );
+            
+            //TODO: Fix
+            AblyHttpClient client = new AblyHttpClient(new AblyHttpOptions()); //= new AblyHttpClient( restHost, null, tls, null );
 
             AblyResponse response = await client.Execute( request );
 

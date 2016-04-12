@@ -14,7 +14,7 @@ namespace IO.Ably
     /// <summary>Client for the ably rest API</summary>
     public sealed class AblyRest : AblyBase, IRestClient
     {
-        internal AblyHttpClient Client { get; set; }
+        internal AblyHttpClient HttpClient { get; set; }
         internal MessageHandler MessageHandler;
 
         internal AblyAuth AblyAuth { get; private set; }
@@ -75,9 +75,8 @@ namespace IO.Ably
             Logger.Debug("Protocol set to: " + Protocol);
             MessageHandler = new MessageHandler(Protocol);
 
-            var port = Options.Tls ? Options.TlsPort : Options.Port;
-            Client = new AblyHttpClient(Options.RestHost, port, Options.Tls, Options.Environment);
-            ExecuteHttpRequest = Client.Execute;
+            HttpClient = new AblyHttpClient(new AblyHttpOptions(Options));
+            ExecuteHttpRequest = HttpClient.Execute;
             AblyAuth = new AblyAuth(Options, this);
         }
 

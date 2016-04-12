@@ -11,35 +11,29 @@ namespace IO.Ably
     internal class AblyHttpClient : IAblyHttpClient
     {
         //TODO: MG make sure this handles the fallback hosts as well
-        private bool IsDefaultHost => Host == Defaults.RestHost;
+        private bool IsDefaultHost => Options.Host == Defaults.RestHost;
 
-        public bool IsSecure { get; }
-        public string Host { get; }
-        public int? Port { get; }
-        public AblyEnvironment? Environment { get; }
+        internal AblyHttpOptions Options { get; }
 
-        private HttpClient _client;
+        internal HttpClient Client { get; set; }
 
-        public AblyHttpClient(string host = null, int? port = null, bool isSecure = true, AblyEnvironment? environment = AblyEnvironment.Live) : 
-            this(host, port, isSecure, environment, null)
+        public AblyHttpClient(AblyHttpOptions options) : 
+            this(options, null)
         {
             
         }
 
-        internal AblyHttpClient(string host, int? port, bool isSecure, AblyEnvironment? environment, HttpMessageHandler messageHandler)
+        internal AblyHttpClient(AblyHttpOptions options, HttpMessageHandler messageHandler)
         {
-            IsSecure = isSecure;
-            Environment = environment;
-            Port = port;
-            Host = host ?? Defaults.RestHost;
-            CreateInternalHttpClient(messageHandler);
+            Options = options;
+            CreateInternalHttpClient(options.HttpRequestTimeout, messageHandler);
         }
 
-        internal void CreateInternalHttpClient(HttpMessageHandler messageHandler)
+        internal void CreateInternalHttpClient(TimeSpan timeout, HttpMessageHandler messageHandler)
         {
-            _client = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
-            _client.DefaultRequestHeaders.Add("X-Ably-Version", Config.AblyVersion);
-            _client.Timeout = TimeSpan.FromSeconds(Config.ConnectTimeout);
+            Client = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
+            Client.DefaultRequestHeaders.Add("X-Ably-Version", Config.AblyVersion);
+            Client.Timeout = timeout;
         }
 
         public async Task<AblyResponse> Execute(AblyRequest request)
@@ -64,7 +58,7 @@ namespace IO.Ably
             {
                 var message = GetRequestMessage(request);
 
-                var response = await _client.SendAsync(message, HttpCompletionOption.ResponseContentRead);
+                var response = await Client.SendAsync(message, HttpCompletionOption.ResponseContentRead);
 
                 var ablyResponse = await GetAblyResponse(response);
                 if (response.IsSuccessStatusCode)
@@ -135,22 +129,22 @@ namespace IO.Ably
 
         public Uri GetRequestUrl(AblyRequest request)
         {
-            string protocol = IsSecure ? "https://" : "http://";
+            string protocol = Options.IsSecure ? "https://" : "http://";
             if (request.Url.StartsWith("http"))
                 return new Uri(request.Url);
             return new Uri(String.Format("{0}{1}{2}{3}{4}",
                                protocol,
                                GetHost(),
-                               Port.HasValue ? ":" + Port.Value : "",
+                               Options.Port.HasValue ? ":" + Options.Port.Value : "",
                                request.Url,
                                GetQuery(request)));
         }
 
         private string GetHost()
         {
-            if (IsDefaultHost && (Environment.HasValue && Environment != AblyEnvironment.Live))
-                return Environment.ToString().ToLower() + "-" + Host;
-            return Host;
+            if (IsDefaultHost && (Options.Environment.HasValue && Options.Environment != AblyEnvironment.Live))
+                return Options.Environment.ToString().ToLower() + "-" + Options.Host;
+            return Options.Host;
         }
 
         private string GetQuery(AblyRequest request)
@@ -161,4 +155,6 @@ namespace IO.Ably
             return string.Empty;
         }
     }
+
+    
 }

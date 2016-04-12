@@ -14,7 +14,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC7")]
         public void WithSecureTrue_CreatesSecureRestUrlsWithDefaultHost()
         {
-            var client = new AblyHttpClient(isSecure: true);
+            var client = new AblyHttpClient(new AblyHttpOptions() { IsSecure = true});
 
             var url = client.GetRequestUrl(new AblyRequest("/test", HttpMethod.Get));
 
@@ -26,7 +26,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC7")]
         public void WithSecureFalse_CreatesNonSecureRestUrlsWithDefaultRestHost()
         {
-            var client = new AblyHttpClient(isSecure: false);
+            var client = new AblyHttpClient(new AblyHttpOptions() { IsSecure = false });
 
             var url = client.GetRequestUrl(new AblyRequest("/test", HttpMethod.Get));
 
@@ -40,12 +40,14 @@ namespace IO.Ably.Tests
         {
             var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success")};
             var handler = new FakeHttpMessageHandler(response);
-            var client = new AblyHttpClient(null, null, true, null, handler);
+            var client = new AblyHttpClient(new AblyHttpOptions(), handler);
 
             await client.Execute(new AblyRequest("/test", HttpMethod.Get));
             var values = handler.LastRequest.Headers.GetValues("X-Ably-Version");
             values.Should().NotBeEmpty();
             values.First().Should().Be("0.8");
         }
+
+
     }
 }

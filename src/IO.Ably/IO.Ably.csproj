@@ -49,6 +49,7 @@
     <Compile Include="AuthOptions.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
+    <Compile Include="Http\AblyHttpOptions.cs" />
     <Compile Include="TokenDetails.cs" />
     <Compile Include="Capability.cs" />
     <Compile Include="CapabilityResource.cs" />
@@ -114,7 +115,6 @@
     <Compile Include="AblyRest.cs" />
     <Compile Include="Rest\Channel.cs" />
     <Compile Include="Rest\ChannelOptions.cs" />
-    <Compile Include="Rest\IAblyRest.cs" />
     <Compile Include="Rest\IChannel.cs" />
     <Compile Include="Rest\IChannelCommands.cs" />
     <Compile Include="Statistics.cs" />

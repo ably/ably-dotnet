@@ -105,7 +105,7 @@ namespace IO.Ably.Tests
         public void ShouldInitialiseAblyHttpClientWithCorrectTlsValue(bool tls)
         {
             var client = new AblyRest(new ClientOptions(ValidKey) { Tls = tls });
-            client.HttpClient.IsSecure.Should().Be(tls);
+            client.HttpClient.Options.IsSecure.Should().Be(tls);
         }
 
         [Fact]
@@ -189,7 +189,7 @@ namespace IO.Ably.Tests
                 var options = new ClientOptions(ValidKey);
                 optionsClient(options);
                 var client = new AblyRest(options);
-                client.HttpClient.CreateInternalHttpClient(_handler);
+                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(10), _handler);
                 return client;
             }
 
@@ -202,6 +202,7 @@ namespace IO.Ably.Tests
             }
 
             [Fact]
+            [Trait("spec", "RSC12")]
             public async Task WithHostSpecifiedInOption_ShouldUseCustomHost()
             {
                 var client = CreateClient(options => { options.RestHost = "www.test.com"; });

@@ -6,10 +6,7 @@ using Xunit;
 namespace IO.Ably.Tests
 {
     [CollectionDefinition("AblyRest SandBox Collection")]
-    public class AblyCollectionFixture : ICollectionFixture<AblySandboxFixture>
-    {
-        
-    }
+    public class AblyCollectionFixture : ICollectionFixture<AblySandboxFixture> { }
 
     public class Key
     {
@@ -36,7 +33,7 @@ namespace IO.Ably.Tests
 
         internal AblyHttpClient GetHttpClient()
         {
-            return new AblyHttpClient(isSecure: Tls, environment: Environment);
+            return new AblyHttpClient(new AblyHttpOptions() {IsSecure = Tls, Environment = Environment });
         }
 
         public ClientOptions CreateDefaultOptions()
