@@ -98,6 +98,7 @@ namespace IO.Ably.Tests
 
         [Theory]
         [Trait("spec", "RSC7")]
+        [Trait("spec", "RSC18")]
         [InlineData(true)]
         [InlineData(false)]
         public void ShouldInitialiseAblyHttpClientWithCorrectTlsValue(bool tls)
@@ -106,7 +107,23 @@ namespace IO.Ably.Tests
             client.HttpClient.IsSecure.Should().Be(tls);
         }
 
-        
+        [Fact]
+        [Trait("spec", "RSC8a")]
+
+        public void ShouldUseBinaryProtocolByDefault()
+        {
+            var client = new AblyRest(ValidKey);
+            client.Options.UseBinaryProtocol.Should().BeTrue();
+            client.Protocol.Should().Be(Protocol.MsgPack);
+        }
+
+        [Fact]
+        [Trait("spec", "RSC8b")]
+        public void WhenBinaryProtoclIsFalse_ShouldSetProtocolToJson()
+        {
+            var client = GetRestClient(setOptionsAction: opts => opts.UseBinaryProtocol = false);
+            client.Protocol.Should().Be(Protocol.Json);
+        }
 
         [Fact]
         public async Task Init_WithCallback_ExecutesCallbackOnFirstRequest()
