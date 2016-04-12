@@ -70,7 +70,7 @@ namespace IO.Ably.Tests
             request.Protocol = Protocol.Json;
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
-            await ablyRest.AddAuthHeader(request);
+            await ablyRest.AblyAuth.AddAuthHeader(request);
             request.RequestBody = json.GetBytes();
 
             await client.Execute(request);

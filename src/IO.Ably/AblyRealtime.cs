@@ -14,22 +14,24 @@ namespace IO.Ably
     {
         /// <summary></summary>
         /// <param name="key"></param>
-        public AblyRealtime( string key )
-            : this( new ClientOptions( key ) )
+        public AblyRealtime(string key)
+            : this(new ClientOptions(key))
         { }
 
         /// <summary>
         ///
         /// </summary>
         /// <param name="options"></param>
-        public AblyRealtime( ClientOptions options )
+        public AblyRealtime(ClientOptions options)
         {
-            _options = options;
-            if( options.AutoConnect )
-                this.Connect().IgnoreExceptions();
+            RestClient = new AblyRest(options);
+            if (options.AutoConnect)
+                Connect().IgnoreExceptions();
         }
 
-        Rest.AblySimpleRestClient _simpleRest;
+        public AblyRest RestClient { get; }
+        internal AblyAuth Auth => RestClient.AblyAuth;
+        internal ClientOptions Options => RestClient.Options;
 
         /// <summary>The collection of channels instanced, indexed by channel name.</summary>
         public IRealtimeChannelCommands Channels { get; private set; }
@@ -37,7 +39,7 @@ namespace IO.Ably
         /// <summary>A reference to the connection object for this library instance.</summary>
         public Connection Connection { get; private set; }
 
-        ClientOptions options { get { return _options as ClientOptions; } }
+        ClientOptions options => Options;
 
         /// <summary>
         ///
@@ -45,61 +47,58 @@ namespace IO.Ably
         /// <returns></returns>
         public async Task<Connection> Connect()
         {
-            if( null == this.Channels || null == this.Connection )
+            if (Channels == null || Connection == null)
             {
-                _simpleRest = new Rest.AblySimpleRestClient( _options );
-                await InitAuth( _simpleRest );
+                await InitAuth();
 
-                IConnectionManager connectionManager = new ConnectionManager( options );
-                _protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
+                IConnectionManager connectionManager = new ConnectionManager(options);
                 IChannelFactory factory = new ChannelFactory() { ConnectionManager = connectionManager, Options = options };
-                this.Channels = new ChannelList( connectionManager, factory );
-                this.Connection = connectionManager.Connection;
+                Channels = new ChannelList(connectionManager, factory);
+                Connection = connectionManager.Connection;
             }
 
             ConnectionState state = this.Connection.State;
-            if( state == ConnectionState.Connected )
-                return this.Connection;
+            if (state == ConnectionState.Connected)
+                return Connection;
 
-            using( ConnStateAwaitor awaitor = new ConnStateAwaitor( this.Connection ) )
+            using (ConnStateAwaitor awaitor = new ConnStateAwaitor(this.Connection))
             {
                 awaitor.connection.Connect();
                 return await awaitor.wait();
             }
         }
 
-        new internal async Task InitAuth( IAblyRest restClient )
+        internal async Task InitAuth()
         {
-            base.InitAuth( restClient );
-
-            if( AuthMethod == AuthMethod.Basic )
+            if (Auth.AuthMethod == AuthMethod.Basic)
             {
                 string authHeader = Convert.ToBase64String(Options.Key.GetBytes());
-                options.AuthHeaders[ "Authorization" ] = "Basic " + authHeader;
+                //TODO: Fix this.
+                options.AuthHeaders["Authorization"] = "Basic " + authHeader;
                 return;
             }
-            if( AuthMethod == AuthMethod.Token )
+            if (Auth.AuthMethod == AuthMethod.Token)
             {
                 await InitTokenAuth();
                 return;
             }
 
-            throw new Exception( "Unexpected AuthMethod value" );
+            throw new Exception("Unexpected AuthMethod value");
         }
 
         /// <summary>Request auth token, set options</summary>
         async Task InitTokenAuth()
         {
-            CurrentToken = await Auth.Authorise( null, null, false );
+            await Auth.Authorise(null, null, false); //This sets current token
 
-            if( HasValidToken() )
+            if (Auth.HasValidToken())
             {
                 // WebSockets use Token from Options.Token
-                this.Options.Token = CurrentToken.Token;
-                Logger.Debug( "Adding Authorization header with Token authentication" );
+                Options.Token = Auth.CurrentToken.Token;
+                Logger.Debug("Adding Authorization header with Token authentication");
             }
             else
-                throw new AblyException( "Invalid token credentials: " + CurrentToken, 40100, HttpStatusCode.Unauthorized );
+                throw new AblyException("Invalid token credentials: " + Auth.CurrentToken, 40100, HttpStatusCode.Unauthorized);
         }
 
         /// <summary>
@@ -108,13 +107,13 @@ namespace IO.Ably
         /// </summary>
         public void Close()
         {
-            this.Connection.Close();
+            Connection.Close();
         }
 
         /// <summary>Retrieves the ably service time</summary>
         public Task<DateTimeOffset> Time()
         {
-            return _simpleRest.Time();
+            return RestClient.Time();
         }
     }
 }

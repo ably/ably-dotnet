@@ -2,109 +2,35 @@
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using IO.Ably.Auth;
-using IO.Ably.Rest;
+using IO.Ably.Transport;
 
 namespace IO.Ably
 {
     public class AblyBase
     {
-        private static readonly string InternetCheckURL = "https://internet-up.ably-realtime.com/is-the-internet-up.txt";
-        private static readonly string InternetCheckOK = "yes";
-
-        protected Protocol _protocol;
-        protected ClientOptions _options;
-        internal AuthMethod AuthMethod;
-        internal TokenDetails CurrentToken;
-        private IAuthCommands _auth;
-
-        /// <summary>
-        /// Authentication methods
-        /// </summary>
-        public IAuthCommands Auth
-        {
-            get { return _auth; }
-        }
-
-        internal Protocol Protocol
-        {
-            get { return _protocol; }
-        }
-
-        internal ClientOptions Options
-        {
-            get { return _options; }
-        }
-
-        /// <summary>
-        /// Initializes the Ably Auth type based on the options passed.
-        /// </summary>
-        internal void InitAuth(IAblyRest restClient)
-        {
-            _auth = new AblyTokenAuth(Options, restClient);
-            AuthMethod = Options.Method;
-            if (AuthMethod == AuthMethod.Basic)
-            {
-                Logger.Info("Using basic authentication.");
-                return;
-            }
-            Logger.Info("Using token authentication.");
-            if (StringExtensions.IsNotEmpty(Options.Token))
-            {
-                CurrentToken = new TokenDetails(Options.Token);
-            }
-            LogCurrentAuthenticationMethod();
-        }
-
         //TODO: MG Move to use the AblyHttpClient
         public static bool CanConnectToAbly()
         {
-            WebRequest req = WebRequest.Create(InternetCheckURL);
+            WebRequest req = WebRequest.Create(Defaults.InternetCheckURL);
             WebResponse res = null;
             try
             {
                 Func<Task<WebResponse>> fn = () => req.GetResponseAsync();
-                res = Task.Run( fn ).Result;
+                res = Task.Run(fn).Result;
             }
             catch (Exception)
             {
                 return false;
             }
-            using( var resStream = res.GetResponseStream() )
+            using (var resStream = res.GetResponseStream())
             {
-                using( StreamReader reader = new StreamReader( resStream ) )
+                using (StreamReader reader = new StreamReader(resStream))
                 {
-                    return reader.ReadLine() == InternetCheckOK;
+                    return reader.ReadLine() == Defaults.InternetCheckOKMessage;
                 }
             }
         }
 
-        internal TokenAuthMethod GetTokenAuthMethod()
-        {
-            if( null != Options.AuthCallback )
-                return TokenAuthMethod.Callback;
-            if( StringExtensions.IsNotEmpty(Options.AuthUrl) )
-                return TokenAuthMethod.Url;
-            if( StringExtensions.IsNotEmpty(Options.Key) )
-                return TokenAuthMethod.Signing;
-            if( StringExtensions.IsNotEmpty(Options.Token) )
-                return TokenAuthMethod.JustToken;
-            return TokenAuthMethod.None;
-        }
-
-        private void LogCurrentAuthenticationMethod()
-        {
-            TokenAuthMethod method = GetTokenAuthMethod();
-            Logger.Info( "Authentication method: {0}", method.description() );
-        }
-
-        /// <summary>True if CurrentToken is still valid.</summary>
-        protected bool HasValidToken()
-        {
-            if ( null == CurrentToken )
-                return false;
-            var exp = CurrentToken.Expires;
-            return ( exp == DateTimeOffset.MinValue ) || ( exp >= DateTimeOffset.UtcNow );
-        }
+        
     }
 }

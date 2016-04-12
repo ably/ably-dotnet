@@ -51,7 +51,7 @@ namespace IO.Ably.Tests
                     opts.ClientId = "123";
                 });
 
-                Assert.Equal(AuthMethod.Token, client.AuthMethod);
+                Assert.Equal(AuthMethod.Token, client.AblyAuth.AuthMethod);
             }
         }
 
@@ -92,7 +92,7 @@ namespace IO.Ably.Tests
             var client = new AblyRest(options);
 
             //Assert
-            var auth = client.Auth as AblyTokenAuth;
+            var auth = client.Auth as AblyAuth;
             auth.Options.Should().BeSameAs(options);
         }
 
@@ -196,11 +196,11 @@ namespace IO.Ably.Tests
             };
             var rest = new AblyRest(options);
             rest.ExecuteHttpRequest = request => "[{}]".ToAblyResponse();
-            rest.CurrentToken = new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddDays(-2) };
+            rest.Auth.CurrentToken = new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddDays(-2) };
 
             await rest.Stats();
             newTokenRequested.Should().BeTrue();
-            rest.CurrentToken.Token.Should().Be("new.token");
+            rest.Auth.CurrentToken.Token.Should().Be("new.token");
         }
 
         [Fact]
@@ -214,7 +214,7 @@ namespace IO.Ably.Tests
             };
             var rest = new AblyRest(options);
             var token = new TokenDetails("123") { Expires = DateTimeOffset.UtcNow.AddHours(1) };
-            rest.CurrentToken = token;
+            rest.Auth.CurrentToken = token;
 
             rest.ExecuteHttpRequest = request =>
             {
@@ -233,7 +233,7 @@ namespace IO.Ably.Tests
         {
             var rest = new AblyRest(new ClientOptions() { Token = "token_id" });
 
-            rest.TokenRenewable.Should().BeFalse();
+            rest.AblyAuth.TokenRenewable.Should().BeFalse();
         }
 
         [Fact]
@@ -246,7 +246,7 @@ namespace IO.Ably.Tests
             var expectedValue = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(key.ToString()));
 
             //Act
-            rest.AddAuthHeader(request).Wait();
+            rest.AblyAuth.AddAuthHeader(request).Wait();
 
             //Assert
             var authHeader = request.Headers.First();

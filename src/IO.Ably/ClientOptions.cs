@@ -92,9 +92,9 @@ namespace IO.Ably
         {
             get
             {
-                if (StringExtensions.IsNotEmpty(Key))
+                if (Key.IsNotEmpty())
                 {
-                    if (StringExtensions.IsEmpty(ClientId))
+                    if (ClientId.IsEmpty())
                     {
                         return Ably.AuthMethod.Basic;
                     }

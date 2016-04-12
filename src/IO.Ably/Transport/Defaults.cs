@@ -7,6 +7,10 @@ namespace IO.Ably.Transport
     {
         public const int ProtocolVersion = 1;
         public const int QueryLimit = 100;
+
+        public const string InternetCheckURL = "https://internet-up.ably-realtime.com/is-the-internet-up.txt";
+        public static readonly string InternetCheckOKMessage = "yes";
+
         public static readonly string RestHost = "rest.ably.io";
         public static readonly String RealtimeHost = "realtime.ably.io";
         public static readonly string[] FallbackHosts;
@@ -14,6 +18,8 @@ namespace IO.Ably.Transport
         public static readonly Capability DefaultTokenCapability = Capability.AllowAll;
         public const int Port = 80;
         public const int TlsPort = 443;
+        // Buffer in seconds before a token is considered unusable
+        public const int TokenExpireBufer = 15;
         public static readonly string[] SupportedTransports = new string[]{ "web_socket" };
         public static readonly Dictionary<string, ITransportFactory> TransportFactories;
 

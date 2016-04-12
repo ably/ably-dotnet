@@ -47,6 +47,7 @@
     <Compile Include="ApiKey.cs" />
     <Compile Include="AuthMethod.cs" />
     <Compile Include="AuthOptions.cs" />
+    <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="TokenDetails.cs" />
     <Compile Include="Capability.cs" />
     <Compile Include="CapabilityResource.cs" />

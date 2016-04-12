@@ -10,14 +10,14 @@ namespace IO.Ably.Tests
         public void Init_WithKeyAndNoClientId_SetsAuthMethodToBasic()
         {
             var client = new AblyRest(ValidKey);
-            Assert.Equal(AuthMethod.Basic, client.AuthMethod);
+            Assert.Equal(AuthMethod.Basic, client.AblyAuth.AuthMethod);
         }
 
         [Fact]
         public void Init_WithKeyAndClientId_SetsAuthMethodToToken()
         {
             var client = new AblyRest(new ClientOptions { Key = ValidKey, ClientId = "123" });
-            Assert.Equal(AuthMethod.Token, client.AuthMethod);
+            Assert.Equal(AuthMethod.Token, client.AblyAuth.AuthMethod);
         }
 
         [Fact]
@@ -26,7 +26,7 @@ namespace IO.Ably.Tests
             ClientOptions options = new ClientOptions { Key = ValidKey, ClientId = "123", Token = "222" };
             var client = new AblyRest(options);
 
-            Assert.Equal(options.Token, client.CurrentToken.Token);
+            Assert.Equal(options.Token, client.AblyAuth.CurrentToken.Token);
         }
 
         [Fact]
@@ -38,7 +38,7 @@ namespace IO.Ably.Tests
                 opts.ClientId = "123";
             });
 
-            Assert.Equal(AuthMethod.Token, client.AuthMethod);
+            Assert.Equal(AuthMethod.Token, client.AblyAuth.AuthMethod);
         }
 
         [Fact]

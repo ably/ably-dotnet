@@ -19,13 +19,6 @@ namespace IO.Ably.Tests
         private readonly string _dummyTokenResponse = "{ \"access_token\": {}}";
 
         [Fact]
-        public void TokenShouldNotBeSetBeforeAuthoriseIsCalled()
-        {
-            var client = GetClient();
-            client.CurrentToken.Should().BeNull();
-        }
-
-        [Fact]
         public void RequestToken_CreatesPostRequestWithCorrectUrl()
         {
             //Arrange
@@ -108,15 +101,15 @@ namespace IO.Ably.Tests
         public void RequestToken_WithQueryTime_SendsTimeRequestAndUsesReturnedTimeForTheRequest()
         {
             var currentTime = DateTimeOffset.UtcNow;
-            Func<AblyRequest, AblyResponse> executeHttpRequest = x =>
+            Func<AblyRequest, Task<AblyResponse>> executeHttpRequest = x =>
             {
                 if (x.Url.Contains("time"))
-                    return new AblyResponse { TextResponse = "[" + currentTime.ToUnixTimeInMilliseconds() + "]", Type = ResponseType.Json };
+                    return Task.FromResult(new AblyResponse { TextResponse = "[" + currentTime.ToUnixTimeInMilliseconds() + "]", Type = ResponseType.Json });
 
                 //Assert
                 var tokenRequest = x.PostData as TokenRequest;
                 Assert.Equal(tokenRequest.Timestamp, currentTime.ToUnixTimeInMilliseconds().ToString());
-                return new AblyResponse() { TextResponse = _dummyTokenResponse };
+                return Task.FromResult(new AblyResponse() { TextResponse = _dummyTokenResponse });
             };
             var rest = GetClient(executeHttpRequest);
             var tokenParams = new TokenParams { Capability = new Capability(), ClientId = "ClientId", Ttl = TimeSpan.FromMinutes(10) };
@@ -128,10 +121,10 @@ namespace IO.Ably.Tests
         [Fact]
         public void RequestToken_WithoutQueryTime_SendsTimeRequestAndUsesReturnedTimeForTheRequest()
         {
-            Func<AblyRequest, AblyResponse> executeHttpRequest = x =>
+            Func<AblyRequest, Task<AblyResponse>> executeHttpRequest = x =>
             {
                 Assert.False(x.Url.Contains("time"));
-                return new AblyResponse() { TextResponse = _dummyTokenResponse };
+                return Task.FromResult(new AblyResponse() { TextResponse = _dummyTokenResponse });
             };
             var rest = GetClient(executeHttpRequest);
 
@@ -175,14 +168,14 @@ namespace IO.Ably.Tests
 
             AblyRequest authRequest = null;
             var requestdata = new TokenRequest { KeyName = GetKeyId(), Capability = "123" };
-            Func<AblyRequest, AblyResponse> executeHttpRequest = x =>
+            Func<AblyRequest, Task<AblyResponse>> executeHttpRequest = x =>
             {
                 if (x.Url == options.AuthUrl)
                 {
                     authRequest = x;
-                    return new AblyResponse { TextResponse = JsonConvert.SerializeObject(requestdata) };
+                    return Task.FromResult(new AblyResponse { TextResponse = JsonConvert.SerializeObject(requestdata) });
                 }
-                return new AblyResponse { TextResponse = _dummyTokenResponse };
+                return Task.FromResult(new AblyResponse { TextResponse = _dummyTokenResponse });
             };
             var rest = GetClient(executeHttpRequest);
 
@@ -209,14 +202,14 @@ namespace IO.Ably.Tests
             };
             AblyRequest authRequest = null;
             var requestdata = new TokenRequest { KeyName = GetKeyId(), Capability = "123" };
-            Func<AblyRequest, AblyResponse> executeHttpRequest = (x) =>
+            Func<AblyRequest, Task<AblyResponse>> executeHttpRequest = (x) =>
             {
                 if (x.Url == options.AuthUrl)
                 {
                     authRequest = x;
-                    return new AblyResponse { TextResponse = JsonConvert.SerializeObject(requestdata) };
+                    return Task.FromResult(new AblyResponse { TextResponse = JsonConvert.SerializeObject(requestdata) });
                 }
-                return new AblyResponse { TextResponse = _dummyTokenResponse };
+                return Task.FromResult(new AblyResponse { TextResponse = _dummyTokenResponse });
             };
             var rest = GetClient(executeHttpRequest);
 
@@ -240,11 +233,11 @@ namespace IO.Ably.Tests
             };
 
             var dateTime = DateTimeOffset.UtcNow;
-            Func<AblyRequest, AblyResponse> executeHttpRequest = (x) =>
+            Func<AblyRequest, Task<AblyResponse>> executeHttpRequest = (x) =>
             {
                 if (x.Url == options.AuthUrl)
                 {
-                    return new AblyResponse
+                    return Task.FromResult(new AblyResponse
                     {
                         TextResponse = "{ " +
                                        "\"keyName\":\"123\"," +
@@ -253,9 +246,9 @@ namespace IO.Ably.Tests
                                        "\"capability\":\"{}\"," +
                                        "\"clientId\":\"111\"" +
                                        "}"
-                    };
+                    });
                 }
-                return new AblyResponse { TextResponse = "{}" };
+                return Task.FromResult(new AblyResponse { TextResponse = "{}" });
             };
             var rest = GetClient(executeHttpRequest);
 
@@ -275,14 +268,14 @@ namespace IO.Ably.Tests
             };
             List<AblyRequest> requests = new List<AblyRequest>();
             var requestdata = new TokenRequest { KeyName = GetKeyId(), Capability = "123" };
-            Func<AblyRequest, AblyResponse> executeHttpRequest = (x) =>
+            Func<AblyRequest, Task<AblyResponse>> executeHttpRequest = (x) =>
             {
                 requests.Add(x);
                 if (x.Url == options.AuthUrl)
                 {
-                    return new AblyResponse { TextResponse = JsonConvert.SerializeObject(requestdata) };
+                    return Task.FromResult(new AblyResponse { TextResponse = JsonConvert.SerializeObject(requestdata) });
                 }
-                return new AblyResponse { TextResponse = _dummyTokenResponse };
+                return Task.FromResult(new AblyResponse { TextResponse = _dummyTokenResponse });
             };
             var rest = GetClient(executeHttpRequest);
 
@@ -315,7 +308,7 @@ namespace IO.Ably.Tests
             {
                 AuthUrl = "http://authUrl"
             };
-            Func<AblyRequest, AblyResponse> executeHttpRequest = (x) => new AblyResponse { Type = ResponseType.Binary };
+            Func<AblyRequest, Task<AblyResponse>> executeHttpRequest = (x) => Task.FromResult(new AblyResponse { Type = ResponseType.Binary });
             var rest = GetClient(executeHttpRequest);
 
             var tokenParams = new TokenParams { Capability = new Capability() };
@@ -327,11 +320,11 @@ namespace IO.Ably.Tests
         public async Task Authorise_WithNotExpiredCurrentTokenAndForceFalse_ReturnsCurrentToken()
         {
             var client = GetClient();
-            client.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(1) };
+            client.Auth.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(1) };
 
             var token = await client.Auth.Authorise(null, null, false);
 
-            Assert.Same(client.CurrentToken, token);
+            Assert.Same(client.Auth.CurrentToken, token);
         }
 
         [Fact]
@@ -349,7 +342,7 @@ namespace IO.Ably.Tests
         public async Task Authorise_WithNotExpiredCurrentTokenAndForceTrue_RequestsNewToken()
         {
             var client = GetClient();
-            client.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(1) };
+            client.Auth.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(1) };
 
             var token = await client.Auth.Authorise(new TokenParams() { ClientId = "123", Capability = new Capability() }, null, true);
 
@@ -361,7 +354,7 @@ namespace IO.Ably.Tests
         public async Task Authorise_WithExpiredCurrentToken_RequestsNewToken()
         {
             var client = GetClient();
-            client.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(-1) };
+            client.Auth.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(-1) };
 
             var token = await client.Auth.Authorise(null, null, false);
 
@@ -378,14 +371,13 @@ namespace IO.Ably.Tests
             rest.Auth.RequestToken(request, null);
         }
 
-        private AblyRealtime GetClient(Func<AblyRequest, AblyResponse> executeHttpRequest)
+        private AblyRealtime GetClient(Func<AblyRequest, Task<AblyResponse>> executeHttpRequest)
         {
             var options = new ClientOptions() { Key = ApiKey, UseBinaryProtocol = false };
             var client = new AblyRealtime(options);
-            var fakeHttpClient = new FakeHttpClient();
-            fakeHttpClient.ExecuteFunc = executeHttpRequest;
+            client.RestClient.ExecuteHttpRequest = executeHttpRequest;
 
-            client.InitAuth( new Rest.AblySimpleRestClient( options, fakeHttpClient) ).Wait();
+            client.InitAuth().Wait();
 
             Config.Now = () => Now;
             return client;
@@ -395,7 +387,7 @@ namespace IO.Ably.Tests
         {
             var options = new ClientOptions() { Key = ApiKey, UseBinaryProtocol = false };
             var client = new AblyRealtime(options);
-            client.InitAuth( new Rest.AblySimpleRestClient( options ) ).Wait();
+            client.InitAuth().Wait();
 
             Config.Now = () => Now;
             return client;
@@ -403,10 +395,10 @@ namespace IO.Ably.Tests
 
         private AblyRealtime GetClient()
         {
-            Func<AblyRequest, AblyResponse> executeHttpRequest = (request) =>
+            Func<AblyRequest, Task<AblyResponse>> executeHttpRequest = (request) =>
             {
                 CurrentRequest = request;
-                return new AblyResponse() { TextResponse = _dummyTokenResponse };
+                return Task.FromResult(new AblyResponse() { TextResponse = _dummyTokenResponse });
             };
 
             return GetClient(executeHttpRequest);

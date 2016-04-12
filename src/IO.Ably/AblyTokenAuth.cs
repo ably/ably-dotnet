@@ -5,28 +5,96 @@ using IO.Ably.Auth;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
+using IO.Ably.Transport;
 
 namespace IO.Ably
 {
-    public class AblyTokenAuth : IAuthCommands
+    public class AblyAuth : IAuthCommands
     {
-        internal AblyTokenAuth(ClientOptions options, Rest.IAblyRest rest)
+        internal AblyAuth(ClientOptions options, Rest.IAblyRest rest)
         {
             Options = options;
             _rest = rest;
+
+            Initialise();
         }
 
+        internal AuthMethod AuthMethod;
         internal ClientOptions Options { get; }
         private TokenParams _lastTokenRequest;
         private Rest.IAblyRest _rest;
-        // Buffer in seconds before a token is considered unusable
-        private const int TokenExpireBufer = 15;
 
-        //TODO: MG: Temporary ugliness. I want to get the tests passing before fixing this shit.
-        private TokenDetails CurrentToken
+        public TokenDetails CurrentToken { get; set; }
+
+        internal bool HasValidToken()
         {
-            get { return (_rest as AblyRest).CurrentToken; }
-            set { (_rest as AblyRest).CurrentToken = value; }
+            if (CurrentToken == null)
+                return false;
+            var exp = CurrentToken.Expires;
+            return (exp == DateTimeOffset.MinValue) || (exp >= DateTimeOffset.UtcNow);
+        }
+
+        bool HasTokenId
+        {
+            get { return StringExtensions.IsNotEmpty(Options.Token); }
+        }
+
+        public bool TokenRenewable
+        {
+            get { return TokenCreatedExternally || (HasApiKey && HasTokenId == false); }
+        }
+
+        bool TokenCreatedExternally
+        {
+            get { return Options.AuthUrl.IsNotEmpty() || Options.AuthCallback != null; }
+        }
+
+        bool HasApiKey
+        {
+            get { return Options.Key.IsNotEmpty(); }
+        }
+
+        internal void Initialise()
+        {
+            AuthMethod = Options.Method;
+
+            if (AuthMethod == AuthMethod.Basic)
+            {
+                Logger.Info("Using basic authentication.");
+                return;
+            }
+
+            Logger.Info("Using token authentication.");
+            if (Options.Token.IsNotEmpty())
+            {
+                CurrentToken = new TokenDetails(Options.Token);
+            }
+
+        }
+
+        internal async Task AddAuthHeader(AblyRequest request)
+        {
+            if (AuthMethod == AuthMethod.Basic)
+            {
+                var authInfo = Convert.ToBase64String(Options.Key.GetBytes());
+                request.Headers["Authorization"] = "Basic " + authInfo;
+                Logger.Debug("Adding Authorization header with Basic authentication.");
+            }
+            else
+            {
+                if (HasValidToken() == false && TokenRenewable)
+                {
+                    CurrentToken = await Authorise(null, null, false);
+                }
+
+                if (HasValidToken())
+                {
+                    request.Headers["Authorization"] = "Bearer " + CurrentToken.Token.ToBase64();
+                    Logger.Debug("Adding Authorization header with Token authentication");
+                }
+                else
+                    throw new AblyException("Invalid token credentials: " + CurrentToken, 40100, HttpStatusCode.Unauthorized);
+            }
         }
 
         /// <summary>
@@ -135,7 +203,7 @@ namespace IO.Ably
         {
             if (CurrentToken != null)
             {
-                if (CurrentToken.Expires > (Config.Now().AddSeconds(TokenExpireBufer)))
+                if (CurrentToken.Expires > (Config.Now().AddSeconds(Defaults.TokenExpireBufer)))
                 {
                     if (force == false)
                         return CurrentToken;
@@ -179,6 +247,26 @@ namespace IO.Ably
                 request.Timestamp = (await _rest.Time()).ToUnixTimeInMilliseconds().ToString();
 
             return request;
+        }
+
+
+        internal TokenAuthMethod GetTokenAuthMethod()
+        {
+            if (null != Options.AuthCallback)
+                return TokenAuthMethod.Callback;
+            if (Options.AuthUrl.IsNotEmpty())
+                return TokenAuthMethod.Url;
+            if (Options.Key.IsNotEmpty())
+                return TokenAuthMethod.Signing;
+            if (Options.Token.IsNotEmpty())
+                return TokenAuthMethod.JustToken;
+            return TokenAuthMethod.None;
+        }
+
+        private void LogCurrentAuthenticationMethod()
+        {
+            TokenAuthMethod method = GetTokenAuthMethod();
+            Logger.Info("Authentication method: {0}", method.ToEnumDescription());
         }
     }
 }

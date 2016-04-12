@@ -6,6 +6,7 @@ using System.Net.Http;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Rest;
 using System.Threading.Tasks;
+using IO.Ably.Auth;
 
 namespace IO.Ably
 {
@@ -14,6 +15,17 @@ namespace IO.Ably
     {
         internal AblyHttpClient HttpClient;
         internal MessageHandler MessageHandler;
+
+        internal AblyAuth AblyAuth { get; private set; }
+
+        /// <summary>
+        /// Authentication methods
+        /// </summary>
+        public IAuthCommands Auth => AblyAuth;
+
+        internal Protocol Protocol { get; private set; }
+
+        internal ClientOptions Options { get; }
 
         /// <summary>Initializes the RestClient using the api key provided</summary>
         /// <param name="apiKey">Full api key</param>
@@ -35,8 +47,8 @@ namespace IO.Ably
         /// <param name="init">Action delegate which receives a empty options object.</param>
         public AblyRest(Action<ClientOptions> init)
         {
-            _options = new ClientOptions();
-            init(_options);
+            Options = new ClientOptions();
+            init(Options);
             InitializeAbly();
         }
 
@@ -46,51 +58,42 @@ namespace IO.Ably
         /// <param name="clientOptions"></param>
         public AblyRest(ClientOptions clientOptions)
         {
-            _options = clientOptions;
+            Options = clientOptions;
             InitializeAbly();
         }
 
         /// <summary>Initializes the rest client and validates the passed in options</summary>
         private void InitializeAbly()
         {
-            if (_options == null)
+            if (Options == null)
             {
                 Logger.Error("No options provider to Ably rest");
                 throw new AblyException("Invalid options");
             }
 
-            _protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
-            Logger.Debug("Protocol set to: " + _protocol);
-            MessageHandler = new MessageHandler(_protocol);
+            Protocol = Options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
+            Logger.Debug("Protocol set to: " + Protocol);
+            MessageHandler = new MessageHandler(Protocol);
 
-            var port = _options.Tls ? _options.TlsPort : _options.Port;
-            HttpClient = new AblyHttpClient(_options.RestHost, port, _options.Tls, _options.Environment);
+            var port = Options.Tls ? Options.TlsPort : Options.Port;
+            HttpClient = new AblyHttpClient(Options.RestHost, port, Options.Tls, Options.Environment);
             ExecuteHttpRequest = HttpClient.Execute;
 
-            InitAuth(this);
+            AblyAuth = new AblyAuth(Options, this);
         }
 
-        /// <summary>
-        /// Channel methods
-        /// </summary>
-        public IChannelCommands Channels
-        {
-            get { return this; }
-        }
+        public IChannelCommands Channels => this;
 
-        internal IAblyRest RestMethods
-        {
-            get { return this;}
-        }
+        internal IAblyRest RestMethods => this;
 
         internal Func<AblyRequest, Task<AblyResponse>> ExecuteHttpRequest;
-
+          
         async Task<AblyResponse> IAblyRest.ExecuteRequest(AblyRequest request)
         {
             Logger.Info("Sending {0} request to {1}", request.Method, request.Url);
 
             if (request.SkipAuthentication == false)
-                await AddAuthHeader(request);
+                await AblyAuth.AddAuthHeader(request);
 
             MessageHandler.SetRequestBody(request);
 
@@ -107,51 +110,6 @@ namespace IO.Ably
                 Logger.Debug("Raw response (base64):" + response.Body.ToBase64());
 
             return MessageHandler.ParseResponse<T>(request, response);
-        }
-
-        bool TokenCreatedExternally
-        {
-            get { return StringExtensions.IsNotEmpty(Options.AuthUrl) || Options.AuthCallback != null; }
-        }
-
-        bool HasApiKey
-        {
-            get { return StringExtensions.IsNotEmpty(Options.Key); }
-        }
-
-        bool HasTokenId
-        {
-            get { return StringExtensions.IsNotEmpty(Options.Token); }
-        }
-
-        public bool TokenRenewable
-        {
-            get { return TokenCreatedExternally || (HasApiKey && HasTokenId == false); }
-        }
-
-        internal async Task AddAuthHeader(AblyRequest request)
-        {
-            if (AuthMethod == AuthMethod.Basic)
-            {
-                var authInfo = Convert.ToBase64String(Options.Key.GetBytes());
-                request.Headers["Authorization"] = "Basic " + authInfo;
-                Logger.Debug("Adding Authorization header with Basic authentication.");
-            }
-            else
-            {
-                if (HasValidToken() == false && TokenRenewable)
-                {
-                    CurrentToken = await Auth.Authorise(null, null, false);
-                }
-
-                if (HasValidToken())
-                {
-                    request.Headers["Authorization"] = "Bearer " + CurrentToken.Token.ToBase64();
-                    Logger.Debug("Adding Authorization header with Token authentication");
-                }
-                else
-                    throw new AblyException("Invalid token credentials: " + CurrentToken, 40100, HttpStatusCode.Unauthorized);
-            }
         }
 
         /// <summary>/// Retrieves the ably service time/// </summary>

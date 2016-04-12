@@ -38,7 +38,7 @@ namespace IO.Ably.Tests
         public void TokenShouldNotBeSetBeforeAuthoriseIsCalled()
         {
             var client = GetRestClient();
-            client.CurrentToken.Should().BeNull();
+            client.Auth.CurrentToken.Should().BeNull();
         }
 
         [Fact]
@@ -348,11 +348,11 @@ namespace IO.Ably.Tests
         public async Task Authorise_WithNotExpiredCurrentTokenAndForceFalse_ReturnsCurrentToken()
         {
             var client = GetRestClient();
-            client.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(1) };
+            client.Auth.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(1) };
 
             var token = await client.Auth.Authorise(null, null, false);
 
-            Assert.Same(client.CurrentToken, token);
+            Assert.Same(client.Auth.CurrentToken, token);
         }
 
         [Fact]
@@ -370,7 +370,7 @@ namespace IO.Ably.Tests
         public async Task Authorise_WithNotExpiredCurrentTokenAndForceTrue_RequestsNewToken()
         {
             var client = GetRestClient();
-            client.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(1) };
+            client.Auth.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(1) };
 
             var token = await client.Auth.Authorise(new TokenParams() { ClientId = "123", Capability = new Capability() }, null, true);
 
@@ -382,7 +382,7 @@ namespace IO.Ably.Tests
         public async Task Authorise_WithExpiredCurrentToken_RequestsNewToken()
         {
             var client = GetRestClient();
-            client.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(-1) };
+            client.Auth.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(-1) };
 
             var token = await client.Auth.Authorise(null, null, false);
 
