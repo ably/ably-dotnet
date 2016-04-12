@@ -143,7 +143,9 @@
     <Compile Include="Infrastructure\AsyncLazy.cs" />
     <Compile Include="Infrastructure\ProtocolData.cs" />
     <Compile Include="Rest\AblyHttpClientSpecs.cs" />
+    <Compile Include="Infrastructure\FakeHttpMessageHandler.cs" />
     <Compile Include="Rest\MockHttpSpecs.cs" />
+    <Compile Include="Rest\RestInitSpecs.cs" />
     <Compile Include="Rest\RestSandBoxSpecs.cs" />
     <Compile Include="Rest\RestSpecs.cs" />
     <Compile Include="ApiKeyTests.cs" />
