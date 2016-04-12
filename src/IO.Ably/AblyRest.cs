@@ -14,7 +14,7 @@ namespace IO.Ably
     /// <summary>Client for the ably rest API</summary>
     public sealed class AblyRest : AblyBase, IRestClient
     {
-        internal AblyHttpClient HttpClient;
+        internal AblyHttpClient Client { get; set; }
         internal MessageHandler MessageHandler;
 
         internal AblyAuth AblyAuth { get; private set; }
@@ -24,7 +24,7 @@ namespace IO.Ably
         /// </summary>
         public IAuthCommands Auth => AblyAuth;
 
-        internal Protocol Protocol { get; private set; }
+        internal Protocol Protocol => Options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
 
         internal ClientOptions Options { get; }
 
@@ -72,14 +72,12 @@ namespace IO.Ably
                 throw new AblyException("Invalid options");
             }
 
-            Protocol = Options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
             Logger.Debug("Protocol set to: " + Protocol);
             MessageHandler = new MessageHandler(Protocol);
 
             var port = Options.Tls ? Options.TlsPort : Options.Port;
-            HttpClient = new AblyHttpClient(Options.RestHost, port, Options.Tls, Options.Environment);
-            ExecuteHttpRequest = HttpClient.Execute;
-
+            Client = new AblyHttpClient(Options.RestHost, port, Options.Tls, Options.Environment);
+            ExecuteHttpRequest = Client.Execute;
             AblyAuth = new AblyAuth(Options, this);
         }
 

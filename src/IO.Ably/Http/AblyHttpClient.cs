@@ -32,7 +32,11 @@ namespace IO.Ably
             Environment = environment;
             Port = port;
             Host = host ?? Defaults.RestHost;
+            CreateInternalHttpClient(messageHandler);
+        }
 
+        internal void CreateInternalHttpClient(HttpMessageHandler messageHandler)
+        {
             _client = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
             _client.DefaultRequestHeaders.Add("X-Ably-Version", Config.AblyVersion);
             _client.Timeout = TimeSpan.FromSeconds(Config.ConnectTimeout);

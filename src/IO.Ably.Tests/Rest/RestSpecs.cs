@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -159,7 +160,7 @@ namespace IO.Ably.Tests
                 {
                     if (request.Url.Contains("/keys"))
                     {
-                        return new TokenDetails("123") {Expires = Now.AddDays(1), ClientId = "123"}.ToJson().ToAblyResponse();
+                        return new TokenDetails("123") { Expires = Now.AddDays(1), ClientId = "123" }.ToJson().ToAblyResponse();
                     }
 
                     if (firstAttempt)
@@ -170,6 +171,71 @@ namespace IO.Ably.Tests
                     return AblyResponse.EmptyResponse.ToTask();
                 }, opts => { opts.TokenDetails = tokenDetails; });
                 return client;
+            }
+        }
+
+        [Trait("spec", "RSC11")]
+        public class HostSpecs : AblySpecs
+        {
+            private FakeHttpMessageHandler _handler;
+            public HostSpecs()
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("12345678") };
+                _handler = new FakeHttpMessageHandler(response);
+            }
+
+            private AblyRest CreateClient(Action<ClientOptions> optionsClient)
+            {
+                var options = new ClientOptions(ValidKey);
+                optionsClient(options);
+                var client = new AblyRest(options);
+                client.HttpClient.CreateInternalHttpClient(_handler);
+                return client;
+            }
+
+            [Fact]
+            public async Task WithoutHostSpecific_ShouldUseDefaultHost()
+            {
+                var client = CreateClient(options => { });
+                await MakeAnyRequest(client);
+                _handler.LastRequest.RequestUri.Host.Should().Be(Defaults.RestHost);
+            }
+
+            [Fact]
+            public async Task WithHostSpecifiedInOption_ShouldUseCustomHost()
+            {
+                var client = CreateClient(options => { options.RestHost = "www.test.com"; });
+                await MakeAnyRequest(client);
+                _handler.LastRequest.RequestUri.Host.Should().Be("www.test.com");
+            }
+
+            [Theory]
+            [InlineData(AblyEnvironment.Sandbox)]
+            [InlineData(AblyEnvironment.Uat)]
+            public async Task WithEnvironmentAndNoCustomHost_ShouldPrefixEnvironment(AblyEnvironment environment)
+            {
+                var client = CreateClient(options => { options.Environment = environment; });
+                await MakeAnyRequest(client);
+                var expected = environment.ToString().ToLower() + "-" + Defaults.RestHost;
+                _handler.LastRequest.RequestUri.Host.Should().Be(expected);
+            }
+
+            [Fact]
+            public async Task WithEnvironmentAndCustomHost_ShouldUseCustomHostAsIs()
+            {
+                var client = CreateClient(options =>
+                {
+                    options.Environment = AblyEnvironment.Sandbox;
+                    options.RestHost = "www.test.com";
+                });
+                await MakeAnyRequest(client);
+                _handler.LastRequest.RequestUri.Host.Should().Be("www.test.com");
+            }
+
+
+            private static async Task MakeAnyRequest(AblyRest client)
+            {
+                await client.Channels.Get("boo").Publish("boo", "baa");
             }
         }
 
