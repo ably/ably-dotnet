@@ -1,8 +1,8 @@
 using System;
-using System.ComponentModel.Design;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
@@ -11,10 +11,12 @@ namespace IO.Ably.Tests
     public class RestSandBoxSpecs
     {
         private readonly AblySandboxFixture _fixture;
+        protected readonly ITestOutputHelper Output;
 
-        public RestSandBoxSpecs(AblySandboxFixture fixture)
+        public RestSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
         {
             _fixture = fixture;
+            Output = output;
         }
 
         private async Task<AblyRest> GetRestClient(Protocol protocol, Action<ClientOptions> optionsAction = null)
@@ -54,7 +56,7 @@ namespace IO.Ably.Tests
         [Trait("requires", "sandbox")]
         public class WithTokenAuthAndInvalidToken : RestSandBoxSpecs
         {
-            public WithTokenAuthAndInvalidToken(AblySandboxFixture fixture) : base(fixture) { }
+            public WithTokenAuthAndInvalidToken(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
 
             [Theory]
             [ProtocolData]
@@ -62,19 +64,21 @@ namespace IO.Ably.Tests
             public async Task WhenTokenIsRenewable_ShouldRenewToken(Protocol protocol)
             {
                 var authClient = await GetRestClient(protocol);
+                Output.WriteLine("Getting Token to expire in 1 second");
                 var almostExpiredToken = await authClient.Auth.RequestToken(new TokenParams {ClientId = "123", Ttl = TimeSpan.FromSeconds(1)}, null);
-
+                Output.WriteLine("Token: " + almostExpiredToken.ToString());
                 await Task.Delay(TimeSpan.FromSeconds(2));
                 
                 //Add this to fool the client it is a valid token
                 almostExpiredToken.Expires = DateTimeOffset.UtcNow.AddHours(1); 
 
+                //Trying again with the new token
                 var client = await GetRestClient(protocol, options =>
                 {
                     options.TokenDetails = almostExpiredToken;
                     options.ClientId = "123";
                     options.Key = "";
-                    options.AuthCallback = async request => await authClient.AblyAuth.RequestToken(request, null);
+                    options.AuthCallback = request => authClient.AblyAuth.RequestToken(request, null);
                 });
 
                 await client.Stats();
