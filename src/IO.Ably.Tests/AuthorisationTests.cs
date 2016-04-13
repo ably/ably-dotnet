@@ -124,8 +124,6 @@ namespace IO.Ably.Tests
             Assert.Equal(Now.ToUnixTimeInMilliseconds().ToString(), data.Timestamp);
         }
 
-
-
         [Fact]
         public async Task RequestToken_WithQueryTime_SendsTimeRequestAndUsesReturnedTimeForTheRequest()
         {

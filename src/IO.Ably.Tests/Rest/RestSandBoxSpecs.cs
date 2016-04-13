@@ -17,6 +17,8 @@ namespace IO.Ably.Tests
         {
             _fixture = fixture;
             Output = output;
+            //Reset time in case other tests have changed it
+            Config.Now = () => DateTimeOffset.UtcNow;
         }
 
         private async Task<AblyRest> GetRestClient(Protocol protocol, Action<ClientOptions> optionsAction = null)
@@ -63,6 +65,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSC10")]
             public async Task WhenTokenIsRenewable_ShouldRenewToken(Protocol protocol)
             {
+                Output.WriteLine("Current time: " + Config.Now());
                 var authClient = await GetRestClient(protocol);
                 Output.WriteLine("Getting Token to expire in 1 second");
                 var almostExpiredToken = await authClient.Auth.RequestToken(new TokenParams {ClientId = "123", Ttl = TimeSpan.FromSeconds(1)}, null);
