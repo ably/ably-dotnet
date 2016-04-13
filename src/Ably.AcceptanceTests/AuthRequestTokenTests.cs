@@ -4,7 +4,6 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using IO.Ably.Transport;
 
 namespace IO.Ably.AcceptanceTests
 {

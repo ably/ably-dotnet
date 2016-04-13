@@ -11,6 +11,7 @@ namespace IO.Ably.Tests
     public class RestInitSpecs : AblySpecs
     {
         [Fact]
+        [Trait("spec", "RSA2")]
         public void Init_WithKeyAndNoClientId_SetsAuthMethodToBasic()
         {
             var client = new AblyRest(ValidKey);

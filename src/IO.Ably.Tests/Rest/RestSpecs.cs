@@ -277,6 +277,7 @@ namespace IO.Ably.Tests
 
         [Fact]
         [Trait("spec", "RSC14a")]
+        [Trait("spec", "RSA11")]
         public async Task AddAuthHeader_WithBasicAuthentication_AddsCorrectAuthorisationHeader()
         {
             //Arrange
@@ -292,6 +293,46 @@ namespace IO.Ably.Tests
             var authHeader = request.Headers.First();
             authHeader.Key.Should().Be("Authorization");
             authHeader.Value.Should().Be(expectedValue);
+        }
+
+        [Fact]
+        [Trait("spec", "RSA3b")]
+        public async Task AddAuthHeader_WithTokenAuthentication_AddsCorrectAuthorisationHeader()
+        {
+            //Arrange
+            var tokenValue = "TokenValue";
+            var rest = new AblyRest(opts => opts.Token = tokenValue);
+            var request = new AblyRequest("/test", HttpMethod.Get, Protocol.Json);
+            var expectedValue = "Bearer " + tokenValue.ToBase64();
+
+            //Act
+            await rest.AblyAuth.AddAuthHeader(request);
+
+            //Assert
+            var authHeader = request.Headers.First();
+            authHeader.Key.Should().Be("Authorization");
+            authHeader.Value.Should().Be(expectedValue);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        [Trait("spec", "RSA3a")]
+        public async Task TokenAuthCanBeUsedOverHttpAndHttps(bool tls)
+        {
+            //Arrange
+            var tokenValue = "TokenValue";
+            var rest = new AblyRest(opts =>
+            {
+                opts.Token = tokenValue;
+                opts.Tls = tls;
+            });
+            var request = new AblyRequest("/test", HttpMethod.Get, Protocol.Json);
+
+            //Act
+            await rest.AblyAuth.AddAuthHeader(request);
+            
+            // If it throws the test will fail
         }
 
         public class FallbackSpecs : AblySpecs
