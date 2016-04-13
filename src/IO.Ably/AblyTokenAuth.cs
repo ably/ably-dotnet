@@ -79,6 +79,8 @@ namespace IO.Ably
 
         internal async Task AddAuthHeader(AblyRequest request)
         {
+            EnsureSecureConnection();
+
             if (request.Headers.ContainsKey("Authorization"))
                 request.Headers.Remove("Authorization");
 
@@ -135,6 +137,8 @@ namespace IO.Ably
             }
 
             _lastTokenRequest = data;
+
+            EnsureSecureConnection();
 
             var request = _rest.CreatePostRequest($"/keys/{keyId}/requestToken");
             request.SkipAuthentication = true;
@@ -193,6 +197,12 @@ namespace IO.Ably
             if (null == result)
                 throw new AblyException(new ErrorInfo("Invalid token response returned", 500));
             return result;
+        }
+
+        private void EnsureSecureConnection()
+        {
+            if (AuthMethod == AuthMethod.Basic && Options.Tls == false)
+                throw new InsecureRequestException();
         }
 
         /// <summary>

@@ -4,6 +4,7 @@ using FluentAssertions;
 using IO.Ably.Auth;
 using IO.Ably.Transport;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
@@ -156,6 +157,10 @@ namespace IO.Ably.Tests
             }
                 );
             client.HttpClient.Options.Port.Should().Be(111);
+        }
+
+        public RestInitSpecs(ITestOutputHelper output) : base(output)
+        {
         }
     }
 }

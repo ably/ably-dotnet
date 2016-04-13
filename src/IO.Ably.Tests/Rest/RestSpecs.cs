@@ -9,6 +9,7 @@ using FluentAssertions;
 using IO.Ably.AcceptanceTests;
 using IO.Ably.Auth;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
@@ -189,13 +190,17 @@ namespace IO.Ably.Tests
                 });
                 return client;
             }
+
+            public WithInvalidToken(ITestOutputHelper output) : base(output)
+            {
+            }
         }
 
         [Trait("spec", "RSC11")]
         public class HostSpecs : AblySpecs
         {
             private FakeHttpMessageHandler _handler;
-            public HostSpecs()
+            public HostSpecs(ITestOutputHelper output) : base(output)
             {
                 var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("12345678") };
                 _handler = new FakeHttpMessageHandler(response);
@@ -293,7 +298,7 @@ namespace IO.Ably.Tests
         {
             private FakeHttpMessageHandler _handler;
             private HttpResponseMessage _response;
-            public FallbackSpecs()
+            public FallbackSpecs(ITestOutputHelper output) : base(output)
             {
                 _response = new HttpResponseMessage() { Content = new StringContent("1234")};
                 _handler = new FakeHttpMessageHandler(_response);
@@ -508,6 +513,10 @@ namespace IO.Ably.Tests
             var channel = rest.Channels.Get("Test");
 
             Assert.Equal("Test", channel.Name);
+        }
+
+        public RestSpecs(ITestOutputHelper output) : base(output)
+        {
         }
     }
 }
