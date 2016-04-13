@@ -18,9 +18,9 @@ namespace IO.Ably.AcceptanceTests
             _binaryProtocol = binaryProtocol == Protocol.MsgPack;
         }
 
-        private AblyRealtime GetRealtimeClient(Action<AblyRealtimeOptions> setup = null)
+        private AblyRealtime GetRealtimeClient(Action<ClientOptions> setup = null)
         {
-            var options = TestsSetup.GetDefaultOptions<AblyRealtimeOptions>();
+            var options = TestsSetup.GetDefaultOptions<ClientOptions>();
             options.UseBinaryProtocol = _binaryProtocol;
             if (setup != null)
             {

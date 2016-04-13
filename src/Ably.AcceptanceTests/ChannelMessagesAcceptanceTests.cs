@@ -13,7 +13,7 @@ namespace IO.Ably.AcceptanceTests
 {
     public class StatsAcceptanceTests
     {
-        public readonly static DateTime StartInterval = new DateTime(DateTime.Now.Year  -1, 2, 3, 15, 5, 0, DateTimeKind.Utc);
+        public readonly static DateTimeOffset StartInterval = DateHelper.CreateDate(DateTimeOffset.UtcNow.Year - 1, 2, 3, 15, 5);
 
         //Stats fixtures can be found in StatsFixture.json which is posted to /stats in TestsSetup.cs
 
@@ -28,7 +28,7 @@ namespace IO.Ably.AcceptanceTests
         {
             var testData = TestsSetup.TestData;
 
-            var options = new AblyOptions
+            var options = new ClientOptions
             {
                 Key = testData.keys.First().keyStr,
                 UseBinaryProtocol = _protocol == Protocol.MsgPack,
@@ -40,7 +40,6 @@ namespace IO.Ably.AcceptanceTests
 
         [TestFixture(Protocol.Json)]
         [TestFixture(Protocol.MsgPack)]
-        [Ignore("Will fix those after getting the stats to post correctly")]
         public class ByMinuteWhenFromSetToStartIntervalAndLimitSetTo1 : StatsAcceptanceTests
         {
             public ByMinuteWhenFromSetToStartIntervalAndLimitSetTo1(Protocol protocol) : base(protocol)
@@ -51,7 +50,7 @@ namespace IO.Ably.AcceptanceTests
             public void GetStats()
             {
                 var client = GetAbly();
-                Stats = client.Stats(new StatsDataRequestQuery() {Start = StartInterval.AddMinutes(-30), Limit = 1}).Result;
+                Stats = client.Stats(new StatsDataRequestQuery() { Start = StartInterval.AddMinutes(-30), Limit = 1 }).Result;
 
                 TestStats = Stats.First();
             }
@@ -147,7 +146,7 @@ namespace IO.Ably.AcceptanceTests
         {
             var testData = TestsSetup.TestData;
 
-            var options = new AblyOptions
+            var options = new ClientOptions
             {
                 Key = testData.keys.First().keyStr,
                 UseBinaryProtocol = _protocol == Protocol.MsgPack,
@@ -162,14 +161,14 @@ namespace IO.Ably.AcceptanceTests
         [SetUp]
         public void Setup()
         {
-             examples = JObject.Parse(ResourceHelper.GetResource("crypto-data-128.json"));
+            examples = JObject.Parse(ResourceHelper.GetResource("crypto-data-128.json"));
         }
 
         public ChannelOptions GetOptions()
         {
-            var key = ((string) examples["key"]).FromBase64();
+            var key = ((string)examples["key"]).FromBase64();
             var iv = ((string)examples["iv"]).FromBase64();
-            var keyLength = (int) examples["keylength"];
+            var keyLength = (int)examples["keylength"];
             var cipherParams = new CipherParams("aes", key, CipherMode.CBC, keyLength, iv);
             return new ChannelOptions(cipherParams);
         }
@@ -177,7 +176,7 @@ namespace IO.Ably.AcceptanceTests
         [Test]
         public async Task CanPublishAMessageAndRetrieveIt()
         {
-            var items = (JArray) examples["items"];
+            var items = (JArray)examples["items"];
 
             Ably.AblyRest ably = GetAbly();
             IChannel channel = ably.Channels.Get("persisted:test", GetOptions());
@@ -192,7 +191,7 @@ namespace IO.Ably.AcceptanceTests
                 if (message.data is byte[])
                     (message.data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
                 else if (encoding == "json")
-                    JToken.DeepEquals((JToken) message.data, (JToken) decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
+                    JToken.DeepEquals((JToken)message.data, (JToken)decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
                 else
                     message.data.Should().Be(decodedData, "Item number {0} data does not match decoded data", count);
                 count++;
@@ -214,7 +213,7 @@ namespace IO.Ably.AcceptanceTests
             }
 
             //Assert
-            var history = await channel.History(new DataRequestQuery() {Limit = 10});
+            var history = await channel.History(new DataRequestQuery() { Limit = 10 });
             history.Should().HaveCount(10);
             history.HasNext.Should().BeTrue();
             history.First().name.Should().Be("name19");

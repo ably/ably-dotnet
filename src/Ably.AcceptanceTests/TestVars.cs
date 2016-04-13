@@ -14,17 +14,17 @@ namespace IO.Ably.AcceptanceTests
         {
             get { return Environment.ToString().ToLower() + "-" + Config.DefaultHost; }
         }
-        public int? restPort;
+        public int restPort;
         public bool tls;
         internal AblyEnvironment Environment;
 
-        public AblyOptions CreateOptions(string key) {
-			var opts = new AblyOptions() { Key = key};
+        public ClientOptions CreateOptions(string key) {
+			var opts = new ClientOptions() { Key = key};
 			FillInOptions(opts);
 			return opts;
 		}
-		public void FillInOptions(AblyOptions opts) {
-			opts.Host = restHost;
+		public void FillInOptions(ClientOptions opts) {
+			opts.RestHost = restHost;
 			opts.Port = restPort;
 			opts.Tls = tls;
 		}
