@@ -389,7 +389,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        [Trait("RSC17")]
+        [Trait("spec", "RSC17")]
         public void WhenClientIdInOptions_ShouldPassClientIdtoAblyAuth()
         {
             var options = new ClientOptions(ValidKey) { ClientId = "123"};
@@ -428,7 +428,7 @@ namespace IO.Ably.Tests
 
             var rest = new AblyRest(options);
 
-            rest.ExecuteHttpRequest = request =>;
+            rest.ExecuteHttpRequest = request =>
             {
                 if (request.Url.Contains(options.AuthUrl.ToString()))
                 {
