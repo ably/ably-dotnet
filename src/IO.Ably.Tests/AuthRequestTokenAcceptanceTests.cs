@@ -39,43 +39,47 @@ namespace IO.Ably.Tests
             rest.Auth.RequestToken(tokenParams, authOptions);
         }
 
-        [Fact]
-        public void WithOverridingClientId_OverridesTheDefault()
+        [Trait("spec", "RSA8e")]
+        public class TokenParamsOverridingSpecs : AuthRequestTokenAcceptanceTests
         {
-            var tokenParams = new TokenParams { ClientId = "123" };
-            RequestToken(tokenParams, null, (data, request) => Assert.Equal("123", data.ClientId));
-        }
+            [Fact]
+            public void WithOverridingClientId_OverridesTheDefault()
+            {
+                var tokenParams = new TokenParams {ClientId = "123"};
+                RequestToken(tokenParams, null, (data, request) => Assert.Equal("123", data.ClientId));
+            }
 
-        [Fact]
-        public void WithOverridingCapability_OverridesTheDefault()
-        {
-            var capability = new Capability();
-            capability.AddResource("test").AllowAll();
-            var tokenParams = new TokenParams { Capability = capability };
+            [Fact]
+            public void WithOverridingCapability_OverridesTheDefault()
+            {
+                var capability = new Capability();
+                capability.AddResource("test").AllowAll();
+                var tokenParams = new TokenParams {Capability = capability};
 
-            RequestToken(tokenParams, null, (data, request) => Assert.Equal(capability.ToJson(), data.Capability));
-        }
+                RequestToken(tokenParams, null, (data, request) => Assert.Equal(capability.ToJson(), data.Capability));
+            }
 
-        [Fact]
-        public void WithOverridingNonce_OverridesTheDefault()
-        {
-            RequestToken(new TokenParams { Nonce = "Blah" }, null, (data, request) => Assert.Equal("Blah", data.Nonce));
-        }
+            [Fact]
+            public void WithOverridingNonce_OverridesTheDefault()
+            {
+                RequestToken(new TokenParams {Nonce = "Blah"}, null, (data, request) => Assert.Equal("Blah", data.Nonce));
+            }
 
-        [Fact]
-        public void WithOverridingTimeStamp_OverridesTheDefault()
-        {
-            var timeStamp = new DateTimeOffset(2015, 1, 1, 0, 0, 0, TimeSpan.Zero);
-            var tokenParams = new TokenParams { Timestamp = timeStamp };
-            RequestToken(tokenParams, null,
-                (data, request) => Assert.Equal(timeStamp.ToUnixTimeInMilliseconds().ToString(), data.Timestamp));
-        }
+            [Fact]
+            public void WithOverridingTimeStamp_OverridesTheDefault()
+            {
+                var timeStamp = new DateTimeOffset(2015, 1, 1, 0, 0, 0, TimeSpan.Zero);
+                var tokenParams = new TokenParams {Timestamp = timeStamp};
+                RequestToken(tokenParams, null,
+                    (data, request) => Assert.Equal(timeStamp.ToUnixTimeInMilliseconds().ToString(), data.Timestamp));
+            }
 
-        [Fact]
-        public void WithOverridingTtl_OverridesTheDefault()
-        {
-            RequestToken(new TokenParams { Ttl = TimeSpan.FromSeconds(2) }, null,
-                (data, request) => Assert.Equal(TimeSpan.FromSeconds(2).TotalMilliseconds.ToString(), data.Ttl));
+            [Fact]
+            public void WithOverridingTtl_OverridesTheDefault()
+            {
+                RequestToken(new TokenParams {Ttl = TimeSpan.FromSeconds(2)}, null,
+                    (data, request) => Assert.Equal(TimeSpan.FromSeconds(2).TotalMilliseconds.ToString(), data.Ttl));
+            }
         }
     }
 }

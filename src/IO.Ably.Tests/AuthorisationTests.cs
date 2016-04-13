@@ -21,10 +21,24 @@ namespace IO.Ably.Tests
 
         [Fact]
         [Trait("spec", "RSA1")]
-        public void WithTlsFalseAndBasicAuth_Throws()
+        public async Task WithTlsFalseAndBasicAuth_Throws()
         {
             var client = GetRestClient(setOptionsAction: options => { options.Tls = false; });
-            Assert.ThrowsAsync<InsecureRequestException>(() => client.Auth.Authorise(null, null, false));
+            await Assert.ThrowsAsync<InsecureRequestException>(() => client.Auth.Authorise(null, null, false));
+        }
+
+        [Fact]
+        [Trait("spec", "RSA14")]
+        public async Task WithNoTokenOrWayToGenerateOneAndUseTokenAuthIsTrue_AuthoriseShouldThrow()
+        {
+            var client = GetRestClient(setOptionsAction: options =>
+            {
+                options.Key = "";
+                options.UseTokenAuth = true;
+            });
+
+            var ex = await Assert.ThrowsAsync<AblyException>(() => client.Auth.Authorise(null, null, false));
+            ex.ErrorInfo.message.Should().Be("TokenAuth is on but there is no way to generate one");
         }
 
         [Fact]

@@ -24,6 +24,8 @@ namespace IO.Ably
         private TokenParams _lastTokenRequest;
         private readonly AblyRest _rest;
 
+        //public string CurrentClientId { get; set; }
+
         public TokenDetails CurrentToken { get; set; }
 
         internal bool HasValidToken()
@@ -115,7 +117,7 @@ namespace IO.Ably
         /// <param name="options">Extra <see cref="AuthOptions"/> used for creating a token </param>
         /// <returns>A valid ably token</returns>
         /// <exception cref="AblyException"></exception>
-        public async Task<TokenDetails> RequestToken(TokenParams requestData, AuthOptions options)
+        public async Task<TokenDetails> RequestToken(TokenParams requestData = null, AuthOptions options = null)
         {
             var mergedOptions = options != null ? options.Merge(Options) : Options;
             string keyId = "", keyValue = "";
@@ -184,6 +186,11 @@ namespace IO.Ably
             }
             else
             {
+                if (keyId.IsEmpty() || keyValue.IsEmpty())
+                {
+                    throw new AblyException("TokenAuth is on but there is no way to generate one");
+                }
+
                 postData = new TokenRequest().Populate(data, keyId, keyValue);
             }
 
