@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Auth;
@@ -81,7 +82,7 @@ namespace IO.Ably.Tests
             {
                 var client = new AblyRest(opts =>
                 {
-                    opts.AuthUrl = "http://authUrl";
+                    opts.AuthUrl = new Uri("http://authUrl");
                 });
 
                 client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
@@ -97,7 +98,41 @@ namespace IO.Ably.Tests
 
                 client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
             }
+
+            [Fact]
+            public void WithTokenOnly_SetsTokenRenewableToFalse()
+            {
+                var rest = new AblyRest(new ClientOptions() { Token = "token_id" });
+
+                rest.AblyAuth.TokenRenewable.Should().BeFalse();
+            }
+
+            [Fact]
+            public void WithApiKey_SetsTokenRenewableToTrue()
+            {
+                var rest = new AblyRest(new ClientOptions(ValidKey));
+
+                rest.AblyAuth.TokenRenewable.Should().BeTrue();
+            }
+
+            [Fact]
+            public void WithAuthUrl_SetsTokenRenewableToTrue()
+            {
+                var rest = new AblyRest(new ClientOptions() { AuthUrl = new Uri("http://boo")});
+
+                rest.AblyAuth.TokenRenewable.Should().BeTrue();
+            }
+
+            [Fact]
+            public void WithAuthCallback_SetsTokenRenewableToTrue()
+            {
+                var rest = new AblyRest(new ClientOptions() { AuthCallback = token => Task.FromResult(new TokenDetails())});
+
+                rest.AblyAuth.TokenRenewable.Should().BeTrue();
+            }
         }
+
+
 
         [Fact]
         public void Init_WithTlsAndSpecificPort_ShouldInitialiseHttpClientWithCorrectPort()

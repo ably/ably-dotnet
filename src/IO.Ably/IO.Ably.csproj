@@ -49,6 +49,7 @@
     <Compile Include="AuthOptions.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
+    <Compile Include="Extensions\UriExtensions.cs" />
     <Compile Include="Http\AblyHttpOptions.cs" />
     <Compile Include="TokenDetails.cs" />
     <Compile Include="Capability.cs" />

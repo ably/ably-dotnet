@@ -27,7 +27,7 @@ namespace IO.Ably
         public const int DisconnectTimeout = 10000;
         public const int SuspendedTimeout = 60000;
         public static string[] Transports = { "web_socket", "comet" };
-        public static string[] FallbackHosts = { "A.ably-realtime.com", "B.ably-realtime.com", "C.ably-realtime.com", "D.ably-realtime.com", "E.ably-realtime.com" };
+        
 
         public static int ProtocolVersion = 1;
 

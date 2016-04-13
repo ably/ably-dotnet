@@ -19,7 +19,7 @@ namespace IO.Ably.Tests
                 AuthHeaders = new Dictionary<string, string> { {"Test", "Test"} },
                 AuthParams = new Dictionary<string, string> { {"Test", "Test"} },
                 Token = "Token",
-                AuthUrl = "http://www.google.com",
+                AuthUrl = new Uri("http://www.google.com"),
                 Key = "key",
                 QueryTime = true,
                 AuthCallback = param => null,
@@ -64,7 +64,7 @@ namespace IO.Ably.Tests
                 AuthHeaders = new Dictionary<string, string> { {"Complete", "Test"} },
                 AuthParams = new Dictionary<string, string> { {"Complete", "Test"} },
                 Token = "Complete",
-                AuthUrl = "http://www.ably.io",
+                AuthUrl = new Uri("http://www.ably.io"),
                 Key = "completeKey",
                 QueryTime = true,
                 AuthCallback = param => null

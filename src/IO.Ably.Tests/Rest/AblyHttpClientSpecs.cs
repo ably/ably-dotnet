@@ -48,6 +48,52 @@ namespace IO.Ably.Tests
             values.First().Should().Be("0.8");
         }
 
+        public class IsRetriableResponseSpecs
+        {
+            private AblyHttpClient _client;
+
+            public IsRetriableResponseSpecs()
+            {
+                _client = new AblyHttpClient(new AblyHttpOptions());
+            }
+
+            [Fact]
+            public void IsRetryableError_WithTaskCancellationException_ShouldBeTrue()
+            {
+                _client.IsRetryableError(new TaskCanceledException()).Should().BeTrue();
+            }
+
+            [Theory]
+            [InlineData(WebExceptionStatus.Timeout)]
+            [InlineData(WebExceptionStatus.ConnectFailure)]
+            [InlineData(WebExceptionStatus.NameResolutionFailure)]
+            [Trait("spec", "RSC15d")]
+            public void IsRetyableError_WithHttpMessageExecption_ShouldBeTrue(WebExceptionStatus status)
+            {
+                var exception = new HttpRequestException("Error", new WebException("boo", status));
+                _client.IsRetryableError(exception).Should().BeTrue();
+            }
+
+            [Theory]
+            [InlineData(HttpStatusCode.BadGateway, true)]
+            [InlineData(HttpStatusCode.InternalServerError, true)]
+            [InlineData(HttpStatusCode.NotImplemented, true)]
+            [InlineData(HttpStatusCode.BadGateway, true)]
+            [InlineData(HttpStatusCode.ServiceUnavailable, true)]
+            [InlineData(HttpStatusCode.GatewayTimeout, true)]
+            [InlineData(HttpStatusCode.NoContent, false)]
+            [InlineData(HttpStatusCode.NotFound, false)]
+            [Trait("spec", "RSC15d")]
+
+            public void IsRetryableResponse_WithErrorCode_ShouldReturnExpectedValue(HttpStatusCode statusCode,
+                bool expected)
+            {
+                var response = new HttpResponseMessage(statusCode);
+                _client.IsRetryableResponse(response).Should().Be(expected);
+            }
+        }
+
+        
 
     }
 }

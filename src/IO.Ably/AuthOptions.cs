@@ -23,7 +23,7 @@ namespace IO.Ably
         /// another entity, so tokens can be renewed without the
         /// client requiring access to keys.
         ///</summary>
-        public string AuthUrl { get; set; }
+        public Uri AuthUrl { get; set; }
 
         /// <summary>
         /// Used in conjunction with AuthUrl. Default is GET.

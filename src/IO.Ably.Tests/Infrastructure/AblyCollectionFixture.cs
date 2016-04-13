@@ -33,12 +33,12 @@ namespace IO.Ably.Tests
 
         internal AblyHttpClient GetHttpClient()
         {
-            return new AblyHttpClient(new AblyHttpOptions() {IsSecure = Tls, Environment = Environment });
+            return new AblyHttpClient(new AblyHttpOptions() { IsSecure = Tls, Environment = Environment });
         }
 
         public ClientOptions CreateDefaultOptions()
         {
-            return new ClientOptions() { Key = FirstValidKey, Tls = Tls};
+            return new ClientOptions() { Key = FirstValidKey, Tls = Tls, Environment = Environment };
         }
     }
 }

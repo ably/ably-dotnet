@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Net;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 
@@ -31,6 +32,14 @@ namespace IO.Ably
         public HttpStatusCode? statusCode { get; set; }
         /// <summary>Additional reason information, where available</summary>
         public string message { get; set; }
+
+        public int NumberOfTries { get; set; }
+
+        public bool IsUnAuthorizedError => statusCode.HasValue &&
+                                           statusCode.Value == HttpStatusCode.Unauthorized;
+
+        public bool IsTokenError => code >= Defaults.TokenErrorCodesRangeStart &&
+                                    code <= Defaults.TokenErrorCodesRangeEnd;
 
         public ErrorInfo() { }
 

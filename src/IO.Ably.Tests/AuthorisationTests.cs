@@ -191,7 +191,7 @@ namespace IO.Ably.Tests
             var rest = GetRestClient();
             var options = new AuthOptions
             {
-                AuthUrl = "http://authUrl",
+                AuthUrl = new Uri("http://authUrl"),
                 AuthHeaders = new Dictionary<string, string> { { "Test", "Test" } },
                 AuthParams = new Dictionary<string, string> { { "Test", "Test" } },
             };
@@ -200,7 +200,7 @@ namespace IO.Ably.Tests
             var requestdata = new TokenRequest { KeyName = KeyId, Capability = "123" };
             rest.ExecuteHttpRequest = x =>
             {
-                if (x.Url == options.AuthUrl)
+                if (x.Url == options.AuthUrl.ToString())
                 {
                     authRequest = x;
                     return JsonConvert.SerializeObject(requestdata).ToAblyResponse();
@@ -225,7 +225,7 @@ namespace IO.Ably.Tests
             var rest = GetRestClient();
             var options = new AuthOptions
             {
-                AuthUrl = "http://authUrl",
+                AuthUrl = new Uri("http://authUrl"),
                 AuthHeaders = new Dictionary<string, string> { { "Test", "Test" } },
                 AuthParams = new Dictionary<string, string> { { "Test", "Test" } },
                 AuthMethod = HttpMethod.Post
@@ -234,7 +234,7 @@ namespace IO.Ably.Tests
             var requestdata = new TokenRequest { KeyName = KeyId, Capability = "123" };
             rest.ExecuteHttpRequest = (x) =>
             {
-                if (x.Url == options.AuthUrl)
+                if (x.Url == options.AuthUrl.ToString())
                 {
                     authRequest = x;
                     return JsonConvert.SerializeObject(requestdata).ToAblyResponse();
@@ -250,7 +250,7 @@ namespace IO.Ably.Tests
 
             Assert.Equal(options.AuthHeaders, authRequest.Headers);
             Assert.Equal(options.AuthParams, authRequest.PostParameters);
-            Assert.Equal(options.AuthUrl, authRequest.Url);
+            Assert.Equal(options.AuthUrl.ToString(), authRequest.Url);
         }
 
         [Fact]
@@ -259,13 +259,13 @@ namespace IO.Ably.Tests
             var rest = GetRestClient();
             var options = new AuthOptions
             {
-                AuthUrl = "http://authUrl"
+                AuthUrl = new Uri("http://authUrl")
             };
 
             var dateTime = DateTimeOffset.UtcNow;
             rest.ExecuteHttpRequest = (x) =>
             {
-                if (x.Url == options.AuthUrl)
+                if (x.Url == options.AuthUrl.ToString())
                 {
                     return ("{ " +
                                        "\"keyName\":\"123\"," +
@@ -291,14 +291,14 @@ namespace IO.Ably.Tests
             var rest = GetRestClient();
             var options = new AuthOptions
             {
-                AuthUrl = "http://authUrl"
+                AuthUrl = new Uri("http://authUrl")
             };
             List<AblyRequest> requests = new List<AblyRequest>();
             var requestdata = new TokenRequest { KeyName = KeyId, Capability = "123" };
             rest.ExecuteHttpRequest = (x) =>
             {
                 requests.Add(x);
-                if (x.Url == options.AuthUrl)
+                if (x.Url == options.AuthUrl.ToString())
                 {
                     return JsonConvert.SerializeObject(requestdata).ToAblyResponse();
                 }
@@ -319,7 +319,7 @@ namespace IO.Ably.Tests
             var rest = GetRestClient();
             var options = new AuthOptions
             {
-                AuthUrl = "http://authUrl"
+                AuthUrl = new Uri("http://authUrl")
             };
 
             rest.ExecuteHttpRequest = (x) => { throw new AblyException("Testing"); };
@@ -335,7 +335,7 @@ namespace IO.Ably.Tests
             var rest = GetRestClient();
             var options = new AuthOptions
             {
-                AuthUrl = "http://authUrl"
+                AuthUrl = new Uri("http://authUrl")
             };
             rest.ExecuteHttpRequest = (x) => Task.FromResult(new AblyResponse { Type = ResponseType.Binary });
 

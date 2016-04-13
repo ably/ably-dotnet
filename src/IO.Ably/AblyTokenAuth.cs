@@ -151,7 +151,7 @@ namespace IO.Ably
             {
                 var url = mergedOptions.AuthUrl;
                 var protocol = Options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
-                var authRequest = new AblyRequest(url, mergedOptions.AuthMethod, protocol);
+                var authRequest = new AblyRequest(url.ToString(), mergedOptions.AuthMethod, protocol);
                 if (mergedOptions.AuthMethod == HttpMethod.Get)
                 {
                     authRequest.AddQueryParameters(mergedOptions.AuthParams);

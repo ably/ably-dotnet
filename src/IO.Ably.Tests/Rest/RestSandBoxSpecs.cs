@@ -58,7 +58,7 @@ namespace IO.Ably.Tests
 
             [Theory]
             [ProtocolData]
-            [Trait("specs", "RSC10")]
+            [Trait("spec", "RSC10")]
             public async Task WhenTokenIsRenewable_ShouldRenewToken(Protocol protocol)
             {
                 var authClient = await GetRestClient(protocol);

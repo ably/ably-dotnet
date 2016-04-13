@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -150,10 +151,19 @@ namespace IO.Ably.Tests
             {
                 var client = GetConfiguredRestClient(40100, null);
 
-                Assert.ThrowsAsync<AblyException>(() => client.Stats());
+                await Assert.ThrowsAsync<AblyException>(() => client.Stats());
             }
 
-            private AblyRest GetConfiguredRestClient(int errorCode, TokenDetails tokenDetails)
+            [Fact]
+            [Trait("spec", "RSC14c")]
+            public async Task WhenClientHasNoMeansOfRenewingToken_ShouldThrow()
+            {
+                var client = GetConfiguredRestClient(Defaults.TokenErrorCodesRangeStart, null, useApiKey: false);
+
+                await Assert.ThrowsAsync<AblyException>(() => client.Stats());
+            }
+
+            private AblyRest GetConfiguredRestClient(int errorCode, TokenDetails tokenDetails, bool useApiKey = true)
             {
                 bool firstAttempt = true;
                 var client = GetRestClient(request =>
@@ -166,10 +176,17 @@ namespace IO.Ably.Tests
                     if (firstAttempt)
                     {
                         firstAttempt = false;
-                        throw new AblyException(new ErrorInfo("", errorCode));
+                        throw new AblyException(new ErrorInfo("", errorCode, HttpStatusCode.Unauthorized));
                     }
                     return AblyResponse.EmptyResponse.ToTask();
-                }, opts => { opts.TokenDetails = tokenDetails; });
+                }, opts =>
+                {
+                    opts.TokenDetails = tokenDetails;
+                    if (useApiKey == false)
+                    {
+                        opts.Key = "";
+                    }
+                });
                 return client;
             }
         }
@@ -233,7 +250,6 @@ namespace IO.Ably.Tests
                 _handler.LastRequest.RequestUri.Host.Should().Be("www.test.com");
             }
 
-
             private static async Task MakeAnyRequest(AblyRest client)
             {
                 await client.Channels.Get("boo").Publish("boo", "baa");
@@ -273,6 +289,114 @@ namespace IO.Ably.Tests
             authHeader.Value.Should().Be(expectedValue);
         }
 
+        public class FallbackSpecs : AblySpecs
+        {
+            private FakeHttpMessageHandler _handler;
+            private HttpResponseMessage _response;
+            public FallbackSpecs()
+            {
+                _response = new HttpResponseMessage() { Content = new StringContent("1234")};
+                _handler = new FakeHttpMessageHandler(_response);
+            }
+
+            private AblyRest CreateClient(Action<ClientOptions> optionsClient)
+            {
+                var options = new ClientOptions(ValidKey);
+                optionsClient?.Invoke(options);
+                var client = new AblyRest(options);
+                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(10), _handler);
+                return client;
+            }
+
+            [Fact]
+            [Trait("spec", "RSC15b")]
+            public async Task WithOverriddenRestHost_DoesNotRetryAndFailsImmediately()
+            {
+                _response.StatusCode = HttpStatusCode.BadGateway;
+                var client = CreateClient(options => options.RestHost = "boo.com");
+
+                var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                ex.ErrorInfo.statusCode.Should().Be(_response.StatusCode);
+                _handler.NumberOfRequests.Should().Be(1);
+            }
+
+            [Fact]
+            [Trait("spec", "RSC15b")]
+            public async Task ShouldRetryRequestANumberOfTimes()
+            {
+                _response.StatusCode = HttpStatusCode.BadGateway;
+                var client = CreateClient(null);
+
+                var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                //ex.ErrorInfo.statusCode.Should().Be(_response.StatusCode);
+                _handler.NumberOfRequests.Should().Be(client.Options.HttpMaxRetryCount);
+            }
+
+            [Fact]
+            [Trait("spec", "RSC15e")]
+            public async Task ShouldAttemptDefaultHostFirstAfterFailure()
+            {
+                _response.StatusCode = HttpStatusCode.BadGateway;
+                var client = CreateClient(null);
+
+                var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                _handler.Requests.Clear();
+                ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+
+                _handler.Requests.First().RequestUri.Host.Should().Be(Defaults.RestHost);
+            }
+
+            [Fact]
+            [Trait("spec", "RSC15a")]
+            public async Task ShouldAttemptFallbackHostsInRandomOrder()
+            {
+                _response.StatusCode = HttpStatusCode.BadGateway;
+                var client = CreateClient(null);
+
+                var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                var firstAttemptHosts = _handler.Requests.Select(x => x.RequestUri.Host).ToList();
+                _handler.Requests.Clear();
+                ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                var secondAttemptHosts = _handler.Requests.Select(x => x.RequestUri.Host).ToList();
+
+                //TODO: Find if there is a better way to assert differnt order
+                bool sameOrder = true;
+                for (int i = 0; i < firstAttemptHosts.Count; i++)
+                {
+                    sameOrder = sameOrder && firstAttemptHosts[i] == secondAttemptHosts[i];
+                }
+                Debug.WriteLine("FirstTryHosts: " + firstAttemptHosts.JoinStrings());
+                Debug.WriteLine("SecondTryHosts: " + secondAttemptHosts.JoinStrings());
+                sameOrder.Should().BeFalse();
+            }
+
+            [Fact]
+            [Trait("spec", "RSC15a")]
+            public async Task WhenConfigValueIsSetToMoreThanAvailableHosts_ShouldOnlyRetryEachFallbackHostOnce()
+            {
+                _response.StatusCode = HttpStatusCode.BadGateway;
+                var client = CreateClient(opts => opts.HttpMaxRetryCount = 10);
+
+                var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+
+                _handler.Requests.Count.Should().Be(Defaults.FallbackHosts.Length + 1); //First attempt is with rest.ably.io
+            }
+
+            private static async Task MakeAnyRequest(AblyRest client)
+            {
+                await client.Channels.Get("boo").Publish("boo", "baa");
+            }
+        }
+
+        [Fact]
+        [Trait("RSC17")]
+        public void WhenClientIdInOptions_ShouldPassClientIdtoAblyAuth()
+        {
+            var options = new ClientOptions(ValidKey) { ClientId = "123"};
+            var client = new AblyRest(options);
+            client.AblyAuth.Options.Should().BeSameAs(options);
+        }
+
         [Fact]
         public async Task Init_WithCallback_ExecutesCallbackOnFirstRequest()
         {
@@ -298,15 +422,15 @@ namespace IO.Ably.Tests
             bool called = false;
             var options = new ClientOptions
             {
-                AuthUrl = "http://testUrl",
+                AuthUrl = new Uri("http://testUrl"),
                 UseBinaryProtocol = false
             };
 
             var rest = new AblyRest(options);
 
-            rest.ExecuteHttpRequest = request =>
+            rest.ExecuteHttpRequest = request =>;
             {
-                if (request.Url.Contains(options.AuthUrl))
+                if (request.Url.Contains(options.AuthUrl.ToString()))
                 {
                     called = true;
                     return "{}".ToAblyResponse();
@@ -375,16 +499,6 @@ namespace IO.Ably.Tests
             await rest.Stats();
             await rest.Stats();
         }
-
-        [Fact]
-        public void Init_WithTokenId_SetsTokenRenewableToFalse()
-        {
-            var rest = new AblyRest(new ClientOptions() { Token = "token_id" });
-
-            rest.AblyAuth.TokenRenewable.Should().BeFalse();
-        }
-
-        
 
         [Fact]
         public void ChannelsGet_ReturnsNewChannelWithName()
