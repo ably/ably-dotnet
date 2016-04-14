@@ -38,7 +38,7 @@ namespace IO.Ably.Types
             meta.setCustom( "messages",
                 ( obj, packer ) =>
                 {
-                    Message[] arr = ((ProtocolMessage)obj).messages.Where( m => !m.isEmpty() ).ToArray();
+                    Message[] arr = ((ProtocolMessage)obj).messages.Where( m => !m.IsEmpty() ).ToArray();
                     packer.packArray( mdMessage, arr );
                 },
                 ( unp, obj ) =>

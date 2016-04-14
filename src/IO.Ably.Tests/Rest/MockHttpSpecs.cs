@@ -9,7 +9,7 @@ namespace IO.Ably.Tests
     {
         internal virtual AblyResponse DefaultResponse { get; }
         internal AblyRequest LastRequest { get; set; }
-        internal AblyRest GetRestClient(Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null, Action<ClientOptions> setOptionsAction = null)
+        internal virtual AblyRest GetRestClient(Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null, Action<ClientOptions> setOptionsAction = null)
         {
             var options = new ClientOptions(ValidKey) { UseBinaryProtocol = false};
             setOptionsAction?.Invoke(options);

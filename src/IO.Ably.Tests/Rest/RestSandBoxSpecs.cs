@@ -8,27 +8,9 @@ namespace IO.Ably.Tests
 {
     [Collection("AblyRest SandBox Collection")]
     [Trait("requires", "sandbox")]
-    public class RestSandBoxSpecs
+    public class RestSandBoxSpecses : SandboxSpecs
     {
-        private readonly AblySandboxFixture _fixture;
-        protected readonly ITestOutputHelper Output;
-
-        public RestSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
-        {
-            _fixture = fixture;
-            Output = output;
-            //Reset time in case other tests have changed it
-            Config.Now = () => DateTimeOffset.UtcNow;
-        }
-
-        private async Task<AblyRest> GetRestClient(Protocol protocol, Action<ClientOptions> optionsAction = null)
-        {
-            var settings = await _fixture.GetSettings();
-            var defaultOptions = settings.CreateDefaultOptions();
-            defaultOptions.UseBinaryProtocol = protocol == Protocol.MsgPack;
-            optionsAction?.Invoke(defaultOptions);
-            return new AblyRest(defaultOptions);
-        }
+        public RestSandBoxSpecses(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
 
         [Theory]
         [ProtocolData]
@@ -56,7 +38,7 @@ namespace IO.Ably.Tests
 
         [Collection("AblyRest SandBox Collection")]
         [Trait("requires", "sandbox")]
-        public class WithTokenAuthAndInvalidToken : RestSandBoxSpecs
+        public class WithTokenAuthAndInvalidToken : RestSandBoxSpecses
         {
             public WithTokenAuthAndInvalidToken(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
 
@@ -88,5 +70,7 @@ namespace IO.Ably.Tests
                 client.AblyAuth.HasValidToken().Should().BeTrue();
             }
         }
+
+        
     }
 }

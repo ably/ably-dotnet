@@ -5,7 +5,7 @@ namespace IO.Ably
 {
     public interface IAuthCommands
     {
-        Task<TokenDetails> RequestToken(TokenParams request, AuthOptions options);
+        Task<TokenDetails> RequestToken(TokenParams tokenParams = null, AuthOptions options = null);
         Task<TokenDetails> Authorise(TokenParams tokenParams, AuthOptions options, bool force);
 
         // Async because uses server time,

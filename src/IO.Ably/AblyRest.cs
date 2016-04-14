@@ -99,7 +99,6 @@ namespace IO.Ably
             }
             catch (AblyException ex)
             {
-                //TODO: Check with Matt about TokenRevoked and TokenExpired codes
                 if (ex.ErrorInfo.IsUnAuthorizedError
                     && ex.ErrorInfo.IsTokenError && AblyAuth.TokenRenewable)
                 {

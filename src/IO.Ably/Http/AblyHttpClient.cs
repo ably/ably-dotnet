@@ -165,7 +165,11 @@ namespace IO.Ably
                 message.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
 
-            message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(request.Protocol)));
+            if(request.Protocol == Protocol.MsgPack)
+                message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(request.Protocol)));
+
+            //Always accept JSON
+            message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.Json))); 
             if (message.Method == HttpMethod.Post)
             {
                 var content = new ByteArrayContent(request.RequestBody);
@@ -223,8 +227,8 @@ namespace IO.Ably
 
         private string GetQuery(AblyRequest request)
         {
-            string query = string.Join("&", request.QueryParameters.Select(x => String.Format("{0}={1}", x.Key, x.Value)));
-            if (StringExtensions.IsNotEmpty(query))
+            string query = string.Join("&", request.QueryParameters.Select(x => $"{x.Key}={x.Value}"));
+            if (query.IsNotEmpty())
                 return "?" + query;
             return string.Empty;
         }

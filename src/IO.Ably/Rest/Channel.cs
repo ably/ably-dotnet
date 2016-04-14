@@ -22,7 +22,7 @@ namespace IO.Ably.Rest
             Name = name;
             _ablyRest = ablyRest;
             _options = GetOptions(options);
-            _basePath = string.Format("/channels/{0}", name.EncodeUriPart());
+            _basePath = $"/channels/{name.EncodeUriPart()}";
         }
 
         private ChannelOptions GetOptions(ChannelOptions options)
@@ -48,6 +48,11 @@ namespace IO.Ably.Rest
 
             request.PostData = new List<Message> { new Message(name, data)};
             return _ablyRest.ExecuteRequest(request);
+        }
+
+        public Task Publish(Message message)
+        {
+            return this.Publish(new[] {message});
         }
 
         /// <summary>

@@ -397,7 +397,7 @@ namespace IO.Ably.Tests
             public async Task ShouldAttemptFallbackHostsInRandomOrder()
             {
                 _response.StatusCode = HttpStatusCode.BadGateway;
-                var client = CreateClient(null);
+                var client = CreateClient(options => options.HttpMaxRetryCount = 5); //Increasing the max try to make the randomness easier to test
 
                 var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
                 var firstAttemptHosts = _handler.Requests.Select(x => x.RequestUri.Host).ToList();
@@ -434,14 +434,7 @@ namespace IO.Ably.Tests
             }
         }
 
-        [Fact]
-        [Trait("spec", "RSC17")]
-        public void WhenClientIdInOptions_ShouldPassClientIdtoAblyAuth()
-        {
-            var options = new ClientOptions(ValidKey) { ClientId = "123"};
-            var client = new AblyRest(options);
-            client.AblyAuth.Options.Should().BeSameAs(options);
-        }
+       
 
         [Fact]
         public async Task Init_WithCallback_ExecutesCallbackOnFirstRequest()

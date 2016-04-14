@@ -5,7 +5,6 @@ using IO.Ably.Auth;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
-using IO.Ably.Transport;
 
 namespace IO.Ably
 {
@@ -27,6 +26,11 @@ namespace IO.Ably
         //public string CurrentClientId { get; set; }
 
         public TokenDetails CurrentToken { get; set; }
+
+        public string GetClientId()
+        {
+            return CurrentToken != null ? CurrentToken.ClientId : Options.GetClientId();
+        }
 
         internal bool HasValidToken()
         {
@@ -113,11 +117,11 @@ namespace IO.Ably
         /// Makes a token request. This will make a token request now, even if the library already
 	    /// has a valid token. It would typically be used to issue tokens for use by other clients.
         /// </summary>
-        /// <param name="requestData">The <see cref="TokenRequest"/> data used for the token</param>
+        /// <param name="tokenParams">The <see cref="TokenRequest"/> data used for the token</param>
         /// <param name="options">Extra <see cref="AuthOptions"/> used for creating a token </param>
         /// <returns>A valid ably token</returns>
         /// <exception cref="AblyException"></exception>
-        public async Task<TokenDetails> RequestToken(TokenParams requestData = null, AuthOptions options = null)
+        public async Task<TokenDetails> RequestToken(TokenParams tokenParams = null, AuthOptions options = null)
         {
             var mergedOptions = options != null ? options.Merge(Options) : Options;
             string keyId = "", keyValue = "";
@@ -128,17 +132,22 @@ namespace IO.Ably
                 keyValue = key.KeySecret;
             }
 
-            var data = requestData ?? new TokenParams()
-            {
-                ClientId = Options.ClientId
-            };
+            //TODO: Implement usage of default token params
+            TokenParams @params = tokenParams;
 
-            if (requestData == null && options == null && _lastTokenRequest != null)
+            if (@params == null)
             {
-                data = _lastTokenRequest;
+                @params = Options.DefaultTokenParams ?? new TokenParams();
+                @params.ClientId = GetClientId(); //Ensure the correct clientId is supplied
+            }
+            
+
+            if (tokenParams == null && options == null && _lastTokenRequest != null)
+            {
+                @params = _lastTokenRequest;
             }
 
-            _lastTokenRequest = data;
+            _lastTokenRequest = @params;
 
             EnsureSecureConnection();
 
@@ -147,7 +156,7 @@ namespace IO.Ably
             TokenRequest postData = null;
             if (mergedOptions.AuthCallback != null)
             {
-                var token = await mergedOptions.AuthCallback(data);
+                var token = await mergedOptions.AuthCallback(@params);
                 if (token != null)
                     return token;
                 throw new AblyException("AuthCallback returned an invalid token");
@@ -155,28 +164,15 @@ namespace IO.Ably
 
             if (mergedOptions.AuthUrl.IsNotEmpty())
             {
-                var url = mergedOptions.AuthUrl;
-                var protocol = Options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
-                var authRequest = new AblyRequest(url.ToString(), mergedOptions.AuthMethod, protocol);
-                if (mergedOptions.AuthMethod == HttpMethod.Get)
-                {
-                    authRequest.AddQueryParameters(mergedOptions.AuthParams);
-                }
-                else
-                {
-                    authRequest.PostParameters = mergedOptions.AuthParams;
-                }
-                authRequest.Headers.Merge(mergedOptions.AuthHeaders);
-                authRequest.SkipAuthentication = true;
-                AblyResponse response = await _rest.ExecuteRequest(authRequest);
-                if (response.Type != ResponseType.Json)
-                    throw new AblyException(
-                        new ErrorInfo(
-                            string.Format("Content Type {0} is not supported by this client library",
-                                response.ContentType), 500));
+                var response = await CallAuthUrl(mergedOptions);
+
+                if (response.Type == ResponseType.Text) //Return token string
+                    return new TokenDetails(response.TextResponse);
 
                 var signedData = response.TextResponse;
                 var jData = JObject.Parse(signedData);
+
+                //TODO: How do you know if it is a valid token
                 if (TokenDetails.IsToken(jData))
                     return jData.ToObject<TokenDetails>();
 
@@ -191,7 +187,7 @@ namespace IO.Ably
                     throw new AblyException("TokenAuth is on but there is no way to generate one");
                 }
 
-                postData = new TokenRequest().Populate(data, keyId, keyValue);
+                postData = new TokenRequest().Populate(@params, keyId, keyValue);
             }
 
             if (mergedOptions.QueryTime)
@@ -204,6 +200,33 @@ namespace IO.Ably
             if (null == result)
                 throw new AblyException(new ErrorInfo("Invalid token response returned", 500));
             return result;
+        }
+
+        private async Task<AblyResponse> CallAuthUrl(AuthOptions mergedOptions)
+        {
+            var url = mergedOptions.AuthUrl;
+            var protocol = Options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
+            var authRequest = new AblyRequest(url.ToString(), mergedOptions.AuthMethod, protocol);
+
+            if (mergedOptions.AuthMethod == HttpMethod.Get)
+            {
+                authRequest.AddQueryParameters(mergedOptions.AuthParams);
+            }
+            else
+            {
+                authRequest.PostParameters = mergedOptions.AuthParams;
+            }
+
+            authRequest.Headers.Merge(mergedOptions.AuthHeaders);
+            authRequest.SkipAuthentication = true;
+            AblyResponse response = await _rest.ExecuteRequest(authRequest);
+            if (response.Type == ResponseType.Binary)
+                throw new AblyException(
+                    new ErrorInfo(
+                        string.Format("Content Type {0} is not supported by this client library",
+                            response.ContentType), 500));
+
+            return response;
         }
 
         private void EnsureSecureConnection()
@@ -259,7 +282,7 @@ namespace IO.Ably
             {
                 ClientId = Options.ClientId
             };
-            
+
             if (tokenParams == null && options == null && _lastTokenRequest != null)
             {
                 data = _lastTokenRequest;
@@ -267,7 +290,7 @@ namespace IO.Ably
 
             ApiKey key = mergedOptions.ParseKey();
             var request = new TokenRequest().Populate(data, key.KeyName, key.KeySecret);
-                
+
             if (mergedOptions.QueryTime)
                 request.Timestamp = (await _rest.Time()).ToUnixTimeInMilliseconds().ToString();
 

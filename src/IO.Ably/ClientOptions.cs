@@ -5,6 +5,8 @@ namespace IO.Ably
 {
     public class ClientOptions : AuthOptions
     {
+        private string _clientId;
+
         /// <summary>
         ///
         /// </summary>
@@ -12,14 +14,32 @@ namespace IO.Ably
 
         /// <summary>
         /// The id of the client represented by this instance. The clientId is relevant
-	    /// to presence operations, where the clientId is the principal identifier of the
-	    /// client in presence update messages. The clientId is also relevant to
-	    /// authentication; a token issued for a specific client may be used to authenticate
-	    /// the bearer of that token to the service.
+        /// to presence operations, where the clientId is the principal identifier of the
+        /// client in presence update messages. The clientId is also relevant to
+        /// authentication; a token issued for a specific client may be used to authenticate
+        /// the bearer of that token to the service.
         /// </summary>
-        public string ClientId { get; set; }
+        public string ClientId
+        {
+            get { return _clientId; }
+            set
+            {
+                if(value == "*")
+                    throw new InvalidOperationException("Wildcard clientIds are not support in ClientOptions");
+                _clientId = value;
+            }
+        }
 
-        public TokenRequest DefaultTokenRequest { get; set; }
+        public TokenParams DefaultTokenParams { get; set; }
+
+        internal string GetClientId()
+        {
+            if (ClientId.IsNotEmpty())
+                return ClientId;
+            if (DefaultTokenParams != null)
+                return DefaultTokenParams.ClientId;
+            return null;
+        }
 
         /// <summary>
         /// If <c>false</c>, this disables the default behaviour whereby the library queues messages on a
