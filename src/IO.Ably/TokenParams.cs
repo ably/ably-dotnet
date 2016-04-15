@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace IO.Ably
 {
@@ -38,10 +40,48 @@ namespace IO.Ably
         /// </summary>
         public string Nonce { get; set; }
 
-        public TokenParams()
+        public TokenParams Merge(TokenParams otherParams)
         {
-            Capability = Capability.AllowAll;
-            Ttl = TimeSpan.FromMinutes(60);
+            if (otherParams == null)
+                return this;
+
+            var result = new TokenParams();
+            result.ClientId = ClientId.IsNotEmpty() ? ClientId : otherParams.ClientId;
+            result.Capability = Capability ?? otherParams.Capability;
+            result.Ttl = Ttl ?? otherParams.Ttl;
+            result.Timestamp = Timestamp ?? otherParams.Timestamp;
+            result.Nonce = Nonce ?? otherParams.Nonce;
+            return result;
+        }
+
+        public static TokenParams WithDefaultsApplied()
+        {
+            var tokenParams = new TokenParams
+            {
+                Capability = Defaults.DefaultTokenCapability,
+                Ttl = Defaults.DefaultTokenTtl
+            };
+            return tokenParams;
+        }
+
+        public Dictionary<string, string> ToRequestParams(Dictionary<string, string> mergeWith = null)
+        {
+            var dictionary = new Dictionary<string,string>();
+            if(Ttl.HasValue)
+                dictionary.Add("ttl", Ttl.Value.TotalMilliseconds.ToString());
+            if(ClientId.IsNotEmpty())
+                dictionary.Add("clientId", ClientId);
+            if(Nonce.IsNotEmpty())
+                dictionary.Add("nonce", Nonce);
+            if (Capability != null)
+                dictionary.Add("capability", Capability.ToJson());
+            if (Timestamp.HasValue)
+                dictionary.Add("timestamp", Timestamp.Value.ToUnixTimeInMilliseconds().ToString());
+
+            if (mergeWith != null)
+                return dictionary.Merge(mergeWith);
+
+            return dictionary;
         }
     }
 }

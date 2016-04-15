@@ -15,7 +15,7 @@ namespace IO.Ably.Tests
     {
         internal override AblyResponse DefaultResponse => _dummyTokenResponse;
 
-        AblyResponse _dummyTokenResponse = new AblyResponse() { Type=ResponseType.Json, TextResponse = "{ \"access_token\": {}}" };
+        AblyResponse _dummyTokenResponse = new AblyResponse() { Type = ResponseType.Json, TextResponse = "{ \"access_token\": {}}" };
 
         private static string KeyId => ValidKey.Split(':')[0];
 
@@ -25,6 +25,240 @@ namespace IO.Ably.Tests
         {
             var client = GetRestClient(setOptionsAction: options => { options.Tls = false; });
             await Assert.ThrowsAsync<InsecureRequestException>(() => client.Auth.Authorise(null, null, false));
+        }
+
+        [Fact]
+        public void UsesKeyIdFromTheClient()
+        {
+            var client = GetRestClient();
+            var data = client.Auth.CreateTokenRequest(null, null).Result;
+            data.KeyName.Should().Be(client.Options.ParseKey().KeyName);
+        }
+
+        [Fact]
+        [Trait("spec", "RSA5")]
+        public void UsesDefaultTtlWhenNoneIsSpecified()
+        {
+            var client = GetRestClient();
+            var data = client.Auth.CreateTokenRequest(null, null).Result;
+            data.Ttl.Should().Be(Defaults.DefaultTokenTtl.TotalMilliseconds.ToString());
+        }
+
+        [Fact]
+        [Trait("spec", "RSA6")]
+        public void UsesTheDefaultCapability()
+        {
+            var client = GetRestClient();
+            var data = client.Auth.CreateTokenRequest(null, null).Result;
+            data.Capability.Should().Be(Defaults.DefaultTokenCapability.ToJson());
+        }
+
+        [Fact]
+        public void UsesUniqueNonseWhichIsMoreThan16Characters()
+        {
+            var client = GetRestClient();
+            var data = client.Auth.CreateTokenRequest(null, null).Result;
+            var secondTime = client.Auth.CreateTokenRequest(null, null).Result;
+            data.Nonce.Should().NotBe(secondTime.Nonce);
+            data.Nonce.Length.Should().BeGreaterOrEqualTo(16);
+        }
+
+
+        [Trait("spec", "RSA9b")]
+        [Trait("spec", "RSA9i")]
+        public class CreateTokenRequestAuthOptionSpecs : AuthorisationTests
+        {
+            public CreateTokenRequestAuthOptionSpecs(ITestOutputHelper output) : base(output)
+            {
+            }
+
+            private AblyRest GetClientWithTokenParams()
+            {
+                return GetRestClient(null, options =>
+                {
+                    options.DefaultTokenParams = new TokenParams()
+                    {
+                        Ttl = TimeSpan.FromHours(2),
+                        Capability = Capability.AllowAll,
+                        ClientId = "123",
+                        Timestamp = Now.AddMinutes(1),
+                        Nonce = "defaultnonce"
+                    };
+                });
+            }
+
+            [Fact]
+            public async Task WithDefaultTokenParams_ShouldSetTokenRequestValuesCorrectly()
+            {
+                var client = GetClientWithTokenParams();
+
+                var request = await client.Auth.CreateTokenRequest();
+                request.Capability.Should().Be(Capability.AllowAll.ToJson());
+                request.ClientId.Should().Be("123");
+                request.KeyName.Should().Be(ApiKey.Parse(client.Options.Key).KeyName);
+                request.Ttl.Should().Be(TimeSpan.FromHours(2).TotalMilliseconds.ToString());
+                request.Timestamp.Should().Be(Now.AddMinutes(1).ToUnixTimeInMilliseconds().ToString());
+                request.Nonce.Should().Be("defaultnonce");
+            }
+
+            [Fact]
+            public async Task WithOverrideTokenParams_ShouldSetTokenRequestValuesCorrectly()
+            {
+                var client = GetClientWithTokenParams();
+
+                var overridingTokenParams = new TokenParams()
+                {
+                    Ttl = TimeSpan.FromHours(1),
+                    ClientId = "999",
+                    Capability = new Capability(),
+                    Nonce = "overrideNonce",
+                    Timestamp = Now.AddMinutes(10)
+                };
+
+                var request = await client.Auth.CreateTokenRequest(overridingTokenParams);
+
+                request.Capability.Should().Be("");
+                request.ClientId.Should().Be("999");
+                request.Ttl.Should().Be(TimeSpan.FromHours(1).TotalMilliseconds.ToString());
+                request.Timestamp.Should().Be(Now.AddMinutes(10).ToUnixTimeInMilliseconds().ToString());
+                request.Nonce.Should().Be("overrideNonce");
+            }
+
+            [Fact]
+            public async Task WithOverrideAuthOptions_ShouldSetTokenRequestValuesCorrectly()
+            {
+                var client = GetClientWithTokenParams();
+
+                var overrideAuthOptions = new AuthOptions()
+                {
+                    Key = "keyid.name:secret",
+                };
+
+                var request = await client.Auth.CreateTokenRequest(null, overrideAuthOptions);
+
+                request.KeyName.Should().Be("keyid.name");
+            }
+        }
+
+        public class CreateTokenRequestSpecs : AuthorisationTests
+        {
+            [Fact]
+            [Trait("spec", "RSA9h")]
+            public async Task ReturnsASignedTokenRequest()
+            {
+                var request = await Client.Auth.CreateTokenRequest();
+                request.Should().NotBeNull();
+                request.Mac.Should().NotBeEmpty();
+            }
+
+            [Fact]
+            [Trait("spec", "RSA9c")]
+            public async Task WithEmptyNonce_ShouldGenerateANonceWithMoreThan16Characters()
+            {
+                var request =await Client.Auth.CreateTokenRequest();
+                request.Nonce.Length.Should().BeGreaterThan(16, "Nonce should be more than 16 characters");
+            }
+
+            [Fact]
+            [Trait("spec", "RSA9d")]
+            public async Task WithNoTimeStapmInRequest_ShouldUseSystemType()
+            {
+                var request = await Client.Auth.CreateTokenRequest();
+                request.Timestamp.Should().Be(Now.ToUnixTimeInMilliseconds().ToString());
+            }
+
+            [Fact]
+            [Trait("spec", "RSA9d")]
+            public void WithTimeStampOverridesDefault()
+            {
+                var date = new DateTimeOffset(2014, 1, 1, 0, 0, 0, TimeSpan.Zero);
+                var data = Client.Auth.CreateTokenRequest(new TokenParams() { Timestamp = date }, null).Result;
+                data.Timestamp.Should().Be(date.ToUnixTimeInMilliseconds().ToString());
+            }
+
+            [Fact]
+            [Trait("spec", "RSA9d")]
+            public void WithQueryTimeQueriesForTimestamp()
+            {
+                var currentTime = Config.Now().ToUnixTimeInMilliseconds();
+                var client = GetRestClient(x => ("[" + currentTime + "]").ToAblyJsonResponse());
+
+                var data = client.Auth.CreateTokenRequest(null, new AuthOptions() { QueryTime = true }).Result;
+                data.Timestamp.Should().Be(currentTime.ToString());
+            }
+
+            [Fact]
+            [Trait("spec", "RSA9e")]
+            public void WithTtlOverridesDefault()
+            {
+                var data = Client.Auth.CreateTokenRequest(new TokenParams { Ttl = TimeSpan.FromHours(2) }, null).Result;
+
+                data.Ttl.Should().Be(TimeSpan.FromHours(2).TotalMilliseconds.ToString());
+            }
+
+            [Fact]
+            [Trait("spec", "RSA9f")]
+            public async Task WithCapabilitySpecifiedInTokenParams_ShouldPassTheJsonStringToRequest()
+            {
+                var capability = new Capability();
+                capability.AddResource("a").AllowAll();
+                var customParams = new TokenParams() { Capability = capability };
+                var request = await Client.Auth.CreateTokenRequest(customParams);
+                request.Capability.Should().Be(capability.ToJson());
+            }
+
+            [Fact]
+            [Trait("spec", "RSA9g")]
+            public async Task GeneratesHMac()
+            {
+                var data = await Client.Auth.CreateTokenRequest();
+                data.Mac.Should().NotBeEmpty();
+            }
+
+            [Fact]
+            public void WithNonceOverridesDefault()
+            {
+                var data = Client.Auth.CreateTokenRequest(new TokenParams() { Nonce = "Blah" }, null).Result;
+                data.Nonce.Should().Be("Blah");
+            }
+
+            [Fact]
+            public void WithClientIdOverridesDefault()
+            {
+                var data = Client.Auth.CreateTokenRequest(new TokenParams() { ClientId = "123" }, null).Result;
+                data.ClientId.Should().Be("123");
+            }
+
+            [Fact]
+            public async void WithOutKeyIdThrowsException()
+            {
+                var client = new AblyRest(new ClientOptions());
+                await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequest(null, null));
+            }
+
+            [Fact]
+            public async void WithOutKeyValueThrowsException()
+            {
+                var client = new AblyRest(new ClientOptions() { Key = "111.222" });
+                await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequest(null, null));
+            }
+
+            
+
+            public CreateTokenRequestSpecs(ITestOutputHelper output) : base(output)
+            {
+                Client = GetRestClient();
+            }
+
+            public AblyRest Client { get; }
+        }
+
+        
+
+        [Fact]
+        public void CreateTokenRequest_ShouldReturnASignedTokenRequest()
+        {
+            
         }
 
         [Fact]
@@ -39,12 +273,6 @@ namespace IO.Ably.Tests
 
             var ex = await Assert.ThrowsAsync<AblyException>(() => client.Auth.Authorise(null, null, false));
             ex.ErrorInfo.message.Should().Be("TokenAuth is on but there is no way to generate one");
-        }
-
-        [Trait("spec", "RSA15")]
-        public class TokenAuthWithClientIdSpecs
-        {
-
         }
 
         public class ClientIdSpecs : AuthorisationTests
@@ -125,7 +353,6 @@ namespace IO.Ably.Tests
             }
         }
 
-
         public class RequestTokenSpecs : AuthorisationTests
         {
             [Fact]
@@ -162,10 +389,10 @@ namespace IO.Ably.Tests
             {
                 var client = GetRestClient(null,
                                     options => options.DefaultTokenParams = new TokenParams
-                                                {
-                                                    ClientId = "123",
-                                                    Ttl = TimeSpan.FromHours(2)
-                                                });
+                                    {
+                                        ClientId = "123",
+                                        Ttl = TimeSpan.FromHours(2)
+                                    });
                 var capability = new Capability();
                 capability.AddResource("a").AllowAll();
                 var methodParams = new TokenParams()
@@ -318,41 +545,81 @@ namespace IO.Ably.Tests
                 Assert.Same(token, result);
             }
 
-
             [Fact]
             [Trait("spec", "RSA8c")]
             [Trait("spec", "RSA8c1a")]
+            [Trait("spec", "RSA8c2")]
             public async Task WithAuthUrlAndDefaultAuthMethod_SendsGetRequestToTheUrlAndPassesQueryParameters()
             {
-                var rest = GetRestClient();
+                var rest = GetRestClient(AuthExecuteHttpRequest, opts =>
+                {
+                    opts.DefaultTokenParams = new TokenParams() {Ttl = TimeSpan.FromHours(2)};
+                    opts.AuthUrl = new Uri("http://authUrl");
+                    opts.AuthHeaders = new Dictionary<string, string> {{"Test", "Test"}};
+                    opts.AuthParams = new Dictionary<string, string> {{"Test", "Test"}, {"TTl", "123"}};
+                });
+                
+                
+
+                //Act
+                await rest.Auth.RequestToken(null, null);
+
+                //Expected will be { "ttl" : "intvalue", "Test" :"Test" }
+                var expectedAuthParams = new Dictionary<string, string>()
+                {
+                    {"ttl", TimeSpan.FromHours(2).TotalMilliseconds.ToString()},
+                    {"Test", "Test" }
+                };
+
+                //Assert
+                Assert.Equal(HttpMethod.Get, FirstRequest.Method);
+                Assert.Equal(rest.Options.AuthHeaders, FirstRequest.Headers);
+                Assert.Equal(expectedAuthParams, FirstRequest.QueryParameters);
+            }
+
+            private Task<AblyResponse> AuthExecuteHttpRequest(AblyRequest request)
+            {
+                if (request.Url.Contains("authUrl"))
+                {
+                    return JsonConvert.SerializeObject(new TokenRequest() { ClientId = "123"}).ToAblyResponse();
+                }
+                return _dummyTokenResponse.ToTask();
+            }
+
+            [Fact]
+            [Trait("spec", "RSA8c")]
+            [Trait("spec", "RSA8c3")]
+            public async Task WithDefaultAuthParamsAndHeadersAndSpecifiedOnce_ShouldIgnoreTheDefaultOnesAndNowMergeThem()
+            {
+                var rest = GetRestClient(AuthExecuteHttpRequest, opts =>
+                {
+                    opts.DefaultTokenParams = new TokenParams() { Ttl = TimeSpan.FromHours(2) };
+                    opts.AuthUrl = new Uri("http://authUrl");
+                    opts.AuthHeaders = new Dictionary<string, string> {{"default", "default"}};
+                    opts.AuthParams = new Dictionary<string, string> {{"default", "default"}};
+                });
+
                 var options = new AuthOptions
                 {
                     AuthUrl = new Uri("http://authUrl"),
                     AuthHeaders = new Dictionary<string, string> { { "Test", "Test" } },
-                    AuthParams = new Dictionary<string, string> { { "Test", "Test" } },
+                    AuthParams = new Dictionary<string, string> { { "Test", "Test" }},
                 };
-
-                AblyRequest authRequest = null;
-                var requestdata = new TokenRequest { KeyName = KeyId, Capability = "123" };
-                rest.ExecuteHttpRequest = x =>
-                {
-                    if (x.Url == options.AuthUrl.ToString())
-                    {
-                        authRequest = x;
-                        return JsonConvert.SerializeObject(requestdata).ToAblyResponse();
-                    }
-                    return _dummyTokenResponse.ToTask();
-                };
-
-                var tokenRequest = new TokenParams { Capability = new Capability() };
 
                 //Act
-                await rest.Auth.RequestToken(tokenRequest, options);
+                await rest.Auth.RequestToken(null, options);
+
+                //Expected will be { "ttl" : "intvalue", "Test" :"Test" }
+                var expectedAuthParams = new Dictionary<string, string>()
+                {
+                    {"ttl", TimeSpan.FromHours(2).TotalMilliseconds.ToString()},
+                    {"Test", "Test" }
+                };
 
                 //Assert
-                Assert.Equal(HttpMethod.Get, authRequest.Method);
-                Assert.Equal(options.AuthHeaders, authRequest.Headers);
-                Assert.Equal(options.AuthParams, authRequest.QueryParameters);
+                Assert.Equal(HttpMethod.Get, FirstRequest.Method);
+                Assert.Equal(options.AuthHeaders, FirstRequest.Headers);
+                Assert.Equal(expectedAuthParams, FirstRequest.QueryParameters);
             }
 
             [Fact]
@@ -360,35 +627,29 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSA8c1b")]
             public async Task WithAuthUrlAndAuthMethodPost_SendPostRequestToAuthUrlAndPassesPostParameters()
             {
-                var rest = GetRestClient();
-                var options = new AuthOptions
+                var rest = GetRestClient(AuthExecuteHttpRequest, opts =>
                 {
-                    AuthUrl = new Uri("http://authUrl"),
-                    AuthHeaders = new Dictionary<string, string> { { "Test", "Test" } },
-                    AuthParams = new Dictionary<string, string> { { "Test", "Test" }, { "Capability", "true" } },
-                    AuthMethod = HttpMethod.Post
-                };
-                AblyRequest authRequest = null;
-                var requestdata = new TokenRequest { KeyName = KeyId, Capability = "123" };
-                rest.ExecuteHttpRequest = (x) =>
-                {
-                    if (x.Url == options.AuthUrl.ToString())
-                    {
-                        authRequest = x;
-                        return JsonConvert.SerializeObject(requestdata).ToAblyResponse();
-                    }
-                    return _dummyTokenResponse.ToTask();
-                };
-
+                    opts.AuthUrl = new Uri("http://authUrl");
+                    opts.AuthHeaders = new Dictionary<string, string> {{"Test", "Test"}};
+                    opts.AuthParams = new Dictionary<string, string> {{"Test", "Test"}, {"Capability", "true"}};
+                    opts.AuthMethod = HttpMethod.Post;
+                });
+                
                 var tokenParams = new TokenParams() { Capability = new Capability() };
 
-                await rest.Auth.RequestToken(tokenParams, options);
+                await rest.Auth.RequestToken(tokenParams, null);
 
-                Assert.Equal(HttpMethod.Post, authRequest.Method);
+                var expectedParams = new Dictionary<string,string>()
+                {
+                    { "capability", "" }, //Duplicate param so the value from TokenParams takes precedence
+                    { "Test", "Test" }
+                };
 
-                Assert.Equal(options.AuthHeaders, authRequest.Headers);
-                Assert.Equal(options.AuthParams, authRequest.PostParameters);
-                Assert.Equal(options.AuthUrl.ToString(), authRequest.Url);
+                Assert.Equal(HttpMethod.Post, FirstRequest.Method);
+
+                Assert.Equal(rest.Options.AuthHeaders, FirstRequest.Headers);
+                Assert.Equal(expectedParams, FirstRequest.PostParameters);
+                Assert.Equal(rest.Options.AuthUrl.ToString(), FirstRequest.Url);
             }
 
             [Fact]
@@ -396,10 +657,9 @@ namespace IO.Ably.Tests
             {
                 var rest = GetRestClient(null, options => options.AuthUrl = new Uri("http://authUrl"));
 
-                var dateTime = DateTimeOffset.UtcNow;
                 rest.ExecuteHttpRequest = (x) =>
                 {
-                    if (x.Url == rest.Options  .AuthUrl.ToString())
+                    if (x.Url == rest.Options.AuthUrl.ToString())
                     {
                         return new AblyResponse
                         {
@@ -420,7 +680,7 @@ namespace IO.Ably.Tests
             {
                 var rest = GetRestClient();
                 var options = new AuthOptions()
-                { 
+                {
                     AuthUrl = new Uri("http://authUrl")
                 };
 
@@ -456,7 +716,7 @@ namespace IO.Ably.Tests
                     AuthUrl = new Uri("http://authUrl")
                 };
                 List<AblyRequest> requests = new List<AblyRequest>();
-                var requestdata = new TokenRequest { KeyName = KeyId, Capability = "123", Mac = "mac"};
+                var requestdata = new TokenRequest { KeyName = KeyId, Capability = "123", Mac = "mac" };
                 rest.ExecuteHttpRequest = (x) =>
                 {
                     requests.Add(x);
@@ -518,7 +778,7 @@ namespace IO.Ably.Tests
             var client = GetRestClient();
             client.Auth.CurrentToken.Should().BeNull();
         }
-        
+
         [Fact]
         public async Task Authorise_WithNotExpiredCurrentTokenAndForceFalse_ReturnsCurrentToken()
         {
@@ -531,17 +791,18 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        [Trait("spec", "RSA10j")]
         public async Task Authorise_PreservesTokenRequestOptionsForSubsequentRequests()
         {
             var client = GetRestClient();
             await client.Auth.Authorise(new TokenParams() { Ttl = TimeSpan.FromMinutes(260) }, null, false);
-
-            await client.Auth.Authorise(null, null, false);
+            await client.Auth.Authorise(null, null, true);
             var data = LastRequest.PostData as TokenRequest;
             data.Ttl.Should().Be(TimeSpan.FromMinutes(260).TotalMilliseconds.ToString());
         }
 
         [Fact]
+        [Trait("spec", "RSA10d")]
         public async Task Authorise_WithNotExpiredCurrentTokenAndForceTrue_RequestsNewToken()
         {
             var client = GetRestClient();
@@ -554,15 +815,41 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        [Trait("spec", "RSA10c")]
         public async Task Authorise_WithExpiredCurrentToken_RequestsNewToken()
         {
             var client = GetRestClient();
-            client.Auth.CurrentToken = new TokenDetails() { Expires = Config.Now().AddHours(-1) };
+            var initialToken = new TokenDetails() { Expires = Config.Now().AddHours(-1) };
+            client.Auth.CurrentToken = initialToken;
 
             var token = await client.Auth.Authorise(null, null, false);
 
             Assert.Contains("requestToken", LastRequest.Url);
-            token.Should().NotBeNull();
+            token.Should().NotBeSameAs(initialToken);
+        }
+
+        [Theory]
+        [InlineData(Defaults.TokenExpireBufferInSeconds + 1, false)]
+        [InlineData(Defaults.TokenExpireBufferInSeconds, true)]
+        [InlineData(Defaults.TokenExpireBufferInSeconds - 1, true)]
+        [Trait("spec", "RSA10c")]
+        public async Task Authorise_WithTokenExpiringIn15Seconds_RenewsToken(int secondsLeftToExpire, bool shouldRenew)
+        {
+            var client = GetRestClient();
+            var initialToken = new TokenDetails() { Expires = Now.AddSeconds(secondsLeftToExpire) };
+            client.Auth.CurrentToken = initialToken;
+
+            var token = await client.Auth.Authorise(null, null, false);
+            
+            if (shouldRenew)
+            {
+                Assert.Contains("requestToken", LastRequest.Url);
+                token.Should().NotBeSameAs(initialToken);
+            }
+            else
+            {
+                token.Should().BeSameAs(initialToken);
+            }
         }
 
         private async Task SendRequestTokenWithValidOptions()

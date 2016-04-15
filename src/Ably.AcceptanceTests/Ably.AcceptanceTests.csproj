@@ -88,7 +88,6 @@
     <Compile Include="..\IO.Ably.Tests\MiscUtils.cs">
       <Link>MiscUtils.cs</Link>
     </Compile>
-    <Compile Include="AuthRequestTokenTests.cs" />
     <Compile Include="ChannelMessagesAcceptanceTests.cs" />
     <Compile Include="DateHelper.cs" />
     <Compile Include="Key.cs" />

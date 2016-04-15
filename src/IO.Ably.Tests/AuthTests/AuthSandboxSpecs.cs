@@ -121,6 +121,18 @@ namespace IO.Ably.Tests
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RSA7b2")]
+        [Trait("spec", "RSA10a")]
+        public async Task WithoutClientId_WhenAuthorisedWithTokenParamsWithClientId_SetsClientId(Protocol protocol)
+        {
+            var ably = await GetRestClient(protocol);
+            await ably.Auth.Authorise(new TokenParams() {ClientId = "123"}, null, true);
+            ably.AblyAuth.GetClientId().Should().Be("123");
+            ably.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RSA8f1")]
         public async Task TokenAuthWithouthClientId_ShouldNotSetClientIdOnMessagesAndTheClient(Protocol protocol)
         {

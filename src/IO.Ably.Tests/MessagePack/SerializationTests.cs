@@ -39,7 +39,6 @@ namespace IO.Ably.Tests.MessagePack
         {
             var message = new Message() {name = "example", data = "AAECAwQFBgcICQoLDA0ODw==".FromBase64()};
             var serialised = MsgPackHelper.Serialise(new List<Message> { message });
-            Console.WriteLine(serialised.ToBase64());
             var resultMessage = MsgPackHelper.DeSerialise(serialised, typeof(List<Message>)) as List<Message>;
             var data = ((MessagePackObject)resultMessage.First().data).ToObject() as byte[];
             data.Should().BeEquivalentTo(message.data as byte[]);

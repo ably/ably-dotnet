@@ -24,8 +24,8 @@ namespace IO.Ably
 
         public string Url { get; set; }
         public HttpMethod Method { get; private set; }
-        public Dictionary<string, string> Headers { get; private set; }
-        public Dictionary<string, string> QueryParameters { get; private set; }
+        public Dictionary<string, string> Headers { get; set; }
+        public Dictionary<string, string> QueryParameters { get; set; }
 
         public void AddQueryParameters(IEnumerable<KeyValuePair<string, string>> parameters)
         {

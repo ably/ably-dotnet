@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.AcceptanceTests;
@@ -138,7 +137,6 @@ namespace IO.Ably.Tests
             public async Task WhenErrorCodeIsTokenSpecific_ShouldAutomaticallyTryToRenewTokenIfRequestFails(int errorCode)
             {
                 var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
-                bool firstAttempt = true;
                 var client = GetConfiguredRestClient(errorCode, tokenDetails);
 
                 await client.Stats();
@@ -157,6 +155,7 @@ namespace IO.Ably.Tests
 
             [Fact]
             [Trait("spec", "RSC14c")]
+            [Trait("spec", "RSC14d")]
             public async Task WhenClientHasNoMeansOfRenewingToken_ShouldThrow()
             {
                 var client = GetConfiguredRestClient(Defaults.TokenErrorCodesRangeStart, null, useApiKey: false);
@@ -405,7 +404,6 @@ namespace IO.Ably.Tests
                 ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
                 var secondAttemptHosts = _handler.Requests.Select(x => x.RequestUri.Host).ToList();
 
-                //TODO: Find if there is a better way to assert differnt order
                 bool sameOrder = true;
                 for (int i = 0; i < firstAttemptHosts.Count; i++)
                 {
@@ -426,6 +424,30 @@ namespace IO.Ably.Tests
                 var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
 
                 _handler.Requests.Count.Should().Be(Defaults.FallbackHosts.Length + 1); //First attempt is with rest.ably.io
+            }
+
+            /// <summary>
+            /// (TO3l6) httpMaxRetryDuration integer – default 10,000 (10s). Max elapsed time in which fallback host retries for HTTP requests will be attempted i.e. if the first default host attempt takes 5s, and then the subsequent fallback retry attempt takes 7s, no further fallback host attempts will be made as the total elapsed time of 12s exceeds the default 10s limit
+            /// </summary>
+            [Fact]
+            [Trait("spec", "TO3l6")]
+            public async Task ShouldOnlyRetryFallbackHostWhileTheTimeTakenIsLessThanHttpMaxRetryDuration()
+            {
+                var options = new ClientOptions(ValidKey) { HttpMaxRetryDuration = TimeSpan.FromSeconds(3)};
+                var client = new AblyRest(options);
+                _response.StatusCode =HttpStatusCode.BadGateway;
+                var handler = new FakeHttpMessageHandler(_response,
+                    () =>
+                    {
+                        //Tweak time to pretend 2 seconds have ellapsed
+                        Now += TimeSpan.FromSeconds(2);
+                    });
+
+                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(3), handler);
+
+                var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+
+                handler.Requests.Count.Should().Be(2); //First attempt is with rest.ably.io
             }
 
             private static async Task MakeAnyRequest(AblyRest client)
