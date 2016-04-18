@@ -114,14 +114,18 @@ namespace IO.Ably
         {
             get
             {
-                if (Key.IsNotEmpty())
+                if (ClientId.IsNotEmpty() || AuthUrl != null || AuthCallback != null || Token.IsNotEmpty() ||
+                    TokenDetails != null)
                 {
-                    if (ClientId.IsEmpty())
-                    {
-                        return Ably.AuthMethod.Basic;
-                    }
+                    return Ably.AuthMethod.Token;
                 }
 
+                if (Key.IsNotEmpty())
+                {
+                    return Ably.AuthMethod.Basic;
+                }
+
+                //default
                 return Ably.AuthMethod.Token;
             }
         }

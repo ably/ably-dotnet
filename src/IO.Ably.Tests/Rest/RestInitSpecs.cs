@@ -39,10 +39,11 @@ namespace IO.Ably.Tests
             [Fact]
             public void WithKeyNoClientIdAndAuthToken_ShouldSetCurrentToken()
             {
-                ClientOptions options = new ClientOptions { Key = ValidKey, ClientId = "123", Token = "222" };
+                ClientOptions options = new ClientOptions { Key = ValidKey, ClientId = "123", Token = "blah"};
                 var client = new AblyRest(options);
 
-                Assert.Equal(options.Token, client.AblyAuth.CurrentToken.Token);
+                client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
+                client.AblyAuth.CurrentToken.Token.Should().Be("blah");
             }
 
             [Fact]
@@ -50,6 +51,7 @@ namespace IO.Ably.Tests
             {
                 var client = new AblyRest(opts =>
                 {
+                    opts.Key = "test.best:rest";
                     opts.Token = "blah";
                     opts.ClientId = "123";
                 });
@@ -62,6 +64,7 @@ namespace IO.Ably.Tests
             {
                 var client = new AblyRest(opts =>
                 {
+                    opts.Key = "test.best:rest";
                     opts.Token = "blah";
                 });
 
@@ -73,6 +76,7 @@ namespace IO.Ably.Tests
             {
                 var client = new AblyRest(opts =>
                 {
+                    opts.Key = "test.best:rest";
                     opts.TokenDetails = new TokenDetails("123");
                 });
 
@@ -84,6 +88,7 @@ namespace IO.Ably.Tests
             {
                 var client = new AblyRest(opts =>
                 {
+                    opts.Key = "test.best:rest";
                     opts.AuthUrl = new Uri("http://authUrl");
                 });
 

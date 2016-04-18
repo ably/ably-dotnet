@@ -6,7 +6,7 @@ namespace IO.Ably
     public interface IAuthCommands
     {
         Task<TokenDetails> RequestToken(TokenParams tokenParams = null, AuthOptions options = null);
-        Task<TokenDetails> Authorise(TokenParams tokenParams, AuthOptions options, bool force);
+        Task<TokenDetails> Authorise(TokenParams tokenParams = null, AuthOptions options = null);
 
         // Async because uses server time,
         /// <summary>Returns a signed TokenRequest object that can be used to obtain a token from Ably.</summary>

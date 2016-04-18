@@ -102,7 +102,9 @@
   <ItemGroup>
     <Compile Include="AblyResponseTests.cs" />
     <Compile Include="AuthTests\AuthOptionsTests.cs" />
+    <Compile Include="AuthTests\AuthoriseTests.cs" />
     <Compile Include="AuthTests\AuthSandboxSpecs.cs" />
+    <Compile Include="AuthTests\RequestTokenTests.cs" />
     <Compile Include="CapabilityTests.cs" />
     <Compile Include="ChannelTests.cs" />
     <Compile Include="AuthTests\AuthorisationTests.cs" />

@@ -54,6 +54,18 @@ namespace IO.Ably
             return result;
         }
 
+        public TokenParams Clone()
+        {
+            var result = new TokenParams();
+            result.ClientId = ClientId;
+            if(Capability != null)
+                result.Capability = new Capability(Capability.ToJson());
+            result.Nonce = Nonce;
+            result.Ttl = Ttl;
+            result.Timestamp = Timestamp;
+            return result;
+        }
+
         public static TokenParams WithDefaultsApplied()
         {
             var tokenParams = new TokenParams

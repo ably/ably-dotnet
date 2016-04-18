@@ -129,6 +129,8 @@ namespace IO.Ably.Tests
 
         public class WithInvalidToken : MockHttpSpecs
         {
+            private TokenDetails _returnedDummyTokenDetails;
+
             [Theory]
             [InlineData(Defaults.TokenErrorCodesRangeStart)]
             [InlineData(Defaults.TokenErrorCodesRangeStart + 1)]
@@ -141,8 +143,8 @@ namespace IO.Ably.Tests
 
                 await client.Stats();
 
-                client.Auth.CurrentToken.Expires.Should().BeCloseTo(Now.AddDays(1));
-                client.Auth.CurrentToken.ClientId.Should().Be("123");
+                client.Auth.CurrentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires); //Due to a json.net bug
+                client.Auth.CurrentToken.ClientId.Should().Be(_returnedDummyTokenDetails.ClientId);
             }
 
             [Fact]
@@ -170,7 +172,8 @@ namespace IO.Ably.Tests
                 {
                     if (request.Url.Contains("/keys"))
                     {
-                        return new TokenDetails("123") { Expires = Now.AddDays(1), ClientId = "123" }.ToJson().ToAblyResponse();
+                        
+                        return _returnedDummyTokenDetails.ToJson().ToAblyResponse();
                     }
 
                     if (firstAttempt)
@@ -192,6 +195,7 @@ namespace IO.Ably.Tests
 
             public WithInvalidToken(ITestOutputHelper output) : base(output)
             {
+                _returnedDummyTokenDetails = new TokenDetails("123") {Expires = Now.AddDays(1), ClientId = "123"};
             }
         }
 
