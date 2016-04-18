@@ -22,14 +22,14 @@ namespace IO.Ably
 
         internal static string ToBase64(this string text)
         {
-            if (StringExtensions.IsEmpty(text))
+            if (text.IsEmpty())
                 return string.Empty;
             return text.GetBytes().ToBase64();
         }
 
         internal static byte[] FromBase64(this string base64String)
         {
-            if (StringExtensions.IsEmpty(base64String))
+            if (base64String.IsEmpty())
                 return new byte[0];
             return Convert.FromBase64String(base64String);
         }

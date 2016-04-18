@@ -40,6 +40,7 @@ namespace IO.Ably.AcceptanceTests
 
         [TestFixture(Protocol.Json)]
         [TestFixture(Protocol.MsgPack)]
+        [Ignore("Ignoring for the time being. Will fix when I get to stats")]
         public class ByMinuteWhenFromSetToStartIntervalAndLimitSetTo1 : StatsAcceptanceTests
         {
             public ByMinuteWhenFromSetToStartIntervalAndLimitSetTo1(Protocol protocol) : base(protocol)

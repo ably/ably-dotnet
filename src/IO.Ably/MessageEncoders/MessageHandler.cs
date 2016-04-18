@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using IO.Ably.Transport;
 
 namespace IO.Ably.MessageEncoders
 {
@@ -217,12 +218,10 @@ namespace IO.Ably.MessageEncoders
             if (request.QueryParameters.ContainsKey("limit"))
             {
                 var limitQuery = request.QueryParameters["limit"];
-                var limit = Config.Limit;
-                if (StringExtensions.IsNotEmpty(limitQuery))
-                    limit = int.Parse(limitQuery);
-                return limit;
+                if (limitQuery.IsNotEmpty())
+                    return int.Parse(limitQuery);
             }
-            return Config.Limit;
+            return Defaults.QueryLimit;
         }
     }
 }

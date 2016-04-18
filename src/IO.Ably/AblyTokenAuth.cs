@@ -5,28 +5,104 @@ using IO.Ably.Auth;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
+using IO.Ably.Transport;
 
 namespace IO.Ably
 {
-    public class AblyTokenAuth : IAuthCommands
+    public class AblyAuth : IAuthCommands
     {
-        internal AblyTokenAuth(ClientOptions options, Rest.IAblyRest rest)
+        internal AblyAuth(ClientOptions options, AblyRest rest)
         {
-            _options = options;
+            Options = options;
             _rest = rest;
+
+            Initialise();
         }
 
-        private ClientOptions _options;
+        internal AuthMethod AuthMethod;
+        internal ClientOptions Options { get; }
         private TokenParams _lastTokenRequest;
-        private Rest.IAblyRest _rest;
-        // Buffer in seconds before a token is considered unusable
-        private const int TokenExpireBufer = 15;
+        private readonly AblyRest _rest;
 
-        //TODO: MG: Temporary ugliness. I want to get the tests passing before fixing this shit.
-        private TokenDetails CurrentToken
+        public TokenDetails CurrentToken { get; set; }
+
+        internal bool HasValidToken()
         {
-            get { return (_rest as AblyRest).CurrentToken; }
-            set { (_rest as AblyRest).CurrentToken = value; }
+            if (CurrentToken == null)
+                return false;
+            var exp = CurrentToken.Expires;
+            return (exp == DateTimeOffset.MinValue) || (exp >= DateTimeOffset.UtcNow);
+        }
+
+        bool HasTokenId => Options.Token.IsNotEmpty();
+
+        public bool TokenRenewable => TokenCreatedExternally || (HasApiKey && HasTokenId == false);
+
+        bool TokenCreatedExternally => Options.AuthUrl.IsNotEmpty() || Options.AuthCallback != null;
+
+        bool HasApiKey => Options.Key.IsNotEmpty();
+
+        internal void Initialise()
+        {
+            SetAuthMethod();
+
+            if (AuthMethod == AuthMethod.Basic)
+            {
+                LogCurrentAuthenticationMethod();
+                return;
+            }
+
+            Logger.Info("Using token authentication.");
+            if (Options.TokenDetails != null)
+            {
+                CurrentToken = Options.TokenDetails;
+            }
+            else if (Options.Token.IsNotEmpty())
+            {
+                CurrentToken = new TokenDetails(Options.Token);
+            }
+            LogCurrentAuthenticationMethod();
+        }
+
+        private void SetAuthMethod()
+        {
+            if (Options.UseTokenAuth.HasValue)
+            {
+                //ASK: Should I throw an error if a particular auth is not possible
+                AuthMethod = Options.UseTokenAuth.Value ? AuthMethod.Token : AuthMethod.Basic;
+            }
+            else
+            {
+                AuthMethod = Options.Method;
+            }
+        }
+
+        internal async Task AddAuthHeader(AblyRequest request)
+        {
+            if (request.Headers.ContainsKey("Authorization"))
+                request.Headers.Remove("Authorization");
+
+            if (AuthMethod == AuthMethod.Basic)
+            {
+                var authInfo = Convert.ToBase64String(Options.Key.GetBytes());
+                request.Headers["Authorization"] = "Basic " + authInfo;
+                Logger.Debug("Adding Authorization header with Basic authentication.");
+            }
+            else
+            {
+                if (HasValidToken() == false && TokenRenewable)
+                {
+                    CurrentToken = await Authorise(null, null, false);
+                }
+
+                if (HasValidToken())
+                {
+                    request.Headers["Authorization"] = "Bearer " + CurrentToken.Token.ToBase64();
+                    Logger.Debug("Adding Authorization header with Token authentication");
+                }
+                else
+                    throw new AblyException("Invalid token credentials: " + CurrentToken, 40100, HttpStatusCode.Unauthorized);
+            }
         }
 
         /// <summary>
@@ -39,7 +115,7 @@ namespace IO.Ably
         /// <exception cref="AblyException"></exception>
         public async Task<TokenDetails> RequestToken(TokenParams requestData, AuthOptions options)
         {
-            var mergedOptions = options != null ? options.Merge(_options) : _options;
+            var mergedOptions = options != null ? options.Merge(Options) : Options;
             string keyId = "", keyValue = "";
             if (mergedOptions.Key.IsNotEmpty())
             {
@@ -50,7 +126,7 @@ namespace IO.Ably
 
             var data = requestData ?? new TokenParams()
             {
-                ClientId = _options.ClientId
+                ClientId = Options.ClientId
             };
 
             if (requestData == null && options == null && _lastTokenRequest != null)
@@ -65,7 +141,7 @@ namespace IO.Ably
             TokenRequest postData = null;
             if (mergedOptions.AuthCallback != null)
             {
-                var token = mergedOptions.AuthCallback(data);
+                var token = await mergedOptions.AuthCallback(data);
                 if (token != null)
                     return token;
                 throw new AblyException("AuthCallback returned an invalid token");
@@ -74,8 +150,8 @@ namespace IO.Ably
             if (mergedOptions.AuthUrl.IsNotEmpty())
             {
                 var url = mergedOptions.AuthUrl;
-                var protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
-                var authRequest = new AblyRequest(url, mergedOptions.AuthMethod, protocol);
+                var protocol = Options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
+                var authRequest = new AblyRequest(url.ToString(), mergedOptions.AuthMethod, protocol);
                 if (mergedOptions.AuthMethod == HttpMethod.Get)
                 {
                     authRequest.AddQueryParameters(mergedOptions.AuthParams);
@@ -135,7 +211,7 @@ namespace IO.Ably
         {
             if (CurrentToken != null)
             {
-                if (CurrentToken.Expires > (Config.Now().AddSeconds(TokenExpireBufer)))
+                if (CurrentToken.Expires > (Config.Now().AddSeconds(Defaults.TokenExpireBufer)))
                 {
                     if (force == false)
                         return CurrentToken;
@@ -157,14 +233,14 @@ namespace IO.Ably
         /// <returns></returns>
         public async Task<TokenRequest> CreateTokenRequest(TokenParams tokenParams, AuthOptions options)
         {
-            var mergedOptions = options != null ? options.Merge(_options) : _options;
+            var mergedOptions = options != null ? options.Merge(Options) : Options;
 
             if (string.IsNullOrEmpty(mergedOptions.Key))
                 throw new AblyException("No key specified", 40101, HttpStatusCode.Unauthorized);
 
             var data = tokenParams ?? new TokenParams
             {
-                ClientId = _options.ClientId
+                ClientId = Options.ClientId
             };
             
             if (tokenParams == null && options == null && _lastTokenRequest != null)
@@ -179,6 +255,26 @@ namespace IO.Ably
                 request.Timestamp = (await _rest.Time()).ToUnixTimeInMilliseconds().ToString();
 
             return request;
+        }
+
+
+        internal TokenAuthMethod GetTokenAuthMethod()
+        {
+            if (null != Options.AuthCallback)
+                return TokenAuthMethod.Callback;
+            if (Options.AuthUrl.IsNotEmpty())
+                return TokenAuthMethod.Url;
+            if (Options.Key.IsNotEmpty())
+                return TokenAuthMethod.Signing;
+            if (Options.Token.IsNotEmpty())
+                return TokenAuthMethod.JustToken;
+            return TokenAuthMethod.None;
+        }
+
+        private void LogCurrentAuthenticationMethod()
+        {
+            TokenAuthMethod method = GetTokenAuthMethod();
+            Logger.Info("Authentication method: {0}", method.ToEnumDescription());
         }
     }
 }

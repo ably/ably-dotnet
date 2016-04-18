@@ -1,90 +1,164 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection.Emit;
 using System.Threading.Tasks;
+using IO.Ably.Transport;
 
 namespace IO.Ably
 {
     internal class AblyHttpClient : IAblyHttpClient
     {
-        internal static readonly MimeTypes MimeTypes = new MimeTypes();
-
-        private string _host;
-        private readonly int? _port;
-        private readonly bool _isSecure;
-        private readonly AblyEnvironment? _environment;
-
         //TODO: MG make sure this handles the fallback hosts as well
-        private bool IsDefaultHost => _host == Config.DefaultHost;
-        private HttpClient _client;
+        private bool IsDefaultHost => Options.Host == Defaults.RestHost;
 
-        public AblyHttpClient(string host) : this(host, null, true) { }
+        internal AblyHttpOptions Options { get; }
 
-        public AblyHttpClient(string host, int? port = null, bool isSecure = true, AblyEnvironment? environment = AblyEnvironment.Live)
+        internal HttpClient Client { get; set; }
+
+        public AblyHttpClient(AblyHttpOptions options) :
+            this(options, null)
         {
-            _isSecure = isSecure;
-            _environment = environment;
-            _port = port;
-            _host = host;
-            _client = new HttpClient();
-            _client.DefaultRequestHeaders.Add("X-Ably-Version", Config.AblyVersion);
-            _client.Timeout = TimeSpan.FromSeconds(Config.ConnectTimeout);
+
+        }
+
+        internal AblyHttpClient(AblyHttpOptions options, HttpMessageHandler messageHandler)
+        {
+            Options = options;
+            CreateInternalHttpClient(options.HttpRequestTimeout, messageHandler);
+        }
+
+        internal void CreateInternalHttpClient(TimeSpan timeout, HttpMessageHandler messageHandler)
+        {
+            Client = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
+            Client.DefaultRequestHeaders.Add("X-Ably-Version", Config.AblyVersion);
+            Client.Timeout = timeout;
         }
 
         public async Task<AblyResponse> Execute(AblyRequest request)
         {
-            //TODO: MG Add retrying back
-            //var hosts = Config.FallbackHosts;
+            var fallbackHosts = Defaults.FallbackHosts.ToList();
+            var random = new Random();
 
-            //int currentTry = 0;
+            int currentTry = 0;
             //var startTime = Config.Now();
-            //while (currentTry <= hosts.Length)
-            //{
-            //    var requestTime = Config.Now();
-            //    if ((requestTime - startTime).TotalSeconds > Config.CommulativeFailedRequestTimeOutInSeconds)
-            //    {
-            //        Logger.Error("Cumulative retry timeout of {0}s was exceeded", Config.CommulativeFailedRequestTimeOutInSeconds);
-            //        throw new AblyException(
-            //            new ErrorInfo(string.Format("Commulative retry timeout of {0}s was exceeded.",
-            //                Config.CommulativeFailedRequestTimeOutInSeconds), 500, null));
-            //    }
+            var numberOfRetries = IsDefaultHost ? Options.HttpMaxRetryCount : 1;
+            var host = GetHost();
 
-            try
+            while (currentTry < numberOfRetries)
             {
-                var message = GetRequestMessage(request);
+                //    var requestTime = Config.Now();
+                //    if ((requestTime - startTime).TotalSeconds > Config.CommulativeFailedRequestTimeOutInSeconds)
+                //    {
+                //        Logger.Error("Cumulative retry timeout of {0}s was exceeded", Config.CommulativeFailedRequestTimeOutInSeconds);
+                //        throw new AblyException(
+                //            new ErrorInfo(string.Format("Commulative retry timeout of {0}s was exceeded.",
+                //                Config.CommulativeFailedRequestTimeOutInSeconds), 500, null));
+                //    }
 
-                var response = await _client.SendAsync(message, HttpCompletionOption.ResponseContentRead);
-
-                var ablyResponse = await GetAblyResponse(response);
-                if (response.IsSuccessStatusCode)
+                Logger.Debug("Executing request: " + request.Url + (currentTry > 0 ? $"try {currentTry}" : ""));
+                try
                 {
-                    return ablyResponse;
-                }
-                
-                throw AblyException.FromResponse(ablyResponse);
+                    var message = GetRequestMessage(request, host);
+                    var response = await Client.SendAsync(message, HttpCompletionOption.ResponseContentRead);
 
+                    var ablyResponse = await GetAblyResponse(response);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return ablyResponse;
+                    }
+
+                    if (IsRetryableResponse(response) && IsDefaultHost)
+                    {
+                        Logger.Info("Failed response. Retrying. Returned response with status code: " +
+                                    response.StatusCode);
+
+                        if (TryGetNextRandomHost(fallbackHosts, random, out host))
+                        {
+                            Logger.Info("Retrying using host {0}", host);
+                            currentTry++;
+                            continue;
+                        }
+                    }
+                    throw AblyException.FromResponse(ablyResponse);
+                }
+                catch (HttpRequestException ex) when(IsRetryableError(ex) && IsDefaultHost)
+                {
+                    Logger.Warning("Error making a connection to Ably servers. Retrying", ex);
+
+                    if (TryGetNextRandomHost(fallbackHosts, random, out host))
+                    {
+                        Logger.Info("Retrying using host {0}", host);
+                        currentTry++;
+                        continue;
+                    }
+                    throw;
+                    //_host = hosts[currentTry - 1];
+                    
+                }
+                catch (TaskCanceledException ex) when (IsRetryableError(ex) && IsDefaultHost)
+                {
+                    //TODO: Check about the conditions we should retry. 
+                    //First retry the same host and then start the others
+                    
+                    Logger.Warning("Error making a connection to Ably servers. Retrying", ex);
+                    if (TryGetNextRandomHost(fallbackHosts, random, out host))
+                    {
+                        Logger.Info("Retrying using host {0}", host);
+                        currentTry++;
+                        continue;
+                    }
+                    throw;
+                }
+                catch(HttpRequestException ex) { throw new AblyException(new ErrorInfo("Error executing request", 500), ex);}
+                catch(TaskCanceledException ex) { throw new AblyException(new ErrorInfo("Error executing request", 500), ex);}
             }
-            catch (HttpRequestException ex)
-            {
-                //TODO: Check about the conditions we should retry. 
-                //First retry the same host and then start the others
-                //if (IsRetryableAndNotExpiredToken(response) && IsDefaultHost)
-                //{
-                //    Logger.Error("Error making a connection to Ably servers. Retrying", exception);
-                //    _host = hosts[currentTry - 1];
-                //    currentTry++;
-                //    continue;
-                //}
-                throw new AblyException(new ErrorInfo("Error exectuting request", 500), ex);
-            }
-            //}
+
+            throw new AblyException(new ErrorInfo("Error exectuting request", 500));
         }
 
-        private HttpRequestMessage GetRequestMessage(AblyRequest request)
+        private bool TryGetNextRandomHost(List<string> hosts, Random random, out string host)
         {
-            var message = new HttpRequestMessage(request.Method, GetRequestUrl(request));
+            if (hosts.Count == 0)
+            {
+                host = "";
+                return false;
+            }
+
+            host = hosts[random.Next(hosts.Count)];
+            hosts.Remove(host);
+            return true;
+        }
+
+        internal bool IsRetryableResponse(HttpResponseMessage response)
+        {
+            if (response.StatusCode >= (HttpStatusCode) 500 && response.StatusCode <= (HttpStatusCode) 504)
+                return true;
+            return false;
+        }
+
+        internal bool IsRetryableError(Exception ex)
+        {
+            if (ex is TaskCanceledException)
+                return true;
+            var httpEx = ex as HttpRequestException;
+            if (httpEx?.InnerException is WebException)
+            {
+                var webEx = httpEx.InnerException as WebException;
+                return webEx.Status == WebExceptionStatus.NameResolutionFailure || 
+                    webEx.Status == WebExceptionStatus.Timeout ||
+                    webEx.Status == WebExceptionStatus.ConnectFailure;
+            }
+            return false;
+        }
+
+        private HttpRequestMessage GetRequestMessage(AblyRequest request, string host)
+        {
+            var message = new HttpRequestMessage(request.Method, GetRequestUrl(request, host));
 
             foreach (var header in request.Headers)
             {
@@ -124,24 +198,27 @@ namespace IO.Ably
             };
         }
 
-        private Uri GetRequestUrl(AblyRequest request)
+        public Uri GetRequestUrl(AblyRequest request, string host = null)
         {
-            string protocol = _isSecure ? "https://" : "http://";
+            if (host == null)
+                host = GetHost();
+
+            string protocol = Options.IsSecure ? "https://" : "http://";
             if (request.Url.StartsWith("http"))
                 return new Uri(request.Url);
-            return new Uri(String.Format("{0}{1}{2}{3}{4}",
+            return new Uri(string.Format("{0}{1}{2}{3}{4}",
                                protocol,
-                               GetHost(),
-                               _port.HasValue ? ":" + _port.Value : "",
+                               host,
+                               Options.Port.HasValue ? ":" + Options.Port.Value : "",
                                request.Url,
                                GetQuery(request)));
         }
 
         private string GetHost()
         {
-            if (IsDefaultHost && (_environment.HasValue && _environment != AblyEnvironment.Live))
-                return _environment.ToString().ToLower() + "-" + _host;
-            return _host;
+            if (IsDefaultHost && (Options.Environment.HasValue && Options.Environment != AblyEnvironment.Live))
+                return Options.Environment.ToString().ToLower() + "-" + Options.Host;
+            return Options.Host;
         }
 
         private string GetQuery(AblyRequest request)
@@ -152,4 +229,6 @@ namespace IO.Ably
             return string.Empty;
         }
     }
+
+
 }

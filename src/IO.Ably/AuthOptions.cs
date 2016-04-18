@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading.Tasks;
 using IO.Ably.Auth;
 
 namespace IO.Ably
@@ -14,7 +15,7 @@ namespace IO.Ably
         /// <summary>
         /// Callback used when requesting a new token. A <see cref="TokenRequest"/> is passed and it needs to return <see cref="TokenDetails"/>
         /// </summary>
-        public Func<TokenParams, TokenDetails> AuthCallback;
+        public Func<TokenParams, Task<TokenDetails>> AuthCallback;
 
         /// <summary>
         /// A URL to query to obtain either a signed token request (<see cref="TokenRequest"/>) or a valid <see cref="TokenDetails"/>
@@ -22,7 +23,7 @@ namespace IO.Ably
         /// another entity, so tokens can be renewed without the
         /// client requiring access to keys.
         ///</summary>
-        public string AuthUrl { get; set; }
+        public Uri AuthUrl { get; set; }
 
         /// <summary>
         /// Used in conjunction with AuthUrl. Default is GET.
@@ -32,9 +33,11 @@ namespace IO.Ably
         public string Key { get; set; }
         public string Token { get; set; }
         public TokenDetails TokenDetails { get; set; }
+
         public Dictionary<string, string> AuthHeaders { get; set; }
         public Dictionary<string, string> AuthParams { get; set; }
         public bool QueryTime { get; set; }
+        public bool? UseTokenAuth { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the AuthOptions class.
@@ -63,7 +66,8 @@ namespace IO.Ably
             if (AuthUrl == null) AuthUrl = defaults.AuthUrl;
             if (AuthHeaders.Count == 0) AuthHeaders = defaults.AuthHeaders;
             if (AuthParams.Count == 0) AuthParams = defaults.AuthParams;
-            if (StringExtensions.IsEmpty(Key)) Key = defaults.Key;
+            if (Key.IsEmpty()) Key = defaults.Key;
+            if (UseTokenAuth.HasValue == false) UseTokenAuth = defaults.UseTokenAuth;
             QueryTime = QueryTime || defaults.QueryTime;
             return this;
         }

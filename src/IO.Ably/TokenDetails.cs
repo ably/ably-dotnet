@@ -54,9 +54,9 @@ namespace IO.Ably.Auth
         {
         }
 
-        public TokenDetails(string id)
+        public TokenDetails(string token)
         {
-            Token = id;
+            Token = token;
         }
 
         /// <summary>

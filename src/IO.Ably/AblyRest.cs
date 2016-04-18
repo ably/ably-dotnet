@@ -6,25 +6,27 @@ using System.Net.Http;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Rest;
 using System.Threading.Tasks;
+using IO.Ably.Auth;
+using IO.Ably.Transport;
 
 namespace IO.Ably
 {
     /// <summary>Client for the ably rest API</summary>
-    public sealed class AblyRest : AblyBase, IRestClient, IAblyRest
+    public sealed class AblyRest : AblyBase, IRestClient
     {
-        internal IAblyHttpClient _httpClient;
-        internal MessageHandler _messageHandler;
+        internal AblyHttpClient HttpClient { get; set; }
+        internal MessageHandler MessageHandler;
 
-        /// <summary>Initializes the RestClient by reading the Key from a connection string with key 'Ably'</summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public AblyRest()
-        {
-            var key = Platform.IoC.GetConnectionString();
-            if( string.IsNullOrEmpty( key ) )
-                throw new AblyException( "A connection string with key 'Ably' doesn't exist in the application configuration" );
-            _options = new ClientOptions( key );
-            InitializeAbly();
-        }
+        internal AblyAuth AblyAuth { get; private set; }
+
+        /// <summary>
+        /// Authentication methods
+        /// </summary>
+        public IAuthCommands Auth => AblyAuth;
+
+        internal Protocol Protocol => Options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
+
+        internal ClientOptions Options { get; }
 
         /// <summary>Initializes the RestClient using the api key provided</summary>
         /// <param name="apiKey">Full api key</param>
@@ -46,8 +48,8 @@ namespace IO.Ably
         /// <param name="init">Action delegate which receives a empty options object.</param>
         public AblyRest(Action<ClientOptions> init)
         {
-            _options = new ClientOptions();
-            init(_options);
+            Options = new ClientOptions();
+            init(Options);
             InitializeAbly();
         }
 
@@ -57,131 +59,77 @@ namespace IO.Ably
         /// <param name="clientOptions"></param>
         public AblyRest(ClientOptions clientOptions)
         {
-            _options = clientOptions;
+            Options = clientOptions;
             InitializeAbly();
         }
 
         /// <summary>Initializes the rest client and validates the passed in options</summary>
         private void InitializeAbly()
         {
-            if (_options == null)
+            if (Options == null)
             {
                 Logger.Error("No options provider to Ably rest");
                 throw new AblyException("Invalid options");
             }
 
-            _protocol = _options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
-            Logger.Debug("Protocol set to: " + _protocol);
-            _messageHandler = new MessageHandler(_protocol);
+            Logger.Debug("Protocol set to: " + Protocol);
+            MessageHandler = new MessageHandler(Protocol);
 
-            string host = GetHost();
-            var port = _options.Tls ? _options.TlsPort : _options.Port;
-            _httpClient = new AblyHttpClient(host, port, _options.Tls, _options.Environment);
-            ExecuteHttpRequest = _httpClient.Execute;
-
-            InitAuth(this);
+            HttpClient = new AblyHttpClient(new AblyHttpOptions(Options));
+            ExecuteHttpRequest = HttpClient.Execute;
+            AblyAuth = new AblyAuth(Options, this);
         }
 
-
-        string GetHost()
-        {
-            if (_options.RestHost.IsNotEmpty())
-                return _options.RestHost;
-
-            return Config.DefaultHost;
-        }
-
-        /// <summary>
-        /// Channel methods
-        /// </summary>
-        public IChannelCommands Channels
-        {
-            get { return this; }
-        }
-
-        internal IAblyRest RestMethods
-        {
-            get { return this;}
-        }
+        public IChannelCommands Channels => this;
 
         internal Func<AblyRequest, Task<AblyResponse>> ExecuteHttpRequest;
 
-        async Task<AblyResponse> IAblyRest.ExecuteRequest(AblyRequest request)
+        internal async Task<AblyResponse> ExecuteRequest(AblyRequest request)
         {
             Logger.Info("Sending {0} request to {1}", request.Method, request.Url);
 
             if (request.SkipAuthentication == false)
-                await AddAuthHeader(request);
+                await AblyAuth.AddAuthHeader(request);
 
-            _messageHandler.SetRequestBody(request);
+            MessageHandler.SetRequestBody(request);
 
-            return await ExecuteHttpRequest(request);
+            try
+            {
+                return await ExecuteHttpRequest(request);
+            }
+            catch (AblyException ex)
+            {
+                //TODO: Check with Matt about TokenRevoked and TokenExpired codes
+                if (ex.ErrorInfo.IsUnAuthorizedError
+                    && ex.ErrorInfo.IsTokenError && AblyAuth.TokenRenewable)
+                {
+                    await AblyAuth.Authorise(null, null, true);
+                    await AblyAuth.AddAuthHeader(request);
+                    return await ExecuteHttpRequest(request);
+                }
+                throw;
+            }
         }
 
-        async Task<T> IAblyRest.ExecuteRequest<T>(AblyRequest request)
+        internal async Task<T> ExecuteRequest<T>(AblyRequest request) where T : class
         {
-            var response = await RestMethods.ExecuteRequest(request);
+            var response = await ExecuteRequest(request);
             Logger.Debug("Response received. Status: " + response.StatusCode);
             Logger.Debug("Content type: " + response.ContentType);
             Logger.Debug("Encoding: " + response.Encoding);
-            if(response.Body != null)
+            if (response.Body != null)
                 Logger.Debug("Raw response (base64):" + response.Body.ToBase64());
 
-            return _messageHandler.ParseResponse<T>(request, response);
-        }
-
-        bool TokenCreatedExternally
-        {
-            get { return StringExtensions.IsNotEmpty(Options.AuthUrl) || Options.AuthCallback != null; }
-        }
-
-        bool HasApiKey
-        {
-            get { return StringExtensions.IsNotEmpty(Options.Key); }
-        }
-
-        bool HasTokenId
-        {
-            get { return StringExtensions.IsNotEmpty(Options.Token); }
-        }
-
-        public bool TokenRenewable
-        {
-            get { return TokenCreatedExternally || (HasApiKey && HasTokenId == false); }
-        }
-
-        internal async Task AddAuthHeader(AblyRequest request)
-        {
-            if (AuthMethod == AuthMethod.Basic)
-            {
-                var authInfo = Convert.ToBase64String(Options.Key.GetBytes());
-                request.Headers["Authorization"] = "Basic " + authInfo;
-                Logger.Debug("Adding Authorization header with Basic authentication.");
-            }
-            else
-            {
-                if (HasValidToken() == false && TokenRenewable)
-                {
-                    CurrentToken = await Auth.Authorise(null, null, false);
-                }
-
-                if (HasValidToken())
-                {
-                    request.Headers["Authorization"] = "Bearer " + CurrentToken.Token.ToBase64();
-                    Logger.Debug("Adding Authorization header with Token authentication");
-                }
-                else
-                    throw new AblyException("Invalid token credentials: " + CurrentToken, 40100, HttpStatusCode.Unauthorized);
-            }
+            return MessageHandler.ParseResponse<T>(request, response);
         }
 
         /// <summary>/// Retrieves the ably service time/// </summary>
         /// <returns></returns>
         public async Task<DateTimeOffset> Time()
         {
-            AblyRequest request = RestMethods.CreateGetRequest("/time");
+            AblyRequest request = CreateGetRequest("/time");
             request.SkipAuthentication = true;
-            List<long> response = await RestMethods.ExecuteRequest<List<long>>(request);
+            List<long> response = await ExecuteRequest<List<long>>(request);
             return response.First().FromUnixTimeInMilliseconds();
         }
 
@@ -219,19 +167,19 @@ namespace IO.Ably
         {
             query.Validate();
 
-            var request = RestMethods.CreateGetRequest("/stats");
+            var request = CreateGetRequest("/stats");
 
             request.AddQueryParameters(query.GetParameters());
 
-            return RestMethods.ExecuteRequest<PaginatedResource<Stats>>(request);
+            return ExecuteRequest<PaginatedResource<Stats>>(request);
         }
 
-        AblyRequest IAblyRest.CreateGetRequest(string path, ChannelOptions options)
+        internal AblyRequest CreateGetRequest(string path, ChannelOptions options = null)
         {
             return new AblyRequest(path, HttpMethod.Get, Protocol) { ChannelOptions = options };
         }
 
-        AblyRequest IAblyRest.CreatePostRequest(string path, ChannelOptions options)
+        internal AblyRequest CreatePostRequest(string path, ChannelOptions options = null)
         {
             return new AblyRequest(path, HttpMethod.Post, Protocol) { ChannelOptions = options };
         }

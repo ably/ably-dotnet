@@ -1,6 +1,5 @@
 using System;
 using FluentAssertions;
-using Moq;
 using Xunit;
 
 namespace IO.Ably.Tests
@@ -41,7 +40,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void BeforeSendingAMessage_CurrentTokenIsNull()
         {
-            Client.CurrentToken.Should().BeNull();
+            Client.Auth.CurrentToken.Should().BeNull();
         }
 
         [Fact]
@@ -49,7 +48,7 @@ namespace IO.Ably.Tests
         {
             Client.Channels.Get("test").Publish("test", true);
 
-            Client.CurrentToken.Should().NotBeNull();
+            Client.Auth.CurrentToken.Should().NotBeNull();
         }
     }
 }

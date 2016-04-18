@@ -116,6 +116,7 @@
     <Compile Include="FakeResponseHandler.cs" />
     <Compile Include="ImplicitTokenAuthWithClientId.cs" />
     <Compile Include="JsonDeserializationBugTests.cs" />
+    <Compile Include="LoggerTests.cs" />
     <Compile Include="MessageEncodes\Base64EncoderTests.cs" />
     <Compile Include="MessageEncodes\CipherEncoderTests.cs" />
     <Compile Include="MessageEncodes\JsonEncoderTests.cs" />
@@ -136,9 +137,20 @@
     <Compile Include="ResourceHelper.cs" />
     <Compile Include="RestApiTests.cs" />
     <Compile Include="RestProtocolTests.cs" />
-    <Compile Include="RestTests.cs" />
+    <Compile Include="Infrastructure\AblyCollectionFixture.cs" />
+    <Compile Include="Infrastructure\AblySandboxFixture.cs" />
+    <Compile Include="Infrastructure\AblySpecs.cs" />
+    <Compile Include="Infrastructure\AsyncLazy.cs" />
+    <Compile Include="Infrastructure\ProtocolData.cs" />
+    <Compile Include="Rest\AblyHttpClientSpecs.cs" />
+    <Compile Include="Infrastructure\FakeHttpMessageHandler.cs" />
+    <Compile Include="Rest\MockHttpSpecs.cs" />
+    <Compile Include="Rest\RestInitSpecs.cs" />
+    <Compile Include="Rest\RestSandBoxSpecs.cs" />
+    <Compile Include="Rest\RestSpecs.cs" />
     <Compile Include="ApiKeyTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rest\StatsSpecs.cs" />
     <Compile Include="StatsParsingTests.cs" />
     <Compile Include="TokenRequestDataTests.cs" />
     <Compile Include="TokenDetailsTests.cs" />
@@ -150,6 +162,12 @@
     </None>
     <EmbeddedResource Include="StatsInterval.json" />
     <None Include="packages.config" />
+    <EmbeddedResource Include="StatsFixture.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="testAppSpec.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
@@ -163,6 +181,9 @@
       <Project>{021875be-63fd-4ff4-b34f-0b77ccd1919e}</Project>
       <Name>IO.Ably.net45</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Setup\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
