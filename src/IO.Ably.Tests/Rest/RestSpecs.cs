@@ -138,6 +138,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSC10")]
             public async Task WhenErrorCodeIsTokenSpecific_ShouldAutomaticallyTryToRenewTokenIfRequestFails(int errorCode)
             {
+                base.Now = DateTimeOffset.Now;
                 var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
                 var client = GetConfiguredRestClient(errorCode, tokenDetails);
 
@@ -437,6 +438,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "TO3l6")]
             public async Task ShouldOnlyRetryFallbackHostWhileTheTimeTakenIsLessThanHttpMaxRetryDuration()
             {
+
                 var options = new ClientOptions(ValidKey) { HttpMaxRetryDuration = TimeSpan.FromSeconds(3)};
                 var client = new AblyRest(options);
                 _response.StatusCode =HttpStatusCode.BadGateway;
