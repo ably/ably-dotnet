@@ -46,10 +46,10 @@ namespace IO.Ably.Tests
         }
 
         [Trait("spec", "RSN3")]
-        public class CreatingChannel : ChannelSpecs
+        public class GettingAChannel : ChannelSpecs
         {
             private AblyRest _client;
-            public CreatingChannel(ITestOutputHelper output) : base(output)
+            public GettingAChannel(ITestOutputHelper output) : base(output)
             {
                 _client = GetRestClient();
             }
@@ -91,6 +91,16 @@ namespace IO.Ably.Tests
                 var secondTime = _client.Channels.Get("test", newOptions);
                 (secondTime as RestChannel).Options.ShouldBeEquivalentTo(newOptions);
             }
+        }
+
+        [Fact]
+        public void ShouldBeAbleToReleaseAChannelSoItIsRemovedFromTheChannelsCollection()
+        {
+            var client = GetRestClient();
+            var channel = client.Channels.Get("first");
+            client.Channels.Should().Contain(x => x.Name == "first");
+            client.Channels.Release("first");
+            client.Channels.Should().BeEmpty();
         }
 
         [Fact]
@@ -275,6 +285,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        [Trait("spec", "RSN4a")]
         public void Presence_CreatesGetRequestWithCorrectPath()
         {
             var rest = GetRestClient(request => "[]".ToAblyResponse());

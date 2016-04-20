@@ -20,7 +20,7 @@ namespace IO.Ably
         internal MessageHandler MessageHandler { get; private set; }
 
         internal AblyAuth AblyAuth { get; private set; }
-        internal List<RestChannel> RestChannels { get; private set; } = new List<RestChannel>();
+        internal List<IChannel> RestChannels { get; private set; } = new List<IChannel>();
 
         /// <summary>
         /// Authentication methods
@@ -200,7 +200,7 @@ namespace IO.Ably
 
             lock (_channelLock)
             {
-                var channel = RestChannels.FirstOrDefault(x => x.Name.EqualsTo(name));
+                var channel = RestChannels.FirstOrDefault(x => x.Name.EqualsTo(name)) as RestChannel;
                 if (channel == null)
                 {
                     var channelOptions = options ?? Options.ChannelDefaults;
@@ -217,6 +217,17 @@ namespace IO.Ably
                 }
                 return channel;
             }
+        }
+
+        bool IChannelCommands.Release(string name)
+        {
+            var channel = Channels.Get(name);
+            if (channel != null)
+            {
+                lock (_channelLock)
+                    return RestChannels.Remove(channel);
+            }
+            return false;
         }
 
         public IEnumerator<IChannel> GetEnumerator()
