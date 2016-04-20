@@ -137,6 +137,7 @@ namespace IO.Ably.Tests
         public async Task TokenAuthWithouthClientId_ShouldNotSetClientIdOnMessagesAndTheClient(Protocol protocol)
         {
             Output.WriteLine("Current time: " + Config.Now());
+            Config.Now = () => DateTimeOffset.UtcNow;
             var client = await GetRestClient(protocol);
             var settings = await Fixture.GetSettings();
             var token = await client.Auth.RequestToken();
