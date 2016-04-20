@@ -12,7 +12,7 @@ using Xunit.Extensions;
 
 namespace IO.Ably.Tests
 {
-    public class ChannelTests : MockHttpSpecs
+    public class ChannelSpecs : MockHttpSpecs
     {
         [Fact]
         [Trait("spec", "RSN1")]
@@ -216,7 +216,7 @@ namespace IO.Ably.Tests
             Assert.Equal($"/channels/{channel.Name}/presence", LastRequest.Url);
         }
 
-        public ChannelTests(ITestOutputHelper output) : base(output)
+        public ChannelSpecs(ITestOutputHelper output) : base(output)
         {
         }
     }
