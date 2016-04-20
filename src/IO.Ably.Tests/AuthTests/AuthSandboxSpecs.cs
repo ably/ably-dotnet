@@ -136,11 +136,16 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSA8f1")]
         public async Task TokenAuthWithouthClientId_ShouldNotSetClientIdOnMessagesAndTheClient(Protocol protocol)
         {
+            Output.WriteLine("Current time: " + Config.Now());
             var client = await GetRestClient(protocol);
             var settings = await Fixture.GetSettings();
             var token = await client.Auth.RequestToken();
             var tokenClient = new AblyRest(new ClientOptions
-            { TokenDetails = token, Environment = settings.Environment, UseBinaryProtocol = protocol == Protocol.MsgPack});
+            {
+                TokenDetails = token,
+                Environment = settings.Environment,
+                UseBinaryProtocol = protocol == Protocol.MsgPack
+            });
 
             tokenClient.AblyAuth.GetClientId().Should().BeNullOrEmpty();
             var channel = tokenClient.Channels["persisted:test"];
