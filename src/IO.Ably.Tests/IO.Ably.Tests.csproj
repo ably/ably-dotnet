@@ -106,7 +106,7 @@
     <Compile Include="AuthTests\AuthSandboxSpecs.cs" />
     <Compile Include="AuthTests\RequestTokenTests.cs" />
     <Compile Include="CapabilityTests.cs" />
-    <Compile Include="ChannelTests.cs" />
+    <Compile Include="Rest\ChannelTests.cs" />
     <Compile Include="AuthTests\AuthorisationTests.cs" />
     <Compile Include="CipherParamsTests.cs" />
     <Compile Include="ClientConnectionAcceptanceTests.cs" />

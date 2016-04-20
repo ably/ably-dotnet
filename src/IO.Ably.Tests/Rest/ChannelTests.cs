@@ -6,11 +6,12 @@ using Newtonsoft.Json;
 using Xunit;
 using IO.Ably.Encryption;
 using IO.Ably.Rest;
+using Xunit.Abstractions;
 using Xunit.Extensions;
 
 namespace IO.Ably.Tests
 {
-    public class ChannelTests : RestApiTests
+    public class ChannelTests : MockHttpSpecs
     {
         [Fact]
         public void Publish_CreatesPostRequestWithValidPath()
@@ -19,8 +20,8 @@ namespace IO.Ably.Tests
             var channel = rest.Channels.Get("Test");
             channel.Publish("event", "data");
 
-            Assert.Equal(HttpMethod.Post, _currentRequest.Method);
-            Assert.Equal(String.Format("/channels/{0}/messages", channel.Name), _currentRequest.Url);
+            Assert.Equal(HttpMethod.Post, LastRequest.Method);
+            Assert.Equal(String.Format("/channels/{0}/messages", channel.Name), LastRequest.Url);
         }
 
         [Fact]
@@ -30,8 +31,8 @@ namespace IO.Ably.Tests
             var channel = rest.Channels.Get("Test");
             channel.Publish("event", "data");
 
-            Assert.IsType<List<Message>>(_currentRequest.PostData);
-            var messages = _currentRequest.PostData as List<Message>;
+            Assert.IsType<List<Message>>(LastRequest.PostData);
+            var messages = LastRequest.PostData as List<Message>;
             var data = messages.First();
             Assert.Equal("data", data.data);
             Assert.Equal("event", data.name);
@@ -44,8 +45,8 @@ namespace IO.Ably.Tests
             var channel = rest.Channels.Get("Test");
             channel.Publish("event", new byte[] { 1, 2 });
 
-            Assert.IsType<List<Message>>(_currentRequest.PostData);
-            var postData = (_currentRequest.PostData as IList<Message>).First();
+            Assert.IsType<List<Message>>(LastRequest.PostData);
+            var postData = (LastRequest.PostData as IList<Message>).First();
             Assert.Equal("base64", postData.encoding);
         }
 
@@ -57,8 +58,8 @@ namespace IO.Ably.Tests
             var message = new Message() { name = "event" , data = "data"};
             channel.Publish(new List<Message> {message });
 
-            Assert.Equal(HttpMethod.Post, _currentRequest.Method);
-            Assert.Equal(String.Format("/channels/{0}/messages", channel.Name), _currentRequest.Url);
+            Assert.Equal(HttpMethod.Post, LastRequest.Method);
+            Assert.Equal(String.Format("/channels/{0}/messages", channel.Name), LastRequest.Url);
         }
 
         [Fact]
@@ -70,7 +71,7 @@ namespace IO.Ably.Tests
             var message = new Message() { name = "event", data = "data" };
             channel.Publish(new List<Message> { message });
 
-            var data = _currentRequest.PostData as IEnumerable<Message>;
+            var data = LastRequest.PostData as IEnumerable<Message>;
             Assert.NotNull(data);
             Assert.Equal(1, data.Count());
             var payloadMessage = data.First();
@@ -81,28 +82,20 @@ namespace IO.Ably.Tests
         [Fact]
         public void History_WithNoOptions_CreateGetRequestWithValidPath()
         {
-            var rest = GetRestClient();
+            var rest = GetRestClient(request => "[]".ToAblyResponse());
             var channel = rest.Channels.Get("Test");
-            rest.ExecuteHttpRequest = delegate(AblyRequest request)
-            {
-                _currentRequest = request;
-                return "[]".ToAblyResponse();
-            };
+            
             channel.History();
 
-            Assert.Equal(HttpMethod.Get, _currentRequest.Method);
-            Assert.Equal(String.Format("/channels/{0}/messages", channel.Name), _currentRequest.Url);
+            Assert.Equal(HttpMethod.Get, LastRequest.Method);
+            Assert.Equal(String.Format("/channels/{0}/messages", channel.Name), LastRequest.Url);
         }
 
         [Fact]
          public void History_WithOptions_AddsParametersToRequest()
         {
-            var rest = GetRestClient();
-            rest.ExecuteHttpRequest = delegate(AblyRequest request)
-            {
-                _currentRequest = request;
-                return "[]".ToAblyResponse();
-            };
+            var rest = GetRestClient(request => "[]".ToAblyResponse());
+
             var channel = rest.Channels.Get("Test");
             var query = new DataRequestQuery();
             var now = DateTimeOffset.Now;
@@ -112,10 +105,10 @@ namespace IO.Ably.Tests
             query.Limit = 1000;
             channel.History(query);
 
-            _currentRequest.AssertContainsParameter("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
-            _currentRequest.AssertContainsParameter("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
-            _currentRequest.AssertContainsParameter("direction", query.Direction.ToString().ToLower());
-            _currentRequest.AssertContainsParameter("limit", query.Limit.Value.ToString());
+            LastRequest.AssertContainsParameter("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
+            LastRequest.AssertContainsParameter("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
+            LastRequest.AssertContainsParameter("direction", query.Direction.ToString().ToLower());
+            LastRequest.AssertContainsParameter("limit", query.Limit.Value.ToString());
         }
 
         [Theory]
@@ -209,18 +202,18 @@ namespace IO.Ably.Tests
         [Fact]
         public void Presence_CreatesGetRequestWithCorrectPath()
         {
-            var rest = GetRestClient();
-            rest.ExecuteHttpRequest = request =>
-                {
-                    _currentRequest = request;
-                    return "[]".ToAblyResponse();
-                };
+            var rest = GetRestClient(request => "[]".ToAblyResponse());
+
             var channel = rest.Channels.Get("Test");
 
             channel.Presence();
 
-            Assert.Equal(HttpMethod.Get, _currentRequest.Method);
-            Assert.Equal(String.Format("/channels/{0}/presence", channel.Name), _currentRequest.Url);
+            Assert.Equal(HttpMethod.Get, LastRequest.Method);
+            Assert.Equal(String.Format("/channels/{0}/presence", channel.Name), LastRequest.Url);
+        }
+
+        public ChannelTests(ITestOutputHelper output) : base(output)
+        {
         }
     }
 }
