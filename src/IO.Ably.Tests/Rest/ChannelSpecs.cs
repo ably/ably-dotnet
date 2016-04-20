@@ -80,6 +80,17 @@ namespace IO.Ably.Tests
                 var channel = _client.Channels.Get("test", options);
                 (channel as RestChannel).Options.ShouldBeEquivalentTo(options);
             }
+
+            [Fact]
+            [Trait("spec", "RSN3c")]
+            public void WhenAccesingExistingChannel_WithNewOptions_ShouldUpdateExistingChannelWithNewOptions()
+            {
+                var channel = _client.Channels.Get("test");
+                var initialOptions = (channel as RestChannel).Options;
+                var newOptions = new ChannelOptions(true);
+                var secondTime = _client.Channels.Get("test", newOptions);
+                (secondTime as RestChannel).Options.ShouldBeEquivalentTo(newOptions);
+            }
         }
 
         [Fact]

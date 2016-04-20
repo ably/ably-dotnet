@@ -207,6 +207,14 @@ namespace IO.Ably
                     channel = new RestChannel(this, name, channelOptions);
                     RestChannels.Add(channel);
                 }
+                else
+                {
+                    if (options != null &&
+                             Equals(channel.Options, options) == false)
+                    {
+                        channel.SetOptions(options);
+                    }
+                }
                 return channel;
             }
         }
