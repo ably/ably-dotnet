@@ -23,6 +23,28 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        [Trait("spec", "RSN2")]
+        public void ShouldBeAbleToIterateThroughExistingChannels()
+        {
+            var client = GetRestClient();
+            var channel1 = client.Channels.Get("test");
+            var channel2 = client.Channels.Get("test1");
+
+            client.Channels.Should().HaveCount(2);
+            client.Channels.ShouldBeEquivalentTo(new [] { channel1, channel2 });
+        }
+
+        [Fact]
+        public void ShouldBeAbleToCheckIsAChannelExists()
+        {
+            var client = GetRestClient();
+            var channel1 = client.Channels.Get("test");
+            var channel2 = client.Channels.Get("test1");
+
+            client.Channels.Any(x => x.Name == "test").Should().BeTrue();
+        }
+
+        [Fact]
         public void Publish_CreatesPostRequestWithValidPath()
         {
             var rest = GetRestClient();

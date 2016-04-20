@@ -15,6 +15,7 @@ namespace IO.Ably
     /// <summary>Client for the ably rest API</summary>
     public sealed class AblyRest : AblyBase, IRestClient
     {
+        private readonly object _channelLock = new object();
         internal AblyHttpClient HttpClient { get; private set; }
         internal MessageHandler MessageHandler { get; private set; }
 
@@ -185,19 +186,29 @@ namespace IO.Ably
             return new AblyRequest(path, HttpMethod.Post, Protocol) { ChannelOptions = options };
         }
 
-        IChannel IChannelCommands.this[string name]
-        {
-            get { return ((IChannelCommands)this).Get(name); }
-        }
+        IChannel IChannelCommands.this[string name] => Channels.Get(name);
 
         IChannel IChannelCommands.Get(string name)
         {
-            return new RestChannel(this, name, Options.ChannelDefaults);
+            return Channels.Get(name, null);
         }
 
         IChannel IChannelCommands.Get(string name, ChannelOptions options)
         {
-            return new RestChannel(this, name, options);
+            if (name.IsEmpty())
+                throw new ArgumentNullException(nameof(name), "Empty channel name");
+
+            lock (_channelLock)
+            {
+                var channel = RestChannels.FirstOrDefault(x => x.Name.EqualsTo(name));
+                if (channel == null)
+                {
+                    var channelOptions = options ?? Options.ChannelDefaults;
+                    channel = new RestChannel(this, name, channelOptions);
+                    RestChannels.Add(channel);
+                }
+                return channel;
+            }
         }
 
         public IEnumerator<IChannel> GetEnumerator()
