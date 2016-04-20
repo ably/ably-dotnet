@@ -206,6 +206,53 @@ namespace IO.Ably.Tests
             message.data.Should().Be("test");
         }
 
+        [Theory]
+        [ProtocolData]
+        public async Task TokenAuthUrlWhenPlainTextTokenIsReturn_ShouldBeAblyToPublishWithNewToken(Protocol protocol)
+        {
+            var client = await GetRestClient(protocol);
+            var token = await client.Auth.RequestToken(new TokenParams() { ClientId = "*"});
+            var settings = await Fixture.GetSettings();
+            var authUrl = "http://echo.ably.io/?type=text&body=" + token.Token;
+
+            var authUrlClient = new AblyRest(new ClientOptions
+            {
+                AuthUrl = new Uri(authUrl),
+                Environment = settings.Environment,
+                UseBinaryProtocol = protocol == Protocol.MsgPack
+            });
+
+            var channel = authUrlClient.Channels["pesisted:test"];
+            await channel.Publish(new Message("test", "test") { clientId = "123" });
+
+            var message = (await channel.History()).First();
+            message.clientId.Should().Be("123");
+            message.data.Should().Be("test");
+        }
+
+        [Theory]
+        [ProtocolData]
+        public async Task TokenAuthUrlWithJsonTokenReturned_ShouldBeAblyToPublishWithNewToken(Protocol protocol)
+        {
+            var client = await GetRestClient(protocol);
+            var token = await client.Auth.RequestToken(new TokenParams() { ClientId = "*" });
+            var settings = await Fixture.GetSettings();
+            var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeUriString(token.ToJson());
+
+            var authUrlClient = new AblyRest(new ClientOptions
+            {
+                AuthUrl = new Uri(authUrl),
+                Environment = settings.Environment,
+                UseBinaryProtocol = protocol == Protocol.MsgPack
+            });
+
+            var channel = authUrlClient.Channels["pesisted:test"];
+            await channel.Publish(new Message("test", "test") { clientId = "123" });
+
+            var message = (await channel.History()).First();
+            message.clientId.Should().Be("123");
+            message.data.Should().Be("test");
+        }
 
         public class RequestTokenSpecs : AuthSandboxSpecs
         {
