@@ -25,10 +25,7 @@ namespace IO.Ably.Tests.MessageEncodes
             _stringData = "random-string";
             _key = GenerateKey(keyLength);
             _channelOptions =
-                new ChannelOptions(new CipherParams(Crypto.DefaultAlgorithm, _key, Encryption.CipherMode.CBC, keyLength))
-                {
-                    Encrypted = encrypt
-                };
+                new ChannelOptions(encrypt, new CipherParams(Crypto.DefaultAlgorithm, _key, Encryption.CipherMode.CBC, keyLength));
             _crypto = Crypto.GetCipher(_channelOptions);
             _encryptedData = _crypto.Encrypt(_stringData.GetBytes());
             _encryptedBinaryData = _crypto.Encrypt(_binaryData);

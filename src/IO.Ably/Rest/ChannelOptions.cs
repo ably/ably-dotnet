@@ -2,12 +2,13 @@ namespace IO.Ably.Rest
 {
     public class ChannelOptions
     {
-        public bool Encrypted { get; set; }
-        public CipherParams CipherParams { get; set; }
+        public bool Encrypted { get; private set; }
+        public CipherParams CipherParams { get; private set; }
 
-        public ChannelOptions()
+        public ChannelOptions(bool encrypted = false, CipherParams @params = null)
         {
-            
+            Encrypted = encrypted;
+            CipherParams = @params;
         }
 
         public ChannelOptions(CipherParams @params)

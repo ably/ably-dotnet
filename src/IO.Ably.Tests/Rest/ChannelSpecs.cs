@@ -35,6 +35,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        [Trait("spec", "RSN2")]
         public void ShouldBeAbleToCheckIsAChannelExists()
         {
             var client = GetRestClient();
@@ -42,6 +43,43 @@ namespace IO.Ably.Tests
             var channel2 = client.Channels.Get("test1");
 
             client.Channels.Any(x => x.Name == "test").Should().BeTrue();
+        }
+
+        [Trait("spec", "RSN3")]
+        public class CreatingChannel : ChannelSpecs
+        {
+            private AblyRest _client;
+            public CreatingChannel(ITestOutputHelper output) : base(output)
+            {
+                _client = GetRestClient();
+            }
+
+            [Fact]
+            [Trait("spec", "RSN3a")]
+            public void WhenChannelDoesntExist_ShouldCreateANewOne()
+            {
+                var channel = _client.Channels.Get("new");
+                channel.Should().NotBeNull();
+            }
+
+            [Fact]
+            [Trait("spec", "RSN3a")]
+            public void WhenChannelAlreadyexists_ShouldReturnExistingChannel()
+            {
+                var channel = _client.Channels.Get("new");
+                var secondTime = _client.Channels.Get("new");
+                channel.Should().BeSameAs(secondTime);
+            }
+
+            [Fact]
+            [Trait("spec", "RSN3a")]
+            [Trait("spec", "RSN3b")]
+            public void WithProvidedChannelOptions_ShouldSetOptionsOnChannel()
+            {
+                var options = new ChannelOptions();
+                var channel = _client.Channels.Get("test", options);
+                (channel as RestChannel).Options.ShouldBeEquivalentTo(options);
+            }
         }
 
         [Fact]
