@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -18,6 +19,7 @@ namespace IO.Ably
         internal MessageHandler MessageHandler { get; private set; }
 
         internal AblyAuth AblyAuth { get; private set; }
+        internal List<RestChannel> RestChannels { get; private set; } = new List<RestChannel>();
 
         /// <summary>
         /// Authentication methods
@@ -196,6 +198,16 @@ namespace IO.Ably
         IChannel IChannelCommands.Get(string name, ChannelOptions options)
         {
             return new RestChannel(this, name, options);
+        }
+
+        public IEnumerator<IChannel> GetEnumerator()
+        {
+            return RestChannels.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

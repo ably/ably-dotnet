@@ -1,6 +1,8 @@
+using System.Collections.Generic;
+
 namespace IO.Ably.Rest
 {
-    public interface IChannelCommands
+    public interface IChannelCommands : IEnumerable<IChannel>
     {
         /// <summary>
         /// Create a channel with the specified name

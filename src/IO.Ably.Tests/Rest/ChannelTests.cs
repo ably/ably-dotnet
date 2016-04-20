@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using FluentAssertions;
 using Newtonsoft.Json;
 using Xunit;
 using IO.Ably.Encryption;
@@ -13,6 +14,14 @@ namespace IO.Ably.Tests
 {
     public class ChannelTests : MockHttpSpecs
     {
+        [Fact]
+        [Trait("spec", "RSN1")]
+        public void ChannelsIsACollectionOfChannelObjects()
+        {
+            var client = GetRestClient();
+            (client.Channels is IEnumerable<IChannel>).Should().BeTrue();
+        }
+
         [Fact]
         public void Publish_CreatesPostRequestWithValidPath()
         {
