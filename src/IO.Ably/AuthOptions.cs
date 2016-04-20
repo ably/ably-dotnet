@@ -38,7 +38,7 @@ namespace IO.Ably
 
         public Dictionary<string, string> AuthHeaders { get; set; }
         public Dictionary<string, string> AuthParams { get; set; }
-        public bool QueryTime { get; set; }
+        public bool? QueryTime { get; set; }
         public bool? UseTokenAuth { get; set; }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace IO.Ably
             if (AuthParams.Count == 0) AuthParams = defaults.AuthParams;
             if (Key.IsEmpty()) Key = defaults.Key;
             if (UseTokenAuth.HasValue == false) UseTokenAuth = defaults.UseTokenAuth;
-            QueryTime = QueryTime || defaults.QueryTime;
+            if(QueryTime.HasValue == false) QueryTime = defaults.QueryTime;
             return this;
         }
 
