@@ -130,6 +130,7 @@ namespace IO.Ably.Tests
         public class WithInvalidToken : MockHttpSpecs
         {
             private TokenDetails _returnedDummyTokenDetails;
+            private bool _firstAttempt = true;
 
             [Theory]
             [InlineData(Defaults.TokenErrorCodesRangeStart)]
@@ -144,7 +145,7 @@ namespace IO.Ably.Tests
 
                 await client.Stats();
 
-                client.Auth.CurrentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires); //Due to a json.net bug
+                client.Auth.CurrentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires);
                 client.Auth.CurrentToken.ClientId.Should().Be(_returnedDummyTokenDetails.ClientId);
             }
 
@@ -168,18 +169,17 @@ namespace IO.Ably.Tests
 
             private AblyRest GetConfiguredRestClient(int errorCode, TokenDetails tokenDetails, bool useApiKey = true)
             {
-                bool firstAttempt = true;
+                
                 var client = GetRestClient(request =>
                 {
                     if (request.Url.Contains("/keys"))
                     {
-                        
                         return _returnedDummyTokenDetails.ToJson().ToAblyResponse();
                     }
 
-                    if (firstAttempt)
+                    if (_firstAttempt)
                     {
-                        firstAttempt = false;
+                        _firstAttempt = false;
                         throw new AblyException(new ErrorInfo("", errorCode, HttpStatusCode.Unauthorized));
                     }
                     return AblyResponse.EmptyResponse.ToTask();
