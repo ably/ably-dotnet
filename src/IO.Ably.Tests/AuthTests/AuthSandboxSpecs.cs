@@ -56,7 +56,7 @@ namespace IO.Ably.Tests
             capability.AddResource("foo").AllowPublish();
 
             var ably = await GetRestClient(protocol);
-            var token = ably.Auth.RequestToken(CreateTokenParams(capability), null).Result;
+            var token = await ably.Auth.RequestToken(CreateTokenParams(capability), null);
 
             var options = await Fixture.GetSettings();
             var httpTokenAbly = new AblyRest(new ClientOptions { Token = token.Token, Environment = options.Environment, Tls = false});
@@ -95,7 +95,7 @@ namespace IO.Ably.Tests
             {
                 var tokenParams = CreateTokenParams(null);
                 tokenParams.Timestamp = DateTimeOffset.UtcNow.AddDays(-1);
-                return ably.Auth.RequestToken(tokenParams, null);
+                return ably.Auth.RequestToken(tokenParams, new AuthOptions() { QueryTime = false});
             });
 
             error.ErrorInfo.code.Should().Be(40101);
@@ -136,9 +136,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSA8f1")]
         public async Task TokenAuthWithouthClientId_ShouldNotSetClientIdOnMessagesAndTheClient(Protocol protocol)
         {
-            Output.WriteLine("Current time: " + Config.Now());
-            Config.Now = () => DateTimeOffset.UtcNow;
-            var client = await GetRestClient(protocol);
+            var client = await GetRestClient(protocol, opts => opts.QueryTime = true);
             var settings = await Fixture.GetSettings();
             var token = await client.Auth.RequestToken();
             var tokenClient = new AblyRest(new ClientOptions

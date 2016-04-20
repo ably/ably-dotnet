@@ -104,7 +104,7 @@ namespace IO.Ably.MessageEncoders
                 return GetMessagesRequestBody(request.PostData as IEnumerable<Message>,
                     request.ChannelOptions);
 
-            Logger.Debug(string.Format("Payload: {0}", JsonConvert.SerializeObject(request.PostData)));
+            //Logger.Debug(string.Format("Payload: {0}", JsonConvert.SerializeObject(request.PostData)));
 
             if (_protocol == Protocol.Json)
                 return JsonConvert.SerializeObject(request.PostData).GetBytes();

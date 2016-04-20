@@ -23,6 +23,7 @@ namespace IO.Ably.Tests
             var settings = await Fixture.GetSettings();
             var defaultOptions = settings.CreateDefaultOptions();
             defaultOptions.UseBinaryProtocol = protocol == Protocol.MsgPack;
+            //defaultOptions.QueryTime = true;
             optionsAction?.Invoke(defaultOptions);
             return new AblyRest(defaultOptions);
         }

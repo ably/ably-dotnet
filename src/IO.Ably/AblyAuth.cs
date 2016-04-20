@@ -136,6 +136,9 @@ namespace IO.Ably
 
             var @params = MergeTokenParamsWithDefaults(tokenParams);
 
+            if (mergedOptions.QueryTime.GetValueOrDefault(false))
+                @params.Timestamp = await _rest.Time();
+
             EnsureSecureConnection();
 
             var request = _rest.CreatePostRequest($"/keys/{keyId}/requestToken");
@@ -176,9 +179,6 @@ namespace IO.Ably
 
                 postData = new TokenRequest().Populate(@params, keyId, keyValue);
             }
-
-            if (mergedOptions.QueryTime)
-                postData.Timestamp = (await _rest.Time()).ToUnixTimeInMilliseconds().ToString();
 
             request.PostData = postData;
 
@@ -309,11 +309,11 @@ namespace IO.Ably
 
             var @params = MergeTokenParamsWithDefaults(tokenParams);
 
+            if (mergedOptions.QueryTime.GetValueOrDefault(false))
+                @params.Timestamp = await _rest.Time();
+
             ApiKey key = mergedOptions.ParseKey();
             var request = new TokenRequest().Populate(@params, key.KeyName, key.KeySecret);
-
-            if (mergedOptions.QueryTime)
-                request.Timestamp = (await _rest.Time()).ToUnixTimeInMilliseconds().ToString();
 
             return request;
         }
