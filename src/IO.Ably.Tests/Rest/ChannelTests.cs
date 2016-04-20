@@ -21,7 +21,7 @@ namespace IO.Ably.Tests
             channel.Publish("event", "data");
 
             Assert.Equal(HttpMethod.Post, LastRequest.Method);
-            Assert.Equal(String.Format("/channels/{0}/messages", channel.Name), LastRequest.Url);
+            Assert.Equal($"/channels/{channel.Name}/messages", LastRequest.Url);
         }
 
         [Fact]
@@ -59,7 +59,7 @@ namespace IO.Ably.Tests
             channel.Publish(new List<Message> {message });
 
             Assert.Equal(HttpMethod.Post, LastRequest.Method);
-            Assert.Equal(String.Format("/channels/{0}/messages", channel.Name), LastRequest.Url);
+            Assert.Equal($"/channels/{channel.Name}/messages", LastRequest.Url);
         }
 
         [Fact]
@@ -88,7 +88,7 @@ namespace IO.Ably.Tests
             channel.History();
 
             Assert.Equal(HttpMethod.Get, LastRequest.Method);
-            Assert.Equal(String.Format("/channels/{0}/messages", channel.Name), LastRequest.Url);
+            Assert.Equal($"/channels/{channel.Name}/messages", LastRequest.Url);
         }
 
         [Fact]
@@ -138,17 +138,12 @@ namespace IO.Ably.Tests
         public void History_WithPartialResult_ReturnsCorrectFirstCurrentAndNextLinks()
         {
             //Arrange
-            var rest = GetRestClient();
+            var rest = GetRestClient(request => new AblyResponse()
+            {
+                Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
+                TextResponse = "[]"
+            }.ToTask());
 
-            rest.ExecuteHttpRequest = request =>
-                {
-                    var response = new AblyResponse()
-                        {
-                            Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
-                            TextResponse = "[]"
-                        };
-                    return response.ToTask();
-                };
             var channel = rest.Channels.Get("test");
 
             //Act
@@ -173,7 +168,7 @@ namespace IO.Ably.Tests
                 var response = new AblyResponse()
                 {
                     Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
-                    TextResponse = string.Format("[{0}]", JsonConvert.SerializeObject(message))
+                    TextResponse = $"[{JsonConvert.SerializeObject(message)}]"
                 };
                 return response.ToTask();
             };
@@ -209,7 +204,7 @@ namespace IO.Ably.Tests
             channel.Presence();
 
             Assert.Equal(HttpMethod.Get, LastRequest.Method);
-            Assert.Equal(String.Format("/channels/{0}/presence", channel.Name), LastRequest.Url);
+            Assert.Equal($"/channels/{channel.Name}/presence", LastRequest.Url);
         }
 
         public ChannelTests(ITestOutputHelper output) : base(output)
