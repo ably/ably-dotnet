@@ -28,6 +28,16 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        [Trait("spec", "RSA1")]
+        public async Task WithTlsTrueAndBasicAuth_ShouldWork()
+        {
+            var client = GetRestClient(setOptionsAction: options => { options.Tls = true; });
+            await client.Auth.Authorise();
+
+            //Success
+        }
+
+        [Fact]
         public void UsesKeyIdFromTheClient()
         {
             var client = GetRestClient();
