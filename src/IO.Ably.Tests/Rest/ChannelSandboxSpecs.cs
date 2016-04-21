@@ -65,7 +65,7 @@ namespace IO.Ably.Tests.Rest
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSL1g1b")]
-        public async Task WithMessageWithImplicitClientIdComingFromOptions_ReturnsMessageWithCorrectClientId(Protocol protocol)
+        public async Task WithImplicitClientIdComingFromOptions_ReturnsMessageWithCorrectClientId(Protocol protocol)
         {
             var message = new Message("test", "test") { clientId = null};
             var client = await GetRestClient(protocol, opts => opts.ClientId = "999");
@@ -76,7 +76,35 @@ namespace IO.Ably.Tests.Rest
             result.First().clientId.Should().Be("999");
         }
 
-        
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSL1g2")]
+        public async Task WithExplicitClientIdMatchingClientIdInOptions_ReturnsMessageWithCorrectClientId(Protocol protocol)
+        {
+            var message = new Message("test", "test") { clientId = "999" };
+            var client = await GetRestClient(protocol, opts => opts.ClientId = "999");
+            var channel = client.Channels.Get("persisted:test");
+            await channel.Publish(message);
+
+            var result = await channel.History();
+            result.First().clientId.Should().Be("999");
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSL1g3")]
+        [Trait("spec", "RSL1g4")]
+        public async Task WithExplicitClientIdNotMatchingClientIdInOptions_ReturnsMessageWithCorrectClientId(Protocol protocol)
+        {
+            var message = new Message("test", "test") { clientId = "999" };
+            var client = await GetRestClient(protocol, opts => opts.ClientId = "111");
+            var channel = client.Channels.Get("test");
+            var ex = await Assert.ThrowsAsync<AblyException>(() => channel.Publish(message));
+            Output.WriteLine("Error: " + ex.Message);
+
+            //Can publish further messages in the same channel
+            await channel.Publish("test", "test");
+        }
 
         [Theory]
         [ProtocolData]
