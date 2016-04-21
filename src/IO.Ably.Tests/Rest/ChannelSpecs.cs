@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Newtonsoft.Json;
 using Xunit;
 using IO.Ably.Encryption;
 using IO.Ably.Rest;
+using MsgPack.Serialization;
 using Xunit.Abstractions;
 using Xunit.Extensions;
 
@@ -143,6 +145,43 @@ namespace IO.Ably.Tests
                 var postedMessages = LastRequest.PostData as List<Message>;
                 postedMessages.Should().HaveCount(3);
                 postedMessages.ShouldBeEquivalentTo(new [] { message, message1, message2});
+            }
+
+            [Fact]
+            [Trait("spec", "RSL1e")]
+            public async Task WithNoData_ShouldOnlySendNameProperty()
+            {
+                var client = GetRestClient();
+
+                var messageWithNoData = new Message() { name = "NoData" };
+                await client.Channels.Get("nodata").Publish(messageWithNoData);
+
+                LastRequest.RequestBody.GetText().Should().Be("[{\"name\":\"NoData\"}]");
+            }
+
+            [Fact]
+            [Trait("spec", "RSL1e")]
+            public async Task WithNoName_ShouldOnlySendDataProperty()
+            {
+                var client = GetRestClient();
+
+                var messageWithNoName = new Message() { data = "NoName" };
+                await client.Channels.Get("noname").Publish(messageWithNoName);
+
+                
+                LastRequest.RequestBody.GetText().Should().Be("[{\"data\":\"NoName\"}]");
+            }
+
+            [Fact(Skip = "Currently the MsgPack serializer does not support skipping properties. Should be available in v0.7")]
+            [Trait("spec", "RSL1e")]
+            public async Task WithNoNameAndMsgPack_ShouldOnlySendDataProperty()
+            {
+                var client = GetRestClient(null, opts => opts.UseBinaryProtocol = true);
+
+                var messageWithNoName = new Message() { data = "NoName" };
+                await client.Channels.Get("noname").Publish(messageWithNoName);
+
+                Output.WriteLine("Message pack message: " + LastRequest.RequestBody.GetText());
             }
 
             [Fact]
