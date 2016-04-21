@@ -247,18 +247,25 @@ namespace IO.Ably.Tests
             }
         }
 
-
-        [Fact]
-        public async Task History_WithNoOptions_CreateGetRequestWithValidPath()
+        public class ChannelHistory : ChannelSpecs
         {
-            var rest = GetRestClient(request => "[]".ToAblyResponse());
-            var channel = rest.Channels.Get("Test");
+            [Fact]
+            [Trait("spec", "RSL2a")]
+            public async Task History_WithNoOptions_CreateGetRequestWithValidPath()
+            {
+                var rest = GetRestClient(request => "[]".ToAblyResponse());
+                var channel = rest.Channels.Get("Test");
 
-            var result = await channel.History();
-            result.Should().BeOfType<PaginatedResource<Message>>();
+                var result = await channel.History();
+                result.Should().BeOfType<PaginatedResource<Message>>();
 
-            Assert.Equal(HttpMethod.Get, LastRequest.Method);
-            Assert.Equal($"/channels/{channel.Name}/messages", LastRequest.Url);
+                Assert.Equal(HttpMethod.Get, LastRequest.Method);
+                Assert.Equal($"/channels/{channel.Name}/messages", LastRequest.Url);
+            }
+
+            public ChannelHistory(ITestOutputHelper output) : base(output)
+            {
+            }
         }
 
         [Fact]
