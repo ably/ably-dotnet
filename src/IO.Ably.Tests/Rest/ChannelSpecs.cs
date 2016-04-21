@@ -144,7 +144,7 @@ namespace IO.Ably.Tests
                 LastRequest.Url.Should().Be($"/channels/{channel.Name}/messages");
                 var postedMessages = LastRequest.PostData as List<Message>;
                 postedMessages.Should().HaveCount(3);
-                postedMessages.ShouldBeEquivalentTo(new [] { message, message1, message2});
+                postedMessages.ShouldBeEquivalentTo(new[] { message, message1, message2 });
             }
 
             [Fact]
@@ -168,7 +168,7 @@ namespace IO.Ably.Tests
                 var messageWithNoName = new Message() { data = "NoName" };
                 await client.Channels.Get("noname").Publish(messageWithNoName);
 
-                
+
                 LastRequest.RequestBody.GetText().Should().Be("[{\"data\":\"NoName\"}]");
             }
 
@@ -223,7 +223,7 @@ namespace IO.Ably.Tests
                 Assert.Equal("base64", postData.encoding);
             }
 
-            
+
 
             [Fact]
             public void Publish_WithOneMessage_AddsPayloadToRequest()
@@ -249,12 +249,13 @@ namespace IO.Ably.Tests
 
 
         [Fact]
-        public void History_WithNoOptions_CreateGetRequestWithValidPath()
+        public async Task History_WithNoOptions_CreateGetRequestWithValidPath()
         {
             var rest = GetRestClient(request => "[]".ToAblyResponse());
             var channel = rest.Channels.Get("Test");
 
-            channel.History();
+            var result = await channel.History();
+            result.Should().BeOfType<PaginatedResource<Message>>();
 
             Assert.Equal(HttpMethod.Get, LastRequest.Method);
             Assert.Equal($"/channels/{channel.Name}/messages", LastRequest.Url);
