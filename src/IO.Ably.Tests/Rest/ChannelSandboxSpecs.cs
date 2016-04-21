@@ -157,6 +157,16 @@ namespace IO.Ably.Tests.Rest
             secondPage.First().name.Should().Be("name9");
         }
 
+        [Theory]
+        [ProtocolData]
+        public async Task WithUnsupportedPayloadTypes_ShouldRaiseException(Protocol protocol)
+        {
+            var client = await GetRestClient(protocol);
+            var channel = client.Channels.Get("persisted:test_" + protocol);
+
+            await channel.Publish("int", 1);
+        }
+
         private object DecodeData(string data, string encoding)
         {
             if (encoding == "json")

@@ -75,8 +75,6 @@ namespace IO.Ably.Tests.MessageEncodes
                 var error = Assert.Throws<AblyException>(delegate { DecodePayload("test", "json"); });
                 error.ErrorInfo.message.Should().Be("Invalid Json data: 'test'");
             }
-
-
         }
 
         public class Encode : JsonEncoderTests
