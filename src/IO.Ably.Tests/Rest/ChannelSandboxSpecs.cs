@@ -31,7 +31,21 @@ namespace IO.Ably.Tests.Rest
             return new ChannelOptions(cipherParams);
         }
 
-        
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSL1c")]
+        [Trait("spec", "RSL1d")]
+        public async Task SendingAVeryLargeMessage_ShouldThrowErrorToIndicateSendingFailed(Protocol protocol)
+        {
+            var message = new Message();
+            message.name = "large";
+            message.data = new string('a', 100 * 1024 * 8); // 100KB
+            var client = await GetRestClient(protocol);
+            var ex = await Assert.ThrowsAsync<AblyException>(()
+                => client.Channels.Get("large").Publish(message));
+
+            Output.WriteLine("Error: " + ex.Message);
+        }
 
 
         [Theory]
