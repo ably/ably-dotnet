@@ -14,8 +14,8 @@ namespace IO.Ably
     /// <summary>Client for the ably rest API</summary>
     public sealed class AblyRest : AblyBase, IRestClient
     {
-        internal AblyHttpClient HttpClient { get; set; }
-        internal MessageHandler MessageHandler;
+        internal AblyHttpClient HttpClient { get; private set; }
+        internal MessageHandler MessageHandler { get; private set; }
 
         internal AblyAuth AblyAuth { get; private set; }
 
@@ -99,11 +99,10 @@ namespace IO.Ably
             }
             catch (AblyException ex)
             {
-                //TODO: Check with Matt about TokenRevoked and TokenExpired codes
                 if (ex.ErrorInfo.IsUnAuthorizedError
                     && ex.ErrorInfo.IsTokenError && AblyAuth.TokenRenewable)
                 {
-                    await AblyAuth.Authorise(null, null, true);
+                    await AblyAuth.Authorise(null, new AuthOptions() {Force = true});
                     await AblyAuth.AddAuthHeader(request);
                     return await ExecuteHttpRequest(request);
                 }

@@ -79,7 +79,7 @@ namespace IO.Ably.Types
         {
             if( null == messages )
                 return false;
-            return messages.Any( m => !m.isEmpty() );
+            return messages.Any( m => !m.IsEmpty() );
         }
 
         [OnSerializing]
@@ -91,7 +91,7 @@ namespace IO.Ably.Types
             // Filter out empty messages
             if( null == this.messages )
                 return;
-            this.messages = this.messages.Where( m => !m.isEmpty() ).ToArray();
+            this.messages = this.messages.Where( m => !m.IsEmpty() ).ToArray();
             if( this.messages.Length <= 0 )
                 this.messages = null;
         }

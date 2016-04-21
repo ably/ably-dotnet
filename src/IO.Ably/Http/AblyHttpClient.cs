@@ -13,7 +13,6 @@ namespace IO.Ably
 {
     internal class AblyHttpClient : IAblyHttpClient
     {
-        //TODO: MG make sure this handles the fallback hosts as well
         private bool IsDefaultHost => Options.Host == Defaults.RestHost;
 
         internal AblyHttpOptions Options { get; }
@@ -45,20 +44,20 @@ namespace IO.Ably
             var random = new Random();
 
             int currentTry = 0;
-            //var startTime = Config.Now();
+            var startTime = Config.Now();
             var numberOfRetries = IsDefaultHost ? Options.HttpMaxRetryCount : 1;
             var host = GetHost();
 
             while (currentTry < numberOfRetries)
             {
-                //    var requestTime = Config.Now();
-                //    if ((requestTime - startTime).TotalSeconds > Config.CommulativeFailedRequestTimeOutInSeconds)
-                //    {
-                //        Logger.Error("Cumulative retry timeout of {0}s was exceeded", Config.CommulativeFailedRequestTimeOutInSeconds);
-                //        throw new AblyException(
-                //            new ErrorInfo(string.Format("Commulative retry timeout of {0}s was exceeded.",
-                //                Config.CommulativeFailedRequestTimeOutInSeconds), 500, null));
-                //    }
+                var requestTime = Config.Now();
+                if ((requestTime - startTime).TotalSeconds >= Options.HttpMaxRetryDuration.TotalSeconds)
+                {
+                    Logger.Error("Cumulative retry timeout of {0}s was exceeded", Config.CommulativeFailedRequestTimeOutInSeconds);
+                    throw new AblyException(
+                        new ErrorInfo(string.Format("Commulative retry timeout of {0}s was exceeded.",
+                            Config.CommulativeFailedRequestTimeOutInSeconds), 500, null));
+                }
 
                 Logger.Debug("Executing request: " + request.Url + (currentTry > 0 ? $"try {currentTry}" : ""));
                 try
@@ -165,12 +164,23 @@ namespace IO.Ably
                 message.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
 
-            message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(request.Protocol)));
+            if(request.Protocol == Protocol.MsgPack)
+                message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(request.Protocol)));
+
+            //Always accept JSON
+            message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.Json))); 
             if (message.Method == HttpMethod.Post)
             {
-                var content = new ByteArrayContent(request.RequestBody);
-                content.Headers.ContentType = new MediaTypeHeaderValue(GetHeaderValue(request.Protocol));
-                message.Content = content;
+                if (request.PostParameters.Any() && request.RequestBody.Length == 0)
+                {
+                    message.Content = new FormUrlEncodedContent(request.PostParameters);
+                }
+                else
+                {
+                    var content = new ByteArrayContent(request.RequestBody);
+                    content.Headers.ContentType = new MediaTypeHeaderValue(GetHeaderValue(request.Protocol));
+                    message.Content = content;
+                }
             }
 
             return message;
@@ -223,8 +233,8 @@ namespace IO.Ably
 
         private string GetQuery(AblyRequest request)
         {
-            string query = string.Join("&", request.QueryParameters.Select(x => String.Format("{0}={1}", x.Key, x.Value)));
-            if (StringExtensions.IsNotEmpty(query))
+            string query = string.Join("&", request.QueryParameters.Select(x => $"{x.Key}={x.Value}"));
+            if (query.IsNotEmpty())
                 return "?" + query;
             return string.Empty;
         }

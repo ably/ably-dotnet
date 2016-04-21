@@ -1,3 +1,4 @@
+using System;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,8 @@ namespace IO.Ably
     /// Assert.Equal("{ \"first\": [ \"*\" ], \"second\": [ \"publish\" ] }", capability.ToJson());
     /// </code>
     /// </summary>
+    /// 
+    
     public class Capability
     {
         /// <summary>
@@ -39,10 +42,21 @@ namespace IO.Ably
         {
             Resources = new List<CapabilityResource>();
 
-            var json = JObject.Parse(capabilityString);
-            foreach(JProperty child in json.Children())
+            if (capabilityString.IsNotEmpty())
             {
-                Resources.Add(GetResource(child));
+                if (capabilityString.IsJson())
+                {
+                    var json = JObject.Parse(capabilityString);
+                    foreach (var jToken in json.Children())
+                    {
+                        var child = (JProperty) jToken;
+                        Resources.Add(GetResource(child));
+                    }
+                }
+                else
+                {
+                    throw new ArgumentException("Capability string is not valid json", nameof(capabilityString));
+                }
             }
         }
 

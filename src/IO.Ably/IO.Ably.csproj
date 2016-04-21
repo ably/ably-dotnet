@@ -43,7 +43,7 @@
     <Compile Include="AblyEnvironment.cs" />
     <Compile Include="AblyException.cs" />
     <Compile Include="AblyRealtime.cs" />
-    <Compile Include="AblyTokenAuth.cs" />
+    <Compile Include="AblyAuth.cs" />
     <Compile Include="ApiKey.cs" />
     <Compile Include="AuthMethod.cs" />
     <Compile Include="AuthOptions.cs" />

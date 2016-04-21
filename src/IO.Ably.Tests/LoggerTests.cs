@@ -17,7 +17,7 @@ namespace IO.Ably.AcceptanceTests
         public string LastMessage { get; set; }
     }
 
-    public class LoggerTests
+    public class LoggerTests : IDisposable
     {
         [Fact]
         public void TestLogger()
@@ -62,6 +62,12 @@ namespace IO.Ably.AcceptanceTests
                 // Revert the level
                 Logger.LogLevel = Defaults.DefaultLogLevel;
             }
+        }
+
+
+        public void Dispose()
+        {
+            Logger.LoggerSink = new DefaultLoggerSink();
         }
     }
 }

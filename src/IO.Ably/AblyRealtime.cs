@@ -89,7 +89,7 @@ namespace IO.Ably
         /// <summary>Request auth token, set options</summary>
         async Task InitTokenAuth()
         {
-            await Auth.Authorise(null, null, false); //This sets current token
+            await Auth.Authorise(); //This sets current token
 
             if (Auth.HasValidToken())
             {

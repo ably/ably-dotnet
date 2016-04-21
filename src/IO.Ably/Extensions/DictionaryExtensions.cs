@@ -19,13 +19,21 @@ namespace IO.Ably
             return defaultValue;
         }
         
-        public static void Merge<TKey, TValue>(this IDictionary<TKey, TValue> first, IDictionary<TKey, TValue> second)
+        public static Dictionary<string, string> Merge(this Dictionary<string, string> first, Dictionary<string, string> second)
         {
-            if (second == null) return;
-            if (first == null) first = new Dictionary<TKey, TValue>();
-            foreach (var item in second)
-                if (!first.ContainsKey(item.Key))
-                    first.Add(item.Key, item.Value);
+            if (second == null) return first;
+            if (first == null) first = new Dictionary<string,string>();
+            var result = first.ToDictionary(x => x.Key, x => x.Value);
+            foreach(var item in second)
+            {
+                if (result.Keys.Any(x => string.Equals(x, item.Key, StringComparison.InvariantCultureIgnoreCase)) ==
+                    false)
+                {
+                    result.Add(item.Key, item.Value);
+                }
+            }
+
+            return result;
         }
     }
 }

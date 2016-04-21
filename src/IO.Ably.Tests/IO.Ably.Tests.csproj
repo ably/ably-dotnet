@@ -101,12 +101,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AblyResponseTests.cs" />
-    <Compile Include="AuthCreateTokenRequestAcceptanceTests.cs" />
-    <Compile Include="AuthOptionsTests.cs" />
-    <Compile Include="AuthRequestTokenAcceptanceTests.cs" />
+    <Compile Include="AuthTests\AuthOptionsTests.cs" />
+    <Compile Include="AuthTests\AuthoriseTests.cs" />
+    <Compile Include="AuthTests\AuthSandboxSpecs.cs" />
+    <Compile Include="AuthTests\RequestTokenTests.cs" />
     <Compile Include="CapabilityTests.cs" />
     <Compile Include="ChannelTests.cs" />
-    <Compile Include="AuthorisationTests.cs" />
+    <Compile Include="AuthTests\AuthorisationTests.cs" />
     <Compile Include="CipherParamsTests.cs" />
     <Compile Include="ClientConnectionAcceptanceTests.cs" />
     <Compile Include="DataRequestQueryParseFacts.cs" />
@@ -150,8 +151,10 @@
     <Compile Include="Rest\RestSpecs.cs" />
     <Compile Include="ApiKeyTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rest\SandboxSpec.cs" />
     <Compile Include="Rest\StatsSpecs.cs" />
     <Compile Include="StatsParsingTests.cs" />
+    <Compile Include="TokenParamsTests.cs" />
     <Compile Include="TokenRequestDataTests.cs" />
     <Compile Include="TokenDetailsTests.cs" />
   </ItemGroup>

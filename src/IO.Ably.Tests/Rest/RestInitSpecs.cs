@@ -4,12 +4,14 @@ using FluentAssertions;
 using IO.Ably.Auth;
 using IO.Ably.Transport;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
     public class RestInitSpecs : AblySpecs
     {
         [Fact]
+        [Trait("spec", "RSA2")]
         public void Init_WithKeyAndNoClientId_SetsAuthMethodToBasic()
         {
             var client = new AblyRest(ValidKey);
@@ -37,10 +39,11 @@ namespace IO.Ably.Tests
             [Fact]
             public void WithKeyNoClientIdAndAuthToken_ShouldSetCurrentToken()
             {
-                ClientOptions options = new ClientOptions { Key = ValidKey, ClientId = "123", Token = "222" };
+                ClientOptions options = new ClientOptions { Key = ValidKey, ClientId = "123", Token = "blah"};
                 var client = new AblyRest(options);
 
-                Assert.Equal(options.Token, client.AblyAuth.CurrentToken.Token);
+                client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
+                client.AblyAuth.CurrentToken.Token.Should().Be("blah");
             }
 
             [Fact]
@@ -48,6 +51,7 @@ namespace IO.Ably.Tests
             {
                 var client = new AblyRest(opts =>
                 {
+                    opts.Key = "test.best:rest";
                     opts.Token = "blah";
                     opts.ClientId = "123";
                 });
@@ -60,6 +64,7 @@ namespace IO.Ably.Tests
             {
                 var client = new AblyRest(opts =>
                 {
+                    opts.Key = "test.best:rest";
                     opts.Token = "blah";
                 });
 
@@ -71,6 +76,7 @@ namespace IO.Ably.Tests
             {
                 var client = new AblyRest(opts =>
                 {
+                    opts.Key = "test.best:rest";
                     opts.TokenDetails = new TokenDetails("123");
                 });
 
@@ -82,6 +88,7 @@ namespace IO.Ably.Tests
             {
                 var client = new AblyRest(opts =>
                 {
+                    opts.Key = "test.best:rest";
                     opts.AuthUrl = new Uri("http://authUrl");
                 });
 
@@ -156,6 +163,10 @@ namespace IO.Ably.Tests
             }
                 );
             client.HttpClient.Options.Port.Should().Be(111);
+        }
+
+        public RestInitSpecs(ITestOutputHelper output) : base(output)
+        {
         }
     }
 }

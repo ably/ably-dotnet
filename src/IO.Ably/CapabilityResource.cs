@@ -22,10 +22,7 @@ namespace IO.Ably
             AllowedOperations = new SortedSet<string>();
         }
 
-        public bool AllowsAll
-        {
-            get { return AllowedOperations.Contains(AllowedOps.All); }
-        }
+        public bool AllowsAll => AllowedOperations.Contains(AllowedOps.All);
 
         public void AllowAll()
         {

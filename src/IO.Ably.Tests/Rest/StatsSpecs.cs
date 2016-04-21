@@ -1,6 +1,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 using static Xunit.Assert;
 
 namespace IO.Ably.Tests
@@ -168,6 +169,10 @@ namespace IO.Ably.Tests
             await ExecuteStatsQuery(query);
 
             LastRequest.AssertContainsParameter("by", statsBy.GetValueOrDefault(StatsBy.Minute).ToString().ToLower());
+        }
+
+        public StatsSpecs(ITestOutputHelper output) : base(output)
+        {
         }
     }
 }

@@ -34,9 +34,11 @@ namespace IO.Ably
         public string Token { get; set; }
         public TokenDetails TokenDetails { get; set; }
 
+        public bool Force { get; set; }
+
         public Dictionary<string, string> AuthHeaders { get; set; }
         public Dictionary<string, string> AuthParams { get; set; }
-        public bool QueryTime { get; set; }
+        public bool? QueryTime { get; set; }
         public bool? UseTokenAuth { get; set; }
 
         /// <summary>
@@ -64,11 +66,13 @@ namespace IO.Ably
         {
             if (AuthCallback == null) AuthCallback = defaults.AuthCallback;
             if (AuthUrl == null) AuthUrl = defaults.AuthUrl;
+            if (Token.IsEmpty()) Token = defaults.Token;
+            if (TokenDetails == null) TokenDetails = defaults.TokenDetails;
             if (AuthHeaders.Count == 0) AuthHeaders = defaults.AuthHeaders;
             if (AuthParams.Count == 0) AuthParams = defaults.AuthParams;
             if (Key.IsEmpty()) Key = defaults.Key;
             if (UseTokenAuth.HasValue == false) UseTokenAuth = defaults.UseTokenAuth;
-            QueryTime = QueryTime || defaults.QueryTime;
+            if(QueryTime.HasValue == false) QueryTime = defaults.QueryTime;
             return this;
         }
 

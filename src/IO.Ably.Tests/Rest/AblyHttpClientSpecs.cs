@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC7")]
         public void WithSecureTrue_CreatesSecureRestUrlsWithDefaultHost()
         {
-            var client = new AblyHttpClient(new AblyHttpOptions() { IsSecure = true});
+            var client = new AblyHttpClient(new AblyHttpOptions() { IsSecure = true });
 
             var url = client.GetRequestUrl(new AblyRequest("/test", HttpMethod.Get));
 
@@ -38,7 +39,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC7a")]
         public async Task WhenCallingUrl_AddsDefaultAblyHeader()
         {
-            var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success")};
+            var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
             var handler = new FakeHttpMessageHandler(response);
             var client = new AblyHttpClient(new AblyHttpOptions(), handler);
 
@@ -46,6 +47,23 @@ namespace IO.Ably.Tests
             var values = handler.LastRequest.Headers.GetValues("X-Ably-Version");
             values.Should().NotBeEmpty();
             values.First().Should().Be("0.8");
+        }
+
+        [Fact]
+        public async Task WhenCallingUrlWithPostParamsAndEmptyBody_PassedTheParamsAsUrlEncodedValues()
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
+            var handler = new FakeHttpMessageHandler(response);
+            var client = new AblyHttpClient(new AblyHttpOptions(), handler);
+
+
+            var ablyRequest = new AblyRequest("/test", HttpMethod.Post);
+            ablyRequest.PostParameters = new Dictionary<string, string>() { { "test", "test" }, { "best", "best" } };
+
+            await client.Execute(ablyRequest);
+            var content = handler.LastRequest.Content;
+            var formContent = content as FormUrlEncodedContent;
+            formContent.Should().NotBeNull("Content should be of type FormUrlEncodedContent");
         }
 
         public class IsRetriableResponseSpecs
@@ -92,8 +110,5 @@ namespace IO.Ably.Tests
                 _client.IsRetryableResponse(response).Should().Be(expected);
             }
         }
-
-        
-
     }
 }

@@ -20,7 +20,7 @@ namespace IO.Ably
         public const int Port = 80;
         public const int TlsPort = 443;
         // Buffer in seconds before a token is considered unusable
-        public const int TokenExpireBufer = 15;
+        public const int TokenExpireBufferInSeconds = 15;
         public static readonly string[] SupportedTransports = new string[]{ "web_socket" };
         public static readonly Dictionary<string, ITransportFactory> TransportFactories;
 

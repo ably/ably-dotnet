@@ -3,12 +3,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.AcceptanceTests;
 using IO.Ably.Auth;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
@@ -129,6 +129,9 @@ namespace IO.Ably.Tests
 
         public class WithInvalidToken : MockHttpSpecs
         {
+            private TokenDetails _returnedDummyTokenDetails;
+            private bool _firstAttempt = true;
+
             [Theory]
             [InlineData(Defaults.TokenErrorCodesRangeStart)]
             [InlineData(Defaults.TokenErrorCodesRangeStart + 1)]
@@ -136,14 +139,29 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSC10")]
             public async Task WhenErrorCodeIsTokenSpecific_ShouldAutomaticallyTryToRenewTokenIfRequestFails(int errorCode)
             {
+                base.Now = DateTimeOffset.Now;
                 var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
+                //Had to inline the method otherwise the tests intermittently fail.
                 bool firstAttempt = true;
-                var client = GetConfiguredRestClient(errorCode, tokenDetails);
+                var client = GetRestClient(request =>
+                {
+                    if (request.Url.Contains("/keys"))
+                    {
+                        return _returnedDummyTokenDetails.ToJson().ToAblyResponse();
+                    }
+
+                    if (firstAttempt)
+                    {
+                        firstAttempt = false;
+                        throw new AblyException(new ErrorInfo("", errorCode, HttpStatusCode.Unauthorized));
+                    }
+                    return AblyResponse.EmptyResponse.ToTask();
+                }, opts => opts.TokenDetails = tokenDetails);
 
                 await client.Stats();
 
-                client.Auth.CurrentToken.Expires.Should().BeCloseTo(Now.AddDays(1));
-                client.Auth.CurrentToken.ClientId.Should().Be("123");
+                client.Auth.CurrentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires);
+                client.Auth.CurrentToken.ClientId.Should().Be(_returnedDummyTokenDetails.ClientId);
             }
 
             [Fact]
@@ -156,6 +174,7 @@ namespace IO.Ably.Tests
 
             [Fact]
             [Trait("spec", "RSC14c")]
+            [Trait("spec", "RSC14d")]
             public async Task WhenClientHasNoMeansOfRenewingToken_ShouldThrow()
             {
                 var client = GetConfiguredRestClient(Defaults.TokenErrorCodesRangeStart, null, useApiKey: false);
@@ -165,17 +184,16 @@ namespace IO.Ably.Tests
 
             private AblyRest GetConfiguredRestClient(int errorCode, TokenDetails tokenDetails, bool useApiKey = true)
             {
-                bool firstAttempt = true;
                 var client = GetRestClient(request =>
                 {
                     if (request.Url.Contains("/keys"))
                     {
-                        return new TokenDetails("123") { Expires = Now.AddDays(1), ClientId = "123" }.ToJson().ToAblyResponse();
+                        return _returnedDummyTokenDetails.ToJson().ToAblyResponse();
                     }
 
-                    if (firstAttempt)
+                    if (_firstAttempt)
                     {
-                        firstAttempt = false;
+                        _firstAttempt = false;
                         throw new AblyException(new ErrorInfo("", errorCode, HttpStatusCode.Unauthorized));
                     }
                     return AblyResponse.EmptyResponse.ToTask();
@@ -189,13 +207,18 @@ namespace IO.Ably.Tests
                 });
                 return client;
             }
+
+            public WithInvalidToken(ITestOutputHelper output) : base(output)
+            {
+                _returnedDummyTokenDetails = new TokenDetails("123") {Expires = Now.AddDays(1), ClientId = "123"};
+            }
         }
 
         [Trait("spec", "RSC11")]
         public class HostSpecs : AblySpecs
         {
             private FakeHttpMessageHandler _handler;
-            public HostSpecs()
+            public HostSpecs(ITestOutputHelper output) : base(output)
             {
                 var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("12345678") };
                 _handler = new FakeHttpMessageHandler(response);
@@ -272,6 +295,7 @@ namespace IO.Ably.Tests
 
         [Fact]
         [Trait("spec", "RSC14a")]
+        [Trait("spec", "RSA11")]
         public async Task AddAuthHeader_WithBasicAuthentication_AddsCorrectAuthorisationHeader()
         {
             //Arrange
@@ -289,11 +313,51 @@ namespace IO.Ably.Tests
             authHeader.Value.Should().Be(expectedValue);
         }
 
+        [Fact]
+        [Trait("spec", "RSA3b")]
+        public async Task AddAuthHeader_WithTokenAuthentication_AddsCorrectAuthorisationHeader()
+        {
+            //Arrange
+            var tokenValue = "TokenValue";
+            var rest = new AblyRest(opts => opts.Token = tokenValue);
+            var request = new AblyRequest("/test", HttpMethod.Get, Protocol.Json);
+            var expectedValue = "Bearer " + tokenValue.ToBase64();
+
+            //Act
+            await rest.AblyAuth.AddAuthHeader(request);
+
+            //Assert
+            var authHeader = request.Headers.First();
+            authHeader.Key.Should().Be("Authorization");
+            authHeader.Value.Should().Be(expectedValue);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        [Trait("spec", "RSA3a")]
+        public async Task TokenAuthCanBeUsedOverHttpAndHttps(bool tls)
+        {
+            //Arrange
+            var tokenValue = "TokenValue";
+            var rest = new AblyRest(opts =>
+            {
+                opts.Token = tokenValue;
+                opts.Tls = tls;
+            });
+            var request = new AblyRequest("/test", HttpMethod.Get, Protocol.Json);
+
+            //Act
+            await rest.AblyAuth.AddAuthHeader(request);
+            
+            // If it throws the test will fail
+        }
+
         public class FallbackSpecs : AblySpecs
         {
             private FakeHttpMessageHandler _handler;
             private HttpResponseMessage _response;
-            public FallbackSpecs()
+            public FallbackSpecs(ITestOutputHelper output) : base(output)
             {
                 _response = new HttpResponseMessage() { Content = new StringContent("1234")};
                 _handler = new FakeHttpMessageHandler(_response);
@@ -351,7 +415,7 @@ namespace IO.Ably.Tests
             public async Task ShouldAttemptFallbackHostsInRandomOrder()
             {
                 _response.StatusCode = HttpStatusCode.BadGateway;
-                var client = CreateClient(null);
+                var client = CreateClient(options => options.HttpMaxRetryCount = 5); //Increasing the max try to make the randomness easier to test
 
                 var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
                 var firstAttemptHosts = _handler.Requests.Select(x => x.RequestUri.Host).ToList();
@@ -359,7 +423,6 @@ namespace IO.Ably.Tests
                 ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
                 var secondAttemptHosts = _handler.Requests.Select(x => x.RequestUri.Host).ToList();
 
-                //TODO: Find if there is a better way to assert differnt order
                 bool sameOrder = true;
                 for (int i = 0; i < firstAttemptHosts.Count; i++)
                 {
@@ -382,20 +445,38 @@ namespace IO.Ably.Tests
                 _handler.Requests.Count.Should().Be(Defaults.FallbackHosts.Length + 1); //First attempt is with rest.ably.io
             }
 
+            /// <summary>
+            /// (TO3l6) httpMaxRetryDuration integer – default 10,000 (10s). Max elapsed time in which fallback host retries for HTTP requests will be attempted i.e. if the first default host attempt takes 5s, and then the subsequent fallback retry attempt takes 7s, no further fallback host attempts will be made as the total elapsed time of 12s exceeds the default 10s limit
+            /// </summary>
+            [Fact]
+            [Trait("spec", "TO3l6")]
+            public async Task ShouldOnlyRetryFallbackHostWhileTheTimeTakenIsLessThanHttpMaxRetryDuration()
+            {
+
+                var options = new ClientOptions(ValidKey) { HttpMaxRetryDuration = TimeSpan.FromSeconds(3)};
+                var client = new AblyRest(options);
+                _response.StatusCode =HttpStatusCode.BadGateway;
+                var handler = new FakeHttpMessageHandler(_response,
+                    () =>
+                    {
+                        //Tweak time to pretend 2 seconds have ellapsed
+                        Now += TimeSpan.FromSeconds(2);
+                    });
+
+                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(3), handler);
+
+                var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+
+                handler.Requests.Count.Should().Be(2); //First attempt is with rest.ably.io
+            }
+
             private static async Task MakeAnyRequest(AblyRest client)
             {
                 await client.Channels.Get("boo").Publish("boo", "baa");
             }
         }
 
-        [Fact]
-        [Trait("spec", "RSC17")]
-        public void WhenClientIdInOptions_ShouldPassClientIdtoAblyAuth()
-        {
-            var options = new ClientOptions(ValidKey) { ClientId = "123"};
-            var client = new AblyRest(options);
-            client.AblyAuth.Options.Should().BeSameAs(options);
-        }
+       
 
         [Fact]
         public async Task Init_WithCallback_ExecutesCallbackOnFirstRequest()
@@ -508,6 +589,10 @@ namespace IO.Ably.Tests
             var channel = rest.Channels.Get("Test");
 
             Assert.Equal("Test", channel.Name);
+        }
+
+        public RestSpecs(ITestOutputHelper output) : base(output)
+        {
         }
     }
 }

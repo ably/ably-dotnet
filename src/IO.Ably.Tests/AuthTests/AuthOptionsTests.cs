@@ -5,6 +5,7 @@ using Xunit;
 
 namespace IO.Ably.Tests
 {
+    [Trait("spec", "RSA8e")]
     public class AuthOptionsMergeTests
     {
         public AuthOptions GetBlankOptions()

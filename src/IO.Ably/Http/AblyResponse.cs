@@ -11,11 +11,11 @@ namespace IO.Ably
 
     }
 
-
     internal enum ResponseType
     {
         Json,
-        Binary
+        Binary,
+        Text
     }
 
     internal class AblyResponse
@@ -39,16 +39,31 @@ namespace IO.Ably
         internal AblyResponse(string encoding, string contentType, byte[] body)
         {
             ContentType = contentType;
-            Type = contentType.ToLower() == "application/json" ? ResponseType.Json : ResponseType.Binary;
+            Type = GetResponseType(contentType);
             Encoding = encoding.IsNotEmpty() ? encoding : "utf-8";
 
-            if (Type == ResponseType.Json)
+            if (Type == ResponseType.Json || Type == ResponseType.Text)
             {
                 TextResponse = System.Text.Encoding.GetEncoding(Encoding).GetString(body, 0, body.Length);
             }
             Body = body;
         }
 
-    
+        private static ResponseType GetResponseType(string contentType)
+        {
+            if (contentType == null)
+                return ResponseType.Binary;
+
+            switch (contentType.ToLower())
+            {
+                case "application/json":
+                    return ResponseType.Json;
+                case "text/plain":
+                    return ResponseType.Text;
+                default:
+                    return ResponseType.Binary;
+            }
+        }
+
     }
 }
