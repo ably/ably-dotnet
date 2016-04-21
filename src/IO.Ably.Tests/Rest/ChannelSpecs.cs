@@ -172,6 +172,19 @@ namespace IO.Ably.Tests
                 LastRequest.RequestBody.GetText().Should().Be("[{\"data\":\"NoName\"}]");
             }
 
+            [Fact]
+            [Trait("spec", "RSL1e")]
+            public async Task WithBlankMessage_ShouldSendBlankMessage()
+            {
+                var client = GetRestClient();
+
+                var messageWithNoName = new Message();
+                await client.Channels.Get("blank-message").Publish(messageWithNoName);
+
+
+                LastRequest.RequestBody.GetText().Should().Be("[{}]");
+            }
+
             [Fact(Skip = "Currently the MsgPack serializer does not support skipping properties. Should be available in v0.7")]
             [Trait("spec", "RSL1e")]
             public async Task WithNoNameAndMsgPack_ShouldOnlySendDataProperty()
