@@ -31,7 +31,7 @@ namespace IO.Ably.Tests
             var channel2 = client.Channels.Get("test1");
 
             client.Channels.Should().HaveCount(2);
-            client.Channels.ShouldBeEquivalentTo(new [] { channel1, channel2 });
+            client.Channels.ShouldBeEquivalentTo(new[] { channel1, channel2 });
         }
 
         [Fact]
@@ -94,6 +94,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        [Trait("spec", "RSN4a")]
         public void ShouldBeAbleToReleaseAChannelSoItIsRemovedFromTheChannelsCollection()
         {
             var client = GetRestClient();
@@ -103,78 +104,104 @@ namespace IO.Ably.Tests
             client.Channels.Should().BeEmpty();
         }
 
-        [Fact]
-        public void Publish_CreatesPostRequestWithValidPath()
+        public class ChannelPublish : ChannelSpecs
         {
-            var rest = GetRestClient();
-            var channel = rest.Channels.Get("Test");
-            channel.Publish("event", "data");
+            [Fact]
+            [Trait("spec", "RSL1a")]
+            [Trait("spec", "RSL1b")]
+            public void WithNameAndData_CreatesASinglePostRequestWithValidPath()
+            {
+                var rest = GetRestClient();
+                var channel = rest.Channels.Get("Test");
+                channel.Publish("event", "data");
 
-            Assert.Equal(HttpMethod.Post, LastRequest.Method);
-            Assert.Equal($"/channels/{channel.Name}/messages", LastRequest.Url);
+                LastRequest.Method.Should().Be(HttpMethod.Post);
+                LastRequest.Url.Should().Be($"/channels/{channel.Name}/messages");
+                var messages = LastRequest.PostData as List<Message>;
+                messages.Should().HaveCount(1);
+                messages.First().data.Should().Be("data");
+                messages.First().name.Should().Be("event");
+                Requests.Should().HaveCount(1);
+            }
+
+            [Fact]
+            [Trait("spec", "RSL1a")]
+            [Trait("spec", "RSL1c")]
+            public void WithMessagesList_CreatesOnePostRequestToMessagesRoute()
+            {
+                var rest = GetRestClient();
+                var channel = rest.Channels.Get("Test");
+                var message = new Message() { name = "event", data = "data" };
+                var message1 = new Message() { name = "event1", data = "data" };
+                var message2 = new Message() { name = "event2", data = "data" };
+                channel.Publish(new List<Message> { message, message1, message2 });
+
+                Requests.Count.Should().Be(1);
+
+                LastRequest.Method.Should().Be(HttpMethod.Post);
+                LastRequest.Url.Should().Be($"/channels/{channel.Name}/messages");
+                var postedMessages = LastRequest.PostData as List<Message>;
+                postedMessages.Should().HaveCount(3);
+                postedMessages.ShouldBeEquivalentTo(new [] { message, message1, message2});
+            }
+
+            [Fact]
+            public void Publish_WithNameAndData_AddsPayloadToRequest()
+            {
+                var rest = GetRestClient();
+                var channel = rest.Channels.Get("Test");
+                channel.Publish("event", "data");
+
+                Assert.IsType<List<Message>>(LastRequest.PostData);
+                var messages = LastRequest.PostData as List<Message>;
+                var data = messages.First();
+                Assert.Equal("data", data.data);
+                Assert.Equal("event", data.name);
+            }
+
+            [Fact]
+            public void Publish_WithBinaryArrayData_AddsBase64EncodingToRequest()
+            {
+                var rest = GetRestClient();
+                var channel = rest.Channels.Get("Test");
+                channel.Publish("event", new byte[] { 1, 2 });
+
+                Assert.IsType<List<Message>>(LastRequest.PostData);
+                var postData = (LastRequest.PostData as IList<Message>).First();
+                Assert.Equal("base64", postData.encoding);
+            }
+
+            
+
+            [Fact]
+            public void Publish_WithOneMessage_AddsPayloadToRequest()
+            {
+                var rest = GetRestClient();
+                var channel = rest.Channels.Get("Test");
+
+                var message = new Message() { name = "event", data = "data" };
+                channel.Publish(new List<Message> { message });
+
+                var data = LastRequest.PostData as IEnumerable<Message>;
+                Assert.NotNull(data);
+                Assert.Equal(1, data.Count());
+                var payloadMessage = data.First();
+                Assert.Equal("data", payloadMessage.data);
+                Assert.Equal("event", payloadMessage.name);
+            }
+
+            public ChannelPublish(ITestOutputHelper output) : base(output)
+            {
+            }
         }
 
-        [Fact]
-        public void Publish_WithNameAndData_AddsPayloadToRequest()
-        {
-            var rest = GetRestClient();
-            var channel = rest.Channels.Get("Test");
-            channel.Publish("event", "data");
-
-            Assert.IsType<List<Message>>(LastRequest.PostData);
-            var messages = LastRequest.PostData as List<Message>;
-            var data = messages.First();
-            Assert.Equal("data", data.data);
-            Assert.Equal("event", data.name);
-        }
-
-        [Fact]
-        public void Publish_WithBinaryArrayData_AddsBase64EncodingToRequest()
-        {
-            var rest = GetRestClient();
-            var channel = rest.Channels.Get("Test");
-            channel.Publish("event", new byte[] { 1, 2 });
-
-            Assert.IsType<List<Message>>(LastRequest.PostData);
-            var postData = (LastRequest.PostData as IList<Message>).First();
-            Assert.Equal("base64", postData.encoding);
-        }
-
-        [Fact]
-        public void Publish_WithMessages_CreatesPostRequestToMessagesRoute()
-        {
-            var rest = GetRestClient();
-            var channel = rest.Channels.Get("Test");
-            var message = new Message() { name = "event" , data = "data"};
-            channel.Publish(new List<Message> {message });
-
-            Assert.Equal(HttpMethod.Post, LastRequest.Method);
-            Assert.Equal($"/channels/{channel.Name}/messages", LastRequest.Url);
-        }
-
-        [Fact]
-        public void Publish_WithOneMessage_AddsPayloadToRequest()
-        {
-            var rest = GetRestClient();
-            var channel = rest.Channels.Get("Test");
-
-            var message = new Message() { name = "event", data = "data" };
-            channel.Publish(new List<Message> { message });
-
-            var data = LastRequest.PostData as IEnumerable<Message>;
-            Assert.NotNull(data);
-            Assert.Equal(1, data.Count());
-            var payloadMessage = data.First();
-            Assert.Equal("data", payloadMessage.data);
-            Assert.Equal("event", payloadMessage.name);
-        }
 
         [Fact]
         public void History_WithNoOptions_CreateGetRequestWithValidPath()
         {
             var rest = GetRestClient(request => "[]".ToAblyResponse());
             var channel = rest.Channels.Get("Test");
-            
+
             channel.History();
 
             Assert.Equal(HttpMethod.Get, LastRequest.Method);
@@ -182,7 +209,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-         public void History_WithOptions_AddsParametersToRequest()
+        public void History_WithOptions_AddsParametersToRequest()
         {
             var rest = GetRestClient(request => "[]".ToAblyResponse());
 
@@ -221,7 +248,7 @@ namespace IO.Ably.Tests
             var channel = rest.Channels.Get("Test");
             var query = new DataRequestQuery() { Start = start, End = end };
 
-             Assert.Throws<AblyException>(delegate { channel.History(query); });
+            Assert.Throws<AblyException>(delegate { channel.History(query); });
         }
 
         [Fact]
@@ -250,7 +277,7 @@ namespace IO.Ably.Tests
         {
             //Arrange
             var rest = GetRestClient();
-            var message = new Message() {name = "test", data = "Test"};
+            var message = new Message() { name = "test", data = "Test" };
             var defaultParams = Crypto.GetDefaultParams();
 
             rest.ExecuteHttpRequest = request =>
@@ -278,9 +305,9 @@ namespace IO.Ably.Tests
         {
             get
             {
-                yield return new object[] { new DateTimeOffset(1969, 1, 1,0,0,0,TimeSpan.Zero), DateTimeOffset.Now };
-                yield return new object[] { new DateTimeOffset(2000, 1, 1, 0,0,0,TimeSpan.Zero), new DateTimeOffset(1999, 12, 31,0,0,0,TimeSpan.Zero) };
-                yield return new object[] { null, new DateTimeOffset(1969, 12, 31, 0,0,0,TimeSpan.Zero) };
+                yield return new object[] { new DateTimeOffset(1969, 1, 1, 0, 0, 0, TimeSpan.Zero), DateTimeOffset.Now };
+                yield return new object[] { new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero), new DateTimeOffset(1999, 12, 31, 0, 0, 0, TimeSpan.Zero) };
+                yield return new object[] { null, new DateTimeOffset(1969, 12, 31, 0, 0, 0, TimeSpan.Zero) };
             }
         }
 
