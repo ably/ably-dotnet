@@ -249,44 +249,82 @@ namespace IO.Ably.Tests
 
         public class ChannelHistory : ChannelSpecs
         {
+            private AblyRest _client;
+            private IChannel _channel;
+
             [Fact]
             [Trait("spec", "RSL2a")]
-            public async Task History_WithNoOptions_CreateGetRequestWithValidPath()
+            public async Task WithNoOptions_CreateGetRequestWithValidPath()
             {
-                var rest = GetRestClient(request => "[]".ToAblyResponse());
-                var channel = rest.Channels.Get("Test");
+                var result = await _channel.History();
 
-                var result = await channel.History();
                 result.Should().BeOfType<PaginatedResource<Message>>();
-
                 Assert.Equal(HttpMethod.Get, LastRequest.Method);
-                Assert.Equal($"/channels/{channel.Name}/messages", LastRequest.Url);
+                Assert.Equal($"/channels/{_channel.Name}/messages", LastRequest.Url);
+            }
+
+            [Fact]
+            [Trait("spec", "RSL2b")]
+            public async Task WithOptions_AddsParametersToRequest()
+            {
+                var query = new DataRequestQuery();
+                var now = DateTimeOffset.Now;
+                query.Start = now.AddHours(-1);
+                query.End = now;
+                query.Direction = QueryDirection.Forwards;
+                query.Limit = 1000;
+                await _channel.History(query);
+
+                LastRequest.AssertContainsParameter("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
+                LastRequest.AssertContainsParameter("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
+                LastRequest.AssertContainsParameter("direction", query.Direction.ToString().ToLower());
+                LastRequest.AssertContainsParameter("limit", query.Limit.Value.ToString());
+            }
+
+            [Fact]
+            [Trait("spec", "RSL2b")]
+            public async Task WithStartBeforeEnd_Throws()
+            {
+                var ex = Assert.ThrowsAsync<AblyException>(() => 
+                        _channel.History(new DataRequestQuery() {Start = Now, End = Now.AddHours(-1)}));
+            }
+
+            [Fact]
+            [Trait("spec", "RSL2b2")]
+            public async Task WithoutDirection_ShouldDefaultToBackwards()
+            {
+                await _channel.History();
+
+                LastRequest.AssertContainsParameter("direction", QueryDirection.Backwards.ToString().ToLower());
+            }
+
+            [Fact]
+            [Trait("spec", "RSL2b3")]
+            public async Task WithOutLimit_ShouldUseDefaultOf100()
+            {
+                await _channel.History();
+
+                LastRequest.AssertContainsParameter("limit", "100");
+            }
+
+            [Theory]
+            [InlineData(-1)]
+            [InlineData(1001)]
+            [Trait("spec", "RSL2b3")]
+            public async Task WithLimitLessThan0andMoreThan1000_ShouldThrow(int limit)
+            {
+                var ex = await
+                    Assert.ThrowsAsync<AblyException>(() => _channel.History(new DataRequestQuery() {Limit = limit}));
             }
 
             public ChannelHistory(ITestOutputHelper output) : base(output)
             {
+                _client = GetRestClient();
+                _channel = _client.Channels.Get("test");
             }
         }
 
-        [Fact]
-        public void History_WithOptions_AddsParametersToRequest()
-        {
-            var rest = GetRestClient(request => "[]".ToAblyResponse());
-
-            var channel = rest.Channels.Get("Test");
-            var query = new DataRequestQuery();
-            var now = DateTimeOffset.Now;
-            query.Start = now.AddHours(-1);
-            query.End = now;
-            query.Direction = QueryDirection.Forwards;
-            query.Limit = 1000;
-            channel.History(query);
-
-            LastRequest.AssertContainsParameter("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
-            LastRequest.AssertContainsParameter("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
-            LastRequest.AssertContainsParameter("direction", query.Direction.ToString().ToLower());
-            LastRequest.AssertContainsParameter("limit", query.Limit.Value.ToString());
-        }
+        
 
         [Theory]
         [InlineData(10001)]
