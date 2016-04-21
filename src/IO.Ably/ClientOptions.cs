@@ -144,7 +144,7 @@ namespace IO.Ably
             TlsPort = 443;
             Port = 80;
             UseBinaryProtocol = true;
-            ChannelDefaults = new ChannelOptions();
+            ChannelDefaults = new ChannelOptions(false);
             AutoConnect = true;
             EchoMessages = true;
             QueueMessages = true;

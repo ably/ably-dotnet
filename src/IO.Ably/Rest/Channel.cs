@@ -14,27 +14,26 @@ namespace IO.Ably.Rest
     {
         public string Name { get; private set; }
         private readonly AblyRest _ablyRest;
-        private readonly ChannelOptions _options;
+        public ChannelOptions Options { get; private set; }
         private readonly string _basePath;
 
         internal RestChannel(AblyRest ablyRest, string name,  ChannelOptions options)
         {
             Name = name;
             _ablyRest = ablyRest;
-            _options = GetOptions(options);
+            SetOptions(options);
             _basePath = $"/channels/{name.EncodeUriPart()}";
         }
 
-        private ChannelOptions GetOptions(ChannelOptions options)
+        internal void SetOptions(ChannelOptions options)
         {
-            if(options == null)
-                return new ChannelOptions();
-
-            if (options.Encrypted && options.CipherParams == null)
+            if (options == null)
             {
-                return new ChannelOptions() {Encrypted = true, CipherParams = Crypto.GetDefaultParams()};
+                Options = new ChannelOptions(false);
+                return;
             }
-            return new ChannelOptions() {Encrypted = options.Encrypted, CipherParams = options.CipherParams};
+
+            Options = new ChannelOptions(options.Encrypted, options.CipherParams);
         }
 
         /// <summary>
@@ -44,7 +43,7 @@ namespace IO.Ably.Rest
         /// <param name="data">The message payload. Allowed payloads are string, objects and byte[]</param>
         public Task Publish(string name, object data)
         {
-            var request = _ablyRest.CreatePostRequest(_basePath + "/messages", _options);
+            var request = _ablyRest.CreatePostRequest(_basePath + "/messages", Options);
 
             request.PostData = new List<Message> { new Message(name, data)};
             return _ablyRest.ExecuteRequest(request);
@@ -61,7 +60,7 @@ namespace IO.Ably.Rest
         /// <param name="messages">a list of messages</param>
         public Task Publish(IEnumerable<Message> messages)
         {
-            var request = _ablyRest.CreatePostRequest(_basePath + "/messages", _options);
+            var request = _ablyRest.CreatePostRequest(_basePath + "/messages", Options);
             request.PostData = messages;
             return _ablyRest.ExecuteRequest(request);
         }
@@ -72,7 +71,7 @@ namespace IO.Ably.Rest
         /// <returns><see cref="PaginatedResource{T}"/> of the PresenseMessages</returns>
         public Task<PaginatedResource<PresenceMessage>> Presence()
         {
-            var request = _ablyRest.CreateGetRequest(_basePath + "/presence", _options);
+            var request = _ablyRest.CreateGetRequest(_basePath + "/presence", Options);
             return _ablyRest.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
         }
 
@@ -82,7 +81,7 @@ namespace IO.Ably.Rest
         /// <returns><see cref="PaginatedResource{PresenceMessage}"/></returns>
         public Task<PaginatedResource<PresenceMessage>> PresenceHistory()
         {
-            var request = _ablyRest.CreateGetRequest(_basePath + "/presence", _options);
+            var request = _ablyRest.CreateGetRequest(_basePath + "/presence", Options);
             return _ablyRest.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
         }
 
@@ -92,7 +91,7 @@ namespace IO.Ably.Rest
         /// <returns><see cref="PaginatedResource{PresenceMessage}"/></returns>
         public Task<PaginatedResource<PresenceMessage>> PresenceHistory(DataRequestQuery query)
         {
-            var request = _ablyRest.CreateGetRequest(_basePath + "/presence", _options);
+            var request = _ablyRest.CreateGetRequest(_basePath + "/presence", Options);
             request.AddQueryParameters(query.GetParameters());
             return _ablyRest.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
         }
@@ -115,7 +114,7 @@ namespace IO.Ably.Rest
         {
             query.Validate();
 
-            var request = _ablyRest.CreateGetRequest(_basePath + "/messages", _options);
+            var request = _ablyRest.CreateGetRequest(_basePath + "/messages", Options);
 
             request.AddQueryParameters(query.GetParameters());
 

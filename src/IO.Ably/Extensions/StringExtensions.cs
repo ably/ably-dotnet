@@ -43,5 +43,11 @@ namespace IO.Ably
 
             return string.Empty;
         }
+
+        public static bool EqualsTo(this string input, string other, bool caseSensitive = false)
+        {
+            return string.Equals(input, other,
+                caseSensitive ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase);
+        }
     }
 }

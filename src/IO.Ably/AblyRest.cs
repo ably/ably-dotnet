@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -14,10 +15,12 @@ namespace IO.Ably
     /// <summary>Client for the ably rest API</summary>
     public sealed class AblyRest : AblyBase, IRestClient
     {
+        private readonly object _channelLock = new object();
         internal AblyHttpClient HttpClient { get; private set; }
         internal MessageHandler MessageHandler { get; private set; }
 
         internal AblyAuth AblyAuth { get; private set; }
+        internal List<IChannel> RestChannels { get; private set; } = new List<IChannel>();
 
         /// <summary>
         /// Authentication methods
@@ -183,19 +186,58 @@ namespace IO.Ably
             return new AblyRequest(path, HttpMethod.Post, Protocol) { ChannelOptions = options };
         }
 
-        IChannel IChannelCommands.this[string name]
-        {
-            get { return ((IChannelCommands)this).Get(name); }
-        }
+        IChannel IChannelCommands.this[string name] => Channels.Get(name);
 
         IChannel IChannelCommands.Get(string name)
         {
-            return new RestChannel(this, name, Options.ChannelDefaults);
+            return Channels.Get(name, null);
         }
 
         IChannel IChannelCommands.Get(string name, ChannelOptions options)
         {
-            return new RestChannel(this, name, options);
+            if (name.IsEmpty())
+                throw new ArgumentNullException(nameof(name), "Empty channel name");
+
+            lock (_channelLock)
+            {
+                var channel = RestChannels.FirstOrDefault(x => x.Name.EqualsTo(name)) as RestChannel;
+                if (channel == null)
+                {
+                    var channelOptions = options ?? Options.ChannelDefaults;
+                    channel = new RestChannel(this, name, channelOptions);
+                    RestChannels.Add(channel);
+                }
+                else
+                {
+                    if (options != null &&
+                             Equals(channel.Options, options) == false)
+                    {
+                        channel.SetOptions(options);
+                    }
+                }
+                return channel;
+            }
+        }
+
+        bool IChannelCommands.Release(string name)
+        {
+            var channel = Channels.Get(name);
+            if (channel != null)
+            {
+                lock (_channelLock)
+                    return RestChannels.Remove(channel);
+            }
+            return false;
+        }
+
+        public IEnumerator<IChannel> GetEnumerator()
+        {
+            return RestChannels.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }
