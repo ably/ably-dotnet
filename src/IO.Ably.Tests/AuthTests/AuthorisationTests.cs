@@ -294,6 +294,7 @@ namespace IO.Ably.Tests
 
             [Fact]
             [Trait("spec", "RSA7a1")]
+            [Trait("spec", "RSL1g1a")]
             public void ShouldNotPassClientIdWithPublishedMessage()
             {
                 var client = GetRestClientWithClientId();

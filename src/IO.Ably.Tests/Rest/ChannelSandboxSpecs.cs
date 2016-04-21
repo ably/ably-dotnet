@@ -61,6 +61,20 @@ namespace IO.Ably.Tests.Rest
             result.First().clientId.Should().Be("123");
         }
 
+        //RSL1g
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSL1f1")]
+        public async Task WithExplicitClientIdInOptions_ReturnsMessageWithCorrectClientId(Protocol protocol)
+        {
+            var message = new Message("test", "test") { clientId = null};
+            var client = await GetRestClient(protocol, opts => opts.ClientId = "999");
+            var channel = client.Channels.Get("persisted:test");
+            await channel.Publish(message);
+
+            var result = await channel.History();
+            result.First().clientId.Should().Be("999");
+        }
 
         [Theory]
         [ProtocolData]
