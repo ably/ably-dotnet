@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace IO.Ably
+namespace IO.Ably.Tests
 {
     public class FakeResponseHandler : DelegatingHandler
     {

@@ -85,7 +85,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\IO.Ably.Tests\MiscUtils.cs">
+    <Compile Include="..\IO.Ably.Tests\Infrastructure\MiscUtils.cs">
       <Link>MiscUtils.cs</Link>
     </Compile>
     <Compile Include="ChannelMessagesAcceptanceTests.cs" />

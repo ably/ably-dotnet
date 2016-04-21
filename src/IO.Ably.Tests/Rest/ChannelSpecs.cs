@@ -397,13 +397,13 @@ namespace IO.Ably.Tests
 
         [Fact]
         [Trait("spec", "RSN4a")]
-        public void Presence_CreatesGetRequestWithCorrectPath()
+        public async Task Presence_CreatesGetRequestWithCorrectPath()
         {
             var rest = GetRestClient(request => "[]".ToAblyResponse());
 
             var channel = rest.Channels.Get("Test");
 
-            channel.Presence();
+            var presence = await channel.Presence();
 
             Assert.Equal(HttpMethod.Get, LastRequest.Method);
             Assert.Equal($"/channels/{channel.Name}/presence", LastRequest.Url);
