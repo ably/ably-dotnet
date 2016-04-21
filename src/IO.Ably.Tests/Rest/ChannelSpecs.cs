@@ -317,95 +317,81 @@ namespace IO.Ably.Tests
                     Assert.ThrowsAsync<AblyException>(() => _channel.History(new DataRequestQuery() {Limit = limit}));
             }
 
+            [Theory]
+            [MemberData("InvalidHistoryDates")]
+            public void History_WithInvalidStartOrEnd_Throws(DateTimeOffset? start, DateTimeOffset? end)
+            {
+                var rest = GetRestClient();
+                var channel = rest.Channels.Get("Test");
+                var query = new DataRequestQuery() { Start = start, End = end };
+
+                Assert.Throws<AblyException>(delegate { channel.History(query); });
+            }
+
+            public static IEnumerable<object[]> InvalidHistoryDates
+            {
+                get
+                {
+                    yield return new object[] { new DateTimeOffset(1969, 1, 1, 0, 0, 0, TimeSpan.Zero), DateTimeOffset.Now };
+                    yield return new object[] { new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero), new DateTimeOffset(1999, 12, 31, 0, 0, 0, TimeSpan.Zero) };
+                    yield return new object[] { null, new DateTimeOffset(1969, 12, 31, 0, 0, 0, TimeSpan.Zero) };
+                }
+            }
+
+            [Fact]
+            public async Task History_WithPartialResult_ReturnsCorrectFirstCurrentAndNextLinks()
+            {
+                //Arrange
+                var rest = GetRestClient(request => new AblyResponse()
+                {
+                    Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
+                    TextResponse = "[]"
+                }.ToTask());
+
+                var channel = rest.Channels.Get("test");
+
+                //Act
+                var result = await channel.History();
+
+                //Assert
+                Assert.NotNull(result.NextQuery);
+                Assert.NotNull(result.CurrentQuery);
+                Assert.NotNull(result.FirstQuery);
+            }
+
+            [Fact]
+            public async Task History_ForAnEncryptedChannel_DecryptsMessagesBeforeReturningThem()
+            {
+                //Arrange
+                var rest = GetRestClient();
+                var message = new Message() { name = "test", data = "Test" };
+                var defaultParams = Crypto.GetDefaultParams();
+
+                rest.ExecuteHttpRequest = request =>
+                {
+                    var response = new AblyResponse()
+                    {
+                        Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
+                        TextResponse = $"[{JsonConvert.SerializeObject(message)}]"
+                    };
+                    return response.ToTask();
+                };
+
+                var channel = rest.Channels.Get("test", new ChannelOptions(defaultParams));
+
+                //Act
+                var result = await channel.History();
+
+                //Assert
+                Assert.NotEmpty(result);
+                var firstMessage = result.First();
+                Assert.Equal(message.data, firstMessage.data);
+            }
+
             public ChannelHistory(ITestOutputHelper output) : base(output)
             {
                 _client = GetRestClient();
                 _channel = _client.Channels.Get("test");
-            }
-        }
-
-        
-
-        [Theory]
-        [InlineData(10001)]
-        [InlineData(-1)]
-        public void History_WithInvalidLimit_Throws(int limit)
-        {
-            var rest = GetRestClient();
-            var channel = rest.Channels.Get("Test");
-            var query = new DataRequestQuery() { Limit = limit };
-
-            Assert.Throws<AblyException>(delegate { channel.History(query); });
-        }
-
-        [Theory]
-        [MemberData("InvalidHistoryDates")]
-        public void History_WithInvalidStartOrEnd_Throws(DateTimeOffset? start, DateTimeOffset? end)
-        {
-            var rest = GetRestClient();
-            var channel = rest.Channels.Get("Test");
-            var query = new DataRequestQuery() { Start = start, End = end };
-
-            Assert.Throws<AblyException>(delegate { channel.History(query); });
-        }
-
-        [Fact]
-        public void History_WithPartialResult_ReturnsCorrectFirstCurrentAndNextLinks()
-        {
-            //Arrange
-            var rest = GetRestClient(request => new AblyResponse()
-            {
-                Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
-                TextResponse = "[]"
-            }.ToTask());
-
-            var channel = rest.Channels.Get("test");
-
-            //Act
-            var result = channel.History().Result;
-
-            //Assert
-            Assert.NotNull(result.NextQuery);
-            Assert.NotNull(result.CurrentQuery);
-            Assert.NotNull(result.FirstQuery);
-        }
-
-        [Fact]
-        public void History_ForAnEncryptedChannel_DecryptsMessagesBeforeReturningThem()
-        {
-            //Arrange
-            var rest = GetRestClient();
-            var message = new Message() { name = "test", data = "Test" };
-            var defaultParams = Crypto.GetDefaultParams();
-
-            rest.ExecuteHttpRequest = request =>
-            {
-                var response = new AblyResponse()
-                {
-                    Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
-                    TextResponse = $"[{JsonConvert.SerializeObject(message)}]"
-                };
-                return response.ToTask();
-            };
-
-            var channel = rest.Channels.Get("test", new ChannelOptions(defaultParams));
-
-            //Act
-            var result = channel.History().Result;
-
-            //Assert
-            Assert.NotEmpty(result);
-            var firstMessage = result.First();
-            Assert.Equal(message.data, firstMessage.data);
-        }
-
-        public static IEnumerable<object[]> InvalidHistoryDates
-        {
-            get
-            {
-                yield return new object[] { new DateTimeOffset(1969, 1, 1, 0, 0, 0, TimeSpan.Zero), DateTimeOffset.Now };
-                yield return new object[] { new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero), new DateTimeOffset(1999, 12, 31, 0, 0, 0, TimeSpan.Zero) };
-                yield return new object[] { null, new DateTimeOffset(1969, 12, 31, 0, 0, 0, TimeSpan.Zero) };
             }
         }
 
