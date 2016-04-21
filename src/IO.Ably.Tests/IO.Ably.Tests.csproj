@@ -106,6 +106,7 @@
     <Compile Include="AuthTests\AuthSandboxSpecs.cs" />
     <Compile Include="AuthTests\RequestTokenTests.cs" />
     <Compile Include="CapabilityTests.cs" />
+    <Compile Include="Rest\ChannelSandboxSpecs.cs" />
     <Compile Include="Rest\ChannelSpecs.cs" />
     <Compile Include="AuthTests\AuthorisationTests.cs" />
     <Compile Include="CipherParamsTests.cs" />
@@ -164,6 +165,7 @@
       <SubType>Designer</SubType>
     </None>
     <EmbeddedResource Include="StatsInterval.json" />
+    <EmbeddedResource Include="crypto-data-128.json" />
     <None Include="packages.config" />
     <EmbeddedResource Include="StatsFixture.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

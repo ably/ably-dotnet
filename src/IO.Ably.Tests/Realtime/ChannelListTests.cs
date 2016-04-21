@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using IO.Ably.Realtime;
+using IO.Ably.Rest;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 using Xunit;
@@ -53,7 +54,7 @@ namespace IO.Ably.Tests
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
             factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new RealtimeChannel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
-            Rest.ChannelOptions options = new Rest.ChannelOptions();
+            var options = new ChannelOptions();
 
             // Act
             var channel = target.Get("test", options);
@@ -70,7 +71,7 @@ namespace IO.Ably.Tests
             Mock<IChannelFactory> factory = new Mock<IChannelFactory>();
             factory.Setup(c => c.Create(It.IsAny<string>())).Returns<string>(c => new RealtimeChannel(c, "", manager.Object));
             ChannelList target = new ChannelList(manager.Object, factory.Object);
-            Rest.ChannelOptions options = new Rest.ChannelOptions();
+            ChannelOptions options = new ChannelOptions();
             var channel = target.Get("test");
 
             // Act
