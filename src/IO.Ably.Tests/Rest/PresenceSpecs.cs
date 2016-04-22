@@ -19,7 +19,7 @@ namespace IO.Ably.Tests
 
             var presence = await channel.Presence.Get();
 
-            presence.Should().BeOfType<PaginatedResource<PresenceMessage>>();
+            presence.Should().BeOfType<PaginatedResult<PresenceMessage>>();
 
             Assert.Equal(HttpMethod.Get, LastRequest.Method);
             Assert.Equal($"/channels/{channel.Name}/presence", LastRequest.Url);

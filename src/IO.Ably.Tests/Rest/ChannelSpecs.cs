@@ -258,7 +258,7 @@ namespace IO.Ably.Tests
             {
                 var result = await _channel.History();
 
-                result.Should().BeOfType<PaginatedResource<Message>>();
+                result.Should().BeOfType<PaginatedResult<Message>>();
                 Assert.Equal(HttpMethod.Get, LastRequest.Method);
                 Assert.Equal($"/channels/{_channel.Name}/messages", LastRequest.Url);
             }
@@ -398,25 +398,6 @@ namespace IO.Ably.Tests
         
 
         public ChannelSpecs(ITestOutputHelper output) : base(output)
-        {
-        }
-    }
-
-    public class PresenceSpecs : MockHttpSpecs
-    {
-        [Fact]
-        public async Task Presence_CreatesGetRequestWithCorrectPath()
-        {
-            var rest = GetRestClient();
-
-            var channel = rest.Channels.Get("Test");
-
-            var presence = await channel.Presence.Get();
-
-            Assert.Equal(HttpMethod.Get, LastRequest.Method);
-            Assert.Equal($"/channels/{channel.Name}/presence", LastRequest.Url);
-        }
-        public PresenceSpecs(ITestOutputHelper output) : base(output)
         {
         }
     }

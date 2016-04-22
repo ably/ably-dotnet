@@ -156,9 +156,9 @@ namespace IO.Ably.MessageEncoders
         /// <param name="response"></param>
         /// <param name="funcParse">Function to parse HTTP response into a sequence of items.</param>
         /// <returns></returns>
-        internal PaginatedResource<T> paginated<T>( AblyRequest request, AblyResponse response, Func<AblyResponse, ChannelOptions, IEnumerable<T>> funcParse )
+        internal PaginatedResult<T> paginated<T>( AblyRequest request, AblyResponse response, Func<AblyResponse, ChannelOptions, IEnumerable<T>> funcParse )
         {
-            PaginatedResource<T> res = new PaginatedResource<T>( response.Headers, GetLimit( request ) );
+            PaginatedResult<T> res = new PaginatedResult<T>( response.Headers, GetLimit( request ) );
             res.AddRange( funcParse( response, request.ChannelOptions ) );
             return res;
         }
@@ -166,13 +166,13 @@ namespace IO.Ably.MessageEncoders
         public T ParseResponse<T>(AblyRequest request, AblyResponse response) where T : class
         {
             LogResponse(response);
-            if( typeof( T ) == typeof( PaginatedResource<Message> ) )
+            if( typeof( T ) == typeof( PaginatedResult<Message> ) )
                 return paginated( request, response, ParseMessagesResponse ) as T;
 
-            if (typeof(T) == typeof(PaginatedResource<Stats>))
+            if (typeof(T) == typeof(PaginatedResult<Stats>))
                 return paginated( request, response, ParseStatsResponse ) as T;
 
-            if (typeof(T) == typeof(PaginatedResource<PresenceMessage>))
+            if (typeof(T) == typeof(PaginatedResult<PresenceMessage>))
                 return paginated( request, response, ParsePresenceMessages ) as T;
 
             var responseText = response.TextResponse;

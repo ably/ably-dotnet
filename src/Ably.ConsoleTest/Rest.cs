@@ -47,7 +47,7 @@ namespace IO.Ably.ConsoleTest
 
             ConsoleColor.DarkGreen.writeLine( "Getting the history.." );
 
-            PaginatedResource<Message> history = await channel.History();
+            PaginatedResult<Message> history = await channel.History();
 
             if( history.Count <= 0 )
                 throw new ApplicationException( "Message lost: not on the history" );

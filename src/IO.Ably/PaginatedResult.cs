@@ -1,18 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http.Headers;
-using IO.Ably.Transport;
 
 namespace IO.Ably
 {
-    public class PaginatedResource<T> : List<T>
+    public class PaginatedResult<T> : List<T>
     {
         private readonly int _limit;
 
-        public PaginatedResource() : this(null, Defaults.QueryLimit)
+        public PaginatedResult() : this(null, Defaults.QueryLimit)
         {
         }
 
-        public PaginatedResource(HttpHeaders headers, int limit)
+        public PaginatedResult(HttpHeaders headers, int limit)
         {
             _limit = limit;
             if (null != headers)
@@ -23,10 +22,7 @@ namespace IO.Ably
             }
         }
 
-        public bool HasNext
-        {
-            get { return null != NextQuery && NextQuery.IsEmpty == false; }
-        }
+        public bool HasNext => null != NextQuery && NextQuery.IsEmpty == false;
 
         public DataRequestQuery NextQuery { get; }
         public DataRequestQuery FirstQuery { get; private set; }
