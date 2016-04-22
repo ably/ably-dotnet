@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Encryption;
 using IO.Ably.Rest;
@@ -15,6 +17,49 @@ namespace IO.Ably.AcceptanceTests
 {
     public class MessageEncodersAcceptanceTests : AblySpecs
     {
+        public class WithSupportedPayloads : MockHttpSpecs
+        {
+            public WithSupportedPayloads(ITestOutputHelper output) : base(output)
+            {
+            }
+
+            public class TestObject
+            {
+                public string Name { get; set; }
+                public int Age { get; set; }
+                public DateTime DoB { get; set; }
+            }
+
+            public static IEnumerable<object[]> SupportedMessages
+            {  
+                get
+                {
+                    yield return new object[] {new Message("int", 1), "json"};
+                    yield return new object[] {new Message("float", 1.1), "json"};
+                    yield return new object[] {new Message("date", Config.Now()), "json"};
+                    yield return new object[] {new Message("string", "string"), null};
+                    yield return new object[] {new Message("string", new byte[] {1,2,4}), "base64"};
+                    yield return new object[] { new Message("object", new TestObject() { Age = 40, Name = "Bob", DoB = new DateTime(1976, 1,1)}), "json"};
+                }
+            }
+
+            [Theory]
+            [MemberData("SupportedMessages")]
+            [Trait("spec", "RSL4a")]
+            public async Task PublishSupportedMessages(Message message, string encoding)
+            {
+                var client = GetRestClient();
+
+                await client.Channels.Get("test").Publish(message);
+
+                var processedMessages = JsonConvert.DeserializeObject<List<Message>>(LastRequest.RequestBody.GetText());
+                processedMessages.First().encoding.Should().Be(encoding);
+                Output.WriteLine("Encoded message: " + LastRequest.RequestBody.GetText());
+            }
+             
+        }
+
+
         public class WithTextProtocolWithoutEncryption : MockHttpSpecs
         {
             private AblyRest _client;
