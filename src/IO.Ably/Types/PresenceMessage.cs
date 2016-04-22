@@ -48,20 +48,7 @@ namespace IO.Ably
         [MessagePackMember( 5 )]
         public string encoding { get; set; }
 
-        [JsonIgnore]
         [MessagePackMember( 6 )]
-        public DateTimeOffset timestamp { get; set; }
-
-        [JsonProperty( "timestamp" )]
-        public long timestamp_raw
-        {
-            get { return timestamp.ToUnixTimeInMilliseconds(); }
-            set { timestamp = value.FromUnixTimeInMilliseconds(); }
-        }
-
-        public bool ShouldSerializetimestamp_raw()
-        {
-            return timestamp.Ticks > 0;
-        }
+        public DateTimeOffset? timestamp { get; set; }
     }
 }

@@ -25,6 +25,7 @@ namespace IO.Ably.Tests
 
         public bool Tls { get; set; }
         public AblyEnvironment Environment => AblyEnvironment.Sandbox;
+        public CipherParams CipherParams { get; set; }
 
         public TestEnvironmentSettings()
         {

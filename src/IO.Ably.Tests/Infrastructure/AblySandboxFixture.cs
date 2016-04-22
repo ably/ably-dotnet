@@ -28,7 +28,7 @@ namespace IO.Ably.Tests
             AblyRequest request = new AblyRequest("/apps", HttpMethod.Post);
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
-            request.RequestBody = testAppSpec.ToString().GetBytes();
+            request.RequestBody = testAppSpec["post_apps"].ToString().GetBytes();
             request.Protocol = Protocol.Json;
 
             var response = await client.Execute(request);
