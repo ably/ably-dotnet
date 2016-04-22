@@ -137,8 +137,10 @@ namespace IO.Ably.Tests
             [InlineData(Defaults.TokenErrorCodesRangeStart + 1)]
             [InlineData(Defaults.TokenErrorCodesRangeEnd)]
             [Trait("spec", "RSC10")]
+            [Trait("intermitten", "true")]
             public async Task WhenErrorCodeIsTokenSpecific_ShouldAutomaticallyTryToRenewTokenIfRequestFails(int errorCode)
             {
+                Output.WriteLine("Error code.");
                 base.Now = DateTimeOffset.Now;
                 var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
                 //Had to inline the method otherwise the tests intermittently fail.
@@ -147,14 +149,17 @@ namespace IO.Ably.Tests
                 {
                     if (request.Url.Contains("/keys"))
                     {
+                        Output.WriteLine("Requesting new token.");
                         return _returnedDummyTokenDetails.ToJson().ToAblyResponse();
                     }
 
                     if (firstAttempt)
                     {
+                        Output.WriteLine("First attempt!");
                         firstAttempt = false;
                         throw new AblyException(new ErrorInfo("", errorCode, HttpStatusCode.Unauthorized));
                     }
+                    Output.WriteLine("Generic request!");
                     return AblyResponse.EmptyResponse.ToTask();
                 }, opts => opts.TokenDetails = tokenDetails);
 
