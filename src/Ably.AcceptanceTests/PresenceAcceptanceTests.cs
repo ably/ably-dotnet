@@ -36,7 +36,7 @@ namespace IO.Ably.AcceptanceTests
             string channelName = "persisted:presence_fixtures";
             var ably = GetAbly();
             var channel = ably.Channels.Get(channelName);
-             var presence = await channel.Presence.Presence();
+             var presence = await channel.Presence.Get();
 
             presence.Should().HaveCount(4);
             foreach (var presenceMessage in presence)
@@ -51,11 +51,11 @@ namespace IO.Ably.AcceptanceTests
             string channelName = "persisted:presence_fixtures";
             var ably = GetAbly();
             var channel = ably.Channels.Get(channelName);
-            var presence = await channel.Presence.PresenceHistory(new DataRequestQuery {Limit=2});
+            var presence = await channel.Presence.History(new DataRequestQuery {Limit=2});
 
             presence.Should().HaveCount(2);
             presence.HasNext.Should().BeTrue();
-            var nextPage = await channel.Presence.PresenceHistory(presence.NextQuery);
+            var nextPage = await channel.Presence.History(presence.NextQuery);
             nextPage.Should().HaveCount(2);
         }
     }

@@ -403,7 +403,7 @@ namespace IO.Ably.Tests
 
             var channel = rest.Channels.Get("Test");
 
-            var presence = await channel.Presence.Presence();
+            var presence = await channel.Presence.Get();
 
             Assert.Equal(HttpMethod.Get, LastRequest.Method);
             Assert.Equal($"/channels/{channel.Name}/presence", LastRequest.Url);
