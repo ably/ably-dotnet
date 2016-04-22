@@ -49,7 +49,7 @@ namespace IO.Ably.MessageEncoders
             if (response.Type == ResponseType.Json)
             {
                 var messages = JsonConvert.DeserializeObject<List<PresenceMessage>>(response.TextResponse, Config.GetJsonSettings());
-                ProcessMessages(messages, new ChannelOptions());
+                ProcessMessages(messages, options);
                 return messages;
             }
 
@@ -59,7 +59,7 @@ namespace IO.Ably.MessageEncoders
                 //Unwrap the data objects because message pack leaves them as a MessagePackObject
                 payload.data = ((MessagePackObject)payload.data).ToObject();
             }
-            ProcessMessages(payloads, new ChannelOptions());
+            ProcessMessages(payloads, options);
             return payloads;
         }
 

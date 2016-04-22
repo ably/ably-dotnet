@@ -29,10 +29,10 @@ namespace IO.Ably.Tests
             var cipher = testAppSpec["cipher"];
             settings.CipherParams = new CipherParams(
                 (string)cipher["algorithm"],
-                ((string)cipher["key"]).GetBytes(),
+                ((string)cipher["key"]).FromBase64(),
                 CipherMode.CBC,
                 (int)cipher["keylength"],
-                ((string)cipher["iv"]).GetBytes()
+                ((string)cipher["iv"]).FromBase64()
                 );
 
             AblyHttpClient client = settings.GetHttpClient();
