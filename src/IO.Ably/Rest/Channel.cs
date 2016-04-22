@@ -96,8 +96,7 @@ namespace IO.Ably.Rest
         /// <returns><see cref="PaginatedResult{T}"/></returns>
         Task<PaginatedResult<PresenceMessage>> IPresence.History()
         {
-            var request = _ablyRest.CreateGetRequest(_basePath + "/presence", Options);
-            return _ablyRest.ExecuteRequest<PaginatedResult<PresenceMessage>>(request);
+            return Presence.History(new DataRequestQuery());
         }
 
         /// <summary>
@@ -106,7 +105,11 @@ namespace IO.Ably.Rest
         /// <returns><see cref="PaginatedResult{T}"/></returns>
         Task<PaginatedResult<PresenceMessage>> IPresence.History(DataRequestQuery query)
         {
-            var request = _ablyRest.CreateGetRequest(_basePath + "/presence", Options);
+            query = query ?? new DataRequestQuery();
+
+            query.Validate();
+
+            var request = _ablyRest.CreateGetRequest(_basePath + "/presence/history", Options);
             request.AddQueryParameters(query.GetParameters());
             return _ablyRest.ExecuteRequest<PaginatedResult<PresenceMessage>>(request);
         }
