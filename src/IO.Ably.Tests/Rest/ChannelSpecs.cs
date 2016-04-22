@@ -395,11 +395,19 @@ namespace IO.Ably.Tests
             }
         }
 
+        
+
+        public ChannelSpecs(ITestOutputHelper output) : base(output)
+        {
+        }
+    }
+
+    public class PresenceSpecs : MockHttpSpecs
+    {
         [Fact]
-        [Trait("spec", "RSN4a")]
         public async Task Presence_CreatesGetRequestWithCorrectPath()
         {
-            var rest = GetRestClient(request => "[]".ToAblyResponse());
+            var rest = GetRestClient();
 
             var channel = rest.Channels.Get("Test");
 
@@ -408,8 +416,7 @@ namespace IO.Ably.Tests
             Assert.Equal(HttpMethod.Get, LastRequest.Method);
             Assert.Equal($"/channels/{channel.Name}/presence", LastRequest.Url);
         }
-
-        public ChannelSpecs(ITestOutputHelper output) : base(output)
+        public PresenceSpecs(ITestOutputHelper output) : base(output)
         {
         }
     }
