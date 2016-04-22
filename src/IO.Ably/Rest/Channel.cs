@@ -11,7 +11,7 @@ namespace IO.Ably.Rest
     /// and every message broadcast by the service is associated with a unique channel.
     /// A channel cannot be instantiated but needs to be created using the AblyRest.Channels.Get("channelname")
     /// </summary>
-    public class RestChannel : IChannel
+    public class RestChannel : IChannel, IPresence
     {
         public string Name { get; private set; }
         private readonly AblyRest _ablyRest;
@@ -66,11 +66,13 @@ namespace IO.Ably.Rest
             return _ablyRest.ExecuteRequest(request);
         }
 
+        public IPresence Presence => this;
+
         /// <summary>
         /// Obtain the set of members currently present for a channel
         /// </summary>
         /// <returns><see cref="PaginatedResource{T}"/> of the PresenseMessages</returns>
-        public Task<PaginatedResource<PresenceMessage>> Presence()
+        Task<PaginatedResource<PresenceMessage>> IPresence.Presence()
         {
             var request = _ablyRest.CreateGetRequest(_basePath + "/presence", Options);
             return _ablyRest.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
@@ -80,7 +82,7 @@ namespace IO.Ably.Rest
         /// Get the presence messages history for the channel
         /// </summary>
         /// <returns><see cref="PaginatedResource{PresenceMessage}"/></returns>
-        public Task<PaginatedResource<PresenceMessage>> PresenceHistory()
+        Task<PaginatedResource<PresenceMessage>> IPresence.PresenceHistory()
         {
             var request = _ablyRest.CreateGetRequest(_basePath + "/presence", Options);
             return _ablyRest.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
@@ -90,7 +92,7 @@ namespace IO.Ably.Rest
         /// Get the presence messages history for the channel by specifying a query
         /// </summary>
         /// <returns><see cref="PaginatedResource{PresenceMessage}"/></returns>
-        public Task<PaginatedResource<PresenceMessage>> PresenceHistory(DataRequestQuery query)
+        Task<PaginatedResource<PresenceMessage>> IPresence.PresenceHistory(DataRequestQuery query)
         {
             var request = _ablyRest.CreateGetRequest(_basePath + "/presence", Options);
             request.AddQueryParameters(query.GetParameters());

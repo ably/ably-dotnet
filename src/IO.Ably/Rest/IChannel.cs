@@ -12,6 +12,12 @@ namespace IO.Ably.Rest
         Task<PaginatedResource<Message>> History();
         Task<PaginatedResource<Message>> History(DataRequestQuery dataQuery);
         string Name { get; }
+        
+        IPresence Presence { get; }
+    }
+
+    public interface IPresence
+    {
         Task<PaginatedResource<PresenceMessage>> Presence();
         Task<PaginatedResource<PresenceMessage>> PresenceHistory();
         Task<PaginatedResource<PresenceMessage>> PresenceHistory(DataRequestQuery query);
