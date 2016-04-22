@@ -60,6 +60,7 @@ namespace IO.Ably.AcceptanceTests
         }
 
 
+        [Trait("spec", "RSL4d")]
         public class WithTextProtocolWithoutEncryption : MockHttpSpecs
         {
             private AblyRest _client;
@@ -76,6 +77,7 @@ namespace IO.Ably.AcceptanceTests
             }
 
             [Fact]
+            [Trait("spec", "RSL4d2")]
             public void WithStringData_DoesNotApplyAnyEncoding()
             {
                 //Act
@@ -88,6 +90,7 @@ namespace IO.Ably.AcceptanceTests
             }
 
             [Fact]
+            [Trait("spec", "RSL4d1")]
             public void WithBinaryData_DoesNotApplyAnyEncoding()
             {
                 //Act
@@ -102,6 +105,7 @@ namespace IO.Ably.AcceptanceTests
             }
 
             [Fact]
+            [Trait("spec", "RSL4d3")]
             public void WithJsonData_AppliesCorrectEncoding()
             {
                 //Arrange
@@ -181,6 +185,7 @@ namespace IO.Ably.AcceptanceTests
             }
         }
 
+        [Trait("spec", "RSL4c")]
         public class WithBinaryProtocolWithoutEncryption : MockHttpSpecs
         {
             private AblyRest _client;
