@@ -12,7 +12,7 @@ namespace IO.Ably.MessageEncoders
     internal class MessageHandler : IMessageHandler
     {
         private readonly Protocol _protocol;
-        public List<MessageEncoder> Encoders = new List<MessageEncoder>();
+        public readonly List<MessageEncoder> Encoders = new List<MessageEncoder>();
 
         public MessageHandler()
             : this(Protocol.MsgPack)
