@@ -80,8 +80,13 @@ namespace IO.Ably.Rest
             var presenceLimit = limit ?? Defaults.QueryLimit;
 
             var request = _ablyRest.CreateGetRequest(_basePath + "/presence", Options);
+
             request.QueryParameters.Add("limit", presenceLimit.ToString());
-            
+            if (clientId.IsNotEmpty())
+                request.QueryParameters.Add("clientId", clientId);
+            if (connectionId.IsNotEmpty())
+                request.QueryParameters.Add("connectionId", connectionId);
+
             return _ablyRest.ExecuteRequest<PaginatedResult<PresenceMessage>>(request);
         }
 

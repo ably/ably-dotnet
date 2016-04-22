@@ -53,6 +53,19 @@ namespace IO.Ably.Tests
                 }
             }
 
+            [Fact]
+            [Trait("spec", "RSP3a2")]
+            [Trait("spec", "RSP3a3")]
+            public async Task WithClientIdAndConnectionId_ShouldSetQueryParameters()
+            {
+                var clientId = "123";
+                var connectionId = "333";
+                await _channel.Presence.Get(clientId: clientId, connectionId: connectionId);
+
+                LastRequest.AssertContainsParameter("clientId", clientId);
+                LastRequest.AssertContainsParameter("connectionId", connectionId);
+            }
+
             public GetSpecs(ITestOutputHelper output) : base(output)
             {
                 _client = GetRestClient();
