@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using CipherMode = IO.Ably.Encryption.CipherMode;
 
 namespace AblyPlatform.Cryptography
 {
@@ -21,7 +22,7 @@ namespace AblyPlatform.Cryptography
             _params = @params;
         }
 
-        static readonly Dictionary<IO.Ably.Encryption.CipherMode, System.Security.Cryptography.CipherMode> s_modes = new Dictionary<IO.Ably.Encryption.CipherMode, System.Security.Cryptography.CipherMode>()
+        static readonly Dictionary<IO.Ably.Encryption.CipherMode, System.Security.Cryptography.CipherMode> ModesMap = new Dictionary<IO.Ably.Encryption.CipherMode, System.Security.Cryptography.CipherMode>()
         {
             { IO.Ably.Encryption.CipherMode.CBC, System.Security.Cryptography.CipherMode.CBC },
             { IO.Ably.Encryption.CipherMode.ECB, System.Security.Cryptography.CipherMode.ECB },
@@ -29,6 +30,26 @@ namespace AblyPlatform.Cryptography
             { IO.Ably.Encryption.CipherMode.CFB , System.Security.Cryptography.CipherMode.CFB },
             { IO.Ably.Encryption.CipherMode.CTS , System.Security.Cryptography.CipherMode.CTS },
         };
+
+        public static System.Security.Cryptography.CipherMode MapAblyMode(IO.Ably.Encryption.CipherMode? mode)
+        {
+            if(mode == null)
+                return System.Security.Cryptography.CipherMode.CBC;
+            return ModesMap[mode.Value];
+        }
+
+        public static byte[] GenerateKey(CipherMode? mode, int? keyLength)
+        {
+            using (var aes = new AesCryptoServiceProvider())
+            {
+                aes.KeySize = keyLength ?? Crypto.DefaultKeylength;
+                aes.Mode = MapAblyMode(mode);
+                aes.Padding = PaddingMode.PKCS7;
+                aes.BlockSize = Crypto.DefaultBlocklength * 8;
+                aes.GenerateKey();
+                return aes.Key;
+            }
+        }
 
         private static byte[] Encrypt(byte[] input, byte[] key, int keySize, System.Security.Cryptography.CipherMode mode, byte[] iv = null)
         {
@@ -84,7 +105,7 @@ namespace AblyPlatform.Cryptography
         {
             try
             {
-                return Encrypt(input, _params.Key, _params.KeyLength, s_modes[_params.Mode], _params.Iv);
+                return Encrypt(input, _params.Key, _params.KeyLength, ModesMap[_params.Mode], _params.Iv);
             }
             catch (Exception ex)
             {
@@ -99,7 +120,7 @@ namespace AblyPlatform.Cryptography
         {
             try
             {
-                return Decrypt(input, _params.Key, _params.KeyLength, s_modes[_params.Mode]);
+                return Decrypt(input, _params.Key, _params.KeyLength, ModesMap[_params.Mode]);
             }
             catch (Exception ex)
             {

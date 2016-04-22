@@ -87,10 +87,44 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSE1e")]
             public void WithInvalidKeyLength_ShouldThrows()
             {
-                Assert.Throws<AblyException>(() => Crypto.GetDefaultParams(new byte[] { 193,24,123 }));
+                Assert.Throws<AblyException>(() => Crypto.GetDefaultParams(new byte[] { 193, 24, 123 }));
             }
-            
+
             public GetDefaultParamsSpecs(ITestOutputHelper output) : base(output)
+            {
+            }
+        }
+
+        public class GenerateRandomKeyTests : EncryptionSpecs
+        {
+            [Fact]
+            [Trait("spec", "RSE2a")]
+            [Trait("spec", "RSE2b")]
+            public void WithoutKeyLength_GeneratesAES256bitKey()
+            {
+                var key = Crypto.GetRandomKey();
+                (key.Length * 8).Should().Be(256);
+            }
+
+            [Theory]
+            [InlineData(128)]
+            [InlineData(256)]
+            [Trait("spec", "RSE2a")]
+            [Trait("spec", "RSE2b")]
+            public void WithKeyLength_GenerateAESKeyWithCorrectLength(int length)
+            {
+                var key = Crypto.GetRandomKey(null, length);
+                (key.Length * 8).Should().Be(length);
+            }
+
+            [Fact]
+            [Trait("spec", "RSE2a")]
+            public void WithInvalidKeyLength_Throws()
+            {
+                Assert.Throws<AblyException>(() => Crypto.GetRandomKey(null, 111));
+            }
+
+            public GenerateRandomKeyTests(ITestOutputHelper output) : base(output)
             {
             }
         }

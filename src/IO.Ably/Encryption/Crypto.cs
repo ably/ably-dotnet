@@ -72,9 +72,9 @@ namespace IO.Ably.Encryption
     }
 
     public class Crypto
-    { 
+    {
         public const string DefaultAlgorithm = "AES";
-        public const int DefaultKeylength = 128; ///bits
+        public const int DefaultKeylength = 256; ///bits
         public const int DefaultBlocklength = 16; ///bytes
         public const CipherMode DefaultMode = CipherMode.CBC;
 
@@ -84,29 +84,26 @@ namespace IO.Ably.Encryption
             {
                 throw new ArgumentNullException(nameof(base64EncodedKey), "Base64Encoded key cannot be null");
             }
-            return GetDefaultParams(base64EncodedKey.FromBase64(), base64Iv?.FromBase64(), mode);    
+            return GetDefaultParams(base64EncodedKey.FromBase64(), base64Iv?.FromBase64(), mode);
         }
 
         public static CipherParams GetDefaultParams(byte[] key = null, byte[] iv = null, CipherMode? mode = null)
         {
             if (key != null && key.Any())
             {
-                var keyLength = key.Length*8;
-                if(keyLength != 128 && keyLength != 256)
-                    throw new AblyException($"Only 128 and 256 keys are supported. Provided key is {keyLength}", 40003, HttpStatusCode.BadRequest);
+                ValidateKeyLength(key.Length * 8);
 
                 return new CipherParams(DefaultAlgorithm, key, mode, iv);
             }
 
-            using (var aes = new AesCryptoServiceProvider())
-            {
-                aes.KeySize = DefaultKeylength;
-                aes.Mode = System.Security.Cryptography.CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
-                aes.BlockSize = DefaultBlocklength * 8;
-                aes.GenerateKey();
-                return new CipherParams(aes.Key);
-            }
+            return new CipherParams(GetRandomKey(mode));
+        }
+
+        private static void ValidateKeyLength(int keyLength)
+        {
+            if (keyLength != 128 && keyLength != 256)
+                throw new AblyException($"Only 128 and 256 keys are supported. Provided key is {keyLength}", 40003,
+                    HttpStatusCode.BadRequest);
         }
 
         public static IChannelCipher GetCipher(CipherParams cipherParams)
@@ -127,5 +124,14 @@ namespace IO.Ably.Encryption
                 return Convert.ToBase64String(hmac.Hash);
             }
         }
+
+        public static byte[] GetRandomKey(CipherMode? mode = null, int? keyLength = null)
+        {
+            if(keyLength.HasValue)
+                ValidateKeyLength(keyLength.Value);
+
+            return AesCipher.GenerateKey(mode, keyLength);
+        }
+
     }
 }
