@@ -32,8 +32,15 @@ namespace IO.Ably.MessageEncoders
             }
 
             var cipher = Crypto.GetCipher(options);
-            payload.data = cipher.Decrypt(payload.data as byte[]);
-            RemoveCurrentEncodingPart(payload);
+            try
+            {
+                payload.data = cipher.Decrypt(payload.data as byte[]);
+                RemoveCurrentEncodingPart(payload);
+            }
+            catch (AblyException ex)
+            {
+                Logger.Error("Error decrypting payload. Leaving it encrypted", ex); 
+            }
         }
 
         private string GetCipherType(string currentEncoding)

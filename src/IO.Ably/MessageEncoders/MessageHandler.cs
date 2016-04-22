@@ -69,7 +69,7 @@ namespace IO.Ably.MessageEncoders
 
             if (response.Type == ResponseType.Json)
             {
-                var messages = JsonConvert.DeserializeObject<List<Message>>(response.TextResponse);
+                var messages = JsonConvert.DeserializeObject<List<Message>>(response.TextResponse, Config.GetJsonSettings());
                 ProcessMessages(messages, options);
                 return messages;
             }
@@ -107,7 +107,7 @@ namespace IO.Ably.MessageEncoders
             //Logger.Debug(string.Format("Payload: {0}", JsonConvert.SerializeObject(request.PostData)));
 
             if (_protocol == Protocol.Json)
-                return JsonConvert.SerializeObject(request.PostData).GetBytes();
+                return JsonConvert.SerializeObject(request.PostData, Config.GetJsonSettings()).GetBytes();
             return MsgPackHelper.Serialise(request.PostData);
         }
 
@@ -119,7 +119,7 @@ namespace IO.Ably.MessageEncoders
             {
                 return MsgPackHelper.Serialise(payloads);
             }
-            return JsonConvert.SerializeObject(payloads).GetBytes();
+            return JsonConvert.SerializeObject(payloads, Config.GetJsonSettings()).GetBytes();
         }
 
         internal void EncodePayloads(ChannelOptions options, IEnumerable<IEncodedMessage> payloads)
@@ -181,7 +181,7 @@ namespace IO.Ably.MessageEncoders
                 // A bit of a hack. Message pack serializer does not like capability objects
                 responseText = MsgPackHelper.DeSerialise(response.Body, typeof (MessagePackObject)).ToString();
             }
-            return (T)JsonConvert.DeserializeObject(responseText, typeof(T));
+            return (T)JsonConvert.DeserializeObject(responseText, typeof(T), Config.GetJsonSettings());
         }
 
         private void LogResponse(AblyResponse response)
@@ -210,7 +210,7 @@ namespace IO.Ably.MessageEncoders
             {
                 body = ((MessagePackObject)MsgPackHelper.DeSerialise(response.Body, typeof (MessagePackObject))).ToString();
             }
-            return JsonConvert.DeserializeObject<List<Stats>>(body);
+            return JsonConvert.DeserializeObject<List<Stats>>(body, Config.GetJsonSettings());
         }
 
         private static int GetLimit(AblyRequest request)

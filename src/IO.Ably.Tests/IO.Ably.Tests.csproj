@@ -167,6 +167,7 @@
     </None>
     <EmbeddedResource Include="StatsInterval.json" />
     <EmbeddedResource Include="crypto-data-128.json" />
+    <EmbeddedResource Include="crypto-data-256.json" />
     <None Include="packages.config" />
     <EmbeddedResource Include="StatsFixture.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

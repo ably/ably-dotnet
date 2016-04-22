@@ -15,18 +15,19 @@ namespace IO.Ably.Tests.Rest
     public class ChannelSandboxSpecs : SandboxSpecs
     {
         private JObject examples;
-
+        private JObject examples256;
 
         public ChannelSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
         {
             examples = JObject.Parse(ResourceHelper.GetResource("crypto-data-128.json"));
+            examples256 = JObject.Parse(ResourceHelper.GetResource("crypto-data-256.json"));
         }
 
-        public ChannelOptions GetOptions()
+        public ChannelOptions GetOptions(JObject data)
         {
-            var key = ((string) examples["key"]).FromBase64();
-            var iv = ((string) examples["iv"]).FromBase64();
-            var keyLength = (int) examples["keylength"];
+            var key = ((string) data["key"]).FromBase64();
+            var iv = ((string) data["iv"]).FromBase64();
+            var keyLength = (int) data["keylength"];
             var cipherParams = new CipherParams("aes", key, CipherMode.CBC, keyLength, iv);
             return new ChannelOptions(cipherParams);
         }
@@ -110,13 +111,45 @@ namespace IO.Ably.Tests.Rest
         [ProtocolData]
         [Trait("spec", "RSL4c4")]
         [Trait("spec", "RSL4d4")]
+        [Trait("spec", "RSL5a")]
+        [Trait("spec", "RSL5c")]
+        [Trait("spec", "RSL6a")]
         //Uses the to publish the examples inside crypto-data-128.json to publish and then retrieve the messages
-        public async Task CanPublishAMessageAndRetrieveIt(Protocol protocol)
+        public async Task CanPublishAMessageAndRetrieveIt128(Protocol protocol)
         {
             var items = (JArray)examples["items"];
 
             AblyRest ably = await GetRestClient(protocol);
-            IChannel channel = ably.Channels.Get("persisted:test", GetOptions());
+            IChannel channel = ably.Channels.Get("persisted:test", GetOptions(examples));
+            var count = 0;
+            foreach (var item in items)
+            {
+                var encoded = item["encoded"];
+                var encoding = (string)encoded["encoding"];
+                var decodedData = DecodeData((string)encoded["data"], encoding);
+                await channel.Publish((string)encoded["name"], decodedData);
+                var message = (await channel.History()).First();
+                if (message.data is byte[])
+                    (message.data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
+                else if (encoding == "json")
+                    JToken.DeepEquals((JToken)message.data, (JToken)decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
+                else
+                    message.data.Should().Be(decodedData, "Item number {0} data does not match decoded data", count);
+                count++;
+            }
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSL5b")]
+        [Trait("spec", "RSL5c")]
+        //Uses the to publish the examples inside crypto-data-256.json to publish and then retrieve the messages
+        public async Task CanPublishAMessageAndRetrieveIt256(Protocol protocol)
+        {
+            var items = (JArray)examples256["items"];
+
+            AblyRest ably = await GetRestClient(protocol);
+            IChannel channel = ably.Channels.Get("persisted:test", GetOptions(examples256));
             var count = 0;
             foreach (var item in items)
             {
@@ -168,6 +201,41 @@ namespace IO.Ably.Tests.Rest
             var channel = client.Channels.Get("persisted:test_" + protocol);
 
             await channel.Publish("int", 1);
+        }
+
+        class TestLoggerSink : ILoggerSink
+        {
+            public LogLevel LastLoggedLevel { get; set; }
+            public string LastMessage { get; set; }
+            public void LogEvent(LogLevel level, string message)
+            {
+                LastLoggedLevel = level;
+                LastMessage = message;
+            }
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSL6b")]
+        public async Task WithEncryptionCiphenMismatch_ShouldLeaveMessageEncryptedAndRaiseError(Protocol protocol)
+        {
+            var loggerSink = new TestLoggerSink();
+
+            using (Logger.SetTempDestination(loggerSink))
+            {
+                var client = await GetRestClient(protocol);
+                var channel1 = client.Channels.Get("persisted:encryption", GetOptions(examples));
+
+                var payload = "test payload";
+                await channel1.Publish("test", payload);
+
+                var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(true));
+                var message = (await channel2.History()).First();
+
+                loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
+                loggerSink.LastMessage.Should().Contain("Error decrypting payload");
+                message.encoding.Should().Be("utf-8/cipher+aes-128-cbc");
+            }
         }
 
         private object DecodeData(string data, string encoding)
