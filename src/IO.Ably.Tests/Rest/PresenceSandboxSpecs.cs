@@ -30,5 +30,21 @@ namespace IO.Ably.Tests.Rest
 
             presence.Should().HaveCount(6);
         }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSP5")]
+        public async Task WithCorrectCipherParams_DecryptsMessagesCorrectly(Protocol protocol)
+        {
+            var client = await GetRestClient(protocol);
+            var settings = await Fixture.GetSettings();
+            var channel = client.Channels.Get(TestEnvironmentSettings.PresenceChannelName, new ChannelOptions(settings.CipherParams));
+
+            var presence = await channel.Presence.Get();
+            foreach (var message in presence)
+            {
+                message.encoding.Should().BeNullOrEmpty();
+            }
+        }
     }
 }
