@@ -128,7 +128,7 @@ namespace IO.Ably.Tests.MessageEncodes
 
                 string result = _crypto.Decrypt((byte[])payload.data).GetText();
                 result.Should().Be(_stringData);
-                payload.encoding.Should().Be("utf-8/cipher+aes-128-cbc");
+                payload.encoding.Should().Be("utf-8/cipher+aes-256-cbc");
             }
 
             [Fact]
@@ -140,7 +140,7 @@ namespace IO.Ably.Tests.MessageEncodes
 
                 byte[] result = _crypto.Decrypt((byte[])payload.data);
                 result.Should().BeEquivalentTo(_binaryData);
-                payload.encoding.Should().Be("cipher+aes-128-cbc");
+                payload.encoding.Should().Be("cipher+aes-256-cbc");
             }
 
             [Fact]
@@ -152,18 +152,18 @@ namespace IO.Ably.Tests.MessageEncodes
 
                 string result = _crypto.Decrypt((byte[])payload.data).GetText();
                 result.Should().BeEquivalentTo(_stringData);
-                payload.encoding.Should().Be("json/utf-8/cipher+aes-128-cbc");
+                payload.encoding.Should().Be("json/utf-8/cipher+aes-256-cbc");
             }
 
             [Fact]
             public void WithAlreadyEncryptedData_LeavesDataAndEncodingIntact()
             {
-                var payload = new Message() { data = _encryptedData, encoding = "utf-8/cipher+aes-128-cbc" };
+                var payload = new Message() { data = _encryptedData, encoding = "utf-8/cipher+aes-256-cbc" };
 
                 encoder.Encode(payload, _channelOptions);
 
                 payload.data.Should().BeSameAs(_encryptedData);
-                payload.encoding.Should().Be("utf-8/cipher+aes-128-cbc");
+                payload.encoding.Should().Be("utf-8/cipher+aes-256-cbc");
             }
 
         }
@@ -178,7 +178,7 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithCipherPayload_DercyptsDataAndStripsEncoding()
             {
-                var payload = new Message() { data = _encryptedBinaryData, encoding = "cipher+aes-128-cbc" };
+                var payload = new Message() { data = _encryptedBinaryData, encoding = "cipher+aes-256-cbc" };
 
                 encoder.Decode(payload, _channelOptions);
 
@@ -189,7 +189,7 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithCipherPayloadBeforeOtherPayloads_DecryptsDataAndStriptsCipherEncoding()
             {
-                var payload = new Message() { data = _encryptedBinaryData, encoding = "utf-8/cipher+aes-128-cbc" };
+                var payload = new Message() { data = _encryptedBinaryData, encoding = "utf-8/cipher+aes-256-cbc" };
 
                 encoder.Decode(payload, _channelOptions);
 
@@ -211,13 +211,13 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithCipherEncodingThatDoesNotMatchTheCurrentCipher_ThrowsException()
             {
-                var payload = new Message() { data = "test", encoding = "utf-8/cipher+aes-256-cbc" };
+                var payload = new Message() { data = "test", encoding = "utf-8/cipher+aes-128-cbc" };
 
                 var error = Assert.Throws<AblyException>(delegate { encoder.Decode(payload, _channelOptions); });
 
                 error.ErrorInfo.message.Should()
                     .Be(string.Format("Cipher algorithm {0} does not match message cipher algorithm of {1}",
-                        _channelOptions.CipherParams.CipherType.ToLower(), "cipher+aes-256-cbc"));
+                        _channelOptions.CipherParams.CipherType.ToLower(), "cipher+aes-128-cbc"));
 
                 error.ErrorInfo.code.Should().Be(92002);
             }

@@ -27,8 +27,8 @@ namespace IO.Ably.Tests
             {
                 var result = Crypto.GetDefaultParams();
                 result.Algorithm.Should().Be("AES");
-                result.CipherType.Should().Be("AES-128-CBC");
-                result.KeyLength.Should().Be(128);
+                result.CipherType.Should().Be("AES-256-CBC");
+                result.KeyLength.Should().Be(256);
                 result.Mode.Should().Be(CipherMode.CBC);
             }
 
