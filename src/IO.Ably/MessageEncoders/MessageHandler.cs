@@ -48,7 +48,7 @@ namespace IO.Ably.MessageEncoders
         {
             if (response.Type == ResponseType.Json)
             {
-                var messages = JsonConvert.DeserializeObject<List<PresenceMessage>>(response.TextResponse);
+                var messages = JsonConvert.DeserializeObject<List<PresenceMessage>>(response.TextResponse, Config.GetJsonSettings());
                 ProcessMessages(messages, new ChannelOptions());
                 return messages;
             }
