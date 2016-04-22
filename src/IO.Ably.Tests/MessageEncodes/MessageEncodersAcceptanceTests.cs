@@ -56,7 +56,7 @@ namespace IO.Ably.AcceptanceTests
                 processedMessages.First().encoding.Should().Be(encoding);
                 Output.WriteLine("Encoded message: " + LastRequest.RequestBody.GetText());
             }
-             
+            
         }
 
 
@@ -152,6 +152,7 @@ namespace IO.Ably.AcceptanceTests
             }
 
             [Fact]
+            [Trait("spec", "RSL4b")]
             public void WithStringData_SetsEncodingAndDataCorrectly()
             {
                 //Act
@@ -201,6 +202,7 @@ namespace IO.Ably.AcceptanceTests
             }
 
             [Fact]
+            [Trait("spec", "RSL4c2")]
             public void WithString_DoesNotApplyAnyEncoding()
             {
                 //Act
@@ -213,6 +215,7 @@ namespace IO.Ably.AcceptanceTests
             }
 
             [Fact]
+            [Trait("spec", "RSL4c1")]
             public void WithBinaryData_DoesNotApplyAnyEncoding()
             {
                 //Act
@@ -226,6 +229,7 @@ namespace IO.Ably.AcceptanceTests
             }
 
             [Fact]
+            [Trait("spec", "RSL4c3")]
             public void WithJsonData_AppliesCorrectEncoding()
             {
                 //Arrange

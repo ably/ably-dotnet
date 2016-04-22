@@ -108,6 +108,8 @@ namespace IO.Ably.Tests.Rest
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RSL4c4")]
+        //Uses the to publish the examples inside crypto-data-128.json to publish and then retrieve the messages
         public async Task CanPublishAMessageAndRetrieveIt(Protocol protocol)
         {
             var items = (JArray)examples["items"];

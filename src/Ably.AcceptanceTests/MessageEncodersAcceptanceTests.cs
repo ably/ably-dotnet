@@ -190,6 +190,7 @@ namespace IO.Ably.AcceptanceTests
             }
 
             [Test]
+            
             public void WithBinaryData_DoesNotApplyAnyEncoding()
             {
                 //Act
