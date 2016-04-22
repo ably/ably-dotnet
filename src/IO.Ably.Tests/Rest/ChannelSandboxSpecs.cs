@@ -25,10 +25,9 @@ namespace IO.Ably.Tests.Rest
 
         public ChannelOptions GetOptions(JObject data)
         {
-            var key = ((string) data["key"]).FromBase64();
-            var iv = ((string) data["iv"]).FromBase64();
-            var keyLength = (int) data["keylength"];
-            var cipherParams = new CipherParams("aes", key, CipherMode.CBC, keyLength, iv);
+            var key = ((string) data["key"]);
+            var iv = ((string) data["iv"]);
+            var cipherParams = new CipherParams("aes", key, CipherMode.CBC, iv);
             return new ChannelOptions(cipherParams);
         }
 

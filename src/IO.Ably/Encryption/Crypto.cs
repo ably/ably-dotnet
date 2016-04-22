@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using AblyPlatform.Cryptography;
@@ -77,14 +78,32 @@ namespace IO.Ably.Encryption
         public const int DefaultBlocklength = 16; ///bytes
         public const CipherMode DefaultMode = CipherMode.CBC;
 
-        public static CipherParams GetDefaultParams()
+        public static CipherParams GetDefaultParams(string base64EncodedKey, string base64Iv = null, CipherMode? mode = null)
         {
+            if (base64EncodedKey == null)
+            {
+                throw new ArgumentNullException(nameof(base64EncodedKey), "Base64Encoded key cannot be null");
+            }
+            return GetDefaultParams(base64EncodedKey.FromBase64(), base64Iv?.FromBase64(), mode);    
+        }
+
+        public static CipherParams GetDefaultParams(byte[] key = null, byte[] iv = null, CipherMode? mode = null)
+        {
+            if (key != null && key.Any())
+            {
+                var keyLength = key.Length*8;
+                if(keyLength != 128 && keyLength != 256)
+                    throw new AblyException($"Only 128 and 256 keys are supported. Provided key is {keyLength}", 40003, HttpStatusCode.BadRequest);
+
+                return new CipherParams(DefaultAlgorithm, key, mode, iv);
+            }
+
             using (var aes = new AesCryptoServiceProvider())
             {
-                aes.KeySize = Crypto.DefaultKeylength;
+                aes.KeySize = DefaultKeylength;
                 aes.Mode = System.Security.Cryptography.CipherMode.CBC;
                 aes.Padding = PaddingMode.PKCS7;
-                aes.BlockSize = Crypto.DefaultBlocklength * 8;
+                aes.BlockSize = DefaultBlocklength * 8;
                 aes.GenerateKey();
                 return new CipherParams(aes.Key);
             }

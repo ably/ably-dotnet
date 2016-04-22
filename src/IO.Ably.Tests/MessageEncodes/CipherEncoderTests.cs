@@ -26,7 +26,7 @@ namespace IO.Ably.Tests.MessageEncodes
             _stringData = "random-string";
             _key = GenerateKey(keyLength);
             _channelOptions =
-                new ChannelOptions(encrypt, new CipherParams(Crypto.DefaultAlgorithm, _key, Encryption.CipherMode.CBC, keyLength));
+                new ChannelOptions(encrypt, new CipherParams(Crypto.DefaultAlgorithm, _key, Encryption.CipherMode.CBC));
             _crypto = Crypto.GetCipher(_channelOptions.CipherParams);
             _encryptedData = _crypto.Encrypt(_stringData.GetBytes());
             _encryptedBinaryData = _crypto.Encrypt(_binaryData);
@@ -45,7 +45,7 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithInvalidKeyLength_Throws()
             {
-                var options = new ChannelOptions(new CipherParams(Crypto.DefaultAlgorithm, new byte[] { }, keyLength: 10));
+                var options = new ChannelOptions(new CipherParams(Crypto.DefaultAlgorithm, new byte[] {1,2,3 }));
                 var encoder = new CipherEncoder(Protocol.MsgPack);
                 var error = Assert.Throws<AblyException>(delegate
                 {

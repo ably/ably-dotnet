@@ -75,10 +75,7 @@ namespace AblyPlatform.Cryptography
             }
         }
 
-        public string Algorithm
-        {
-            get { return "AES"; }
-        }
+        public string Algorithm => "AES";
 
         /// <summary>Encrypt a byte[] using the CipherParams provided in the constructor</summary>
         /// <param name="input">byte[] to be encrypted</param>
