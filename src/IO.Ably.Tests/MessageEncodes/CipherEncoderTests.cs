@@ -4,6 +4,7 @@ using IO.Ably;
 using FluentAssertions;
 using IO.Ably.Encryption;
 using IO.Ably.MessageEncoders;
+using IO.Ably.Platform;
 using IO.Ably.Rest;
 using Xunit;
 
@@ -26,7 +27,7 @@ namespace IO.Ably.Tests.MessageEncodes
             _key = GenerateKey(keyLength);
             _channelOptions =
                 new ChannelOptions(encrypt, new CipherParams(Crypto.DefaultAlgorithm, _key, Encryption.CipherMode.CBC, keyLength));
-            _crypto = Crypto.GetCipher(_channelOptions);
+            _crypto = Crypto.GetCipher(_channelOptions.CipherParams);
             _encryptedData = _crypto.Encrypt(_stringData.GetBytes());
             _encryptedBinaryData = _crypto.Encrypt(_binaryData);
 

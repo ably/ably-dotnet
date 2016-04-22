@@ -1,5 +1,6 @@
 using System;
 using IO.Ably.Encryption;
+using IO.Ably.Platform;
 using IO.Ably.Rest;
 
 namespace IO.Ably.MessageEncoders
@@ -26,7 +27,7 @@ namespace IO.Ably.MessageEncoders
                 throw new AblyException(string.Format("Cipher algorithm {0} does not match message cipher algorithm of {1}", options.CipherParams.CipherType.ToLower(), currentEncoding), 92002);
             }
 
-            var cipher = Crypto.GetCipher(options);
+            var cipher = Crypto.GetCipher(options.CipherParams);
             try
             {
                 payload.data = cipher.Decrypt(payload.data as byte[]);
@@ -60,7 +61,7 @@ namespace IO.Ably.MessageEncoders
                 AddEncoding(payload, "utf-8");
             }
 
-            var cipher = Crypto.GetCipher(options);
+            var cipher = Crypto.GetCipher(options.CipherParams);
             payload.data = cipher.Encrypt(payload.data as byte[]);
             AddEncoding(payload, string.Format("{0}+{1}", EncodingName, options.CipherParams.CipherType.ToLower()));
         }

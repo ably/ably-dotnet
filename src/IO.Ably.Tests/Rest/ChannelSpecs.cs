@@ -7,6 +7,7 @@ using FluentAssertions;
 using Newtonsoft.Json;
 using Xunit;
 using IO.Ably.Encryption;
+using IO.Ably.Platform;
 using IO.Ably.Rest;
 using MsgPack.Serialization;
 using Xunit.Abstractions;
