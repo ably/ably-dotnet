@@ -72,9 +72,16 @@ namespace IO.Ably.Rest
         /// Obtain the set of members currently present for a channel
         /// </summary>
         /// <returns><see cref="PaginatedResult{T}"/> of the PresenseMessages</returns>
-        Task<PaginatedResult<PresenceMessage>> IPresence.Get()
+        Task<PaginatedResult<PresenceMessage>> IPresence.Get(int? limit, string clientId, string connectionId)
         {
+            if (limit.HasValue && (limit < 0 || limit > 1000))
+                throw new ArgumentException("Limit must be between 0 and 1000", nameof(limit));
+
+            var presenceLimit = limit ?? Defaults.QueryLimit;
+
             var request = _ablyRest.CreateGetRequest(_basePath + "/presence", Options);
+            request.QueryParameters.Add("limit", presenceLimit.ToString());
+            
             return _ablyRest.ExecuteRequest<PaginatedResult<PresenceMessage>>(request);
         }
 

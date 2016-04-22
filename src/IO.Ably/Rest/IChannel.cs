@@ -18,7 +18,7 @@ namespace IO.Ably.Rest
 
     public interface IPresence
     {
-        Task<PaginatedResult<PresenceMessage>> Get();
+        Task<PaginatedResult<PresenceMessage>> Get(int? limit = null, string clientId = null, string connectionId = null);
         Task<PaginatedResult<PresenceMessage>> History();
         Task<PaginatedResult<PresenceMessage>> History(DataRequestQuery query);
     }
