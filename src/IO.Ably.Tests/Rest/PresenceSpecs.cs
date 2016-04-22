@@ -8,6 +8,7 @@ namespace IO.Ably.Tests
     public class PresenceSpecs : MockHttpSpecs
     {
         [Fact]
+        [Trait("spec", "RSP1")]
         public async Task Presence_CreatesGetRequestWithCorrectPath()
         {
             var rest = GetRestClient();
@@ -19,6 +20,8 @@ namespace IO.Ably.Tests
             Assert.Equal(HttpMethod.Get, LastRequest.Method);
             Assert.Equal($"/channels/{channel.Name}/presence", LastRequest.Url);
         }
+
+
         public PresenceSpecs(ITestOutputHelper output) : base(output)
         {
         }
