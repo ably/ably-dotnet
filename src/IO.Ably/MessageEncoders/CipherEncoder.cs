@@ -20,11 +20,6 @@ namespace IO.Ably.MessageEncoders
             if (currentEncoding.Contains(EncodingName) == false)
                 return;
 
-            if (options.Encrypted == false)
-            {
-                throw new AblyException("Message cannot be decrypted as the channel is not set up for encryption & decryption", 92001);
-            }
-
             var cipherType = GetCipherType(currentEncoding);
             if (cipherType.ToLower() != options.CipherParams.CipherType.ToLower())
             {
