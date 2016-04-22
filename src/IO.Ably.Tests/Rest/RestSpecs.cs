@@ -458,17 +458,17 @@ namespace IO.Ably.Tests
             public async Task ShouldOnlyRetryFallbackHostWhileTheTimeTakenIsLessThanHttpMaxRetryDuration()
             {
 
-                var options = new ClientOptions(ValidKey) { HttpMaxRetryDuration = TimeSpan.FromSeconds(3)};
+                var options = new ClientOptions(ValidKey) { HttpMaxRetryDuration = TimeSpan.FromSeconds(11)};
                 var client = new AblyRest(options);
                 _response.StatusCode =HttpStatusCode.BadGateway;
                 var handler = new FakeHttpMessageHandler(_response,
                     () =>
                     {
-                        //Tweak time to pretend 2 seconds have ellapsed
-                        Now += TimeSpan.FromSeconds(2);
+                        //Tweak time to pretend 10 seconds have ellapsed
+                        Now += TimeSpan.FromSeconds(10);
                     });
 
-                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(3), handler);
+                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
 
                 var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
 
