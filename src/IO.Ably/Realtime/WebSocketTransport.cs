@@ -11,7 +11,7 @@ namespace IO.Ably.Realtime
 {
     internal class WebSocketTransport : ITransport
     {
-        private static readonly Dictionary<WebSocketState, TransportState> stateDict = new Dictionary
+        private static readonly Dictionary<WebSocketState, TransportState> StateDict = new Dictionary
             <WebSocketState, TransportState>
         {
             {WebSocketState.None, TransportState.Initialized},
@@ -42,7 +42,7 @@ namespace IO.Ably.Realtime
                 {
                     return TransportState.Initialized;
                 }
-                return stateDict[socket.State];
+                return StateDict[socket.State];
             }
         }
 
@@ -177,8 +177,8 @@ namespace IO.Ably.Realtime
                 socketTransport.socket.Opened += socketTransport.socket_Opened;
                 socketTransport.socket.Closed += socketTransport.socket_Closed;
                 socketTransport.socket.Error += socketTransport.socket_Error;
-                socketTransport.socket.MessageReceived += socketTransport.socket_MessageReceived;
-                socketTransport.socket.DataReceived += socketTransport.socket_DataReceived;
+                socketTransport.socket.MessageReceived += socketTransport.socket_MessageReceived; //For text messages
+                socketTransport.socket.DataReceived += socketTransport.socket_DataReceived; //For binary messages
                 return socketTransport;
             }
         }

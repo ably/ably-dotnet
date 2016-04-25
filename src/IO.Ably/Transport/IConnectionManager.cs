@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using IO.Ably.Types;
-using System.Threading.Tasks;
 
 namespace IO.Ably.Transport
 {
@@ -10,9 +10,9 @@ namespace IO.Ably.Transport
     {
         public ConnectionInfo(string connectionId, long connectionSerial, string connectionKey)
         {
-            this.ConnectionId = connectionId;
-            this.ConnectionSerial = connectionSerial;
-            this.ConnectionKey = connectionKey;
+            ConnectionId = connectionId;
+            ConnectionSerial = connectionSerial;
+            ConnectionKey = connectionKey;
         }
 
         public string ConnectionId { get; private set; }
@@ -21,17 +21,17 @@ namespace IO.Ably.Transport
     }
 
     public delegate void StateChangedDelegate(ConnectionState state, ConnectionInfo info, ErrorInfo error);
+
     public delegate void MessageReceivedDelegate(ProtocolMessage message);
 
     internal interface IConnectionManager
     {
-        event MessageReceivedDelegate MessageReceived;
-
         Connection Connection { get; }
 
-        Realtime.ConnectionState ConnectionState { get; }
+        ConnectionState ConnectionState { get; }
 
         bool IsActive { get; }
+        event MessageReceivedDelegate MessageReceived;
 
         void Connect();
 
@@ -39,8 +39,8 @@ namespace IO.Ably.Transport
 
         Task Ping();
 
-        void Send( ProtocolMessage message, Action<bool, ErrorInfo> callback );
-        Task SendAsync( ProtocolMessage message );
+        void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback);
+        Task SendAsync(ProtocolMessage message);
     }
 
     internal interface IConnectionContext

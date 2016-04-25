@@ -14,14 +14,15 @@ namespace IO.Ably.Transport
 
     internal class AcknowledgementProcessor : IAcknowledgementProcessor
     {
-        private readonly Dictionary<long, Action<bool, ErrorInfo>> ackQueue;
+        //TODO: Look at replacing this with a ConcurrentDictionary
+        private readonly Dictionary<long, Action<bool, ErrorInfo>> _ackQueue;
 
         private long msgSerial;
 
         public AcknowledgementProcessor()
         {
             msgSerial = 0;
-            ackQueue = new Dictionary<long, Action<bool, ErrorInfo>>();
+            _ackQueue = new Dictionary<long, Action<bool, ErrorInfo>>();
         }
 
         public void SendMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
@@ -33,7 +34,7 @@ namespace IO.Ably.Transport
 
             if (callback != null)
             {
-                ackQueue.Add(message.msgSerial, callback);
+                _ackQueue.Add(message.msgSerial, callback);
             }
         }
 
@@ -58,11 +59,11 @@ namespace IO.Ably.Transport
                 case Realtime.ConnectionState.Closed:
                 case Realtime.ConnectionState.Failed:
                 {
-                    foreach (var item in ackQueue)
+                    foreach (var item in _ackQueue)
                     {
                         item.Value(false, state.Error ?? ErrorInfo.ReasonUnknown);
                     }
-                    ackQueue.Clear();
+                    _ackQueue.Clear();
                     break;
                 }
             }
@@ -71,7 +72,7 @@ namespace IO.Ably.Transport
         private void Reset()
         {
             msgSerial = 0;
-            ackQueue.Clear();
+            _ackQueue.Clear();
         }
 
         private static bool AckRequired(ProtocolMessage msg)
@@ -87,7 +88,7 @@ namespace IO.Ably.Transport
             for (var i = startSerial; i <= endSerial; i++)
             {
                 Action<bool, ErrorInfo> callback;
-                if (ackQueue.TryGetValue(i, out callback))
+                if (_ackQueue.TryGetValue(i, out callback))
                 {
                     if (message.action == ProtocolMessage.MessageAction.Ack)
                     {
@@ -97,7 +98,7 @@ namespace IO.Ably.Transport
                     {
                         callback(false, message.error ?? ErrorInfo.ReasonUnknown);
                     }
-                    ackQueue.Remove(i);
+                    _ackQueue.Remove(i);
                 }
             }
         }
