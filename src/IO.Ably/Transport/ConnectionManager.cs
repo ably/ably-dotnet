@@ -47,30 +47,15 @@ namespace IO.Ably.Transport
             Connection = new Connection(this);
         }
 
-        ConnectionState IConnectionContext.State
-        {
-            get { return _state; }
-        }
+        ConnectionState IConnectionContext.State => _state;
 
-        ITransport IConnectionContext.Transport
-        {
-            get { return _transport; }
-        }
+        ITransport IConnectionContext.Transport => _transport;
 
-        Queue<ProtocolMessage> IConnectionContext.QueuedMessages
-        {
-            get { return _pendingMessages; }
-        }
+        Queue<ProtocolMessage> IConnectionContext.QueuedMessages => _pendingMessages;
 
-        DateTimeOffset? IConnectionContext.FirstConnectionAttempt
-        {
-            get { return _firstConnectionAttempt; }
-        }
+        DateTimeOffset? IConnectionContext.FirstConnectionAttempt => _firstConnectionAttempt;
 
-        int IConnectionContext.ConnectionAttempts
-        {
-            get { return _connectionAttempts; }
-        }
+        int IConnectionContext.ConnectionAttempts => _connectionAttempts;
 
         void IConnectionContext.SetState(ConnectionState newState)
         {

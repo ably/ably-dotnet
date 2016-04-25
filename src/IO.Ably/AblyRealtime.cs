@@ -57,11 +57,13 @@ namespace IO.Ably
                 Connection = connectionManager.Connection;
             }
 
-            ConnectionState state = this.Connection.State;
+            ConnectionState state = Connection.State;
             if (state == ConnectionState.Connected)
                 return Connection;
 
-            using (ConnStateAwaitor awaitor = new ConnStateAwaitor(this.Connection))
+
+            //TODO: To come back to this
+            using (ConnStateAwaitor awaitor = new ConnStateAwaitor(Connection))
             {
                 awaitor.connection.Connect();
                 return await awaitor.wait();
