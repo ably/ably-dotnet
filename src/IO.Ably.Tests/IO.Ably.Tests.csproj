@@ -108,6 +108,7 @@
     <Compile Include="CapabilityTests.cs" />
     <Compile Include="EncryptionSpecs.cs" />
     <Compile Include="MessageEncodes\MessageEncodersAcceptanceTests.cs" />
+    <Compile Include="Realtime\ConnectionSpecs.cs" />
     <Compile Include="Realtime\MockHttpRealtimeSpecs.cs" />
     <Compile Include="Rest\PresenceSandboxSpecs.cs" />
     <Compile Include="Rest\ChannelSandboxSpecs.cs" />
@@ -130,7 +131,6 @@
     <Compile Include="MessagePack\SerializationTests.cs" />
     <Compile Include="Infrastructure\MiscUtils.cs" />
     <Compile Include="Realtime\AckProtocolTests.cs" />
-    <Compile Include="Realtime\AuthenticationTests.cs" />
     <Compile Include="Realtime\ChannelListTests.cs" />
     <Compile Include="Realtime\ConnectionManagerTests.cs" />
     <Compile Include="Realtime\ConnectionStatesTests.cs" />

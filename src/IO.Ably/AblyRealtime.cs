@@ -65,7 +65,7 @@ namespace IO.Ably
             //TODO: To come back to this
             using (ConnStateAwaitor awaitor = new ConnStateAwaitor(Connection))
             {
-                awaitor.connection.Connect();
+                awaitor.Connection.Connect();
                 return await awaitor.wait();
             }
         }

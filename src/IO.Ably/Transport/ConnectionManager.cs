@@ -91,7 +91,7 @@ namespace IO.Ably.Transport
         {
             if (_firstConnectionAttempt == null)
             {
-                _firstConnectionAttempt = DateTimeOffset.UtcNow;
+                _firstConnectionAttempt = Config.Now();
             }
             _connectionAttempts++;
         }

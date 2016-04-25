@@ -9,7 +9,7 @@ namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionConnectingState : ConnectionState
     {
-        private const int ConnectTimeout = 15*1000;
+        private const int ConnectTimeout = 15*1000; //TODO: Use values from config
         private static readonly ISet<HttpStatusCode> FallbackReasons;
 
         private readonly ICountdownTimer _timer;
