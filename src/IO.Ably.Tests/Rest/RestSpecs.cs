@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    public class RestSpecs : MockHttpSpecs
+    public class RestSpecs : MockHttpRestSpecs
     {
         [Trait("spec", "RSC1")]
         public class WhenInitialisingRestClient
@@ -127,7 +127,7 @@ namespace IO.Ably.Tests
             client.Protocol.Should().Be(Protocol.Json);
         }
 
-        public class WithInvalidToken : MockHttpSpecs
+        public class WithInvalidToken : MockHttpRestSpecs
         {
             private TokenDetails _returnedDummyTokenDetails;
             private bool _firstAttempt = true;

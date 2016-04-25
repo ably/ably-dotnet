@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    public class PresenceSpecs : MockHttpSpecs
+    public class PresenceSpecs : MockHttpRestSpecs
     {
         [Fact]
         [Trait("spec", "RSP1")]

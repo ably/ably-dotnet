@@ -18,7 +18,7 @@ namespace IO.Ably.AcceptanceTests
 {
     public class MessageEncodersAcceptanceTests : AblySpecs
     {
-        public class WithSupportedPayloads : MockHttpSpecs
+        public class WithSupportedPayloads : MockHttpRestSpecs
         {
             public WithSupportedPayloads(ITestOutputHelper output) : base(output)
             {
@@ -62,7 +62,7 @@ namespace IO.Ably.AcceptanceTests
 
 
         [Trait("spec", "RSL4d")]
-        public class WithTextProtocolWithoutEncryption : MockHttpSpecs
+        public class WithTextProtocolWithoutEncryption : MockHttpRestSpecs
         {
             private AblyRest _client;
 
@@ -122,7 +122,7 @@ namespace IO.Ably.AcceptanceTests
             }
         }
 
-        public class WithTextProtocolWithEncryption : MockHttpSpecs
+        public class WithTextProtocolWithEncryption : MockHttpRestSpecs
         {
             private AblyRest _client;
             private ChannelOptions options;
@@ -187,7 +187,7 @@ namespace IO.Ably.AcceptanceTests
         }
 
         [Trait("spec", "RSL4c")]
-        public class WithBinaryProtocolWithoutEncryption : MockHttpSpecs
+        public class WithBinaryProtocolWithoutEncryption : MockHttpRestSpecs
         {
             private AblyRest _client;
 
@@ -251,7 +251,7 @@ namespace IO.Ably.AcceptanceTests
             }
         }
 
-        public class WithBinaryProtocolWithEncryption : MockHttpSpecs
+        public class WithBinaryProtocolWithEncryption : MockHttpRestSpecs
         {
             private AblyRest _client;
             private ChannelOptions options;

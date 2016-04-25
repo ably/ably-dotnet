@@ -2,25 +2,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using FluentAssertions;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    public abstract class MockHttpSpecs : AblySpecs
+    public abstract class MockHttpRealtimeSpecs : AblySpecs
     {
         internal virtual AblyResponse DefaultResponse { get; }
         internal AblyRequest LastRequest => Requests.LastOrDefault();
         internal AblyRequest FirstRequest => Requests.FirstOrDefault();
         internal List<AblyRequest> Requests { get; } = new List<AblyRequest>();
 
-        internal virtual AblyRest GetRestClient(Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null, Action<ClientOptions> setOptionsAction = null)
+        internal virtual AblyRealtime GetRealtimeClient(Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null, Action<ClientOptions> setOptionsAction = null)
         {
             var options = new ClientOptions(ValidKey) { UseBinaryProtocol = false};
             setOptionsAction?.Invoke(options);
 
-            var client = new AblyRest(options);
-            client.ExecuteHttpRequest = request =>
+            var client = new AblyRealtime(options);
+            client.RestClient.ExecuteHttpRequest = request =>
             {
                 Requests.Add(request);
                 if (handleRequestFunc != null)
@@ -32,7 +31,7 @@ namespace IO.Ably.Tests
             return client;
         }
 
-        public MockHttpSpecs(ITestOutputHelper output) : base(output)
+        public MockHttpRealtimeSpecs(ITestOutputHelper output) : base(output)
         {
         }
     }

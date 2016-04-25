@@ -108,6 +108,7 @@
     <Compile Include="CapabilityTests.cs" />
     <Compile Include="EncryptionSpecs.cs" />
     <Compile Include="MessageEncodes\MessageEncodersAcceptanceTests.cs" />
+    <Compile Include="Realtime\MockHttpRealtimeSpecs.cs" />
     <Compile Include="Rest\PresenceSandboxSpecs.cs" />
     <Compile Include="Rest\ChannelSandboxSpecs.cs" />
     <Compile Include="Rest\ChannelSpecs.cs" />
@@ -149,7 +150,7 @@
     <Compile Include="Infrastructure\ProtocolData.cs" />
     <Compile Include="Rest\AblyHttpClientSpecs.cs" />
     <Compile Include="Infrastructure\FakeHttpMessageHandler.cs" />
-    <Compile Include="Rest\MockHttpSpecs.cs" />
+    <Compile Include="Rest\MockHttpRestSpecs.cs" />
     <Compile Include="Rest\PresenceSpecs.cs" />
     <Compile Include="Rest\RestInitSpecs.cs" />
     <Compile Include="Rest\RestSandBoxSpecs.cs" />

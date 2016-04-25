@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    public class AuthorisationTests : MockHttpSpecs
+    public class AuthorisationTests : MockHttpRestSpecs
     {
         internal override AblyResponse DefaultResponse => DummyTokenResponse;
 
