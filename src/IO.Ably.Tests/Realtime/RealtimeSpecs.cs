@@ -1,10 +1,22 @@
-﻿using Xunit;
+﻿using FluentAssertions;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    public class RealtimeTests : AblySpecs
+    public class RealtimeSpecs : AblySpecs
     {
+        [Fact]
+        public void UsesSameClientOptionsAsRestClient()
+        {
+            var options = new ClientOptions(ValidKey);
+
+            var client = new AblyRealtime(options);
+
+            client.Options.Should().BeSameAs(client.RestClient.Options);
+        }
+
+
         [Fact]
         public void When_HostNotSetInOptions_UseBinaryProtocol_TrueByDefault()
         {
@@ -36,7 +48,7 @@ namespace IO.Ably.Tests
             Assert.NotNull(realtime.Auth);
         }
 
-        public RealtimeTests(ITestOutputHelper output) : base(output)
+        public RealtimeSpecs(ITestOutputHelper output) : base(output)
         {
         }
     }
