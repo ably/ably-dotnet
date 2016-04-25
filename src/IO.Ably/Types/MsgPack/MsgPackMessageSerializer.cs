@@ -142,15 +142,5 @@ namespace IO.Ably.Types
         {
             return meta.serialize( message );
         }
-
-        public object SerializeAnything(PresenceMessage message)
-        {
-            return meta.serialize(message);
-        }
-
-        public PresenceMessage DeserializePresence(byte[] data)
-        {
-            return (PresenceMessage) meta.deserialize(data);
-        }
     }
 }
