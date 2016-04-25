@@ -26,9 +26,11 @@ namespace IO.Ably.Transport
         public Mode Mode { get; set; }
 
 
-        //TODO: Move so this is handled by the Auth object and ensures all the rules about renewing are followed
+        
         public void StoreParams(WebHeaderCollection collection)
         {
+
+            //TODO: Move so this is handled by the Auth object and ensures all the rules about renewing are followed
             // auth
             if (Options.Method == AuthMethod.Basic)
             {
