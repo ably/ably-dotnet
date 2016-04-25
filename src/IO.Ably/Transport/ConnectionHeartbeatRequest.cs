@@ -1,17 +1,22 @@
 ﻿using System;
+using System.Net;
+using IO.Ably.Realtime;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
+using ConnectionState = IO.Ably.Realtime.ConnectionState;
 
 namespace IO.Ably.Transport
 {
     internal class ConnectionHeartbeatRequest
     {
-        private IConnectionManager manager;
-        private Action<bool, ErrorInfo> callback;
-        private ICountdownTimer timer;
+        private const int HeartbeatTimeout = 5*1000; //TODO: Make sure it comes from ClientOptions
 
-        private static readonly ErrorInfo DefaultError = new ErrorInfo("Unable to ping service; not connected", 40000, System.Net.HttpStatusCode.BadRequest);
-        private const int HeartbeatTimeout = 5 * 1000;
+        private static readonly ErrorInfo DefaultError = new ErrorInfo("Unable to ping service; not connected", 40000,
+            HttpStatusCode.BadRequest);
+
+        private Action<bool, ErrorInfo> _callback;
+        private IConnectionManager _manager;
+        private ICountdownTimer _timer;
 
         public static bool CanHandleMessage(ProtocolMessage message)
         {
@@ -23,11 +28,12 @@ namespace IO.Ably.Transport
             return Execute(manager, new CountdownTimer(), callback);
         }
 
-        public static ConnectionHeartbeatRequest Execute(IConnectionManager manager, ICountdownTimer timer, Action<bool, ErrorInfo> callback)
+        public static ConnectionHeartbeatRequest Execute(IConnectionManager manager, ICountdownTimer timer,
+            Action<bool, ErrorInfo> callback)
         {
-            ConnectionHeartbeatRequest request = new ConnectionHeartbeatRequest();
+            var request = new ConnectionHeartbeatRequest();
 
-            if (manager.Connection.State != Realtime.ConnectionState.Connected)
+            if (manager.Connection.State != ConnectionState.Connected)
             {
                 callback?.Invoke(false, DefaultError);
 
@@ -36,17 +42,17 @@ namespace IO.Ably.Transport
 
             if (callback != null)
             {
-                request.manager = manager;
-                request.manager.MessageReceived += request.OnMessageReceived;
-                request.manager.Connection.ConnectionStateChanged += request.OnConnectionStateChanged;
-                request.timer = timer;
-                request.callback = callback;
+                request._manager = manager;
+                request._manager.MessageReceived += request.OnMessageReceived;
+                request._manager.Connection.ConnectionStateChanged += request.OnConnectionStateChanged;
+                request._timer = timer;
+                request._callback = callback;
             }
 
             manager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat), null);
             if (callback != null)
             {
-                request.timer.Start(HeartbeatTimeout, request.OnTimeout);
+                request._timer.Start(HeartbeatTimeout, request.OnTimeout);
             }
 
             return request;
@@ -56,37 +62,37 @@ namespace IO.Ably.Transport
         {
             if (CanHandleMessage(message))
             {
-                this.FinishRequest(true, null);
+                FinishRequest(true, null);
             }
         }
 
-        private void OnConnectionStateChanged(object sender, Realtime.ConnectionStateChangedEventArgs e)
+        private void OnConnectionStateChanged(object sender, ConnectionStateChangedEventArgs e)
         {
-            if (e.CurrentState != Realtime.ConnectionState.Connected)
+            if (e.CurrentState != ConnectionState.Connected)
             {
-                this.FinishRequest(false, DefaultError);
+                FinishRequest(false, DefaultError);
             }
         }
 
         private void OnTimeout()
         {
-            this.FinishRequest(false, DefaultError);
+            FinishRequest(false, DefaultError);
         }
 
         private void FinishRequest(bool result, ErrorInfo error)
         {
-            this.manager.MessageReceived -= this.OnMessageReceived;
-            this.manager.Connection.ConnectionStateChanged -= this.OnConnectionStateChanged;
-            this.timer.Abort();
+            _manager.MessageReceived -= OnMessageReceived;
+            _manager.Connection.ConnectionStateChanged -= OnConnectionStateChanged;
+            _timer.Abort();
 
-            if (this.callback != null)
+            if (_callback != null)
             {
-                this.callback(result, error);
+                _callback(result, error);
             }
 
-            this.callback = null;
-            this.manager = null;
-            this.timer = null;
+            _callback = null;
+            _manager = null;
+            _timer = null;
         }
     }
 }

@@ -51,7 +51,6 @@ namespace IO.Ably.Transport
         Connection Connection { get; }
         DateTimeOffset? FirstConnectionAttempt { get; }
         int ConnectionAttempts { get; }
-
         void SetState(States.Connection.ConnectionState state);
         void CreateTransport(bool useFallbackHost);
         void DestroyTransport();

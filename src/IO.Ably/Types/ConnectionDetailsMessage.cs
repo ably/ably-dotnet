@@ -1,7 +1,4 @@
-﻿using MsgPack.Serialization;
-using Newtonsoft.Json;
-
-namespace IO.Ably
+﻿namespace IO.Ably
 {
     public class ConnectionDetailsMessage
     {

@@ -14,27 +14,28 @@ namespace IO.Ably.Realtime
             ConnectionState.Failed
         };
 
-        public readonly Connection connection;
-        private readonly ConnectionState m_awaitedState;
-        private readonly TaskCompletionSource<Connection> m_tcs = new TaskCompletionSource<Connection>();
+        private readonly ConnectionState _awaitedState;
+
+        public readonly Connection Connection;
+        private readonly TaskCompletionSource<Connection> taskCompletionSource = new TaskCompletionSource<Connection>();
 
         public ConnStateAwaitor(Connection connection, ConnectionState awaitedState = ConnectionState.Connected)
         {
-            this.connection = connection;
-            m_awaitedState = awaitedState;
+            Connection = connection;
+            _awaitedState = awaitedState;
             connection.ConnectionStateChanged += conn_StateChanged;
         }
 
         public void Dispose()
         {
-            connection.ConnectionStateChanged -= conn_StateChanged;
+            Connection.ConnectionStateChanged -= conn_StateChanged;
         }
 
         private void conn_StateChanged(object sender, ConnectionStateChangedEventArgs e)
         {
-            if (e.CurrentState == m_awaitedState)
+            if (e.CurrentState == _awaitedState)
             {
-                m_tcs.SetResult(connection);
+                taskCompletionSource.SetResult(Connection);
                 return; // Success :-)
             }
 
@@ -43,10 +44,10 @@ namespace IO.Ably.Realtime
 
             // Failed :-(
             if (null != e.Reason)
-                m_tcs.SetException(e.Reason.AsException());
+                taskCompletionSource.SetException(e.Reason.AsException());
 
             // TODO: improve error message
-            m_tcs.SetException(new Exception("Connection is in some failed state " + e.CurrentState));
+            taskCompletionSource.SetException(new Exception("Connection is in some failed state " + e.CurrentState));
         }
 
         public Task<Connection> wait()
@@ -56,12 +57,12 @@ namespace IO.Ably.Realtime
 
         public async Task<Connection> wait(TimeSpan timeout)
         {
-            var tResult = m_tcs.Task;
+            var tResult = taskCompletionSource.Task;
             var tTimeout = Task.Delay(timeout);
             var tCompleted = await Task.WhenAny(tResult, tTimeout);
             if (tCompleted == tResult)
                 return tResult.Result;
-            m_tcs.SetException(new TimeoutException());
+            taskCompletionSource.SetException(new TimeoutException());
             return await tResult;
         }
     }

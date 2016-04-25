@@ -8,25 +8,13 @@ namespace IO.Ably.Transport.States.Connection
             base(context)
         { }
 
-        protected override bool CanQueueMessages
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool CanQueueMessages => true;
 
-        public override Realtime.ConnectionState State
-        {
-            get
-            {
-                return Realtime.ConnectionState.Initialized;
-            }
-        }
+        public override Realtime.ConnectionState State => Realtime.ConnectionState.Initialized;
 
         public override void Connect()
         {
-            this.context.SetState(new ConnectionConnectingState(this.context));
+            context.SetState(new ConnectionConnectingState(this.context));
         }
 
         public override void Close()

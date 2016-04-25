@@ -174,7 +174,7 @@ namespace IO.Ably.Transport
         {
             if (_sync != null)
             {
-                _sync.Post(o => OnTransportError((TransportState)o, e), _transport.State);
+                _sync.Post(o => OnTransportError((TransportState) o, e), _transport.State);
                 return;
             }
             OnTransportError(_transport.State, e);
@@ -216,7 +216,7 @@ namespace IO.Ably.Transport
             if (useFallbackHost)
             {
                 var r = new Random();
-                defaultHost = Defaults.FallbackHosts[r.Next(0, 1000) % Defaults.FallbackHosts.Length];
+                defaultHost = Defaults.FallbackHosts[r.Next(0, 1000)%Defaults.FallbackHosts.Length];
             }
             var host = options.RealtimeHost.IsNotEmpty() ? options.RealtimeHost : defaultHost;
             if (options.Environment.HasValue && options.Environment != AblyEnvironment.Live)

@@ -37,15 +37,9 @@ namespace IO.Ably.Transport.States.Connection
             _useFallbackHost = useFallbackHost;
         }
 
-        public override Realtime.ConnectionState State
-        {
-            get { return Realtime.ConnectionState.Connecting; }
-        }
+        public override Realtime.ConnectionState State => Realtime.ConnectionState.Connecting;
 
-        protected override bool CanQueueMessages
-        {
-            get { return true; }
-        }
+        protected override bool CanQueueMessages => true;
 
         public override void Connect()
         {
@@ -165,7 +159,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public static bool CanConnectToAbly()
         {
-            WebRequest req = WebRequest.Create(Defaults.InternetCheckURL);
+            var req = WebRequest.Create(Defaults.InternetCheckURL);
             WebResponse res = null;
             try
             {
@@ -178,7 +172,7 @@ namespace IO.Ably.Transport.States.Connection
             }
             using (var resStream = res.GetResponseStream())
             {
-                using (StreamReader reader = new StreamReader(resStream))
+                using (var reader = new StreamReader(resStream))
                 {
                     return reader.ReadLine() == Defaults.InternetCheckOKMessage;
                 }
