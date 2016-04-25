@@ -34,6 +34,20 @@ namespace IO.Ably.Types
                 } );
 
             TypeMetadata mdPresence = new TypeMetadata( typeof( PresenceMessage ) );
+            mdPresence.setCustom("data",
+                (obj, packer) =>
+                {
+                    object data = ((PresenceMessage)obj).data;
+                    if (data is byte[])
+                        packer.PackRaw(data as byte[]);
+                    else
+                        packer.PackString(data.ToString());
+                },
+                (unpacker, obj) =>
+                {
+                    MessagePackObject result = unpacker.ReadItemData();
+                    ((PresenceMessage)obj).data = result.unpack();
+                });
 
             meta.setCustom( "messages",
                 ( obj, packer ) =>
@@ -127,6 +141,16 @@ namespace IO.Ably.Types
         public object SerializeProtocolMessage( ProtocolMessage message )
         {
             return meta.serialize( message );
+        }
+
+        public object SerializeAnything(PresenceMessage message)
+        {
+            return meta.serialize(message);
+        }
+
+        public PresenceMessage DeserializePresence(byte[] data)
+        {
+            return (PresenceMessage) meta.deserialize(data);
         }
     }
 }
