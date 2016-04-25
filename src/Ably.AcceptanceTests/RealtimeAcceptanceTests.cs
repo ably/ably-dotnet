@@ -34,9 +34,8 @@ namespace IO.Ably.AcceptanceTests
         public void TestCanConnectToAbly()
         {
             // Act
-            bool result = AblyRealtime.CanConnectToAbly();
 
-            Assert.True(result);
+            Assert.True(false); //Fail the test until properly exposed
         }
 
         [Test]

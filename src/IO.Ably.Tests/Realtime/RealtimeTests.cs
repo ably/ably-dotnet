@@ -1,14 +1,10 @@
-﻿using IO.Ably.Realtime;
-using IO.Ably.Transport;
-using Moq;
-using Xunit;
+﻿using Xunit;
+using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    public class RealtimeTests
+    public class RealtimeTests : AblySpecs
     {
-        private static readonly string Debug_Key = "123.456:789";
-
         [Fact]
         public void When_HostNotSetInOptions_UseBinaryProtocol_TrueByDefault()
         {
@@ -22,22 +18,26 @@ namespace IO.Ably.Tests
         [Fact]
         public void New_Realtime_HasConnection()
         {
-            AblyRealtime realtime = new AblyRealtime(Debug_Key);
+            AblyRealtime realtime = new AblyRealtime(ValidKey);
             Assert.NotNull(realtime.Connection);
         }
 
         [Fact]
         public void New_Realtime_HasChannels()
         {
-            AblyRealtime realtime = new AblyRealtime(Debug_Key);
+            AblyRealtime realtime = new AblyRealtime(ValidKey);
             Assert.NotNull(realtime.Channels);
         }
 
         [Fact]
         public void New_Realtime_HasAuth()
         {
-            AblyRealtime realtime = new AblyRealtime(Debug_Key);
+            AblyRealtime realtime = new AblyRealtime(ValidKey);
             Assert.NotNull(realtime.Auth);
+        }
+
+        public RealtimeTests(ITestOutputHelper output) : base(output)
+        {
         }
     }
 }

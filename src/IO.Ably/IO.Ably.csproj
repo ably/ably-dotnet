@@ -39,7 +39,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AblyBase.cs" />
     <Compile Include="AblyEnvironment.cs" />
     <Compile Include="AblyException.cs" />
     <Compile Include="AblyRealtime.cs" />

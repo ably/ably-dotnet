@@ -7,10 +7,7 @@ using System.Threading.Tasks;
 
 namespace IO.Ably
 {
-    /// <summary>
-    ///
-    /// </summary>
-    public class AblyRealtime : AblyBase
+    public class AblyRealtime
     {
         /// <summary></summary>
         /// <param name="key"></param>
@@ -25,11 +22,14 @@ namespace IO.Ably
         public AblyRealtime(ClientOptions options)
         {
             RestClient = new AblyRest(options);
+
+            //TODO: Change this and allow a way to check to log exceptions
             if (options.AutoConnect)
                 Connect().IgnoreExceptions();
         }
 
         public AblyRest RestClient { get; }
+
         internal AblyAuth Auth => RestClient.AblyAuth;
         internal ClientOptions Options => RestClient.Options;
 
