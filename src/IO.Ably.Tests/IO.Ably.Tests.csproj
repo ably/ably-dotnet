@@ -121,6 +121,7 @@
     <Compile Include="MessageEncodes\Base64EncoderTests.cs" />
     <Compile Include="MessageEncodes\CipherEncoderTests.cs" />
     <Compile Include="MessageEncodes\JsonEncoderTests.cs" />
+    <Compile Include="MessageEncodes\SerializationSpecs.cs" />
     <Compile Include="MessageEncodes\Utf8EncoderTests.cs" />
     <Compile Include="MessagePack\SerializationTests.cs" />
     <Compile Include="MiscUtils.cs" />

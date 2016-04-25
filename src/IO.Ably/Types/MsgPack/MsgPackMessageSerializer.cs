@@ -34,6 +34,20 @@ namespace IO.Ably.Types
                 } );
 
             TypeMetadata mdPresence = new TypeMetadata( typeof( PresenceMessage ) );
+            mdPresence.setCustom("data",
+                (obj, packer) =>
+                {
+                    object data = ((PresenceMessage)obj).data;
+                    if (data is byte[])
+                        packer.PackRaw(data as byte[]);
+                    else
+                        packer.PackString(data.ToString());
+                },
+                (unpacker, obj) =>
+                {
+                    MessagePackObject result = unpacker.ReadItemData();
+                    ((PresenceMessage)obj).data = result.unpack();
+                });
 
             meta.setCustom( "messages",
                 ( obj, packer ) =>
