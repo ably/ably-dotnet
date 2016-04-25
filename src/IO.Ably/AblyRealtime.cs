@@ -53,7 +53,7 @@ namespace IO.Ably
 
                 IConnectionManager connectionManager = new ConnectionManager(options);
                 IChannelFactory factory = new ChannelFactory() { ConnectionManager = connectionManager, Options = options };
-                Channels = new ChannelList(connectionManager, factory);
+                Channels = new ChannelList(factory);
                 Connection = connectionManager.Connection;
             }
 
