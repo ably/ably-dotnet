@@ -112,7 +112,7 @@ namespace IO.Ably
 
         /// <summary>Retrieves the ably service time</summary>
         public Task<DateTimeOffset> Time()
-        {
+        { 
             return RestClient.Time();
         }
 

@@ -1,4 +1,6 @@
-﻿using FluentAssertions;
+﻿using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using FluentAssertions;
 using IO.Ably.Realtime;
 using Xunit;
 using Xunit.Abstractions;
@@ -53,6 +55,27 @@ namespace IO.Ably.Tests
                 LastRequest.Url.Should().Contain("stats");
             }
 
+            [Fact]
+            [Trait("spec", "RTC5b")]
+            public void ShouldImplementTheSameStatsInterfaceAsTheRestClient()
+            {
+                (_client is IStatsCommands).Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RTC6a")]
+            public async Task ShouldImplementTheTimeFunction()
+            {
+                try
+                {
+                    await _client.Time();
+                }
+                catch
+                {
+                    //ignore processing errors and only care about the request
+                }
+                LastRequest.Url.Should().Contain("time");
+            }
 
 
             public RealtimeProperiesSpec(ITestOutputHelper output) : base(output)
