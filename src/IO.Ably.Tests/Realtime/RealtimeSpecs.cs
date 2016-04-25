@@ -46,11 +46,14 @@ namespace IO.Ably.Tests
             }
 
             [Fact]
+            [Trait("spec", "RTC5a")]
             public void ShouldProxyRestClientStats()
             {
                 _client.Stats();
                 LastRequest.Url.Should().Contain("stats");
             }
+
+
 
             public RealtimeProperiesSpec(ITestOutputHelper output) : base(output)
             {
