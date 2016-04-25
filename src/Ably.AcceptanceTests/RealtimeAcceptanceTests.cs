@@ -7,27 +7,27 @@ using System.Threading.Tasks;
 
 namespace IO.Ably.AcceptanceTests
 {
-    [TestFixture( Protocol.MsgPack )]
-    [TestFixture( Protocol.Json )]
+    [TestFixture(Protocol.MsgPack)]
+    [TestFixture(Protocol.Json)]
     [Ignore("Will get those fixed after getting the rest tests to work")]
     public class RealtimeAcceptanceTests
     {
         private readonly bool _binaryProtocol;
 
-        public RealtimeAcceptanceTests( Protocol binaryProtocol )
+        public RealtimeAcceptanceTests(Protocol binaryProtocol)
         {
             _binaryProtocol = binaryProtocol == Protocol.MsgPack;
         }
 
-        private AblyRealtime GetRealtimeClient( Action<AblyRealtimeOptions> setup = null )
+        private AblyRealtime GetRealtimeClient(Action<ClientOptions> setup = null)
         {
-            var options = TestsSetup.GetDefaultOptions<AblyRealtimeOptions>();
+            var options = TestsSetup.GetDefaultOptions<ClientOptions>();
             options.UseBinaryProtocol = _binaryProtocol;
-            if( setup != null )
+            if (setup != null)
             {
-                setup( options );
+                setup(options);
             }
-            return new AblyRealtime( options );
+            return new AblyRealtime(options);
         }
 
         [Test]
@@ -36,7 +36,7 @@ namespace IO.Ably.AcceptanceTests
             // Act
             bool result = AblyRealtime.CanConnectToAbly();
 
-            Assert.True( result );
+            Assert.True(result);
         }
 
         [Test]
@@ -46,7 +46,7 @@ namespace IO.Ably.AcceptanceTests
             var client = GetRealtimeClient();
 
             // Assert
-            client.Connection.State.ShouldBeEquivalentTo( Realtime.ConnectionState.Connecting );
+            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionState.Connecting);
             client.Connection.Close();
         }
 
@@ -58,20 +58,20 @@ namespace IO.Ably.AcceptanceTests
             AutoResetEvent signal = new AutoResetEvent(false);
             var args = new List<Realtime.ConnectionStateChangedEventArgs>();
 
-            client.Connection.ConnectionStateChanged += ( s, e ) =>
+            client.Connection.ConnectionStateChanged += (s, e) =>
             {
-                args.Add( e );
+                args.Add(e);
                 signal.Set();
             };
 
             // Assert
-            signal.WaitOne( 10000 );
+            signal.WaitOne(10000);
 
-            args.Count.ShouldBeEquivalentTo( 1 );
-            args[ 0 ].CurrentState.ShouldBeEquivalentTo( Realtime.ConnectionState.Connected );
-            args[ 0 ].PreviousState.ShouldBeEquivalentTo( Realtime.ConnectionState.Connecting );
-            args[ 0 ].Reason.ShouldBeEquivalentTo( null );
-            client.Connection.State.ShouldBeEquivalentTo( Realtime.ConnectionState.Connected );
+            args.Count.ShouldBeEquivalentTo(1);
+            args[0].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionState.Connected);
+            args[0].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionState.Connecting);
+            args[0].Reason.ShouldBeEquivalentTo(null);
+            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionState.Connected);
         }
 
         [Test]
@@ -82,32 +82,32 @@ namespace IO.Ably.AcceptanceTests
             AutoResetEvent signal = new AutoResetEvent(false);
             var args = new List<Realtime.ConnectionStateChangedEventArgs>();
 
-            client.Connection.ConnectionStateChanged += ( s, e ) =>
+            client.Connection.ConnectionStateChanged += (s, e) =>
             {
-                args.Add( e );
-                if( args.Count == 2 ) signal.Set();
+                args.Add(e);
+                if (args.Count == 2) signal.Set();
             };
 
             // Act
-            client.Connection.State.ShouldBeEquivalentTo( Realtime.ConnectionState.Initialized );
+            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionState.Initialized);
             await client.Connect();
 
             // Assert
-            client.Connection.State.ShouldBeEquivalentTo( Realtime.ConnectionState.Connecting );
+            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionState.Connecting);
 
-            args.Count.ShouldBeEquivalentTo( 1 );
-            args[ 0 ].PreviousState.ShouldBeEquivalentTo( Realtime.ConnectionState.Initialized );
-            args[ 0 ].CurrentState.ShouldBeEquivalentTo( Realtime.ConnectionState.Connecting );
-            args[ 0 ].Reason.ShouldBeEquivalentTo( null );
+            args.Count.ShouldBeEquivalentTo(1);
+            args[0].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionState.Initialized);
+            args[0].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionState.Connecting);
+            args[0].Reason.ShouldBeEquivalentTo(null);
 
-            signal.WaitOne( 10000 );
+            signal.WaitOne(10000);
 
-            args.Count.ShouldBeEquivalentTo( 2 );
-            args[ 1 ].PreviousState.ShouldBeEquivalentTo( Realtime.ConnectionState.Connecting );
-            args[ 1 ].CurrentState.ShouldBeEquivalentTo( Realtime.ConnectionState.Connected );
-            args[ 1 ].Reason.ShouldBeEquivalentTo( null );
+            args.Count.ShouldBeEquivalentTo(2);
+            args[1].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionState.Connecting);
+            args[1].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionState.Connected);
+            args[1].Reason.ShouldBeEquivalentTo(null);
 
-            client.Connection.State.ShouldBeEquivalentTo( Realtime.ConnectionState.Connected );
+            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionState.Connected);
         }
 
         [Test]
@@ -118,42 +118,42 @@ namespace IO.Ably.AcceptanceTests
             Semaphore signal = new Semaphore(0, 3);
             var args = new List<Realtime.ConnectionStateChangedEventArgs>();
 
-            client.Connection.ConnectionStateChanged += ( s, e ) =>
+            client.Connection.ConnectionStateChanged += (s, e) =>
             {
-                args.Add( e );
+                args.Add(e);
                 signal.Release();
             };
 
-            signal.WaitOne( 10000 );
-            client.Connection.State.ShouldBeEquivalentTo( Realtime.ConnectionState.Connected );
+            signal.WaitOne(10000);
+            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionState.Connected);
 
             // Act
             client.Close();
 
             // Assert
-            signal.WaitOne( 10000 );
-            args.Count.ShouldBeEquivalentTo( 2 );
-            args[ 1 ].PreviousState.ShouldBeEquivalentTo( Realtime.ConnectionState.Connected );
-            args[ 1 ].CurrentState.ShouldBeEquivalentTo( Realtime.ConnectionState.Closing );
-            args[ 1 ].Reason.ShouldBeEquivalentTo( ErrorInfo.ReasonClosed );
+            signal.WaitOne(10000);
+            args.Count.ShouldBeEquivalentTo(2);
+            args[1].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionState.Connected);
+            args[1].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionState.Closing);
+            args[1].Reason.ShouldBeEquivalentTo(ErrorInfo.ReasonClosed);
 
-            signal.WaitOne( 10000 );
-            args.Count.ShouldBeEquivalentTo( 3 );
-            args[ 2 ].PreviousState.ShouldBeEquivalentTo( Realtime.ConnectionState.Closing );
-            args[ 2 ].CurrentState.ShouldBeEquivalentTo( Realtime.ConnectionState.Closed );
-            args[ 2 ].Reason.ShouldBeEquivalentTo( ErrorInfo.ReasonClosed );
+            signal.WaitOne(10000);
+            args.Count.ShouldBeEquivalentTo(3);
+            args[2].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionState.Closing);
+            args[2].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionState.Closed);
+            args[2].Reason.ShouldBeEquivalentTo(ErrorInfo.ReasonClosed);
         }
 
-        static Tuple<DateTime?, AblyException> time( AblyRealtime client )
+        static Tuple<DateTimeOffset?, AblyException> Time(AblyRealtime client)
         {
             try
             {
-                DateTime? dt = client.Time().Result;
-                return new Tuple<DateTime?, AblyException>( dt, null );
+                DateTimeOffset? dt = client.Time().Result;
+                return new Tuple<DateTimeOffset?, AblyException>(dt, null);
             }
-            catch( Exception ex )
+            catch (Exception ex)
             {
-                return new Tuple<DateTime?, AblyException>( null, new AblyException( ex ) );
+                return new Tuple<DateTimeOffset?, AblyException>(null, new AblyException(ex));
             }
         }
 
@@ -162,31 +162,30 @@ namespace IO.Ably.AcceptanceTests
         {
             // Arrange
             var client = GetRealtimeClient();
-            AutoResetEvent signal = new AutoResetEvent(false);
 
-            Tuple<DateTime?, AblyException> result = time( client );
+            var result = Time(client);
 
-            Assert.NotNull( result );
-            Assert.NotNull( result.Item1 );
-            Logger.Info( "Local {0}, server {1}", DateTime.UtcNow, result.Item1.Value );
-            Assert.IsTrue( ( DateTime.UtcNow - result.Item1.Value ).TotalSeconds < 3 );
-            Assert.Null( result.Item2 );
+            Assert.NotNull(result);
+            Assert.NotNull(result.Item1);
+            Logger.Info("Local {0}, server {1}", DateTimeOffset.UtcNow, result.Item1.Value);
+            Assert.IsTrue((DateTimeOffset.UtcNow - result.Item1.Value).TotalSeconds < 3);
+            Assert.Null(result.Item2);
         }
 
         [Test]
         public void TestRealtimeClient_Time_WhenError()
         {
             // Arrange
-            var client = new AblyRealtime(new AblyRealtimeOptions("123.456:789") { Host = "nohost.tt" });
+            var client = new AblyRealtime(new ClientOptions("123.456:789") { RealtimeHost = "nohost.tt" });
             AutoResetEvent signal = new AutoResetEvent(false);
 
-            Tuple<DateTime?, AblyException> result = time( client );
+            var result = Time(client);
 
             // Assert
-            signal.WaitOne( 10000 );
-            Assert.NotNull( result );
-            Assert.Null( result.Item1 );
-            Assert.NotNull( result.Item2 );
+            signal.WaitOne(10000);
+            Assert.NotNull(result);
+            Assert.Null(result.Item1);
+            Assert.NotNull(result.Item2);
         }
 
         [Test]
@@ -196,20 +195,20 @@ namespace IO.Ably.AcceptanceTests
             var client = GetRealtimeClient(o => o.AutoConnect = false);
             AutoResetEvent signal = new AutoResetEvent(false);
 
-            client.Connection.ConnectionStateChanged += ( s, e ) =>
+            client.Connection.ConnectionStateChanged += (s, e) =>
             {
-                if( e.CurrentState == Realtime.ConnectionState.Connected )
+                if (e.CurrentState == Realtime.ConnectionState.Connected)
                     signal.Set();
             };
             string keyBeforeConnect = client.Connection.Id;
 
             // Act
             await client.Connect();
-            signal.WaitOne( 10000 );
+            signal.WaitOne(10000);
 
             // Assert
-            Assert.IsNull( keyBeforeConnect );
-            Assert.IsNotNull( client.Connection.Id );
+            Assert.IsNull(keyBeforeConnect);
+            Assert.IsNotNull(client.Connection.Id);
         }
 
         [Test]
@@ -222,17 +221,17 @@ namespace IO.Ably.AcceptanceTests
             Semaphore signal = new Semaphore(0, clientCount);
 
             // Act
-            for( int i = 0; i < clientCount; i++ )
+            for (int i = 0; i < clientCount; i++)
             {
                 var client = GetRealtimeClient(o => o.AutoConnect = false);
 
-                client.Connection.ConnectionStateChanged += ( s, e ) =>
+                client.Connection.ConnectionStateChanged += (s, e) =>
                 {
-                    if( e.CurrentState == Realtime.ConnectionState.Connected )
+                    if (e.CurrentState == Realtime.ConnectionState.Connected)
                     {
-                        lock ( ids )
+                        lock (ids)
                         {
-                            ids.Add( client.Connection.Id );
+                            ids.Add(client.Connection.Id);
                         }
                         signal.Release();
                     }
@@ -242,13 +241,13 @@ namespace IO.Ably.AcceptanceTests
             }
 
             // wait for all to complete
-            for( int i = 0; i < clientCount; i++ )
+            for (int i = 0; i < clientCount; i++)
             {
-                signal.WaitOne( 10000 );
+                signal.WaitOne(10000);
             }
 
             // Assert
-            ids.Count.ShouldBeEquivalentTo( clientCount );
+            ids.Count.ShouldBeEquivalentTo(clientCount);
         }
 
         [Test]
@@ -258,20 +257,20 @@ namespace IO.Ably.AcceptanceTests
             var client = GetRealtimeClient(o => o.AutoConnect = false);
             AutoResetEvent signal = new AutoResetEvent(false);
 
-            client.Connection.ConnectionStateChanged += ( s, e ) =>
+            client.Connection.ConnectionStateChanged += (s, e) =>
             {
-                if( e.CurrentState == Realtime.ConnectionState.Connected )
+                if (e.CurrentState == Realtime.ConnectionState.Connected)
                     signal.Set();
             };
             string keyBeforeConnect = client.Connection.Key;
 
             // Act
             await client.Connect();
-            signal.WaitOne( 10000 );
+            signal.WaitOne(10000);
 
             // Assert
-            Assert.IsNull( keyBeforeConnect );
-            Assert.IsNotNull( client.Connection.Key );
+            Assert.IsNull(keyBeforeConnect);
+            Assert.IsNotNull(client.Connection.Key);
         }
 
         [Test]
@@ -284,17 +283,17 @@ namespace IO.Ably.AcceptanceTests
             Semaphore signal = new Semaphore(0, clientCount);
 
             // Act
-            for( int i = 0; i < clientCount; i++ )
+            for (int i = 0; i < clientCount; i++)
             {
                 var client = GetRealtimeClient(o => o.AutoConnect = false);
 
-                client.Connection.ConnectionStateChanged += ( s, e ) =>
+                client.Connection.ConnectionStateChanged += (s, e) =>
                 {
-                    if( e.CurrentState == Realtime.ConnectionState.Connected )
+                    if (e.CurrentState == Realtime.ConnectionState.Connected)
                     {
-                        lock ( keys )
+                        lock (keys)
                         {
-                            keys.Add( client.Connection.Key );
+                            keys.Add(client.Connection.Key);
                         }
                         signal.Release();
                     }
@@ -304,13 +303,13 @@ namespace IO.Ably.AcceptanceTests
             }
 
             // wait for all to complete
-            for( int i = 0; i < clientCount; i++ )
+            for (int i = 0; i < clientCount; i++)
             {
-                signal.WaitOne( 10000 );
+                signal.WaitOne(10000);
             }
 
             // Assert
-            keys.Count.ShouldBeEquivalentTo( clientCount );
+            keys.Count.ShouldBeEquivalentTo(clientCount);
         }
 
         [Test]
@@ -321,22 +320,22 @@ namespace IO.Ably.AcceptanceTests
             AutoResetEvent signal = new AutoResetEvent(false);
             var args = new List<Realtime.ConnectionStateChangedEventArgs>();
 
-            client.Connection.ConnectionStateChanged += ( s, e ) =>
+            client.Connection.ConnectionStateChanged += (s, e) =>
             {
-                args.Add( e );
+                args.Add(e);
                 signal.Set();
             };
 
             // Assert
-            signal.WaitOne( 10000 );
+            signal.WaitOne(10000);
 
-            args.Count.ShouldBeEquivalentTo( 1 );
-            args[ 0 ].CurrentState.ShouldBeEquivalentTo( Realtime.ConnectionState.Failed );
-            args[ 0 ].PreviousState.ShouldBeEquivalentTo( Realtime.ConnectionState.Connecting );
-            args[ 0 ].Reason.ShouldBeEquivalentTo( client.Connection.Reason );
-            client.Connection.State.ShouldBeEquivalentTo( Realtime.ConnectionState.Failed );
-            client.Connection.Reason.code.ShouldBeEquivalentTo( 40400 );
-            client.Connection.Reason.statusCode.ShouldBeEquivalentTo( System.Net.HttpStatusCode.NotFound );
+            args.Count.ShouldBeEquivalentTo(1);
+            args[0].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionState.Failed);
+            args[0].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionState.Connecting);
+            args[0].Reason.ShouldBeEquivalentTo(client.Connection.Reason);
+            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionState.Failed);
+            client.Connection.Reason.code.ShouldBeEquivalentTo(40400);
+            client.Connection.Reason.statusCode.ShouldBeEquivalentTo(System.Net.HttpStatusCode.NotFound);
         }
 
         [Test]
@@ -346,15 +345,15 @@ namespace IO.Ably.AcceptanceTests
             var client = GetRealtimeClient();
             AutoResetEvent signal = new AutoResetEvent(false);
 
-            client.Connection.ConnectionStateChanged += ( s, e ) =>
+            client.Connection.ConnectionStateChanged += (s, e) =>
             {
                 signal.Set();
             };
 
             // Assert
-            signal.WaitOne( 10000 );
+            signal.WaitOne(10000);
 
-            client.Connection.Serial.ShouldBeEquivalentTo( -1 );
+            client.Connection.Serial.ShouldBeEquivalentTo(-1);
         }
     }
 }

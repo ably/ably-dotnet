@@ -15,11 +15,11 @@ namespace IO.Ably.AcceptanceTests
 
         private static TestVars GetTestData()
         {
-            return new TestVars { tls = false, keys = new List<Key>(), Environment = AblyEnvironment.Sandbox};
+            return new TestVars { tls = true, keys = new List<Key>(), Environment = AblyEnvironment.Sandbox};
         }
 
         public static T GetDefaultOptions<T>()
-            where T : AblyOptions, new()
+            where T : ClientOptions, new()
         {
             return new T
             {
@@ -29,18 +29,19 @@ namespace IO.Ably.AcceptanceTests
             };
         }
 
-        public static AblyOptions GetDefaultOptions()
+        public static ClientOptions GetDefaultOptions()
         {
-            return GetDefaultOptions<AblyOptions>();
+            return GetDefaultOptions<ClientOptions>();
         }
 
         [OneTimeSetUp]
-        public void RunBeforeAllTests()
+        public async Task RunBeforeAllTests()
         {
             TestData = GetTestData();
             
             TestData.TestAppSpec = JObject.Parse(ResourceHelper.GetResource("testAppSpec.json"));
-            AblyHttpClient client = new AblyHttpClient(TestData.restHost, null, TestData.tls, null);
+            var httpOptions = new AblyHttpOptions() {Host = TestData.RestHost, IsSecure = TestData.tls };
+            AblyHttpClient client = new AblyHttpClient(httpOptions);
             AblyRequest request = new AblyRequest("/apps", HttpMethod.Post);
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
@@ -63,7 +64,7 @@ namespace IO.Ably.AcceptanceTests
                 TestData.keys.Add(testkey);
             }
 
-            //SetupSampleStats();
+            await SetupSampleStats();
         }
 
         public async Task SetupSampleStats()
@@ -78,11 +79,13 @@ namespace IO.Ably.AcceptanceTests
             json = json.Replace("[[Interval3]]", interval3.ToString("yyyy-MM-dd:HH:mm"));
 
             AblyRest ablyRest = new AblyRest(TestData.keys.First().keyStr);
-            AblyHttpClient client = new AblyHttpClient(TestsSetup.TestData.restHost, null, TestsSetup.TestData.tls, null);
+            var httpOptions = new AblyHttpOptions() { Host = TestData.RestHost, IsSecure = TestData.tls };
+            AblyHttpClient client = new AblyHttpClient(httpOptions);
             AblyRequest request = new AblyRequest("/stats", HttpMethod.Post);
+            request.Protocol = Protocol.Json;
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
-            await ablyRest.AddAuthHeader(request);
+            await ablyRest.AblyAuth.AddAuthHeader(request);
             request.RequestBody = json.GetBytes();
 
             var response = client.Execute(request).Result;

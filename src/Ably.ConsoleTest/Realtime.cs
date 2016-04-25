@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace IO.Ably.ConsoleTest
 {
@@ -6,9 +7,9 @@ namespace IO.Ably.ConsoleTest
     {
         public static async Task Test()
         {
-            var options = new AblyRealtimeOptions()
+            var options = new ClientOptions()
             {
-                AuthUrl = "https://www.ably.io/ably-auth/token-request/demos",
+                AuthUrl = new Uri("https://www.ably.io/ably-auth/token-request/demos"),
                 ClientId = "stan",
                 Tls = false,
             };

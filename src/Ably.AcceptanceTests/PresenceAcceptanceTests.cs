@@ -20,7 +20,7 @@ namespace IO.Ably.AcceptanceTests
         {
             var testData = TestsSetup.TestData;
 
-            var options = new AblyOptions
+            var options = new ClientOptions
             {
                 Key = testData.keys.First().keyStr,
                 UseBinaryProtocol = _protocol == Protocol.MsgPack,
@@ -36,7 +36,7 @@ namespace IO.Ably.AcceptanceTests
             string channelName = "persisted:presence_fixtures";
             var ably = GetAbly();
             var channel = ably.Channels.Get(channelName);
-            var presence = await channel.Presence();
+             var presence = await channel.Presence();
 
             presence.Should().HaveCount(4);
             foreach (var presenceMessage in presence)

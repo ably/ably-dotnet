@@ -10,21 +10,21 @@ namespace IO.Ably.ConsoleTest
     {
         static AblyRest GetRestClient()
         {
-            AblyOptions options = new AblyOptions();
+            ClientOptions options = new ClientOptions();
             options.Environment = AblyEnvironment.Sandbox;
             options.Tls = true;
             options.UseBinaryProtocol = false;
             return new AblyRest( options );
         }
 
-        static TokenRequest CreateTokenRequest( Capability capability, TimeSpan? ttl = null )
+        static TokenParams CreateTokenRequest( Capability capability, TimeSpan? ttl = null )
         {
-            TokenRequest res = new TokenRequest();
-            res.ClientId = "John";
-            res.Capability = capability;
+            var tokenParams = new TokenParams();
+            tokenParams.ClientId = "John";
+            tokenParams.Capability = capability;
             if( ttl.HasValue )
-                res.Ttl = ttl.Value;
-            return res;
+                tokenParams.Ttl = ttl.Value;
+            return tokenParams;
         }
 
         public static async Task Test()
@@ -42,7 +42,7 @@ namespace IO.Ably.ConsoleTest
             // Verify we can publish
             IChannel channel = ably.Channels.Get( "persisted:presence_fixtures" );
 
-            DateTime tsPublish = DateTime.UtcNow;
+            var tsPublish = DateTimeOffset.UtcNow;
             await channel.Publish( "test", true );
 
             ConsoleColor.DarkGreen.writeLine( "Getting the history.." );
@@ -53,8 +53,8 @@ namespace IO.Ably.ConsoleTest
                 throw new ApplicationException( "Message lost: not on the history" );
 
             Message msg = history.First();
-            DateTime tsNow = DateTime.UtcNow;
-            DateTime tsHistory = msg.timestamp.Value;
+            var tsNow = DateTimeOffset.UtcNow;
+            var tsHistory = msg.timestamp.Value;
 
             if( tsHistory < tsPublish )
                 throw new ApplicationException( "Timestamp's too early. Please ensure your PC's time is correct, use e.g. time.nist.gov server." );

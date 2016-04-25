@@ -1,0 +1,44 @@
+using System.Collections.Generic;
+using System.Linq;
+using IO.Ably.Transport;
+using Xunit;
+
+namespace IO.Ably.Tests
+{
+    [CollectionDefinition("AblyRest SandBox Collection")]
+    public class AblyCollectionFixture : ICollectionFixture<AblySandboxFixture> { }
+
+    public class Key
+    {
+        public string KeyName { get; set; }
+        public string KeySecret { get; set; }
+        public string KeyStr { get; set; }
+        public string Capability { get; set; }
+    }
+
+    public class TestEnvironmentSettings
+    {
+        public string AppId { get; set; }
+        public List<Key> Keys { get; set; }
+
+        public string FirstValidKey => Keys.FirstOrDefault()?.KeyStr;
+
+        public bool Tls { get; set; }
+        public AblyEnvironment Environment => AblyEnvironment.Sandbox;
+
+        public TestEnvironmentSettings()
+        {
+            Keys = new List<Key>();
+        }
+
+        internal AblyHttpClient GetHttpClient()
+        {
+            return new AblyHttpClient(new AblyHttpOptions() { IsSecure = Tls, Environment = Environment });
+        }
+
+        public ClientOptions CreateDefaultOptions()
+        {
+            return new ClientOptions() { Key = FirstValidKey, Tls = Tls, Environment = Environment };
+        }
+    }
+}
