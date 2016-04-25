@@ -4,7 +4,12 @@ using System.Threading.Tasks;
 
 namespace IO.Ably
 {
-    public interface IRestClient : IChannelCommands
+    public interface IRealtimeClient : IStatsCommands
+    {
+        
+    }
+
+    public interface IRestClient : IStatsCommands, IChannelCommands
     {
         /// <summary>Authentication methods</summary>
         IAuthCommands Auth { get; }
@@ -15,7 +20,10 @@ namespace IO.Ably
         /// <summary>Retrieves the ably service time</summary>
         /// <returns></returns>
         Task<DateTimeOffset> Time();
+    }
 
+    public interface IStatsCommands
+    {
         /// <summary>Retrieves the stats for the application. Passed default <see cref="StatsDataRequestQuery"/> for the request</summary>
         /// <returns></returns>
         Task<PaginatedResult<Stats>> Stats();

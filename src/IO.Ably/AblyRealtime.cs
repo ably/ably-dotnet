@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace IO.Ably
 {
-    public class AblyRealtime
+    public class AblyRealtime : IRealtimeClient
     {
         /// <summary></summary>
         /// <param name="key"></param>
@@ -114,6 +114,21 @@ namespace IO.Ably
         public Task<DateTimeOffset> Time()
         {
             return RestClient.Time();
+        }
+
+        public Task<PaginatedResult<Stats>> Stats()
+        {
+            return RestClient.Stats();
+        }
+
+        public Task<PaginatedResult<Stats>> Stats(StatsDataRequestQuery query)
+        {
+            return RestClient.Stats(query);
+        }
+
+        public Task<PaginatedResult<Stats>> Stats(DataRequestQuery query)
+        {
+            return RestClient.Stats(query);
         }
     }
 }
