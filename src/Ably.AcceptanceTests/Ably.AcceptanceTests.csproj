@@ -91,13 +91,10 @@
     <Compile Include="ChannelMessagesAcceptanceTests.cs" />
     <Compile Include="DateHelper.cs" />
     <Compile Include="Key.cs" />
-    <Compile Include="LoggerTests.cs" />
-    <Compile Include="MessageEncodersAcceptanceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RealtimeAcceptanceTests.cs" />
     <Compile Include="RealtimeChannelAcceptanceTests.cs" />
     <Compile Include="ResourceHelper.cs" />
-    <Compile Include="RestAcceptanceTests.cs" />
     <Compile Include="TestsSetup.cs" />
     <Compile Include="TestVars.cs" />
   </ItemGroup>
