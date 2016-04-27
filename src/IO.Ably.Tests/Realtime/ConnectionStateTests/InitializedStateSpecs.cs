@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    public class InitializedStateSpecs : ConnectionStatesTests
+    public class InitializedStateSpecs : AblySpecs
     {
         private FakeConnectionContext _context;
         private ConnectionInitializedState _state;

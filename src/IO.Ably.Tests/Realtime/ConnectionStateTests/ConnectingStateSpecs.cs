@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    public class ConnectingStateSpecs : ConnectionStatesTests
+    public class ConnectingStateSpecs : AblySpecs
     {
         private FakeConnectionContext _context;
         private ConnectionConnectingState _state;
