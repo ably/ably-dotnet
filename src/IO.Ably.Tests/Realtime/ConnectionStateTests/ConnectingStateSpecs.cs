@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -29,8 +28,6 @@ namespace IO.Ably.Tests
         {
             return new FakeTransport() { State = TransportState.Connected };
         }
-
-
 
         [Fact]
         public void HasCorrectState()
