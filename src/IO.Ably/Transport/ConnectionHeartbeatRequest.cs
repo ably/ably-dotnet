@@ -43,8 +43,8 @@ namespace IO.Ably.Transport
             if (callback != null)
             {
                 request._manager = manager;
-                request._manager.MessageReceived += request.OnMessageReceived;
-                request._manager.Connection.ConnectionStateChanged += request.OnConnectionStateChanged;
+                manager.MessageReceived += request.OnMessageReceived;
+                manager.Connection.ConnectionStateChanged += request.OnConnectionStateChanged;
                 request._timer = timer;
                 request._callback = callback;
             }

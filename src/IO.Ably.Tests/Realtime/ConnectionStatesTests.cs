@@ -1,6 +1,7 @@
 ﻿using Moq;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
@@ -61,13 +62,13 @@ namespace IO.Ably.Tests
         [InlineData(ProtocolMessage.MessageAction.Nack)]
         [InlineData(ProtocolMessage.MessageAction.Presence)]
         [InlineData(ProtocolMessage.MessageAction.Sync)]
-        public void InitializedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
+        public async Task InitializedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
             // Arrange
             ConnectionInitializedState state = new ConnectionInitializedState(null);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(action));
+            bool result = await state.OnMessageReceived(new ProtocolMessage(action));
 
             // Assert
             Assert.False(result);
@@ -168,20 +169,20 @@ namespace IO.Ably.Tests
         [InlineData(ProtocolMessage.MessageAction.Nack)]
         [InlineData(ProtocolMessage.MessageAction.Presence)]
         [InlineData(ProtocolMessage.MessageAction.Sync)]
-        public void ConnectingState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
+        public async Task ConnectingState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
             // Arrange
             ConnectionConnectingState state = new ConnectionConnectingState(null);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(action));
+            bool result = await state.OnMessageReceived(new ProtocolMessage(action));
 
             // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public void ConnectingState_HandlesInboundConnectedMessage()
+        public async Task ConnectingState_HandlesInboundConnectedMessage()
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
@@ -191,7 +192,7 @@ namespace IO.Ably.Tests
             ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+            bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
             // Assert
             Assert.True(result);
@@ -233,7 +234,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void ConnectingState_HandlesInboundErrorMessage()
+        public async Task ConnectingState_HandlesInboundErrorMessage()
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
@@ -243,14 +244,14 @@ namespace IO.Ably.Tests
             ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
+            bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
 
             // Assert
             Assert.True(result);
         }
 
         [Fact]
-        public void ConnectingState_HandlesInboundErrorMessage_GoesToFailed()
+        public async Task ConnectingState_HandlesInboundErrorMessage_GoesToFailed()
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
@@ -261,7 +262,7 @@ namespace IO.Ably.Tests
             ErrorInfo targetError = new ErrorInfo("test", 123);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
+            bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
 
             // Assert
             context.Verify(c => c.SetState(It.Is<ConnectionFailedState>(ss => object.ReferenceEquals(ss.Error, targetError))), Times.Once());
@@ -270,7 +271,7 @@ namespace IO.Ably.Tests
         [Theory]
         [InlineData(System.Net.HttpStatusCode.InternalServerError)]
         [InlineData(System.Net.HttpStatusCode.GatewayTimeout)]
-        public void ConnectingState_HandlesInboundErrorMessage_GoesToDisconnected(System.Net.HttpStatusCode code)
+        public async Task ConnectingState_HandlesInboundErrorMessage_GoesToDisconnected(System.Net.HttpStatusCode code)
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
@@ -282,14 +283,14 @@ namespace IO.Ably.Tests
             ErrorInfo targetError = new ErrorInfo("test", 123, code);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
+            bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
 
             // Assert
             context.Verify(c => c.SetState(It.Is<ConnectionDisconnectedState>(ss => ss.UseFallbackHost == true)), Times.Once());
         }
 
         [Fact]
-        public void ConnectingState_HandlesInboundErrorMessage_ClearsConnectionKey()
+        public async Task ConnectingState_HandlesInboundErrorMessage_ClearsConnectionKey()
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
@@ -302,35 +303,35 @@ namespace IO.Ably.Tests
             ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("test", 123, System.Net.HttpStatusCode.InternalServerError) });
+            bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("test", 123, System.Net.HttpStatusCode.InternalServerError) });
 
             // Assert
             connection.VerifySet(c => c.Key = null);
         }
 
         [Fact]
-        public void ConnectingState_HandlesInboundDisconnectedMessage()
+        public async Task ConnectingState_HandlesInboundDisconnectedMessage()
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
             ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+            bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
 
             // Assert
             Assert.True(result);
         }
 
         [Fact]
-        public void ConnectingState_HandlesInboundDisconnectedMessage_GoesToDisconnected()
+        public async Task ConnectingState_HandlesInboundDisconnectedMessage_GoesToDisconnected()
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
             ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
 
             // Act
-            state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+            await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
 
             // Assert
             context.Verify(c => c.SetState(It.Is<ConnectionDisconnectedState>(ss => ss.UseFallbackHost == false)), Times.Once());
@@ -339,21 +340,21 @@ namespace IO.Ably.Tests
         [Theory]
         [InlineData(System.Net.HttpStatusCode.InternalServerError)]
         [InlineData(System.Net.HttpStatusCode.GatewayTimeout)]
-        public void ConnectingState_HandlesInboundDisconnectedMessage_GoesToDisconnected_FallbackHost(System.Net.HttpStatusCode code)
+        public async Task ConnectingState_HandlesInboundDisconnectedMessage_GoesToDisconnected_FallbackHost(System.Net.HttpStatusCode code)
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
             ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
 
             // Act
-            state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { error = new ErrorInfo("", 0, code) });
+            await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { error = new ErrorInfo("", 0, code) });
 
             // Assert
             context.Verify(c => c.SetState(It.Is<ConnectionDisconnectedState>(ss => ss.UseFallbackHost == true)), Times.Once());
         }
 
         [Fact]
-        public void ConnectingState_HandlesInboundDisconnectedMessage_GoesToSuspended()
+        public async Task  ConnectingState_HandlesInboundDisconnectedMessage_GoesToSuspended()
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
@@ -361,7 +362,7 @@ namespace IO.Ably.Tests
             ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
 
             // Act
-            state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+            await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
 
             // Assert
             context.Verify(c => c.SetState(It.IsAny<ConnectionSuspendedState>()), Times.Once());
@@ -396,7 +397,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.Setup(c => c.CreateTransport(It.IsAny<bool>()))
+            context.Setup(c => c.CreateTransport())
                 .Callback(() => context.Setup(c => c.Transport).Returns(new Mock<ITransport>().Object));
             ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
 
@@ -404,23 +405,7 @@ namespace IO.Ably.Tests
             state.OnAttachedToContext();
 
             // Assert
-            context.Verify(c => c.CreateTransport(false), Times.Once());
-        }
-
-        [Fact]
-        public void ConnectingState_AttachToContext_Fallback_CreatesTransport()
-        {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.Setup(c => c.CreateTransport(It.IsAny<bool>()))
-                .Callback(() => context.Setup(c => c.Transport).Returns(new Mock<ITransport>().Object));
-            ConnectionConnectingState state = new ConnectionConnectingState(context.Object, true);
-
-            // Act
-            state.OnAttachedToContext();
-
-            // Assert
-            context.Verify(c => c.CreateTransport(true), Times.Once());
+            context.Verify(c => c.CreateTransport(), Times.Once());
         }
 
         [Fact]
@@ -666,7 +651,7 @@ namespace IO.Ably.Tests
         [InlineData(ProtocolMessage.MessageAction.Nack)]
         [InlineData(ProtocolMessage.MessageAction.Presence)]
         [InlineData(ProtocolMessage.MessageAction.Sync)]
-        public void ConnectedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
+        public async Task ConnectedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
@@ -674,7 +659,7 @@ namespace IO.Ably.Tests
             ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(action));
+            bool result = await state.OnMessageReceived(new ProtocolMessage(action));
 
             // Assert
             Assert.False(result);
@@ -682,7 +667,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void ConnectedState_HandlesInboundDisconnectedMessage()
+        public async Task ConnectedState_HandlesInboundDisconnectedMessage()
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
@@ -690,7 +675,7 @@ namespace IO.Ably.Tests
             ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+            bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
 
             // Assert
             Assert.True(result);
@@ -712,7 +697,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void ConnectedState_HandlesInboundErrorMessage()
+        public async Task ConnectedState_HandlesInboundErrorMessage()
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
@@ -720,14 +705,14 @@ namespace IO.Ably.Tests
             ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
+            bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
 
             // Assert
             Assert.True(result);
         }
 
         [Fact]
-        public void ConnectedState_HandlesInboundErrorMessage_GoesToFailed()
+        public async Task ConnectedState_HandlesInboundErrorMessage_GoesToFailed()
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
@@ -736,7 +721,7 @@ namespace IO.Ably.Tests
             ErrorInfo targetError = new ErrorInfo("test", 123);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
+            bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
 
             // Assert
             context.Verify(c => c.SetState(It.Is<ConnectionFailedState>(ss => object.ReferenceEquals(ss.Error, targetError))), Times.Once());
@@ -896,13 +881,13 @@ namespace IO.Ably.Tests
         [InlineData(ProtocolMessage.MessageAction.Nack)]
         [InlineData(ProtocolMessage.MessageAction.Presence)]
         [InlineData(ProtocolMessage.MessageAction.Sync)]
-        public void DisconnectedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
+        public async Task DisconnectedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
             // Arrange
             ConnectionDisconnectedState state = new ConnectionDisconnectedState(null, ErrorInfo.ReasonClosed);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(action));
+            bool result = await state.OnMessageReceived(new ProtocolMessage(action));
 
             // Assert
             Assert.False(result);
@@ -1030,13 +1015,13 @@ namespace IO.Ably.Tests
         [InlineData(ProtocolMessage.MessageAction.Nack)]
         [InlineData(ProtocolMessage.MessageAction.Presence)]
         [InlineData(ProtocolMessage.MessageAction.Sync)]
-        public void SuspendedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
+        public async Task SuspendedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
             // Arrange
             ConnectionSuspendedState state = new ConnectionSuspendedState(null);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(action));
+            bool result = await state.OnMessageReceived(new ProtocolMessage(action));
 
             // Assert
             Assert.False(result);
@@ -1193,62 +1178,62 @@ namespace IO.Ably.Tests
         [InlineData(ProtocolMessage.MessageAction.Nack)]
         [InlineData(ProtocolMessage.MessageAction.Presence)]
         [InlineData(ProtocolMessage.MessageAction.Sync)]
-        public void ClosingState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
+        public async Task ClosingState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
             // Arrange
             ConnectionClosingState state = new ConnectionClosingState(null);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(action));
+            bool result = await state.OnMessageReceived(new ProtocolMessage(action));
 
             // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public void ClosingState_HandlesInboundClosedMessage()
+        public async Task ClosingState_HandlesInboundClosedMessage()
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
             ConnectionClosingState state = new ConnectionClosingState(context.Object);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
+            bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
 
             // Assert
             Assert.True(result);
         }
 
         [Fact]
-        public void ClosingState_HandlesInboundClosedMessage_GoesToClosed()
+        public async Task ClosingState_HandlesInboundClosedMessage_GoesToClosed()
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
             ConnectionClosingState state = new ConnectionClosingState(context.Object);
 
             // Act
-            state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
+            await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
 
             // Assert
             context.Verify(c => c.SetState(It.IsAny<ConnectionClosedState>()), Times.Once());
         }
 
         [Fact]
-        public void ClosingState_HandlesInboundErrorMessage()
+        public async Task ClosingState_HandlesInboundErrorMessage()
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
             ConnectionClosingState state = new ConnectionClosingState(context.Object);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
+            bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
 
             // Assert
             Assert.True(result);
         }
 
         [Fact]
-        public void ClosingState_HandlesInboundErrorMessage_GoesToFailed()
+        public async Task ClosingState_HandlesInboundErrorMessage_GoesToFailed()
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
@@ -1256,35 +1241,35 @@ namespace IO.Ably.Tests
             ErrorInfo targetError = new ErrorInfo("test", 123);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
+            bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
 
             // Assert
             context.Verify(c => c.SetState(It.Is<ConnectionFailedState>(ss => object.ReferenceEquals(ss.Error, targetError))), Times.Once());
         }
 
         [Fact]
-        public void ClosingState_HandlesInboundDisconnectedMessage()
+        public async Task ClosingState_HandlesInboundDisconnectedMessage()
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
             ConnectionClosingState state = new ConnectionClosingState(context.Object);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+            bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
 
             // Assert
             Assert.True(result);
         }
 
         [Fact]
-        public void ClosingState_HandlesInboundDisconnectedMessage_GoesToDisconnected()
+        public async Task ClosingState_HandlesInboundDisconnectedMessage_GoesToDisconnected()
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
             ConnectionClosingState state = new ConnectionClosingState(context.Object);
 
             // Act
-            state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+            await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
 
             // Assert
             context.Verify(c => c.SetState(It.IsAny<ConnectionDisconnectedState>()), Times.Once());
@@ -1349,7 +1334,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void ClosingState_ForceCloseNotApplied_WhenClosedMessageReceived()
+        public async Task ClosingState_ForceCloseNotApplied_WhenClosedMessageReceived()
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
@@ -1361,7 +1346,7 @@ namespace IO.Ably.Tests
 
             // Act
             state.OnAttachedToContext();
-            state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
+            await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
 
             // Assert
             timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>()), Times.Once);
@@ -1370,7 +1355,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void ClosingState_ForceCloseNotApplied_WhenErrorMessageReceived()
+        public async Task ClosingState_ForceCloseNotApplied_WhenErrorMessageReceived()
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
@@ -1382,7 +1367,7 @@ namespace IO.Ably.Tests
 
             // Act
             state.OnAttachedToContext();
-            state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
+            await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
 
             // Assert
             timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>()), Times.Once);
@@ -1447,7 +1432,7 @@ namespace IO.Ably.Tests
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
             context.SetupGet(c => c.Connection).Returns(new Connection(new Mock<IConnectionManager>().Object));
             Mock<ITransport> transport = new Mock<ITransport>();
-            context.Setup(c => c.CreateTransport(It.IsAny<bool>())).Callback(() =>
+            context.Setup(c => c.CreateTransport()).Callback(() =>
                 context.Setup(c => c.Transport).Returns(transport.Object));
             ConnectionClosedState state = new ConnectionClosedState(context.Object);
 
@@ -1476,13 +1461,13 @@ namespace IO.Ably.Tests
         [InlineData(ProtocolMessage.MessageAction.Nack)]
         [InlineData(ProtocolMessage.MessageAction.Presence)]
         [InlineData(ProtocolMessage.MessageAction.Sync)]
-        public void ClosedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
+        public async Task ClosedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
             // Arrange
             ConnectionClosedState state = new ConnectionClosedState(null);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(action));
+            bool result = await state.OnMessageReceived(new ProtocolMessage(action));
 
             // Assert
             Assert.False(result);
@@ -1572,7 +1557,7 @@ namespace IO.Ably.Tests
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
             context.SetupGet(c => c.Connection).Returns(new Connection(new Mock<IConnectionManager>().Object));
             Mock<ITransport> transport = new Mock<ITransport>();
-            context.Setup(c => c.CreateTransport(It.IsAny<bool>())).Callback(() =>
+            context.Setup(c => c.CreateTransport()).Callback(() =>
                 context.Setup(c => c.Transport).Returns(transport.Object));
             ConnectionFailedState state = new ConnectionFailedState(context.Object, ErrorInfo.ReasonNeverConnected);
 
@@ -1601,13 +1586,13 @@ namespace IO.Ably.Tests
         [InlineData(ProtocolMessage.MessageAction.Nack)]
         [InlineData(ProtocolMessage.MessageAction.Presence)]
         [InlineData(ProtocolMessage.MessageAction.Sync)]
-        public void FailedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
+        public async Task FailedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
             // Arrange
             ConnectionFailedState state = new ConnectionFailedState(null, ErrorInfo.ReasonNeverConnected);
 
             // Act
-            bool result = state.OnMessageReceived(new ProtocolMessage(action));
+            bool result = await state.OnMessageReceived(new ProtocolMessage(action));
 
             // Assert
             Assert.False(result);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using IO.Ably.Types;
 
@@ -48,20 +49,20 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void Close()
         {
-            TransitionState(new ConnectionClosingState(context));
+            TransitionState(new ConnectionClosingState(Context));
         }
 
-        public override bool OnMessageReceived(ProtocolMessage message)
+        public override async Task<bool> OnMessageReceived(ProtocolMessage message)
         {
             switch (message.action)
             {
                 case ProtocolMessage.MessageAction.Connected:
                 {
-                    if (context.Transport.State == TransportState.Connected)
+                    if (Context.Transport.State == TransportState.Connected)
                     {
                         var info = new ConnectionInfo(message.connectionId, message.connectionSerial ?? -1,
                             message.connectionKey);
-                        TransitionState(new ConnectionConnectedState(context, info));
+                        TransitionState(new ConnectionConnectedState(Context, info));
                     }
                     return true;
                 }
@@ -70,13 +71,13 @@ namespace IO.Ably.Transport.States.Connection
                     ConnectionState nextState;
                     if (ShouldSuspend())
                     {
-                        nextState = new ConnectionSuspendedState(context, message.error);
+                        nextState = new ConnectionSuspendedState(Context, message.error);
                     }
                     else
                     {
-                        nextState = new ConnectionDisconnectedState(context, message.error)
+                        nextState = new ConnectionDisconnectedState(Context, message.error)
                         {
-                            UseFallbackHost = ShouldUseFallbackHost(message.error)
+                            UseFallbackHost = await ShouldUseFallbackHost(message.error)
                         };
                     }
                     TransitionState(nextState);
@@ -84,32 +85,32 @@ namespace IO.Ably.Transport.States.Connection
                 }
                 case ProtocolMessage.MessageAction.Error:
                 {
-                    if (ShouldUseFallbackHost(message.error))
+                    if (await ShouldUseFallbackHost(message.error))
                     {
-                        context.Connection.Key = null;
-                        TransitionState(new ConnectionDisconnectedState(context) {UseFallbackHost = true});
+                        Context.Connection.Key = null;
+                        TransitionState(new ConnectionDisconnectedState(Context) {UseFallbackHost = true});
                     }
-                    TransitionState(new ConnectionFailedState(context, message.error));
+                    TransitionState(new ConnectionFailedState(Context, message.error));
                     return true;
                 }
             }
             return false;
         }
 
-        public override void OnTransportStateChanged(TransportStateInfo state)
+        public override async Task OnTransportStateChanged(TransportStateInfo state)
         {
             if (state.Error != null || state.State == TransportState.Closed)
             {
                 ConnectionState nextState;
                 if (ShouldSuspend())
                 {
-                    nextState = new ConnectionSuspendedState(context);
+                    nextState = new ConnectionSuspendedState(Context);
                 }
                 else
                 {
-                    nextState = new ConnectionDisconnectedState(context, state)
+                    nextState = new ConnectionDisconnectedState(Context, state)
                     {
-                        UseFallbackHost = state.Error != null && CanConnectToAbly()
+                        UseFallbackHost = state.Error != null && await CanConnectToAbly()
                     };
                 }
                 TransitionState(nextState);
@@ -118,64 +119,60 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void OnAttachedToContext()
         {
-            context.AttemptConnection();
+            Context.AttemptConnection();
 
-            if (context.Transport == null || _useFallbackHost)
+            if (Context.Transport == null)
             {
-                context.CreateTransport(_useFallbackHost);
+                Context.CreateTransport();
             }
 
-            if (context.Transport.State != TransportState.Connected)
+            if (Context.Transport.State != TransportState.Connected)
             {
-                context.Transport.Connect();
-                _timer.Start(ConnectTimeout, () =>
+                Context.Transport.Connect();
+                _timer.Start(ConnectTimeout, async () =>
                 {
-                    context.SetState(new ConnectionDisconnectedState(context, ErrorInfo.ReasonTimeout)
+                    var disconnectedState = new ConnectionDisconnectedState(Context, ErrorInfo.ReasonTimeout)
                     {
-                        UseFallbackHost = CanConnectToAbly()
-                    });
+                        UseFallbackHost = await CanConnectToAbly()
+                    };
+                    Context.SetState(disconnectedState);
                 });
             }
         }
 
-        private static bool ShouldUseFallbackHost(ErrorInfo error)
+        private async Task<bool> ShouldUseFallbackHost(ErrorInfo error)
         {
-            return error != null && error.statusCode != null && FallbackReasons.Contains(error.statusCode.Value) &&
-                   CanConnectToAbly();
+            return error?.statusCode != null && 
+                FallbackReasons.Contains(error.statusCode.Value) &&
+                await CanConnectToAbly();
         }
 
         private void TransitionState(ConnectionState newState)
         {
-            context.SetState(newState);
+            Context.SetState(newState);
             _timer.Abort();
         }
 
         private bool ShouldSuspend()
         {
-            return context.FirstConnectionAttempt != null &&
-                   context.FirstConnectionAttempt.Value
+            return Context.FirstConnectionAttempt != null &&
+                   Context.FirstConnectionAttempt.Value
                        .AddMilliseconds(ConnectionSuspendedState.SuspendTimeout) < DateTimeOffset.UtcNow;
         }
 
-        public static bool CanConnectToAbly()
+        public async Task<bool> CanConnectToAbly()
         {
-            var req = WebRequest.Create(Defaults.InternetCheckURL);
-            WebResponse res = null;
             try
             {
-                Func<Task<WebResponse>> fn = () => req.GetResponseAsync();
-                res = Task.Run(fn).Result;
+                var httpClient = Context.RestClient.HttpClient;
+                var request = new AblyRequest(Defaults.InternetCheckURL, HttpMethod.Get);
+                var response = await httpClient.Execute(request);
+                return response.TextResponse == Defaults.InternetCheckOKMessage;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.Error("Error accessing ably internet check url. Internet is down!", ex);
                 return false;
-            }
-            using (var resStream = res.GetResponseStream())
-            {
-                using (var reader = new StreamReader(resStream))
-                {
-                    return reader.ReadLine() == Defaults.InternetCheckOKMessage;
-                }
             }
         }
     }

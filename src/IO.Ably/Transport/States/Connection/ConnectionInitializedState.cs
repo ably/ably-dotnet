@@ -1,4 +1,5 @@
-﻿using IO.Ably.Types;
+﻿using System.Threading.Tasks;
+using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
@@ -14,7 +15,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void Connect()
         {
-            context.SetState(new ConnectionConnectingState(this.context));
+            Context.SetState(new ConnectionConnectingState(this.Context));
         }
 
         public override void Close()
@@ -22,15 +23,18 @@ namespace IO.Ably.Transport.States.Connection
             // do nothing
         }
 
-        public override bool OnMessageReceived(ProtocolMessage message)
+        public override Task<bool> OnMessageReceived(ProtocolMessage message)
         {
-            // do nothing
-            return false;
+            // could not happen
+            Logger.Error("Receiving message in disconected state!");
+            return TaskConstants.BooleanFalse;
         }
 
-        public override void OnTransportStateChanged(TransportStateInfo state)
+        public override Task OnTransportStateChanged(TransportStateInfo state)
         {
-            // do nothing
+            // could not happen
+            Logger.Error("Unexpected state change. " + state.State);
+            return TaskConstants.BooleanTrue;
         }
     }
 }

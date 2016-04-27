@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.Auth;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -67,7 +68,7 @@ namespace IO.Ably.Tests
                 });
 
                 await client.Stats();
-                client.AblyAuth.HasValidToken().Should().BeTrue();
+                client.AblyAuth.CurrentToken.IsValidToken().Should().BeTrue();
             }
         }
 

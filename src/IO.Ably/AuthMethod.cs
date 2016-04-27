@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 namespace IO.Ably
 {
-    internal enum AuthMethod : byte
+    public enum AuthMethod : byte
     {
         Basic,
         Token

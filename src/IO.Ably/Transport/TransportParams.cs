@@ -1,82 +1,122 @@
-﻿using System.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace IO.Ably.Transport
-{
-    public enum Mode
-    {
-        Clean,
-        Resume,
-        Recover
-    }
-
+{ 
     public class TransportParams
-    {
-        public TransportParams(ClientOptions options)
+    {    
+        public string Host { get; private set; }
+        public bool Tls { get; private set; }
+        public string[] FallbackHosts { get; private set; }
+        public int Port { get; private set; }
+        public string ConnectionKey { get; private set; }
+        public long? ConnectionSerial { get; set; }
+        public bool UseBinaryProtocol { get; private set; }
+
+        //TODO: Look at inconsisten protection levels
+        internal AuthMethod AuthMethod { get; private set; }
+        public string AuthValue { get; private set; } //either key or token
+        public string RecoverValue { get; private set; }
+        public string ClientId { get; private set; }
+        public bool EchoMessages { get; private set; }
+
+        private TransportParams()
         {
-            Options = options;
+            
         }
 
-        public ClientOptions Options { get; set; }
-        public string Host { get; set; }
-        public string[] FallbackHosts { get; set; }
-        public int Port { get; set; }
-        public string ConnectionKey { get; set; }
-        public string ConnectionSerial { get; set; }
-        public Mode Mode { get; set; }
-
-
-        
-        public void StoreParams(WebHeaderCollection collection)
+        internal static async Task<TransportParams> Create(IAuthCommands auth, ClientOptions options, string connectionKey = null, long? connectionSerial = null)
         {
-
-            //TODO: Move so this is handled by the Auth object and ensures all the rules about renewing are followed
-            // auth
-            if (Options.Method == AuthMethod.Basic)
+            var result = new TransportParams();
+            result.Host = options.FullRealtimeHost();
+            result.Tls = options.Tls;
+            result.Port = options.Tls ? options.TlsPort : options.Port;
+            result.ClientId = options.GetClientId();
+            result.AuthMethod = auth.AuthMethod;
+            if (result.AuthMethod == AuthMethod.Basic)
             {
-                collection["key"] = WebUtility.UrlEncode(Options.Key);
+                result.AuthValue = options.Key;
             }
             else
             {
-                collection["access_token"] = WebUtility.UrlEncode(Options.Token);
+                var token = await auth.GetCurrentValidTokenAndRenewIfNecessary();
+                if(token == null)
+                    throw new AblyException("There is no valid token. Can't authenticate", 40100, HttpStatusCode.Unauthorized);
+
+                result.AuthValue = token.Token;
+            }
+            result.ConnectionKey = connectionKey;
+            result.ConnectionSerial = connectionSerial;
+            result.EchoMessages = options.EchoMessages;
+            result.FallbackHosts = Defaults.FallbackHosts;
+            result.UseBinaryProtocol = options.UseBinaryProtocol;
+            result.RecoverValue = options.Recover;
+
+            return result;
+
+        }
+
+        //Add logic for random fallback hosts
+        public Uri GetUri()
+        {
+            var wsScheme = Tls ? "wss://" : "ws://";
+            var uriBuilder = new UriBuilder(wsScheme, Host, Port);
+            uriBuilder.Query = GetParams().ToQueryString();
+            return uriBuilder.Uri;
+        }
+
+
+        public Dictionary<string, string> GetParams()
+        {
+           //TODO: Write some tests 
+           var result = new Dictionary<string, string>();
+
+            if (AuthMethod == AuthMethod.Basic)
+            {
+                result["key"] = AuthValue;
+            }
+            else
+            {
+                result["access_token"] = AuthValue;
             }
 
-            // connection
-            if (Options.UseBinaryProtocol)
+
+            //Url encode all the params at the time of creating the query string
+            result["format"] = UseBinaryProtocol ? "msgpack" : "json";
+
+            if (EchoMessages)
             {
-                collection["format"] = "msgpack";
-            }
-            if (!Options.EchoMessages)
-            {
-                collection["echo"] = "false";
+                result["echo"] = "false";
             }
 
-            // recovery
             if (ConnectionKey.IsNotEmpty())
             {
-                Mode = Mode.Resume;
-                collection["resume"] = ConnectionKey;
-                if (ConnectionSerial.IsNotEmpty())
+                result["resume"] = ConnectionKey;
+                if (ConnectionSerial.HasValue)
                 {
-                    collection["connection_serial"] = ConnectionSerial;
+                    result["connection_serial"] = ConnectionSerial.Value.ToString();
                 }
             }
-            else if (Options.Recover.IsNotEmpty())
+            else if (RecoverValue.IsNotEmpty())
             {
-                Mode = Mode.Recover;
                 var pattern = new Regex(@"^([\w\-]+):(\-?\w+)$");
-                var match = pattern.Match(Options.Recover);
+                var match = pattern.Match(RecoverValue);
                 if (match.Success)
                 {
-                    collection["recover"] = match.Groups[1].Value;
-                    collection["connection_serial"] = match.Groups[2].Value;
+                    result["recover"] = match.Groups[1].Value;
+                    result["connection_serial"] = match.Groups[2].Value;
                 }
             }
 
-            if (!string.IsNullOrEmpty(Options.ClientId))
+            if (ClientId.IsNotEmpty())
             {
-                collection["client_id"] = Options.ClientId;
+                result["client_id"] = ClientId;
             }
+
+            return result;
         }
     }
 }

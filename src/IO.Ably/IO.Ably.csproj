@@ -46,6 +46,7 @@
     <Compile Include="ApiKey.cs" />
     <Compile Include="AuthMethod.cs" />
     <Compile Include="AuthOptions.cs" />
+    <Compile Include="Class1.cs" />
     <Compile Include="Encryption\AesCipher.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
@@ -90,7 +91,6 @@
     <Compile Include="Types\Message.cs" />
     <Compile Include="MessageEncoders\Base64Encoder.cs" />
     <Compile Include="MessageEncoders\CipherEncoder.cs" />
-    <Compile Include="MessageEncoders\IMessageHandler.cs" />
     <Compile Include="MessageEncoders\JsonEncoder.cs" />
     <Compile Include="MessageEncoders\MessageEncoder.cs" />
     <Compile Include="MessageEncoders\MessageHandler.cs" />

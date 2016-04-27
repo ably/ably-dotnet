@@ -40,7 +40,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void BeforeSendingAMessage_CurrentTokenIsNull()
         {
-            Client.Auth.CurrentToken.Should().BeNull();
+            Client.AblyAuth.CurrentToken.Should().BeNull();
         }
 
         [Fact]
@@ -48,7 +48,7 @@ namespace IO.Ably.Tests
         {
             Client.Channels.Get("test").Publish("test", true);
 
-            Client.Auth.CurrentToken.Should().NotBeNull();
+            Client.AblyAuth.CurrentToken.Should().NotBeNull();
         }
     }
 }

@@ -312,7 +312,7 @@ namespace IO.Ably.Realtime
 
             private string MemberKey(PresenceMessage message)
             {
-                return string.Format("{0}:{1}", message.connectionId, message.clientId);
+                return $"{message.connectionId}:{message.clientId}";
             }
         }
     }

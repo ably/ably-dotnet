@@ -47,12 +47,13 @@ namespace IO.Ably.Transport
     {
         States.Connection.ConnectionState State { get; }
         ITransport Transport { get; }
+        AblyRest RestClient { get; }
         Queue<ProtocolMessage> QueuedMessages { get; }
         Connection Connection { get; }
         DateTimeOffset? FirstConnectionAttempt { get; }
         int ConnectionAttempts { get; }
         void SetState(States.Connection.ConnectionState state);
-        void CreateTransport(bool useFallbackHost);
+        Task CreateTransport();
         void DestroyTransport();
         void AttemptConnection();
         void ResetConnectionAttempts();

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Text;
+using System.Threading.Tasks;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 using SuperSocket.ClientEngine;
@@ -21,28 +20,28 @@ namespace IO.Ably.Realtime
             {WebSocketState.Closed, TransportState.Closed}
         };
 
-        private readonly IMessageSerializer serializer;
+        private readonly IMessageSerializer _serializer;
+        private readonly TransportParams _parameters;
 
-        private bool channelBinaryMode;
+        private WebSocket _socket;
 
-        private WebSocket socket;
-
-        private WebSocketTransport(IMessageSerializer serializer)
+        private WebSocketTransport(IMessageSerializer serializer, TransportParams parameters)
         {
-            this.serializer = serializer;
+            _serializer = serializer;
+            _parameters = parameters;
         }
 
-        public string Host { get; private set; }
+        public string Host => _parameters.Host;
 
         public TransportState State
         {
             get
             {
-                if (socket == null)
+                if (_socket == null)
                 {
                     return TransportState.Initialized;
                 }
-                return StateDict[socket.State];
+                return StateDict[_socket.State];
             }
         }
 
@@ -50,69 +49,49 @@ namespace IO.Ably.Realtime
 
         public void Connect()
         {
-            socket.Open();
+            _socket.Open();
         }
 
         public void Close()
         {
-            if (socket == null)
-            {
-                return;
-            }
-            socket.Close();
+            _socket?.Close();
         }
 
         public void Abort(string reason)
         {
-            socket.Close(reason);
+            _socket.Close(reason);
         }
 
         public void Send(ProtocolMessage message)
         {
-            var serializedMessage = serializer.SerializeProtocolMessage(message);
+            var serializedMessage = _serializer.SerializeProtocolMessage(message);
 
-            if (channelBinaryMode)
+            if (_parameters.UseBinaryProtocol)
             {
                 var data = (byte[]) serializedMessage;
-                socket.Send(data, 0, data.Length);
+                _socket.Send(data, 0, data.Length);
             }
             else
             {
-                socket.Send((string) serializedMessage);
+                _socket.Send((string) serializedMessage);
             }
         }
 
-        /// <summary>Convert names+values from WebHeaderCollection into HTTP GET request arguments</summary>
-        private static void setQuery(UriBuilder ub, WebHeaderCollection q)
+        private Task CreateSocket()
         {
-            var sb = new StringBuilder();
-            for (var i = 0; i < q.Count; i++)
-            {
-                var key = q.GetKey(i);
-                var val = q.Get(i);
+            if(_parameters == null)
+                throw new ArgumentNullException(nameof(_parameters), "Null parameters are not allowed");
 
-                if (string.IsNullOrEmpty(key))
-                    continue;
-                if (sb.Length > 0)
-                    sb.Append('&');
-                sb.Append(WebUtility.UrlEncode(key));
-                sb.Append('=');
-                sb.Append(WebUtility.UrlEncode(val));
-            }
-            ub.Query = sb.ToString();
-        }
+            var uri = _parameters.GetUri();
 
-        private static WebSocket CreateSocket(TransportParams parameters)
-        {
-            var isTls = parameters.Options.Tls;
-            var wsScheme = isTls ? "wss://" : "ws://";
-            var queryCollection = new WebHeaderCollection();
-            parameters.StoreParams(queryCollection);
+            _socket = new WebSocket(uri.ToString(), "", WebSocketVersion.Rfc6455);
+            _socket.Opened += socket_Opened;
+            _socket.Closed += socket_Closed;
+            _socket.Error += socket_Error;
+            _socket.MessageReceived += socket_MessageReceived; //For text messages
+            _socket.DataReceived += socket_DataReceived; //For binary messages
 
-            var uriBuilder = new UriBuilder(wsScheme, parameters.Host, parameters.Port);
-            setQuery(uriBuilder, queryCollection);
-            var socket = new WebSocket(uriBuilder.ToString(), "", WebSocketVersion.Rfc6455);
-            return socket;
+            return Task.FromResult(true);
         }
 
         private void socket_Opened(object sender, EventArgs e)
@@ -143,7 +122,7 @@ namespace IO.Ably.Realtime
         {
             if (Listener != null)
             {
-                var message = serializer.DeserializeProtocolMessage(e.Message);
+                var message = _serializer.DeserializeProtocolMessage(e.Message);
                 Listener.OnTransportMessageReceived(message);
             }
         }
@@ -152,17 +131,17 @@ namespace IO.Ably.Realtime
         {
             if (Listener != null)
             {
-                var message = serializer.DeserializeProtocolMessage(e.Data);
+                var message = _serializer.DeserializeProtocolMessage(e.Data);
                 Listener.OnTransportMessageReceived(message);
             }
         }
 
         public class WebSocketTransportFactory : ITransportFactory
         {
-            public ITransport CreateTransport(TransportParams parameters)
+            public async Task<ITransport> CreateTransport(TransportParams parameters)
             {
                 IMessageSerializer serializer = null;
-                if (parameters.Options.UseBinaryProtocol)
+                if (parameters.UseBinaryProtocol)
                 {
                     serializer = new MsgPackMessageSerializer();
                 }
@@ -170,17 +149,82 @@ namespace IO.Ably.Realtime
                 {
                     serializer = new JsonMessageSerializer();
                 }
-                var socketTransport = new WebSocketTransport(serializer);
-                socketTransport.Host = parameters.Host;
-                socketTransport.channelBinaryMode = parameters.Options.UseBinaryProtocol;
-                socketTransport.socket = CreateSocket(parameters);
-                socketTransport.socket.Opened += socketTransport.socket_Opened;
-                socketTransport.socket.Closed += socketTransport.socket_Closed;
-                socketTransport.socket.Error += socketTransport.socket_Error;
-                socketTransport.socket.MessageReceived += socketTransport.socket_MessageReceived; //For text messages
-                socketTransport.socket.DataReceived += socketTransport.socket_DataReceived; //For binary messages
+                var socketTransport = new WebSocketTransport(serializer, parameters);
+                await socketTransport.CreateSocket();
                 return socketTransport;
             }
         }
     }
+
+    /* 
+     * 
+     * http://www.tomdupont.net/2015/12/websocket4net-extensions-openasync.html
+     * Error handling logic. Look a bit later
+     * public static class WebSocketExtensions
+{
+    public static async Task OpenAsync(
+        this WebSocket webSocket,
+        int retryCount = 5,
+        CancellationToken cancelToken = default(CancellationToken))
+    {
+        var failCount = 0;
+        var exceptions = new List<Exception>(retryCount);
+ 
+        var openCompletionSource = new TaskCompletionSource<bool>();
+        cancelToken.Register(() => openCompletionSource.TrySetCanceled());
+ 
+        EventHandler openHandler = (s, e) => openCompletionSource.TrySetResult(true);
+ 
+        EventHandler<ErrorEventArgs> errorHandler = (s, e) =>
+        {
+            if (exceptions.All(ex => ex.Message != e.Exception.Message))
+            {
+                exceptions.Add(e.Exception);
+            }
+        };
+ 
+        EventHandler closeHandler = (s, e) =>
+        {
+            if (cancelToken.IsCancellationRequested)
+            {
+                openCompletionSource.TrySetCanceled();
+            }
+            else if (++failCount < retryCount)
+            {
+                webSocket.Open();
+            }
+            else
+            {
+                var exception = exceptions.Count == 1
+                    ? exceptions.Single()
+                    : new AggregateException(exceptions);
+ 
+                var webSocketException = new WebSocketException(
+                    "Unable to connect", 
+                    exception);
+ 
+                openCompletionSource.TrySetException(webSocketException);
+            }
+        };
+ 
+        try
+        {
+            webSocket.Opened += openHandler;
+            webSocket.Error += errorHandler;
+            webSocket.Closed += closeHandler;
+ 
+            webSocket.Open();
+ 
+            await openCompletionSource.Task.ConfigureAwait(false);
+        }
+        finally
+        {
+            webSocket.Opened -= openHandler;
+            webSocket.Error -= errorHandler;
+            webSocket.Closed -= closeHandler;
+        }
+    }
+     * 
+     * 
+     */
 }

@@ -19,7 +19,7 @@ namespace IO.Ably
             Initialise();
         }
 
-        internal AuthMethod AuthMethod;
+        public AuthMethod AuthMethod { get; private set; }
         internal ClientOptions Options { get; }
         internal TokenParams CurrentTokenParams { get; set; }
         internal AuthOptions CurrentAuthOptions { get; set; }
@@ -30,14 +30,6 @@ namespace IO.Ably
         public string GetClientId()
         {
             return CurrentToken?.ClientId ?? CurrentTokenParams?.ClientId ?? Options.GetClientId();
-        }
-
-        internal bool HasValidToken()
-        {
-            if (CurrentToken == null)
-                return false;
-            var exp = CurrentToken.Expires;
-            return (exp == DateTimeOffset.MinValue) || (exp >= DateTimeOffset.UtcNow);
         }
 
         bool HasTokenId => Options.Token.IsNotEmpty();
@@ -83,7 +75,7 @@ namespace IO.Ably
             {
                 AuthMethod = Options.Method;
             }
-        }
+        }  
 
         internal async Task AddAuthHeader(AblyRequest request)
         {
@@ -96,23 +88,38 @@ namespace IO.Ably
             {
                 var authInfo = Convert.ToBase64String(Options.Key.GetBytes());
                 request.Headers["Authorization"] = "Basic " + authInfo;
-                Logger.Debug("Adding Authorization header with Basic authentication.");
             }
             else
             {
-                if (HasValidToken() == false && TokenRenewable)
+                var currentValidToken = await GetCurrentValidTokenAndRenewIfNecessary();
+                if (currentValidToken == null)
                 {
-                    CurrentToken = await Authorise();
-                }
-
-                if (HasValidToken())
-                {
-                    request.Headers["Authorization"] = "Bearer " + CurrentToken.Token.ToBase64();
-                    Logger.Debug("Adding Authorization header with Token authentication");
-                }
-                else
                     throw new AblyException("Invalid token credentials: " + CurrentToken, 40100, HttpStatusCode.Unauthorized);
+                }
+                
+                request.Headers["Authorization"] = "Bearer " + CurrentToken.Token.ToBase64();
             }
+        }
+
+        public async Task<TokenDetails> GetCurrentValidTokenAndRenewIfNecessary()
+        {
+            if(AuthMethod == AuthMethod.Basic)
+                throw new AblyException("AuthMethod is set to Auth so there is no current valid token.");
+
+            if (CurrentToken.IsValidToken())
+                return CurrentToken;
+
+            if (TokenRenewable)
+            {
+                var token = await Authorise();
+                if (token.IsValidToken())
+                {
+                    CurrentToken = token;       
+                    return token;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

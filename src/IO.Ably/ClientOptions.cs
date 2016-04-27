@@ -33,7 +33,6 @@ namespace IO.Ably
         public TokenParams DefaultTokenParams { get; set; }
 
 
-        //TODO: Make sure I fail if 
         internal string GetClientId()
         {
             if (ClientId.IsNotEmpty())
@@ -74,6 +73,38 @@ namespace IO.Ably
         /// For development environments only. Allows a non default host for the rest service
         /// </summary>
         public string RestHost { get; set; }
+
+        private bool IsLiveEnvironment => Environment.HasValue == false || Environment == AblyEnvironment.Live;
+
+        internal bool IsDefaultRestHost => RestHost.IsEmpty();
+
+        internal bool IsDefaultRealtimeHost => RealtimeHost.IsEmpty();
+
+        internal string FullRealtimeHost()
+        {
+            if (RealtimeHost.IsEmpty())
+            {
+                if(IsLiveEnvironment)
+                    return Defaults.RealtimeHost;
+                return Environment.ToString().ToLower() + "-" + Defaults.RealtimeHost;
+            }
+
+            return RealtimeHost;
+        }
+
+        internal string FullRestHost()
+        {
+            if (RestHost.IsEmpty())
+            {
+                if (IsLiveEnvironment)
+                {
+                    return Defaults.RestHost;
+                }
+                return Environment.ToString().ToLower() + "-" + Defaults.RestHost;
+            }
+
+            return RestHost;
+        }
 
         /// <summary>
         ///  For development environments only; allows a non-default Ably port to be specified.

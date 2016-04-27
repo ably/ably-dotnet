@@ -8,7 +8,7 @@ namespace IO.Ably.Realtime
     /// </summary>
     public class Connection : IDisposable
     {
-        private readonly IConnectionManager manager;
+        private readonly IConnectionManager _manager;
 
         internal Connection()
         {
@@ -16,8 +16,8 @@ namespace IO.Ably.Realtime
 
         internal Connection(IConnectionManager manager)
         {
-            this.manager = manager;
-            State = this.manager.ConnectionState;
+            this._manager = manager;
+            State = this._manager.ConnectionState;
         }
 
         /// <summary>
@@ -62,14 +62,14 @@ namespace IO.Ably.Realtime
         /// </summary>
         public void Connect()
         {
-            manager.Connect();
+            _manager.Connect();
         }
 
         /// <summary>
         /// </summary>
         public Task Ping()
         {
-            return manager.Ping();
+            return _manager.Ping();
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace IO.Ably.Realtime
         /// </summary>
         public void Close()
         {
-            manager.Close();
+            _manager.Close();
         }
 
         internal void OnStateChanged(ConnectionState state, ErrorInfo error = null, int retryin = -1)

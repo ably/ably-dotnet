@@ -36,7 +36,7 @@ namespace IO.Ably.Tests
 
         internal AblyHttpClient GetHttpClient()
         {
-            return new AblyHttpClient(new AblyHttpOptions() { IsSecure = Tls, Environment = Environment });
+            return new AblyHttpClient(new AblyHttpOptions() { IsSecure = Tls});
         }
 
         public ClientOptions CreateDefaultOptions()

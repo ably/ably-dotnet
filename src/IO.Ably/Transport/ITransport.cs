@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport
@@ -31,7 +32,7 @@ namespace IO.Ably.Transport
 
     public interface ITransportFactory
     {
-        ITransport CreateTransport(TransportParams parameters);
+        Task<ITransport> CreateTransport(TransportParams parameters);
     }
 
     public interface ITransportListener

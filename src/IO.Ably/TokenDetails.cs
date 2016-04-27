@@ -71,7 +71,19 @@ namespace IO.Ably.Auth
 
         public override string ToString()
         {
-            return string.Format("Token: {0}, Expires: {1}, Issued: {2}, Capability: {3}, ClientId: {4}", Token, Expires, Issued, Capability, ClientId);
+            return
+                $"Token: {Token}, Expires: {Expires}, Issued: {Issued}, Capability: {Capability}, ClientId: {ClientId}";
+        }
+    }
+
+    public static class TokenDetailsExtensions
+    {
+        public static bool IsValidToken(this TokenDetails token)
+        {
+            if (token == null)
+                return false;
+            var exp = token.Expires;
+            return (exp == DateTimeOffset.MinValue) || (exp >= DateTimeOffset.UtcNow);
         }
     }
 }

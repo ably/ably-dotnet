@@ -260,7 +260,7 @@ namespace IO.Ably.Tests
             var channel = target.Get("test");
 
             // Act
-            IEnumerator<Realtime.IRealtimeChannel> enumerator = (target as IEnumerable<Realtime.IRealtimeChannel>).GetEnumerator();
+            IEnumerator<IRealtimeChannel> enumerator = (target as IEnumerable<IRealtimeChannel>).GetEnumerator();
             enumerator.MoveNext();
 
             // Assert

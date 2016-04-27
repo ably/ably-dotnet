@@ -20,7 +20,7 @@ namespace IO.Ably.Tests
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
 
             // Act
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            var target = new RealtimeChannel("test", "client", manager.Object);
 
             // Assert
             Assert.NotNull(target.Presence);
@@ -33,7 +33,7 @@ namespace IO.Ably.Tests
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
 
             // Act
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            var target = new RealtimeChannel("test", "client", manager.Object);
 
             // Assert
             Assert.Equal(ChannelState.Initialized, target.State);
@@ -44,7 +44,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            var target = new RealtimeChannel("test", "client", manager.Object);
 
             // Act
             target.Attach();
@@ -59,7 +59,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.SetupGet(c => c.IsActive).Returns(true);
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            var target = new RealtimeChannel("test", "client", manager.Object);
 
             // Act
             target.Attach();
@@ -74,7 +74,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.SetupGet(c => c.IsActive).Returns(true);
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            var target = new RealtimeChannel("test", "client", manager.Object);
             List<ChannelState> states = new List<ChannelState>();
             target.ChannelStateChanged += (s, e) => states.Add(e.NewState);
 
@@ -91,7 +91,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.SetupGet(c => c.IsActive).Returns(true);
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            var target = new RealtimeChannel("test", "client", manager.Object);
             List<ChannelState> states = new List<ChannelState>();
             target.ChannelStateChanged += (s, e) => states.Add(e.NewState);
 
@@ -109,7 +109,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.SetupGet(c => c.IsActive).Returns(true);
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            var target = new RealtimeChannel("test", "client", manager.Object);
 
             // Act
             target.Attach();
@@ -127,7 +127,7 @@ namespace IO.Ably.Tests
             manager.SetupGet(c => c.IsActive).Returns(true);
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            var target = new RealtimeChannel("test", "client", manager.Object);
 
             // Act
             target.Attach();
@@ -147,7 +147,7 @@ namespace IO.Ably.Tests
             Task detachingTask = null;
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Detach), null))
                 .Callback(() => detachingTask = Task.Factory.StartNew(() => Thread.Sleep(50)).ContinueWith(c => manager.Raise(cc => cc.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Detached))));
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            var target = new RealtimeChannel("test", "client", manager.Object);
             target.Attach();
             target.Detach();
 
@@ -167,7 +167,7 @@ namespace IO.Ably.Tests
             manager.SetupGet(c => c.IsActive).Returns(true);
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            var target = new RealtimeChannel("test", "client", manager.Object);
             List<ChannelState> states = new List<ChannelState>();
             target.Attach();
             target.ChannelStateChanged += (s, e) => states.Add(e.NewState);
@@ -187,7 +187,7 @@ namespace IO.Ably.Tests
             manager.SetupGet(c => c.IsActive).Returns(true);
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            RealtimeChannel target = new RealtimeChannel("test", "client", manager.Object);
             List<ChannelState> states = new List<ChannelState>();
             target.Attach();
             target.ChannelStateChanged += (s, e) => states.Add(e.NewState);
@@ -208,7 +208,7 @@ namespace IO.Ably.Tests
             manager.SetupGet(c => c.IsActive).Returns(true);
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            RealtimeChannel target = new RealtimeChannel("test", "client", manager.Object);
             target.Attach();
 
             // Act
@@ -229,7 +229,7 @@ namespace IO.Ably.Tests
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Detach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Detached));
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            RealtimeChannel target = new RealtimeChannel("test", "client", manager.Object);
             target.Attach();
 
             // Act
@@ -250,7 +250,7 @@ namespace IO.Ably.Tests
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Detached));
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Callback(() => attachingTask = Task.Factory.StartNew(() => Thread.Sleep(50)).ContinueWith(c => manager.Raise(cc => cc.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached))));
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            RealtimeChannel target = new RealtimeChannel("test", "client", manager.Object);
             target.Attach();
 
             // Act
@@ -266,7 +266,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            RealtimeChannel target = new RealtimeChannel("test", "client", manager.Object);
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Error));
 
             // Act
@@ -281,7 +281,7 @@ namespace IO.Ably.Tests
             manager.SetupGet(c => c.IsActive).Returns(true);
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            RealtimeChannel target = new RealtimeChannel("test", "client", manager.Object);
             target.Attach();
 
             // Act
@@ -300,7 +300,7 @@ namespace IO.Ably.Tests
             manager.SetupGet(c => c.IsActive).Returns(true);
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            RealtimeChannel target = new RealtimeChannel("test", "client", manager.Object);
             target.Attach();
             Message[] messages = new Message[]
             {
@@ -328,7 +328,7 @@ namespace IO.Ably.Tests
             manager.SetupGet(c => c.IsActive).Returns(true);
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            RealtimeChannel target = new RealtimeChannel("test", "client", manager.Object);
 
             // Act
             target.Publish("message", null);
@@ -347,7 +347,7 @@ namespace IO.Ably.Tests
             manager.SetupGet(c => c.IsActive).Returns(true);
             manager.Setup(c => c.Send(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Attach), null))
                 .Raises(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Attached));
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            RealtimeChannel target = new RealtimeChannel("test", "client", manager.Object);
 
             // Act
             target.Publish("message", null);
@@ -363,7 +363,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            RealtimeChannel target = new RealtimeChannel("test", "client", manager.Object);
             Message[] receivedMessage = null;
             target.Subscribe( ( m ) => receivedMessage = m );
 
@@ -380,7 +380,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            RealtimeChannel target = new RealtimeChannel("test", "client", manager.Object);
             Message[] receivedMessage = null;
             target.Subscribe("test", (m) => receivedMessage = m);
 
@@ -398,7 +398,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            RealtimeChannel target = new RealtimeChannel("test", "client", manager.Object);
             Message[] receivedMessage = null;
 
             // Act
@@ -416,7 +416,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            RealtimeChannel target = new RealtimeChannel("test", "client", manager.Object);
             Message[] receivedMessage = null;
             Action<Message[]> action = (m) => receivedMessage = m;
             target.Subscribe("test", action);
@@ -436,7 +436,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            Realtime.RealtimeChannel target = new Realtime.RealtimeChannel("test", "client", manager.Object);
+            RealtimeChannel target = new RealtimeChannel("test", "client", manager.Object);
             Message[] receivedMessage = null;
             Action<Message[]> action = (m) => receivedMessage = m;
             target.Subscribe("test", action);

@@ -111,7 +111,7 @@ namespace IO.Ably.Tests
             var channel = ably.Channels.Get("test");
             await channel.Publish("test", true);
 
-            var token = ably.Auth.CurrentToken;
+            var token = ably.AblyAuth.CurrentToken;
 
             token.Should().NotBeNull();
             token.ClientId.Should().Be("123");

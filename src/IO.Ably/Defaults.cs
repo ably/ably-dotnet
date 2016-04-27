@@ -13,7 +13,7 @@ namespace IO.Ably
         public static readonly string InternetCheckOKMessage = "yes";
 
         public static readonly string RestHost = "rest.ably.io";
-        public static readonly String RealtimeHost = "realtime.ably.io";
+        public static readonly string RealtimeHost = "realtime.ably.io";
         public static readonly string[] FallbackHosts;
         public static readonly TimeSpan DefaultTokenTtl = TimeSpan.FromHours(1);
         public static readonly Capability DefaultTokenCapability = Capability.AllowAll;
