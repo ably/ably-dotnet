@@ -45,11 +45,12 @@ namespace IO.Ably.Transport.States.Connection
             return TaskConstants.BooleanTrue;
         }
 
-        public override void OnAttachedToContext()
+        public override Task OnAttachedToContext()
         {
             // This is a terminal state. Clear the transport.
             Context.DestroyTransport();
             Context.Connection.Key = null;
+            return TaskConstants.Completed;
         }
 
         private static ErrorInfo CreateError(TransportStateInfo state)

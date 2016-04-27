@@ -674,7 +674,7 @@ namespace IO.Ably.Tests
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
 
             // Assert
-            timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<Action>()), Times.Once());
+            timer.Verify(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<Action>(), false), Times.Once());
             Assert.Empty(res);
         }
 
@@ -884,7 +884,7 @@ namespace IO.Ably.Tests
             manager.Setup(c => c.Connection).Returns(connection.Object);
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
-            timer.Setup(c => c.Start(It.IsAny<int>(), It.IsAny<Action>())).Callback<int, Action>((c, e) => e());
+            timer.Setup(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<Action>(), false)).Callback<int, Action>((c, e) => e());
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -907,7 +907,7 @@ namespace IO.Ably.Tests
             manager.Setup(c => c.Connection).Returns(connection.Object);
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
-            timer.Setup(c => c.Start(It.IsAny<int>(), It.IsAny<Action>())).Callback<int, Action>((c, e) => e());
+            timer.Setup(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<Action>(), false)).Callback<int, Action>((c, e) => e());
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);

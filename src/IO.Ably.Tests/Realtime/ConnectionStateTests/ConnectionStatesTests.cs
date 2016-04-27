@@ -1,6 +1,7 @@
 ﻿using Moq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
@@ -14,583 +15,100 @@ using ConnectionState = IO.Ably.Transport.States.Connection.ConnectionState;
 
 namespace IO.Ably.Tests
 {
+    public class InitializedStateSpecs : ConnectionStatesTests
+    {
+        private FakeConnectionContext _context;
+        private ConnectionInitializedState _state;
+
+        #region Initialized
+        public InitializedStateSpecs(ITestOutputHelper output) : base(output)
+        {
+            _context = new FakeConnectionContext();
+            _state = new ConnectionInitializedState(_context);
+        }
+
+        [Fact]
+        public void InitializedState_CorrectState()
+        {
+            // Assert
+            _state.State.Should().Be(ConnectionStateType.Initialized);
+        }
+
+        [Fact]
+        public void ShouldQueueMessagesWhenSent()
+        {
+            // Act
+            _state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Connect));
+
+            // Assert
+            _context.QueuedMessages.Should().HaveCount(1);
+        }
+
+        [Theory]
+        [InlineData(ProtocolMessage.MessageAction.Ack)]
+        [InlineData(ProtocolMessage.MessageAction.Attach)]
+        [InlineData(ProtocolMessage.MessageAction.Attached)]
+        [InlineData(ProtocolMessage.MessageAction.Close)]
+        [InlineData(ProtocolMessage.MessageAction.Closed)]
+        [InlineData(ProtocolMessage.MessageAction.Connect)]
+        [InlineData(ProtocolMessage.MessageAction.Connected)]
+        [InlineData(ProtocolMessage.MessageAction.Detach)]
+        [InlineData(ProtocolMessage.MessageAction.Detached)]
+        [InlineData(ProtocolMessage.MessageAction.Disconnect)]
+        [InlineData(ProtocolMessage.MessageAction.Disconnected)]
+        [InlineData(ProtocolMessage.MessageAction.Error)]
+        [InlineData(ProtocolMessage.MessageAction.Heartbeat)]
+        [InlineData(ProtocolMessage.MessageAction.Message)]
+        [InlineData(ProtocolMessage.MessageAction.Nack)]
+        [InlineData(ProtocolMessage.MessageAction.Presence)]
+        [InlineData(ProtocolMessage.MessageAction.Sync)]
+        public async Task ShouldNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
+        {
+            // Act
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(action));
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void ShouldNotListenToTransportChanges()
+        {
+            // Act
+            _state.OnTransportStateChanged(null);
+        }
+
+        [Fact]
+        public void CloseShouldDoNothing()
+        {
+            // Act
+            _state.Close();
+        }
+
+        [Fact]
+        public void OnConnect_ShouldGoToConnectionState()
+        {
+            // Act
+            _state.Connect();
+
+            // Assert
+            _context.State.Should().BeOfType<ConnectionConnectingState>();
+        }
+        #endregion
+    }
+
+
     public class ConnectionStatesTests : AblySpecs
     {
         public ConnectionStatesTests(ITestOutputHelper output) : base(output)
         {
-         
+
         }
 
-        public class InitializedStateSpecs : ConnectionStatesTests
-        {
-            private FakeConnectionContext _context;
-            private ConnectionInitializedState _state;
-
-            #region Initialized
-            public InitializedStateSpecs(ITestOutputHelper output) : base(output)
-            {
-                _context = new FakeConnectionContext();
-                _state = new ConnectionInitializedState(_context);
-            }
-
-            [Fact]
-            public void InitializedState_CorrectState()
-            {
-                // Assert
-                _state.State.Should().Be(ConnectionStateType.Initialized);
-            }
-
-            [Fact]
-            public void ShouldQueueMessagesWhenSent()
-            {
-                // Act
-                _state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Connect));
-
-                // Assert
-                _context.QueuedMessages.Should().HaveCount(1);
-            }
-
-            [Theory]
-            [InlineData(ProtocolMessage.MessageAction.Ack)]
-            [InlineData(ProtocolMessage.MessageAction.Attach)]
-            [InlineData(ProtocolMessage.MessageAction.Attached)]
-            [InlineData(ProtocolMessage.MessageAction.Close)]
-            [InlineData(ProtocolMessage.MessageAction.Closed)]
-            [InlineData(ProtocolMessage.MessageAction.Connect)]
-            [InlineData(ProtocolMessage.MessageAction.Connected)]
-            [InlineData(ProtocolMessage.MessageAction.Detach)]
-            [InlineData(ProtocolMessage.MessageAction.Detached)]
-            [InlineData(ProtocolMessage.MessageAction.Disconnect)]
-            [InlineData(ProtocolMessage.MessageAction.Disconnected)]
-            [InlineData(ProtocolMessage.MessageAction.Error)]
-            [InlineData(ProtocolMessage.MessageAction.Heartbeat)]
-            [InlineData(ProtocolMessage.MessageAction.Message)]
-            [InlineData(ProtocolMessage.MessageAction.Nack)]
-            [InlineData(ProtocolMessage.MessageAction.Presence)]
-            [InlineData(ProtocolMessage.MessageAction.Sync)]
-            public async Task ShouldNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
-            {
-                // Act
-                bool result = await _state.OnMessageReceived(new ProtocolMessage(action));
-
-                // Assert
-                Assert.False(result);
-            }
-
-            [Fact]
-            public void ShouldNotListenToTransportChanges()
-            {
-                // Act
-                _state.OnTransportStateChanged(null);
-            }
-
-            [Fact]
-            public void CloseShouldDoNothing()
-            {
-                // Act
-                _state.Close();
-            }
-
-            [Fact]
-            public void OnConnect_ShouldGoToConnectionState()
-            {
-                // Act
-                _state.Connect();
-
-                // Assert
-                _context.State.Should().BeOfType<ConnectionConnectingState>();
-            }
-            #endregion
-        }
-
+   
         //
         // Connecting state
         //
-
-        public class ConnectingStateSpecs : ConnectionStatesTests
-        {
-            private FakeConnectionContext _context;
-            private ConnectionInitializedState _state;
-
-            #region Initialized
-
-            public ConnectingStateSpecs(ITestOutputHelper output) : base(output)
-            {
-                _context = new FakeConnectionContext();
-                _state = new ConnectionInitializedState(_context);
-            }
-
-            [Fact]
-            public void ConnectingState_CorrectState()
-            {
-                // Arrange
-                ConnectionConnectingState state = new ConnectionConnectingState(_context);
-
-                // Assert
-                Assert.Equal<Ably.Realtime.ConnectionStateType>(Ably.Realtime.ConnectionStateType.Connecting, state.State);
-            }
-
-            [Fact]
-            public void ConnectingState_AttemptsConnection()
-            {
-                // Arrange
-                ConnectionConnectingState state = new ConnectionConnectingState(_context);
-
-                // Act
-                state.OnAttachedToContext();
-
-                _context.AttempConnectionCalled.Should().BeTrue();
-            }
-
-            [Fact]
-            public void ConnectingState_QueuesMessages()
-            {
-                // Arrange
-                var state = new ConnectionConnectingState(_context);
-
-                // Act
-                state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Connect));
-
-                // Assert
-                Assert.Equal<int>(1, context.Object.QueuedMessages.Count);
-            }
-
-            [Theory]
-            [InlineData(ProtocolMessage.MessageAction.Ack)]
-            [InlineData(ProtocolMessage.MessageAction.Attach)]
-            [InlineData(ProtocolMessage.MessageAction.Attached)]
-            [InlineData(ProtocolMessage.MessageAction.Close)]
-            [InlineData(ProtocolMessage.MessageAction.Closed)]
-            [InlineData(ProtocolMessage.MessageAction.Connect)]
-            [InlineData(ProtocolMessage.MessageAction.Detach)]
-            [InlineData(ProtocolMessage.MessageAction.Detached)]
-            [InlineData(ProtocolMessage.MessageAction.Disconnect)]
-            [InlineData(ProtocolMessage.MessageAction.Heartbeat)]
-            [InlineData(ProtocolMessage.MessageAction.Message)]
-            [InlineData(ProtocolMessage.MessageAction.Nack)]
-            [InlineData(ProtocolMessage.MessageAction.Presence)]
-            [InlineData(ProtocolMessage.MessageAction.Sync)]
-            public async Task ConnectingState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
-            {
-                // Arrange
-                ConnectionConnectingState state = new ConnectionConnectingState(null);
-
-                // Act
-                bool result = await state.OnMessageReceived(new ProtocolMessage(action));
-
-                // Assert
-                Assert.False(result);
-            }
-
-            [Fact]
-            public async Task ConnectingState_HandlesInboundConnectedMessage()
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                Mock<ITransport> transport = new Mock<ITransport>();
-                transport.Setup(c => c.State).Returns(TransportState.Connecting);
-                context.Setup(c => c.Transport).Returns(transport.Object);
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-
-                // Act
-                bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
-
-                // Assert
-                Assert.True(result);
-            }
-
-            [Fact]
-            public void ConnectingState_HandlesInboundConnectedMessage_DoesNotGoToConnected()
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                Mock<ITransport> transport = new Mock<ITransport>();
-                transport.Setup(c => c.State).Returns(TransportState.Closing);
-                context.Setup(c => c.Transport).Returns(transport.Object);
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-
-                // Act
-                state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
-
-                // Assert
-                context.Verify(c => c.SetState(It.IsAny<ConnectionState>()), Times.Never());
-            }
-
-            [Fact]
-            public void ConnectingState_HandlesInboundConnectedMessage_GoesToConnected()
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                context.SetupGet(c => c.Connection).Returns(new Connection(new Mock<IConnectionManager>().Object));
-                Mock<ITransport> transport = new Mock<ITransport>();
-                transport.Setup(c => c.State).Returns(TransportState.Connected);
-                context.Setup(c => c.Transport).Returns(transport.Object);
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-
-                // Act
-                state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
-
-                // Assert
-                context.Verify(c => c.SetState(It.IsAny<ConnectionConnectedState>()), Times.Once());
-            }
-
-            [Fact]
-            public async Task ConnectingState_HandlesInboundErrorMessage()
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                Mock<ITransport> transport = new Mock<ITransport>();
-                transport.Setup(c => c.State).Returns(TransportState.Connected);
-                context.Setup(c => c.Transport).Returns(transport.Object);
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-
-                // Act
-                bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
-
-                // Assert
-                Assert.True(result);
-            }
-
-            [Fact]
-            public async Task ConnectingState_HandlesInboundErrorMessage_GoesToFailed()
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                Mock<ITransport> transport = new Mock<ITransport>();
-                transport.Setup(c => c.State).Returns(TransportState.Connected);
-                context.Setup(c => c.Transport).Returns(transport.Object);
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-                ErrorInfo targetError = new ErrorInfo("test", 123);
-
-                // Act
-                bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
-
-                // Assert
-                context.Verify(c => c.SetState(It.Is<ConnectionFailedState>(ss => object.ReferenceEquals(ss.Error, targetError))), Times.Once());
-            }
-
-            [Theory]
-            [InlineData(System.Net.HttpStatusCode.InternalServerError)]
-            [InlineData(System.Net.HttpStatusCode.GatewayTimeout)]
-            public async Task ConnectingState_HandlesInboundErrorMessage_GoesToDisconnected(System.Net.HttpStatusCode code)
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                context.Setup(c => c.Connection).Returns(new Connection());
-                Mock<ITransport> transport = new Mock<ITransport>();
-                transport.Setup(c => c.State).Returns(TransportState.Connected);
-                context.Setup(c => c.Transport).Returns(transport.Object);
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-                ErrorInfo targetError = new ErrorInfo("test", 123, code);
-
-                // Act
-                bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
-
-                // Assert
-                context.Verify(c => c.SetState(It.Is<ConnectionDisconnectedState>(ss => ss.UseFallbackHost == true)), Times.Once());
-            }
-
-            [Fact]
-            public async Task ConnectingState_HandlesInboundErrorMessage_ClearsConnectionKey()
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                Mock<Connection> connection = new Mock<Connection>();
-                connection.SetupProperty(c => c.Key);
-                context.Setup(c => c.Connection).Returns(connection.Object);
-                Mock<ITransport> transport = new Mock<ITransport>();
-                transport.Setup(c => c.State).Returns(TransportState.Connected);
-                context.Setup(c => c.Transport).Returns(transport.Object);
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-
-                // Act
-                bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("test", 123, System.Net.HttpStatusCode.InternalServerError) });
-
-                // Assert
-                connection.VerifySet(c => c.Key = null);
-            }
-
-            [Fact]
-            public async Task ConnectingState_HandlesInboundDisconnectedMessage()
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-
-                // Act
-                bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
-
-                // Assert
-                Assert.True(result);
-            }
-
-            [Fact]
-            public async Task ConnectingState_HandlesInboundDisconnectedMessage_GoesToDisconnected()
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-
-                // Act
-                await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
-
-                // Assert
-                context.Verify(c => c.SetState(It.Is<ConnectionDisconnectedState>(ss => ss.UseFallbackHost == false)), Times.Once());
-            }
-
-            [Theory]
-            [InlineData(System.Net.HttpStatusCode.InternalServerError)]
-            [InlineData(System.Net.HttpStatusCode.GatewayTimeout)]
-            public async Task ConnectingState_HandlesInboundDisconnectedMessage_GoesToDisconnected_FallbackHost(System.Net.HttpStatusCode code)
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-
-                // Act
-                await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { error = new ErrorInfo("", 0, code) });
-
-                // Assert
-                context.Verify(c => c.SetState(It.Is<ConnectionDisconnectedState>(ss => ss.UseFallbackHost == true)), Times.Once());
-            }
-
-            [Fact]
-            public async Task ConnectingState_HandlesInboundDisconnectedMessage_GoesToSuspended()
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                context.SetupGet(c => c.FirstConnectionAttempt).Returns(DateTimeOffset.UtcNow.AddHours(-3));
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-
-                // Act
-                await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
-
-                // Assert
-                context.Verify(c => c.SetState(It.IsAny<ConnectionSuspendedState>()), Times.Once());
-            }
-
-            [Fact]
-            public void ConnectingState_Connect_DoesNothing()
-            {
-                // Arrange
-                ConnectionConnectingState state = new ConnectionConnectingState(null);
-
-                // Act
-                state.Connect();
-            }
-
-            [Fact]
-            public void ConnectingState_Close_GoesToClosing()
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-
-                // Act
-                state.Close();
-
-                // Assert
-                context.Verify(c => c.SetState(It.IsAny<ConnectionClosingState>()), Times.Once());
-            }
-
-            [Fact]
-            public void ConnectingState_AttachToContext_NoTransport_CreatesTransport()
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                context.Setup(c => c.CreateTransport())
-                    .Callback(() => context.Setup(c => c.Transport).Returns(new Mock<ITransport>().Object));
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-
-                // Act
-                state.OnAttachedToContext();
-
-                // Assert
-                context.Verify(c => c.CreateTransport(), Times.Once());
-            }
-
-            [Fact]
-            public void ConnectingState_AttachToContext_ClosedTransport_Connects()
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                Mock<ITransport> transport = new Mock<ITransport>();
-                context.SetupGet(c => c.Transport).Returns(transport.Object);
-                transport.SetupGet(c => c.State).Returns(TransportState.Closed);
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-
-                // Act
-                state.OnAttachedToContext();
-
-                // Assert
-                transport.Verify(c => c.Connect(), Times.Once());
-            }
-
-            //[Fact]
-            //public void ConnectingState_AttachToContext_ConnectedTransport_SendsConnect()
-            //{
-            //    // Arrange
-            //    Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            //    Mock<ITransport> transport = new Mock<ITransport>();
-            //    context.SetupGet(c => c.Transport).Returns(transport.Object);
-            //    transport.SetupGet(c => c.State).Returns(TransportState.Connected);
-            //    ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-
-            //    // Act
-            //    state.OnAttachedToContext();
-
-            //    // Assert
-            //    transport.Verify(c => c.Send(It.Is<ProtocolMessage>(ss => ss.Action == ProtocolMessage.MessageAction.Connect)), Times.Once());
-            //}
-
-            [Theory]
-            [InlineData(TransportState.Closing)]
-            [InlineData(TransportState.Connected)]
-            [InlineData(TransportState.Connecting)]
-            [InlineData(TransportState.Initialized)]
-            public void ConnectingState_TransportStateChanges_DoesNotSwitchState(TransportState transportState)
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                Mock<ITransport> transport = new Mock<ITransport>();
-                context.SetupGet(c => c.Transport).Returns(transport.Object);
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-
-                // Act
-                state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(transportState));
-
-                // Assert
-                context.Verify(c => c.SetState(It.IsAny<ConnectionState>()), Times.Never());
-            }
-
-            //[Fact]
-            //public void ConnectingState_TransportGoesConnected_SendsConnect()
-            //{
-            //    // Arrange
-            //    Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            //    Mock<ITransport> transport = new Mock<ITransport>();
-            //    context.SetupGet(c => c.Transport).Returns(transport.Object);
-            //    ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-
-            //    // Act
-            //    state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Connected));
-
-            //    // Assert
-            //    transport.Verify(c => c.Send(It.Is<ProtocolMessage>(ss => ss.Action == ProtocolMessage.MessageAction.Connect)), Times.Once());
-            //}
-
-            [Fact]
-            public void ConnectingState_TransportGoesDisconnected_SwitchesToDisconnected()
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-
-                // Act
-                state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
-
-                // Assert
-                context.Verify(c => c.SetState(It.Is<ConnectionDisconnectedState>(ss => ss.UseFallbackHost == false)), Times.Once());
-            }
-
-            [Fact]
-            public void ConnectingState_TransportGoesDisconnected_SwitchesToDisconnected_WithError()
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-
-                // Act
-                state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed, new Exception()));
-
-                // Assert
-                context.Verify(c => c.SetState(It.Is<ConnectionDisconnectedState>(ss => ss.UseFallbackHost == true)), Times.Once());
-            }
-
-            [Fact]
-            public void ConnectingState_TransportGoesDisconnected_SwitchesToSuspended()
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                context.SetupGet(c => c.FirstConnectionAttempt).Returns(DateTimeOffset.UtcNow.AddHours(-3));
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
-
-                // Act
-                state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
-
-                // Assert
-                context.Verify(c => c.SetState(It.IsAny<ConnectionSuspendedState>()), Times.Once());
-            }
-
-            [Fact]
-            public void ConnectingState_ForceDisconnect()
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                Mock<ITransport> transport = new Mock<ITransport>();
-                transport.SetupGet(c => c.State).Returns(TransportState.Initialized);
-                context.SetupGet(c => c.Transport).Returns(transport.Object);
-                Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-                timer.Setup(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>())).Callback<int, System.Action>((t, c) => c());
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object, timer.Object);
-
-                // Act
-                state.OnAttachedToContext();
-
-                // Assert
-                timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>()), Times.Once);
-                context.Verify(c => c.SetState(It.Is<ConnectionDisconnectedState>(ss => ss.Error == ErrorInfo.ReasonTimeout)), Times.Once());
-            }
-
-            [Theory]
-            [InlineData(ProtocolMessage.MessageAction.Connected)]
-            [InlineData(ProtocolMessage.MessageAction.Disconnected)]
-            [InlineData(ProtocolMessage.MessageAction.Error)]
-            public void ConnectingState_ForceDisconnectNotApplied_WhenMessageReceived(ProtocolMessage.MessageAction action)
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                context.SetupGet(c => c.Connection).Returns(new Connection(new Mock<IConnectionManager>().Object));
-                Mock<ITransport> transport = new Mock<ITransport>();
-                transport.SetupGet(c => c.State).Returns(TransportState.Initialized);
-                context.SetupGet(c => c.Transport).Returns(transport.Object);
-                Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object, timer.Object);
-
-                // Act
-                state.OnAttachedToContext();
-                transport.SetupGet(c => c.State).Returns(TransportState.Connected);
-                state.OnMessageReceived(new ProtocolMessage(action));
-
-                // Assert
-                timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>()), Times.Once);
-                timer.Verify(c => c.Abort(), Times.Once);
-            }
-
-            [Fact]
-            public void ConnectingState_ForceDisconnectNotApplied_WhenTransportClosed()
-            {
-                // Arrange
-                Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-                Mock<ITransport> transport = new Mock<ITransport>();
-                transport.SetupGet(c => c.State).Returns(TransportState.Initialized);
-                context.SetupGet(c => c.Transport).Returns(transport.Object);
-                Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-                ConnectionConnectingState state = new ConnectionConnectingState(context.Object, timer.Object);
-
-                // Act
-                state.OnAttachedToContext();
-                state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
-
-                // Assert
-                timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>()), Times.Once);
-                timer.Verify(c => c.Abort(), Times.Once);
-            }
-
-        }
-
-        
-        #endregion
 
         //
         // Connected state
@@ -945,14 +463,14 @@ namespace IO.Ably.Tests
             transport.SetupGet(c => c.State).Returns(TransportState.Initialized);
             context.SetupGet(c => c.Transport).Returns(transport.Object);
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            timer.Setup(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>())).Callback<int, System.Action>((t, c) => c());
+            timer.Setup(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<System.Action>(), false)).Callback<int, System.Action>((t, c) => c());
             ConnectionDisconnectedState state = new ConnectionDisconnectedState(context.Object, ErrorInfo.ReasonClosed, timer.Object);
 
             // Act
             state.OnAttachedToContext();
 
             // Assert
-            timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>()), Times.Once);
+            timer.Verify(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<System.Action>(), false), Times.Once);
             context.Verify(c => c.SetState(It.IsAny<ConnectionConnectingState>()), Times.Once());
         }
 
@@ -972,7 +490,7 @@ namespace IO.Ably.Tests
             state.OnAttachedToContext();
 
             // Assert
-            timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>()), Times.Never());
+            timer.Verify(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<System.Action>(), false), Times.Never());
             context.Verify(c => c.SetState(It.IsAny<ConnectionConnectingState>()), Times.Once());
         }
         #endregion
@@ -1079,14 +597,14 @@ namespace IO.Ably.Tests
             transport.SetupGet(c => c.State).Returns(TransportState.Initialized);
             context.SetupGet(c => c.Transport).Returns(transport.Object);
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            timer.Setup(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>())).Callback<int, System.Action>((t, c) => c());
+            timer.Setup(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<System.Action>(), false)).Callback<int, System.Action>((t, c) => c());
             ConnectionSuspendedState state = new ConnectionSuspendedState(context.Object, null, timer.Object);
 
             // Act
             state.OnAttachedToContext();
 
             // Assert
-            timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>()), Times.Once);
+            timer.Verify(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<System.Action>(), false), Times.Once);
             context.Verify(c => c.SetState(It.IsAny<ConnectionConnectingState>()), Times.Once());
         }
         #endregion
@@ -1327,14 +845,14 @@ namespace IO.Ably.Tests
             transport.SetupGet(c => c.State).Returns(TransportState.Connected);
             context.SetupGet(c => c.Transport).Returns(transport.Object);
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            timer.Setup(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>())).Callback<int, System.Action>((t, c) => c());
+            timer.Setup(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<System.Action>(), false)).Callback<int, System.Action>((t, c) => c());
             ConnectionClosingState state = new ConnectionClosingState(context.Object, null, timer.Object);
 
             // Act
             state.OnAttachedToContext();
 
             // Assert
-            timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>()), Times.Once);
+            timer.Verify(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<System.Action>(), false), Times.Once);
             context.Verify(c => c.SetState(It.IsAny<ConnectionClosedState>()), Times.Once());
         }
 
@@ -1354,7 +872,7 @@ namespace IO.Ably.Tests
             await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
 
             // Assert
-            timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>()), Times.Once);
+            timer.Verify(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<System.Action>(), false), Times.Once);
             timer.Verify(c => c.Abort(), Times.Once);
             context.Verify(c => c.SetState(It.IsAny<ConnectionClosedState>()), Times.Once());
         }
@@ -1375,7 +893,7 @@ namespace IO.Ably.Tests
             await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
 
             // Assert
-            timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<System.Action>()), Times.Once);
+            timer.Verify(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<System.Action>(), false), Times.Once);
             timer.Verify(c => c.Abort(), Times.Once);
             context.Verify(c => c.SetState(It.IsAny<ConnectionFailedState>()), Times.Once());
         }
@@ -1631,77 +1149,6 @@ namespace IO.Ably.Tests
         }
         #endregion
 
-        [Fact]
-        public void CountdownTimer_Start_StartsCountdown()
-        {
-            // Arrange
-            CountdownTimer timer = new CountdownTimer();
-            int timeout = 10;
-            int called = 0;
-            System.Action callback = () => called++;
-
-            // Act
-            timer.Start(timeout, callback);
-            System.Threading.Thread.Sleep(50);
-
-            // Assert
-            Assert.Equal<int>(1, called);
-        }
-
-        [Fact]
-        public void CountdownTimer_Abort_StopsCountdown()
-        {
-            // Arrange
-            CountdownTimer timer = new CountdownTimer();
-            int timeout = 10;
-            int called = 0;
-            System.Action callback = () => called++;
-            timer.Start(timeout, callback);
-
-            // Act
-            timer.Abort();
-            System.Threading.Thread.Sleep(50);
-
-            // Assert
-            Assert.Equal<int>(0, called);
-        }
-
-        [Fact(Skip = "Inconsistent test")]
-        public void CountdownTimer_AbortStart_StartsNewCountdown()
-        {
-            // Arrange
-            CountdownTimer timer = new CountdownTimer();
-            int timeout = 10;
-            int called = 0;
-            Action callback = () => called++;
-            timer.Start(timeout, callback);
-
-            // Act
-            timer.Abort();
-            timer.Start(timeout, callback);
-            System.Threading.Thread.Sleep(50);
-
-            // Assert
-            Assert.Equal<int>(1, called);
-        }
-
-        //TODO: MG Fix the inconsistent test
-        [Fact(Skip = "Inconsistent test. It has concurrency issues.")]
-        public void CountdownTimer_StartTwice_AbortsOldTimer()
-        {
-            // Arrange
-            CountdownTimer timer = new CountdownTimer();
-            int timeout = 10;
-            int called = 0;
-            Action callback = () => called++;
-
-            // Act
-            timer.Start(timeout, callback);
-            timer.Start(timeout, callback);
-            System.Threading.Thread.Sleep(50);
-
-            // Assert
-            Assert.Equal<int>(1, called);
-        }
+        
     }
 }

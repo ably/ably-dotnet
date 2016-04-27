@@ -28,8 +28,9 @@ namespace IO.Ably.Transport.States.Connection
         public abstract Task OnTransportStateChanged(TransportStateInfo state);
         public abstract Task<bool> OnMessageReceived(ProtocolMessage message);
 
-        public virtual void OnAttachedToContext()
+        public virtual Task OnAttachedToContext()
         {
+            return TaskConstants.BooleanTrue;
         }
 
         public virtual void SendMessage(ProtocolMessage message)

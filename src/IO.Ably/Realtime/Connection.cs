@@ -16,8 +16,8 @@ namespace IO.Ably.Realtime
 
         internal Connection(IConnectionManager manager)
         {
-            this._manager = manager;
-            State = this._manager.ConnectionState;
+            _manager = manager;
+            State = _manager.ConnectionState;
         }
 
         /// <summary>
@@ -29,17 +29,17 @@ namespace IO.Ably.Realtime
         ///     The id of the current connection. This string may be
         ///     used when recovering connection state.
         /// </summary>
-        public virtual string Id { get; internal set; }
+        public string Id { get; internal set; }
 
         /// <summary>
         ///     The serial number of the last message received on this connection.
         ///     The serial number may be used when recovering connection state.
         /// </summary>
-        public virtual long Serial { get; internal set; }
+        public long Serial { get; internal set; }
 
         /// <summary>
         /// </summary>
-        public virtual string Key { get; internal set; }
+        public string Key { get; internal set; }
 
         /// <summary>
         ///     Information relating to the transition to the current state,
@@ -87,12 +87,7 @@ namespace IO.Ably.Realtime
             var oldState = State;
             State = state;
             Reason = error;
-            var eh = ConnectionStateChanged;
-            if (null != eh)
-            {
-                // TODO: Add proper arguments in Connection.ConnectionStateChanged
-                eh(this, new ConnectionStateChangedEventArgs(oldState, state, retryin, error));
-            }
+            ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(oldState, state, retryin, error));
         }
     }
 }

@@ -40,6 +40,6 @@ namespace IO.Ably.Transport
         void OnTransportConnected();
         void OnTransportDisconnected();
         void OnTransportError(Exception error);
-        void OnTransportMessageReceived(ProtocolMessage message);
+        Task OnTransportMessageReceived(ProtocolMessage message);
     }
 }

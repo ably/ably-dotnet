@@ -51,7 +51,7 @@ namespace IO.Ably.Transport
             manager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat), null);
             if (callback != null)
             {
-                request._timer.Start(HeartbeatTimeout, request.OnTimeout);
+                request._timer.Start(TimeSpan.FromMilliseconds(HeartbeatTimeout), request.OnTimeout);
             }
 
             return request;

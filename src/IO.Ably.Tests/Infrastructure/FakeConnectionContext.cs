@@ -9,6 +9,71 @@ using ConnectionState = IO.Ably.Transport.States.Connection.ConnectionState;
 
 namespace IO.Ably.Tests
 {
+    internal class FakeTimer : ICountdownTimer
+    {
+        public void Start(TimeSpan delay, Action onTimeOut, bool autoReset = false)
+        {
+            StartedWithAction = true;
+            LastDelay = delay;
+            AutoRest = autoReset;
+        }
+
+        public bool AutoRest { get; set; }
+
+        public TimeSpan LastDelay { get; set; }
+
+        public bool StartedWithAction { get; set; }
+
+        public void StartAsync(TimeSpan delay, Func<Task> onTimeOut, bool autoReset = false)
+        {
+            StartedWithFunc = true;
+            LastDelay = delay;
+            AutoRest = autoReset;
+        }
+
+        public bool StartedWithFunc { get; set; }
+
+        public void Abort()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    internal class FakeTransport : ITransport
+    {
+        public string Host { get; set; }
+        public TransportState State { get; set; }
+        public ITransportListener Listener { get; set; }
+
+        public void Connect()
+        {
+            ConnectCalled = true;
+        }
+
+        public bool ConnectCalled { get; set; }
+
+        public void Close()
+        {
+            CloseCalled = true;
+        }
+
+        public bool CloseCalled { get; set; }
+
+        public void Abort(string reason)
+        {
+            AbortCalled = true;
+        }
+
+        public bool AbortCalled { get; set; }
+
+        public void Send(ProtocolMessage message)
+        {
+            LastMessageSend = message;
+        }
+
+        public ProtocolMessage LastMessageSend { get; set; }
+    }
+
     internal class FakeConnectionContext : IConnectionContext
     {
         public ConnectionState State { get; set; }
@@ -21,6 +86,11 @@ namespace IO.Ably.Tests
 
         public ConnectionState LastSetState { get; set; }
 
+        public FakeConnectionContext()
+        {
+            Connection = new Connection();
+        }
+
         public void SetState(ConnectionState state)
         {
             State = state;
@@ -31,6 +101,7 @@ namespace IO.Ably.Tests
         public Task CreateTransport()
         {
             CreateTransportCalled = true;
+            Transport = new FakeTransport();
             return TaskConstants.BooleanTrue;
         }
 
@@ -50,6 +121,12 @@ namespace IO.Ably.Tests
         public void ResetConnectionAttempts()
         {
             ResetConnectionAttemptsCalled = true;
+        }
+
+        public bool CanConnectToAblyBool = true;
+        public Task<bool> CanConnectToAbly()
+        {
+            return Task.FromResult(CanConnectToAblyBool);
         }
     }
 }

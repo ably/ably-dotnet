@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
@@ -71,17 +72,19 @@ namespace IO.Ably.Transport.States.Connection
             return TaskConstants.BooleanTrue;
         }
 
-        public override void OnAttachedToContext()
+        public override Task OnAttachedToContext()
         {
             if (Context.Transport.State == TransportState.Connected)
             {
                 Context.Transport.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
-                _timer.Start(CloseTimeout, () => Context.SetState(new ConnectionClosedState(Context)));
+                _timer.Start(TimeSpan.FromMilliseconds(CloseTimeout), () => Context.SetState(new ConnectionClosedState(Context)));
+                
             }
             else
             {
                 Context.SetState(new ConnectionClosedState(Context));
             }
+            return TaskConstants.Completed;
         }
 
         private void TransitionState(ConnectionState newState)

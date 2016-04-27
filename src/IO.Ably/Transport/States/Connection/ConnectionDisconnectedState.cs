@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
@@ -58,10 +59,10 @@ namespace IO.Ably.Transport.States.Connection
         {
             // could not happen
             Logger.Error("Unexpected state change. " + state.State);
-            return TaskConstants.BooleanTrue;
+            return TaskConstants.Completed;
         }
 
-        public override void OnAttachedToContext()
+        public override Task OnAttachedToContext()
         {
             if (UseFallbackHost)
             {
@@ -69,8 +70,10 @@ namespace IO.Ably.Transport.States.Connection
             }
             else
             {
-                _timer.Start(ConnectTimeout, OnTimeOut);
+                _timer.Start(TimeSpan.FromMilliseconds(ConnectTimeout), OnTimeOut);
             }
+
+            return TaskConstants.Completed;
         }
 
         private void OnTimeOut()

@@ -57,5 +57,6 @@ namespace IO.Ably.Transport
         void DestroyTransport();
         void AttemptConnection();
         void ResetConnectionAttempts();
+        Task<bool> CanConnectToAbly();
     }
 }

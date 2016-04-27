@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using IO.Ably.Realtime;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
@@ -8,12 +9,12 @@ namespace IO.Ably.Transport.States.Connection
         public ConnectionConnectedState(IConnectionContext context, ConnectionInfo info) :
             base(context)
         {
-            this.Context.Connection.Id = info.ConnectionId;
-            this.Context.Connection.Key = info.ConnectionKey;
-            this.Context.Connection.Serial = info.ConnectionSerial;
+            Context.Connection.Id = info.ConnectionId;
+            Context.Connection.Key = info.ConnectionKey;
+            Context.Connection.Serial = info.ConnectionSerial;
         }
 
-        public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Connected;
+        public override ConnectionStateType State => ConnectionStateType.Connected;
 
         protected override bool CanQueueMessages => false;
 
@@ -39,8 +40,8 @@ namespace IO.Ably.Transport.States.Connection
                 case ProtocolMessage.MessageAction.Error:
                 {
                     Context.SetState(new ConnectionFailedState(Context, message.error));
-                        return TaskConstants.BooleanTrue;
-                    }
+                    return TaskConstants.BooleanTrue;
+                }
             }
             return TaskConstants.BooleanFalse;
         }
@@ -59,7 +60,7 @@ namespace IO.Ably.Transport.States.Connection
             Context.Transport.Send(message);
         }
 
-        public override void OnAttachedToContext()
+        public override Task OnAttachedToContext()
         {
             Context.ResetConnectionAttempts();
 
@@ -71,6 +72,8 @@ namespace IO.Ably.Transport.States.Connection
                 }
                 Context.QueuedMessages.Clear();
             }
+
+            return TaskConstants.Completed;
         }
     }
 }

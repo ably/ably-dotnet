@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Runtime.Remoting.Contexts;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
@@ -27,6 +29,8 @@ namespace IO.Ably.Transport
         {
             _sync = SynchronizationContext.Current;
             _pendingMessages = new Queue<ProtocolMessage>();
+            _state = new ConnectionInitializedState(this);
+            Connection = new Connection(this);
         }
 
         internal ConnectionManager(ITransport transport, IAcknowledgementProcessor ackProcessor,
@@ -46,9 +50,7 @@ namespace IO.Ably.Transport
         {
             _options = options;
             RestClient = restClient;
-            _state = new ConnectionInitializedState(this);
             _ackProcessor = new AcknowledgementProcessor();
-            Connection = new Connection(this);
         }
 
         ConnectionState IConnectionContext.State => _state;
@@ -106,6 +108,22 @@ namespace IO.Ably.Transport
             _connectionAttempts = 0;
         }
 
+        public async Task<bool> CanConnectToAbly()
+        {
+            try
+            {
+                var httpClient = RestClient.HttpClient;
+                var request = new AblyRequest(Defaults.InternetCheckURL, HttpMethod.Get);
+                var response = await httpClient.Execute(request);
+                return response.TextResponse == Defaults.InternetCheckOKMessage;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error accessing ably internet check url. Internet is down!", ex);
+                return false;
+            }
+        }
+
         public event MessageReceivedDelegate MessageReceived;
 
         // TODO: Find out why is this?
@@ -116,10 +134,7 @@ namespace IO.Ably.Transport
 
         public Connection Connection { get; internal set; }
 
-        public Realtime.ConnectionStateType ConnectionState
-        {
-            get { return _state.State; }
-        }
+        public ConnectionStateType ConnectionState => _state.State;
 
         public void Connect()
         {
@@ -178,27 +193,27 @@ namespace IO.Ably.Transport
         {
             if (_sync != null)
             {
-                _sync.Post(o => OnTransportError((TransportState) o, e), _transport.State);
+                _sync.Post(o => OnTransportError((TransportState)o, e), _transport.State);
                 return;
             }
             OnTransportError(_transport.State, e);
         }
 
-        void ITransportListener.OnTransportMessageReceived(ProtocolMessage message)
+        async Task ITransportListener.OnTransportMessageReceived(ProtocolMessage message)
         {
             if (_sync != null)
             {
-                _sync.Post(o => OnTransportMessageReceived(message), null);
+                _sync.Post(async o => await OnTransportMessageReceived(message), null);
                 return;
             }
-            OnTransportMessageReceived(message);
+            await OnTransportMessageReceived(message);
         }
 
         internal async Task<TransportParams> CreateTransportParameters()
         {
             return await TransportParams.Create(RestClient.AblyAuth, _options, Connection?.Key, Connection?.Serial);
         }
-        
+
         //TODO: Move this inside WebSocketTransport
         private static string GetHost(ClientOptions options, bool useFallbackHost)
         {
@@ -206,7 +221,7 @@ namespace IO.Ably.Transport
             if (useFallbackHost)
             {
                 var r = new Random();
-                defaultHost = Defaults.FallbackHosts[r.Next(0, 1000)%Defaults.FallbackHosts.Length];
+                defaultHost = Defaults.FallbackHosts[r.Next(0, 1000) % Defaults.FallbackHosts.Length];
             }
             var host = options.RealtimeHost.IsNotEmpty() ? options.RealtimeHost : defaultHost;
             if (options.Environment.HasValue && options.Environment != AblyEnvironment.Live)
