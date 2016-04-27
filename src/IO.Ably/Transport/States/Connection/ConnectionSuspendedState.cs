@@ -28,7 +28,7 @@ namespace IO.Ably.Transport.States.Connection
             RetryIn = ConnectTimeout;
         }
 
-        public override Realtime.ConnectionState State => Realtime.ConnectionState.Suspended;
+        public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Suspended;
 
         protected override bool CanQueueMessages => false;
 

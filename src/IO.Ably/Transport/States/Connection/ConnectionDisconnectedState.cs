@@ -33,7 +33,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public bool UseFallbackHost { get; set; }
 
-        public override Realtime.ConnectionState State => Realtime.ConnectionState.Disconnected;
+        public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Disconnected;
 
         protected override bool CanQueueMessages => true;
 

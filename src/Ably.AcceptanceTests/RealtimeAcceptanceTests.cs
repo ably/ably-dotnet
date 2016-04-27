@@ -45,7 +45,7 @@ namespace IO.Ably.AcceptanceTests
             var client = GetRealtimeClient();
 
             // Assert
-            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionState.Connecting);
+            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Connecting);
             client.Connection.Close();
         }
 
@@ -67,10 +67,10 @@ namespace IO.Ably.AcceptanceTests
             signal.WaitOne(10000);
 
             args.Count.ShouldBeEquivalentTo(1);
-            args[0].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionState.Connected);
-            args[0].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionState.Connecting);
+            args[0].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Connected);
+            args[0].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Connecting);
             args[0].Reason.ShouldBeEquivalentTo(null);
-            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionState.Connected);
+            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Connected);
         }
 
         [Test]
@@ -88,25 +88,25 @@ namespace IO.Ably.AcceptanceTests
             };
 
             // Act
-            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionState.Initialized);
+            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Initialized);
             await client.Connect();
 
             // Assert
-            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionState.Connecting);
+            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Connecting);
 
             args.Count.ShouldBeEquivalentTo(1);
-            args[0].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionState.Initialized);
-            args[0].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionState.Connecting);
+            args[0].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Initialized);
+            args[0].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Connecting);
             args[0].Reason.ShouldBeEquivalentTo(null);
 
             signal.WaitOne(10000);
 
             args.Count.ShouldBeEquivalentTo(2);
-            args[1].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionState.Connecting);
-            args[1].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionState.Connected);
+            args[1].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Connecting);
+            args[1].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Connected);
             args[1].Reason.ShouldBeEquivalentTo(null);
 
-            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionState.Connected);
+            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Connected);
         }
 
         [Test]
@@ -124,7 +124,7 @@ namespace IO.Ably.AcceptanceTests
             };
 
             signal.WaitOne(10000);
-            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionState.Connected);
+            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Connected);
 
             // Act
             client.Close();
@@ -132,14 +132,14 @@ namespace IO.Ably.AcceptanceTests
             // Assert
             signal.WaitOne(10000);
             args.Count.ShouldBeEquivalentTo(2);
-            args[1].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionState.Connected);
-            args[1].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionState.Closing);
+            args[1].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Connected);
+            args[1].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Closing);
             args[1].Reason.ShouldBeEquivalentTo(ErrorInfo.ReasonClosed);
 
             signal.WaitOne(10000);
             args.Count.ShouldBeEquivalentTo(3);
-            args[2].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionState.Closing);
-            args[2].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionState.Closed);
+            args[2].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Closing);
+            args[2].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Closed);
             args[2].Reason.ShouldBeEquivalentTo(ErrorInfo.ReasonClosed);
         }
 
@@ -196,7 +196,7 @@ namespace IO.Ably.AcceptanceTests
 
             client.Connection.ConnectionStateChanged += (s, e) =>
             {
-                if (e.CurrentState == Realtime.ConnectionState.Connected)
+                if (e.CurrentState == Realtime.ConnectionStateType.Connected)
                     signal.Set();
             };
             string keyBeforeConnect = client.Connection.Id;
@@ -226,7 +226,7 @@ namespace IO.Ably.AcceptanceTests
 
                 client.Connection.ConnectionStateChanged += (s, e) =>
                 {
-                    if (e.CurrentState == Realtime.ConnectionState.Connected)
+                    if (e.CurrentState == Realtime.ConnectionStateType.Connected)
                     {
                         lock (ids)
                         {
@@ -258,7 +258,7 @@ namespace IO.Ably.AcceptanceTests
 
             client.Connection.ConnectionStateChanged += (s, e) =>
             {
-                if (e.CurrentState == Realtime.ConnectionState.Connected)
+                if (e.CurrentState == Realtime.ConnectionStateType.Connected)
                     signal.Set();
             };
             string keyBeforeConnect = client.Connection.Key;
@@ -288,7 +288,7 @@ namespace IO.Ably.AcceptanceTests
 
                 client.Connection.ConnectionStateChanged += (s, e) =>
                 {
-                    if (e.CurrentState == Realtime.ConnectionState.Connected)
+                    if (e.CurrentState == Realtime.ConnectionStateType.Connected)
                     {
                         lock (keys)
                         {
@@ -329,10 +329,10 @@ namespace IO.Ably.AcceptanceTests
             signal.WaitOne(10000);
 
             args.Count.ShouldBeEquivalentTo(1);
-            args[0].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionState.Failed);
-            args[0].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionState.Connecting);
+            args[0].CurrentState.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Failed);
+            args[0].PreviousState.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Connecting);
             args[0].Reason.ShouldBeEquivalentTo(client.Connection.Reason);
-            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionState.Failed);
+            client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Failed);
             client.Connection.Reason.code.ShouldBeEquivalentTo(40400);
             client.Connection.Reason.statusCode.ShouldBeEquivalentTo(System.Net.HttpStatusCode.NotFound);
         }

@@ -13,7 +13,6 @@ using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit.Abstractions;
-using ConnectionState = IO.Ably.Realtime.ConnectionState;
 
 namespace IO.Ably.Tests
 {
@@ -27,7 +26,7 @@ namespace IO.Ably.Tests
             IConnectionContext target = new ConnectionManager(new ClientOptions(), null);
 
             // Assert
-            Assert.Equal<ConnectionState>(ConnectionState.Initialized, target.State.State);
+            Assert.Equal<ConnectionStateType>(ConnectionStateType.Initialized, target.State.State);
         }
 
         [Theory]
@@ -473,7 +472,7 @@ namespace IO.Ably.Tests
             Mock<ITransport> mock = new Mock<ITransport>();
             Mock<IAcknowledgementProcessor> ackmock = new Mock<IAcknowledgementProcessor>();
             Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
-            state.Setup(c => c.State).Returns(ConnectionState.Connected);
+            state.Setup(c => c.State).Returns(ConnectionStateType.Connected);
             ConnectionManager target = new ConnectionManager(mock.Object, ackmock.Object, state.Object, GetRestClient());
 
             // Act
@@ -554,14 +553,14 @@ namespace IO.Ably.Tests
         #region ConnectionHeartbeatRequest tests
 
         [Theory]
-        [InlineData(ConnectionState.Closed)]
-        [InlineData(ConnectionState.Closing)]
-        [InlineData(ConnectionState.Connecting)]
-        [InlineData(ConnectionState.Disconnected)]
-        [InlineData(ConnectionState.Failed)]
-        [InlineData(ConnectionState.Initialized)]
-        [InlineData(ConnectionState.Suspended)]
-        public void ConnectionHeartbeatRequest_FailsWhenNotConnected(ConnectionState state)
+        [InlineData(ConnectionStateType.Closed)]
+        [InlineData(ConnectionStateType.Closing)]
+        [InlineData(ConnectionStateType.Connecting)]
+        [InlineData(ConnectionStateType.Disconnected)]
+        [InlineData(ConnectionStateType.Failed)]
+        [InlineData(ConnectionStateType.Initialized)]
+        [InlineData(ConnectionStateType.Suspended)]
+        public void ConnectionHeartbeatRequest_FailsWhenNotConnected(ConnectionStateType state)
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
@@ -580,14 +579,14 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [InlineData(ConnectionState.Closed)]
-        [InlineData(ConnectionState.Closing)]
-        [InlineData(ConnectionState.Connecting)]
-        [InlineData(ConnectionState.Disconnected)]
-        [InlineData(ConnectionState.Failed)]
-        [InlineData(ConnectionState.Initialized)]
-        [InlineData(ConnectionState.Suspended)]
-        public void ConnectionHeartbeatRequest_FailsWhenNotConnected_WithNoCallback(ConnectionState state)
+        [InlineData(ConnectionStateType.Closed)]
+        [InlineData(ConnectionStateType.Closing)]
+        [InlineData(ConnectionStateType.Connecting)]
+        [InlineData(ConnectionStateType.Disconnected)]
+        [InlineData(ConnectionStateType.Failed)]
+        [InlineData(ConnectionStateType.Initialized)]
+        [InlineData(ConnectionStateType.Suspended)]
+        public void ConnectionHeartbeatRequest_FailsWhenNotConnected_WithNoCallback(ConnectionStateType state)
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
@@ -603,7 +602,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
 
             // Act
@@ -618,7 +617,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
 
             // Act
@@ -632,13 +631,13 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<Connection> connection = new Mock<Connection>();
-            connection.Setup(c => c.State).Returns(ConnectionState.Connected);
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, null, null);
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionState.Closed, ConnectionState.Connected, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closed, ConnectionStateType.Connected, 0, null));
         }
 
         [Fact]
@@ -647,7 +646,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
@@ -666,7 +665,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
@@ -701,7 +700,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
@@ -720,7 +719,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
@@ -741,7 +740,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
@@ -761,8 +760,8 @@ namespace IO.Ably.Tests
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             Mock<Connection> connection = new Mock<Connection>();
-            connection.Setup(c => c.State).Returns(ConnectionState.Connected);
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
@@ -773,31 +772,31 @@ namespace IO.Ably.Tests
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionState.Closing, ConnectionState.Closed, 0, null));
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionState.Closing, ConnectionState.Closed, 0, null));
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionState.Closing, ConnectionState.Closed, 0, null));
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionState.Closing, ConnectionState.Closed, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closing, ConnectionStateType.Closed, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closing, ConnectionStateType.Closed, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closing, ConnectionStateType.Closed, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closing, ConnectionStateType.Closed, 0, null));
 
             // Assert
             Assert.Equal<int>(1, res.Count);
         }
 
         [Theory]
-        [InlineData(ConnectionState.Closed)]
-        [InlineData(ConnectionState.Closing)]
-        [InlineData(ConnectionState.Connecting)]
-        [InlineData(ConnectionState.Disconnected)]
-        [InlineData(ConnectionState.Failed)]
-        [InlineData(ConnectionState.Initialized)]
-        [InlineData(ConnectionState.Suspended)]
-        public void ConnectionHeartbeatRequest_ListensForStateChanges(ConnectionState state)
+        [InlineData(ConnectionStateType.Closed)]
+        [InlineData(ConnectionStateType.Closing)]
+        [InlineData(ConnectionStateType.Connecting)]
+        [InlineData(ConnectionStateType.Disconnected)]
+        [InlineData(ConnectionStateType.Failed)]
+        [InlineData(ConnectionStateType.Initialized)]
+        [InlineData(ConnectionStateType.Suspended)]
+        public void ConnectionHeartbeatRequest_ListensForStateChanges(ConnectionStateType state)
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             Mock<Connection> connection = new Mock<Connection>();
-            connection.Setup(c => c.State).Returns(ConnectionState.Connected);
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
@@ -813,21 +812,21 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [InlineData(ConnectionState.Closed)]
-        [InlineData(ConnectionState.Closing)]
-        [InlineData(ConnectionState.Connecting)]
-        [InlineData(ConnectionState.Disconnected)]
-        [InlineData(ConnectionState.Failed)]
-        [InlineData(ConnectionState.Initialized)]
-        [InlineData(ConnectionState.Suspended)]
-        public void ConnectionHeartbeatRequest_ListensForStateChanges_StopsTimer(ConnectionState state)
+        [InlineData(ConnectionStateType.Closed)]
+        [InlineData(ConnectionStateType.Closing)]
+        [InlineData(ConnectionStateType.Connecting)]
+        [InlineData(ConnectionStateType.Disconnected)]
+        [InlineData(ConnectionStateType.Failed)]
+        [InlineData(ConnectionStateType.Initialized)]
+        [InlineData(ConnectionStateType.Suspended)]
+        public void ConnectionHeartbeatRequest_ListensForStateChanges_StopsTimer(ConnectionStateType state)
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             Mock<Connection> connection = new Mock<Connection>();
-            connection.SetupGet(c => c.State).Returns(ConnectionState.Connected);
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            connection.SetupGet(c => c.State).Returns(ConnectionStateType.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
             Action<bool, ErrorInfo> callback = (e, err) => { };
 
@@ -840,21 +839,21 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [InlineData(ConnectionState.Closed)]
-        [InlineData(ConnectionState.Closing)]
-        [InlineData(ConnectionState.Connecting)]
-        [InlineData(ConnectionState.Disconnected)]
-        [InlineData(ConnectionState.Failed)]
-        [InlineData(ConnectionState.Initialized)]
-        [InlineData(ConnectionState.Suspended)]
-        public void ConnectionHeartbeatRequest_ListensForStateChanges_Unsubscribes(ConnectionState state)
+        [InlineData(ConnectionStateType.Closed)]
+        [InlineData(ConnectionStateType.Closing)]
+        [InlineData(ConnectionStateType.Connecting)]
+        [InlineData(ConnectionStateType.Disconnected)]
+        [InlineData(ConnectionStateType.Failed)]
+        [InlineData(ConnectionStateType.Initialized)]
+        [InlineData(ConnectionStateType.Suspended)]
+        public void ConnectionHeartbeatRequest_ListensForStateChanges_Unsubscribes(ConnectionStateType state)
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             Mock<Connection> connection = new Mock<Connection>();
-            connection.Setup(c => c.State).Returns(ConnectionState.Connected);
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
@@ -880,8 +879,8 @@ namespace IO.Ably.Tests
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             Mock<Connection> connection = new Mock<Connection>();
-            connection.Setup(c => c.State).Returns(ConnectionState.Connected);
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
@@ -903,8 +902,8 @@ namespace IO.Ably.Tests
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             Mock<Connection> connection = new Mock<Connection>();
-            connection.Setup(c => c.State).Returns(ConnectionState.Connected);
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
@@ -912,7 +911,7 @@ namespace IO.Ably.Tests
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionState.Closed, ConnectionState.Closed, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closed, ConnectionStateType.Closed, 0, null));
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
 
             // Assert
@@ -927,7 +926,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));

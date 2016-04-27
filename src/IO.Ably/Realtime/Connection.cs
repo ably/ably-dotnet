@@ -23,7 +23,7 @@ namespace IO.Ably.Realtime
         /// <summary>
         ///     Indicates the current state of this connection.
         /// </summary>
-        public virtual ConnectionState State { get; private set; }
+        public virtual ConnectionStateType State { get; private set; }
 
         /// <summary>
         ///     The id of the current connection. This string may be
@@ -73,7 +73,7 @@ namespace IO.Ably.Realtime
         }
 
         /// <summary>
-        ///     Causes the connection to close, entering the <see cref="ConnectionState.Closed" /> state. Once closed,
+        ///     Causes the connection to close, entering the <see cref="ConnectionStateType.Closed" /> state. Once closed,
         ///     the library will not attempt to re-establish the connection without a call
         ///     to <see cref="Connect()" />.
         /// </summary>
@@ -82,7 +82,7 @@ namespace IO.Ably.Realtime
             _manager.Close();
         }
 
-        internal void OnStateChanged(ConnectionState state, ErrorInfo error = null, int retryin = -1)
+        internal void OnStateChanged(ConnectionStateType state, ErrorInfo error = null, int retryin = -1)
         {
             var oldState = State;
             State = state;

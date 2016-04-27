@@ -53,11 +53,11 @@ namespace IO.Ably.Transport
         {
             switch (state.State)
             {
-                case Realtime.ConnectionState.Connected:
+                case Realtime.ConnectionStateType.Connected:
                     Reset();
                     break;
-                case Realtime.ConnectionState.Closed:
-                case Realtime.ConnectionState.Failed:
+                case Realtime.ConnectionStateType.Closed:
+                case Realtime.ConnectionStateType.Failed:
                 {
                     foreach (var item in _ackQueue)
                     {

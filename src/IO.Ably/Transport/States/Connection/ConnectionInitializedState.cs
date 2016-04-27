@@ -11,7 +11,7 @@ namespace IO.Ably.Transport.States.Connection
 
         protected override bool CanQueueMessages => true;
 
-        public override Realtime.ConnectionState State => Realtime.ConnectionState.Initialized;
+        public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Initialized;
 
         public override void Connect()
         {
@@ -33,7 +33,7 @@ namespace IO.Ably.Transport.States.Connection
         public override Task OnTransportStateChanged(TransportStateInfo state)
         {
             // could not happen
-            Logger.Error("Unexpected state change. " + state.State);
+            Logger.Error("Unexpected state change. " + state?.ToString() ?? "Null");
             return TaskConstants.BooleanTrue;
         }
     }

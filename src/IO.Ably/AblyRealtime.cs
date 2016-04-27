@@ -55,8 +55,8 @@ namespace IO.Ably
                 Connection = connectionManager.Connection;
             }
 
-            ConnectionState state = Connection.State;
-            if (state == ConnectionState.Connected)
+            ConnectionStateType state = Connection.State;
+            if (state == ConnectionStateType.Connected)
                 return Connection;
 
 

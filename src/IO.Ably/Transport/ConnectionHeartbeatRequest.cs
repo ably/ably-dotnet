@@ -3,7 +3,6 @@ using System.Net;
 using IO.Ably.Realtime;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
-using ConnectionState = IO.Ably.Realtime.ConnectionState;
 
 namespace IO.Ably.Transport
 {
@@ -33,7 +32,7 @@ namespace IO.Ably.Transport
         {
             var request = new ConnectionHeartbeatRequest();
 
-            if (manager.Connection.State != ConnectionState.Connected)
+            if (manager.Connection.State != ConnectionStateType.Connected)
             {
                 callback?.Invoke(false, DefaultError);
 
@@ -68,7 +67,7 @@ namespace IO.Ably.Transport
 
         private void OnConnectionStateChanged(object sender, ConnectionStateChangedEventArgs e)
         {
-            if (e.CurrentState != ConnectionState.Connected)
+            if (e.CurrentState != ConnectionStateType.Connected)
             {
                 FinishRequest(false, DefaultError);
             }

@@ -13,7 +13,7 @@ namespace IO.Ably.Transport.States.Connection
             this.Context.Connection.Serial = info.ConnectionSerial;
         }
 
-        public override Realtime.ConnectionState State => Realtime.ConnectionState.Connected;
+        public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Connected;
 
         protected override bool CanQueueMessages => false;
 

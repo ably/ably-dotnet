@@ -286,7 +286,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSL2b")]
             public async Task WithStartBeforeEnd_Throws()
             {
-                var ex = Assert.ThrowsAsync<AblyException>(() => 
+                var ex = await Assert.ThrowsAsync<AblyException>(() => 
                         _channel.History(new DataRequestQuery() {Start = Now, End = Now.AddHours(-1)}));
             }
 

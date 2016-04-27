@@ -17,7 +17,7 @@ namespace IO.Ably.Transport.States.Connection
             Error = error ?? ErrorInfo.ReasonFailed;
         }
 
-        public override Realtime.ConnectionState State => Realtime.ConnectionState.Failed;
+        public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Failed;
 
         protected override bool CanQueueMessages => false;
 

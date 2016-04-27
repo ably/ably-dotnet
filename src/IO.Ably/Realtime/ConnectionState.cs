@@ -1,7 +1,7 @@
 ﻿namespace IO.Ably.Realtime
 {
     /// <summary>A series of connection states.</summary>
-    public enum ConnectionState
+    public enum ConnectionStateType
     {
         /// <summary>
         /// A connection object having this state has been initialized but no connection has yet been

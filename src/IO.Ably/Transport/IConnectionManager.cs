@@ -20,7 +20,7 @@ namespace IO.Ably.Transport
         public string ConnectionKey { get; private set; }
     }
 
-    public delegate void StateChangedDelegate(ConnectionState state, ConnectionInfo info, ErrorInfo error);
+    public delegate void StateChangedDelegate(ConnectionStateType state, ConnectionInfo info, ErrorInfo error);
 
     public delegate void MessageReceivedDelegate(ProtocolMessage message);
 
@@ -28,7 +28,7 @@ namespace IO.Ably.Transport
     {
         Connection Connection { get; }
 
-        ConnectionState ConnectionState { get; }
+        ConnectionStateType ConnectionState { get; }
 
         bool IsActive { get; }
         event MessageReceivedDelegate MessageReceived;

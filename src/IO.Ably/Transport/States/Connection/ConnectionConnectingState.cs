@@ -38,7 +38,7 @@ namespace IO.Ably.Transport.States.Connection
             _useFallbackHost = useFallbackHost;
         }
 
-        public override Realtime.ConnectionState State => Realtime.ConnectionState.Connecting;
+        public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Connecting;
 
         protected override bool CanQueueMessages => true;
 

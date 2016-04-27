@@ -116,7 +116,7 @@ namespace IO.Ably.Transport
 
         public Connection Connection { get; internal set; }
 
-        public Realtime.ConnectionState ConnectionState
+        public Realtime.ConnectionStateType ConnectionState
         {
             get { return _state.State; }
         }

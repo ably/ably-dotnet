@@ -17,7 +17,7 @@ namespace IO.Ably.Transport.States.Connection
 
         protected readonly IConnectionContext Context;
 
-        public abstract Realtime.ConnectionState State { get; }
+        public abstract Realtime.ConnectionStateType State { get; }
         public ErrorInfo Error { get; protected set; }
         public int? RetryIn { get; protected set; }
 
