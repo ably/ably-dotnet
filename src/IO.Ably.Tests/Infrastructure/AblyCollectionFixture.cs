@@ -21,10 +21,13 @@ namespace IO.Ably.Tests
         public string AppId { get; set; }
         public List<Key> Keys { get; set; }
 
+        public const string PresenceChannelName = "persisted:presence_fixtures";
+
         public string FirstValidKey => Keys.FirstOrDefault()?.KeyStr;
 
         public bool Tls { get; set; }
         public AblyEnvironment Environment => AblyEnvironment.Sandbox;
+        public CipherParams CipherParams { get; set; }
 
         public TestEnvironmentSettings()
         {

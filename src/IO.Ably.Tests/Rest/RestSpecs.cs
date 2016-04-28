@@ -137,8 +137,10 @@ namespace IO.Ably.Tests
             [InlineData(Defaults.TokenErrorCodesRangeStart + 1)]
             [InlineData(Defaults.TokenErrorCodesRangeEnd)]
             [Trait("spec", "RSC10")]
+            [Trait("intermitten", "true")]
             public async Task WhenErrorCodeIsTokenSpecific_ShouldAutomaticallyTryToRenewTokenIfRequestFails(int errorCode)
             {
+                Output.WriteLine("Error code.");
                 base.Now = DateTimeOffset.Now;
                 var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
                 //Had to inline the method otherwise the tests intermittently fail.
@@ -147,14 +149,17 @@ namespace IO.Ably.Tests
                 {
                     if (request.Url.Contains("/keys"))
                     {
+                        Output.WriteLine("Requesting new token.");
                         return _returnedDummyTokenDetails.ToJson().ToAblyResponse();
                     }
 
                     if (firstAttempt)
                     {
+                        Output.WriteLine("First attempt!");
                         firstAttempt = false;
                         throw new AblyException(new ErrorInfo("", errorCode, HttpStatusCode.Unauthorized));
                     }
+                    Output.WriteLine("Generic request!");
                     return AblyResponse.EmptyResponse.ToTask();
                 }, opts => opts.TokenDetails = tokenDetails);
 
@@ -453,17 +458,17 @@ namespace IO.Ably.Tests
             public async Task ShouldOnlyRetryFallbackHostWhileTheTimeTakenIsLessThanHttpMaxRetryDuration()
             {
 
-                var options = new ClientOptions(ValidKey) { HttpMaxRetryDuration = TimeSpan.FromSeconds(3)};
+                var options = new ClientOptions(ValidKey) { HttpMaxRetryDuration = TimeSpan.FromSeconds(11)};
                 var client = new AblyRest(options);
                 _response.StatusCode =HttpStatusCode.BadGateway;
                 var handler = new FakeHttpMessageHandler(_response,
                     () =>
                     {
-                        //Tweak time to pretend 2 seconds have ellapsed
-                        Now += TimeSpan.FromSeconds(2);
+                        //Tweak time to pretend 10 seconds have ellapsed
+                        Now += TimeSpan.FromSeconds(10);
                     });
 
-                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(3), handler);
+                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
 
                 var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
 

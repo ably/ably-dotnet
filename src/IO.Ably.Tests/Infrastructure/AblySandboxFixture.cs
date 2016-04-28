@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using IO.Ably.Encryption;
 using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Tests
@@ -24,11 +25,21 @@ namespace IO.Ably.Tests
             };
 
             JObject testAppSpec = JObject.Parse(ResourceHelper.GetResource("testAppSpec.json"));
+
+            var cipher = testAppSpec["cipher"];
+            settings.CipherParams = new CipherParams(
+                (string)cipher["algorithm"],
+                ((string)cipher["key"]).FromBase64(),
+                CipherMode.CBC,
+                (int)cipher["keylength"],
+                ((string)cipher["iv"]).FromBase64()
+                );
+
             AblyHttpClient client = settings.GetHttpClient();
             AblyRequest request = new AblyRequest("/apps", HttpMethod.Post);
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
-            request.RequestBody = testAppSpec.ToString().GetBytes();
+            request.RequestBody = testAppSpec["post_apps"].ToString().GetBytes();
             request.Protocol = Protocol.Json;
 
             var response = await client.Execute(request);

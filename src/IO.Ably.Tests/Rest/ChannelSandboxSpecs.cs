@@ -70,7 +70,7 @@ namespace IO.Ably.Tests.Rest
         {
             var message = new Message("test", "test") { clientId = null};
             var client = await GetRestClient(protocol, opts => opts.ClientId = "999");
-            var channel = client.Channels.Get("persisted:test");
+            var channel = client.Channels.Get("persisted:test".AddRandomSuffix());
             await channel.Publish(message);
 
             var result = await channel.History();
@@ -84,7 +84,7 @@ namespace IO.Ably.Tests.Rest
         {
             var message = new Message("test", "test") { clientId = "999" };
             var client = await GetRestClient(protocol, opts => opts.ClientId = "999");
-            var channel = client.Channels.Get("persisted:test");
+            var channel = client.Channels.Get("persisted:test".AddRandomSuffix());
             await channel.Publish(message);
 
             var result = await channel.History();
@@ -120,7 +120,7 @@ namespace IO.Ably.Tests.Rest
             var items = (JArray)examples["items"];
 
             AblyRest ably = await GetRestClient(protocol);
-            IChannel channel = ably.Channels.Get("persisted:test", GetOptions(examples));
+            IChannel channel = ably.Channels.Get("persisted:test".AddRandomSuffix(), GetOptions(examples));
             var count = 0;
             foreach (var item in items)
             {
@@ -149,7 +149,7 @@ namespace IO.Ably.Tests.Rest
             var items = (JArray)examples256["items"];
 
             AblyRest ably = await GetRestClient(protocol);
-            IChannel channel = ably.Channels.Get("persisted:test", GetOptions(examples256));
+            IChannel channel = ably.Channels.Get("persisted:test".AddRandomSuffix(), GetOptions(examples256));
             var count = 0;
             foreach (var item in items)
             {

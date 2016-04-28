@@ -83,7 +83,7 @@
     <Compile Include="IAuthCommands.cs" />
     <Compile Include="IChannelCipher.cs" />
     <Compile Include="Types\IEncodedMessage.cs" />
-    <Compile Include="PaginatedResource.cs" />
+    <Compile Include="PaginatedResult.cs" />
     <Compile Include="IRestClient.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Types\Message.cs" />

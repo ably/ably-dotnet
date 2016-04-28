@@ -18,12 +18,12 @@ namespace IO.Ably
 
         /// <summary>Retrieves the stats for the application. Passed default <see cref="StatsDataRequestQuery"/> for the request</summary>
         /// <returns></returns>
-        Task<PaginatedResource<Stats>> Stats();
+        Task<PaginatedResult<Stats>> Stats();
 
         /// <summary>Retrieves the stats for the application using a more specific stats query. Check <see cref="StatsDataRequestQuery"/> for more information</summary>
         /// <param name="query">stats query</param>
         /// <returns></returns>
-        Task<PaginatedResource<Stats>> Stats(StatsDataRequestQuery query);
+        Task<PaginatedResult<Stats>> Stats(StatsDataRequestQuery query);
 
         /// <summary>Retrieves the stats for the application based on a custom query. It should be used with <see cref="DataRequestQuery"/>.
         /// It is mainly because of the way a PaginatedResource defines its queries. For retrieving Stats with special parameters use <see cref="AblyRest.Stats(StatsDataRequestQuery query)"/>
@@ -35,6 +35,6 @@ namespace IO.Ably
         /// </example>
         /// <param name="query"><see cref="DataRequestQuery"/> and <see cref="StatsDataRequestQuery"/></param>
         /// <returns></returns>
-        Task<PaginatedResource<Stats>> Stats(DataRequestQuery query);
+        Task<PaginatedResult<Stats>> Stats(DataRequestQuery query);
     }
 }
