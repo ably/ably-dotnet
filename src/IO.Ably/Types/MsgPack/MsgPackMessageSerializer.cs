@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using IO.Ably.Types.MsgPack;
+using MsgPack;
 
 namespace IO.Ably.Types
 {
