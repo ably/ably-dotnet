@@ -1,5 +1,6 @@
 ﻿using Moq;
 using System.Threading.Tasks;
+using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
@@ -11,72 +12,67 @@ namespace IO.Ably.Tests
 {
     public class FailedStateSpecs : AblySpecs
     {
+        private FakeConnectionContext _context;
+        private ConnectionFailedState _state;
+
+        private ConnectionFailedState GetState(ErrorInfo info = null)
+        {
+            return new ConnectionFailedState(_context, info);
+        }
+        private ConnectionFailedState GetState(ConnectionState.TransportStateInfo transportStateInfo)
+        {
+            return new ConnectionFailedState(_context, transportStateInfo);
+        }
+
         public FailedStateSpecs(ITestOutputHelper output) : base(output)
         {
-
+            _context = new FakeConnectionContext();
+            _state = GetState();
         }
 
         [Fact]
-        public void FailedState_CorrectState()
+        public void ShouldHaveCorrectState()
         {
             // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionFailedState state = new ConnectionFailedState(context.Object, ErrorInfo.ReasonNeverConnected);
+            _state.State.Should().Be(ConnectionStateType.Failed);
+        }
+
+        [Fact]
+        public void ConnectCalled_ShouldGoToConnecting()
+        {
+            // Act
+            _state.Connect();
 
             // Assert
-            Assert.Equal(Ably.Realtime.ConnectionStateType.Failed, state.State);
+            _context.StateShouldBe<ConnectionConnectingState>();
         }
 
         [Fact]
-        public void FailedState_Connect_GoesToConnecting()
+        public void Close_ShouldDoNothing()
         {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionFailedState state = new ConnectionFailedState(context.Object, ErrorInfo.ReasonNeverConnected);
-
             // Act
-            state.Connect();
-
-            // Assert
-            context.Verify(c => c.SetState(It.IsAny<ConnectionConnectingState>()), Times.Once());
+            _state.Close();
         }
 
         [Fact]
-        public void FailedState_Close_DoesNothing()
+        public void SendMessage_ShouldDoNothing()
         {
             // Arrange
-            ConnectionFailedState state = new ConnectionFailedState(null, ErrorInfo.ReasonNeverConnected);
-
-            // Act
-            state.Close();
-        }
-
-        [Fact]
-        public void FailedState_SendMessage_DoesNothing()
-        {
-            // Arrange
-            ConnectionFailedState state = new ConnectionFailedState(null, ErrorInfo.ReasonNeverConnected);
+            var state = GetState(ErrorInfo.ReasonNeverConnected);
 
             // Act
             state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
         }
 
         [Fact]
-        public void FailedState_AttachToContext_DestroysTransport()
+        public async Task OnAttachToContext_DestroysTransport()
         {
             // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.Connection).Returns(new Connection(new Mock<IConnectionManager>().Object));
-            Mock<ITransport> transport = new Mock<ITransport>();
-            context.Setup(c => c.CreateTransport()).Callback(() =>
-                context.Setup(c => c.Transport).Returns(transport.Object));
-            ConnectionFailedState state = new ConnectionFailedState(context.Object, ErrorInfo.ReasonNeverConnected);
-
             // Act
-            state.OnAttachedToContext();
+            await _state.OnAttachedToContext();
 
             // Assert
-            context.Verify(c => c.DestroyTransport(), Times.Once());
+            _context.DestroyTransportCalled.Should().BeTrue();
         }
 
         [Theory]
@@ -97,43 +93,32 @@ namespace IO.Ably.Tests
         [InlineData(ProtocolMessage.MessageAction.Nack)]
         [InlineData(ProtocolMessage.MessageAction.Presence)]
         [InlineData(ProtocolMessage.MessageAction.Sync)]
-        public async Task FailedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
+        public async Task ShouldNotHandleInboundMessages(ProtocolMessage.MessageAction action)
         {
-            // Arrange
-            ConnectionFailedState state = new ConnectionFailedState(null, ErrorInfo.ReasonNeverConnected);
-
             // Act
-            bool result = await state.OnMessageReceived(new ProtocolMessage(action));
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(action));
 
             // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public void FailedState_DoesNotListenToTransportChanges()
+        public async Task ShouldNotListenToTransportCHanges()
         {
-            // Arrange
-            ConnectionFailedState state = new ConnectionFailedState(null, ErrorInfo.ReasonNeverConnected);
-
-            // Act
-            state.OnTransportStateChanged(null);
+            await _state.OnTransportStateChanged(null);
         }
 
         [Fact]
-        public void FailedState_UpdatesConnectionInformation()
+        public async Task OnAttached_ShouldClearConnectionKey()
         {
             // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            var target = new Mock<Connection>();
-            target.SetupProperty(c => c.Key, "test test");
-            context.SetupGet(c => c.Connection).Returns(target.Object);
-            ConnectionFailedState state = new ConnectionFailedState(context.Object, ErrorInfo.ReasonNeverConnected);
+            _context.Connection.Key = "Test";
 
             // Act
-            state.OnAttachedToContext();
+            await _state.OnAttachedToContext();
 
             // Assert
-            target.VerifySet(c => c.Key = null);
+            _context.Connection.Key.Should().BeNullOrEmpty();
         }
     }
 }
