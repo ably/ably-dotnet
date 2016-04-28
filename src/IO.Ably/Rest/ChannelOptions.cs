@@ -1,4 +1,5 @@
 using IO.Ably.Encryption;
+using IO.Ably.Platform;
 
 namespace IO.Ably.Rest
 {

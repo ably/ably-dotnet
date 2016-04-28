@@ -106,6 +106,7 @@
     <Compile Include="AuthTests\AuthSandboxSpecs.cs" />
     <Compile Include="AuthTests\RequestTokenTests.cs" />
     <Compile Include="CapabilityTests.cs" />
+    <Compile Include="EncryptionSpecs.cs" />
     <Compile Include="MessageEncodes\MessageEncodersAcceptanceTests.cs" />
     <Compile Include="Rest\PresenceSandboxSpecs.cs" />
     <Compile Include="Rest\ChannelSandboxSpecs.cs" />
@@ -186,10 +187,6 @@
     <ProjectReference Include="..\IO.Ably\IO.Ably.csproj">
       <Project>{ef341e0a-733d-4f79-8303-fd1b10d778eb}</Project>
       <Name>IO.Ably</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\IO.Ably.Platforms\Ably.net45\IO.Ably.net45.csproj">
-      <Project>{021875be-63fd-4ff4-b34f-0b77ccd1919e}</Project>
-      <Name>IO.Ably.net45</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
