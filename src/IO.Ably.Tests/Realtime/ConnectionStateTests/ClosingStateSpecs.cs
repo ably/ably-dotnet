@@ -1,5 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using FluentAssertions;
+using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -12,58 +14,40 @@ namespace IO.Ably.Tests
     public class ClosingStateSpecs : AblySpecs
     {
         [Fact]
-        public void ClosingState_CorrectState()
+        public void ShouldHaveClosingState()
         {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionClosingState state = new ConnectionClosingState(context.Object);
+            _state.State.Should().Be(ConnectionStateType.Closing);
+        }
+
+        [Fact]
+        public void SendMessageShouldDoNothing()
+        {
+            // Act
+            _state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
+        }
+
+        [Fact]
+        public void OnConnectCalled_SHouldDoNothing()
+        {
+            // Act
+            _state.Connect();
+        }
+
+        [Fact]
+        public void CloseCalled_ShouldDoNothing()
+        {
+            // Act
+            _state.Close();
+        }
+
+        [Fact]
+        public async Task OnTransportDisconnected_ShouldMoveToClosed()
+        {
+            // Act
+            await _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
 
             // Assert
-            Assert.Equal<Ably.Realtime.ConnectionStateType>(Ably.Realtime.ConnectionStateType.Closing, state.State);
-        }
-
-        [Fact]
-        public void ClosingState_SendMessage_DoesNothing()
-        {
-            // Arrange
-            ConnectionClosingState state = new ConnectionClosingState(null);
-
-            // Act
-            state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
-        }
-
-        [Fact]
-        public void ClosingState_Connect_DoesNothing()
-        {
-            // Arrange
-            ConnectionClosingState state = new ConnectionClosingState(null);
-
-            // Act
-            state.Connect();
-        }
-
-        [Fact]
-        public void ClosingState_Close_DoesNothing()
-        {
-            // Arrange
-            ConnectionClosingState state = new ConnectionClosingState(null);
-
-            // Act
-            state.Close();
-        }
-
-        [Fact]
-        public void ClosingState_TransportGoesDisconnected_SwitchesToClosed()
-        {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionClosingState state = new ConnectionClosingState(context.Object);
-
-            // Act
-            state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
-
-            // Assert
-            context.Verify(c => c.SetState(It.IsAny<ConnectionClosedState>()), Times.Once());
+            _context.StateShouldBe<ConnectionClosedState>();
         }
 
         [Theory]
@@ -71,17 +55,13 @@ namespace IO.Ably.Tests
         [InlineData(TransportState.Connected)]
         [InlineData(TransportState.Connecting)]
         [InlineData(TransportState.Initialized)]
-        public void ClosingState_TransportStateChanges_DoesNotSwitchState(TransportState transportState)
+        public async Task OnTransportStateChangeTHatIsNotClosed_ShouldDoNothing(TransportState transportState)
         {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionClosingState state = new ConnectionClosingState(context.Object);
-
             // Act
-            state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(transportState));
+            await _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(transportState));
 
             // Assert
-            context.Verify(c => c.SetState(It.IsAny<ConnectionState>()), Times.Never());
+            _context.ShouldHaveNotChangedState();
         }
 
         [Theory]
@@ -99,118 +79,61 @@ namespace IO.Ably.Tests
         [InlineData(ProtocolMessage.MessageAction.Nack)]
         [InlineData(ProtocolMessage.MessageAction.Presence)]
         [InlineData(ProtocolMessage.MessageAction.Sync)]
-        public async Task ClosingState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
+        public async Task ShouldNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
-            // Arrange
-            ConnectionClosingState state = new ConnectionClosingState(null);
-
             // Act
-            bool result = await state.OnMessageReceived(new ProtocolMessage(action));
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(action));
 
             // Assert
-            Assert.False(result);
+            result.Should().BeFalse();
         }
 
         [Fact]
-        public async Task ClosingState_HandlesInboundClosedMessage()
+        public async Task ShouldHandleInboundClosedMessageAndMoveToClosed()
         {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionClosingState state = new ConnectionClosingState(context.Object);
-
             // Act
-            bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
 
             // Assert
-            Assert.True(result);
+            result.Should().BeTrue();
+            _context.StateShouldBe<ConnectionClosedState>();
         }
 
         [Fact]
-        public async Task ClosingState_HandlesInboundClosedMessage_GoesToClosed()
+        public async Task ShouldHandleInboundErrorMessageAndMoveToFailedState()
         {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionClosingState state = new ConnectionClosingState(context.Object);
-
-            // Act
-            await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
-
-            // Assert
-            context.Verify(c => c.SetState(It.IsAny<ConnectionClosedState>()), Times.Once());
-        }
-
-        [Fact]
-        public async Task ClosingState_HandlesInboundErrorMessage()
-        {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionClosingState state = new ConnectionClosingState(context.Object);
-
-            // Act
-            bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
-
-            // Assert
-            Assert.True(result);
-        }
-
-        [Fact]
-        public async Task ClosingState_HandlesInboundErrorMessage_GoesToFailed()
-        {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionClosingState state = new ConnectionClosingState(context.Object);
             ErrorInfo targetError = new ErrorInfo("test", 123);
-
             // Act
-            bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
 
             // Assert
-            context.Verify(c => c.SetState(It.Is<ConnectionFailedState>(ss => object.ReferenceEquals(ss.Error, targetError))), Times.Once());
+            result.Should().BeTrue();
+            var targetState = _context.StateShouldBe<ConnectionFailedState>();
+            targetState.Error.ShouldBeEquivalentTo(targetError);
         }
 
         [Fact]
-        public async Task ClosingState_HandlesInboundDisconnectedMessage()
+        public async Task ShouldHandleInboundDisconnectedMessageAndGoToDisconnectedState()
         {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionClosingState state = new ConnectionClosingState(context.Object);
-
             // Act
-            bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
 
             // Assert
             Assert.True(result);
+            _context.StateShouldBe<ConnectionDisconnectedState>();
         }
 
         [Fact]
-        public async Task ClosingState_HandlesInboundDisconnectedMessage_GoesToDisconnected()
+        public async Task OnAttachedToTransport_ShouldSendCloseMessage()
         {
             // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionClosingState state = new ConnectionClosingState(context.Object);
-
+            var transport = new FakeTransport() { State = TransportState.Connected };
+            _context.Transport = transport;
             // Act
-            await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+            await _state.OnAttachedToContext();
 
             // Assert
-            context.Verify(c => c.SetState(It.IsAny<ConnectionDisconnectedState>()), Times.Once());
-        }
-
-        [Fact]
-        public void ClosingState_AttachToContext_ConnectedTransport_SendsClose()
-        {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            Mock<ITransport> transport = new Mock<ITransport>();
-            transport.SetupGet(c => c.State).Returns(TransportState.Connected);
-            context.SetupGet(c => c.Transport).Returns(transport.Object);
-            ConnectionClosingState state = new ConnectionClosingState(context.Object);
-
-            // Act
-            state.OnAttachedToContext();
-
-            // Assert
-            transport.Verify(c => c.Send(It.Is<ProtocolMessage>(ss => ss.action == ProtocolMessage.MessageAction.Close)), Times.Once());
+            transport.LastMessageSend.action.Should().Be(ProtocolMessage.MessageAction.Close);
         }
 
         [Theory]
@@ -218,86 +141,76 @@ namespace IO.Ably.Tests
         [InlineData(TransportState.Closing)]
         [InlineData(TransportState.Connecting)]
         [InlineData(TransportState.Initialized)]
-        public void ClosingState_AttachToContext_TransportNotConnected_GoesToClosedState(TransportState transportState)
+        public async Task WhenTransportIsNotConnected_ShouldGoStraightToClosed(TransportState transportState)
         {
             // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            Mock<ITransport> transport = new Mock<ITransport>();
-            transport.SetupGet(c => c.State).Returns(transportState);
-            context.SetupGet(c => c.Transport).Returns(transport.Object);
-            ConnectionClosingState state = new ConnectionClosingState(context.Object);
+            _context.Transport = new FakeTransport() { State = transportState };
 
             // Act
-            state.OnAttachedToContext();
+            await _state.OnAttachedToContext();
 
             // Assert
-            context.Verify(c => c.SetState(It.IsAny<ConnectionClosedState>()), Times.Once());
+            _context.StateShouldBe<ConnectionClosedState>();
         }
 
         [Fact]
-        public void ClosingState_ForceClose()
+        public async Task AfterTimeoutExpires_ShouldForceStateToClosed()
         {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            Mock<ITransport> transport = new Mock<ITransport>();
-            transport.SetupGet(c => c.State).Returns(TransportState.Connected);
-            context.SetupGet(c => c.Transport).Returns(transport.Object);
-            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            timer.Setup(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<System.Action>(), false)).Callback<int, System.Action>((t, c) => c());
-            ConnectionClosingState state = new ConnectionClosingState(context.Object, null, timer.Object);
+            _context.Transport = new FakeTransport() { State = TransportState.Connected };
 
-            // Act
-            state.OnAttachedToContext();
+            await _state.OnAttachedToContext();
+            _timer.StartedWithAction.Should().BeTrue();
+            _timer.OnTimeOut();
 
-            // Assert
-            timer.Verify(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<System.Action>(), false), Times.Once);
-            context.Verify(c => c.SetState(It.IsAny<ConnectionClosedState>()), Times.Once());
+            _context.StateShouldBe<ConnectionClosedState>();
         }
 
         [Fact]
-        public async Task ClosingState_ForceCloseNotApplied_WhenClosedMessageReceived()
+        public async Task WhenClosedMessageReceived_ShouldAbortTimer()
         {
             // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            Mock<ITransport> transport = new Mock<ITransport>();
-            transport.SetupGet(c => c.State).Returns(TransportState.Connected);
-            context.SetupGet(c => c.Transport).Returns(transport.Object);
-            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            ConnectionClosingState state = new ConnectionClosingState(context.Object, null, timer.Object);
+            _context.Transport = new FakeTransport(TransportState.Connected);
 
             // Act
-            state.OnAttachedToContext();
-            await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
+            await _state.OnAttachedToContext();
+            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
 
             // Assert
-            timer.Verify(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<System.Action>(), false), Times.Once);
-            timer.Verify(c => c.Abort(), Times.Once);
-            context.Verify(c => c.SetState(It.IsAny<ConnectionClosedState>()), Times.Once());
+            _timer.StartedWithAction.Should().BeTrue();
+            _timer.Aborted.Should().BeTrue();
+            _context.StateShouldBe<ConnectionClosedState>();
         }
 
         [Fact]
-        public async Task ClosingState_ForceCloseNotApplied_WhenErrorMessageReceived()
+        public async Task OnErrorReceived_TimerIsAbortedAndStateIsFailedState()
         {
             // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            Mock<ITransport> transport = new Mock<ITransport>();
-            transport.SetupGet(c => c.State).Returns(TransportState.Connected);
-            context.SetupGet(c => c.Transport).Returns(transport.Object);
-            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            ConnectionClosingState state = new ConnectionClosingState(context.Object, null, timer.Object);
+            _context.Transport = new FakeTransport(TransportState.Connected);
 
             // Act
-            state.OnAttachedToContext();
-            await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
+            await _state.OnAttachedToContext();
+            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
 
             // Assert
-            timer.Verify(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<System.Action>(), false), Times.Once);
-            timer.Verify(c => c.Abort(), Times.Once);
-            context.Verify(c => c.SetState(It.IsAny<ConnectionFailedState>()), Times.Once());
+            _timer.StartedWithAction.Should().BeTrue();
+            _timer.Aborted.Should().BeTrue();
+            _context.StateShouldBe<ConnectionFailedState>();
+        }
+
+        private FakeConnectionContext _context;
+        private ConnectionClosingState _state;
+        private FakeTimer _timer;
+
+        private ConnectionClosingState GetState(ErrorInfo info = null)
+        {
+            return new ConnectionClosingState(_context, info, _timer);
         }
 
         public ClosingStateSpecs(ITestOutputHelper output) : base(output)
         {
+            _timer = new FakeTimer();
+            _context = new FakeConnectionContext();
+            _state = GetState();
         }
     }
 }

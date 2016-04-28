@@ -5,6 +5,12 @@ namespace IO.Ably.Tests
 {
     internal class FakeTransport : ITransport
     {
+        public FakeTransport(TransportState? state = null)
+        {
+            if (state.HasValue)
+                State = state.Value;
+        }
+
         public bool ConnectCalled { get; set; }
 
         public bool CloseCalled { get; set; }
