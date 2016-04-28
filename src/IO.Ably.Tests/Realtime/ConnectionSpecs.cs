@@ -89,6 +89,20 @@ namespace IO.Ably.Tests.Realtime
                     .WhichValue.Should().Be(echo.ToString().ToLower());
             }
 
+            [Theory]
+            [InlineData("123")]
+            [InlineData(null)]
+            public void WithClientId_ShouldSetTransportClientIdCorrectly(string clientId)
+            {
+                var client = GetClientWithFakeTransport(opts => opts.ClientId = clientId);
+                LastCreatedTransport.Parameters.ClientId.Should().Be(clientId);
+                LastCreatedTransport.Parameters.GetParams()
+                    .Should().ContainKey("clientId")
+                    .WhichValue.Should().Be(clientId);
+            }
+
+
+            
 
 
             public ConnectionParameterTests(ITestOutputHelper output) : base(output)

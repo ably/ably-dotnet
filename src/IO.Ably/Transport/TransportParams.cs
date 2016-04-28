@@ -86,11 +86,7 @@ namespace IO.Ably.Transport
 
             //Url encode all the params at the time of creating the query string
             result["format"] = UseBinaryProtocol ? "msgpack" : "json";
-
-            if (EchoMessages)
-            {
-                result["echo"] = "false";
-            }
+            result["echo"] = EchoMessages.ToString().ToLower();
 
             if (ConnectionKey.IsNotEmpty())
             {
