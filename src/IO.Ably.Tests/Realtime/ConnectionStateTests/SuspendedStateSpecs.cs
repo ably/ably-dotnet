@@ -1,5 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using FluentAssertions;
+using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -11,25 +13,33 @@ namespace IO.Ably.Tests
 {
     public class SuspendedStateSpecs : AblySpecs
     {
-        [Fact]
-        public void SuspendedState_CorrectState()
-        {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionSuspendedState state = new ConnectionSuspendedState(context.Object);
 
-            // Assert
-            Assert.Equal<Ably.Realtime.ConnectionStateType>(Ably.Realtime.ConnectionStateType.Suspended, state.State);
+        private FakeConnectionContext _context;
+        private ConnectionSuspendedState _state;
+        private FakeTimer _timer;
+
+        private ConnectionSuspendedState GetState(ErrorInfo info = null)
+        {
+            return new ConnectionSuspendedState(_context, info, _timer);
+        }
+
+        public SuspendedStateSpecs(ITestOutputHelper output) : base(output)
+        {
+            _timer = new FakeTimer();
+            _context = new FakeConnectionContext();
+            _state = GetState();
         }
 
         [Fact]
-        public void SuspendedState_SendMessage_DoesNothing()
+        public void ShouldHaveSuspendedState()
         {
-            // Arrange
-            ConnectionSuspendedState state = new ConnectionSuspendedState(null);
+            _state.State.Should().Be(ConnectionStateType.Suspended);
+        }
 
-            // Act
-            state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
+        [Fact]
+        public void SendMessage_ShouldDoNothing()
+        {
+            _state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
         }
 
         [Theory]
@@ -50,78 +60,56 @@ namespace IO.Ably.Tests
         [InlineData(ProtocolMessage.MessageAction.Nack)]
         [InlineData(ProtocolMessage.MessageAction.Presence)]
         [InlineData(ProtocolMessage.MessageAction.Sync)]
-        public async Task SuspendedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
+        public async Task ShouldIgnoreInboundMessages(ProtocolMessage.MessageAction action)
         {
-            // Arrange
-            ConnectionSuspendedState state = new ConnectionSuspendedState(null);
-
             // Act
-            bool result = await state.OnMessageReceived(new ProtocolMessage(action));
+            var result = await _state.OnMessageReceived(new ProtocolMessage(action));
 
             // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public void SuspendedState_DoesNotListenToTransportChanges()
+        public void ShouldNotListenToTransportChanges()
         {
-            // Arrange
-            ConnectionSuspendedState state = new ConnectionSuspendedState(null);
-
             // Act
-            state.OnTransportStateChanged(null);
+            _state.OnTransportStateChanged(null);
         }
 
         [Fact]
-        public void SuspendedState_Close_GoesToClosed()
+        public void Close_ChangesStateToClosed()
         {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionSuspendedState state = new ConnectionSuspendedState(context.Object);
-
             // Act
-            state.Close();
+            _state.Close();
 
             // Assert
-            context.Verify(c => c.SetState(It.IsAny<ConnectionClosedState>()), Times.Once());
+            _context.StateShouldBe<ConnectionClosedState>();
         }
 
         [Fact]
-        public void SuspendedState_Connect_GoesToConnecting()
+        public void Connect_ShouldChangeStateToConnecting()
         {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionSuspendedState state = new ConnectionSuspendedState(context.Object);
-
             // Act
-            state.Connect();
+            _state.Connect();
 
             // Assert
-            context.Verify(c => c.SetState(It.IsAny<ConnectionConnectingState>()), Times.Once());
+            _context.StateShouldBe<ConnectionConnectingState>();
         }
 
         [Fact]
-        public void SuspendedState_RetriesConnection()
+        public async Task ShouldRetyConnection()
         {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            Mock<ITransport> transport = new Mock<ITransport>();
-            transport.SetupGet(c => c.State).Returns(TransportState.Initialized);
-            context.SetupGet(c => c.Transport).Returns(transport.Object);
-            Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            timer.Setup(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<System.Action>(), false)).Callback<int, System.Action>((t, c) => c());
-            ConnectionSuspendedState state = new ConnectionSuspendedState(context.Object, null, timer.Object);
+            _context.Transport = new FakeTransport(TransportState.Initialized);
 
             // Act
-            state.OnAttachedToContext();
+            await _state.OnAttachedToContext();
+            _timer.StartedWithAction.Should().BeTrue();
+            _timer.OnTimeOut();
 
             // Assert
-            timer.Verify(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<System.Action>(), false), Times.Once);
-            context.Verify(c => c.SetState(It.IsAny<ConnectionConnectingState>()), Times.Once());
+            _context.StateShouldBe<ConnectionConnectingState>();
         }
 
-        public SuspendedStateSpecs(ITestOutputHelper output) : base(output)
-        {
-        }
+ 
     }
 }
