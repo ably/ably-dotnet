@@ -128,7 +128,7 @@ namespace IO.Ably
                 return false;
             }
 
-            host = hosts[random.Next(hosts.Count)];
+            host = hosts[random.Next(1000) % hosts.Count];
             hosts.Remove(host);
             return true;
         }

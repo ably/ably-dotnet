@@ -39,7 +39,7 @@ namespace IO.Ably.Tests.Rest
         {
             var message = new Message();
             message.name = "large";
-            message.data = new string('a', 100 * 1024 * 8); // 100KB
+            message.data = new string('a', 50 * 1024 * 8); // 100KB
             var client = await GetRestClient(protocol);
             var ex = await Assert.ThrowsAsync<AblyException>(()
                 => client.Channels.Get("large").Publish(message));
