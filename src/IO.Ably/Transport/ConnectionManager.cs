@@ -24,7 +24,7 @@ namespace IO.Ably.Transport
 
         private ITransport _transport;
 
-        internal ConnectionManager()
+        private ConnectionManager()
         {
             _pendingMessages = new Queue<ProtocolMessage>();
             _state = new ConnectionInitializedState(this);
@@ -213,7 +213,8 @@ namespace IO.Ably.Transport
 
         internal virtual Task<ITransport> CreateTransport(TransportParams transportParams)
         {
-            return Defaults.TransportFactories["web_socket"].CreateTransport(transportParams);
+            var factory = _options.TransportFactory ?? Defaults.WebSocketTransportFactory;
+            return factory.CreateTransport(transportParams);
         }
 
         private void OnTransportConnected()

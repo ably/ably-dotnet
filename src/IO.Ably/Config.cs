@@ -23,8 +23,6 @@ namespace IO.Ably
         public const int CommulativeFailedRequestTimeOutInSeconds = 10;
         public const int DisconnectTimeout = 10000;
         public const int SuspendedTimeout = 60000;
-        public static string[] Transports = { "web_socket", "comet" };
-        
 
         public static int ProtocolVersion = 1;
 

@@ -21,8 +21,7 @@ namespace IO.Ably
         public const int TlsPort = 443;
         // Buffer in seconds before a token is considered unusable
         public const int TokenExpireBufferInSeconds = 15;
-        public static readonly string[] SupportedTransports = new string[]{ "web_socket" };
-        public static readonly Dictionary<string, ITransportFactory> TransportFactories;
+        public static readonly ITransportFactory WebSocketTransportFactory = Platform.IoC.WebSockets;
 
         internal const int TokenErrorCodesRangeStart = 40140;
         internal const int TokenErrorCodesRangeEnd = 40149;
@@ -33,10 +32,6 @@ namespace IO.Ably
         static Defaults()
         {
             FallbackHosts = new [] { "A.ably-realtime.com", "B.ably-realtime.com", "C.ably-realtime.com", "D.ably-realtime.com", "E.ably-realtime.com" };
-            TransportFactories = new Dictionary<string, ITransportFactory>()
-            {
-                { "web_socket", Platform.IoC.WebSockets }
-            };
         }
     }
 }
