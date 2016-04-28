@@ -84,7 +84,7 @@ namespace IO.Ably.Transport.States.Connection
             {
                 Context.SetState(new ConnectionClosedState(Context));
             }
-            return TaskConstants.Completed;
+            return TaskConstants.BooleanTrue;
         }
 
         private void TransitionState(ConnectionState newState)

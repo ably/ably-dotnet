@@ -50,7 +50,7 @@ namespace IO.Ably.Transport.States.Connection
             // This is a terminal state. Clear the transport.
             Context.DestroyTransport();
             Context.Connection.Key = null;
-            return TaskConstants.Completed;
+            return TaskConstants.BooleanTrue;
         }
 
         private static ErrorInfo CreateError(TransportStateInfo state)

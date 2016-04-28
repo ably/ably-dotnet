@@ -73,7 +73,7 @@ namespace IO.Ably.Transport.States.Connection
                 Context.QueuedMessages.Clear();
             }
 
-            return TaskConstants.Completed;
+            return TaskConstants.BooleanTrue;
         }
     }
 }

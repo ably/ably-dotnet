@@ -59,7 +59,7 @@ namespace IO.Ably.Transport.States.Connection
         {
             // could not happen
             Logger.Error("Unexpected state change. " + state);
-            return TaskConstants.Completed;
+            return TaskConstants.BooleanTrue;
         }
 
         public override Task OnAttachedToContext()
@@ -73,7 +73,7 @@ namespace IO.Ably.Transport.States.Connection
                 _timer.Start(TimeSpan.FromMilliseconds(ConnectTimeout), OnTimeOut);
             }
 
-            return TaskConstants.Completed;
+            return TaskConstants.BooleanTrue;
         }
 
         private void OnTimeOut()

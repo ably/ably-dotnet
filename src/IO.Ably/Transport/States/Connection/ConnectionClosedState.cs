@@ -39,7 +39,7 @@ namespace IO.Ably.Transport.States.Connection
         public override Task OnTransportStateChanged(TransportStateInfo state)
         {
             // could not happen
-            return TaskConstants.Completed;
+            return TaskConstants.BooleanTrue;
         }
 
         public override Task OnAttachedToContext()
@@ -48,7 +48,7 @@ namespace IO.Ably.Transport.States.Connection
             Context.DestroyTransport();
             Context.Connection.Key = null;
 
-            return TaskConstants.Completed;
+            return TaskConstants.BooleanTrue;
         }
     }
 }

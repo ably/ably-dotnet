@@ -53,14 +53,14 @@ namespace IO.Ably.Transport.States.Connection
         public override Task OnTransportStateChanged(TransportStateInfo state)
         {
             // could not happen
-            Logger.Error("Unexpected state change. " + state.State);
+            Logger.Error("Unexpected state change. " + state);
             return TaskConstants.BooleanTrue;
         }
 
         public override Task OnAttachedToContext()
         {
             _timer.Start(TimeSpan.FromMilliseconds(ConnectTimeout), OnTimeOut);
-            return TaskConstants.Completed;
+            return TaskConstants.BooleanTrue;
         }
 
         private void OnTimeOut()

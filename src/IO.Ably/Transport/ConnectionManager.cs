@@ -16,7 +16,6 @@ namespace IO.Ably.Transport
         private readonly IAcknowledgementProcessor _ackProcessor;
         private readonly ClientOptions _options;
         private readonly Queue<ProtocolMessage> _pendingMessages;
-        private readonly SynchronizationContext _sync;
         private int _connectionAttempts;
         private DateTimeOffset? _firstConnectionAttempt;
         private ConnectionState _state;
@@ -27,7 +26,6 @@ namespace IO.Ably.Transport
 
         internal ConnectionManager()
         {
-            _sync = SynchronizationContext.Current;
             _pendingMessages = new Queue<ProtocolMessage>();
             _state = new ConnectionInitializedState(this);
             Connection = new Connection(this);
@@ -171,41 +169,23 @@ namespace IO.Ably.Transport
         //
         void ITransportListener.OnTransportConnected()
         {
-            if (_sync != null)
-            {
-                _sync.Post(o => OnTransportConnected(), null);
-                return;
-            }
             OnTransportConnected();
         }
 
         void ITransportListener.OnTransportDisconnected()
         {
-            if (_sync != null)
-            {
-                _sync.Post(o => OnTransportDisconnected(), null);
-                return;
-            }
+            
             OnTransportDisconnected();
         }
 
         void ITransportListener.OnTransportError(Exception e)
         {
-            if (_sync != null)
-            {
-                _sync.Post(o => OnTransportError((TransportState)o, e), _transport.State);
-                return;
-            }
+            
             OnTransportError(_transport.State, e);
         }
 
         async Task ITransportListener.OnTransportMessageReceived(ProtocolMessage message)
         {
-            if (_sync != null)
-            {
-                _sync.Post(async o => await OnTransportMessageReceived(message), null);
-                return;
-            }
             await OnTransportMessageReceived(message);
         }
 
