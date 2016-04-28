@@ -46,7 +46,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void AfterSendingAMessage_CurrentTokenHasDefaultCapabilityAndTtl()
         {
-            Client.Channels.Get("test").Publish("test", true);
+            Client.Channels.Get("test").Publish("test", "true");
 
             Client.Auth.CurrentToken.Should().NotBeNull();
         }

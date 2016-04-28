@@ -17,7 +17,7 @@ namespace IO.Ably.AcceptanceTests
             var ably = new AblyRest(new ClientOptions() { Key = fakeKey, Environment = AblyEnvironment.Sandbox , Tls = true});
 
             //Act
-            var error = Assert.ThrowsAsync<AblyException>(() => ably.Channels.Get("Test").Publish("test", true));
+            var error = Assert.ThrowsAsync<AblyException>(() => ably.Channels.Get("Test").Publish("test", "true"));
 
             error.ErrorInfo.statusCode.Should().Be(HttpStatusCode.Unauthorized);
             error.ErrorInfo.code.Should().Be(40400);
