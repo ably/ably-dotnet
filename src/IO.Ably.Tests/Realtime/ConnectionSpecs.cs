@@ -67,12 +67,29 @@ namespace IO.Ably.Tests.Realtime
             [Theory]
             [InlineData(true, "msgpack")]
             [InlineData(false, "json")]
+            [Trait("spec", "RTN2a")]
             public void WithUseBinaryEncoding_ShouldSetTransportFormatProperty(bool useBinary, string format)
             {
                 var client = GetClientWithFakeTransport(opts => opts.UseBinaryProtocol = useBinary);
                 LastCreatedTransport.Parameters.UseBinaryProtocol.Should().Be(useBinary);
-                LastCreatedTransport.Parameters.GetParams().Should().ContainKey("format").WhichValue(format);
+                LastCreatedTransport.Parameters.GetParams().Should().ContainKey("format").WhichValue.Should().Be(format);
             }
+
+            [Theory]
+            [InlineData(true)]
+            [InlineData(false)]
+            [Trait("spec", "RTN2b")]
+            public void WithEchoInClientOptions_ShouldSetTransportEchoCorrectly(bool echo)
+            {
+                var client = GetClientWithFakeTransport(opts => opts.EchoMessages = echo);
+
+                LastCreatedTransport.Parameters.EchoMessages.Should().Be(echo);
+                LastCreatedTransport.Parameters.GetParams()
+                    .Should().ContainKey("echo")
+                    .WhichValue.Should().Be(echo.ToString().ToLower());
+            }
+
+
 
             public ConnectionParameterTests(ITestOutputHelper output) : base(output)
             {
