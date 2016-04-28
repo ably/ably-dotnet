@@ -35,13 +35,32 @@ namespace IO.Ably.AcceptanceTests
             {  
                 get
                 {
-                    yield return new object[] {new Message("int", 1), "json"};
-                    yield return new object[] {new Message("float", 1.1), "json"};
-                    yield return new object[] {new Message("date", Config.Now()), "json"};
+                    
                     yield return new object[] {new Message("string", "string"), null};
                     yield return new object[] {new Message("string", new byte[] {1,2,4}), "base64"};
                     yield return new object[] { new Message("object", new TestObject() { Age = 40, Name = "Bob", DoB = new DateTime(1976, 1,1)}), "json"};
                 }
+            }
+
+            public static IEnumerable<object[]> UnSupportedMassages
+            {
+                get
+                {
+                    yield return new object[] { new Message("int", 1) };
+                    yield return new object[] { new Message("float", 1.1) };
+                    yield return new object[] { new Message("date", Config.Now())};
+                }
+            }
+
+            [Theory]
+            [MemberData(nameof(UnSupportedMassages))]
+            [Trait("spec", "RSL4a")]
+            public async Task PublishUnSupportedMessagesThrows(Message message)
+            {
+                var client = GetRestClient();
+
+                var ex = await Assert.ThrowsAsync<AblyException>(() => client.Channels.Get("test").Publish(message));
+                ex.Message.Should().Contain("Unsupported payload");
             }
 
             [Theory]

@@ -24,7 +24,9 @@ namespace IO.Ably.MessageEncoders
             var cipherType = GetCipherType(currentEncoding);
             if (cipherType.ToLower() != options.CipherParams.CipherType.ToLower())
             {
-                throw new AblyException(string.Format("Cipher algorithm {0} does not match message cipher algorithm of {1}", options.CipherParams.CipherType.ToLower(), currentEncoding), 92002);
+                Logger.Error(
+                    $"Cipher algorithm {options.CipherParams.CipherType.ToLower()} does not match message cipher algorithm of {currentEncoding}");
+                return;
             }
 
             var cipher = Crypto.GetCipher(options.CipherParams);

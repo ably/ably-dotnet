@@ -39,7 +39,7 @@ namespace IO.Ably.Tests.Rest
         {
             var message = new Message();
             message.name = "large";
-            message.data = new string('a', 100 * 1024 * 8); // 100KB
+            message.data = new string('a', 50 * 1024 * 8); // 100KB
             var client = await GetRestClient(protocol);
             var ex = await Assert.ThrowsAsync<AblyException>(()
                 => client.Channels.Get("large").Publish(message));
@@ -194,12 +194,13 @@ namespace IO.Ably.Tests.Rest
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RSL4a")]
         public async Task WithUnsupportedPayloadTypes_ShouldRaiseException(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
             var channel = client.Channels.Get("persisted:test_" + protocol);
 
-            await channel.Publish("int", 1);
+            var ex = await Assert.ThrowsAsync<AblyException>(() => channel.Publish("int", 1));
         }
 
         class TestLoggerSink : ILoggerSink
@@ -216,7 +217,7 @@ namespace IO.Ably.Tests.Rest
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSL6b")]
-        public async Task WithEncryptionCiphenMismatch_ShouldLeaveMessageEncryptedAndRaiseError(Protocol protocol)
+        public async Task WithEncryptionCipherMismatch_ShouldLeaveMessageEncryptedAndLogError(Protocol protocol)
         {
             var loggerSink = new TestLoggerSink();
 
@@ -229,6 +230,29 @@ namespace IO.Ably.Tests.Rest
                 await channel1.Publish("test", payload);
 
                 var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(true));
+                var message = (await channel2.History()).First();
+
+                loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
+                message.encoding.Should().Be("utf-8/cipher+aes-128-cbc");
+            }
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSL6b")]
+        public async Task WithEncryptionCipherAlgorithmMismatch_ShouldLeaveMessageEncryptedAndLogError(Protocol protocol)
+        {
+            var loggerSink = new TestLoggerSink();
+
+            using (Logger.SetTempDestination(loggerSink))
+            {
+                var client = await GetRestClient(protocol);
+                var channel1 = client.Channels.Get("persisted:encryption", GetOptions(examples));
+
+                var payload = "test payload";
+                await channel1.Publish("test", payload);
+
+                var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(true, new CipherParams(Crypto.GetRandomKey(CipherMode.CBC, 128))));
                 var message = (await channel2.History()).First();
 
                 loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
