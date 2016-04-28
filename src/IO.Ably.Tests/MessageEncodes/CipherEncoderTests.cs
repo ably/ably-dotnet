@@ -209,17 +209,17 @@ namespace IO.Ably.Tests.MessageEncodes
             }
 
             [Fact]
-            public void WithCipherEncodingThatDoesNotMatchTheCurrentCipher_ThrowsException()
+            public void WithCipherEncodingThatDoesNotMatchTheCurrentCipher_LeavesMessageUnencrypted()
             {
-                var payload = new Message() { data = "test", encoding = "utf-8/cipher+aes-128-cbc" };
+                var initialEncoding = "utf-8/cipher+aes-128-cbc";
+                var encryptedValue = "test";
+                var payload = new Message() { data = encryptedValue, encoding = initialEncoding };
 
-                var error = Assert.Throws<AblyException>(delegate { encoder.Decode(payload, _channelOptions); });
+                encoder.Decode(payload, _channelOptions);
 
-                error.ErrorInfo.message.Should()
-                    .Be(string.Format("Cipher algorithm {0} does not match message cipher algorithm of {1}",
-                        _channelOptions.CipherParams.CipherType.ToLower(), "cipher+aes-128-cbc"));
+                payload.encoding.Should().Be(initialEncoding);
+                payload.data.Should().Be(encryptedValue);
 
-                error.ErrorInfo.code.Should().Be(92002);
             }
         }
 

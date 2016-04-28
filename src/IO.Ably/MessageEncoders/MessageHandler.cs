@@ -5,11 +5,18 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using IO.Ably.Transport;
 
 namespace IO.Ably.MessageEncoders
 {
     internal class MessageHandler
     {
+        private static readonly Type[] UnsupportedTypes = new[]
+            {
+                typeof(short), typeof(int), typeof(double), typeof(float), typeof(decimal), typeof(DateTime), typeof(DateTimeOffset), typeof(byte), typeof(bool),
+                typeof(long), typeof(uint), typeof(ulong), typeof(ushort), typeof(sbyte)
+            };
         private readonly Protocol _protocol;
         public readonly List<MessageEncoder> Encoders = new List<MessageEncoder>();
 
@@ -95,15 +102,12 @@ namespace IO.Ably.MessageEncoders
 
         public byte[] GetRequestBody(AblyRequest request)
         {
-            Logger.Debug("Encoding request body.");
             if (request.PostData == null)
                 return new byte[] { };
 
             if (request.PostData is IEnumerable<Message>)
                 return GetMessagesRequestBody(request.PostData as IEnumerable<Message>,
                     request.ChannelOptions);
-
-            //Logger.Debug(string.Format("Payload: {0}", JsonConvert.SerializeObject(request.PostData)));
 
             if (_protocol == Protocol.Json)
                 return JsonConvert.SerializeObject(request.PostData, Config.GetJsonSettings()).GetBytes();
@@ -135,10 +139,30 @@ namespace IO.Ably.MessageEncoders
 
         private void EncodePayload(IEncodedMessage payload, ChannelOptions options)
         {
+            ValidatePayloadDataType(payload);
             foreach (var encoder in Encoders)
             {
                 encoder.Encode(payload, options);
             }
+        }
+
+        private void ValidatePayloadDataType(IEncodedMessage payload)
+        {
+            if (payload.data == null)
+                return;
+
+            var dataType = payload.data.GetType();
+            var testType = GetNullableType(dataType) ?? dataType;
+            if (UnsupportedTypes.Contains(testType))
+            {
+                throw new AblyException("Unsupported payload type. Only string, binarydata (byte[]) and objects convertable to json are supported being directly sent. This ensures that libraries in different languages work correctly. To send the requested value please create a DTO and pass the DTO as payload. For example if you are sending an '10' then create a class with one property; assign the value to the property and send it.");
+            }
+        }
+
+        static Type GetNullableType(Type type)
+        {
+            if (type.IsValueType == false) return null; // ref-type
+            return Nullable.GetUnderlyingType(type);
         }
 
         private void DecodePayload(IEncodedMessage payload, ChannelOptions options)
