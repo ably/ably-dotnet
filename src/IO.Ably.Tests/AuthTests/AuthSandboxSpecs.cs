@@ -63,8 +63,8 @@ namespace IO.Ably.Tests
             var httpsTokenAbly = new AblyRest(new ClientOptions { Token = token.Token, Environment = options.Environment, Tls = true });
 
             //If it doesn't throw we are good :)
-            await httpTokenAbly.Channels.Get("foo").Publish("test", true);
-            await httpsTokenAbly.Channels.Get("foo").Publish("test", true);
+            await httpTokenAbly.Channels.Get("foo").Publish("test", "true");
+            await httpsTokenAbly.Channels.Get("foo").Publish("test", "true");
         }
 
         [Theory]
@@ -80,7 +80,7 @@ namespace IO.Ably.Tests
 
             var tokenAbly = new AblyRest(new ClientOptions { Token = token.Token, Environment = AblyEnvironment.Sandbox });
 
-            var error = await Assert.ThrowsAsync<AblyException>(() => tokenAbly.Channels.Get("boo").Publish("test", true));
+            var error = await Assert.ThrowsAsync<AblyException>(() => tokenAbly.Channels.Get("boo").Publish("test", "true"));
             error.ErrorInfo.code.Should().Be(40160);
             error.ErrorInfo.statusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
@@ -109,7 +109,7 @@ namespace IO.Ably.Tests
         {
             var ably = await GetRestClient(protocol, ablyOptions => ablyOptions.ClientId = "123");
             var channel = ably.Channels.Get("test");
-            await channel.Publish("test", true);
+            await channel.Publish("test", "true");
 
             var token = ably.Auth.CurrentToken;
 

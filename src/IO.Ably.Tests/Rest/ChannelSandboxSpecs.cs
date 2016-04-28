@@ -194,12 +194,13 @@ namespace IO.Ably.Tests.Rest
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RSL4a")]
         public async Task WithUnsupportedPayloadTypes_ShouldRaiseException(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
             var channel = client.Channels.Get("persisted:test_" + protocol);
 
-            await channel.Publish("int", 1);
+            var ex = await Assert.ThrowsAsync<AblyException>(() => channel.Publish("int", 1));
         }
 
         class TestLoggerSink : ILoggerSink
@@ -232,7 +233,6 @@ namespace IO.Ably.Tests.Rest
                 var message = (await channel2.History()).First();
 
                 loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
-                loggerSink.LastMessage.Should().Contain("Error decrypting payload");
                 message.encoding.Should().Be("utf-8/cipher+aes-128-cbc");
             }
         }

@@ -32,7 +32,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void WhenPublishing_WillSendATokenRequestToServer()
         {
-            Client.Channels.Get("test").Publish("test", true);
+            Client.Channels.Get("test").Publish("test", "true");
 
            ExecutionCount.Should().Be(2);
         }
