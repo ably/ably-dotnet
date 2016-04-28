@@ -1,5 +1,7 @@
 using System;
 using System.Globalization;
+using IO.Ably.Encryption;
+using IO.Ably.Platform;
 using IO.Ably.Transport;
 using MsgPack.Serialization;
 using Newtonsoft.Json;
@@ -79,7 +81,7 @@ namespace IO.Ably
                 };
 
             var signText = string.Join("\n", values) + "\n";
-            Mac = Encryption.Crypto.ComputeHMacSha256( signText, key );
+            Mac = Crypto.ComputeHMacSha256(signText, key);
         }
 
         public override int GetHashCode()

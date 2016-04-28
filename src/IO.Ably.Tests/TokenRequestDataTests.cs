@@ -1,5 +1,7 @@
 ﻿using System;
 using FluentAssertions;
+using IO.Ably.Encryption;
+using IO.Ably.Platform;
 using Xunit;
 
 namespace IO.Ably.Tests
@@ -127,7 +129,7 @@ namespace IO.Ably.Tests
             };
             var signText = string.Join("\n", values) + "\n";
 
-            string mac = Encryption.Crypto.ComputeHMacSha256(signText, GetKeyValue());
+            string mac = Crypto.ComputeHMacSha256(signText, GetKeyValue());
 
             Assert.Equal(mac, request.Mac);
         }

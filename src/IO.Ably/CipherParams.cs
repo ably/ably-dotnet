@@ -31,10 +31,12 @@ namespace IO.Ably
         }
 
         public string Algorithm { get; }
+
         public byte[] Key { get; }
+
         public byte[] Iv { get; }
         public CipherMode Mode { get; }
-        public int KeyLength { get; }
+        public int KeyLength => Key?.Length * 8 ?? 0;
 
         public string CipherType
         {
@@ -46,13 +48,20 @@ namespace IO.Ably
 
         }
 
-        public CipherParams(string algorithm, byte[] key, CipherMode? mode = null, int? keyLength = null, byte[] iv = null)
+        public CipherParams(string algorithm, byte[] key, CipherMode? mode = null, byte[] iv = null)
         {
             Algorithm = algorithm.IsEmpty() ? Crypto.DefaultAlgorithm : algorithm;
             Key = key;
             Mode = mode ?? Crypto.DefaultMode;
-            KeyLength = keyLength ?? Crypto.DefaultKeylength;
             Iv = iv;
+        }
+
+        public CipherParams(string algorithm, string base64Key = null, CipherMode mode = Crypto.DefaultMode, string base64Iv = null)
+        {
+            Algorithm = algorithm.IsEmpty() ? Crypto.DefaultAlgorithm : algorithm;
+            Key = base64Key.FromBase64();
+            Mode = mode;
+            Iv = base64Iv.FromBase64();
         }
     }
 }

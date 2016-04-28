@@ -3,15 +3,12 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using IO.Ably.CustomSerialisers;
 using IO.Ably.Encryption;
+using IO.Ably.Platform;
 
 namespace IO.Ably
 {
     public static class Config
     {
-        /// <summary>
-        /// Http connection timeout in ms.
-        /// Default value: 15000 ms
-        /// </summary>
         public static Func<CipherParams, IChannelCipher> GetCipher = Crypto.GetCipher;
 
         /// <summary>X-Ably-Version HTTP request header value</summary>

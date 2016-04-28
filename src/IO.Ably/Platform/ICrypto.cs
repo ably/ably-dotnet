@@ -6,8 +6,8 @@ namespace IO.Ably.Platform
     {
         CipherParams GetDefaultParams();
 
-        IChannelCipher GetCipher( CipherParams p );
+        IChannelCipher GetCipher(CipherParams cipherParams);
 
-        string ComputeHMacSha256( string text, string key );
+        string ComputeHMacSha256(string text, string key);
     }
 }

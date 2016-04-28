@@ -31,7 +31,6 @@ namespace IO.Ably.Tests
                 (string)cipher["algorithm"],
                 ((string)cipher["key"]).FromBase64(),
                 CipherMode.CBC,
-                (int)cipher["keylength"],
                 ((string)cipher["iv"]).FromBase64()
                 );
 

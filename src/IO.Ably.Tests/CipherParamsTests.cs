@@ -9,7 +9,6 @@ namespace IO.Ably.Tests
         [Fact]
         public void Ctor_WithKeyAndNoAlgorithSpecified_DefaultsToAES()
         {
-
             //Act
             var cipherParams = new CipherParams("", new byte[] {});
 

@@ -1,5 +1,9 @@
 using System;
+using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
+using AblyPlatform.Cryptography;
+using IO.Ably.Platform;
 using IO.Ably.Rest;
 
 namespace IO.Ably.Encryption
@@ -69,58 +73,65 @@ namespace IO.Ably.Encryption
 
     public class Crypto
     {
-        public const String DefaultAlgorithm = "AES";
-        public const int DefaultKeylength = 128; ///bits
+        public const string DefaultAlgorithm = "AES";
+        public const int DefaultKeylength = 256; ///bits
         public const int DefaultBlocklength = 16; ///bytes
         public const CipherMode DefaultMode = CipherMode.CBC;
 
-        internal static CipherParams GetDefaultParams()
+        public static CipherParams GetDefaultParams(string base64EncodedKey, string base64Iv = null, CipherMode? mode = null)
         {
-            return Platform.IoC.Crypto.GetDefaultParams();
-        }
-
-        internal static IChannelCipher GetCipher( ChannelOptions opts )
-        {
-            CipherParams p = opts.CipherParams ?? GetDefaultParams();
-            return Platform.IoC.Crypto.GetCipher( p );
-        }
-
-        internal static IChannelCipher GetCipher( CipherParams p )
-        {
-            return Platform.IoC.Crypto.GetCipher( p );
-        }
-
-        internal static string ComputeHMacSha256( string text, string key )
-        {
-            return Platform.IoC.Crypto.ComputeHMacSha256( text, key );
-        }
-
-        /* public static CipherParams GetDefaultParams()
-        {
-            using (var aes = new AesCryptoServiceProvider())
+            if (base64EncodedKey == null)
             {
-                aes.KeySize = DefaultKeylength;
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
-                aes.BlockSize = DefaultBlocklength * 8;
-                aes.GenerateKey();
-                return new CipherParams(aes.Key);
+                throw new ArgumentNullException(nameof(base64EncodedKey), "Base64Encoded key cannot be null");
+            }
+            return GetDefaultParams(base64EncodedKey.FromBase64(), base64Iv?.FromBase64(), mode);
+        }
+
+        public static CipherParams GetDefaultParams(byte[] key = null, byte[] iv = null, CipherMode? mode = null)
+        {
+            if (key != null && key.Any())
+            {
+                ValidateKeyLength(key.Length * 8);
+
+                return new CipherParams(DefaultAlgorithm, key, mode, iv);
+            }
+
+            return new CipherParams(GetRandomKey(mode));
+        }
+
+        private static void ValidateKeyLength(int keyLength)
+        {
+            if (keyLength != 128 && keyLength != 256)
+                throw new AblyException($"Only 128 and 256 keys are supported. Provided key is {keyLength}", 40003,
+                    HttpStatusCode.BadRequest);
+        }
+
+        public static IChannelCipher GetCipher(CipherParams cipherParams)
+        {
+            if (string.Equals(cipherParams.Algorithm, Crypto.DefaultAlgorithm, StringComparison.CurrentCultureIgnoreCase))
+                return new AesCipher(cipherParams);
+
+            throw new AblyException("Currently only the AES encryption algorithm is supported", 50000, HttpStatusCode.InternalServerError);
+        }
+
+        public static string ComputeHMacSha256(string text, string key)
+        {
+            byte[] bytes = text.GetBytes();
+            byte[] keyBytes = key.GetBytes();
+            using (var hmac = new HMACSHA256(keyBytes))
+            {
+                hmac.ComputeHash(bytes);
+                return Convert.ToBase64String(hmac.Hash);
             }
         }
 
-        public static CipherParams GetDefaultParams(byte[] key)
+        public static byte[] GetRandomKey(CipherMode? mode = null, int? keyLength = null)
         {
-            return new CipherParams(key);
+            if(keyLength.HasValue)
+                ValidateKeyLength(keyLength.Value);
+
+            return AesCipher.GenerateKey(mode, keyLength);
         }
 
-        public static IChannelCipher GetCipher(ChannelOptions opts)
-        {
-            CipherParams @params = opts.CipherParams ?? GetDefaultParams();
-
-            if (string.Equals(@params.Algorithm, DefaultAlgorithm, StringComparison.CurrentCultureIgnoreCase))
-                return new AesCipher(@params);
-
-            throw new AblyException("Currently only the AES encryption algorith is supported", 50000, HttpStatusCode.InternalServerError);
-        } */
     }
 }
