@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
@@ -11,67 +12,56 @@ namespace IO.Ably.Tests
 {
     public class ClosedStateSpecs : AblySpecs
     {
-        [Fact]
-        public void ClosedState_CorrectState()
+        private FakeConnectionContext _context;
+        private ConnectionClosedState _state;
+
+        public ClosedStateSpecs(ITestOutputHelper output) : base(output)
         {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionClosedState state = new ConnectionClosedState(context.Object);
+            _context = new FakeConnectionContext();
+            _state = new ConnectionClosedState(_context);
+        }
+
+        [Fact]
+        public void ShouldHaveCorrectState()
+        {
+            _state.State.Should().Be(ConnectionStateType.Closed);
+        }
+
+        [Fact]
+        public void WhenConnectCalled_MovesToConnectingState()
+        {
+            // Act
+            _state.Connect();
 
             // Assert
-            Assert.Equal<Ably.Realtime.ConnectionStateType>(Ably.Realtime.ConnectionStateType.Closed, state.State);
+            _context.StateShouldBe<ConnectionConnectingState>();
         }
 
         [Fact]
-        public void ClosedState_Connect_GoesToConnecting()
+        public void WhenCloseCalled_ShouldDoNothing()
+        {
+            // Act
+            new ConnectionClosedState(null).Close();
+        }
+
+        [Fact]
+        public void WhenMessageIsSent_DoesNothing()
+        {
+            // Act
+            _state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
+        }
+
+        [Fact]
+        public async Task OnAttachedToContext_ShouldDestroyTransport()
         {
             // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            ConnectionClosedState state = new ConnectionClosedState(context.Object);
+            _context.Transport = new FakeTransport();
 
             // Act
-            state.Connect();
+            await _state.OnAttachedToContext();
 
             // Assert
-            context.Verify(c => c.SetState(It.IsAny<ConnectionConnectingState>()), Times.Once());
-        }
-
-        [Fact]
-        public void ClosedState_Close_DoesNothing()
-        {
-            // Arrange
-            ConnectionClosedState state = new ConnectionClosedState(null);
-
-            // Act
-            state.Close();
-        }
-
-        [Fact]
-        public void ClosedState_SendMessage_DoesNothing()
-        {
-            // Arrange
-            ConnectionClosedState state = new ConnectionClosedState(null);
-
-            // Act
-            state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
-        }
-
-        [Fact]
-        public void ClosedState_AttachToContext_DestroysTransport()
-        {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.Connection).Returns(new Connection(new Mock<IConnectionManager>().Object));
-            Mock<ITransport> transport = new Mock<ITransport>();
-            context.Setup(c => c.CreateTransport()).Callback(() =>
-                context.Setup(c => c.Transport).Returns(transport.Object));
-            ConnectionClosedState state = new ConnectionClosedState(context.Object);
-
-            // Act
-            state.OnAttachedToContext();
-
-            // Assert
-            context.Verify(c => c.DestroyTransport(), Times.Once());
+            _context.DestroyTransportCalled.Should().BeTrue();
         }
 
         [Theory]
@@ -92,47 +82,33 @@ namespace IO.Ably.Tests
         [InlineData(ProtocolMessage.MessageAction.Nack)]
         [InlineData(ProtocolMessage.MessageAction.Presence)]
         [InlineData(ProtocolMessage.MessageAction.Sync)]
-        public async Task ClosedState_DoesNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
+        public async Task ShouldNotHandleInboundMessageWithAction(ProtocolMessage.MessageAction action)
         {
-            // Arrange
-            ConnectionClosedState state = new ConnectionClosedState(null);
-
             // Act
-            bool result = await state.OnMessageReceived(new ProtocolMessage(action));
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(action));
 
             // Assert
-            Assert.False(result);
+            result.Should().Be(false);
         }
 
         [Fact]
-        public void ClosedState_DoesNotListenToTransportChanges()
+        public async Task ShouldNotListenForTransporChanges()
         {
-            // Arrange
-            ConnectionClosedState state = new ConnectionClosedState(null);
-
             // Act
-            state.OnTransportStateChanged(null);
+            await _state.OnTransportStateChanged(null);
         }
 
         [Fact]
-        public void ClosedState_UpdatesConnectionInformation()
+        public async Task ShouldClearConnectionKey()
         {
             // Arrange
-
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            Mock<Connection> target = new Mock<Connection>();
-            target.SetupProperty(c => c.Key, "test test");
-            context.SetupGet(c => c.Connection).Returns(target.Object);
-            ConnectionClosedState state = new ConnectionClosedState(context.Object);
+            _context.Connection.Key = "test";
 
             // Act
-            state.OnAttachedToContext();
+            await _state.OnAttachedToContext();
 
             // Assert
-            target.VerifySet(c => c.Key = null);
-        }
-        public ClosedStateSpecs(ITestOutputHelper output) : base(output)
-        {
+            _context.Connection.Key.Should().BeNullOrEmpty();
         }
     }
 }
