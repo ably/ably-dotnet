@@ -9,18 +9,18 @@ namespace IO.Ably.Transport
         readonly TaskCompletionSource<bool> _completionSource = new TaskCompletionSource<bool>();
 
         /// <summary>Operator that casts to <see cref="Task" />.</summary>
-        public static implicit operator Task( TaskWrapper wrapper ) { return wrapper._completionSource.Task; }
+        public static implicit operator Task(TaskWrapper wrapper) { return wrapper._completionSource.Task; }
 
         /// <summary>Operator that casts to the callback action type.</summary>
-        public static implicit operator Action<bool, ErrorInfo>( TaskWrapper wrapper ) { return wrapper.Callback; }
+        public static implicit operator Action<bool, ErrorInfo>(TaskWrapper wrapper) { return wrapper.Callback; }
 
-        void Callback( bool res, ErrorInfo ei)
+        void Callback(bool res, ErrorInfo ei)
         {
-            if( res )
-                _completionSource.SetResult( true );
-            if( null != ei )
-                _completionSource.SetException( ei.AsException() );
-            _completionSource.SetException( new Exception("") );
+            if (res)
+                _completionSource.SetResult(true);
+            if (null != ei)
+                _completionSource.SetException(ei.AsException());
+            _completionSource.SetException(new Exception(""));
         }
     }
 }

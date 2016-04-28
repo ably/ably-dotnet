@@ -49,16 +49,14 @@ namespace IO.Ably
         {
             if (Channels == null || Connection == null)
             {
-                await InitAuth();
-
-                IConnectionManager connectionManager = new ConnectionManager(options);
+                IConnectionManager connectionManager = new ConnectionManager(options, RestClient);
                 IChannelFactory factory = new ChannelFactory() { ConnectionManager = connectionManager, Options = options };
                 Channels = new ChannelList(factory);
                 Connection = connectionManager.Connection;
             }
 
-            ConnectionState state = Connection.State;
-            if (state == ConnectionState.Connected)
+            ConnectionStateType state = Connection.State;
+            if (state == ConnectionStateType.Connected)
                 return Connection;
 
 
@@ -68,39 +66,6 @@ namespace IO.Ably
                 awaitor.Connection.Connect();
                 return await awaitor.wait();
             }
-        }
-
-        internal async Task InitAuth()
-        {
-            if (Auth.AuthMethod == AuthMethod.Basic)
-            {
-                string authHeader = Convert.ToBase64String(Options.Key.GetBytes());
-                //TODO: Fix this.
-                options.AuthHeaders["Authorization"] = "Basic " + authHeader;
-                return;
-            }
-            if (Auth.AuthMethod == AuthMethod.Token)
-            {
-                await InitTokenAuth();
-                return;
-            }
-
-            throw new Exception("Unexpected AuthMethod value");
-        }
-
-        /// <summary>Request auth token, set options</summary>
-        async Task InitTokenAuth()
-        {
-            await Auth.Authorise(); //This sets current token
-
-            if (Auth.HasValidToken())
-            {
-                // WebSockets use Token from Options.Token
-                Options.Token = Auth.CurrentToken.Token;
-                Logger.Debug("Adding Authorization header with Token authentication");
-            }
-            else
-                throw new AblyException("Invalid token credentials: " + Auth.CurrentToken, 40100, HttpStatusCode.Unauthorized);
         }
 
         /// <summary>

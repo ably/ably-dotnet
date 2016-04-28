@@ -7,19 +7,19 @@ namespace IO.Ably.Realtime
     /// <summary>Utility class to wait for a specified state of the connection, with timeout.</summary>
     internal class ConnStateAwaitor : IDisposable
     {
-        private static readonly HashSet<ConnectionState> PermanentlyFailedStates = new HashSet<ConnectionState>
+        private static readonly HashSet<ConnectionStateType> PermanentlyFailedStates = new HashSet<ConnectionStateType>
         {
-            ConnectionState.Suspended,
-            ConnectionState.Closed,
-            ConnectionState.Failed
+            ConnectionStateType.Suspended,
+            ConnectionStateType.Closed,
+            ConnectionStateType.Failed
         };
 
-        private readonly ConnectionState _awaitedState;
+        private readonly ConnectionStateType _awaitedState;
 
         public readonly Connection Connection;
         private readonly TaskCompletionSource<Connection> _taskCompletionSource = new TaskCompletionSource<Connection>();
 
-        public ConnStateAwaitor(Connection connection, ConnectionState awaitedState = ConnectionState.Connected)
+        public ConnStateAwaitor(Connection connection, ConnectionStateType awaitedState = ConnectionStateType.Connected)
         {
             Connection = connection;
             _awaitedState = awaitedState;

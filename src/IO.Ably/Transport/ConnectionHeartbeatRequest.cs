@@ -3,7 +3,6 @@ using System.Net;
 using IO.Ably.Realtime;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
-using ConnectionState = IO.Ably.Realtime.ConnectionState;
 
 namespace IO.Ably.Transport
 {
@@ -33,7 +32,7 @@ namespace IO.Ably.Transport
         {
             var request = new ConnectionHeartbeatRequest();
 
-            if (manager.Connection.State != ConnectionState.Connected)
+            if (manager.Connection.State != ConnectionStateType.Connected)
             {
                 callback?.Invoke(false, DefaultError);
 
@@ -43,8 +42,8 @@ namespace IO.Ably.Transport
             if (callback != null)
             {
                 request._manager = manager;
-                request._manager.MessageReceived += request.OnMessageReceived;
-                request._manager.Connection.ConnectionStateChanged += request.OnConnectionStateChanged;
+                manager.MessageReceived += request.OnMessageReceived;
+                manager.Connection.ConnectionStateChanged += request.OnConnectionStateChanged;
                 request._timer = timer;
                 request._callback = callback;
             }
@@ -52,7 +51,7 @@ namespace IO.Ably.Transport
             manager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat), null);
             if (callback != null)
             {
-                request._timer.Start(HeartbeatTimeout, request.OnTimeout);
+                request._timer.Start(TimeSpan.FromMilliseconds(HeartbeatTimeout), request.OnTimeout);
             }
 
             return request;
@@ -68,7 +67,7 @@ namespace IO.Ably.Transport
 
         private void OnConnectionStateChanged(object sender, ConnectionStateChangedEventArgs e)
         {
-            if (e.CurrentState != ConnectionState.Connected)
+            if (e.CurrentState != ConnectionStateType.Connected)
             {
                 FinishRequest(false, DefaultError);
             }

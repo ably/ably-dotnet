@@ -10,7 +10,7 @@ using IO.Ably.Transport;
 
 namespace IO.Ably.MessageEncoders
 {
-    internal class MessageHandler : IMessageHandler
+    internal class MessageHandler
     {
         private static readonly Type[] UnsupportedTypes = new[]
             {
@@ -40,7 +40,7 @@ namespace IO.Ably.MessageEncoders
             Encoders.Add(new CipherEncoder(protocol));
             Encoders.Add(new Base64Encoder(protocol));
 
-            Logger.Debug(string.Format("Initializing message encodings. {0} initialized", string.Join(",", Encoders.Select( x=> x.EncodingName))));
+            Logger.Debug(string.Format("Initializing message encodings. {0} initialized", string.Join(",", Encoders.Select(x => x.EncodingName))));
         }
 
         public T ParseMessagesResponse<T>(AblyResponse response) where T : class
@@ -50,7 +50,7 @@ namespace IO.Ably.MessageEncoders
             return default(T);
         }
 
-        public IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response, ChannelOptions options )
+        public IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response, ChannelOptions options)
         {
             if (response.Type == ResponseType.Json)
             {
@@ -179,59 +179,61 @@ namespace IO.Ably.MessageEncoders
         /// <param name="response"></param>
         /// <param name="funcParse">Function to parse HTTP response into a sequence of items.</param>
         /// <returns></returns>
-        internal PaginatedResult<T> paginated<T>( AblyRequest request, AblyResponse response, Func<AblyResponse, ChannelOptions, IEnumerable<T>> funcParse )
+        internal static PaginatedResult<T> Paginated<T>(AblyRequest request, AblyResponse response, Func<AblyResponse, ChannelOptions, IEnumerable<T>> funcParse)
         {
-            PaginatedResult<T> res = new PaginatedResult<T>( response.Headers, GetLimit( request ) );
-            res.AddRange( funcParse( response, request.ChannelOptions ) );
+            PaginatedResult<T> res = new PaginatedResult<T>(response.Headers, GetLimit(request));
+            res.AddRange(funcParse(response, request.ChannelOptions));
             return res;
         }
 
         public T ParseResponse<T>(AblyRequest request, AblyResponse response) where T : class
         {
             LogResponse(response);
-            if( typeof( T ) == typeof( PaginatedResult<Message> ) )
-                return paginated( request, response, ParseMessagesResponse ) as T;
+            if (typeof(T) == typeof(PaginatedResult<Message>))
+                return Paginated(request, response, ParseMessagesResponse) as T;
 
             if (typeof(T) == typeof(PaginatedResult<Stats>))
-                return paginated( request, response, ParseStatsResponse ) as T;
+                return Paginated(request, response, ParseStatsResponse) as T;
 
             if (typeof(T) == typeof(PaginatedResult<PresenceMessage>))
-                return paginated( request, response, ParsePresenceMessages ) as T;
+                return Paginated(request, response, ParsePresenceMessages) as T;
 
             var responseText = response.TextResponse;
             if (_protocol == Protocol.MsgPack)
             {
                 // A bit of a hack. Message pack serializer does not like capability objects
-                responseText = MsgPackHelper.DeSerialise(response.Body, typeof (MessagePackObject)).ToString();
+                responseText = MsgPackHelper.DeSerialise(response.Body, typeof(MessagePackObject)).ToString();
             }
             return (T)JsonConvert.DeserializeObject(responseText, typeof(T), Config.GetJsonSettings());
         }
 
         private void LogResponse(AblyResponse response)
         {
-            Logger.Info("Protocol:" + _protocol);
-            try
+            if (Logger.IsDebug)
             {
-                var responseBody = response.TextResponse;
-                if (_protocol == Protocol.MsgPack && response.Body != null)
+                Logger.Info("Protocol:" + _protocol);
+                try
                 {
-                    responseBody = MsgPackHelper.DeSerialise(response.Body, typeof(MessagePackObject)).ToString();
+                    var responseBody = response.TextResponse;
+                    if (_protocol == Protocol.MsgPack && response.Body != null)
+                    {
+                        responseBody = MsgPackHelper.DeSerialise(response.Body, typeof (MessagePackObject)).ToString();
+                    }
+                    Logger.Debug("Response: " + responseBody);
                 }
-                Logger.Debug("Response: " + responseBody);
+                catch (Exception ex)
+                {
+                    Logger.Error("Error while logging response body.", ex);
+                }
             }
-            catch (Exception ex)
-            {
-                Logger.Error("Error while logging response body.", ex);
-            }
-
         }
 
-        private IEnumerable<Stats> ParseStatsResponse(AblyResponse response, ChannelOptions options )
+        private IEnumerable<Stats> ParseStatsResponse(AblyResponse response, ChannelOptions options)
         {
             var body = response.TextResponse;
             if (_protocol == Protocol.MsgPack)
             {
-                body = ((MessagePackObject)MsgPackHelper.DeSerialise(response.Body, typeof (MessagePackObject))).ToString();
+                body = ((MessagePackObject)MsgPackHelper.DeSerialise(response.Body, typeof(MessagePackObject))).ToString();
             }
             return JsonConvert.DeserializeObject<List<Stats>>(body, Config.GetJsonSettings());
         }

@@ -43,6 +43,7 @@ namespace IO.Ably
         public static LogLevel LogLevel { get; set; }
 
         public static ILoggerSink LoggerSink { get; set; }
+        public static bool IsDebug => LogLevel == LogLevel.Debug;
 
         static Logger()
         {

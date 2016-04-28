@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
@@ -11,12 +12,12 @@ namespace IO.Ably.Transport.States.Connection
 
         public ConnectionState(IConnectionContext context)
         {
-            this.context = context;
+            this.Context = context;
         }
 
-        protected IConnectionContext context;
+        protected readonly IConnectionContext Context;
 
-        public abstract Realtime.ConnectionState State { get; }
+        public abstract Realtime.ConnectionStateType State { get; }
         public ErrorInfo Error { get; protected set; }
         public int? RetryIn { get; protected set; }
 
@@ -24,18 +25,19 @@ namespace IO.Ably.Transport.States.Connection
 
         public abstract void Connect();
         public abstract void Close();
-        public abstract void OnTransportStateChanged(TransportStateInfo state);
-        public abstract bool OnMessageReceived(ProtocolMessage message);
+        public abstract Task OnTransportStateChanged(TransportStateInfo state);
+        public abstract Task<bool> OnMessageReceived(ProtocolMessage message);
 
-        public virtual void OnAttachedToContext()
+        public virtual Task OnAttachedToContext()
         {
+            return TaskConstants.BooleanTrue;
         }
 
         public virtual void SendMessage(ProtocolMessage message)
         {
             if (CanQueueMessages)
             {
-                context.QueuedMessages.Enqueue(message);
+                Context.QueuedMessages.Enqueue(message);
             }
         }
 
@@ -53,6 +55,11 @@ namespace IO.Ably.Transport.States.Connection
 
             public TransportState State { get; private set; }
             public Exception Error { get; private set; }
+
+            public override string ToString()
+            {
+                return $"State: {State}. Error: {Error}";
+            }
         }
     }
 }

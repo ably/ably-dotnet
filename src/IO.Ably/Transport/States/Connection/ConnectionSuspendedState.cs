@@ -1,4 +1,6 @@
-﻿using IO.Ably.Types;
+﻿using System;
+using System.Threading.Tasks;
+using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
@@ -27,39 +29,43 @@ namespace IO.Ably.Transport.States.Connection
             RetryIn = ConnectTimeout;
         }
 
-        public override Realtime.ConnectionState State => Realtime.ConnectionState.Suspended;
+        public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Suspended;
 
         protected override bool CanQueueMessages => false;
 
         public override void Connect()
         {
-            context.SetState(new ConnectionConnectingState(context));
+            Context.SetState(new ConnectionConnectingState(Context));
         }
 
         public override void Close()
         {
-            context.SetState(new ConnectionClosedState(context));
+            Context.SetState(new ConnectionClosedState(Context));
         }
 
-        public override bool OnMessageReceived(ProtocolMessage message)
+        public override Task<bool> OnMessageReceived(ProtocolMessage message)
         {
             // could not happen
-            return false;
+            Logger.Error("Receiving message in disconected state!");
+            return TaskConstants.BooleanFalse;
         }
 
-        public override void OnTransportStateChanged(TransportStateInfo state)
+        public override Task OnTransportStateChanged(TransportStateInfo state)
         {
             // could not happen
+            Logger.Error("Unexpected state change. " + state);
+            return TaskConstants.BooleanTrue;
         }
 
-        public override void OnAttachedToContext()
+        public override Task OnAttachedToContext()
         {
-            _timer.Start(ConnectTimeout, OnTimeOut);
+            _timer.Start(TimeSpan.FromMilliseconds(ConnectTimeout), OnTimeOut);
+            return TaskConstants.BooleanTrue;
         }
 
         private void OnTimeOut()
         {
-            context.SetState(new ConnectionConnectingState(context));
+            Context.SetState(new ConnectionConnectingState(Context));
         }
     }
 }

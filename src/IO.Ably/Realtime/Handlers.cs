@@ -11,31 +11,29 @@ namespace IO.Ably.Realtime
     {
         private readonly TheSet _set = new TheSet();
 
-        public IEnumerable<IMessageHandler> alive()
+        public IEnumerable<IMessageHandler> GetAliveHandlers()
         {
-            TheSet deadSet = null;
-            foreach (var wr in _set)
+            TheSet deadSet = new TheSet();
+            foreach (var reference in _set)
             {
                 IMessageHandler res;
-                if (wr.TryGetTarget(out res))
+                if (reference.TryGetTarget(out res))
                 {
                     yield return res;
                     continue;
                 }
                 // Dead
-                if (null == deadSet)
-                    deadSet = new TheSet();
-                deadSet.Add(wr);
+                deadSet.Add(reference);
             }
             _set.ExceptWith(deadSet);
         }
 
         /// <summary>Add handler to the collection.</summary>
         /// <param name="handler"></param>
-        public void add(IMessageHandler handler)
+        public void Add(IMessageHandler handler)
         {
-            if (null == handler)
-                throw new ArgumentNullException();
+            if (handler == null)
+                throw new ArgumentNullException(nameof(handler), "Null handlers are not supported");
 
             _set.Add(new WeakReference<IMessageHandler>(handler));
         }
@@ -43,26 +41,26 @@ namespace IO.Ably.Realtime
         /// <summary>Remove handler from the collection.</summary>
         /// <param name="handler"></param>
         /// <returns>True if removed, false if not found.</returns>
-        public bool remove(IMessageHandler handler)
+        public bool Remove(IMessageHandler handler)
         {
-            var found = false;
+            var removed = false;
             var setToRemove = new TheSet();
-            foreach (var wr in _set)
+            foreach (var reference in _set)
             {
                 IMessageHandler res;
-                if (wr.TryGetTarget(out res))
+                if (reference.TryGetTarget(out res))
                 {
                     if (res != handler)
                         continue;
                     // Found the requested handler, and it's alive.
-                    found = true;
-                    setToRemove.Add(wr);
+                    removed = true;
+                    setToRemove.Add(reference);
                 }
                 // Dead
-                setToRemove.Add(wr);
+                setToRemove.Add(reference);
             }
             _set.ExceptWith(setToRemove);
-            return found;
+            return removed;
         }
     }
 }

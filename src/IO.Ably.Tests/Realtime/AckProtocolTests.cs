@@ -1,6 +1,7 @@
 ﻿using States = IO.Ably.Transport.States.Connection;
 using System;
 using System.Collections.Generic;
+using IO.Ably.Realtime;
 using Xunit;
 using Xunit.Extensions;
 using IO.Ably.Transport;
@@ -248,7 +249,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.Connection).Returns(new Realtime.Connection(new Mock<IConnectionManager>().Object));
+            context.SetupGet(c => c.Connection).Returns(new Connection(new Mock<IConnectionManager>().Object));
 
             AcknowledgementProcessor target = new AcknowledgementProcessor();
             ProtocolMessage targetMessage1 = new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test");

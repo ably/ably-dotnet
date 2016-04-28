@@ -1,60 +1,133 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace IO.Ably.Transport.States.Connection
 {
     public interface ICountdownTimer
     {
-        void Start(int countdown, Action onTimeOut);
+        void Start(TimeSpan delay, Action onTimeOut, bool autoReset = false);
+        void StartAsync(TimeSpan delay, Func<Task> onTimeOut, bool autoReset = false);
         void Abort();
     }
 
-    internal delegate void TimerCallback(object state);
+    //internal sealed class Timer : CancellationTokenSource, IDisposable
+    //{
+    //    private readonly Func<Task> _callback;
+    //    private readonly TimeSpan _period;
+    //    private readonly Action _action;
 
-    //TODO: Replace with a .net framework provided timer.
-    internal sealed class Timer : CancellationTokenSource, IDisposable
-    {
-        internal Timer(TimerCallback callback, object state, int dueTime, int period)
-        {
-            // Contract.Assert( period == -1, "This stub implementation only supports dueTime." );
-            Task.Delay(dueTime, Token).ContinueWith((t, s) =>
-            {
-                var tuple = (Tuple<TimerCallback, object>) s;
-                tuple.Item1(tuple.Item2);
-            }, Tuple.Create(callback, state), CancellationToken.None,
-                TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion,
-                TaskScheduler.Default);
-        }
+    //    internal Timer(Func<Task> callback, TimeSpan period)
+    //    {
+    //        if(callback == null)
+    //            throw new ArgumentNullException(nameof(callback));
+    //        if (period == TimeSpan.Zero)
+    //            throw new ArgumentException("Period can't be zero!", nameof(period));
 
-        public new void Dispose()
-        {
-            Cancel();
-        }
-    }
+    //        _callback = callback;
+    //        _period = period;
+    //    }
+
+    //    internal Timer(Action action, TimeSpan period)
+    //    {
+    //        if (action == null)
+    //            throw new ArgumentNullException(nameof(action));
+    //        if (period == TimeSpan.Zero)
+    //            throw new ArgumentException("Period can't be zero!", nameof(period));
+
+    //        _action = action;
+    //        _period = period;
+    //    }
+
+    //    public async Task Start()
+    //    {
+    //        while (!IsCancellationRequested)
+    //        {
+    //            await Task.Delay(_period, Token);
+
+    //            if (!IsCancellationRequested)
+    //            {
+    //                if(_callback != null)
+    //                    await _callback();
+
+    //                _action?.Invoke();
+    //            }
+    //        }
+    //    }
+
+    //    public new void Dispose()
+    //    {
+    //        Cancel();
+    //    }
+    //}
 
     public class CountdownTimer : ICountdownTimer
     {
-        private Timer _timer;
+        private System.Timers.Timer _timer;
+        private Action _onTimeOut;
+        private Func<Task> _onTimeOutFunc;
 
-        public void Start(int countdown, Action onTimeOut)
+        public void Start(TimeSpan delay, Action onTimeOut, bool autoReset = false)
         {
+            if(onTimeOut == null)
+                throw new ArgumentNullException(nameof(onTimeOut));
+
+            _onTimeOut = onTimeOut;
+
             if (_timer != null)
             {
                 Abort();
             }
 
-            _timer = new Timer(o =>
+            _timer = SetupTimer(delay, autoReset);
+            _timer.Start();
+        }
+
+        private System.Timers.Timer SetupTimer(TimeSpan delay, bool autoReset)
+        {
+            var timer = new System.Timers.Timer(delay.TotalMilliseconds);
+            timer.AutoReset = autoReset;
+            timer.Elapsed += OnTimerOnElapsed;
+            return timer;
+        }
+
+        private async void OnTimerOnElapsed(object sender, ElapsedEventArgs args)
+        {
+            try
             {
-                onTimeOut();
-                _timer.Dispose();
-            }, null, countdown, Timeout.Infinite);
+                if (_onTimeOut != null)
+                    _onTimeOut();
+                else
+                {
+                    await _onTimeOutFunc();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error in method called by timer.", ex);
+                throw;
+            }
+        }
+        
+
+        public void StartAsync(TimeSpan delay, Func<Task> onTimeOut, bool autoReset = false)
+        {
+
+            if (_timer != null)
+            {
+                Abort();
+            }
+
+            _timer = SetupTimer(delay, autoReset);
+            _timer.Start();
         }
 
         public void Abort()
         {
             if (_timer != null)
             {
+                _timer.Stop();
                 _timer.Dispose();
                 _timer = null;
             }

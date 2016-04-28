@@ -1,4 +1,5 @@
-﻿using IO.Ably.Types;
+﻿using System.Threading.Tasks;
+using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
@@ -15,13 +16,13 @@ namespace IO.Ably.Transport.States.Connection
             Error = error ?? ErrorInfo.ReasonClosed;
         }
 
-        public override Realtime.ConnectionState State => Realtime.ConnectionState.Closed;
+        public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Closed;
 
         protected override bool CanQueueMessages => false;
 
         public override void Connect()
         {
-            context.SetState(new ConnectionConnectingState(context));
+            Context.SetState(new ConnectionConnectingState(Context));
         }
 
         public override void Close()
@@ -29,22 +30,25 @@ namespace IO.Ably.Transport.States.Connection
             // do nothing
         }
 
-        public override bool OnMessageReceived(ProtocolMessage message)
+        public override Task<bool> OnMessageReceived(ProtocolMessage message)
         {
             // could not happen
-            return false;
+            return TaskConstants.BooleanFalse;
         }
 
-        public override void OnTransportStateChanged(TransportStateInfo state)
+        public override Task OnTransportStateChanged(TransportStateInfo state)
         {
             // could not happen
+            return TaskConstants.BooleanTrue;
         }
 
-        public override void OnAttachedToContext()
+        public override Task OnAttachedToContext()
         {
             // This is a terminal state. Clear the transport.
-            context.DestroyTransport();
-            context.Connection.Key = null;
+            Context.DestroyTransport();
+            Context.Connection.Key = null;
+
+            return TaskConstants.BooleanTrue;
         }
     }
 }

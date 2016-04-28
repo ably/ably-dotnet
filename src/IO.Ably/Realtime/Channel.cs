@@ -12,27 +12,22 @@ namespace IO.Ably.Realtime
     /// <summary>Implement realtime channel.</summary>
     internal class RealtimeChannel : IRealtimeChannel
     {
-        private readonly IConnectionManager connection;
-        private readonly Handlers handlersAll = new Handlers();
-        private readonly Dictionary<string, Handlers> handlersSpecific = new Dictionary<string, Handlers>();
+        private readonly IConnectionManager _connection;
+        private readonly Handlers _handlers = new Handlers();
+        private readonly Dictionary<string, Handlers> _specificHandlers = new Dictionary<string, Handlers>();
 
-        /// <summary>A lock object to protect queued messages</summary>
-        private readonly object lockQueue = new object();
+        private readonly object _lockQueue = new object();
 
-        /// <summary>
-        ///     A lock object to protect subscribers. Only locked while subscribing, unsubscribing, or receiving those
-        ///     messages.
-        /// </summary>
-        private readonly object lockSubscribers = new object();
+        private readonly object _lockSubscribers = new object();
 
-        private List<QueuedProtocolMessage> queuedMessages;
+        private List<QueuedProtocolMessage> _queuedMessages;
 
         internal RealtimeChannel(string name, string clientId, IConnectionManager connection)
         {
             Name = name;
             Presence = new Presence(connection, this, clientId);
-            this.connection = connection;
-            this.connection.MessageReceived += OnConnectionMessageReceived;
+            _connection = connection;
+            _connection.MessageReceived += OnConnectionMessageReceived;
         }
 
         public event EventHandler<ChannelStateChangedEventArgs> ChannelStateChanged;
@@ -62,13 +57,13 @@ namespace IO.Ably.Realtime
                 return;
             }
 
-            if (!connection.IsActive)
+            if (!_connection.IsActive)
             {
-                connection.Connect();
+                _connection.Connect();
             }
 
             SetChannelState(ChannelState.Attaching);
-            connection.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name), null);
+            _connection.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name), null);
         }
 
         /// <summary>
@@ -89,34 +84,34 @@ namespace IO.Ably.Realtime
             }
 
             SetChannelState(ChannelState.Detaching);
-            connection.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name), null);
+            _connection.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name), null);
         }
 
         public void Subscribe(IMessageHandler handler)
         {
-            lock (lockSubscribers)
-                handlersAll.add(handler);
+            lock (_lockSubscribers)
+                _handlers.Add(handler);
         }
 
         public void Subscribe(string eventName, IMessageHandler handler)
         {
-            lock (lockSubscribers)
+            lock (_lockSubscribers)
             {
                 Handlers handlers;
-                if (!handlersSpecific.TryGetValue(eventName, out handlers))
+                if (!_specificHandlers.TryGetValue(eventName, out handlers))
                 {
                     handlers = new Handlers();
-                    handlersSpecific.Add(eventName, handlers);
+                    _specificHandlers.Add(eventName, handlers);
                 }
-                handlers.add(handler);
+                handlers.Add(handler);
             }
         }
 
         public void Unsubscribe(IMessageHandler handler)
         {
-            lock (lockSubscribers)
+            lock (_lockSubscribers)
             {
-                if (handlersAll.remove(handler))
+                if (_handlers.Remove(handler))
                     return;
             }
             Logger.Warning("Unsubscribe failed: was not subscribed");
@@ -124,11 +119,11 @@ namespace IO.Ably.Realtime
 
         public void Unsubscribe(string eventName, IMessageHandler handler)
         {
-            lock (lockSubscribers)
+            lock (_lockSubscribers)
             {
                 Handlers handlers;
-                if (handlersSpecific.TryGetValue(eventName, out handlers))
-                    if (handlers.remove(handler))
+                if (_specificHandlers.TryGetValue(eventName, out handlers))
+                    if (handlers.Remove(handler))
                         return;
             }
             Logger.Warning("Unsubscribe failed: was not subscribed");
@@ -171,18 +166,18 @@ namespace IO.Ably.Realtime
             if (State == ChannelState.Initialized || State == ChannelState.Attaching)
             {
                 // Not connected, queue the message
-                lock (lockQueue)
+                lock (_lockQueue)
                 {
-                    if (null == queuedMessages)
-                        queuedMessages = new List<QueuedProtocolMessage>(16);
-                    queuedMessages.Add(new QueuedProtocolMessage(msg, callback));
+                    if (null == _queuedMessages)
+                        _queuedMessages = new List<QueuedProtocolMessage>(16);
+                    _queuedMessages.Add(new QueuedProtocolMessage(msg, callback));
                     return;
                 }
             }
             if (State == ChannelState.Attached)
             {
                 // Connected, send right now
-                connection.Send(msg, callback);
+                _connection.Send(msg, callback);
                 return;
             }
 
@@ -236,15 +231,15 @@ namespace IO.Ably.Realtime
         {
             foreach (var msg in message.messages)
             {
-                lock (lockSubscribers)
+                lock (_lockSubscribers)
                 {
-                    foreach (var h in handlersAll.alive())
+                    foreach (var h in _handlers.GetAliveHandlers())
                         h.Handle(msg);
 
                     Handlers handlers;
-                    if (!handlersSpecific.TryGetValue(msg.name, out handlers))
+                    if (!_specificHandlers.TryGetValue(msg.name, out handlers))
                         continue;
-                    foreach (var h in handlers.alive())
+                    foreach (var h in handlers.GetAliveHandlers())
                         h.Handle(msg);
                 }
             }
@@ -253,18 +248,18 @@ namespace IO.Ably.Realtime
         private int SendQueuedMessages()
         {
             List<QueuedProtocolMessage> list = null;
-            lock (lockQueue)
+            lock (_lockQueue)
             {
-                if (null == queuedMessages || queuedMessages.Count <= 0)
+                if (_queuedMessages == null || _queuedMessages.Count <= 0)
                     return 0;
 
                 // Swap the list.
-                list = queuedMessages;
-                queuedMessages = null;
+                list = _queuedMessages;
+                _queuedMessages = null;
             }
 
             foreach (var qpm in list)
-                connection.Send(qpm.message, qpm.callback);
+                _connection.Send(qpm.message, qpm.callback);
             return list.Count;
         }
 

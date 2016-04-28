@@ -64,7 +64,7 @@ namespace IO.Ably.AcceptanceTests
             }
 
             [Theory]
-            [MemberData("SupportedMessages")]
+            [MemberData(nameof(SupportedMessages))]
             [Trait("spec", "RSL4a")]
             public async Task PublishSupportedMessages(Message message, string encoding)
             {

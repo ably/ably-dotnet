@@ -1,4 +1,6 @@
-﻿using IO.Ably.Types;
+﻿using System;
+using System.Threading.Tasks;
+using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
@@ -24,7 +26,7 @@ namespace IO.Ably.Transport.States.Connection
             Error = error ?? ErrorInfo.ReasonClosed;
         }
 
-        public override Realtime.ConnectionState State => Realtime.ConnectionState.Closing;
+        public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Closing;
 
         protected override bool CanQueueMessages => false;
 
@@ -38,53 +40,56 @@ namespace IO.Ably.Transport.States.Connection
             // do nothing
         }
 
-        public override bool OnMessageReceived(ProtocolMessage message)
+        public override Task<bool> OnMessageReceived(ProtocolMessage message)
         {
             switch (message.action)
             {
                 case ProtocolMessage.MessageAction.Closed:
-                {
-                    TransitionState(new ConnectionClosedState(context));
-                    return true;
-                }
+                    {
+                        TransitionState(new ConnectionClosedState(Context));
+                        return TaskConstants.BooleanTrue;
+                    }
                 case ProtocolMessage.MessageAction.Disconnected:
-                {
-                    TransitionState(new ConnectionDisconnectedState(context, message.error));
-                    return true;
-                }
+                    {
+                        TransitionState(new ConnectionDisconnectedState(Context, message.error));
+                        return TaskConstants.BooleanTrue;
+                    }
                 case ProtocolMessage.MessageAction.Error:
-                {
-                    TransitionState(new ConnectionFailedState(context, message.error));
-                    return true;
-                }
+                    {
+                        TransitionState(new ConnectionFailedState(Context, message.error));
+                        return TaskConstants.BooleanTrue;
+                    }
             }
-            return false;
+            return TaskConstants.BooleanFalse;
         }
 
-        public override void OnTransportStateChanged(TransportStateInfo state)
+        public override Task OnTransportStateChanged(TransportStateInfo state)
         {
             if (state.State == TransportState.Closed)
             {
-                TransitionState(new ConnectionClosedState(context));
+                TransitionState(new ConnectionClosedState(Context));
             }
+            return TaskConstants.BooleanTrue;
         }
 
-        public override void OnAttachedToContext()
+        public override Task OnAttachedToContext()
         {
-            if (context.Transport.State == TransportState.Connected)
+            if (Context.Transport.State == TransportState.Connected)
             {
-                context.Transport.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
-                _timer.Start(CloseTimeout, () => context.SetState(new ConnectionClosedState(context)));
+                Context.Transport.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
+                _timer.Start(TimeSpan.FromMilliseconds(CloseTimeout), () => Context.SetState(new ConnectionClosedState(Context)));
+                
             }
             else
             {
-                context.SetState(new ConnectionClosedState(context));
+                Context.SetState(new ConnectionClosedState(Context));
             }
+            return TaskConstants.BooleanTrue;
         }
 
         private void TransitionState(ConnectionState newState)
         {
-            context.SetState(newState);
+            Context.SetState(newState);
             _timer.Abort();
         }
     }

@@ -13,7 +13,7 @@ namespace IO.Ably.Tests.AuthTests
         public void TokenShouldNotBeSetBeforeAuthoriseIsCalled()
         {
             var client = GetRestClient();
-            client.Auth.CurrentToken.Should().BeNull();
+            client.AblyAuth.CurrentToken.Should().BeNull();
         }
 
         [Fact]
@@ -24,7 +24,7 @@ namespace IO.Ably.Tests.AuthTests
 
             var token = await client.Auth.Authorise();
 
-            Assert.Same(client.Auth.CurrentToken, token);
+            Assert.Same(client.AblyAuth.CurrentToken, token);
         }
 
         [Fact]
@@ -61,7 +61,7 @@ namespace IO.Ably.Tests.AuthTests
         {
             var client = GetRestClient();
             var initialToken = new TokenDetails() { Expires = Config.Now().AddHours(1) };
-            client.Auth.CurrentToken = initialToken;
+            client.AblyAuth.CurrentToken = initialToken;
 
             var token = await client.Auth.Authorise(new TokenParams() { ClientId = "123", Capability = new Capability() }, new AuthOptions { Force = true});
 
@@ -75,7 +75,7 @@ namespace IO.Ably.Tests.AuthTests
         {
             var client = GetRestClient();
             var initialToken = new TokenDetails() { Expires = Config.Now().AddHours(-1) };
-            client.Auth.CurrentToken = initialToken;
+            client.AblyAuth.CurrentToken = initialToken;
 
             var token = await client.Auth.Authorise();
             ;
@@ -92,7 +92,7 @@ namespace IO.Ably.Tests.AuthTests
         {
             var client = GetRestClient();
             var initialToken = new TokenDetails() { Expires = Now.AddSeconds(secondsLeftToExpire) };
-            client.Auth.CurrentToken = initialToken;
+            client.AblyAuth.CurrentToken = initialToken;
 
             var token = await client.Auth.Authorise();
 

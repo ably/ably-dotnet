@@ -20,7 +20,7 @@ namespace IO.Ably.Transport
         public string ConnectionKey { get; private set; }
     }
 
-    public delegate void StateChangedDelegate(ConnectionState state, ConnectionInfo info, ErrorInfo error);
+    public delegate void StateChangedDelegate(ConnectionStateType state, ConnectionInfo info, ErrorInfo error);
 
     public delegate void MessageReceivedDelegate(ProtocolMessage message);
 
@@ -28,7 +28,7 @@ namespace IO.Ably.Transport
     {
         Connection Connection { get; }
 
-        ConnectionState ConnectionState { get; }
+        ConnectionStateType ConnectionState { get; }
 
         bool IsActive { get; }
         event MessageReceivedDelegate MessageReceived;
@@ -47,14 +47,16 @@ namespace IO.Ably.Transport
     {
         States.Connection.ConnectionState State { get; }
         ITransport Transport { get; }
+        AblyRest RestClient { get; }
         Queue<ProtocolMessage> QueuedMessages { get; }
         Connection Connection { get; }
         DateTimeOffset? FirstConnectionAttempt { get; }
         int ConnectionAttempts { get; }
         void SetState(States.Connection.ConnectionState state);
-        void CreateTransport(bool useFallbackHost);
+        Task CreateTransport();
         void DestroyTransport();
         void AttemptConnection();
         void ResetConnectionAttempts();
+        Task<bool> CanConnectToAbly();
     }
 }

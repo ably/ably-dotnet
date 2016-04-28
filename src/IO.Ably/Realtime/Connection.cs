@@ -8,7 +8,7 @@ namespace IO.Ably.Realtime
     /// </summary>
     public class Connection : IDisposable
     {
-        private readonly IConnectionManager manager;
+        private readonly IConnectionManager _manager;
 
         internal Connection()
         {
@@ -16,30 +16,30 @@ namespace IO.Ably.Realtime
 
         internal Connection(IConnectionManager manager)
         {
-            this.manager = manager;
-            State = this.manager.ConnectionState;
+            _manager = manager;
+            State = _manager.ConnectionState;
         }
 
         /// <summary>
         ///     Indicates the current state of this connection.
         /// </summary>
-        public virtual ConnectionState State { get; private set; }
+        public virtual ConnectionStateType State { get; private set; }
 
         /// <summary>
         ///     The id of the current connection. This string may be
         ///     used when recovering connection state.
         /// </summary>
-        public virtual string Id { get; internal set; }
+        public string Id { get; internal set; }
 
         /// <summary>
         ///     The serial number of the last message received on this connection.
         ///     The serial number may be used when recovering connection state.
         /// </summary>
-        public virtual long Serial { get; internal set; }
+        public long Serial { get; internal set; }
 
         /// <summary>
         /// </summary>
-        public virtual string Key { get; internal set; }
+        public string Key { get; internal set; }
 
         /// <summary>
         ///     Information relating to the transition to the current state,
@@ -62,37 +62,32 @@ namespace IO.Ably.Realtime
         /// </summary>
         public void Connect()
         {
-            manager.Connect();
+            _manager.Connect();
         }
 
         /// <summary>
         /// </summary>
         public Task Ping()
         {
-            return manager.Ping();
+            return _manager.Ping();
         }
 
         /// <summary>
-        ///     Causes the connection to close, entering the <see cref="ConnectionState.Closed" /> state. Once closed,
+        ///     Causes the connection to close, entering the <see cref="ConnectionStateType.Closed" /> state. Once closed,
         ///     the library will not attempt to re-establish the connection without a call
         ///     to <see cref="Connect()" />.
         /// </summary>
         public void Close()
         {
-            manager.Close();
+            _manager.Close();
         }
 
-        internal void OnStateChanged(ConnectionState state, ErrorInfo error = null, int retryin = -1)
+        internal void OnStateChanged(ConnectionStateType state, ErrorInfo error = null, int retryin = -1)
         {
             var oldState = State;
             State = state;
             Reason = error;
-            var eh = ConnectionStateChanged;
-            if (null != eh)
-            {
-                // TODO: Add proper arguments in Connection.ConnectionStateChanged
-                eh(this, new ConnectionStateChangedEventArgs(oldState, state, retryin, error));
-            }
+            ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(oldState, state, retryin, error));
         }
     }
 }

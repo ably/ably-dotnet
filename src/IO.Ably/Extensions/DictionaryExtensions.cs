@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 
 namespace IO.Ably
 {
@@ -17,6 +18,14 @@ namespace IO.Ably
             if (dictionary.ContainsKey(key))
                 return dictionary[key];
             return defaultValue;
+        }
+
+        public static string ToQueryString(this Dictionary<string,string> @params)
+        {
+            if (@params == null || @params.Count == 0)
+                return "";
+
+            return string.Join("&", @params.Select(x => $"{WebUtility.UrlEncode(x.Key)}={WebUtility.UrlEncode(x.Value)}"));
         }
         
         public static Dictionary<string, string> Merge(this Dictionary<string, string> first, Dictionary<string, string> second)

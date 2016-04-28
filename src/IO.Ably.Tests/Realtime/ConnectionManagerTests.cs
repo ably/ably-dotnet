@@ -6,25 +6,27 @@ using System.Linq;
 using Xunit;
 using System.Net;
 using System.Threading.Tasks;
+using FluentAssertions;
+using IO.Ably.Auth;
 using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
-using ConnectionState = IO.Ably.Realtime.ConnectionState;
+using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
     //Temporarily made private to fix the Rest unit tests first
-    class ConnectionManagerTests
+    class ConnectionManagerTests : AblySpecs
     {
         [Fact]
         public void When_Created_StateIsInitialized()
         {
             // Arrange
-            IConnectionContext target = new ConnectionManager(new ClientOptions());
+            IConnectionContext target = new ConnectionManager(new ClientOptions(), null);
 
             // Assert
-            Assert.Equal<ConnectionState>(ConnectionState.Initialized, target.State.State);
+            Assert.Equal<ConnectionStateType>(ConnectionStateType.Initialized, target.State.State);
         }
 
         [Theory]
@@ -50,7 +52,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<ITransport> transport = new Mock<ITransport>();
             transport.SetupProperty(c => c.Listener);
-            ConnectionManager manager = new ConnectionManager(transport.Object, new AcknowledgementProcessor(), new ConnectionInitializedState(null));
+            ConnectionManager manager = new ConnectionManager(transport.Object, new AcknowledgementProcessor(), new ConnectionInitializedState(null), GetRestClient());
             List<ProtocolMessage> res = new List<ProtocolMessage>();
             manager.MessageReceived += (message) => res.Add(message);
             ProtocolMessage target = new ProtocolMessage(action);
@@ -73,7 +75,7 @@ namespace IO.Ably.Tests
             transport.SetupGet(c => c.State).Returns(TransportState.Closing);
             transport.SetupProperty(c => c.Listener);
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
+            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object, GetRestClient());
 
             // Act
             transport.Object.Listener.OnTransportConnected();
@@ -91,7 +93,7 @@ namespace IO.Ably.Tests
             transport.SetupGet(c => c.State).Returns(TransportState.Closing);
             transport.SetupProperty(c => c.Listener);
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
+            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object, GetRestClient());
 
             // Act
             transport.Object.Listener.OnTransportDisconnected();
@@ -110,7 +112,7 @@ namespace IO.Ably.Tests
             transport.SetupGet(c => c.State).Returns(TransportState.Closed);
             transport.SetupProperty(c => c.Listener);
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
+            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object, GetRestClient());
             Exception targetError = new Exception("test");
 
             // Act
@@ -130,7 +132,7 @@ namespace IO.Ably.Tests
             transport.SetupGet(c => c.State).Returns(TransportState.Closed);
             transport.SetupProperty(c => c.Listener);
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
+            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object, GetRestClient());
             ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
 
             // Act
@@ -147,7 +149,7 @@ namespace IO.Ably.Tests
             Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
+            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object, GetRestClient());
 
             // Act
             target.Connect();
@@ -163,7 +165,7 @@ namespace IO.Ably.Tests
             Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
+            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object, GetRestClient());
 
             // Act
             target.Close();
@@ -179,7 +181,7 @@ namespace IO.Ably.Tests
             Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
+            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object, GetRestClient());
             ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
 
             // Act
@@ -196,7 +198,7 @@ namespace IO.Ably.Tests
             Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            IConnectionContext target = new ConnectionManager(transport.Object, ackProcessor.Object, new ConnectionInitializedState(null));
+            IConnectionContext target = new ConnectionManager(transport.Object, ackProcessor.Object, new ConnectionInitializedState(null), GetRestClient());
             ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
 
             // Act
@@ -219,7 +221,7 @@ namespace IO.Ably.Tests
             transport.SetupGet(c => c.State).Returns(TransportState.Closed);
             transport.SetupProperty(c => c.Listener);
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
+            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object, GetRestClient());
             ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
 
             // Act
@@ -236,7 +238,7 @@ namespace IO.Ably.Tests
             Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            IConnectionContext target = new ConnectionManager(transport.Object, ackProcessor.Object, new ConnectionInitializedState(null));
+            IConnectionContext target = new ConnectionManager(transport.Object, ackProcessor.Object, new ConnectionInitializedState(null), GetRestClient());
             ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
 
             // Act
@@ -253,7 +255,7 @@ namespace IO.Ably.Tests
             Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
             Mock<ITransport> transport = new Mock<ITransport>();
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
+            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object, GetRestClient());
             ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
             Action<bool, ErrorInfo> targetAction = (b, e) => { };
 
@@ -276,7 +278,7 @@ namespace IO.Ably.Tests
                 .Callback(() => { if (firstCall == null) firstCall = "ack"; });
             state.Setup(c => c.SendMessage(It.IsAny<ProtocolMessage>()))
                 .Callback(() => { if (firstCall == null) firstCall = "state"; });
-            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
+            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object, GetRestClient());
             ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
             Action<bool, ErrorInfo> targetAction = (b, e) => { };
 
@@ -289,300 +291,177 @@ namespace IO.Ably.Tests
 
         #endregion
 
-        [Fact]
-        public void CreateCorrectTransportParameters_UsesConnectionKey()
+        public class TransportParameterTests : AblySpecs
         {
-            // Arrange
-            ClientOptions options = new ClientOptions();
-            Mock<Connection> connection = new Mock<Connection>();
-            connection.SetupProperty(c => c.Key, "123");
+            private FakeAuth _fakeAuth;
+            private TransportParams _params;
+            private Dictionary<string, string> _queryParams; 
+            public TransportParameterTests(ITestOutputHelper output) : base(output)
+            {
+                _fakeAuth = new FakeAuth();
+            }
 
-            // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options, connection.Object, false);
+            private async Task Create(ClientOptions options = null, string connectionKey = null, long? connectionSerial = null)
+            {
+                options = options ?? new ClientOptions();
+                _params = await TransportParams.Create(_fakeAuth, options, connectionKey, connectionSerial);
+                _queryParams = _params.GetParams();
+            }
 
-            // Assert
-            Assert.Equal<string>("123", target.ConnectionKey);
+            [Fact]
+            public async Task ShouldUseCorrectKey()
+            {
+                // Arrange
+                await Create(connectionKey: "123");
+
+                // Assert
+                _params.ConnectionKey.Should().Be("123");
+            }
+
+            [Fact]
+            public async Task ShouldUseCorrectSerial()
+            {
+                // Arrange
+                await Create(connectionSerial: 123);
+
+                // Assert
+                _params.ConnectionSerial.Should().Be(123);
+            }
+
+            [Fact]
+            public async Task ShouldSetDefaultHost()
+            {
+                // Arrange
+                await Create();
+
+                // Assert
+                _params.Host.Should().Be(Defaults.RealtimeHost);
+            }
+
+            [Fact]
+            public async Task When_HostSetInOptions_ShouldHaveCorrectHost()
+            {
+                // Arrange
+                ClientOptions options = new ClientOptions();
+                options.RealtimeHost = "test.test.com";
+                await Create(options);
+
+                _params.Host.Should().Be("test.test.com");
+            }
+
+            [Theory]
+            [InlineData(AblyEnvironment.Sandbox)]
+            [InlineData(AblyEnvironment.Uat)]
+            public async Task When_EnvironmentSetInOptions_CreateCorrectTransportParameters(AblyEnvironment environment)
+            {
+                // Arrange
+                ClientOptions options = new ClientOptions();
+                options.Environment = environment;
+                options.RealtimeHost = "test";
+                await Create(options);
+
+                // Assert
+                Assert.Equal<string>(string.Format("{0}-{1}", environment, options.RealtimeHost).ToLower(), _params.Host);
+            }
+
+            
+            [Fact]
+            public async Task When_EnvironmentSetInOptions_Live_FallbackDoesNotModifyIt()
+            {
+                // Arrange
+                ClientOptions options = new ClientOptions();
+                options.Environment = AblyEnvironment.Live;
+                options.RealtimeHost = "test";
+                await Create(options);
+
+                // Assert
+                Assert.Equal<string>(options.RealtimeHost, _params.Host);
+            }
+
+            [Fact]
+            public async Task WithBasicAuth_ShouldAddKeyToQuery()
+            {
+                _fakeAuth.AuthMethod = AuthMethod.Basic;
+                await Create(new ClientOptions(ValidKey));
+
+                _queryParams["key"].Should().Be(ValidKey);
+            }
+
+            [Fact]
+            public async Task WithTokenAuth_ShouldAddAccessTokenToQuery()
+            {
+                // Arrange
+                _fakeAuth.AuthMethod = AuthMethod.Token;
+                _fakeAuth.CurrentToken = new TokenDetails("123");
+                await Create();
+
+                //Assert
+                _queryParams["access_token"].Should().Be("123");
+            }
+
+            [Fact]
+            public async Task WithUseBinaryProtocol_ShouldAddMsgPackFormatToQuery()
+            {
+                // Arrange
+                await Create(new ClientOptions() { UseBinaryProtocol = true});
+
+                _queryParams["format"].Should().Be("msgpack");
+            }
+
+            [Fact]
+            public async Task WithUseBinaryProtocolFalse_ShouldNotAddFormatToQuery()
+            {
+                // Arrange
+                await Create(new ClientOptions() {UseBinaryProtocol = false});
+                // Act
+
+                _queryParams.Should().NotContain("format", "");
+            }
+
+            [Fact]
+            public async Task WithConnectionKey_ShouldSetResumeToQuery()
+            {
+                // Arrange
+                string target = "123456789";
+                await Create(null, target);
+
+                _queryParams["resume"].Should().Be(target);
+            }
+
+            [Fact]
+            public async Task WithConnectionKeyAndSerial_ShouldSetCorrectQueryValues()
+            {
+                // Arrange
+                string target = "123456789";
+                await Create(null, "123", 123456);
+
+                // Assert
+                _queryParams["connection_serial"].Should().Be("123456");
+            }
+
+            [Fact]
+            public async Task WithRecoverOption_ShouldSetRecoverConnectionSerialToQuery()
+            {
+                // Arrange
+                string target = "test-:123";
+                await Create(new ClientOptions() {Recover = target});
+
+                _queryParams["recover"].Should().Be("test-");
+                _queryParams["connection_serial"].Should().Be("123");
+            }
+
+            [Fact]
+            public async Task WithClientId_ShouldAddClientIdToQuery()
+            {
+                // Arrange
+                string target = "test123";
+                await Create(new ClientOptions() {ClientId = "tast123"});
+
+                // Assert
+                _queryParams["clientId"].Should().Be("test123");
+            }
         }
-
-        [Fact]
-        public void CreateCorrectTransportParameters_UsesConnectionSerial()
-        {
-            // Arrange
-            ClientOptions options = new ClientOptions();
-            Mock<Connection> connection = new Mock<Connection>();
-            connection.SetupProperty(c => c.Serial, 123);
-
-            // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options, connection.Object, false);
-
-            // Assert
-            Assert.Equal<string>("123", target.ConnectionSerial);
-        }
-
-        [Fact]
-        public void CreateCorrectTransportParameters_UsesDefaultHost()
-        {
-            // Arrange
-            ClientOptions options = new ClientOptions();
-
-            // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options, null, false);
-
-            // Assert
-            Assert.Equal<string>(Defaults.RealtimeHost, target.Host);
-        }
-
-        [Fact]
-        public void CreateCorrectTransportParameters_Fallback_UsesFallbacktHost()
-        {
-            // Arrange
-            ClientOptions options = new ClientOptions();
-
-            // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options, null, true);
-
-            // Assert
-            Assert.True(Defaults.FallbackHosts.Contains(target.Host));
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void When_HostSetInOptions_CreateTransportParameters_DoesNotModifyIt(bool fallback)
-        {
-            // Arrange
-            ClientOptions options = new ClientOptions();
-            options.RealtimeHost= "http://test";
-
-            // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options, null, fallback);
-
-            // Assert
-            Assert.Equal<string>(options.RealtimeHost, target.Host);
-        }
-
-        [Theory]
-        [InlineData(AblyEnvironment.Sandbox)]
-        [InlineData(AblyEnvironment.Uat)]
-        public void When_EnvironmentSetInOptions_CreateCorrectTransportParameters(AblyEnvironment environment)
-        {
-            // Arrange
-            ClientOptions options = new ClientOptions();
-            options.Environment = environment;
-            options.RealtimeHost = "test";
-
-            // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options, null, false);
-
-            // Assert
-            Assert.Equal<string>(string.Format("{0}-{1}", environment, options.RealtimeHost).ToLower(), target.Host);
-        }
-
-        [Theory]
-        [InlineData(AblyEnvironment.Sandbox)]
-        [InlineData(AblyEnvironment.Uat)]
-        public void When_EnvironmentSetInOptions_CreateCorrectTransportParameters_Fallback(AblyEnvironment environment)
-        {
-            // Arrange
-            ClientOptions options = new ClientOptions();
-            options.Environment = environment;
-            options.RealtimeHost = "test";
-
-            // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options, null, true);
-
-            // Assert
-            Assert.Equal<string>(string.Format("{0}-{1}", environment, options.RealtimeHost).ToLower(), target.Host);
-        }
-
-        [Fact]
-        public void When_EnvironmentSetInOptions_Live_CreateCorrectTransportParameters()
-        {
-            // Arrange
-            ClientOptions options = new ClientOptions();
-            options.Environment = AblyEnvironment.Live;
-            options.RealtimeHost = "test";
-
-            // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options, null, false);
-
-            // Assert
-            Assert.Equal<string>(options.RealtimeHost, target.Host);
-        }
-
-        [Fact]
-        public void When_EnvironmentSetInOptions_Live_FallbackDoesNotModifyIt()
-        {
-            // Arrange
-            ClientOptions options = new ClientOptions();
-            options.Environment = AblyEnvironment.Live;
-            options.RealtimeHost = "test";
-
-            // Act
-            TransportParams target = ConnectionManager.CreateTransportParameters(options, null, true);
-
-            // Assert
-            Assert.Equal<string>(options.RealtimeHost, target.Host);
-        }
-
-        [Fact]
-        public void StoreTransportParams_Key()
-        {
-            string target = "123.456:789";
-            TransportParams parameters = new TransportParams( new ClientOptions( target ) );
-            var table = new System.Net.WebHeaderCollection();
-
-            parameters.StoreParams( table );
-
-            Assert.Equal<string>( target, WebUtility.UrlDecode( table[ "key" ] ) );
-        }
-
-        [Fact]
-        public void StoreTransportParams_Token()
-        {
-            // Arrange
-            string target = "afafmasfasmsafnqwqff";
-            TransportParams parameters = new TransportParams(new ClientOptions() { Token = target });
-            var table = new System.Net.WebHeaderCollection();
-
-            // Act
-            parameters.StoreParams(table);
-
-            // Assert
-            Assert.Equal<string>(target, table["access_token"]);
-        }
-
-        [Fact]
-        public void StoreTransportParams_Format_MsgPack()
-        {
-            // Arrange
-            TransportParams parameters = new TransportParams(new ClientOptions() { UseBinaryProtocol = true });
-            var table = new System.Net.WebHeaderCollection();
-
-            // Act
-            parameters.StoreParams(table);
-
-            // Assert
-            Assert.Equal<string>("msgpack", table["format"]);
-        }
-
-        [Fact]
-        public void StoreTransportParams_Format_Text()
-        {
-            // Arrange
-            TransportParams parameters = new TransportParams(new ClientOptions() { UseBinaryProtocol = false });
-            var table = new System.Net.WebHeaderCollection();
-            // Act
-            parameters.StoreParams(table);
-
-            // Assert
-            Assert.Null(table["format"]);
-        }
-
-        [Fact]
-        public void StoreTransportParams_Resume()
-        {
-            // Arrange
-            string target = "123456789";
-            TransportParams parameters = new TransportParams(new ClientOptions()) { ConnectionKey = target };
-            var table = new System.Net.WebHeaderCollection();
-
-            // Act
-            parameters.StoreParams(table);
-
-            // Assert
-            Assert.Equal<Mode>(Mode.Resume, parameters.Mode);
-        }
-
-        [Fact]
-        public void StoreTransportParams_Resume_Key()
-        {
-            // Arrange
-            string target = "123456789";
-            TransportParams parameters = new TransportParams(new ClientOptions()) { ConnectionKey = target };
-            var table = new System.Net.WebHeaderCollection();
-
-            // Act
-            parameters.StoreParams(table);
-
-            // Assert
-            Assert.Equal<string>(target, table["resume"]);
-        }
-
-        [Fact]
-        public void StoreTransportParams_Resume_Serial()
-        {
-            // Arrange
-            string target = "123456789";
-            TransportParams parameters = new TransportParams(new ClientOptions()) { ConnectionKey = "123", ConnectionSerial = target };
-            var table = new System.Net.WebHeaderCollection();
-
-            // Act
-            parameters.StoreParams(table);
-
-            // Assert
-            Assert.Equal<string>(target, table["connection_serial"]);
-        }
-
-        [Fact]
-        public void StoreTransportParams_Recover()
-        {
-            // Arrange
-            string target = "test-:123";
-            TransportParams parameters = new TransportParams(new ClientOptions() { Recover = target });
-            var table = new System.Net.WebHeaderCollection();
-
-            // Act
-            parameters.StoreParams(table);
-
-            // Assert
-            Assert.Equal<Mode>(Mode.Recover, parameters.Mode);
-        }
-
-        [Fact]
-        public void StoreTransportParams_Recover_Key()
-        {
-            // Arrange
-            string target = "test-:123";
-            TransportParams parameters = new TransportParams(new ClientOptions() { Recover = target });
-            var table = new System.Net.WebHeaderCollection();
-
-            // Act
-            parameters.StoreParams(table);
-
-            // Assert
-            Assert.Equal<string>("test-", table["recover"]);
-        }
-
-        [Fact]
-        public void StoreTransportParams_Recover_Serial()
-        {
-            // Arrange
-            string target = "test-:123";
-            TransportParams parameters = new TransportParams(new ClientOptions() { Recover = target });
-            var table = new System.Net.WebHeaderCollection();
-
-            // Act
-            parameters.StoreParams(table);
-
-            // Assert
-            Assert.Equal<string>("123", table["connection_serial"]);
-        }
-
-        [Fact]
-        public void StoreTransportParams_ClientID()
-        {
-            // Arrange
-            string target = "test123";
-            TransportParams parameters = new TransportParams(new ClientOptions() { ClientId = target });
-            var table = new System.Net.WebHeaderCollection();
-
-            // Act
-            parameters.StoreParams(table);
-
-            // Assert
-            Assert.Equal<string>(target, table["client_id"]);
-        }
+        
 
         #region Connection
 
@@ -593,8 +472,8 @@ namespace IO.Ably.Tests
             Mock<ITransport> mock = new Mock<ITransport>();
             Mock<IAcknowledgementProcessor> ackmock = new Mock<IAcknowledgementProcessor>();
             Mock<States.ConnectionState> state = new Mock<States.ConnectionState>();
-            state.Setup(c => c.State).Returns(ConnectionState.Connected);
-            ConnectionManager target = new ConnectionManager(mock.Object, ackmock.Object, state.Object);
+            state.Setup(c => c.State).Returns(ConnectionStateType.Connected);
+            ConnectionManager target = new ConnectionManager(mock.Object, ackmock.Object, state.Object, GetRestClient());
 
             // Act
             await target.Ping();
@@ -640,7 +519,7 @@ namespace IO.Ably.Tests
             transport.SetupGet(c => c.State).Returns(TransportState.Closed);
             transport.SetupProperty(c => c.Listener);
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
+            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object, GetRestClient());
             ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message) { connectionSerial = 123456 };
 
             // Act
@@ -659,7 +538,7 @@ namespace IO.Ably.Tests
             transport.SetupGet(c => c.State).Returns(TransportState.Closed);
             transport.SetupProperty(c => c.Listener);
             Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object);
+            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object, GetRestClient());
             target.Connection.Serial = 123456;
             ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
 
@@ -674,14 +553,14 @@ namespace IO.Ably.Tests
         #region ConnectionHeartbeatRequest tests
 
         [Theory]
-        [InlineData(ConnectionState.Closed)]
-        [InlineData(ConnectionState.Closing)]
-        [InlineData(ConnectionState.Connecting)]
-        [InlineData(ConnectionState.Disconnected)]
-        [InlineData(ConnectionState.Failed)]
-        [InlineData(ConnectionState.Initialized)]
-        [InlineData(ConnectionState.Suspended)]
-        public void ConnectionHeartbeatRequest_FailsWhenNotConnected(ConnectionState state)
+        [InlineData(ConnectionStateType.Closed)]
+        [InlineData(ConnectionStateType.Closing)]
+        [InlineData(ConnectionStateType.Connecting)]
+        [InlineData(ConnectionStateType.Disconnected)]
+        [InlineData(ConnectionStateType.Failed)]
+        [InlineData(ConnectionStateType.Initialized)]
+        [InlineData(ConnectionStateType.Suspended)]
+        public void ConnectionHeartbeatRequest_FailsWhenNotConnected(ConnectionStateType state)
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
@@ -700,14 +579,14 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [InlineData(ConnectionState.Closed)]
-        [InlineData(ConnectionState.Closing)]
-        [InlineData(ConnectionState.Connecting)]
-        [InlineData(ConnectionState.Disconnected)]
-        [InlineData(ConnectionState.Failed)]
-        [InlineData(ConnectionState.Initialized)]
-        [InlineData(ConnectionState.Suspended)]
-        public void ConnectionHeartbeatRequest_FailsWhenNotConnected_WithNoCallback(ConnectionState state)
+        [InlineData(ConnectionStateType.Closed)]
+        [InlineData(ConnectionStateType.Closing)]
+        [InlineData(ConnectionStateType.Connecting)]
+        [InlineData(ConnectionStateType.Disconnected)]
+        [InlineData(ConnectionStateType.Failed)]
+        [InlineData(ConnectionStateType.Initialized)]
+        [InlineData(ConnectionStateType.Suspended)]
+        public void ConnectionHeartbeatRequest_FailsWhenNotConnected_WithNoCallback(ConnectionStateType state)
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
@@ -723,7 +602,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
 
             // Act
@@ -738,7 +617,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
 
             // Act
@@ -752,13 +631,13 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<Connection> connection = new Mock<Connection>();
-            connection.Setup(c => c.State).Returns(ConnectionState.Connected);
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, null, null);
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionState.Closed, ConnectionState.Connected, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closed, ConnectionStateType.Connected, 0, null));
         }
 
         [Fact]
@@ -767,7 +646,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
@@ -786,7 +665,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
@@ -795,7 +674,7 @@ namespace IO.Ably.Tests
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
 
             // Assert
-            timer.Verify(c => c.Start(It.IsAny<int>(), It.IsAny<Action>()), Times.Once());
+            timer.Verify(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<Action>(), false), Times.Once());
             Assert.Empty(res);
         }
 
@@ -821,7 +700,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
@@ -840,7 +719,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
@@ -861,7 +740,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
@@ -881,8 +760,8 @@ namespace IO.Ably.Tests
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             Mock<Connection> connection = new Mock<Connection>();
-            connection.Setup(c => c.State).Returns(ConnectionState.Connected);
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
@@ -893,31 +772,31 @@ namespace IO.Ably.Tests
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionState.Closing, ConnectionState.Closed, 0, null));
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionState.Closing, ConnectionState.Closed, 0, null));
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionState.Closing, ConnectionState.Closed, 0, null));
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionState.Closing, ConnectionState.Closed, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closing, ConnectionStateType.Closed, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closing, ConnectionStateType.Closed, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closing, ConnectionStateType.Closed, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closing, ConnectionStateType.Closed, 0, null));
 
             // Assert
             Assert.Equal<int>(1, res.Count);
         }
 
         [Theory]
-        [InlineData(ConnectionState.Closed)]
-        [InlineData(ConnectionState.Closing)]
-        [InlineData(ConnectionState.Connecting)]
-        [InlineData(ConnectionState.Disconnected)]
-        [InlineData(ConnectionState.Failed)]
-        [InlineData(ConnectionState.Initialized)]
-        [InlineData(ConnectionState.Suspended)]
-        public void ConnectionHeartbeatRequest_ListensForStateChanges(ConnectionState state)
+        [InlineData(ConnectionStateType.Closed)]
+        [InlineData(ConnectionStateType.Closing)]
+        [InlineData(ConnectionStateType.Connecting)]
+        [InlineData(ConnectionStateType.Disconnected)]
+        [InlineData(ConnectionStateType.Failed)]
+        [InlineData(ConnectionStateType.Initialized)]
+        [InlineData(ConnectionStateType.Suspended)]
+        public void ConnectionHeartbeatRequest_ListensForStateChanges(ConnectionStateType state)
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             Mock<Connection> connection = new Mock<Connection>();
-            connection.Setup(c => c.State).Returns(ConnectionState.Connected);
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
@@ -933,21 +812,21 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [InlineData(ConnectionState.Closed)]
-        [InlineData(ConnectionState.Closing)]
-        [InlineData(ConnectionState.Connecting)]
-        [InlineData(ConnectionState.Disconnected)]
-        [InlineData(ConnectionState.Failed)]
-        [InlineData(ConnectionState.Initialized)]
-        [InlineData(ConnectionState.Suspended)]
-        public void ConnectionHeartbeatRequest_ListensForStateChanges_StopsTimer(ConnectionState state)
+        [InlineData(ConnectionStateType.Closed)]
+        [InlineData(ConnectionStateType.Closing)]
+        [InlineData(ConnectionStateType.Connecting)]
+        [InlineData(ConnectionStateType.Disconnected)]
+        [InlineData(ConnectionStateType.Failed)]
+        [InlineData(ConnectionStateType.Initialized)]
+        [InlineData(ConnectionStateType.Suspended)]
+        public void ConnectionHeartbeatRequest_ListensForStateChanges_StopsTimer(ConnectionStateType state)
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             Mock<Connection> connection = new Mock<Connection>();
-            connection.SetupGet(c => c.State).Returns(ConnectionState.Connected);
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            connection.SetupGet(c => c.State).Returns(ConnectionStateType.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
             Action<bool, ErrorInfo> callback = (e, err) => { };
 
@@ -960,21 +839,21 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [InlineData(ConnectionState.Closed)]
-        [InlineData(ConnectionState.Closing)]
-        [InlineData(ConnectionState.Connecting)]
-        [InlineData(ConnectionState.Disconnected)]
-        [InlineData(ConnectionState.Failed)]
-        [InlineData(ConnectionState.Initialized)]
-        [InlineData(ConnectionState.Suspended)]
-        public void ConnectionHeartbeatRequest_ListensForStateChanges_Unsubscribes(ConnectionState state)
+        [InlineData(ConnectionStateType.Closed)]
+        [InlineData(ConnectionStateType.Closing)]
+        [InlineData(ConnectionStateType.Connecting)]
+        [InlineData(ConnectionStateType.Disconnected)]
+        [InlineData(ConnectionStateType.Failed)]
+        [InlineData(ConnectionStateType.Initialized)]
+        [InlineData(ConnectionStateType.Suspended)]
+        public void ConnectionHeartbeatRequest_ListensForStateChanges_Unsubscribes(ConnectionStateType state)
         {
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             Mock<Connection> connection = new Mock<Connection>();
-            connection.Setup(c => c.State).Returns(ConnectionState.Connected);
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
@@ -1000,12 +879,12 @@ namespace IO.Ably.Tests
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             Mock<Connection> connection = new Mock<Connection>();
-            connection.Setup(c => c.State).Returns(ConnectionState.Connected);
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
-            timer.Setup(c => c.Start(It.IsAny<int>(), It.IsAny<Action>())).Callback<int, Action>((c, e) => e());
+            timer.Setup(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<Action>(), false)).Callback<int, Action>((c, e) => e());
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -1023,16 +902,16 @@ namespace IO.Ably.Tests
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             Mock<Connection> connection = new Mock<Connection>();
-            connection.Setup(c => c.State).Returns(ConnectionState.Connected);
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
-            timer.Setup(c => c.Start(It.IsAny<int>(), It.IsAny<Action>())).Callback<int, Action>((c, e) => e());
+            timer.Setup(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<Action>(), false)).Callback<int, Action>((c, e) => e());
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionState.Closed, ConnectionState.Closed, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closed, ConnectionStateType.Closed, 0, null));
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
 
             // Assert
@@ -1047,7 +926,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
-            manager.Setup(c => c.ConnectionState).Returns(ConnectionState.Connected);
+            manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
             List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
             Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
@@ -1072,35 +951,44 @@ namespace IO.Ably.Tests
         #endregion
 
         [Fact]
-        public void WhenRestoringConnection_UsesLastKnownConnectionSerial()
+        public async Task WhenRestoringConnection_UsesLastKnownConnectionSerial()
         {
             // Arrange
             long targetSerial = 1234567;
             Mock<ConnectionManager> target = new Mock<ConnectionManager>(new ClientOptions());
             target.Object.Connection.Serial = targetSerial;
-            target.Setup(c => c.CreateTransport(It.IsAny<TransportParams>())).Returns(new Mock<ITransport>().Object);
+            target.Setup(c => c.CreateTransport(It.IsAny<TransportParams>())).Returns(new Mock<Task<ITransport>>().Object);
 
             // Act
-            (target.Object as IConnectionContext).CreateTransport(false);
+            await (target.Object as IConnectionContext).CreateTransport();
 
             // Assert
-            target.Verify(c => c.CreateTransport(It.Is<TransportParams>(tp => tp.ConnectionSerial == targetSerial.ToString())), Times.Once());
+            target.Verify(c => c.CreateTransport(It.Is<TransportParams>(tp => tp.ConnectionSerial.Value == targetSerial)), Times.Once());
         }
 
         [Fact]
-        public void WhenRestoringConnection_UsesConnectionKey()
+        public async Task WhenRestoringConnection_UsesConnectionKey()
         {
             // Arrange
             string targetKey = "1234567";
             Mock<ConnectionManager> target = new Mock<ConnectionManager>(new ClientOptions());
             target.Object.Connection.Key = targetKey;
-            target.Setup(c => c.CreateTransport(It.IsAny<TransportParams>())).Returns(new Mock<ITransport>().Object);
+            target.Setup(c => c.CreateTransport(It.IsAny<TransportParams>())).Returns(new Mock<Task<ITransport>>().Object);
 
             // Act
-            (target.Object as IConnectionContext).CreateTransport(false);
+            await (target.Object as IConnectionContext).CreateTransport();
 
             // Assert
             target.Verify(c => c.CreateTransport(It.Is<TransportParams>(tp => tp.ConnectionKey == targetKey.ToString())), Times.Once());
+        }
+
+        private AblyRest GetRestClient()
+        {
+            return new AblyRest(ValidKey);
+        }
+
+        public ConnectionManagerTests(ITestOutputHelper output) : base(output)
+        {
         }
     }
 }

@@ -13,19 +13,11 @@ namespace IO.Ably
 {
     internal class AblyHttpClient : IAblyHttpClient
     {
-        private bool IsDefaultHost => Options.Host == Defaults.RestHost;
-
         internal AblyHttpOptions Options { get; }
 
         internal HttpClient Client { get; set; }
 
-        public AblyHttpClient(AblyHttpOptions options) :
-            this(options, null)
-        {
-
-        }
-
-        internal AblyHttpClient(AblyHttpOptions options, HttpMessageHandler messageHandler)
+        internal AblyHttpClient(AblyHttpOptions options, HttpMessageHandler messageHandler =null)
         {
             Options = options;
             CreateInternalHttpClient(options.HttpRequestTimeout, messageHandler);
@@ -45,8 +37,8 @@ namespace IO.Ably
 
             int currentTry = 0;
             var startTime = Config.Now();
-            var numberOfRetries = IsDefaultHost ? Options.HttpMaxRetryCount : 1;
-            var host = GetHost();
+            var numberOfRetries = Options.HttpMaxRetryCount;
+            var host = Options.Host;
 
             while (currentTry < numberOfRetries)
             {
@@ -71,7 +63,7 @@ namespace IO.Ably
                         return ablyResponse;
                     }
 
-                    if (IsRetryableResponse(response) && IsDefaultHost)
+                    if (IsRetryableResponse(response) && Options.IsDefaultHost)
                     {
                         Logger.Info("Failed response. Retrying. Returned response with status code: " +
                                     response.StatusCode);
@@ -85,7 +77,7 @@ namespace IO.Ably
                     }
                     throw AblyException.FromResponse(ablyResponse);
                 }
-                catch (HttpRequestException ex) when(IsRetryableError(ex) && IsDefaultHost)
+                catch (HttpRequestException ex) when(IsRetryableError(ex) && Options.IsDefaultHost)
                 {
                     Logger.Warning("Error making a connection to Ably servers. Retrying", ex);
 
@@ -99,7 +91,7 @@ namespace IO.Ably
                     //_host = hosts[currentTry - 1];
                     
                 }
-                catch (TaskCanceledException ex) when (IsRetryableError(ex) && IsDefaultHost)
+                catch (TaskCanceledException ex) when (IsRetryableError(ex) && Options.IsDefaultHost)
                 {
                     //TODO: Check about the conditions we should retry. 
                     //First retry the same host and then start the others
@@ -211,7 +203,7 @@ namespace IO.Ably
         public Uri GetRequestUrl(AblyRequest request, string host = null)
         {
             if (host == null)
-                host = GetHost();
+                host = Options.Host;
 
             string protocol = Options.IsSecure ? "https://" : "http://";
             if (request.Url.StartsWith("http"))
@@ -224,16 +216,9 @@ namespace IO.Ably
                                GetQuery(request)));
         }
 
-        private string GetHost()
-        {
-            if (IsDefaultHost && (Options.Environment.HasValue && Options.Environment != AblyEnvironment.Live))
-                return Options.Environment.ToString().ToLower() + "-" + Options.Host;
-            return Options.Host;
-        }
-
         private string GetQuery(AblyRequest request)
         {
-            string query = string.Join("&", request.QueryParameters.Select(x => $"{x.Key}={x.Value}"));
+            var query = request.QueryParameters.ToQueryString();
             if (query.IsNotEmpty())
                 return "?" + query;
             return string.Empty;

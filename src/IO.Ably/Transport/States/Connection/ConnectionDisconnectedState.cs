@@ -1,4 +1,6 @@
-﻿using IO.Ably.Types;
+﻿using System;
+using System.Threading.Tasks;
+using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
@@ -32,46 +34,51 @@ namespace IO.Ably.Transport.States.Connection
 
         public bool UseFallbackHost { get; set; }
 
-        public override Realtime.ConnectionState State => Realtime.ConnectionState.Disconnected;
+        public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Disconnected;
 
         protected override bool CanQueueMessages => true;
 
         public override void Connect()
         {
-            context.SetState(new ConnectionConnectingState(context));
+            Context.SetState(new ConnectionConnectingState(Context));
         }
 
         public override void Close()
         {
-            context.SetState(new ConnectionClosedState(context));
+            Context.SetState(new ConnectionClosedState(Context));
         }
 
-        public override bool OnMessageReceived(ProtocolMessage message)
+        public override Task<bool> OnMessageReceived(ProtocolMessage message)
         {
             // could not happen
-            return false;
+            Logger.Error("Receiving message in disconected state!");
+            return TaskConstants.BooleanFalse;
         }
 
-        public override void OnTransportStateChanged(TransportStateInfo state)
+        public override Task OnTransportStateChanged(TransportStateInfo state)
         {
             // could not happen
+            Logger.Error("Unexpected state change. " + state);
+            return TaskConstants.BooleanTrue;
         }
 
-        public override void OnAttachedToContext()
+        public override Task OnAttachedToContext()
         {
             if (UseFallbackHost)
             {
-                context.SetState(new ConnectionConnectingState(context));
+                Context.SetState(new ConnectionConnectingState(Context));
             }
             else
             {
-                _timer.Start(ConnectTimeout, OnTimeOut);
+                _timer.Start(TimeSpan.FromMilliseconds(ConnectTimeout), OnTimeOut);
             }
+
+            return TaskConstants.BooleanTrue;
         }
 
         private void OnTimeOut()
         {
-            context.SetState(new ConnectionConnectingState(context));
+            Context.SetState(new ConnectionConnectingState(Context));
         }
 
         private static ErrorInfo CreateError(TransportStateInfo state)

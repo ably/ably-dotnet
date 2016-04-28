@@ -165,8 +165,8 @@ namespace IO.Ably.Tests
 
                 await client.Stats();
 
-                client.Auth.CurrentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires);
-                client.Auth.CurrentToken.ClientId.Should().Be(_returnedDummyTokenDetails.ClientId);
+                client.AblyAuth.CurrentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires);
+                client.AblyAuth.CurrentToken.ClientId.Should().Be(_returnedDummyTokenDetails.ClientId);
             }
 
             [Fact]
@@ -554,11 +554,11 @@ namespace IO.Ably.Tests
             };
             var rest = new AblyRest(options);
             rest.ExecuteHttpRequest = request => "[{}]".ToAblyResponse();
-            rest.Auth.CurrentToken = new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddDays(-2) };
+            rest.AblyAuth.CurrentToken = new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddDays(-2) };
 
             await rest.Stats();
             newTokenRequested.Should().BeTrue();
-            rest.Auth.CurrentToken.Token.Should().Be("new.token");
+            rest.AblyAuth.CurrentToken.Token.Should().Be("new.token");
         }
 
         [Fact]
@@ -572,7 +572,7 @@ namespace IO.Ably.Tests
             };
             var rest = new AblyRest(options);
             var token = new TokenDetails("123") { Expires = DateTimeOffset.UtcNow.AddHours(1) };
-            rest.Auth.CurrentToken = token;
+            rest.AblyAuth.CurrentToken = token;
 
             rest.ExecuteHttpRequest = request =>
             {
