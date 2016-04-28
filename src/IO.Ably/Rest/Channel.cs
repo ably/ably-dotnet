@@ -11,7 +11,7 @@ namespace IO.Ably.Rest
     /// and every message broadcast by the service is associated with a unique channel.
     /// A channel cannot be instantiated but needs to be created using the AblyRest.Channels.Get("channelname")
     /// </summary>
-    public class RestChannel : IChannel
+    public class RestChannel : IChannel, IPresence
     {
         public string Name { get; private set; }
         private readonly AblyRest _ablyRest;
@@ -66,42 +66,59 @@ namespace IO.Ably.Rest
             return _ablyRest.ExecuteRequest(request);
         }
 
+        public IPresence Presence => this;
+
         /// <summary>
         /// Obtain the set of members currently present for a channel
         /// </summary>
-        /// <returns><see cref="PaginatedResource{T}"/> of the PresenseMessages</returns>
-        public Task<PaginatedResource<PresenceMessage>> Presence()
+        /// <returns><see cref="PaginatedResult{T}"/> of the PresenseMessages</returns>
+        Task<PaginatedResult<PresenceMessage>> IPresence.Get(int? limit, string clientId, string connectionId)
         {
+            if (limit.HasValue && (limit < 0 || limit > 1000))
+                throw new ArgumentException("Limit must be between 0 and 1000", nameof(limit));
+
+            var presenceLimit = limit ?? Defaults.QueryLimit;
+
             var request = _ablyRest.CreateGetRequest(_basePath + "/presence", Options);
-            return _ablyRest.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
+
+            request.QueryParameters.Add("limit", presenceLimit.ToString());
+            if (clientId.IsNotEmpty())
+                request.QueryParameters.Add("clientId", clientId);
+            if (connectionId.IsNotEmpty())
+                request.QueryParameters.Add("connectionId", connectionId);
+
+            return _ablyRest.ExecuteRequest<PaginatedResult<PresenceMessage>>(request);
         }
 
         /// <summary>
         /// Get the presence messages history for the channel
         /// </summary>
-        /// <returns><see cref="PaginatedResource{PresenceMessage}"/></returns>
-        public Task<PaginatedResource<PresenceMessage>> PresenceHistory()
+        /// <returns><see cref="PaginatedResult{T}"/></returns>
+        Task<PaginatedResult<PresenceMessage>> IPresence.History()
         {
-            var request = _ablyRest.CreateGetRequest(_basePath + "/presence", Options);
-            return _ablyRest.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
+            return Presence.History(new DataRequestQuery());
         }
 
         /// <summary>
         /// Get the presence messages history for the channel by specifying a query
         /// </summary>
-        /// <returns><see cref="PaginatedResource{PresenceMessage}"/></returns>
-        public Task<PaginatedResource<PresenceMessage>> PresenceHistory(DataRequestQuery query)
+        /// <returns><see cref="PaginatedResult{T}"/></returns>
+        Task<PaginatedResult<PresenceMessage>> IPresence.History(DataRequestQuery query)
         {
-            var request = _ablyRest.CreateGetRequest(_basePath + "/presence", Options);
+            query = query ?? new DataRequestQuery();
+
+            query.Validate();
+
+            var request = _ablyRest.CreateGetRequest(_basePath + "/presence/history", Options);
             request.AddQueryParameters(query.GetParameters());
-            return _ablyRest.ExecuteRequest<PaginatedResource<PresenceMessage>>(request);
+            return _ablyRest.ExecuteRequest<PaginatedResult<PresenceMessage>>(request);
         }
 
         /// <summary>
         /// Return the message history of the channel
         /// </summary>
-        /// <returns><see cref="PaginatedResource{T}"/> of Messages</returns>
-        public Task<PaginatedResource<Message>> History()
+        /// <returns><see cref="PaginatedResult{T}"/> of Messages</returns>
+        public Task<PaginatedResult<Message>> History()
         {
             return History(new DataRequestQuery());
         }
@@ -110,8 +127,8 @@ namespace IO.Ably.Rest
         /// Return the message history of the channel
         /// </summary>
         /// <param name="dataQuery"><see cref="DataRequestQuery"/></param>
-        /// <returns><see cref="PaginatedResource{T}"/> of Messages</returns>
-        public Task<PaginatedResource<Message>> History(DataRequestQuery dataQuery)
+        /// <returns><see cref="PaginatedResult{T}"/> of Messages</returns>
+        public Task<PaginatedResult<Message>> History(DataRequestQuery dataQuery)
         {
             var query = dataQuery ?? new DataRequestQuery();
 
@@ -121,7 +138,7 @@ namespace IO.Ably.Rest
 
             request.AddQueryParameters(query.GetParameters());
 
-            return _ablyRest.ExecuteRequest<PaginatedResource<Message>>(request);
+            return _ablyRest.ExecuteRequest<PaginatedResult<Message>>(request);
         }
     }
 }

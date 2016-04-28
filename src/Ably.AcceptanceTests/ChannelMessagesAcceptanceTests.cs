@@ -56,7 +56,7 @@ namespace IO.Ably.AcceptanceTests
                 TestStats = Stats.First();
             }
 
-            public PaginatedResource<Stats> Stats { get; set; }
+            public PaginatedResult<Stats> Stats { get; set; }
             public Stats TestStats { get; set; }
 
             [Test]

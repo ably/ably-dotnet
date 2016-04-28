@@ -139,7 +139,7 @@ namespace IO.Ably
         /// Retrieves the stats for the application. Passed default <see cref="StatsDataRequestQuery"/> for the request
         /// </summary>
         /// <returns></returns>
-        public Task<PaginatedResource<Stats>> Stats()
+        public Task<PaginatedResult<Stats>> Stats()
         {
             return Stats(new StatsDataRequestQuery());
         }
@@ -149,7 +149,7 @@ namespace IO.Ably
         /// </summary>
         /// <param name="query">stats query</param>
         /// <returns></returns>
-        public Task<PaginatedResource<Stats>> Stats(StatsDataRequestQuery query)
+        public Task<PaginatedResult<Stats>> Stats(StatsDataRequestQuery query)
         {
             return Stats(query as DataRequestQuery);
         }
@@ -165,7 +165,7 @@ namespace IO.Ably
         /// </example>
         /// <param name="query"><see cref="DataRequestQuery"/> and <see cref="StatsDataRequestQuery"/></param>
         /// <returns></returns>
-        public Task<PaginatedResource<Stats>> Stats(DataRequestQuery query)
+        public Task<PaginatedResult<Stats>> Stats(DataRequestQuery query)
         {
             query.Validate();
 
@@ -173,7 +173,7 @@ namespace IO.Ably
 
             request.AddQueryParameters(query.GetParameters());
 
-            return ExecuteRequest<PaginatedResource<Stats>>(request);
+            return ExecuteRequest<PaginatedResult<Stats>>(request);
         }
 
         internal AblyRequest CreateGetRequest(string path, ChannelOptions options = null)

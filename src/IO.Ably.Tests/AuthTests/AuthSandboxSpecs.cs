@@ -147,7 +147,7 @@ namespace IO.Ably.Tests
             });
 
             tokenClient.AblyAuth.GetClientId().Should().BeNullOrEmpty();
-            var channel = tokenClient.Channels["persisted:test"];
+            var channel = tokenClient.Channels["persisted:test".AddRandomSuffix()];
             await channel.Publish("test", "test");
             var message = (await channel.History()).First();
             message.clientId.Should().BeNullOrEmpty();

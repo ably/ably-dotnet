@@ -9,11 +9,17 @@ namespace IO.Ably.Rest
         Task Publish(Message message);
         Task Publish(IEnumerable<Message> messages);
 
-        Task<PaginatedResource<Message>> History();
-        Task<PaginatedResource<Message>> History(DataRequestQuery dataQuery);
+        Task<PaginatedResult<Message>> History();
+        Task<PaginatedResult<Message>> History(DataRequestQuery dataQuery);
         string Name { get; }
-        Task<PaginatedResource<PresenceMessage>> Presence();
-        Task<PaginatedResource<PresenceMessage>> PresenceHistory();
-        Task<PaginatedResource<PresenceMessage>> PresenceHistory(DataRequestQuery query);
+        
+        IPresence Presence { get; }
+    }
+
+    public interface IPresence
+    {
+        Task<PaginatedResult<PresenceMessage>> Get(int? limit = null, string clientId = null, string connectionId = null);
+        Task<PaginatedResult<PresenceMessage>> History();
+        Task<PaginatedResult<PresenceMessage>> History(DataRequestQuery query);
     }
 }

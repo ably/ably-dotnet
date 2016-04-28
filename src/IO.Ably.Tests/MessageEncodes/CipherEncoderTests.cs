@@ -208,19 +208,6 @@ namespace IO.Ably.Tests.MessageEncodes
             }
 
             [Fact]
-            public void WithCipherEncodingWhenCurrentChannelIsNotConfiguredForEncryption_ThrowsException()
-            {
-                var payload = new Message() { data = "test", encoding = "utf-8/cipher+aes-256-cbc" };
-
-                var error = Assert.Throws<AblyException>(delegate { encoder.Decode(payload, new ChannelOptions()); });
-
-                error.ErrorInfo.message.Should()
-                    .Be("Message cannot be decrypted as the channel is not set up for encryption & decryption");
-
-                error.ErrorInfo.code.Should().Be(92001);
-            }
-
-            [Fact]
             public void WithCipherEncodingThatDoesNotMatchTheCurrentCipher_ThrowsException()
             {
                 var payload = new Message() { data = "test", encoding = "utf-8/cipher+aes-256-cbc" };
