@@ -40,8 +40,8 @@ function global:run_tests($test_result_file, $xunit_console_dir, $solution_dir, 
 
 		Write-Output "TestAssemblies: $testAssemblies"
 
-		$xunit_console = "$xunit_console_dir\xunit.console.clr4.exe"
-		& "$xunit_console" $testAssemblies /noshadow /nunit "$test_result_file"
+		$xunit_console = "$xunit_console_dir\xunit.console.exe"
+		& "$xunit_console" $testAssemblies -noshadow -nunit "$test_result_file"
 
 		Write-Output "##teamcity[importData type='nunit' path='$test_result_file']"
 	}
@@ -62,7 +62,7 @@ function global:run_nunit_tests($test_result_folder, $console_dir, $test_root, $
 	
 	$testAssemblies = @()
 	$testDlls = (get-childitem "$test_root\" -r -i "*$testType.dll" -exclude "*.config")
-	$nunit_console = "$console_dir\nunit-console.exe"
+	$nunit_console = "$console_dir\nunit3-console.exe"
 	
 	try {
 		foreach($testDll in $testDlls) {

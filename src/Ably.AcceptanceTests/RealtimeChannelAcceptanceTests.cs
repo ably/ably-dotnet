@@ -3,11 +3,13 @@ using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using System.Threading;
+using IO.Ably.Tests;
 
-namespace Ably.AcceptanceTests
+namespace IO.Ably.AcceptanceTests
 {
     [TestFixture(Protocol.MsgPack)]
     [TestFixture(Protocol.Json)]
+    [Ignore("Will fix those after the rest tests")]
     public class RealtimeChannelAcceptanceTests
     {
         private readonly bool _binaryProtocol;
@@ -17,9 +19,9 @@ namespace Ably.AcceptanceTests
             _binaryProtocol = binaryProtocol == Protocol.MsgPack;
         }
 
-        private AblyRealtime GetRealtimeClient(Action<AblyRealtimeOptions> setup = null)
+        private AblyRealtime GetRealtimeClient(Action<ClientOptions> setup = null)
         {
-            var options = TestsSetup.GetDefaultOptions<AblyRealtimeOptions>();
+            var options = TestsSetup.GetDefaultOptions<ClientOptions>();
             options.UseBinaryProtocol = _binaryProtocol;
             if (setup != null)
             {
@@ -83,11 +85,11 @@ namespace Ably.AcceptanceTests
             Realtime.IRealtimeChannel target = client.Channels.Get("test");
             target.Attach();
             List<Message> messagesReceived = new List<Message>();
-            target.MessageReceived += (messages) =>
+            target.Subscribe( messages =>
             {
-                messagesReceived.AddRange(messages);
+                messagesReceived.AddRange( messages );
                 signal.Set();
-            };
+            } );
 
             // Act
             target.Publish("test", "test data");
@@ -95,8 +97,8 @@ namespace Ably.AcceptanceTests
 
             // Assert
             messagesReceived.Count.ShouldBeEquivalentTo(1);
-            messagesReceived[0].Name.ShouldBeEquivalentTo("test");
-            messagesReceived[0].Data.ShouldBeEquivalentTo("test data");
+            messagesReceived[0].name.ShouldBeEquivalentTo("test");
+            messagesReceived[0].data.ShouldBeEquivalentTo("test data");
         }
 
         [Test]
@@ -108,11 +110,11 @@ namespace Ably.AcceptanceTests
             Realtime.IRealtimeChannel target = client.Channels.Get("test");
             target.Attach();
             List<Message> messagesReceived = new List<Message>();
-            target.MessageReceived += (messages) =>
+            target.Subscribe( messages =>
             {
-                messagesReceived.AddRange(messages);
+                messagesReceived.AddRange( messages );
                 signal.Set();
-            };
+            } );
 
             // Act
             target.Publish("test1", "test 12");
@@ -122,12 +124,12 @@ namespace Ably.AcceptanceTests
 
             // Assert
             messagesReceived.Count.ShouldBeEquivalentTo(3);
-            messagesReceived[0].Name.ShouldBeEquivalentTo("test1");
-            messagesReceived[0].Data.ShouldBeEquivalentTo("test 12");
-            messagesReceived[1].Name.ShouldBeEquivalentTo("test2");
-            messagesReceived[1].Data.ShouldBeEquivalentTo("test 123");
-            messagesReceived[2].Name.ShouldBeEquivalentTo("test3");
-            messagesReceived[2].Data.ShouldBeEquivalentTo("test 321");
+            messagesReceived[0].name.ShouldBeEquivalentTo("test1");
+            messagesReceived[0].data.ShouldBeEquivalentTo("test 12");
+            messagesReceived[1].name.ShouldBeEquivalentTo("test2");
+            messagesReceived[1].data.ShouldBeEquivalentTo("test 123");
+            messagesReceived[2].name.ShouldBeEquivalentTo("test3");
+            messagesReceived[2].data.ShouldBeEquivalentTo("test 321");
         }
 
         [Test]
@@ -139,11 +141,11 @@ namespace Ably.AcceptanceTests
             Realtime.IRealtimeChannel target = client.Channels.Get("test");
             target.Attach();
             List<Message> messagesReceived = new List<Message>();
-            target.MessageReceived += (messages) =>
+            target.Subscribe( messages =>
             {
-                messagesReceived.AddRange(messages);
+                messagesReceived.AddRange( messages );
                 signal.Set();
-            };
+            } );
 
             // Act
             target.Publish("test", "test data");

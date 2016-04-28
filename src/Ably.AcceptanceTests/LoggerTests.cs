@@ -1,18 +1,19 @@
 ﻿using NUnit.Framework;
 using System.Diagnostics;
 using FluentAssertions;
+using IO.Ably.Transport;
 
-namespace Ably.AcceptanceTests
+namespace IO.Ably.AcceptanceTests
 {
     [TestFixture]
     class LoggerTests
     {
         class TestLoggerSink : ILoggerSink
         {
-            void ILoggerSink.LogEvent( LogLevel level, string message )
+            void ILoggerSink.LogEvent(LogLevel level, string message)
             {
-                this.lastLevel = level;
-                this.lastMessage = message;
+                lastLevel = level;
+                lastMessage = message;
             }
 
             public LogLevel? lastLevel;
@@ -30,43 +31,43 @@ namespace Ably.AcceptanceTests
         [Test]
         public void TestLogger()
         {
-            using( var d = Logger.SetTempDestination( null ) )
+            using (var d = Logger.SetTempDestination(null))
             {
-                sink.lastLevel.ShouldBeEquivalentTo( null );
-                sink.lastMessage.ShouldBeEquivalentTo( null );
+                sink.lastLevel.ShouldBeEquivalentTo(null);
+                sink.lastMessage.ShouldBeEquivalentTo(null);
 
-                Logger.logLevel.ShouldBeEquivalentTo( Config.DefaultLogLevel );
-                Logger.logLevel = LogLevel.Debug;
+                Logger.LogLevel.ShouldBeEquivalentTo(Defaults.DefaultLogLevel);
+                Logger.LogLevel = LogLevel.Debug;
 
                 // null destination shouldn't throw
-                Logger.SetDestination( null );
-                Logger.Info( "msg" );
+                Logger.LoggerSink = null;
+                Logger.Info("msg");
 
-                Logger.SetDestination( sink );
+                Logger.LoggerSink = sink;
 
                 // Basic messages
-                Logger.Error( "Test Error Message" );
-                sink.lastLevel.ShouldBeEquivalentTo( LogLevel.Error );
-                sink.lastMessage.ShouldBeEquivalentTo( "Test Error Message" );
+                Logger.Error("Test Error Message");
+                sink.lastLevel.ShouldBeEquivalentTo(LogLevel.Error);
+                sink.lastMessage.ShouldBeEquivalentTo("Test Error Message");
 
-                Logger.Info( "Test Info Message" );
-                sink.lastLevel.ShouldBeEquivalentTo( LogLevel.Info );
-                sink.lastMessage.ShouldBeEquivalentTo( "Test Info Message" );
+                Logger.Info("Test Info Message");
+                sink.lastLevel.ShouldBeEquivalentTo(LogLevel.Info);
+                sink.lastMessage.ShouldBeEquivalentTo("Test Info Message");
 
-                Logger.Debug( "Test Debug Message" );
-                sink.lastLevel.ShouldBeEquivalentTo( LogLevel.Debug );
-                sink.lastMessage.ShouldBeEquivalentTo( "Test Debug Message" );
+                Logger.Debug("Test Debug Message");
+                sink.lastLevel.ShouldBeEquivalentTo(LogLevel.Debug);
+                sink.lastMessage.ShouldBeEquivalentTo("Test Debug Message");
 
                 // Verify the log level works
-                Logger.logLevel = LogLevel.Warning;
-                Logger.Error( "Test Error Message" );
-                Logger.Info( "Test Info Message" );
-                Logger.Debug( "Test Debug Message" );
-                sink.lastLevel.ShouldBeEquivalentTo( LogLevel.Error );
-                sink.lastMessage.ShouldBeEquivalentTo( "Test Error Message" );
+                Logger.LogLevel = LogLevel.Warning;
+                Logger.Error("Test Error Message");
+                Logger.Info("Test Info Message");
+                Logger.Debug("Test Debug Message");
+                sink.lastLevel.ShouldBeEquivalentTo(LogLevel.Error);
+                sink.lastMessage.ShouldBeEquivalentTo("Test Error Message");
 
                 // Revert the level
-                Logger.logLevel = Config.DefaultLogLevel;
+                Logger.LogLevel = Defaults.DefaultLogLevel;
             }
         }
     }

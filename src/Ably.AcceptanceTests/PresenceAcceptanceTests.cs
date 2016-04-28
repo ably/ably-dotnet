@@ -1,8 +1,9 @@
 using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Ably.AcceptanceTests
+namespace IO.Ably.AcceptanceTests
 {
     [TestFixture(Protocol.Json)]
     [TestFixture(Protocol.MsgPack)]
@@ -15,46 +16,46 @@ namespace Ably.AcceptanceTests
             _protocol = protocol;
         }
 
-        private RestClient GetAbly()
+        private AblyRest GetAbly()
         {
             var testData = TestsSetup.TestData;
 
-            var options = new AblyOptions
+            var options = new ClientOptions
             {
                 Key = testData.keys.First().keyStr,
                 UseBinaryProtocol = _protocol == Protocol.MsgPack,
                 Environment = AblyEnvironment.Sandbox
             };
-            var ably = new RestClient(options);
+            var ably = new AblyRest(options);
             return ably;
         }
 
         [Test]
-        public void GetsPeoplePresentOnTheChannel()
+        public async Task GetsPeoplePresentOnTheChannel()
         {
             string channelName = "persisted:presence_fixtures";
             var ably = GetAbly();
             var channel = ably.Channels.Get(channelName);
-            var presence = channel.Presence();
+             var presence = await channel.Presence.Get();
 
             presence.Should().HaveCount(4);
-            foreach (var pMessage in presence)
+            foreach (var presenceMessage in presence)
             {
-                pMessage.Action.Should().Be(PresenceMessage.ActionType.Present);
+                presenceMessage.action.Should().Be(PresenceMessage.ActionType.Present);
             }
         }
 
         [Test]
-        public void GetsPagedPresenceMessages()
+        public async Task GetsPagedPresenceMessages()
         {
             string channelName = "persisted:presence_fixtures";
             var ably = GetAbly();
             var channel = ably.Channels.Get(channelName);
-            var presence = channel.PresenceHistory(new DataRequestQuery() {Limit=2});
+            var presence = await channel.Presence.History(new DataRequestQuery {Limit=2});
 
             presence.Should().HaveCount(2);
             presence.HasNext.Should().BeTrue();
-            var nextPage = channel.PresenceHistory(presence.NextQuery);
+            var nextPage = await channel.Presence.History(presence.NextQuery);
             nextPage.Should().HaveCount(2);
         }
     }
