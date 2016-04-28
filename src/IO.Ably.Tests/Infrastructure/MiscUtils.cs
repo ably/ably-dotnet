@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace IO.Ably
+namespace IO.Ably.Tests
 {
     static class MiscUtils
     {

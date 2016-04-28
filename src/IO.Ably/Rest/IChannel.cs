@@ -10,7 +10,7 @@ namespace IO.Ably.Rest
         Task Publish(IEnumerable<Message> messages);
 
         Task<PaginatedResource<Message>> History();
-        Task<PaginatedResource<Message>> History(DataRequestQuery query);
+        Task<PaginatedResource<Message>> History(DataRequestQuery dataQuery);
         string Name { get; }
         Task<PaginatedResource<PresenceMessage>> Presence();
         Task<PaginatedResource<PresenceMessage>> PresenceHistory();

@@ -31,12 +31,6 @@ namespace IO.Ably
 
         public static int ProtocolVersion = 1;
 
-        static Config()
-        {
-            // Configure JSON serializer/de-serializer
-            JsonConvert.DefaultSettings = GetJsonSettings;
-        }
-
         internal static JsonSerializerSettings GetJsonSettings()
         {
             JsonSerializerSettings res = new JsonSerializerSettings();

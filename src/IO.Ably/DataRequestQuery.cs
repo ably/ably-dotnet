@@ -127,8 +127,8 @@ namespace IO.Ably
 
         internal void Validate()
         {
-            if (Limit.HasValue && (Limit < 0 || Limit > 10000))
-                throw new AblyException("History query limit must be between 0 and 10000");
+            if (Limit.HasValue && (Limit < 0 || Limit > 1000))
+                throw new AblyException("History query limit must be between 0 and 1000");
 
             if (Start.HasValue)
             {
@@ -157,6 +157,8 @@ namespace IO.Ably
             result.Add(new KeyValuePair<string, string>("direction", Direction.ToString().ToLower()));
             if (Limit.HasValue)
                 result.Add(new KeyValuePair<string, string>("limit", Limit.Value.ToString()));
+            else
+                result.Add(new KeyValuePair<string, string>("limit","100"));
 
             result.AddRange(ExtraParameters);
             return result;

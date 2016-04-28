@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using System.Threading;
+using IO.Ably.Tests;
 
 namespace IO.Ably.AcceptanceTests
 {

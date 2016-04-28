@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using IO.Ably.Encryption;
 using System.Threading.Tasks;
@@ -108,10 +109,12 @@ namespace IO.Ably.Rest
         /// <summary>
         /// Return the message history of the channel
         /// </summary>
-        /// <param name="query"><see cref="DataRequestQuery"/></param>
+        /// <param name="dataQuery"><see cref="DataRequestQuery"/></param>
         /// <returns><see cref="PaginatedResource{T}"/> of Messages</returns>
-        public Task<PaginatedResource<Message>> History(DataRequestQuery query)
+        public Task<PaginatedResource<Message>> History(DataRequestQuery dataQuery)
         {
+            var query = dataQuery ?? new DataRequestQuery();
+
             query.Validate();
 
             var request = _ablyRest.CreateGetRequest(_basePath + "/messages", Options);

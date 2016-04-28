@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Encryption;
 using IO.Ably.Rest;
@@ -8,37 +10,74 @@ using IO.Ably.Tests;
 using MsgPack;
 using MsgPack.Serialization;
 using Newtonsoft.Json;
-using NUnit.Framework;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace IO.Ably.AcceptanceTests
 {
-    public class MessageEncodersAcceptanceTests
+    public class MessageEncodersAcceptanceTests : AblySpecs
     {
-        private static string fakeKey = "AppId.KeyId:KeyValue";
+        public class WithSupportedPayloads : MockHttpSpecs
+        {
+            public WithSupportedPayloads(ITestOutputHelper output) : base(output)
+            {
+            }
 
-        [TestFixture]
-        public class WithTextProtocolWithoutEncryption
+            public class TestObject
+            {
+                public string Name { get; set; }
+                public int Age { get; set; }
+                public DateTime DoB { get; set; }
+            }
+
+            public static IEnumerable<object[]> SupportedMessages
+            {  
+                get
+                {
+                    yield return new object[] {new Message("int", 1), "json"};
+                    yield return new object[] {new Message("float", 1.1), "json"};
+                    yield return new object[] {new Message("date", Config.Now()), "json"};
+                    yield return new object[] {new Message("string", "string"), null};
+                    yield return new object[] {new Message("string", new byte[] {1,2,4}), "base64"};
+                    yield return new object[] { new Message("object", new TestObject() { Age = 40, Name = "Bob", DoB = new DateTime(1976, 1,1)}), "json"};
+                }
+            }
+
+            [Theory]
+            [MemberData("SupportedMessages")]
+            [Trait("spec", "RSL4a")]
+            public async Task PublishSupportedMessages(Message message, string encoding)
+            {
+                var client = GetRestClient();
+
+                await client.Channels.Get("test").Publish(message);
+
+                var processedMessages = JsonConvert.DeserializeObject<List<Message>>(LastRequest.RequestBody.GetText());
+                processedMessages.First().encoding.Should().Be(encoding);
+                Output.WriteLine("Encoded message: " + LastRequest.RequestBody.GetText());
+            }
+            
+        }
+
+
+        [Trait("spec", "RSL4d")]
+        public class WithTextProtocolWithoutEncryption : MockHttpSpecs
         {
             private AblyRest _client;
-            private AblyRequest currentRequest;
 
             private Message GetPayload()
             {
-                var payloads = JsonConvert.DeserializeObject<List<Message>>(currentRequest.RequestBody.GetText());
+                var payloads = JsonConvert.DeserializeObject<List<Message>>(LastRequest.RequestBody.GetText());
                 return payloads.FirstOrDefault();
             }
 
-            public WithTextProtocolWithoutEncryption()
+            public WithTextProtocolWithoutEncryption(ITestOutputHelper output): base(output)
             {
-                _client = new AblyRest(new ClientOptions() { Key = fakeKey, UseBinaryProtocol = false});
-                _client.ExecuteHttpRequest = request =>
-                {
-                    currentRequest = request;
-                    return "{}".ToAblyResponse();
-                };
+                _client = GetRestClient();
             }
 
-            [Test]
+            [Fact]
+            [Trait("spec", "RSL4d2")]
             public void WithStringData_DoesNotApplyAnyEncoding()
             {
                 //Act
@@ -50,7 +89,8 @@ namespace IO.Ably.AcceptanceTests
                 payload.encoding.Should().BeNull();
             }
 
-            [Test]
+            [Fact]
+            [Trait("spec", "RSL4d1")]
             public void WithBinaryData_DoesNotApplyAnyEncoding()
             {
                 //Act
@@ -64,7 +104,8 @@ namespace IO.Ably.AcceptanceTests
                 payload.encoding.Should().Be("base64");
             }
 
-            [Test]
+            [Fact]
+            [Trait("spec", "RSL4d3")]
             public void WithJsonData_AppliesCorrectEncoding()
             {
                 //Arrange
@@ -80,32 +121,25 @@ namespace IO.Ably.AcceptanceTests
             }
         }
 
-        [TestFixture]
-        public class WithTextProtocolWithEncryption
+        public class WithTextProtocolWithEncryption : MockHttpSpecs
         {
             private AblyRest _client;
-            private AblyRequest currentRequest;
             private ChannelOptions options;
 
-            public WithTextProtocolWithEncryption()
+            public WithTextProtocolWithEncryption(ITestOutputHelper output) : base(output)
             {
                 options = new ChannelOptions(Crypto.GetDefaultParams());
-                _client = new AblyRest(new ClientOptions() { Key = fakeKey, UseBinaryProtocol = false});
-                _client.ExecuteHttpRequest = request =>
-                {
-                    currentRequest = request;
-                    return "{}".ToAblyResponse();
-                };
+                _client = GetRestClient();
             }
 
             private Message GetPayload()
             {
-                var payloads = JsonConvert.DeserializeObject<List<Message>>(currentRequest.RequestBody.GetText());
+                var payloads = JsonConvert.DeserializeObject<List<Message>>(LastRequest.RequestBody.GetText());
                 return payloads.FirstOrDefault();
             }
 
 
-            [Test]
+            [Fact]
             public void WithBinaryData_SetsEncodingAndDataCorrectly()
             {
                 //Arrange
@@ -121,7 +155,8 @@ namespace IO.Ably.AcceptanceTests
                 Crypto.GetCipher(options).Decrypt(encryptedBytes).Should().BeEquivalentTo(bytes);
             }
 
-            [Test]
+            [Fact]
+            [Trait("spec", "RSL4b")]
             public void WithStringData_SetsEncodingAndDataCorrectly()
             {
                 //Act
@@ -134,7 +169,7 @@ namespace IO.Ably.AcceptanceTests
                 Crypto.GetCipher(options).Decrypt(encryptedBytes).GetText().Should().BeEquivalentTo("test");
             }
 
-            [Test]
+            [Fact]
             public void WithJsonData_SetsEncodingAndDataCorrectly()
             {
                 //Act
@@ -150,15 +185,14 @@ namespace IO.Ably.AcceptanceTests
             }
         }
 
-        [TestFixture]
-        public class WithBinaryProtocolWithoutEncryption
+        [Trait("spec", "RSL4c")]
+        public class WithBinaryProtocolWithoutEncryption : MockHttpSpecs
         {
             private AblyRest _client;
-            private AblyRequest currentRequest;
 
             private Message GetPayload()
             {
-                using (var stream = new MemoryStream(currentRequest.RequestBody))
+                using (var stream = new MemoryStream(LastRequest.RequestBody))
                 {
                     var context = SerializationContext.Default.GetSerializer<List<Message>>();
                     var payload = context.Unpack(stream).FirstOrDefault();
@@ -167,17 +201,13 @@ namespace IO.Ably.AcceptanceTests
                 }
             }
 
-            public WithBinaryProtocolWithoutEncryption()
+            public WithBinaryProtocolWithoutEncryption(ITestOutputHelper output) : base(output)
             {
-                _client = new AblyRest(new ClientOptions() { Key = fakeKey, UseBinaryProtocol = true});
-                _client.ExecuteHttpRequest = request =>
-                {
-                    currentRequest = request;
-                    return "{}".ToAblyResponse();
-                };
+                _client = GetRestClient(null, opts => opts.UseBinaryProtocol = true);
             }
 
-            [Test]
+            [Fact]
+            [Trait("spec", "RSL4c2")]
             public void WithString_DoesNotApplyAnyEncoding()
             {
                 //Act
@@ -189,8 +219,8 @@ namespace IO.Ably.AcceptanceTests
                 payload.encoding.Should().BeNull();
             }
 
-            [Test]
-            
+            [Fact]
+            [Trait("spec", "RSL4c1")]
             public void WithBinaryData_DoesNotApplyAnyEncoding()
             {
                 //Act
@@ -203,7 +233,8 @@ namespace IO.Ably.AcceptanceTests
                 payload.encoding.Should().BeNull();
             }
 
-            [Test]
+            [Fact]
+            [Trait("spec", "RSL4c3")]
             public void WithJsonData_AppliesCorrectEncoding()
             {
                 //Arrange
@@ -219,27 +250,20 @@ namespace IO.Ably.AcceptanceTests
             }
         }
 
-        [TestFixture]
-        public class WithBinaryProtocolWithEncryption
+        public class WithBinaryProtocolWithEncryption : MockHttpSpecs
         {
             private AblyRest _client;
-            private AblyRequest currentRequest;
             private ChannelOptions options;
 
-            public WithBinaryProtocolWithEncryption()
+            public WithBinaryProtocolWithEncryption(ITestOutputHelper output) : base(output)
             {
                 options = new ChannelOptions(Crypto.GetDefaultParams());
-                _client = new AblyRest(new ClientOptions() { Key = fakeKey, UseBinaryProtocol = true});
-                _client.ExecuteHttpRequest = request =>
-                {
-                    currentRequest = request;
-                    return "{}".ToAblyResponse();
-                };
+                _client = GetRestClient(null, opts => opts.UseBinaryProtocol = true);
             }
 
             private Message GetPayload()
             {
-                using (var stream = new MemoryStream(currentRequest.RequestBody))
+                using (var stream = new MemoryStream(LastRequest.RequestBody))
                 {
                     var context = SerializationContext.Default.GetSerializer<List<Message>>();
                     var payload = context.Unpack(stream).FirstOrDefault();
@@ -248,7 +272,7 @@ namespace IO.Ably.AcceptanceTests
                 }
             }
 
-            [Test]
+            [Fact]
             public void WithBinaryData_SetsEncodingAndDataCorrectly()
             {
                 //Arrange
@@ -264,7 +288,7 @@ namespace IO.Ably.AcceptanceTests
                 Crypto.GetCipher(options).Decrypt(encryptedBytes).Should().BeEquivalentTo(bytes);
             }
 
-            [Test]
+            [Fact]
             public void WithStringData_SetsEncodingAndDataCorrectly()
             {
                 //Act
@@ -277,7 +301,7 @@ namespace IO.Ably.AcceptanceTests
                 Crypto.GetCipher(options).Decrypt(encryptedBytes).GetText().Should().BeEquivalentTo("test");
             }
 
-            [Test]
+            [Fact]
             public void WithJsonData_SetsEncodingAndDataCorrectly()
             {
                 //Act
@@ -291,6 +315,10 @@ namespace IO.Ably.AcceptanceTests
                 var decryptedString = Crypto.GetCipher(options).Decrypt(encryptedBytes).GetText();
                 decryptedString.Should().Be(JsonConvert.SerializeObject(obj));
             }
+        }
+
+        public MessageEncodersAcceptanceTests(ITestOutputHelper output) : base(output)
+        {
         }
     }
 }

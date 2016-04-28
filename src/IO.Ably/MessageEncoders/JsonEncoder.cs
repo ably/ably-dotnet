@@ -37,7 +37,6 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
-
         public bool NeedsJsonEncoding(IEncodedMessage payload)
         {
             return payload.data is string == false && payload.data is byte[] == false;
