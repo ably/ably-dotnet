@@ -64,6 +64,16 @@ namespace IO.Ably.Tests.Realtime
                 LastCreatedTransport.Parameters.Host.Should().Be(Defaults.RealtimeHost);
             }
 
+            [Theory]
+            [InlineData(true, "msgpack")]
+            [InlineData(false, "json")]
+            public void WithUseBinaryEncoding_ShouldSetTransportFormatProperty(bool useBinary, string format)
+            {
+                var client = GetClientWithFakeTransport(opts => opts.UseBinaryProtocol = useBinary);
+                LastCreatedTransport.Parameters.UseBinaryProtocol.Should().Be(useBinary);
+                LastCreatedTransport.Parameters.GetParams().Should().ContainKey("format").WhichValue(format);
+            }
+
             public ConnectionParameterTests(ITestOutputHelper output) : base(output)
             {
                 _fakeTransportFactory = new FakeTransportFactory();
