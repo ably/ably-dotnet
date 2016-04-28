@@ -1,43 +1,32 @@
-﻿using System;
-using IO.Ably.Types;
+﻿using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionClosingState : ConnectionState
     {
+        private const int CloseTimeout = 1000;
+        private readonly ICountdownTimer _timer;
+
         public ConnectionClosingState(IConnectionContext context) :
             this(context, null, new CountdownTimer())
-        { }
+        {
+        }
 
         public ConnectionClosingState(IConnectionContext context, ErrorInfo error) :
             this(context, error, new CountdownTimer())
-        { }
+        {
+        }
 
         public ConnectionClosingState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer) :
             base(context)
         {
             _timer = timer;
-            this.Error = error ?? ErrorInfo.ReasonClosed;
+            Error = error ?? ErrorInfo.ReasonClosed;
         }
 
-        private const int CloseTimeout = 1000;
-        private ICountdownTimer _timer;
+        public override Realtime.ConnectionState State => Realtime.ConnectionState.Closing;
 
-        public override Realtime.ConnectionState State
-        {
-            get
-            {
-                return Realtime.ConnectionState.Closing;
-            }
-        }
-
-        protected override bool CanQueueMessages
-        {
-            get
-            {
-                return false;
-            }
-        }
+        protected override bool CanQueueMessages => false;
 
         public override void Connect()
         {
@@ -54,20 +43,20 @@ namespace IO.Ably.Transport.States.Connection
             switch (message.action)
             {
                 case ProtocolMessage.MessageAction.Closed:
-                    {
-                        this.TransitionState(new ConnectionClosedState(this.context));
-                        return true;
-                    }
+                {
+                    TransitionState(new ConnectionClosedState(context));
+                    return true;
+                }
                 case ProtocolMessage.MessageAction.Disconnected:
-                    {
-                        this.TransitionState(new ConnectionDisconnectedState(this.context, message.error));
-                        return true;
-                    }
+                {
+                    TransitionState(new ConnectionDisconnectedState(context, message.error));
+                    return true;
+                }
                 case ProtocolMessage.MessageAction.Error:
-                    {
-                        this.TransitionState(new ConnectionFailedState(this.context, message.error));
-                        return true;
-                    }
+                {
+                    TransitionState(new ConnectionFailedState(context, message.error));
+                    return true;
+                }
             }
             return false;
         }
@@ -76,26 +65,26 @@ namespace IO.Ably.Transport.States.Connection
         {
             if (state.State == TransportState.Closed)
             {
-                this.TransitionState(new ConnectionClosedState(this.context));
+                TransitionState(new ConnectionClosedState(context));
             }
         }
 
         public override void OnAttachedToContext()
         {
-            if (this.context.Transport.State == TransportState.Connected)
+            if (context.Transport.State == TransportState.Connected)
             {
-                this.context.Transport.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
-                _timer.Start(CloseTimeout, () => this.context.SetState(new ConnectionClosedState(this.context)));
+                context.Transport.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
+                _timer.Start(CloseTimeout, () => context.SetState(new ConnectionClosedState(context)));
             }
             else
             {
-                this.context.SetState(new ConnectionClosedState(this.context));
+                context.SetState(new ConnectionClosedState(context));
             }
         }
 
         private void TransitionState(ConnectionState newState)
         {
-            this.context.SetState(newState);
+            context.SetState(newState);
             _timer.Abort();
         }
     }

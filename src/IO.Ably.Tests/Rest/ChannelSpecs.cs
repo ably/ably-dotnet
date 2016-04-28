@@ -15,7 +15,7 @@ using Xunit.Extensions;
 
 namespace IO.Ably.Tests
 {
-    public class ChannelSpecs : MockHttpSpecs
+    public class ChannelSpecs : MockHttpRestSpecs
     {
         [Fact]
         [Trait("spec", "RSN1")]

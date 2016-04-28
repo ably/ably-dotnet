@@ -1,59 +1,49 @@
-﻿using System;
-using IO.Ably.Types;
+﻿using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionDisconnectedState : ConnectionState
     {
+        private const int ConnectTimeout = 15*1000;
+        private readonly ICountdownTimer _timer;
+
         public ConnectionDisconnectedState(IConnectionContext context) :
             this(context, null, new CountdownTimer())
-        { }
+        {
+        }
 
         public ConnectionDisconnectedState(IConnectionContext context, TransportStateInfo stateInfo) :
             this(context, CreateError(stateInfo), new CountdownTimer())
-        { }
+        {
+        }
 
         public ConnectionDisconnectedState(IConnectionContext context, ErrorInfo error) :
             this(context, error, new CountdownTimer())
-        { }
+        {
+        }
 
         public ConnectionDisconnectedState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer) :
             base(context)
         {
             _timer = timer;
-            this.Error = error ?? ErrorInfo.ReasonDisconnected;
-            this.RetryIn = ConnectTimeout;
+            Error = error ?? ErrorInfo.ReasonDisconnected;
+            RetryIn = ConnectTimeout; //TODO: Make sure this comes from ClientOptions
         }
-
-        private const int ConnectTimeout = 15 * 1000;
-        private ICountdownTimer _timer;
 
         public bool UseFallbackHost { get; set; }
 
-        public override Realtime.ConnectionState State
-        {
-            get
-            {
-                return Realtime.ConnectionState.Disconnected;
-            }
-        }
+        public override Realtime.ConnectionState State => Realtime.ConnectionState.Disconnected;
 
-        protected override bool CanQueueMessages
-        {
-            get
-            {
-                return true;
-            }
-        }
+        protected override bool CanQueueMessages => true;
 
         public override void Connect()
         {
-            this.context.SetState(new ConnectionConnectingState(this.context));
+            context.SetState(new ConnectionConnectingState(context));
         }
 
         public override void Close()
         {
-            this.context.SetState(new ConnectionClosedState(this.context));
+            context.SetState(new ConnectionClosedState(context));
         }
 
         public override bool OnMessageReceived(ProtocolMessage message)
@@ -71,17 +61,17 @@ namespace IO.Ably.Transport.States.Connection
         {
             if (UseFallbackHost)
             {
-                this.context.SetState(new ConnectionConnectingState(this.context));
+                context.SetState(new ConnectionConnectingState(context));
             }
             else
             {
-                this._timer.Start(ConnectTimeout, this.OnTimeOut);
+                _timer.Start(ConnectTimeout, OnTimeOut);
             }
         }
 
         private void OnTimeOut()
         {
-            this.context.SetState(new ConnectionConnectingState(this.context));
+            context.SetState(new ConnectionConnectingState(context));
         }
 
         private static ErrorInfo CreateError(TransportStateInfo state)

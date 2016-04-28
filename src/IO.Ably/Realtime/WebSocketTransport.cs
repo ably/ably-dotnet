@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Text;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 using SuperSocket.ClientEngine;
 using WebSocket4Net;
-using ErrorEventArgs = SuperSocket.ClientEngine.ErrorEventArgs;
 
 namespace IO.Ably.Realtime
 {
     internal class WebSocketTransport : ITransport
     {
-        private static readonly Dictionary<WebSocketState, TransportState> stateDict = new Dictionary
+        private static readonly Dictionary<WebSocketState, TransportState> StateDict = new Dictionary
             <WebSocketState, TransportState>
         {
             {WebSocketState.None, TransportState.Initialized},
@@ -23,8 +21,9 @@ namespace IO.Ably.Realtime
             {WebSocketState.Closed, TransportState.Closed}
         };
 
-        private bool channelBinaryMode;
         private readonly IMessageSerializer serializer;
+
+        private bool channelBinaryMode;
 
         private WebSocket socket;
 
@@ -43,7 +42,7 @@ namespace IO.Ably.Realtime
                 {
                     return TransportState.Initialized;
                 }
-                return stateDict[socket.State];
+                return StateDict[socket.State];
             }
         }
 
@@ -74,12 +73,12 @@ namespace IO.Ably.Realtime
 
             if (channelBinaryMode)
             {
-                var data = (byte[])serializedMessage;
+                var data = (byte[]) serializedMessage;
                 socket.Send(data, 0, data.Length);
             }
             else
             {
-                socket.Send((string)serializedMessage);
+                socket.Send((string) serializedMessage);
             }
         }
 
@@ -178,8 +177,8 @@ namespace IO.Ably.Realtime
                 socketTransport.socket.Opened += socketTransport.socket_Opened;
                 socketTransport.socket.Closed += socketTransport.socket_Closed;
                 socketTransport.socket.Error += socketTransport.socket_Error;
-                socketTransport.socket.MessageReceived += socketTransport.socket_MessageReceived;
-                socketTransport.socket.DataReceived += socketTransport.socket_DataReceived;
+                socketTransport.socket.MessageReceived += socketTransport.socket_MessageReceived; //For text messages
+                socketTransport.socket.DataReceived += socketTransport.socket_DataReceived; //For binary messages
                 return socketTransport;
             }
         }

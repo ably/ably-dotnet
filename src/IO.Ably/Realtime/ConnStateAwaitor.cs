@@ -7,61 +7,62 @@ namespace IO.Ably.Realtime
     /// <summary>Utility class to wait for a specified state of the connection, with timeout.</summary>
     internal class ConnStateAwaitor : IDisposable
     {
-        static readonly HashSet<ConnectionState> s_hsPermanentlyFailedStates = new HashSet<ConnectionState>()
+        private static readonly HashSet<ConnectionState> PermanentlyFailedStates = new HashSet<ConnectionState>
         {
             ConnectionState.Suspended,
             ConnectionState.Closed,
-            ConnectionState.Failed,
+            ConnectionState.Failed
         };
 
-        public ConnStateAwaitor( Connection connection, ConnectionState awaitedState = ConnectionState.Connected )
+        private readonly ConnectionState _awaitedState;
+
+        public readonly Connection Connection;
+        private readonly TaskCompletionSource<Connection> _taskCompletionSource = new TaskCompletionSource<Connection>();
+
+        public ConnStateAwaitor(Connection connection, ConnectionState awaitedState = ConnectionState.Connected)
         {
-            this.connection = connection;
-            m_awaitedState = awaitedState;
+            Connection = connection;
+            _awaitedState = awaitedState;
             connection.ConnectionStateChanged += conn_StateChanged;
         }
 
         public void Dispose()
         {
-            this.connection.ConnectionStateChanged -= conn_StateChanged;
+            Connection.ConnectionStateChanged -= conn_StateChanged;
         }
 
-        void conn_StateChanged( object sender, ConnectionStateChangedEventArgs e )
+        private void conn_StateChanged(object sender, ConnectionStateChangedEventArgs e)
         {
-            if( e.CurrentState == m_awaitedState )
+            if (e.CurrentState == _awaitedState)
             {
-                m_tcs.SetResult( this.connection );
+                _taskCompletionSource.SetResult(Connection);
                 return; // Success :-)
             }
 
-            if( !s_hsPermanentlyFailedStates.Contains( e.CurrentState ) )
+            if (!PermanentlyFailedStates.Contains(e.CurrentState))
                 return; // Still trying :-/
 
             // Failed :-(
-            if( null != e.Reason )
-                m_tcs.SetException( e.Reason.AsException() );
+            if (null != e.Reason)
+                _taskCompletionSource.SetException(e.Reason.AsException());
 
             // TODO: improve error message
-            m_tcs.SetException( new Exception( "Connection is in some failed state " + e.CurrentState.ToString() ) );
+            _taskCompletionSource.SetException(new Exception("Connection is in some failed state " + e.CurrentState));
         }
-
-        public readonly Connection connection;
-        readonly ConnectionState m_awaitedState;
-        readonly TaskCompletionSource<Connection> m_tcs = new TaskCompletionSource<Connection>();
 
         public Task<Connection> wait()
         {
-            return wait( TimeSpan.FromMinutes( 1 ) );
+            return wait(TimeSpan.FromMinutes(1));
         }
 
-        public async Task<Connection> wait( TimeSpan timeout )
+        public async Task<Connection> wait(TimeSpan timeout)
         {
-            Task<Connection> tResult = m_tcs.Task;
-            Task tTimeout = Task.Delay( timeout );
-            Task tCompleted = await Task.WhenAny( tResult, tTimeout );
-            if( tCompleted == tResult )
+            var tResult = _taskCompletionSource.Task;
+            var tTimeout = Task.Delay(timeout);
+            var tCompleted = await Task.WhenAny(tResult, tTimeout);
+            if (tCompleted == tResult)
                 return tResult.Result;
-            m_tcs.SetException( new TimeoutException() );
+            _taskCompletionSource.SetException(new TimeoutException());
             return await tResult;
         }
     }

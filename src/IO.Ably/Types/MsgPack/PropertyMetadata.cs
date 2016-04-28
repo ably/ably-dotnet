@@ -1,109 +1,109 @@
-﻿using MsgPack;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Reflection;
+using MsgPack;
+using Newtonsoft.Json;
 
 namespace IO.Ably.Types.MsgPack
 {
     internal class PropertyMetadata
     {
-        readonly PropertyInfo pi;
+        private readonly bool canRead;
+        private readonly bool canWrite;
         public readonly string name;
-        public Func<object, bool> shouldSerializeMethod;
-        readonly bool canRead, canWrite;
+        private readonly PropertyInfo pi;
 
         public Action<Unpacker, object> deserialize;
         public Action<object, Packer> serialize;
+        public Func<object, bool> shouldSerializeMethod;
 
-        public PropertyMetadata( PropertyInfo pi, string serializeName = null )
+        public PropertyMetadata(PropertyInfo pi, string serializeName = null)
         {
             this.pi = pi;
-            string propName = pi.Name;
-            this.name = propName;
+            var propName = pi.Name;
+            name = propName;
 
             var getter = pi.GetMethod;
-            canRead = ( null != getter ) && getter.IsPublic;
+            canRead = (null != getter) && getter.IsPublic;
 
             var setter = pi.SetMethod;
-            canWrite = ( null != setter ) && setter.IsPublic;
+            canWrite = (null != setter) && setter.IsPublic;
 
             // Find prop name
             var jp = this.pi.GetCustomAttribute<JsonPropertyAttribute>();
-            if( null != jp && jp.PropertyName.IsNotEmpty() )
-                this.name = jp.PropertyName;
+            if (null != jp && jp.PropertyName.IsNotEmpty())
+                name = jp.PropertyName;
 
-            if( null != serializeName )
-                this.name = serializeName;
+            if (null != serializeName)
+                name = serializeName;
 
             // Look for ShouldSerializeXxx method
-            string ssm = "ShouldSerialize" + propName;
-            var mi = this.pi.DeclaringType.GetRuntimeMethod(ssm, new Type[ 0 ] );
-            if( null != mi )
-                this.shouldSerializeMethod = ( obj ) => (bool)mi.Invoke( obj, null );
+            var ssm = "ShouldSerialize" + propName;
+            var mi = this.pi.DeclaringType.GetRuntimeMethod(ssm, new Type[0]);
+            if (null != mi)
+                shouldSerializeMethod = obj => (bool) mi.Invoke(obj, null);
 
             // Fill those delegates
-            if( pi.PropertyType == typeof( int ) || pi.PropertyType.IsEnum )
+            if (pi.PropertyType == typeof (int) || pi.PropertyType.IsEnum)
             {
-                this.deserialize = ( unp, obj ) =>
+                deserialize = (unp, obj) =>
                 {
                     int i;
-                    unp.ReadInt32( out i );
-                    pi.SetValue( obj, i );
+                    unp.ReadInt32(out i);
+                    pi.SetValue(obj, i);
                 };
-                this.serialize = ( obj, p ) => p.Pack( (int)pi.GetValue( obj ) );
+                serialize = (obj, p) => p.Pack((int) pi.GetValue(obj));
                 return;
             }
-            if( pi.PropertyType == typeof( long ) )
+            if (pi.PropertyType == typeof (long))
             {
-                this.deserialize = ( unp, obj ) =>
+                deserialize = (unp, obj) =>
                 {
                     long i;
-                    unp.ReadInt64( out i );
-                    pi.SetValue( obj, i );
+                    unp.ReadInt64(out i);
+                    pi.SetValue(obj, i);
                 };
-                this.serialize = ( obj, p ) => p.Pack( (long)pi.GetValue( obj ) );
+                serialize = (obj, p) => p.Pack((long) pi.GetValue(obj));
                 return;
             }
-            if( pi.PropertyType == typeof( long? ) )
+            if (pi.PropertyType == typeof (long?))
             {
-                this.deserialize = ( unp, obj ) =>
+                deserialize = (unp, obj) =>
                 {
                     long? i;
-                    unp.ReadNullableInt64( out i );
-                    pi.SetValue( obj, i );
+                    unp.ReadNullableInt64(out i);
+                    pi.SetValue(obj, i);
                 };
-                this.serialize = ( obj, p ) => p.Pack( (long?)pi.GetValue( obj ) );
+                serialize = (obj, p) => p.Pack((long?) pi.GetValue(obj));
                 return;
             }
-            if( pi.PropertyType == typeof( string ) )
+            if (pi.PropertyType == typeof (string))
             {
-                this.deserialize = ( unp, obj ) =>
+                deserialize = (unp, obj) =>
                 {
                     string s;
-                    unp.ReadString( out s );
-                    pi.SetValue( obj, s );
+                    unp.ReadString(out s);
+                    pi.SetValue(obj, s);
                 };
-                this.serialize = ( obj, p ) => p.Pack( (string)pi.GetValue( obj ) );
-                return;
+                serialize = (obj, p) => p.Pack((string) pi.GetValue(obj));
             }
         }
 
-        public bool shouldSerialize( object obj )
+        public bool shouldSerialize(object obj)
         {
-            if( !this.canRead )
+            if (!canRead)
                 return false;
-            if( null == this.serialize )
+            if (null == serialize)
                 return false;
 
-            if( null != this.shouldSerializeMethod )
-                if( !this.shouldSerializeMethod( obj ) )
+            if (null != shouldSerializeMethod)
+                if (!shouldSerializeMethod(obj))
                     return false;
 
-            object val = this.pi.GetValue(obj);
-            if( null == val )
+            var val = pi.GetValue(obj);
+            if (null == val)
                 return false;
 
-            if( val is string && ( (string)val ) == "" )
+            if (val is string && (string) val == "")
                 return false;
 
             return true;

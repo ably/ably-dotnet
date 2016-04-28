@@ -1,5 +1,4 @@
-﻿using System;
-using IO.Ably.Types;
+﻿using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
@@ -8,34 +7,22 @@ namespace IO.Ably.Transport.States.Connection
         public ConnectionFailedState(IConnectionContext context, TransportStateInfo transportState) :
             base(context)
         {
-            this.Error = CreateError(transportState);
+            Error = CreateError(transportState);
         }
 
         public ConnectionFailedState(IConnectionContext context, ErrorInfo error) :
             base(context)
         {
-            this.Error = error ?? ErrorInfo.ReasonFailed;
+            Error = error ?? ErrorInfo.ReasonFailed;
         }
 
-        public override Realtime.ConnectionState State
-        {
-            get
-            {
-                return Realtime.ConnectionState.Failed;
-            }
-        }
+        public override Realtime.ConnectionState State => Realtime.ConnectionState.Failed;
 
-        protected override bool CanQueueMessages
-        {
-            get
-            {
-                return false;
-            }
-        }
+        protected override bool CanQueueMessages => false;
 
         public override void Connect()
         {
-            this.context.SetState(new ConnectionConnectingState(this.context));
+            context.SetState(new ConnectionConnectingState(context));
         }
 
         public override void Close()
@@ -57,8 +44,8 @@ namespace IO.Ably.Transport.States.Connection
         public override void OnAttachedToContext()
         {
             // This is a terminal state. Clear the transport.
-            this.context.DestroyTransport();
-            this.context.Connection.Key = null;
+            context.DestroyTransport();
+            context.Connection.Key = null;
         }
 
         private static ErrorInfo CreateError(TransportStateInfo state)

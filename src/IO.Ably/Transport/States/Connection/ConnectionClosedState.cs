@@ -6,33 +6,22 @@ namespace IO.Ably.Transport.States.Connection
     {
         public ConnectionClosedState(IConnectionContext context) :
             this(context, null)
-        { }
+        {
+        }
 
         public ConnectionClosedState(IConnectionContext context, ErrorInfo error) :
             base(context)
         {
-            this.Error = error ?? ErrorInfo.ReasonClosed;
+            Error = error ?? ErrorInfo.ReasonClosed;
         }
 
-        public override Realtime.ConnectionState State
-        {
-            get
-            {
-                return Realtime.ConnectionState.Closed;
-            }
-        }
+        public override Realtime.ConnectionState State => Realtime.ConnectionState.Closed;
 
-        protected override bool CanQueueMessages
-        {
-            get
-            {
-                return false;
-            }
-        }
+        protected override bool CanQueueMessages => false;
 
         public override void Connect()
         {
-            this.context.SetState(new ConnectionConnectingState(this.context));
+            context.SetState(new ConnectionConnectingState(context));
         }
 
         public override void Close()
@@ -54,8 +43,8 @@ namespace IO.Ably.Transport.States.Connection
         public override void OnAttachedToContext()
         {
             // This is a terminal state. Clear the transport.
-            this.context.DestroyTransport();
-            this.context.Connection.Key = null;
+            context.DestroyTransport();
+            context.Connection.Key = null;
         }
     }
 }

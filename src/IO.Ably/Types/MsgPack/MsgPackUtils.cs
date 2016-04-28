@@ -1,82 +1,78 @@
-﻿using MsgPack;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using MsgPack;
 
 namespace IO.Ably.Types.MsgPack
 {
-    static class MsgPackUtils
+    internal static class MsgPackUtils
     {
-        public static object unpack( this MessagePackObject mp )
+        private static readonly Dictionary<Type, Func<MessagePackObject, object>> resolver = new Dictionary
+            <Type, Func<MessagePackObject, object>>
         {
-            return ParseResult( mp );
+            {typeof (byte), r => r.AsByte()},
+            {typeof (sbyte), r => r.AsSByte()},
+            {typeof (bool), r => r.AsBoolean()},
+            {typeof (ushort), r => r.AsUInt16()},
+            {typeof (uint), r => r.AsUInt32()},
+            {typeof (ulong), r => r.AsUInt64()},
+            {typeof (short), r => r.AsInt16()},
+            {typeof (int), r => r.AsInt32()},
+            {typeof (long), r => r.AsInt64()},
+            {typeof (float), r => r.AsSingle()},
+            {typeof (double), r => r.AsDouble()},
+            {typeof (string), r => r.AsStringUtf8()}
+        };
+
+        public static object unpack(this MessagePackObject mp)
+        {
+            return ParseResult(mp);
         }
 
-        static object ParseResult( MessagePackObject obj )
+        private static object ParseResult(MessagePackObject obj)
         {
-            if( obj.IsList )
+            if (obj.IsList)
             {
-                List<object> data = new List<object>();
-                foreach( MessagePackObject objItem in obj.AsList() )
+                var data = new List<object>();
+                foreach (var objItem in obj.AsList())
                 {
-                    data.Add( ParseResult( objItem ) );
+                    data.Add(ParseResult(objItem));
                 }
                 return data.ToArray();
             }
-            else if( obj.IsMap )
+            if (obj.IsMap)
             {
-                Dictionary< object ,object> data = new Dictionary< object ,object>();
-                foreach( var objItem in obj.AsDictionary() )
+                var data = new Dictionary<object, object>();
+                foreach (var objItem in obj.AsDictionary())
                 {
-                    data.Add( ParseResult( objItem.Key ), ParseResult( objItem.Value ) );
+                    data.Add(ParseResult(objItem.Key), ParseResult(objItem.Value));
                 }
                 return data;
             }
-            else
+            if (obj.UnderlyingType != null && resolver.ContainsKey(obj.UnderlyingType))
             {
-                if( obj.UnderlyingType != null && resolver.ContainsKey( obj.UnderlyingType ) )
-                {
-                    return resolver[ obj.UnderlyingType ]( obj );
-                }
+                return resolver[obj.UnderlyingType](obj);
             }
             return null;
         }
 
-        static readonly Dictionary<Type, Func<MessagePackObject, object>> resolver = new Dictionary<Type, Func<MessagePackObject, object>>()
+        public static void packArray<tElt>(this Packer packer, TypeMetadata mdMessage, tElt[] arr)
         {
-            { typeof(Byte), r => r.AsByte() },
-            { typeof(SByte), r => r.AsSByte() },
-            { typeof(Boolean), r => r.AsBoolean() },
-            { typeof(UInt16), r => r.AsUInt16() },
-            { typeof(UInt32), r => r.AsUInt32() },
-            { typeof(UInt64), r => r.AsUInt64() },
-            { typeof(Int16), r => r.AsInt16() },
-            { typeof(Int32), r => r.AsInt32() },
-            { typeof(Int64), r => r.AsInt64() },
-            { typeof(Single), r => r.AsSingle() },
-            { typeof(Double), r => r.AsDouble() },
-            { typeof(String), r => r.AsStringUtf8() },
-        };
-
-        public static void packArray<tElt>( this Packer packer, TypeMetadata mdMessage, tElt[] arr )
-        {
-            packer.PackArrayHeader( arr.Length );
-            foreach( var m in arr )
-                mdMessage.serialize( m, packer );
+            packer.PackArrayHeader(arr.Length);
+            foreach (var m in arr)
+                mdMessage.serialize(m, packer);
         }
 
-        public static tElt[] unpackArray<tElt>( this Unpacker unpacker, TypeMetadata mdMessage )
+        public static tElt[] unpackArray<tElt>(this Unpacker unpacker, TypeMetadata mdMessage)
         {
             long ll;
-            unpacker.ReadArrayLength( out ll );
-            int l = (int)ll;
-            tElt[] arr = new tElt[ l ];
-            for( int i = 0; i < l; i++ )
+            unpacker.ReadArrayLength(out ll);
+            var l = (int) ll;
+            var arr = new tElt[l];
+            for (var i = 0; i < l; i++)
             {
-                arr[ i ] = (tElt)mdMessage.deserialize( unpacker );
+                arr[i] = (tElt) mdMessage.deserialize(unpacker);
             }
             return arr;
         }
-
-
     }
 }

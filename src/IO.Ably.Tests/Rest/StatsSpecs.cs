@@ -6,7 +6,7 @@ using static Xunit.Assert;
 
 namespace IO.Ably.Tests
 {
-    public class StatsSpecs : MockHttpSpecs
+    public class StatsSpecs : MockHttpRestSpecs
     {
         [Fact]
         public async Task ShouldCreateRequestToCorrectPath()

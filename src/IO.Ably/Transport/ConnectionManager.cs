@@ -47,30 +47,15 @@ namespace IO.Ably.Transport
             Connection = new Connection(this);
         }
 
-        ConnectionState IConnectionContext.State
-        {
-            get { return _state; }
-        }
+        ConnectionState IConnectionContext.State => _state;
 
-        ITransport IConnectionContext.Transport
-        {
-            get { return _transport; }
-        }
+        ITransport IConnectionContext.Transport => _transport;
 
-        Queue<ProtocolMessage> IConnectionContext.QueuedMessages
-        {
-            get { return _pendingMessages; }
-        }
+        Queue<ProtocolMessage> IConnectionContext.QueuedMessages => _pendingMessages;
 
-        DateTimeOffset? IConnectionContext.FirstConnectionAttempt
-        {
-            get { return _firstConnectionAttempt; }
-        }
+        DateTimeOffset? IConnectionContext.FirstConnectionAttempt => _firstConnectionAttempt;
 
-        int IConnectionContext.ConnectionAttempts
-        {
-            get { return _connectionAttempts; }
-        }
+        int IConnectionContext.ConnectionAttempts => _connectionAttempts;
 
         void IConnectionContext.SetState(ConnectionState newState)
         {
@@ -106,7 +91,7 @@ namespace IO.Ably.Transport
         {
             if (_firstConnectionAttempt == null)
             {
-                _firstConnectionAttempt = DateTimeOffset.UtcNow;
+                _firstConnectionAttempt = Config.Now();
             }
             _connectionAttempts++;
         }
@@ -189,7 +174,7 @@ namespace IO.Ably.Transport
         {
             if (_sync != null)
             {
-                _sync.Post(o => OnTransportError((TransportState)o, e), _transport.State);
+                _sync.Post(o => OnTransportError((TransportState) o, e), _transport.State);
                 return;
             }
             OnTransportError(_transport.State, e);
@@ -231,7 +216,7 @@ namespace IO.Ably.Transport
             if (useFallbackHost)
             {
                 var r = new Random();
-                defaultHost = Defaults.FallbackHosts[r.Next(0, 1000) % Defaults.FallbackHosts.Length];
+                defaultHost = Defaults.FallbackHosts[r.Next(0, 1000)%Defaults.FallbackHosts.Length];
             }
             var host = options.RealtimeHost.IsNotEmpty() ? options.RealtimeHost : defaultHost;
             if (options.Environment.HasValue && options.Environment != AblyEnvironment.Live)

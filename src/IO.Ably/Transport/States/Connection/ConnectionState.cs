@@ -47,8 +47,8 @@ namespace IO.Ably.Transport.States.Connection
 
             public TransportStateInfo(TransportState state, Exception error)
             {
-                this.State = state;
-                this.Error = error;
+                State = state;
+                Error = error;
             }
 
             public TransportState State { get; private set; }

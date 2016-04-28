@@ -14,25 +14,27 @@ namespace IO.Ably.Transport
 
     internal class AcknowledgementProcessor : IAcknowledgementProcessor
     {
-        public AcknowledgementProcessor()
-        {
-            this.msgSerial = 0;
-            this.ackQueue = new Dictionary<long, Action<bool, ErrorInfo>>();
-        }
+        //TODO: Look at replacing this with a ConcurrentDictionary
+        private readonly Dictionary<long, Action<bool, ErrorInfo>> _ackQueue;
 
         private long msgSerial;
-        private Dictionary<long, Action<bool, ErrorInfo>> ackQueue;
+
+        public AcknowledgementProcessor()
+        {
+            msgSerial = 0;
+            _ackQueue = new Dictionary<long, Action<bool, ErrorInfo>>();
+        }
 
         public void SendMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
         {
             if (!AckRequired(message))
                 return;
 
-            message.msgSerial = this.msgSerial++;
+            message.msgSerial = msgSerial++;
 
             if (callback != null)
             {
-                this.ackQueue.Add(message.msgSerial, callback);
+                _ackQueue.Add(message.msgSerial, callback);
             }
         }
 
@@ -52,41 +54,41 @@ namespace IO.Ably.Transport
             switch (state.State)
             {
                 case Realtime.ConnectionState.Connected:
-                    this.Reset();
+                    Reset();
                     break;
                 case Realtime.ConnectionState.Closed:
                 case Realtime.ConnectionState.Failed:
+                {
+                    foreach (var item in _ackQueue)
                     {
-                        foreach (var item in this.ackQueue)
-                        {
-                            item.Value(false, state.Error ?? ErrorInfo.ReasonUnknown);
-                        }
-                        this.ackQueue.Clear();
-                        break;
+                        item.Value(false, state.Error ?? ErrorInfo.ReasonUnknown);
                     }
+                    _ackQueue.Clear();
+                    break;
+                }
             }
         }
 
         private void Reset()
         {
-            this.msgSerial = 0;
-            this.ackQueue.Clear();
+            msgSerial = 0;
+            _ackQueue.Clear();
         }
 
         private static bool AckRequired(ProtocolMessage msg)
         {
-            return (msg.action == ProtocolMessage.MessageAction.Message ||
-                msg.action == ProtocolMessage.MessageAction.Presence);
+            return msg.action == ProtocolMessage.MessageAction.Message ||
+                   msg.action == ProtocolMessage.MessageAction.Presence;
         }
 
         private void HandleMessageAcknowledgement(ProtocolMessage message)
         {
-            long startSerial = message.msgSerial;
-            long endSerial = message.msgSerial + (message.count - 1);
-            for (long i = startSerial; i <= endSerial; i++)
+            var startSerial = message.msgSerial;
+            var endSerial = message.msgSerial + (message.count - 1);
+            for (var i = startSerial; i <= endSerial; i++)
             {
                 Action<bool, ErrorInfo> callback;
-                if (this.ackQueue.TryGetValue(i, out callback))
+                if (_ackQueue.TryGetValue(i, out callback))
                 {
                     if (message.action == ProtocolMessage.MessageAction.Ack)
                     {
@@ -96,7 +98,7 @@ namespace IO.Ably.Transport
                     {
                         callback(false, message.error ?? ErrorInfo.ReasonUnknown);
                     }
-                    this.ackQueue.Remove(i);
+                    _ackQueue.Remove(i);
                 }
             }
         }

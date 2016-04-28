@@ -32,7 +32,8 @@ namespace IO.Ably.Types
                     ((Message) obj).data = result.unpack();
                 });
 
-            var mdPresence = new TypeMetadata(typeof (PresenceMessage));
+<<<<<<< HEAD
+            TypeMetadata mdPresence = new TypeMetadata( typeof( PresenceMessage ) );
             mdPresence.setCustom("data",
                 (obj, packer) =>
                 {
@@ -47,6 +48,9 @@ namespace IO.Ably.Types
                     MessagePackObject result = unpacker.ReadItemData();
                     ((PresenceMessage)obj).data = result.unpack();
                 });
+=======
+            var mdPresence = new TypeMetadata(typeof (PresenceMessage));
+>>>>>>> specs/realtime
 
             meta.setCustom("messages",
                 (obj, packer) =>

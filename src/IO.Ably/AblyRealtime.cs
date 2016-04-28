@@ -7,10 +7,7 @@ using System.Threading.Tasks;
 
 namespace IO.Ably
 {
-    /// <summary>
-    ///
-    /// </summary>
-    public class AblyRealtime : AblyBase
+    public class AblyRealtime : IRealtimeClient
     {
         /// <summary></summary>
         /// <param name="key"></param>
@@ -25,11 +22,14 @@ namespace IO.Ably
         public AblyRealtime(ClientOptions options)
         {
             RestClient = new AblyRest(options);
+
+            //TODO: Change this and allow a way to check to log exceptions
             if (options.AutoConnect)
                 Connect().IgnoreExceptions();
         }
 
         public AblyRest RestClient { get; }
+
         internal AblyAuth Auth => RestClient.AblyAuth;
         internal ClientOptions Options => RestClient.Options;
 
@@ -53,17 +53,19 @@ namespace IO.Ably
 
                 IConnectionManager connectionManager = new ConnectionManager(options);
                 IChannelFactory factory = new ChannelFactory() { ConnectionManager = connectionManager, Options = options };
-                Channels = new ChannelList(connectionManager, factory);
+                Channels = new ChannelList(factory);
                 Connection = connectionManager.Connection;
             }
 
-            ConnectionState state = this.Connection.State;
+            ConnectionState state = Connection.State;
             if (state == ConnectionState.Connected)
                 return Connection;
 
-            using (ConnStateAwaitor awaitor = new ConnStateAwaitor(this.Connection))
+
+            //TODO: To come back to this
+            using (ConnStateAwaitor awaitor = new ConnStateAwaitor(Connection))
             {
-                awaitor.connection.Connect();
+                awaitor.Connection.Connect();
                 return await awaitor.wait();
             }
         }
@@ -112,8 +114,23 @@ namespace IO.Ably
 
         /// <summary>Retrieves the ably service time</summary>
         public Task<DateTimeOffset> Time()
-        {
+        { 
             return RestClient.Time();
+        }
+
+        public Task<PaginatedResult<Stats>> Stats()
+        {
+            return RestClient.Stats();
+        }
+
+        public Task<PaginatedResult<Stats>> Stats(StatsDataRequestQuery query)
+        {
+            return RestClient.Stats(query);
+        }
+
+        public Task<PaginatedResult<Stats>> Stats(DataRequestQuery query)
+        {
+            return RestClient.Stats(query);
         }
     }
 }

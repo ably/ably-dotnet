@@ -12,21 +12,9 @@ namespace IO.Ably.Transport.States.Connection
             this.context.Connection.Serial = info.ConnectionSerial;
         }
 
-        public override Realtime.ConnectionState State
-        {
-            get
-            {
-                return Realtime.ConnectionState.Connected;
-            }
-        }
+        public override Realtime.ConnectionState State => Realtime.ConnectionState.Connected;
 
-        protected override bool CanQueueMessages
-        {
-            get
-            {
-                return false;
-            }
-        }
+        protected override bool CanQueueMessages => false;
 
         public override void Connect()
         {
@@ -35,7 +23,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void Close()
         {
-            this.context.SetState(new ConnectionClosingState(this.context));
+            context.SetState(new ConnectionClosingState(context));
         }
 
         public override bool OnMessageReceived(ProtocolMessage message)
@@ -43,15 +31,15 @@ namespace IO.Ably.Transport.States.Connection
             switch (message.action)
             {
                 case ProtocolMessage.MessageAction.Disconnected:
-                    {
-                        this.context.SetState(new ConnectionDisconnectedState(this.context, message.error));
-                        return true;
-                    }
+                {
+                    context.SetState(new ConnectionDisconnectedState(context, message.error));
+                    return true;
+                }
                 case ProtocolMessage.MessageAction.Error:
-                    {
-                        this.context.SetState(new ConnectionFailedState(this.context, message.error));
-                        return true;
-                    }
+                {
+                    context.SetState(new ConnectionFailedState(context, message.error));
+                    return true;
+                }
             }
             return false;
         }
@@ -60,7 +48,7 @@ namespace IO.Ably.Transport.States.Connection
         {
             if (state.State == TransportState.Closed)
             {
-                this.context.SetState(new ConnectionDisconnectedState(this.context, state));
+                context.SetState(new ConnectionDisconnectedState(context, state));
             }
         }
 
@@ -73,13 +61,13 @@ namespace IO.Ably.Transport.States.Connection
         {
             context.ResetConnectionAttempts();
 
-            if (this.context.QueuedMessages != null && this.context.QueuedMessages.Count > 0)
+            if (context.QueuedMessages != null && context.QueuedMessages.Count > 0)
             {
-                foreach (ProtocolMessage message in this.context.QueuedMessages)
+                foreach (var message in context.QueuedMessages)
                 {
-                    this.SendMessage(message);
+                    SendMessage(message);
                 }
-                this.context.QueuedMessages.Clear();
+                context.QueuedMessages.Clear();
             }
         }
     }

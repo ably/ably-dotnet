@@ -1,8 +1,5 @@
-﻿using IO.Ably.Types;
-using System;
-using System.Collections.Specialized;
+﻿using System.Net;
 using System.Text.RegularExpressions;
-using System.Net;
 
 namespace IO.Ably.Transport
 {
@@ -17,7 +14,7 @@ namespace IO.Ably.Transport
     {
         public TransportParams(ClientOptions options)
         {
-            this.Options = options;
+            Options = options;
         }
 
         public ClientOptions Options { get; set; }
@@ -28,8 +25,12 @@ namespace IO.Ably.Transport
         public string ConnectionSerial { get; set; }
         public Mode Mode { get; set; }
 
-        public void StoreParams( WebHeaderCollection collection )
+
+        
+        public void StoreParams(WebHeaderCollection collection)
         {
+
+            //TODO: Move so this is handled by the Auth object and ensures all the rules about renewing are followed
             // auth
             if (Options.Method == AuthMethod.Basic)
             {
@@ -51,20 +52,20 @@ namespace IO.Ably.Transport
             }
 
             // recovery
-            if (!string.IsNullOrEmpty(ConnectionKey))
+            if (ConnectionKey.IsNotEmpty())
             {
                 Mode = Mode.Resume;
                 collection["resume"] = ConnectionKey;
-                if (!string.IsNullOrEmpty(ConnectionSerial))
+                if (ConnectionSerial.IsNotEmpty())
                 {
                     collection["connection_serial"] = ConnectionSerial;
                 }
             }
-            else if (!string.IsNullOrEmpty(Options.Recover))
+            else if (Options.Recover.IsNotEmpty())
             {
                 Mode = Mode.Recover;
-                Regex pattern = new Regex(@"^([\w\-]+):(\-?\w+)$");
-                Match match = pattern.Match(Options.Recover);
+                var pattern = new Regex(@"^([\w\-]+):(\-?\w+)$");
+                var match = pattern.Match(Options.Recover);
                 if (match.Success)
                 {
                     collection["recover"] = match.Groups[1].Value;
