@@ -23,23 +23,29 @@ namespace IO.Ably
         {
             RestClient = new AblyRest(options);
 
+            ConnectionManager = new ConnectionManager(options, RestClient);
+            ChannelFactory = new ChannelFactory() { ConnectionManager = ConnectionManager, Options = options };
+            Channels = new ChannelList(ChannelFactory);
+
             //TODO: Change this and allow a way to check to log exceptions
             if (options.AutoConnect)
                 Connect().IgnoreExceptions();
         }
+
+        public ChannelFactory ChannelFactory { get; set; }
 
         public AblyRest RestClient { get; }
 
         internal AblyAuth Auth => RestClient.AblyAuth;
         internal ClientOptions Options => RestClient.Options;
 
+        internal ConnectionManager ConnectionManager { get; set; }
+
         /// <summary>The collection of channels instanced, indexed by channel name.</summary>
         public IRealtimeChannelCommands Channels { get; private set; }
 
         /// <summary>A reference to the connection object for this library instance.</summary>
-        public Connection Connection { get; private set; }
-
-        ClientOptions options => Options;
+        public Connection Connection => ConnectionManager.Connection;
 
         /// <summary>
         ///
@@ -47,14 +53,6 @@ namespace IO.Ably
         /// <returns></returns>
         public async Task<Connection> Connect()
         {
-            if (Channels == null || Connection == null)
-            {
-                IConnectionManager connectionManager = new ConnectionManager(options, RestClient);
-                IChannelFactory factory = new ChannelFactory() { ConnectionManager = connectionManager, Options = options };
-                Channels = new ChannelList(factory);
-                Connection = connectionManager.Connection;
-            }
-
             ConnectionStateType state = Connection.State;
             if (state == ConnectionStateType.Connected)
                 return Connection;

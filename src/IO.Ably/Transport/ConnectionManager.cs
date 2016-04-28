@@ -53,7 +53,7 @@ namespace IO.Ably.Transport
 
         ConnectionState IConnectionContext.State => _state;
 
-        ITransport IConnectionContext.Transport => _transport;
+        public ITransport Transport => _transport;
 
         Queue<ProtocolMessage> IConnectionContext.QueuedMessages => _pendingMessages;
 
