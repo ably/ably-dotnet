@@ -216,7 +216,7 @@ namespace IO.Ably.Tests.Rest
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSL6b")]
-        public async Task WithEncryptionCiphenMismatch_ShouldLeaveMessageEncryptedAndRaiseError(Protocol protocol)
+        public async Task WithEncryptionCipherMismatch_ShouldLeaveMessageEncryptedAndLogError(Protocol protocol)
         {
             var loggerSink = new TestLoggerSink();
 
@@ -229,6 +229,30 @@ namespace IO.Ably.Tests.Rest
                 await channel1.Publish("test", payload);
 
                 var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(true));
+                var message = (await channel2.History()).First();
+
+                loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
+                loggerSink.LastMessage.Should().Contain("Error decrypting payload");
+                message.encoding.Should().Be("utf-8/cipher+aes-128-cbc");
+            }
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSL6b")]
+        public async Task WithEncryptionCipherAlgorithmMismatch_ShouldLeaveMessageEncryptedAndLogError(Protocol protocol)
+        {
+            var loggerSink = new TestLoggerSink();
+
+            using (Logger.SetTempDestination(loggerSink))
+            {
+                var client = await GetRestClient(protocol);
+                var channel1 = client.Channels.Get("persisted:encryption", GetOptions(examples));
+
+                var payload = "test payload";
+                await channel1.Publish("test", payload);
+
+                var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(true, new CipherParams(Crypto.GetRandomKey(CipherMode.CBC, 128))));
                 var message = (await channel2.History()).First();
 
                 loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
