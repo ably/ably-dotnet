@@ -3,12 +3,19 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Tests
 {
-    internal class FakeTransport : ITransport
+    public class FakeTransport : ITransport
     {
+        public TransportParams Parameters { get; }
+
         public FakeTransport(TransportState? state = null)
         {
             if (state.HasValue)
                 State = state.Value;
+        }
+
+        public FakeTransport(TransportParams parameters)
+        {
+            Parameters = parameters;
         }
 
         public bool ConnectCalled { get; set; }

@@ -5,13 +5,31 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Transport;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime
 {
+    public class FakeTransportFactory : ITransportFactory
+    {
+        public FakeTransport LastCreatedTransport { get; set; }
+
+        public FakeTransportFactory()
+        {
+        }
+
+        public Task<ITransport> CreateTransport(TransportParams parameters)
+        {
+            LastCreatedTransport = new FakeTransport(parameters);
+            return Task.FromResult<ITransport>(LastCreatedTransport);
+        }
+    }
+
     public class ConnectionSpecs : AblySpecs
     {
+
+
         public ConnectionSpecs(ITestOutputHelper output) : base(output)
         {
         }
@@ -28,15 +46,42 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN2")]
         public class ConnectionParameterTests : ConnectionSpecs
         {
+            private FakeTransportFactory _fakeTransportFactory;
+            private FakeTransport LastCreatedTransport => _fakeTransportFactory.LastCreatedTransport;
+
+            private AblyRealtime GetClientWithFakeTransport(Action<ClientOptions> optionsAction = null)
+            {
+                var options = new ClientOptions(ValidKey) {TransportFactory = _fakeTransportFactory};
+                optionsAction?.Invoke(options);
+                return GetClient(options);
+            }
+
+            [Fact]
+            [Trait("spec", "RTN2")]
+            public void ShouldUseDefaultRealtimeHost()
+            {
+                var client = GetClientWithFakeTransport();
+                LastCreatedTransport.Parameters.Host.Should().Be(Defaults.RealtimeHost);
+            }
 
             public ConnectionParameterTests(ITestOutputHelper output) : base(output)
             {
+                _fakeTransportFactory = new FakeTransportFactory();
             }
         }
 
-        private AblyRealtime GetClient()
+        protected virtual AblyRealtime GetClient(ClientOptions options = null)
         {
-            return new AblyRealtime(ValidKey);
+            var clientOptions = options ?? new ClientOptions(ValidKey);
+            return new AblyRealtime(clientOptions);
+        }
+        protected virtual AblyRealtime GetClient(Action<ClientOptions> optionsAction)
+        {
+            var options = new ClientOptions(ValidKey);
+            optionsAction?.Invoke(options);
+            return new AblyRealtime(options);
         }
     }
+
+    
 }
