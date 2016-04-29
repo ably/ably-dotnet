@@ -1,3 +1,4 @@
+using System;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 
@@ -40,16 +41,21 @@ namespace IO.Ably.Tests
         public void Close()
         {
             CloseCalled = true;
+            Listener?.OnTransportMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
             Listener?.OnTransportDisconnected();
         }
+
 
         public void Abort(string reason)
         {
             AbortCalled = true;
         }
 
+        public Action<ProtocolMessage> SendAction = delegate { };
+
         public void Send(ProtocolMessage message)
         {
+            SendAction(message);
             LastMessageSend = message;
         }
     }

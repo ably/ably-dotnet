@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -204,7 +205,6 @@ namespace IO.Ably.Tests.Realtime
             public void ANewConnectionShouldRaiseConnectingAndConnectedEvents()
             {
                 var client = GetClientWithFakeTransport(opts => opts.AutoConnect = false);
-                var expected = new[] {ConnectionStateType.Connecting, ConnectionStateType.Connected,};
                 var states = new List<ConnectionStateType>();
                 client.Connection.ConnectionStateChanged += (sender, args) =>
                 {
@@ -213,8 +213,34 @@ namespace IO.Ably.Tests.Realtime
 
                 client.Connect();
 
-                states.Should().BeEquivalentTo(expected);
+                states.Should().BeEquivalentTo(new[] {ConnectionStateType.Connecting, ConnectionStateType.Connected,});
             }
+
+            [Fact]
+            [Trait("spec", "RTN4c")]
+            [Trait("sandboxTest", "needed")]
+            public void WhenClosingAConnection_ItShouldRaiseClosingAndClosedEvents()
+            {
+                var client = GetClientWithFakeTransport();
+
+                //Start collecting events after the connection is open
+                var states = new List<ConnectionStateType>();
+                client.Connection.ConnectionStateChanged += (sender, args) =>
+                {
+                    states.Add(args.CurrentState);
+                };
+                LastCreatedTransport.SendAction = message =>
+                {
+                    if (message.action == ProtocolMessage.MessageAction.Close)
+                    {
+                        LastCreatedTransport.Close();
+                    }
+                };
+
+                client.Close();
+                states.Should().BeEquivalentTo(new[] { ConnectionStateType.Closing, ConnectionStateType.Closed });
+            }
+
 
             public EventEmitterSpecs(ITestOutputHelper output) : base(output)
             {
