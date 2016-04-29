@@ -24,6 +24,12 @@ namespace IO.Ably.AcceptanceTests
             _protocol = protocol;
         }
 
+        [SetUp]
+        public void SetupParent()
+        {
+            Console.WriteLine("Setup parent");
+        }
+
         private AblyRest GetAbly()
         {
             var testData = TestsSetup.TestData;
@@ -40,11 +46,17 @@ namespace IO.Ably.AcceptanceTests
 
         [TestFixture(Protocol.Json)]
         [TestFixture(Protocol.MsgPack)]
-        [Ignore("Ignoring for the time being. Will fix when I get to stats")]
+        //[Ignore("Ignoring for the time being. Will fix when I get to stats")]
         public class ByMinuteWhenFromSetToStartIntervalAndLimitSetTo1 : StatsAcceptanceTests
         {
             public ByMinuteWhenFromSetToStartIntervalAndLimitSetTo1(Protocol protocol) : base(protocol)
             {
+            }
+
+            [SetUp]
+            public void SetupChild()
+            {
+                Console.WriteLine("Setup child");
             }
 
             [OneTimeSetUp]

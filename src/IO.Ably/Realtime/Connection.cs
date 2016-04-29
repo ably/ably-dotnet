@@ -41,6 +41,8 @@ namespace IO.Ably.Realtime
         /// </summary>
         public string Key { get; internal set; }
 
+        public string RecoveryKey { get; internal set; }
+
         /// <summary>
         ///     Information relating to the transition to the current state,
         ///     as an Ably ErrorInfo object. This contains an error code and

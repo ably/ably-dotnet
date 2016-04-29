@@ -205,14 +205,14 @@ namespace IO.Ably.Tests
         {
             // Arrange
             JsonMessageSerializer serializer = new JsonMessageSerializer();
-            string message = string.Format("{{\"action\":{0}}}", (int)action);
+            string message = string.Format("{{ \"action\": {0} }}", (int)action);
 
             // Act
             ProtocolMessage target = serializer.DeserializeProtocolMessage(message);
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<ProtocolMessage.MessageAction>(action, target.action);
+            Assert.Equal(action, target.action);
         }
 
         [Theory]
@@ -350,7 +350,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<int>(int.Parse(count.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.count);
+            Assert.Equal<int>(int.Parse(count.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.count.Value);
         }
 
         [Theory]

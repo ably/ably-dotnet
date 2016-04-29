@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace IO.Ably.Types
 {
@@ -10,7 +10,7 @@ namespace IO.Ably.Types
     {
         public enum MessageAction : int
         {
-            Heartbeat,
+            Heartbeat = 0,
             Ack,
             Nack,
             Connect,
@@ -53,16 +53,9 @@ namespace IO.Ably.Types
 
         public MessageAction action { get; set; }
 
-        // http://stackoverflow.com/a/24224465/126995
-        [JsonIgnore]
-        public MessageFlag flags { get; set; }
-        [JsonProperty( "flags" )]
-        public MessageFlag flag_setOnly { set { this.flags = value; } }
+        public MessageFlag? flags { get; set; }
 
-        [JsonIgnore]
-        public int count { get; set; }
-        [JsonProperty( "count" )]
-        public int count_setOnly { set { this.count = value; } }
+        public int? count { get; set; }
 
         public ErrorInfo error { get; set; }
         public string id { get; set; }
@@ -75,39 +68,40 @@ namespace IO.Ably.Types
         public DateTimeOffset? timestamp { get; set; }
         public Message[] messages { get; set; }
 
-        public bool ShouldSerializemessages()
-        {
-            if( null == messages )
-                return false;
-            return messages.Any( m => !m.IsEmpty() );
-        }
-
-        [OnSerializing]
-        internal void onSerializing( StreamingContext context )
-        {
-            if( "" == channel )
-                channel = null;
-
-            // Filter out empty messages
-            if( null == this.messages )
-                return;
-            this.messages = this.messages.Where( m => !m.IsEmpty() ).ToArray();
-            if( this.messages.Length <= 0 )
-                this.messages = null;
-        }
-
         public PresenceMessage[] presence { get; set; }
         public ConnectionDetailsMessage connectionDetails { get; set; }
 
+        public bool ShouldSerializemessages()
+        {
+            if (null == messages)
+                return false;
+            return messages.Any(m => !m.IsEmpty());
+        }
+
+        [OnSerializing]
+        internal void onSerializing(StreamingContext context)
+        {
+            if ("" == channel)
+                channel = null;
+
+            // Filter out empty messages
+            if (messages == null)
+                return;
+
+            messages = messages.Where(m => !m.IsEmpty()).ToArray();
+            if (messages.Length <= 0)
+                messages = null;
+        }
+
         public override string ToString()
         {
-            StringBuilder text = new StringBuilder();
+            var text = new StringBuilder();
             text.Append("{ ")
-                .AppendFormat("action={0}", this.action);
-            if (this.messages != null && this.messages.Length > 0)
+                .AppendFormat("action={0}", action);
+            if (messages != null && messages.Length > 0)
             {
                 text.Append(", mesasages=[ ");
-                foreach (Message message in this.messages)
+                foreach (var message in messages)
                 {
                     text.AppendFormat("{{ name=\"{0}\"", message.name);
                     if (message.timestamp.HasValue && message.timestamp.Value.Ticks > 0)

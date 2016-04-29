@@ -17,6 +17,11 @@ namespace IO.Ably.Tests.Realtime
         private FakeTransportFactory _fakeTransportFactory;
         protected FakeTransport LastCreatedTransport => _fakeTransportFactory.LastCreatedTransport;
 
+        protected void FakeMessageReceived(ProtocolMessage message)
+        {
+            LastCreatedTransport.Listener.OnTransportMessageReceived(message);
+        }
+
         protected AblyRealtime GetClientWithFakeTransport(Action<ClientOptions> optionsAction = null)
         {
             var options = new ClientOptions(ValidKey) { TransportFactory = _fakeTransportFactory };
@@ -47,6 +52,7 @@ namespace IO.Ably.Tests.Realtime
             public void WithAutoConnect_CallsConnectOnTransport()
             {
                 var client = GetClientWithFakeTransport(opts => opts.AutoConnect = true);
+                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
                 client.ConnectionManager.ConnectionState.Should().Be(ConnectionStateType.Connected);
                 LastCreatedTransport.ConnectCalled.Should().BeTrue();
@@ -60,6 +66,23 @@ namespace IO.Ably.Tests.Realtime
 
                 client.ConnectionManager.ConnectionState.Should().Be(ConnectionStateType.Initialized);
                 LastCreatedTransport.Should().BeNull("Transport shouldn't be created without calling connect when AutoConnect is false");
+            }
+
+            [Fact]
+            public void WhenConnectedMessageReceived_ConnectionShouldBeInConnectedStateAndConnectionDetailsAreUpdated()
+            {
+                var client = GetClientWithFakeTransport(opts => opts.AutoConnect = false);
+
+                client.Connect();
+                //SendConnected Message
+                var connectionDetailsMessage = new ConnectionDetailsMessage()
+                {
+                    clientId = "123",
+                    connectionKey = "key"
+                };
+                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { connectionDetails = connectionDetailsMessage});
+
+                client.Connection.State.Should().Be(ConnectionStateType.Connected);
             }
 
             public GeneralSpecs(ITestOutputHelper output) : base(output)
@@ -216,6 +239,8 @@ namespace IO.Ably.Tests.Realtime
                 };
 
                 client.Connect();
+                //SendConnected Message
+                LastCreatedTransport.Listener.OnTransportMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
                 states.Should().BeEquivalentTo(new[] { ConnectionStateType.Connecting, ConnectionStateType.Connected });
                 client.Connection.State.Should().Be(ConnectionStateType.Connected);
@@ -277,6 +302,8 @@ namespace IO.Ably.Tests.Realtime
             {
             }
         }
+
+
 
     }
 }
