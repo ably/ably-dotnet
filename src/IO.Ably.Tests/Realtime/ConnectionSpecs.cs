@@ -28,13 +28,30 @@ namespace IO.Ably.Tests.Realtime
             _fakeTransportFactory = new FakeTransportFactory();
         }
 
-        [Fact]
-        [Trait("spec", "RTN1")]
-        public void ShouldUseWebSocketTransport()
+        public class GeneralTests : ConnectionSpecs
         {
-            var client = GetRealtimeClient();
+            [Fact]
+            [Trait("spec", "RTN1")]
+            public void ShouldUseWebSocketTransport()
+            {
+                var client = GetRealtimeClient();
 
-            client.ConnectionManager.Transport.GetType().Should().Be(typeof(WebSocketTransport));
+                client.ConnectionManager.Transport.GetType().Should().Be(typeof(WebSocketTransport));
+            }
+
+            [Fact]
+            [Trait("spec", "RTN3")]
+            public void WithAutoConnect_CallsConnectOnTransport()
+            {
+                var client = GetClientWithFakeTransport(opts => opts.AutoConnect = true);
+
+                client.ConnectionManager.ConnectionState.Should().Be(ConnectionStateType.Connected);
+                LastCreatedTransport.ConnectCalled.Should().BeTrue();
+            }
+
+            public GeneralTests(ITestOutputHelper output) : base(output)
+            {
+            }
         }
 
         [Trait("spec", "RTN2")]
@@ -149,13 +166,5 @@ namespace IO.Ably.Tests.Realtime
             }
         }
 
-        [Fact]
-        public void WithAutoConnect_CallsConnectOnTransport()
-        {
-            var client = GetClientWithFakeTransport(opts => opts.AutoConnect = true);
-
-            client.ConnectionManager.ConnectionState.Should().Be(ConnectionStateType.Connected);
-            LastCreatedTransport.ConnectCalled.Should().BeTrue();
-        }
     }
 }
