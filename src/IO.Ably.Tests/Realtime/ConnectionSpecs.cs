@@ -201,6 +201,7 @@ namespace IO.Ably.Tests.Realtime
 
             [Fact]
             [Trait("spec", "RTN4b")]
+            [Trait("spec", "RTN4d")]
             [Trait("sandboxTest", "needed")]
             public void ANewConnectionShouldRaiseConnectingAndConnectedEvents()
             {
@@ -213,11 +214,13 @@ namespace IO.Ably.Tests.Realtime
 
                 client.Connect();
 
-                states.Should().BeEquivalentTo(new[] {ConnectionStateType.Connecting, ConnectionStateType.Connected,});
+                states.Should().BeEquivalentTo(new[] { ConnectionStateType.Connecting, ConnectionStateType.Connected });
+                client.Connection.State.Should().Be(ConnectionStateType.Connected);
             }
 
             [Fact]
             [Trait("spec", "RTN4c")]
+            [Trait("spec", "RTN4d")]
             [Trait("sandboxTest", "needed")]
             public void WhenClosingAConnection_ItShouldRaiseClosingAndClosedEvents()
             {
@@ -239,6 +242,7 @@ namespace IO.Ably.Tests.Realtime
 
                 client.Close();
                 states.Should().BeEquivalentTo(new[] { ConnectionStateType.Closing, ConnectionStateType.Closed });
+                client.Connection.State.Should().Be(ConnectionStateType.Closed);
             }
 
 
