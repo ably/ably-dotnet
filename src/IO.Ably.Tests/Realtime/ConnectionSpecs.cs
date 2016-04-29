@@ -28,7 +28,7 @@ namespace IO.Ably.Tests.Realtime
             _fakeTransportFactory = new FakeTransportFactory();
         }
 
-        public class GeneralTests : ConnectionSpecs
+        public class GeneralSpecs : ConnectionSpecs
         {
             [Fact]
             [Trait("spec", "RTN1")]
@@ -60,7 +60,7 @@ namespace IO.Ably.Tests.Realtime
                 LastCreatedTransport.Should().BeNull("Transport shouldn't be created without calling connect when AutoConnect is false");
             }
 
-            public GeneralTests(ITestOutputHelper output) : base(output)
+            public GeneralSpecs(ITestOutputHelper output) : base(output)
             {
             }
         }
@@ -114,9 +114,9 @@ namespace IO.Ably.Tests.Realtime
                 });
 
                 LastCreatedTransport.Parameters.ClientId.Should().Be(clientId);
-                    LastCreatedTransport.Parameters.GetParams()
-                        .Should().ContainKey("clientId")
-                        .WhichValue.Should().Be(clientId);
+                LastCreatedTransport.Parameters.GetParams()
+                    .Should().ContainKey("clientId")
+                    .WhichValue.Should().Be(clientId);
             }
 
             [Fact]
@@ -173,7 +173,32 @@ namespace IO.Ably.Tests.Realtime
 
             public ConnectionParameterSpecs(ITestOutputHelper output) : base(output)
             {
-                
+
+            }
+        }
+
+        [Trait("spec", "RTN4")]
+        public class EventEmitterSpecs : ConnectionSpecs
+        {
+            [Fact]
+            public void EmittedEventTypesShouldBe()
+            {
+                var states = Enum.GetNames(typeof(ConnectionStateType));
+                states.ShouldBeEquivalentTo(new[]
+                {
+                    "Initialized",
+                    "Connecting",
+                    "Connected",
+                    "Disconnected",
+                    "Suspended",
+                    "Closing",
+                    "Closed",
+                    "Failed"
+                });
+            }
+
+            public EventEmitterSpecs(ITestOutputHelper output) : base(output)
+            {
             }
         }
 
