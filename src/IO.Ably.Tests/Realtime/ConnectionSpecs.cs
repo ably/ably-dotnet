@@ -181,6 +181,7 @@ namespace IO.Ably.Tests.Realtime
         public class EventEmitterSpecs : ConnectionSpecs
         {
             [Fact]
+            [Trait("spec", "RTN4a")]
             public void EmittedEventTypesShouldBe()
             {
                 var states = Enum.GetNames(typeof(ConnectionStateType));
@@ -195,6 +196,24 @@ namespace IO.Ably.Tests.Realtime
                     "Closed",
                     "Failed"
                 });
+            }
+
+            [Fact]
+            [Trait("spec", "RTN4b")]
+            [Trait("sandboxTest", "needed")]
+            public void ANewConnectionShouldRaiseConnectingAndConnectedEvents()
+            {
+                var client = GetClientWithFakeTransport(opts => opts.AutoConnect = false);
+                var expected = new[] {ConnectionStateType.Connecting, ConnectionStateType.Connected,};
+                var states = new List<ConnectionStateType>();
+                client.Connection.ConnectionStateChanged += (sender, args) =>
+                {
+                    states.Add(args.CurrentState);
+                };
+
+                client.Connect();
+
+                states.Should().BeEquivalentTo(expected);
             }
 
             public EventEmitterSpecs(ITestOutputHelper output) : base(output)
