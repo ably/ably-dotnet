@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
+using Nito.AsyncEx;
 using ConnectionState = IO.Ably.Transport.States.Connection.ConnectionState;
 
 namespace IO.Ably.Transport
@@ -61,14 +62,25 @@ namespace IO.Ably.Transport
 
         int IConnectionContext.ConnectionAttempts => _connectionAttempts;
 
-        void IConnectionContext.SetState(ConnectionState newState)
+        async Task IConnectionContext.SetState(ConnectionState newState)
         {
             _state = newState;
-            _state.OnAttachedToContext();
-
             _ackProcessor.OnStateChanged(newState);
 
             Connection.OnStateChanged(newState.State, newState.Error, newState.RetryIn ?? -1);
+
+            try
+            {
+                await _state.OnAttachedToContext();
+            }
+            catch (AblyException ex)
+            {
+                Logger.Error("Error attaching to context", ex);
+                if (_state.State != ConnectionStateType.Failed)
+                {
+                    ((IConnectionContext)this).SetState(new ConnectionFailedState(this, new ErrorInfo($"Failed to attach connection state {_state.State}", 500)));
+                }
+            }
         }
 
         async Task IConnectionContext.CreateTransport()

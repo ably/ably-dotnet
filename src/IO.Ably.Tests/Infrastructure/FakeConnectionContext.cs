@@ -35,10 +35,11 @@ namespace IO.Ably.Tests
         public DateTimeOffset? FirstConnectionAttempt { get; set; }
         public int ConnectionAttempts { get; set; }
 
-        public void SetState(ConnectionState state)
+        public Task SetState(ConnectionState state)
         {
             State = state;
             LastSetState = state;
+            return TaskConstants.BooleanTrue;
         }
 
         public Task CreateTransport()

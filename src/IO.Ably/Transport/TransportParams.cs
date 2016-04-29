@@ -42,11 +42,19 @@ namespace IO.Ably.Transport
             }
             else
             {
-                var token = await auth.GetCurrentValidTokenAndRenewIfNecessary();
-                if(token == null)
-                    throw new AblyException("There is no valid token. Can't authenticate", 40100, HttpStatusCode.Unauthorized);
+                try
+                {
+                    var token = await auth.GetCurrentValidTokenAndRenewIfNecessary();
+                    if (token == null)
+                        throw new AblyException("There is no valid token. Can't authenticate", 40100, HttpStatusCode.Unauthorized);
 
-                result.AuthValue = token.Token;
+                    result.AuthValue = token.Token;
+                }
+                catch (AblyException ex)
+                {
+                    throw;
+                }
+                
             }
             result.ConnectionKey = connectionKey;
             result.ConnectionSerial = connectionSerial;
@@ -109,7 +117,7 @@ namespace IO.Ably.Transport
 
             if (ClientId.IsNotEmpty())
             {
-                result["client_id"] = ClientId;
+                result["clientId"] = ClientId;
             }
 
             return result;

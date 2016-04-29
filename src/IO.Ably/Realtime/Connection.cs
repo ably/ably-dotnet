@@ -6,7 +6,7 @@ namespace IO.Ably.Realtime
 {
     /// <summary>
     /// </summary>
-    public class Connection : IDisposable
+    public sealed class Connection : IDisposable
     {
         private readonly IConnectionManager _manager;
 
@@ -23,7 +23,7 @@ namespace IO.Ably.Realtime
         /// <summary>
         ///     Indicates the current state of this connection.
         /// </summary>
-        public virtual ConnectionStateType State { get; private set; }
+        public ConnectionStateType State { get; private set; }
 
         /// <summary>
         ///     The id of the current connection. This string may be
@@ -47,7 +47,7 @@ namespace IO.Ably.Realtime
         ///     message and, in the failed state in particular, provides diagnostic
         ///     error information.
         /// </summary>
-        public virtual ErrorInfo Reason { get; private set; }
+        public ErrorInfo Reason { get; private set; }
 
         public void Dispose()
         {
@@ -56,7 +56,7 @@ namespace IO.Ably.Realtime
 
         /// <summary>
         /// </summary>
-        public virtual event EventHandler<ConnectionStateChangedEventArgs> ConnectionStateChanged;
+        public event EventHandler<ConnectionStateChangedEventArgs> ConnectionStateChanged;
 
         /// <summary>
         /// </summary>

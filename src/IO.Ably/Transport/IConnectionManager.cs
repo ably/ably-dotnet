@@ -52,7 +52,7 @@ namespace IO.Ably.Transport
         Connection Connection { get; }
         DateTimeOffset? FirstConnectionAttempt { get; }
         int ConnectionAttempts { get; }
-        void SetState(States.Connection.ConnectionState state);
+        Task SetState(States.Connection.ConnectionState state);
         Task CreateTransport();
         void DestroyTransport();
         void AttemptConnection();

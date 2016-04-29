@@ -5,7 +5,7 @@ namespace IO.Ably.ConsoleTest
 {
     class Realtime
     {
-        public static async Task Test()
+        public static void Test()
         {
             var options = new ClientOptions()
             {
@@ -14,7 +14,7 @@ namespace IO.Ably.ConsoleTest
                 Tls = false,
             };
             var realtime = new AblyRealtime( options );
-            await realtime.Connect();
+            realtime.Connect();
         }
     }
 }

@@ -89,7 +89,7 @@ namespace IO.Ably.AcceptanceTests
 
             // Act
             client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Initialized);
-            await client.Connect();
+            client.Connect();
 
             // Assert
             client.Connection.State.ShouldBeEquivalentTo(Realtime.ConnectionStateType.Connecting);
@@ -202,7 +202,7 @@ namespace IO.Ably.AcceptanceTests
             string keyBeforeConnect = client.Connection.Id;
 
             // Act
-            await client.Connect();
+            client.Connect();
             signal.WaitOne(10000);
 
             // Assert
@@ -236,7 +236,7 @@ namespace IO.Ably.AcceptanceTests
                     }
                 };
 
-                await client.Connect();
+                client.Connect();
             }
 
             // wait for all to complete
@@ -264,7 +264,7 @@ namespace IO.Ably.AcceptanceTests
             string keyBeforeConnect = client.Connection.Key;
 
             // Act
-            await client.Connect();
+            client.Connect();
             signal.WaitOne(10000);
 
             // Assert
@@ -298,7 +298,7 @@ namespace IO.Ably.AcceptanceTests
                     }
                 };
 
-                await client.Connect();
+                client.Connect();
             }
 
             // wait for all to complete

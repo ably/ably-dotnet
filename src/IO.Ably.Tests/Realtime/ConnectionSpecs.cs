@@ -26,19 +26,17 @@ namespace IO.Ably.Tests.Realtime
         }
     }
 
-    public class ConnectionSpecs : AblySpecs
+    public class ConnectionSpecs : AblyRealtimeSpecs
     {
-
-
         public ConnectionSpecs(ITestOutputHelper output) : base(output)
         {
         }
 
         [Fact]
         [Trait("spec", "RTN1")]
-        public async Task ShouldUseWebSocketTransport()
+        public void ShouldUseWebSocketTransport()
         {
-            var client = GetClient();
+            var client = GetRealtimeClient();
 
             client.ConnectionManager.Transport.GetType().Should().Be(typeof(WebSocketTransport));
         }
@@ -53,7 +51,8 @@ namespace IO.Ably.Tests.Realtime
             {
                 var options = new ClientOptions(ValidKey) {TransportFactory = _fakeTransportFactory};
                 optionsAction?.Invoke(options);
-                return GetClient(options);
+                var client = GetRealtimeClient(options);
+                return client;
             }
 
             [Fact]
@@ -89,16 +88,43 @@ namespace IO.Ably.Tests.Realtime
                     .WhichValue.Should().Be(echo.ToString().ToLower());
             }
 
-            [Theory]
-            [InlineData("123")]
-            [InlineData(null)]
-            public void WithClientId_ShouldSetTransportClientIdCorrectly(string clientId)
+            [Fact]
+            [Trait("spec", "RTN2d")]
+            public void WithClientId_ShouldSetTransportClientIdCorrectly()
             {
-                var client = GetClientWithFakeTransport(opts => opts.ClientId = clientId);
+                var clientId = "123";
+                var client = GetClientWithFakeTransport(opts =>
+                {
+                    opts.ClientId = clientId;
+                    opts.Token = "123";
+
+                });
+
                 LastCreatedTransport.Parameters.ClientId.Should().Be(clientId);
-                LastCreatedTransport.Parameters.GetParams()
-                    .Should().ContainKey("clientId")
-                    .WhichValue.Should().Be(clientId);
+                    LastCreatedTransport.Parameters.GetParams()
+                        .Should().ContainKey("clientId")
+                        .WhichValue.Should().Be(clientId);
+            }
+
+            [Fact]
+            [Trait("spec", "RTN2d")]
+            public void WithoutClientId_ShouldNotSetClientIdParameterOnTransport()
+            {
+                var client = GetClientWithFakeTransport();
+
+                LastCreatedTransport.Parameters.ClientId.Should().BeNullOrEmpty();
+                LastCreatedTransport.Parameters.GetParams().Should().NotContainKey("clientId");
+
+            }
+
+            [Fact]
+            public void WithBasicAuth_ShouldSetTransportKeyParameter()
+            {
+                var client = GetClientWithFakeTransport();
+                LastCreatedTransport.Parameters.AuthValue.Should().Be(client.Options.Key);
+                LastCreatedTransport.Parameters.GetParams().
+                    Should().ContainKey("key")
+                    .WhichValue.Should().Be(client.Options.Key);
             }
 
 
@@ -110,19 +136,5 @@ namespace IO.Ably.Tests.Realtime
                 _fakeTransportFactory = new FakeTransportFactory();
             }
         }
-
-        protected virtual AblyRealtime GetClient(ClientOptions options = null)
-        {
-            var clientOptions = options ?? new ClientOptions(ValidKey);
-            return new AblyRealtime(clientOptions);
-        }
-        protected virtual AblyRealtime GetClient(Action<ClientOptions> optionsAction)
-        {
-            var options = new ClientOptions(ValidKey);
-            optionsAction?.Invoke(options);
-            return new AblyRealtime(options);
-        }
     }
-
-    
 }
