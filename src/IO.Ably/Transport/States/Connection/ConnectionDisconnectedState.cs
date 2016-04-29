@@ -6,7 +6,7 @@ namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionDisconnectedState : ConnectionState
     {
-        private const int ConnectTimeout = 15*1000;
+        private readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(15);
         private readonly ICountdownTimer _timer;
 
         public ConnectionDisconnectedState(IConnectionContext context) :
@@ -70,7 +70,7 @@ namespace IO.Ably.Transport.States.Connection
             }
             else
             {
-                _timer.Start(TimeSpan.FromMilliseconds(ConnectTimeout), OnTimeOut);
+                _timer.Start(ConnectTimeout, OnTimeOut);
             }
 
             return TaskConstants.BooleanTrue;

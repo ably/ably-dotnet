@@ -121,6 +121,7 @@
     <Compile Include="Realtime\ConnectionStateTests\InitializedStateSpecs.cs" />
     <Compile Include="Realtime\ConnectionStateTests\SuspendedStateSpecs.cs" />
     <Compile Include="Realtime\CountDownTimerSpecs.cs" />
+    <Compile Include="Infrastructure\FakeTransportFactory.cs" />
     <Compile Include="Realtime\MockHttpRealtimeSpecs.cs" />
     <Compile Include="Rest\PresenceSandboxSpecs.cs" />
     <Compile Include="Rest\ChannelSandboxSpecs.cs" />

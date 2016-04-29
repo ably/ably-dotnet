@@ -137,7 +137,7 @@ namespace IO.Ably.Tests
             [InlineData(Defaults.TokenErrorCodesRangeStart + 1)]
             [InlineData(Defaults.TokenErrorCodesRangeEnd)]
             [Trait("spec", "RSC10")]
-            [Trait("intermitten", "true")]
+            [Trait("intermittent", "true")]
             public async Task WhenErrorCodeIsTokenSpecific_ShouldAutomaticallyTryToRenewTokenIfRequestFails(int errorCode)
             {
                 Output.WriteLine("Error code.");
@@ -417,7 +417,7 @@ namespace IO.Ably.Tests
 
             [Fact]
             [Trait("spec", "RSC15a")]
-            [Trait("intermitten", "true")]
+            [Trait("intermittent", "true")]
             public async Task ShouldAttemptFallbackHostsInRandomOrder()
             {
                 _response.StatusCode = HttpStatusCode.BadGateway;

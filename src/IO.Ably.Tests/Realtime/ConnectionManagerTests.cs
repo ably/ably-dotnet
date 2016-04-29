@@ -637,7 +637,7 @@ namespace IO.Ably.Tests
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, null, null);
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closed, ConnectionStateType.Connected, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closed, ConnectionStateType.Connected, null, null));
         }
 
         [Fact]
@@ -772,10 +772,10 @@ namespace IO.Ably.Tests
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closing, ConnectionStateType.Closed, 0, null));
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closing, ConnectionStateType.Closed, 0, null));
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closing, ConnectionStateType.Closed, 0, null));
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closing, ConnectionStateType.Closed, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closing, ConnectionStateType.Closed));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closing, ConnectionStateType.Closed));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closing, ConnectionStateType.Closed));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closing, ConnectionStateType.Closed));
 
             // Assert
             Assert.Equal<int>(1, res.Count);
@@ -803,7 +803,7 @@ namespace IO.Ably.Tests
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(state, state, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(state, state));
 
             // Assert
             Assert.Equal<int>(1, res.Count);
@@ -832,7 +832,7 @@ namespace IO.Ably.Tests
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(state, state, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(state, state));
 
             // Assert
             timer.Verify(c => c.Abort(), Times.Once());
@@ -860,9 +860,9 @@ namespace IO.Ably.Tests
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(state, state, 0, null));
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(state, state, 0, null));
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(state, state, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(state, state));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(state, state));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(state, state));
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
@@ -911,7 +911,7 @@ namespace IO.Ably.Tests
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
-            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closed, ConnectionStateType.Closed, 0, null));
+            connection.Raise(c => c.ConnectionStateChanged += null, new ConnectionStateChangedEventArgs(ConnectionStateType.Closed, ConnectionStateType.Closed));
             manager.Raise(c => c.MessageReceived += null, new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
 
             // Assert

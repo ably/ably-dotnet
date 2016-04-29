@@ -7,8 +7,8 @@ namespace IO.Ably.Transport.States.Connection
     internal class ConnectionSuspendedState : ConnectionState
     {
         //TODO: Make sure these come from config
-        public const int SuspendTimeout = 120*1000; // Time before a connection is considered suspended
-        private const int ConnectTimeout = 120*1000; // Time to wait before retrying connection
+        public static readonly TimeSpan SuspendTimeout = TimeSpan.FromSeconds(120); // Time before a connection is considered suspended
+        private readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(120); // Time to wait before retrying connection
         private readonly ICountdownTimer _timer;
 
         public ConnectionSuspendedState(IConnectionContext context) :
@@ -59,7 +59,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Task OnAttachedToContext()
         {
-            _timer.Start(TimeSpan.FromMilliseconds(ConnectTimeout), OnTimeOut);
+            _timer.Start(ConnectTimeout, OnTimeOut);
             return TaskConstants.BooleanTrue;
         }
 

@@ -19,7 +19,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public abstract Realtime.ConnectionStateType State { get; }
         public ErrorInfo Error { get; protected set; }
-        public int? RetryIn { get; protected set; }
+        public TimeSpan? RetryIn { get; protected set; }
 
         protected abstract bool CanQueueMessages { get; }
 

@@ -67,7 +67,7 @@ namespace IO.Ably.Transport
             _state = newState;
             _ackProcessor.OnStateChanged(newState);
 
-            Connection.OnStateChanged(newState.State, newState.Error, newState.RetryIn ?? -1);
+            Connection.OnStateChanged(newState.State, newState.Error, newState.RetryIn);
 
             try
             {

@@ -82,7 +82,7 @@ namespace IO.Ably.Realtime
             _manager.Close();
         }
 
-        internal void OnStateChanged(ConnectionStateType state, ErrorInfo error = null, int retryin = -1)
+        internal void OnStateChanged(ConnectionStateType state, ErrorInfo error = null, TimeSpan? retryin = null)
         {
             var oldState = State;
             State = state;
