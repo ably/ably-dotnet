@@ -49,6 +49,16 @@ namespace IO.Ably.Tests.Realtime
                 LastCreatedTransport.ConnectCalled.Should().BeTrue();
             }
 
+            [Fact]
+            [Trait("spec", "RTN3")]
+            public void WithAutoConnectFalse_LeavesStateAsInitialized()
+            {
+                var client = GetClientWithFakeTransport(opts => opts.AutoConnect = false);
+
+                client.ConnectionManager.ConnectionState.Should().Be(ConnectionStateType.Initialized);
+                LastCreatedTransport.Should().BeNull("Transport shouldn't be created without calling connect when AutoConnect is false");
+            }
+
             public GeneralTests(ITestOutputHelper output) : base(output)
             {
             }
