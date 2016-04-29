@@ -9,7 +9,7 @@ namespace IO.Ably.Tests
         internal virtual AblyRealtime GetRealtimeClient(ClientOptions options = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
         {
             var clientOptions = options ?? new ClientOptions(ValidKey);
-            return new AblyRealtime(options, opts => GetRestClient(handleRequestFunc, clientOptions));
+            return new AblyRealtime(clientOptions, opts => GetRestClient(handleRequestFunc, clientOptions));
         }
 
         internal virtual AblyRealtime GetRealtimeClient(Action<ClientOptions> optionsAction, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)

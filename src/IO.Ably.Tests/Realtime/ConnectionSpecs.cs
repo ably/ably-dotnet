@@ -114,10 +114,10 @@ namespace IO.Ably.Tests.Realtime
 
                 LastCreatedTransport.Parameters.ClientId.Should().BeNullOrEmpty();
                 LastCreatedTransport.Parameters.GetParams().Should().NotContainKey("clientId");
-
             }
 
             [Fact]
+            [Trait("spec", "RTN2e")]
             public void WithBasicAuth_ShouldSetTransportKeyParameter()
             {
                 var client = GetClientWithFakeTransport();
@@ -127,9 +127,25 @@ namespace IO.Ably.Tests.Realtime
                     .WhichValue.Should().Be(client.Options.Key);
             }
 
+            [Fact]
+            [Trait("spec", "RTN2e")]
+            public void WithTokenAuth_ShouldSetTransportAccessTokeParameter()
+            {
+                var clientId = "123";
+                var tokenString = "token";
+                var client = GetClientWithFakeTransport(opts =>
+                {
+                    opts.Key = "";
+                    opts.ClientId = clientId;
+                    opts.Token = tokenString;
 
-            
+                });
 
+                LastCreatedTransport.Parameters.AuthValue.Should().Be(tokenString);
+                LastCreatedTransport.Parameters.GetParams()
+                    .Should().ContainKey("accessToken")
+                    .WhichValue.Should().Be(tokenString);
+            }
 
             public ConnectionParameterTests(ITestOutputHelper output) : base(output)
             {

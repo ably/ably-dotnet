@@ -88,7 +88,7 @@ namespace IO.Ably.Transport
             }
             else
             {
-                result["access_token"] = AuthValue;
+                result["accessToken"] = AuthValue;
             }
 
 
