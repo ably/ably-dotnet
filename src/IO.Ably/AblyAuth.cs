@@ -24,12 +24,19 @@ namespace IO.Ably
         internal TokenParams CurrentTokenParams { get; set; }
         internal AuthOptions CurrentAuthOptions { get; set; }
         private readonly AblyRest _rest;
+        private string _connectionClientId;
 
         public TokenDetails CurrentToken { get; set; }
 
+        internal string ConnectionClientId
+        {
+            get { return _connectionClientId; }
+            set { _connectionClientId = value; }
+        }
+
         public string GetClientId()
         {
-            return CurrentToken?.ClientId ?? CurrentTokenParams?.ClientId ?? Options.GetClientId();
+            return ConnectionClientId ?? CurrentToken?.ClientId ?? CurrentTokenParams?.ClientId ?? Options.GetClientId();
         }
 
         bool HasTokenId => Options.Token.IsNotEmpty();

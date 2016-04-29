@@ -8,13 +8,15 @@ namespace IO.Ably.Transport
 {
     public class ConnectionInfo
     {
-        public ConnectionInfo(string connectionId, long connectionSerial, string connectionKey)
+        public ConnectionInfo(string connectionId, long connectionSerial, string connectionKey, string clientId)
         {
+            ClientId = clientId;
             ConnectionId = connectionId;
             ConnectionSerial = connectionSerial;
             ConnectionKey = connectionKey;
         }
 
+        public string ClientId { get; set; }
         public string ConnectionId { get; private set; }
         public long ConnectionSerial { get; private set; }
         public string ConnectionKey { get; private set; }
@@ -58,5 +60,6 @@ namespace IO.Ably.Transport
         void AttemptConnection();
         void ResetConnectionAttempts();
         Task<bool> CanConnectToAbly();
+        void SetConnectionClientId(string clientId);
     }
 }

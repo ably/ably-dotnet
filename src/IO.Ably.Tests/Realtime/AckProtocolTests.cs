@@ -260,7 +260,7 @@ namespace IO.Ably.Tests
             // Act
             target.SendMessage(targetMessage1, null);
             target.SendMessage(targetMessage2, null);
-            target.OnStateChanged(new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, "")));
+            target.OnStateChanged(new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, "", "")));
             target.SendMessage(targetMessage3, null);
             target.SendMessage(targetMessage4, null);
 

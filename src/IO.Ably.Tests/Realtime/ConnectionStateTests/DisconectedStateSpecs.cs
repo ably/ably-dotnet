@@ -19,7 +19,7 @@ namespace IO.Ably.Tests
         public DisconectedStateSpecs(ITestOutputHelper output) : base(output)
         {
             _context = new FakeConnectionContext();
-            _connectionInfo = new ConnectionInfo("", 0, "");
+            _connectionInfo = new ConnectionInfo("", 0, "", "");
             _timer = new FakeTimer();
             _state = GetState();
         }

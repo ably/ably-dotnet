@@ -61,7 +61,7 @@ namespace IO.Ably.Transport.States.Connection
                     if (Context.Transport.State == TransportState.Connected)
                     {
                         var info = new ConnectionInfo(message.connectionId, message.connectionSerial ?? -1,
-                            message.connectionKey);
+                            message.connectionKey, message.connectionDetails?.clientId);
                         TransitionState(new ConnectionConnectedState(Context, info));
                     }
                     return true;

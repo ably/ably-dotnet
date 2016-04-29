@@ -8,6 +8,8 @@ namespace IO.Ably.Types
 {
     public class ProtocolMessage
     {
+        private string _connectionKey;
+
         public enum MessageAction : int
         {
             Heartbeat = 0,
@@ -62,7 +64,18 @@ namespace IO.Ably.Types
         public string channel { get; set; }
         public string channelSerial { get; set; }
         public string connectionId { get; set; }
-        public string connectionKey { get; set; }
+
+        public string connectionKey
+        {
+            get
+            {
+                if(connectionDetails != null && connectionDetails.connectionKey.IsNotEmpty())
+                    return connectionDetails.connectionKey;
+                return _connectionKey;
+            }
+            set { _connectionKey = value; }
+        }
+
         public long? connectionSerial { get; set; }
         public long msgSerial { get; set; }
         public DateTimeOffset? timestamp { get; set; }

@@ -79,5 +79,10 @@ namespace IO.Ably.Tests
         {
             return Task.FromResult(CanConnectToAblyBool);
         }
+
+        public void SetConnectionClientId(string clientId)
+        {
+            
+        }
     }
 }

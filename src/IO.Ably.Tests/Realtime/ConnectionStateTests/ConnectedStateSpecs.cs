@@ -24,7 +24,7 @@ namespace IO.Ably.Tests
 
         private ConnectionConnectedState GetState(ConnectionInfo info = null)
         {
-            return new ConnectionConnectedState(_context, info ?? new ConnectionInfo("", 0, ""));
+            return new ConnectionConnectedState(_context, info ?? new ConnectionInfo("", 0, "", ""));
         }
 
         [Fact]
@@ -167,7 +167,7 @@ namespace IO.Ably.Tests
             // Arrange
             Mock<IConnectionContext> context = new Mock<IConnectionContext>();
             context.SetupGet(c => c.Connection).Returns(new Connection(new Mock<IConnectionManager>().Object));
-            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, ""));
+            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, "", ""));
 
             // Act
             state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
@@ -180,7 +180,7 @@ namespace IO.Ably.Tests
         public void ConnectedState_UpdatesConnectionInformation()
         {
             // Act
-            var state = GetState(new ConnectionInfo("test", 12564, "test test"));
+            var state = GetState(new ConnectionInfo("test", 12564, "test test", ""));
 
             // Assert
             var connection = _context.Connection;

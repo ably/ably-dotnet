@@ -78,7 +78,7 @@ namespace IO.Ably.Transport
                 Logger.Error("Error attaching to context", ex);
                 if (_state.State != ConnectionStateType.Failed)
                 {
-                    ((IConnectionContext)this).SetState(new ConnectionFailedState(this, new ErrorInfo($"Failed to attach connection state {_state.State}", 500)));
+                    await ((IConnectionContext)this).SetState(new ConnectionFailedState(this, new ErrorInfo($"Failed to attach connection state {_state.State}", 500)));
                 }
             }
         }
@@ -135,6 +135,12 @@ namespace IO.Ably.Transport
                 Logger.Error("Error accessing ably internet check url. Internet is down!", ex);
                 return false;
             }
+        }
+
+        public void SetConnectionClientId(string clientId)
+        {
+            if(clientId.IsNotEmpty())
+                RestClient.AblyAuth.ConnectionClientId = clientId;
         }
 
         public event MessageReceivedDelegate MessageReceived;

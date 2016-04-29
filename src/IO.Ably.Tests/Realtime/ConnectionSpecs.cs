@@ -69,20 +69,52 @@ namespace IO.Ably.Tests.Realtime
             }
 
             [Fact]
+            [Trait("spec", "RTN19")]
             public void WhenConnectedMessageReceived_ConnectionShouldBeInConnectedStateAndConnectionDetailsAreUpdated()
             {
-                var client = GetClientWithFakeTransport(opts => opts.AutoConnect = false);
+                var client = GetClientWithFakeTransport();
 
-                client.Connect();
-                //SendConnected Message
                 var connectionDetailsMessage = new ConnectionDetailsMessage()
                 {
                     clientId = "123",
-                    connectionKey = "key"
+                    connectionKey = "boo"
                 };
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { connectionDetails = connectionDetailsMessage});
+                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+                {
+                    connectionDetails = connectionDetailsMessage,
+                    connectionKey = "unimportant"
+                });
 
                 client.Connection.State.Should().Be(ConnectionStateType.Connected);
+                client.Connection.Key.Should().Be("boo");
+            }
+
+            [Fact]
+            [Trait("spec", "RTN19")]
+            public void WhenConnectedMessageReceived_WithNoConnectionDetailsButConnectionKeyInMessage_ShouldHaveCorrectKey()
+            {
+                var client = GetClientWithFakeTransport();
+
+                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+                {
+                    connectionKey = "unimportant"
+                });
+
+                client.Connection.Key.Should().Be("unimportant");
+            }
+
+            [Fact]
+            [Trait("spec", "RSA15a")]
+            public void WhenConnectedMessageReceivedWithClientId_AblyAuthShouldUseConnectionClientId()
+            {
+                var client = GetClientWithFakeTransport();
+
+                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+                {
+                    connectionDetails = new ConnectionDetailsMessage { clientId = "realtimeClient" }
+                });
+
+                client.RestClient.AblyAuth.GetClientId().Should().Be("realtimeClient");
             }
 
             public GeneralSpecs(ITestOutputHelper output) : base(output)
