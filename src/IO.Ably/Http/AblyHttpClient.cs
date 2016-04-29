@@ -23,7 +23,7 @@ namespace IO.Ably
         internal void CreateInternalHttpClient(TimeSpan timeout, HttpMessageHandler messageHandler)
         {
             Client = messageHandler != null ? new HttpClient(messageHandler) : new HttpClient();
-            Client.DefaultRequestHeaders.Add("X-Ably-Version", Config.AblyVersion);
+            Client.DefaultRequestHeaders.Add("X-Ably-Version", Defaults.ProtocolVersion);
             Client.Timeout = timeout;
         }
 

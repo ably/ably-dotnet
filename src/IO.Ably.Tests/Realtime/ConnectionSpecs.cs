@@ -147,6 +147,16 @@ namespace IO.Ably.Tests.Realtime
                     .WhichValue.Should().Be(tokenString);
             }
 
+            [Fact]
+            public void ShouldSetTransportVersionParameterTov08()
+            {
+                var client = GetClientWithFakeTransport();
+
+                LastCreatedTransport.Parameters.GetParams()
+                    .Should().ContainKey("v")
+                    .WhichValue.Should().Be("0.8");
+            }
+
             public ConnectionParameterTests(ITestOutputHelper output) : base(output)
             {
                 _fakeTransportFactory = new FakeTransportFactory();

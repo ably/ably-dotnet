@@ -46,7 +46,7 @@ namespace IO.Ably.Tests
             await client.Execute(new AblyRequest("/test", HttpMethod.Get));
             var values = handler.LastRequest.Headers.GetValues("X-Ably-Version");
             values.Should().NotBeEmpty();
-            values.First().Should().Be("0.8");
+            values.First().Should().Be(Defaults.ProtocolVersion);
         }
 
         [Fact]

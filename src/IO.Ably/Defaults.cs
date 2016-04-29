@@ -6,7 +6,7 @@ namespace IO.Ably
 {
     internal static class Defaults
     {
-        public const int ProtocolVersion = 1;
+        public const string ProtocolVersion = "0.8";
         public const int QueryLimit = 100;
 
         public const string InternetCheckURL = "https://internet-up.ably-realtime.com/is-the-internet-up.txt";
