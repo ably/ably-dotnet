@@ -202,6 +202,7 @@ namespace IO.Ably.Tests.Realtime
             [Fact]
             [Trait("spec", "RTN4b")]
             [Trait("spec", "RTN4d")]
+            [Trait("spec", "RTN4e")]
             [Trait("sandboxTest", "needed")]
             public void ANewConnectionShouldRaiseConnectingAndConnectedEvents()
             {
@@ -209,6 +210,7 @@ namespace IO.Ably.Tests.Realtime
                 var states = new List<ConnectionStateType>();
                 client.Connection.ConnectionStateChanged += (sender, args) =>
                 {
+                    args.Should().BeOfType<ConnectionStateChangedEventArgs>();
                     states.Add(args.CurrentState);
                 };
 
@@ -221,6 +223,7 @@ namespace IO.Ably.Tests.Realtime
             [Fact]
             [Trait("spec", "RTN4c")]
             [Trait("spec", "RTN4d")]
+            [Trait("spec", "RTN4e")]
             [Trait("sandboxTest", "needed")]
             public void WhenClosingAConnection_ItShouldRaiseClosingAndClosedEvents()
             {
@@ -230,6 +233,7 @@ namespace IO.Ably.Tests.Realtime
                 var states = new List<ConnectionStateType>();
                 client.Connection.ConnectionStateChanged += (sender, args) =>
                 {
+                    args.Should().BeOfType<ConnectionStateChangedEventArgs>();
                     states.Add(args.CurrentState);
                 };
                 LastCreatedTransport.SendAction = message =>
