@@ -41,6 +41,7 @@ namespace IO.Ably.Tests.Realtime
 
             [Fact]
             [Trait("spec", "RTN3")]
+            [Trait("sandboxTest", "needed")]
             public void WithAutoConnect_CallsConnectOnTransport()
             {
                 var client = GetClientWithFakeTransport(opts => opts.AutoConnect = true);
