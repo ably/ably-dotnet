@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
@@ -247,6 +248,28 @@ namespace IO.Ably.Tests.Realtime
                 client.Close();
                 states.Should().BeEquivalentTo(new[] { ConnectionStateType.Closing, ConnectionStateType.Closed });
                 client.Connection.State.Should().Be(ConnectionStateType.Closed);
+            }
+
+            [Fact]
+            [Trait("spec", "RTN4f")]
+            [Trait("sandboxTest", "needed")]
+            public async Task WithAConnectionError_ShouldRaiseChangeStateEventWithError()
+            {
+                var client = GetClientWithFakeTransport();
+                bool hasError = false;
+                ErrorInfo actualError = null;
+                client.Connection.ConnectionStateChanged += (sender, args) =>
+                {
+                    hasError = args.HasError;
+                    actualError = args.Reason;
+                };
+                var expectedError = new ErrorInfo();
+
+                await LastCreatedTransport.Listener.OnTransportMessageReceived(
+                    new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = expectedError });
+
+                hasError.Should().BeTrue();
+                actualError.Should().Be(expectedError);
             }
 
 

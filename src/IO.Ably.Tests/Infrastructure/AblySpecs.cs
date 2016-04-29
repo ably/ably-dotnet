@@ -9,12 +9,14 @@ namespace IO.Ably.Tests
         internal virtual AblyRealtime GetRealtimeClient(ClientOptions options = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
         {
             var clientOptions = options ?? new ClientOptions(ValidKey);
+            clientOptions.SkipInternetCheck = true; //This is for the Unit tests
             return new AblyRealtime(clientOptions, opts => GetRestClient(handleRequestFunc, clientOptions));
         }
 
         internal virtual AblyRealtime GetRealtimeClient(Action<ClientOptions> optionsAction, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
         {
             var options = new ClientOptions(ValidKey);
+            options.SkipInternetCheck = true; //This is for the Unit tests
             optionsAction?.Invoke(options);
             return new AblyRealtime(options, clientOptions => GetRestClient(handleRequestFunc, clientOptions));
         }

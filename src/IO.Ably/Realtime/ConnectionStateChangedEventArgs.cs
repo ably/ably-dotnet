@@ -27,6 +27,6 @@ namespace IO.Ably.Realtime
 
         public ErrorInfo Reason { get; }
 
-        public bool HasError => Reason == null;
+        public bool HasError => Reason != null;
     }
 }

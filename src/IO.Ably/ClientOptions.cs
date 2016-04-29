@@ -1,4 +1,5 @@
 using System;
+using System.Security.Permissions;
 using IO.Ably.Rest;
 using IO.Ably.Transport;
 
@@ -163,6 +164,8 @@ namespace IO.Ably
                 return Ably.AuthMethod.Token;
             }
         }
+
+        internal bool SkipInternetCheck { get; set; } = false;
 
         /// <summary>
         /// Defaul constructor for ClientOptions

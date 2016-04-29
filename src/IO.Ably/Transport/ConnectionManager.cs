@@ -120,6 +120,9 @@ namespace IO.Ably.Transport
 
         public async Task<bool> CanConnectToAbly()
         {
+            if (_options.SkipInternetCheck)
+                return await TaskConstants.BooleanTrue;
+
             try
             {
                 var httpClient = RestClient.HttpClient;
