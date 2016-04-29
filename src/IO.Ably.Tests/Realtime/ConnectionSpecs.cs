@@ -5,31 +5,27 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
-using IO.Ably.Transport;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime
 {
-    public class FakeTransportFactory : ITransportFactory
-    {
-        public FakeTransport LastCreatedTransport { get; set; }
-
-        public FakeTransportFactory()
-        {
-        }
-
-        public Task<ITransport> CreateTransport(TransportParams parameters)
-        {
-            LastCreatedTransport = new FakeTransport(parameters);
-            return Task.FromResult<ITransport>(LastCreatedTransport);
-        }
-    }
-
     public class ConnectionSpecs : AblyRealtimeSpecs
     {
+        private FakeTransportFactory _fakeTransportFactory;
+        protected FakeTransport LastCreatedTransport => _fakeTransportFactory.LastCreatedTransport;
+
+        protected AblyRealtime GetClientWithFakeTransport(Action<ClientOptions> optionsAction = null)
+        {
+            var options = new ClientOptions(ValidKey) { TransportFactory = _fakeTransportFactory };
+            optionsAction?.Invoke(options);
+            var client = GetRealtimeClient(options);
+            return client;
+        }
+
         public ConnectionSpecs(ITestOutputHelper output) : base(output)
         {
+            _fakeTransportFactory = new FakeTransportFactory();
         }
 
         [Fact]
@@ -44,17 +40,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN2")]
         public class ConnectionParameterTests : ConnectionSpecs
         {
-            private FakeTransportFactory _fakeTransportFactory;
-            private FakeTransport LastCreatedTransport => _fakeTransportFactory.LastCreatedTransport;
-
-            private AblyRealtime GetClientWithFakeTransport(Action<ClientOptions> optionsAction = null)
-            {
-                var options = new ClientOptions(ValidKey) {TransportFactory = _fakeTransportFactory};
-                optionsAction?.Invoke(options);
-                var client = GetRealtimeClient(options);
-                return client;
-            }
-
             [Fact]
             [Trait("spec", "RTN2")]
             public void ShouldUseDefaultRealtimeHost()
@@ -148,6 +133,7 @@ namespace IO.Ably.Tests.Realtime
             }
 
             [Fact]
+            [Trait("spec", "RTN2f")]
             public void ShouldSetTransportVersionParameterTov08()
             {
                 var client = GetClientWithFakeTransport();
@@ -159,8 +145,17 @@ namespace IO.Ably.Tests.Realtime
 
             public ConnectionParameterTests(ITestOutputHelper output) : base(output)
             {
-                _fakeTransportFactory = new FakeTransportFactory();
+                
             }
+        }
+
+        [Fact]
+        public void WithAutoConnect_CallsConnectOnTransport()
+        {
+            var client = GetClientWithFakeTransport(opts => opts.AutoConnect = true);
+
+            client.ConnectionManager.ConnectionState.Should().Be(ConnectionStateType.Connected);
+            LastCreatedTransport.ConnectCalled.Should().BeTrue();
         }
     }
 }

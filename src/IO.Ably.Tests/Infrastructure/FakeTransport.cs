@@ -32,11 +32,15 @@ namespace IO.Ably.Tests
         public void Connect()
         {
             ConnectCalled = true;
+            Listener?.OnTransportConnected();
+            State = TransportState.Connected;
+            Listener?.OnTransportMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
         }
 
         public void Close()
         {
             CloseCalled = true;
+            Listener?.OnTransportDisconnected();
         }
 
         public void Abort(string reason)
