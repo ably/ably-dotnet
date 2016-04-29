@@ -66,7 +66,7 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Trait("spec", "RTN2")]
-        public class ConnectionParameterTests : ConnectionSpecs
+        public class ConnectionParameterSpecs : ConnectionSpecs
         {
             [Fact]
             [Trait("spec", "RTN2")]
@@ -171,7 +171,7 @@ namespace IO.Ably.Tests.Realtime
                     .WhichValue.Should().Be("0.8");
             }
 
-            public ConnectionParameterTests(ITestOutputHelper output) : base(output)
+            public ConnectionParameterSpecs(ITestOutputHelper output) : base(output)
             {
                 
             }
