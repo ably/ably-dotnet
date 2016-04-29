@@ -417,6 +417,7 @@ namespace IO.Ably.Tests
 
             [Fact]
             [Trait("spec", "RSC15a")]
+            [Trait("intermitten", "true")]
             public async Task ShouldAttemptFallbackHostsInRandomOrder()
             {
                 _response.StatusCode = HttpStatusCode.BadGateway;
