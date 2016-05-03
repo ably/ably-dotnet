@@ -23,9 +23,18 @@ namespace IO.Ably.Tests
             var settings = await Fixture.GetSettings();
             var defaultOptions = settings.CreateDefaultOptions();
             defaultOptions.UseBinaryProtocol = protocol == Protocol.MsgPack;
-            //defaultOptions.QueryTime = true;
             optionsAction?.Invoke(defaultOptions);
             return new AblyRest(defaultOptions);
+        }
+
+        protected async Task<AblyRealtime> GetRealtimeClient(Protocol protocol,
+            Action<ClientOptions> optionsAction = null)
+        {
+            var settings = await Fixture.GetSettings();
+            var defaultOptions = settings.CreateDefaultOptions();
+            defaultOptions.UseBinaryProtocol = protocol == Protocol.MsgPack;
+            optionsAction?.Invoke(defaultOptions);
+            return new AblyRealtime(defaultOptions);
         }
 
         class OutputLoggerSink : ILoggerSink

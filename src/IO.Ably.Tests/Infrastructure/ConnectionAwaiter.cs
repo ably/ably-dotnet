@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using IO.Ably.Realtime;
 
-namespace IO.Ably.Realtime
+namespace IO.Ably.Tests.Infrastructure
 {
     /// <summary>Utility class to wait for a specified state of the connection, with timeout.</summary>
     internal class ConnStateAwaitor : IDisposable

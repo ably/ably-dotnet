@@ -14,6 +14,15 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime
 {
+    [Collection("AblyRest SandBox Collection")]
+    [Trait("requires", "sandbox")]
+    public class ConnectionSandBoxSpecs : SandboxSpecs
+    {
+        public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
+        {
+        }
+    }
+
     public class ConnectionSpecs : AblyRealtimeSpecs
     {
         private FakeTransportFactory _fakeTransportFactory;
