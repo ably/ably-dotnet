@@ -180,7 +180,7 @@ namespace IO.Ably.Tests
         public void ConnectedState_UpdatesConnectionInformation()
         {
             // Act
-            var state = GetState(new ConnectionInfo("test", 12564, "test test", ""));
+            GetState(new ConnectionInfo("test", 12564, "test test", ""));
 
             // Assert
             var connection = _context.Connection;
