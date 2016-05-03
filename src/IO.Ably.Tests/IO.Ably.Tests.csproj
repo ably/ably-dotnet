@@ -107,6 +107,7 @@
     <Compile Include="AuthTests\RequestTokenTests.cs" />
     <Compile Include="CapabilityTests.cs" />
     <Compile Include="EncryptionSpecs.cs" />
+    <Compile Include="Infrastructure\FakeAckProcessor.cs" />
     <Compile Include="Infrastructure\FakeConnectionContext.cs" />
     <Compile Include="Infrastructure\FakeTimer.cs" />
     <Compile Include="Infrastructure\FakeTransport.cs" />

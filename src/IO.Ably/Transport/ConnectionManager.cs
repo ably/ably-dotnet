@@ -14,7 +14,7 @@ namespace IO.Ably.Transport
 {
     internal class ConnectionManager : IConnectionManager, ITransportListener, IConnectionContext
     {
-        private readonly IAcknowledgementProcessor _ackProcessor;
+        public IAcknowledgementProcessor AckProcessor { get; internal set; }
         private readonly ClientOptions _options;
         private readonly Queue<ProtocolMessage> _pendingMessages;
         private int _connectionAttempts;
@@ -40,7 +40,7 @@ namespace IO.Ably.Transport
             _transport.Listener = this;
             _state = initialState;
             RestClient = restClient;
-            _ackProcessor = ackProcessor;
+            AckProcessor = ackProcessor;
             Connection = new Connection(this);
         }
 
@@ -49,7 +49,7 @@ namespace IO.Ably.Transport
         {
             _options = options;
             RestClient = restClient;
-            _ackProcessor = new AcknowledgementProcessor();
+            AckProcessor = new AcknowledgementProcessor();
         }
 
         ConnectionState IConnectionContext.State => _state;
@@ -65,7 +65,7 @@ namespace IO.Ably.Transport
         async Task IConnectionContext.SetState(ConnectionState newState)
         {
             _state = newState;
-            _ackProcessor.OnStateChanged(newState);
+            AckProcessor.OnStateChanged(newState);
 
             Connection.OnStateChanged(newState.State, newState.Error, newState.RetryIn);
 
@@ -167,7 +167,7 @@ namespace IO.Ably.Transport
 
         public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback)
         {
-            _ackProcessor.SendMessage(message, callback);
+            AckProcessor.SendMessage(message, callback);
             _state.SendMessage(message);
         }
 
@@ -258,7 +258,7 @@ namespace IO.Ably.Transport
             Logger.Debug("ConnectionManager: Message Received {0}", message);
 
             var handled = await _state.OnMessageReceived(message);
-            handled |= _ackProcessor.OnMessageReceived(message);
+            handled |= AckProcessor.OnMessageReceived(message);
             handled |= ConnectionHeartbeatRequest.CanHandleMessage(message);
 
             if (message.connectionSerial != null)

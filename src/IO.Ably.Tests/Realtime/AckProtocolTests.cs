@@ -1,12 +1,10 @@
 ﻿using States = IO.Ably.Transport.States.Connection;
 using System;
 using System.Collections.Generic;
-using IO.Ably.Realtime;
 using Xunit;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
-using Moq;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
@@ -18,6 +16,9 @@ namespace IO.Ably.Tests
         [Theory]
         [InlineData(ProtocolMessage.MessageAction.Message)]
         [InlineData(ProtocolMessage.MessageAction.Presence)]
+        [Trait("spec", "RTN7a")]
+        [Trait("spec", "RTN7b")]
+        [Trait("sandboxTest", "needed")]
         public void WhenSendingPresenceOrDataMessage_IncrementsMsgSerial(ProtocolMessage.MessageAction messageAction)
         {
             // Arrange
@@ -52,6 +53,7 @@ namespace IO.Ably.Tests
         [InlineData(ProtocolMessage.MessageAction.Heartbeat)]
         [InlineData(ProtocolMessage.MessageAction.Nack)]
         [InlineData(ProtocolMessage.MessageAction.Sync)]
+        [Trait("spec", "RTN7a")]
         public void WhenSendingNotAPresenceOrDataMessage_MsgSerialNotIncremented(ProtocolMessage.MessageAction messageAction)
         {
             // Arrange
@@ -217,6 +219,8 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        [Trait("spec", "RTN7c")]
+        [Trait("sandboxTest", "needed")]
         public void OnState_Closed_FailCallbackCalled()
         {
             // Arrange
@@ -237,6 +241,8 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        [Trait("spec", "RTN7c")]
+        [Trait("sandboxTest", "needed")]
         public void OnState_Failed_FailCallbackCalled()
         {
             // Arrange
