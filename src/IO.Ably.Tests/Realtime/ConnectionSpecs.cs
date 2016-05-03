@@ -14,15 +14,6 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime
 {
-    [Collection("AblyRest SandBox Collection")]
-    [Trait("requires", "sandbox")]
-    public class ConnectionSandBoxSpecs : SandboxSpecs
-    {
-        public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
-        {
-        }
-    }
-
     public class ConnectionSpecs : AblyRealtimeSpecs
     {
         private FakeTransportFactory _fakeTransportFactory;
@@ -60,7 +51,6 @@ namespace IO.Ably.Tests.Realtime
             [Fact]
             [Trait("spec", "RTN3")]
             [Trait("spec", "RTN6")]
-            [Trait("sandboxTest", "needed")]
             public void WithAutoConnect_CallsConnectOnTransport()
             {
                 var client = GetClientWithFakeTransport(opts => opts.AutoConnect = true);
