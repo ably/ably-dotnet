@@ -408,5 +408,31 @@ namespace IO.Ably.Tests.Realtime
             {
             }
         }
+
+        [Trait("spec", "RTN9")]
+        public class ConnectionKeySpecs : ConnectionSpecs
+        {
+            [Fact]
+            [Trait("spec", "RTN9a")]
+            public void UntilConnected_ShouldBeNull()
+            {
+                var client = GetClientWithFakeTransport(opts => opts.AutoConnect = false);
+                client.Connection.Key.Should().BeNullOrEmpty();
+            }
+
+            [Fact]
+            [Trait("spec", "RTN9b")]
+            [Trait("sandboxTest", "needed")]
+            public void OnceConnected_ShouldUseKeyFromConnectedMessage()
+            {
+                var client = GetClientWithFakeTransport();
+                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { connectionDetails = new ConnectionDetailsMessage() { connectionKey = "key"} });
+                client.Connection.Key.Should().Be("key");
+            }
+
+            public ConnectionKeySpecs(ITestOutputHelper output) : base(output)
+            {
+            }
+        }
     }
 }
