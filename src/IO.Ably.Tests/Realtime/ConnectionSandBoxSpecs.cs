@@ -131,7 +131,7 @@ namespace IO.Ably.Tests.Realtime
             var result = await client.Connection.Ping();
 
             result.IsSuccess.Should().BeTrue();
-            result.Value.Value.Should().Be(TimeSpan.Zero);
+            result.Value.Value.Should().BeGreaterThan(TimeSpan.Zero);
         }
 
         public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)

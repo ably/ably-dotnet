@@ -546,6 +546,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTN13a")]
             public async Task OnHeartBeatMessageReceived_ShouldReturnElapsedTime()
             {
+                Now = DateTimeOffset.UtcNow;
                 var client = GetConnectedClient();
 
                 _fakeTransportFactory.LastCreatedTransport.SendAction = async message =>
