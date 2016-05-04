@@ -262,7 +262,6 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTN4b")]
             [Trait("spec", "RTN4d")]
             [Trait("spec", "RTN4e")]
-            [Trait("sandboxTest", "needed")]
             public void ANewConnectionShouldRaiseConnectingAndConnectedEvents()
             {
                 var client = GetClientWithFakeTransport(opts => opts.AutoConnect = false);
@@ -285,7 +284,6 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTN4c")]
             [Trait("spec", "RTN4d")]
             [Trait("spec", "RTN4e")]
-            [Trait("sandboxTest", "needed")]
             public void WhenClosingAConnection_ItShouldRaiseClosingAndClosedEvents()
             {
                 var client = GetClientWithFakeTransport();
@@ -325,13 +323,12 @@ namespace IO.Ably.Tests.Realtime
                 };
                 var expectedError = new ErrorInfo();
 
-                await LastCreatedTransport.Listener.OnTransportMessageReceived(
+                LastCreatedTransport.Listener.OnTransportMessageReceived(
                     new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = expectedError });
 
                 hasError.Should().BeTrue();
                 actualError.Should().Be(expectedError);
             }
-
 
             public EventEmitterSpecs(ITestOutputHelper output) : base(output)
             {
@@ -346,7 +343,7 @@ namespace IO.Ably.Tests.Realtime
             // This only contains the AckProcessor integration with the ConnectionManager. 
             // The Actual Ack processor tests are in AckProtocolSpecs.cs
 
-            [Fact]
+            [Fact]  
             public void ShouldListenToConnectionStateChanges()
             {
                 ((IConnectionContext) _realtime.ConnectionManager).SetState(

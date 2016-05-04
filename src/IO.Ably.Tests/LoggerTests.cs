@@ -41,15 +41,15 @@ namespace IO.Ably.AcceptanceTests
                 // Basic messages
                 Logger.Error("Test Error Message");
                 sink.LastLevel.ShouldBeEquivalentTo(LogLevel.Error);
-                sink.LastMessage.ShouldBeEquivalentTo("Test Error Message");
+                sink.LastMessage.Should().EndWith("Test Error Message");
 
                 Logger.Info("Test Info Message");
                 sink.LastLevel.ShouldBeEquivalentTo(LogLevel.Info);
-                sink.LastMessage.ShouldBeEquivalentTo("Test Info Message");
+                sink.LastMessage.Should().EndWith("Test Info Message");
 
                 Logger.Debug("Test Debug Message");
                 sink.LastLevel.ShouldBeEquivalentTo(LogLevel.Debug);
-                sink.LastMessage.ShouldBeEquivalentTo("Test Debug Message");
+                sink.LastMessage.Should().EndWith("Test Debug Message");
 
                 // Verify the log level works
                 Logger.LogLevel = LogLevel.Warning;
@@ -57,7 +57,7 @@ namespace IO.Ably.AcceptanceTests
                 Logger.Info("Test Info Message");
                 Logger.Debug("Test Debug Message");
                 sink.LastLevel.ShouldBeEquivalentTo(LogLevel.Error);
-                sink.LastMessage.ShouldBeEquivalentTo("Test Error Message");
+                sink.LastMessage.Should().EndWith("Test Error Message");
 
                 // Revert the level
                 Logger.LogLevel = Defaults.DefaultLogLevel;

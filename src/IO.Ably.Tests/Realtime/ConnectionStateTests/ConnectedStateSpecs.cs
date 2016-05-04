@@ -177,6 +177,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        [Trait("spec", "RTN8b")]
         public void ConnectedState_UpdatesConnectionInformation()
         {
             // Act

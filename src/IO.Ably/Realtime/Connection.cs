@@ -1,11 +1,10 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
 
 namespace IO.Ably.Realtime
 {
-    /// <summary>
-    /// </summary>
     public sealed class Connection : IDisposable
     {
         private readonly IConnectionManager _manager;
@@ -58,7 +57,7 @@ namespace IO.Ably.Realtime
 
         /// <summary>
         /// </summary>
-        public event EventHandler<ConnectionStateChangedEventArgs> ConnectionStateChanged;
+        public event EventHandler<ConnectionStateChangedEventArgs> ConnectionStateChanged = delegate { };
 
         /// <summary>
         /// </summary>
@@ -89,7 +88,15 @@ namespace IO.Ably.Realtime
             var oldState = State;
             State = state;
             Reason = error;
-            ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(oldState, state, retryin, error));
+            var stateArgs = new ConnectionStateChangedEventArgs(oldState, state, retryin, error);
+            var handler = Volatile.Read(ref ConnectionStateChanged); //Make sure we get all the subscribers on all threads
+            if (Logger.IsDebug)
+            {
+                var delegates = handler.GetInvocationList();
+                Logger.Debug($"{delegates.Length} delegates will be notified");
+            }
+            
+            handler(this, stateArgs); 
         }
     }
 }

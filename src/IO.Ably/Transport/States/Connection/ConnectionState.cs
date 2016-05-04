@@ -41,6 +41,11 @@ namespace IO.Ably.Transport.States.Connection
             }
         }
 
+        public override string ToString()
+        {
+            return $"Type: {GetType().Name}, State: {State}";
+        }
+
         public class TransportStateInfo
         {
             public TransportStateInfo(TransportState state)

@@ -80,7 +80,7 @@ namespace IO.Ably.Tests
             Logger.Error("Boo");
 
             sink.LastLevel.Should().Be(LogLevel.Error);
-            sink.LastMessage.Should().Be("Boo");
+            sink.LastMessage.Should().Contain("Boo");
         }
 
         [Fact]

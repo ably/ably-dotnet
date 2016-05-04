@@ -107,12 +107,14 @@
     <Compile Include="AuthTests\RequestTokenTests.cs" />
     <Compile Include="CapabilityTests.cs" />
     <Compile Include="EncryptionSpecs.cs" />
+    <Compile Include="Infrastructure\ConnectionAwaiter.cs" />
     <Compile Include="Infrastructure\FakeAckProcessor.cs" />
     <Compile Include="Infrastructure\FakeConnectionContext.cs" />
     <Compile Include="Infrastructure\FakeTimer.cs" />
     <Compile Include="Infrastructure\FakeTransport.cs" />
     <Compile Include="MessageEncodes\MessageEncodersAcceptanceTests.cs" />
     <Compile Include="Infrastructure\FakeAuth.cs" />
+    <Compile Include="Realtime\ConnectionSandBoxSpecs.cs" />
     <Compile Include="Realtime\ConnectionSpecs.cs" />
     <Compile Include="Realtime\ConnectionStateTests\ClosedStateSpecs.cs" />
     <Compile Include="Realtime\ConnectionStateTests\ClosingStateSpecs.cs" />

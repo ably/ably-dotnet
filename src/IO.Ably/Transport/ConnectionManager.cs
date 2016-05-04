@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Runtime.Remoting.Contexts;
-using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Nito.AsyncEx;
+using Nito.AsyncEx.Synchronous;
 using ConnectionState = IO.Ably.Transport.States.Connection.ConnectionState;
 
 namespace IO.Ably.Transport
@@ -20,6 +19,22 @@ namespace IO.Ably.Transport
         private int _connectionAttempts;
         private DateTimeOffset? _firstConnectionAttempt;
         private ConnectionState _state;
+        internal readonly AsyncContextThread _asyncContextThread = new AsyncContextThread();
+
+        public Task ExecuteAsyncOperation(Func<Task> asyncOperation)
+        {
+            if (_options.UseSyncForTesting)
+            {
+                asyncOperation().WaitAndUnwrapException();
+                return TaskConstants.BooleanTrue;
+            }
+            return _asyncContextThread.Factory.Run(asyncOperation);
+        }
+
+        public Task<T> ExecuteAsyncOperation<T>(Func<Task<T>>  asyncOperation)
+        {
+            return _asyncContextThread.Factory.Run(asyncOperation);
+        }
 
         public AblyRest RestClient { get; private set; }
 
@@ -62,25 +77,34 @@ namespace IO.Ably.Transport
 
         int IConnectionContext.ConnectionAttempts => _connectionAttempts;
 
-        async Task IConnectionContext.SetState(ConnectionState newState)
+        void IConnectionContext.SetState(ConnectionState newState)
         {
-            _state = newState;
-            AckProcessor.OnStateChanged(newState);
-
-            Connection.OnStateChanged(newState.State, newState.Error, newState.RetryIn);
-
-            try
+            if (Logger.IsDebug)
             {
-                await _state.OnAttachedToContext();
+                Logger.Debug($"Setting state from {_state} to {newState}");
             }
-            catch (AblyException ex)
+
+            ExecuteAsyncOperation(async () =>
             {
-                Logger.Error("Error attaching to context", ex);
-                if (_state.State != ConnectionStateType.Failed)
+                _state = newState;
+                AckProcessor.OnStateChanged(newState);
+
+                Connection.OnStateChanged(newState.State, newState.Error, newState.RetryIn);
+
+                try
                 {
-                    await ((IConnectionContext)this).SetState(new ConnectionFailedState(this, new ErrorInfo($"Failed to attach connection state {_state.State}", 500)));
+                    await _state.OnAttachedToContext();
                 }
-            }
+                catch (AblyException ex)
+                {
+                    Logger.Error("Error attaching to context", ex);
+                    if (_state.State != ConnectionStateType.Failed)
+                    {
+                        ((IConnectionContext) this).SetState(new ConnectionFailedState(this,
+                            new ErrorInfo($"Failed to attach connection state {_state.State}", 500)));
+                    }
+                }
+            });
         }
 
         async Task IConnectionContext.CreateTransport()
@@ -167,6 +191,10 @@ namespace IO.Ably.Transport
 
         public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback)
         {
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"Current state: {_state}. Sending message: {message}");
+            }
             AckProcessor.SendMessage(message, callback);
             _state.SendMessage(message);
         }
@@ -205,9 +233,13 @@ namespace IO.Ably.Transport
             OnTransportError(_transport.State, e);
         }
 
-        async Task ITransportListener.OnTransportMessageReceived(ProtocolMessage message)
+        void ITransportListener.OnTransportMessageReceived(ProtocolMessage message)
         {
-            await OnTransportMessageReceived(message);
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Message received: " + message);
+            }
+            ExecuteAsyncOperation(() => OnTransportMessageReceived(message));
         }
 
         internal async Task<TransportParams> CreateTransportParameters()

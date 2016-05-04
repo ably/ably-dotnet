@@ -1,6 +1,9 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -10,15 +13,70 @@ namespace IO.Ably.Tests.Realtime
     [Trait("requires", "sandbox")]
     public class ConnectionSandBoxSpecs : SandboxSpecs
     {
+        private Task WaitForState(AblyRealtime realtime, ConnectionStateType awaitedState = ConnectionStateType.Connected, TimeSpan? waitSpan = null)
+        {
+            Logger.Debug($"Waiting for state {awaitedState} for {(waitSpan ?? TimeSpan.FromSeconds(2)).TotalSeconds} seconds");
+            var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
+            if (waitSpan.HasValue)
+                return connectionAwaiter.Wait(waitSpan.Value);
+            return connectionAwaiter.Wait();
+        }
+
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN6")]
         public async Task WithAutoConnectTrue_ShouldConnectToAblyInTheBackground(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
-            var awaitor = new ConnectionAwaiter(client.Connection);
-            await awaitor.Wait();
+            await WaitForState(client);
+
             client.Connection.State.Should().Be(ConnectionStateType.Connected);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN4b")]
+        [Trait("spec", "RTN4d")]
+        [Trait("spec", "RTN4e")]
+        public async Task ANewConnectionShouldRaiseConnectingAndConnectedEvents(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, opts => opts.AutoConnect = false);
+            var states = new List<ConnectionStateType>();
+            client.Connection.ConnectionStateChanged += (sender, args) =>
+            {
+                args.Should().BeOfType<ConnectionStateChangedEventArgs>();
+                states.Add(args.CurrentState);
+            };
+
+            client.Connect();
+
+            await WaitForState(client);
+
+            states.Should().BeEquivalentTo(new[] { ConnectionStateType.Connecting, ConnectionStateType.Connected });
+            client.Connection.State.Should().Be(ConnectionStateType.Connected);
+        }
+
+        [Theory]
+        [ProtocolData]
+        public async Task WhenClosingAConnection_ItShouldRaiseClosingAndClosedEvents(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+
+            //Start collecting events after the connection is open
+            await WaitForState(client);
+
+            var states = new List<ConnectionStateType>();
+            client.Connection.ConnectionStateChanged += (sender, args) =>
+            {
+                args.Should().BeOfType<ConnectionStateChangedEventArgs>();
+                states.Add(args.CurrentState);
+            };
+            client.Close();
+
+            await WaitForState(client, ConnectionStateType.Closed, TimeSpan.FromSeconds(5));
+
+            states.Should().BeEquivalentTo(new[] { ConnectionStateType.Closing, ConnectionStateType.Closed });
+            client.Connection.State.Should().Be(ConnectionStateType.Closed);
         }
 
         public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)

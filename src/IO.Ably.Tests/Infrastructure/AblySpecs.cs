@@ -10,6 +10,7 @@ namespace IO.Ably.Tests
         {
             var clientOptions = options ?? new ClientOptions(ValidKey);
             clientOptions.SkipInternetCheck = true; //This is for the Unit tests
+            clientOptions.UseSyncForTesting = true;
             return new AblyRealtime(clientOptions, opts => GetRestClient(handleRequestFunc, clientOptions));
         }
 
@@ -17,6 +18,7 @@ namespace IO.Ably.Tests
         {
             var options = new ClientOptions(ValidKey);
             options.SkipInternetCheck = true; //This is for the Unit tests
+            options.UseSyncForTesting = true;
             optionsAction?.Invoke(options);
             return new AblyRealtime(options, clientOptions => GetRestClient(handleRequestFunc, clientOptions));
         }

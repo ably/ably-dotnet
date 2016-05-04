@@ -2,6 +2,7 @@ using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
 using IO.Ably.Transport;
 
 namespace IO.Ably
@@ -60,10 +61,20 @@ namespace IO.Ably
 
         static void Message(LogLevel level, string message, params object[] args)
         {
+            var timeStamp = GetLogMessagePreifx();
             ILoggerSink i = LoggerSink;
             if (level > LogLevel || null == i)
                 return;
-            i.LogEvent(level, string.Format(message, args));
+            if(args == null || args.Length == 0)
+                i.LogEvent(level, timeStamp + " " + message);
+            else
+                i.LogEvent(level, timeStamp + " " + string.Format(message, args));
+        }
+
+        private static string GetLogMessagePreifx()
+        {
+            var timeStamp = Config.Now().ToString("hh:mm:ss.fff");
+            return $"{timeStamp} #{Thread.CurrentThread.ManagedThreadId}";
         }
 
         /// <summary>Log an error message.</summary>

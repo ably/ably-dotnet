@@ -60,7 +60,6 @@
     <Compile Include="ClientOptions.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Realtime\ChannelFactory.cs" />
-    <Compile Include="Realtime\ConnStateAwaitor.cs" />
     <Compile Include="Realtime\Handlers.cs" />
     <Compile Include="Realtime\IMessageHandler.cs" />
     <Compile Include="Transport\TaskWrapper.cs" />
