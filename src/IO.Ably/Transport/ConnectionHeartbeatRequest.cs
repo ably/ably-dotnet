@@ -13,28 +13,31 @@ namespace IO.Ably.Transport
         private static readonly ErrorInfo DefaultError = new ErrorInfo("Unable to ping service; not connected", 40000,
             HttpStatusCode.BadRequest);
 
-        private Action<bool, ErrorInfo> _callback;
+        private Action<DateTimeOffset?, ErrorInfo> _callback;
         private IConnectionManager _manager;
         private ICountdownTimer _timer;
+        private bool _finished;
+        private object _syncLock = new object();
+
 
         public static bool CanHandleMessage(ProtocolMessage message)
         {
             return message.action == ProtocolMessage.MessageAction.Heartbeat;
         }
 
-        public static ConnectionHeartbeatRequest Execute(IConnectionManager manager, Action<bool, ErrorInfo> callback)
+        public static ConnectionHeartbeatRequest Execute(IConnectionManager manager, Action<DateTimeOffset?, ErrorInfo> callback)
         {
             return Execute(manager, new CountdownTimer(), callback);
         }
 
         public static ConnectionHeartbeatRequest Execute(IConnectionManager manager, ICountdownTimer timer,
-            Action<bool, ErrorInfo> callback)
+            Action<DateTimeOffset?, ErrorInfo> callback)
         {
             var request = new ConnectionHeartbeatRequest();
 
             if (manager.Connection.State != ConnectionStateType.Connected)
             {
-                callback?.Invoke(false, DefaultError);
+                callback?.Invoke(default(DateTimeOffset), DefaultError);
 
                 return request;
             }
@@ -61,7 +64,7 @@ namespace IO.Ably.Transport
         {
             if (CanHandleMessage(message))
             {
-                FinishRequest(true, null);
+                FinishRequest(DateTimeOffset.MaxValue, null); //TODO: Fix when I see how the data is returned
             }
         }
 
@@ -69,29 +72,36 @@ namespace IO.Ably.Transport
         {
             if (e.CurrentState != ConnectionStateType.Connected)
             {
-                FinishRequest(false, DefaultError);
+                FinishRequest(default(DateTimeOffset), DefaultError);
             }
         }
 
         private void OnTimeout()
         {
-            FinishRequest(false, DefaultError);
+            FinishRequest(null, DefaultError);
         }
 
-        private void FinishRequest(bool result, ErrorInfo error)
+        private void FinishRequest(DateTimeOffset? result, ErrorInfo error)
         {
-            _manager.MessageReceived -= OnMessageReceived;
-            _manager.Connection.ConnectionStateChanged -= OnConnectionStateChanged;
-            _timer.Abort();
-
-            if (_callback != null)
+            if (_finished == false)
             {
-                _callback(result, error);
-            }
+                lock (_syncLock)
+                {
+                    if (_finished == false)
+                    {
+                        _manager.MessageReceived -= OnMessageReceived;
+                        _manager.Connection.ConnectionStateChanged -= OnConnectionStateChanged;
+                        _timer.Abort();
 
-            _callback = null;
-            _manager = null;
-            _timer = null;
+                        _callback?.Invoke(result, error);
+
+                        _callback = null;
+                        _manager = null;
+                        _timer = null;
+                    }
+                }
+            }
+            
         }
     }
 }

@@ -202,15 +202,17 @@ namespace IO.Ably.Transport
         public Task SendAsync(ProtocolMessage message)
         {
             var tw = new TaskWrapper();
-            Send(message, tw);
-            return tw;
+            Send(message, tw.Callback);
+            return tw.Task;
         }
 
-        public Task Ping()
+        public Task<Result<DateTimeOffset?>> PingAsync()
         {
-            var res = new TaskWrapper();
-            ConnectionHeartbeatRequest.Execute(this, res);
-            return res;
+            return TaskWrapper.Wrap<DateTimeOffset?>(Ping);
+        }
+        public void Ping(Action<DateTimeOffset?, ErrorInfo> callback)
+        {
+            ConnectionHeartbeatRequest.Execute(this, callback);
         }
 
         //

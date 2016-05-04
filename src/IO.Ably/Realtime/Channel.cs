@@ -153,11 +153,11 @@ namespace IO.Ably.Realtime
         public Task PublishAsync(IEnumerable<Message> messages)
         {
             var tw = new TaskWrapper();
-            publishImpl(messages, tw);
-            return tw;
+            PublishImpl(messages, tw.Callback);
+            return tw.Task;
         }
 
-        private void publishImpl(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback)
+        private void PublishImpl(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback)
         {
             // Create protocol message
             var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Message, Name);

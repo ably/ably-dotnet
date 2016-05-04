@@ -476,7 +476,7 @@ namespace IO.Ably.Tests
             ConnectionManager target = new ConnectionManager(mock.Object, ackmock.Object, state.Object, GetRestClient());
 
             // Act
-            await target.Ping();
+            await target.PingAsync();
 
             // Assert
             state.Verify(c => c.SendMessage(It.Is<ProtocolMessage>(m => m.action == ProtocolMessage.MessageAction.Heartbeat)), Times.Once());
@@ -528,15 +528,15 @@ namespace IO.Ably.Tests
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.Setup(c => c.ConnectionState).Returns(state);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
-            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
-            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            var res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
+            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, null, callback);
 
             // Assert
             Assert.Equal<int>(1, res.Count);
-            Assert.False(res[0].Item1);
+            Assert.Null(res[0].Item1);
             Assert.NotNull(res[0].Item2);
         }
 
@@ -610,8 +610,9 @@ namespace IO.Ably.Tests
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
-            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
-            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+
+            var res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
+            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -629,8 +630,8 @@ namespace IO.Ably.Tests
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
-            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
-            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            List<Tuple<DateTimeOffset?, ErrorInfo>> res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
+            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -664,8 +665,8 @@ namespace IO.Ably.Tests
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
-            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
-            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            List<Tuple<DateTimeOffset?, ErrorInfo>> res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
+            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -683,8 +684,8 @@ namespace IO.Ably.Tests
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
-            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
-            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            List<Tuple<DateTimeOffset?, ErrorInfo>> res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
+            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -692,7 +693,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.Equal<int>(1, res.Count);
-            Assert.True(res[0].Item1);
+            Assert.Null(res[0].Item1);
             Assert.Null(res[0].Item2);
         }
 
@@ -704,8 +705,8 @@ namespace IO.Ably.Tests
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
-            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
-            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            List<Tuple<DateTimeOffset?, ErrorInfo>> res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
+            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -725,8 +726,8 @@ namespace IO.Ably.Tests
             connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
-            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
-            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            var res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
+            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -760,8 +761,8 @@ namespace IO.Ably.Tests
             connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
-            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
-            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            var res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
+            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -769,7 +770,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.Equal<int>(1, res.Count);
-            Assert.False(res[0].Item1);
+            Assert.Null(res[0].Item1);
             Assert.NotNull(res[0].Item2);
         }
 
@@ -790,7 +791,7 @@ namespace IO.Ably.Tests
             connection.SetupGet(c => c.State).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
-            Action<bool, ErrorInfo> callback = (e, err) => { };
+            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => { };
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -817,8 +818,8 @@ namespace IO.Ably.Tests
             connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
-            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
-            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            var res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
+            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -844,8 +845,8 @@ namespace IO.Ably.Tests
             connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
-            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
-            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            var res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
+            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
             timer.Setup(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<Action>(), false)).Callback<int, Action>((c, e) => e());
 
             // Act
@@ -853,7 +854,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.Equal<int>(1, res.Count);
-            Assert.False(res[0].Item1);
+            Assert.Null(res[0].Item1);
             Assert.NotNull(res[0].Item2);
         }
 
@@ -867,8 +868,8 @@ namespace IO.Ably.Tests
             connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
-            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
-            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            var res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
+            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
             timer.Setup(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<Action>(), false)).Callback<int, Action>((c, e) => e());
 
             // Act
@@ -878,7 +879,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.Equal<int>(1, res.Count);
-            Assert.False(res[0].Item1);
+            Assert.Null(res[0].Item1);
             Assert.NotNull(res[0].Item2);
         }
 
@@ -890,8 +891,8 @@ namespace IO.Ably.Tests
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
-            List<Tuple<bool, ErrorInfo>> res = new List<Tuple<bool, ErrorInfo>>();
-            Action<bool, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            List<Tuple<DateTimeOffset?, ErrorInfo>> res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
+            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
             const int count = 10;
 
             // Act
@@ -905,7 +906,7 @@ namespace IO.Ably.Tests
             Assert.Equal<int>(count, res.Count);
             foreach (var item in res)
             {
-                Assert.True(item.Item1);
+                Assert.NotNull(item.Item1);
                 Assert.Null(item.Item2);
             }
         }

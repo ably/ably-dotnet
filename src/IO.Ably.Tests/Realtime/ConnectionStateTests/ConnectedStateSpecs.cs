@@ -171,6 +171,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        [Trait("spec", "RTN12c")]
         public async Task WhenCloseMessageReceived_ShouldChangeStateToClosed()
         {
             bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Close));

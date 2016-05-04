@@ -70,7 +70,7 @@ namespace IO.Ably.Realtime
         /// </summary>
         public Task Ping()
         {
-            return _manager.Ping();
+            return _manager.PingAsync();
         }
 
         /// <summary>

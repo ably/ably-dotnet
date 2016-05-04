@@ -81,8 +81,8 @@ namespace IO.Ably.Realtime
                 }
 
                 var tw = new TaskWrapper();
-                pendingPresence.Add(new QueuedPresenceMessage(msg, tw));
-                return tw;
+                pendingPresence.Add(new QueuedPresenceMessage(msg, tw.Callback));
+                return tw.Task;
             }
             if (channel.State == ChannelState.Attached)
             {

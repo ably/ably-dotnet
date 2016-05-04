@@ -47,12 +47,14 @@
     <Compile Include="AuthMethod.cs" />
     <Compile Include="AuthOptions.cs" />
     <Compile Include="Class1.cs" />
+    <Compile Include="Realtime\ConnectionAwaiter.cs" />
     <Compile Include="Encryption\AesCipher.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\UriExtensions.cs" />
     <Compile Include="Http\AblyHttpOptions.cs" />
     <Compile Include="Realtime\WebSocketTransport.cs" />
+    <Compile Include="Result.cs" />
     <Compile Include="TokenDetails.cs" />
     <Compile Include="Capability.cs" />
     <Compile Include="CapabilityResource.cs" />

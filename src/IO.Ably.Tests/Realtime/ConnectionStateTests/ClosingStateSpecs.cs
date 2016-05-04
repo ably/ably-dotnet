@@ -169,6 +169,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        [Trait("spec", "RTN12a")]
         public async Task WhenClosedMessageReceived_ShouldAbortTimerAndMoveToClosedState()
         {
             // Arrange
