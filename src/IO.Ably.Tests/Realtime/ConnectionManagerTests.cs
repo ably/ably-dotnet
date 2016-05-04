@@ -17,7 +17,7 @@ using Xunit.Abstractions;
 namespace IO.Ably.Tests
 {
     //Temporarily made private to fix the Rest unit tests first
-    class ConnectionManagerTests : AblySpecs
+    public class ConnectionManagerTests : AblySpecs
     {
         [Fact]
         public void When_Created_StateIsInitialized()
@@ -510,24 +510,7 @@ namespace IO.Ably.Tests
             mock.Verify(c => c.Close(), Times.Once());
         }
 
-        [Fact]
-        public void ConnectionSerialUpdated_WhenProtocolMessageReceived()
-        {
-            // Arrange
-            Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
-            Mock<ITransport> transport = new Mock<ITransport>();
-            transport.SetupGet(c => c.State).Returns(TransportState.Closed);
-            transport.SetupProperty(c => c.Listener);
-            Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object, GetRestClient());
-            ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message) { connectionSerial = 123456 };
-
-            // Act
-            transport.Object.Listener.OnTransportMessageReceived(targetMessage);
-
-            // Assert
-            Assert.Equal(123456, target.Connection.Serial);
-        }
+        
 
         [Fact]
         public void ConnectionSerialNotUpdated_WhenProtocolMessageReceived()
@@ -950,37 +933,7 @@ namespace IO.Ably.Tests
 
         #endregion
 
-        [Fact]
-        public async Task WhenRestoringConnection_UsesLastKnownConnectionSerial()
-        {
-            // Arrange
-            long targetSerial = 1234567;
-            Mock<ConnectionManager> target = new Mock<ConnectionManager>(new ClientOptions());
-            target.Object.Connection.Serial = targetSerial;
-            target.Setup(c => c.CreateTransport(It.IsAny<TransportParams>())).Returns(new Mock<Task<ITransport>>().Object);
-
-            // Act
-            await (target.Object as IConnectionContext).CreateTransport();
-
-            // Assert
-            target.Verify(c => c.CreateTransport(It.Is<TransportParams>(tp => tp.ConnectionSerial.Value == targetSerial)), Times.Once());
-        }
-
-        [Fact]
-        public async Task WhenRestoringConnection_UsesConnectionKey()
-        {
-            // Arrange
-            string targetKey = "1234567";
-            Mock<ConnectionManager> target = new Mock<ConnectionManager>(new ClientOptions());
-            target.Object.Connection.Key = targetKey;
-            target.Setup(c => c.CreateTransport(It.IsAny<TransportParams>())).Returns(new Mock<Task<ITransport>>().Object);
-
-            // Act
-            await (target.Object as IConnectionContext).CreateTransport();
-
-            // Assert
-            target.Verify(c => c.CreateTransport(It.Is<TransportParams>(tp => tp.ConnectionKey == targetKey.ToString())), Times.Once());
-        }
+        
 
         private AblyRest GetRestClient()
         {

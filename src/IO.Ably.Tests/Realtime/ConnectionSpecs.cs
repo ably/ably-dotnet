@@ -9,6 +9,7 @@ using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
+using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -426,7 +427,73 @@ namespace IO.Ably.Tests.Realtime
                 client.Connection.Key.Should().Be("key");
             }
 
+            [Fact]
+            [Trait("spec", "RTN9b")]
+            public async Task WhenRestoringConnection_UsesConnectionKey()
+            {
+                // Arrange
+                string targetKey = "1234567";
+                var client = GetClientWithFakeTransport();
+                client.Connection.Key = targetKey;
+
+                // Act
+                var transportParamsForReconnect = await client.ConnectionManager.CreateTransportParameters();
+
+                // Assert
+                transportParamsForReconnect
+                    .ConnectionKey.Should().Be(targetKey);
+            }
+
             public ConnectionKeySpecs(ITestOutputHelper output) : base(output)
+            {
+            }
+        }
+
+        public class ConnectionSerialSpecs : ConnectionSpecs
+        {
+            [Fact]
+            [Trait("spec", "RTN10a")]
+            public void OnceConnected_ConnectionSerialShouldBeMinusOne()
+            {
+                var client = GetClientWithFakeTransport();
+                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+                client.Connection.Serial.Should().Be(-1);
+            }
+
+            [Fact]
+            [Trait("spec", "RTN10c")]
+            public async Task WhenRestoringConnection_UsesLastKnownConnectionSerial()
+            {
+                // Arrange
+                var client = GetClientWithFakeTransport();
+                long targetSerial = 1234567;
+                client.Connection.Serial = targetSerial;
+
+                // Act
+                var transportParams =await client.ConnectionManager.CreateTransportParameters();
+
+                transportParams.ConnectionSerial.Should().Be(targetSerial);
+            }
+
+            [Fact]
+            public void ConnectionSerialUpdated_WhenProtocolMessageReceived()
+            {
+                // Arrange
+                var client = GetClientWithFakeTransport();
+                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+
+                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Message)
+                {
+                    connectionSerial = 123456
+                });
+
+                // Act
+                client.Connection.Serial.Should().Be(123456);
+
+            }
+
+
+            public ConnectionSerialSpecs(ITestOutputHelper output) : base(output)
             {
             }
         }
