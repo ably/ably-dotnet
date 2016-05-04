@@ -168,6 +168,8 @@ namespace IO.Ably
         internal bool SkipInternetCheck { get; set; } = false;
         internal bool UseSyncForTesting { get; set; } = false;
 
+        internal TimeSpan RealtimeRequestTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;
+
         /// <summary>
         /// Defaul constructor for ClientOptions
         /// </summary>

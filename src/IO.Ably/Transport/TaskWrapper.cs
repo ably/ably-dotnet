@@ -44,12 +44,12 @@ namespace IO.Ably.Transport
 
         public void Callback(T res, ErrorInfo ei)
         {
-            if(typeof(T).IsValueType && Equals(res, default(T)) == false)
+            if (ei != null)
+                _completionSource.SetResult(Result.Fail<T>(ei));
+            else if (typeof(T).IsValueType && Equals(res, default(T)) == false)
                 _completionSource.SetResult(Result.Ok(res));
             else if (typeof(T).IsValueType == false && res != null)
                 _completionSource.SetResult(Result.Ok(res));
-            else if (ei != null)
-                _completionSource.SetResult(Result.Fail<T>(ei));
             else
                 _completionSource.SetException(new Exception("")); //Something bad happened
         }

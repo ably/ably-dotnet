@@ -30,6 +30,8 @@ namespace IO.Ably.Transport
     {
         Connection Connection { get; }
 
+        ClientOptions Options { get; }
+
         ConnectionStateType ConnectionState { get; }
 
         bool IsActive { get; }

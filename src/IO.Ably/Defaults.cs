@@ -21,6 +21,7 @@ namespace IO.Ably
         public const int TlsPort = 443;
         // Buffer in seconds before a token is considered unusable
         public const int TokenExpireBufferInSeconds = 15;
+        public static readonly TimeSpan DefaultRealtimeTimeout = TimeSpan.FromSeconds(10);
         public static readonly ITransportFactory WebSocketTransportFactory = Platform.IoC.WebSockets;
 
         internal const int TokenErrorCodesRangeStart = 40140;

@@ -8,9 +8,7 @@ namespace IO.Ably.Transport
 {
     internal class ConnectionHeartbeatRequest
     {
-        private const int HeartbeatTimeout = 5*1000; //TODO: Make sure it comes from ClientOptions
-
-        private static readonly ErrorInfo DefaultError = new ErrorInfo("Unable to ping service; not connected", 40000,
+        public static readonly ErrorInfo DefaultError = new ErrorInfo("Unable to ping service; not connected", 40000,
             HttpStatusCode.BadRequest);
 
         private Action<DateTimeOffset?, ErrorInfo> _callback;
@@ -54,7 +52,7 @@ namespace IO.Ably.Transport
             manager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat), null);
             if (callback != null)
             {
-                request._timer.Start(TimeSpan.FromMilliseconds(HeartbeatTimeout), request.OnTimeout);
+                request._timer.Start(manager.Options.RealtimeRequestTimeout, request.OnTimeout);
             }
 
             return request;
@@ -64,7 +62,7 @@ namespace IO.Ably.Transport
         {
             if (CanHandleMessage(message))
             {
-                FinishRequest(DateTimeOffset.MaxValue, null); //TODO: Fix when I see how the data is returned
+                FinishRequest(Config.Now(), null);
             }
         }
 
@@ -78,7 +76,7 @@ namespace IO.Ably.Transport
 
         private void OnTimeout()
         {
-            FinishRequest(null, DefaultError);
+            FinishRequest(null, new ErrorInfo("Unable to ping service; Request timed out", 40800, HttpStatusCode.RequestTimeout));
         }
 
         private void FinishRequest(DateTimeOffset? result, ErrorInfo error)

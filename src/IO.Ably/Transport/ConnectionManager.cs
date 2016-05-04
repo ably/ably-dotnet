@@ -14,26 +14,26 @@ namespace IO.Ably.Transport
     internal class ConnectionManager : IConnectionManager, ITransportListener, IConnectionContext
     {
         public IAcknowledgementProcessor AckProcessor { get; internal set; }
-        private readonly ClientOptions _options;
+        public ClientOptions Options { get; }
         private readonly Queue<ProtocolMessage> _pendingMessages;
         private int _connectionAttempts;
         private DateTimeOffset? _firstConnectionAttempt;
         private ConnectionState _state;
-        internal readonly AsyncContextThread _asyncContextThread = new AsyncContextThread();
+        internal readonly AsyncContextThread AsyncContextThread = new AsyncContextThread();
 
         public Task ExecuteAsyncOperation(Func<Task> asyncOperation)
         {
-            if (_options.UseSyncForTesting)
+            if (Options.UseSyncForTesting)
             {
                 asyncOperation().WaitAndUnwrapException();
                 return TaskConstants.BooleanTrue;
             }
-            return _asyncContextThread.Factory.Run(asyncOperation);
+            return AsyncContextThread.Factory.Run(asyncOperation);
         }
 
         public Task<T> ExecuteAsyncOperation<T>(Func<Task<T>>  asyncOperation)
         {
-            return _asyncContextThread.Factory.Run(asyncOperation);
+            return AsyncContextThread.Factory.Run(asyncOperation);
         }
 
         public AblyRest RestClient { get; private set; }
@@ -62,7 +62,7 @@ namespace IO.Ably.Transport
         public ConnectionManager(ClientOptions options, AblyRest restClient)
             : this()
         {
-            _options = options;
+            Options = options;
             RestClient = restClient;
             AckProcessor = new AcknowledgementProcessor();
         }
@@ -144,7 +144,7 @@ namespace IO.Ably.Transport
 
         public async Task<bool> CanConnectToAbly()
         {
-            if (_options.SkipInternetCheck)
+            if (Options.SkipInternetCheck)
                 return await TaskConstants.BooleanTrue;
 
             try
@@ -246,7 +246,7 @@ namespace IO.Ably.Transport
 
         internal async Task<TransportParams> CreateTransportParameters()
         {
-            return await TransportParams.Create(RestClient.AblyAuth, _options, Connection?.Key, Connection?.Serial);
+            return await TransportParams.Create(RestClient.AblyAuth, Options, Connection?.Key, Connection?.Serial);
         }
 
         //TODO: Move this inside WebSocketTransport
@@ -268,7 +268,7 @@ namespace IO.Ably.Transport
 
         internal virtual Task<ITransport> CreateTransport(TransportParams transportParams)
         {
-            var factory = _options.TransportFactory ?? Defaults.WebSocketTransportFactory;
+            var factory = Options.TransportFactory ?? Defaults.WebSocketTransportFactory;
             return factory.CreateTransport(transportParams);
         }
 

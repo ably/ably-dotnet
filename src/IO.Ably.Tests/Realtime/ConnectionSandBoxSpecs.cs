@@ -119,6 +119,20 @@ namespace IO.Ably.Tests.Realtime
             distinctConnectionIds.Should().HaveCount(3);
         }
 
+        [Theory]
+        [ProtocolData]
+        public async Task WithConnectedClient_PingShouldReturnServiceTime(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+
+            await WaitForState(client);
+
+            var result = await client.Connection.Ping();
+
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Value.Should().BeWithin(TimeSpan.FromSeconds(1)).Before(Config.Now());
+        }
+
         public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
         {
         }
