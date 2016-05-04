@@ -17,7 +17,7 @@ using Xunit.Abstractions;
 namespace IO.Ably.Tests
 {
     //Temporarily made private to fix the Rest unit tests first
-    public class ConnectionManagerTests : AblySpecs
+    class ConnectionManagerTests : AblySpecs
     {
         [Fact]
         public void When_Created_StateIsInitialized()
@@ -510,27 +510,6 @@ namespace IO.Ably.Tests
             mock.Verify(c => c.Close(), Times.Once());
         }
 
-        
-
-        [Fact]
-        public void ConnectionSerialNotUpdated_WhenProtocolMessageReceived()
-        {
-            // Arrange
-            Mock<Transport.States.Connection.ConnectionState> state = new Mock<Transport.States.Connection.ConnectionState>();
-            Mock<ITransport> transport = new Mock<ITransport>();
-            transport.SetupGet(c => c.State).Returns(TransportState.Closed);
-            transport.SetupProperty(c => c.Listener);
-            Mock<IAcknowledgementProcessor> ackProcessor = new Mock<IAcknowledgementProcessor>();
-            ConnectionManager target = new ConnectionManager(transport.Object, ackProcessor.Object, state.Object, GetRestClient());
-            target.Connection.Serial = 123456;
-            ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
-
-            // Act
-            transport.Object.Listener.OnTransportMessageReceived(targetMessage);
-
-            // Assert
-            Assert.Equal(123456, target.Connection.Serial);
-        }
         #endregion
 
         #region ConnectionHeartbeatRequest tests

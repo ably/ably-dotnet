@@ -77,13 +77,15 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void Close_ChangesStateToClosed()
+        [Trait("spec", "RTN12d")]
+        public void Close_ChangesStateToClosedAndAbortsTimer()
         {
             // Act
             _state.Close();
 
             // Assert
             _context.StateShouldBe<ConnectionClosedState>();
+            _timer.Aborted.Should().BeTrue();
         }
 
         [Fact]

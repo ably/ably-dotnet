@@ -32,7 +32,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void Connect()
         {
-            // do nothing
+            //do nothing
         }
 
         public override void Close()

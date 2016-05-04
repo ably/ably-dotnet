@@ -34,6 +34,9 @@ namespace IO.Ably.Transport.States.Connection
         {
             switch (message.action)
             {
+                case ProtocolMessage.MessageAction.Close:
+                    Context.SetState(new ConnectionClosedState(Context, message.error));
+                    return TaskConstants.BooleanTrue;
                 case ProtocolMessage.MessageAction.Disconnected:
                 {
                     Context.SetState(new ConnectionDisconnectedState(Context, message.error));

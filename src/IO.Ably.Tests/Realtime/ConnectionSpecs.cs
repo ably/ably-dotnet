@@ -449,6 +449,7 @@ namespace IO.Ably.Tests.Realtime
             }
         }
 
+        [Trait("spec", "RTN10")]
         public class ConnectionSerialSpecs : ConnectionSpecs
         {
             [Fact]
@@ -519,5 +520,14 @@ namespace IO.Ably.Tests.Realtime
             {
             }
         }
+
+        [Trait("spec", "RTN12")]
+        public class ConnectionCloseSpecs : ConnectionSpecs
+        {
+            public ConnectionCloseSpecs(ITestOutputHelper output) : base(output)
+            {
+            }
+        }
+
     }
 }

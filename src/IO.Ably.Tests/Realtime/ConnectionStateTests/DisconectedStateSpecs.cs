@@ -91,7 +91,8 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void WhenCloseCalled_ShouldTrasitionToClosed()
+        [Trait("spec", "RTN12d")]
+        public void WhenCloseCalled_ShouldTrasitionToClosedAndTimerAborted()
         {
             // Arrange
             
@@ -102,6 +103,7 @@ namespace IO.Ably.Tests
 
             // Assert
             _context.StateShouldBe<ConnectionClosedState>();
+            _timer.Aborted.Should().BeTrue();
         }
 
         [Fact]

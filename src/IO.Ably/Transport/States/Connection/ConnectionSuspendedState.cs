@@ -40,6 +40,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void Close()
         {
+            _timer.Abort();
             Context.SetState(new ConnectionClosedState(Context));
         }
 

@@ -124,6 +124,8 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        [Trait("spec", "RTN12a")]
+        //When the closing state is initialised a Close message is sent
         public async Task OnAttachedToTransport_ShouldSendCloseMessage()
         {
             // Arrange
@@ -154,6 +156,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        [Trait("spec", "RTN12b")]
         public async Task AfterTimeoutExpires_ShouldForceStateToClosed()
         {
             _context.Transport = new FakeTransport() { State = TransportState.Connected };
@@ -166,7 +169,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public async Task WhenClosedMessageReceived_ShouldAbortTimer()
+        public async Task WhenClosedMessageReceived_ShouldAbortTimerAndMoveToClosedState()
         {
             // Arrange
             _context.Transport = new FakeTransport(TransportState.Connected);

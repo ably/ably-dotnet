@@ -39,6 +39,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN4b")]
         [Trait("spec", "RTN4d")]
         [Trait("spec", "RTN4e")]
+        [Trait("spec", "RTN11a")]
         public async Task ANewConnectionShouldRaiseConnectingAndConnectedEvents(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol, opts => opts.AutoConnect = false);

@@ -62,7 +62,6 @@ namespace IO.Ably.Tests
         [InlineData(ProtocolMessage.MessageAction.Ack)]
         [InlineData(ProtocolMessage.MessageAction.Attach)]
         [InlineData(ProtocolMessage.MessageAction.Attached)]
-        [InlineData(ProtocolMessage.MessageAction.Close)]
         [InlineData(ProtocolMessage.MessageAction.Closed)]
         [InlineData(ProtocolMessage.MessageAction.Connect)]
         [InlineData(ProtocolMessage.MessageAction.Connected)]
@@ -121,6 +120,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        [Trait("spec", "RTN12a")]
         public void WhenCloseCalled_ShouldCHangeStateToClosing()
         {
             // Act
@@ -164,16 +164,19 @@ namespace IO.Ably.Tests
         [Fact]
         public void ConnectedState_TransportGoesDisconnected_SwitchesToDisconnected()
         {
-            // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            context.SetupGet(c => c.Connection).Returns(new Connection(new Mock<IConnectionManager>().Object));
-            ConnectionConnectedState state = new ConnectionConnectedState(context.Object, new ConnectionInfo("", 0, "", ""));
-
-            // Act
-            state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
+            _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
 
             // Assert
-            context.Verify(c => c.SetState(It.IsAny<ConnectionDisconnectedState>()), Times.Once());
+            _context.StateShouldBe<ConnectionDisconnectedState>();
+        }
+
+        [Fact]
+        public async Task WhenCloseMessageReceived_ShouldChangeStateToClosed()
+        {
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
+
+            result.Should().BeTrue();
+            _context.StateShouldBe<ConnectionClosedState>();
         }
 
         [Fact]
