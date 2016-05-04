@@ -476,7 +476,8 @@ namespace IO.Ably.Tests.Realtime
             }
 
             [Fact]
-            public void ConnectionSerialUpdated_WhenProtocolMessageReceived()
+            [Trait("spec", "RTN10b")]
+            public void WhenProtocolMessageWithSerialReceived_SerialShouldUpdate()
             {
                 // Arrange
                 var client = GetClientWithFakeTransport();
@@ -489,6 +490,27 @@ namespace IO.Ably.Tests.Realtime
 
                 // Act
                 client.Connection.Serial.Should().Be(123456);
+            }
+
+            [Fact]
+            [Trait("spec", "RTN10b")]
+            public void WhenProtocolMessageWithOUTSerialReceived_SerialShouldNotUpdate()
+            {
+                // Arrange
+                var client = GetClientWithFakeTransport();
+                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+                var initialSerial = client.Connection.Serial;
+
+                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Message));
+
+                // Act
+                client.Connection.Serial.Should().Be(initialSerial);
+            }
+
+            [Fact(Skip = "Need to get back to it")]
+            [Trait("spec", "RTN10b")]
+            public void WhenFirstAckMessageReceived_ShouldSetSerialToZero()
+            {
 
             }
 
