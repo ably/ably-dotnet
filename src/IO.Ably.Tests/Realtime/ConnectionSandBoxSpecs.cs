@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
@@ -15,7 +16,7 @@ namespace IO.Ably.Tests.Realtime
     {
         private Task WaitForState(AblyRealtime realtime, ConnectionStateType awaitedState = ConnectionStateType.Connected, TimeSpan? waitSpan = null)
         {
-            Logger.Debug($"Waiting for state {awaitedState} for {(waitSpan ?? TimeSpan.FromSeconds(2)).TotalSeconds} seconds");
+            
             var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
             if (waitSpan.HasValue)
                 return connectionAwaiter.Wait(waitSpan.Value);
@@ -77,6 +78,25 @@ namespace IO.Ably.Tests.Realtime
 
             states.Should().BeEquivalentTo(new[] { ConnectionStateType.Closing, ConnectionStateType.Closed });
             client.Connection.State.Should().Be(ConnectionStateType.Closed);
+        }
+
+        [Theory]
+        [ProtocolData]
+        public async Task WithMultipleClients_ShouldHaveUniqueConnectionIdsProvidedByAbly(Protocol protocol)
+        {
+            var clients = new[]
+            {
+                await GetRealtimeClient(protocol),
+                await GetRealtimeClient(protocol),
+                await GetRealtimeClient(protocol)
+            };
+
+            //Wait for the clients to connect
+            await Task.Delay(TimeSpan.FromSeconds(3));
+
+            var distinctConnectionIds = clients.Select(x => x.Connection.Id).Distinct();
+            distinctConnectionIds.Should().HaveCount(3);
+
         }
 
         public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
