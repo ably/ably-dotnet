@@ -82,6 +82,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTN8b")]
         public async Task WithMultipleClients_ShouldHaveUniqueConnectionIdsProvidedByAbly(Protocol protocol)
         {
             var clients = new[]
@@ -96,7 +97,25 @@ namespace IO.Ably.Tests.Realtime
 
             var distinctConnectionIds = clients.Select(x => x.Connection.Id).Distinct();
             distinctConnectionIds.Should().HaveCount(3);
+        }
 
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN9b")]
+        public async Task WithMultipleClients_ShouldHaveUniqueConnectionKeysProvidedByAbly(Protocol protocol)
+        {
+            var clients = new[]
+            {
+                await GetRealtimeClient(protocol),
+                await GetRealtimeClient(protocol),
+                await GetRealtimeClient(protocol)
+            };
+
+            //Wait for the clients to connect
+            await Task.Delay(TimeSpan.FromSeconds(3));
+
+            var distinctConnectionIds = clients.Select(x => x.Connection.Key).Distinct();
+            distinctConnectionIds.Should().HaveCount(3);
         }
 
         public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
