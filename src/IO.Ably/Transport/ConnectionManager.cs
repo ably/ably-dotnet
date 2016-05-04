@@ -206,11 +206,11 @@ namespace IO.Ably.Transport
             return tw.Task;
         }
 
-        public Task<Result<DateTimeOffset?>> PingAsync()
+        public Task<Result<TimeSpan?>> PingAsync()
         {
-            return TaskWrapper.Wrap<DateTimeOffset?>(Ping);
+            return TaskWrapper.Wrap<TimeSpan?>(Ping);
         }
-        public void Ping(Action<DateTimeOffset?, ErrorInfo> callback)
+        public void Ping(Action<TimeSpan?, ErrorInfo> callback)
         {
             ConnectionHeartbeatRequest.Execute(this, callback);
         }

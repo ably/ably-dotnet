@@ -121,6 +121,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTN13a")]
         public async Task WithConnectedClient_PingShouldReturnServiceTime(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
@@ -130,7 +131,7 @@ namespace IO.Ably.Tests.Realtime
             var result = await client.Connection.Ping();
 
             result.IsSuccess.Should().BeTrue();
-            result.Value.Value.Should().BeWithin(TimeSpan.FromSeconds(1)).Before(Config.Now());
+            result.Value.Value.Should().Be(TimeSpan.Zero);
         }
 
         public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)

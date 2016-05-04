@@ -544,12 +544,13 @@ namespace IO.Ably.Tests.Realtime
 
             [Fact]
             [Trait("spec", "RTN13a")]
-            public async Task OnHeartBeatMessageReceived_ShouldReturnCurrentClientTime()
+            public async Task OnHeartBeatMessageReceived_ShouldReturnElapsedTime()
             {
                 var client = GetConnectedClient();
 
                 _fakeTransportFactory.LastCreatedTransport.SendAction = async message =>
                 {
+                    Now = Now.AddMilliseconds(100);
                     if (message.action == ProtocolMessage.MessageAction.Heartbeat)
                     {
                         await Task.Delay(1);
@@ -559,7 +560,7 @@ namespace IO.Ably.Tests.Realtime
                 var result = await client.Connection.Ping();
 
                 result.IsSuccess.Should().BeTrue();
-                result.Value.Value.Should().Be(Now);
+                result.Value.Value.Should().Be(TimeSpan.FromMilliseconds(100));
             }
 
             [Fact]

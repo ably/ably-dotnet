@@ -528,8 +528,8 @@ namespace IO.Ably.Tests
             Mock<IConnectionManager> manager = new Mock<IConnectionManager>();
             manager.Setup(c => c.ConnectionState).Returns(state);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
-            var res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
-            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            var res = new List<Tuple<TimeSpan?, ErrorInfo>>();
+            Action<TimeSpan?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, null, callback);
@@ -611,8 +611,8 @@ namespace IO.Ably.Tests
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
 
-            var res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
-            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            var res = new List<Tuple<TimeSpan?, ErrorInfo>>();
+            Action<TimeSpan?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -630,8 +630,8 @@ namespace IO.Ably.Tests
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
-            List<Tuple<DateTimeOffset?, ErrorInfo>> res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
-            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            List<Tuple<TimeSpan?, ErrorInfo>> res = new List<Tuple<TimeSpan?, ErrorInfo>>();
+            Action<TimeSpan?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -665,8 +665,8 @@ namespace IO.Ably.Tests
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
-            List<Tuple<DateTimeOffset?, ErrorInfo>> res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
-            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            List<Tuple<TimeSpan?, ErrorInfo>> res = new List<Tuple<TimeSpan?, ErrorInfo>>();
+            Action<TimeSpan?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -684,8 +684,8 @@ namespace IO.Ably.Tests
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
-            List<Tuple<DateTimeOffset?, ErrorInfo>> res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
-            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            List<Tuple<TimeSpan?, ErrorInfo>> res = new List<Tuple<TimeSpan?, ErrorInfo>>();
+            Action<TimeSpan?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -705,8 +705,8 @@ namespace IO.Ably.Tests
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
-            List<Tuple<DateTimeOffset?, ErrorInfo>> res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
-            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            List<Tuple<TimeSpan?, ErrorInfo>> res = new List<Tuple<TimeSpan?, ErrorInfo>>();
+            Action<TimeSpan?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -726,8 +726,8 @@ namespace IO.Ably.Tests
             connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
-            var res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
-            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            var res = new List<Tuple<TimeSpan?, ErrorInfo>>();
+            Action<TimeSpan?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -761,8 +761,8 @@ namespace IO.Ably.Tests
             connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
-            var res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
-            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            var res = new List<Tuple<TimeSpan?, ErrorInfo>>();
+            Action<TimeSpan?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -791,7 +791,7 @@ namespace IO.Ably.Tests
             connection.SetupGet(c => c.State).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
-            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => { };
+            Action<TimeSpan?, ErrorInfo> callback = (e, err) => { };
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -818,8 +818,8 @@ namespace IO.Ably.Tests
             connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
-            var res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
-            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            var res = new List<Tuple<TimeSpan?, ErrorInfo>>();
+            Action<TimeSpan?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
 
             // Act
             ConnectionHeartbeatRequest target = ConnectionHeartbeatRequest.Execute(manager.Object, timer.Object, callback);
@@ -845,8 +845,8 @@ namespace IO.Ably.Tests
             connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
-            var res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
-            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            var res = new List<Tuple<TimeSpan?, ErrorInfo>>();
+            Action<TimeSpan?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
             timer.Setup(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<Action>(), false)).Callback<int, Action>((c, e) => e());
 
             // Act
@@ -868,8 +868,8 @@ namespace IO.Ably.Tests
             connection.Setup(c => c.State).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(connection.Object);
-            var res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
-            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            var res = new List<Tuple<TimeSpan?, ErrorInfo>>();
+            Action<TimeSpan?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
             timer.Setup(c => c.Start(It.IsAny<TimeSpan>(), It.IsAny<Action>(), false)).Callback<int, Action>((c, e) => e());
 
             // Act
@@ -891,8 +891,8 @@ namespace IO.Ably.Tests
             Mock<ICountdownTimer> timer = new Mock<ICountdownTimer>();
             manager.Setup(c => c.ConnectionState).Returns(ConnectionStateType.Connected);
             manager.Setup(c => c.Connection).Returns(new Connection(manager.Object));
-            List<Tuple<DateTimeOffset?, ErrorInfo>> res = new List<Tuple<DateTimeOffset?, ErrorInfo>>();
-            Action<DateTimeOffset?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
+            List<Tuple<TimeSpan?, ErrorInfo>> res = new List<Tuple<TimeSpan?, ErrorInfo>>();
+            Action<TimeSpan?, ErrorInfo> callback = (e, err) => res.Add(Tuple.Create(e, err));
             const int count = 10;
 
             // Act

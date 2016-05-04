@@ -41,8 +41,8 @@ namespace IO.Ably.Transport
 
         void Close();
 
-        Task<Result<DateTimeOffset?>> PingAsync();
-        void Ping(Action<DateTimeOffset?, ErrorInfo> callback);
+        Task<Result<TimeSpan?>> PingAsync();
+        void Ping(Action<TimeSpan?, ErrorInfo> callback);
 
         void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback);
         Task SendAsync(ProtocolMessage message);

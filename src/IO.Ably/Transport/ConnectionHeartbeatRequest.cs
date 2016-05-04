@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Threading;
 using IO.Ably.Realtime;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -10,76 +11,88 @@ namespace IO.Ably.Transport
     {
         public static readonly ErrorInfo DefaultError = new ErrorInfo("Unable to ping service; not connected", 40000,
             HttpStatusCode.BadRequest);
+        public static readonly ErrorInfo TimeOutError = new ErrorInfo("Unable to ping service; Request timed out", 40800, HttpStatusCode.RequestTimeout);
 
-        private Action<DateTimeOffset?, ErrorInfo> _callback;
+        private Action<TimeSpan?, ErrorInfo> _callback;
         private IConnectionManager _manager;
         private ICountdownTimer _timer;
         private bool _finished;
         private object _syncLock = new object();
+        private DateTimeOffset _start = DateTimeOffset.MinValue;
+        
+        private TimeSpan TimeOut => _manager.Options.RealtimeRequestTimeout;
 
+        public ConnectionHeartbeatRequest(IConnectionManager manager, ICountdownTimer timer)
+        {
+            _manager = manager;
+            _timer = timer;
+        }
 
         public static bool CanHandleMessage(ProtocolMessage message)
         {
             return message.action == ProtocolMessage.MessageAction.Heartbeat;
         }
 
-        public static ConnectionHeartbeatRequest Execute(IConnectionManager manager, Action<DateTimeOffset?, ErrorInfo> callback)
+        public static ConnectionHeartbeatRequest Execute(IConnectionManager manager, Action<TimeSpan?, ErrorInfo> callback)
         {
             return Execute(manager, new CountdownTimer(), callback);
         }
 
         public static ConnectionHeartbeatRequest Execute(IConnectionManager manager, ICountdownTimer timer,
-            Action<DateTimeOffset?, ErrorInfo> callback)
+            Action<TimeSpan?, ErrorInfo> callback)
         {
-            var request = new ConnectionHeartbeatRequest();
+            var request = new ConnectionHeartbeatRequest(manager, timer);
 
-            if (manager.Connection.State != ConnectionStateType.Connected)
+            return request.Send(callback);
+            
+        }
+
+        private ConnectionHeartbeatRequest Send(Action<TimeSpan?, ErrorInfo> callback)
+        {
+            _start = Config.Now();
+
+            if (_manager.Connection.State != ConnectionStateType.Connected)
             {
-                callback?.Invoke(default(DateTimeOffset), DefaultError);
+                callback?.Invoke(default(TimeSpan), DefaultError);
 
-                return request;
+                return this;
             }
-
+            
             if (callback != null)
             {
-                request._manager = manager;
-                manager.MessageReceived += request.OnMessageReceived;
-                manager.Connection.ConnectionStateChanged += request.OnConnectionStateChanged;
-                request._timer = timer;
-                request._callback = callback;
+                _callback = callback;
+                _manager.MessageReceived += OnMessageReceived;
+                _manager.Connection.ConnectionStateChanged += OnConnectionStateChanged;
+
+                _manager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat), null);
+                _timer.Start(TimeOut, () => FinishRequest(null, TimeOutError));
             }
 
-            manager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat), null);
-            if (callback != null)
-            {
-                request._timer.Start(manager.Options.RealtimeRequestTimeout, request.OnTimeout);
-            }
-
-            return request;
+            return this;
         }
 
         private void OnMessageReceived(ProtocolMessage message)
         {
             if (CanHandleMessage(message))
             {
-                FinishRequest(Config.Now(), null);
+                FinishRequest(GetElapsedTime(), null);
             }
         }
+
+        private TimeSpan? GetElapsedTime()
+        {
+            return Config.Now() - _start;
+        }  
 
         private void OnConnectionStateChanged(object sender, ConnectionStateChangedEventArgs e)
         {
             if (e.CurrentState != ConnectionStateType.Connected)
             {
-                FinishRequest(default(DateTimeOffset), DefaultError);
+                FinishRequest(default(TimeSpan), DefaultError);
             }
         }
 
-        private void OnTimeout()
-        {
-            FinishRequest(null, new ErrorInfo("Unable to ping service; Request timed out", 40800, HttpStatusCode.RequestTimeout));
-        }
-
-        private void FinishRequest(DateTimeOffset? result, ErrorInfo error)
+        private void FinishRequest(TimeSpan? result, ErrorInfo error)
         {
             if (_finished == false)
             {
@@ -87,6 +100,8 @@ namespace IO.Ably.Transport
                 {
                     if (_finished == false)
                     {
+                        _finished = true;
+
                         _manager.MessageReceived -= OnMessageReceived;
                         _manager.Connection.ConnectionStateChanged -= OnConnectionStateChanged;
                         _timer.Abort();

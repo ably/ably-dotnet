@@ -68,7 +68,7 @@ namespace IO.Ably.Realtime
 
         /// <summary>
         /// </summary>
-        public Task<Result<DateTimeOffset?>> Ping()
+        public Task<Result<TimeSpan?>> Ping()
         {
             return _manager.PingAsync();
         }
