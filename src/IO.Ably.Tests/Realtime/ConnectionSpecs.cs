@@ -175,7 +175,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTN2d")]
             public void WithClientId_ShouldSetTransportClientIdCorrectly()
             {
-                var clientId = "123";
+                var clientId = "12345";
                 var client = GetClientWithFakeTransport(opts =>
                 {
                     opts.ClientId = clientId;
@@ -613,7 +613,11 @@ namespace IO.Ably.Tests.Realtime
                 Now = DateTimeOffset.Now;
                 var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
                 bool renewTokenCalled = false;
-                var client = GetClientWithFakeTransport(opts=> opts.TokenDetails = tokenDetails, request =>
+                var client = GetClientWithFakeTransport(opts =>
+                {
+                    opts.TokenDetails = tokenDetails;
+                    opts.UseBinaryProtocol = false;
+                }, request =>
                 {
                     if (request.Url.Contains("/keys"))
                     {
@@ -633,8 +637,11 @@ namespace IO.Ably.Tests.Realtime
 
                 FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", 40140, HttpStatusCode.Unauthorized) });
 
-                renewTokenCalled.Should().BeTrue();
-                client.Auth.CurrentToken.Should().ShouldBeEquivalentTo(_returnedDummyTokenDetails);
+                renewTokenCalled.Should().BeTrue();  
+                var currentToken = client.Auth.CurrentToken;
+                currentToken.Token.Should().Be(_returnedDummyTokenDetails.Token);
+                currentToken.ClientId.Should().Be(_returnedDummyTokenDetails.ClientId);
+                currentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires);
                 raisedErrors.Should().BeEmpty("No errors should be raised!");
             }
 

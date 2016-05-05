@@ -59,6 +59,11 @@ namespace IO.Ably.Auth
             Token = token;
         }
 
+        public void Expire()
+        {
+            Expires = Config.Now().AddDays(-1);
+        }
+
         /// <summary>
         /// Checks if a json object is a token. It does it by ensuring the existance of "issued" property
         /// </summary>
@@ -67,6 +72,31 @@ namespace IO.Ably.Auth
         public static bool IsToken(JObject json)
         {
             return json != null && json["issued"] != null;
+        }
+
+        private bool Equals(TokenDetails other)
+        {
+            return string.Equals(Token, other.Token) && Expires.Equals(other.Expires) && Issued.Equals(other.Issued) && Equals(Capability, other.Capability) && string.Equals(ClientId, other.ClientId);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            return obj is TokenDetails && Equals((TokenDetails) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (Token != null ? Token.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ Expires.GetHashCode();
+                hashCode = (hashCode*397) ^ Issued.GetHashCode();
+                hashCode = (hashCode*397) ^ (Capability != null ? Capability.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (ClientId != null ? ClientId.GetHashCode() : 0);
+                return hashCode;
+            }
         }
 
         public override string ToString()
@@ -83,7 +113,7 @@ namespace IO.Ably.Auth
             if (token == null)
                 return false;
             var exp = token.Expires;
-            return (exp == DateTimeOffset.MinValue) || (exp >= DateTimeOffset.UtcNow);
+            return (exp == DateTimeOffset.MinValue) || (exp >= Config.Now());
         }
     }
 }

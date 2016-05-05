@@ -58,11 +58,14 @@ namespace IO.Ably.Transport
         DateTimeOffset? FirstConnectionAttempt { get; }
         int ConnectionAttempts { get; }
         void SetState(States.Connection.ConnectionState state);
-        Task CreateTransport();
+        Task CreateTransport(bool renewToken = false);
         void DestroyTransport();
         void AttemptConnection();
         void ResetConnectionAttempts();
         Task<bool> CanConnectToAbly();
         void SetConnectionClientId(string clientId);
+
+        bool ShouldWeRenewToken(ErrorInfo error);
+        
     }
 }

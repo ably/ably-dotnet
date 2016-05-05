@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Ports;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace IO.Ably.Transport.States.Connection
         private readonly ICountdownTimer _timer;
         private readonly bool _useFallbackHost;
         private volatile bool _hasRetriedToReniewToken;
+        private volatile bool _suppressTransportEvents;
 
         static ConnectionConnectingState()
         {
@@ -87,11 +89,20 @@ namespace IO.Ably.Transport.States.Connection
                 case ProtocolMessage.MessageAction.Error:
                 {
                     //If the error is a token error do some magic
-                    if (message.error != null && message.error.IsTokenError && _hasRetriedToReniewToken == false)
+                    if (Context.ShouldWeRenewToken(message.error) && _hasRetriedToReniewToken == false)
                     {
-                        await Context.CreateTransport();
+                        try
+                        {
+                            _suppressTransportEvents = true;
+                            await Context.CreateTransport(renewToken: true);
+                            ConnectTransport();
+                            return true;
+                        }
+                        finally
+                        {
+                            _suppressTransportEvents = false;
+                        }
                     }
-
 
                     if (await ShouldUseFallbackHost(message.error))
                     {
@@ -99,6 +110,7 @@ namespace IO.Ably.Transport.States.Connection
                         TransitionState(new ConnectionDisconnectedState(Context) {UseFallbackHost = true});
                         return true;
                     }
+
                     TransitionState(new ConnectionFailedState(Context, message.error));
                     return true;
                 }
@@ -108,6 +120,8 @@ namespace IO.Ably.Transport.States.Connection
 
         public override async Task OnTransportStateChanged(TransportStateInfo state)
         {
+            if (_suppressTransportEvents) return;
+
             if (state.Error != null || state.State == TransportState.Closed)
             {
                 ConnectionState nextState;

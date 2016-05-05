@@ -107,10 +107,13 @@ namespace IO.Ably.Transport
             });
         }
 
-        async Task IConnectionContext.CreateTransport()
+        async Task IConnectionContext.CreateTransport(bool renewToken = false)
         {
             if (_transport != null)
                 (this as IConnectionContext).DestroyTransport();
+
+            if(renewToken)
+                RestClient.AblyAuth.ExpireCurrentToken(); //This will cause the RequestToken to be called when constructing the TransportParams
 
             var transport = GetTransportFactory().CreateTransport(await CreateTransportParameters());
             transport.Listener = this;
@@ -165,6 +168,13 @@ namespace IO.Ably.Transport
         {
             if(clientId.IsNotEmpty())
                 RestClient.AblyAuth.ConnectionClientId = clientId;
+        }
+
+        public bool ShouldWeRenewToken(ErrorInfo error)
+        {
+            if (error == null) return false;
+
+            return error.IsTokenError && RestClient.AblyAuth.TokenRenewable;
         }
 
         public event MessageReceivedDelegate MessageReceived;
@@ -246,7 +256,7 @@ namespace IO.Ably.Transport
 
         internal async Task<TransportParams> CreateTransportParameters()
         {
-            return await TransportParams.Create(RestClient.AblyAuth, Options, Connection?.Key, Connection?.Serial);
+            return await TransportParams.Create(RestClient.Auth, Options, Connection?.Key, Connection?.Serial);
         }
 
         //TODO: Move this inside WebSocketTransport

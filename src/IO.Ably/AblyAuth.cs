@@ -27,6 +27,11 @@ namespace IO.Ably
 
         public TokenDetails CurrentToken { get; set; }
 
+        public void ExpireCurrentToken()
+        {
+            CurrentToken?.Expire();
+        }
+
         internal string ConnectionClientId
         {
             get { return _connectionClientId; }

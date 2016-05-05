@@ -27,6 +27,12 @@ namespace IO.Ably.Tests
         }
 
         public ConnectionState LastSetState { get; set; }
+        public IAuthCommands Auth { get; set; }
+
+        public bool RenewTokenValue { get; set; }
+
+        public bool ShouldWeRenewTokenValue { get; set; }
+
         public ConnectionState State { get; set; }
         public ITransport Transport { get; set; }
         public AblyRest RestClient { get; set; }
@@ -41,22 +47,12 @@ namespace IO.Ably.Tests
             LastSetState = state;
         }
 
-        public Task CreateTransport()
+        public Task CreateTransport(bool renewToken = false)
         {
             CreateTransportCalled = true;
+            RenewTokenValue = renewToken;
             Transport = new FakeTransport();
             return TaskConstants.BooleanTrue;
-        }
-
-        public T StateShouldBe<T>() where T : ConnectionState
-        {
-            LastSetState.Should().BeOfType<T>();
-            return (T) LastSetState;
-        } 
-
-        public void ShouldHaveNotChangedState()
-        {
-            LastSetState.Should().BeNull();
         }
 
         public void DestroyTransport()
@@ -81,7 +77,22 @@ namespace IO.Ably.Tests
 
         public void SetConnectionClientId(string clientId)
         {
-            
+        }
+
+        public bool ShouldWeRenewToken(ErrorInfo error)
+        {
+            return ShouldWeRenewTokenValue;
+        }
+
+        public T StateShouldBe<T>() where T : ConnectionState
+        {
+            LastSetState.Should().BeOfType<T>();
+            return (T) LastSetState;
+        }
+
+        public void ShouldHaveNotChangedState()
+        {
+            LastSetState.Should().BeNull();
         }
     }
 }
