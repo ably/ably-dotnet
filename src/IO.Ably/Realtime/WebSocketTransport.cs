@@ -49,16 +49,28 @@ namespace IO.Ably.Realtime
 
         public void Connect()
         {
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Connecting socket");
+            }
             _socket.Open();
         }
 
         public void Close()
         {
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Closing socket. Current socket is " + (_socket == null ? "null" : "not null"));
+            }
             _socket?.Close();
         }
 
         public void Abort(string reason)
         {
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Aborting socket. Reason: " + reason);
+            }
             _socket.Close(reason);
         }
 
@@ -83,7 +95,10 @@ namespace IO.Ably.Realtime
                 throw new ArgumentNullException(nameof(_parameters), "Null parameters are not allowed");
 
             var uri = _parameters.GetUri();
-
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Connecting to web socket on url: " + uri);
+            }
             _socket = new WebSocket(uri.ToString(), "", WebSocketVersion.Rfc6455);
             _socket.Opened += socket_Opened;
             _socket.Closed += socket_Closed;
@@ -96,30 +111,35 @@ namespace IO.Ably.Realtime
 
         private void socket_Opened(object sender, EventArgs e)
         {
-            if (Listener != null)
+            if (Logger.IsDebug)
             {
-                Listener.OnTransportConnected();
+                Logger.Debug("Websocket opened!");
             }
+            Listener?.OnTransportConnected();
         }
 
         private void socket_Closed(object sender, EventArgs e)
         {
-            if (Listener != null)
+            if (Logger.IsDebug)
             {
-                Listener.OnTransportDisconnected();
+                Logger.Debug("Websocket closed!");
             }
+            Listener?.OnTransportDisconnected();
         }
 
         private void socket_Error(object sender, ErrorEventArgs e)
         {
-            if (Listener != null)
-            {
-                Listener.OnTransportError(e.Exception);
-            }
+            Logger.Error("Websocket error!", e.Exception);
+            Listener?.OnTransportError(e.Exception);
         }
 
         private void socket_MessageReceived(object sender, MessageReceivedEventArgs e)
         {
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Websocket message received. Raw: " + e.Message);
+            }
+
             if (Listener != null)
             {
                 var message = _serializer.DeserializeProtocolMessage(e.Message);
@@ -129,6 +149,11 @@ namespace IO.Ably.Realtime
 
         private void socket_DataReceived(object sender, DataReceivedEventArgs e)
         {
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Websocket data message received. Raw: " + e.Data.GetText());
+            }
+
             if (Listener != null)
             {
                 var message = _serializer.DeserializeProtocolMessage(e.Data);
