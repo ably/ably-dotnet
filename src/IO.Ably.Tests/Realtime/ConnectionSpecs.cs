@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.Auth;
 using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
@@ -26,17 +27,17 @@ namespace IO.Ably.Tests.Realtime
             LastCreatedTransport.Listener.OnTransportMessageReceived(message);
         }
 
-        protected AblyRealtime GetClientWithFakeTransport(Action<ClientOptions> optionsAction = null)
+        internal AblyRealtime GetClientWithFakeTransport(Action<ClientOptions> optionsAction = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
         {
             var options = new ClientOptions(ValidKey) { TransportFactory = _fakeTransportFactory };
             optionsAction?.Invoke(options);
-            var client = GetRealtimeClient(options);
+            var client = GetRealtimeClient(options, handleRequestFunc);
             return client;
         }
 
-        protected AblyRealtime GetConnectedClient(Action<ClientOptions> optionsAction = null)
+        internal AblyRealtime GetConnectedClient(Action<ClientOptions> optionsAction = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
         {
-            var client = GetClientWithFakeTransport(optionsAction);
+            var client = GetClientWithFakeTransport(optionsAction, handleRequestFunc);
             FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
             return client;
         }
@@ -598,6 +599,46 @@ namespace IO.Ably.Tests.Realtime
             }
 
             public ConnectionPingSpecs(ITestOutputHelper output) : base(output)
+            {
+            }
+        }
+
+        public class ConnectionFailureSpecs : ConnectionSpecs
+        {
+            private TokenDetails _returnedDummyTokenDetails = new TokenDetails("123") { Expires = Config.Now().AddDays(1), ClientId = "123" };
+
+            [Fact]
+            public async Task WithTokenErrorAndRenewableToken_ShouldRenewTokenAutomaticallyWithoutEmittingError()
+            {
+                Now = DateTimeOffset.Now;
+                var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
+                bool renewTokenCalled = false;
+                var client = GetClientWithFakeTransport(opts=> opts.TokenDetails = tokenDetails, request =>
+                {
+                    if (request.Url.Contains("/keys"))
+                    {
+                        renewTokenCalled = true;
+                        return _returnedDummyTokenDetails.ToJson().ToAblyResponse();
+                    }
+
+                    return AblyResponse.EmptyResponse.ToTask();
+                });
+
+                List<ErrorInfo> raisedErrors = new List<ErrorInfo>();
+                client.Connection.ConnectionStateChanged += (sender, args) =>
+                {
+                     if(args.HasError)
+                        raisedErrors.Add(args.Reason);
+                };
+
+                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", 40140, HttpStatusCode.Unauthorized) });
+
+                renewTokenCalled.Should().BeTrue();
+                client.Auth.CurrentToken.Should().ShouldBeEquivalentTo(_returnedDummyTokenDetails);
+                raisedErrors.Should().BeEmpty("No errors should be raised!");
+            }
+
+            public ConnectionFailureSpecs(ITestOutputHelper output) : base(output)
             {
             }
         }

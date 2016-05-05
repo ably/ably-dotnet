@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.Auth;
 using IO.Ably.Realtime;
 using IO.Ably.Types;
 using Xunit;
@@ -159,7 +160,37 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.Reason.Should().BeSameAs(error);
         }
 
-        
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN14b")]
+        public async Task WithExpiredRenewableToken_ShouldAutomaticallyRenewTokenAndNoErrorShouldBeEmitted(
+            Protocol protocol)
+        {
+            var restClient = await GetRestClient(protocol);
+            var invalidToken = await restClient.Auth.RequestToken();
+
+            //Use an old token which will result in 40143 Unrecognised token
+            invalidToken.Token = invalidToken.Token.Split('.')[0] + ".DOcRVPgv1Wf1-YGgJFjyk2PNOGl_DFL7aCDzEPju8TYHorfxHHVoNoDGz5fKRW0UxePiVjD1EVEW0ZiknIK8u3S5p1FBq5Rtw_I7OX7fW8U4sGxJjAfMS_fTcXFdvouTQ";
+
+            var realtimeClient = await GetRealtimeClient(protocol, options =>
+            {
+                options.TokenDetails = invalidToken;
+                options.AutoConnect = false;
+            });
+
+            ErrorInfo error = null;
+            realtimeClient.Connection.ConnectionStateChanged += (o, args) =>
+            {
+                error = args.Reason;
+            };
+
+            realtimeClient.Connect();
+
+            await WaitForState(realtimeClient, ConnectionStateType.Connected, TimeSpan.FromSeconds(10));
+
+            realtimeClient.Auth.CurrentToken.Expires.Should().BeAfter(Config.Now(), "The token should be valid and expire in the future.");
+            error.Should().BeNull("No error should be raised!");
+        }
 
         public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
         {

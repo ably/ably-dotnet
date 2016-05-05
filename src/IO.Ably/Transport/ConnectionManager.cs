@@ -112,9 +112,9 @@ namespace IO.Ably.Transport
             if (_transport != null)
                 (this as IConnectionContext).DestroyTransport();
 
-            var transportParams = await CreateTransportParameters();
-            _transport = await CreateTransport(transportParams);
-            _transport.Listener = this;
+            var transport = GetTransportFactory().CreateTransport(await CreateTransportParameters());
+            transport.Listener = this;
+            _transport = transport;
         }
 
         void IConnectionContext.DestroyTransport()
@@ -266,10 +266,9 @@ namespace IO.Ably.Transport
             return host;
         }
 
-        internal virtual Task<ITransport> CreateTransport(TransportParams transportParams)
+        private ITransportFactory GetTransportFactory()
         {
-            var factory = Options.TransportFactory ?? Defaults.WebSocketTransportFactory;
-            return factory.CreateTransport(transportParams);
+            return Options.TransportFactory ?? Defaults.WebSocketTransportFactory;
         }
 
         private void OnTransportConnected()

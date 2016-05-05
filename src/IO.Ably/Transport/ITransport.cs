@@ -25,14 +25,12 @@ namespace IO.Ably.Transport
 
         void Close();
 
-        void Abort(string reason);
-
         void Send(ProtocolMessage message);
     }
 
     public interface ITransportFactory
     {
-        Task<ITransport> CreateTransport(TransportParams parameters);
+        ITransport CreateTransport(TransportParams parameters);
     }
 
     public interface ITransportListener

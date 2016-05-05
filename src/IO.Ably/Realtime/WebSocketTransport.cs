@@ -21,17 +21,25 @@ namespace IO.Ably.Realtime
         };
 
         private readonly IMessageSerializer _serializer;
-        private readonly TransportParams _parameters;
 
         private WebSocket _socket;
 
         private WebSocketTransport(IMessageSerializer serializer, TransportParams parameters)
         {
+            if (parameters == null)
+                throw new ArgumentNullException(nameof(parameters), "Null parameters are not allowed");
+            if(serializer == null)
+                throw new ArgumentNullException(nameof(serializer), "Null serializer");
+
             _serializer = serializer;
-            _parameters = parameters;
+            Host = parameters.Host;
+            BinaryProtocol = parameters.UseBinaryProtocol;
+            WebSocketUri = parameters.GetUri();
         }
 
-        public string Host => _parameters.Host;
+        public string Host { get; }
+        public bool BinaryProtocol { get; }
+        public Uri WebSocketUri { get; }
 
         public TransportState State
         {
@@ -49,6 +57,12 @@ namespace IO.Ably.Realtime
 
         public void Connect()
         {
+            if (_socket == null)
+            {
+                _socket = CreateSocket(WebSocketUri);
+                AttachEvents();
+            }
+            
             if (Logger.IsDebug)
             {
                 Logger.Debug("Connecting socket");
@@ -62,23 +76,20 @@ namespace IO.Ably.Realtime
             {
                 Logger.Debug("Closing socket. Current socket is " + (_socket == null ? "null" : "not null"));
             }
-            _socket?.Close();
-        }
-
-        public void Abort(string reason)
-        {
-            if (Logger.IsDebug)
+            if (_socket != null)
             {
-                Logger.Debug("Aborting socket. Reason: " + reason);
+                _socket.Close();
+                DetachEvents();
+                _socket = null;
             }
-            _socket.Close(reason);
+            
         }
 
         public void Send(ProtocolMessage message)
         {
             var serializedMessage = _serializer.SerializeProtocolMessage(message);
 
-            if (_parameters.UseBinaryProtocol)
+            if (BinaryProtocol)
             {
                 var data = (byte[]) serializedMessage;
                 _socket.Send(data, 0, data.Length);
@@ -89,24 +100,45 @@ namespace IO.Ably.Realtime
             }
         }
 
-        private Task CreateSocket()
+        private WebSocket CreateSocket(Uri uri)
         {
-            if(_parameters == null)
-                throw new ArgumentNullException(nameof(_parameters), "Null parameters are not allowed");
-
-            var uri = _parameters.GetUri();
             if (Logger.IsDebug)
             {
                 Logger.Debug("Connecting to web socket on url: " + uri);
             }
-            _socket = new WebSocket(uri.ToString(), "", WebSocketVersion.Rfc6455);
-            _socket.Opened += socket_Opened;
-            _socket.Closed += socket_Closed;
-            _socket.Error += socket_Error;
-            _socket.MessageReceived += socket_MessageReceived; //For text messages
-            _socket.DataReceived += socket_DataReceived; //For binary messages
 
-            return Task.FromResult(true);
+            return new WebSocket(uri.ToString(), "", WebSocketVersion.Rfc6455);
+        }
+
+        private void AttachEvents()
+        {
+            if (_socket != null)
+            {
+                _socket.Opened += socket_Opened;
+                _socket.Closed += socket_Closed;
+                _socket.Error += socket_Error;
+                _socket.MessageReceived += socket_MessageReceived; //For text messages
+                _socket.DataReceived += socket_DataReceived; //For binary messages    
+            }
+        }
+
+        private void DetachEvents()
+        {
+            if (_socket != null)
+            {
+                try
+                {
+                    _socket.Opened -= socket_Opened;
+                    _socket.Closed -= socket_Closed;
+                    _socket.Error -= socket_Error;
+                    _socket.MessageReceived -= socket_MessageReceived; //For text messages
+                    _socket.DataReceived -= socket_DataReceived; //For binary messages    
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warning("Error while detaching events handlers. Error: {0}", ex.Message);   
+                }
+            }
         }
 
         private void socket_Opened(object sender, EventArgs e)
@@ -163,7 +195,7 @@ namespace IO.Ably.Realtime
 
         public class WebSocketTransportFactory : ITransportFactory
         {
-            public async Task<ITransport> CreateTransport(TransportParams parameters)
+            public ITransport CreateTransport(TransportParams parameters)
             {
                 IMessageSerializer serializer = null;
                 if (parameters.UseBinaryProtocol)
@@ -174,9 +206,7 @@ namespace IO.Ably.Realtime
                 {
                     serializer = new JsonMessageSerializer();
                 }
-                var socketTransport = new WebSocketTransport(serializer, parameters);
-                await socketTransport.CreateSocket();
-                return socketTransport;
+                return new WebSocketTransport(serializer, parameters);
             }
         }
     }

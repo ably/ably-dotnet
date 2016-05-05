@@ -306,10 +306,10 @@ namespace IO.Ably.Tests
 
             // Act
             await _state.OnAttachedToContext();
-            _timer.OnTimeOut();
+            await _timer.OnTimeOutFunc();
 
             // Assert
-            _timer.StartedWithAction.Should().BeTrue();
+            _timer.StartedWithFunc.Should().BeTrue();
             _context.LastSetState.Should().BeOfType<ConnectionDisconnectedState>();
         }
 
@@ -329,7 +329,7 @@ namespace IO.Ably.Tests
             await _state.OnMessageReceived(new ProtocolMessage(action));
 
             // Assert
-            _timer.StartedWithAction.Should().BeTrue();
+            _timer.StartedWithFunc.Should().BeTrue();
             _timer.Aborted.Should().BeTrue();
         }
 
@@ -344,7 +344,7 @@ namespace IO.Ably.Tests
             await _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
 
             // Assert
-            _timer.StartedWithAction.Should().BeTrue();
+            _timer.StartedWithFunc.Should().BeTrue();
             _timer.Aborted.Should().BeTrue();
         }
 

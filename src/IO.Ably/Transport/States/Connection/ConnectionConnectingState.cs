@@ -15,6 +15,7 @@ namespace IO.Ably.Transport.States.Connection
 
         private readonly ICountdownTimer _timer;
         private readonly bool _useFallbackHost;
+        private volatile bool _hasRetriedToReniewToken;
 
         static ConnectionConnectingState()
         {
@@ -85,6 +86,13 @@ namespace IO.Ably.Transport.States.Connection
                 }
                 case ProtocolMessage.MessageAction.Error:
                 {
+                    //If the error is a token error do some magic
+                    if (message.error != null && message.error.IsTokenError && _hasRetriedToReniewToken == false)
+                    {
+                        await Context.CreateTransport();
+                    }
+
+
                     if (await ShouldUseFallbackHost(message.error))
                     {
                         Context.Connection.Key = null;
@@ -127,10 +135,15 @@ namespace IO.Ably.Transport.States.Connection
                 await Context.CreateTransport();
             }
 
+            ConnectTransport();
+        }
+
+        private void ConnectTransport()
+        {
             if (Context.Transport.State != TransportState.Connected)
             {
                 Context.Transport.Connect();
-                _timer.Start(TimeSpan.FromMilliseconds(ConnectTimeout), async () =>
+                _timer.StartAsync(TimeSpan.FromMilliseconds(ConnectTimeout), async () =>
                 {
                     var disconnectedState = new ConnectionDisconnectedState(Context, ErrorInfo.ReasonTimeout)
                     {

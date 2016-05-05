@@ -7,10 +7,10 @@ namespace IO.Ably.Tests.Realtime
     {
         public FakeTransport LastCreatedTransport { get; set; }
 
-        public Task<ITransport> CreateTransport(TransportParams parameters)
+        public ITransport CreateTransport(TransportParams parameters)
         {
             LastCreatedTransport = new FakeTransport(parameters);
-            return Task.FromResult<ITransport>(LastCreatedTransport);
+            return LastCreatedTransport;
         }
     }
 }

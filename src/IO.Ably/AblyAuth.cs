@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.Design;
 using System.Net;
 using System.Net.Http;
 using IO.Ably.Auth;
