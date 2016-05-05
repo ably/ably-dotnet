@@ -134,6 +134,33 @@ namespace IO.Ably.Tests.Realtime
             result.Value.Value.Should().BeGreaterThan(TimeSpan.Zero);
         }
 
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN14a")]
+        public async Task WithInvalidApiKey_ShouldSetToFailedStateAndAddErrorMessageToEmittedState(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, options =>
+            {
+                options.AutoConnect = false;
+                options.Key = "baba.bobo:bosh";
+            });
+
+            ErrorInfo error = null;
+            client.Connection.ConnectionStateChanged += (sender, args) =>
+            {
+                error = args.Reason;
+            };
+
+            client.Connect();
+
+            await WaitForState(client, ConnectionStateType.Failed);
+
+            error.Should().NotBeNull();
+            client.Connection.Reason.Should().BeSameAs(error);
+        }
+
+        
+
         public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
         {
         }
