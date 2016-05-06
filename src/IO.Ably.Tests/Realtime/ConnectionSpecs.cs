@@ -782,11 +782,14 @@ namespace IO.Ably.Tests.Realtime
                 };
                 do
                 {
-                    Now = Now.AddSeconds(5);
                     LastCreatedTransport.Listener.OnTransportError(new Exception());
+                    Now = Now.AddSeconds(15);
                 } while (client.Connection.State != ConnectionStateType.Suspended);
 
-                stateChanges.Select(x => x.CurrentState).Distinct().Should().HaveCount(3);
+                stateChanges.Select(x => x.CurrentState).Distinct()
+                    .ShouldBeEquivalentTo(new [] { ConnectionStateType.Connecting, ConnectionStateType.Disconnected, ConnectionStateType.Suspended, });
+                int numberOfAttemps =(int) Math.Floor(Defaults.ConnectionStateTtl.TotalSeconds / 15);
+                stateChanges.Count(x => x.CurrentState == ConnectionStateType.Connecting).Should().Be(numberOfAttemps);
             }
 
             public ConnectionFailureSpecs(ITestOutputHelper output) : base(output)
