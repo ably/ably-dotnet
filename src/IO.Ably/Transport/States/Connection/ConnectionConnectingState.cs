@@ -11,7 +11,7 @@ namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionConnectingState : ConnectionState
     {
-        private const int ConnectTimeout = 15*1000; //TODO: Use values from config
+        private const int ConnectTimeout = 15 * 1000; //TODO: Use values from config
         private static readonly ISet<HttpStatusCode> FallbackReasons;
 
         private readonly ICountdownTimer _timer;
@@ -60,66 +60,66 @@ namespace IO.Ably.Transport.States.Connection
             switch (message.action)
             {
                 case ProtocolMessage.MessageAction.Connected:
-                {
-                    if (Context.Transport.State == TransportState.Connected)
                     {
-                        var info = new ConnectionInfo(message.connectionId, message.connectionSerial ?? -1,
-                            message.connectionKey, message.connectionDetails?.clientId);
-                        TransitionState(new ConnectionConnectedState(Context, info));
-                    }
-                    return true;
-                }
-                case ProtocolMessage.MessageAction.Disconnected:
-                {
-                    ConnectionState nextState;
-                    if (ShouldSuspend())
-                    {
-                        nextState = new ConnectionSuspendedState(Context, message.error);
-                    }
-                    else
-                    {
-                        nextState = new ConnectionDisconnectedState(Context, message.error)
+                        if (Context.Transport.State == TransportState.Connected)
                         {
-                            UseFallbackHost = await ShouldUseFallbackHost(message.error)
-                        };
-                    }
-                    TransitionState(nextState);
-                    return true;
-                }
-                case ProtocolMessage.MessageAction.Error:
-                {
-                    //If the error is a token error do some magic
-                    if (Context.ShouldWeRenewToken(message.error) && _hasRetriedToReniewToken == false)
-                    {
-                        try
-                        {
-                            _suppressTransportEvents = true;
-                            await Context.CreateTransport(renewToken: true);
-                            ConnectTransport();
-                            return true;
+                            var info = new ConnectionInfo(message.connectionId, message.connectionSerial ?? -1,
+                                message.connectionKey, message.connectionDetails?.clientId);
+                            TransitionState(new ConnectionConnectedState(Context, info));
                         }
-                        catch (AblyException ex)
-                        {
-                                Logger.Error("Error trying to renew token.", ex);
-                                TransitionState(new ConnectionFailedState(Context, ex.ErrorInfo));
-                            return true;
-                        }
-                        finally
-                        {
-                            _suppressTransportEvents = false;
-                        }
-                    }
-
-                    if (await ShouldUseFallbackHost(message.error))
-                    {
-                        Context.Connection.Key = null;
-                        TransitionState(new ConnectionDisconnectedState(Context) {UseFallbackHost = true});
                         return true;
                     }
+                case ProtocolMessage.MessageAction.Disconnected:
+                    {
+                        ConnectionState nextState;
+                        if (ShouldSuspend())
+                        {
+                            nextState = new ConnectionSuspendedState(Context, message.error);
+                        }
+                        else
+                        {
+                            nextState = new ConnectionDisconnectedState(Context, message.error)
+                            {
+                                UseFallbackHost = await ShouldUseFallbackHost(message.error)
+                            };
+                        }
+                        TransitionState(nextState);
+                        return true;
+                    }
+                case ProtocolMessage.MessageAction.Error:
+                    {
+                        //If the error is a token error do some magic
+                        if (Context.ShouldWeRenewToken(message.error) && _hasRetriedToReniewToken == false)
+                        {
+                            try
+                            {
+                                _suppressTransportEvents = true;
+                                await Context.CreateTransport(renewToken: true);
+                                ConnectTransport();
+                                return true;
+                            }
+                            catch (AblyException ex)
+                            {
+                                Logger.Error("Error trying to renew token.", ex);
+                                TransitionState(new ConnectionFailedState(Context, ex.ErrorInfo));
+                                return true;
+                            }
+                            finally
+                            {
+                                _suppressTransportEvents = false;
+                            }
+                        }
 
-                    TransitionState(new ConnectionFailedState(Context, message.error));
-                    return true;
-                }
+                        if (await ShouldUseFallbackHost(message.error))
+                        {
+                            Context.Connection.Key = null;
+                            TransitionState(new ConnectionDisconnectedState(Context) { UseFallbackHost = true });
+                            return true;
+                        }
+
+                        TransitionState(new ConnectionFailedState(Context, message.error));
+                        return true;
+                    }
             }
             return false;
         }
@@ -176,7 +176,7 @@ namespace IO.Ably.Transport.States.Connection
 
         private async Task<bool> ShouldUseFallbackHost(ErrorInfo error)
         {
-            return error?.statusCode != null && 
+            return error?.statusCode != null &&
                 FallbackReasons.Contains(error.statusCode.Value) &&
                 await Context.CanConnectToAbly();
         }
