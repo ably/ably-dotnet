@@ -13,7 +13,10 @@ namespace IO.Ably.Transport.States.Connection
             Context.Connection.Id = info.ConnectionId;
             Context.Connection.Key = info.ConnectionKey;
             Context.Connection.Serial = info.ConnectionSerial;
+            if (info.ConnectionStateTtl.HasValue)
+                Context.Connection.ConnectionStateTtl = info.ConnectionStateTtl.Value;
             Context.SetConnectionClientId(info.ClientId);
+
         }
 
         public override ConnectionStateType State => ConnectionStateType.Connected;

@@ -5,8 +5,8 @@ namespace IO.Ably
     /// </summary>
     public enum AblyEnvironment
     {
-        Live, 
+        Live,
         Uat,
-        Sandbox
+        Sandbox,
     }
 }

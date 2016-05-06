@@ -30,12 +30,15 @@ namespace IO.Ably.Tests
         public TransportState State { get; set; }
         public ITransportListener Listener { get; set; }
 
+        public bool OnConnectChangeStateToConnected { get; set; } = true;
         public void Connect()
         {
             ConnectCalled = true;
-            Listener?.OnTransportConnected();
-            State = TransportState.Connected;
-            
+            if (OnConnectChangeStateToConnected)
+            {
+               Listener?.OnTransportConnected();
+                State = TransportState.Connected;
+            }
         }
 
         public void Close()

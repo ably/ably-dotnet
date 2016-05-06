@@ -7,78 +7,60 @@ using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Nito.AsyncEx;
 using Nito.AsyncEx.Synchronous;
-using ConnectionState = IO.Ably.Transport.States.Connection.ConnectionState;
 
 namespace IO.Ably.Transport
 {
     internal class ConnectionManager : IConnectionManager, ITransportListener, IConnectionContext
     {
-        public IAcknowledgementProcessor AckProcessor { get; internal set; }
-        public ClientOptions Options { get; }
-        public TimeSpan DefaultTimeout => Options.RealtimeRequestTimeout;
-
         private readonly Queue<ProtocolMessage> _pendingMessages;
-        private int _connectionAttempts;
-        private DateTimeOffset? _firstConnectionAttempt;
-        private ConnectionState _state;
 
         internal readonly AsyncContextThread AsyncContextThread = new AsyncContextThread();
-
-        public Task ExecuteAsyncOperation(Func<Task> asyncOperation)
-        {
-            if (Options.UseSyncForTesting)
-            {
-                asyncOperation().WaitAndUnwrapException();
-                return TaskConstants.BooleanTrue;
-            }
-            return AsyncContextThread.Factory.Run(asyncOperation);
-        }
-
-        public Task<T> ExecuteAsyncOperation<T>(Func<Task<T>>  asyncOperation)
-        {
-            return AsyncContextThread.Factory.Run(asyncOperation);
-        }
-
-        public AblyRest RestClient { get; private set; }
-
-        private ITransport _transport;
+        private ConnectionState _state;
 
         private ConnectionManager()
         {
             _pendingMessages = new Queue<ProtocolMessage>();
             _state = new ConnectionInitializedState(this);
             Connection = new Connection(this);
+
+            if (Logger.IsDebug)
+            {
+                Execute(() => Logger.Debug("ConnectionManager thread created"));
+            }
         }
 
         internal ConnectionManager(ITransport transport, IAcknowledgementProcessor ackProcessor,
             ConnectionState initialState, AblyRest restClient)
             : this()
         {
-            _transport = transport;
-            _transport.Listener = this;
+            Transport = transport;
+            Transport.Listener = this;
             _state = initialState;
             RestClient = restClient;
             AckProcessor = ackProcessor;
             Connection = new Connection(this);
         }
 
-        public ConnectionManager(ClientOptions options, AblyRest restClient)
+        public ConnectionManager(AblyRest restClient)
             : this()
         {
-            Options = options;
+            AttemptsInfo = new ConnectionAttemptsInfo(restClient.Options, Connection);
             RestClient = restClient;
             AckProcessor = new AcknowledgementProcessor();
         }
 
+        public IAcknowledgementProcessor AckProcessor { get; internal set; }
+
+        private ConnectionAttemptsInfo AttemptsInfo { get; }
+        public TimeSpan RetryTimeout => Options.DisconnectedRetryTimeout;
+
+        public AblyRest RestClient { get; }
+
         ConnectionState IConnectionContext.State => _state;
 
-        public ITransport Transport => _transport;
+        public ITransport Transport { get; private set; }
 
         Queue<ProtocolMessage> IConnectionContext.QueuedMessages => _pendingMessages;
-
-        DateTimeOffset? IConnectionContext.FirstConnectionAttempt => _firstConnectionAttempt;
-
-        int IConnectionContext.ConnectionAttempts => _connectionAttempts;
 
         void IConnectionContext.SetState(ConnectionState newState)
         {
@@ -112,40 +94,36 @@ namespace IO.Ably.Transport
 
         async Task IConnectionContext.CreateTransport(bool renewToken = false)
         {
-            if (_transport != null)
+            if (Transport != null)
                 (this as IConnectionContext).DestroyTransport();
 
-            if(renewToken)
-                RestClient.AblyAuth.ExpireCurrentToken(); //This will cause the RequestToken to be called when constructing the TransportParams
+            if (renewToken)
+                RestClient.AblyAuth.ExpireCurrentToken();
+                    //This will cause the RequestToken to be called when constructing the TransportParams
 
             var transport = GetTransportFactory().CreateTransport(await CreateTransportParameters());
             transport.Listener = this;
-            _transport = transport;
+            Transport = transport;
         }
 
         void IConnectionContext.DestroyTransport()
         {
-            if (_transport == null)
+            if (Transport == null)
                 return;
 
-            _transport.Close();
-            _transport.Listener = null;
-            _transport = null;
+            Transport.Close();
+            Transport.Listener = null;
+            Transport = null;
         }
 
         void IConnectionContext.AttemptConnection()
         {
-            if (_firstConnectionAttempt == null)
-            {
-                _firstConnectionAttempt = Config.Now();
-            }
-            _connectionAttempts++;
+            AttemptsInfo.Increment();
         }
 
         void IConnectionContext.ResetConnectionAttempts()
         {
-            _firstConnectionAttempt = null;
-            _connectionAttempts = 0;
+            AttemptsInfo.Reset();
         }
 
         public async Task<bool> CanConnectToAbly()
@@ -169,7 +147,7 @@ namespace IO.Ably.Transport
 
         public void SetConnectionClientId(string clientId)
         {
-            if(clientId.IsNotEmpty())
+            if (clientId.IsNotEmpty())
                 RestClient.AblyAuth.ConnectionClientId = clientId;
         }
 
@@ -179,6 +157,14 @@ namespace IO.Ably.Transport
 
             return error.IsTokenError && RestClient.AblyAuth.TokenRenewable;
         }
+
+        public bool ShouldSuspend()
+        {
+            return AttemptsInfo.ShouldSuspend();
+        }
+
+        public ClientOptions Options => RestClient.Options;
+        public TimeSpan DefaultTimeout => Options.RealtimeRequestTimeout;
 
         public event MessageReceivedDelegate MessageReceived;
 
@@ -223,6 +209,7 @@ namespace IO.Ably.Transport
         {
             return TaskWrapper.Wrap<TimeSpan?>(Ping);
         }
+
         public void Ping(Action<TimeSpan?, ErrorInfo> callback)
         {
             ConnectionHeartbeatRequest.Execute(this, callback);
@@ -238,14 +225,12 @@ namespace IO.Ably.Transport
 
         void ITransportListener.OnTransportDisconnected()
         {
-            
             OnTransportDisconnected();
         }
 
         void ITransportListener.OnTransportError(Exception e)
         {
-            
-            OnTransportError(_transport.State, e);
+            OnTransportError(Transport.State, e);
         }
 
         void ITransportListener.OnTransportMessageReceived(ProtocolMessage message)
@@ -257,19 +242,40 @@ namespace IO.Ably.Transport
             ExecuteAsyncOperation(() => OnTransportMessageReceived(message));
         }
 
+        public void Execute(Action action)
+        {
+            AsyncContextThread.Factory.StartNew(action).WaitAndUnwrapException();
+        }
+
+        public Task ExecuteAsyncOperation(Func<Task> asyncOperation)
+        {
+            if (Options.UseSyncForTesting)
+            {
+                asyncOperation().WaitAndUnwrapException();
+                return TaskConstants.BooleanTrue;
+            }
+
+            return AsyncContextThread.Factory.Run(asyncOperation);
+        }
+
+        public Task<T> ExecuteAsyncOperation<T>(Func<Task<T>> asyncOperation)
+        {
+            return AsyncContextThread.Factory.Run(asyncOperation);
+        }
+
         internal async Task<TransportParams> CreateTransportParameters()
         {
             return await TransportParams.Create(RestClient.Auth, Options, Connection?.Key, Connection?.Serial);
         }
 
-        //TODO: Move this inside WebSocketTransport
+
         private static string GetHost(ClientOptions options, bool useFallbackHost)
         {
             var defaultHost = Defaults.RealtimeHost;
             if (useFallbackHost)
             {
                 var r = new Random();
-                defaultHost = Defaults.FallbackHosts[r.Next(0, 1000) % Defaults.FallbackHosts.Length];
+                defaultHost = Defaults.FallbackHosts[r.Next(0, 1000)%Defaults.FallbackHosts.Length];
             }
             var host = options.RealtimeHost.IsNotEmpty() ? options.RealtimeHost : defaultHost;
             if (options.Environment.HasValue && options.Environment != AblyEnvironment.Live)

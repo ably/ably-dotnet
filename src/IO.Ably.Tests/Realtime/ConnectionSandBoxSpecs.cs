@@ -84,6 +84,17 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        public async Task ShouldSaveConnectionStateTtlToConnectionObject(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+
+            await WaitForState(client);
+
+            client.Connection.ConnectionStateTtl.Should().NotBe(Defaults.ConnectionStateTtl);
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RTN8b")]
         public async Task WithMultipleClients_ShouldHaveUniqueConnectionIdsProvidedByAbly(Protocol protocol)
         {

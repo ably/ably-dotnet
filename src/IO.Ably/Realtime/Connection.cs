@@ -42,6 +42,7 @@ namespace IO.Ably.Realtime
 
         public string RecoveryKey { get; internal set; }
 
+        public TimeSpan ConnectionStateTtl { get; internal set; } = Defaults.ConnectionStateTtl;
         /// <summary>
         ///     Information relating to the transition to the current state,
         ///     as an Ably ErrorInfo object. This contains an error code and

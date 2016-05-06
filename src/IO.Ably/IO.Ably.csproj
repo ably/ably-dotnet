@@ -47,6 +47,8 @@
     <Compile Include="AuthMethod.cs" />
     <Compile Include="AuthOptions.cs" />
     <Compile Include="Class1.cs" />
+    <Compile Include="CustomSerialisers\TimeSpanJsonConverter.cs" />
+    <Compile Include="CustomSerialisers\TimespanMessagePackSerializer.cs" />
     <Compile Include="Realtime\ConnectionAwaiter.cs" />
     <Compile Include="Encryption\AesCipher.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
@@ -64,6 +66,7 @@
     <Compile Include="Realtime\ChannelFactory.cs" />
     <Compile Include="Realtime\Handlers.cs" />
     <Compile Include="Realtime\IMessageHandler.cs" />
+    <Compile Include="Transport\ConnectionAttemptsInfo.cs" />
     <Compile Include="Transport\TaskWrapper.cs" />
     <Compile Include="Types\ConnectionDetailsMessage.cs" />
     <Compile Include="CustomSerialisers\CapabilityJsonConverter.cs" />

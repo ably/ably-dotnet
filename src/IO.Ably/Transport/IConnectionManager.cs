@@ -8,15 +8,37 @@ namespace IO.Ably.Transport
 {
     public class ConnectionInfo
     {
-        public ConnectionInfo(string connectionId, long connectionSerial, string connectionKey, string clientId)
+        public static readonly ConnectionInfo Empty = new ConnectionInfo();
+        private ConnectionInfo() { }
+
+        public ConnectionInfo(string connectionId, long connectionSerial, string connectionKey, string clientId, TimeSpan? connectionStateTtl = null)
         {
             ClientId = clientId;
             ConnectionId = connectionId;
             ConnectionSerial = connectionSerial;
             ConnectionKey = connectionKey;
+            ConnectionStateTtl = connectionStateTtl;
         }
 
-        public string ClientId { get; set; }
+        public ConnectionInfo(ProtocolMessage message)
+        {
+            if(message == null)
+                throw new ArgumentNullException(nameof(message), "Null message");
+
+            if (message.action != ProtocolMessage.MessageAction.Connected)
+            {
+                throw new InvalidOperationException("Can only create Connection info from Connected message. Current passed: " + message.action);
+            }
+
+            ConnectionId = message.connectionId;
+            ConnectionSerial = message.connectionSerial ?? -1;
+            ConnectionKey = message.connectionKey;
+            ClientId = message.connectionDetails?.clientId;
+            ConnectionStateTtl = message.connectionDetails?.connectionStateTtl;
+        }
+
+        public TimeSpan? ConnectionStateTtl { get; private set; }
+        public string ClientId { get; private set; }
         public string ConnectionId { get; private set; }
         public long ConnectionSerial { get; private set; }
         public string ConnectionKey { get; private set; }
@@ -53,13 +75,13 @@ namespace IO.Ably.Transport
     internal interface IConnectionContext
     {
         TimeSpan DefaultTimeout { get; }
+        TimeSpan RetryTimeout { get; }
+
         States.Connection.ConnectionState State { get; }
         ITransport Transport { get; }
         AblyRest RestClient { get; }
         Queue<ProtocolMessage> QueuedMessages { get; }
         Connection Connection { get; }
-        DateTimeOffset? FirstConnectionAttempt { get; }
-        int ConnectionAttempts { get; }
         void SetState(States.Connection.ConnectionState state);
         Task CreateTransport(bool renewToken = false);
         void DestroyTransport();
@@ -69,6 +91,7 @@ namespace IO.Ably.Transport
         void SetConnectionClientId(string clientId);
 
         bool ShouldWeRenewToken(ErrorInfo error);
-        
+
+        bool ShouldSuspend();
     }
 }

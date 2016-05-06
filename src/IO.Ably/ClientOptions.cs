@@ -188,7 +188,7 @@ namespace IO.Ably
             AutoConnect = true;
             EchoMessages = true;
             QueueMessages = true;
-            DisconnectedRetryTimeout = TimeSpan.FromSeconds(15);
+            DisconnectedRetryTimeout = Defaults.DisconnectedRetryTimeout;
             SuspendedRetryTimeout = TimeSpan.FromSeconds(30);
             HttpOpenTimeout = TimeSpan.FromSeconds(4);
             HttpRequestTimeout = TimeSpan.FromSeconds(15);

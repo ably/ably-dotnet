@@ -12,6 +12,7 @@ using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Moq;
+using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -353,10 +354,10 @@ namespace IO.Ably.Tests.Realtime
             // This only contains the AckProcessor integration with the ConnectionManager. 
             // The Actual Ack processor tests are in AckProtocolSpecs.cs
 
-            [Fact]  
+            [Fact]
             public void ShouldListenToConnectionStateChanges()
             {
-                ((IConnectionContext) _realtime.ConnectionManager).SetState(
+                ((IConnectionContext)_realtime.ConnectionManager).SetState(
                     new ConnectionFailedState(_realtime.ConnectionManager, new ErrorInfo()));
 
                 _ackProcessor.OnStatecChanged.Should().BeTrue();
@@ -376,7 +377,7 @@ namespace IO.Ably.Tests.Realtime
             public void WhemMessageReceived_ShouldPassTheMessageThroughTheAckProcessor()
             {
                 var message = new ProtocolMessage(ProtocolMessage.MessageAction.Ack);
-                ((ITransportListener) _realtime.ConnectionManager).OnTransportMessageReceived(message);
+                ((ITransportListener)_realtime.ConnectionManager).OnTransportMessageReceived(message);
 
                 _ackProcessor.OnMessageReceivedCalled.Should().BeTrue();
             }
@@ -406,7 +407,7 @@ namespace IO.Ably.Tests.Realtime
             public void ConnectionIdSetBasedOnValueProvidedByAblyService()
             {
                 var client = GetClientWithFakeTransport();
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { connectionId = "123"});
+                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { connectionId = "123" });
                 client.Connection.Id.Should().Be("123");
             }
 
@@ -432,7 +433,7 @@ namespace IO.Ably.Tests.Realtime
             public void OnceConnected_ShouldUseKeyFromConnectedMessage()
             {
                 var client = GetClientWithFakeTransport();
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { connectionDetails = new ConnectionDetailsMessage() { connectionKey = "key"} });
+                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { connectionDetails = new ConnectionDetailsMessage() { connectionKey = "key" } });
                 client.Connection.Key.Should().Be("key");
             }
 
@@ -480,7 +481,7 @@ namespace IO.Ably.Tests.Realtime
                 client.Connection.Serial = targetSerial;
 
                 // Act
-                var transportParams =await client.ConnectionManager.CreateTransportParameters();
+                var transportParams = await client.ConnectionManager.CreateTransportParameters();
 
                 transportParams.ConnectionSerial.Should().Be(targetSerial);
             }
@@ -633,13 +634,13 @@ namespace IO.Ably.Tests.Realtime
                 List<ErrorInfo> raisedErrors = new List<ErrorInfo>();
                 client.Connection.ConnectionStateChanged += (sender, args) =>
                 {
-                     if(args.HasError)
+                    if (args.HasError)
                         raisedErrors.Add(args.Reason);
                 };
 
                 FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
-                renewTokenCalled.Should().BeTrue();  
+                renewTokenCalled.Should().BeTrue();
                 var currentToken = client.Auth.CurrentToken;
                 currentToken.Token.Should().Be(_returnedDummyTokenDetails.Token);
                 currentToken.ClientId.Should().Be(_returnedDummyTokenDetails.ClientId);
@@ -690,7 +691,7 @@ namespace IO.Ably.Tests.Realtime
                 {
                     if (request.Url.Contains("/keys"))
                     {
-                        throw new AblyException(new ErrorInfo() { code = 123});
+                        throw new AblyException(new ErrorInfo() { code = 123 });
                     }
 
                     return AblyResponse.EmptyResponse.ToTask();
@@ -730,6 +731,62 @@ namespace IO.Ably.Tests.Realtime
                 renewCount.Should().Be(1);
                 client.Connection.State.Should().Be(ConnectionStateType.Failed);
                 client.Connection.Reason.Should().NotBeNull();
+            }
+
+            [Fact]
+            [Trait("spec", "RTN14d")]
+            public async Task WhenTransportFails_ShouldTransitionToDisconnectedAndEmitErrorWithRetry()
+            {
+                _fakeTransportFactory.initialiseFakeTransport =
+                    transport => transport.OnConnectChangeStateToConnected = false; //this will keep it in connecting state
+
+                ClientOptions options = null;
+                var client = GetClientWithFakeTransport(opts =>
+                {
+                    opts.AutoConnect = false;
+                    options = opts;
+                });
+
+                ConnectionStateChangedEventArgs stateChangeArgs = null;
+
+                client.Connect();
+                client.Connection.ConnectionStateChanged += (sender, args) =>
+                {
+                    args.CurrentState.Should().Be(ConnectionStateType.Disconnected);
+                    args.RetryIn.Should().Be(options.DisconnectedRetryTimeout);
+                    args.Reason.Should().NotBeNull();
+                };
+                LastCreatedTransport.Listener.OnTransportError(new Exception());
+            }
+
+            [Fact]
+            [Trait("spec", "RTN14d")]
+            public async Task WhenTransportFails_ShouldGoFromConnectingToDisconectedUntilConnectionStateTtlIsReached()
+            {
+                Now = DateTimeOffset.UtcNow;
+
+                _fakeTransportFactory.initialiseFakeTransport =
+                    transport => transport.OnConnectChangeStateToConnected = false;
+                //this will keep it in connecting state
+
+                var client = GetClientWithFakeTransport(opts => opts.AutoConnect = false);
+
+                ConnectionStateChangedEventArgs stateChangeArgs = null;
+
+
+                client.Connect();
+                List<ConnectionStateChangedEventArgs> stateChanges = new List<ConnectionStateChangedEventArgs>();
+                client.Connection.ConnectionStateChanged += (sender, args) =>
+                {
+                    stateChanges.Add(args);
+                };
+                do
+                {
+                    Now = Now.AddSeconds(5);
+                    LastCreatedTransport.Listener.OnTransportError(new Exception());
+                } while (client.Connection.State != ConnectionStateType.Suspended);
+
+                stateChanges.Select(x => x.CurrentState).Distinct().Should().HaveCount(3);
             }
 
             public ConnectionFailureSpecs(ITestOutputHelper output) : base(output)

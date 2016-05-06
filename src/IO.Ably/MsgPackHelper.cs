@@ -13,6 +13,7 @@ namespace IO.Ably
             var context = new SerializationContext() { SerializationMethod = SerializationMethod.Map};
             context.Serializers.Register(new CapabilityMessagePackSerializer(context));
             context.Serializers.Register(new DateTimeOffsetMessagePackSerializer(context));
+            context.Serializers.Register(new TimespanMessagePackSerializer(context));
             return context;
         }
 

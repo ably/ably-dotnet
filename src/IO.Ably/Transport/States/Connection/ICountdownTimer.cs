@@ -69,6 +69,7 @@ namespace IO.Ably.Transport.States.Connection
         private Action _onTimeOut;
         private Func<Task> _onTimeOutFunc;
         private TimeSpan _delay;
+        private volatile bool _aborted;
 
         public CountdownTimer(string name)
         {
@@ -98,6 +99,7 @@ namespace IO.Ably.Transport.States.Connection
 
         private System.Timers.Timer SetupTimer(TimeSpan delay, bool autoReset)
         {
+            _aborted = false;
             _delay = delay;
             var timer = new System.Timers.Timer(delay.TotalMilliseconds);
             timer.AutoReset = autoReset;
@@ -107,6 +109,15 @@ namespace IO.Ably.Transport.States.Connection
 
         private async void OnTimerOnElapsed(object sender, ElapsedEventArgs args)
         {
+            if (_aborted)
+            {
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug($"Timer '{_name}' aborted. Skipping OnElapsed callback.");
+                }
+                return;
+            }
+
             try
             {
                 if (_onTimeOut != null)
@@ -158,6 +169,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public void Abort()
         {
+            _aborted = true;
             if (Logger.IsDebug)
             {
                 Logger.Debug($"Aborting timer '{_name}'");

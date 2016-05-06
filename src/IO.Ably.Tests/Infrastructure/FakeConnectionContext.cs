@@ -34,14 +34,13 @@ namespace IO.Ably.Tests
         public bool ShouldWeRenewTokenValue { get; set; }
 
         public TimeSpan DefaultTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;
+        public TimeSpan RetryTimeout { get; set; } = Defaults.DisconnectedRetryTimeout;
 
         public ConnectionState State { get; set; }
         public ITransport Transport { get; set; }
         public AblyRest RestClient { get; set; }
         public Queue<ProtocolMessage> QueuedMessages { get; } = new Queue<ProtocolMessage>();
         public Connection Connection { get; set; }
-        public DateTimeOffset? FirstConnectionAttempt { get; set; }
-        public int ConnectionAttempts { get; set; }
 
         public void SetState(ConnectionState state)
         {
@@ -85,6 +84,13 @@ namespace IO.Ably.Tests
         {
             return ShouldWeRenewTokenValue;
         }
+
+        public bool ShouldSuspend()
+        {
+            return ShouldSuspendValue;
+        }
+
+        public bool ShouldSuspendValue { get; set; }
 
         public T StateShouldBe<T>() where T : ConnectionState
         {

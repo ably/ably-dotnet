@@ -27,7 +27,7 @@ namespace IO.Ably
         {
             RestClient = createRestFunc(options);
 
-            ConnectionManager = new ConnectionManager(options, RestClient);
+            ConnectionManager = new ConnectionManager(RestClient);
             ChannelFactory = new ChannelFactory { ConnectionManager = ConnectionManager, Options = options };
             Channels = new ChannelList(ChannelFactory);
 

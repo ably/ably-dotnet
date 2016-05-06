@@ -62,6 +62,15 @@ namespace IO.Ably.Tests.MessagePack
             response.AccessToken.Issued.Should().Be(((long)1421938646).FromUnixTimeInMilliseconds());
             response.AccessToken.Expires.Should().Be(((long)1421942246).FromUnixTimeInMilliseconds());
         }
+
+        [Fact]
+        public void CanDeserialiseConnectionDetailsMessages()
+        {
+            var connectionDetails = new ConnectionDetailsMessage() { clientId = "123", connectionStateTtl = TimeSpan.FromSeconds(60)};
+            var serialized = MsgPackHelper.Serialise(connectionDetails);
+            var deserialized = MsgPackHelper.DeSerialise(serialized, typeof(ConnectionDetailsMessage));
+            deserialized.ShouldBeEquivalentTo(connectionDetails);
+        }
     }
 
     public class JsonSerializationTests

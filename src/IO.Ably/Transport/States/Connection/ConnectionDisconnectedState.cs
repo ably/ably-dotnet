@@ -6,7 +6,6 @@ namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionDisconnectedState : ConnectionState
     {
-        private readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(15);
         private readonly ICountdownTimer _timer;
 
         public ConnectionDisconnectedState(IConnectionContext context) :
@@ -29,7 +28,7 @@ namespace IO.Ably.Transport.States.Connection
         {
             _timer = timer;
             Error = error ?? ErrorInfo.ReasonDisconnected;
-            RetryIn = ConnectTimeout; //TODO: Make sure this comes from ClientOptions
+            RetryIn = context.RetryTimeout;
         }
 
         public bool UseFallbackHost { get; set; }
@@ -71,7 +70,7 @@ namespace IO.Ably.Transport.States.Connection
             }
             else
             {
-                _timer.Start(ConnectTimeout, OnTimeOut);
+                _timer.Start(Context.RetryTimeout, OnTimeOut);
             }
 
             return TaskConstants.BooleanTrue;

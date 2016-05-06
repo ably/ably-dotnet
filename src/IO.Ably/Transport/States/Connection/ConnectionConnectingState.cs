@@ -62,8 +62,7 @@ namespace IO.Ably.Transport.States.Connection
                     {
                         if (Context.Transport.State == TransportState.Connected)
                         {
-                            var info = new ConnectionInfo(message.connectionId, message.connectionSerial ?? -1,
-                                message.connectionKey, message.connectionDetails?.clientId);
+                            var info = new ConnectionInfo(message);
                             TransitionState(new ConnectionConnectedState(Context, info));
                         }
                         return true;
@@ -71,7 +70,7 @@ namespace IO.Ably.Transport.States.Connection
                 case ProtocolMessage.MessageAction.Disconnected:
                     {
                         ConnectionState nextState;
-                        if (ShouldSuspend())
+                        if (Context.ShouldSuspend())
                         {
                             nextState = new ConnectionSuspendedState(Context, message.error);
                         }
@@ -131,7 +130,7 @@ namespace IO.Ably.Transport.States.Connection
             if (state.Error != null || state.State == TransportState.Closed)
             {
                 ConnectionState nextState;
-                if (ShouldSuspend())
+                if (Context.ShouldSuspend())
                 {
                     nextState = new ConnectionSuspendedState(Context);
                 }
@@ -183,15 +182,10 @@ namespace IO.Ably.Transport.States.Connection
 
         private void TransitionState(ConnectionState newState)
         {
-            Context.SetState(newState);
             _timer.Abort();
+            Context.SetState(newState);
         }
 
-        private bool ShouldSuspend()
-        {
-            return Context.FirstConnectionAttempt != null &&
-                   Context.FirstConnectionAttempt.Value
-                       .Add(ConnectionSuspendedState.SuspendTimeout) < Config.Now();
-        }
+        
     }
 }

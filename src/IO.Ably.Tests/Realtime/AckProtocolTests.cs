@@ -207,7 +207,7 @@ namespace IO.Ably.Tests
             // Act
             _ackProcessor.SendMessage(targetMessage1, null);
             _ackProcessor.SendMessage(targetMessage2, null);
-            _ackProcessor.OnStateChanged(new ConnectionConnectedState(context, new ConnectionInfo("", 0, "", "")));
+            _ackProcessor.OnStateChanged(new ConnectionConnectedState(context, ConnectionInfo.Empty));
             _ackProcessor.SendMessage(targetMessage3, null);
             _ackProcessor.SendMessage(targetMessage4, null);
 
