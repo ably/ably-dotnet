@@ -93,6 +93,7 @@ namespace IO.Ably.Transport.States.Connection
                         {
                             try
                             {
+                                _hasRetriedToReniewToken = true;
                                 _suppressTransportEvents = true;
                                 await Context.CreateTransport(renewToken: true);
                                 ConnectTransport();

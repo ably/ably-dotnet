@@ -703,6 +703,34 @@ namespace IO.Ably.Tests.Realtime
                 client.Connection.Reason.code.Should().Be(123);
             }
 
+            [Fact]
+            [Trait("spec", "RTN14b")]
+            public async Task WithTokenErrorTwice_ShouldNotRenewAndRaiseErrorAndTransitionToFailed()
+            {
+                var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
+                var renewCount = 0;
+                var client = GetClientWithFakeTransport(opts =>
+                {
+                    opts.TokenDetails = tokenDetails;
+                    opts.UseBinaryProtocol = false;
+                }, request =>
+                {
+                    if (request.Url.Contains("/keys"))
+                    {
+                        renewCount++;
+                        return _returnedDummyTokenDetails.ToJson().ToAblyResponse();
+                    }
+
+                    return AblyResponse.EmptyResponse.ToTask();
+                });
+
+                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+
+                renewCount.Should().Be(1);
+                client.Connection.State.Should().Be(ConnectionStateType.Failed);
+                client.Connection.Reason.Should().NotBeNull();
+            }
 
             public ConnectionFailureSpecs(ITestOutputHelper output) : base(output)
             {
