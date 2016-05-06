@@ -30,6 +30,8 @@ namespace IO.Ably.Transport
     {
         Connection Connection { get; }
 
+        TimeSpan DefaultTimeout { get; }
+
         ClientOptions Options { get; }
 
         ConnectionStateType ConnectionState { get; }
@@ -50,6 +52,7 @@ namespace IO.Ably.Transport
 
     internal interface IConnectionContext
     {
+        TimeSpan DefaultTimeout { get; }
         States.Connection.ConnectionState State { get; }
         ITransport Transport { get; }
         AblyRest RestClient { get; }

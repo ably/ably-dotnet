@@ -33,6 +33,8 @@ namespace IO.Ably.Tests
 
         public bool ShouldWeRenewTokenValue { get; set; }
 
+        public TimeSpan DefaultTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;
+
         public ConnectionState State { get; set; }
         public ITransport Transport { get; set; }
         public AblyRest RestClient { get; set; }

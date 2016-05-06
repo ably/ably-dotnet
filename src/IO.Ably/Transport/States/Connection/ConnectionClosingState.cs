@@ -10,12 +10,12 @@ namespace IO.Ably.Transport.States.Connection
         private readonly ICountdownTimer _timer;
 
         public ConnectionClosingState(IConnectionContext context) :
-            this(context, null, new CountdownTimer())
+            this(context, null, new CountdownTimer("Closing state timer"))
         {
         }
 
         public ConnectionClosingState(IConnectionContext context, ErrorInfo error) :
-            this(context, error, new CountdownTimer())
+            this(context, error, new CountdownTimer("Closing state timer"))
         {
         }
 

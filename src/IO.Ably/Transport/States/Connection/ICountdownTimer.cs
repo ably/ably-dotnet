@@ -64,14 +64,26 @@ namespace IO.Ably.Transport.States.Connection
 
     public class CountdownTimer : ICountdownTimer
     {
+        private readonly string _name;
         private System.Timers.Timer _timer;
         private Action _onTimeOut;
         private Func<Task> _onTimeOutFunc;
+        private TimeSpan _delay;
+
+        public CountdownTimer(string name)
+        {
+            _name = name;
+        }
 
         public void Start(TimeSpan delay, Action onTimeOut, bool autoReset = false)
         {
-            if(onTimeOut == null)
+            if (onTimeOut == null)
                 throw new ArgumentNullException(nameof(onTimeOut));
+
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"Setting up timer '{_name}' to run action after {delay.TotalSeconds} seconds. Autoreset: {autoReset}");
+            }
 
             _onTimeOut = onTimeOut;
 
@@ -86,6 +98,7 @@ namespace IO.Ably.Transport.States.Connection
 
         private System.Timers.Timer SetupTimer(TimeSpan delay, bool autoReset)
         {
+            _delay = delay;
             var timer = new System.Timers.Timer(delay.TotalMilliseconds);
             timer.AutoReset = autoReset;
             timer.Elapsed += OnTimerOnElapsed;
@@ -97,9 +110,20 @@ namespace IO.Ably.Transport.States.Connection
             try
             {
                 if (_onTimeOut != null)
+                {
+                    if (Logger.IsDebug)
+                    {
+                        Logger.Debug($"Timer '{_name}' interval {_delay.TotalSeconds} seconds elapsed and calling action.");    
+                    }
+
                     _onTimeOut();
+                }
                 else
                 {
+                    if (Logger.IsDebug)
+                    {
+                        Logger.Debug($"Timer '{_name}' interval {_delay.TotalSeconds} seconds elapsed and calling async action.");
+                    }
                     await _onTimeOutFunc();
                 }
             }
@@ -113,11 +137,20 @@ namespace IO.Ably.Transport.States.Connection
 
         public void StartAsync(TimeSpan delay, Func<Task> onTimeOut, bool autoReset = false)
         {
+            if (onTimeOut == null)
+                throw new ArgumentNullException(nameof(onTimeOut));
+
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"Setting up timer '{_name}' to run action after {delay.TotalSeconds} seconds. Autoreset: {autoReset}");
+            }
 
             if (_timer != null)
             {
                 Abort();
             }
+
+            _onTimeOutFunc = onTimeOut;
 
             _timer = SetupTimer(delay, autoReset);
             _timer.Start();
@@ -125,6 +158,10 @@ namespace IO.Ably.Transport.States.Connection
 
         public void Abort()
         {
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"Aborting timer '{_name}'");
+            }
             if (_timer != null)
             {
                 _timer.Stop();

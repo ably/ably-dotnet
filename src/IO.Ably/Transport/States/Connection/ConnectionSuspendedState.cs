@@ -12,12 +12,12 @@ namespace IO.Ably.Transport.States.Connection
         private readonly ICountdownTimer _timer;
 
         public ConnectionSuspendedState(IConnectionContext context) :
-            this(context, null, new CountdownTimer())
+            this(context, null, new CountdownTimer("Suspended state timer"))
         {
         }
 
         public ConnectionSuspendedState(IConnectionContext context, ErrorInfo error) :
-            this(context, error, new CountdownTimer())
+            this(context, error, new CountdownTimer("Suspended state timer"))
         {
         }
 

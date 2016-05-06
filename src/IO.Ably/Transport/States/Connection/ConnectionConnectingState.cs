@@ -11,7 +11,6 @@ namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionConnectingState : ConnectionState
     {
-        private const int ConnectTimeout = 15 * 1000; //TODO: Use values from config
         private static readonly ISet<HttpStatusCode> FallbackReasons;
 
         private readonly ICountdownTimer _timer;
@@ -29,7 +28,7 @@ namespace IO.Ably.Transport.States.Connection
         }
 
         public ConnectionConnectingState(IConnectionContext context, bool useFallbackHost = false) :
-            this(context, new CountdownTimer(), useFallbackHost)
+            this(context, new CountdownTimer("Connecting state timer"), useFallbackHost)
         {
         }
 
@@ -164,7 +163,7 @@ namespace IO.Ably.Transport.States.Connection
             if (Context.Transport.State != TransportState.Connected)
             {
                 Context.Transport.Connect();
-                _timer.StartAsync(TimeSpan.FromMilliseconds(ConnectTimeout), async () =>
+                _timer.StartAsync(Context.DefaultTimeout, async () =>
                 {
                     var disconnectedState = new ConnectionDisconnectedState(Context, ErrorInfo.ReasonTimeout)
                     {

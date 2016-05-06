@@ -163,8 +163,7 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN14b")]
-        public async Task WithExpiredRenewableToken_ShouldAutomaticallyRenewTokenAndNoErrorShouldBeEmitted(
-            Protocol protocol)
+        public async Task WithExpiredRenewableToken_ShouldAutomaticallyRenewTokenAndNoErrorShouldBeEmitted(Protocol protocol)
         {
             var restClient = await GetRestClient(protocol);
             var invalidToken = await restClient.Auth.RequestToken();
@@ -190,6 +189,24 @@ namespace IO.Ably.Tests.Realtime
 
             realtimeClient.Auth.CurrentToken.Expires.Should().BeAfter(Config.Now(), "The token should be valid and expire in the future.");
             error.Should().BeNull("No error should be raised!");
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN14c")]
+        public async Task ShouldFailIfConnectionIsNotEstablishedWithInDefaultTimeout(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, options =>
+            {
+                options.RealtimeHost = "localhost";
+                options.AutoConnect = false;
+                options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(500);
+            });
+
+            client.Connect();
+
+            await WaitForState(client, ConnectionStateType.Disconnected);
+            client.Connection.Reason.Should().NotBeNull();
         }
 
         public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)

@@ -15,10 +15,13 @@ namespace IO.Ably.Transport
     {
         public IAcknowledgementProcessor AckProcessor { get; internal set; }
         public ClientOptions Options { get; }
+        public TimeSpan DefaultTimeout => Options.RealtimeRequestTimeout;
+
         private readonly Queue<ProtocolMessage> _pendingMessages;
         private int _connectionAttempts;
         private DateTimeOffset? _firstConnectionAttempt;
         private ConnectionState _state;
+
         internal readonly AsyncContextThread AsyncContextThread = new AsyncContextThread();
 
         public Task ExecuteAsyncOperation(Func<Task> asyncOperation)
