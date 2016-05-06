@@ -606,8 +606,10 @@ namespace IO.Ably.Tests.Realtime
         public class ConnectionFailureSpecs : ConnectionSpecs
         {
             private TokenDetails _returnedDummyTokenDetails = new TokenDetails("123") { Expires = Config.Now().AddDays(1), ClientId = "123" };
+            private int _tokenErrorCode = 40140;
 
             [Fact]
+            [Trait("spec", "RTN14b")]
             public async Task WithTokenErrorAndRenewableToken_ShouldRenewTokenAutomaticallyWithoutEmittingError()
             {
                 Now = DateTimeOffset.Now;
@@ -635,7 +637,7 @@ namespace IO.Ably.Tests.Realtime
                         raisedErrors.Add(args.Reason);
                 };
 
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", 40140, HttpStatusCode.Unauthorized) });
+                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
                 renewTokenCalled.Should().BeTrue();  
                 var currentToken = client.Auth.CurrentToken;
@@ -644,6 +646,63 @@ namespace IO.Ably.Tests.Realtime
                 currentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires);
                 raisedErrors.Should().BeEmpty("No errors should be raised!");
             }
+
+            [Fact]
+            [Trait("spec", "RTN14b")]
+            public async Task WithTokenErrorAndNonRenewableToken_ShouldRaiseErrorAndTransitionToFailed()
+            {
+                var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
+                bool renewTokenCalled = false;
+                var client = GetClientWithFakeTransport(opts =>
+                {
+                    opts.Key = "";
+                    opts.TokenDetails = tokenDetails;
+                    opts.UseBinaryProtocol = false;
+                }, request =>
+                {
+                    if (request.Url.Contains("/keys"))
+                    {
+                        renewTokenCalled = true;
+                        return _returnedDummyTokenDetails.ToJson().ToAblyResponse();
+                    }
+
+                    return AblyResponse.EmptyResponse.ToTask();
+                });
+
+                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+
+                renewTokenCalled.Should().BeFalse();
+                client.Connection.State.Should().Be(ConnectionStateType.Failed);
+                client.Connection.Reason.Should().NotBeNull();
+                client.Connection.Reason.code.Should().Be(_tokenErrorCode);
+            }
+
+            [Fact]
+            [Trait("spec", "RTN14b")]
+            public async Task WithTokenErrorAndTokenRenewalFails_ShouldRaiseErrorAndTransitionToFailed()
+            {
+                var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
+                var client = GetClientWithFakeTransport(opts =>
+                {
+                    opts.TokenDetails = tokenDetails;
+                    opts.UseBinaryProtocol = false;
+                }, request =>
+                {
+                    if (request.Url.Contains("/keys"))
+                    {
+                        throw new AblyException(new ErrorInfo() { code = 123});
+                    }
+
+                    return AblyResponse.EmptyResponse.ToTask();
+                });
+
+                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+
+                client.Connection.State.Should().Be(ConnectionStateType.Failed);
+                client.Connection.Reason.Should().NotBeNull();
+                client.Connection.Reason.code.Should().Be(123);
+            }
+
 
             public ConnectionFailureSpecs(ITestOutputHelper output) : base(output)
             {

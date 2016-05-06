@@ -98,6 +98,12 @@ namespace IO.Ably.Transport.States.Connection
                             ConnectTransport();
                             return true;
                         }
+                        catch (AblyException ex)
+                        {
+                                Logger.Error("Error trying to renew token.", ex);
+                                TransitionState(new ConnectionFailedState(Context, ex.ErrorInfo));
+                            return true;
+                        }
                         finally
                         {
                             _suppressTransportEvents = false;
