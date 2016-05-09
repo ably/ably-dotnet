@@ -8,24 +8,29 @@ namespace IO.Ably.Realtime
 {
     public sealed class Connection : IDisposable
     {
-        internal ConnectionManager ConnectionManager { get; }
+        private readonly AblyRest _restClient;
+        private ConnectionManager _connectionManager;
+
+        internal ConnectionManager ConnectionManager { get; set; }
         private ConnectionState _currentState;
-        internal Connection()
-        {
-        }
+
+
 
         internal Connection(AblyRest restClient)
         {
-            ConnectionManager = new ConnectionManager(this, restClient);
-            
+            _restClient = restClient;
+        }
+
+        internal void Initialise()
+        {
+            ConnectionManager = new ConnectionManager(this, _restClient);
             ConnectionState = new ConnectionInitializedState(ConnectionManager);
-            State = ConnectionManager.ConnectionState;
         }
 
         /// <summary>
         ///     Indicates the current state of this connection.
         /// </summary>
-        public ConnectionStateType State { get; private set; }
+        public ConnectionStateType State => ConnectionState.State;
 
         internal ConnectionState ConnectionState { get; set; }
 

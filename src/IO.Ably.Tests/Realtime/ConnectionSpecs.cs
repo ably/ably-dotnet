@@ -313,7 +313,7 @@ namespace IO.Ably.Tests.Realtime
                 };
                 LastCreatedTransport.SendAction = message =>
                 {
-                    if (message.action == ProtocolMessage.MessageAction.Close)
+                    if (message.Original.action == ProtocolMessage.MessageAction.Close)
                     {
                         LastCreatedTransport.Close();
                     }
@@ -362,7 +362,7 @@ namespace IO.Ably.Tests.Realtime
             [Fact]
             public void ShouldListenToConnectionStateChanges()
             {
-                ((IConnectionContext)_realtime.ConnectionManager).SetState(
+                _realtime.ConnectionManager.SetState(
                     new ConnectionFailedState(_realtime.ConnectionManager, new ErrorInfo()));
 
                 _ackProcessor.OnStatecChanged.Should().BeTrue();
@@ -559,7 +559,7 @@ namespace IO.Ably.Tests.Realtime
                 _fakeTransportFactory.LastCreatedTransport.SendAction = async message =>
                 {
                     Now = Now.AddMilliseconds(100);
-                    if (message.action == ProtocolMessage.MessageAction.Heartbeat)
+                    if (message.Original.action == ProtocolMessage.MessageAction.Heartbeat)
                     {
                         await Task.Delay(1);
                         await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));

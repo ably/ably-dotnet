@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Rest;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -23,7 +24,7 @@ namespace IO.Ably.Tests
 
         public FakeConnectionContext()
         {
-            Connection = new Connection();
+            Connection = new Connection(null);
         }
 
         public ConnectionState LastSetState { get; set; }
@@ -37,7 +38,7 @@ namespace IO.Ably.Tests
         public TimeSpan RetryTimeout { get; set; } = Defaults.DisconnectedRetryTimeout;
 
         public ConnectionState State { get; set; }
-        public TransportState TransportState { get; set; }
+        public TransportState TransportState => Transport.State;
         public ITransport Transport { get; set; }
         public AblyRest RestClient { get; set; }
         public Queue<ProtocolMessage> QueuedMessages { get; } = new Queue<ProtocolMessage>();

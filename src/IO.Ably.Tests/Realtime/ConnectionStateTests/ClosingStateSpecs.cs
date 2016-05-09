@@ -135,7 +135,7 @@ namespace IO.Ably.Tests
             await _state.OnAttachedToContext();
 
             // Assert
-            transport.LastMessageSend.action.Should().Be(ProtocolMessage.MessageAction.Close);
+            _context.LastMessageSent.action.Should().Be(ProtocolMessage.MessageAction.Close);
         }
 
         [Theory]

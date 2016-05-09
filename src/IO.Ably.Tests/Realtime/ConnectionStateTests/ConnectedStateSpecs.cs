@@ -1,11 +1,9 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
-using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -47,15 +45,12 @@ namespace IO.Ably.Tests
         [Fact]
         public void ShouldSendMessagesUsingTransport()
         {
-            var transport = new FakeTransport();
-            _context.Transport = transport;
-
             // Act
             _state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
 
             // Assert
-            transport.LastMessageSend.Should().NotBeNull();
-            transport.LastMessageSend.action.Should().Be(ProtocolMessage.MessageAction.Attach);
+            _context.LastMessageSent.Should().NotBeNull();
+            _context.LastMessageSent.action.Should().Be(ProtocolMessage.MessageAction.Attach);
         }
 
         [Theory]
@@ -134,8 +129,6 @@ namespace IO.Ably.Tests
         public async Task OnAttachToContext_ShouldSendPendingMessages()
         {
             // Arrange
-            var transport = new FakeTransport();
-            _context.Transport = transport;
             var targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Attach);
             _context.QueuedMessages.Enqueue(targetMessage);
 
@@ -143,7 +136,7 @@ namespace IO.Ably.Tests
             await _state.OnAttachedToContext();
 
             // Assert
-            transport.LastMessageSend.Should().BeSameAs(targetMessage);
+            _context.LastMessageSent.Should().BeSameAs(targetMessage);
             _context.QueuedMessages.Should().BeEmpty();
         }
 

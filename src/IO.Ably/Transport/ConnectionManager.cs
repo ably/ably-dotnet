@@ -30,7 +30,7 @@ namespace IO.Ably.Transport
         public ConnectionManager(Connection connection, AblyRest restClient)
             : this()
         {
-            AttemptsInfo = new ConnectionAttemptsInfo(restClient.Options, Connection);
+            AttemptsInfo = new ConnectionAttemptsInfo(restClient.Options, connection);
             Connection = connection;
             RestClient = restClient;
             AckProcessor = new AcknowledgementProcessor();
@@ -174,12 +174,10 @@ namespace IO.Ably.Transport
                 Logger.Debug($"Current state: {Connection.State}. Sending message: {message}");
             }
 
-            if (callback != null)
-            {
-                AckProcessor.SendMessage(message, callback);
-            }
+            AckProcessor.SendMessage(message, callback);
 
             var data = new RealtimeTransportData("");//Create the data
+            data.Original = message;
 
             Transport.Send(data);
         }

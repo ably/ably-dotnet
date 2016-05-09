@@ -11,6 +11,7 @@ namespace IO.Ably.Realtime
 {
     public class RealtimeTransportData
     {
+        public ProtocolMessage Original { get; set; }
         public bool IsBinary => Length > 0;
         public byte[] Data { get; } = new byte[0];
         public string Text { get; }

@@ -26,7 +26,8 @@ namespace IO.Ably.Tests
 
         public bool AbortCalled { get; set; }
 
-        public ProtocolMessage LastMessageSend { get; set; }
+        public ProtocolMessage LastMessageSend => LastTransportData.Original;
+        public RealtimeTransportData LastTransportData { get; set; }
         public string Host { get; set; }
         public TransportState State { get; set; }
         public ITransportListener Listener { get; set; }
@@ -52,7 +53,8 @@ namespace IO.Ably.Tests
 
         public void Send(RealtimeTransportData data)
         {
-            
+            SendAction(data);
+            LastTransportData = data;
         }
 
 
@@ -61,12 +63,8 @@ namespace IO.Ably.Tests
             AbortCalled = true;
         }
 
-        public Action<ProtocolMessage> SendAction = delegate { };
+        public Action<RealtimeTransportData> SendAction = delegate { };
 
-        public void Send(ProtocolMessage message)
-        {
-            SendAction(message);
-            LastMessageSend = message;
-        }
+        
     }
 }

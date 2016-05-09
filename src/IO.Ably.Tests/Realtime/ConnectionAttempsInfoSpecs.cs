@@ -59,7 +59,7 @@ namespace IO.Ably.Tests.Realtime
 
         public ConnectionAttemptsInfoSpecs(ITestOutputHelper output) : base(output)
         {
-            _connection = new Connection();
+            _connection = new Connection(new AblyRest(ValidKey));
             _options = new ClientOptions();
             _info = new ConnectionAttemptsInfo(_options, _connection);
         }

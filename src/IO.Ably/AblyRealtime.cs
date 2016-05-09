@@ -7,6 +7,8 @@ namespace IO.Ably
 {
     public class AblyRealtime : IRealtimeClient
     {
+        private ChannelFactory _channelFactory;
+
         /// <summary></summary>
         /// <param name="key"></param>
         public AblyRealtime(string key)
@@ -27,7 +29,7 @@ namespace IO.Ably
         {
             RestClient = createRestFunc(options);
             Connection = new Connection(RestClient);
-            ChannelFactory = new ChannelFactory { ConnectionManager = ConnectionManager, Options = options };
+            Connection.Initialise();
             Channels = new ChannelList(ChannelFactory);
 
             //TODO: Change this and allow a way to check to log exceptions
@@ -35,7 +37,7 @@ namespace IO.Ably
                 Connect();
         }
 
-        public ChannelFactory ChannelFactory { get; set; }
+        public ChannelFactory ChannelFactory => _channelFactory ?? (_channelFactory = new ChannelFactory { ConnectionManager = ConnectionManager, Options = Options });
 
         public AblyRest RestClient { get; }
 
