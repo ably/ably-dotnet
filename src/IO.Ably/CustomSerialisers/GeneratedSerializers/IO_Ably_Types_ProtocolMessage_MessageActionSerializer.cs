@@ -16,7 +16,7 @@ namespace IO.Ably.CustomSerialisers {
     public class IO_Ably_Types_ProtocolMessage_MessageActionSerializer : MsgPack.Serialization.EnumMessagePackSerializer<IO.Ably.Types.ProtocolMessage.MessageAction> {
         
         public IO_Ably_Types_ProtocolMessage_MessageActionSerializer(MsgPack.Serialization.SerializationContext context) : 
-                this(context, MsgPack.Serialization.EnumSerializationMethod.ByName) {
+                this(context, MsgPack.Serialization.EnumSerializationMethod.ByUnderlyingValue) {
         }
         
         public IO_Ably_Types_ProtocolMessage_MessageActionSerializer(MsgPack.Serialization.SerializationContext context, MsgPack.Serialization.EnumSerializationMethod enumSerializationMethod) : 

@@ -16,7 +16,7 @@ namespace IO.Ably.CustomSerialisers {
     public class IO_Ably_PresenceMessage_ActionTypeSerializer : MsgPack.Serialization.EnumMessagePackSerializer<IO.Ably.PresenceMessage.ActionType> {
         
         public IO_Ably_PresenceMessage_ActionTypeSerializer(MsgPack.Serialization.SerializationContext context) : 
-                this(context, MsgPack.Serialization.EnumSerializationMethod.ByName) {
+                this(context, MsgPack.Serialization.EnumSerializationMethod.ByUnderlyingValue) {
         }
         
         public IO_Ably_PresenceMessage_ActionTypeSerializer(MsgPack.Serialization.SerializationContext context, MsgPack.Serialization.EnumSerializationMethod enumSerializationMethod) : 

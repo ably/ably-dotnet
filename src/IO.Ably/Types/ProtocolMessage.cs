@@ -88,20 +88,20 @@ namespace IO.Ably.Types
         {
             if (null == messages)
                 return false;
-            return messages.Any(m => !m.IsEmpty());
+            return messages.Any(m => !m.IsEmpty);
         }
 
         [OnSerializing]
         internal void onSerializing(StreamingContext context)
         {
-            if ("" == channel)
+            if (channel == "")
                 channel = null;
 
             // Filter out empty messages
             if (messages == null)
                 return;
 
-            messages = messages.Where(m => !m.IsEmpty()).ToArray();
+            messages = messages.Where(m => !m.IsEmpty).ToArray();
             if (messages.Length <= 0)
                 messages = null;
         }

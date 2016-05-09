@@ -8,6 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Linq;
+
 namespace IO.Ably.CustomSerialisers {
     
     
@@ -44,7 +46,7 @@ namespace IO.Ably.CustomSerialisers {
             MsgPack.Serialization.PolymorphismSchema schema0 = default(MsgPack.Serialization.PolymorphismSchema);
             schema0 = null;
             this._serializer0 = context.GetSerializer<string>(schema0);
-            this._serializer1 = context.GetSerializer<IO.Ably.Types.ProtocolMessage.MessageAction>(MsgPack.Serialization.EnumMessagePackSerializerHelpers.DetermineEnumSerializationMethod(context, typeof(IO.Ably.Types.ProtocolMessage.MessageAction), MsgPack.Serialization.EnumMemberSerializationMethod.Default));
+            this._serializer1 = context.GetSerializer<IO.Ably.Types.ProtocolMessage.MessageAction>(MsgPack.Serialization.EnumMessagePackSerializerHelpers.DetermineEnumSerializationMethod(context, typeof(IO.Ably.Types.ProtocolMessage.MessageAction), MsgPack.Serialization.EnumMemberSerializationMethod.ByUnderlyingValue));
             MsgPack.Serialization.PolymorphismSchema schema1 = default(MsgPack.Serialization.PolymorphismSchema);
             schema1 = null;
             this._serializer2 = context.GetSerializer<IO.Ably.ConnectionDetailsMessage>(schema1);
@@ -77,38 +79,95 @@ namespace IO.Ably.CustomSerialisers {
             this._serializer11 = context.GetSerializer<System.Nullable<IO.Ably.Types.ProtocolMessage.MessageAction>>(schema10);
         }
         
-        protected override void PackToCore(MsgPack.Packer packer, IO.Ably.Types.ProtocolMessage objectTree) {
-            packer.PackMapHeader(15);
+        protected override void PackToCore(MsgPack.Packer packer, IO.Ably.Types.ProtocolMessage objectTree)
+        {
+            var nonNullFields = new bool []
+            {
+                objectTree.channel.IsNotEmpty(),
+                objectTree.channelSerial.IsNotEmpty(),
+                objectTree.connectionDetails != null,
+                objectTree.connectionId.IsNotEmpty(),
+                objectTree.connectionKey.IsNotEmpty(),
+                objectTree.connectionSerial != null,
+                objectTree.count != null,
+                objectTree.error != null,
+                objectTree.flags != null,
+                objectTree.id.IsNotEmpty(),
+                objectTree.timestamp != null,
+                objectTree.messages != null && objectTree.messages.Any(x => x.IsEmpty == false),
+                objectTree.presence != null && objectTree.presence.Any()
+            }.Count(x => x) + 2; //One for MsgSerial and one for Action as this is always serialised
+
+            packer.PackMapHeader(nonNullFields);
             this._serializer0.PackTo(packer, "action");
             this._serializer1.PackTo(packer, objectTree.action);
-            this._serializer0.PackTo(packer, "channel");
-            this._serializer0.PackTo(packer, objectTree.channel);
-            this._serializer0.PackTo(packer, "channelSerial");
-            this._serializer0.PackTo(packer, objectTree.channelSerial);
-            this._serializer0.PackTo(packer, "connectionDetails");
-            this._serializer2.PackTo(packer, objectTree.connectionDetails);
-            this._serializer0.PackTo(packer, "connectionId");
-            this._serializer0.PackTo(packer, objectTree.connectionId);
-            this._serializer0.PackTo(packer, "connectionKey");
-            this._serializer0.PackTo(packer, objectTree.connectionKey);
-            this._serializer0.PackTo(packer, "connectionSerial");
-            this._serializer3.PackTo(packer, objectTree.connectionSerial);
-            this._serializer0.PackTo(packer, "count");
-            this._serializer4.PackTo(packer, objectTree.count);
-            this._serializer0.PackTo(packer, "error");
-            this._serializer5.PackTo(packer, objectTree.error);
-            this._serializer0.PackTo(packer, "flags");
-            this._serializer6.PackTo(packer, objectTree.flags);
-            this._serializer0.PackTo(packer, "id");
-            this._serializer0.PackTo(packer, objectTree.id);
-            this._serializer0.PackTo(packer, "messages");
-            this._serializer7.PackTo(packer, objectTree.messages);
+            if (objectTree.channel.IsNotEmpty())
+            {
+                this._serializer0.PackTo(packer, "channel");
+                this._serializer0.PackTo(packer, objectTree.channel);
+            }
+            if (objectTree.channelSerial.IsNotEmpty())
+            {
+                this._serializer0.PackTo(packer, "channelSerial");
+                this._serializer0.PackTo(packer, objectTree.channelSerial);
+            }
+            if (objectTree.connectionDetails != null)
+            {
+                this._serializer0.PackTo(packer, "connectionDetails");
+                this._serializer2.PackTo(packer, objectTree.connectionDetails);
+            }
+            if (objectTree.connectionId.IsNotEmpty())
+            {
+                this._serializer0.PackTo(packer, "connectionId");
+                this._serializer0.PackTo(packer, objectTree.connectionId);
+            }
+            if (objectTree.connectionKey.IsNotEmpty())
+            {
+                this._serializer0.PackTo(packer, "connectionKey");
+                this._serializer0.PackTo(packer, objectTree.connectionKey);
+            }
+            if (objectTree.connectionSerial != null)
+            {
+                this._serializer0.PackTo(packer, "connectionSerial");
+                this._serializer3.PackTo(packer, objectTree.connectionSerial);
+            }
+            if (objectTree.count != null)
+            {
+                this._serializer0.PackTo(packer, "count");
+                this._serializer4.PackTo(packer, objectTree.count);
+            }
+            if (objectTree.error != null)
+            {
+                this._serializer0.PackTo(packer, "error");
+                this._serializer5.PackTo(packer, objectTree.error);
+            }
+            if (objectTree.flags != null)
+            {
+                this._serializer0.PackTo(packer, "flags");
+                this._serializer6.PackTo(packer, objectTree.flags);
+            }
+            if (objectTree.id.IsNotEmpty())
+            {
+                this._serializer0.PackTo(packer, "id");
+                this._serializer0.PackTo(packer, objectTree.id);
+            }
             this._serializer0.PackTo(packer, "msgSerial");
             this._serializer8.PackTo(packer, objectTree.msgSerial);
-            this._serializer0.PackTo(packer, "presence");
-            this._serializer9.PackTo(packer, objectTree.presence);
-            this._serializer0.PackTo(packer, "timestamp");
-            this._serializer10.PackTo(packer, objectTree.timestamp);
+            if (objectTree.messages != null && objectTree.messages.Any(x => x.IsEmpty == false))
+            {
+                this._serializer0.PackTo(packer, "messages");
+                this._serializer7.PackTo(packer, objectTree.messages.Where(x => x.IsEmpty == false).ToArray());
+            }
+            if (objectTree.presence != null && objectTree.presence.Any())
+            {
+                this._serializer0.PackTo(packer, "presence");
+                this._serializer9.PackTo(packer, objectTree.presence);
+            }
+            if (objectTree.timestamp != null)
+            {
+                this._serializer0.PackTo(packer, "timestamp");
+                this._serializer10.PackTo(packer, objectTree.timestamp);
+            }
         }
         
         protected override IO.Ably.Types.ProtocolMessage UnpackFromCore(MsgPack.Unpacker unpacker) {

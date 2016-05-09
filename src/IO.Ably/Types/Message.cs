@@ -29,7 +29,7 @@ namespace IO.Ably
         public string clientId { get; set; }
 
         /// <summary>The connection id of the publisher of the message</summary>
-        public string connection_id { get; set; }
+        public string connectionId { get; set; }
 
         /// <summary>The event name, if available</summary>
         public string name { get; set; }
@@ -74,16 +74,6 @@ namespace IO.Ably
         {
             data = data_raw;
             data_raw = null;
-
-            //TODO: Ask Matt why we are doing this
-            // Reduce precision of numbers
-            if (data is long)
-                data = (int) (long) data;
-            if (data is double)
-                data = (float) (double) data;
-
-            if (encoding == "base64" && data is string)
-                data = ((string) data).FromBase64();
         }
 
         public override string ToString()
@@ -95,10 +85,35 @@ namespace IO.Ably
             return result;
         }
 
-        /// <summary>True if all public properties have their default values.</summary>
-        public bool IsEmpty()
+        [JsonIgnore]
+        public bool IsEmpty => Equals(this, defaultInstance);
+
+        protected bool Equals(Message other)
         {
-            return ReflectionUtils.isPropsEqual(this, defaultInstance);
+            return string.Equals(id, other.id) && string.Equals(clientId, other.clientId) && string.Equals(connectionId, other.connectionId) && string.Equals(name, other.name) && timestamp.Equals(other.timestamp) && Equals(data, other.data) && string.Equals(encoding, other.encoding);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((Message) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (id != null ? id.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (clientId != null ? clientId.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (connectionId != null ? connectionId.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (name != null ? name.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ timestamp.GetHashCode();
+                hashCode = (hashCode*397) ^ (data != null ? data.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (encoding != null ? encoding.GetHashCode() : 0);
+                return hashCode;
+            }
         }
     }
 }

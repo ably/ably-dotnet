@@ -5,9 +5,9 @@ namespace IO.Ably
 {
     public class PresenceMessage : IEncodedMessage
     {
-        public enum ActionType
+        public enum ActionType : byte
         {
-            Absent,
+            Absent = 0,
             Present,
             Enter,
             Leave,

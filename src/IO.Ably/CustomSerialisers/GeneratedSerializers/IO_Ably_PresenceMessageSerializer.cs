@@ -8,6 +8,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Linq;
+using MsgPack;
+
 namespace IO.Ably.CustomSerialisers {
     
     
@@ -30,7 +33,7 @@ namespace IO.Ably.CustomSerialisers {
             MsgPack.Serialization.PolymorphismSchema schema0 = default(MsgPack.Serialization.PolymorphismSchema);
             schema0 = null;
             this._serializer0 = context.GetSerializer<string>(schema0);
-            this._serializer1 = context.GetSerializer<IO.Ably.PresenceMessage.ActionType>(MsgPack.Serialization.EnumMessagePackSerializerHelpers.DetermineEnumSerializationMethod(context, typeof(IO.Ably.PresenceMessage.ActionType), MsgPack.Serialization.EnumMemberSerializationMethod.Default));
+            this._serializer1 = context.GetSerializer<IO.Ably.PresenceMessage.ActionType>(MsgPack.Serialization.EnumMessagePackSerializerHelpers.DetermineEnumSerializationMethod(context, typeof(IO.Ably.PresenceMessage.ActionType), MsgPack.Serialization.EnumMemberSerializationMethod.ByUnderlyingValue));
             MsgPack.Serialization.PolymorphismSchema schema1 = default(MsgPack.Serialization.PolymorphismSchema);
             schema1 = null;
             this._serializer2 = context.GetSerializer<object>(schema1);
@@ -42,22 +45,52 @@ namespace IO.Ably.CustomSerialisers {
             this._serializer4 = context.GetSerializer<System.Nullable<IO.Ably.PresenceMessage.ActionType>>(schema3);
         }
         
-        protected override void PackToCore(MsgPack.Packer packer, IO.Ably.PresenceMessage objectTree) {
-            packer.PackMapHeader(7);
-            this._serializer0.PackTo(packer, "id");
-            this._serializer0.PackTo(packer, objectTree.id);
+        protected override void PackToCore(MsgPack.Packer packer, IO.Ably.PresenceMessage objectTree)
+        {
+            var nonNullFields = new bool[]
+            {
+                objectTree.id.IsNotEmpty(),
+                objectTree.clientId.IsNotEmpty(),
+                objectTree.connectionId.IsNotEmpty(),
+                objectTree.data != null,
+                objectTree.encoding.IsNotEmpty(),
+                objectTree.encoding.IsNotEmpty(),
+                objectTree.timestamp != null,
+            }.Count(x => x) + 1; //one for action
+
+            packer.PackMapHeader(nonNullFields);
+            if (objectTree.id.IsNotEmpty())
+            {
+                this._serializer0.PackTo(packer, "id");
+                this._serializer0.PackTo(packer, objectTree.id);
+            }
             this._serializer0.PackTo(packer, "action");
             this._serializer1.PackTo(packer, objectTree.action);
-            this._serializer0.PackTo(packer, "clientId");
-            this._serializer0.PackTo(packer, objectTree.clientId);
-            this._serializer0.PackTo(packer, "connectionId");
-            this._serializer0.PackTo(packer, objectTree.connectionId);
-            this._serializer0.PackTo(packer, "data");
-            this._serializer2.PackTo(packer, objectTree.data);
-            this._serializer0.PackTo(packer, "encoding");
-            this._serializer0.PackTo(packer, objectTree.encoding);
-            this._serializer0.PackTo(packer, "timestamp");
-            this._serializer3.PackTo(packer, objectTree.timestamp);
+            if (objectTree.clientId.IsNotEmpty())
+            {
+                this._serializer0.PackTo(packer, "clientId");
+                this._serializer0.PackTo(packer, objectTree.clientId);
+            }
+            if (objectTree.connectionId.IsNotEmpty())
+            {
+                this._serializer0.PackTo(packer, "connectionId");
+                this._serializer0.PackTo(packer, objectTree.connectionId);
+            }
+            if (objectTree.data != null)
+            {
+                this._serializer0.PackTo(packer, "data");
+                this._serializer2.PackTo(packer, objectTree.data);
+            }
+            if (objectTree.encoding.IsNotEmpty())
+            {
+                this._serializer0.PackTo(packer, "encoding");
+                this._serializer0.PackTo(packer, objectTree.encoding);
+            }
+            if (objectTree.timestamp != null)
+            {
+                this._serializer0.PackTo(packer, "timestamp");
+                this._serializer3.PackTo(packer, objectTree.timestamp);
+            }
         }
         
         protected override IO.Ably.PresenceMessage UnpackFromCore(MsgPack.Unpacker unpacker) {
@@ -260,7 +293,20 @@ namespace IO.Ably.CustomSerialisers {
                                 }
                                 if (((nullable11 == null) 
                                             == false)) {
-                                    result.data = nullable11;
+
+                                    if (nullable11 is MsgPack.MessagePackObject)
+                                    {
+                                        result.data = ((MessagePackObject)nullable11).ToObject();
+                                    }
+                                    else if (nullable11 is MessagePackObject[])
+                                    {
+                                        result.data =
+                                            ((MessagePackObject[]) nullable11).Select(x => x.ToObject()).ToArray();
+                                    }
+                                    else
+                                    {
+                                        result.data = nullable11;
+                                    }
                                 }
                             }
                             else {

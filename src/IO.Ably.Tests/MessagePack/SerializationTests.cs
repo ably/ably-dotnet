@@ -29,7 +29,7 @@ namespace IO.Ably.Tests.MessagePack
             var result = MsgPackHelper.DeSerialise(serialised, typeof (List<Message>)) as List<Message>;
             var resultMessage = result.First();
 
-            ((MessagePackObject)resultMessage.data).ToObject().Should().Be(message.data);
+            resultMessage.data.Should().Be(message.data);
             resultMessage.name.Should().Be(message.name);
 
         }
@@ -40,7 +40,7 @@ namespace IO.Ably.Tests.MessagePack
             var message = new Message() {name = "example", data = "AAECAwQFBgcICQoLDA0ODw==".FromBase64()};
             var serialised = MsgPackHelper.Serialise(new List<Message> { message });
             var resultMessage = MsgPackHelper.DeSerialise(serialised, typeof(List<Message>)) as List<Message>;
-            var data = ((MessagePackObject)resultMessage.First().data).ToObject() as byte[];
+            var data = resultMessage.First().data as byte[];
             data.Should().BeEquivalentTo(message.data as byte[]);
             resultMessage.First().name.Should().Be(message.name);
         }
