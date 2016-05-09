@@ -1,13 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using IO.Ably.Auth;
 using IO.Ably.Types;
+using MsgPack.Serialization;
 using Xunit;
+using Xunit.Abstractions;
 using Xunit.Extensions;
 
 namespace IO.Ably.Tests
 {
-    public class MsgPackMessageSerializerTests
+    public class GenerateMsgPackSerializers
+    {
+        [Fact(Skip="true")]
+        public void Generate()
+        {
+            var applicationLibraryAssembly = typeof(ProtocolMessage).Assembly;
+            SerializerGenerator.GenerateCode(
+                new SerializerCodeGenerationConfiguration
+                {
+                    Namespace = "IO.Ably.CustomSerialisers",
+                    OutputDirectory = "../../../IO.Ably/CustomSerialisers/GeneratedSerializers",
+                    EnumSerializationMethod = EnumSerializationMethod.ByName, // You can tweak it to use ByUnderlyingValue as you like.
+                IsRecursive = true, // Set depenendent serializers are also generated.
+                PreferReflectionBasedSerializer = false, // Set true if you want to use reflection based collection serializer, false if you want to get generated collection serializers.
+                SerializationMethod = SerializationMethod.Map // You tweak it to generate 'map' based serializers.
+            },
+                applicationLibraryAssembly.GetTypes().Where(type =>
+                    type == typeof(Message) || type == typeof(ProtocolMessage) || type == typeof(PresenceMessage) ||
+                    type == typeof(PaginatedResult<Stats>) || type == typeof(TokenDetails) || type == typeof(Stats)
+                    /* ...you can filter types to be serialized by their namespace, custom attributes, etc... */
+                )
+            );
+        }
+    }
+
+    public class MsgPackMessageSerializerTests: AblySpecs
     {
         public static IEnumerable<object[]> Messages
         {
@@ -65,14 +94,15 @@ namespace IO.Ably.Tests
             expectedMessage.Add(0x82);
             expectedMessage.AddRange(SerializeString("action"));
             expectedMessage.Add((byte)messageAction);
-            expectedMessage.AddRange(SerializeString("msgSerial"));
-            expectedMessage.Add(0);
+            //expectedMessage.AddRange(SerializeString("msgSerial"));
+            //expectedMessage.Add(0);
 
             // Act
             object result = serializer.SerializeProtocolMessage(message);
 
             // Assert
             Assert.IsType<byte[]>(result);
+            Output.WriteLine((result as byte[]).GetText());
             Assert.Equal<byte[]>(expectedMessage.ToArray(), result as byte[]);
         }
 
@@ -386,7 +416,7 @@ namespace IO.Ably.Tests
             Assert.Equal<long>(connectionSerial, target.connectionSerial.Value);
         }
 
-        [Theory(Skip="Broken until I get to Realtime serialization")]
+        [Theory]
         [InlineData(123)]
         [InlineData(0)]
         [InlineData(-1)]
@@ -477,6 +507,10 @@ namespace IO.Ably.Tests
             bytes.Add((byte)(0xa0 + str.Length));
             bytes.AddRange(System.Text.UTF8Encoding.GetEncoding("utf-8").GetBytes(str));
             return bytes.ToArray();
+        }
+
+        public MsgPackMessageSerializerTests(ITestOutputHelper output) : base(output)
+        {
         }
     }
 }

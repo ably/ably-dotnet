@@ -1,5 +1,4 @@
-﻿using System.CodeDom.Compiler;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using IO.Ably.Types;
 
@@ -16,7 +15,6 @@ namespace IO.Ably.Transport.States.Connection
             if (info.ConnectionStateTtl.HasValue)
                 Context.Connection.ConnectionStateTtl = info.ConnectionStateTtl.Value;
             Context.SetConnectionClientId(info.ClientId);
-
         }
 
         public override ConnectionStateType State => ConnectionStateType.Connected;
@@ -65,7 +63,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void SendMessage(ProtocolMessage message)
         {
-            Context.Transport.Send(message);
+            Context.Send(message);
         }
 
         public override Task OnAttachedToContext()

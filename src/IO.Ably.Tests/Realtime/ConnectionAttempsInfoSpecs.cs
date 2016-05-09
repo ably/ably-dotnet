@@ -49,9 +49,9 @@ namespace IO.Ably.Tests.Realtime
             _info.Increment();
             //Move now to default ConnetionStatettl - 1 second
             Now = Now.Add(Defaults.ConnectionStateTtl);
-            _info.ShouldSuspend().Should().BeTrue();
+            _info.ShouldSuspend().Should().BeTrue(); // =
             Now = Now.AddSeconds(1);
-            _info.ShouldSuspend().Should().BeTrue();
+            _info.ShouldSuspend().Should().BeTrue(); // >
 
         }
 

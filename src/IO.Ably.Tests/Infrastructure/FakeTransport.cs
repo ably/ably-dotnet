@@ -1,4 +1,5 @@
 using System;
+using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 
@@ -44,8 +45,14 @@ namespace IO.Ably.Tests
         public void Close()
         {
             CloseCalled = true;
-            Listener?.OnTransportMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
+
+            //Listener?.OnTransportDataReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
             Listener?.OnTransportDisconnected();
+        }
+
+        public void Send(RealtimeTransportData data)
+        {
+            
         }
 
 

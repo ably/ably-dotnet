@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -15,36 +16,22 @@ namespace IO.Ably.Transport
         private readonly Queue<ProtocolMessage> _pendingMessages;
 
         internal readonly AsyncContextThread AsyncContextThread = new AsyncContextThread();
-        private ConnectionState _state;
 
         private ConnectionManager()
         {
             _pendingMessages = new Queue<ProtocolMessage>();
-            _state = new ConnectionInitializedState(this);
-            Connection = new Connection(this);
-
+            
             if (Logger.IsDebug)
             {
                 Execute(() => Logger.Debug("ConnectionManager thread created"));
             }
         }
 
-        internal ConnectionManager(ITransport transport, IAcknowledgementProcessor ackProcessor,
-            ConnectionState initialState, AblyRest restClient)
-            : this()
-        {
-            Transport = transport;
-            Transport.Listener = this;
-            _state = initialState;
-            RestClient = restClient;
-            AckProcessor = ackProcessor;
-            Connection = new Connection(this);
-        }
-
-        public ConnectionManager(AblyRest restClient)
+        public ConnectionManager(Connection connection, AblyRest restClient)
             : this()
         {
             AttemptsInfo = new ConnectionAttemptsInfo(restClient.Options, Connection);
+            Connection = connection;
             RestClient = restClient;
             AckProcessor = new AcknowledgementProcessor();
         }
@@ -52,41 +39,43 @@ namespace IO.Ably.Transport
         public IAcknowledgementProcessor AckProcessor { get; internal set; }
 
         private ConnectionAttemptsInfo AttemptsInfo { get; }
+        
         public TimeSpan RetryTimeout => Options.DisconnectedRetryTimeout;
 
         public AblyRest RestClient { get; }
+        public MessageHandler Handler => RestClient.MessageHandler;
 
-        ConnectionState IConnectionContext.State => _state;
+        public ConnectionState State => Connection.ConnectionState;
+        public TransportState TransportState => Transport.State;
 
         public ITransport Transport { get; private set; }
 
         Queue<ProtocolMessage> IConnectionContext.QueuedMessages => _pendingMessages;
 
-        void IConnectionContext.SetState(ConnectionState newState)
+        public void SetState(ConnectionState newState)
         {
             if (Logger.IsDebug)
             {
-                Logger.Debug($"Setting state from {_state} to {newState}");
+                Logger.Debug($"Setting state from {ConnectionState} to {newState}");
             }
 
             ExecuteAsyncOperation(async () =>
             {
-                _state = newState;
                 AckProcessor.OnStateChanged(newState);
 
-                Connection.OnStateChanged(newState.State, newState.Error, newState.RetryIn);
+                Connection.UpdateState(newState);
 
                 try
                 {
-                    await _state.OnAttachedToContext();
+                    await newState.OnAttachedToContext();
                 }
                 catch (AblyException ex)
                 {
                     Logger.Error("Error attaching to context", ex);
-                    if (_state.State != ConnectionStateType.Failed)
+                    if (newState.State != ConnectionStateType.Failed)
                     {
-                        ((IConnectionContext) this).SetState(new ConnectionFailedState(this,
-                            new ErrorInfo($"Failed to attach connection state {_state.State}", 500)));
+                        SetState(new ConnectionFailedState(this,
+                            new ErrorInfo($"Failed to attach connection state {newState.State}", 500)));
                     }
                 }
             });
@@ -174,28 +163,25 @@ namespace IO.Ably.Transport
             get { return false; }
         }
 
-        public Connection Connection { get; internal set; }
+        public Connection Connection { get; }
 
-        public ConnectionStateType ConnectionState => _state.State;
+        public ConnectionStateType ConnectionState => Connection.State;
 
-        public void Connect()
-        {
-            _state.Connect();
-        }
-
-        public void Close()
-        {
-            _state.Close();
-        }
-
-        public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback)
+        public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null)
         {
             if (Logger.IsDebug)
             {
-                Logger.Debug($"Current state: {_state}. Sending message: {message}");
+                Logger.Debug($"Current state: {Connection.State}. Sending message: {message}");
             }
-            AckProcessor.SendMessage(message, callback);
-            _state.SendMessage(message);
+
+            if (callback != null)
+            {
+                AckProcessor.SendMessage(message, callback);
+            }
+
+            var data = new RealtimeTransportData("");//Create the data
+
+            Transport.Send(data);
         }
 
         public Task SendAsync(ProtocolMessage message)
@@ -205,19 +191,6 @@ namespace IO.Ably.Transport
             return tw.Task;
         }
 
-        public Task<Result<TimeSpan?>> PingAsync()
-        {
-            return TaskWrapper.Wrap<TimeSpan?>(Ping);
-        }
-
-        public void Ping(Action<TimeSpan?, ErrorInfo> callback)
-        {
-            ConnectionHeartbeatRequest.Execute(this, callback);
-        }
-
-        //
-        // Transport communication
-        //
         void ITransportListener.OnTransportConnected()
         {
             OnTransportConnected();
@@ -233,12 +206,14 @@ namespace IO.Ably.Transport
             OnTransportError(Transport.State, e);
         }
 
-        void ITransportListener.OnTransportMessageReceived(ProtocolMessage message)
+        void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)
         {
             if (Logger.IsDebug)
             {
-                Logger.Debug("Message received: " + message);
+                Logger.Debug("Message received: " + data.Explain());
             }
+
+            var message = Handler.ParseRealtimeData(data);
             ExecuteAsyncOperation(() => OnTransportMessageReceived(message));
         }
 
@@ -268,7 +243,6 @@ namespace IO.Ably.Transport
             return await TransportParams.Create(RestClient.Auth, Options, Connection?.Key, Connection?.Serial);
         }
 
-
         private static string GetHost(ClientOptions options, bool useFallbackHost)
         {
             var defaultHost = Defaults.RealtimeHost;
@@ -292,24 +266,24 @@ namespace IO.Ably.Transport
 
         private void OnTransportConnected()
         {
-            _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Connected));
+            State.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Connected));
         }
 
         private void OnTransportDisconnected()
         {
-            _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
+            State.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
         }
 
         private void OnTransportError(TransportState state, Exception e)
         {
-            _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(state, e));
+            State.OnTransportStateChanged(new ConnectionState.TransportStateInfo(state, e));
         }
 
-        private async Task OnTransportMessageReceived(ProtocolMessage message)
+        public async Task OnTransportMessageReceived(ProtocolMessage message)
         {
             Logger.Debug("ConnectionManager: Message Received {0}", message);
 
-            var handled = await _state.OnMessageReceived(message);
+            var handled = await State.OnMessageReceived(message);
             handled |= AckProcessor.OnMessageReceived(message);
             handled |= ConnectionHeartbeatRequest.CanHandleMessage(message);
 

@@ -140,7 +140,7 @@ namespace IO.Ably.Tests.Realtime
 
             await WaitForState(client);
 
-            var result = await client.Connection.Ping();
+            var result = await client.Connection.PingAsync();
 
             result.IsSuccess.Should().BeTrue();
             result.Value.Value.Should().BeGreaterThan(TimeSpan.Zero);

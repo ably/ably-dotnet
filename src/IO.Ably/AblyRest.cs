@@ -116,12 +116,14 @@ namespace IO.Ably
         internal async Task<T> ExecuteRequest<T>(AblyRequest request) where T : class
         {
             var response = await ExecuteRequest(request);
-            Logger.Debug("Response received. Status: " + response.StatusCode);
-            Logger.Debug("Content type: " + response.ContentType);
-            Logger.Debug("Encoding: " + response.Encoding);
-            if (response.Body != null)
-                Logger.Debug("Raw response (base64):" + response.Body.ToBase64());
-
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Response received. Status: " + response.StatusCode);
+                Logger.Debug("Content type: " + response.ContentType);
+                Logger.Debug("Encoding: " + response.Encoding);
+                if (response.Body != null)
+                    Logger.Debug("Raw response (base64):" + response.Body.ToBase64());
+            }
             return MessageHandler.ParseResponse<T>(request, response);
         }
 

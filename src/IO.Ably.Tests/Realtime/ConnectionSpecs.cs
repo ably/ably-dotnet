@@ -18,15 +18,18 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime
 {
+    public static class AblyRealtimeTestExtensions
+    {
+        public static Task FakeMessageReceived(this AblyRealtime client, ProtocolMessage message)
+        {
+            return client.ConnectionManager.OnTransportMessageReceived(message);
+        }
+    }
+
     public class ConnectionSpecs : AblyRealtimeSpecs
     {
         private FakeTransportFactory _fakeTransportFactory;
         protected FakeTransport LastCreatedTransport => _fakeTransportFactory.LastCreatedTransport;
-
-        protected void FakeMessageReceived(ProtocolMessage message)
-        {
-            LastCreatedTransport.Listener.OnTransportMessageReceived(message);
-        }
 
         internal AblyRealtime GetClientWithFakeTransport(Action<ClientOptions> optionsAction = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
         {
@@ -39,7 +42,7 @@ namespace IO.Ably.Tests.Realtime
         internal AblyRealtime GetConnectedClient(Action<ClientOptions> optionsAction = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
         {
             var client = GetClientWithFakeTransport(optionsAction, handleRequestFunc);
-            FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+            client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
             return client;
         }
 
@@ -65,7 +68,7 @@ namespace IO.Ably.Tests.Realtime
             public void WithAutoConnect_CallsConnectOnTransport()
             {
                 var client = GetClientWithFakeTransport(opts => opts.AutoConnect = true);
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+                client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
                 client.ConnectionManager.ConnectionState.Should().Be(ConnectionStateType.Connected);
                 LastCreatedTransport.ConnectCalled.Should().BeTrue();
@@ -92,7 +95,7 @@ namespace IO.Ably.Tests.Realtime
                     clientId = "123",
                     connectionKey = "boo"
                 };
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+                client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
                 {
                     connectionDetails = connectionDetailsMessage,
                     connectionKey = "unimportant"
@@ -108,7 +111,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 var client = GetClientWithFakeTransport();
 
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+                client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
                 {
                     connectionKey = "unimportant"
                 });
@@ -123,7 +126,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 var client = GetClientWithFakeTransport();
 
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+                client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
                 {
                     connectionDetails = new ConnectionDetailsMessage { clientId = "realtimeClient" }
                 });
@@ -273,7 +276,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTN4b")]
             [Trait("spec", "RTN4d")]
             [Trait("spec", "RTN4e")]
-            public void ANewConnectionShouldRaiseConnectingAndConnectedEvents()
+            public async Task ANewConnectionShouldRaiseConnectingAndConnectedEvents()
             {
                 var client = GetClientWithFakeTransport(opts => opts.AutoConnect = false);
                 var states = new List<ConnectionStateType>();
@@ -284,8 +287,10 @@ namespace IO.Ably.Tests.Realtime
                 };
 
                 client.Connect();
+
                 //SendConnected Message
-                LastCreatedTransport.Listener.OnTransportMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+                await client.ConnectionManager.OnTransportMessageReceived(
+                    new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
                 states.Should().BeEquivalentTo(new[] { ConnectionStateType.Connecting, ConnectionStateType.Connected });
                 client.Connection.State.Should().Be(ConnectionStateType.Connected);
@@ -334,7 +339,7 @@ namespace IO.Ably.Tests.Realtime
                 };
                 var expectedError = new ErrorInfo();
 
-                LastCreatedTransport.Listener.OnTransportMessageReceived(
+                await client.ConnectionManager.OnTransportMessageReceived(
                     new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = expectedError });
 
                 hasError.Should().BeTrue();
@@ -374,10 +379,10 @@ namespace IO.Ably.Tests.Realtime
             }
 
             [Fact]
-            public void WhemMessageReceived_ShouldPassTheMessageThroughTheAckProcessor()
+            public async Task WhemMessageReceived_ShouldPassTheMessageThroughTheAckProcessor()
             {
                 var message = new ProtocolMessage(ProtocolMessage.MessageAction.Ack);
-                ((ITransportListener)_realtime.ConnectionManager).OnTransportMessageReceived(message);
+                await _realtime.ConnectionManager.OnTransportMessageReceived(message);
 
                 _ackProcessor.OnMessageReceivedCalled.Should().BeTrue();
             }
@@ -407,7 +412,7 @@ namespace IO.Ably.Tests.Realtime
             public void ConnectionIdSetBasedOnValueProvidedByAblyService()
             {
                 var client = GetClientWithFakeTransport();
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { connectionId = "123" });
+                client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { connectionId = "123" });
                 client.Connection.Id.Should().Be("123");
             }
 
@@ -433,7 +438,7 @@ namespace IO.Ably.Tests.Realtime
             public void OnceConnected_ShouldUseKeyFromConnectedMessage()
             {
                 var client = GetClientWithFakeTransport();
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { connectionDetails = new ConnectionDetailsMessage() { connectionKey = "key" } });
+                client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { connectionDetails = new ConnectionDetailsMessage() { connectionKey = "key" } });
                 client.Connection.Key.Should().Be("key");
             }
 
@@ -467,7 +472,7 @@ namespace IO.Ably.Tests.Realtime
             public void OnceConnected_ConnectionSerialShouldBeMinusOne()
             {
                 var client = GetClientWithFakeTransport();
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+                client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
                 client.Connection.Serial.Should().Be(-1);
             }
 
@@ -492,9 +497,9 @@ namespace IO.Ably.Tests.Realtime
             {
                 // Arrange
                 var client = GetClientWithFakeTransport();
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+                client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Message)
+                client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Message)
                 {
                     connectionSerial = 123456
                 });
@@ -509,10 +514,10 @@ namespace IO.Ably.Tests.Realtime
             {
                 // Arrange
                 var client = GetClientWithFakeTransport();
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+                client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
                 var initialSerial = client.Connection.Serial;
 
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Message));
+                client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Message));
 
                 // Act
                 client.Connection.Serial.Should().Be(initialSerial);
@@ -539,7 +544,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 var client = GetConnectedClient();
 
-                var result = await client.Connection.Ping();
+                var result = await client.Connection.PingAsync();
 
                 LastCreatedTransport.LastMessageSend.action.Should().Be(ProtocolMessage.MessageAction.Heartbeat);
             }
@@ -557,10 +562,10 @@ namespace IO.Ably.Tests.Realtime
                     if (message.action == ProtocolMessage.MessageAction.Heartbeat)
                     {
                         await Task.Delay(1);
-                        FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
+                        await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
                     }
                 };
-                var result = await client.Connection.Ping();
+                var result = await client.Connection.PingAsync();
 
                 result.IsSuccess.Should().BeTrue();
                 result.Value.Value.Should().Be(TimeSpan.FromMilliseconds(100));
@@ -574,14 +579,14 @@ namespace IO.Ably.Tests.Realtime
 
                 ((IConnectionContext)client.ConnectionManager).SetState(new ConnectionClosedState(client.ConnectionManager, new ErrorInfo()));
 
-                var result = await client.Connection.Ping();
+                var result = await client.Connection.PingAsync();
 
                 result.IsSuccess.Should().BeFalse();
                 result.Error.Should().Be(ConnectionHeartbeatRequest.DefaultError);
 
                 ((IConnectionContext)client.ConnectionManager).SetState(new ConnectionFailedState(client.ConnectionManager, new ErrorInfo()));
 
-                var resultFailed = await client.Connection.Ping();
+                var resultFailed = await client.Connection.PingAsync();
 
                 resultFailed.IsSuccess.Should().BeFalse();
                 resultFailed.Error.Should().Be(ConnectionHeartbeatRequest.DefaultError);
@@ -593,7 +598,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 var client = GetConnectedClient(opts => opts.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100));
 
-                var result = await client.Connection.Ping();
+                var result = await client.Connection.PingAsync();
 
                 result.IsSuccess.Should().BeFalse();
                 result.Error.statusCode.Should().Be(HttpStatusCode.RequestTimeout);
@@ -638,7 +643,7 @@ namespace IO.Ably.Tests.Realtime
                         raisedErrors.Add(args.Reason);
                 };
 
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+                await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
                 renewTokenCalled.Should().BeTrue();
                 var currentToken = client.Auth.CurrentToken;
@@ -670,7 +675,7 @@ namespace IO.Ably.Tests.Realtime
                     return AblyResponse.EmptyResponse.ToTask();
                 });
 
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+                await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
                 renewTokenCalled.Should().BeFalse();
                 client.Connection.State.Should().Be(ConnectionStateType.Failed);
@@ -697,7 +702,7 @@ namespace IO.Ably.Tests.Realtime
                     return AblyResponse.EmptyResponse.ToTask();
                 });
 
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+                await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
                 client.Connection.State.Should().Be(ConnectionStateType.Failed);
                 client.Connection.Reason.Should().NotBeNull();
@@ -725,8 +730,8 @@ namespace IO.Ably.Tests.Realtime
                     return AblyResponse.EmptyResponse.ToTask();
                 });
 
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
-                FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+                await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+                await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
                 renewCount.Should().Be(1);
                 client.Connection.State.Should().Be(ConnectionStateType.Failed);

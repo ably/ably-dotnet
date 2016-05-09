@@ -114,6 +114,7 @@
     <Compile Include="Infrastructure\FakeTransport.cs" />
     <Compile Include="MessageEncodes\MessageEncodersAcceptanceTests.cs" />
     <Compile Include="Infrastructure\FakeAuth.cs" />
+    <Compile Include="Realtime\ConnectionAttempsInfoSpecs.cs" />
     <Compile Include="Realtime\ConnectionSandBoxSpecs.cs" />
     <Compile Include="Realtime\ConnectionSpecs.cs" />
     <Compile Include="Realtime\ConnectionStateTests\ClosedStateSpecs.cs" />
@@ -149,7 +150,6 @@
     <Compile Include="Infrastructure\MiscUtils.cs" />
     <Compile Include="Realtime\AckProtocolTests.cs" />
     <Compile Include="Realtime\ChannelListTests.cs" />
-    <Compile Include="Realtime\ConnectionManagerTests.cs" />
     <Compile Include="Realtime\ConnectionStateTests\FailedStateSpecs.cs" />
     <Compile Include="Realtime\DateHelper.cs" />
     <Compile Include="Realtime\JsonMessageSerializerTests.cs" />

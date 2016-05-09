@@ -74,11 +74,10 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Task OnAttachedToContext()
         {
-            if (Context.Transport.State == TransportState.Connected)
+            if (Context.TransportState == TransportState.Connected)
             {
-                Context.Transport.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
+                Context.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
                 _timer.Start(TimeSpan.FromMilliseconds(CloseTimeout), () => Context.SetState(new ConnectionClosedState(Context)));
-                
             }
             else
             {

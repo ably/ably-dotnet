@@ -59,7 +59,8 @@ namespace IO.Ably.Realtime
 
             if (!_connection.IsActive)
             {
-                _connection.Connect();
+                //TODO: This is backwards. Need to get it fixed
+                _connection.Connection.Connect();
             }
 
             SetChannelState(ChannelState.Attaching);

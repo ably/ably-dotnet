@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Configuration;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
 using IO.Ably.Types;
@@ -8,6 +9,34 @@ using WebSocket4Net;
 
 namespace IO.Ably.Realtime
 {
+    public class RealtimeTransportData
+    {
+        public bool IsBinary => Length > 0;
+        public byte[] Data { get; } = new byte[0];
+        public string Text { get; }
+        public int Length => Data.Length;
+
+        public RealtimeTransportData(string text)
+        {
+            Text = text;
+        }
+
+        public RealtimeTransportData(byte[] data)
+        {
+            Data = data;
+        }
+
+        public string Explain()
+        {
+            if (IsBinary)
+            {
+                return $"Binary message with length: " + Length;
+            }
+            return Text;
+        }
+    }
+
+
     internal class WebSocketTransport : ITransport
     {
         private static readonly Dictionary<WebSocketState, TransportState> StateDict = new Dictionary
@@ -20,24 +49,18 @@ namespace IO.Ably.Realtime
             {WebSocketState.Closed, TransportState.Closed}
         };
 
-        private readonly IMessageSerializer _serializer;
 
         private WebSocket _socket;
 
-        private WebSocketTransport(IMessageSerializer serializer, TransportParams parameters)
+        private WebSocketTransport(TransportParams parameters)
         {
             if (parameters == null)
                 throw new ArgumentNullException(nameof(parameters), "Null parameters are not allowed");
-            if(serializer == null)
-                throw new ArgumentNullException(nameof(serializer), "Null serializer");
-
-            _serializer = serializer;
-            Host = parameters.Host;
+        
             BinaryProtocol = parameters.UseBinaryProtocol;
             WebSocketUri = parameters.GetUri();
         }
 
-        public string Host { get; }
         public bool BinaryProtocol { get; }
         public Uri WebSocketUri { get; }
 
@@ -85,18 +108,15 @@ namespace IO.Ably.Realtime
             
         }
 
-        public void Send(ProtocolMessage message)
+        public void Send(RealtimeTransportData data)
         {
-            var serializedMessage = _serializer.SerializeProtocolMessage(message);
-
             if (BinaryProtocol)
             {
-                var data = (byte[]) serializedMessage;
-                _socket.Send(data, 0, data.Length);
+                _socket.Send(data.Data, 0, data.Length);
             }
             else
             {
-                _socket.Send((string) serializedMessage);
+                _socket.Send(data.Text);
             }
         }
 
@@ -174,8 +194,7 @@ namespace IO.Ably.Realtime
 
             if (Listener != null)
             {
-                var message = _serializer.DeserializeProtocolMessage(e.Message);
-                Listener.OnTransportMessageReceived(message);
+                Listener.OnTransportDataReceived(new RealtimeTransportData(e.Message));
             }
         }
 
@@ -188,8 +207,7 @@ namespace IO.Ably.Realtime
 
             if (Listener != null)
             {
-                var message = _serializer.DeserializeProtocolMessage(e.Data);
-                Listener.OnTransportMessageReceived(message);
+                Listener.OnTransportDataReceived(new RealtimeTransportData(e.Data));
             }
         }
 
@@ -197,16 +215,7 @@ namespace IO.Ably.Realtime
         {
             public ITransport CreateTransport(TransportParams parameters)
             {
-                IMessageSerializer serializer = null;
-                if (parameters.UseBinaryProtocol)
-                {
-                    serializer = new MsgPackMessageSerializer();
-                }
-                else
-                {
-                    serializer = new JsonMessageSerializer();
-                }
-                return new WebSocketTransport(serializer, parameters);
+                return new WebSocketTransport(parameters);
             }
         }
     }

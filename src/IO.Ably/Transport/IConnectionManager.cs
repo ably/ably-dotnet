@@ -60,16 +60,8 @@ namespace IO.Ably.Transport
 
         bool IsActive { get; }
         event MessageReceivedDelegate MessageReceived;
-
-        void Connect();
-
-        void Close();
-
-        Task<Result<TimeSpan?>> PingAsync();
-        void Ping(Action<TimeSpan?, ErrorInfo> callback);
-
+        
         void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback);
-        Task SendAsync(ProtocolMessage message);
     }
 
     internal interface IConnectionContext
@@ -78,6 +70,7 @@ namespace IO.Ably.Transport
         TimeSpan RetryTimeout { get; }
 
         States.Connection.ConnectionState State { get; }
+        TransportState TransportState { get; }
         ITransport Transport { get; }
         AblyRest RestClient { get; }
         Queue<ProtocolMessage> QueuedMessages { get; }
@@ -89,9 +82,8 @@ namespace IO.Ably.Transport
         void ResetConnectionAttempts();
         Task<bool> CanConnectToAbly();
         void SetConnectionClientId(string clientId);
-
         bool ShouldWeRenewToken(ErrorInfo error);
-
+        void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null);
         bool ShouldSuspend();
     }
 }

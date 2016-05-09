@@ -26,8 +26,7 @@ namespace IO.Ably
         internal AblyRealtime(ClientOptions options, Func<ClientOptions, AblyRest> createRestFunc)
         {
             RestClient = createRestFunc(options);
-
-            ConnectionManager = new ConnectionManager(RestClient);
+            Connection = new Connection(RestClient);
             ChannelFactory = new ChannelFactory { ConnectionManager = ConnectionManager, Options = options };
             Channels = new ChannelList(ChannelFactory);
 
@@ -43,13 +42,13 @@ namespace IO.Ably
         internal AblyAuth Auth => RestClient.AblyAuth;
         internal ClientOptions Options => RestClient.Options;
 
-        internal ConnectionManager ConnectionManager { get; set; }
+        internal ConnectionManager ConnectionManager => Connection.ConnectionManager;
 
         /// <summary>The collection of channels instanced, indexed by channel name.</summary>
         public IRealtimeChannelCommands Channels { get; private set; }
 
         /// <summary>A reference to the connection object for this library instance.</summary>
-        public Connection Connection => ConnectionManager.Connection;
+        public Connection Connection { get; set; }
 
         public Task<PaginatedResult<Stats>> Stats()
         {

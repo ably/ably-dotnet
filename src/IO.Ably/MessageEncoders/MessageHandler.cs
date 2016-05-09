@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using IO.Ably.Realtime;
 using IO.Ably.Transport;
+using IO.Ably.Types;
 
 namespace IO.Ably.MessageEncoders
 {
@@ -60,13 +62,21 @@ namespace IO.Ably.MessageEncoders
             }
 
             var payloads = MsgPackHelper.DeSerialise(response.Body, typeof(List<PresenceMessage>)) as List<PresenceMessage>;
-            foreach (var payload in payloads.Where(x => x.data != null))
-            {
-                //Unwrap the data objects because message pack leaves them as a MessagePackObject
-                payload.data = ((MessagePackObject)payload.data).ToObject();
-            }
+            UnwrapMessagesData(payloads);
             ProcessMessages(payloads, options);
             return payloads;
+        }
+
+        public void UnwrapMessagesData(IEnumerable<IEncodedMessage> messages)
+        {
+            if (messages == null || messages.Any() == false)
+                return;
+
+            foreach (var message in messages.Where(x => x.data != null))
+            {
+                //Unwrap the data objects because message pack leaves them as a MessagePackObject
+                message.data = ((MessagePackObject)message.data).ToObject();
+            }
         }
 
         public IEnumerable<Message> ParseMessagesResponse(AblyResponse response, ChannelOptions options)
@@ -81,11 +91,7 @@ namespace IO.Ably.MessageEncoders
             }
 
             var payloads = MsgPackHelper.DeSerialise(response.Body, typeof(List<Message>)) as List<Message>;
-            foreach (var payload in payloads.Where(x => x.data != null))
-            {
-                //Unwrap the data objects because message pack leaves them as a MessagePackObject
-                payload.data = ((MessagePackObject)payload.data).ToObject();
-            }
+            UnwrapMessagesData(payloads);
             ProcessMessages(payloads, options);
             return payloads;
         }
@@ -202,7 +208,7 @@ namespace IO.Ably.MessageEncoders
             if (_protocol == Protocol.MsgPack)
             {
                 // A bit of a hack. Message pack serializer does not like capability objects
-                responseText = MsgPackHelper.DeSerialise(response.Body, typeof(MessagePackObject)).ToString();
+                return (T)MsgPackHelper.DeSerialise(response.Body, typeof(T));
             }
             return (T)JsonConvert.DeserializeObject(responseText, typeof(T), Config.GetJsonSettings());
         }
@@ -233,7 +239,7 @@ namespace IO.Ably.MessageEncoders
             var body = response.TextResponse;
             if (_protocol == Protocol.MsgPack)
             {
-                body = ((MessagePackObject)MsgPackHelper.DeSerialise(response.Body, typeof(MessagePackObject))).ToString();
+                return (List<Stats>)MsgPackHelper.DeSerialise(response.Body, typeof(List<Stats>));
             }
             return JsonConvert.DeserializeObject<List<Stats>>(body, Config.GetJsonSettings());
         }
@@ -247,6 +253,23 @@ namespace IO.Ably.MessageEncoders
                     return int.Parse(limitQuery);
             }
             return Defaults.QueryLimit;
+        }
+
+        public ProtocolMessage ParseRealtimeData(RealtimeTransportData data)
+        {
+            ProtocolMessage message;
+            if (_protocol == Protocol.MsgPack)
+            {
+                message = (ProtocolMessage)MsgPackHelper.DeSerialise(data.Data, typeof(ProtocolMessage));
+                UnwrapMessagesData(message.messages);
+                UnwrapMessagesData(message.presence);
+            }
+            else
+            {
+                message = JsonConvert.DeserializeObject<ProtocolMessage>(data.Text, Config.GetJsonSettings());
+            }
+
+            return message;
         }
     }
 }

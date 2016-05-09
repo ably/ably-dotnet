@@ -2,27 +2,32 @@
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
+using IO.Ably.Transport.States.Connection;
 
 namespace IO.Ably.Realtime
 {
     public sealed class Connection : IDisposable
     {
-        private readonly IConnectionManager _manager;
-
+        internal ConnectionManager ConnectionManager { get; }
+        private ConnectionState _currentState;
         internal Connection()
         {
         }
 
-        internal Connection(IConnectionManager manager)
+        internal Connection(AblyRest restClient)
         {
-            _manager = manager;
-            State = _manager.ConnectionState;
+            ConnectionManager = new ConnectionManager(this, restClient);
+            
+            ConnectionState = new ConnectionInitializedState(ConnectionManager);
+            State = ConnectionManager.ConnectionState;
         }
 
         /// <summary>
         ///     Indicates the current state of this connection.
         /// </summary>
         public ConnectionStateType State { get; private set; }
+
+        internal ConnectionState ConnectionState { get; set; }
 
         /// <summary>
         ///     The id of the current connection. This string may be
@@ -64,15 +69,21 @@ namespace IO.Ably.Realtime
         /// </summary>
         public void Connect()
         {
-            _manager.Connect();
+            ConnectionState.Connect();
         }
 
         /// <summary>
         /// </summary>
-        public Task<Result<TimeSpan?>> Ping()
+        public Task<Result<TimeSpan?>> PingAsync()
         {
-            return _manager.PingAsync();
+            return TaskWrapper.Wrap<TimeSpan?>(Ping);
         }
+
+        public void Ping(Action<TimeSpan?, ErrorInfo> callback)
+        {
+            ConnectionHeartbeatRequest.Execute(ConnectionManager, callback);
+        }
+
 
         /// <summary>
         ///     Causes the connection to close, entering the <see cref="ConnectionStateType.Closed" /> state. Once closed,
@@ -81,15 +92,17 @@ namespace IO.Ably.Realtime
         /// </summary>
         public void Close()
         {
-            _manager.Close();
+            ConnectionState.Close();
         }
 
-        internal void OnStateChanged(ConnectionStateType state, ErrorInfo error = null, TimeSpan? retryin = null)
+        internal void UpdateState(ConnectionState state)
         {
-            var oldState = State;
-            State = state;
-            Reason = error;
-            var stateArgs = new ConnectionStateChangedEventArgs(oldState, state, retryin, error);
+            var oldState = ConnectionState.State;
+            var newState = state.State;
+            ConnectionState = state;
+            Reason = state.Error;
+            var stateArgs = new ConnectionStateChangedEventArgs(oldState, newState, state.RetryIn, Reason);
+
             var handler = Volatile.Read(ref ConnectionStateChanged); //Make sure we get all the subscribers on all threads
             if (Logger.IsDebug)
             {

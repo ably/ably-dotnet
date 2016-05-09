@@ -58,7 +58,7 @@ namespace IO.Ably.Tests
             ProtocolMessage target = new ProtocolMessage(action);
 
             // Act
-            transport.Object.Listener.OnTransportMessageReceived(target);
+            transport.Object.Listener.OnTransportDataReceived(target);
 
             // Assert
             Assert.Single(res, target);
@@ -136,7 +136,7 @@ namespace IO.Ably.Tests
             ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
 
             // Act
-            transport.Object.Listener.OnTransportMessageReceived(targetMessage);
+            transport.Object.Listener.OnTransportDataReceived(targetMessage);
 
             // Assert
             state.Verify(c => c.OnMessageReceived(targetMessage), Times.Once());
@@ -225,7 +225,7 @@ namespace IO.Ably.Tests
             ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
 
             // Act
-            transport.Object.Listener.OnTransportMessageReceived(targetMessage);
+            transport.Object.Listener.OnTransportDataReceived(targetMessage);
 
             // Assert
             ackProcessor.Verify(c => c.OnMessageReceived(targetMessage), Times.Once());

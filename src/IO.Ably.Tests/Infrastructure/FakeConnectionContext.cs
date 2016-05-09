@@ -37,6 +37,7 @@ namespace IO.Ably.Tests
         public TimeSpan RetryTimeout { get; set; } = Defaults.DisconnectedRetryTimeout;
 
         public ConnectionState State { get; set; }
+        public TransportState TransportState { get; set; }
         public ITransport Transport { get; set; }
         public AblyRest RestClient { get; set; }
         public Queue<ProtocolMessage> QueuedMessages { get; } = new Queue<ProtocolMessage>();
@@ -84,6 +85,16 @@ namespace IO.Ably.Tests
         {
             return ShouldWeRenewTokenValue;
         }
+
+        public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null)
+        {
+            LastMessageSent = message;
+            LastCallback = callback;
+        }
+
+        public Action<bool, ErrorInfo> LastCallback { get; set; }
+
+        public ProtocolMessage LastMessageSent { get; set; }
 
         public bool ShouldSuspend()
         {
