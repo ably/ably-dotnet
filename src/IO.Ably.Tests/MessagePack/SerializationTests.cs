@@ -64,7 +64,7 @@ namespace IO.Ably.Tests.MessagePack
             var details = new TokenDetails()
             {
                 Token = "DaC_fA.DzqwNZFHNIl_GpUR6ENpeqewYnzf5LtI2L2RCP0eDSs597_6OXEW5vumSHiBn2pdxP7ge420UNbrqpKaS_W4aWE5oc15OriGL_8hELLGpgDEoNsnUixWIizGvhsnKVFYT",
-                //  KeyName = "DaC_fA.ChPHsQ",
+                KeyName = "DaC_fA.ChPHsQ",
                 Issued = 1462827574141.FromUnixTimeInMilliseconds(),
                 Expires = 1462831174141.FromUnixTimeInMilliseconds(),
                 Capability = new Capability("{\"*\":[\"*\"]}"),
@@ -74,12 +74,29 @@ namespace IO.Ably.Tests.MessagePack
             var bytes =
                 "hqV0b2tlbtmIRGFDX2ZBLkR6cXdOWkZITklsX0dwVVI2RU5wZXFld1luemY1THRJMkwyUkNQMGVEU3M1OTdfNk9YRVc1dnVtU0hpQm4ycGR4UDdnZTQyMFVOYnJxcEthU19XNGFXRTVvYzE1T3JpR0xfOGhFTExHcGdERW9Oc25VaXhXSWl6R3Zoc25LVkZZVKdrZXlOYW1lrURhQ19mQS5DaFBIc1GmaXNzdWVkzwAAAVSXUWN9p2V4cGlyZXPPAAABVJeIUf2qY2FwYWJpbGl0eat7IioiOlsiKiJdfahjbGllbnRJZKMxMjM="
                     .FromBase64();
+
             Output.WriteLine(bytes.GetText());
             var packed = MsgPackHelper.Serialise(details);
             var unpacked = (TokenDetails)MsgPackHelper.DeSerialise(packed, typeof(TokenDetails));
             unpacked.ShouldBeEquivalentTo(details);
             var unpackedFromRaw = MsgPackHelper.DeSerialise(bytes, typeof(TokenDetails));
             unpackedFromRaw.ShouldBeEquivalentTo(details);
+        }
+
+        [Fact]
+        public void CanSerialiseAndDeserialiseTokenDetailsWithEmptyCapability()
+        {
+            var details = new TokenDetails()
+            {
+                Token = "DaC_fA.DzqwNZFHNIl_GpUR6ENpeqewYnzf5LtI2L2RCP0eDSs597_6OXEW5vumSHiBn2pdxP7ge420UNbrqpKaS_W4aWE5oc15OriGL_8hELLGpgDEoNsnUixWIizGvhsnKVFYT",
+                KeyName = "DaC_fA.ChPHsQ",
+                Issued = 1462827574141.FromUnixTimeInMilliseconds(),
+                Capability = new Capability(),
+            };
+
+            var packed = MsgPackHelper.Serialise(details);
+            var unpacked = (TokenDetails)MsgPackHelper.DeSerialise(packed, typeof(TokenDetails));
+            unpacked.ShouldBeEquivalentTo(details);
         }
 
         [Fact]

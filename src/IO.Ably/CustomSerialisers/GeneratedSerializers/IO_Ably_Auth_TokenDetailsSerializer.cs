@@ -8,22 +8,25 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace IO.Ably.CustomSerialisers {
-    
-    
+namespace IO.Ably.CustomSerialisers
+{
+
+
     [System.CodeDom.Compiler.GeneratedCodeAttribute("MsgPack.Serialization.CodeDomSerializers.CodeDomSerializerBuilder", "0.6.0.0")]
-    public class IO_Ably_Auth_TokenDetailsSerializer : MsgPack.Serialization.MessagePackSerializer<IO.Ably.Auth.TokenDetails> {
-        
+    public class IO_Ably_Auth_TokenDetailsSerializer : MsgPack.Serialization.MessagePackSerializer<IO.Ably.Auth.TokenDetails>
+    {
+
         private MsgPack.Serialization.MessagePackSerializer<string> _serializer0;
-        
+
         private MsgPack.Serialization.MessagePackSerializer<System.DateTimeOffset> _serializer1;
-        
+
         private MsgPack.Serialization.MessagePackSerializer<IO.Ably.Capability> _serializer2;
-        
+
         private MsgPack.Serialization.MessagePackSerializer<System.Nullable<System.DateTimeOffset>> _serializer3;
-        
-        public IO_Ably_Auth_TokenDetailsSerializer(MsgPack.Serialization.SerializationContext context) : 
-                base(context) {
+
+        public IO_Ably_Auth_TokenDetailsSerializer(MsgPack.Serialization.SerializationContext context) :
+                base(context)
+        {
             MsgPack.Serialization.PolymorphismSchema schema0 = default(MsgPack.Serialization.PolymorphismSchema);
             schema0 = null;
             this._serializer0 = context.GetSerializer<string>(schema0);
@@ -35,11 +38,14 @@ namespace IO.Ably.CustomSerialisers {
             schema2 = null;
             this._serializer3 = context.GetSerializer<System.Nullable<System.DateTimeOffset>>(schema2);
         }
-        
-        protected override void PackToCore(MsgPack.Packer packer, IO.Ably.Auth.TokenDetails objectTree) {
-            packer.PackMapHeader(5);
+
+        protected override void PackToCore(MsgPack.Packer packer, IO.Ably.Auth.TokenDetails objectTree)
+        {
+            packer.PackMapHeader(6);
             this._serializer0.PackTo(packer, "token");
             this._serializer0.PackTo(packer, objectTree.Token);
+            this._serializer0.PackTo(packer, "keyName");
+            this._serializer0.PackTo(packer, objectTree.KeyName);
             this._serializer0.PackTo(packer, "expires");
             this._serializer1.PackTo(packer, objectTree.Expires);
             this._serializer0.PackTo(packer, "issued");
@@ -49,285 +55,196 @@ namespace IO.Ably.CustomSerialisers {
             this._serializer0.PackTo(packer, "clientId");
             this._serializer0.PackTo(packer, objectTree.ClientId);
         }
-        
-        protected override IO.Ably.Auth.TokenDetails UnpackFromCore(MsgPack.Unpacker unpacker) {
+
+        protected override IO.Ably.Auth.TokenDetails UnpackFromCore(MsgPack.Unpacker unpacker)
+        {
             IO.Ably.Auth.TokenDetails result = default(IO.Ably.Auth.TokenDetails);
             result = new IO.Ably.Auth.TokenDetails();
-            if (unpacker.IsArrayHeader) {
-                int unpacked = default(int);
-                int itemsCount = default(int);
-                itemsCount = MsgPack.Serialization.UnpackHelpers.GetItemsCount(unpacker);
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                string nullable = default(string);
-                if ((unpacked < itemsCount)) {
-                    nullable = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.Auth.TokenDetails), "System.String Token");
-                }
-                if (((nullable == null) 
-                            == false)) {
-                    result.Token = nullable;
-                }
-                unpacked = (unpacked + 1);
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                System.Nullable<System.DateTimeOffset> nullable0 = default(System.Nullable<System.DateTimeOffset>);
-                if ((unpacked < itemsCount)) {
-                    if ((unpacker.Read() == false)) {
-                        throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(30);
-                    }
-                    if (((unpacker.IsArrayHeader == false) 
-                                && (unpacker.IsMapHeader == false))) {
-                        nullable0 = this._serializer3.UnpackFrom(unpacker);
-                    }
-                    else {
-                        MsgPack.Unpacker disposable = default(MsgPack.Unpacker);
-                        disposable = unpacker.ReadSubtree();
-                        try {
-                            nullable0 = this._serializer3.UnpackFrom(disposable);
-                        }
-                        finally {
-                            if (((disposable == null) 
-                                        == false)) {
-                                disposable.Dispose();
-                            }
-                        }
-                    }
-                }
-                if (nullable0.HasValue) {
-                    result.Expires = nullable0.Value;
-                }
-                unpacked = (unpacked + 1);
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                System.Nullable<System.DateTimeOffset> nullable1 = default(System.Nullable<System.DateTimeOffset>);
-                if ((unpacked < itemsCount)) {
-                    if ((unpacker.Read() == false)) {
-                        throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(40);
-                    }
-                    if (((unpacker.IsArrayHeader == false) 
-                                && (unpacker.IsMapHeader == false))) {
-                        nullable1 = this._serializer3.UnpackFrom(unpacker);
-                    }
-                    else {
-                        MsgPack.Unpacker disposable0 = default(MsgPack.Unpacker);
-                        disposable0 = unpacker.ReadSubtree();
-                        try {
-                            nullable1 = this._serializer3.UnpackFrom(disposable0);
-                        }
-                        finally {
-                            if (((disposable0 == null) 
-                                        == false)) {
-                                disposable0.Dispose();
-                            }
-                        }
-                    }
-                }
-                if (nullable1.HasValue) {
-                    result.Issued = nullable1.Value;
-                }
-                unpacked = (unpacked + 1);
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                IO.Ably.Capability nullable2 = default(IO.Ably.Capability);
-                if ((unpacked < itemsCount)) {
-                    if ((unpacker.Read() == false)) {
-                        throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(50);
-                    }
-                    if (((unpacker.IsArrayHeader == false) 
-                                && (unpacker.IsMapHeader == false))) {
-                        nullable2 = this._serializer2.UnpackFrom(unpacker);
-                    }
-                    else {
-                        MsgPack.Unpacker disposable1 = default(MsgPack.Unpacker);
-                        disposable1 = unpacker.ReadSubtree();
-                        try {
-                            nullable2 = this._serializer2.UnpackFrom(disposable1);
-                        }
-                        finally {
-                            if (((disposable1 == null) 
-                                        == false)) {
-                                disposable1.Dispose();
-                            }
-                        }
-                    }
-                }
-                if (((nullable2 == null) 
-                            == false)) {
-                    result.Capability = nullable2;
-                }
-                unpacked = (unpacked + 1);
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                unpacker.Read();
-                string nullable3 = default(string);
-                if ((unpacked < itemsCount)) {
-                    nullable3 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.Auth.TokenDetails), "System.String ClientId");
-                }
-                if (((nullable3 == null) 
-                            == false)) {
-                    result.ClientId = nullable3;
-                }
-                unpacked = (unpacked + 1);
-            }
-            else {
+            {
                 int itemsCount0 = default(int);
                 itemsCount0 = MsgPack.Serialization.UnpackHelpers.GetItemsCount(unpacker);
-                for (int i = 0; (i < itemsCount0); i = (i + 1)) {
+                for (int i = 0; (i < itemsCount0); i = (i + 1))
+                {
                     string key = default(string);
                     string nullable4 = default(string);
                     nullable4 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.Auth.TokenDetails), "MemberName");
-                    if (((nullable4 == null) 
-                                == false)) {
+                    if (((nullable4 == null)
+                                == false))
+                    {
                         key = nullable4;
                     }
-                    else {
+                    else
+                    {
                         throw MsgPack.Serialization.SerializationExceptions.NewNullIsProhibited("MemberName");
                     }
-                    if ((key == "clientId")) {
+                    if ((key == "clientId"))
+                    {
                         string nullable9 = default(string);
                         nullable9 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.Auth.TokenDetails), "System.String ClientId");
-                        if (((nullable9 == null) 
-                                    == false)) {
+                        if (((nullable9 == null)
+                                    == false))
+                        {
                             result.ClientId = nullable9;
                         }
                     }
-                    else {
-                        if ((key == "capability")) {
-                            IO.Ably.Capability nullable8 = default(IO.Ably.Capability);
-                            if ((unpacker.Read() == false)) {
+                    else
+                    {
+                        if ((key == "keyName"))
+                        {
+                            string keyNameValue = null;
+                            if ((unpacker.Read() == false))
+                            {
                                 throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
                             }
-                            if (((unpacker.IsArrayHeader == false) 
-                                        && (unpacker.IsMapHeader == false))) {
+                            if (((unpacker.IsArrayHeader == false)
+                                        && (unpacker.IsMapHeader == false)))
+                            {
+                                keyNameValue = this._serializer0.UnpackFrom(unpacker);
+                            }
+                            else
+                            {
+                                MsgPack.Unpacker disposable10 = default(MsgPack.Unpacker);
+                                disposable10 = unpacker.ReadSubtree();
+                                try
+                                {
+                                    keyNameValue = this._serializer0.UnpackFrom(disposable10);
+                                }
+                                finally
+                                {
+                                    if (((disposable10 == null)
+                                                == false))
+                                    {
+                                        disposable10.Dispose();
+                                    }
+                                }
+                            }
+                            if (((keyNameValue == null)
+                                        == false))
+                            {
+                                result.KeyName = keyNameValue;
+                            }
+                        }
+                        else if ((key == "capability"))
+                        {
+                            IO.Ably.Capability nullable8 = default(IO.Ably.Capability);
+                            if ((unpacker.Read() == false))
+                            {
+                                throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
+                            }
+                            if (((unpacker.IsArrayHeader == false)
+                                        && (unpacker.IsMapHeader == false)))
+                            {
                                 nullable8 = this._serializer2.UnpackFrom(unpacker);
                             }
-                            else {
+                            else
+                            {
                                 MsgPack.Unpacker disposable4 = default(MsgPack.Unpacker);
                                 disposable4 = unpacker.ReadSubtree();
-                                try {
+                                try
+                                {
                                     nullable8 = this._serializer2.UnpackFrom(disposable4);
                                 }
-                                finally {
-                                    if (((disposable4 == null) 
-                                                == false)) {
+                                finally
+                                {
+                                    if (((disposable4 == null)
+                                                == false))
+                                    {
                                         disposable4.Dispose();
                                     }
                                 }
                             }
-                            if (((nullable8 == null) 
-                                        == false)) {
+                            if (((nullable8 == null)
+                                        == false))
+                            {
                                 result.Capability = nullable8;
                             }
                         }
-                        else {
-                            if ((key == "issued")) {
+                        else
+                        {
+                            if ((key == "issued"))
+                            {
                                 System.Nullable<System.DateTimeOffset> nullable7 = default(System.Nullable<System.DateTimeOffset>);
-                                if ((unpacker.Read() == false)) {
+                                if ((unpacker.Read() == false))
+                                {
                                     throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
                                 }
-                                if (((unpacker.IsArrayHeader == false) 
-                                            && (unpacker.IsMapHeader == false))) {
+                                if (((unpacker.IsArrayHeader == false)
+                                            && (unpacker.IsMapHeader == false)))
+                                {
                                     nullable7 = this._serializer3.UnpackFrom(unpacker);
                                 }
-                                else {
+                                else
+                                {
                                     MsgPack.Unpacker disposable3 = default(MsgPack.Unpacker);
                                     disposable3 = unpacker.ReadSubtree();
-                                    try {
+                                    try
+                                    {
                                         nullable7 = this._serializer3.UnpackFrom(disposable3);
                                     }
-                                    finally {
-                                        if (((disposable3 == null) 
-                                                    == false)) {
+                                    finally
+                                    {
+                                        if (((disposable3 == null)
+                                                    == false))
+                                        {
                                             disposable3.Dispose();
                                         }
                                     }
                                 }
-                                if (nullable7.HasValue) {
+                                if (nullable7.HasValue)
+                                {
                                     result.Issued = nullable7.Value;
                                 }
                             }
-                            else {
-                                if ((key == "expires")) {
+                            else
+                            {
+                                if ((key == "expires"))
+                                {
                                     System.Nullable<System.DateTimeOffset> nullable6 = default(System.Nullable<System.DateTimeOffset>);
-                                    if ((unpacker.Read() == false)) {
+                                    if ((unpacker.Read() == false))
+                                    {
                                         throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
                                     }
-                                    if (((unpacker.IsArrayHeader == false) 
-                                                && (unpacker.IsMapHeader == false))) {
+                                    if (((unpacker.IsArrayHeader == false)
+                                                && (unpacker.IsMapHeader == false)))
+                                    {
                                         nullable6 = this._serializer3.UnpackFrom(unpacker);
                                     }
-                                    else {
+                                    else
+                                    {
                                         MsgPack.Unpacker disposable2 = default(MsgPack.Unpacker);
                                         disposable2 = unpacker.ReadSubtree();
-                                        try {
+                                        try
+                                        {
                                             nullable6 = this._serializer3.UnpackFrom(disposable2);
                                         }
-                                        finally {
-                                            if (((disposable2 == null) 
-                                                        == false)) {
+                                        finally
+                                        {
+                                            if (((disposable2 == null)
+                                                        == false))
+                                            {
                                                 disposable2.Dispose();
                                             }
                                         }
                                     }
-                                    if (nullable6.HasValue) {
+                                    if (nullable6.HasValue)
+                                    {
                                         result.Expires = nullable6.Value;
                                     }
                                 }
-                                else {
-                                    if ((key == "token")) {
+                                else
+                                {
+                                    if ((key == "token"))
+                                    {
                                         string nullable5 = default(string);
                                         nullable5 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.Auth.TokenDetails), "System.String Token");
-                                        if (((nullable5 == null) 
-                                                    == false)) {
+                                        if (((nullable5 == null)
+                                                    == false))
+                                        {
                                             result.Token = nullable5;
                                         }
                                     }
-                                    else {
+                                    else
+                                    {
                                         unpacker.Skip();
                                     }
                                 }
@@ -338,13 +255,15 @@ namespace IO.Ably.CustomSerialisers {
             }
             return result;
         }
-        
+
         private static T @__Conditional<T>(bool condition, T whenTrue, T whenFalse)
-         {
-            if (condition) {
+        {
+            if (condition)
+            {
                 return whenTrue;
             }
-            else {
+            else
+            {
                 return whenFalse;
             }
         }
