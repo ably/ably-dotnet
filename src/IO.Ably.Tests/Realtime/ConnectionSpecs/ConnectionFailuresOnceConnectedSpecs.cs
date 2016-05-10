@@ -38,14 +38,18 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Fact]
+        [Trait("spec", "RTN15h")]
         public async Task WithDisconnectMessageWithTokenError_ShouldRenewTokenAndReconnect()
         {
             var client = SetupConnectedClient();
 
             List<ConnectionStateType> states = new List<ConnectionStateType>();
-            
+            var errors = new List<ErrorInfo>();
             client.Connection.ConnectionStateChanged += (sender, args) =>
             {
+                if(args.HasError)
+                    errors.Add(args.Reason);
+
                 states.Add(args.CurrentState);
                 if (args.CurrentState == ConnectionStateType.Connecting)
                 {
@@ -56,6 +60,7 @@ namespace IO.Ably.Tests.Realtime
 
             _renewTokenCalled.Should().BeTrue();
             Assert.Equal(new [] { ConnectionStateType.Disconnected, ConnectionStateType.Connecting, ConnectionStateType.Connected }, states);
+            errors.Should().BeEmpty("There should be no errors emitted by the client");
 
             var currentToken = client.Auth.CurrentToken;
             currentToken.Token.Should().Be(_returnedDummyTokenDetails.Token);

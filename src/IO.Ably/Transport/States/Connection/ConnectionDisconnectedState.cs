@@ -27,7 +27,7 @@ namespace IO.Ably.Transport.States.Connection
             base(context)
         {
             _timer = timer;
-            Error = error ?? ErrorInfo.ReasonDisconnected;
+            Error = error;
             RetryIn = context.RetryTimeout;
         }
 

@@ -20,7 +20,11 @@ namespace IO.Ably.Tests
             Parameters = parameters;
         }
 
-        public bool ConnectCalled { get; set; }
+        public bool ConnectCalled
+        {
+            get { return _connectCalled; }
+            set { _connectCalled = value; }
+        }
 
         public bool CloseCalled { get; set; }
 
@@ -64,7 +68,6 @@ namespace IO.Ably.Tests
         }
 
         public Action<RealtimeTransportData> SendAction = delegate { };
-
-        
+        private volatile bool _connectCalled;
     }
 }

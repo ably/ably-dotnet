@@ -229,6 +229,8 @@ namespace IO.Ably.Tests
         [Fact]
         public async Task OnAttachedToContext_CreatesTransport()
         {
+            _context.AllowTransportCreating = true;
+
             // Act
             await _state.OnAttachedToContext();
 
