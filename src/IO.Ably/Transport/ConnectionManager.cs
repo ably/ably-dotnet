@@ -154,6 +154,7 @@ namespace IO.Ably.Transport
 
         public ClientOptions Options => RestClient.Options;
         public TimeSpan DefaultTimeout => Options.RealtimeRequestTimeout;
+        public TimeSpan SuspendRetryTimeout => Options.SuspendedRetryTimeout;
 
         public event MessageReceivedDelegate MessageReceived;
 
@@ -164,6 +165,7 @@ namespace IO.Ably.Transport
         }
 
         public Connection Connection { get; }
+        
 
         public ConnectionStateType ConnectionState => Connection.State;
 

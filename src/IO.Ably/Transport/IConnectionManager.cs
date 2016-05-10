@@ -75,6 +75,7 @@ namespace IO.Ably.Transport
         AblyRest RestClient { get; }
         Queue<ProtocolMessage> QueuedMessages { get; }
         Connection Connection { get; }
+        TimeSpan SuspendRetryTimeout { get; }
         void SetState(States.Connection.ConnectionState state);
         Task CreateTransport(bool renewToken = false);
         void DestroyTransport();

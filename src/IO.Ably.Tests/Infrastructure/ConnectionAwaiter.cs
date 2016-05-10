@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
 
@@ -18,7 +19,7 @@ namespace IO.Ably.Tests
         private readonly ConnectionStateType _awaitedState;
 
         public readonly Connection Connection;
-        private readonly TaskCompletionSource<Connection> _taskCompletionSource = new TaskCompletionSource<Connection>();
+        private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private readonly string _id = Guid.NewGuid().ToString("D").Split('-')[0];
 
         public ConnectionAwaiter(Connection connection, ConnectionStateType awaitedState = ConnectionStateType.Connected)
@@ -40,7 +41,7 @@ namespace IO.Ably.Tests
             if (e.CurrentState == _awaitedState)
             {
                 Logger.Debug($"[{_id}] Desired state was reached.");
-                _taskCompletionSource.SetResult(Connection);
+                _taskCompletionSource.SetResult(true);
                 RemoveListener();
                 return; // Success :-)
             }
@@ -56,30 +57,38 @@ namespace IO.Ably.Tests
             _taskCompletionSource.SetException(new Exception("Connection is in some failed state " + e.CurrentState));
         }
 
-        public async Task<Connection> Wait()
+        public async Task<TimeSpan> Wait()
         {
             return await Wait(TimeSpan.FromSeconds(2));
         }
 
-        public async Task<Connection> Wait(TimeSpan timeout)
+        public async Task<TimeSpan> Wait(TimeSpan timeout)
         {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            
             if (Logger.IsDebug)
             {
                 Logger.Debug($"[{_id}] Waiting for state {_awaitedState} for {timeout.TotalSeconds} seconds");
             }
 
             if (Connection.State == _awaitedState)
-                return Connection;
+                return TimeSpan.Zero;
 
             var tResult = _taskCompletionSource.Task;
             var tCompleted = await Task.WhenAny(tResult, Task.Delay(timeout));
             if (tCompleted == tResult)
-                return tResult.Result;
+            {
+                stopwatch.Stop();
+                return stopwatch.Elapsed;
+            }
             
             Logger.Debug($"[{_id} Timeout exceeded. Throwing TimeoutException");
             RemoveListener();
             _taskCompletionSource.SetException(new TimeoutException());
-            return await tResult;
+            await tResult;
+            stopwatch.Stop();
+            return stopwatch.Elapsed;
         }
     }
 }

@@ -7,8 +7,6 @@ namespace IO.Ably.Transport.States.Connection
     internal class ConnectionSuspendedState : ConnectionState
     {
         //TODO: Make sure these come from config
-        public static readonly TimeSpan SuspendTimeout = TimeSpan.FromSeconds(120); // Time before a connection is considered suspended
-        private readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(120); // Time to wait before retrying connection
         private readonly ICountdownTimer _timer;
 
         public ConnectionSuspendedState(IConnectionContext context) :
@@ -26,7 +24,7 @@ namespace IO.Ably.Transport.States.Connection
         {
             _timer = timer;
             Error = error ?? ErrorInfo.ReasonSuspended;
-            RetryIn = ConnectTimeout;
+            RetryIn = context.SuspendRetryTimeout;
         }
 
         public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Suspended;
@@ -60,7 +58,8 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Task OnAttachedToContext()
         {
-            _timer.Start(ConnectTimeout, OnTimeOut);
+            if(RetryIn.HasValue)
+                _timer.Start(RetryIn.Value, OnTimeOut);
             return TaskConstants.BooleanTrue;
         }
 

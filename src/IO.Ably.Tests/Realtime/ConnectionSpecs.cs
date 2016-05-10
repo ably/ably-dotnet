@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -766,7 +767,8 @@ namespace IO.Ably.Tests.Realtime
 
             [Fact]
             [Trait("spec", "RTN14d")]
-            public async Task WhenTransportFails_ShouldGoFromConnectingToDisconectedUntilConnectionStateTtlIsReached()
+            [Trait("spec", "RTN14e")]
+            public async Task WhenTransportFails_ShouldGoFromConnectingToDisconectedUntilConnectionStateTtlIsReachedAndStateIsSuspended()
             {
                 Now = DateTimeOffset.UtcNow;
 
@@ -791,10 +793,42 @@ namespace IO.Ably.Tests.Realtime
                     Now = Now.AddSeconds(15);
                 } while (client.Connection.State != ConnectionStateType.Suspended);
 
+                client.Connection.State.Should().Be(ConnectionStateType.Suspended);
+
                 stateChanges.Select(x => x.CurrentState).Distinct()
                     .ShouldBeEquivalentTo(new [] { ConnectionStateType.Connecting, ConnectionStateType.Disconnected, ConnectionStateType.Suspended, });
                 int numberOfAttemps =(int) Math.Floor(Defaults.ConnectionStateTtl.TotalSeconds / 15);
                 stateChanges.Count(x => x.CurrentState == ConnectionStateType.Connecting).Should().Be(numberOfAttemps);
+            }
+
+            [Fact]
+            [Trait("spec", "RTN14e")]
+            public async Task WhenInSuspendedState_ShouldTryAndReconnectAfterSuspendRetryTimeoutIsReached()
+            {
+                Now = DateTimeOffset.UtcNow;
+
+                _fakeTransportFactory.initialiseFakeTransport =
+                    transport => transport.OnConnectChangeStateToConnected = false;
+                //this will keep it in connecting state
+
+                var client = GetClientWithFakeTransport(opts =>
+                {
+                    opts.AutoConnect = false;
+                    opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(100);
+                });
+
+                client.Connect();
+                do
+                {
+                    LastCreatedTransport.Listener.OnTransportError(new Exception());
+                    Now = Now.AddSeconds(15);
+                } while (client.Connection.State != ConnectionStateType.Suspended);
+
+                Stopwatch watch = new Stopwatch();
+                watch.Start();
+                var awaiter = new ConnectionAwaiter(client.Connection, ConnectionStateType.Connecting);
+                var elapsed = await awaiter.Wait();
+                elapsed.Should().BeCloseTo(client.Options.SuspendedRetryTimeout);
             }
 
             public ConnectionFailureSpecs(ITestOutputHelper output) : base(output)

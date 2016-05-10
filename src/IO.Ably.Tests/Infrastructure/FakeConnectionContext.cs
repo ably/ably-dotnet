@@ -43,6 +43,7 @@ namespace IO.Ably.Tests
         public AblyRest RestClient { get; set; }
         public Queue<ProtocolMessage> QueuedMessages { get; } = new Queue<ProtocolMessage>();
         public Connection Connection { get; set; }
+        public TimeSpan SuspendRetryTimeout { get; set; }
 
         public void SetState(ConnectionState state)
         {
