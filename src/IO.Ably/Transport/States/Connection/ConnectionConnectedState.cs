@@ -31,25 +31,25 @@ namespace IO.Ably.Transport.States.Connection
             Context.SetState(new ConnectionClosingState(Context));
         }
 
-        public override Task<bool> OnMessageReceived(ProtocolMessage message)
+        public override async Task<bool> OnMessageReceived(ProtocolMessage message)
         {
             switch (message.action)
             {
                 case ProtocolMessage.MessageAction.Close:
                     Context.SetState(new ConnectionClosedState(Context, message.error));
-                    return TaskConstants.BooleanTrue;
+                    return true;
                 case ProtocolMessage.MessageAction.Disconnected:
-                {
-                    Context.SetState(new ConnectionDisconnectedState(Context, message.error));
-                    return TaskConstants.BooleanTrue;
-                }
+                    var error = message.error;
+                    var result = await Context.RetryBecauseOfTokenError(error);
+                    if (result == false)
+                        Context.SetState(new ConnectionDisconnectedState(Context, message.error));
+
+                    return true;
                 case ProtocolMessage.MessageAction.Error:
-                {
                     Context.SetState(new ConnectionFailedState(Context, message.error));
-                    return TaskConstants.BooleanTrue;
-                }
+                    return true;
             }
-            return TaskConstants.BooleanFalse;
+            return false;
         }
 
         public override Task OnTransportStateChanged(TransportStateInfo state)

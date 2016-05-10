@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 {
-    public class ConnectionFailureSpecs : ConnectionSpecsBase
+    public class ConnectingFailureSpecs : ConnectionSpecsBase
     {
         private TokenDetails _returnedDummyTokenDetails = new TokenDetails("123") { Expires = Config.Now().AddDays(1), ClientId = "123" };
         private int _tokenErrorCode = 40140;
@@ -260,7 +260,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             await new ConnectionAwaiter(client.Connection, ConnectionStateType.Suspended).Wait();
         }
 
-        public ConnectionFailureSpecs(ITestOutputHelper output) : base(output)
+        public ConnectingFailureSpecs(ITestOutputHelper output) : base(output)
         {
         }
     }

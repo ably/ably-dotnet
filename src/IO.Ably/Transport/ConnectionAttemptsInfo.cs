@@ -9,7 +9,9 @@ namespace IO.Ably.Transport
         private readonly ClientOptions _options;
         private readonly Connection _connection;
         internal int NumberOfAttempts { get; private set; }
-        private object _syncLock = new object();
+        internal bool TriedToRenewToken { get; private set; }
+
+        private readonly object _syncLock = new object();
 
         public ConnectionAttemptsInfo(ClientOptions options, Connection connection)
         {
@@ -30,7 +32,14 @@ namespace IO.Ably.Transport
             {
                 NumberOfAttempts = 0;
                 FirstAttempt = null;
+                TriedToRenewToken = false;
             }
+        }
+
+        public void RecordTokenRetry()
+        {
+            lock (_syncLock) 
+                TriedToRenewToken = true;
         }
 
         public bool ShouldSuspend()

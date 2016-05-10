@@ -145,7 +145,7 @@ namespace IO.Ably.Tests
             var transport = new FakeTransport() { State = TransportState.Initialized };
             _context.Transport = transport;
             var state = GetState(ErrorInfo.ReasonClosed);
-            state.UseFallbackHost = true;
+            state.RetryInstantly = true;
 
             // Act
             await state.OnAttachedToContext();

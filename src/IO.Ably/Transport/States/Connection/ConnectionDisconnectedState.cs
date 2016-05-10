@@ -31,7 +31,7 @@ namespace IO.Ably.Transport.States.Connection
             RetryIn = context.RetryTimeout;
         }
 
-        public bool UseFallbackHost { get; set; }
+        public bool RetryInstantly { get; set; }
 
         public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Disconnected;
 
@@ -64,10 +64,10 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Task OnAttachedToContext()
         {
-            if (UseFallbackHost)
+            if (RetryInstantly)
             {
                 Context.SetState(new ConnectionConnectingState(Context));
-            }
+            }  
             else
             {
                 _timer.Start(Context.RetryTimeout, OnTimeOut);

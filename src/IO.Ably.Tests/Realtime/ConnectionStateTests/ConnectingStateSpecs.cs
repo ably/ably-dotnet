@@ -193,7 +193,7 @@ namespace IO.Ably.Tests
 
             // Assert
             var lastType = _context.LastSetState as ConnectionDisconnectedState;
-            lastType.UseFallbackHost.Should().BeTrue();
+            lastType.RetryInstantly.Should().BeTrue();
         }
 
         [Fact]

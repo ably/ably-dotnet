@@ -72,12 +72,12 @@ namespace IO.Ably.Transport
         States.Connection.ConnectionState State { get; }
         TransportState TransportState { get; }
         ITransport Transport { get; }
-        AblyRest RestClient { get; }
         Queue<ProtocolMessage> QueuedMessages { get; }
         Connection Connection { get; }
         TimeSpan SuspendRetryTimeout { get; }
-        void SetState(States.Connection.ConnectionState state);
-        Task CreateTransport(bool renewToken = false);
+        void ClearTokenAndRecordRetry();
+        Task SetState(States.Connection.ConnectionState state, bool skipAttach = false);
+        Task CreateTransport();
         void DestroyTransport();
         void AttemptConnection();
         void ResetConnectionAttempts();
@@ -86,5 +86,6 @@ namespace IO.Ably.Transport
         bool ShouldWeRenewToken(ErrorInfo error);
         void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null);
         bool ShouldSuspend();
+        Task<bool> RetryBecauseOfTokenError(ErrorInfo error);
     }
 }

@@ -45,16 +45,23 @@ namespace IO.Ably.Tests
         public Connection Connection { get; set; }
         public TimeSpan SuspendRetryTimeout { get; set; }
 
-        public void SetState(ConnectionState state)
+        public void ClearTokenAndRecordRetry()
+        {
+            TriedToRenewToken = true;
+        }
+
+        public bool TriedToRenewToken { get; set; }
+
+        public Task SetState(ConnectionState state, bool skipAttach)
         {
             State = state;
             LastSetState = state;
+            return TaskConstants.BooleanTrue;
         }
 
-        public Task CreateTransport(bool renewToken = false)
+        public Task CreateTransport()
         {
             CreateTransportCalled = true;
-            RenewTokenValue = renewToken;
             Transport = new FakeTransport();
             return TaskConstants.BooleanTrue;
         }
@@ -101,6 +108,13 @@ namespace IO.Ably.Tests
         public bool ShouldSuspend()
         {
             return ShouldSuspendValue;
+        }
+
+        public Func<ErrorInfo, Task<bool>> RetryFunc = delegate { return TaskConstants.BooleanFalse; };
+
+        public Task<bool> RetryBecauseOfTokenError(ErrorInfo error)
+        {
+            return RetryFunc(error);
         }
 
         public bool ShouldSuspendValue { get; set; }

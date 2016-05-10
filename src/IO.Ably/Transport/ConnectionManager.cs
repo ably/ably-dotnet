@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Mail;
 using System.Threading.Tasks;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
@@ -52,43 +53,47 @@ namespace IO.Ably.Transport
 
         Queue<ProtocolMessage> IConnectionContext.QueuedMessages => _pendingMessages;
 
-        public void SetState(ConnectionState newState)
+        public void ClearTokenAndRecordRetry()
+        {
+            RestClient.Auth.ExpireCurrentToken();
+            AttemptsInfo.RecordTokenRetry();
+        }
+
+        public Task SetState(ConnectionState newState, bool skipAttach = false)
         {
             if (Logger.IsDebug)
             {
                 Logger.Debug($"Setting state from {ConnectionState} to {newState}");
             }
 
-            ExecuteAsyncOperation(async () =>
+            return ExecuteAsyncOperation(async () =>
             {
                 AckProcessor.OnStateChanged(newState);
-
                 Connection.UpdateState(newState);
 
-                try
+                if (skipAttach == false)
                 {
-                    await newState.OnAttachedToContext();
-                }
-                catch (AblyException ex)
-                {
-                    Logger.Error("Error attaching to context", ex);
-                    if (newState.State != ConnectionStateType.Failed)
+                    try
                     {
-                        SetState(new ConnectionFailedState(this,
-                            new ErrorInfo($"Failed to attach connection state {newState.State}", 500)));
+                        await newState.OnAttachedToContext();
+                    }
+                    catch (AblyException ex)
+                    {
+                        Logger.Error("Error attaching to context", ex);
+                        if (newState.State != ConnectionStateType.Failed)
+                        {
+                            SetState(new ConnectionFailedState(this,
+                                new ErrorInfo($"Failed to attach connection state {newState.State}", 500)));
+                        }
                     }
                 }
             });
         }
 
-        async Task IConnectionContext.CreateTransport(bool renewToken)
+        async Task IConnectionContext.CreateTransport()
         {
-            if (Transport != null)
+            if (Transport != null && AttemptsInfo.TriedToRenewToken)
                 (this as IConnectionContext).DestroyTransport();
-
-            if (renewToken)
-                RestClient.AblyAuth.ExpireCurrentToken();
-                    //This will cause the RequestToken to be called when constructing the TransportParams
 
             var transport = GetTransportFactory().CreateTransport(await CreateTransportParameters());
             transport.Listener = this;
@@ -144,12 +149,24 @@ namespace IO.Ably.Transport
         {
             if (error == null) return false;
 
-            return error.IsTokenError && RestClient.AblyAuth.TokenRenewable;
+            return error.IsTokenError && AttemptsInfo.TriedToRenewToken == false && RestClient.AblyAuth.TokenRenewable;
         }
 
         public bool ShouldSuspend()
         {
             return AttemptsInfo.ShouldSuspend();
+        }
+
+        public async Task<bool> RetryBecauseOfTokenError(ErrorInfo error)
+        {
+            if (ShouldWeRenewToken(error))
+            {
+                ClearTokenAndRecordRetry();
+                await SetState(new ConnectionDisconnectedState(this), skipAttach: true);
+                await SetState(new ConnectionConnectingState(this));
+                return true;
+            }
+            return false;
         }
 
         public ClientOptions Options => RestClient.Options;

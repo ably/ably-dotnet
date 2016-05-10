@@ -15,7 +15,6 @@ namespace IO.Ably.Transport.States.Connection
 
         private readonly ICountdownTimer _timer;
         private readonly bool _useFallbackHost;
-        private volatile bool _hasRetriedToReniewToken;
         private volatile bool _suppressTransportEvents;
 
         static ConnectionConnectingState()
@@ -78,7 +77,7 @@ namespace IO.Ably.Transport.States.Connection
                         {
                             nextState = new ConnectionDisconnectedState(Context, message.error)
                             {
-                                UseFallbackHost = await ShouldUseFallbackHost(message.error)
+                                RetryInstantly = await ShouldUseFallbackHost(message.error)
                             };
                         }
                         TransitionState(nextState);
@@ -87,13 +86,13 @@ namespace IO.Ably.Transport.States.Connection
                 case ProtocolMessage.MessageAction.Error:
                     {
                         //If the error is a token error do some magic
-                        if (Context.ShouldWeRenewToken(message.error) && _hasRetriedToReniewToken == false)
+                        if (Context.ShouldWeRenewToken(message.error))
                         {
                             try
                             {
-                                _hasRetriedToReniewToken = true;
+                                Context.ClearTokenAndRecordRetry();
                                 _suppressTransportEvents = true;
-                                await Context.CreateTransport(renewToken: true);
+                                await Context.CreateTransport();
                                 ConnectTransport();
                                 return true;
                             }
@@ -107,12 +106,12 @@ namespace IO.Ably.Transport.States.Connection
                             {
                                 _suppressTransportEvents = false;
                             }
-                        }
+                        }  
 
                         if (await ShouldUseFallbackHost(message.error))
                         {
                             Context.Connection.Key = null;
-                            TransitionState(new ConnectionDisconnectedState(Context) { UseFallbackHost = true });
+                            TransitionState(new ConnectionDisconnectedState(Context) { RetryInstantly = true });
                             return true;
                         }
 
@@ -138,7 +137,7 @@ namespace IO.Ably.Transport.States.Connection
                 {
                     nextState = new ConnectionDisconnectedState(Context, state)
                     {
-                        UseFallbackHost = state.Error != null && await Context.CanConnectToAbly()
+                        RetryInstantly = state.Error != null && await Context.CanConnectToAbly()
                     };
                 }
                 TransitionState(nextState);
@@ -149,10 +148,7 @@ namespace IO.Ably.Transport.States.Connection
         {
             Context.AttemptConnection();
 
-            if (Context.Transport == null)
-            {
-                await Context.CreateTransport();
-            }
+            await Context.CreateTransport();
 
             ConnectTransport();
         }
@@ -173,7 +169,7 @@ namespace IO.Ably.Transport.States.Connection
                     {
                         nextState = new ConnectionDisconnectedState(Context, ErrorInfo.ReasonTimeout)
                         {
-                            UseFallbackHost = await Context.CanConnectToAbly()
+                            RetryInstantly = await Context.CanConnectToAbly()
                         };
                     }
                     
