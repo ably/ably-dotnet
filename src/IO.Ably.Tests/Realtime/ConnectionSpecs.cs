@@ -824,12 +824,41 @@ namespace IO.Ably.Tests.Realtime
                     Now = Now.AddSeconds(15);
                 } while (client.Connection.State != ConnectionStateType.Suspended);
 
-                Stopwatch watch = new Stopwatch();
-                watch.Start();
                 var awaiter = new ConnectionAwaiter(client.Connection, ConnectionStateType.Connecting);
                 var elapsed = await awaiter.Wait();
                 elapsed.Should().BeCloseTo(client.Options.SuspendedRetryTimeout);
             }
+
+            [Fact]
+            [Trait("spec", "RTN14f")]
+            public async Task WhenInSuspendedStateAfterRetrying_ShouldGoBackToSuspendedState()
+            {
+                Now = DateTimeOffset.UtcNow;
+
+                _fakeTransportFactory.initialiseFakeTransport =
+                    transport => transport.OnConnectChangeStateToConnected = false;
+                //this will keep it in connecting state
+
+                var client = GetClientWithFakeTransport(opts =>
+                {
+                    opts.AutoConnect = false;
+                    opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(100);
+                    opts.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
+                });
+
+                client.Connect();
+                do
+                {
+                    LastCreatedTransport.Listener.OnTransportError(new Exception());
+                    Now = Now.AddSeconds(15);
+                } while (client.Connection.State != ConnectionStateType.Suspended);
+
+                await new ConnectionAwaiter(client.Connection, ConnectionStateType.Connecting).Wait();
+                await new ConnectionAwaiter(client.Connection, ConnectionStateType.Suspended).Wait();
+
+            }
+
+
 
             public ConnectionFailureSpecs(ITestOutputHelper output) : base(output)
             {

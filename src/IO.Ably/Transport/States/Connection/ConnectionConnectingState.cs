@@ -164,11 +164,20 @@ namespace IO.Ably.Transport.States.Connection
                 Context.Transport.Connect();
                 _timer.StartAsync(Context.DefaultTimeout, async () =>
                 {
-                    var disconnectedState = new ConnectionDisconnectedState(Context, ErrorInfo.ReasonTimeout)
+                    ConnectionState nextState;
+                    if (Context.ShouldSuspend())
                     {
-                        UseFallbackHost = await Context.CanConnectToAbly()
-                    };
-                    Context.SetState(disconnectedState);
+                        nextState = new ConnectionSuspendedState(Context);
+                    }
+                    else
+                    {
+                        nextState = new ConnectionDisconnectedState(Context, ErrorInfo.ReasonTimeout)
+                        {
+                            UseFallbackHost = await Context.CanConnectToAbly()
+                        };
+                    }
+                    
+                    Context.SetState(nextState);
                 });
             }
         }
@@ -185,7 +194,5 @@ namespace IO.Ably.Transport.States.Connection
             _timer.Abort();
             Context.SetState(newState);
         }
-
-        
     }
 }
