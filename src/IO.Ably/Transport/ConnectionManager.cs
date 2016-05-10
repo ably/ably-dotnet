@@ -81,7 +81,7 @@ namespace IO.Ably.Transport
             });
         }
 
-        async Task IConnectionContext.CreateTransport(bool renewToken = false)
+        async Task IConnectionContext.CreateTransport(bool renewToken)
         {
             if (Transport != null)
                 (this as IConnectionContext).DestroyTransport();
@@ -176,17 +176,9 @@ namespace IO.Ably.Transport
 
             AckProcessor.SendMessage(message, callback);
 
-            var data = new RealtimeTransportData("");//Create the data
-            data.Original = message;
+            var data = Handler.GetTransportData(message);
 
             Transport.Send(data);
-        }
-
-        public Task SendAsync(ProtocolMessage message)
-        {
-            var tw = new TaskWrapper();
-            Send(message, tw.Callback);
-            return tw.Task;
         }
 
         void ITransportListener.OnTransportConnected()

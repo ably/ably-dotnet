@@ -62,20 +62,8 @@ namespace IO.Ably.MessageEncoders
             }
 
             var payloads = MsgPackHelper.DeSerialise(response.Body, typeof(List<PresenceMessage>)) as List<PresenceMessage>;
-            UnwrapMessagesData(payloads);
             ProcessMessages(payloads, options);
             return payloads;
-        }
-
-        public void UnwrapMessagesData(IEnumerable<IEncodedMessage> messages)
-        {
-            if (messages == null || messages.Any() == false)
-                return;
-
-            foreach (var message in messages.Where(x => x.data != null))
-            {
-                message.data = message.data;
-            }
         }
 
         public IEnumerable<Message> ParseMessagesResponse(AblyResponse response, ChannelOptions options)
@@ -90,7 +78,6 @@ namespace IO.Ably.MessageEncoders
             }
 
             var payloads = MsgPackHelper.DeSerialise(response.Body, typeof(List<Message>)) as List<Message>;
-            UnwrapMessagesData(payloads);
             ProcessMessages(payloads, options);
             return payloads;
         }
@@ -260,8 +247,6 @@ namespace IO.Ably.MessageEncoders
             if (_protocol == Protocol.MsgPack)
             {
                 message = (ProtocolMessage)MsgPackHelper.DeSerialise(data.Data, typeof(ProtocolMessage));
-                UnwrapMessagesData(message.messages);
-                UnwrapMessagesData(message.presence);
             }
             else
             {
@@ -269,6 +254,23 @@ namespace IO.Ably.MessageEncoders
             }
 
             return message;
+        }
+
+        public RealtimeTransportData GetTransportData(ProtocolMessage message)
+        {
+            RealtimeTransportData data;
+            if (_protocol == Protocol.MsgPack)
+            {
+                var bytes= MsgPackHelper.Serialise(message);
+                data = new RealtimeTransportData(bytes) { Original = message };
+            }
+            else
+            {
+                var text = JsonConvert.SerializeObject(message, Config.GetJsonSettings());
+                data = new RealtimeTransportData(text) { Original = message };
+            }
+
+            return data;
         }
     }
 }
