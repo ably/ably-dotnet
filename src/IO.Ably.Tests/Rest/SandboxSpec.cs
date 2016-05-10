@@ -15,8 +15,8 @@ namespace IO.Ably.Tests
             Output = output;
             //Reset time in case other tests have changed it
             Config.Now = () => DateTimeOffset.UtcNow;
-            //Logger.LoggerSink = new OutputLoggerSink(output);
-            //Logger.LogLevel = LogLevel.Debug;
+            Logger.LoggerSink = new OutputLoggerSink(output);
+            Logger.LogLevel = LogLevel.Debug;
         }
 
         protected async Task<AblyRest> GetRestClient(Protocol protocol, Action<ClientOptions> optionsAction = null)

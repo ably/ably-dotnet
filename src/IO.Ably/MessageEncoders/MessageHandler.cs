@@ -74,8 +74,7 @@ namespace IO.Ably.MessageEncoders
 
             foreach (var message in messages.Where(x => x.data != null))
             {
-                //Unwrap the data objects because message pack leaves them as a MessagePackObject
-                message.data = ((MessagePackObject)message.data).ToObject();
+                message.data = message.data;
             }
         }
 

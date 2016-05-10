@@ -37,7 +37,7 @@ namespace IO.Ably.Tests
         }
     }
 
-    public class MsgPackMessageSerializerTests: AblySpecs
+    public class MsgPackMessageSerializerTests : AblySpecs
     {
         public static IEnumerable<object[]> Messages
         {

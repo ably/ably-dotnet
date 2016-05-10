@@ -18,6 +18,9 @@ namespace IO.Ably.Auth
         [MessagePackMember(10, Name = "token")]
         public string Token { get; set; }
 
+        [JsonProperty("keyName")]
+        [MessagePackMember(10, Name = "keyName")]
+        public string KeyName { get; set; }
         /// <summary>
         /// Absolute token expiry date in UTC
         /// </summary>

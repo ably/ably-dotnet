@@ -13,9 +13,8 @@ namespace IO.Ably
             var context = new SerializationContext() { SerializationMethod = SerializationMethod.Map};
             context.Serializers.Register(new DateTimeOffsetMessagePackSerializer(context));
             context.Serializers.Register(new TimespanMessagePackSerializer(context));
-            context.Serializers.Register(new IO_Ably_Auth_TokenDetailsSerializer(context));
-            context.Serializers.Register(new IO_Ably_CapabilityResourceSerializer(context));
             context.Serializers.Register(new IO_Ably_CapabilitySerializer(context));
+            context.Serializers.Register(new IO_Ably_Auth_TokenDetailsSerializer(context));
             context.Serializers.Register(new IO_Ably_ConnectionDetailsMessageSerializer(context));
             context.Serializers.Register(new IO_Ably_ConnectionTypesSerializer(context));
             context.Serializers.Register(new IO_Ably_ErrorInfoSerializer(context));

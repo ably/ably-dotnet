@@ -48,7 +48,6 @@
     <Compile Include="AuthOptions.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="CustomSerialisers\GeneratedSerializers\IO_Ably_Auth_TokenDetailsSerializer.cs" />
-    <Compile Include="CustomSerialisers\GeneratedSerializers\IO_Ably_CapabilityResourceSerializer.cs" />
     <Compile Include="CustomSerialisers\GeneratedSerializers\IO_Ably_CapabilitySerializer.cs" />
     <Compile Include="CustomSerialisers\GeneratedSerializers\IO_Ably_ConnectionDetailsMessageSerializer.cs" />
     <Compile Include="CustomSerialisers\GeneratedSerializers\IO_Ably_ConnectionTypesSerializer.cs" />

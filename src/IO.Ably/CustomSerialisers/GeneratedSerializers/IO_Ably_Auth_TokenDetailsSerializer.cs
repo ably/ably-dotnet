@@ -12,7 +12,6 @@ namespace IO.Ably.CustomSerialisers {
     
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("MsgPack.Serialization.CodeDomSerializers.CodeDomSerializerBuilder", "0.6.0.0")]
-    [System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public class IO_Ably_Auth_TokenDetailsSerializer : MsgPack.Serialization.MessagePackSerializer<IO.Ably.Auth.TokenDetails> {
         
         private MsgPack.Serialization.MessagePackSerializer<string> _serializer0;
