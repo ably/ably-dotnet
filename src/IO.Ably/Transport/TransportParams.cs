@@ -5,9 +5,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace IO.Ably.Transport
-{ 
+{
     public class TransportParams
-    {    
+    {
         public string Host { get; private set; }
         public bool Tls { get; private set; }
         public string[] FallbackHosts { get; private set; }
@@ -25,7 +25,7 @@ namespace IO.Ably.Transport
 
         private TransportParams()
         {
-            
+
         }
 
         internal static async Task<TransportParams> Create(IAuthCommands auth, ClientOptions options, string connectionKey = null, long? connectionSerial = null)
@@ -42,19 +42,11 @@ namespace IO.Ably.Transport
             }
             else
             {
-                try
-                {
-                    var token = await auth.GetCurrentValidTokenAndRenewIfNecessary();
-                    if (token == null)
-                        throw new AblyException("There is no valid token. Can't authenticate", 40100, HttpStatusCode.Unauthorized);
+                var token = await auth.GetCurrentValidTokenAndRenewIfNecessary();
+                if (token == null)
+                    throw new AblyException("There is no valid token. Can't authenticate", 40100, HttpStatusCode.Unauthorized);
 
-                    result.AuthValue = token.Token;
-                }
-                catch (AblyException ex)
-                {
-                    throw;
-                }
-                
+                result.AuthValue = token.Token;
             }
             result.ConnectionKey = connectionKey;
             result.ConnectionSerial = connectionSerial;
@@ -64,7 +56,6 @@ namespace IO.Ably.Transport
             result.RecoverValue = options.Recover;
 
             return result;
-
         }
 
         //Add logic for random fallback hosts
@@ -79,8 +70,8 @@ namespace IO.Ably.Transport
 
         public Dictionary<string, string> GetParams()
         {
-           //TODO: Write some tests 
-           var result = new Dictionary<string, string>();
+            //TODO: Write some tests 
+            var result = new Dictionary<string, string>();
 
             if (AuthMethod == AuthMethod.Basic)
             {

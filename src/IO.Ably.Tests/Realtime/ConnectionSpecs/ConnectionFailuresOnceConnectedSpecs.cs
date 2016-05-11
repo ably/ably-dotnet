@@ -105,6 +105,43 @@ namespace IO.Ably.Tests.Realtime
             errors.First().code.Should().Be(_failedRenewalErorrCode);
         }
 
+        [Fact]
+        [Trait("spec", "RTN15f")]
+        public async Task WhenConnectionFailsConsecutivelyMoreThanOnceWithTokenError_ShouldTransitionToFailedWithError()
+        {
+            var client = SetupConnectedClient();
+
+            List<ConnectionStateType> states = new List<ConnectionStateType>();
+            var errors = new List<ErrorInfo>();
+            client.Connection.ConnectionStateChanged += (sender, args) =>
+            {
+                if (args.HasError)
+                    errors.Add(args.Reason);
+
+                states.Add(args.CurrentState);
+            };
+
+            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
+            {
+                error = _tokenErrorInfo
+            });
+
+            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
+            {
+                error = _tokenErrorInfo
+            });
+
+            Assert.Equal(new[]
+            {
+                ConnectionStateType.Disconnected,
+                ConnectionStateType.Connecting,
+                ConnectionStateType.Failed
+            }, states);
+
+            errors.Should().NotBeEmpty();
+            errors.First().code.Should().Be(_tokenErrorInfo.code);
+        }
+
 
 
         public ConnectionFailuresOnceConnectedSpecs(ITestOutputHelper output) : base(output)
