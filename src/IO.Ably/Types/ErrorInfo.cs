@@ -33,8 +33,6 @@ namespace IO.Ably
         /// <summary>Additional reason information, where available</summary>
         public string message { get; set; }
 
-        public int NumberOfTries { get; set; }
-
         public bool IsUnAuthorizedError => statusCode.HasValue &&
                                            statusCode.Value == HttpStatusCode.Unauthorized;
 

@@ -35,153 +35,106 @@ namespace IO.Ably.CustomSerialisers {
         }
         
         protected override void PackToCore(MsgPack.Packer packer, IO.Ably.ErrorInfo objectTree) {
-            packer.PackMapHeader(4);
+            packer.PackMapHeader(3);
             this._serializer0.PackTo(packer, "code");
             this._serializer1.PackTo(packer, objectTree.code);
             this._serializer0.PackTo(packer, "message");
             this._serializer0.PackTo(packer, objectTree.message);
-            this._serializer0.PackTo(packer, "NumberOfTries");
-            this._serializer1.PackTo(packer, objectTree.NumberOfTries);
             this._serializer0.PackTo(packer, "statusCode");
             this._serializer2.PackTo(packer, objectTree.statusCode);
         }
         
-        protected override IO.Ably.ErrorInfo UnpackFromCore(MsgPack.Unpacker unpacker) {
+        protected override IO.Ably.ErrorInfo UnpackFromCore(MsgPack.Unpacker unpacker)
+        {
             IO.Ably.ErrorInfo result = default(IO.Ably.ErrorInfo);
             result = new IO.Ably.ErrorInfo();
-            if (unpacker.IsArrayHeader) {
-                int unpacked = default(int);
-                int itemsCount = default(int);
-                itemsCount = MsgPack.Serialization.UnpackHelpers.GetItemsCount(unpacker);
-                System.Nullable<int> nullable = default(System.Nullable<int>);
-                if ((unpacked < itemsCount)) {
-                    nullable = MsgPack.Serialization.UnpackHelpers.UnpackNullableInt32Value(unpacker, typeof(IO.Ably.ErrorInfo), "Int32 code");
+            int itemsCount0 = default(int);
+            itemsCount0 = MsgPack.Serialization.UnpackHelpers.GetItemsCount(unpacker);
+            for (int i = 0; (i < itemsCount0); i = (i + 1))
+            {
+                string key = default(string);
+                string nullable3 = default(string);
+                nullable3 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.ErrorInfo),
+                    "MemberName");
+                if (((nullable3 == null)
+                     == false))
+                {
+                    key = nullable3;
                 }
-                if (nullable.HasValue) {
-                    result.code = nullable.Value;
+                else
+                {
+                    throw MsgPack.Serialization.SerializationExceptions.NewNullIsProhibited("MemberName");
                 }
-                unpacked = (unpacked + 1);
-                string nullable0 = default(string);
-                if ((unpacked < itemsCount)) {
-                    nullable0 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.ErrorInfo), "System.String message");
-                }
-                if (((nullable0 == null) 
-                            == false)) {
-                    result.message = nullable0;
-                }
-                unpacked = (unpacked + 1);
-                System.Nullable<int> nullable1 = default(System.Nullable<int>);
-                if ((unpacked < itemsCount)) {
-                    nullable1 = MsgPack.Serialization.UnpackHelpers.UnpackNullableInt32Value(unpacker, typeof(IO.Ably.ErrorInfo), "Int32 NumberOfTries");
-                }
-                if (nullable1.HasValue) {
-                    result.NumberOfTries = nullable1.Value;
-                }
-                unpacked = (unpacked + 1);
-                System.Nullable<System.Net.HttpStatusCode> nullable2 = default(System.Nullable<System.Net.HttpStatusCode>);
-                if ((unpacked < itemsCount)) {
-                    if ((unpacker.Read() == false)) {
-                        throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(3);
+                if ((key == "statusCode"))
+                {
+                    System.Nullable<System.Net.HttpStatusCode> nullable7 =
+                        default(System.Nullable<System.Net.HttpStatusCode>);
+                    if ((unpacker.Read() == false))
+                    {
+                        throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
                     }
-                    if (((unpacker.IsArrayHeader == false) 
-                                && (unpacker.IsMapHeader == false))) {
-                        nullable2 = this._serializer2.UnpackFrom(unpacker);
+                    if (((unpacker.IsArrayHeader == false)
+                         && (unpacker.IsMapHeader == false)))
+                    {
+                        nullable7 = this._serializer2.UnpackFrom(unpacker);
                     }
-                    else {
-                        MsgPack.Unpacker disposable = default(MsgPack.Unpacker);
-                        disposable = unpacker.ReadSubtree();
-                        try {
-                            nullable2 = this._serializer2.UnpackFrom(disposable);
+                    else
+                    {
+                        MsgPack.Unpacker disposable0 = default(MsgPack.Unpacker);
+                        disposable0 = unpacker.ReadSubtree();
+                        try
+                        {
+                            nullable7 = this._serializer2.UnpackFrom(disposable0);
                         }
-                        finally {
-                            if (((disposable == null) 
-                                        == false)) {
-                                disposable.Dispose();
+                        finally
+                        {
+                            if (((disposable0 == null)
+                                 == false))
+                            {
+                                disposable0.Dispose();
                             }
                         }
                     }
+                    if (nullable7.HasValue)
+                    {
+                        result.statusCode = nullable7;
+                    }
                 }
-                if (nullable2.HasValue) {
-                    result.statusCode = nullable2;
-                }
-                unpacked = (unpacked + 1);
-            }
-            else {
-                int itemsCount0 = default(int);
-                itemsCount0 = MsgPack.Serialization.UnpackHelpers.GetItemsCount(unpacker);
-                for (int i = 0; (i < itemsCount0); i = (i + 1)) {
-                    string key = default(string);
-                    string nullable3 = default(string);
-                    nullable3 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.ErrorInfo), "MemberName");
-                    if (((nullable3 == null) 
-                                == false)) {
-                        key = nullable3;
-                    }
-                    else {
-                        throw MsgPack.Serialization.SerializationExceptions.NewNullIsProhibited("MemberName");
-                    }
-                    if ((key == "statusCode")) {
-                        System.Nullable<System.Net.HttpStatusCode> nullable7 = default(System.Nullable<System.Net.HttpStatusCode>);
-                        if ((unpacker.Read() == false)) {
-                            throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
-                        }
-                        if (((unpacker.IsArrayHeader == false) 
-                                    && (unpacker.IsMapHeader == false))) {
-                            nullable7 = this._serializer2.UnpackFrom(unpacker);
-                        }
-                        else {
-                            MsgPack.Unpacker disposable0 = default(MsgPack.Unpacker);
-                            disposable0 = unpacker.ReadSubtree();
-                            try {
-                                nullable7 = this._serializer2.UnpackFrom(disposable0);
-                            }
-                            finally {
-                                if (((disposable0 == null) 
-                                            == false)) {
-                                    disposable0.Dispose();
-                                }
-                            }
-                        }
-                        if (nullable7.HasValue) {
-                            result.statusCode = nullable7;
+                else
+                {
+                    if ((key == "message"))
+                    {
+                        string nullable5 = default(string);
+                        nullable5 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker,
+                            typeof(IO.Ably.ErrorInfo), "System.String message");
+                        if (((nullable5 == null)
+                             == false))
+                        {
+                            result.message = nullable5;
                         }
                     }
-                    else {
-                        if ((key == "NumberOfTries")) {
-                            System.Nullable<int> nullable6 = default(System.Nullable<int>);
-                            nullable6 = MsgPack.Serialization.UnpackHelpers.UnpackNullableInt32Value(unpacker, typeof(IO.Ably.ErrorInfo), "Int32 NumberOfTries");
-                            if (nullable6.HasValue) {
-                                result.NumberOfTries = nullable6.Value;
+                    else
+                    {
+                        if ((key == "code"))
+                        {
+                            System.Nullable<int> nullable4 = default(System.Nullable<int>);
+                            nullable4 = MsgPack.Serialization.UnpackHelpers.UnpackNullableInt32Value(unpacker,
+                                typeof(IO.Ably.ErrorInfo), "Int32 code");
+                            if (nullable4.HasValue)
+                            {
+                                result.code = nullable4.Value;
                             }
                         }
-                        else {
-                            if ((key == "message")) {
-                                string nullable5 = default(string);
-                                nullable5 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.ErrorInfo), "System.String message");
-                                if (((nullable5 == null) 
-                                            == false)) {
-                                    result.message = nullable5;
-                                }
-                            }
-                            else {
-                                if ((key == "code")) {
-                                    System.Nullable<int> nullable4 = default(System.Nullable<int>);
-                                    nullable4 = MsgPack.Serialization.UnpackHelpers.UnpackNullableInt32Value(unpacker, typeof(IO.Ably.ErrorInfo), "Int32 code");
-                                    if (nullable4.HasValue) {
-                                        result.code = nullable4.Value;
-                                    }
-                                }
-                                else {
-                                    unpacker.Skip();
-                                }
-                            }
+                        else
+                        {
+                            unpacker.Skip();
                         }
                     }
                 }
             }
             return result;
         }
-        
+
         private static T @__Conditional<T>(bool condition, T whenTrue, T whenFalse)
          {
             if (condition) {

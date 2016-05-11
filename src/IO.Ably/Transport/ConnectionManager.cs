@@ -79,11 +79,12 @@ namespace IO.Ably.Transport
                     }
                     catch (AblyException ex)
                     {
+                        newState.AbortTimer();
+
                         Logger.Error("Error attaching to context", ex);
                         if (newState.State != ConnectionStateType.Failed)
                         {
-                            SetState(new ConnectionFailedState(this,
-                                new ErrorInfo($"Failed to attach connection state {newState.State}", 500)));
+                            SetState(new ConnectionFailedState(this, ex.ErrorInfo));
                         }
                     }
                 }
@@ -94,6 +95,7 @@ namespace IO.Ably.Transport
         {
             if (Transport != null && AttemptsInfo.TriedToRenewToken)
                 (this as IConnectionContext).DestroyTransport();
+                
 
             var transport = GetTransportFactory().CreateTransport(await CreateTransportParameters());
             transport.Listener = this;

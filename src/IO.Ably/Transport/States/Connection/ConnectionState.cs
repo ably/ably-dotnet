@@ -27,6 +27,7 @@ namespace IO.Ably.Transport.States.Connection
         public abstract void Close();
         public abstract Task OnTransportStateChanged(TransportStateInfo state);
         public abstract Task<bool> OnMessageReceived(ProtocolMessage message);
+        public abstract void AbortTimer();
 
         public virtual Task OnAttachedToContext()
         {

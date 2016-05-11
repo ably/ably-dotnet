@@ -59,12 +59,12 @@ namespace IO.Ably.Tests
             return TaskConstants.BooleanTrue;
         }
 
-        public bool ShouldCreateTransport { get; set; }
+        public bool AllowTransportCreating { get; set; }
 
         public Task CreateTransport()
         {
             CreateTransportCalled = true;
-            if(ShouldCreateTransport)
+            if(AllowTransportCreating)
                 Transport = new FakeTransport();
             return TaskConstants.BooleanTrue;
         }

@@ -55,6 +55,11 @@ namespace IO.Ably.Transport.States.Connection
             return TaskConstants.BooleanFalse;
         }
 
+        public override void AbortTimer()
+        {
+            _timer.Abort();
+        }
+
         public override Task OnTransportStateChanged(TransportStateInfo state)
         {
             // could not happen

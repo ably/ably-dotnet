@@ -122,6 +122,11 @@ namespace IO.Ably.Transport.States.Connection
             return false;
         }
 
+        public override void AbortTimer()
+        {
+            _timer.Abort();
+        }
+
         public override async Task OnTransportStateChanged(TransportStateInfo state)
         {
             if (_suppressTransportEvents) return;
@@ -147,8 +152,16 @@ namespace IO.Ably.Transport.States.Connection
         public override async Task OnAttachedToContext()
         {
             Context.AttemptConnection();
-
-            await Context.CreateTransport();
+            try
+            {
+                _suppressTransportEvents = true;
+                await Context.CreateTransport();
+            }
+            finally
+            {
+                _suppressTransportEvents = false;
+            }
+            
 
             ConnectTransport();
         }

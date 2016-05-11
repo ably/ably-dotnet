@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -18,8 +19,10 @@ namespace IO.Ably.Tests.Realtime
         private int _tokenErrorCode = 40140;
         private bool _renewTokenCalled;
         private TokenDetails _validToken;
+        private ErrorInfo _tokenErrorInfo;
+        private int _failedRenewalErorrCode = 1234;
 
-        public AblyRealtime SetupConnectedClient()
+        public AblyRealtime SetupConnectedClient(bool failRenewal = false)
         {
             return GetConnectedClient(opts =>
             {
@@ -29,6 +32,8 @@ namespace IO.Ably.Tests.Realtime
             {
                 if (request.Url.Contains("/keys"))
                 {
+                    if (failRenewal)
+                        throw new AblyException(new ErrorInfo("Failed to renew token", _failedRenewalErorrCode));
                     _renewTokenCalled = true;
                     return _returnedDummyTokenDetails.ToJson().ToAblyResponse();
                 }
@@ -47,7 +52,7 @@ namespace IO.Ably.Tests.Realtime
             var errors = new List<ErrorInfo>();
             client.Connection.ConnectionStateChanged += (sender, args) =>
             {
-                if(args.HasError)
+                if (args.HasError)
                     errors.Add(args.Reason);
 
                 states.Add(args.CurrentState);
@@ -56,10 +61,10 @@ namespace IO.Ably.Tests.Realtime
                     client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
                 }
             };
-            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { error = new ErrorInfo() { code = _tokenErrorCode, statusCode = HttpStatusCode.Unauthorized } });
+            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { error = _tokenErrorInfo });
 
             _renewTokenCalled.Should().BeTrue();
-            Assert.Equal(new [] { ConnectionStateType.Disconnected, ConnectionStateType.Connecting, ConnectionStateType.Connected }, states);
+            Assert.Equal(new[] { ConnectionStateType.Disconnected, ConnectionStateType.Connecting, ConnectionStateType.Connected }, states);
             errors.Should().BeEmpty("There should be no errors emitted by the client");
 
             var currentToken = client.Auth.CurrentToken;
@@ -68,11 +73,46 @@ namespace IO.Ably.Tests.Realtime
             currentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires);
         }
 
+        [Fact]
+        [Trait("spec", "RTN15h")]
+        public async Task WithTokenErrorWhenTokenRenewalFails_ShouldGoToFailedStateAndEmitError()
+        {
+            var client = SetupConnectedClient(failRenewal: true);
+
+            List<ConnectionStateType> states = new List<ConnectionStateType>();
+            var errors = new List<ErrorInfo>();
+            client.Connection.ConnectionStateChanged += (sender, args) =>
+            {
+                if (args.HasError)
+                    errors.Add(args.Reason);
+
+                states.Add(args.CurrentState);
+            };
+
+            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
+                {
+                    error = _tokenErrorInfo
+                });
+
+            Assert.Equal(new[]
+            {
+                ConnectionStateType.Disconnected,
+                ConnectionStateType.Connecting,
+                ConnectionStateType.Failed
+            }, states);
+
+            errors.Should().NotBeEmpty();
+            errors.First().code.Should().Be(_failedRenewalErorrCode);
+        }
+
+
+
         public ConnectionFailuresOnceConnectedSpecs(ITestOutputHelper output) : base(output)
         {
             Now = DateTimeOffset.Now;
             _validToken = new TokenDetails("id") { Expires = Now.AddHours(1) };
             _renewTokenCalled = false;
+            _tokenErrorInfo = new ErrorInfo() { code = _tokenErrorCode, statusCode = HttpStatusCode.Unauthorized };
         }
     }
 }
