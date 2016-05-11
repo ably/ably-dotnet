@@ -22,10 +22,11 @@ namespace IO.Ably.Tests.Realtime
         private ErrorInfo _tokenErrorInfo;
         private int _failedRenewalErorrCode = 1234;
 
-        public AblyRealtime SetupConnectedClient(bool failRenewal = false)
+        public AblyRealtime SetupConnectedClient(bool failRenewal = false, bool renewable = true)
         {
             return GetConnectedClient(opts =>
             {
+                if (renewable == false) opts.Key = ""; //clear the key to make the token non renewable
                 opts.TokenDetails = _validToken;
                 opts.UseBinaryProtocol = false;
             }, request =>
@@ -140,6 +141,35 @@ namespace IO.Ably.Tests.Realtime
 
             errors.Should().NotBeEmpty();
             errors.First().code.Should().Be(_tokenErrorInfo.code);
+        }
+
+        [Fact]
+        [Trait("spec", "RTN15f")]
+        public async Task WhenConnectionFailsWithTokenErrorButTokenIsNotRenewable_ShouldTransitionDirectlyToFailedWithError()
+        {
+            var client = SetupConnectedClient(renewable: false);
+
+            List<ConnectionStateType> states = new List<ConnectionStateType>();
+            var errors = new List<ErrorInfo>();
+            client.Connection.ConnectionStateChanged += (sender, args) =>
+            {
+                if (args.HasError)
+                    errors.Add(args.Reason);
+
+                states.Add(args.CurrentState);
+            };
+
+            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
+            {
+                error = _tokenErrorInfo
+            });
+
+            Assert.Equal(new[]
+            {
+                ConnectionStateType.Failed
+            }, states);
+
+            errors.Should().NotBeEmpty();
         }
 
 

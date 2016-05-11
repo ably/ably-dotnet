@@ -159,13 +159,21 @@ namespace IO.Ably.Transport
             return AttemptsInfo.ShouldSuspend();
         }
 
-        public async Task<bool> RetryBecauseOfTokenError(ErrorInfo error)
+        public async Task<bool> HandleTokenError(ErrorInfo error)
         {
-            if (ShouldWeRenewToken(error))
+            if (error != null && error.IsTokenError)
             {
-                ClearTokenAndRecordRetry();
-                await SetState(new ConnectionDisconnectedState(this), skipAttach: true);
-                await SetState(new ConnectionConnectingState(this));
+                if (ShouldWeRenewToken(error))
+                {
+                    ClearTokenAndRecordRetry();
+                    await SetState(new ConnectionDisconnectedState(this), skipAttach: true);
+                    await SetState(new ConnectionConnectingState(this));
+                }
+                else
+                {
+                    await SetState(new ConnectionFailedState(this, error));
+                }
+
                 return true;
             }
             return false;
