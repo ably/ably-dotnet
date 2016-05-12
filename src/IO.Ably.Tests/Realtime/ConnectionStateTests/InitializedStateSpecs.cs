@@ -65,13 +65,6 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void ShouldNotListenToTransportChanges()
-        {
-            // Act
-            _state.OnTransportStateChanged(null);
-        }
-
-        [Fact]
         public void CloseShouldDoNothing()
         {
             // Act

@@ -13,11 +13,6 @@ namespace IO.Ably.Transport.States.Connection
         {
         }
 
-        public ConnectionDisconnectedState(IConnectionContext context, TransportStateInfo stateInfo) :
-            this(context, CreateError(stateInfo), new CountdownTimer("Disconnected state timer"))
-        {
-        }
-
         public ConnectionDisconnectedState(IConnectionContext context, ErrorInfo error) :
             this(context, error, new CountdownTimer("Disconnected state timer"))
         {
@@ -60,13 +55,6 @@ namespace IO.Ably.Transport.States.Connection
             _timer.Abort();
         }
 
-        public override Task OnTransportStateChanged(TransportStateInfo state)
-        {
-            // could not happen
-            Logger.Error("Unexpected state change. " + state);
-            return TaskConstants.BooleanTrue;
-        }
-
         public override Task OnAttachedToContext()
         {
             if (RetryInstantly)
@@ -84,11 +72,6 @@ namespace IO.Ably.Transport.States.Connection
         private void OnTimeOut()
         {
             Context.SetState(new ConnectionConnectingState(Context));
-        }
-
-        private static ErrorInfo CreateError(TransportStateInfo state)
-        {
-            return ErrorInfo.ReasonDisconnected;
         }
     }
 }

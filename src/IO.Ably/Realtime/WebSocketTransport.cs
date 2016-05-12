@@ -122,7 +122,7 @@ namespace IO.Ably.Realtime
         }
 
         private WebSocket CreateSocket(Uri uri)
-        {
+        { 
             if (Logger.IsDebug)
             {
                 Logger.Debug("Connecting to web socket on url: " + uri);
@@ -168,7 +168,8 @@ namespace IO.Ably.Realtime
             {
                 Logger.Debug("Websocket opened!");
             }
-            Listener?.OnTransportConnected();
+
+            Listener?.OnTransportEvent(State);
         }
 
         private void socket_Closed(object sender, EventArgs e)
@@ -177,13 +178,13 @@ namespace IO.Ably.Realtime
             {
                 Logger.Debug("Websocket closed!");
             }
-            Listener?.OnTransportDisconnected();
+            Listener?.OnTransportEvent(State);
         }
 
         private void socket_Error(object sender, ErrorEventArgs e)
         {
             Logger.Error("Websocket error!", e.Exception);
-            Listener?.OnTransportError(e.Exception);
+            Listener?.OnTransportEvent(State, e.Exception);
         }
 
         private void socket_MessageReceived(object sender, MessageReceivedEventArgs e)
@@ -193,10 +194,7 @@ namespace IO.Ably.Realtime
                 Logger.Debug("Websocket message received. Raw: " + e.Message);
             }
 
-            if (Listener != null)
-            {
-                Listener.OnTransportDataReceived(new RealtimeTransportData(e.Message));
-            }
+            Listener?.OnTransportDataReceived(new RealtimeTransportData(e.Message));
         }
 
         private void socket_DataReceived(object sender, DataReceivedEventArgs e)
@@ -206,10 +204,7 @@ namespace IO.Ably.Realtime
                 Logger.Debug("Websocket data message received. Raw: " + e.Data.GetText());
             }
 
-            if (Listener != null)
-            {
-                Listener.OnTransportDataReceived(new RealtimeTransportData(e.Data));
-            }
+            Listener?.OnTransportDataReceived(new RealtimeTransportData(e.Data));
         }
 
         public class WebSocketTransportFactory : ITransportFactory

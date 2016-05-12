@@ -40,30 +40,6 @@ namespace IO.Ably.Tests
             _state.Close();
         }
 
-        [Fact]
-        public async Task OnTransportDisconnected_ShouldMoveToClosed()
-        {
-            // Act
-            await _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
-
-            // Assert
-            _context.StateShouldBe<ConnectionClosedState>();
-        }
-
-        [Theory]
-        [InlineData(TransportState.Closing)]
-        [InlineData(TransportState.Connected)]
-        [InlineData(TransportState.Connecting)]
-        [InlineData(TransportState.Initialized)]
-        public async Task OnTransportStateChangeTHatIsNotClosed_ShouldDoNothing(TransportState transportState)
-        {
-            // Act
-            await _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(transportState));
-
-            // Assert
-            _context.ShouldHaveNotChangedState();
-        }
-
         [Theory]
         [InlineData(ProtocolMessage.MessageAction.Ack)]
         [InlineData(ProtocolMessage.MessageAction.Attach)]

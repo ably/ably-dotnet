@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Auth;
 using IO.Ably.Realtime;
+using IO.Ably.Transport;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -165,7 +166,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 args.RetryIn.Should().Be(options.DisconnectedRetryTimeout);
                 args.Reason.Should().NotBeNull();
             };
-            LastCreatedTransport.Listener.OnTransportError(new Exception());
+            LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closing, new Exception());
         }
 
         [Fact]
@@ -192,7 +193,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             };
             do
             {
-                LastCreatedTransport.Listener.OnTransportError(new Exception());
+                LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closing, new Exception());
                 Now = Now.AddSeconds(15);
             } while (client.Connection.State != ConnectionStateType.Suspended);
 
@@ -223,7 +224,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.Connect();
             do
             {
-                LastCreatedTransport.Listener.OnTransportError(new Exception());
+                LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closing, new Exception());
                 Now = Now.AddSeconds(15);
             } while (client.Connection.State != ConnectionStateType.Suspended);
 
@@ -252,7 +253,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.Connect();
             do
             {
-                LastCreatedTransport.Listener.OnTransportError(new Exception());
+                LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closing, new Exception());
                 Now = Now.AddSeconds(15);
             } while (client.Connection.State != ConnectionStateType.Suspended);
 

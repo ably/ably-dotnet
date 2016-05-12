@@ -70,13 +70,6 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void ShouldNotListenToTransportChanges()
-        {
-            // Act
-            _state.OnTransportStateChanged(null);
-        }
-
-        [Fact]
         [Trait("spec", "RTN12d")]
         public void Close_ChangesStateToClosedAndAbortsTimer()
         {

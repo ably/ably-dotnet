@@ -140,29 +140,6 @@ namespace IO.Ably.Tests
             _context.QueuedMessages.Should().BeEmpty();
         }
 
-        [Theory]
-        [InlineData(TransportState.Closing)]
-        [InlineData(TransportState.Connected)]
-        [InlineData(TransportState.Connecting)]
-        [InlineData(TransportState.Initialized)]
-        public async Task WhenTransportStateChanges_ConnectionStatesShouldNotChange(TransportState transportState)
-        {
-            // Act
-            await _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(transportState));
-
-            // Assert
-            _context.LastSetState.Should().BeNull();
-        }
-
-        [Fact]
-        public void ConnectedState_TransportGoesDisconnected_SwitchesToDisconnected()
-        {
-            _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
-
-            // Assert
-            _context.StateShouldBe<ConnectionDisconnectedState>();
-        }
-
         [Fact]
         [Trait("spec", "RTN12c")]
         public async Task WhenCloseMessageReceived_ShouldChangeStateToClosed()

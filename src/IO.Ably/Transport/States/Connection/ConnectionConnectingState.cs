@@ -127,41 +127,10 @@ namespace IO.Ably.Transport.States.Connection
             _timer.Abort();
         }
 
-        public override async Task OnTransportStateChanged(TransportStateInfo state)
-        {
-            if (_suppressTransportEvents) return;
-
-            if (state.Error != null || state.State == TransportState.Closed)
-            {
-                ConnectionState nextState;
-                if (Context.ShouldSuspend())
-                {
-                    nextState = new ConnectionSuspendedState(Context);
-                }
-                else
-                {
-                    nextState = new ConnectionDisconnectedState(Context, state)
-                    {
-                        RetryInstantly = state.Error != null && await Context.CanConnectToAbly()
-                    };
-                }
-                TransitionState(nextState);
-            }
-        }
-
         public override async Task OnAttachedToContext()
         {
             Context.AttemptConnection();
-            try
-            {
-                _suppressTransportEvents = true;
-                await Context.CreateTransport();
-            }
-            finally
-            {
-                _suppressTransportEvents = false;
-            }
-            
+            await Context.CreateTransport();
 
             ConnectTransport();
         }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Auth;
 using IO.Ably.Realtime;
+using IO.Ably.Transport;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -170,6 +171,34 @@ namespace IO.Ably.Tests.Realtime
             }, states);
 
             errors.Should().NotBeEmpty();
+        }
+
+        [Fact]
+        [Trait("spec", "RTN15f")]
+        public async Task WhenTransportCloses_ShouldResumeConnection()
+        {
+            var client = SetupConnectedClient();
+
+            List<ConnectionStateType> states = new List<ConnectionStateType>();
+            var errors = new List<ErrorInfo>();
+            client.Connection.ConnectionStateChanged += (sender, args) =>
+            {
+                if (args.HasError)
+                    errors.Add(args.Reason);
+
+                states.Add(args.CurrentState);
+                if (args.CurrentState == ConnectionStateType.Connecting)
+                {
+                    client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+                }
+            };
+
+            LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closed);
+            
+            Assert.Equal(new[]
+            {
+                ConnectionStateType.Failed
+            }, states);
         }
 
 

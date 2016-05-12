@@ -19,10 +19,6 @@ namespace IO.Ably.Tests
         {
             return new ConnectionFailedState(_context, info);
         }
-        private ConnectionFailedState GetState(ConnectionState.TransportStateInfo transportStateInfo)
-        {
-            return new ConnectionFailedState(_context, transportStateInfo);
-        }
 
         public FailedStateSpecs(ITestOutputHelper output) : base(output)
         {
@@ -100,12 +96,6 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.False(result);
-        }
-
-        [Fact]
-        public async Task ShouldNotListenToTransportCHanges()
-        {
-            await _state.OnTransportStateChanged(null);
         }
 
         [Fact]

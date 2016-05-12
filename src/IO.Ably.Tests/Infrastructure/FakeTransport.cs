@@ -42,7 +42,7 @@ namespace IO.Ably.Tests
             ConnectCalled = true;
             if (OnConnectChangeStateToConnected)
             {
-               Listener?.OnTransportConnected();
+                Listener?.OnTransportEvent(TransportState.Connected);
                 State = TransportState.Connected;
             }
         }
@@ -52,7 +52,7 @@ namespace IO.Ably.Tests
             CloseCalled = true;
 
             //Listener?.OnTransportDataReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
-            Listener?.OnTransportDisconnected();
+            Listener?.OnTransportEvent(TransportState.Closed);
         }
 
         public void Send(RealtimeTransportData data)

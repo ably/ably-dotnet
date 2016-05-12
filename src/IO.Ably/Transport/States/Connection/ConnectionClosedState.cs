@@ -41,12 +41,6 @@ namespace IO.Ably.Transport.States.Connection
             
         }
 
-        public override Task OnTransportStateChanged(TransportStateInfo state)
-        {
-            // could not happen
-            return TaskConstants.BooleanTrue;
-        }
-
         public override Task OnAttachedToContext()
         {
             // This is a terminal state. Clear the transport.

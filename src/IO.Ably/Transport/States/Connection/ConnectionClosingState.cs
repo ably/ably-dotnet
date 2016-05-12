@@ -68,15 +68,6 @@ namespace IO.Ably.Transport.States.Connection
             _timer.Abort();
         }
 
-        public override Task OnTransportStateChanged(TransportStateInfo state)
-        {
-            if (state.State == TransportState.Closed)
-            {
-                TransitionState(new ConnectionClosedState(Context));
-            }
-            return TaskConstants.BooleanTrue;
-        }
-
         public override Task OnAttachedToContext()
         {
             if (Context.TransportState == TransportState.Connected)

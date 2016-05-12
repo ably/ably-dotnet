@@ -24,11 +24,6 @@ namespace IO.Ably.Tests
             _state = GetState();
         }
 
-        private ConnectionDisconnectedState GetState(ConnectionState.TransportStateInfo stateInfo)
-        {
-            return new ConnectionDisconnectedState(_context, stateInfo);
-        }
-
         private ConnectionDisconnectedState GetState(ErrorInfo error = null, ICountdownTimer timer = null)
         {
             return new ConnectionDisconnectedState(_context, error, _timer);
@@ -78,16 +73,6 @@ namespace IO.Ably.Tests
 
             // Assert
             handled.Should().BeFalse();
-        }
-
-        [Fact]
-        public async Task SHouldNotListenToTransportStateChanges()
-        {
-            // Arrange
-            var state = GetState(ErrorInfo.ReasonClosed);
-
-            // Act
-            await state.OnTransportStateChanged(null);
         }
 
         [Fact]

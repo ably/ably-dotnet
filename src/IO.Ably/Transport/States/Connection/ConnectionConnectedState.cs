@@ -57,14 +57,7 @@ namespace IO.Ably.Transport.States.Connection
             
         }
 
-        public override Task OnTransportStateChanged(TransportStateInfo state)
-        {
-            if (state.State == TransportState.Closed)
-            {
-                Context.SetState(new ConnectionDisconnectedState(Context, state));
-            }
-            return TaskConstants.BooleanTrue;
-        }
+        
 
         public override void SendMessage(ProtocolMessage message)
         {

@@ -21,7 +21,7 @@ namespace IO.Ably.Transport
         private ConnectionManager()
         {
             _pendingMessages = new Queue<ProtocolMessage>();
-            
+
             if (Logger.IsDebug)
             {
                 Execute(() => Logger.Debug("ConnectionManager thread created"));
@@ -40,7 +40,7 @@ namespace IO.Ably.Transport
         public IAcknowledgementProcessor AckProcessor { get; internal set; }
 
         private ConnectionAttemptsInfo AttemptsInfo { get; }
-        
+
         public TimeSpan RetryTimeout => Options.DisconnectedRetryTimeout;
 
         public AblyRest RestClient { get; }
@@ -66,8 +66,11 @@ namespace IO.Ably.Transport
                 Logger.Debug($"Setting state from {ConnectionState} to {newState}");
             }
 
-            return ExecuteAsyncOperation(async () =>
+            return ExecuteOnManagerThread(async () =>
             {
+                //Abort any times on the old state
+                State.AbortTimer();
+
                 AckProcessor.OnStateChanged(newState);
                 Connection.UpdateState(newState);
 
@@ -95,7 +98,7 @@ namespace IO.Ably.Transport
         {
             if (Transport != null && AttemptsInfo.TriedToRenewToken)
                 (this as IConnectionContext).DestroyTransport();
-                
+
 
             var transport = GetTransportFactory().CreateTransport(await CreateTransportParameters());
             transport.Listener = this;
@@ -159,7 +162,7 @@ namespace IO.Ably.Transport
             return AttemptsInfo.ShouldSuspend();
         }
 
-        public async Task<bool> HandleTokenError(ErrorInfo error)
+        public async Task<bool> RetryBecauseOfTokenError(ErrorInfo error)
         {
             if (error != null && error.IsTokenError)
             {
@@ -192,7 +195,7 @@ namespace IO.Ably.Transport
         }
 
         public Connection Connection { get; }
-        
+
 
         public ConnectionStateType ConnectionState => Connection.State;
 
@@ -210,30 +213,65 @@ namespace IO.Ably.Transport
             Transport.Send(data);
         }
 
-        void ITransportListener.OnTransportConnected()
+        void ITransportListener.OnTransportEvent(TransportState state, Exception ex)
         {
-            OnTransportConnected();
+            ExecuteOnManagerThread(async () =>
+            {
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug($"On transport event. State {state} error {ex}");
+                }
+
+                if (state == TransportState.Closed || ex != null)
+                {
+                    switch (ConnectionState)
+                    {
+                        case ConnectionStateType.Closing:
+                            await SetState(new ConnectionClosedState(this));
+                            break;
+                        case ConnectionStateType.Connecting:
+                            await HandleConnectingFailure(ex);
+                            break;
+                        case ConnectionStateType.Connected:
+                            var error = ex != null ? ErrorInfo.ReasonDisconnected : null;
+                            await SetState(new ConnectionDisconnectedState(this, GetErrorInfoFromTransportException(ex, ErrorInfo.ReasonDisconnected)));
+                            break;
+                    }
+                }
+            });
         }
 
-        void ITransportListener.OnTransportDisconnected()
+        private static ErrorInfo GetErrorInfoFromTransportException(Exception ex, ErrorInfo @default)
         {
-            OnTransportDisconnected();
+            if (ex?.Message == "HTTP/1.1 401 Unauthorized")
+                return ErrorInfo.ReasonRefused;
+
+            return @default;
         }
 
-        void ITransportListener.OnTransportError(Exception e)
+        private async Task HandleConnectingFailure(Exception ex)
         {
-            OnTransportError(Transport.State, e);
+            if (ShouldSuspend())
+                await SetState(new ConnectionSuspendedState(this));
+            else
+                await SetState(new ConnectionDisconnectedState(this, ErrorInfo.ReasonDisconnected)
+                {
+                    RetryInstantly = ex != null && await CanConnectToAbly()
+                });
         }
 
         void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)
         {
-            if (Logger.IsDebug)
+            ExecuteOnManagerThread(() =>
             {
-                Logger.Debug("Message received: " + data.Explain());
-            }
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug("Message received: " + data.Explain());
+                }
 
-            var message = Handler.ParseRealtimeData(data);
-            ExecuteAsyncOperation(() => OnTransportMessageReceived(message));
+                var message = Handler.ParseRealtimeData(data);
+                return OnTransportMessageReceived(message);
+            });
         }
 
         public void Execute(Action action)
@@ -241,7 +279,7 @@ namespace IO.Ably.Transport
             AsyncContextThread.Factory.StartNew(action).WaitAndUnwrapException();
         }
 
-        public Task ExecuteAsyncOperation(Func<Task> asyncOperation)
+        public Task ExecuteOnManagerThread(Func<Task> asyncOperation)
         {
             if (Options.UseSyncForTesting)
             {
@@ -252,7 +290,7 @@ namespace IO.Ably.Transport
             return AsyncContextThread.Factory.Run(asyncOperation);
         }
 
-        public Task<T> ExecuteAsyncOperation<T>(Func<Task<T>> asyncOperation)
+        public Task<T> ExecuteOnManagerThread<T>(Func<Task<T>> asyncOperation)
         {
             return AsyncContextThread.Factory.Run(asyncOperation);
         }
@@ -268,7 +306,7 @@ namespace IO.Ably.Transport
             if (useFallbackHost)
             {
                 var r = new Random();
-                defaultHost = Defaults.FallbackHosts[r.Next(0, 1000)%Defaults.FallbackHosts.Length];
+                defaultHost = Defaults.FallbackHosts[r.Next(0, 1000) % Defaults.FallbackHosts.Length];
             }
             var host = options.RealtimeHost.IsNotEmpty() ? options.RealtimeHost : defaultHost;
             if (options.Environment.HasValue && options.Environment != AblyEnvironment.Live)
@@ -281,21 +319,6 @@ namespace IO.Ably.Transport
         private ITransportFactory GetTransportFactory()
         {
             return Options.TransportFactory ?? Defaults.WebSocketTransportFactory;
-        }
-
-        private void OnTransportConnected()
-        {
-            State.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Connected));
-        }
-
-        private void OnTransportDisconnected()
-        {
-            State.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
-        }
-
-        private void OnTransportError(TransportState state, Exception e)
-        {
-            State.OnTransportStateChanged(new ConnectionState.TransportStateInfo(state, e));
         }
 
         public async Task OnTransportMessageReceived(ProtocolMessage message)

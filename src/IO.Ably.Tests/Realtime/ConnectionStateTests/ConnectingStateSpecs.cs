@@ -252,51 +252,6 @@ namespace IO.Ably.Tests
             fakeTransport.ConnectCalled.Should().BeTrue();
         }
 
-        [Theory]
-        [InlineData(TransportState.Closing)]
-        [InlineData(TransportState.Connected)]
-        [InlineData(TransportState.Connecting)]
-        [InlineData(TransportState.Initialized)]
-        public async Task WhenTransportStateChanges_ShouldNotSwitchState(TransportState transportState)
-        {
-            // Act
-            await _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(transportState));
-
-            // Assert
-            _context.LastSetState.Should().BeNull();
-        }
-
-        [Fact]
-        public async Task WhenTransportGoesDisconnected_ShouldSwitchToDisconnected()
-        {
-            // Act
-            await _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
-
-            // Assert
-            _context.LastSetState.Should().BeOfType<ConnectionDisconnectedState>();
-        }
-
-        [Fact]
-        [Trait("spec", "RTN14d")]
-        public async Task TransportGoesDisconnectedWithError_ShouldSwitchToDisconnected()
-        {
-            // Act
-            await _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed, new Exception()));
-
-            // Assert
-            _context.LastSetState.Should().BeOfType<ConnectionDisconnectedState>();
-        }
-
-        [Fact(Skip = "Test is too vague. Look into it.")]
-        public async Task WhenTransportGoesDisconnected_SwitchesToSuspended()
-        {
-            // Act
-            await _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
-
-            // Assert
-            _context.LastSetState.Should().BeOfType<ConnectionSuspendedState>();
-        }
-
         [Fact]
         public async Task ConnectingState_ForceDisconnect()
         {
@@ -331,21 +286,5 @@ namespace IO.Ably.Tests
             _timer.StartedWithFunc.Should().BeTrue();
             _timer.Aborted.Should().BeTrue();
         }
-
-        [Fact]
-        public async Task ConnectingState_ForceDisconnectNotApplied_WhenTransportClosed()
-        {
-            // Arrange
-            _context.Transport = new FakeTransport() { State = TransportState.Initialized };
-
-            // Act
-            await _state.OnAttachedToContext();
-            await _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
-
-            // Assert
-            _timer.StartedWithFunc.Should().BeTrue();
-            _timer.Aborted.Should().BeTrue();
-        }
-
     }
 }

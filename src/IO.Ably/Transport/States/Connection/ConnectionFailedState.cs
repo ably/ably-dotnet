@@ -5,12 +5,6 @@ namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionFailedState : ConnectionState
     {
-        public ConnectionFailedState(IConnectionContext context, TransportStateInfo transportState) :
-            base(context)
-        {
-            Error = CreateError(transportState);
-        }
-
         public ConnectionFailedState(IConnectionContext context, ErrorInfo error) :
             base(context)
         {
@@ -43,13 +37,6 @@ namespace IO.Ably.Transport.States.Connection
             
         }
 
-        public override Task OnTransportStateChanged(TransportStateInfo state)
-        {
-            // could not happen
-            Logger.Error("Unexpected state change. " + state);
-            return TaskConstants.BooleanTrue;
-        }
-
         public override Task OnAttachedToContext()
         {
             // This is a terminal state. Clear the transport.
@@ -58,14 +45,6 @@ namespace IO.Ably.Transport.States.Connection
             return TaskConstants.BooleanTrue;
         }
 
-        private static ErrorInfo CreateError(TransportStateInfo state)
-        {
-            if (state != null && state.Error != null)
-            {
-                if (state.Error.Message == "HTTP/1.1 401 Unauthorized")
-                    return ErrorInfo.ReasonRefused;
-            }
-            return ErrorInfo.ReasonFailed;
-        }
+        
     }
 }
