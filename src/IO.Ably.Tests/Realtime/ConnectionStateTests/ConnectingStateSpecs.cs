@@ -35,14 +35,6 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public async Task OnAttachedToContext_ShouldAttempToConnect()
-        {
-            _state.OnAttachedToContext();
-
-            _context.AttempConnectionCalled.Should().BeTrue();
-        }
-
-        [Fact]
         public void SendMessage_ShouldQueueMessage()
         {
             _state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Connect));
@@ -239,20 +231,6 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public async Task OnAttachedToContext_WithClosedTransport_ShouldConnectTheTransport()
-        {
-            // Arrange
-            var fakeTransport = new FakeTransport() { State = TransportState.Closed };
-            _context.Transport = fakeTransport;
-
-            // Act
-            await _state.OnAttachedToContext();
-
-            // Assert
-            fakeTransport.ConnectCalled.Should().BeTrue();
-        }
-
-        [Fact]
         public async Task ConnectingState_ForceDisconnect()
         {
             // Arrange
@@ -260,11 +238,11 @@ namespace IO.Ably.Tests
 
             // Act
             await _state.OnAttachedToContext();
-            await _timer.OnTimeOutFunc();
+            _timer.OnTimeOut();
 
             // Assert
-            _timer.StartedWithFunc.Should().BeTrue();
-            _context.LastSetState.Should().BeOfType<ConnectionDisconnectedState>();
+            _timer.StartedWithAction.Should().BeTrue();
+            _context.HandledConnectionFailureCalled.Should().BeTrue();
         }
 
         [Theory]
@@ -283,7 +261,7 @@ namespace IO.Ably.Tests
             await _state.OnMessageReceived(new ProtocolMessage(action));
 
             // Assert
-            _timer.StartedWithFunc.Should().BeTrue();
+            _timer.StartedWithAction.Should().BeTrue();
             _timer.Aborted.Should().BeTrue();
         }
     }

@@ -7,6 +7,7 @@ using IO.Ably.Rest;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
+using Nito.AsyncEx.Synchronous;
 
 namespace IO.Ably.Tests
 {
@@ -36,6 +37,18 @@ namespace IO.Ably.Tests
 
         public TimeSpan DefaultTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;
         public TimeSpan RetryTimeout { get; set; } = Defaults.DisconnectedRetryTimeout;
+
+        public Task ExecuteOnManagerThread(Func<Task> asyncOperation)
+        {
+            asyncOperation().WaitAndUnwrapException();
+            return TaskConstants.BooleanTrue;
+        }
+
+        public Task Execute(Action action)
+        {
+            action();
+            return TaskConstants.BooleanTrue;
+        }
 
         public ConnectionState State { get; set; }
         public TransportState TransportState => Transport.State;
@@ -69,9 +82,12 @@ namespace IO.Ably.Tests
             return TaskConstants.BooleanTrue;
         }
 
-        public void DestroyTransport()
+        public void DestroyTransport(bool suppressClosedEvent = true)
         {
             DestroyTransportCalled = true;
+
+            
+
         }
 
         public void AttemptConnection()
@@ -119,6 +135,20 @@ namespace IO.Ably.Tests
         {
             return RetryFunc(error);
         }
+
+        public void CloseConnection()
+        {
+            CloseConnectionCalled = true;
+        }
+
+        public void HandleConnectingFailure(Exception ex)
+        {
+            HandledConnectionFailureCalled = true;
+        }
+
+        public bool HandledConnectionFailureCalled { get; set; }
+
+        public bool CloseConnectionCalled { get; set; }
 
         public bool ShouldSuspendValue { get; set; }
 

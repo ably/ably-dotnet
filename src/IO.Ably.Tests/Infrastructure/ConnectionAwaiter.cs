@@ -16,19 +16,19 @@ namespace IO.Ably.Tests
             ConnectionStateType.Failed
         };
 
-        private readonly ConnectionStateType _awaitedState;
+        private readonly List<ConnectionStateType> _awaitedStates = new List<ConnectionStateType>();
 
         public readonly Connection Connection;
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private readonly string _id = Guid.NewGuid().ToString("D").Split('-')[0];
 
-        public ConnectionAwaiter(Connection connection, ConnectionStateType awaitedState = ConnectionStateType.Connected)
+        public ConnectionAwaiter(Connection connection, params ConnectionStateType[] awaitedStates)
         {
             Connection = connection;
-            _awaitedState = awaitedState;
-            Connection.ConnectionStateChanged += conn_StateChanged;
+            _awaitedStates.AddRange(awaitedStates ?? new []{ConnectionStateType.Connected});
+            
         }
-        
+
         private void RemoveListener()
         {
             Logger.Debug($"[{_id}] Removing Connection listener");
@@ -37,29 +37,17 @@ namespace IO.Ably.Tests
 
         private void conn_StateChanged(object sender, ConnectionStateChangedEventArgs e)
         {
-            Logger.Debug($"[{_id}] Awaiter on state changed to " + e.CurrentState);
-            if (e.CurrentState == _awaitedState)
+            if (_awaitedStates.Contains(e.CurrentState))
             {
                 Logger.Debug($"[{_id}] Desired state was reached.");
-                _taskCompletionSource.SetResult(true);
                 RemoveListener();
-                return; // Success :-)
+                _taskCompletionSource.SetResult(true);
             }
-
-            if (!PermanentlyFailedStates.Contains(e.CurrentState))
-                return; // Still trying :-/
-
-            RemoveListener();
-            // Failed :-(
-            if (null != e.Reason)
-                _taskCompletionSource.SetException(e.Reason.AsException());
-
-            _taskCompletionSource.SetException(new Exception("Connection is in some failed state " + e.CurrentState));
         }
 
-        public async Task<TimeSpan> Wait()
+        public Task<TimeSpan> Wait()
         {
-            return await Wait(TimeSpan.FromSeconds(2));
+            return Wait(TimeSpan.FromSeconds(2));
         }
 
         public async Task<TimeSpan> Wait(TimeSpan timeout)
@@ -69,24 +57,30 @@ namespace IO.Ably.Tests
             
             if (Logger.IsDebug)
             {
-                Logger.Debug($"[{_id}] Waiting for state {_awaitedState} for {timeout.TotalSeconds} seconds");
+                Logger.Debug($"[{_id}] Waiting for state {string.Join(",", _awaitedStates)} for {timeout.TotalSeconds} seconds");
             }
 
-            if (Connection.State == _awaitedState)
+            if (_awaitedStates.Contains(Connection.State))
+            {
+                Logger.Debug($"Current state is {Connection.State}. Desired state reached.");
                 return TimeSpan.Zero;
+            }
 
+            Connection.ConnectionStateChanged += conn_StateChanged;
             var tResult = _taskCompletionSource.Task;
-            var tCompleted = await Task.WhenAny(tResult, Task.Delay(timeout));
+            var tCompleted = await Task.WhenAny(tResult, Task.Delay(timeout)).ConfigureAwait(true);
             if (tCompleted == tResult)
             {
                 stopwatch.Stop();
                 return stopwatch.Elapsed;
             }
+
+            if (_taskCompletionSource.TrySetException(new TimeoutException()))
+            {
+                Logger.Debug($"[{_id} Timeout exceeded. Throwing TimeoutException");
+                RemoveListener();
+            }
             
-            Logger.Debug($"[{_id} Timeout exceeded. Throwing TimeoutException");
-            RemoveListener();
-            _taskCompletionSource.SetException(new TimeoutException());
-            await tResult;
             stopwatch.Stop();
             return stopwatch.Elapsed;
         }

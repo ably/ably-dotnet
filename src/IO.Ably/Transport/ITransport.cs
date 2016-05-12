@@ -22,7 +22,7 @@ namespace IO.Ably.Transport
 
         void Connect();
 
-        void Close();
+        void Close(bool suppressClosedEvent = true);
 
         void Send(RealtimeTransportData data);
     }

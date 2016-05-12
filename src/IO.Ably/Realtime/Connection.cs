@@ -9,8 +9,6 @@ namespace IO.Ably.Realtime
     public sealed class Connection : IDisposable
     {
         private readonly AblyRest _restClient;
-        private ConnectionManager _connectionManager;
-
         internal ConnectionManager ConnectionManager { get; set; }
         private ConnectionState _currentState;
 
@@ -74,7 +72,7 @@ namespace IO.Ably.Realtime
         /// </summary>
         public void Connect()
         {
-            ConnectionState.Connect();
+            ConnectionManager.Connect();
         }
 
         /// <summary>
@@ -97,11 +95,15 @@ namespace IO.Ably.Realtime
         /// </summary>
         public void Close()
         {
-            ConnectionState.Close();
+            ConnectionManager.CloseConnection();
         }
 
         internal void UpdateState(ConnectionState state)
         {
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"Connection notifying subscribers for state change `{state.State}`");
+            }
             var oldState = ConnectionState.State;
             var newState = state.State;
             ConnectionState = state;
@@ -109,12 +111,6 @@ namespace IO.Ably.Realtime
             var stateArgs = new ConnectionStateChangedEventArgs(oldState, newState, state.RetryIn, Reason);
 
             var handler = Volatile.Read(ref ConnectionStateChanged); //Make sure we get all the subscribers on all threads
-            if (Logger.IsDebug)
-            {
-                var delegates = handler.GetInvocationList();
-                Logger.Debug($"{delegates.Length} delegates will be notified");
-            }
-            
             handler(this, stateArgs); 
         }
     }

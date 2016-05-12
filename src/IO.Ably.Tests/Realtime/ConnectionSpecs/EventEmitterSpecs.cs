@@ -73,7 +73,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 if (message.Original.action == ProtocolMessage.MessageAction.Close)
                 {
-                    LastCreatedTransport.Close();
+                    LastCreatedTransport.Close(false);
                 }
             };
 

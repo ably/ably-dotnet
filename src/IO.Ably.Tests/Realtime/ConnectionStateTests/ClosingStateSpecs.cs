@@ -102,7 +102,7 @@ namespace IO.Ably.Tests
         [Fact]
         [Trait("spec", "RTN12a")]
         //When the closing state is initialised a Close message is sent
-        public async Task OnAttachedToTransport_ShouldSendCloseMessage()
+        public async Task OnAttachedToTransport_ShouldSendClosedMessage()
         {
             // Arrange
             var transport = new FakeTransport() { State = TransportState.Connected };

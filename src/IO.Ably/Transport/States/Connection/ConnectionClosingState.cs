@@ -37,6 +37,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void Close()
         {
+            
             // do nothing
         }
 
@@ -73,7 +74,7 @@ namespace IO.Ably.Transport.States.Connection
             if (Context.TransportState == TransportState.Connected)
             {
                 Context.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
-                _timer.Start(TimeSpan.FromMilliseconds(CloseTimeout), () => Context.SetState(new ConnectionClosedState(Context)));
+                _timer.Start(TimeSpan.FromMilliseconds(CloseTimeout), OnTimeOut);
             }
             else
             {
@@ -82,10 +83,16 @@ namespace IO.Ably.Transport.States.Connection
             return TaskConstants.BooleanTrue;
         }
 
+        private void OnTimeOut()
+        {
+            Context.Execute(() =>
+                Context.SetState(new ConnectionClosedState(Context)));
+        }
+
         private void TransitionState(ConnectionState newState)
         {
-            Context.SetState(newState);
             _timer.Abort();
+            Context.SetState(newState);
         }
     }
 }

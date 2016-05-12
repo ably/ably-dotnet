@@ -68,7 +68,8 @@ namespace IO.Ably.Transport
     {
         TimeSpan DefaultTimeout { get; }
         TimeSpan RetryTimeout { get; }
-
+        Task ExecuteOnManagerThread(Func<Task> asyncOperation);
+        Task Execute(Action action);
         States.Connection.ConnectionState State { get; }
         TransportState TransportState { get; }
         ITransport Transport { get; }
@@ -78,8 +79,7 @@ namespace IO.Ably.Transport
         void ClearTokenAndRecordRetry();
         Task SetState(States.Connection.ConnectionState state, bool skipAttach = false);
         Task CreateTransport();
-        void DestroyTransport();
-        void AttemptConnection();
+        void DestroyTransport(bool suppressClosedEvent = true);
         void ResetConnectionAttempts();
         Task<bool> CanConnectToAbly();
         void SetConnectionClientId(string clientId);
@@ -87,5 +87,7 @@ namespace IO.Ably.Transport
         void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null);
         bool ShouldSuspend();
         Task<bool> RetryBecauseOfTokenError(ErrorInfo error);
+        void CloseConnection();
+        void HandleConnectingFailure(Exception ex);
     }
 }

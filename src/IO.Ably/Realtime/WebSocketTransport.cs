@@ -94,7 +94,7 @@ namespace IO.Ably.Realtime
             _socket.Open();
         }
 
-        public void Close()
+        public void Close(bool suppressClosedEvent = true)
         {
             if (Logger.IsDebug)
             {
@@ -102,11 +102,15 @@ namespace IO.Ably.Realtime
             }
             if (_socket != null)
             {
+                if(suppressClosedEvent)
+                    DetachEvents();
+
                 _socket.Close();
-                DetachEvents();
+
+                if(suppressClosedEvent == false)
+                    DetachEvents();
                 _socket = null;
             }
-            
         }
 
         public void Send(RealtimeTransportData data)

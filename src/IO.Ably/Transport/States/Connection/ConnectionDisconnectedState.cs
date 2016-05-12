@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
@@ -57,6 +56,8 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Task OnAttachedToContext()
         {
+            Context.DestroyTransport();
+            
             if (RetryInstantly)
             {
                 Context.SetState(new ConnectionConnectingState(Context));
@@ -71,7 +72,8 @@ namespace IO.Ably.Transport.States.Connection
 
         private void OnTimeOut()
         {
-            Context.SetState(new ConnectionConnectingState(Context));
+            Context.Execute(() => Context.SetState(new ConnectionConnectingState(Context)));
+
         }
     }
 }

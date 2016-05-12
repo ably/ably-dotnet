@@ -18,23 +18,18 @@ namespace IO.Ably.Transport
 
         internal readonly AsyncContextThread AsyncContextThread = new AsyncContextThread();
 
-        private ConnectionManager()
+        public ConnectionManager(Connection connection, AblyRest restClient)
         {
             _pendingMessages = new Queue<ProtocolMessage>();
+            AttemptsInfo = new ConnectionAttemptsInfo(restClient.Options, connection);
+            Connection = connection;
+            RestClient = restClient;
+            AckProcessor = new AcknowledgementProcessor();
 
             if (Logger.IsDebug)
             {
                 Execute(() => Logger.Debug("ConnectionManager thread created"));
             }
-        }
-
-        public ConnectionManager(Connection connection, AblyRest restClient)
-            : this()
-        {
-            AttemptsInfo = new ConnectionAttemptsInfo(restClient.Options, connection);
-            Connection = connection;
-            RestClient = restClient;
-            AckProcessor = new AcknowledgementProcessor();
         }
 
         public IAcknowledgementProcessor AckProcessor { get; internal set; }
@@ -59,6 +54,11 @@ namespace IO.Ably.Transport
             AttemptsInfo.RecordTokenRetry();
         }
 
+        public void Connect()
+        {
+            Execute(() => State.Connect());
+        }
+
         public Task SetState(ConnectionState newState, bool skipAttach = false)
         {
             if (Logger.IsDebug)
@@ -71,13 +71,15 @@ namespace IO.Ably.Transport
                 //Abort any times on the old state
                 State.AbortTimer();
 
-                AckProcessor.OnStateChanged(newState);
-                Connection.UpdateState(newState);
-
                 if (skipAttach == false)
                 {
                     try
                     {
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug($"xx Attaching state " + newState.State);
+                        }
+
                         await newState.OnAttachedToContext();
                     }
                     catch (AblyException ex)
@@ -90,34 +92,44 @@ namespace IO.Ably.Transport
                             SetState(new ConnectionFailedState(this, ex.ErrorInfo));
                         }
                     }
+                    finally
+                    {
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug($"xx Completed attaching " + newState.State);
+                        }
+                    }
                 }
+
+                AckProcessor.OnStateChanged(newState);
+                Connection.UpdateState(newState);
             });
         }
 
         async Task IConnectionContext.CreateTransport()
         {
+            if (Logger.IsDebug) Logger.Debug("Creating transport");
+            AttemptsInfo.Increment();
+
             if (Transport != null && AttemptsInfo.TriedToRenewToken)
                 (this as IConnectionContext).DestroyTransport();
-
 
             var transport = GetTransportFactory().CreateTransport(await CreateTransportParameters());
             transport.Listener = this;
             Transport = transport;
+            Transport.Connect();
         }
 
-        void IConnectionContext.DestroyTransport()
+        void IConnectionContext.DestroyTransport(bool suppressClosedEvent)
         {
+            if (Logger.IsDebug)
+                Logger.Debug("Destroying transport");
             if (Transport == null)
                 return;
 
-            Transport.Close();
+            Transport.Close(suppressClosedEvent);
             Transport.Listener = null;
             Transport = null;
-        }
-
-        void IConnectionContext.AttemptConnection()
-        {
-            AttemptsInfo.Increment();
         }
 
         void IConnectionContext.ResetConnectionAttempts()
@@ -174,12 +186,20 @@ namespace IO.Ably.Transport
                 }
                 else
                 {
-                    await SetState(new ConnectionFailedState(this, error));
+                    SetState(new ConnectionFailedState(this, error));
                 }
 
                 return true;
             }
             return false;
+        }
+
+        public void CloseConnection()
+        {
+            Execute(() =>
+                State.Close());
+
+
         }
 
         public ClientOptions Options => RestClient.Options;
@@ -215,7 +235,7 @@ namespace IO.Ably.Transport
 
         void ITransportListener.OnTransportEvent(TransportState state, Exception ex)
         {
-            ExecuteOnManagerThread(async () =>
+            ExecuteOnManagerThread(() =>
             {
                 if (Logger.IsDebug)
                 {
@@ -227,17 +247,19 @@ namespace IO.Ably.Transport
                     switch (ConnectionState)
                     {
                         case ConnectionStateType.Closing:
-                            await SetState(new ConnectionClosedState(this));
+                            SetState(new ConnectionClosedState(this));
                             break;
                         case ConnectionStateType.Connecting:
-                            await HandleConnectingFailure(ex);
+                            HandleConnectingFailure(ex);
                             break;
                         case ConnectionStateType.Connected:
                             var error = ex != null ? ErrorInfo.ReasonDisconnected : null;
-                            await SetState(new ConnectionDisconnectedState(this, GetErrorInfoFromTransportException(ex, ErrorInfo.ReasonDisconnected)));
+                            SetState(new ConnectionDisconnectedState(this, GetErrorInfoFromTransportException(ex, ErrorInfo.ReasonDisconnected)));
                             break;
                     }
                 }
+
+                return TaskConstants.BooleanTrue;
             });
         }
 
@@ -249,15 +271,13 @@ namespace IO.Ably.Transport
             return @default;
         }
 
-        private async Task HandleConnectingFailure(Exception ex)
+        public void HandleConnectingFailure(Exception ex)
         {
+            if (Logger.IsDebug) Logger.Debug("Handling Connecting failure.");
             if (ShouldSuspend())
-                await SetState(new ConnectionSuspendedState(this));
+                SetState(new ConnectionSuspendedState(this));
             else
-                await SetState(new ConnectionDisconnectedState(this, ErrorInfo.ReasonDisconnected)
-                {
-                    RetryInstantly = ex != null && await CanConnectToAbly()
-                });
+                SetState(new ConnectionDisconnectedState(this, ErrorInfo.ReasonDisconnected));
         }
 
         void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)
@@ -274,9 +294,15 @@ namespace IO.Ably.Transport
             });
         }
 
-        public void Execute(Action action)
+        public Task Execute(Action action)
         {
-            AsyncContextThread.Factory.StartNew(action).WaitAndUnwrapException();
+            if (Options != null && Options.UseSyncForTesting)
+            {
+                AsyncContextThread.Factory.StartNew(action).WaitAndUnwrapException();
+                return TaskConstants.BooleanTrue;
+            }
+
+            return AsyncContextThread.Factory.StartNew(action);
         }
 
         public Task ExecuteOnManagerThread(Func<Task> asyncOperation)

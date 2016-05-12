@@ -79,6 +79,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15h")]
         public async Task WithTokenErrorWhenTokenRenewalFails_ShouldGoToFailedStateAndEmitError()
         {
+            Logger.LogLevel = LogLevel.Debug;
             var client = SetupConnectedClient(failRenewal: true);
 
             List<ConnectionStateType> states = new List<ConnectionStateType>();
@@ -123,7 +124,7 @@ namespace IO.Ably.Tests.Realtime
                 states.Add(args.CurrentState);
             };
 
-            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
+            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
                 error = _tokenErrorInfo
             });

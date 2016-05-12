@@ -47,12 +47,13 @@ namespace IO.Ably.Tests
             }
         }
 
-        public void Close()
+        public void Close(bool suppressClosedEvent = true)
         {
             CloseCalled = true;
 
             //Listener?.OnTransportDataReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
-            Listener?.OnTransportEvent(TransportState.Closed);
+            if(suppressClosedEvent == false)
+                Listener?.OnTransportEvent(TransportState.Closed);
         }
 
         public void Send(RealtimeTransportData data)

@@ -32,7 +32,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Task<bool> OnMessageReceived(ProtocolMessage message)
         {
-            // could not happen
+            // do nothing
             return TaskConstants.BooleanFalse;
         }
 

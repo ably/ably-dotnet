@@ -57,8 +57,6 @@ namespace IO.Ably.Transport.States.Connection
             
         }
 
-        
-
         public override void SendMessage(ProtocolMessage message)
         {
             Context.Send(message);

@@ -63,7 +63,7 @@ namespace IO.Ably.Transport.States.Connection
 
         private void OnTimeOut()
         {
-            Context.SetState(new ConnectionConnectingState(Context));
+            Context.Execute(() => Context.SetState(new ConnectionConnectingState(Context)));
         }
     }
 }

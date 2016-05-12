@@ -91,9 +91,7 @@ namespace IO.Ably.Transport.States.Connection
                             try
                             {
                                 Context.ClearTokenAndRecordRetry();
-                                _suppressTransportEvents = true;
                                 await Context.CreateTransport();
-                                ConnectTransport();
                                 return true;
                             }
                             catch (AblyException ex)
@@ -101,10 +99,6 @@ namespace IO.Ably.Transport.States.Connection
                                 Logger.Error("Error trying to renew token.", ex);
                                 TransitionState(new ConnectionFailedState(Context, ex.ErrorInfo));
                                 return true;
-                            }
-                            finally
-                            {
-                                _suppressTransportEvents = false;
                             }
                         }  
 
@@ -129,35 +123,13 @@ namespace IO.Ably.Transport.States.Connection
 
         public override async Task OnAttachedToContext()
         {
-            Context.AttemptConnection();
             await Context.CreateTransport();
-
-            ConnectTransport();
+            _timer.Start(Context.DefaultTimeout, onTimeOut: OnTimeOut);
         }
 
-        private void ConnectTransport()
+        private void OnTimeOut()
         {
-            if (Context.Transport.State != TransportState.Connected)
-            {
-                Context.Transport.Connect();
-                _timer.StartAsync(Context.DefaultTimeout, async () =>
-                {
-                    ConnectionState nextState;
-                    if (Context.ShouldSuspend())
-                    {
-                        nextState = new ConnectionSuspendedState(Context);
-                    }
-                    else
-                    {
-                        nextState = new ConnectionDisconnectedState(Context, ErrorInfo.ReasonTimeout)
-                        {
-                            RetryInstantly = await Context.CanConnectToAbly()
-                        };
-                    }
-                    
-                    Context.SetState(nextState);
-                });
-            }
+            Context.Execute(() => Context.HandleConnectingFailure(null));
         }
 
         private async Task<bool> ShouldUseFallbackHost(ErrorInfo error)

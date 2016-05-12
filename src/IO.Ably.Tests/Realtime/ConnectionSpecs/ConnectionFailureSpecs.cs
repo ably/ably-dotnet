@@ -147,6 +147,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN14d")]
         public async Task WhenTransportFails_ShouldTransitionToDisconnectedAndEmitErrorWithRetry()
         {
+            Logger.LogLevel = LogLevel.Debug;
             _fakeTransportFactory.initialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false; //this will keep it in connecting state
 
@@ -174,13 +175,18 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN14e")]
         public async Task WhenTransportFails_ShouldGoFromConnectingToDisconectedUntilConnectionStateTtlIsReachedAndStateIsSuspended()
         {
+            Logger.LogLevel = LogLevel.Debug;
             Now = DateTimeOffset.UtcNow;
 
             _fakeTransportFactory.initialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false;
             //this will keep it in connecting state
 
-            var client = GetClientWithFakeTransport(opts => opts.AutoConnect = false);
+            var client = GetClientWithFakeTransport(opts =>
+            {
+                opts.AutoConnect = false;
+                opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10);
+            });
 
             ConnectionStateChangedEventArgs stateChangeArgs = null;
 
@@ -191,17 +197,19 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             {
                 stateChanges.Add(args);
             };
+
             do
             {
-                LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closing, new Exception());
-                Now = Now.AddSeconds(15);
+                LastCreatedTransport.Listener?.OnTransportEvent(TransportState.Closing, new Exception());
+                await WaitForConnectingOrSuspended(client);
+                Now = Now.AddSeconds(30);
             } while (client.Connection.State != ConnectionStateType.Suspended);
 
             client.Connection.State.Should().Be(ConnectionStateType.Suspended);
 
             stateChanges.Select(x => x.CurrentState).Distinct()
                 .ShouldBeEquivalentTo(new[] { ConnectionStateType.Connecting, ConnectionStateType.Disconnected, ConnectionStateType.Suspended, });
-            int numberOfAttemps = (int)Math.Floor(Defaults.ConnectionStateTtl.TotalSeconds / 15);
+            int numberOfAttemps = (int)Math.Floor(Defaults.ConnectionStateTtl.TotalSeconds / 30);
             stateChanges.Count(x => x.CurrentState == ConnectionStateType.Connecting).Should().Be(numberOfAttemps);
         }
 
@@ -209,6 +217,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN14e")]
         public async Task WhenInSuspendedState_ShouldTryAndReconnectAfterSuspendRetryTimeoutIsReached()
         {
+
             Now = DateTimeOffset.UtcNow;
 
             _fakeTransportFactory.initialiseFakeTransport =
@@ -218,19 +227,32 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             var client = GetClientWithFakeTransport(opts =>
             {
                 opts.AutoConnect = false;
+                opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10);
                 opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(100);
             });
 
             client.Connect();
             do
             {
-                LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closing, new Exception());
-                Now = Now.AddSeconds(15);
+                LastCreatedTransport.Listener?.OnTransportEvent(TransportState.Closing, new Exception());
+                
+                await WaitForConnectingOrSuspended(client);
+                Now = Now.AddSeconds(30);
+
             } while (client.Connection.State != ConnectionStateType.Suspended);
 
             var awaiter = new ConnectionAwaiter(client.Connection, ConnectionStateType.Connecting);
             var elapsed = await awaiter.Wait();
             elapsed.Should().BeCloseTo(client.Options.SuspendedRetryTimeout);
+        }
+
+        private static async Task WaitForConnectingOrSuspended(AblyRealtime client)
+        {
+            await
+                Task.WhenAll(
+                    new ConnectionAwaiter(client.Connection, ConnectionStateType.Connecting, ConnectionStateType.Suspended).Wait
+                        (),
+                    Task.Delay(10));
         }
 
         [Fact]
@@ -246,15 +268,16 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             var client = GetClientWithFakeTransport(opts =>
             {
                 opts.AutoConnect = false;
-                opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(100);
+                opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(10);
                 opts.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
             });
 
             client.Connect();
             do
             {
-                LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closing, new Exception());
-                Now = Now.AddSeconds(15);
+                LastCreatedTransport.Listener?.OnTransportEvent(TransportState.Closing, new Exception());
+                await WaitForConnectingOrSuspended(client);
+                Now = Now.AddSeconds(30);
             } while (client.Connection.State != ConnectionStateType.Suspended);
 
             await new ConnectionAwaiter(client.Connection, ConnectionStateType.Connecting).Wait();
