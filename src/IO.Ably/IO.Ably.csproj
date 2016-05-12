@@ -85,6 +85,7 @@
     <Compile Include="Realtime\Handlers.cs" />
     <Compile Include="Realtime\IMessageHandler.cs" />
     <Compile Include="Transport\ConnectionAttemptsInfo.cs" />
+    <Compile Include="Transport\MessageDispatcher.cs" />
     <Compile Include="Transport\TaskWrapper.cs" />
     <Compile Include="Types\ConnectionDetailsMessage.cs" />
     <Compile Include="CustomSerialisers\CapabilityJsonConverter.cs" />

@@ -175,6 +175,7 @@ namespace IO.Ably.Realtime
                     return;
                 }
             }
+
             if (State == ChannelState.Attached)
             {
                 // Connected, send right now

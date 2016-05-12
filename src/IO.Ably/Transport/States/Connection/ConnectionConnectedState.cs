@@ -19,7 +19,8 @@ namespace IO.Ably.Transport.States.Connection
 
         public override ConnectionStateType State => ConnectionStateType.Connected;
 
-        protected override bool CanQueueMessages => false;
+        public override bool CanQueueMessages => false;
+        public override bool CanSend => true;
 
         public override void Connect()
         {

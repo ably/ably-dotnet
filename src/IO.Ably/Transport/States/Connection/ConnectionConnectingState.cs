@@ -41,7 +41,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Connecting;
 
-        protected override bool CanQueueMessages => true;
+        public override bool CanQueueMessages => true;
 
         public override void Connect()
         {

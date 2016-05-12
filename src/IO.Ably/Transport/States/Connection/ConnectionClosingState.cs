@@ -28,7 +28,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Closing;
 
-        protected override bool CanQueueMessages => false;
+        public override bool CanQueueMessages => false;
 
         public override void Connect()
         {

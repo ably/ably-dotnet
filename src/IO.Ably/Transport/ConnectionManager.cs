@@ -208,11 +208,7 @@ namespace IO.Ably.Transport
 
         public event MessageReceivedDelegate MessageReceived;
 
-        // TODO: Find out why is this?
-        public bool IsActive
-        {
-            get { return false; }
-        }
+        public bool IsActive => State.CanQueueMessages && State.CanSend;
 
         public Connection Connection { get; }
 

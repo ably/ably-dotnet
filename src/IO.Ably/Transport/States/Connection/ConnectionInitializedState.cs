@@ -9,7 +9,7 @@ namespace IO.Ably.Transport.States.Connection
             base(context)
         { }
 
-        protected override bool CanQueueMessages => true;
+        public override bool CanQueueMessages => true;
 
         public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Initialized;
 
