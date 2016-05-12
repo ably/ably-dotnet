@@ -18,13 +18,25 @@ namespace IO.Ably.Transport.States.Connection
         public abstract Realtime.ConnectionStateType State { get; }
         public ErrorInfo Error { get; protected set; }
         public TimeSpan? RetryIn { get; protected set; }
-        public abstract bool CanQueueMessages { get; }
+        public virtual bool CanQueue => false;
         public virtual bool CanSend => false;
 
-        public abstract void Connect();
-        public abstract void Close();
-        public abstract Task<bool> OnMessageReceived(ProtocolMessage message);
-        public abstract void AbortTimer();
+        public virtual void Connect()
+        {
+        }
+
+        public virtual void Close()
+        {
+        }
+
+        public virtual Task<bool> OnMessageReceived(ProtocolMessage message)
+        {
+            return TaskConstants.BooleanFalse;
+        }
+
+        public virtual void AbortTimer()
+        {
+        }
 
         public virtual Task OnAttachedToContext()
         {
@@ -33,7 +45,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public virtual void SendMessage(ProtocolMessage message)
         {
-            if (CanQueueMessages)
+            if (CanQueue)
             {
                 Context.QueuedMessages.Enqueue(message);
             }

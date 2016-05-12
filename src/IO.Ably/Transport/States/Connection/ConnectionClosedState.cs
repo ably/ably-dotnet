@@ -18,27 +18,9 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Closed;
 
-        public override bool CanQueueMessages => false;
-
         public override void Connect()
         {
             Context.SetState(new ConnectionConnectingState(Context));
-        }
-
-        public override void Close()
-        {
-            // do nothing
-        }
-
-        public override Task<bool> OnMessageReceived(ProtocolMessage message)
-        {
-            // do nothing
-            return TaskConstants.BooleanFalse;
-        }
-
-        public override void AbortTimer()
-        {
-            
         }
 
         public override Task OnAttachedToContext()

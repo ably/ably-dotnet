@@ -29,7 +29,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Disconnected;
 
-        public override bool CanQueueMessages => true;
+        public override bool CanQueue => true;
 
         public override void Connect()
         {
@@ -40,13 +40,6 @@ namespace IO.Ably.Transport.States.Connection
         {
             _timer.Abort();
             Context.SetState(new ConnectionClosedState(Context));
-        }
-
-        public override Task<bool> OnMessageReceived(ProtocolMessage message)
-        {
-            // could not happen
-            Logger.Error("Receiving message in disconected state!");
-            return TaskConstants.BooleanFalse;
         }
 
         public override void AbortTimer()

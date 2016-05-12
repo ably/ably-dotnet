@@ -6,7 +6,6 @@ namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionSuspendedState : ConnectionState
     {
-        //TODO: Make sure these come from config
         private readonly ICountdownTimer _timer;
 
         public ConnectionSuspendedState(IConnectionContext context) :
@@ -29,8 +28,6 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Suspended;
 
-        public override bool CanQueueMessages => false;
-
         public override void Connect()
         {
             Context.SetState(new ConnectionConnectingState(Context));
@@ -40,13 +37,6 @@ namespace IO.Ably.Transport.States.Connection
         {
             _timer.Abort();
             Context.SetState(new ConnectionClosedState(Context));
-        }
-
-        public override Task<bool> OnMessageReceived(ProtocolMessage message)
-        {
-            // could not happen
-            Logger.Error("Receiving message in disconected state!");
-            return TaskConstants.BooleanFalse;
         }
 
         public override void AbortTimer()

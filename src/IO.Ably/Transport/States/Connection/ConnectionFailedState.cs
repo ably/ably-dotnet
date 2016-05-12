@@ -13,30 +13,11 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Failed;
 
-        public override bool CanQueueMessages => false;
-
         public override void Connect()
         {
             Context.SetState(new ConnectionConnectingState(Context));
         }
-
-        public override void Close()
-        {
-            // does nothing
-        }
-
-        public override Task<bool> OnMessageReceived(ProtocolMessage message)
-        {
-            // could not happen
-            Logger.Error("Receiving message in disconected state!");
-            return TaskConstants.BooleanFalse;
-        }
-
-        public override void AbortTimer()
-        {
-            
-        }
-
+        
         public override Task OnAttachedToContext()
         {
             // This is a terminal state. Clear the transport.
@@ -44,7 +25,5 @@ namespace IO.Ably.Transport.States.Connection
             Context.Connection.Key = null;
             return TaskConstants.BooleanTrue;
         }
-
-        
     }
 }

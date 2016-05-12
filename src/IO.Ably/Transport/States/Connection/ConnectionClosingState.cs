@@ -14,11 +14,6 @@ namespace IO.Ably.Transport.States.Connection
         {
         }
 
-        public ConnectionClosingState(IConnectionContext context, ErrorInfo error) :
-            this(context, error, new CountdownTimer("Closing state timer"))
-        {
-        }
-
         public ConnectionClosingState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer) :
             base(context)
         {
@@ -27,19 +22,6 @@ namespace IO.Ably.Transport.States.Connection
         }
 
         public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Closing;
-
-        public override bool CanQueueMessages => false;
-
-        public override void Connect()
-        {
-            //do nothing
-        }
-
-        public override void Close()
-        {
-            
-            // do nothing
-        }
 
         public override Task<bool> OnMessageReceived(ProtocolMessage message)
         {
