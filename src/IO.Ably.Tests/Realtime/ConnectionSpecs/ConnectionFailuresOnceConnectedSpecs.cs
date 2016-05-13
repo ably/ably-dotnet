@@ -109,7 +109,7 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Fact]
-        [Trait("spec", "RTN15f")]
+        [Trait("spec", "RTN15h")]
         public async Task WhenConnectionFailsConsecutivelyMoreThanOnceWithTokenError_ShouldTransitionToFailedWithError()
         {
             var client = SetupConnectedClient();
@@ -124,7 +124,7 @@ namespace IO.Ably.Tests.Realtime
                 states.Add(args.CurrentState);
             };
 
-            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
+            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
             {
                 error = _tokenErrorInfo
             });
@@ -188,18 +188,11 @@ namespace IO.Ably.Tests.Realtime
                     errors.Add(args.Reason);
 
                 states.Add(args.CurrentState);
-                if (args.CurrentState == ConnectionStateType.Connecting)
-                {
-                    client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
-                }
             };
 
             LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closed);
             
-            Assert.Equal(new[]
-            {
-                ConnectionStateType.Failed
-            }, states);
+            
         }
 
 

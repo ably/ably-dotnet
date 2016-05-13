@@ -15,8 +15,25 @@ namespace IO.Ably.Transport
     internal class ConnectionManager : IConnectionManager, ITransportListener, IConnectionContext
     {
         private readonly Queue<ProtocolMessage> _pendingMessages;
-
         internal readonly AsyncContextThread AsyncContextThread = new AsyncContextThread();
+        private ITransportFactory GetTransportFactory() => Options.TransportFactory ?? Defaults.WebSocketTransportFactory;
+        public IAcknowledgementProcessor AckProcessor { get; internal set; }
+        private ConnectionAttemptsInfo AttemptsInfo { get; }
+        public TimeSpan RetryTimeout => Options.DisconnectedRetryTimeout;
+        public AblyRest RestClient { get; }
+        public MessageHandler Handler => RestClient.MessageHandler;
+        public ConnectionState State => Connection.ConnectionState;
+        public TransportState TransportState => Transport.State;
+        public ITransport Transport { get; private set; }
+        Queue<ProtocolMessage> IConnectionContext.QueuedMessages => _pendingMessages;
+        public ClientOptions Options => RestClient.Options;
+        public TimeSpan DefaultTimeout => Options.RealtimeRequestTimeout;
+        public TimeSpan SuspendRetryTimeout => Options.SuspendedRetryTimeout;
+        public event MessageReceivedDelegate MessageReceived;
+        public bool IsActive => State.CanQueue && State.CanSend;
+        public Connection Connection { get; }
+        public ConnectionStateType ConnectionState => Connection.State;
+
 
         public ConnectionManager(Connection connection, AblyRest restClient)
         {
@@ -31,23 +48,7 @@ namespace IO.Ably.Transport
                 Execute(() => Logger.Debug("ConnectionManager thread created"));
             }
         }
-
-        public IAcknowledgementProcessor AckProcessor { get; internal set; }
-
-        private ConnectionAttemptsInfo AttemptsInfo { get; }
-
-        public TimeSpan RetryTimeout => Options.DisconnectedRetryTimeout;
-
-        public AblyRest RestClient { get; }
-        public MessageHandler Handler => RestClient.MessageHandler;
-
-        public ConnectionState State => Connection.ConnectionState;
-        public TransportState TransportState => Transport.State;
-
-        public ITransport Transport { get; private set; }
-
-        Queue<ProtocolMessage> IConnectionContext.QueuedMessages => _pendingMessages;
-
+        
         public void ClearTokenAndRecordRetry()
         {
             RestClient.Auth.ExpireCurrentToken();
@@ -71,6 +72,8 @@ namespace IO.Ably.Transport
                 //Abort any times on the old state
                 State.AbortTimer();
 
+                AckProcessor.OnStateChanged(newState);
+                bool statusUpdated = false;
                 if (skipAttach == false)
                 {
                     try
@@ -79,11 +82,14 @@ namespace IO.Ably.Transport
                         {
                             Logger.Debug($"xx Attaching state " + newState.State);
                         }
-
+                        
                         await newState.OnAttachedToContext();
                     }
                     catch (AblyException ex)
                     {
+                        statusUpdated = true;
+                        Connection.UpdateState(newState);
+
                         newState.AbortTimer();
 
                         Logger.Error("Error attaching to context", ex);
@@ -101,8 +107,9 @@ namespace IO.Ably.Transport
                     }
                 }
 
-                AckProcessor.OnStateChanged(newState);
-                Connection.UpdateState(newState);
+                if (statusUpdated == false)
+                    Connection.UpdateState(newState);
+
             });
         }
 
@@ -122,8 +129,8 @@ namespace IO.Ably.Transport
 
         void IConnectionContext.DestroyTransport(bool suppressClosedEvent)
         {
-            if (Logger.IsDebug)
-                Logger.Debug("Destroying transport");
+            if (Logger.IsDebug) Logger.Debug("Destroying transport");
+
             if (Transport == null)
                 return;
 
@@ -140,7 +147,7 @@ namespace IO.Ably.Transport
         public async Task<bool> CanConnectToAbly()
         {
             if (Options.SkipInternetCheck)
-                return await TaskConstants.BooleanTrue;
+                return true;
 
             try
             {
@@ -196,24 +203,9 @@ namespace IO.Ably.Transport
 
         public void CloseConnection()
         {
-            Execute(() =>
-                State.Close());
-
-
+            Execute(() => State.Close());
         }
 
-        public ClientOptions Options => RestClient.Options;
-        public TimeSpan DefaultTimeout => Options.RealtimeRequestTimeout;
-        public TimeSpan SuspendRetryTimeout => Options.SuspendedRetryTimeout;
-
-        public event MessageReceivedDelegate MessageReceived;
-
-        public bool IsActive => State.CanQueue && State.CanSend;
-
-        public Connection Connection { get; }
-
-
-        public ConnectionStateType ConnectionState => Connection.State;
 
         public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null)
         {
@@ -312,11 +304,6 @@ namespace IO.Ably.Transport
             return AsyncContextThread.Factory.Run(asyncOperation);
         }
 
-        public Task<T> ExecuteOnManagerThread<T>(Func<Task<T>> asyncOperation)
-        {
-            return AsyncContextThread.Factory.Run(asyncOperation);
-        }
-
         internal async Task<TransportParams> CreateTransportParameters()
         {
             return await TransportParams.Create(RestClient.Auth, Options, Connection?.Key, Connection?.Serial);
@@ -338,10 +325,7 @@ namespace IO.Ably.Transport
             return host;
         }
 
-        private ITransportFactory GetTransportFactory()
-        {
-            return Options.TransportFactory ?? Defaults.WebSocketTransportFactory;
-        }
+        
 
         public async Task OnTransportMessageReceived(ProtocolMessage message)
         {

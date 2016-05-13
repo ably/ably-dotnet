@@ -100,6 +100,9 @@ namespace IO.Ably.Realtime
 
         internal void UpdateState(ConnectionState state)
         {
+            if (state.State == State)
+                return;
+
             if (Logger.IsDebug)
             {
                 Logger.Debug($"Connection notifying subscribers for state change `{state.State}`");

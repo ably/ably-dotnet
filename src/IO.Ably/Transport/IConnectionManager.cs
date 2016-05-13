@@ -44,8 +44,6 @@ namespace IO.Ably.Transport
         public string ConnectionKey { get; private set; }
     }
 
-    public delegate void StateChangedDelegate(ConnectionStateType state, ConnectionInfo info, ErrorInfo error);
-
     public delegate void MessageReceivedDelegate(ProtocolMessage message);
 
     internal interface IConnectionManager
