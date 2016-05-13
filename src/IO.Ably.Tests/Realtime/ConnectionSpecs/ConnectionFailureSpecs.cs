@@ -241,7 +241,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             var awaiter = new ConnectionAwaiter(client.Connection, ConnectionStateType.Connecting);
             var elapsed = await awaiter.Wait();
-            elapsed.Should().BeCloseTo(client.Options.SuspendedRetryTimeout);
+            elapsed.Should().BeCloseTo(client.Options.SuspendedRetryTimeout, 100);
         }
 
         private static async Task WaitForConnectingOrSuspended(AblyRealtime client)
