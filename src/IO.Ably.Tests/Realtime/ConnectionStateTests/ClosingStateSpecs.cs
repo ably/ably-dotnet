@@ -20,13 +20,6 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void SendMessageShouldDoNothing()
-        {
-            // Act
-            _state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
-        }
-
-        [Fact]
         public void OnConnectCalled_SHouldDoNothing()
         {
             // Act
@@ -108,7 +101,7 @@ namespace IO.Ably.Tests
             var transport = new FakeTransport() { State = TransportState.Connected };
             _context.Transport = transport;
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
 
             // Assert
             _context.LastMessageSent.action.Should().Be(ProtocolMessage.MessageAction.Close);
@@ -125,7 +118,7 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport() { State = transportState };
 
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
 
             // Assert
             _context.StateShouldBe<ConnectionClosedState>();
@@ -137,7 +130,7 @@ namespace IO.Ably.Tests
         {
             _context.Transport = new FakeTransport() { State = TransportState.Connected };
 
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
             _timer.StartedWithAction.Should().BeTrue();
             _timer.OnTimeOut();
 
@@ -152,7 +145,7 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport(TransportState.Connected);
 
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
             await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
 
             // Assert
@@ -168,7 +161,7 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport(TransportState.Connected);
 
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
             await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
 
             // Assert

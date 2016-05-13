@@ -116,7 +116,7 @@ namespace IO.Ably.Transport.States.Connection
             _timer.Abort();
         }
 
-        public override async Task OnAttachedToContext()
+        public override async Task OnAttachToContext()
         {
             await Context.CreateTransport();
             _timer.Start(Context.DefaultTimeout, onTimeOut: OnTimeOut);

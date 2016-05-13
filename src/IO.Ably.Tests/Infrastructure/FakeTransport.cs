@@ -47,7 +47,7 @@ namespace IO.Ably.Tests
             {
                 Listener?.OnTransportEvent(TransportState.Connected);
                 State = TransportState.Connected;
-            }
+            } 
         }
 
         public void Close(bool suppressClosedEvent = true)

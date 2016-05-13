@@ -36,21 +36,10 @@ namespace IO.Ably.Tests
         public async Task ShouldResetsContextConnectionAttempts()
         {
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
 
             // Assert
             _context.ResetConnectionAttemptsCalled.Should().BeTrue();
-        }
-
-        [Fact]
-        public void ShouldSendMessagesUsingTransport()
-        {
-            // Act
-            _state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
-
-            // Assert
-            _context.LastMessageSent.Should().NotBeNull();
-            _context.LastMessageSent.action.Should().Be(ProtocolMessage.MessageAction.Attach);
         }
 
         [Theory]
@@ -124,21 +113,7 @@ namespace IO.Ably.Tests
             // Assert
             _context.StateShouldBe<ConnectionClosingState>();
         }
-
-        [Fact]
-        public async Task OnAttachToContext_ShouldSendPendingMessages()
-        {
-            // Arrange
-            var targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Attach);
-            _context.QueuedMessages.Enqueue(targetMessage);
-
-            // Act
-            await _state.OnAttachedToContext();
-
-            // Assert
-            _context.LastMessageSent.Should().BeSameAs(targetMessage);
-            _context.QueuedMessages.Should().BeEmpty();
-        }
+        
 
         [Fact]
         [Trait("spec", "RTN12c")]
@@ -155,7 +130,9 @@ namespace IO.Ably.Tests
         public void ConnectedState_UpdatesConnectionInformation()
         {
             // Act
-            GetState(new ConnectionInfo("test", 12564, "test test", ""));
+            var state = GetState(new ConnectionInfo("test", 12564, "test test", ""));
+
+            state.BeforeTransition();
 
             // Assert
             var connection = _context.Connection;

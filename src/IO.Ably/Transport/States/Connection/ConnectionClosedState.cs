@@ -23,7 +23,7 @@ namespace IO.Ably.Transport.States.Connection
             Context.SetState(new ConnectionConnectingState(Context));
         }
 
-        public override Task OnAttachedToContext()
+        public override Task OnAttachToContext()
         {
             // This is a terminal state. Clear the transport.
             Context.DestroyTransport();

@@ -1,41 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
-using IO.Ably.Transport.States.Connection;
+using System.Linq;
+using IO.Ably.Realtime;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport
 {
     internal interface IAcknowledgementProcessor
     {
-        void SendMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback);
+        void QueueIfNecessary(ProtocolMessage message, Action<bool, ErrorInfo> callback);
         bool OnMessageReceived(ProtocolMessage message);
-        void OnStateChanged(ConnectionState state);
+        IEnumerable<ProtocolMessage> GetQueuedMessages();
     }
 
     internal class AcknowledgementProcessor : IAcknowledgementProcessor
     {
-        //TODO: Look at replacing this with a ConcurrentDictionary
-        private readonly Dictionary<long, Action<bool, ErrorInfo>> _ackQueue;
+        private readonly Connection _connection;
+        private readonly Queue<MessageAndCallback> _queue = new Queue<MessageAndCallback>();
+        private object _syncObject = new object();
 
-        private long msgSerial;
-
-        public AcknowledgementProcessor()
+        public IEnumerable<ProtocolMessage> GetQueuedMessages()
         {
-            msgSerial = 0;
-            _ackQueue = new Dictionary<long, Action<bool, ErrorInfo>>();
+            List<ProtocolMessage> messages;
+            lock (_syncObject)
+            {
+                messages = new List<ProtocolMessage>(_queue.Select(x => x.Message));
+            }
+            return messages;
         }
 
-        public void SendMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
+        public AcknowledgementProcessor(Connection connection)
         {
-            if (!AckRequired(message))
-                return;
+            _connection = connection;
+            _connection.ConnectionStateChanged += OnStateChanged;
+        }
 
-            message.msgSerial = msgSerial++;
-
-            if (callback != null)
-            {
-                _ackQueue.Add(message.msgSerial, callback);
-            }
+        public void QueueIfNecessary(ProtocolMessage message, Action<bool, ErrorInfo> callback)
+        {
+            if (message.AckRequired)
+                lock (_syncObject)
+                {
+                    message.MsgSerial = _connection.MessageSerial++;
+                    _queue.Enqueue(new MessageAndCallback(message, callback));
+                }
         }
 
         public bool OnMessageReceived(ProtocolMessage message)
@@ -49,21 +56,30 @@ namespace IO.Ably.Transport
             return false;
         }
 
-        public void OnStateChanged(ConnectionState state)
+        private void OnStateChanged(object sender, ConnectionStateChangedEventArgs args)
         {
-            switch (state.State)
+            var state = args.CurrentState;
+            var error = args.Reason;
+            switch (state)
             {
-                case Realtime.ConnectionStateType.Connected:
-                    Reset();
-                    break;
-                case Realtime.ConnectionStateType.Closed:
-                case Realtime.ConnectionStateType.Failed:
-                {
-                    foreach (var item in _ackQueue)
+                case ConnectionStateType.Connected:
+                    lock (_syncObject)
                     {
-                        item.Value(false, state.Error ?? ErrorInfo.ReasonUnknown);
+                        Reset();
                     }
-                    _ackQueue.Clear();
+                    break;
+                case ConnectionStateType.Closed:
+                case ConnectionStateType.Failed:
+                {
+                    lock (_syncObject)
+                    {
+                            foreach (var item in _queue.Where(x => x.Callback != null))
+                            {
+                                var messageError = error ?? ErrorInfo.ReasonUnknown;
+                                SafeExecute(item, false, messageError);
+                            }
+                            Reset();
+                        }
                     break;
                 }
             }
@@ -71,35 +87,44 @@ namespace IO.Ably.Transport
 
         private void Reset()
         {
-            msgSerial = 0;
-            _ackQueue.Clear();
-        }
-
-        private static bool AckRequired(ProtocolMessage msg)
-        {
-            return msg.action == ProtocolMessage.MessageAction.Message ||
-                   msg.action == ProtocolMessage.MessageAction.Presence;
+            _queue.Clear();
         }
 
         private void HandleMessageAcknowledgement(ProtocolMessage message)
         {
-            var startSerial = message.msgSerial;
-            var endSerial = message.msgSerial + (message.count - 1);
-            for (var i = startSerial; i <= endSerial; i++)
+            lock (_syncObject)
             {
-                Action<bool, ErrorInfo> callback;
-                if (_ackQueue.TryGetValue(i, out callback))
+                var endSerial = message.MsgSerial + (message.count - 1);
+                while (_queue.Count > 0)
                 {
-                    if (message.action == ProtocolMessage.MessageAction.Ack)
+                    var current = _queue.Peek();
+                    if (current.Serial <= endSerial)
                     {
-                        callback(true, null);
+                        if (message.action == ProtocolMessage.MessageAction.Ack)
+                        {
+                            SafeExecute(current, true, null);
+                        }
+                        else
+                        {
+                            SafeExecute(current, false, message.error ?? ErrorInfo.ReasonUnknown);
+                        }
+                        _queue.Dequeue();
                     }
-                    else
-                    {
-                        callback(false, message.error ?? ErrorInfo.ReasonUnknown);
-                    }
-                    _ackQueue.Remove(i);
                 }
+            }
+        }
+
+        private void SafeExecute(MessageAndCallback info, bool success, ErrorInfo error)
+        {
+            try
+            {
+                info.Callback?.Invoke(success, error);
+            }
+            catch (Exception)
+            {
+                var result = success ? "Success" : "Failed";
+                var errorMessage = error != null ? $"Error: {error}" : "";
+                Logger.Error($"Error executing callback for message with serial {info.Message.MsgSerial}. Result: {result}. {errorMessage}");
             }
         }
     }

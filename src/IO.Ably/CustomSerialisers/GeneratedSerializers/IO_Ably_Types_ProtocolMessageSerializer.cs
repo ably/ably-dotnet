@@ -152,7 +152,7 @@ namespace IO.Ably.CustomSerialisers {
                 this._serializer0.PackTo(packer, objectTree.id);
             }
             this._serializer0.PackTo(packer, "msgSerial");
-            this._serializer8.PackTo(packer, objectTree.msgSerial);
+            this._serializer8.PackTo(packer, objectTree.MsgSerial);
             if (objectTree.messages != null && objectTree.messages.Any(x => x.IsEmpty == false))
             {
                 this._serializer0.PackTo(packer, "messages");
@@ -381,7 +381,7 @@ namespace IO.Ably.CustomSerialisers {
                     nullable11 = MsgPack.Serialization.UnpackHelpers.UnpackNullableInt64Value(unpacker, typeof(IO.Ably.Types.ProtocolMessage), "Int64 msgSerial");
                 }
                 if (nullable11.HasValue) {
-                    result.msgSerial = nullable11.Value;
+                    result.MsgSerial = nullable11.Value;
                 }
                 unpacked = (unpacked + 1);
                 IO.Ably.PresenceMessage[] nullable12 = default(IO.Ably.PresenceMessage[]);
@@ -513,7 +513,7 @@ namespace IO.Ably.CustomSerialisers {
                                 System.Nullable<long> nullable27 = default(System.Nullable<long>);
                                 nullable27 = MsgPack.Serialization.UnpackHelpers.UnpackNullableInt64Value(unpacker, typeof(IO.Ably.Types.ProtocolMessage), "Int64 msgSerial");
                                 if (nullable27.HasValue) {
-                                    result.msgSerial = nullable27.Value;
+                                    result.MsgSerial = nullable27.Value;
                                 }
                             }
                             else {

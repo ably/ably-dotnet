@@ -34,14 +34,6 @@ namespace IO.Ably.Tests
             _state.State.Should().Be(Ably.Realtime.ConnectionStateType.Connecting);
         }
 
-        [Fact]
-        public void SendMessage_ShouldQueueMessage()
-        {
-            _state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Connect));
-
-            _context.QueuedMessages.Should().HaveCount(1);
-        }
-
         [Theory]
         [InlineData(ProtocolMessage.MessageAction.Ack)]
         [InlineData(ProtocolMessage.MessageAction.Attach)]
@@ -224,7 +216,7 @@ namespace IO.Ably.Tests
             _context.AllowTransportCreating = true;
 
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
 
             // Assert
             _context.CreateTransportCalled.Should().BeTrue();
@@ -237,7 +229,7 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport() { State = TransportState.Initialized};
 
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
             _timer.OnTimeOut();
 
             // Assert
@@ -256,7 +248,7 @@ namespace IO.Ably.Tests
             _context.Transport = transport;
 
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
             transport.State = TransportState.Connected;
             await _state.OnMessageReceived(new ProtocolMessage(action));
 

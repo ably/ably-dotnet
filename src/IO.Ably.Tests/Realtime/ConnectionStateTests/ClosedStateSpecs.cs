@@ -43,20 +43,13 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void WhenMessageIsSent_DoesNothing()
-        {
-            // Act
-            _state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
-        }
-
-        [Fact]
         public async Task OnAttachedToContext_ShouldDestroyTransport()
         {
             // Arrange
             _context.Transport = new FakeTransport();
 
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
 
             // Assert
             _context.DestroyTransportCalled.Should().BeTrue();
@@ -96,7 +89,7 @@ namespace IO.Ably.Tests
             _context.Connection.Key = "test";
 
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
 
             // Assert
             _context.Connection.Key.Should().BeNullOrEmpty();

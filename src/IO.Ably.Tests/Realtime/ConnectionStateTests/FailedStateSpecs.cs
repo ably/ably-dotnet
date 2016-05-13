@@ -51,21 +51,11 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void SendMessage_ShouldDoNothing()
-        {
-            // Arrange
-            var state = GetState(ErrorInfo.ReasonNeverConnected);
-
-            // Act
-            state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
-        }
-
-        [Fact]
         public async Task OnAttachToContext_DestroysTransport()
         {
             // Arrange
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
 
             // Assert
             _context.DestroyTransportCalled.Should().BeTrue();
@@ -105,7 +95,7 @@ namespace IO.Ably.Tests
             _context.Connection.Key = "Test";
 
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
 
             // Assert
             _context.Connection.Key.Should().BeNullOrEmpty();

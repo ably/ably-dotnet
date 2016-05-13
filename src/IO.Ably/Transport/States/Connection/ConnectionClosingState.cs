@@ -51,11 +51,11 @@ namespace IO.Ably.Transport.States.Connection
             _timer.Abort();
         }
 
-        public override Task OnAttachedToContext()
+        public override Task OnAttachToContext()
         {
             if (Context.TransportState == TransportState.Connected)
             {
-                Context.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
+                Context.SendToTransport(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
                 _timer.Start(TimeSpan.FromMilliseconds(CloseTimeout), OnTimeOut);
             }
             else

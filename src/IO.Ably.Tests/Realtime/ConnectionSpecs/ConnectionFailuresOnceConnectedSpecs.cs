@@ -52,18 +52,16 @@ namespace IO.Ably.Tests.Realtime
 
             List<ConnectionStateType> states = new List<ConnectionStateType>();
             var errors = new List<ErrorInfo>();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.ConnectionStateChanged += (sender, args) => 
             {
                 if (args.HasError)
                     errors.Add(args.Reason);
 
                 states.Add(args.CurrentState);
-                if (args.CurrentState == ConnectionStateType.Connecting)
-                {
-                    client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
-                }
             };
+
             await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { error = _tokenErrorInfo });
+            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
             _renewTokenCalled.Should().BeTrue();
             Assert.Equal(new[] { ConnectionStateType.Disconnected, ConnectionStateType.Connecting, ConnectionStateType.Connected }, states);
@@ -94,6 +92,7 @@ namespace IO.Ably.Tests.Realtime
                     client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
                 }
             };
+
             await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { error = _tokenErrorInfo });
 
             var urlParams = LastCreatedTransport.Parameters.GetParams();
@@ -105,7 +104,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15h")]
         public async Task WithTokenErrorWhenTokenRenewalFails_ShouldGoToFailedStateAndEmitError()
         {
-            Logger.LogLevel = LogLevel.Debug;
             var client = SetupConnectedClient(failRenewal: true);
 
             List<ConnectionStateType> states = new List<ConnectionStateType>();
@@ -207,8 +205,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15b2")]
         public async Task WhenTransportCloses_ShouldResumeConnection()
         {
-            Logger.LogLevel = LogLevel.Debug;
-            ;
             var client = SetupConnectedClient();
 
             List<ConnectionStateType> states = new List<ConnectionStateType>();

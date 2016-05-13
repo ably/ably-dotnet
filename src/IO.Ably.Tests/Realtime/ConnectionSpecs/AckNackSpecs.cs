@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
@@ -16,22 +17,15 @@ namespace IO.Ably.Tests.Realtime
         // The Actual Ack processor tests are in AckProtocolSpecs.cs
 
         [Fact]
-        public void ShouldListenToConnectionStateChanges()
-        {
-            _realtime.ConnectionManager.SetState(
-                new ConnectionFailedState(_realtime.ConnectionManager, new ErrorInfo()));
-
-            _ackProcessor.OnStatecChanged.Should().BeTrue();
-            _ackProcessor.LastState.Should().BeOfType<ConnectionFailedState>();
-        }
-
-        [Fact]
         public void WhenSendIsCalled_ShouldPassTheMessageThroughTHeAckProcessor()
         {
+            _realtime.Connection.ConnectionState = new ConnectionConnectedState(_realtime.ConnectionManager,
+                new ConnectionInfo(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)));
+
             var message = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
 
             _realtime.ConnectionManager.Send(message, null);
-            _ackProcessor.SendMessageCalled.Should().BeTrue();
+            _ackProcessor.QueueIfNecessaryCalled.Should().BeTrue();
         }
 
         [Fact]

@@ -1,6 +1,7 @@
 ﻿using States = IO.Ably.Transport.States.Connection;
 using System;
 using System.Collections.Generic;
+using IO.Ably.Realtime;
 using Xunit;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
@@ -11,6 +12,7 @@ namespace IO.Ably.Tests
 {
     public class AckProtocolTests : AblySpecs
     {
+        private Connection _connection;
         private readonly AcknowledgementProcessor _ackProcessor;
 
         [Theory]
@@ -27,14 +29,14 @@ namespace IO.Ably.Tests
             var targetMessage3 = new ProtocolMessage(messageAction, "Test");
 
             // Act
-            _ackProcessor.SendMessage(targetMessage1, null);
-            _ackProcessor.SendMessage(targetMessage2, null);
-            _ackProcessor.SendMessage(targetMessage3, null);
+            _ackProcessor.QueueIfNecessary(targetMessage1, null);
+            _ackProcessor.QueueIfNecessary(targetMessage2, null);
+            _ackProcessor.QueueIfNecessary(targetMessage3, null);
 
             // Assert
-            Assert.Equal(0, targetMessage1.msgSerial);
-            Assert.Equal(1, targetMessage2.msgSerial);
-            Assert.Equal(2, targetMessage3.msgSerial);
+            Assert.Equal(0, targetMessage1.MsgSerial);
+            Assert.Equal(1, targetMessage2.MsgSerial);
+            Assert.Equal(2, targetMessage3.MsgSerial);
         }
 
         [Theory]
@@ -62,14 +64,14 @@ namespace IO.Ably.Tests
             var targetMessage3 = new ProtocolMessage(messageAction, "Test");
 
             // Act
-            _ackProcessor.SendMessage(targetMessage1, null);
-            _ackProcessor.SendMessage(targetMessage2, null);
-            _ackProcessor.SendMessage(targetMessage3, null);
+            _ackProcessor.QueueIfNecessary(targetMessage1, null);
+            _ackProcessor.QueueIfNecessary(targetMessage2, null);
+            _ackProcessor.QueueIfNecessary(targetMessage3, null);
 
             // Assert
-            Assert.Equal(0, targetMessage1.msgSerial);
-            Assert.Equal(0, targetMessage2.msgSerial);
-            Assert.Equal(0, targetMessage3.msgSerial);
+            Assert.Equal(0, targetMessage1.MsgSerial);
+            Assert.Equal(0, targetMessage2.MsgSerial);
+            Assert.Equal(0, targetMessage3.MsgSerial);
         }
 
         [Theory]
@@ -121,10 +123,10 @@ namespace IO.Ably.Tests
             };
 
             // Act
-            _ackProcessor.SendMessage(message, callback);
-            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { msgSerial = 0, count = 1 });
-            _ackProcessor.SendMessage(message, callback);
-            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { msgSerial = 1, count = 1 });
+            _ackProcessor.QueueIfNecessary(message, callback);
+            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = 0, count = 1 });
+            _ackProcessor.QueueIfNecessary(message, callback);
+            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = 1, count = 1 });
 
             // Assert
             Assert.Equal(2, callbacks.Count);
@@ -136,14 +138,14 @@ namespace IO.Ably.Tests
         public void WhenSendingMessage_AckCallbackCalled_ForMultipleMessages()
         {
             // Arrange
-            AcknowledgementProcessor target = new AcknowledgementProcessor();
+            AcknowledgementProcessor target = new AcknowledgementProcessor(new Connection(new AblyRest(ValidKey)));
             List<Tuple<bool, ErrorInfo>> callbacks = new List<Tuple<bool, ErrorInfo>>();
 
             // Act
-            target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 0) callbacks.Add(Tuple.Create(ack, err)); });
-            target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 1) callbacks.Add(Tuple.Create(ack, err)); });
-            target.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 2) callbacks.Add(Tuple.Create(ack, err)); });
-            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { msgSerial = 0, count = 3 });
+            target.QueueIfNecessary(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 0) callbacks.Add(Tuple.Create(ack, err)); });
+            target.QueueIfNecessary(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 1) callbacks.Add(Tuple.Create(ack, err)); });
+            target.QueueIfNecessary(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 2) callbacks.Add(Tuple.Create(ack, err)); });
+            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = 0, count = 3 });
 
             // Assert
             Assert.Equal(3, callbacks.Count);
@@ -161,10 +163,10 @@ namespace IO.Ably.Tests
             Action<bool, ErrorInfo> callback = (ack, err) => { callbacks.Add(Tuple.Create(ack, err)); };
             // Act
 
-            _ackProcessor.SendMessage(message, callback);
-            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { msgSerial = 0, count = 1 });
-            _ackProcessor.SendMessage(message, callback);
-            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { msgSerial = 1, count = 1 });
+            _ackProcessor.QueueIfNecessary(message, callback);
+            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 0, count = 1 });
+            _ackProcessor.QueueIfNecessary(message, callback);
+            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 1, count = 1 });
 
             // Assert
             Assert.Equal(2, callbacks.Count);
@@ -182,40 +184,15 @@ namespace IO.Ably.Tests
             ErrorInfo error = new ErrorInfo("reason", 123);
 
             // Act
-            _ackProcessor.SendMessage(message, callback);
-            _ackProcessor.SendMessage(message, callback);
-            _ackProcessor.SendMessage(message, callback);
-            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { msgSerial = 0, count = 3, error = error });
+            _ackProcessor.QueueIfNecessary(message, callback);
+            _ackProcessor.QueueIfNecessary(message, callback);
+            _ackProcessor.QueueIfNecessary(message, callback);
+            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 0, count = 3, error = error });
 
             // Assert
             Assert.Equal(3, callbacks.Count);
             Assert.True(callbacks.TrueForAll(c => !c.Item1)); // Nack
             Assert.True(callbacks.TrueForAll(c => ReferenceEquals(c.Item2, error))); // Error
-        }
-
-        [Fact]
-        public void OnConnectionConnectedState_MessageSerialIsResetToZero()
-        {
-            // Arrange
-            var context = new FakeConnectionContext();
-
-            var targetMessage1 = new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test");
-            var targetMessage2 = new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test");
-            var targetMessage3 = new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test");
-            var targetMessage4 = new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test");
-
-            // Act
-            _ackProcessor.SendMessage(targetMessage1, null);
-            _ackProcessor.SendMessage(targetMessage2, null);
-            _ackProcessor.OnStateChanged(new ConnectionConnectedState(context, ConnectionInfo.Empty));
-            _ackProcessor.SendMessage(targetMessage3, null);
-            _ackProcessor.SendMessage(targetMessage4, null);
-
-            // Assert
-            Assert.Equal(0, targetMessage1.msgSerial);
-            Assert.Equal(1, targetMessage2.msgSerial);
-            Assert.Equal(0, targetMessage3.msgSerial);
-            Assert.Equal(1, targetMessage4.msgSerial);
         }
 
         [Fact]
@@ -230,9 +207,9 @@ namespace IO.Ably.Tests
             Action<bool, ErrorInfo> callback = (ack, err) => { callbacks.Add(Tuple.Create(ack, err)); };
 
             // Act
-            _ackProcessor.SendMessage(message, callback);
-            _ackProcessor.SendMessage(message, callback);
-            _ackProcessor.OnStateChanged(new ConnectionClosedState(null, error));
+            _ackProcessor.QueueIfNecessary(message, callback);
+            _ackProcessor.QueueIfNecessary(message, callback);
+            _connection.UpdateState(new ConnectionClosedState(null, error));
 
             // Assert
             Assert.Equal(2, callbacks.Count);
@@ -252,9 +229,9 @@ namespace IO.Ably.Tests
             Action<bool, ErrorInfo> callback = (ack, err) => { callbacks.Add(Tuple.Create(ack, err)); };
 
             // Act
-            _ackProcessor.SendMessage(message, callback);
-            _ackProcessor.SendMessage(message, callback);
-            _ackProcessor.OnStateChanged(new ConnectionFailedState(null, error));
+            _ackProcessor.QueueIfNecessary(message, callback);
+            _ackProcessor.QueueIfNecessary(message, callback);
+            _connection.UpdateState(new ConnectionFailedState(null, error));
 
             // Assert
             Assert.Equal(2, callbacks.Count);
@@ -264,7 +241,9 @@ namespace IO.Ably.Tests
 
         public AckProtocolTests(ITestOutputHelper output) : base(output)
         {
-            _ackProcessor = new AcknowledgementProcessor();
+            _connection = new Connection(new AblyRest(ValidKey));
+            _connection.Initialise();
+            _ackProcessor = new AcknowledgementProcessor(_connection);
         }
     }
 }

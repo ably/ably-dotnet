@@ -38,11 +38,13 @@ namespace IO.Ably.Tests
         public TimeSpan DefaultTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;
         public TimeSpan RetryTimeout { get; set; } = Defaults.DisconnectedRetryTimeout;
 
-        public Task ExecuteOnManagerThread(Func<Task> asyncOperation)
+        public void SendToTransport(ProtocolMessage message)
         {
-            asyncOperation().WaitAndUnwrapException();
-            return TaskConstants.BooleanTrue;
+            LastMessageSent = message;
+            SendToTransportCalled = true;
         }
+
+        public bool SendToTransportCalled { get; set; }
 
         public Task Execute(Action action)
         {
@@ -145,6 +147,13 @@ namespace IO.Ably.Tests
         {
             HandledConnectionFailureCalled = true;
         }
+
+        public void SendPendingMessages(bool resumed)
+        {
+            SendPendingMessagesCalled = true;
+        }
+
+        public bool SendPendingMessagesCalled { get; set; }
 
         public bool HandledConnectionFailureCalled { get; set; }
 

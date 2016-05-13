@@ -6,8 +6,7 @@ using IO.Ably.Types;
 namespace IO.Ably.Transport.States.Connection
 {
     [DebuggerDisplay("{State}")]
-    internal abstract class 
-        ConnectionState
+    internal abstract class ConnectionState
     {
         public ConnectionState(IConnectionContext context)
         {
@@ -36,19 +35,17 @@ namespace IO.Ably.Transport.States.Connection
 
         public virtual void AbortTimer()
         {
+
         }
 
-        public virtual Task OnAttachedToContext()
+        public virtual Task BeforeTransition()
         {
             return TaskConstants.BooleanTrue;
         }
 
-        public virtual void SendMessage(ProtocolMessage message)
+        public virtual Task OnAttachToContext()
         {
-            if (CanQueue)
-            {
-                Context.QueuedMessages.Enqueue(message);
-            }
+            return TaskConstants.BooleanTrue;
         }
 
         public override string ToString()

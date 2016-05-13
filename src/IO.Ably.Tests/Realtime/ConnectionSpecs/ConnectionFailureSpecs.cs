@@ -147,7 +147,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN14d")]
         public async Task WhenTransportFails_ShouldTransitionToDisconnectedAndEmitErrorWithRetry()
         {
-            Logger.LogLevel = LogLevel.Debug;
             _fakeTransportFactory.initialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false; //this will keep it in connecting state
 
@@ -175,7 +174,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN14e")]
         public async Task WhenTransportFails_ShouldGoFromConnectingToDisconectedUntilConnectionStateTtlIsReachedAndStateIsSuspended()
         {
-            Logger.LogLevel = LogLevel.Debug;
             Now = DateTimeOffset.UtcNow;
 
             _fakeTransportFactory.initialiseFakeTransport =

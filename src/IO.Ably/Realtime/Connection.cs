@@ -12,8 +12,6 @@ namespace IO.Ably.Realtime
         internal ConnectionManager ConnectionManager { get; set; }
         private ConnectionState _currentState;
 
-
-
         internal Connection(AblyRest restClient)
         {
             _restClient = restClient;
@@ -44,6 +42,7 @@ namespace IO.Ably.Realtime
         /// </summary>
         public long? Serial { get; internal set; }
 
+        internal long MessageSerial { get; set; } = 0;
         /// <summary>
         /// </summary>
         public string Key { get; internal set; }
@@ -69,6 +68,7 @@ namespace IO.Ably.Realtime
         /// <summary>
         /// </summary>
         public event EventHandler<ConnectionStateChangedEventArgs> ConnectionStateChanged = delegate { };
+        //TODO: Add IDisposable and clear all event hadlers when the connection is disposed
 
         /// <summary>
         /// </summary>

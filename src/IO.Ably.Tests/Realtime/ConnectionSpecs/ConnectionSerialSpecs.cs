@@ -6,6 +6,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime
 {
+
     [Trait("spec", "RTN10")]
     public class ConnectionSerialSpecs : ConnectionSpecsBase
     {

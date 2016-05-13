@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Mail;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace IO.Ably.Transport
 {
     internal class ConnectionManager : IConnectionManager, ITransportListener, IConnectionContext
     {
-        private readonly Queue<ProtocolMessage> _pendingMessages;
+        private readonly Queue<MessageAndCallback> _pendingMessages;
         internal readonly AsyncContextThread AsyncContextThread = new AsyncContextThread();
         private ITransportFactory GetTransportFactory() => Options.TransportFactory ?? Defaults.WebSocketTransportFactory;
         public IAcknowledgementProcessor AckProcessor { get; internal set; }
@@ -25,7 +26,6 @@ namespace IO.Ably.Transport
         public ConnectionState State => Connection.ConnectionState;
         public TransportState TransportState => Transport.State;
         public ITransport Transport { get; private set; }
-        Queue<ProtocolMessage> IConnectionContext.QueuedMessages => _pendingMessages;
         public ClientOptions Options => RestClient.Options;
         public TimeSpan DefaultTimeout => Options.RealtimeRequestTimeout;
         public TimeSpan SuspendRetryTimeout => Options.SuspendedRetryTimeout;
@@ -37,18 +37,18 @@ namespace IO.Ably.Transport
 
         public ConnectionManager(Connection connection, AblyRest restClient)
         {
-            _pendingMessages = new Queue<ProtocolMessage>();
+            _pendingMessages = new Queue<MessageAndCallback>();
             AttemptsInfo = new ConnectionAttemptsInfo(restClient.Options, connection);
             Connection = connection;
             RestClient = restClient;
-            AckProcessor = new AcknowledgementProcessor();
+            AckProcessor = new AcknowledgementProcessor(connection);
 
             if (Logger.IsDebug)
             {
                 Execute(() => Logger.Debug("ConnectionManager thread created"));
             }
         }
-        
+
         public void ClearTokenAndRecordRetry()
         {
             RestClient.Auth.ExpireCurrentToken();
@@ -62,54 +62,47 @@ namespace IO.Ably.Transport
 
         public Task SetState(ConnectionState newState, bool skipAttach = false)
         {
-            if (Logger.IsDebug)
-            {
-                Logger.Debug($"Setting state from {ConnectionState} to {newState}");
-            }
-
             return ExecuteOnManagerThread(async () =>
             {
-                //Abort any times on the old state
+                //Abort any timers on the old state
                 State.AbortTimer();
 
-                AckProcessor.OnStateChanged(newState);
-                bool statusUpdated = false;
-                if (skipAttach == false)
+                
+                try
                 {
-                    try
-                    {
-                        if (Logger.IsDebug)
-                        {
-                            Logger.Debug($"xx Attaching state " + newState.State);
-                        }
-                        
-                        await newState.OnAttachedToContext();
-                    }
-                    catch (AblyException ex)
-                    {
-                        statusUpdated = true;
-                        Connection.UpdateState(newState);
+                    if (Logger.IsDebug) Logger.Debug($"xx {newState.State }: BeforeTransition");
+                    await newState.BeforeTransition();
 
-                        newState.AbortTimer();
-
-                        Logger.Error("Error attaching to context", ex);
-                        if (newState.State != ConnectionStateType.Failed)
-                        {
-                            SetState(new ConnectionFailedState(this, ex.ErrorInfo));
-                        }
-                    }
-                    finally
-                    {
-                        if (Logger.IsDebug)
-                        {
-                            Logger.Debug($"xx Completed attaching " + newState.State);
-                        }
-                    }
-                }
-
-                if (statusUpdated == false)
                     Connection.UpdateState(newState);
 
+                    if (skipAttach == false)
+                    {
+                        if (Logger.IsDebug) Logger.Debug($"xx {newState.State}: Attaching state ");
+
+                        await newState.OnAttachToContext();
+                    }
+                    else
+                        if (Logger.IsDebug) Logger.Debug($"xx {newState.State}: Skipping attaching.");
+                }
+                catch (AblyException ex)
+                {
+                    Connection.UpdateState(newState);
+
+                    newState.AbortTimer();
+
+                    Logger.Error("Error attaching to context", ex);
+                    if (newState.State != ConnectionStateType.Failed)
+                    {
+                        SetState(new ConnectionFailedState(this, ex.ErrorInfo));
+                    }
+                }
+                finally
+                {
+                    if (Logger.IsDebug)
+                    {
+                        Logger.Debug($"xx {newState.State}: Completed setting state");
+                    }
+                }
             });
         }
 
@@ -118,7 +111,7 @@ namespace IO.Ably.Transport
             if (Logger.IsDebug) Logger.Debug("Creating transport");
             AttemptsInfo.Increment();
 
-            if (Transport != null && AttemptsInfo.TriedToRenewToken)
+            if (Transport != null)
                 (this as IConnectionContext).DestroyTransport();
 
             var transport = GetTransportFactory().CreateTransport(await CreateTransportParameters());
@@ -188,7 +181,7 @@ namespace IO.Ably.Transport
                 if (ShouldWeRenewToken(error))
                 {
                     ClearTokenAndRecordRetry();
-                    await SetState(new ConnectionDisconnectedState(this), skipAttach: true);
+                    await SetState(new ConnectionDisconnectedState(this), skipAttach: ConnectionState == ConnectionStateType.Connecting);
                     await SetState(new ConnectionConnectingState(this));
                 }
                 else
@@ -214,10 +207,39 @@ namespace IO.Ably.Transport
                 Logger.Debug($"Current state: {Connection.State}. Sending message: {message}");
             }
 
-            AckProcessor.SendMessage(message, callback);
+            if (State.CanSend)
+            {
+                SendMessage(message, callback);
+                return;
+            }
 
+            if (State.CanQueue && Options.QueueMessages)
+            {
+                lock (_pendingMessages)
+                {
+                    _pendingMessages.Enqueue(new MessageAndCallback(message, callback));
+                }
+                return;
+            }
+
+            if (State.CanQueue && Options.QueueMessages == false)
+            {
+                throw new AblyException($"Current state is [{State.State}] which supports queuing but Options.QueueMessages is set to False.");
+            }
+            throw new AblyException($"The current state [{State.State}] does not allow messages to be sent.");
+
+        }
+
+        private void SendMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
+        {
+            AckProcessor.QueueIfNecessary(message, callback);
+
+            SendToTransport(message);
+        }
+
+        public void SendToTransport(ProtocolMessage message)
+        {
             var data = Handler.GetTransportData(message);
-
             Transport.Send(data);
         }
 
@@ -272,7 +294,28 @@ namespace IO.Ably.Transport
                 SetState(new ConnectionDisconnectedState(this, ErrorInfo.ReasonDisconnected));
         }
 
-        void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)
+        public void SendPendingMessages(bool resumed)
+        {
+            if (resumed)
+            {
+                //Resend any messages waiting an Ack Queue
+                foreach (var message in AckProcessor.GetQueuedMessages())
+                {
+                    SendToTransport(message);
+                }
+            }
+
+            lock (_pendingMessages)
+            {
+                while (_pendingMessages.Count > 0)
+                {
+                    var queuedMessage = _pendingMessages.Dequeue();
+                    SendMessage(queuedMessage.Message, queuedMessage.Callback);
+                } 
+            }
+        }
+
+          void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)
         {
             ExecuteOnManagerThread(() =>
             {

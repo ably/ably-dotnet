@@ -35,16 +35,6 @@ namespace IO.Ably.Tests
             _state.State.Should().Be(ConnectionStateType.Disconnected);
         }
 
-        [Fact]
-        public void ShouldQueueMessages()
-        {
-            // Act
-            _state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Connect));
-
-            // Assert
-            _context.QueuedMessages.Should().HaveCount(1);
-        }
-
         [Theory]
         [InlineData(ProtocolMessage.MessageAction.Ack)]
         [InlineData(ProtocolMessage.MessageAction.Attach)]
@@ -114,7 +104,7 @@ namespace IO.Ably.Tests
             var state = GetState(ErrorInfo.ReasonClosed);
 
             // Act
-            await state.OnAttachedToContext();
+            await state.OnAttachToContext();
             _timer.OnTimeOut();
 
             // Assert
@@ -133,7 +123,7 @@ namespace IO.Ably.Tests
             state.RetryInstantly = true;
 
             // Act
-            await state.OnAttachedToContext();
+            await state.OnAttachToContext();
 
             // Assert
             _timer.StartedWithAction.Should().BeFalse();

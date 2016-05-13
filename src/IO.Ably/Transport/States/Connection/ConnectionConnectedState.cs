@@ -6,15 +6,12 @@ namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionConnectedState : ConnectionState
     {
+        private readonly ConnectionInfo _info;
+        private bool _resumed = false;
         public ConnectionConnectedState(IConnectionContext context, ConnectionInfo info) :
             base(context)
         {
-            Context.Connection.Id = info.ConnectionId;
-            Context.Connection.Key = info.ConnectionKey;
-            Context.Connection.Serial = info.ConnectionSerial;
-            if (info.ConnectionStateTtl.HasValue)
-                Context.Connection.ConnectionStateTtl = info.ConnectionStateTtl.Value;
-            Context.SetConnectionClientId(info.ClientId);
+            _info = info;
         }
 
         public override ConnectionStateType State => ConnectionStateType.Connected;
@@ -52,23 +49,27 @@ namespace IO.Ably.Transport.States.Connection
             
         }
 
-        public override void SendMessage(ProtocolMessage message)
-        {
-            Context.Send(message);
-        }
-
-        public override Task OnAttachedToContext()
+        public override Task BeforeTransition()
         {
             Context.ResetConnectionAttempts();
-
-            if (Context.QueuedMessages != null && Context.QueuedMessages.Count > 0)
+            
+            if (_info != null)
             {
-                foreach (var message in Context.QueuedMessages)
-                {
-                    SendMessage(message);
-                }
-                Context.QueuedMessages.Clear();
+                _resumed = Context.Connection.Id == _info.ConnectionId;
+                Context.Connection.Id = _info.ConnectionId;
+                Context.Connection.Key = _info.ConnectionKey;
+                Context.Connection.Serial = _info.ConnectionSerial;
+                if (_info.ConnectionStateTtl.HasValue)
+                    Context.Connection.ConnectionStateTtl = _info.ConnectionStateTtl.Value;
+                Context.SetConnectionClientId(_info.ClientId);
             }
+            return base.BeforeTransition();
+        }
+
+        public override Task OnAttachToContext()
+        {
+            Context.ResetConnectionAttempts();
+            Context.SendPendingMessages(_resumed);
 
             return TaskConstants.BooleanTrue;
         }

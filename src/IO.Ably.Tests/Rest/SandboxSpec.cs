@@ -17,8 +17,8 @@ namespace IO.Ably.Tests
             Config.Now = () => DateTimeOffset.UtcNow;
 
             // Very useful for debugging failing tests.
-            Logger.LoggerSink = new OutputLoggerSink(output);
-            Logger.LogLevel = LogLevel.Debug;
+            //Logger.LoggerSink = new OutputLoggerSink(output);
+            //Logger.LogLevel = LogLevel.Debug;
         }
 
         protected async Task<AblyRest> GetRestClient(Protocol protocol, Action<ClientOptions> optionsAction = null)
