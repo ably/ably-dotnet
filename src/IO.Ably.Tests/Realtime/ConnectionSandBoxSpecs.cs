@@ -220,6 +220,29 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.Reason.Should().NotBeNull();
         }
 
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15e")]
+        public async Task ShouldUpdateConnectionKeyWhenConnectionIsResumed(Protocol protocol)
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            
+            var client = await GetRealtimeClient(protocol, options =>
+            {
+                options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(500);
+            });
+
+            await WaitForState(client, ConnectionStateType.Connected);
+            var initialConnectionKey = client.Connection.Key;
+            var initialConnectionId = client.Connection.Id;
+            client.ConnectionManager.Transport.Close(false);
+            await WaitForState(client, ConnectionStateType.Disconnected);
+            await WaitForState(client, ConnectionStateType.Connected);
+            client.Connection.Id.Should().Be(initialConnectionId);
+            client.Connection.Key.Should().NotBe(initialConnectionKey);
+        }
+
+
         public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
         {
         }

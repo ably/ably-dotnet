@@ -107,9 +107,7 @@ namespace IO.Ably.Realtime
 
                 _socket.Close();
 
-                if(suppressClosedEvent == false)
-                    DetachEvents();
-                _socket = null;
+                
             }
         }
 
@@ -183,6 +181,10 @@ namespace IO.Ably.Realtime
                 Logger.Debug("Websocket closed!");
             }
             Listener?.OnTransportEvent(State);
+            
+
+            DetachEvents();
+            _socket = null;
         }
 
         private void socket_Error(object sender, ErrorEventArgs e)

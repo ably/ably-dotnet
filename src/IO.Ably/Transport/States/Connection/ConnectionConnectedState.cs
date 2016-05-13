@@ -65,6 +65,7 @@ namespace IO.Ably.Transport.States.Connection
                 Context.SetConnectionClientId(_info.ClientId);
             }
 
+            if(_resumed && Logger.IsDebug) Logger.Debug("Connection resumed!");
             
             return base.BeforeTransition();
         }
