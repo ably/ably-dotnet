@@ -29,7 +29,11 @@ namespace IO.Ably.Tests.Realtime
         internal AblyRealtime GetConnectedClient(Action<ClientOptions> optionsAction = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
         {
             var client = GetClientWithFakeTransport(optionsAction, handleRequestFunc);
-            client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+            client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+            {
+                connectionDetails = new ConnectionDetailsMessage() { connectionKey = "connectionKey"},
+                connectionSerial = 100
+            });
             return client;
         }
 

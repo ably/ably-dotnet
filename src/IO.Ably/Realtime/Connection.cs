@@ -42,13 +42,15 @@ namespace IO.Ably.Realtime
         ///     The serial number of the last message received on this connection.
         ///     The serial number may be used when recovering connection state.
         /// </summary>
-        public long Serial { get; internal set; }
+        public long? Serial { get; internal set; }
 
         /// <summary>
         /// </summary>
         public string Key { get; internal set; }
 
-        public string RecoveryKey { get; internal set; }
+        public bool ConnectionResumable => Key.IsNotEmpty() && Serial.HasValue;
+
+        public string RecoveryKey => ConnectionResumable ? $"{Key}:{Serial.Value}" : "";
 
         public TimeSpan ConnectionStateTtl { get; internal set; } = Defaults.ConnectionStateTtl;
         /// <summary>

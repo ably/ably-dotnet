@@ -76,6 +76,32 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Fact]
+        [Trait("spec", "RTN15a")]
+        public async Task WithDisconnectMessageWithTokenError_ShouldResumeConnection()
+        {
+            var client = SetupConnectedClient();
+
+            List<ConnectionStateType> states = new List<ConnectionStateType>();
+            var errors = new List<ErrorInfo>();
+            client.Connection.ConnectionStateChanged += (sender, args) =>
+            {
+                if (args.HasError)
+                    errors.Add(args.Reason);
+
+                states.Add(args.CurrentState);
+                if (args.CurrentState == ConnectionStateType.Connecting)
+                {
+                    client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+                }
+            };
+            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { error = _tokenErrorInfo });
+
+            var urlParams = LastCreatedTransport.Parameters.GetParams();
+            urlParams.Should().ContainKey("resume");
+            urlParams.Should().ContainKey("connectionSerial");
+        }
+
+        [Fact]
         [Trait("spec", "RTN15h")]
         public async Task WithTokenErrorWhenTokenRenewalFails_ShouldGoToFailedStateAndEmitError()
         {
@@ -146,7 +172,7 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Fact]
-        [Trait("spec", "RTN15f")]
+        [Trait("spec", "RTN15h")]
         public async Task WhenConnectionFailsWithTokenErrorButTokenIsNotRenewable_ShouldTransitionDirectlyToFailedWithError()
         {
             var client = SetupConnectedClient(renewable: false);
@@ -175,9 +201,14 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Fact]
-        [Trait("spec", "RTN15f")]
+        [Trait("spec", "RTN15a")]
+        [Trait("spec", "RTN15b")]
+        [Trait("spec", "RTN15b1")]
+        [Trait("spec", "RTN15b2")]
         public async Task WhenTransportCloses_ShouldResumeConnection()
         {
+            Logger.LogLevel = LogLevel.Debug;
+            ;
             var client = SetupConnectedClient();
 
             List<ConnectionStateType> states = new List<ConnectionStateType>();
@@ -188,14 +219,26 @@ namespace IO.Ably.Tests.Realtime
                     errors.Add(args.Reason);
 
                 states.Add(args.CurrentState);
+                if (args.CurrentState == ConnectionStateType.Connecting)
+                {
+                    client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+                }
             };
 
+            var firstTransport = LastCreatedTransport;
+            var connectionKey = client.Connection.Key;
+            var serial = client.Connection.Serial.Value;
             LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closed);
-            
-            
+
+            await new ConnectionAwaiter(client.Connection, ConnectionStateType.Connected).Wait();
+
+            var urlParams = LastCreatedTransport.Parameters.GetParams();
+            urlParams.Should().ContainKey("resume")
+                .WhichValue.Should().Be(connectionKey);
+            urlParams.Should().ContainKey("connectionSerial")
+                .WhichValue.Should().Be(serial.ToString());
+            LastCreatedTransport.Should().NotBeSameAs(firstTransport);
         }
-
-
 
         public ConnectionFailuresOnceConnectedSpecs(ITestOutputHelper output) : base(output)
         {

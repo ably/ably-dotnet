@@ -242,7 +242,10 @@ namespace IO.Ably.Transport
                             break;
                         case ConnectionStateType.Connected:
                             var error = ex != null ? ErrorInfo.ReasonDisconnected : null;
-                            SetState(new ConnectionDisconnectedState(this, GetErrorInfoFromTransportException(ex, ErrorInfo.ReasonDisconnected)));
+                            var newState = new ConnectionDisconnectedState(this, GetErrorInfoFromTransportException(ex, ErrorInfo.ReasonDisconnected));
+                            newState.RetryInstantly = Connection.ConnectionResumable;
+
+                            SetState(newState);
                             break;
                     }
                 }
@@ -262,6 +265,7 @@ namespace IO.Ably.Transport
         public void HandleConnectingFailure(Exception ex)
         {
             if (Logger.IsDebug) Logger.Debug("Handling Connecting failure.");
+
             if (ShouldSuspend())
                 SetState(new ConnectionSuspendedState(this));
             else
@@ -306,7 +310,7 @@ namespace IO.Ably.Transport
 
         internal async Task<TransportParams> CreateTransportParameters()
         {
-            return await TransportParams.Create(RestClient.Auth, Options, Connection?.Key, Connection?.Serial);
+            return await TransportParams.Create(RestClient.Auth, Options, Connection.Key, Connection.Serial);
         }
 
         private static string GetHost(ClientOptions options, bool useFallbackHost)
@@ -324,8 +328,6 @@ namespace IO.Ably.Transport
             }
             return host;
         }
-
-        
 
         public async Task OnTransportMessageReceived(ProtocolMessage message)
         {

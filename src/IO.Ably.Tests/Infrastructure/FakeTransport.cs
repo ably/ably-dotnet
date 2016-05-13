@@ -37,8 +37,11 @@ namespace IO.Ably.Tests
         public ITransportListener Listener { get; set; }
 
         public bool OnConnectChangeStateToConnected { get; set; } = true;
+
         public void Connect()
         {
+            Logger.Debug("Connecting using: " + Parameters.GetUri().ToString());
+
             ConnectCalled = true;
             if (OnConnectChangeStateToConnected)
             {

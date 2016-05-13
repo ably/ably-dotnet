@@ -70,7 +70,6 @@ namespace IO.Ably.Transport
 
         public Dictionary<string, string> GetParams()
         {
-            //TODO: Write some tests 
             var result = new Dictionary<string, string>();
 
             if (AuthMethod == AuthMethod.Basic)
@@ -92,7 +91,7 @@ namespace IO.Ably.Transport
                 result["resume"] = ConnectionKey;
                 if (ConnectionSerial.HasValue)
                 {
-                    result["connection_serial"] = ConnectionSerial.Value.ToString();
+                    result["connectionSerial"] = ConnectionSerial.Value.ToString();
                 }
             }
             else if (RecoverValue.IsNotEmpty())
@@ -102,7 +101,7 @@ namespace IO.Ably.Transport
                 if (match.Success)
                 {
                     result["recover"] = match.Groups[1].Value;
-                    result["connection_serial"] = match.Groups[2].Value;
+                    result["connectionSerial"] = match.Groups[2].Value;
                 }
             }
 
