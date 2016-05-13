@@ -87,5 +87,6 @@ namespace IO.Ably.Transport
         void CloseConnection();
         void HandleConnectingFailure(Exception ex);
         void SendPendingMessages(bool resumed);
+        void ClearAckQueueAndFailMessages(ErrorInfo error);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using IO.Ably.CustomSerialisers;
 using IO.Ably.Realtime;
 using IO.Ably.Types;
 
@@ -63,11 +64,16 @@ namespace IO.Ably.Transport.States.Connection
                     Context.Connection.ConnectionStateTtl = _info.ConnectionStateTtl.Value;
                 Context.SetConnectionClientId(_info.ClientId);
             }
+
+            
             return base.BeforeTransition();
         }
 
         public override Task OnAttachToContext()
         {
+            if (_resumed == false)
+                Context.ClearAckQueueAndFailMessages(null);
+
             Context.ResetConnectionAttempts();
             Context.SendPendingMessages(_resumed);
 

@@ -34,6 +34,8 @@ namespace IO.Ably.Transport
         public Connection Connection { get; }
         public ConnectionStateType ConnectionState => Connection.State;
 
+        public void ClearAckQueueAndFailMessages(ErrorInfo error) => AckProcessor.ClearQueueAndFailMessages(error);
+
 
         public ConnectionManager(Connection connection, AblyRest restClient)
         {
@@ -315,7 +317,10 @@ namespace IO.Ably.Transport
             }
         }
 
-          void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)
+        
+        
+
+        void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)
         {
             ExecuteOnManagerThread(() =>
             {

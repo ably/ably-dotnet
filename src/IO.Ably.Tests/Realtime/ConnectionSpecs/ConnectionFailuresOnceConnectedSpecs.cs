@@ -236,6 +236,73 @@ namespace IO.Ably.Tests.Realtime
             LastCreatedTransport.Should().NotBeSameAs(firstTransport);
         }
 
+        [Fact]
+        [Trait("spec", "RTN15f")]
+        public async Task AckMessagesAreFailedWhenConnectionIsDroppedAndNotResumed()
+        {
+            var client = SetupConnectedClient();
+            
+            List<bool> callbackResults = new List<bool>();
+            Action<bool, ErrorInfo> callback = (b, info) =>
+            {
+                callbackResults.Add(b);
+            };
+
+            client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message), callback);
+            client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message), callback);
+            client.ConnectionManager.AckProcessor.GetQueuedMessages().Should().HaveCount(2);
+
+            await CloseAndWaitToReconnect(client);
+
+            LastCreatedTransport.SentMessages.Should().BeEmpty();
+            client.ConnectionManager.AckProcessor.GetQueuedMessages().Should().BeEmpty();
+
+            callbackResults.Should().HaveCount(2);
+            callbackResults.All(x => x == false).Should().BeTrue();
+        }
+
+        private async Task CloseAndWaitToReconnect(AblyRealtime client, ProtocolMessage protocolMessage = null)
+        {
+            protocolMessage = protocolMessage ?? new ProtocolMessage(ProtocolMessage.MessageAction.Connected);
+            LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closed);
+            await new ConnectionAwaiter(client.Connection, ConnectionStateType.Connecting).Wait();
+            await client.FakeMessageReceived(protocolMessage);
+        }
+
+        [Fact]
+        [Trait("spec", "RTN15f")]
+        public async Task AckMessagesAreResentWhenConnectionIsDroppedAndResumed()
+        {
+            var client = SetupConnectedClient();
+            client.Connection.ConnectionStateChanged += (sender, args) =>
+            {
+                if (args.CurrentState == ConnectionStateType.Connecting)
+                {
+                    client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+                }
+            };
+            List<bool> callbackResults = new List<bool>();
+            Action<bool, ErrorInfo> callback = (b, info) =>
+            {
+                callbackResults.Add(b);
+            };
+
+            string initialConnectionId = client.Connection.Id;
+            LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closed);
+            client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message), callback);
+            client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message), callback);
+
+            await CloseAndWaitToReconnect(client, new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+            {
+                connectionId = initialConnectionId // if the connection ids match then the connection has been resumed
+            });
+
+            LastCreatedTransport.SentMessages.Should().HaveCount(2);
+            client.ConnectionManager.AckProcessor.GetQueuedMessages().Should().HaveCount(2);
+        }
+
+
+
         public ConnectionFailuresOnceConnectedSpecs(ITestOutputHelper output) : base(output)
         {
             Now = DateTimeOffset.Now;

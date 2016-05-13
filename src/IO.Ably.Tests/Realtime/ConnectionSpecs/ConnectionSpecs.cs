@@ -32,6 +32,7 @@ namespace IO.Ably.Tests.Realtime
             client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
                 connectionDetails = new ConnectionDetailsMessage() { connectionKey = "connectionKey"},
+                connectionId = "1",
                 connectionSerial = 100
             });
             return client;

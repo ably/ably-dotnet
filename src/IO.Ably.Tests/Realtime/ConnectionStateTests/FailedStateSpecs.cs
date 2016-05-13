@@ -100,5 +100,17 @@ namespace IO.Ably.Tests
             // Assert
             _context.Connection.Key.Should().BeNullOrEmpty();
         }
+
+        [Fact]
+        [Trait("spec", "RTN7c")]
+        [Trait("sandboxTest", "needed")]
+        public async Task OnAttached_ClearsAckQueue()
+        {
+            // Arrange
+            await _state.OnAttachToContext();
+
+            _context.ClearAckQueueMessagesCalled.Should().BeTrue();
+            _context.ClearAckMessagesError.Should().Be(ErrorInfo.ReasonFailed);
+        }
     }
 }

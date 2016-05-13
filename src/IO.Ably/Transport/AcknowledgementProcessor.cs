@@ -11,6 +11,7 @@ namespace IO.Ably.Transport
         void QueueIfNecessary(ProtocolMessage message, Action<bool, ErrorInfo> callback);
         bool OnMessageReceived(ProtocolMessage message);
         IEnumerable<ProtocolMessage> GetQueuedMessages();
+        void ClearQueueAndFailMessages(ErrorInfo error);
     }
 
     internal class AcknowledgementProcessor : IAcknowledgementProcessor
@@ -56,32 +57,16 @@ namespace IO.Ably.Transport
             return false;
         }
 
-        private void OnStateChanged(object sender, ConnectionStateChangedEventArgs args)
+        public void ClearQueueAndFailMessages(ErrorInfo error)
         {
-            var state = args.CurrentState;
-            var error = args.Reason;
-            switch (state)
+            lock (_syncObject)
             {
-                case ConnectionStateType.Connected:
-                    lock (_syncObject)
-                    {
-                        Reset();
-                    }
-                    break;
-                case ConnectionStateType.Closed:
-                case ConnectionStateType.Failed:
+                foreach (var item in _queue.Where(x => x.Callback != null))
                 {
-                    lock (_syncObject)
-                    {
-                            foreach (var item in _queue.Where(x => x.Callback != null))
-                            {
-                                var messageError = error ?? ErrorInfo.ReasonUnknown;
-                                SafeExecute(item, false, messageError);
-                            }
-                            Reset();
-                        }
-                    break;
+                    var messageError = error ?? ErrorInfo.ReasonUnknown;
+                    SafeExecute(item, false, messageError);
                 }
+                Reset();
             }
         }
 

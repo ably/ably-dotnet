@@ -153,6 +153,11 @@ namespace IO.Ably.Tests
             SendPendingMessagesCalled = true;
         }
 
+        public void ClearAckQueueAndFailMessages(ErrorInfo error)
+        {
+            
+        }
+
         public bool SendPendingMessagesCalled { get; set; }
 
         public bool HandledConnectionFailureCalled { get; set; }

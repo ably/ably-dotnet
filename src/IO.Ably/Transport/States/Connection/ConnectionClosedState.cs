@@ -26,6 +26,7 @@ namespace IO.Ably.Transport.States.Connection
         public override Task OnAttachToContext()
         {
             // This is a terminal state. Clear the transport.
+            Context.ClearAckQueueAndFailMessages(ErrorInfo.ReasonClosed);
             Context.DestroyTransport();
             Context.Connection.Key = null;
 

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Types;
@@ -31,7 +33,8 @@ namespace IO.Ably.Tests
         public bool AbortCalled { get; set; }
 
         public ProtocolMessage LastMessageSend => LastTransportData.Original;
-        public RealtimeTransportData LastTransportData { get; set; }
+        public List<RealtimeTransportData> SentMessages { get; set; } = new List<RealtimeTransportData>();
+        public RealtimeTransportData LastTransportData => SentMessages.Last();
         public string Host { get; set; }
         public TransportState State { get; set; }
         public ITransportListener Listener { get; set; }
@@ -62,7 +65,7 @@ namespace IO.Ably.Tests
         public void Send(RealtimeTransportData data)
         {
             SendAction(data);
-            LastTransportData = data;
+            SentMessages.Add(data);
         }
 
 
