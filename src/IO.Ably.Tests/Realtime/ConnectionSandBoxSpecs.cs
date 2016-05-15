@@ -259,6 +259,7 @@ namespace IO.Ably.Tests.Realtime
                 UseBinaryProtocol = protocol == Protocol.MsgPack
             });
 
+
             await WaitForState(authUrlClient, waitSpan: TimeSpan.FromSeconds(5));
         }
 
