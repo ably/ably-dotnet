@@ -242,6 +242,26 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.Key.Should().NotBe(initialConnectionKey);
         }
 
+        [Theory]
+        [ProtocolData]
+        public async Task WithAuthUrlShouldGetTokenFromUrl(Protocol protocol)
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            var client = await GetRestClient(protocol);
+            var token = await client.Auth.RequestToken(new TokenParams() { ClientId = "*" });
+            var settings = await Fixture.GetSettings();
+            var authUrl = "http://echo.ably.io/?type=text&body=" + token.Token;
+
+            var authUrlClient = new AblyRealtime(new ClientOptions
+            {
+                AuthUrl = new Uri(authUrl),
+                Environment = settings.Environment,
+                UseBinaryProtocol = protocol == Protocol.MsgPack
+            });
+
+            await WaitForState(authUrlClient, waitSpan: TimeSpan.FromSeconds(5));
+        }
+
 
         public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
         {
