@@ -91,8 +91,17 @@ namespace IO.Ably
 
         public Exception AsException()
         {
-            // TODO: implement own exception class instead, to have both codes in the exception
-            return new Exception( this.message );
+            return new AblyException(this);
+        }
+
+        public bool IsRetyableStatusCode()
+        {
+            return statusCode.HasValue && IsRetryableStatusCode(statusCode.Value);
+        }
+
+        public static bool IsRetryableStatusCode(HttpStatusCode statusCode)
+        {
+            return statusCode >= (HttpStatusCode) 500 && statusCode <= (HttpStatusCode) 504;
         }
     }
 }

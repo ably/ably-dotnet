@@ -121,9 +121,7 @@ namespace IO.Ably
 
         internal bool IsRetryableResponse(HttpResponseMessage response)
         {
-            if (response.StatusCode >= (HttpStatusCode) 500 && response.StatusCode <= (HttpStatusCode) 504)
-                return true;
-            return false;
+            return ErrorInfo.IsRetryableStatusCode(response.StatusCode);
         }
 
         internal bool IsRetryableError(Exception ex)

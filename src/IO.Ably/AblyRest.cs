@@ -250,7 +250,7 @@ namespace IO.Ably
             try
             {
                 var request = new AblyRequest(Defaults.InternetCheckURL, HttpMethod.Get);
-                var response = await HttpClient.Execute(request);
+                var response = await ExecuteHttpRequest(request);
                 return response.TextResponse == Defaults.InternetCheckOKMessage;
             }
             catch (Exception ex)

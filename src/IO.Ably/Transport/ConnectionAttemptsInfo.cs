@@ -54,6 +54,7 @@ namespace IO.Ably.Transport
         internal List<ConnectionAttempt> Attempts { get; } = new List<ConnectionAttempt>();
         internal DateTimeOffset? FirstAttempt => Attempts.Any() ? Attempts.First().Time : (DateTimeOffset?)null;
         public AblyRest RestClient => _connection.RestClient;
+        public ClientOptions Options => RestClient.Options;
         private readonly Connection _connection;
         internal int NumberOfAttempts => Attempts.Count;
         internal bool TriedToRenewToken { get; private set; }
@@ -70,10 +71,11 @@ namespace IO.Ably.Transport
 
         public async Task<bool> CanFallback(ErrorInfo error)
         {
-            return error?.statusCode != null &&
-                FallbackReasons.Contains(error.statusCode.Value) &&
+            return Options.IsDefaultRealtimeHost && 
+                error != null && error.IsRetyableStatusCode() &&
                 await RestClient.CanConnectToAbly();
         }
+
 
         public void Reset()
         {
