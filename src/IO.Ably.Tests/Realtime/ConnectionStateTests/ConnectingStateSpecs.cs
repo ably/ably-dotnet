@@ -116,6 +116,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             _context.Transport = GetConnectedTrasport();
+            _context.CanUseFallBack = false;
             ErrorInfo targetError = new ErrorInfo("test", 123);
 
             // Act
@@ -126,14 +127,13 @@ namespace IO.Ably.Tests
         }
 
 
-        [Theory]
-        [InlineData(System.Net.HttpStatusCode.InternalServerError)]
-        [InlineData(System.Net.HttpStatusCode.GatewayTimeout)]
-        public async Task WithInboundErrorMessage_GoesToDisconnected(System.Net.HttpStatusCode code)
+        [Fact]
+        public async Task WithInboundErrorMessageWhenItCanUseFallBack_GoesToDisconnected()
         {
             _context.Transport = new FakeTransport() { State = TransportState.Connected };
+            _context.CanUseFallBack = true;
             // Arrange
-            ErrorInfo targetError = new ErrorInfo("test", 123, code);
+            ErrorInfo targetError = new ErrorInfo("test", 123);
 
             // Act
             await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
@@ -143,10 +143,11 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public async Task WithInboundErrorMessage_ShouldClearsConnectionKey()
+        public async Task WithInboundErrorMessageMessageWhenItCanUseFallBack_ShouldClearsConnectionKey()
         {
             // Arrange
             _context.Transport = GetConnectedTrasport();
+            _context.CanUseFallBack = true;
             _context.Connection.Key = "123";
 
             // Act

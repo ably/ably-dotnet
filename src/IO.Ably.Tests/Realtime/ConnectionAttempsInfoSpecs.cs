@@ -9,9 +9,8 @@ namespace IO.Ably.Tests.Realtime
 {
     public class ConnectionAttemptsInfoSpecs : AblySpecs
     {
-        private Connection _connection;
-        private ClientOptions _options;
-        private ConnectionAttemptsInfo _info;
+        private readonly Connection _connection;
+        private readonly ConnectionAttemptsInfo _info;
 
         [Fact]
         public void FirstIncrement_ShouldSetCurrentTimeAndIncrementAttempts()
@@ -55,13 +54,10 @@ namespace IO.Ably.Tests.Realtime
 
         }
 
-
-
         public ConnectionAttemptsInfoSpecs(ITestOutputHelper output) : base(output)
         {
             _connection = new Connection(new AblyRest(ValidKey));
-            _options = new ClientOptions();
-            _info = new ConnectionAttemptsInfo(_options, _connection);
+            _info = new ConnectionAttemptsInfo(_connection);
         }
     }
 }

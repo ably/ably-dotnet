@@ -241,5 +241,23 @@ namespace IO.Ably
         {
             return GetEnumerator();
         }
+
+        public async Task<bool> CanConnectToAbly()
+        {
+            if (Options.SkipInternetCheck)
+                return true;
+
+            try
+            {
+                var request = new AblyRequest(Defaults.InternetCheckURL, HttpMethod.Get);
+                var response = await HttpClient.Execute(request);
+                return response.TextResponse == Defaults.InternetCheckOKMessage;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error accessing ably internet check url. Internet is down!", ex);
+                return false;
+            }
+        }
     }
 }

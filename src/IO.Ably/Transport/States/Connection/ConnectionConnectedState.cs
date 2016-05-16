@@ -53,8 +53,6 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void BeforeTransition()
         {
-            Context.ResetConnectionAttempts();
-            
             if (_info != null)
             {
                 _resumed = Context.Connection.Id == _info.ConnectionId;
@@ -74,7 +72,6 @@ namespace IO.Ably.Transport.States.Connection
             if (_resumed == false)
                 Context.ClearAckQueueAndFailMessages(null);
 
-            Context.ResetConnectionAttempts();
             Context.SendPendingMessages(_resumed);
 
             return TaskConstants.BooleanTrue;

@@ -143,7 +143,7 @@ namespace IO.Ably.Tests
             CloseConnectionCalled = true;
         }
 
-        public void HandleConnectingFailure(Exception ex)
+        public void HandleConnectingFailure(ErrorInfo error, Exception ex)
         {
             HandledConnectionFailureCalled = true;
         }
@@ -159,6 +159,14 @@ namespace IO.Ably.Tests
             ClearAckMessagesError = error;
         }
 
+        public Task<bool> CanUseFallBackUrl(ErrorInfo error)
+        {
+            CanUseFallBackUrlCalled = true;
+            return CanUseFallBack ? TaskConstants.BooleanTrue : TaskConstants.BooleanFalse;
+        }
+
+        public bool CanUseFallBackUrlCalled { get; set; }
+
         public ErrorInfo ClearAckMessagesError { get; set; }
 
         public bool ClearAckQueueMessagesCalled { get; set; }
@@ -170,6 +178,7 @@ namespace IO.Ably.Tests
         public bool CloseConnectionCalled { get; set; }
 
         public bool ShouldSuspendValue { get; set; }
+        public bool CanUseFallBack { get; set; }
 
         public T StateShouldBe<T>() where T : ConnectionState
         {

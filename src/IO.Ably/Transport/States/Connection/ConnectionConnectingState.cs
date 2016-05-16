@@ -11,18 +11,10 @@ namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionConnectingState : ConnectionState
     {
-        private static readonly ISet<HttpStatusCode> FallbackReasons;
+      
+    private readonly ICountdownTimer _timer;
 
-        private readonly ICountdownTimer _timer;
-
-        static ConnectionConnectingState()
-        {
-            FallbackReasons = new HashSet<HttpStatusCode>
-            {
-                HttpStatusCode.InternalServerError,
-                HttpStatusCode.GatewayTimeout
-            };
-        }
+        
 
         public ConnectionConnectingState(IConnectionContext context) :
             this(context, new CountdownTimer("Connecting state timer"))
@@ -64,6 +56,7 @@ namespace IO.Ably.Transport.States.Connection
                     }
                 case ProtocolMessage.MessageAction.Disconnected:
                     {
+                        Context.HandleConnectingFailure(message.error, null);
                         ConnectionState nextState;
                         if (Context.ShouldSuspend())
                         {
@@ -95,10 +88,10 @@ namespace IO.Ably.Transport.States.Connection
                             }
                         }
 
-                        if (await ShouldUseFallbackHost(message.error))
+                        if (await Context.CanUseFallBackUrl(message.error))
                         {
                             Context.Connection.Key = null;
-                            TransitionState(new ConnectionDisconnectedState(Context) { RetryInstantly = true });
+                            TransitionState(new ConnectionDisconnectedState(Context));
                             return true;
                         }
 
@@ -122,14 +115,7 @@ namespace IO.Ably.Transport.States.Connection
 
         private void OnTimeOut()
         {
-            Context.Execute(() => Context.HandleConnectingFailure(null));
-        }
-
-        private async Task<bool> ShouldUseFallbackHost(ErrorInfo error)
-        {
-            return error?.statusCode != null &&
-                FallbackReasons.Contains(error.statusCode.Value) &&
-                await Context.CanConnectToAbly();
+            Context.Execute(() => Context.HandleConnectingFailure(null, null));
         }
 
         private void TransitionState(ConnectionState newState)

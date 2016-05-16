@@ -32,16 +32,6 @@ namespace IO.Ably.Tests
             _state.State.Should().Be(ConnectionStateType.Connected);
         }
 
-        [Fact]
-        public async Task ShouldResetsContextConnectionAttempts()
-        {
-            // Act
-            await _state.OnAttachToContext();
-
-            // Assert
-            _context.ResetConnectionAttemptsCalled.Should().BeTrue();
-        }
-
         [Theory]
         [InlineData(ProtocolMessage.MessageAction.Ack)]
         [InlineData(ProtocolMessage.MessageAction.Attach)]

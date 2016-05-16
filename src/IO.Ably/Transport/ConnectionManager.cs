@@ -21,7 +21,7 @@ namespace IO.Ably.Transport
         public IAcknowledgementProcessor AckProcessor { get; internal set; }
         private ConnectionAttemptsInfo AttemptsInfo { get; }
         public TimeSpan RetryTimeout => Options.DisconnectedRetryTimeout;
-        public AblyRest RestClient { get; }
+        public AblyRest RestClient => Connection.RestClient;
         public MessageHandler Handler => RestClient.MessageHandler;
         public ConnectionState State => Connection.ConnectionState;
         public TransportState TransportState => Transport.State;
@@ -33,17 +33,20 @@ namespace IO.Ably.Transport
         public bool IsActive => State.CanQueue && State.CanSend;
         public Connection Connection { get; }
         public ConnectionStateType ConnectionState => Connection.State;
-        private object _stateSyncLock = new object();
-        private volatile ConnectionState InTransitionToState;
+        private readonly object _stateSyncLock = new object();
+        private volatile ConnectionState _inTransitionToState;
 
         public void ClearAckQueueAndFailMessages(ErrorInfo error) => AckProcessor.ClearQueueAndFailMessages(error);
+        public Task<bool> CanUseFallBackUrl(ErrorInfo error)
+        {
+            return AttemptsInfo.CanFallback(error);
+        }
 
-        public ConnectionManager(Connection connection, AblyRest restClient)
+        public ConnectionManager(Connection connection)
         {
             _pendingMessages = new Queue<MessageAndCallback>();
-            AttemptsInfo = new ConnectionAttemptsInfo(restClient.Options, connection);
+            AttemptsInfo = new ConnectionAttemptsInfo(connection);
             Connection = connection;
-            RestClient = restClient;
             AckProcessor = new AcknowledgementProcessor(connection);
 
             if (Logger.IsDebug)
@@ -67,12 +70,13 @@ namespace IO.Ably.Transport
         {
             if (Logger.IsDebug) Logger.Debug($"xx Changing state from {ConnectionState} => {newState.State}. SkipAttach = {skipAttach}.");
 
-            InTransitionToState = newState;
+            _inTransitionToState = newState;
 
             return ExecuteOnManagerThread(async () =>
             {
                 try
                 {
+
                     lock (_stateSyncLock)
                     {
                         if (State.State == newState.State)
@@ -86,6 +90,7 @@ namespace IO.Ably.Transport
                         if (Logger.IsDebug) Logger.Debug($"xx {newState.State}: BeforeTransition");
                         newState.BeforeTransition();
 
+                        AttemptsInfo.UpdateAttemptState(newState);
                         Connection.UpdateState(newState);
                     }
 
@@ -113,9 +118,9 @@ namespace IO.Ably.Transport
                 finally
                 {
                     //Clear the state in transition only if the current state hasn't updated it
-                    if (InTransitionToState == newState)
+                    if (_inTransitionToState == newState)
                     {
-                        InTransitionToState = null;
+                        _inTransitionToState = null;
                     }
                     if (Logger.IsDebug)
                     {
@@ -149,30 +154,6 @@ namespace IO.Ably.Transport
             Transport.Close(suppressClosedEvent);
             Transport.Listener = null;
             Transport = null;
-        }
-
-        void IConnectionContext.ResetConnectionAttempts()
-        {
-            AttemptsInfo.Reset();
-        }
-
-        public async Task<bool> CanConnectToAbly()
-        {
-            if (Options.SkipInternetCheck)
-                return true;
-
-            try
-            {
-                var httpClient = RestClient.HttpClient;
-                var request = new AblyRequest(Defaults.InternetCheckURL, HttpMethod.Get);
-                var response = await httpClient.Execute(request);
-                return response.TextResponse == Defaults.InternetCheckOKMessage;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error("Error accessing ably internet check url. Internet is down!", ex);
-                return false;
-            }
         }
 
         public void SetConnectionClientId(string clientId)
@@ -273,21 +254,19 @@ namespace IO.Ably.Transport
 
                 if (transportState == TransportState.Closed || ex != null)
                 {
-                    var connectionState = InTransitionToState?.State ?? ConnectionState;
+                    var connectionState = _inTransitionToState?.State ?? ConnectionState;
                     switch (connectionState)
                     {
                         case ConnectionStateType.Closing:
-                            SetState(new ConnectionClosedState(this));
+                            SetState(new ConnectionClosedState(this) {Exception = ex});
                             break;
                         case ConnectionStateType.Connecting:
-                            HandleConnectingFailure(ex);
+                            HandleConnectingFailure(null, ex);
                             break;
                         case ConnectionStateType.Connected:
-                            var error = ex != null ? ErrorInfo.ReasonDisconnected : null;
-                            var newState = new ConnectionDisconnectedState(this, GetErrorInfoFromTransportException(ex, ErrorInfo.ReasonDisconnected));
-                            newState.RetryInstantly = Connection.ConnectionResumable;
-
-                            SetState(newState);
+                            var disconnectedState = new ConnectionDisconnectedState(this, GetErrorInfoFromTransportException(ex, ErrorInfo.ReasonDisconnected)) { Exception = ex };
+                            disconnectedState.RetryInstantly = Connection.ConnectionResumable;
+                            SetState(disconnectedState);
                             break;
                     }
                 }
@@ -304,14 +283,18 @@ namespace IO.Ably.Transport
             return @default;
         }
 
-        public void HandleConnectingFailure(Exception ex)
+        public void HandleConnectingFailure(ErrorInfo error, Exception ex)
         {
             if (Logger.IsDebug) Logger.Debug("Handling Connecting failure.");
-            ErrorInfo error = ex != null ? new ErrorInfo(ex.Message, 80000) : null; 
+            ErrorInfo resolvedError = error ?? (ex != null ? new ErrorInfo(ex.Message, 80000) : null);
             if (ShouldSuspend())
-                SetState(new ConnectionSuspendedState(this, error));
+            {
+                SetState(new ConnectionSuspendedState(this, resolvedError ?? ErrorInfo.ReasonSuspended));
+            }
             else
-                SetState(new ConnectionDisconnectedState(this, error ?? ErrorInfo.ReasonDisconnected));
+            {
+                SetState(new ConnectionDisconnectedState(this, resolvedError ?? ErrorInfo.ReasonDisconnected));
+            }
         }
 
         public void SendPendingMessages(bool resumed)
@@ -334,9 +317,6 @@ namespace IO.Ably.Transport
                 } 
             }
         }
-
-        
-        
 
         void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)
         {
@@ -377,22 +357,6 @@ namespace IO.Ably.Transport
         internal async Task<TransportParams> CreateTransportParameters()
         {
             return await TransportParams.Create(RestClient.Auth, Options, Connection.Key, Connection.Serial);
-        }
-
-        private static string GetHost(ClientOptions options, bool useFallbackHost)
-        {
-            var defaultHost = Defaults.RealtimeHost;
-            if (useFallbackHost)
-            {
-                var r = new Random();
-                defaultHost = Defaults.FallbackHosts[r.Next(0, 1000) % Defaults.FallbackHosts.Length];
-            }
-            var host = options.RealtimeHost.IsNotEmpty() ? options.RealtimeHost : defaultHost;
-            if (options.Environment.HasValue && options.Environment != AblyEnvironment.Live)
-            {
-                return string.Format("{0}-{1}", options.Environment.ToString().ToLower(), host);
-            }
-            return host;
         }
 
         public async Task OnTransportMessageReceived(ProtocolMessage message)
