@@ -14,6 +14,29 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 {
+    public class ConnectionRecoverySpecs : ConnectionSpecsBase
+    {
+        [Fact]
+        [Trait("spec", "RTN16c")]
+        public async Task WhenConnectionIsClosed_ConnectionIdAndKeyShouldBeReset()
+        {
+            var client = GetConnectedClient();
+            
+            client.Close();
+
+            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
+
+            client.Connection.State.Should().Be(ConnectionStateType.Closed);
+            client.Connection.Id.Should().BeNullOrEmpty();
+            client.Connection.Key.Should().BeNullOrEmpty();
+
+        }
+
+        public ConnectionRecoverySpecs(ITestOutputHelper output) : base(output)
+        {
+        }
+    }
+
     public class ConnectingFailureSpecs : ConnectionSpecsBase
     {
         private TokenDetails _returnedDummyTokenDetails = new TokenDetails("123") { Expires = Config.Now().AddDays(1), ClientId = "123" };

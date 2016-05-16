@@ -141,4 +141,4 @@ namespace IO.Ably.Tests
             connection.Key.Should().Be("test test");
         }
     }
-}
+} 

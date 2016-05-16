@@ -23,13 +23,17 @@ namespace IO.Ably.Transport.States.Connection
             Context.SetState(new ConnectionConnectingState(Context));
         }
 
-        public override Task OnAttachToContext()
+        public override void BeforeTransition()
         {
             // This is a terminal state. Clear the transport.
-            Context.ClearAckQueueAndFailMessages(ErrorInfo.ReasonClosed);
-            Context.DestroyTransport();
             Context.Connection.Key = null;
+            Context.Connection.Id = null;
+            Context.DestroyTransport();
+        }
 
+        public override Task OnAttachToContext()
+        {
+            Context.ClearAckQueueAndFailMessages(ErrorInfo.ReasonClosed);
             return TaskConstants.BooleanTrue;
         }
     }
