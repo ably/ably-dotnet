@@ -35,7 +35,6 @@ namespace IO.Ably.Tests
         public ProtocolMessage LastMessageSend => LastTransportData.Original;
         public List<RealtimeTransportData> SentMessages { get; set; } = new List<RealtimeTransportData>();
         public RealtimeTransportData LastTransportData => SentMessages.Last();
-        public string Host { get; set; }
         public TransportState State { get; set; }
         public ITransportListener Listener { get; set; }
 

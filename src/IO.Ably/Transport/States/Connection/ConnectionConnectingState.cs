@@ -91,7 +91,7 @@ namespace IO.Ably.Transport.States.Connection
                         if (await Context.CanUseFallBackUrl(message.error))
                         {
                             Context.Connection.Key = null;
-                            TransitionState(new ConnectionDisconnectedState(Context));
+                            Context.HandleConnectingFailure(message.error, null);
                             return true;
                         }
 

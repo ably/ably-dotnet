@@ -28,10 +28,10 @@ namespace IO.Ably.Transport
 
         }
 
-        internal static async Task<TransportParams> Create(IAuthCommands auth, ClientOptions options, string connectionKey = null, long? connectionSerial = null)
+        internal static async Task<TransportParams> Create(string host, IAuthCommands auth, ClientOptions options, string connectionKey = null, long? connectionSerial = null)
         {
             var result = new TransportParams();
-            result.Host = options.FullRealtimeHost();
+            result.Host = host;
             result.Tls = options.Tls;
             result.Port = options.Tls ? options.TlsPort : options.Port;
             result.ClientId = options.GetClientId();

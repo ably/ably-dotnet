@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
+using SuperSocket.ClientEngine;
 
 namespace IO.Ably.Realtime
 {
@@ -10,9 +13,12 @@ namespace IO.Ably.Realtime
     {
         internal AblyRest RestClient { get; }
         internal ConnectionManager ConnectionManager { get; set; }
+        internal List<string> FallbackHosts;
+        private string _host;
 
         internal Connection(AblyRest restClient)
         {
+            FallbackHosts = Defaults.FallbackHosts.Shuffle().ToList();
             RestClient = restClient;
         }
 
@@ -58,6 +64,16 @@ namespace IO.Ably.Realtime
         ///     error information.
         /// </summary>
         public ErrorInfo Reason { get; private set; }
+
+        public string Host
+        {
+            get { return _host; }
+            internal set
+            {
+                _host = value;
+                RestClient.CustomHost = FallbackHosts.Contains(_host) ? _host : "";
+            }
+        }
 
         public void Dispose()
         {

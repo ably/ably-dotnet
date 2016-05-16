@@ -12,6 +12,8 @@ namespace IO.Ably
     {
         internal AblyHttpOptions Options { get; }
 
+        internal string CustomHost { get; set; }
+
         internal HttpClient Client { get; set; }
 
         internal AblyHttpClient(AblyHttpOptions options, HttpMessageHandler messageHandler =null)
@@ -30,12 +32,19 @@ namespace IO.Ably
         public async Task<AblyResponse> Execute(AblyRequest request)
         {
             var fallbackHosts = Defaults.FallbackHosts.ToList();
+            if (CustomHost.IsNotEmpty())
+            {
+                //The custom host is a fallback host currently in use by the Realtime client. 
+                //We need to remove it from the fallback hosts
+                fallbackHosts.Remove(CustomHost);
+            }
+
             var random = new Random();
 
             int currentTry = 0;
             var startTime = Config.Now();
             var numberOfRetries = Options.HttpMaxRetryCount;
-            var host = Options.Host;
+            var host = CustomHost.IsNotEmpty() ? CustomHost : Options.Host;
 
             while (currentTry < numberOfRetries)
             {

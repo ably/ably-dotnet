@@ -67,12 +67,14 @@
     <Compile Include="CustomSerialisers\GeneratedSerializers\System_Net_HttpStatusCodeSerializer.cs" />
     <Compile Include="CustomSerialisers\TimeSpanJsonConverter.cs" />
     <Compile Include="CustomSerialisers\TimespanMessagePackSerializer.cs" />
+    <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Realtime\ConnectionAwaiter.cs" />
     <Compile Include="Encryption\AesCipher.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\UriExtensions.cs" />
     <Compile Include="Http\AblyHttpOptions.cs" />
+    <Compile Include="Realtime\RealtimeTransportData.cs" />
     <Compile Include="Realtime\WebSocketTransport.cs" />
     <Compile Include="Result.cs" />
     <Compile Include="TokenDetails.cs" />

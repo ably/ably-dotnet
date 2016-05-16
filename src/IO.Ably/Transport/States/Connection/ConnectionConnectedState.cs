@@ -40,6 +40,13 @@ namespace IO.Ably.Transport.States.Connection
 
                     return true;
                 case ProtocolMessage.MessageAction.Error:
+                    if (await Context.CanUseFallBackUrl(message.error))
+                    {
+                        Context.Connection.Key = null;
+                        Context.SetState(new ConnectionDisconnectedState(Context, message.error) { RetryInstantly = true });
+                        return true;
+                    }
+
                     Context.SetState(new ConnectionFailedState(Context, message.error));
                     return true;
             }

@@ -19,6 +19,12 @@ namespace IO.Ably
         internal AblyHttpClient HttpClient { get; private set; }
         internal MessageHandler MessageHandler { get; private set; }
 
+        internal string CustomHost
+        {
+            get { return HttpClient.CustomHost; }
+            set { HttpClient.CustomHost = value;  }
+        }
+
         internal AblyAuth AblyAuth { get; private set; }
         internal List<IChannel> RestChannels { get; private set; } = new List<IChannel>();
 
@@ -180,12 +186,12 @@ namespace IO.Ably
 
         internal AblyRequest CreateGetRequest(string path, ChannelOptions options = null)
         {
-            return new AblyRequest(path, HttpMethod.Get, Protocol) { ChannelOptions = options };
+            return new AblyRequest(path, HttpMethod.Get, Protocol) {ChannelOptions = options};
         }
 
         internal AblyRequest CreatePostRequest(string path, ChannelOptions options = null)
         {
-            return new AblyRequest(path, HttpMethod.Post, Protocol) { ChannelOptions = options };
+            return new AblyRequest(path, HttpMethod.Post, Protocol) {ChannelOptions = options};
         }
 
         IChannel IChannelCommands.this[string name] => Channels.Get(name);
@@ -212,7 +218,7 @@ namespace IO.Ably
                 else
                 {
                     if (options != null &&
-                             Equals(channel.Options, options) == false)
+                        Equals(channel.Options, options) == false)
                     {
                         channel.SetOptions(options);
                     }

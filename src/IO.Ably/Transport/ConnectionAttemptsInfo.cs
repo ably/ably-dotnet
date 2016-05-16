@@ -36,6 +36,27 @@ namespace IO.Ably.Transport
             State = state;
             Exception = ex;
         }
+
+        public bool ShouldUseFallback()
+        {
+            return IsFailedOrSuspendedState() &&
+                (IsRecoverableError() || IsRecoverableException());
+        }
+
+        private bool IsFailedOrSuspendedState()
+        {
+            return State == ConnectionStateType.Disconnected || State == ConnectionStateType.Suspended;
+        }
+
+        private bool IsRecoverableException()
+        {
+            return Exception != null;
+        }
+
+        private bool IsRecoverableError()
+        {
+            return (Error != null && Error.IsRetyableStatusCode());
+        }
     }
 
     internal sealed class ConnectionAttemptsInfo
@@ -71,11 +92,15 @@ namespace IO.Ably.Transport
 
         public async Task<bool> CanFallback(ErrorInfo error)
         {
-            return Options.IsDefaultRealtimeHost && 
+            return IsDefaultHost() &&
                 error != null && error.IsRetyableStatusCode() &&
                 await RestClient.CanConnectToAbly();
         }
 
+        private bool IsDefaultHost()
+        {
+            return Options.IsDefaultRealtimeHost;
+        }
 
         public void Reset()
         {
@@ -90,11 +115,10 @@ namespace IO.Ably.Transport
         {
             lock (_syncLock)
             {
-                if (Attempts.Any())
-                {
-                    var attempt = Attempts.Last();
-                    attempt.FailedStates.Add(new AttemptFailedState(state, error));
-                }
+                var attempt = Attempts.LastOrDefault() ?? new ConnectionAttempt(Config.Now());
+                attempt.FailedStates.Add(new AttemptFailedState(state, error));
+                if(Attempts.Count == 0)
+                    Attempts.Add(attempt);
             }
         }
 
@@ -126,28 +150,34 @@ namespace IO.Ably.Transport
             }
         }
 
-        public void Increment()
-        {
-            lock (_syncLock)
-            {
-                Attempts.Add(new ConnectionAttempt(Config.Now()));
-            }
-        }
+        public int DisconnectedCount => Attempts.SelectMany(x => x.FailedStates).Count(x => x.State == ConnectionStateType.Disconnected && x.ShouldUseFallback());
+        public int SuspendedCount => Attempts.SelectMany(x => x.FailedStates).Count(x => x.State == ConnectionStateType.Suspended && x.ShouldUseFallback());
 
-        private static string GetHost(ClientOptions options, bool useFallbackHost)
+        public string GetHost()
         {
-            var defaultHost = Defaults.RealtimeHost;
-            if (useFallbackHost)
+            var lastFailedState = Attempts.SelectMany(x => x.FailedStates).LastOrDefault();
+            string customHost = "";
+            if (lastFailedState != null)
             {
-                var r = new Random();
-                defaultHost = Defaults.FallbackHosts[r.Next(0, 1000) % Defaults.FallbackHosts.Length];
+                if (lastFailedState.State == ConnectionStateType.Disconnected)
+                {
+                    customHost = _connection.FallbackHosts[DisconnectedCount%_connection.FallbackHosts.Count];
+                }
+                if (lastFailedState.State == ConnectionStateType.Suspended && SuspendedCount > 1)
+                {
+                    customHost =
+                        _connection.FallbackHosts[(DisconnectedCount + SuspendedCount)%_connection.FallbackHosts.Count];
+                }
+
+                if (customHost.IsNotEmpty())
+                {
+                    _connection.Host = customHost;
+                    return customHost;
+                }
             }
-            var host = options.RealtimeHost.IsNotEmpty() ? options.RealtimeHost : defaultHost;
-            if (options.Environment.HasValue && options.Environment != AblyEnvironment.Live)
-            {
-                return string.Format("{0}-{1}", options.Environment.ToString().ToLower(), host);
-            }
-            return host;
+
+            _connection.Host = Options.FullRealtimeHost();
+            return _connection.Host;
         }
 
         public void UpdateAttemptState(ConnectionState newState)
@@ -155,10 +185,14 @@ namespace IO.Ably.Transport
             lock (_syncLock)
                 switch (newState.State)
                 {
+                    case ConnectionStateType.Connecting:
+                        Attempts.Add(new ConnectionAttempt(Config.Now()));
+                        break;
+                    case ConnectionStateType.Failed:
+                    case ConnectionStateType.Closed:
                     case ConnectionStateType.Connected:
                         Attempts.Clear();
                         break;
-                    case ConnectionStateType.Failed:
                     case ConnectionStateType.Suspended:
                     case ConnectionStateType.Disconnected:
                         if (newState.Exception != null)

@@ -240,7 +240,7 @@ namespace IO.Ably.Tests.Realtime
             var initialConnectionId = client.Connection.Id;
             client.ConnectionManager.Transport.Close(false);
             await WaitForState(client, ConnectionStateType.Disconnected);
-            await WaitForState(client, ConnectionStateType.Connected);
+            await WaitForState(client, ConnectionStateType.Connected, TimeSpan.FromSeconds(5));
             client.Connection.Id.Should().Be(initialConnectionId);
             client.Connection.Key.Should().NotBe(initialConnectionKey);
         }

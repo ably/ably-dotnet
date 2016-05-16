@@ -16,14 +16,6 @@ namespace IO.Ably.Tests.Realtime
         private bool _internetCheckOK = true;
 
         [Fact]
-        public void FirstIncrement_ShouldSetCurrentTimeAndIncrementAttempts()
-        {
-            _info.Increment();
-            _info.FirstAttempt.Should().Be(Now);
-            _info.NumberOfAttempts.Should().Be(1);
-        }
-
-        [Fact]
         public void Reset_SHouldResetFirstAttemptAndNumberOfAttempts()
         {
             _info.Reset();
@@ -40,7 +32,7 @@ namespace IO.Ably.Tests.Realtime
         [Fact]
         public void ShouldSuspend_WhenFirstAttemptIsWithinConnectionStateTtl_ShouldReturnFalse()
         {
-            _info.Increment();
+            _info.Attempts.Add(new ConnectionAttempt(Config.Now()));
             //Move now to default ConnetionStatettl - 1 second
             Now = Now.Add(Defaults.ConnectionStateTtl.Add(TimeSpan.FromSeconds(-1)));
             _info.ShouldSuspend().Should().BeFalse();
@@ -48,7 +40,7 @@ namespace IO.Ably.Tests.Realtime
         [Fact]
         public void ShouldSuspend_WhenFirstAttemptEqualOrGreaterThanConnectionStateTtl_ShouldReturnTrue()
         {
-            _info.Increment();
+            _info.Attempts.Add(new ConnectionAttempt(Config.Now()));
             //Move now to default ConnetionStatettl - 1 second
             Now = Now.Add(Defaults.ConnectionStateTtl);
             _info.ShouldSuspend().Should().BeTrue(); // =

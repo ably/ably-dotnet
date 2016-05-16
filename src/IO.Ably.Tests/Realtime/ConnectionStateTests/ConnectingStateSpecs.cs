@@ -128,7 +128,7 @@ namespace IO.Ably.Tests
 
 
         [Fact]
-        public async Task WithInboundErrorMessageWhenItCanUseFallBack_GoesToDisconnected()
+        public async Task WithInboundErrorMessageWhenItCanUseFallBack_ShouldCallHandleConnectionFailure()
         {
             _context.Transport = new FakeTransport() { State = TransportState.Connected };
             _context.CanUseFallBack = true;
@@ -139,7 +139,7 @@ namespace IO.Ably.Tests
             await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
 
             // Assert
-            _context.LastSetState.Should().BeOfType<ConnectionDisconnectedState>();
+            _context.HandledConnectionFailureCalled.Should().BeTrue();
         }
 
         [Fact]

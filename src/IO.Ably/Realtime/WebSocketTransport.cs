@@ -3,41 +3,11 @@ using System.Collections.Generic;
 using System.Net.Configuration;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
-using IO.Ably.Types;
 using SuperSocket.ClientEngine;
 using WebSocket4Net;
 
 namespace IO.Ably.Realtime
 {
-    public class RealtimeTransportData
-    {
-        public ProtocolMessage Original { get; set; }
-        public bool IsBinary => Length > 0;
-        public byte[] Data { get; } = new byte[0];
-        public string Text { get; }
-        public int Length => Data.Length;
-
-        public RealtimeTransportData(string text)
-        {
-            Text = text;
-        }
-
-        public RealtimeTransportData(byte[] data)
-        {
-            Data = data;
-        }
-
-        public string Explain()
-        {
-            if (IsBinary)
-            {
-                return $"Binary message with length: " + Length;
-            }
-            return Text;
-        }
-    }
-
-
     internal class WebSocketTransport : ITransport
     {
         private static readonly Dictionary<WebSocketState, TransportState> StateDict = new Dictionary

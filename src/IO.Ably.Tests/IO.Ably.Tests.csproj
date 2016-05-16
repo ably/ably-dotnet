@@ -60,6 +60,7 @@
       <HintPath>..\packages\FluentAssertions.4.3.2\lib\net45\FluentAssertions.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="Moq, Version=4.2.1510.2205, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
       <HintPath>..\packages\Moq.4.2.1510.2205\lib\net40\Moq.dll</HintPath>
       <Private>True</Private>
@@ -131,6 +132,7 @@
     <Compile Include="Realtime\ConnectionSpecs\AckNackSpecs.cs" />
     <Compile Include="Realtime\ConnectionSpecs\ConnectionFailuresOnceConnectedSpecs.cs" />
     <Compile Include="Realtime\ConnectionSpecs\ConnectionFailureSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionFallbackSpecs.cs" />
     <Compile Include="Realtime\ConnectionSpecs\ConnectionIdSpecs.cs" />
     <Compile Include="Realtime\ConnectionSpecs\ConnectionKeySpecs.cs" />
     <Compile Include="Realtime\ConnectionSpecs\ConnectionParameterSpecs.cs" />

@@ -19,7 +19,7 @@ namespace IO.Ably.Transport
         internal readonly AsyncContextThread AsyncContextThread = new AsyncContextThread();
         private ITransportFactory GetTransportFactory() => Options.TransportFactory ?? Defaults.WebSocketTransportFactory;
         public IAcknowledgementProcessor AckProcessor { get; internal set; }
-        private ConnectionAttemptsInfo AttemptsInfo { get; }
+        internal ConnectionAttemptsInfo AttemptsInfo { get; }
         public TimeSpan RetryTimeout => Options.DisconnectedRetryTimeout;
         public AblyRest RestClient => Connection.RestClient;
         public MessageHandler Handler => RestClient.MessageHandler;
@@ -133,8 +133,7 @@ namespace IO.Ably.Transport
         public async Task CreateTransport()
         {
             if (Logger.IsDebug) Logger.Debug("Creating transport");
-            AttemptsInfo.Increment();
-
+            
             if (Transport != null)
                 (this as IConnectionContext).DestroyTransport();
 
@@ -356,7 +355,7 @@ namespace IO.Ably.Transport
 
         internal async Task<TransportParams> CreateTransportParameters()
         {
-            return await TransportParams.Create(RestClient.Auth, Options, Connection.Key, Connection.Serial);
+            return await TransportParams.Create(AttemptsInfo.GetHost(), RestClient.Auth, Options, Connection.Key, Connection.Serial);
         }
 
         public async Task OnTransportMessageReceived(ProtocolMessage message)
