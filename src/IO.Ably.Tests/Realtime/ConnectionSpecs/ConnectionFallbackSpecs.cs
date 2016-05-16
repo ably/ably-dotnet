@@ -125,6 +125,30 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         }
 
         [Fact]
+        [Trait("spec", "RTN17e")]
+        public async Task WithFallbackHost_ShouldMakeRestRequestsOnSameHost()
+        {
+            var client = GetConnectedClient(opts => opts.UseBinaryProtocol = false, request =>
+            {
+                return "[12345]".ToAblyResponse();
+            });
+
+            List<ConnectionStateType> states = new List<ConnectionStateType>();
+            client.Connection.ConnectionStateChanged += (sender, args) =>
+            {
+                states.Add(args.CurrentState);
+            };
+
+            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
+            {
+                error = new ErrorInfo() { statusCode = HttpStatusCode.GatewayTimeout }
+            });
+
+            await client.Time();
+            LastRequest.Url.Should().Contain(client.Connection.Host);
+        }
+
+        [Fact]
         [Trait("spec", "RTN17c")]
         public async Task WhileInDisconnectedStateLoop_ShouldRetryWithMultipleHosts()
         {
