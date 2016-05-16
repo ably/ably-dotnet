@@ -32,7 +32,6 @@ namespace IO.Ably
             Connection.Initialise();
             Channels = new ChannelList(ChannelFactory);
 
-            //TODO: Change this and allow a way to check to log exceptions
             if (options.AutoConnect)
                 Connect();
         }

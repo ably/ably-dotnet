@@ -43,6 +43,11 @@ namespace IO.Ably.Transport.States.Connection
 
         public override bool CanQueue => true;
 
+        public override void Connect()
+        {
+            Logger.Info("Already connecting!");
+        }
+
         public override void Close()
         {
             TransitionState(new ConnectionClosingState(Context));

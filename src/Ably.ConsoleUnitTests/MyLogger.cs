@@ -8,15 +8,15 @@ namespace IO.Ably.ConsoleTest
     {
         static readonly Dictionary<LogLevel, ConsoleColor> s_colors = new Dictionary<LogLevel, ConsoleColor>()
         {
-            { LogLevel.Error, ConsoleColor.DarkRed },
-            { LogLevel.Warning, ConsoleColor.DarkYellow },
-            { LogLevel.Info, ConsoleColor.DarkGreen },
-            { LogLevel.Debug, ConsoleColor.DarkBlue },
+            { LogLevel.Error, ConsoleColor.Red },
+            { LogLevel.Warning, ConsoleColor.Yellow},
+            { LogLevel.Info, ConsoleColor.White },
+            { LogLevel.Debug, ConsoleColor.Cyan },
         };
 
-        void ILoggerSink.LogEvent( LogLevel level, string message )
+        void ILoggerSink.LogEvent(LogLevel level, string message)
         {
-            ConsoleEx.writeLine( s_colors[ level ], "    " + message );
+            ConsoleEx.WriteLine(s_colors[level], "    " + message);
         }
     }
 }

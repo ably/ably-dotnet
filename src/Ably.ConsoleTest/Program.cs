@@ -7,15 +7,18 @@ namespace IO.Ably.ConsoleTest
         static void Main(string[] args)
         {
             IO.Ably.Logger.LoggerSink = new MyLogger();
+            Logger.LogLevel = LogLevel.Debug;
             try
             {
-                Rest.Test().Wait();
-                // Realtime.test().Wait();
-                ConsoleColor.Green.writeLine("Success!");
+                //Rest.Test().Wait();
+                var client = Realtime.Test();
+                client.Connect();
+                Console.ReadLine();
+                ConsoleColor.Green.WriteLine("Success!");
             }
             catch (Exception ex)
             {
-                ex.logError();
+                ex.LogError();
             }
         }
     }

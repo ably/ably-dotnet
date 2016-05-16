@@ -15,7 +15,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void Connect()
         {
-            Context.SetState(new ConnectionConnectingState(this.Context));
+            Context.SetState(new ConnectionConnectingState(Context));
         }
 
         public override void AbortTimer()

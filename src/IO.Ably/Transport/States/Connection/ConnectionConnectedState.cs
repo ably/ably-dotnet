@@ -50,7 +50,7 @@ namespace IO.Ably.Transport.States.Connection
             
         }
 
-        public override Task BeforeTransition()
+        public override void BeforeTransition()
         {
             Context.ResetConnectionAttempts();
             
@@ -66,8 +66,6 @@ namespace IO.Ably.Transport.States.Connection
             }
 
             if(_resumed && Logger.IsDebug) Logger.Debug("Connection resumed!");
-            
-            return base.BeforeTransition();
         }
 
         public override Task OnAttachToContext()

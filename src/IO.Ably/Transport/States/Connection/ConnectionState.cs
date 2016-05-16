@@ -38,9 +38,8 @@ namespace IO.Ably.Transport.States.Connection
 
         }
 
-        public virtual Task BeforeTransition()
+        public virtual void BeforeTransition()
         {
-            return TaskConstants.BooleanTrue;
         }
 
         public virtual Task OnAttachToContext()

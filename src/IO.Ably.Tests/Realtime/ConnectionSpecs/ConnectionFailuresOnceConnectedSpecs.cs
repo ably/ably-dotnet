@@ -288,7 +288,6 @@ namespace IO.Ably.Tests.Realtime
             };
 
             string initialConnectionId = client.Connection.Id;
-            LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closed);
             client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message), callback);
             client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message), callback);
 

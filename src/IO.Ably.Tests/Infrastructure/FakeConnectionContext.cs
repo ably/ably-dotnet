@@ -155,8 +155,13 @@ namespace IO.Ably.Tests
 
         public void ClearAckQueueAndFailMessages(ErrorInfo error)
         {
-            
+            ClearAckQueueMessagesCalled = true;
+            ClearAckMessagesError = error;
         }
+
+        public ErrorInfo ClearAckMessagesError { get; set; }
+
+        public bool ClearAckQueueMessagesCalled { get; set; }
 
         public bool SendPendingMessagesCalled { get; set; }
 

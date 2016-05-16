@@ -195,49 +195,9 @@ namespace IO.Ably.Tests
             Assert.True(callbacks.TrueForAll(c => ReferenceEquals(c.Item2, error))); // Error
         }
 
-        [Fact]
-        [Trait("spec", "RTN7c")]
-        [Trait("sandboxTest", "needed")]
-        public void OnState_Closed_FailCallbackCalled()
-        {
-            // Arrange
-            var callbacks = new List<Tuple<bool, ErrorInfo>>();
-            var error = new ErrorInfo("reason", 123);
-            var message = new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test");
-            Action<bool, ErrorInfo> callback = (ack, err) => { callbacks.Add(Tuple.Create(ack, err)); };
+        
 
-            // Act
-            _ackProcessor.QueueIfNecessary(message, callback);
-            _ackProcessor.QueueIfNecessary(message, callback);
-            _connection.UpdateState(new ConnectionClosedState(null, error));
-
-            // Assert
-            Assert.Equal(2, callbacks.Count);
-            Assert.True(callbacks.TrueForAll(c => c.Item1 == false)); // Nack
-            Assert.True(callbacks.TrueForAll(c => ReferenceEquals(c.Item2, error))); // Error
-        }
-
-        [Fact]
-        [Trait("spec", "RTN7c")]
-        [Trait("sandboxTest", "needed")]
-        public void OnState_Failed_FailCallbackCalled()
-        {
-            // Arrange
-            var callbacks = new List<Tuple<bool, ErrorInfo>>();
-            var error = new ErrorInfo("reason", 123);
-            var message = new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test");
-            Action<bool, ErrorInfo> callback = (ack, err) => { callbacks.Add(Tuple.Create(ack, err)); };
-
-            // Act
-            _ackProcessor.QueueIfNecessary(message, callback);
-            _ackProcessor.QueueIfNecessary(message, callback);
-            _connection.UpdateState(new ConnectionFailedState(null, error));
-
-            // Assert
-            Assert.Equal(2, callbacks.Count);
-            Assert.True(callbacks.TrueForAll(c => c.Item1 == false)); // Nack
-            Assert.True(callbacks.TrueForAll(c => ReferenceEquals(c.Item2, error))); // Error
-        }
+        
 
         public AckProtocolTests(ITestOutputHelper output) : base(output)
         {

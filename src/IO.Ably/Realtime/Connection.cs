@@ -115,6 +115,7 @@ namespace IO.Ably.Realtime
             Reason = state.Error;
             var stateArgs = new ConnectionStateChangedEventArgs(oldState, newState, state.RetryIn, Reason);
 
+            //TODO: Execute this not on the Connection Manager's thread
             var handler = Volatile.Read(ref ConnectionStateChanged); //Make sure we get all the subscribers on all threads
             handler(this, stateArgs); 
         }

@@ -7,53 +7,53 @@ namespace IO.Ably.ConsoleTest
     {
         static readonly object syncRoot = new object();
 
-        public static void writeLine( this ConsoleColor cc, string message )
+        public static void WriteLine(this ConsoleColor cc, string message)
         {
-            if( silent )
+            if (silent)
                 return;
-            lock ( syncRoot )
+            lock (syncRoot)
             {
                 ConsoleColor oc = Console.ForegroundColor;
                 Console.ForegroundColor = cc;
-                Console.WriteLine( message );
+                Console.WriteLine(message);
                 Console.ForegroundColor = oc;
             }
         }
 
-        public static void writeLine( this ConsoleColor cc, string message, params object[] args )
+        public static void WriteLine(this ConsoleColor cc, string message, params object[] args)
         {
-            if( silent )
+            if (silent)
                 return;
-            lock ( syncRoot )
+            lock (syncRoot)
             {
                 ConsoleColor oc = Console.ForegroundColor;
                 Console.ForegroundColor = cc;
-                Console.WriteLine( message, args );
+                Console.WriteLine(message, args);
                 Console.ForegroundColor = oc;
             }
         }
 
-        public static void write( this ConsoleColor cc, string message )
+        public static void Write(this ConsoleColor cc, string message)
         {
-            if( silent )
+            if (silent)
                 return;
-            lock ( syncRoot )
+            lock (syncRoot)
             {
                 ConsoleColor oc = Console.ForegroundColor;
                 Console.ForegroundColor = cc;
-                Console.Write( message );
+                Console.Write(message);
                 Console.ForegroundColor = oc;
             }
         }
 
-        public static void logError( this Exception ex )
+        public static void LogError(this Exception ex)
         {
-            if( ex is AggregateException )
-                ex = ( ex as AggregateException ).Flatten().InnerExceptions.First();
-            lock ( syncRoot )
+            if (ex is AggregateException)
+                ex = (ex as AggregateException).Flatten().InnerExceptions.First();
+            lock (syncRoot)
             {
-                writeLine( ConsoleColor.Red, ex.Message );
-                writeLine( ConsoleColor.DarkRed, ex.ToString() );
+                WriteLine(ConsoleColor.Red, ex.Message);
+                WriteLine(ConsoleColor.DarkRed, ex.ToString());
             }
         }
 

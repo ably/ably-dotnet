@@ -33,7 +33,6 @@ namespace IO.Ably.Transport
         public AcknowledgementProcessor(Connection connection)
         {
             _connection = connection;
-            _connection.ConnectionStateChanged += OnStateChanged;
         }
 
         public void QueueIfNecessary(ProtocolMessage message, Action<bool, ErrorInfo> callback)

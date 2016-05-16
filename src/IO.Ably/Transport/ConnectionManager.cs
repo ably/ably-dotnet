@@ -33,6 +33,7 @@ namespace IO.Ably.Transport
         public bool IsActive => State.CanQueue && State.CanSend;
         public Connection Connection { get; }
         public ConnectionStateType ConnectionState => Connection.State;
+        private object _stateSyncLock = new object();
 
         public void ClearAckQueueAndFailMessages(ErrorInfo error) => AckProcessor.ClearQueueAndFailMessages(error);
 
@@ -59,23 +60,32 @@ namespace IO.Ably.Transport
 
         public void Connect()
         {
-            Execute(() => State.Connect());
+            State.Connect();
         }
 
         public Task SetState(ConnectionState newState, bool skipAttach = false)
         {
+            if (Logger.IsDebug) Logger.Debug($"xx Changing state from {ConnectionState} => {newState.State}");
+
             return ExecuteOnManagerThread(async () =>
             {
-                //Abort any timers on the old state
-                State.AbortTimer();
-
-                
                 try
                 {
-                    if (Logger.IsDebug) Logger.Debug($"xx {newState.State }: BeforeTransition");
-                    await newState.BeforeTransition();
+                    lock (_stateSyncLock)
+                    {
+                        if (State.State == newState.State)
+                        {
+                            if(Logger.IsDebug) Logger.Debug($"xx State is already {State.State}. Skipping SetState action.");
+                            return;
+                        }
 
-                    Connection.UpdateState(newState);
+                        //Abort any timers on the old state
+                        State.AbortTimer();
+                        if (Logger.IsDebug) Logger.Debug($"xx {newState.State}: BeforeTransition");
+                        newState.BeforeTransition();
+
+                        Connection.UpdateState(newState);
+                    }
 
                     if (skipAttach == false)
                     {
@@ -198,9 +208,8 @@ namespace IO.Ably.Transport
 
         public void CloseConnection()
         {
-            Execute(() => State.Close());
+            State.Close();
         }
-
 
         public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null)
         {
@@ -251,7 +260,8 @@ namespace IO.Ably.Transport
             {
                 if (Logger.IsDebug)
                 {
-                    Logger.Debug($"On transport event. State {state} error {ex}");
+                    var errorMessage = ex != null ? $" Error: {ex.Message}" : "";
+                    Logger.Debug($"Transport state changed to: {state}.{errorMessage}");
                 }
 
                 if (state == TransportState.Closed || ex != null)
