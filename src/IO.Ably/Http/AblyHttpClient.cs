@@ -90,9 +90,6 @@ namespace IO.Ably
                 }
                 catch (TaskCanceledException ex) when (IsRetryableError(ex) && Options.IsDefaultHost)
                 {
-                    //TODO: Check about the conditions we should retry. 
-                    //First retry the same host and then start the others
-                    
                     Logger.Warning("Error making a connection to Ably servers. Retrying", ex);
                     if (TryGetNextRandomHost(fallbackHosts, random, out host))
                     {

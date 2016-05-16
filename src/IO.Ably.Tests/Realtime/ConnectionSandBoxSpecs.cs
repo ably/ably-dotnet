@@ -12,6 +12,8 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime
 {
+
+
     [Collection("AblyRest SandBox Collection")]
     [Trait("requires", "sandbox")]
     public class ConnectionSandBoxSpecs : SandboxSpecs
@@ -259,7 +261,6 @@ namespace IO.Ably.Tests.Realtime
                 Environment = settings.Environment,
                 UseBinaryProtocol = protocol == Protocol.MsgPack
             });
-
 
             await WaitForState(authUrlClient, waitSpan: TimeSpan.FromSeconds(5));
         }

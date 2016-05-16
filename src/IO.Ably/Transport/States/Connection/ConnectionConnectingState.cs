@@ -14,8 +14,6 @@ namespace IO.Ably.Transport.States.Connection
         private static readonly ISet<HttpStatusCode> FallbackReasons;
 
         private readonly ICountdownTimer _timer;
-        private readonly bool _useFallbackHost;
-        
 
         static ConnectionConnectingState()
         {
@@ -26,17 +24,15 @@ namespace IO.Ably.Transport.States.Connection
             };
         }
 
-        public ConnectionConnectingState(IConnectionContext context, bool useFallbackHost = false) :
-            this(context, new CountdownTimer("Connecting state timer"), useFallbackHost)
+        public ConnectionConnectingState(IConnectionContext context) :
+            this(context, new CountdownTimer("Connecting state timer"))
         {
         }
 
-        public ConnectionConnectingState(IConnectionContext context, ICountdownTimer timer, bool useFallbackHost = false)
-            :
-                base(context)
+        public ConnectionConnectingState(IConnectionContext context, ICountdownTimer timer)
+            : base(context)
         {
             _timer = timer;
-            _useFallbackHost = useFallbackHost;
         }
 
         public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Connecting;
@@ -75,10 +71,7 @@ namespace IO.Ably.Transport.States.Connection
                         }
                         else
                         {
-                            nextState = new ConnectionDisconnectedState(Context, message.error)
-                            {
-                                RetryInstantly = await ShouldUseFallbackHost(message.error)
-                            };
+                            nextState = new ConnectionDisconnectedState(Context, message.error);
                         }
                         TransitionState(nextState);
                         return true;

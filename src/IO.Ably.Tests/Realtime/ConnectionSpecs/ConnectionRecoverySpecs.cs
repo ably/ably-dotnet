@@ -7,6 +7,14 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 {
+    public class ConnectionFallbackSpecs : ConnectionSpecsBase
+    {
+
+        public ConnectionFallbackSpecs(ITestOutputHelper output) : base(output)
+        {
+        }
+    }
+
     public class ConnectionRecoverySpecs : ConnectionSpecsBase
     {
         [Fact]

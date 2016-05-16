@@ -135,6 +135,7 @@
     <Compile Include="Realtime\ConnectionSpecs\ConnectionKeySpecs.cs" />
     <Compile Include="Realtime\ConnectionSpecs\ConnectionParameterSpecs.cs" />
     <Compile Include="Realtime\ConnectionSpecs\ConnectionPingSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionRecoverySpecs.cs" />
     <Compile Include="Realtime\ConnectionSpecs\ConnectionSerialSpecs.cs" />
     <Compile Include="Realtime\ConnectionSpecs\ConnectionSpecs.cs" />
     <Compile Include="Realtime\ConnectionSpecs\EventEmitterSpecs.cs" />

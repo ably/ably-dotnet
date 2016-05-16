@@ -167,19 +167,6 @@ namespace IO.Ably.Tests
             _context.LastSetState.Should().BeOfType<ConnectionDisconnectedState>();
         }
 
-        [Theory]
-        [InlineData(System.Net.HttpStatusCode.InternalServerError)]
-        [InlineData(System.Net.HttpStatusCode.GatewayTimeout)]
-        public async Task ConnectingState_HandlesInboundDisconnectedMessage_GoesToDisconnected_FallbackHost(System.Net.HttpStatusCode code)
-        {
-            // Act
-            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { error = new ErrorInfo("", 0, code) });
-
-            // Assert
-            var lastType = _context.LastSetState as ConnectionDisconnectedState;
-            lastType.RetryInstantly.Should().BeTrue();
-        }
-
         [Fact]
         public async Task WithInboundDisconnectedMessageAndFirstAttempIsMoreThanTimeoutValue_GoesToSuspended()
         {
