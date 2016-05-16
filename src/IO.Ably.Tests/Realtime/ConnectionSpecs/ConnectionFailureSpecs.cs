@@ -29,7 +29,14 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.Connection.State.Should().Be(ConnectionStateType.Closed);
             client.Connection.Id.Should().BeNullOrEmpty();
             client.Connection.Key.Should().BeNullOrEmpty();
+        }
 
+        [Fact]
+        [Trait("spec", "RTN16b")]
+        public void RecoveryKey_ShouldBeConnectionKeyPlusConnectionSerial()
+        {
+            var client = GetConnectedClient();
+            client.Connection.RecoveryKey.Should().Be($"{client.Connection.Key}:{client.Connection.Serial}");
         }
 
         public ConnectionRecoverySpecs(ITestOutputHelper output) : base(output)
@@ -238,7 +245,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN14e")]
         public async Task WhenInSuspendedState_ShouldTryAndReconnectAfterSuspendRetryTimeoutIsReached()
         {
-
             Now = DateTimeOffset.UtcNow;
 
             _fakeTransportFactory.initialiseFakeTransport =
@@ -289,6 +295,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             var client = GetClientWithFakeTransport(opts =>
             {
                 opts.AutoConnect = false;
+                opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10);
                 opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(10);
                 opts.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
             });

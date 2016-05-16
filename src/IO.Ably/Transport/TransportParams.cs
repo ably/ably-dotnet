@@ -91,17 +91,17 @@ namespace IO.Ably.Transport
                 result["resume"] = ConnectionKey;
                 if (ConnectionSerial.HasValue)
                 {
-                    result["connectionSerial"] = ConnectionSerial.Value.ToString();
+                    result["connection_serial"] = ConnectionSerial.Value.ToString();
                 }
             }
             else if (RecoverValue.IsNotEmpty())
             {
-                var pattern = new Regex(@"^([\w\-]+):(\-?\w+)$");
+                var pattern = new Regex(@"^([\w!-]+):(\-?\w+)$");
                 var match = pattern.Match(RecoverValue);
                 if (match.Success)
                 {
                     result["recover"] = match.Groups[1].Value;
-                    result["connectionSerial"] = match.Groups[2].Value;
+                    result["connection_serial"] = match.Groups[2].Value;
                 }
             }
 

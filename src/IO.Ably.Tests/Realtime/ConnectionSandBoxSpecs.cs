@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Auth;
@@ -261,6 +262,56 @@ namespace IO.Ably.Tests.Realtime
 
 
             await WaitForState(authUrlClient, waitSpan: TimeSpan.FromSeconds(5));
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN16d")]
+        public async Task WhenRecoveringConnection_ShouldHaveSameConnectionIdButDifferentKey(Protocol protocol)
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            var client = await GetRealtimeClient(protocol);
+            await WaitForState(client, ConnectionStateType.Connected);
+            var id = client.Connection.Id;
+            var key = client.Connection.Key;
+
+            var recoveryClient = await GetRealtimeClient(protocol, opts =>
+            {
+                opts.Recover = client.Connection.RecoveryKey;
+                opts.AutoConnect = false;
+            });
+
+            //Kill the transport
+            client.ConnectionManager.Transport.Close(true);
+
+            recoveryClient.Connect();
+            await WaitForState(recoveryClient, ConnectionStateType.Connected, TimeSpan.FromSeconds(5));
+
+            recoveryClient.Connection.Id.Should().Be(id);
+            recoveryClient.Connection.Key.Should().NotBe(key);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN16e")]
+        public async Task WithDummyRecoverData_ShouldConnectAndSetAReasonOnTheConnection(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, opts =>
+            {
+                opts.Recover = "c17a8!WeXvJum2pbuVYZtF-1b63c17a8:-1";
+                opts.AutoConnect = false;
+            });
+            client.Connection.ConnectionStateChanged += (sender, args) =>
+            {
+                if (args.CurrentState == ConnectionStateType.Connected)
+                {
+                    args.Reason.Should().NotBeNull();
+                }
+            };
+            client.Connect();
+
+            await WaitForState(client, ConnectionStateType.Connected, TimeSpan.FromSeconds(10));
+            client.Connection.Reason.code.Should().Be(80008);
         }
 
 

@@ -34,9 +34,9 @@ namespace IO.Ably.Transport
         public Connection Connection { get; }
         public ConnectionStateType ConnectionState => Connection.State;
         private object _stateSyncLock = new object();
+        private volatile ConnectionState InTransitionToState;
 
         public void ClearAckQueueAndFailMessages(ErrorInfo error) => AckProcessor.ClearQueueAndFailMessages(error);
-
 
         public ConnectionManager(Connection connection, AblyRest restClient)
         {
@@ -65,7 +65,9 @@ namespace IO.Ably.Transport
 
         public Task SetState(ConnectionState newState, bool skipAttach = false)
         {
-            if (Logger.IsDebug) Logger.Debug($"xx Changing state from {ConnectionState} => {newState.State}");
+            if (Logger.IsDebug) Logger.Debug($"xx Changing state from {ConnectionState} => {newState.State}. SkipAttach = {skipAttach}.");
+
+            InTransitionToState = newState;
 
             return ExecuteOnManagerThread(async () =>
             {
@@ -110,6 +112,11 @@ namespace IO.Ably.Transport
                 }
                 finally
                 {
+                    //Clear the state in transition only if the current state hasn't updated it
+                    if (InTransitionToState == newState)
+                    {
+                        InTransitionToState = null;
+                    }
                     if (Logger.IsDebug)
                     {
                         Logger.Debug($"xx {newState.State}: Completed setting state");
@@ -118,7 +125,7 @@ namespace IO.Ably.Transport
             });
         }
 
-        async Task IConnectionContext.CreateTransport()
+        public async Task CreateTransport()
         {
             if (Logger.IsDebug) Logger.Debug("Creating transport");
             AttemptsInfo.Increment();
@@ -132,7 +139,7 @@ namespace IO.Ably.Transport
             Transport.Connect();
         }
 
-        void IConnectionContext.DestroyTransport(bool suppressClosedEvent)
+        public void DestroyTransport(bool suppressClosedEvent)
         {
             if (Logger.IsDebug) Logger.Debug("Destroying transport");
 
@@ -254,19 +261,20 @@ namespace IO.Ably.Transport
             Transport.Send(data);
         }
 
-        void ITransportListener.OnTransportEvent(TransportState state, Exception ex)
+        void ITransportListener.OnTransportEvent(TransportState transportState, Exception ex)
         {
             ExecuteOnManagerThread(() =>
             {
                 if (Logger.IsDebug)
                 {
                     var errorMessage = ex != null ? $" Error: {ex.Message}" : "";
-                    Logger.Debug($"Transport state changed to: {state}.{errorMessage}");
+                    Logger.Debug($"Transport state changed to: {transportState}.{errorMessage}");
                 }
 
-                if (state == TransportState.Closed || ex != null)
+                if (transportState == TransportState.Closed || ex != null)
                 {
-                    switch (ConnectionState)
+                    var connectionState = InTransitionToState?.State ?? ConnectionState;
+                    switch (connectionState)
                     {
                         case ConnectionStateType.Closing:
                             SetState(new ConnectionClosedState(this));
@@ -299,11 +307,11 @@ namespace IO.Ably.Transport
         public void HandleConnectingFailure(Exception ex)
         {
             if (Logger.IsDebug) Logger.Debug("Handling Connecting failure.");
-
+            ErrorInfo error = ex != null ? new ErrorInfo(ex.Message, 80000) : null; 
             if (ShouldSuspend())
-                SetState(new ConnectionSuspendedState(this));
+                SetState(new ConnectionSuspendedState(this, error));
             else
-                SetState(new ConnectionDisconnectedState(this, ErrorInfo.ReasonDisconnected));
+                SetState(new ConnectionDisconnectedState(this, error ?? ErrorInfo.ReasonDisconnected));
         }
 
         public void SendPendingMessages(bool resumed)

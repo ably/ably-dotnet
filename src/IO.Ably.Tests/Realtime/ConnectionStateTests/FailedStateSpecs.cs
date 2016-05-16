@@ -51,11 +51,11 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public async Task OnAttachToContext_DestroysTransport()
+        public void BeforeTransition_DestroysTransport()
         {
             // Arrange
             // Act
-            await _state.OnAttachToContext();
+            _state.BeforeTransition();
 
             // Assert
             _context.DestroyTransportCalled.Should().BeTrue();
@@ -89,16 +89,18 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public async Task OnAttached_ShouldClearConnectionKey()
+        public void BeforeTransition_ShouldClearConnectionKeyAndId()
         {
             // Arrange
             _context.Connection.Key = "Test";
+            _context.Connection.Id = "Test";
 
             // Act
-            await _state.OnAttachToContext();
+            _state.BeforeTransition();
 
             // Assert
             _context.Connection.Key.Should().BeNullOrEmpty();
+            _context.Connection.Id.Should().BeNullOrEmpty();
         }
 
         [Fact]

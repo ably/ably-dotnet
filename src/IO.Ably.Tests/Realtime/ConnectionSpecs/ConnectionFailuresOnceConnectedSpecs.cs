@@ -97,7 +97,7 @@ namespace IO.Ably.Tests.Realtime
 
             var urlParams = LastCreatedTransport.Parameters.GetParams();
             urlParams.Should().ContainKey("resume");
-            urlParams.Should().ContainKey("connectionSerial");
+            urlParams.Should().ContainKey("connection_serial");
         }
 
         [Fact]
@@ -226,12 +226,12 @@ namespace IO.Ably.Tests.Realtime
             var serial = client.Connection.Serial.Value;
             LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closed);
 
-            await new ConnectionAwaiter(client.Connection, ConnectionStateType.Connected).Wait();
+            await new ConnectionAwaiter(client.Connection, ConnectionStateType.Connecting).Wait(TimeSpan.FromSeconds(5));
 
             var urlParams = LastCreatedTransport.Parameters.GetParams();
             urlParams.Should().ContainKey("resume")
                 .WhichValue.Should().Be(connectionKey);
-            urlParams.Should().ContainKey("connectionSerial")
+            urlParams.Should().ContainKey("connection_serial")
                 .WhichValue.Should().Be(serial.ToString());
             LastCreatedTransport.Should().NotBeSameAs(firstTransport);
         }

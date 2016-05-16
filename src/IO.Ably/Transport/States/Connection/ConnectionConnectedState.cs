@@ -9,10 +9,11 @@ namespace IO.Ably.Transport.States.Connection
     {
         private readonly ConnectionInfo _info;
         private bool _resumed = false;
-        public ConnectionConnectedState(IConnectionContext context, ConnectionInfo info) :
+        public ConnectionConnectedState(IConnectionContext context, ConnectionInfo info, ErrorInfo error = null) :
             base(context)
         {
             _info = info;
+            Error = error;
         }
 
         public override ConnectionStateType State => ConnectionStateType.Connected;

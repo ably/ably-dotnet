@@ -15,7 +15,7 @@ namespace IO.Ably.Transport.States.Connection
 
         private readonly ICountdownTimer _timer;
         private readonly bool _useFallbackHost;
-        private volatile bool _suppressTransportEvents;
+        
 
         static ConnectionConnectingState()
         {
@@ -62,7 +62,7 @@ namespace IO.Ably.Transport.States.Connection
                         if (Context.Transport.State == TransportState.Connected)
                         {
                             var info = new ConnectionInfo(message);
-                            TransitionState(new ConnectionConnectedState(Context, info));
+                            TransitionState(new ConnectionConnectedState(Context, info, message.error));
                         }
                         return true;
                     }
@@ -100,7 +100,7 @@ namespace IO.Ably.Transport.States.Connection
                                 TransitionState(new ConnectionFailedState(Context, ex.ErrorInfo));
                                 return true;
                             }
-                        }  
+                        }
 
                         if (await ShouldUseFallbackHost(message.error))
                         {

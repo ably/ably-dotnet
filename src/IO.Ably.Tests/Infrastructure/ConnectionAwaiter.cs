@@ -75,11 +75,9 @@ namespace IO.Ably.Tests
                 return stopwatch.Elapsed;
             }
 
-            if (_taskCompletionSource.TrySetException(new TimeoutException()))
-            {
-                Logger.Debug($"[{_id} Timeout exceeded. Throwing TimeoutException");
-                RemoveListener();
-            }
+            Logger.Debug($"[{_id} Timeout exceeded. Throwing TimeoutException");
+            RemoveListener();
+            throw new TimeoutException();
             
             stopwatch.Stop();
             return stopwatch.Elapsed;
