@@ -230,10 +230,7 @@ namespace IO.Ably.Tests.Realtime
         {
             Logger.LogLevel = LogLevel.Debug;
             
-            var client = await GetRealtimeClient(protocol, options =>
-            {
-                options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(500);
-            });
+            var client = await GetRealtimeClient(protocol);
 
             await WaitForState(client, ConnectionStateType.Connected);
             var initialConnectionKey = client.Connection.Key;

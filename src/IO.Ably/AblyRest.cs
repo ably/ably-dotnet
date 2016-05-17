@@ -15,7 +15,6 @@ namespace IO.Ably
     /// <summary>Client for the ably rest API</summary>
     public sealed class AblyRest : IRestClient
     {
-        private readonly object _channelLock = new object();
         internal AblyHttpClient HttpClient { get; private set; }
         internal MessageHandler MessageHandler { get; private set; }
 
@@ -26,6 +25,7 @@ namespace IO.Ably
         }
 
         internal AblyAuth AblyAuth { get; private set; }
+        private readonly object _channelLock = new object();
         internal List<IChannel> RestChannels { get; private set; } = new List<IChannel>();
 
         /// <summary>

@@ -130,7 +130,6 @@
     <Compile Include="Protocol.cs" />
     <Compile Include="QueryDirection.cs" />
     <Compile Include="Realtime\Channel.cs" />
-    <Compile Include="Realtime\ChannelList.cs" />
     <Compile Include="Realtime\ChannelState.cs" />
     <Compile Include="Realtime\ChannelStateChangedEventArgs.cs" />
     <Compile Include="Realtime\Connection.cs" />

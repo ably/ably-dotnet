@@ -37,7 +37,7 @@ namespace IO.Ably.Tests
             public void ShouldAllowAccessToChannelsObject()
             {
                 _client.Channels.Should().NotBeNull();
-                _client.Channels.Should().BeOfType<ChannelList>();
+                (_client.Channels is IRealtimeChannelCommands).Should().BeTrue();
             }
 
             [Fact]

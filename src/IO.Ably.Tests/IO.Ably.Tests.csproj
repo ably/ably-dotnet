@@ -174,7 +174,7 @@
     <Compile Include="MessagePack\SerializationTests.cs" />
     <Compile Include="Infrastructure\MiscUtils.cs" />
     <Compile Include="Realtime\AckProtocolTests.cs" />
-    <Compile Include="Realtime\ChannelListTests.cs" />
+    <Compile Include="Realtime\ChannelsSpecs.cs" />
     <Compile Include="Realtime\ConnectionStateTests\FailedStateSpecs.cs" />
     <Compile Include="Realtime\DateHelper.cs" />
     <Compile Include="Realtime\JsonMessageSerializerTests.cs" />
