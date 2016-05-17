@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Transport.States.Connection;
@@ -128,16 +129,22 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN17e")]
         public async Task WithFallbackHost_ShouldMakeRestRequestsOnSameHost()
         {
-            var client = GetConnectedClient(opts => opts.UseBinaryProtocol = false, request =>
+            var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("[12345678]") };
+            var handler = new FakeHttpMessageHandler(response);
+            var client = new AblyRealtime(new ClientOptions(ValidKey)
             {
-                return "[12345]".ToAblyResponse();
+                UseBinaryProtocol = false,
+                UseSyncForTesting = true,
+                SkipInternetCheck = true,
+                TransportFactory = _fakeTransportFactory
             });
-
-            List<ConnectionStateType> states = new List<ConnectionStateType>();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.RestClient.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(10), handler);
+            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
-                states.Add(args.CurrentState);
-            };
+                connectionDetails = new ConnectionDetailsMessage() { connectionKey = "connectionKey" },
+                connectionId = "1",
+                connectionSerial = 100
+            });
 
             await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
@@ -145,7 +152,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             });
 
             await client.Time();
-            LastRequest.Url.Should().Contain(client.Connection.Host);
+            handler.Requests.Last().RequestUri.ToString().Should().Contain(client.Connection.Host);
         }
 
         [Fact]
@@ -153,7 +160,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         public async Task WhileInDisconnectedStateLoop_ShouldRetryWithMultipleHosts()
         {
             var client = GetConnectedClient(opts => opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10));
-
+               
             List<ConnectionStateType> states = new List<ConnectionStateType>();
             client.Connection.ConnectionStateChanged += (sender, args) =>
             {

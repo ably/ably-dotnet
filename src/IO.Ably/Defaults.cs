@@ -35,7 +35,7 @@ namespace IO.Ably
 
         static Defaults()
         {
-            FallbackHosts = new [] { "A.ably-realtime.com", "B.ably-realtime.com", "C.ably-realtime.com", "D.ably-realtime.com", "E.ably-realtime.com" };
+            FallbackHosts = new [] { "a.ably-realtime.com", "b.ably-realtime.com", "c.ably-realtime.com", "d.ably-realtime.com", "e.ably-realtime.com" };
         }
     }
 }
