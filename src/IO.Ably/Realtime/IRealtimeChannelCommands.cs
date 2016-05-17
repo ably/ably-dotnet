@@ -7,19 +7,12 @@ namespace IO.Ably.Realtime
     public interface IRealtimeChannelCommands : IEnumerable<IRealtimeChannel>
     {
         /// <summary>
-        /// Create a channel with the specified name
-        /// </summary>
-        /// <param name="name">name of the channel</param>
-        /// <returns>an instance of <see cref="RealtimeChannel"/></returns>
-        IRealtimeChannel Get(string name);
-
-        /// <summary>
         /// Create a channel with the specified name and options
         /// </summary>
         /// <param name="name">name of the channel</param>
         /// <param name="options"><see cref="ChannelOptions"/></param>
         /// <returns>an instance of <see cref="RealtimeChannel"/></returns>
-        IRealtimeChannel Get(string name, ChannelOptions options);
+        IRealtimeChannel Get(string name, ChannelOptions options = null);
 
         /// <summary>
         /// Same as the Get(string name)/>
@@ -38,5 +31,7 @@ namespace IO.Ably.Realtime
         /// Releases all channels
         /// </summary>
         void ReleaseAll();
+
+        bool ContainsChannel(string name);
     }
 }

@@ -77,9 +77,13 @@ namespace IO.Ably.Transport.States.Connection
         public override Task OnAttachToContext()
         {
             if (_resumed == false)
+            {
                 Context.ClearAckQueueAndFailMessages(null);
+                Context.DetachAttachedChannels(Error);
+            }
 
             Context.SendPendingMessages(_resumed);
+            
 
             return TaskConstants.BooleanTrue;
         }

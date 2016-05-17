@@ -12,12 +12,13 @@ namespace IO.Ably.Transport
         bool OnMessageReceived(ProtocolMessage message);
         IEnumerable<ProtocolMessage> GetQueuedMessages();
         void ClearQueueAndFailMessages(ErrorInfo error);
+        void FailChannelMessages(string name, ErrorInfo error);
     }
 
     internal class AcknowledgementProcessor : IAcknowledgementProcessor
     {
         private readonly Connection _connection;
-        private readonly Queue<MessageAndCallback> _queue = new Queue<MessageAndCallback>();
+        private readonly List<MessageAndCallback> _queue = new List<MessageAndCallback>();
         private object _syncObject = new object();
 
         public IEnumerable<ProtocolMessage> GetQueuedMessages()
@@ -41,7 +42,7 @@ namespace IO.Ably.Transport
                 lock (_syncObject)
                 {
                     message.MsgSerial = _connection.MessageSerial++;
-                    _queue.Enqueue(new MessageAndCallback(message, callback));
+                    _queue.Add(new MessageAndCallback(message, callback));
                 }
         }
 
@@ -69,6 +70,20 @@ namespace IO.Ably.Transport
             }
         }
 
+        public void FailChannelMessages(string name, ErrorInfo error)
+        {
+            lock (_syncObject)
+            {
+                var messagesToRemove = _queue.Where(x => x.Message.channel == name);
+                foreach (var message in messagesToRemove)
+                {
+                    SafeExecute(message, false, error);
+                    _queue.Remove(message);
+                }
+
+            }
+        }
+
         private void Reset()
         {
             _queue.Clear();
@@ -79,9 +94,9 @@ namespace IO.Ably.Transport
             lock (_syncObject)
             {
                 var endSerial = message.MsgSerial + (message.count - 1);
-                while (_queue.Count > 0)
+                var listForProcessing = new List<MessageAndCallback>(_queue);
+                foreach (var current in listForProcessing)
                 {
-                    var current = _queue.Peek();
                     if (current.Serial <= endSerial)
                     {
                         if (message.action == ProtocolMessage.MessageAction.Ack)
@@ -92,7 +107,7 @@ namespace IO.Ably.Transport
                         {
                             SafeExecute(current, false, message.error ?? ErrorInfo.ReasonUnknown);
                         }
-                        _queue.Dequeue();
+                        _queue.Remove(current);
                     }
                 }
             }

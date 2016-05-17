@@ -165,6 +165,13 @@ namespace IO.Ably.Tests
             return CanUseFallBack ? TaskConstants.BooleanTrue : TaskConstants.BooleanFalse;
         }
 
+        public void DetachAttachedChannels(ErrorInfo error)
+        {
+            DetachAttachedChannelsCalled = true;
+        }
+
+        public bool DetachAttachedChannelsCalled { get; set; }
+
         public bool CanUseFallBackUrlCalled { get; set; }
 
         public ErrorInfo ClearAckMessagesError { get; set; }

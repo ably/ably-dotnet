@@ -11,7 +11,6 @@ namespace IO.Ably.Realtime
         string Name { get; }
         Presence Presence { get; }
         ChannelOptions Options { get; set; }
-        // event Action<Message[]> MessageReceived;
         event EventHandler<ChannelStateChangedEventArgs> ChannelStateChanged;
 
         void Attach();
@@ -27,9 +26,9 @@ namespace IO.Ably.Realtime
 
         void Unsubscribe(IMessageHandler handler);
         void Unsubscribe(string eventName, IMessageHandler handler);
-        void Publish(string name, object data);
-        Task PublishAsync(string eventName, object data);
-        void Publish(IEnumerable<Message> messages);
-        Task PublishAsync(IEnumerable<Message> messages);
+        void Publish(string name, object data, Action<bool, ErrorInfo> callback = null);
+        Task<Result> PublishAsync(string eventName, object data); 
+        void Publish(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback = null);
+        Task<Result> PublishAsync(IEnumerable<Message> messages);
     }
 }

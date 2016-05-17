@@ -9,10 +9,74 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
 {
+    internal class ChannelMessageProcessor
+    {
+        private IRealtimeChannelCommands _channels;
+        private ConnectionManager _connectionManager;
+
+        public ChannelMessageProcessor(ConnectionManager connectionManager, IRealtimeChannelCommands channels)
+        {
+            _connectionManager = connectionManager;
+            _channels = channels;
+            _connectionManager.MessageReceived += MessageReceived;
+        }
+
+        private RealtimeChannel GetChannel(string name)
+        {
+            return _channels.Get(name) as RealtimeChannel;
+        }
+
+        private void MessageReceived(ProtocolMessage message)
+        {
+            if (message.channel.IsEmpty())
+                return;
+
+            var channel = GetChannel(message.channel);
+            if (channel == null)
+            {
+                Logger.Warning($"Message received {message} for a channel that does not exist {message.channel}");
+                return;
+            }
+
+            switch (message.action)
+            {
+                case ProtocolMessage.MessageAction.Error:
+                    if (message.channel.IsNotEmpty())
+                    {
+                        channel.SetChannelState(ChannelState.Failed, message);
+                    }
+                    break;
+                case ProtocolMessage.MessageAction.Attach:
+                case ProtocolMessage.MessageAction.Attached:
+                    if (channel.State != ChannelState.Attached)
+                        channel.SetChannelState(ChannelState.Attached, message);
+                    break;
+                case ProtocolMessage.MessageAction.Detach:
+                case ProtocolMessage.MessageAction.Detached:
+                    if (channel.State != ChannelState.Detached)
+                        channel.SetChannelState(ChannelState.Detached, message);
+                    break;
+                case ProtocolMessage.MessageAction.Message:
+                    foreach (var msg in message.messages)
+                        channel.OnMessage(msg);
+                    break;
+                case ProtocolMessage.MessageAction.Presence:
+                    channel.Presence.OnPresence(message.presence, null);
+                    break;
+                case ProtocolMessage.MessageAction.Sync:
+                    channel.Presence.OnPresence(message.presence, message.channelSerial);
+                    break;
+            }
+        }
+    }
+
     /// <summary>Implement realtime channel.</summary>
     internal class RealtimeChannel : IRealtimeChannel
     {
-        private readonly IConnectionManager _connection;
+        private readonly IConnectionManager _connectionManager;
+        private Connection Connection => _connectionManager.Connection;
+        private ConnectionStateType ConnectionState => Connection.State;
+        public string AttachedSerial { get; set; }
         private readonly Handlers _handlers = new Handlers();
         private readonly Dictionary<string, Handlers> _specificHandlers = new Dictionary<string, Handlers>();
 
@@ -21,13 +85,44 @@ namespace IO.Ably.Realtime
         private readonly object _lockSubscribers = new object();
 
         private List<MessageAndCallback> _queuedMessages;
+        public ErrorInfo Reason { get; internal set; }
 
-        internal RealtimeChannel(string name, string clientId, IConnectionManager connection)
+        internal RealtimeChannel(string name, string clientId, IConnectionManager connectionManager)
         {
             Name = name;
-            Presence = new Presence(connection, this, clientId);
-            _connection = connection;
-            _connection.MessageReceived += OnConnectionMessageReceived;
+            Presence = new Presence(connectionManager, this, clientId);
+            _connectionManager = connectionManager;
+            State = ChannelState.Initialized;
+            SubscribeToConnectionEvents();
+        }
+
+        private void SubscribeToConnectionEvents()
+        {
+            _connectionManager.Connection.ConnectionStateChanged += ConnectionOnConnectionStateChanged;
+        }
+
+        private void ConnectionOnConnectionStateChanged(object sender, ConnectionStateChangedEventArgs args)
+        {
+            switch (args.CurrentState)
+            {
+                case ConnectionStateType.Closed:
+                    if (State == ChannelState.Attached || State == ChannelState.Attaching)
+                        SetChannelState(ChannelState.Detaching);
+                    break;
+                case ConnectionStateType.Suspended:
+                    if (State == ChannelState.Attached || State == ChannelState.Attaching)
+                    {
+                        SetChannelState(ChannelState.Detaching, ErrorInfo.ReasonSuspended);
+                    }
+                    break;
+                case ConnectionStateType.Failed:
+                    if (State != ChannelState.Detached || State != ChannelState.Initialized ||
+                        State != ChannelState.Failed)
+                    {
+                        SetChannelState(ChannelState.Failed, ErrorInfo.ReasonFailed);
+                    }
+                    break;
+            }
         }
 
         public event EventHandler<ChannelStateChangedEventArgs> ChannelStateChanged;
@@ -57,14 +152,7 @@ namespace IO.Ably.Realtime
                 return;
             }
 
-            if (!_connection.IsActive)
-            {
-                //TODO: This is backwards. Need to get it fixed
-                _connection.Connection.Connect();
-            }
-
             SetChannelState(ChannelState.Attaching);
-            _connection.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name), null);
         }
 
         /// <summary>
@@ -85,7 +173,6 @@ namespace IO.Ably.Realtime
             }
 
             SetChannelState(ChannelState.Detaching);
-            _connection.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name), null);
         }
 
         public void Subscribe(IMessageHandler handler)
@@ -133,25 +220,26 @@ namespace IO.Ably.Realtime
         /// <summary>Publish a single message on this channel based on a given event name and payload.</summary>
         /// <param name="name">The event name.</param>
         /// <param name="data">The payload of the message.</param>
-        public void Publish(string name, object data)
+        /// <param name="callback"></param>
+        public void Publish(string name, object data, Action<bool, ErrorInfo> callback = null)
         {
-            PublishAsync(name, data).IgnoreExceptions();
+            PublishImpl(new []{ new Message(name, data) }, callback);
         }
 
         /// <summary>Publish a single message on this channel based on a given event name and payload.</summary>
-        public Task PublishAsync(string name, object data)
+        public Task<Result> PublishAsync(string name, object data)
         {
-            return PublishAsync(new[] {new Message(name, data)});
+            return PublishAsync(new[] { new Message(name, data) });
         }
 
         /// <summary>Publish several messages on this channel.</summary>
-        public void Publish(IEnumerable<Message> messages)
+        public void Publish(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback = null)
         {
-            PublishAsync(messages).IgnoreExceptions();
+            PublishImpl(messages, callback);
         }
 
         /// <summary>Publish several messages on this channel.</summary>
-        public Task PublishAsync(IEnumerable<Message> messages)
+        public Task<Result> PublishAsync(IEnumerable<Message> messages)
         {
             var tw = new TaskWrapper();
             PublishImpl(messages, tw.Callback);
@@ -179,7 +267,7 @@ namespace IO.Ably.Realtime
             if (State == ChannelState.Attached)
             {
                 // Connected, send right now
-                _connection.Send(msg, callback);
+                _connectionManager.Send(msg, callback);
                 return;
             }
 
@@ -188,58 +276,86 @@ namespace IO.Ably.Realtime
                 HttpStatusCode.BadRequest));
         }
 
-        protected void SetChannelState(ChannelState state)
+        internal void SetChannelState(ChannelState state, ProtocolMessage protocolMessage)
+        {
+            SetChannelState(state, protocolMessage.error, protocolMessage);
+        }
+
+        internal void SetChannelState(ChannelState state, ErrorInfo error = null, ProtocolMessage protocolMessage = null)
+        {
+            if (Logger.IsDebug)
+            {
+                var errorMessage = error != null ? "Error: " + error : "";
+                Logger.Debug($"#{Name}: Changing state to: '{state}'. {errorMessage}");
+            }
+
+            HandleStateChange(state, error, protocolMessage);
+
+            //TODO: Post the event back on the user's thread
+            ChannelStateChanged?.Invoke(this, new ChannelStateChangedEventArgs(state, error));
+        }
+
+        private void HandleStateChange(ChannelState state, ErrorInfo error, ProtocolMessage protocolMessage)
         {
             State = state;
-            OnChannelStateChanged(new ChannelStateChangedEventArgs(state));
-        }
+            Reason = error; //Set or clear the error on the channel
 
-        private void OnChannelStateChanged(ChannelStateChangedEventArgs eventArgs)
-        {
-            ChannelStateChanged?.Invoke(this, eventArgs);
-        }
-
-        private void OnConnectionMessageReceived(ProtocolMessage message)
-        {
-            switch (message.action)
+            switch (state)
             {
-                case ProtocolMessage.MessageAction.Attached:
-                    if (State == ChannelState.Attaching)
+                case ChannelState.Attaching:
+                    if (ConnectionState == ConnectionStateType.Initialized)
                     {
-                        SetChannelState(ChannelState.Attached);
-                        SendQueuedMessages();
+                        Connection.Connect();
+                    }
+
+                    //Even thought the connection won't have connected yet the message will be queued and sent as soon as
+                    //the connection is made
+                    _connectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name), null);
+                    break;
+                case ChannelState.Attached:
+                    if (protocolMessage.HasPresenceFlag)
+                    {
+                        //Start sync
+                    }
+                    else
+                    {
+                        //Presence is in sync
+                    }
+
+                    SendQueuedMessages();
+                    AttachedSerial = protocolMessage.channelSerial;
+                    break;
+                case ChannelState.Detaching:
+                    if (ConnectionState == ConnectionStateType.Closed || ConnectionState == ConnectionStateType.Connecting ||
+                        ConnectionState == ConnectionStateType.Suspended)
+                        SetChannelState(ChannelState.Detached, error);
+                    else
+                    {
+                        _connectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name), null);
                     }
                     break;
-                case ProtocolMessage.MessageAction.Detached:
-                    if (State == ChannelState.Detaching)
-                        SetChannelState(ChannelState.Detached);
+                case ChannelState.Detached:
+                    _connectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
                     break;
-                case ProtocolMessage.MessageAction.Message:
-                    OnMessage(message);
-                    break;
-                case ProtocolMessage.MessageAction.Error:
-                    SetChannelState(ChannelState.Failed);
-                    break;
-                default:
-                    Logger.Error("Channel::OnConnectionMessageReceived(): Unexpected message action {0}", message.action);
+                case ChannelState.Failed:
+                    _connectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
                     break;
             }
         }
 
-        private void OnMessage(ProtocolMessage message)
-        {
-            foreach (var msg in message.messages)
-            {
-                lock (_lockSubscribers)
-                {
-                    foreach (var h in _handlers.GetAliveHandlers())
-                        h.Handle(msg);
 
-                    Handlers handlers;
-                    if (!_specificHandlers.TryGetValue(msg.name, out handlers))
-                        continue;
+        internal void OnMessage(Message message)
+        {
+            lock (_lockSubscribers)
+            {
+                foreach (var h in _handlers.GetAliveHandlers())
+                    h.Handle(message);
+
+                Handlers handlers;
+                if (_specificHandlers.TryGetValue(message.name, out handlers))
+                {
                     foreach (var h in handlers.GetAliveHandlers())
-                        h.Handle(msg);
+                        h.Handle(message);
                 }
             }
         }
@@ -258,7 +374,7 @@ namespace IO.Ably.Realtime
             }
 
             foreach (var qpm in list)
-                _connection.Send(qpm.Message, qpm.Callback);
+                _connectionManager.Send(qpm.Message, qpm.Callback);
             return list.Count;
         }
     }

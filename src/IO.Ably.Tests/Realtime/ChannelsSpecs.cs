@@ -107,7 +107,7 @@ namespace IO.Ably.Tests
 
         [Fact]
         [Trait("spec", "RTS4a")]
-        public void Release_ShouldRemoveChannelWhenDetached()
+        public async Task Release_ShouldRemoveChannelWhenDetached()
         {
             // Arrange
             var channel = Channels.Get("test");
@@ -115,8 +115,9 @@ namespace IO.Ably.Tests
             Channels.Release("test");
 
             // Act
-            _realtime.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, "test"));
+            await _realtime.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, "test"));
 
+            await Task.Delay(50);
             // Assert
             Channels.Should().BeEmpty();
         }
@@ -141,6 +142,8 @@ namespace IO.Ably.Tests
         [Trait("spec", "RTS4a")]
         public void ReleaseAll_ShouldDetachChannel()
         {
+            Logger.LogLevel = LogLevel.Debug;
+
             // Arrange
             var channel = Channels.Get("test");
             channel.Attach();
@@ -233,7 +236,7 @@ namespace IO.Ably.Tests
 
         public ChannelsSpecs(ITestOutputHelper output) : base(output)
         {
-            _realtime = GetClientWithFakeTransport();
+            _realtime = GetConnectedClient();
         }
     }
 }

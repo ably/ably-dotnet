@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,8 +13,7 @@ namespace IO.Ably
     public class AblyRealtime : IRealtimeClient, IRealtimeChannelCommands
     {
         private readonly object _channelLock = new object();
-        internal Dictionary<string, IRealtimeChannel> RealtimeChannels { get; private set; } = new Dictionary<string, IRealtimeChannel>();
-        private ChannelFactory _channelFactory;
+        internal ConcurrentDictionary<string, IRealtimeChannel> RealtimeChannels { get; private set; } = new ConcurrentDictionary<string, IRealtimeChannel>();
 
         /// <summary></summary>
         /// <param name="key"></param>
@@ -34,7 +34,7 @@ namespace IO.Ably
         internal AblyRealtime(ClientOptions options, Func<ClientOptions, AblyRest> createRestFunc)
         {
             RestClient = createRestFunc(options);
-            Connection = new Connection(RestClient);
+            Connection = new Connection(this);
             Connection.Initialise();
 
             if (options.AutoConnect)
@@ -96,22 +96,29 @@ namespace IO.Ably
             return RestClient.Time();
         }
 
-        public IRealtimeChannel Get(string name)
+        public IRealtimeChannel Get(string name, ChannelOptions options = null)
         {
-            IRealtimeChannel channel = null;
-            if (!RealtimeChannels.TryGetValue(name, out channel))
+            IRealtimeChannel result = null;
+            if (!RealtimeChannels.TryGetValue(name, out result))
             {
-                channel = new RealtimeChannel(name, Options.GetClientId(), ConnectionManager);
-                RealtimeChannels.Add(name, channel);
+                var channel = new RealtimeChannel(name, Options.GetClientId(), ConnectionManager);
+                if (options != null)
+                    channel.Options = options;
+                result = RealtimeChannels.AddOrUpdate(name, channel, (s, realtimeChannel) =>
+                {
+                    if (options != null)
+                    {
+                        realtimeChannel.Options = options;
+                    }
+                    return realtimeChannel;
+                });
             }
-            return channel;
-        }
-
-        public IRealtimeChannel Get(string name, ChannelOptions options)
-        {
-            var channel = Get(name);
-            channel.Options = options;
-            return channel;
+            else
+            {
+                if (options != null)
+                    result.Options = options;
+            }
+            return result;
         }
 
         public IRealtimeChannel this[string name] => Get(name);
@@ -127,7 +134,8 @@ namespace IO.Ably
                     if (args.NewState == ChannelState.Detached || args.NewState == ChannelState.Failed)
                     {
                         channel.ChannelStateChanged -= eventHandler;
-                        RealtimeChannels.Remove(name);
+                        IRealtimeChannel removedChannel;
+                        RealtimeChannels.TryRemove(name, out removedChannel);
                     }
                 };
                 channel.ChannelStateChanged += eventHandler;
@@ -144,9 +152,14 @@ namespace IO.Ably
             }
         }
 
+        public bool ContainsChannel(string name)
+        {
+            return RealtimeChannels.ContainsKey(name);
+        }
+
         public IEnumerator<IRealtimeChannel> GetEnumerator()
         {
-            return RealtimeChannels.Values.GetEnumerator();
+            return RealtimeChannels.ToArray().Select(x => x.Value).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

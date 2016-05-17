@@ -60,6 +60,7 @@ namespace IO.Ably.Transport
         event MessageReceivedDelegate MessageReceived;
         
         void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback);
+        void FailMessageWaitingForAckAndClearOutgoingQueue(RealtimeChannel realtimeChannel, ErrorInfo error);
     }
 
     internal interface IConnectionContext
@@ -85,5 +86,6 @@ namespace IO.Ably.Transport
         void SendPendingMessages(bool resumed);
         void ClearAckQueueAndFailMessages(ErrorInfo error);
         Task<bool> CanUseFallBackUrl(ErrorInfo error);
+        void DetachAttachedChannels(ErrorInfo error);
     }
 }

@@ -34,8 +34,8 @@ namespace IO.Ably.Types
         [Flags]
         public enum MessageFlag : byte
         {
-            Has_Presence,
-            Has_Backlog
+            Presence,
+            Backlog
         }
 
         public ProtocolMessage()
@@ -56,6 +56,12 @@ namespace IO.Ably.Types
         public MessageAction action { get; set; }
 
         public MessageFlag? flags { get; set; }
+
+        [JsonIgnore]
+        public bool HasPresenceFlag => flags == MessageFlag.Presence;
+        [JsonIgnore]
+        public bool HasBacklogFlag => flags == MessageFlag.Backlog;
+
 
         public int? count { get; set; }
 

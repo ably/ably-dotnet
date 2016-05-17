@@ -42,6 +42,19 @@ namespace IO.Ably.Transport
             return AttemptsInfo.CanFallback(error);
         }
 
+        public void DetachAttachedChannels(ErrorInfo error)
+        {
+            Logger.Warning("Force detaching all attached channels because the connection did not resume successfully!");
+
+            foreach(var channel in Connection.RealtimeClient.Channels)
+            {
+                if (channel.State == ChannelState.Attached || channel.State == ChannelState.Attaching)
+                {
+                    (channel as RealtimeChannel).SetChannelState(ChannelState.Detached, error);
+                }
+            }
+        }
+
         public ConnectionManager(Connection connection)
         {
             _pendingMessages = new Queue<MessageAndCallback>();
@@ -317,6 +330,14 @@ namespace IO.Ably.Transport
             }
         }
 
+        public void FailMessageWaitingForAckAndClearOutgoingQueue(RealtimeChannel channel, ErrorInfo error)
+        {
+            error = error ?? new ErrorInfo($"Channel cannot publish messages whilst state is {channel.State}", 50000);
+            AckProcessor.FailChannelMessages(channel.Name, error);
+            
+            //TODO: Clear messages from the outgoing queue
+        }
+
         void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)
         {
             ExecuteOnManagerThread(() =>
@@ -366,7 +387,7 @@ namespace IO.Ably.Transport
             handled |= AckProcessor.OnMessageReceived(message);
             handled |= ConnectionHeartbeatRequest.CanHandleMessage(message);
 
-            if (message.connectionSerial != null)
+            if (message.connectionSerial.HasValue)
             {
                 Connection.Serial = message.connectionSerial.Value;
             }

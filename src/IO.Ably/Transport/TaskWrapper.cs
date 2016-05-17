@@ -6,21 +6,37 @@ namespace IO.Ably.Transport
     /// <summary>This trivial class wraps legacy callback-style API into a Task API.</summary>
     internal class TaskWrapper
     {
-        readonly TaskCompletionSource<bool> _completionSource = new TaskCompletionSource<bool>();
+        readonly TaskCompletionSource<Result> _completionSource = new TaskCompletionSource<Result>();
 
-        public Task Task => _completionSource.Task;
+        public Task<Result> Task => _completionSource.Task;
 
         public void Callback(bool res, ErrorInfo ei)
         {
             if (res)
-                _completionSource.SetResult(true);
+                _completionSource.SetResult(Result.Ok());
             else if (ei != null)
-                _completionSource.SetException(ei.AsException());
+                _completionSource.SetResult(Result.Fail(ei));
             else
-                _completionSource.SetException(new Exception(""));
+                _completionSource.SetException(new Exception("Unexpected exception thrown by the TaskWrapper."));
         }
 
-        public static Task<Result<T>> Wrap<T>(Action<Action<T, ErrorInfo>> toWrapMethod)
+        public static Task<Result<T>> Wrap<TParam, T>(TParam obj, Action<TParam, Action<T, ErrorInfo>> toWrapMethod)
+        {
+            var wrapper = new TaskWrapper<T>();
+            try
+            {
+                toWrapMethod(obj, wrapper.Callback);
+            }
+            catch (Exception ex)
+            {
+                wrapper.SetException(ex);
+            }
+
+            return wrapper.Task;
+        }
+
+
+    public static Task<Result<T>> Wrap<T>(Action<Action<T, ErrorInfo>> toWrapMethod)
         {
             var wrapper = new TaskWrapper<T>();
             try
