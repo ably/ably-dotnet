@@ -1,10 +1,8 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
-using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
-using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -45,20 +43,13 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void WhenMessageIsSent_DoesNothing()
-        {
-            // Act
-            _state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
-        }
-
-        [Fact]
-        public async Task OnAttachedToContext_ShouldDestroyTransport()
+        public async Task BeforeTransition_ShouldDestroyTransport()
         {
             // Arrange
             _context.Transport = new FakeTransport();
 
             // Act
-            await _state.OnAttachedToContext();
+            _state.BeforeTransition();
 
             // Assert
             _context.DestroyTransportCalled.Should().BeTrue();
@@ -92,23 +83,29 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public async Task ShouldNotListenForTransporChanges()
+        [Trait("spec", "RTN7c")]
+        [Trait("sandboxTest", "needed")]
+        public async Task ShouldClearAckQueue()
         {
-            // Act
-            await _state.OnTransportStateChanged(null);
+            // Arrange
+            await _state.OnAttachToContext();
+
+            _context.ClearAckQueueMessagesCalled.Should().BeTrue();
+            _context.ClearAckMessagesError.Should().Be(ErrorInfo.ReasonClosed);
         }
 
         [Fact]
-        public async Task ShouldClearConnectionKey()
+        public void ShouldClearConnectionKeyAndId()
         {
             // Arrange
             _context.Connection.Key = "test";
 
             // Act
-            await _state.OnAttachedToContext();
+            _state.BeforeTransition();
 
             // Assert
             _context.Connection.Key.Should().BeNullOrEmpty();
+            _context.Connection.Id.Should().BeNullOrEmpty();
         }
     }
 }

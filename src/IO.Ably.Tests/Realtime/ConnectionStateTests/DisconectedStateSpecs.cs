@@ -24,11 +24,6 @@ namespace IO.Ably.Tests
             _state = GetState();
         }
 
-        private ConnectionDisconnectedState GetState(ConnectionState.TransportStateInfo stateInfo)
-        {
-            return new ConnectionDisconnectedState(_context, stateInfo);
-        }
-
         private ConnectionDisconnectedState GetState(ErrorInfo error = null, ICountdownTimer timer = null)
         {
             return new ConnectionDisconnectedState(_context, error, _timer);
@@ -38,16 +33,6 @@ namespace IO.Ably.Tests
         public void ShouldHaveDisconnectedTypes()
         {
             _state.State.Should().Be(ConnectionStateType.Disconnected);
-        }
-
-        [Fact]
-        public void ShouldQueueMessages()
-        {
-            // Act
-            _state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Connect));
-
-            // Assert
-            _context.QueuedMessages.Should().HaveCount(1);
         }
 
         [Theory]
@@ -78,16 +63,6 @@ namespace IO.Ably.Tests
 
             // Assert
             handled.Should().BeFalse();
-        }
-
-        [Fact]
-        public async Task SHouldNotListenToTransportStateChanges()
-        {
-            // Arrange
-            var state = GetState(ErrorInfo.ReasonClosed);
-
-            // Act
-            await state.OnTransportStateChanged(null);
         }
 
         [Fact]
@@ -129,7 +104,7 @@ namespace IO.Ably.Tests
             var state = GetState(ErrorInfo.ReasonClosed);
 
             // Act
-            await state.OnAttachedToContext();
+            await state.OnAttachToContext();
             _timer.OnTimeOut();
 
             // Assert
@@ -145,10 +120,10 @@ namespace IO.Ably.Tests
             var transport = new FakeTransport() { State = TransportState.Initialized };
             _context.Transport = transport;
             var state = GetState(ErrorInfo.ReasonClosed);
-            state.UseFallbackHost = true;
+            state.RetryInstantly = true;
 
             // Act
-            await state.OnAttachedToContext();
+            await state.OnAttachToContext();
 
             // Assert
             _timer.StartedWithAction.Should().BeFalse();

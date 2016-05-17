@@ -29,7 +29,8 @@ namespace IO.Ably
             res.Converters = new List<JsonConverter>()
             {
                 new DateTimeOffsetJsonConverter(),
-                new CapabilityJsonConverter()
+                new CapabilityJsonConverter(),
+                new TimeSpanJsonConverter()
             };
             res.DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind;
             res.NullValueHandling = NullValueHandling.Ignore;

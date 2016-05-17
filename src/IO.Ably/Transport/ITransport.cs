@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using IO.Ably.Realtime;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport
@@ -15,31 +16,25 @@ namespace IO.Ably.Transport
 
     public interface ITransport
     {
-        string Host { get; }
-
         TransportState State { get; }
 
         ITransportListener Listener { get; set; }
 
         void Connect();
 
-        void Close();
+        void Close(bool suppressClosedEvent = true);
 
-        void Abort(string reason);
-
-        void Send(ProtocolMessage message);
+        void Send(RealtimeTransportData data);
     }
 
     public interface ITransportFactory
     {
-        Task<ITransport> CreateTransport(TransportParams parameters);
+        ITransport CreateTransport(TransportParams parameters);
     }
 
     public interface ITransportListener
     {
-        void OnTransportConnected();
-        void OnTransportDisconnected();
-        void OnTransportError(Exception error);
-        void OnTransportMessageReceived(ProtocolMessage message);
+        void OnTransportDataReceived(RealtimeTransportData data);
+        void OnTransportEvent(TransportState state, Exception exception = null);
     }
 }

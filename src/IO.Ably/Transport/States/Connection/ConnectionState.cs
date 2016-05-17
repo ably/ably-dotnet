@@ -8,63 +8,50 @@ namespace IO.Ably.Transport.States.Connection
     [DebuggerDisplay("{State}")]
     internal abstract class ConnectionState
     {
-        internal ConnectionState() { }
-
         public ConnectionState(IConnectionContext context)
         {
             this.Context = context;
         }
 
         protected readonly IConnectionContext Context;
-
         public abstract Realtime.ConnectionStateType State { get; }
         public ErrorInfo Error { get; protected set; }
+        
+        public Exception Exception { get; set; }
         public TimeSpan? RetryIn { get; protected set; }
+        public virtual bool CanQueue => false;
+        public virtual bool CanSend => false;
 
-        protected abstract bool CanQueueMessages { get; }
-
-        public abstract void Connect();
-        public abstract void Close();
-        public abstract Task OnTransportStateChanged(TransportStateInfo state);
-        public abstract Task<bool> OnMessageReceived(ProtocolMessage message);
-
-        public virtual Task OnAttachedToContext()
+        public virtual void Connect()
         {
-            return TaskConstants.BooleanTrue;
         }
 
-        public virtual void SendMessage(ProtocolMessage message)
+        public virtual void Close()
         {
-            if (CanQueueMessages)
-            {
-                Context.QueuedMessages.Enqueue(message);
-            }
+        }
+
+        public virtual Task<bool> OnMessageReceived(ProtocolMessage message)
+        {
+            return TaskConstants.BooleanFalse;
+        }
+
+        public virtual void AbortTimer()
+        {
+
+        }
+
+        public virtual void BeforeTransition()
+        {
+        }
+
+        public virtual Task OnAttachToContext()
+        {
+            return TaskConstants.BooleanTrue;
         }
 
         public override string ToString()
         {
             return $"Type: {GetType().Name}, State: {State}";
-        }
-
-        public class TransportStateInfo
-        {
-            public TransportStateInfo(TransportState state)
-                : this(state, null)
-            { }
-
-            public TransportStateInfo(TransportState state, Exception error)
-            {
-                State = state;
-                Error = error;
-            }
-
-            public TransportState State { get; private set; }
-            public Exception Error { get; private set; }
-
-            public override string ToString()
-            {
-                return $"State: {State}. Error: {Error}";
-            }
         }
     }
 }

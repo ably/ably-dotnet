@@ -9,7 +9,7 @@ using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Ably.Tests.MessageEncodes
+namespace IO.Ably.Tests
 {
     public class ProtocolMessageSpecs
     {
@@ -18,12 +18,11 @@ namespace Ably.Tests.MessageEncodes
             [Fact]
             public void CanSerialiseAndDeserializeProtocolMessage()
             {
-                var serializer = new MsgPackMessageSerializer();
                 var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, "boo");
                 message.presence = new[] { new PresenceMessage(PresenceMessage.ActionType.Enter, "123", "my data") };
 
-                var data = serializer.SerializeProtocolMessage(message);
-                var result = serializer.DeserializeProtocolMessage(data);
+                var data = MsgPackHelper.Serialise(message);
+                var result = MsgPackHelper.DeSerialise(data, typeof(ProtocolMessage)) as ProtocolMessage;
 
                 result.action.Should().Be(message.action);
                 result.presence.First().data.Should().Be(message.presence[0].data);

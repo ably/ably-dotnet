@@ -22,6 +22,9 @@ namespace IO.Ably
         // Buffer in seconds before a token is considered unusable
         public const int TokenExpireBufferInSeconds = 15;
         public static readonly TimeSpan DefaultRealtimeTimeout = TimeSpan.FromSeconds(10);
+        public static readonly TimeSpan DisconnectedRetryTimeout = TimeSpan.FromSeconds(15);
+        public static readonly TimeSpan ConnectionStateTtl = TimeSpan.FromSeconds(60);
+
         public static readonly ITransportFactory WebSocketTransportFactory = Platform.IoC.WebSockets;
 
         internal const int TokenErrorCodesRangeStart = 40140;
@@ -32,7 +35,7 @@ namespace IO.Ably
 
         static Defaults()
         {
-            FallbackHosts = new [] { "A.ably-realtime.com", "B.ably-realtime.com", "C.ably-realtime.com", "D.ably-realtime.com", "E.ably-realtime.com" };
+            FallbackHosts = new [] { "a.ably-realtime.com", "b.ably-realtime.com", "c.ably-realtime.com", "d.ably-realtime.com", "e.ably-realtime.com" };
         }
     }
 }

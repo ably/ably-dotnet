@@ -2,16 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
+using IO.Ably.Auth;
 using IO.Ably.CustomSerialisers;
+using IO.Ably.Types;
 using MsgPack;
 using Newtonsoft.Json;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.MessagePack
 {
-    public class MessagePackSerializationTests
+    public class MessagePackSerializationTests : AblySpecs
     {
-        public MessagePackSerializationTests()
+        public MessagePackSerializationTests(ITestOutputHelper output) : base(output)
         {
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
             {
@@ -29,9 +32,71 @@ namespace IO.Ably.Tests.MessagePack
             var result = MsgPackHelper.DeSerialise(serialised, typeof (List<Message>)) as List<Message>;
             var resultMessage = result.First();
 
-            ((MessagePackObject)resultMessage.data).ToObject().Should().Be(message.data);
+            resultMessage.data.Should().Be(message.data);
             resultMessage.name.Should().Be(message.name);
 
+        }
+
+        [Fact]
+        public void CanSerializeAndDeserialiseCapabilityObject()
+        {
+            var allAllowed = Capability.AllowAll;
+            var withOneResource = new Capability();
+            withOneResource.AddResource("test").AllowPresence().AllowPublish().AllowSubscribe();
+            var withTwoResources = new Capability();
+            withTwoResources.AddResource("one").AllowAll();
+            withTwoResources.AddResource("two").AllowPublish().AllowSubscribe();
+
+            var list = new[] {allAllowed, withOneResource, withTwoResources};
+            foreach (var item in list)
+            {
+                var data = MsgPackHelper.Serialise(item);
+                var unpacked = MsgPackHelper.DeSerialise(data, typeof(Capability));
+                Output.WriteLine(item.ToJson());
+                Output.WriteLine(unpacked.ToJson());
+                Assert.Equal(item, unpacked);
+            }
+        }
+
+        [Fact]
+        public void CanSerialiseAndDeserialiseTokenDetailsCorrectly()
+        {
+            var details = new TokenDetails()
+            {
+                Token = "DaC_fA.DzqwNZFHNIl_GpUR6ENpeqewYnzf5LtI2L2RCP0eDSs597_6OXEW5vumSHiBn2pdxP7ge420UNbrqpKaS_W4aWE5oc15OriGL_8hELLGpgDEoNsnUixWIizGvhsnKVFYT",
+                KeyName = "DaC_fA.ChPHsQ",
+                Issued = 1462827574141.FromUnixTimeInMilliseconds(),
+                Expires = 1462831174141.FromUnixTimeInMilliseconds(),
+                Capability = new Capability("{\"*\":[\"*\"]}"),
+                ClientId = "123"
+            };
+
+            var bytes =
+                "hqV0b2tlbtmIRGFDX2ZBLkR6cXdOWkZITklsX0dwVVI2RU5wZXFld1luemY1THRJMkwyUkNQMGVEU3M1OTdfNk9YRVc1dnVtU0hpQm4ycGR4UDdnZTQyMFVOYnJxcEthU19XNGFXRTVvYzE1T3JpR0xfOGhFTExHcGdERW9Oc25VaXhXSWl6R3Zoc25LVkZZVKdrZXlOYW1lrURhQ19mQS5DaFBIc1GmaXNzdWVkzwAAAVSXUWN9p2V4cGlyZXPPAAABVJeIUf2qY2FwYWJpbGl0eat7IioiOlsiKiJdfahjbGllbnRJZKMxMjM="
+                    .FromBase64();
+
+            Output.WriteLine(bytes.GetText());
+            var packed = MsgPackHelper.Serialise(details);
+            var unpacked = (TokenDetails)MsgPackHelper.DeSerialise(packed, typeof(TokenDetails));
+            unpacked.ShouldBeEquivalentTo(details);
+            var unpackedFromRaw = MsgPackHelper.DeSerialise(bytes, typeof(TokenDetails));
+            unpackedFromRaw.ShouldBeEquivalentTo(details);
+        }
+
+        [Fact]
+        public void CanSerialiseAndDeserialiseTokenDetailsWithEmptyCapability()
+        {
+            var details = new TokenDetails()
+            {
+                Token = "DaC_fA.DzqwNZFHNIl_GpUR6ENpeqewYnzf5LtI2L2RCP0eDSs597_6OXEW5vumSHiBn2pdxP7ge420UNbrqpKaS_W4aWE5oc15OriGL_8hELLGpgDEoNsnUixWIizGvhsnKVFYT",
+                KeyName = "DaC_fA.ChPHsQ",
+                Issued = 1462827574141.FromUnixTimeInMilliseconds(),
+                Capability = new Capability(),
+            };
+
+            var packed = MsgPackHelper.Serialise(details);
+            var unpacked = (TokenDetails)MsgPackHelper.DeSerialise(packed, typeof(TokenDetails));
+            unpacked.ShouldBeEquivalentTo(details);
         }
 
         [Fact]
@@ -40,7 +105,7 @@ namespace IO.Ably.Tests.MessagePack
             var message = new Message() {name = "example", data = "AAECAwQFBgcICQoLDA0ODw==".FromBase64()};
             var serialised = MsgPackHelper.Serialise(new List<Message> { message });
             var resultMessage = MsgPackHelper.DeSerialise(serialised, typeof(List<Message>)) as List<Message>;
-            var data = ((MessagePackObject)resultMessage.First().data).ToObject() as byte[];
+            var data = resultMessage.First().data as byte[];
             data.Should().BeEquivalentTo(message.data as byte[]);
             resultMessage.First().name.Should().Be(message.name);
         }
@@ -61,6 +126,15 @@ namespace IO.Ably.Tests.MessagePack
             response.AccessToken.Token.Should().Be("g4X6QQ.DyBc9LeGow-lieDpn3MtlwOnPHh7em7s2CrSgZK3cT6DoeJ5vT1Ytp41oi5VQKMRLnIWCrAZtuNoqyCIoTZaB1_oQE_E-ow6cxJ_Q0pU2gyiolQ4juT35N24C83wJziB9");
             response.AccessToken.Issued.Should().Be(((long)1421938646).FromUnixTimeInMilliseconds());
             response.AccessToken.Expires.Should().Be(((long)1421942246).FromUnixTimeInMilliseconds());
+        }
+
+        [Fact]
+        public void CanDeserialiseConnectionDetailsMessages()
+        {
+            var connectionDetails = new ConnectionDetailsMessage() { clientId = "123", connectionStateTtl = TimeSpan.FromSeconds(60)};
+            var serialized = MsgPackHelper.Serialise(connectionDetails);
+            var deserialized = MsgPackHelper.DeSerialise(serialized, typeof(ConnectionDetailsMessage));
+            deserialized.ShouldBeEquivalentTo(connectionDetails);
         }
     }
 

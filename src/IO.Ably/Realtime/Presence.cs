@@ -88,7 +88,9 @@ namespace IO.Ably.Realtime
             {
                 var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, channel.Name);
                 message.presence = new[] {msg};
-                return connection.SendAsync(message);
+                connection.Send(message, null);
+                //TODO: Fix this;
+                return TaskConstants.BooleanTrue;
             }
             throw new AblyException("Unable to enter presence channel in detached or failed state", 91001,
                 HttpStatusCode.BadRequest);

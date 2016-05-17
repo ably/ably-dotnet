@@ -76,11 +76,13 @@ namespace IO.Ably
         /// </summary>
         public string RestHost { get; set; }
 
-        private bool IsLiveEnvironment => Environment.HasValue == false || Environment == AblyEnvironment.Live;
+        internal bool IsLiveEnvironment => Environment.HasValue == false || Environment == AblyEnvironment.Live;
 
-        internal bool IsDefaultRestHost => RestHost.IsEmpty();
+        internal bool IsDefaultRestHost => RestHost.IsEmpty() && IsDefaultPort && IsLiveEnvironment;
 
-        internal bool IsDefaultRealtimeHost => RealtimeHost.IsEmpty();
+        internal bool IsDefaultRealtimeHost => RealtimeHost.IsEmpty() && IsDefaultPort && IsLiveEnvironment;
+
+        internal bool IsDefaultPort => Tls ? Port == 80 : TlsPort == 443;
 
         internal string FullRealtimeHost()
         {
@@ -188,7 +190,7 @@ namespace IO.Ably
             AutoConnect = true;
             EchoMessages = true;
             QueueMessages = true;
-            DisconnectedRetryTimeout = TimeSpan.FromSeconds(15);
+            DisconnectedRetryTimeout = Defaults.DisconnectedRetryTimeout;
             SuspendedRetryTimeout = TimeSpan.FromSeconds(30);
             HttpOpenTimeout = TimeSpan.FromSeconds(4);
             HttpRequestTimeout = TimeSpan.FromSeconds(15);

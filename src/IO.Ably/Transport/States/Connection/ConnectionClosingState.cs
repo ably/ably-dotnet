@@ -10,12 +10,7 @@ namespace IO.Ably.Transport.States.Connection
         private readonly ICountdownTimer _timer;
 
         public ConnectionClosingState(IConnectionContext context) :
-            this(context, null, new CountdownTimer())
-        {
-        }
-
-        public ConnectionClosingState(IConnectionContext context, ErrorInfo error) :
-            this(context, error, new CountdownTimer())
+            this(context, null, new CountdownTimer("Closing state timer"))
         {
         }
 
@@ -27,18 +22,6 @@ namespace IO.Ably.Transport.States.Connection
         }
 
         public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Closing;
-
-        protected override bool CanQueueMessages => false;
-
-        public override void Connect()
-        {
-            //do nothing
-        }
-
-        public override void Close()
-        {
-            // do nothing
-        }
 
         public override Task<bool> OnMessageReceived(ProtocolMessage message)
         {
@@ -63,22 +46,17 @@ namespace IO.Ably.Transport.States.Connection
             return TaskConstants.BooleanFalse;
         }
 
-        public override Task OnTransportStateChanged(TransportStateInfo state)
+        public override void AbortTimer()
         {
-            if (state.State == TransportState.Closed)
-            {
-                TransitionState(new ConnectionClosedState(Context));
-            }
-            return TaskConstants.BooleanTrue;
+            _timer.Abort();
         }
 
-        public override Task OnAttachedToContext()
+        public override Task OnAttachToContext()
         {
-            if (Context.Transport.State == TransportState.Connected)
+            if (Context.TransportState == TransportState.Connected)
             {
-                Context.Transport.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
-                _timer.Start(TimeSpan.FromMilliseconds(CloseTimeout), () => Context.SetState(new ConnectionClosedState(Context)));
-                
+                Context.SendToTransport(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
+                _timer.Start(TimeSpan.FromMilliseconds(CloseTimeout), OnTimeOut);
             }
             else
             {
@@ -87,10 +65,16 @@ namespace IO.Ably.Transport.States.Connection
             return TaskConstants.BooleanTrue;
         }
 
+        private void OnTimeOut()
+        {
+            Context.Execute(() =>
+                Context.SetState(new ConnectionClosedState(Context)));
+        }
+
         private void TransitionState(ConnectionState newState)
         {
-            Context.SetState(newState);
             _timer.Abort();
+            Context.SetState(newState);
         }
     }
 }

@@ -6,18 +6,15 @@ namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionSuspendedState : ConnectionState
     {
-        //TODO: Make sure these come from config
-        public static readonly TimeSpan SuspendTimeout = TimeSpan.FromSeconds(120); // Time before a connection is considered suspended
-        private readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(120); // Time to wait before retrying connection
         private readonly ICountdownTimer _timer;
 
         public ConnectionSuspendedState(IConnectionContext context) :
-            this(context, null, new CountdownTimer())
+            this(context, null, new CountdownTimer("Suspended state timer"))
         {
         }
 
         public ConnectionSuspendedState(IConnectionContext context, ErrorInfo error) :
-            this(context, error, new CountdownTimer())
+            this(context, error, new CountdownTimer("Suspended state timer"))
         {
         }
 
@@ -26,12 +23,10 @@ namespace IO.Ably.Transport.States.Connection
         {
             _timer = timer;
             Error = error ?? ErrorInfo.ReasonSuspended;
-            RetryIn = ConnectTimeout;
+            RetryIn = context.SuspendRetryTimeout;
         }
 
         public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Suspended;
-
-        protected override bool CanQueueMessages => false;
 
         public override void Connect()
         {
@@ -44,29 +39,21 @@ namespace IO.Ably.Transport.States.Connection
             Context.SetState(new ConnectionClosedState(Context));
         }
 
-        public override Task<bool> OnMessageReceived(ProtocolMessage message)
+        public override void AbortTimer()
         {
-            // could not happen
-            Logger.Error("Receiving message in disconected state!");
-            return TaskConstants.BooleanFalse;
+            _timer.Abort();
         }
 
-        public override Task OnTransportStateChanged(TransportStateInfo state)
+        public override Task OnAttachToContext()
         {
-            // could not happen
-            Logger.Error("Unexpected state change. " + state);
-            return TaskConstants.BooleanTrue;
-        }
-
-        public override Task OnAttachedToContext()
-        {
-            _timer.Start(ConnectTimeout, OnTimeOut);
+            if(RetryIn.HasValue)
+                _timer.Start(RetryIn.Value, OnTimeOut);
             return TaskConstants.BooleanTrue;
         }
 
         private void OnTimeOut()
         {
-            Context.SetState(new ConnectionConnectingState(Context));
+            Context.Execute(() => Context.SetState(new ConnectionConnectingState(Context)));
         }
     }
 }

@@ -20,13 +20,6 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void SendMessageShouldDoNothing()
-        {
-            // Act
-            _state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
-        }
-
-        [Fact]
         public void OnConnectCalled_SHouldDoNothing()
         {
             // Act
@@ -38,30 +31,6 @@ namespace IO.Ably.Tests
         {
             // Act
             _state.Close();
-        }
-
-        [Fact]
-        public async Task OnTransportDisconnected_ShouldMoveToClosed()
-        {
-            // Act
-            await _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
-
-            // Assert
-            _context.StateShouldBe<ConnectionClosedState>();
-        }
-
-        [Theory]
-        [InlineData(TransportState.Closing)]
-        [InlineData(TransportState.Connected)]
-        [InlineData(TransportState.Connecting)]
-        [InlineData(TransportState.Initialized)]
-        public async Task OnTransportStateChangeTHatIsNotClosed_ShouldDoNothing(TransportState transportState)
-        {
-            // Act
-            await _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(transportState));
-
-            // Assert
-            _context.ShouldHaveNotChangedState();
         }
 
         [Theory]
@@ -126,16 +95,16 @@ namespace IO.Ably.Tests
         [Fact]
         [Trait("spec", "RTN12a")]
         //When the closing state is initialised a Close message is sent
-        public async Task OnAttachedToTransport_ShouldSendCloseMessage()
+        public async Task OnAttachedToTransport_ShouldSendClosedMessage()
         {
             // Arrange
             var transport = new FakeTransport() { State = TransportState.Connected };
             _context.Transport = transport;
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
 
             // Assert
-            transport.LastMessageSend.action.Should().Be(ProtocolMessage.MessageAction.Close);
+            _context.LastMessageSent.action.Should().Be(ProtocolMessage.MessageAction.Close);
         }
 
         [Theory]
@@ -149,7 +118,7 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport() { State = transportState };
 
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
 
             // Assert
             _context.StateShouldBe<ConnectionClosedState>();
@@ -161,7 +130,7 @@ namespace IO.Ably.Tests
         {
             _context.Transport = new FakeTransport() { State = TransportState.Connected };
 
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
             _timer.StartedWithAction.Should().BeTrue();
             _timer.OnTimeOut();
 
@@ -176,7 +145,7 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport(TransportState.Connected);
 
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
             await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
 
             // Assert
@@ -192,7 +161,7 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport(TransportState.Connected);
 
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
             await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
 
             // Assert

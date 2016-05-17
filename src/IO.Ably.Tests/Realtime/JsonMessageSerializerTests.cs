@@ -40,14 +40,8 @@ namespace IO.Ably.Tests
                 yield return new object[] { "[{\"name\":\"test\"}]", new Message[] { new Message("test", null) } };
                 yield return new object[] { "[{\"name\":\"test\"},{\"name\":\"attach\"}]", new Message[] { new Message("test", null),  new Message("attach", null) } };
                 yield return new object[] { "[{\"data\":\"test\"}]", new Message[] { new Message(null, "test") } };
-                yield return new object[] { "[{\"data\":\"2012-04-23T18:25:43.511Z\"}]", new Message[] { new Message(null, new DateTime(2012, 4, 23, 18, 25, 43, 511, DateTimeKind.Utc)) } };
-                //yield return new object[] { "[{\"data\":\"2012-04-23T18:25:43.511+00:00\"}]", new Message[] { new Message(null, new DateTimeOffset(2012, 4, 23, 18, 25, 43, 511, TimeSpan.Zero)) } };
-                yield return new object[] { "[{\"data\":1234}]", new Message[] { new Message(null, 1234) } };
-                yield return new object[] { "[{\"data\":1234.00}]", new Message[] { new Message(null, 1234f) } };
-                yield return new object[] { "[{\"data\":true}]", new Message[] { new Message(null, true) } };
-                yield return new object[] { "[{\"data\":undefined}]", new Message[] { new Message(null, null) } };
+                yield return new object[] { "[{}]", new Message[] { new Message(null, null) } };
                 yield return new object[] { "[{\"data\":[1234,4321]}]", new Message[] { new Message(null, new JArray(1234, 4321)) } };
-                yield return new object[] { "[{\"data\":\"bXkgYmluYXJ5IHBheWxvYWQ=\",\"encoding\":\"base64\"}]", new Message[] { new Message(null, Convert.FromBase64String("bXkgYmluYXJ5IHBheWxvYWQ=")) } };
             }
         }
 
@@ -123,7 +117,7 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_MsgSerial(long msgSerial)
         {
             // Arrange
-            ProtocolMessage message = new ProtocolMessage() { msgSerial = msgSerial };
+            ProtocolMessage message = new ProtocolMessage() { MsgSerial = msgSerial };
             StringBuilder expectedMessage = new StringBuilder();
             expectedMessage.Append("{\"action\":0")
                 .AppendFormat(",\"msgSerial\":{0}", msgSerial)
@@ -371,7 +365,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<long>(long.Parse(serial.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.msgSerial);
+            Assert.Equal<long>(long.Parse(serial.ToString(), System.Globalization.CultureInfo.InstalledUICulture), target.MsgSerial);
         }
 
         [Theory]

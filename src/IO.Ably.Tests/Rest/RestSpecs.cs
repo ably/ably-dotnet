@@ -141,7 +141,7 @@ namespace IO.Ably.Tests
             public async Task WhenErrorCodeIsTokenSpecific_ShouldAutomaticallyTryToRenewTokenIfRequestFails(int errorCode)
             {
                 Output.WriteLine("Error code.");
-                base.Now = DateTimeOffset.Now;
+                Now = DateTimeOffset.Now;
                 var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
                 //Had to inline the method otherwise the tests intermittently fail.
                 bool firstAttempt = true;
@@ -257,7 +257,6 @@ namespace IO.Ably.Tests
 
             [Theory]
             [InlineData(AblyEnvironment.Sandbox)]
-            [InlineData(AblyEnvironment.Uat)]
             public async Task WithEnvironmentAndNoCustomHost_ShouldPrefixEnvironment(AblyEnvironment environment)
             {
                 var client = CreateClient(options => { options.Environment = environment; });

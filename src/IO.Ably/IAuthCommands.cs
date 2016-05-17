@@ -16,5 +16,7 @@ namespace IO.Ably
         AuthMethod AuthMethod { get; }
 
         Task<TokenDetails> GetCurrentValidTokenAndRenewIfNecessary();
+
+        void ExpireCurrentToken();
     }
 }

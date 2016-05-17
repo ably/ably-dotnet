@@ -7,6 +7,8 @@ namespace IO.Ably
 {
     public class AblyRealtime : IRealtimeClient
     {
+        private ChannelFactory _channelFactory;
+
         /// <summary></summary>
         /// <param name="key"></param>
         public AblyRealtime(string key)
@@ -26,30 +28,28 @@ namespace IO.Ably
         internal AblyRealtime(ClientOptions options, Func<ClientOptions, AblyRest> createRestFunc)
         {
             RestClient = createRestFunc(options);
-
-            ConnectionManager = new ConnectionManager(options, RestClient);
-            ChannelFactory = new ChannelFactory { ConnectionManager = ConnectionManager, Options = options };
+            Connection = new Connection(RestClient);
+            Connection.Initialise();
             Channels = new ChannelList(ChannelFactory);
 
-            //TODO: Change this and allow a way to check to log exceptions
             if (options.AutoConnect)
                 Connect();
         }
 
-        public ChannelFactory ChannelFactory { get; set; }
+        public ChannelFactory ChannelFactory => _channelFactory ?? (_channelFactory = new ChannelFactory { ConnectionManager = ConnectionManager, Options = Options });
 
         public AblyRest RestClient { get; }
 
         internal AblyAuth Auth => RestClient.AblyAuth;
         internal ClientOptions Options => RestClient.Options;
 
-        internal ConnectionManager ConnectionManager { get; set; }
+        internal ConnectionManager ConnectionManager => Connection.ConnectionManager;
 
         /// <summary>The collection of channels instanced, indexed by channel name.</summary>
         public IRealtimeChannelCommands Channels { get; private set; }
 
         /// <summary>A reference to the connection object for this library instance.</summary>
-        public Connection Connection => ConnectionManager.Connection;
+        public Connection Connection { get; set; }
 
         public Task<PaginatedResult<Stats>> Stats()
         {

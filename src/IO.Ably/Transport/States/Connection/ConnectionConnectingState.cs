@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Ports;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -10,41 +11,29 @@ namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionConnectingState : ConnectionState
     {
-        private const int ConnectTimeout = 15*1000; //TODO: Use values from config
-        private static readonly ISet<HttpStatusCode> FallbackReasons;
+      
+    private readonly ICountdownTimer _timer;
 
-        private readonly ICountdownTimer _timer;
-        private readonly bool _useFallbackHost;
+        
 
-        static ConnectionConnectingState()
-        {
-            FallbackReasons = new HashSet<HttpStatusCode>
-            {
-                HttpStatusCode.InternalServerError,
-                HttpStatusCode.GatewayTimeout
-            };
-        }
-
-        public ConnectionConnectingState(IConnectionContext context, bool useFallbackHost = false) :
-            this(context, new CountdownTimer(), useFallbackHost)
+        public ConnectionConnectingState(IConnectionContext context) :
+            this(context, new CountdownTimer("Connecting state timer"))
         {
         }
 
-        public ConnectionConnectingState(IConnectionContext context, ICountdownTimer timer, bool useFallbackHost = false)
-            :
-                base(context)
+        public ConnectionConnectingState(IConnectionContext context, ICountdownTimer timer)
+            : base(context)
         {
             _timer = timer;
-            _useFallbackHost = useFallbackHost;
         }
 
         public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Connecting;
 
-        protected override bool CanQueueMessages => true;
+        public override bool CanQueue => true;
 
         public override void Connect()
         {
-            // do nothing
+            Logger.Info("Already connecting!");
         }
 
         public override void Close()
@@ -57,108 +46,72 @@ namespace IO.Ably.Transport.States.Connection
             switch (message.action)
             {
                 case ProtocolMessage.MessageAction.Connected:
-                {
-                    if (Context.Transport.State == TransportState.Connected)
                     {
-                        var info = new ConnectionInfo(message.connectionId, message.connectionSerial ?? -1,
-                            message.connectionKey, message.connectionDetails?.clientId);
-                        TransitionState(new ConnectionConnectedState(Context, info));
-                    }
-                    return true;
-                }
-                case ProtocolMessage.MessageAction.Disconnected:
-                {
-                    ConnectionState nextState;
-                    if (ShouldSuspend())
-                    {
-                        nextState = new ConnectionSuspendedState(Context, message.error);
-                    }
-                    else
-                    {
-                        nextState = new ConnectionDisconnectedState(Context, message.error)
+                        if (Context.Transport.State == TransportState.Connected)
                         {
-                            UseFallbackHost = await ShouldUseFallbackHost(message.error)
-                        };
-                    }
-                    TransitionState(nextState);
-                    return true;
-                }
-                case ProtocolMessage.MessageAction.Error:
-                {
-                    if (await ShouldUseFallbackHost(message.error))
-                    {
-                        Context.Connection.Key = null;
-                        TransitionState(new ConnectionDisconnectedState(Context) {UseFallbackHost = true});
+                            var info = new ConnectionInfo(message);
+                            TransitionState(new ConnectionConnectedState(Context, info, message.error));
+                        }
                         return true;
                     }
-                    TransitionState(new ConnectionFailedState(Context, message.error));
-                    return true;
-                }
+                case ProtocolMessage.MessageAction.Disconnected:
+                    {
+                        Context.HandleConnectingFailure(message.error, null);
+                        return true;
+                    }
+                case ProtocolMessage.MessageAction.Error:
+                    {
+                        //If the error is a token error do some magic
+                        if (Context.ShouldWeRenewToken(message.error))
+                        {
+                            try
+                            {
+                                Context.ClearTokenAndRecordRetry();
+                                await Context.CreateTransport();
+                                return true;
+                            }
+                            catch (AblyException ex)
+                            {
+                                Logger.Error("Error trying to renew token.", ex);
+                                TransitionState(new ConnectionFailedState(Context, ex.ErrorInfo));
+                                return true;
+                            }
+                        }
+
+                        if (await Context.CanUseFallBackUrl(message.error))
+                        {
+                            Context.Connection.Key = null;
+                            Context.HandleConnectingFailure(message.error, null);
+                            return true;
+                        }
+
+                        TransitionState(new ConnectionFailedState(Context, message.error));
+                        return true;
+                    }
             }
             return false;
         }
 
-        public override async Task OnTransportStateChanged(TransportStateInfo state)
+        public override void AbortTimer()
         {
-            if (state.Error != null || state.State == TransportState.Closed)
-            {
-                ConnectionState nextState;
-                if (ShouldSuspend())
-                {
-                    nextState = new ConnectionSuspendedState(Context);
-                }
-                else
-                {
-                    nextState = new ConnectionDisconnectedState(Context, state)
-                    {
-                        UseFallbackHost = state.Error != null && await Context.CanConnectToAbly()
-                    };
-                }
-                TransitionState(nextState);
-            }
+            _timer.Abort();
         }
 
-        public override async Task OnAttachedToContext()
+        public override async Task OnAttachToContext()
         {
-            Context.AttemptConnection();
-
-            if (Context.Transport == null)
-            {
-                await Context.CreateTransport();
-            }
-
-            if (Context.Transport.State != TransportState.Connected)
-            {
-                Context.Transport.Connect();
-                _timer.Start(TimeSpan.FromMilliseconds(ConnectTimeout), async () =>
-                {
-                    var disconnectedState = new ConnectionDisconnectedState(Context, ErrorInfo.ReasonTimeout)
-                    {
-                        UseFallbackHost = await Context.CanConnectToAbly()
-                    };
-                    Context.SetState(disconnectedState);
-                });
-            }
+            await Context.CreateTransport();
+            _timer.Start(Context.DefaultTimeout, onTimeOut: OnTimeOut);
         }
 
-        private async Task<bool> ShouldUseFallbackHost(ErrorInfo error)
+        private void OnTimeOut()
         {
-            return error?.statusCode != null && 
-                FallbackReasons.Contains(error.statusCode.Value) &&
-                await Context.CanConnectToAbly();
+            Context.Execute(() => Context.HandleConnectingFailure(null, null));
         }
 
         private void TransitionState(ConnectionState newState)
         {
-            Context.SetState(newState);
             _timer.Abort();
-        }
-
-        private bool ShouldSuspend()
-        {
-            return Context.FirstConnectionAttempt != null &&
-                   Context.FirstConnectionAttempt.Value
-                       .Add(ConnectionSuspendedState.SuspendTimeout) < Config.Now();
+            Context.SetState(newState);
         }
     }
 }

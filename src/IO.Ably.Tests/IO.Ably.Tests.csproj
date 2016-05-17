@@ -60,6 +60,7 @@
       <HintPath>..\packages\FluentAssertions.4.3.2\lib\net45\FluentAssertions.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="Moq, Version=4.2.1510.2205, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
       <HintPath>..\packages\Moq.4.2.1510.2205\lib\net40\Moq.dll</HintPath>
       <Private>True</Private>
@@ -70,6 +71,18 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Nito.AsyncEx, Version=3.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nito.AsyncEx.3.0.1\lib\net45\Nito.AsyncEx.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Nito.AsyncEx.Concurrent, Version=3.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nito.AsyncEx.3.0.1\lib\net45\Nito.AsyncEx.Concurrent.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Nito.AsyncEx.Enlightenment, Version=3.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nito.AsyncEx.3.0.1\lib\net45\Nito.AsyncEx.Enlightenment.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -114,8 +127,21 @@
     <Compile Include="Infrastructure\FakeTransport.cs" />
     <Compile Include="MessageEncodes\MessageEncodersAcceptanceTests.cs" />
     <Compile Include="Infrastructure\FakeAuth.cs" />
+    <Compile Include="Realtime\ConnectionAttempsInfoSpecs.cs" />
     <Compile Include="Realtime\ConnectionSandBoxSpecs.cs" />
-    <Compile Include="Realtime\ConnectionSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\AckNackSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionFailuresOnceConnectedSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionFailureSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionFallbackSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionIdSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionKeySpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionParameterSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionPingSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionRecoverySpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionSerialSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\EventEmitterSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\GeneralConnectionSpecs.cs" />
     <Compile Include="Realtime\ConnectionStateTests\ClosedStateSpecs.cs" />
     <Compile Include="Realtime\ConnectionStateTests\ClosingStateSpecs.cs" />
     <Compile Include="Realtime\ConnectionStateTests\ConnectedStateSpecs.cs" />
@@ -149,7 +175,6 @@
     <Compile Include="Infrastructure\MiscUtils.cs" />
     <Compile Include="Realtime\AckProtocolTests.cs" />
     <Compile Include="Realtime\ChannelListTests.cs" />
-    <Compile Include="Realtime\ConnectionManagerTests.cs" />
     <Compile Include="Realtime\ConnectionStateTests\FailedStateSpecs.cs" />
     <Compile Include="Realtime\DateHelper.cs" />
     <Compile Include="Realtime\JsonMessageSerializerTests.cs" />

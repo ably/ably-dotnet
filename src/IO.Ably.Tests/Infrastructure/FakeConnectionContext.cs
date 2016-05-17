@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Rest;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
+using Nito.AsyncEx.Synchronous;
 
 namespace IO.Ably.Tests
 {
@@ -23,45 +25,71 @@ namespace IO.Ably.Tests
 
         public FakeConnectionContext()
         {
-            Connection = new Connection();
+            Connection = new Connection(null);
         }
 
         public ConnectionState LastSetState { get; set; }
+        public IAuthCommands Auth { get; set; }
+
+        public bool RenewTokenValue { get; set; }
+
+        public bool ShouldWeRenewTokenValue { get; set; }
+
+        public TimeSpan DefaultTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;
+        public TimeSpan RetryTimeout { get; set; } = Defaults.DisconnectedRetryTimeout;
+
+        public void SendToTransport(ProtocolMessage message)
+        {
+            LastMessageSent = message;
+            SendToTransportCalled = true;
+        }
+
+        public bool SendToTransportCalled { get; set; }
+
+        public Task Execute(Action action)
+        {
+            action();
+            return TaskConstants.BooleanTrue;
+        }
+
         public ConnectionState State { get; set; }
+        public TransportState TransportState => Transport.State;
         public ITransport Transport { get; set; }
         public AblyRest RestClient { get; set; }
         public Queue<ProtocolMessage> QueuedMessages { get; } = new Queue<ProtocolMessage>();
         public Connection Connection { get; set; }
-        public DateTimeOffset? FirstConnectionAttempt { get; set; }
-        public int ConnectionAttempts { get; set; }
+        public TimeSpan SuspendRetryTimeout { get; set; }
 
-        public void SetState(ConnectionState state)
+        public void ClearTokenAndRecordRetry()
+        {
+            TriedToRenewToken = true;
+        }
+
+        public bool TriedToRenewToken { get; set; }
+
+        public Task SetState(ConnectionState state, bool skipAttach)
         {
             State = state;
             LastSetState = state;
+            return TaskConstants.BooleanTrue;
         }
+
+        public bool AllowTransportCreating { get; set; }
 
         public Task CreateTransport()
         {
             CreateTransportCalled = true;
-            Transport = new FakeTransport();
+            if(AllowTransportCreating)
+                Transport = new FakeTransport();
             return TaskConstants.BooleanTrue;
         }
 
-        public T StateShouldBe<T>() where T : ConnectionState
-        {
-            LastSetState.Should().BeOfType<T>();
-            return (T) LastSetState;
-        } 
-
-        public void ShouldHaveNotChangedState()
-        {
-            LastSetState.Should().BeNull();
-        }
-
-        public void DestroyTransport()
+        public void DestroyTransport(bool suppressClosedEvent = true)
         {
             DestroyTransportCalled = true;
+
+            
+
         }
 
         public void AttemptConnection()
@@ -81,7 +109,86 @@ namespace IO.Ably.Tests
 
         public void SetConnectionClientId(string clientId)
         {
-            
+        }
+
+        public bool ShouldWeRenewToken(ErrorInfo error)
+        {
+            return ShouldWeRenewTokenValue;
+        }
+
+        public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null)
+        {
+            LastMessageSent = message;
+            LastCallback = callback;
+        }
+
+        public Action<bool, ErrorInfo> LastCallback { get; set; }
+
+        public ProtocolMessage LastMessageSent { get; set; }
+
+        public bool ShouldSuspend()
+        {
+            return ShouldSuspendValue;
+        }
+
+        public Func<ErrorInfo, Task<bool>> RetryFunc = delegate { return TaskConstants.BooleanFalse; };
+
+        public Task<bool> RetryBecauseOfTokenError(ErrorInfo error)
+        {
+            return RetryFunc(error);
+        }
+
+        public void CloseConnection()
+        {
+            CloseConnectionCalled = true;
+        }
+
+        public void HandleConnectingFailure(ErrorInfo error, Exception ex)
+        {
+            HandledConnectionFailureCalled = true;
+        }
+
+        public void SendPendingMessages(bool resumed)
+        {
+            SendPendingMessagesCalled = true;
+        }
+
+        public void ClearAckQueueAndFailMessages(ErrorInfo error)
+        {
+            ClearAckQueueMessagesCalled = true;
+            ClearAckMessagesError = error;
+        }
+
+        public Task<bool> CanUseFallBackUrl(ErrorInfo error)
+        {
+            CanUseFallBackUrlCalled = true;
+            return CanUseFallBack ? TaskConstants.BooleanTrue : TaskConstants.BooleanFalse;
+        }
+
+        public bool CanUseFallBackUrlCalled { get; set; }
+
+        public ErrorInfo ClearAckMessagesError { get; set; }
+
+        public bool ClearAckQueueMessagesCalled { get; set; }
+
+        public bool SendPendingMessagesCalled { get; set; }
+
+        public bool HandledConnectionFailureCalled { get; set; }
+
+        public bool CloseConnectionCalled { get; set; }
+
+        public bool ShouldSuspendValue { get; set; }
+        public bool CanUseFallBack { get; set; }
+
+        public T StateShouldBe<T>() where T : ConnectionState
+        {
+            LastSetState.Should().BeOfType<T>();
+            return (T) LastSetState;
+        }
+
+        public void ShouldHaveNotChangedState()
+        {
+            LastSetState.Should().BeNull();
         }
     }
 }

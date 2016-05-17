@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Configuration;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
-using IO.Ably.Types;
 using SuperSocket.ClientEngine;
 using WebSocket4Net;
 
@@ -20,18 +20,20 @@ namespace IO.Ably.Realtime
             {WebSocketState.Closed, TransportState.Closed}
         };
 
-        private readonly IMessageSerializer _serializer;
-        private readonly TransportParams _parameters;
 
         private WebSocket _socket;
 
-        private WebSocketTransport(IMessageSerializer serializer, TransportParams parameters)
+        private WebSocketTransport(TransportParams parameters)
         {
-            _serializer = serializer;
-            _parameters = parameters;
+            if (parameters == null)
+                throw new ArgumentNullException(nameof(parameters), "Null parameters are not allowed");
+        
+            BinaryProtocol = parameters.UseBinaryProtocol;
+            WebSocketUri = parameters.GetUri();
         }
 
-        public string Host => _parameters.Host;
+        public bool BinaryProtocol { get; }
+        public Uri WebSocketUri { get; }
 
         public TransportState State
         {
@@ -49,109 +51,143 @@ namespace IO.Ably.Realtime
 
         public void Connect()
         {
+            if (_socket == null)
+            {
+                _socket = CreateSocket(WebSocketUri);
+                AttachEvents();
+            }
+            
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Connecting socket");
+            }
             _socket.Open();
         }
 
-        public void Close()
+        public void Close(bool suppressClosedEvent = true)
         {
-            _socket?.Close();
-        }
-
-        public void Abort(string reason)
-        {
-            _socket.Close(reason);
-        }
-
-        public void Send(ProtocolMessage message)
-        {
-            var serializedMessage = _serializer.SerializeProtocolMessage(message);
-
-            if (_parameters.UseBinaryProtocol)
+            if (Logger.IsDebug)
             {
-                var data = (byte[]) serializedMessage;
-                _socket.Send(data, 0, data.Length);
+                Logger.Debug("Closing socket. Current socket is " + (_socket == null ? "null" : "not null"));
+            }
+            if (_socket != null)
+            {
+                if(suppressClosedEvent)
+                    DetachEvents();
+
+                _socket.Close();
+
+                
+            }
+        }
+
+        public void Send(RealtimeTransportData data)
+        {
+            if (BinaryProtocol)
+            {
+                _socket.Send(data.Data, 0, data.Length);
             }
             else
             {
-                _socket.Send((string) serializedMessage);
+                _socket.Send(data.Text);
             }
         }
 
-        private Task CreateSocket()
+        private WebSocket CreateSocket(Uri uri)
+        { 
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Connecting to web socket on url: " + uri);
+            }
+
+            return new WebSocket(uri.ToString(), "", WebSocketVersion.Rfc6455);
+        }
+
+        private void AttachEvents()
         {
-            if(_parameters == null)
-                throw new ArgumentNullException(nameof(_parameters), "Null parameters are not allowed");
+            if (_socket != null)
+            {
+                _socket.Opened += socket_Opened;
+                _socket.Closed += socket_Closed;
+                _socket.Error += socket_Error;
+                _socket.MessageReceived += socket_MessageReceived; //For text messages
+                _socket.DataReceived += socket_DataReceived; //For binary messages    
+            }
+        }
 
-            var uri = _parameters.GetUri();
-
-            _socket = new WebSocket(uri.ToString(), "", WebSocketVersion.Rfc6455);
-            _socket.Opened += socket_Opened;
-            _socket.Closed += socket_Closed;
-            _socket.Error += socket_Error;
-            _socket.MessageReceived += socket_MessageReceived; //For text messages
-            _socket.DataReceived += socket_DataReceived; //For binary messages
-
-            return Task.FromResult(true);
+        private void DetachEvents()
+        {
+            if (_socket != null)
+            {
+                try
+                {
+                    _socket.Opened -= socket_Opened;
+                    _socket.Closed -= socket_Closed;
+                    _socket.Error -= socket_Error;
+                    _socket.MessageReceived -= socket_MessageReceived; //For text messages
+                    _socket.DataReceived -= socket_DataReceived; //For binary messages    
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warning("Error while detaching events handlers. Error: {0}", ex.Message);   
+                }
+            }
         }
 
         private void socket_Opened(object sender, EventArgs e)
         {
-            if (Listener != null)
+            if (Logger.IsDebug)
             {
-                Listener.OnTransportConnected();
+                Logger.Debug("Websocket opened!");
             }
+
+            Listener?.OnTransportEvent(State);
         }
 
         private void socket_Closed(object sender, EventArgs e)
         {
-            if (Listener != null)
+            if (Logger.IsDebug)
             {
-                Listener.OnTransportDisconnected();
+                Logger.Debug("Websocket closed!");
             }
+            Listener?.OnTransportEvent(State);
+            
+
+            DetachEvents();
+            _socket = null;
         }
 
         private void socket_Error(object sender, ErrorEventArgs e)
         {
-            if (Listener != null)
-            {
-                Listener.OnTransportError(e.Exception);
-            }
+            Logger.Error("Websocket error!", e.Exception);
+            Listener?.OnTransportEvent(State, e.Exception);
         }
 
         private void socket_MessageReceived(object sender, MessageReceivedEventArgs e)
         {
-            if (Listener != null)
+            if (Logger.IsDebug)
             {
-                var message = _serializer.DeserializeProtocolMessage(e.Message);
-                Listener.OnTransportMessageReceived(message);
+                Logger.Debug("Websocket message received. Raw: " + e.Message);
             }
+
+            Listener?.OnTransportDataReceived(new RealtimeTransportData(e.Message));
         }
 
         private void socket_DataReceived(object sender, DataReceivedEventArgs e)
         {
-            if (Listener != null)
+            if (Logger.IsDebug)
             {
-                var message = _serializer.DeserializeProtocolMessage(e.Data);
-                Listener.OnTransportMessageReceived(message);
+                Logger.Debug("Websocket data message received. Raw: " + e.Data.GetText());
             }
+
+            Listener?.OnTransportDataReceived(new RealtimeTransportData(e.Data));
         }
 
         public class WebSocketTransportFactory : ITransportFactory
         {
-            public async Task<ITransport> CreateTransport(TransportParams parameters)
+            public ITransport CreateTransport(TransportParams parameters)
             {
-                IMessageSerializer serializer = null;
-                if (parameters.UseBinaryProtocol)
-                {
-                    serializer = new MsgPackMessageSerializer();
-                }
-                else
-                {
-                    serializer = new JsonMessageSerializer();
-                }
-                var socketTransport = new WebSocketTransport(serializer, parameters);
-                await socketTransport.CreateSocket();
-                return socketTransport;
+                return new WebSocketTransport(parameters);
             }
         }
     }

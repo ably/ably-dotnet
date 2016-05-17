@@ -108,6 +108,11 @@ namespace IO.Ably
             return "";
         }
 
+        public override string ToString()
+        {
+            return ToJson();
+        }
+
         private static JArray GetResourceValue(CapabilityResource resource)
         {
             if (resource.AllowsAll)
@@ -120,6 +125,24 @@ namespace IO.Ably
         private string CleanUpWhiteSpace(string jsonString)
         {
             return Regex.Replace(jsonString, @"\s+", " ", RegexOptions.Singleline);
+        }
+
+        protected bool Equals(Capability other)
+        {
+            return ToJson().Equals(other.ToJson());
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((Capability) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
         }
     }
 

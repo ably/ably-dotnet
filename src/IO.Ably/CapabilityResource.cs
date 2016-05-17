@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
 
 namespace IO.Ably
 {
@@ -14,12 +15,19 @@ namespace IO.Ably
             public const string All = "*";
         }
         public string Name { get; set; }
-        public SortedSet<string> AllowedOperations { get; set; }
+        public List<string> AllowedOperations { get; set; }
 
-        public CapabilityResource(string name)
+        /// <summary>
+        /// 
+        /// </summary>
+        public CapabilityResource()
+        {
+            AllowedOperations = new List<string>();
+        }
+
+        public CapabilityResource(string name) : this()
         {
             Name = name;
-            AllowedOperations = new SortedSet<string>();
         }
 
         public bool AllowsAll => AllowedOperations.Contains(AllowedOps.All);
@@ -27,23 +35,27 @@ namespace IO.Ably
         public void AllowAll()
         {
             AllowedOperations.Add(AllowedOps.All);
+            AllowedOperations.Sort();
         }
 
         public CapabilityResource AllowPresence()
         {
             AllowedOperations.Add(AllowedOps.Presence);
+            AllowedOperations.Sort();
             return this;
         }
 
         public CapabilityResource AllowSubscribe()
         {
             AllowedOperations.Add(AllowedOps.Subscribe);
+            AllowedOperations.Sort();
             return this;
         }
 
         public CapabilityResource AllowPublish()
         {
             AllowedOperations.Add(AllowedOps.Publish);
+            AllowedOperations.Sort();
             return this;
         }
     }

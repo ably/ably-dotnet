@@ -5,7 +5,7 @@ namespace IO.Ably.ConsoleTest
 {
     class Realtime
     {
-        public static void Test()
+        public static AblyRealtime Test()
         {
             var options = new ClientOptions()
             {
@@ -13,8 +13,7 @@ namespace IO.Ably.ConsoleTest
                 ClientId = "stan",
                 Tls = false,
             };
-            var realtime = new AblyRealtime( options );
-            realtime.Connect();
+            return new AblyRealtime(options);
         }
     }
 }

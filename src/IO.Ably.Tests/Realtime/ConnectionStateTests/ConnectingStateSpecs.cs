@@ -16,7 +16,6 @@ namespace IO.Ably.Tests
         private ConnectionConnectingState _state;
         private FakeTimer _timer;
 
-
         public ConnectingStateSpecs(ITestOutputHelper output) : base(output)
         {
             _context = new FakeConnectionContext();
@@ -33,22 +32,6 @@ namespace IO.Ably.Tests
         public void HasCorrectState()
         {
             _state.State.Should().Be(Ably.Realtime.ConnectionStateType.Connecting);
-        }
-
-        [Fact]
-        public async Task OnAttachedToContext_ShouldAttempToConnect()
-        {
-            _state.OnAttachedToContext();
-
-            _context.AttempConnectionCalled.Should().BeTrue();
-        }
-
-        [Fact]
-        public void SendMessage_ShouldQueueMessage()
-        {
-            _state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Connect));
-
-            _context.QueuedMessages.Should().HaveCount(1);
         }
 
         [Theory]
@@ -133,6 +116,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             _context.Transport = GetConnectedTrasport();
+            _context.CanUseFallBack = false;
             ErrorInfo targetError = new ErrorInfo("test", 123);
 
             // Act
@@ -143,27 +127,27 @@ namespace IO.Ably.Tests
         }
 
 
-        [Theory]
-        [InlineData(System.Net.HttpStatusCode.InternalServerError)]
-        [InlineData(System.Net.HttpStatusCode.GatewayTimeout)]
-        public async Task WithInboundErrorMessage_GoesToDisconnected(System.Net.HttpStatusCode code)
+        [Fact]
+        public async Task WithInboundErrorMessageWhenItCanUseFallBack_ShouldCallHandleConnectionFailure()
         {
             _context.Transport = new FakeTransport() { State = TransportState.Connected };
+            _context.CanUseFallBack = true;
             // Arrange
-            ErrorInfo targetError = new ErrorInfo("test", 123, code);
+            ErrorInfo targetError = new ErrorInfo("test", 123);
 
             // Act
             await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
 
             // Assert
-            _context.LastSetState.Should().BeOfType<ConnectionDisconnectedState>();
+            _context.HandledConnectionFailureCalled.Should().BeTrue();
         }
 
         [Fact]
-        public async Task WithInboundErrorMessage_ShouldClearsConnectionKey()
+        public async Task WithInboundErrorMessageMessageWhenItCanUseFallBack_ShouldClearsConnectionKey()
         {
             // Arrange
             _context.Transport = GetConnectedTrasport();
+            _context.CanUseFallBack = true;
             _context.Connection.Key = "123";
 
             // Act
@@ -174,40 +158,14 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public async Task WithInboundDisconnectedMessage_ShouldMoveToDisconnectedState()
+        public async Task WithInboundDisconnectedMessage_ShouldLetConnectionManagerHandleTheDisconnect()
         {
             // Arrange
             _context.Transport = GetConnectedTrasport();
             // Act
             bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
 
-            _context.LastSetState.Should().BeOfType<ConnectionDisconnectedState>();
-        }
-
-        [Theory]
-        [InlineData(System.Net.HttpStatusCode.InternalServerError)]
-        [InlineData(System.Net.HttpStatusCode.GatewayTimeout)]
-        public async Task ConnectingState_HandlesInboundDisconnectedMessage_GoesToDisconnected_FallbackHost(System.Net.HttpStatusCode code)
-        {
-            // Act
-            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { error = new ErrorInfo("", 0, code) });
-
-            // Assert
-            var lastType = _context.LastSetState as ConnectionDisconnectedState;
-            lastType.UseFallbackHost.Should().BeTrue();
-        }
-
-        [Fact]
-        public async Task WithInboundDisconnectedMessageAndFirstAttempIsMoreThanTimeoutValue_GoesToSuspended()
-        {
-            // Arrange
-            _context.FirstConnectionAttempt = Now.AddHours(-1);
-
-            // Act
-            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
-
-            // Assert
-            _context.LastSetState.Should().BeOfType<ConnectionSuspendedState>();
+            _context.HandledConnectionFailureCalled.Should().BeTrue();
         }
 
         [Fact]
@@ -230,72 +188,13 @@ namespace IO.Ably.Tests
         [Fact]
         public async Task OnAttachedToContext_CreatesTransport()
         {
+            _context.AllowTransportCreating = true;
+
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
 
             // Assert
             _context.CreateTransportCalled.Should().BeTrue();
-        }
-
-        [Fact]
-        public async Task OnAttachedToContext_WithClosedTransport_ShouldConnectTheTransport()
-        {
-            // Arrange
-            var fakeTransport = new FakeTransport() { State = TransportState.Closed };
-            _context.Transport = fakeTransport;
-
-            // Act
-            await _state.OnAttachedToContext();
-
-            // Assert
-            fakeTransport.ConnectCalled.Should().BeTrue();
-        }
-
-        [Theory]
-        [InlineData(TransportState.Closing)]
-        [InlineData(TransportState.Connected)]
-        [InlineData(TransportState.Connecting)]
-        [InlineData(TransportState.Initialized)]
-        public async Task WhenTransportStateChanges_ShouldNotSwitchState(TransportState transportState)
-        {
-            // Act
-            await _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(transportState));
-
-            // Assert
-            _context.LastSetState.Should().BeNull();
-        }
-
-        [Fact]
-        public async Task WhenTransportGoesDisconnected_ShouldSwitchToDisconnected()
-        {
-            // Act
-            await _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
-
-            // Assert
-            _context.LastSetState.Should().BeOfType<ConnectionDisconnectedState>();
-        }
-
-        [Fact]
-        public async Task TransportGoesDisconnectedWithError_ShouldSwitchToDisconnected()
-        {
-            // Act
-            await _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed, new Exception()));
-
-            // Assert
-            _context.LastSetState.Should().BeOfType<ConnectionDisconnectedState>();
-        }
-
-        [Fact]
-        public async Task WhenTransportGoesDisconnected_SwitchesToSuspended()
-        {
-            // Arrange
-            _context.FirstConnectionAttempt = Now.AddHours(-1);
-
-            // Act
-            await _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
-
-            // Assert
-            _context.LastSetState.Should().BeOfType<ConnectionSuspendedState>();
         }
 
         [Fact]
@@ -305,17 +204,16 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport() { State = TransportState.Initialized};
 
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
             _timer.OnTimeOut();
 
             // Assert
             _timer.StartedWithAction.Should().BeTrue();
-            _context.LastSetState.Should().BeOfType<ConnectionDisconnectedState>();
+            _context.HandledConnectionFailureCalled.Should().BeTrue();
         }
 
         [Theory]
         [InlineData(ProtocolMessage.MessageAction.Connected)]
-        [InlineData(ProtocolMessage.MessageAction.Disconnected)]
         [InlineData(ProtocolMessage.MessageAction.Error)]
         public async Task WhenMessageReceived_ForceDisconnectNotAppliedAndTimerShouldBeAborted(ProtocolMessage.MessageAction action)
         {
@@ -324,7 +222,7 @@ namespace IO.Ably.Tests
             _context.Transport = transport;
 
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
             transport.State = TransportState.Connected;
             await _state.OnMessageReceived(new ProtocolMessage(action));
 
@@ -332,21 +230,5 @@ namespace IO.Ably.Tests
             _timer.StartedWithAction.Should().BeTrue();
             _timer.Aborted.Should().BeTrue();
         }
-
-        [Fact]
-        public async Task ConnectingState_ForceDisconnectNotApplied_WhenTransportClosed()
-        {
-            // Arrange
-            _context.Transport = new FakeTransport() { State = TransportState.Initialized };
-
-            // Act
-            await _state.OnAttachedToContext();
-            await _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
-
-            // Assert
-            _timer.StartedWithAction.Should().BeTrue();
-            _timer.Aborted.Should().BeTrue();
-        }
-
     }
 }

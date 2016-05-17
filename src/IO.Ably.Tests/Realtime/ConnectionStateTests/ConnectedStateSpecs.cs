@@ -1,11 +1,9 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
-using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -32,30 +30,6 @@ namespace IO.Ably.Tests
         {
             // Assert
             _state.State.Should().Be(ConnectionStateType.Connected);
-        }
-
-        [Fact]
-        public async Task ShouldResetsContextConnectionAttempts()
-        {
-            // Act
-            await _state.OnAttachedToContext();
-
-            // Assert
-            _context.ResetConnectionAttemptsCalled.Should().BeTrue();
-        }
-
-        [Fact]
-        public void ShouldSendMessagesUsingTransport()
-        {
-            var transport = new FakeTransport();
-            _context.Transport = transport;
-
-            // Act
-            _state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
-
-            // Assert
-            transport.LastMessageSend.Should().NotBeNull();
-            transport.LastMessageSend.action.Should().Be(ProtocolMessage.MessageAction.Attach);
         }
 
         [Theory]
@@ -129,46 +103,7 @@ namespace IO.Ably.Tests
             // Assert
             _context.StateShouldBe<ConnectionClosingState>();
         }
-
-        [Fact]
-        public async Task OnAttachToContext_ShouldSendPendingMessages()
-        {
-            // Arrange
-            var transport = new FakeTransport();
-            _context.Transport = transport;
-            var targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Attach);
-            _context.QueuedMessages.Enqueue(targetMessage);
-
-            // Act
-            await _state.OnAttachedToContext();
-
-            // Assert
-            transport.LastMessageSend.Should().BeSameAs(targetMessage);
-            _context.QueuedMessages.Should().BeEmpty();
-        }
-
-        [Theory]
-        [InlineData(TransportState.Closing)]
-        [InlineData(TransportState.Connected)]
-        [InlineData(TransportState.Connecting)]
-        [InlineData(TransportState.Initialized)]
-        public async Task WhenTransportStateChanges_ConnectionStatesShouldNotChange(TransportState transportState)
-        {
-            // Act
-            await _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(transportState));
-
-            // Assert
-            _context.LastSetState.Should().BeNull();
-        }
-
-        [Fact]
-        public void ConnectedState_TransportGoesDisconnected_SwitchesToDisconnected()
-        {
-            _state.OnTransportStateChanged(new ConnectionState.TransportStateInfo(TransportState.Closed));
-
-            // Assert
-            _context.StateShouldBe<ConnectionDisconnectedState>();
-        }
+        
 
         [Fact]
         [Trait("spec", "RTN12c")]
@@ -185,7 +120,9 @@ namespace IO.Ably.Tests
         public void ConnectedState_UpdatesConnectionInformation()
         {
             // Act
-            GetState(new ConnectionInfo("test", 12564, "test test", ""));
+            var state = GetState(new ConnectionInfo("test", 12564, "test test", ""));
+
+            state.BeforeTransition();
 
             // Assert
             var connection = _context.Connection;
@@ -194,4 +131,4 @@ namespace IO.Ably.Tests
             connection.Key.Should().Be("test test");
         }
     }
-}
+} 

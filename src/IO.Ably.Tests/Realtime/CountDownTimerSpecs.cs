@@ -17,7 +17,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task CountdownTimer_Start_StartsCountdown()
         {
             // Arrange
-            CountdownTimer timer = new CountdownTimer();
+            var timer = new CountdownTimer("Test timer");
             var timeout = TimeSpan.FromMilliseconds(10);
             int called = 0;
             Action callback = () => called++;
@@ -34,7 +34,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task CountdownTimer_Abort_StopsCountdown()
         {
             // Arrange
-            CountdownTimer timer = new CountdownTimer();
+            var timer = new CountdownTimer("Test timer");
             var timeout = TimeSpan.FromMilliseconds(10);
             int called = 0;
             Action callback = () => called++;
@@ -52,7 +52,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task CountdownTimer_AbortStart_StartsNewCountdown()
         {
             // Arrange
-            CountdownTimer timer = new CountdownTimer();
+            var timer = CreateTimer();
 
             var timeout = TimeSpan.FromMilliseconds(10);
             int called = 0;
@@ -68,12 +68,16 @@ namespace IO.Ably.Tests.Realtime
             called.Should().Be(1);
         }
 
-        //TODO: MG Fix the inconsistent test
+        private static CountdownTimer CreateTimer()
+        {
+            return new CountdownTimer("Test timer");
+        }
+
         [Fact]
         public async Task CountdownTimer_StartTwice_AbortsOldTimer()
         {
             // Arrange
-            CountdownTimer timer = new CountdownTimer();
+            CountdownTimer timer = CreateTimer();
             var timeout = TimeSpan.FromMilliseconds(10);
             int called1 = 0;
             int called2 = 0;

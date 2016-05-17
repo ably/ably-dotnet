@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using IO.Ably.Realtime;
 using IO.Ably.Transport;
+using IO.Ably.Types;
 
 namespace IO.Ably.MessageEncoders
 {
@@ -60,11 +62,6 @@ namespace IO.Ably.MessageEncoders
             }
 
             var payloads = MsgPackHelper.DeSerialise(response.Body, typeof(List<PresenceMessage>)) as List<PresenceMessage>;
-            foreach (var payload in payloads.Where(x => x.data != null))
-            {
-                //Unwrap the data objects because message pack leaves them as a MessagePackObject
-                payload.data = ((MessagePackObject)payload.data).ToObject();
-            }
             ProcessMessages(payloads, options);
             return payloads;
         }
@@ -81,11 +78,6 @@ namespace IO.Ably.MessageEncoders
             }
 
             var payloads = MsgPackHelper.DeSerialise(response.Body, typeof(List<Message>)) as List<Message>;
-            foreach (var payload in payloads.Where(x => x.data != null))
-            {
-                //Unwrap the data objects because message pack leaves them as a MessagePackObject
-                payload.data = ((MessagePackObject)payload.data).ToObject();
-            }
             ProcessMessages(payloads, options);
             return payloads;
         }
@@ -202,7 +194,7 @@ namespace IO.Ably.MessageEncoders
             if (_protocol == Protocol.MsgPack)
             {
                 // A bit of a hack. Message pack serializer does not like capability objects
-                responseText = MsgPackHelper.DeSerialise(response.Body, typeof(MessagePackObject)).ToString();
+                return (T)MsgPackHelper.DeSerialise(response.Body, typeof(T));
             }
             return (T)JsonConvert.DeserializeObject(responseText, typeof(T), Config.GetJsonSettings());
         }
@@ -233,7 +225,7 @@ namespace IO.Ably.MessageEncoders
             var body = response.TextResponse;
             if (_protocol == Protocol.MsgPack)
             {
-                body = ((MessagePackObject)MsgPackHelper.DeSerialise(response.Body, typeof(MessagePackObject))).ToString();
+                return (List<Stats>)MsgPackHelper.DeSerialise(response.Body, typeof(List<Stats>));
             }
             return JsonConvert.DeserializeObject<List<Stats>>(body, Config.GetJsonSettings());
         }
@@ -247,6 +239,38 @@ namespace IO.Ably.MessageEncoders
                     return int.Parse(limitQuery);
             }
             return Defaults.QueryLimit;
+        }
+
+        public ProtocolMessage ParseRealtimeData(RealtimeTransportData data)
+        {
+            ProtocolMessage message;
+            if (_protocol == Protocol.MsgPack)
+            {
+                message = (ProtocolMessage)MsgPackHelper.DeSerialise(data.Data, typeof(ProtocolMessage));
+            }
+            else
+            {
+                message = JsonConvert.DeserializeObject<ProtocolMessage>(data.Text, Config.GetJsonSettings());
+            }
+
+            return message;
+        }
+
+        public RealtimeTransportData GetTransportData(ProtocolMessage message)
+        {
+            RealtimeTransportData data;
+            if (_protocol == Protocol.MsgPack)
+            {
+                var bytes= MsgPackHelper.Serialise(message);
+                data = new RealtimeTransportData(bytes) { Original = message };
+            }
+            else
+            {
+                var text = JsonConvert.SerializeObject(message, Config.GetJsonSettings());
+                data = new RealtimeTransportData(text) { Original = message };
+            }
+
+            return data;
         }
     }
 }

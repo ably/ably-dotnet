@@ -27,16 +27,6 @@ namespace IO.Ably.Tests
             _state.State.Should().Be(ConnectionStateType.Initialized);
         }
 
-        [Fact]
-        public void ShouldQueueMessagesWhenSent()
-        {
-            // Act
-            _state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Connect));
-
-            // Assert
-            _context.QueuedMessages.Should().HaveCount(1);
-        }
-
         [Theory]
         [InlineData(ProtocolMessage.MessageAction.Ack)]
         [InlineData(ProtocolMessage.MessageAction.Attach)]
@@ -62,13 +52,6 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.False(result);
-        }
-
-        [Fact]
-        public void ShouldNotListenToTransportChanges()
-        {
-            // Act
-            _state.OnTransportStateChanged(null);
         }
 
         [Fact]

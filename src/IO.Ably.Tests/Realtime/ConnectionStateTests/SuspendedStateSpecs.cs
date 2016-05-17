@@ -36,12 +36,6 @@ namespace IO.Ably.Tests
             _state.State.Should().Be(ConnectionStateType.Suspended);
         }
 
-        [Fact]
-        public void SendMessage_ShouldDoNothing()
-        {
-            _state.SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach));
-        }
-
         [Theory]
         [InlineData(ProtocolMessage.MessageAction.Ack)]
         [InlineData(ProtocolMessage.MessageAction.Attach)]
@@ -70,13 +64,6 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void ShouldNotListenToTransportChanges()
-        {
-            // Act
-            _state.OnTransportStateChanged(null);
-        }
-
-        [Fact]
         [Trait("spec", "RTN12d")]
         public void Close_ChangesStateToClosedAndAbortsTimer()
         {
@@ -99,12 +86,13 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        [Trait("spec", "RTN14e")]
         public async Task ShouldRetyConnection()
         {
             _context.Transport = new FakeTransport(TransportState.Initialized);
 
             // Act
-            await _state.OnAttachedToContext();
+            await _state.OnAttachToContext();
             _timer.StartedWithAction.Should().BeTrue();
             _timer.OnTimeOut();
 

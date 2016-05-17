@@ -20,7 +20,7 @@ namespace IO.Ably.Realtime
 
         private readonly object _lockSubscribers = new object();
 
-        private List<QueuedProtocolMessage> _queuedMessages;
+        private List<MessageAndCallback> _queuedMessages;
 
         internal RealtimeChannel(string name, string clientId, IConnectionManager connection)
         {
@@ -59,7 +59,8 @@ namespace IO.Ably.Realtime
 
             if (!_connection.IsActive)
             {
-                _connection.Connect();
+                //TODO: This is backwards. Need to get it fixed
+                _connection.Connection.Connect();
             }
 
             SetChannelState(ChannelState.Attaching);
@@ -168,12 +169,13 @@ namespace IO.Ably.Realtime
                 // Not connected, queue the message
                 lock (_lockQueue)
                 {
-                    if (null == _queuedMessages)
-                        _queuedMessages = new List<QueuedProtocolMessage>(16);
-                    _queuedMessages.Add(new QueuedProtocolMessage(msg, callback));
+                    if (_queuedMessages == null)
+                        _queuedMessages = new List<MessageAndCallback>(16);
+                    _queuedMessages.Add(new MessageAndCallback(msg, callback));
                     return;
                 }
             }
+
             if (State == ChannelState.Attached)
             {
                 // Connected, send right now
@@ -194,10 +196,7 @@ namespace IO.Ably.Realtime
 
         private void OnChannelStateChanged(ChannelStateChangedEventArgs eventArgs)
         {
-            if (ChannelStateChanged != null)
-            {
-                ChannelStateChanged(this, eventArgs);
-            }
+            ChannelStateChanged?.Invoke(this, eventArgs);
         }
 
         private void OnConnectionMessageReceived(ProtocolMessage message)
@@ -247,7 +246,7 @@ namespace IO.Ably.Realtime
 
         private int SendQueuedMessages()
         {
-            List<QueuedProtocolMessage> list = null;
+            List<MessageAndCallback> list = null;
             lock (_lockQueue)
             {
                 if (_queuedMessages == null || _queuedMessages.Count <= 0)
@@ -259,21 +258,8 @@ namespace IO.Ably.Realtime
             }
 
             foreach (var qpm in list)
-                _connection.Send(qpm.message, qpm.callback);
+                _connection.Send(qpm.Message, qpm.Callback);
             return list.Count;
-        }
-
-        internal class QueuedProtocolMessage
-        {
-            public readonly Action<bool, ErrorInfo> callback;
-
-            public readonly ProtocolMessage message;
-
-            public QueuedProtocolMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
-            {
-                this.message = message;
-                this.callback = callback;
-            }
         }
     }
 }

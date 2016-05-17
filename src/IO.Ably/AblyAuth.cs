@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.Design;
 using System.Net;
 using System.Net.Http;
 using IO.Ably.Auth;
@@ -27,6 +26,11 @@ namespace IO.Ably
         private string _connectionClientId;
 
         public TokenDetails CurrentToken { get; set; }
+
+        public void ExpireCurrentToken()
+        {
+            CurrentToken?.Expire();
+        }
 
         internal string ConnectionClientId
         {

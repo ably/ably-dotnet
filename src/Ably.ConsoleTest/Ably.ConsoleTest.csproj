@@ -64,7 +64,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <Resource Include="Sandbox\TestAppSpec.json" />
+    <EmbeddedResource Include="TestAppSpec.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\IO.Ably\IO.Ably.csproj">

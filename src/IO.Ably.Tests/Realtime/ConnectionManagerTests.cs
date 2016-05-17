@@ -23,7 +23,7 @@ namespace IO.Ably.Tests
         public void When_Created_StateIsInitialized()
         {
             // Arrange
-            IConnectionContext target = new ConnectionManager(new ClientOptions(), null);
+            IConnectionContext target = new ConnectionManager(null);
 
             // Assert
             Assert.Equal<ConnectionStateType>(ConnectionStateType.Initialized, target.State.State);
@@ -58,7 +58,7 @@ namespace IO.Ably.Tests
             ProtocolMessage target = new ProtocolMessage(action);
 
             // Act
-            transport.Object.Listener.OnTransportMessageReceived(target);
+            transport.Object.Listener.OnTransportDataReceived(target);
 
             // Assert
             Assert.Single(res, target);
@@ -136,7 +136,7 @@ namespace IO.Ably.Tests
             ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
 
             // Act
-            transport.Object.Listener.OnTransportMessageReceived(targetMessage);
+            transport.Object.Listener.OnTransportDataReceived(targetMessage);
 
             // Assert
             state.Verify(c => c.OnMessageReceived(targetMessage), Times.Once());
@@ -225,7 +225,7 @@ namespace IO.Ably.Tests
             ProtocolMessage targetMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
 
             // Act
-            transport.Object.Listener.OnTransportMessageReceived(targetMessage);
+            transport.Object.Listener.OnTransportDataReceived(targetMessage);
 
             // Assert
             ackProcessor.Verify(c => c.OnMessageReceived(targetMessage), Times.Once());
@@ -351,7 +351,6 @@ namespace IO.Ably.Tests
 
             [Theory]
             [InlineData(AblyEnvironment.Sandbox)]
-            [InlineData(AblyEnvironment.Uat)]
             public async Task When_EnvironmentSetInOptions_CreateCorrectTransportParameters(AblyEnvironment environment)
             {
                 // Arrange

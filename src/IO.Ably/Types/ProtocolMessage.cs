@@ -77,31 +77,35 @@ namespace IO.Ably.Types
         }
 
         public long? connectionSerial { get; set; }
-        public long msgSerial { get; set; }
+        [JsonProperty("msgSerial")]
+        public long MsgSerial { get; set; }
         public DateTimeOffset? timestamp { get; set; }
         public Message[] messages { get; set; }
 
         public PresenceMessage[] presence { get; set; }
         public ConnectionDetailsMessage connectionDetails { get; set; }
 
+        [JsonIgnore]
+        internal bool AckRequired => action == MessageAction.Message || action == MessageAction.Presence;
+
         public bool ShouldSerializemessages()
         {
             if (null == messages)
                 return false;
-            return messages.Any(m => !m.IsEmpty());
+            return messages.Any(m => !m.IsEmpty);
         }
 
         [OnSerializing]
         internal void onSerializing(StreamingContext context)
         {
-            if ("" == channel)
+            if (channel == "")
                 channel = null;
 
             // Filter out empty messages
             if (messages == null)
                 return;
 
-            messages = messages.Where(m => !m.IsEmpty()).ToArray();
+            messages = messages.Where(m => !m.IsEmpty).ToArray();
             if (messages.Length <= 0)
                 messages = null;
         }

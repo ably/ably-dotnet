@@ -1,5 +1,5 @@
-﻿using System.CodeDom.Compiler;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using IO.Ably.CustomSerialisers;
 using IO.Ably.Realtime;
 using IO.Ably.Types;
 
@@ -7,76 +7,79 @@ namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionConnectedState : ConnectionState
     {
-        public ConnectionConnectedState(IConnectionContext context, ConnectionInfo info) :
+        private readonly ConnectionInfo _info;
+        private bool _resumed = false;
+        public ConnectionConnectedState(IConnectionContext context, ConnectionInfo info, ErrorInfo error = null) :
             base(context)
         {
-            Context.Connection.Id = info.ConnectionId;
-            Context.Connection.Key = info.ConnectionKey;
-            Context.Connection.Serial = info.ConnectionSerial;
-            Context.SetConnectionClientId(info.ClientId);
+            _info = info;
+            Error = error;
         }
 
         public override ConnectionStateType State => ConnectionStateType.Connected;
 
-        protected override bool CanQueueMessages => false;
-
-        public override void Connect()
-        {
-            // do nothing
-        }
+        public override bool CanSend => true;
 
         public override void Close()
         {
             Context.SetState(new ConnectionClosingState(Context));
         }
 
-        public override Task<bool> OnMessageReceived(ProtocolMessage message)
+        public override async Task<bool> OnMessageReceived(ProtocolMessage message)
         {
             switch (message.action)
             {
                 case ProtocolMessage.MessageAction.Close:
                     Context.SetState(new ConnectionClosedState(Context, message.error));
-                    return TaskConstants.BooleanTrue;
+                    return true;
                 case ProtocolMessage.MessageAction.Disconnected:
-                {
-                    Context.SetState(new ConnectionDisconnectedState(Context, message.error));
-                    return TaskConstants.BooleanTrue;
-                }
+                    var error = message.error;
+                    var result = await Context.RetryBecauseOfTokenError(error);
+                    if (result == false)
+                        Context.SetState(new ConnectionDisconnectedState(Context, message.error));
+
+                    return true;
                 case ProtocolMessage.MessageAction.Error:
-                {
+                    if (await Context.CanUseFallBackUrl(message.error))
+                    {
+                        Context.Connection.Key = null;
+                        Context.SetState(new ConnectionDisconnectedState(Context, message.error) { RetryInstantly = true });
+                        return true;
+                    }
+
                     Context.SetState(new ConnectionFailedState(Context, message.error));
-                    return TaskConstants.BooleanTrue;
-                }
+                    return true;
             }
-            return TaskConstants.BooleanFalse;
+            return false;
         }
 
-        public override Task OnTransportStateChanged(TransportStateInfo state)
+        public override void AbortTimer()
         {
-            if (state.State == TransportState.Closed)
+            
+        }
+
+        public override void BeforeTransition()
+        {
+            if (_info != null)
             {
-                Context.SetState(new ConnectionDisconnectedState(Context, state));
+                _resumed = Context.Connection.Id == _info.ConnectionId;
+                Context.Connection.Id = _info.ConnectionId;
+                Context.Connection.Key = _info.ConnectionKey;
+                Context.Connection.Serial = _info.ConnectionSerial;
+                if (_info.ConnectionStateTtl.HasValue)
+                    Context.Connection.ConnectionStateTtl = _info.ConnectionStateTtl.Value;
+                Context.SetConnectionClientId(_info.ClientId);
             }
-            return TaskConstants.BooleanTrue;
+
+            if(_resumed && Logger.IsDebug) Logger.Debug("Connection resumed!");
         }
 
-        public override void SendMessage(ProtocolMessage message)
+        public override Task OnAttachToContext()
         {
-            Context.Transport.Send(message);
-        }
+            if (_resumed == false)
+                Context.ClearAckQueueAndFailMessages(null);
 
-        public override Task OnAttachedToContext()
-        {
-            Context.ResetConnectionAttempts();
-
-            if (Context.QueuedMessages != null && Context.QueuedMessages.Count > 0)
-            {
-                foreach (var message in Context.QueuedMessages)
-                {
-                    SendMessage(message);
-                }
-                Context.QueuedMessages.Clear();
-            }
+            Context.SendPendingMessages(_resumed);
 
             return TaskConstants.BooleanTrue;
         }

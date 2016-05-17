@@ -19,6 +19,12 @@ namespace IO.Ably
         internal AblyHttpClient HttpClient { get; private set; }
         internal MessageHandler MessageHandler { get; private set; }
 
+        internal string CustomHost
+        {
+            get { return HttpClient.CustomHost; }
+            set { HttpClient.CustomHost = value;  }
+        }
+
         internal AblyAuth AblyAuth { get; private set; }
         internal List<IChannel> RestChannels { get; private set; } = new List<IChannel>();
 
@@ -116,12 +122,14 @@ namespace IO.Ably
         internal async Task<T> ExecuteRequest<T>(AblyRequest request) where T : class
         {
             var response = await ExecuteRequest(request);
-            Logger.Debug("Response received. Status: " + response.StatusCode);
-            Logger.Debug("Content type: " + response.ContentType);
-            Logger.Debug("Encoding: " + response.Encoding);
-            if (response.Body != null)
-                Logger.Debug("Raw response (base64):" + response.Body.ToBase64());
-
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Response received. Status: " + response.StatusCode);
+                Logger.Debug("Content type: " + response.ContentType);
+                Logger.Debug("Encoding: " + response.Encoding);
+                if (response.Body != null)
+                    Logger.Debug("Raw response (base64):" + response.Body.ToBase64());
+            }
             return MessageHandler.ParseResponse<T>(request, response);
         }
 
@@ -178,12 +186,12 @@ namespace IO.Ably
 
         internal AblyRequest CreateGetRequest(string path, ChannelOptions options = null)
         {
-            return new AblyRequest(path, HttpMethod.Get, Protocol) { ChannelOptions = options };
+            return new AblyRequest(path, HttpMethod.Get, Protocol) {ChannelOptions = options};
         }
 
         internal AblyRequest CreatePostRequest(string path, ChannelOptions options = null)
         {
-            return new AblyRequest(path, HttpMethod.Post, Protocol) { ChannelOptions = options };
+            return new AblyRequest(path, HttpMethod.Post, Protocol) {ChannelOptions = options};
         }
 
         IChannel IChannelCommands.this[string name] => Channels.Get(name);
@@ -210,7 +218,7 @@ namespace IO.Ably
                 else
                 {
                     if (options != null &&
-                             Equals(channel.Options, options) == false)
+                        Equals(channel.Options, options) == false)
                     {
                         channel.SetOptions(options);
                     }
@@ -238,6 +246,24 @@ namespace IO.Ably
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        public async Task<bool> CanConnectToAbly()
+        {
+            if (Options.SkipInternetCheck)
+                return true;
+
+            try
+            {
+                var request = new AblyRequest(Defaults.InternetCheckURL, HttpMethod.Get);
+                var response = await ExecuteHttpRequest(request);
+                return response.TextResponse == Defaults.InternetCheckOKMessage;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error accessing ably internet check url. Internet is down!", ex);
+                return false;
+            }
         }
     }
 }

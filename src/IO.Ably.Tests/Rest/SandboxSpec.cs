@@ -15,6 +15,8 @@ namespace IO.Ably.Tests
             Output = output;
             //Reset time in case other tests have changed it
             Config.Now = () => DateTimeOffset.UtcNow;
+
+            // Very useful for debugging failing tests.
             //Logger.LoggerSink = new OutputLoggerSink(output);
             //Logger.LogLevel = LogLevel.Debug;
         }
@@ -38,7 +40,7 @@ namespace IO.Ably.Tests
             return new AblyRealtime(defaultOptions);
         }
 
-        class OutputLoggerSink : ILoggerSink
+        public class OutputLoggerSink : ILoggerSink
         {
             private readonly ITestOutputHelper _output;
 

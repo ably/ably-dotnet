@@ -19,8 +19,6 @@ namespace IO.Ably.Transport
         private bool _finished;
         private object _syncLock = new object();
         private DateTimeOffset _start = DateTimeOffset.MinValue;
-        
-        private TimeSpan TimeOut => _manager.Options.RealtimeRequestTimeout;
 
         public ConnectionHeartbeatRequest(IConnectionManager manager, ICountdownTimer timer)
         {
@@ -35,7 +33,7 @@ namespace IO.Ably.Transport
 
         public static ConnectionHeartbeatRequest Execute(IConnectionManager manager, Action<TimeSpan?, ErrorInfo> callback)
         {
-            return Execute(manager, new CountdownTimer(), callback);
+            return Execute(manager, new CountdownTimer("Connection heartbeat timer"), callback);
         }
 
         public static ConnectionHeartbeatRequest Execute(IConnectionManager manager, ICountdownTimer timer,
@@ -65,7 +63,7 @@ namespace IO.Ably.Transport
                 _manager.Connection.ConnectionStateChanged += OnConnectionStateChanged;
 
                 _manager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat), null);
-                _timer.Start(TimeOut, () => FinishRequest(null, TimeOutError));
+                _timer.Start(_manager.DefaultTimeout, () => FinishRequest(null, TimeOutError));
             }
 
             return this;
