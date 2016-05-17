@@ -57,16 +57,6 @@ namespace IO.Ably.Transport.States.Connection
                 case ProtocolMessage.MessageAction.Disconnected:
                     {
                         Context.HandleConnectingFailure(message.error, null);
-                        ConnectionState nextState;
-                        if (Context.ShouldSuspend())
-                        {
-                            nextState = new ConnectionSuspendedState(Context, message.error);
-                        }
-                        else
-                        {
-                            nextState = new ConnectionDisconnectedState(Context, message.error);
-                        }
-                        TransitionState(nextState);
                         return true;
                     }
                 case ProtocolMessage.MessageAction.Error:

@@ -158,27 +158,14 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public async Task WithInboundDisconnectedMessage_ShouldMoveToDisconnectedState()
+        public async Task WithInboundDisconnectedMessage_ShouldLetConnectionManagerHandleTheDisconnect()
         {
             // Arrange
             _context.Transport = GetConnectedTrasport();
             // Act
             bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
 
-            _context.LastSetState.Should().BeOfType<ConnectionDisconnectedState>();
-        }
-
-        [Fact]
-        public async Task WithInboundDisconnectedMessageAndFirstAttempIsMoreThanTimeoutValue_GoesToSuspended()
-        {
-            // Arrange
-            _context.ShouldSuspendValue = true;
-
-            // Act
-            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
-
-            // Assert
-            _context.LastSetState.Should().BeOfType<ConnectionSuspendedState>();
+            _context.HandledConnectionFailureCalled.Should().BeTrue();
         }
 
         [Fact]
@@ -227,7 +214,6 @@ namespace IO.Ably.Tests
 
         [Theory]
         [InlineData(ProtocolMessage.MessageAction.Connected)]
-        [InlineData(ProtocolMessage.MessageAction.Disconnected)]
         [InlineData(ProtocolMessage.MessageAction.Error)]
         public async Task WhenMessageReceived_ForceDisconnectNotAppliedAndTimerShouldBeAborted(ProtocolMessage.MessageAction action)
         {

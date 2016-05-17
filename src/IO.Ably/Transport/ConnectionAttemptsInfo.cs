@@ -155,7 +155,7 @@ namespace IO.Ably.Transport
 
         public string GetHost()
         {
-            var lastFailedState = Attempts.SelectMany(x => x.FailedStates).LastOrDefault();
+            var lastFailedState = Attempts.SelectMany(x => x.FailedStates).LastOrDefault(x => x.ShouldUseFallback());
             string customHost = "";
             if (lastFailedState != null)
             {
