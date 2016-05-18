@@ -12,56 +12,56 @@ namespace IO.Ably.CustomSerialisers {
     
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("MsgPack.Serialization.CodeDomSerializers.CodeDomSerializerBuilder", "0.6.0.0")]
-    public class IO_Ably_MessageTypesSerializer : MsgPack.Serialization.MessagePackSerializer<IO.Ably.MessageTypes> {
+    public class IO_Ably_MessageTrafficSerializer : MsgPack.Serialization.MessagePackSerializer<IO.Ably.InboundMessageTraffic> {
         
         private MsgPack.Serialization.MessagePackSerializer<string> _serializer0;
         
-        private MsgPack.Serialization.MessagePackSerializer<IO.Ably.MessageCount> _serializer1;
+        private MsgPack.Serialization.MessagePackSerializer<IO.Ably.MessageTypes> _serializer1;
         
-        public IO_Ably_MessageTypesSerializer(MsgPack.Serialization.SerializationContext context) : 
+        public IO_Ably_MessageTrafficSerializer(MsgPack.Serialization.SerializationContext context) : 
                 base(context) {
             MsgPack.Serialization.PolymorphismSchema schema0 = default(MsgPack.Serialization.PolymorphismSchema);
             schema0 = null;
             this._serializer0 = context.GetSerializer<string>(schema0);
             MsgPack.Serialization.PolymorphismSchema schema1 = default(MsgPack.Serialization.PolymorphismSchema);
             schema1 = null;
-            this._serializer1 = context.GetSerializer<IO.Ably.MessageCount>(schema1);
+            this._serializer1 = context.GetSerializer<IO.Ably.MessageTypes>(schema1);
         }
         
-        protected override void PackToCore(MsgPack.Packer packer, IO.Ably.MessageTypes objectTree) {
+        protected override void PackToCore(MsgPack.Packer packer, IO.Ably.InboundMessageTraffic objectTree) {
             packer.PackMapHeader(3);
             this._serializer0.PackTo(packer, "all");
             this._serializer1.PackTo(packer, objectTree.All);
-            this._serializer0.PackTo(packer, "messages");
-            this._serializer1.PackTo(packer, objectTree.Messages);
-            this._serializer0.PackTo(packer, "presence");
-            this._serializer1.PackTo(packer, objectTree.Presence);
+            this._serializer0.PackTo(packer, "realtime");
+            this._serializer1.PackTo(packer, objectTree.Realtime);
+            this._serializer0.PackTo(packer, "rest");
+            this._serializer1.PackTo(packer, objectTree.Rest);
         }
         
-        protected override IO.Ably.MessageTypes UnpackFromCore(MsgPack.Unpacker unpacker)
+        protected override IO.Ably.InboundMessageTraffic UnpackFromCore(MsgPack.Unpacker unpacker)
         {
-            IO.Ably.MessageTypes result = default(IO.Ably.MessageTypes);
-            result = new IO.Ably.MessageTypes();
+            IO.Ably.InboundMessageTraffic result = default(IO.Ably.InboundMessageTraffic);
+            result = new IO.Ably.InboundMessageTraffic();
             int itemsCount0 = default(int);
             itemsCount0 = MsgPack.Serialization.UnpackHelpers.GetItemsCount(unpacker);
             for (int i = 0; (i < itemsCount0); i = (i + 1))
             {
                 string key = default(string);
-                string nullable2 = default(string);
-                nullable2 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.MessageTypes),
-                    "MemberName");
-                if (((nullable2 == null)
+                string nullable4 = default(string);
+                nullable4 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker,
+                    typeof(IO.Ably.InboundMessageTraffic), "MemberName");
+                if (((nullable4 == null)
                      == false))
                 {
-                    key = nullable2;
+                    key = nullable4;
                 }
                 else
                 {
                     throw MsgPack.Serialization.SerializationExceptions.NewNullIsProhibited("MemberName");
                 }
-                if ((key == "presence"))
+                if ((key == "rest"))
                 {
-                    IO.Ably.MessageCount nullable5 = default(IO.Ably.MessageCount);
+                    IO.Ably.MessageTypes nullable9 = default(IO.Ably.MessageTypes);
                     if ((unpacker.Read() == false))
                     {
                         throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
@@ -69,36 +69,36 @@ namespace IO.Ably.CustomSerialisers {
                     if (((unpacker.IsArrayHeader == false)
                          && (unpacker.IsMapHeader == false)))
                     {
-                        nullable5 = this._serializer1.UnpackFrom(unpacker);
+                        nullable9 = this._serializer1.UnpackFrom(unpacker);
                     }
                     else
                     {
-                        MsgPack.Unpacker disposable4 = default(MsgPack.Unpacker);
-                        disposable4 = unpacker.ReadSubtree();
+                        MsgPack.Unpacker disposable8 = default(MsgPack.Unpacker);
+                        disposable8 = unpacker.ReadSubtree();
                         try
                         {
-                            nullable5 = this._serializer1.UnpackFrom(disposable4);
+                            nullable9 = this._serializer1.UnpackFrom(disposable8);
                         }
                         finally
                         {
-                            if (((disposable4 == null)
+                            if (((disposable8 == null)
                                  == false))
                             {
-                                disposable4.Dispose();
+                                disposable8.Dispose();
                             }
                         }
                     }
-                    if (((nullable5 == null)
+                    if (((nullable9 == null)
                          == false))
                     {
-                        result.Presence = nullable5;
+                        result.Rest = nullable9;
                     }
                 }
                 else
                 {
-                    if ((key == "messages"))
+                    if ((key == "realtime"))
                     {
-                        IO.Ably.MessageCount nullable4 = default(IO.Ably.MessageCount);
+                        IO.Ably.MessageTypes nullable8 = default(IO.Ably.MessageTypes);
                         if ((unpacker.Read() == false))
                         {
                             throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
@@ -106,36 +106,36 @@ namespace IO.Ably.CustomSerialisers {
                         if (((unpacker.IsArrayHeader == false)
                              && (unpacker.IsMapHeader == false)))
                         {
-                            nullable4 = this._serializer1.UnpackFrom(unpacker);
+                            nullable8 = this._serializer1.UnpackFrom(unpacker);
                         }
                         else
                         {
-                            MsgPack.Unpacker disposable3 = default(MsgPack.Unpacker);
-                            disposable3 = unpacker.ReadSubtree();
+                            MsgPack.Unpacker disposable7 = default(MsgPack.Unpacker);
+                            disposable7 = unpacker.ReadSubtree();
                             try
                             {
-                                nullable4 = this._serializer1.UnpackFrom(disposable3);
+                                nullable8 = this._serializer1.UnpackFrom(disposable7);
                             }
                             finally
                             {
-                                if (((disposable3 == null)
+                                if (((disposable7 == null)
                                      == false))
                                 {
-                                    disposable3.Dispose();
+                                    disposable7.Dispose();
                                 }
                             }
                         }
-                        if (((nullable4 == null)
+                        if (((nullable8 == null)
                              == false))
                         {
-                            result.Messages = nullable4;
+                            result.Realtime = nullable8;
                         }
                     }
                     else
                     {
                         if ((key == "all"))
                         {
-                            IO.Ably.MessageCount nullable3 = default(IO.Ably.MessageCount);
+                            IO.Ably.MessageTypes nullable5 = default(IO.Ably.MessageTypes);
                             if ((unpacker.Read() == false))
                             {
                                 throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
@@ -143,29 +143,29 @@ namespace IO.Ably.CustomSerialisers {
                             if (((unpacker.IsArrayHeader == false)
                                  && (unpacker.IsMapHeader == false)))
                             {
-                                nullable3 = this._serializer1.UnpackFrom(unpacker);
+                                nullable5 = this._serializer1.UnpackFrom(unpacker);
                             }
                             else
                             {
-                                MsgPack.Unpacker disposable2 = default(MsgPack.Unpacker);
-                                disposable2 = unpacker.ReadSubtree();
+                                MsgPack.Unpacker disposable4 = default(MsgPack.Unpacker);
+                                disposable4 = unpacker.ReadSubtree();
                                 try
                                 {
-                                    nullable3 = this._serializer1.UnpackFrom(disposable2);
+                                    nullable5 = this._serializer1.UnpackFrom(disposable4);
                                 }
                                 finally
                                 {
-                                    if (((disposable2 == null)
+                                    if (((disposable4 == null)
                                          == false))
                                     {
-                                        disposable2.Dispose();
+                                        disposable4.Dispose();
                                     }
                                 }
                             }
-                            if (((nullable3 == null)
+                            if (((nullable5 == null)
                                  == false))
                             {
-                                result.All = nullable3;
+                                result.All = nullable5;
                             }
                         }
                         else

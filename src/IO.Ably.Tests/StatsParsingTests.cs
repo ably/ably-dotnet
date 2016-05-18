@@ -52,22 +52,6 @@ namespace IO.Ably.Tests
             Assert.Equal(180, _stats.Inbound.Rest.Messages.Data);
             Assert.Equal(0, _stats.Inbound.Rest.Presence.Count);
             Assert.Equal(0, _stats.Inbound.Rest.Presence.Data);
-        
-            //Push
-            Assert.Equal(0, _stats.Inbound.Push.All.Count);
-            Assert.Equal(0, _stats.Inbound.Push.All.Data);
-            Assert.Equal(0, _stats.Inbound.Push.Messages.Count);
-            Assert.Equal(0, _stats.Inbound.Push.Messages.Data);
-            Assert.Equal(0, _stats.Inbound.Push.Presence.Count);
-            Assert.Equal(0, _stats.Inbound.Push.Presence.Data);
-        
-            //HttpStream
-            Assert.Equal(0, _stats.Inbound.HttpStream.All.Count);
-            Assert.Equal(0, _stats.Inbound.HttpStream.All.Data);
-            Assert.Equal(0, _stats.Inbound.HttpStream.Messages.Count);
-            Assert.Equal(0, _stats.Inbound.HttpStream.Messages.Data);
-            Assert.Equal(0, _stats.Inbound.HttpStream.Presence.Count);
-            Assert.Equal(0, _stats.Inbound.HttpStream.Presence.Data);
         }
 
         [Fact]
@@ -96,21 +80,13 @@ namespace IO.Ably.Tests
             Assert.Equal(0, _stats.Outbound.Rest.Presence.Count);
             Assert.Equal(0, _stats.Outbound.Rest.Presence.Data);
                                     
-            //Post                  
-            Assert.Equal(0, _stats.Outbound.Push.All.Count);
-            Assert.Equal(0, _stats.Outbound.Push.All.Data);
-            Assert.Equal(0, _stats.Outbound.Push.Messages.Count);
-            Assert.Equal(0, _stats.Outbound.Push.Messages.Data);
-            Assert.Equal(0, _stats.Outbound.Push.Presence.Count);
-            Assert.Equal(0, _stats.Outbound.Push.Presence.Data);
-                                    
             //HttpStream            
-            Assert.Equal(0, _stats.Outbound.HttpStream.All.Count);
-            Assert.Equal(0, _stats.Outbound.HttpStream.All.Data);
-            Assert.Equal(0, _stats.Outbound.HttpStream.Messages.Count);
-            Assert.Equal(0, _stats.Outbound.HttpStream.Messages.Data);
-            Assert.Equal(0, _stats.Outbound.HttpStream.Presence.Count);
-            Assert.Equal(0, _stats.Outbound.HttpStream.Presence.Data);
+            Assert.Equal(0, _stats.Outbound.Webhook.All.Count);
+            Assert.Equal(0, _stats.Outbound.Webhook.All.Data);
+            Assert.Equal(0, _stats.Outbound.Webhook.Messages.Count);
+            Assert.Equal(0, _stats.Outbound.Webhook.Messages.Data);
+            Assert.Equal(0, _stats.Outbound.Webhook.Presence.Count);
+            Assert.Equal(0, _stats.Outbound.Webhook.Presence.Data);
         }
 
         [Fact]

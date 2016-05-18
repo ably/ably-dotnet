@@ -127,6 +127,7 @@
     <Compile Include="Infrastructure\FakeTransport.cs" />
     <Compile Include="MessageEncodes\MessageEncodersAcceptanceTests.cs" />
     <Compile Include="Infrastructure\FakeAuth.cs" />
+    <Compile Include="Realtime\ChannelSandboxSpecs.cs" />
     <Compile Include="Realtime\ConnectionAttempsInfoSpecs.cs" />
     <Compile Include="Realtime\ConnectionSandBoxSpecs.cs" />
     <Compile Include="Realtime\ConnectionSpecs\AckNackSpecs.cs" />
@@ -200,6 +201,7 @@
     <Compile Include="ApiKeyTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rest\SandboxSpec.cs" />
+    <Compile Include="Rest\StatsSandBoxSpecs.cs" />
     <Compile Include="Rest\StatsSpecs.cs" />
     <Compile Include="StatsParsingTests.cs" />
     <Compile Include="TokenParamsTests.cs" />
@@ -211,7 +213,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </None>
-    <EmbeddedResource Include="StatsInterval.json" />
+    <EmbeddedResource Include="MsgPackStatsTest.json" />
     <EmbeddedResource Include="crypto-data-128.json" />
     <EmbeddedResource Include="crypto-data-256.json" />
     <None Include="packages.config" />
@@ -221,6 +223,7 @@
     <EmbeddedResource Include="testAppSpec.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="StatsInterval.json" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />

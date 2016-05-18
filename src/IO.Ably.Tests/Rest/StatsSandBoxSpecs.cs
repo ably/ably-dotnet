@@ -21,9 +21,11 @@ namespace IO.Ably.Tests
             return result.First();
         }
 
-        [Fact]
+        [Theory]
+        [ProtocolData]
         public async Task ShouldHaveCorrectStatsAsPerStatsSpec(Protocol protocol)
         {
+            Logger.LogLevel = LogLevel.Debug;
             var stats = await GetStats(protocol);
             stats.All.Messages.Count.Should().Be(40 + 70);
             stats.All.Messages.Data.Should().Be(4000 + 7000);

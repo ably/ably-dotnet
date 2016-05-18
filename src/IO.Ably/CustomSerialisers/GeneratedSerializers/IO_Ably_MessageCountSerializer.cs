@@ -12,12 +12,11 @@ namespace IO.Ably.CustomSerialisers {
     
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("MsgPack.Serialization.CodeDomSerializers.CodeDomSerializerBuilder", "0.6.0.0")]
-    [System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public class IO_Ably_MessageCountSerializer : MsgPack.Serialization.MessagePackSerializer<IO.Ably.MessageCount> {
         
         private MsgPack.Serialization.MessagePackSerializer<string> _serializer0;
         
-        private MsgPack.Serialization.MessagePackSerializer<double> _serializer1;
+        private MsgPack.Serialization.MessagePackSerializer<long> _serializer1;
         
         public IO_Ably_MessageCountSerializer(MsgPack.Serialization.SerializationContext context) : 
                 base(context) {
@@ -26,79 +25,69 @@ namespace IO.Ably.CustomSerialisers {
             this._serializer0 = context.GetSerializer<string>(schema0);
             MsgPack.Serialization.PolymorphismSchema schema1 = default(MsgPack.Serialization.PolymorphismSchema);
             schema1 = null;
-            this._serializer1 = context.GetSerializer<double>(schema1);
+            this._serializer1 = context.GetSerializer<long>(schema1);
         }
         
         protected override void PackToCore(MsgPack.Packer packer, IO.Ably.MessageCount objectTree) {
             packer.PackMapHeader(2);
-            this._serializer0.PackTo(packer, "Count");
+            this._serializer0.PackTo(packer, "count");
             this._serializer1.PackTo(packer, objectTree.Count);
-            this._serializer0.PackTo(packer, "Data");
+            this._serializer0.PackTo(packer, "data");
             this._serializer1.PackTo(packer, objectTree.Data);
         }
         
-        protected override IO.Ably.MessageCount UnpackFromCore(MsgPack.Unpacker unpacker) {
+        protected override IO.Ably.MessageCount UnpackFromCore(MsgPack.Unpacker unpacker)
+        {
             IO.Ably.MessageCount result = default(IO.Ably.MessageCount);
             result = new IO.Ably.MessageCount();
-            if (unpacker.IsArrayHeader) {
-                int unpacked = default(int);
-                int itemsCount = default(int);
-                itemsCount = MsgPack.Serialization.UnpackHelpers.GetItemsCount(unpacker);
-                System.Nullable<double> nullable = default(System.Nullable<double>);
-                if ((unpacked < itemsCount)) {
-                    nullable = MsgPack.Serialization.UnpackHelpers.UnpackNullableDoubleValue(unpacker, typeof(IO.Ably.MessageCount), "Double Count");
+            int itemsCount0 = default(int);
+            itemsCount0 = MsgPack.Serialization.UnpackHelpers.GetItemsCount(unpacker);
+            for (int i = 0; (i < itemsCount0); i = (i + 1))
+            {
+                string key = default(string);
+                string nullable1 = default(string);
+                nullable1 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.MessageCount),
+                    "MemberName");
+                if (((nullable1 == null)
+                     == false))
+                {
+                    key = nullable1;
                 }
-                if (nullable.HasValue) {
-                    result.Count = nullable.Value;
+                else
+                {
+                    throw MsgPack.Serialization.SerializationExceptions.NewNullIsProhibited("MemberName");
                 }
-                unpacked = (unpacked + 1);
-                System.Nullable<double> nullable0 = default(System.Nullable<double>);
-                if ((unpacked < itemsCount)) {
-                    nullable0 = MsgPack.Serialization.UnpackHelpers.UnpackNullableDoubleValue(unpacker, typeof(IO.Ably.MessageCount), "Double Data");
-                }
-                if (nullable0.HasValue) {
-                    result.Data = nullable0.Value;
-                }
-                unpacked = (unpacked + 1);
-            }
-            else {
-                int itemsCount0 = default(int);
-                itemsCount0 = MsgPack.Serialization.UnpackHelpers.GetItemsCount(unpacker);
-                for (int i = 0; (i < itemsCount0); i = (i + 1)) {
-                    string key = default(string);
-                    string nullable1 = default(string);
-                    nullable1 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.MessageCount), "MemberName");
-                    if (((nullable1 == null) 
-                                == false)) {
-                        key = nullable1;
+                if ((key == "data"))
+                {
+                    System.Nullable<long> nullable3 = default(System.Nullable<long>);
+                    nullable3 = MsgPack.Serialization.UnpackHelpers.UnpackNullableInt64Value(unpacker,
+                        typeof(IO.Ably.MessageCount), "Double Data");
+                    if (nullable3.HasValue)
+                    {
+                        result.Data = nullable3.Value;
                     }
-                    else {
-                        throw MsgPack.Serialization.SerializationExceptions.NewNullIsProhibited("MemberName");
-                    }
-                    if ((key == "Data")) {
-                        System.Nullable<double> nullable3 = default(System.Nullable<double>);
-                        nullable3 = MsgPack.Serialization.UnpackHelpers.UnpackNullableDoubleValue(unpacker, typeof(IO.Ably.MessageCount), "Double Data");
-                        if (nullable3.HasValue) {
-                            result.Data = nullable3.Value;
+                }
+                else
+                {
+                    if ((key == "count"))
+                    {
+                        System.Nullable<long> nullable2 = default(System.Nullable<long>);
+                        nullable2 = MsgPack.Serialization.UnpackHelpers.UnpackNullableInt64Value(unpacker,
+                            typeof(IO.Ably.MessageCount), "Double Count");
+                        if (nullable2.HasValue)
+                        {
+                            result.Count = nullable2.Value;
                         }
                     }
-                    else {
-                        if ((key == "Count")) {
-                            System.Nullable<double> nullable2 = default(System.Nullable<double>);
-                            nullable2 = MsgPack.Serialization.UnpackHelpers.UnpackNullableDoubleValue(unpacker, typeof(IO.Ably.MessageCount), "Double Count");
-                            if (nullable2.HasValue) {
-                                result.Count = nullable2.Value;
-                            }
-                        }
-                        else {
-                            unpacker.Skip();
-                        }
+                    else
+                    {
+                        unpacker.Skip();
                     }
                 }
             }
             return result;
         }
-        
+
         private static T @__Conditional<T>(bool condition, T whenTrue, T whenFalse)
          {
             if (condition) {

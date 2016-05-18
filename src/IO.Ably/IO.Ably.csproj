@@ -54,7 +54,8 @@
     <Compile Include="CustomSerialisers\GeneratedSerializers\IO_Ably_ErrorInfoSerializer.cs" />
     <Compile Include="CustomSerialisers\GeneratedSerializers\IO_Ably_MessageCountSerializer.cs" />
     <Compile Include="CustomSerialisers\GeneratedSerializers\IO_Ably_MessageSerializer.cs" />
-    <Compile Include="CustomSerialisers\GeneratedSerializers\IO_Ably_MessageTrafficSerializer.cs" />
+    <Compile Include="CustomSerialisers\GeneratedSerializers\IO_Ably_InboundMessageTrafficSerializer.cs" />
+    <Compile Include="CustomSerialisers\GeneratedSerializers\IO_Ably_OutboundMessageTrafficSerializer.cs" />
     <Compile Include="CustomSerialisers\GeneratedSerializers\IO_Ably_MessageTypesSerializer.cs" />
     <Compile Include="CustomSerialisers\GeneratedSerializers\IO_Ably_PresenceMessageSerializer.cs" />
     <Compile Include="CustomSerialisers\GeneratedSerializers\IO_Ably_PresenceMessage_ActionTypeSerializer.cs" />
@@ -68,6 +69,7 @@
     <Compile Include="CustomSerialisers\TimeSpanJsonConverter.cs" />
     <Compile Include="CustomSerialisers\TimespanMessagePackSerializer.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
+    <Compile Include="Realtime\ChannelMessageProcessor.cs" />
     <Compile Include="Realtime\ConnectionAwaiter.cs" />
     <Compile Include="Encryption\AesCipher.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
@@ -93,7 +95,6 @@
     <Compile Include="CustomSerialisers\CapabilityMessagePackSerializer.cs" />
     <Compile Include="CustomSerialisers\DateTimeOffsetJsonConverter.cs" />
     <Compile Include="CustomSerialisers\DateTimeOffsetMessagePackSerializer.cs" />
-    <Compile Include="CustomSerialisers\StatsJsonDateConverter.cs" />
     <Compile Include="DataRequestQuery.cs" />
     <Compile Include="Encryption\Crypto.cs" />
     <Compile Include="Types\ErrorInfo.cs" />
