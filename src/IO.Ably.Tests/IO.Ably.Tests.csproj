@@ -181,7 +181,6 @@
     <Compile Include="Realtime\JsonMessageSerializerTests.cs" />
     <Compile Include="Realtime\MsgPackMessageSerializerTests.cs" />
     <Compile Include="Realtime\PresenceTests.cs" />
-    <Compile Include="Realtime\RealtimeChannelTests.cs" />
     <Compile Include="Realtime\RealtimeSpecs.cs" />
     <Compile Include="Infrastructure\ResourceHelper.cs" />
     <Compile Include="RestApiTests.cs" />
