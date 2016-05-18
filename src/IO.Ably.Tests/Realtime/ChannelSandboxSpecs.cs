@@ -34,6 +34,7 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         public async Task TestAttachChannel_AttachesSuccessfuly(Protocol protocol)
         {
+            Logger.LogLevel = LogLevel.Debug;
             // Arrange
             var client = await GetRealtimeClient(protocol);
             Semaphore signal = new Semaphore(0, 2);
@@ -68,19 +69,18 @@ namespace IO.Ably.Tests.Realtime
         {
             // Arrange
             var client = await GetRealtimeClient(protocol);
-            AutoResetEvent signal = new AutoResetEvent(false);
             IRealtimeChannel target = client.Channels.Get("test");
             target.Attach();
-            List<Message> messagesReceived = new List<Message>();
+            var messagesReceived = new List<Message>();
             target.Subscribe(messages =>
             {
                 messagesReceived.AddRange(messages);
-                signal.Set();
             });
 
             // Act
             target.Publish("test", "test data");
-            signal.WaitOne(10000);
+
+            await Task.Delay(2000);
 
             // Assert
             messagesReceived.Count.ShouldBeEquivalentTo(1);
@@ -92,6 +92,7 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         public async Task TestAttachChannel_Sending3Messages_EchoesItBack(Protocol protocol)
         {
+            Logger.LogLevel = LogLevel.Debug;
             // Arrange
             var client = await GetRealtimeClient(protocol);
             AutoResetEvent signal = new AutoResetEvent(false);
@@ -101,15 +102,14 @@ namespace IO.Ably.Tests.Realtime
             target.Subscribe(messages =>
             {
                 messagesReceived.AddRange(messages);
-                signal.Set();
             });
 
             // Act
             target.Publish("test1", "test 12");
             target.Publish("test2", "test 123");
             target.Publish("test3", "test 321");
-            signal.WaitOne(10000);
 
+            await Task.Delay(2000);
             // Assert
             messagesReceived.Count.ShouldBeEquivalentTo(3);
             messagesReceived[0].name.ShouldBeEquivalentTo("test1");

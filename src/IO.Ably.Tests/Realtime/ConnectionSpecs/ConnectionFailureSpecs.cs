@@ -172,6 +172,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Fact]
         [Trait("spec", "RTN14d")]
         [Trait("spec", "RTN14e")]
+        [Trait("intermittent", "true")]
         public async Task WhenTransportFails_ShouldGoFromConnectingToDisconectedUntilConnectionStateTtlIsReachedAndStateIsSuspended()
         {
             Now = DateTimeOffset.UtcNow;

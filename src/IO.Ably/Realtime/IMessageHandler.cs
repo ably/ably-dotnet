@@ -2,14 +2,6 @@
 
 namespace IO.Ably.Realtime
 {
-    /// <summary>Interface to actually handle those messages as they arrive.</summary>
-    /// <remarks>
-    ///     <para>
-    ///         <b>NB!</b> Channel doesn't retain the handlers, internally, it uses weak references. This mean you must
-    ///         retain the handlers yourself.
-    ///     </para>
-    ///     <para>You can handle them in your class, or you can use <see cref="MessageHandlerAction" />.</para>
-    /// </remarks>
     public interface IMessageHandler
     {
         void Handle(Message message);
@@ -30,6 +22,24 @@ namespace IO.Ably.Realtime
         void IMessageHandler.Handle(Message message)
         {
             action(message);
+        }
+
+        protected bool Equals(MessageHandlerAction other)
+        {
+            return Equals(action, other.action);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((MessageHandlerAction) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (action != null ? action.GetHashCode() : 0);
         }
     }
 }

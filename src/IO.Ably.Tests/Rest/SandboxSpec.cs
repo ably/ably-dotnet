@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using IO.Ably.Realtime;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
@@ -53,6 +54,14 @@ namespace IO.Ably.Tests
             {
                 _output.WriteLine($"{level}: {message}");
             }
+        }
+
+        protected Task WaitForState(AblyRealtime realtime, ConnectionStateType awaitedState = ConnectionStateType.Connected, TimeSpan? waitSpan = null)
+        {
+            var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
+            if (waitSpan.HasValue)
+                return connectionAwaiter.Wait(waitSpan.Value);
+            return connectionAwaiter.Wait();
         }
     }
 }

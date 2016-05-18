@@ -9,67 +9,6 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
 {
-    internal class ChannelMessageProcessor
-    {
-        private IRealtimeChannelCommands _channels;
-        private ConnectionManager _connectionManager;
-
-        public ChannelMessageProcessor(ConnectionManager connectionManager, IRealtimeChannelCommands channels)
-        {
-            _connectionManager = connectionManager;
-            _channels = channels;
-            _connectionManager.MessageReceived += MessageReceived;
-        }
-
-        private RealtimeChannel GetChannel(string name)
-        {
-            return _channels.Get(name) as RealtimeChannel;
-        }
-
-        private void MessageReceived(ProtocolMessage message)
-        {
-            if (message.channel.IsEmpty())
-                return;
-
-            var channel = GetChannel(message.channel);
-            if (channel == null)
-            {
-                Logger.Warning($"Message received {message} for a channel that does not exist {message.channel}");
-                return;
-            }
-
-            switch (message.action)
-            {
-                case ProtocolMessage.MessageAction.Error:
-                    if (message.channel.IsNotEmpty())
-                    {
-                        channel.SetChannelState(ChannelState.Failed, message);
-                    }
-                    break;
-                case ProtocolMessage.MessageAction.Attach:
-                case ProtocolMessage.MessageAction.Attached:
-                    if (channel.State != ChannelState.Attached)
-                        channel.SetChannelState(ChannelState.Attached, message);
-                    break;
-                case ProtocolMessage.MessageAction.Detach:
-                case ProtocolMessage.MessageAction.Detached:
-                    if (channel.State != ChannelState.Detached)
-                        channel.SetChannelState(ChannelState.Detached, message);
-                    break;
-                case ProtocolMessage.MessageAction.Message:
-                    foreach (var msg in message.messages)
-                        channel.OnMessage(msg);
-                    break;
-                case ProtocolMessage.MessageAction.Presence:
-                    channel.Presence.OnPresence(message.presence, null);
-                    break;
-                case ProtocolMessage.MessageAction.Sync:
-                    channel.Presence.OnPresence(message.presence, message.channelSerial);
-                    break;
-            }
-        }
-    }
-
     /// <summary>Implement realtime channel.</summary>
     internal class RealtimeChannel : IRealtimeChannel
     {
@@ -78,7 +17,6 @@ namespace IO.Ably.Realtime
         private ConnectionStateType ConnectionState => Connection.State;
         public string AttachedSerial { get; set; }
         private readonly Handlers _handlers = new Handlers();
-        private readonly Dictionary<string, Handlers> _specificHandlers = new Dictionary<string, Handlers>();
 
         private readonly object _lockQueue = new object();
 
@@ -177,44 +115,24 @@ namespace IO.Ably.Realtime
 
         public void Subscribe(IMessageHandler handler)
         {
-            lock (_lockSubscribers)
-                _handlers.Add(handler);
+            _handlers.Add(handler);
         }
 
         public void Subscribe(string eventName, IMessageHandler handler)
         {
-            lock (_lockSubscribers)
-            {
-                Handlers handlers;
-                if (!_specificHandlers.TryGetValue(eventName, out handlers))
-                {
-                    handlers = new Handlers();
-                    _specificHandlers.Add(eventName, handlers);
-                }
-                handlers.Add(handler);
-            }
+            _handlers.Add(eventName, handler);
         }
 
         public void Unsubscribe(IMessageHandler handler)
         {
-            lock (_lockSubscribers)
-            {
-                if (_handlers.Remove(handler))
-                    return;
-            }
-            Logger.Warning("Unsubscribe failed: was not subscribed");
+            if (_handlers.Remove(handler) == false)
+                Logger.Warning("Unsubscribe failed: was not subscribed");
         }
 
-        public void Unsubscribe(string eventName, IMessageHandler handler)
+        public void Unsubscribe(string eventName, IMessageHandler handler = null)
         {
-            lock (_lockSubscribers)
-            {
-                Handlers handlers;
-                if (_specificHandlers.TryGetValue(eventName, out handlers))
-                    if (handlers.Remove(handler))
-                        return;
-            }
-            Logger.Warning("Unsubscribe failed: was not subscribed");
+            if (_handlers.Remove(eventName, handler) == false)
+                Logger.Warning("Unsubscribe failed: was not subscribed");
         }
 
         /// <summary>Publish a single message on this channel based on a given event name and payload.</summary>
@@ -223,7 +141,7 @@ namespace IO.Ably.Realtime
         /// <param name="callback"></param>
         public void Publish(string name, object data, Action<bool, ErrorInfo> callback = null)
         {
-            PublishImpl(new []{ new Message(name, data) }, callback);
+            PublishImpl(new[] { new Message(name, data) }, callback);
         }
 
         /// <summary>Publish a single message on this channel based on a given event name and payload.</summary>
@@ -346,18 +264,30 @@ namespace IO.Ably.Realtime
 
         internal void OnMessage(Message message)
         {
-            lock (_lockSubscribers)
+            foreach (var handler in _handlers.GetHandlers())
             {
-                foreach (var h in _handlers.GetAliveHandlers())
-                    h.Handle(message);
-
-                Handlers handlers;
-                if (_specificHandlers.TryGetValue(message.name, out handlers))
+                SafeHandle(handler, message);
+            }
+            if (message.name.IsNotEmpty())
+            {
+                foreach (var specificHandler in _handlers.GetHandlers(message.name))
                 {
-                    foreach (var h in handlers.GetAliveHandlers())
-                        h.Handle(message);
+                    SafeHandle(specificHandler, message);
                 }
             }
+        }
+
+        private void SafeHandle(IMessageHandler handler, Message message)
+        {
+            try
+            {
+                handler.Handle(message);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error notifying subscriber", ex);
+            }
+
         }
 
         private int SendQueuedMessages()
