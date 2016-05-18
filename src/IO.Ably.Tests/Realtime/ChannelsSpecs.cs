@@ -186,6 +186,25 @@ namespace IO.Ably.Tests.Realtime
                 Assert.Throws<AblyException>(() => _client.Get("failed").Attach());
             }
 
+            [Fact]
+            [Trait("spec", "RTL4c")]
+            public async Task ShouldSetStateToAttachingSendAnAttachMessageAndWaitForAttachedMessage()
+            {
+                _channel.Attach();
+                _channel.State.Should().Be(ChannelState.Attaching);
+
+                var lastMessageSend = LastCreatedTransport.LastMessageSend;
+                lastMessageSend.action.Should().Be(ProtocolMessage.MessageAction.Attach);
+                lastMessageSend.channel.Should().Be(_channel.Name);
+
+                await _client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
+                {
+                    channel = _channel.Name
+                });
+
+                _channel.State.Should().Be(ChannelState.Attached);
+            }
+
 
             private void SetState(ChannelState state, ErrorInfo error = null, ProtocolMessage message = null)
             {
