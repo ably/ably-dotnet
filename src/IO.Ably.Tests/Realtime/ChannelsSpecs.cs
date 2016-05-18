@@ -6,6 +6,7 @@ using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Rest;
 using IO.Ably.Tests.Realtime;
+using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -39,11 +40,86 @@ namespace IO.Ably.Tests.Realtime
                 (_channel as RealtimeChannel).SetChannelState(state);
             }
 
+            [Fact]
+            [Trait("spec", "RTL2c")]
+            public void ShouldEmmitErrorWithTheErrorThatHasOccuredOnTheChannel()
+            {
+                var error = new ErrorInfo();
+                _channel.ChannelStateChanged += (sender, args) =>
+                {
+                    args.Reason.Should().BeSameAs(error);
+                    _channel.Reason.Should().BeSameAs(error);
+                };
+
+                (_channel as RealtimeChannel).SetChannelState(ChannelState.Attached, error);
+            }
+
             public EventEmitterSpecs(ITestOutputHelper output) : base(output)
             {
                 _channel = GetConnectedClient().Channels.Get("test");
             }
         }
+
+        [Trait("spec", "RTL3")]
+        public class ConnectionStateChangeEffectSpecs : ChannelSpecs
+        {
+            private AblyRealtime _client;
+            private IRealtimeChannel _channel;
+
+            [Theory]
+            [InlineData(ChannelState.Attached)]
+            [InlineData(ChannelState.Attaching)]
+            [Trait("spec", "RTL3a")]
+            public async Task WhenConnectionFails_AttachingOrAttachedChannelsShouldTrasitionToFailedWithSameError(ChannelState state)
+            {
+                var error = new ErrorInfo();
+                (_channel as RealtimeChannel).SetChannelState(state);
+                await _client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) {error = error});
+
+                _client.Connection.State.Should().Be(ConnectionStateType.Failed);
+                _channel.State.Should().Be(ChannelState.Failed);
+                _channel.Reason.Should().BeSameAs(error);
+            }
+
+            [Theory]
+            [InlineData(ChannelState.Attached)]
+            [InlineData(ChannelState.Attaching)]
+            [Trait("spec", "RTL3b")]
+            public async Task WhenConnectionIsClosed_AttachingOrAttachedChannelsShouldTrasitionToDetached(ChannelState state)
+            {
+                (_channel as RealtimeChannel).SetChannelState(state);
+
+                _client.Close();
+
+                await _client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
+
+                _client.Connection.State.Should().Be(ConnectionStateType.Closed);
+                _channel.State.Should().Be(ChannelState.Detached);
+            }
+
+            [Theory]
+            [InlineData(ChannelState.Attached)]
+            [InlineData(ChannelState.Attaching)]
+            [Trait("spec", "RTL3b")]
+            public async Task WhenConnectionIsSuspended_AttachingOrAttachedChannelsShouldTrasitionToDetached(ChannelState state)
+            {
+                (_channel as RealtimeChannel).SetChannelState(state);
+
+                _client.Close();
+
+                await _client.ConnectionManager.SetState(new ConnectionSuspendedState(_client.ConnectionManager));
+
+                _client.Connection.State.Should().Be(ConnectionStateType.Suspended);
+                _channel.State.Should().Be(ChannelState.Detached);
+            }
+
+            public ConnectionStateChangeEffectSpecs(ITestOutputHelper output) : base(output)
+            {
+                _client = GetConnectedClient();
+                _channel = _client.Channels.Get("test");
+            }
+        }
+
         [Fact]
         public void ChannelMessagesArePassedToTheChannelAsSoonAsItBecomesAttached()
         {

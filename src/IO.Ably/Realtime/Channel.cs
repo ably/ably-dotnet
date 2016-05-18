@@ -57,7 +57,7 @@ namespace IO.Ably.Realtime
                     if (State != ChannelState.Detached || State != ChannelState.Initialized ||
                         State != ChannelState.Failed)
                     {
-                        SetChannelState(ChannelState.Failed, ErrorInfo.ReasonFailed);
+                        SetChannelState(ChannelState.Failed, args.Reason ?? ErrorInfo.ReasonFailed);
                     }
                     break;
             }
