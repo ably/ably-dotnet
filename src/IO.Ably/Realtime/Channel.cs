@@ -172,6 +172,8 @@ namespace IO.Ably.Realtime
 
             if (State == ChannelState.Initialized || State == ChannelState.Attaching)
             {
+                if(State == ChannelState.Initialized)
+                    Attach();
                 // Not connected, queue the message
                 lock (_lockQueue)
                 {
@@ -231,17 +233,21 @@ namespace IO.Ably.Realtime
                     _connectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name), null);
                     break;
                 case ChannelState.Attached:
-                    if (protocolMessage.HasPresenceFlag)
+                    if (protocolMessage != null)
                     {
-                        //Start sync
-                    }
-                    else
-                    {
-                        //Presence is in sync
-                    }
+                        if (protocolMessage.HasPresenceFlag)
+                        {
+                            //Start sync
+                        }
+                        else
+                        {
+                            //Presence is in sync
+                        }
 
+                        AttachedSerial = protocolMessage.channelSerial;
+                    }
                     SendQueuedMessages();
-                    AttachedSerial = protocolMessage.channelSerial;
+                    
                     break;
                 case ChannelState.Detaching:
                     if (ConnectionState == ConnectionStateType.Closed || ConnectionState == ConnectionStateType.Connecting ||

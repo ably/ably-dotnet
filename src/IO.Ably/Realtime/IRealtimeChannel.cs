@@ -11,6 +11,7 @@ namespace IO.Ably.Realtime
         string Name { get; }
         Presence Presence { get; }
         ChannelOptions Options { get; set; }
+        ErrorInfo Reason { get; }
         event EventHandler<ChannelStateChangedEventArgs> ChannelStateChanged;
 
         void Attach();

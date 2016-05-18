@@ -10,8 +10,54 @@ using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IO.Ably.Tests
+namespace IO.Ably.Tests.Realtime
 {
+    public class ChannelSpecs : ConnectionSpecsBase
+    {
+        [Trait("spec", "RTL2")]
+        public class EventEmitterSpecs : ChannelSpecs
+        {
+            private IRealtimeChannel _channel;
+
+            [Theory]
+            [InlineData(ChannelState.Initialized)]
+            [InlineData(ChannelState.Attaching)]
+            [InlineData(ChannelState.Attached)]
+            [InlineData(ChannelState.Detaching)]
+            [InlineData(ChannelState.Detached)]
+            [InlineData(ChannelState.Failed)]
+            [Trait("spec", "RTL2a")]
+            [Trait("spec", "RTL2b")]
+            public void ShouldEmitTheFollowingStates(ChannelState state)
+            {
+                _channel.ChannelStateChanged += (sender, args) =>
+                {
+                    args.NewState.Should().Be(state);
+                    _channel.State.Should().Be(state);
+                };
+
+                (_channel as RealtimeChannel).SetChannelState(state);
+            }
+
+            public EventEmitterSpecs(ITestOutputHelper output) : base(output)
+            {
+                _channel = GetConnectedClient().Channels.Get("test");
+            }
+        }
+        [Fact]
+        public void ChannelMessagesArePassedToTheChannelAsSoonAsItBecomesAttached()
+        {
+            var client = GetConnectedClient();
+
+            var channel = client.Channels.Get("test");
+            
+        }
+
+        public ChannelSpecs(ITestOutputHelper output) : base(output)
+        {
+        }
+    }
+
     public class ChannelsSpecs : ConnectionSpecsBase
     {
         private AblyRealtime _realtime;
@@ -142,7 +188,6 @@ namespace IO.Ably.Tests
         [Trait("spec", "RTS4a")]
         public void ReleaseAll_ShouldDetachChannel()
         {
-            Logger.LogLevel = LogLevel.Debug;
 
             // Arrange
             var channel = Channels.Get("test");

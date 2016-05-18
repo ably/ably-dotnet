@@ -7,13 +7,10 @@ using FluentAssertions;
 using Newtonsoft.Json;
 using Xunit;
 using IO.Ably.Encryption;
-using IO.Ably.Platform;
 using IO.Ably.Rest;
-using MsgPack.Serialization;
 using Xunit.Abstractions;
-using Xunit.Extensions;
 
-namespace IO.Ably.Tests
+namespace IO.Ably.Tests.Rest
 {
     public class ChannelSpecs : MockHttpRestSpecs
     {

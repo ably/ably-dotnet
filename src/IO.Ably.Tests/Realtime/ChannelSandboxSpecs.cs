@@ -34,7 +34,6 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         public async Task TestAttachChannel_AttachesSuccessfuly(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
             // Arrange
             var client = await GetRealtimeClient(protocol);
             Semaphore signal = new Semaphore(0, 2);
@@ -65,34 +64,39 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
-        public async Task TestAttachChannel_SendingMessage_EchoesItBack(Protocol protocol)
+        [Trait("spec", "RTL1")]
+        public async Task SendingAMessageAttachesTheChannel_BeforeReceivingTheMessages(Protocol protocol)
         {
             // Arrange
             var client = await GetRealtimeClient(protocol);
             IRealtimeChannel target = client.Channels.Get("test");
-            target.Attach();
             var messagesReceived = new List<Message>();
             target.Subscribe(messages =>
             {
+                
                 messagesReceived.AddRange(messages);
             });
 
             // Act
             target.Publish("test", "test data");
-
+            target.State.Should().Be(ChannelState.Attaching);
             await Task.Delay(2000);
 
             // Assert
+            target.State.Should().Be(ChannelState.Attached);
             messagesReceived.Count.ShouldBeEquivalentTo(1);
             messagesReceived[0].name.ShouldBeEquivalentTo("test");
             messagesReceived[0].data.ShouldBeEquivalentTo("test data");
         }
 
+        //TODO: RTL1 Spec about presence and sync messages
+
+
+
         [Theory]
         [ProtocolData]
         public async Task TestAttachChannel_Sending3Messages_EchoesItBack(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
             // Arrange
             var client = await GetRealtimeClient(protocol);
             AutoResetEvent signal = new AutoResetEvent(false);
