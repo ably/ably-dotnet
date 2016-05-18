@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -203,6 +204,18 @@ namespace IO.Ably.Tests.Realtime
                 });
 
                 _channel.State.Should().Be(ChannelState.Attached);
+            }
+
+            [Fact]
+            public async Task ShouldFailIfAttachMessageNotReceivedWithinDefaultTimeout()
+            {
+                _client.Options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
+                _channel.Attach();
+
+                await Task.Delay(110);
+
+                _channel.State.Should().Be(ChannelState.Failed);
+                _channel.Reason.Should().NotBeNull();
             }
 
 

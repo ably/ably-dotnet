@@ -48,6 +48,8 @@ namespace IO.Ably.Transport
 
     internal interface IConnectionManager
     {
+        Task Execute(Action action);
+
         Connection Connection { get; }
 
         TimeSpan DefaultTimeout { get; }

@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using IO.Ably.Rest;
 using IO.Ably.Transport;
+using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
@@ -17,6 +18,7 @@ namespace IO.Ably.Realtime
         private ConnectionStateType ConnectionState => Connection.State;
         public string AttachedSerial { get; set; }
         private readonly Handlers _handlers = new Handlers();
+        private readonly CountdownTimer _timer;
 
         private readonly object _lockQueue = new object();
 
@@ -28,6 +30,7 @@ namespace IO.Ably.Realtime
         internal RealtimeChannel(string name, string clientId, IConnectionManager connectionManager)
         {
             Name = name;
+            _timer = new CountdownTimer($"#{Name} timer");
             Presence = new Presence(connectionManager, this, clientId);
             _connectionManager = connectionManager;
             State = ChannelState.Initialized;
@@ -91,6 +94,14 @@ namespace IO.Ably.Realtime
             }
 
             SetChannelState(ChannelState.Attaching);
+        }
+
+        private void OnAttachTimeout()
+        {
+            _connectionManager.Execute(() =>
+            {
+                SetChannelState(ChannelState.Failed, new ErrorInfo("Channel didn't attach within the default timeout", 50000));
+            });
         }
 
         /// <summary>
@@ -225,6 +236,8 @@ namespace IO.Ably.Realtime
                     {
                         Connection.Connect();
                     }
+
+                    _timer.Start(_connectionManager.Options.RealtimeRequestTimeout, OnAttachTimeout);
 
                     //Even thought the connection won't have connected yet the message will be queued and sent as soon as
                     //the connection is made
