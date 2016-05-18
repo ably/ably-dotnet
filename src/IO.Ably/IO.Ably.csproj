@@ -70,7 +70,7 @@
     <Compile Include="CustomSerialisers\TimespanMessagePackSerializer.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Realtime\ChannelMessageProcessor.cs" />
-    <Compile Include="Realtime\ConnectionAwaiter.cs" />
+    <Compile Include="Realtime\ChannelAwaiter.cs" />
     <Compile Include="Encryption\AesCipher.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />

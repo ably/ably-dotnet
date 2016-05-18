@@ -78,9 +78,6 @@ namespace IO.Ably.Tests
             Logger.Debug($"[{_id} Timeout exceeded. Throwing TimeoutException");
             RemoveListener();
             throw new TimeoutException();
-            
-            stopwatch.Stop();
-            return stopwatch.Elapsed;
         }
     }
 }

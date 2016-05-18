@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using IO.Ably.Rest;
 using IO.Ably.Transport;
@@ -23,6 +24,7 @@ namespace IO.Ably.Realtime
         private readonly object _lockQueue = new object();
 
         private readonly object _lockSubscribers = new object();
+        private readonly ChannelAwaiter _attachedAwaiter;
 
         public List<MessageAndCallback> QueuedMessages { get; set; } = new List<MessageAndCallback>(16);
         public ErrorInfo Reason { get; internal set; }
@@ -35,6 +37,7 @@ namespace IO.Ably.Realtime
             _connectionManager = connectionManager;
             State = ChannelState.Initialized;
             SubscribeToConnectionEvents();
+            _attachedAwaiter = new ChannelAwaiter(this, ChannelState.Attached);
         }
 
         private void SubscribeToConnectionEvents()
@@ -86,7 +89,7 @@ namespace IO.Ably.Realtime
         ///     Attach to this channel. Any resulting channel state change will be indicated to any registered
         ///     <see cref="ChannelStateChanged" /> listener.
         /// </summary>
-        public void Attach()
+        public void Attach(Action<TimeSpan, ErrorInfo> callback = null)
         {
             if (State == ChannelState.Attaching || State == ChannelState.Attached)
             {
@@ -94,6 +97,13 @@ namespace IO.Ably.Realtime
             }
 
             SetChannelState(ChannelState.Attaching);
+            if (callback != null)
+                _attachedAwaiter.Wait(callback);
+        }
+
+        public Task<Result<TimeSpan>> AttachAsync()
+        {
+            return TaskWrapper.Wrap<TimeSpan>(Attach);
         }
 
         private void OnAttachTimeout()
@@ -261,6 +271,9 @@ namespace IO.Ably.Realtime
                     
                     break;
                 case ChannelState.Detaching:
+                    //Fail timer if still waiting for attached.
+                    _attachedAwaiter.Fail(new ErrorInfo("Channel transitioned to detaching", 50000));
+
                     if (ConnectionState == ConnectionStateType.Closed || ConnectionState == ConnectionStateType.Connecting ||
                         ConnectionState == ConnectionStateType.Suspended)
                         SetChannelState(ChannelState.Detached, error);
@@ -274,6 +287,7 @@ namespace IO.Ably.Realtime
                     ClearAndFailChannelQueuedMessages(error);
                     break;
                 case ChannelState.Failed:
+                    _attachedAwaiter.Fail(error);
                     _connectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
                     ClearAndFailChannelQueuedMessages(error);
                     break;

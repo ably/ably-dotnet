@@ -198,15 +198,15 @@ namespace IO.Ably.Tests.Realtime
                 lastMessageSend.action.Should().Be(ProtocolMessage.MessageAction.Attach);
                 lastMessageSend.channel.Should().Be(_channel.Name);
 
-                await _client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
-                {
-                    channel = _channel.Name
-                });
+                await ReceiveAttachedMessage();
 
                 _channel.State.Should().Be(ChannelState.Attached);
             }
 
+            
+
             [Fact]
+            [Trait("spec", "RTL4f")]
             public async Task ShouldFailIfAttachMessageNotReceivedWithinDefaultTimeout()
             {
                 _client.Options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
@@ -218,10 +218,74 @@ namespace IO.Ably.Tests.Realtime
                 _channel.Reason.Should().NotBeNull();
             }
 
+            [Fact]
+            [Trait("spec", "RTL4d")]
+            public async Task WithACallback_ShouldCallCallbackOnceAttached()
+            {
+                var called = false;
+                _channel.Attach((span, info) =>
+                {
+                    called = true;
+                    info.Should().BeNull();
+                });
+
+                await ReceiveAttachedMessage();
+
+                called.Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RTL4d")]
+            public async Task WithACallback_ShouldCallCallbackWithErrorIfAttachFails()
+            {
+                _client.Options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
+                bool called = false;
+                _channel.Attach((span, info) =>
+                {
+                    called = true;
+                    info.Should().NotBeNull();
+                });
+
+                await Task.Delay(120);
+
+                called.Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RTL4d")]
+            public async Task WhenCallingAsyncMethod_ShouldSucceedWhenChannelReachesAttached()
+            {
+                var attachTask = _channel.AttachAsync();
+                await Task.WhenAll(attachTask, ReceiveAttachedMessage());
+
+                attachTask.Result.IsSuccess.Should().BeTrue();
+                attachTask.Result.Error.Should().BeNull();
+            }
+
+            [Fact]
+            [Trait("spec", "RTL4d")]
+            public async Task WhenCallingAsyncMethod_ShouldFailWithErrorWhenAttachFails()
+            {
+                _client.Options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
+                var attachTask = _channel.AttachAsync();
+
+                await Task.WhenAll(Task.Delay(120), attachTask);
+
+                attachTask.Result.IsFailure.Should().BeTrue();
+                attachTask.Result.Error.Should().NotBeNull();
+            }
 
             private void SetState(ChannelState state, ErrorInfo error = null, ProtocolMessage message = null)
             {
                 (_channel as RealtimeChannel).SetChannelState(state, error, message);
+            }
+
+            private async Task ReceiveAttachedMessage()
+            {
+                await _client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
+                {
+                    channel = _channel.Name
+                });
             }
 
             public ChannelAttachSpecs(ITestOutputHelper output) : base(output)
@@ -456,6 +520,8 @@ namespace IO.Ably.Tests.Realtime
             Assert.Same(channel, enumerator.Current);
             Assert.False(enumerator.MoveNext());
         }
+
+        
 
         public ChannelsSpecs(ITestOutputHelper output) : base(output)
         {

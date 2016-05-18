@@ -14,7 +14,10 @@ namespace IO.Ably.Realtime
         ErrorInfo Reason { get; }
         event EventHandler<ChannelStateChangedEventArgs> ChannelStateChanged;
 
-        void Attach();
+        void Attach(Action<TimeSpan, ErrorInfo> callback = null);
+
+        Task<Result<TimeSpan>> AttachAsync();
+            
         void Detach();
 
         /// <summary>Subscribe a listener to all messages.</summary>

@@ -597,7 +597,7 @@ namespace IO.Ably.Tests
             target.Enter(null);
 
             // Assert
-            channel.Verify(c => c.Attach(), Times.Once());
+            channel.Verify(c => c.Attach(null), Times.Once());
         }
 
         [Theory]
