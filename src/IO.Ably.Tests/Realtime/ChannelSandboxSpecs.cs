@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Events;
 using IO.Ably.Realtime;
 using Xunit;
 using Xunit.Abstractions;
@@ -91,7 +92,21 @@ namespace IO.Ably.Tests.Realtime
 
         //TODO: RTL1 Spec about presence and sync messages
 
+        [Theory]
+        [ProtocolData]
+        public async Task WhenAttachingAChannelWithInsufficientPermissions_ShouldSetItToFailedWithError(
+            Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.Key = settings.KeyWithChannelLimitations;
+            });
 
+            var channel = client.Get("nono");
+            var result = await channel.AttachAsync();
+
+            result.IsFailure.Should().BeTrue();
+        }
 
 
         [Theory]
@@ -130,7 +145,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task TestAttachChannel_SendingMessage_Doesnt_EchoesItBack(Protocol protocol)
         {
             // Arrange
-            var client = await GetRealtimeClient(protocol, o => o.EchoMessages = false);
+            var client = await GetRealtimeClient(protocol, (o, _) => o.EchoMessages = false);
             AutoResetEvent signal = new AutoResetEvent(false);
             var target = client.Channels.Get("test");
 

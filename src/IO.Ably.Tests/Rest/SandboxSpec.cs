@@ -32,12 +32,12 @@ namespace IO.Ably.Tests
         }
 
         protected async Task<AblyRealtime> GetRealtimeClient(Protocol protocol,
-            Action<ClientOptions> optionsAction = null)
+            Action<ClientOptions, TestEnvironmentSettings> optionsAction = null)
         {
             var settings = await Fixture.GetSettings();
             var defaultOptions = settings.CreateDefaultOptions();
             defaultOptions.UseBinaryProtocol = protocol == Protocol.MsgPack;
-            optionsAction?.Invoke(defaultOptions);
+            optionsAction?.Invoke(defaultOptions, settings);
             return new AblyRealtime(defaultOptions);
         }
 

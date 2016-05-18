@@ -24,6 +24,7 @@ namespace IO.Ably.Tests
         public const string PresenceChannelName = "persisted:presence_fixtures";
 
         public string FirstValidKey => Keys.FirstOrDefault()?.KeyStr;
+        public string KeyWithChannelLimitations => Keys[2].KeyStr;
 
         public bool Tls { get; set; }
         public AblyEnvironment Environment => AblyEnvironment.Sandbox;
@@ -41,9 +42,9 @@ namespace IO.Ably.Tests
             return new AblyHttpClient(ablyHttpOptions);
         }
 
-        public ClientOptions CreateDefaultOptions()
+        public ClientOptions CreateDefaultOptions(string key = null)
         {
-            return new ClientOptions() { Key = FirstValidKey, Tls = Tls, Environment = Environment };
+            return new ClientOptions() { Key = key ?? FirstValidKey, Tls = Tls, Environment = Environment };
         }
     }
 }
