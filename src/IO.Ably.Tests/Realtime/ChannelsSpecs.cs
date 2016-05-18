@@ -121,9 +121,26 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Theory]
-        public void FactMethodName()
+        [InlineData(ChannelState.Detached)]
+        [InlineData(ChannelState.Failed)]
+        [Trait("spec", "RTL11")]
+        public void WhenDetachedOrFailed_AllQueuedMessagesShouldBeDeletedAndFailCallbackInvoked(ChannelState state)
         {
-            
+            var client = GetConnectedClient();
+            var channel = client.Channels.Get("test");
+            var expectedError = new ErrorInfo();
+            channel.Attach();
+
+            channel.Publish("test", "data", (success, error) =>
+            {
+                success.Should().BeFalse();
+                error.Should().BeSameAs(expectedError);
+            });
+
+            var realtimeChannel = (channel as RealtimeChannel);
+            realtimeChannel.QueuedMessages.Should().HaveCount(1);
+            realtimeChannel.SetChannelState(state, expectedError);
+            realtimeChannel.QueuedMessages.Should().HaveCount(0);
         }
 
         [Fact]

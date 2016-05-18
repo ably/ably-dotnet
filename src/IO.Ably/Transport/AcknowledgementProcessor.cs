@@ -64,7 +64,7 @@ namespace IO.Ably.Transport
                 foreach (var item in _queue.Where(x => x.Callback != null))
                 {
                     var messageError = error ?? ErrorInfo.ReasonUnknown;
-                    SafeExecute(item, false, messageError);
+                    item.SafeExecute(false, messageError);
                 }
                 Reset();
             }
@@ -77,7 +77,7 @@ namespace IO.Ably.Transport
                 var messagesToRemove = _queue.Where(x => x.Message.channel == name);
                 foreach (var message in messagesToRemove)
                 {
-                    SafeExecute(message, false, error);
+                    message.SafeExecute(false, error);
                     _queue.Remove(message);
                 }
 
@@ -101,11 +101,11 @@ namespace IO.Ably.Transport
                     {
                         if (message.action == ProtocolMessage.MessageAction.Ack)
                         {
-                            SafeExecute(current, true, null);
+                            current.SafeExecute(true, null);
                         }
                         else
                         {
-                            SafeExecute(current, false, message.error ?? ErrorInfo.ReasonUnknown);
+                            current.SafeExecute(false, message.error ?? ErrorInfo.ReasonUnknown);
                         }
                         _queue.Remove(current);
                     }
@@ -113,18 +113,6 @@ namespace IO.Ably.Transport
             }
         }
 
-        private void SafeExecute(MessageAndCallback info, bool success, ErrorInfo error)
-        {
-            try
-            {
-                info.Callback?.Invoke(success, error);
-            }
-            catch (Exception)
-            {
-                var result = success ? "Success" : "Failed";
-                var errorMessage = error != null ? $"Error: {error}" : "";
-                Logger.Error($"Error executing callback for message with serial {info.Message.MsgSerial}. Result: {result}. {errorMessage}");
-            }
-        }
+        
     }
 }

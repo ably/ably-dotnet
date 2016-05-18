@@ -22,7 +22,7 @@ namespace IO.Ably.Realtime
 
         private readonly object _lockSubscribers = new object();
 
-        private List<MessageAndCallback> _queuedMessages;
+        public List<MessageAndCallback> QueuedMessages { get; set; } = new List<MessageAndCallback>(16);
         public ErrorInfo Reason { get; internal set; }
 
         internal RealtimeChannel(string name, string clientId, IConnectionManager connectionManager)
@@ -177,9 +177,7 @@ namespace IO.Ably.Realtime
                 // Not connected, queue the message
                 lock (_lockQueue)
                 {
-                    if (_queuedMessages == null)
-                        _queuedMessages = new List<MessageAndCallback>(16);
-                    _queuedMessages.Add(new MessageAndCallback(msg, callback));
+                    QueuedMessages.Add(new MessageAndCallback(msg, callback));
                     return;
                 }
             }
@@ -260,10 +258,24 @@ namespace IO.Ably.Realtime
                     break;
                 case ChannelState.Detached:
                     _connectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
+                    ClearAndFailChannelQueuedMessages(error);
                     break;
                 case ChannelState.Failed:
                     _connectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
+                    ClearAndFailChannelQueuedMessages(error);
                     break;
+            }
+        }
+
+        private void ClearAndFailChannelQueuedMessages(ErrorInfo error)
+        {
+            lock (_lockQueue)
+            {
+                foreach (var messageAndCallback in QueuedMessages)
+                {
+                    messageAndCallback.SafeExecute(false, error);
+                }
+                QueuedMessages.Clear();
             }
         }
 
@@ -298,15 +310,15 @@ namespace IO.Ably.Realtime
 
         private int SendQueuedMessages()
         {
-            List<MessageAndCallback> list = null;
+            List<MessageAndCallback> list;
             lock (_lockQueue)
             {
-                if (_queuedMessages == null || _queuedMessages.Count <= 0)
+                if (QueuedMessages.Count <= 0)
                     return 0;
 
                 // Swap the list.
-                list = _queuedMessages;
-                _queuedMessages = null;
+                list = new List<MessageAndCallback>(QueuedMessages);
+                QueuedMessages.Clear();
             }
 
             foreach (var qpm in list)
