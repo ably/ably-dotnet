@@ -143,13 +143,60 @@ namespace IO.Ably.Tests.Realtime
             realtimeChannel.QueuedMessages.Should().HaveCount(0);
         }
 
-        [Fact]
-        public void ChannelMessagesArePassedToTheChannelAsSoonAsItBecomesAttached()
+        [Trait("spec", "RTL4")]
+        public class ChannelAttachSpecs : ChannelSpecs
         {
-            var client = GetConnectedClient();
+            private AblyRealtime _client;
+            private IRealtimeChannel _channel;
 
-            var channel = client.Channels.Get("test");
-            
+            [Theory]
+            [InlineData(ChannelState.Attaching)]
+            [InlineData(ChannelState.Attached)]
+            [Trait("spec", "RTL4a")]
+            public void WhenAttachingOrAttached_ShouldDoNothing(ChannelState state)
+            {
+                SetState(state);
+
+                _channel.ChannelStateChanged += (sender, args) =>
+                {
+                    true.Should().BeFalse("This should not happen.");
+                };
+                
+                _channel.Attach();
+            }
+
+            [Fact]
+            [Trait("spec", "RTL4b")]
+            public void WhenConnectionIsClosedClosingSuspendedOrFailed_ShouldThrowError()
+            {
+                //Closed
+                _client.Connection.ConnectionState = new ConnectionClosedState(_client.ConnectionManager);
+                Assert.Throws<AblyException>(() => _client.Get("closed").Attach());
+                
+                //Closing
+                _client.Connection.ConnectionState = new ConnectionClosingState(_client.ConnectionManager);
+                Assert.Throws<AblyException>(() => _client.Get("closing").Attach());
+
+                //Suspended
+                _client.Connection.ConnectionState = new ConnectionSuspendedState(_client.ConnectionManager);
+                Assert.Throws<AblyException>(() => _client.Get("suspended").Attach());
+
+                //Failed
+                _client.Connection.ConnectionState = new ConnectionFailedState(_client.ConnectionManager, ErrorInfo.ReasonFailed);
+                Assert.Throws<AblyException>(() => _client.Get("failed").Attach());
+            }
+
+
+            private void SetState(ChannelState state, ErrorInfo error = null, ProtocolMessage message = null)
+            {
+                (_channel as RealtimeChannel).SetChannelState(state, error, message);
+            }
+
+            public ChannelAttachSpecs(ITestOutputHelper output) : base(output)
+            {
+                _client = GetConnectedClient();
+                _channel = _client.Channels.Get("test");
+            }
         }
 
         public ChannelSpecs(ITestOutputHelper output) : base(output)
