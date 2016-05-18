@@ -217,8 +217,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15e")]
         public async Task ShouldUpdateConnectionKeyWhenConnectionIsResumed(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
-            
             var client = await GetRealtimeClient(protocol);
 
             await WaitForState(client, ConnectionStateType.Connected);
@@ -235,7 +233,6 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         public async Task WithAuthUrlShouldGetTokenFromUrl(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
             var client = await GetRestClient(protocol);
             var token = await client.Auth.RequestToken(new TokenParams() { ClientId = "*" });
             var settings = await Fixture.GetSettings();
@@ -256,7 +253,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN16d")]
         public async Task WhenRecoveringConnection_ShouldHaveSameConnectionIdButDifferentKey(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
             var client = await GetRealtimeClient(protocol);
             await WaitForState(client, ConnectionStateType.Connected);
             var id = client.Connection.Id;

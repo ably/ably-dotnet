@@ -120,6 +120,12 @@ namespace IO.Ably.Tests.Realtime
             }
         }
 
+        [Theory]
+        public void FactMethodName()
+        {
+            
+        }
+
         [Fact]
         public void ChannelMessagesArePassedToTheChannelAsSoonAsItBecomesAttached()
         {

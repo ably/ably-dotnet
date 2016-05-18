@@ -93,6 +93,7 @@ namespace IO.Ably.Tests.Realtime
 
 
 
+
         [Theory]
         [ProtocolData]
         public async Task TestAttachChannel_Sending3Messages_EchoesItBack(Protocol protocol)
