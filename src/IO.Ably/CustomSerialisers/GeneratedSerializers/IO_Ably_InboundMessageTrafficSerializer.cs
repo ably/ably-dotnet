@@ -12,13 +12,13 @@ namespace IO.Ably.CustomSerialisers {
     
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("MsgPack.Serialization.CodeDomSerializers.CodeDomSerializerBuilder", "0.6.0.0")]
-    public class IO_Ably_MessageTrafficSerializer : MsgPack.Serialization.MessagePackSerializer<IO.Ably.InboundMessageTraffic> {
+    public class IO_Ably_InboundMessageTrafficSerializer : MsgPack.Serialization.MessagePackSerializer<IO.Ably.InboundMessageTraffic> {
         
         private MsgPack.Serialization.MessagePackSerializer<string> _serializer0;
         
         private MsgPack.Serialization.MessagePackSerializer<IO.Ably.MessageTypes> _serializer1;
         
-        public IO_Ably_MessageTrafficSerializer(MsgPack.Serialization.SerializationContext context) : 
+        public IO_Ably_InboundMessageTrafficSerializer(MsgPack.Serialization.SerializationContext context) : 
                 base(context) {
             MsgPack.Serialization.PolymorphismSchema schema0 = default(MsgPack.Serialization.PolymorphismSchema);
             schema0 = null;
