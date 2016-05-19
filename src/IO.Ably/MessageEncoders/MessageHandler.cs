@@ -258,19 +258,21 @@ namespace IO.Ably.MessageEncoders
 
         public void EncodeProtocolMessage(ProtocolMessage protocolMessage, ChannelOptions channelOptions)
         {
+            var options = channelOptions ?? new ChannelOptions();
             foreach (var message in protocolMessage.messages)
             {
-                EncodePayload(message, channelOptions);
+                EncodePayload(message, options);
             }
 
             foreach (var presence in protocolMessage.presence)
             {
-                EncodePayload(presence, channelOptions);
+                EncodePayload(presence, options);
             }
         }
 
         public void DecodeProtocolMessage(ProtocolMessage protocolMessage, ChannelOptions channelOptions)
         {
+            var option = channelOptions ?? new ChannelOptions();
             foreach (var message in protocolMessage.messages ?? new Message[] { })
             {
                 DecodePayload(message, channelOptions);

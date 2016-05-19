@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
+using IO.Ably.Rest;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport
@@ -56,12 +57,10 @@ namespace IO.Ably.Transport
 
         ClientOptions Options { get; }
 
-        ConnectionStateType ConnectionState { get; }
-
         bool IsActive { get; }
         event MessageReceivedDelegate MessageReceived;
         
-        void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback);
+        void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null, ChannelOptions channelOptions = null);
         void FailMessageWaitingForAckAndClearOutgoingQueue(RealtimeChannel realtimeChannel, ErrorInfo error);
     }
 
@@ -81,8 +80,7 @@ namespace IO.Ably.Transport
         void DestroyTransport(bool suppressClosedEvent = true);
         void SetConnectionClientId(string clientId);
         bool ShouldWeRenewToken(ErrorInfo error);
-        void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null);
-        bool ShouldSuspend();
+        void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null, ChannelOptions channelOptions = null);
         Task<bool> RetryBecauseOfTokenError(ErrorInfo error);
         void HandleConnectingFailure(ErrorInfo error, Exception ex);
         void SendPendingMessages(bool resumed);

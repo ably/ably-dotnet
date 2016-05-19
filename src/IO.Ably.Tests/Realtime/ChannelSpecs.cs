@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
@@ -233,6 +235,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL4d")]
             public async Task WithACallback_ShouldCallCallbackWithErrorIfAttachFails()
             {
+                Logger.LogLevel = LogLevel.Debug;
                 _client.Options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
                 bool called = false;
                 _channel.Attach((span, info) =>
@@ -446,12 +449,12 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL6a")]
             [Trait("spec", "RTL6i")]
             [Trait("spec", "RTL6ia")]
-            public async Task WithNameAndData_ShouldSendASingleProtocolMessageWithASingleEncodedMessageInside()
+            public void WithNameAndData_ShouldSendASingleProtocolMessageWithASingleEncodedMessageInside()
             {
                 var channel = _client.Get("test");
                 var bytes = new byte[] { 1, 2, 3, 4, 5 };
 
-                SetState(ChannelState.Attached);
+                SetState(channel, ChannelState.Attached);
 
                 channel.Publish("byte", bytes);
 
@@ -466,7 +469,7 @@ namespace IO.Ably.Tests.Realtime
             public async Task WithListOfMessages_ShouldPublishASingleProtocolMessageToTransport()
             {
                 var channel = _client.Get("test");
-                SetState(ChannelState.Attached);
+                SetState(channel, ChannelState.Attached);
 
                 var list = new List<Message>
                 {
@@ -481,39 +484,37 @@ namespace IO.Ably.Tests.Realtime
 
             [Fact]
             [Trait("spec", "RTL6i3")]
-            public async Task WithMessageWithOutName_ShouldSendOnlyData()
+            public void WithMessageWithOutData_ShouldSendOnlyData()
             {
                 var channel = _client.Get("test");
-                SetState(ChannelState.Attached);
+                SetState(channel, ChannelState.Attached);
 
                 channel.Publish(null, "data");
 
-                LastCreatedTransport.LastMessageSend.Text.Should().Be("{}");
+                LastCreatedTransport.SentMessages.First().Text.Should().Contain("\"messages\":[{\"data\":\"data\"}]");
             }
 
             [Fact]
             [Trait("spec", "RTL6i3")]
-            public async Task WithMessageWithOutName_ShouldSendOnlyData()
+            public void WithMessageWithOutName_ShouldSendOnlyData()
             {
                 var channel = _client.Get("test");
-                SetState(ChannelState.Attached);
+                SetState(channel, ChannelState.Attached);
 
                 channel.Publish("name", null);
 
-                LastCreatedTransport.LastMessageSend.Text.Should().Be("{}");
+                LastCreatedTransport.SentMessages.First().Text.Should().Contain("\"messages\":[{\"name\":\"name\"}]");
             }
 
 
-
-
-            private void SetState(ChannelState state, ErrorInfo error = null, ProtocolMessage message = null)
+            private void SetState(IRealtimeChannel channel, ChannelState state, ErrorInfo error = null, ProtocolMessage message = null)
             {
-                (_channel as RealtimeChannel).SetChannelState(state, error, message);
+                (channel as RealtimeChannel).SetChannelState(state, error, message);
             }
 
             public PublishSpecs(ITestOutputHelper output) : base(output)
             {
-                _client = GetConnectedClient();
+                _client = GetConnectedClient(opts => opts.UseBinaryProtocol = false); //Easier to test encoding with the json protocol
             }
         }
 

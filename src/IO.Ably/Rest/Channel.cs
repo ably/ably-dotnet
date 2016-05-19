@@ -15,26 +15,22 @@ namespace IO.Ably.Rest
     {
         public string Name { get; private set; }
         private readonly AblyRest _ablyRest;
-        public ChannelOptions Options { get; private set; }
-        private readonly string _basePath;
 
-        internal RestChannel(AblyRest ablyRest, string name,  ChannelOptions options)
+        public ChannelOptions Options
+        {
+            get { return _options; }
+            set { _options = value ?? new ChannelOptions(); }
+        }
+
+        private readonly string _basePath;
+        private ChannelOptions _options;
+
+        internal RestChannel(AblyRest ablyRest, string name, ChannelOptions options)
         {
             Name = name;
             _ablyRest = ablyRest;
-            SetOptions(options);
+            _options = options;
             _basePath = $"/channels/{name.EncodeUriPart()}";
-        }
-
-        internal void SetOptions(ChannelOptions options)
-        {
-            if (options == null)
-            {
-                Options = new ChannelOptions(false);
-                return;
-            }
-
-            Options = new ChannelOptions(options.Encrypted, options.CipherParams);
         }
 
         /// <summary>

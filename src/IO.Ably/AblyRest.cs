@@ -220,7 +220,7 @@ namespace IO.Ably
                     if (options != null &&
                         Equals(channel.Options, options) == false)
                     {
-                        channel.SetOptions(options);
+                        channel.Options = options;
                     }
                 }
                 return channel;

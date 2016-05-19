@@ -219,14 +219,16 @@ namespace IO.Ably.Transport
                 Logger.Debug($"Current state: {Connection.State}. Sending message: {message}");
             }
 
+            //Encode message/presence payloads
             Handler.EncodeProtocolMessage(message, channelOptions);
 
             if (State.CanSend)
             {
-                SendMessage(message, callback, channelOptions);
+                SendMessage(message, callback);
                 return;
             }
-            else if (State.CanQueue)
+
+            if (State.CanQueue)
             {
                 if (Options.QueueMessages)
                 {
@@ -246,7 +248,7 @@ namespace IO.Ably.Transport
 
         }
 
-        private void SendMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback, ChannelOptions channelOptions)
+        private void SendMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
         {
             AckProcessor.QueueIfNecessary(message, callback);
 

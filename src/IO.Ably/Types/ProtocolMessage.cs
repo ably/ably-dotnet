@@ -40,16 +40,17 @@ namespace IO.Ably.Types
 
         public ProtocolMessage()
         {
+            messages = new Message[] {};
+            presence = new PresenceMessage[] {};
         }
 
-        internal ProtocolMessage(MessageAction action)
+        internal ProtocolMessage(MessageAction action) : this()
         {
             this.action = action;
         }
 
-        internal ProtocolMessage(MessageAction action, string channel)
+        internal ProtocolMessage(MessageAction action, string channel) : this(action)
         {
-            this.action = action;
             this.channel = channel;
         }
 
@@ -61,10 +62,7 @@ namespace IO.Ably.Types
         public bool HasPresenceFlag => flags == MessageFlag.Presence;
         [JsonIgnore]
         public bool HasBacklogFlag => flags == MessageFlag.Backlog;
-
-
         public int? count { get; set; }
-
         public ErrorInfo error { get; set; }
         public string id { get; set; }
         public string channel { get; set; }
@@ -112,7 +110,10 @@ namespace IO.Ably.Types
                 return;
 
             messages = messages.Where(m => !m.IsEmpty).ToArray();
-            if (messages.Length <= 0)
+            if (messages.Length == 0)
+                messages = null;
+
+            if (presence.Length == 0)
                 messages = null;
         }
 
