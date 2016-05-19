@@ -14,6 +14,7 @@ namespace IO.Ably.Tests.Realtime
     public class ConnectionPingSpecs : ConnectionSpecsBase
     {
         [Fact]
+        [Trait("intermittent", "true")]
         public async Task ShouldSendHeartbeatMessage()
         {
             var client = GetConnectedClient();

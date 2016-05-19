@@ -170,6 +170,42 @@ namespace IO.Ably.Tests.Realtime
             messagesReceived.Count.ShouldBeEquivalentTo(0);
         }
 
+        [Theory]
+        [ProtocolData]
+        public async Task With3ClientsAnd60MessagesAndCallbacks_ShouldExecuteAllCallbacks(Protocol protocol)
+        {
+            List<bool> successes = new List<bool>();
+            var client1 = await GetRealtimeClient(protocol);
+            var client2 = await GetRealtimeClient(protocol);
+            var client3 = await GetRealtimeClient(protocol);
+            var messages = new List<Message>();
+            for (int i = 0; i < 20; i++)
+            {
+                messages.Add(new Message("name" + i, "data" + i));
+            }
+
+            foreach (var message in messages)
+            {
+                client1.Get("test").Publish(new [] { message }, (b, info) =>
+                {
+                    successes.Add(b);
+                });
+                client2.Get("test").Publish(new[] { message }, (b, info) =>
+                {
+                    successes.Add(b);
+                });
+                client3.Get("test").Publish(new[] { message }, (b, info) =>
+                {
+                    successes.Add(b);
+                });
+            }
+
+            await Task.Delay(3000);
+            successes.Where(x => x == true).Should().HaveCount(60, "Should have 60 successful callback executed");
+
+        }
+
+
         public ChannelSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
         {
         }
