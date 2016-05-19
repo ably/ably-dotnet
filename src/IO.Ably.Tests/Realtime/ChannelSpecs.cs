@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -506,8 +507,82 @@ namespace IO.Ably.Tests.Realtime
                 LastCreatedTransport.SentMessages.First().Text.Should().Contain("\"messages\":[{\"name\":\"name\"}]");
             }
 
+            [Trait("spec", "RTL6c")]
+            public class ConnectionStateConditions : PublishSpecs
+            {
+                [Fact]
+                [Trait("spec", "RTL6c1")]
+                public void WhenConnectionIsConnected_ShouldSendMessagesDirectly()
+                {
+                    var client = GetConnectedClient();
 
-            private void SetState(IRealtimeChannel channel, ChannelState state, ErrorInfo error = null, ProtocolMessage message = null)
+                    var channel = client.Channels.Get("test");
+                    SetState(channel, ChannelState.Attached);
+
+                    channel.Publish("test", "best");
+
+                    var lastMessageSend = LastCreatedTransport.LastMessageSend;
+                    lastMessageSend.channel.Should().Be("test");
+                    lastMessageSend.messages.First().name.Should().Be("test");
+                    lastMessageSend.messages.First().data.Should().Be("best");
+                }
+
+                [Fact]
+                [Trait("spec", "RTL6c2")]
+                public async Task WhenConnectionIsConnecting_MessageShouldBeQueuedUntilConnectionMovesToConnected()
+                {
+                    var client = GetClientWithFakeTransport();
+                    client.Connect();
+                    client.Connection.State.Should().Be(ConnectionStateType.Connecting);
+                    var channel = client.Get("connecting");
+                    SetState(channel, ChannelState.Attached);
+                    channel.Publish("test", "connecting");
+
+                    LastCreatedTransport.LastMessageSend.Should().BeNull();
+                    client.ConnectionManager.PendingMessages.Should().HaveCount(1);
+                    client.ConnectionManager.PendingMessages.First().Message.messages.First().data.Should().Be("connecting");
+
+                    //Not connect the client
+                    await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+
+                    //Messages should be sent
+                    LastCreatedTransport.LastMessageSend.Should().NotBeNull();
+                    client.ConnectionManager.PendingMessages.Should().BeEmpty();
+                }
+
+                [Fact]
+                [Trait("spec", "RTL6c2")]
+                public async Task WhenConnectionIsDisconnecting_MessageShouldBeQueuedUntilConnectionMovesToConnected()
+                {
+                    var client = GetClientWithFakeTransport();
+                    await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager));
+                    client.Connection.State.Should().Be(ConnectionStateType.Disconnected);
+                    var channel = client.Get("connecting");
+                    SetState(channel, ChannelState.Attached);
+                    channel.Publish("test", "connecting");
+
+                    LastCreatedTransport.LastMessageSend.Should().BeNull();
+                    client.ConnectionManager.PendingMessages.Should().HaveCount(1);
+                    client.ConnectionManager.PendingMessages.First().Message.messages.First().data.Should().Be("connecting");
+
+                    //Now connect
+                    client.Connect();
+                    await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+
+                    //Pending messages are sent
+                    LastCreatedTransport.LastMessageSend.Should().NotBeNull();
+                    client.ConnectionManager.PendingMessages.Should().BeEmpty();
+                }
+
+
+
+                public ConnectionStateConditions(ITestOutputHelper output) : base(output)
+                {
+                    //Inherit _client from parent    
+                }
+            }
+
+            protected void SetState(IRealtimeChannel channel, ChannelState state, ErrorInfo error = null, ProtocolMessage message = null)
             {
                 (channel as RealtimeChannel).SetChannelState(state, error, message);
             }
