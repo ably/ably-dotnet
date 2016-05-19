@@ -437,6 +437,86 @@ namespace IO.Ably.Tests.Realtime
             }
         }
 
+        [Trait("spec", "RTL6")]
+        public class PublishSpecs : ChannelSpecs
+        {
+            AblyRealtime _client;
+
+            [Fact]
+            [Trait("spec", "RTL6a")]
+            [Trait("spec", "RTL6i")]
+            [Trait("spec", "RTL6ia")]
+            public async Task WithNameAndData_ShouldSendASingleProtocolMessageWithASingleEncodedMessageInside()
+            {
+                var channel = _client.Get("test");
+                var bytes = new byte[] { 1, 2, 3, 4, 5 };
+
+                SetState(ChannelState.Attached);
+
+                channel.Publish("byte", bytes);
+
+                var sentMessage = LastCreatedTransport.LastMessageSend.messages.First();
+                LastCreatedTransport.SentMessages.Should().HaveCount(1);
+                sentMessage.encoding.Should().Be("base64");
+            }
+
+            [Fact]
+            [Trait("spec", "RTL6i")]
+            [Trait("spec", "RTL6i2")]
+            public async Task WithListOfMessages_ShouldPublishASingleProtocolMessageToTransport()
+            {
+                var channel = _client.Get("test");
+                SetState(ChannelState.Attached);
+
+                var list = new List<Message>
+                {
+                    new Message("name", "test"),
+                    new Message("test", "best")
+                };
+                channel.Publish(list);
+
+                LastCreatedTransport.SentMessages.Should().HaveCount(1);
+                LastCreatedTransport.LastMessageSend.messages.Should().HaveCount(2);
+            }
+
+            [Fact]
+            [Trait("spec", "RTL6i3")]
+            public async Task WithMessageWithOutName_ShouldSendOnlyData()
+            {
+                var channel = _client.Get("test");
+                SetState(ChannelState.Attached);
+
+                channel.Publish(null, "data");
+
+                LastCreatedTransport.LastMessageSend.Text.Should().Be("{}");
+            }
+
+            [Fact]
+            [Trait("spec", "RTL6i3")]
+            public async Task WithMessageWithOutName_ShouldSendOnlyData()
+            {
+                var channel = _client.Get("test");
+                SetState(ChannelState.Attached);
+
+                channel.Publish("name", null);
+
+                LastCreatedTransport.LastMessageSend.Text.Should().Be("{}");
+            }
+
+
+
+
+            private void SetState(ChannelState state, ErrorInfo error = null, ProtocolMessage message = null)
+            {
+                (_channel as RealtimeChannel).SetChannelState(state, error, message);
+            }
+
+            public PublishSpecs(ITestOutputHelper output) : base(output)
+            {
+                _client = GetConnectedClient();
+            }
+        }
+
         public ChannelSpecs(ITestOutputHelper output) : base(output)
         {
         }

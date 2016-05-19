@@ -243,31 +243,56 @@ namespace IO.Ably.MessageEncoders
 
         public ProtocolMessage ParseRealtimeData(RealtimeTransportData data)
         {
-            ProtocolMessage message;
+            ProtocolMessage protocolMessage;
             if (_protocol == Protocol.MsgPack)
             {
-                message = (ProtocolMessage)MsgPackHelper.DeSerialise(data.Data, typeof(ProtocolMessage));
+                protocolMessage = (ProtocolMessage)MsgPackHelper.DeSerialise(data.Data, typeof(ProtocolMessage));
             }
             else
             {
-                message = JsonConvert.DeserializeObject<ProtocolMessage>(data.Text, Config.GetJsonSettings());
+                protocolMessage = JsonConvert.DeserializeObject<ProtocolMessage>(data.Text, Config.GetJsonSettings());
             }
 
-            return message;
+            return protocolMessage;
         }
 
-        public RealtimeTransportData GetTransportData(ProtocolMessage message)
+        public void EncodeProtocolMessage(ProtocolMessage protocolMessage, ChannelOptions channelOptions)
+        {
+            foreach (var message in protocolMessage.messages)
+            {
+                EncodePayload(message, channelOptions);
+            }
+
+            foreach (var presence in protocolMessage.presence)
+            {
+                EncodePayload(presence, channelOptions);
+            }
+        }
+
+        public void DecodeProtocolMessage(ProtocolMessage protocolMessage, ChannelOptions channelOptions)
+        {
+            foreach (var message in protocolMessage.messages ?? new Message[] { })
+            {
+                DecodePayload(message, channelOptions);
+            }
+            foreach (var presence in protocolMessage.presence ?? new PresenceMessage[] { })
+            {
+                DecodePayload(presence, channelOptions);
+            }
+        }
+
+        public RealtimeTransportData GetTransportData(ProtocolMessage protocolMessage)
         {
             RealtimeTransportData data;
             if (_protocol == Protocol.MsgPack)
             {
-                var bytes= MsgPackHelper.Serialise(message);
-                data = new RealtimeTransportData(bytes) { Original = message };
+                var bytes= MsgPackHelper.Serialise(protocolMessage);
+                data = new RealtimeTransportData(bytes) { Original = protocolMessage };
             }
             else
             {
-                var text = JsonConvert.SerializeObject(message, Config.GetJsonSettings());
-                data = new RealtimeTransportData(text) { Original = message };
+                var text = JsonConvert.SerializeObject(protocolMessage, Config.GetJsonSettings());
+                data = new RealtimeTransportData(text) { Original = protocolMessage };
             }
 
             return data;

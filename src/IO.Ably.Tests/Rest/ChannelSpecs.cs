@@ -183,7 +183,7 @@ namespace IO.Ably.Tests.Rest
                 LastRequest.RequestBody.GetText().Should().Be("[{}]");
             }
 
-            [Fact(Skip = "Currently the MsgPack serializer does not support skipping properties. Should be available in v0.7")]
+            [Fact]
             [Trait("spec", "RSL1e")]
             public async Task WithNoNameAndMsgPack_ShouldOnlySendDataProperty()
             {

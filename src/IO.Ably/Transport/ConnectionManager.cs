@@ -10,6 +10,7 @@ using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Nito.AsyncEx;
 using Nito.AsyncEx.Synchronous;
+using IO.Ably.Rest;
 
 namespace IO.Ably.Transport
 {
@@ -211,37 +212,41 @@ namespace IO.Ably.Transport
             State.Close();
         }
 
-        public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null)
+        public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null, ChannelOptions channelOptions = null)
         {
             if (Logger.IsDebug)
             {
                 Logger.Debug($"Current state: {Connection.State}. Sending message: {message}");
             }
 
+            Handler.EncodeProtocolMessage(message, channelOptions);
+
             if (State.CanSend)
             {
-                SendMessage(message, callback);
+                SendMessage(message, callback, channelOptions);
                 return;
             }
-
-            if (State.CanQueue && Options.QueueMessages)
+            else if (State.CanQueue)
             {
-                lock (_pendingMessages)
+                if (Options.QueueMessages)
                 {
-                    _pendingMessages.Enqueue(new MessageAndCallback(message, callback));
+                    lock (_pendingMessages)
+                    {
+                        _pendingMessages.Enqueue(new MessageAndCallback(message, callback));
+                    }
+                }
+                else
+                {
+                    throw new AblyException($"Current state is [{State.State}] which supports queuing but Options.QueueMessages is set to False.");
                 }
                 return;
             }
 
-            if (State.CanQueue && Options.QueueMessages == false)
-            {
-                throw new AblyException($"Current state is [{State.State}] which supports queuing but Options.QueueMessages is set to False.");
-            }
             throw new AblyException($"The current state [{State.State}] does not allow messages to be sent.");
 
         }
 
-        private void SendMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
+        private void SendMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback, ChannelOptions channelOptions)
         {
             AckProcessor.QueueIfNecessary(message, callback);
 

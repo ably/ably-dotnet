@@ -95,6 +95,7 @@ namespace IO.Ably.Realtime
         {
             if (State == ChannelState.Attaching || State == ChannelState.Attached)
             {
+                callback?.Invoke(TimeSpan.Zero, null);
                 return;
             }
 
@@ -132,6 +133,7 @@ namespace IO.Ably.Realtime
             if (State == ChannelState.Initialized || State == ChannelState.Detaching ||
                 State == ChannelState.Detached)
             {
+                callback?.Invoke(TimeSpan.Zero, null);
                 return;
             }
 
@@ -196,7 +198,14 @@ namespace IO.Ably.Realtime
         public Task<Result> PublishAsync(IEnumerable<Message> messages)
         {
             var tw = new TaskWrapper();
-            PublishImpl(messages, tw.Callback);
+            try
+            {
+                PublishImpl(messages, tw.Callback);
+            }
+            catch (Exception ex)
+            {
+                tw.SetException(ex);
+            }
             return tw.Task;
         }
 

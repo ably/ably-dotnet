@@ -20,23 +20,12 @@ namespace IO.Ably.Transport
                 _completionSource.SetException(new Exception("Unexpected exception thrown by the TaskWrapper."));
         }
 
-        public static Task<Result<T>> Wrap<TParam, T>(TParam obj, Action<TParam, Action<T, ErrorInfo>> toWrapMethod)
+        public void SetException(Exception ex)
         {
-            var wrapper = new TaskWrapper<T>();
-            try
-            {
-                toWrapMethod(obj, wrapper.Callback);
-            }
-            catch (Exception ex)
-            {
-                wrapper.SetException(ex);
-            }
-
-            return wrapper.Task;
+            _completionSource.SetException(new AblyException(ex));
         }
 
-
-    public static Task<Result<T>> Wrap<T>(Action<Action<T, ErrorInfo>> toWrapMethod)
+        public static Task<Result<T>> Wrap<T>(Action<Action<T, ErrorInfo>> toWrapMethod)
         {
             var wrapper = new TaskWrapper<T>();
             try
@@ -47,7 +36,7 @@ namespace IO.Ably.Transport
             {
                 wrapper.SetException(ex);
             }
-            
+
             return wrapper.Task;
         }
     }
@@ -67,7 +56,7 @@ namespace IO.Ably.Transport
             else if (typeof(T).IsValueType == false && res != null)
                 _completionSource.SetResult(Result.Ok(res));
             else
-                _completionSource.SetException(new Exception("")); //Something bad happened
+                _completionSource.SetException(new Exception("Unexpected Exception from the TaskWrapper")); //Something bad happened
         }
 
 

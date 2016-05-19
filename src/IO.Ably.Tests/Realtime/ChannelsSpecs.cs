@@ -233,8 +233,6 @@ namespace IO.Ably.Tests.Realtime
             Assert.False(enumerator.MoveNext());
         }
 
-        
-
         public ChannelsSpecs(ITestOutputHelper output) : base(output)
         {
             _realtime = GetConnectedClient();

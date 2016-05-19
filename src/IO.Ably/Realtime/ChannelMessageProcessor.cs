@@ -20,45 +20,50 @@ namespace IO.Ably.Realtime
             return _channels.Get(name) as RealtimeChannel;
         }
 
-        private void MessageReceived(ProtocolMessage message)
+        private void MessageReceived(ProtocolMessage protocolMessage)
         {
-            if (message.channel.IsEmpty())
+            if (protocolMessage.channel.IsEmpty())
                 return;
 
-            var channel = _channels.ContainsChannel(message.channel) ? GetChannel(message.channel) : null;
+            var channel = _channels.ContainsChannel(protocolMessage.channel) ? GetChannel(protocolMessage.channel) : null;
             if (channel == null)
             {
-                Logger.Warning($"Message received {message} for a channel that does not exist {message.channel}");
+                Logger.Warning($"Message received {protocolMessage} for a channel that does not exist {protocolMessage.channel}");
                 return;
             }
 
-            switch (message.action)
+            switch (protocolMessage.action)
             {
                 case ProtocolMessage.MessageAction.Error:
-                    if (message.channel.IsNotEmpty())
+                    if (protocolMessage.channel.IsNotEmpty())
                     {
-                        channel.SetChannelState(ChannelState.Failed, message);
+                        channel.SetChannelState(ChannelState.Failed, protocolMessage);
                     }
                     break;
                 case ProtocolMessage.MessageAction.Attach:
                 case ProtocolMessage.MessageAction.Attached:
                     if (channel.State != ChannelState.Attached)
-                        channel.SetChannelState(ChannelState.Attached, message);
+                        channel.SetChannelState(ChannelState.Attached, protocolMessage);
                     break;
                 case ProtocolMessage.MessageAction.Detach:
                 case ProtocolMessage.MessageAction.Detached:
                     if (channel.State != ChannelState.Detached)
-                        channel.SetChannelState(ChannelState.Detached, message);
+                        channel.SetChannelState(ChannelState.Detached, protocolMessage);
                     break;
                 case ProtocolMessage.MessageAction.Message:
-                    foreach (var msg in message.messages)
+                    _connectionManager.Handler.DecodeProtocolMessage(protocolMessage, channel.Options);
+                    foreach (var msg in protocolMessage.messages)
+                    {
                         channel.OnMessage(msg);
+                    }
                     break;
                 case ProtocolMessage.MessageAction.Presence:
-                    channel.Presence.OnPresence(message.presence, null);
+                    _connectionManager.Handler.DecodeProtocolMessage(protocolMessage, channel.Options);
+                    channel.Presence.OnPresence(protocolMessage.presence, null);
                     break;
                 case ProtocolMessage.MessageAction.Sync:
-                    channel.Presence.OnPresence(message.presence, message.channelSerial);
+                    _connectionManager.Handler.DecodeProtocolMessage(protocolMessage, channel.Options);
+                    channel.Presence.OnPresence(protocolMessage.presence, protocolMessage.channelSerial);
                     break;
             }
         }
