@@ -25,6 +25,7 @@ namespace IO.Ably.Realtime
 
         private readonly object _lockSubscribers = new object();
         private readonly ChannelAwaiter _attachedAwaiter;
+        private readonly ChannelAwaiter _detachedAwaiter;
 
         public List<MessageAndCallback> QueuedMessages { get; set; } = new List<MessageAndCallback>(16);
         public ErrorInfo Reason { get; internal set; }
@@ -38,6 +39,7 @@ namespace IO.Ably.Realtime
             State = ChannelState.Initialized;
             SubscribeToConnectionEvents();
             _attachedAwaiter = new ChannelAwaiter(this, ChannelState.Attached);
+            _detachedAwaiter = new ChannelAwaiter(this, ChannelState.Detached);
         }
 
         private void SubscribeToConnectionEvents()
@@ -97,8 +99,7 @@ namespace IO.Ably.Realtime
             }
 
             SetChannelState(ChannelState.Attaching);
-            if (callback != null)
-                _attachedAwaiter.Wait(callback);
+            _attachedAwaiter.Wait(callback);
         }
 
         public Task<Result<TimeSpan>> AttachAsync()
@@ -114,11 +115,19 @@ namespace IO.Ably.Realtime
             });
         }
 
+        private void OnDetachTimeout()
+        {
+            _connectionManager.Execute(() =>
+            {
+                SetChannelState(ChannelState.Failed, new ErrorInfo("Channel didn't detach within the default timeout", 50000));
+            });
+        }
+
         /// <summary>
         ///     Detach from this channel. Any resulting channel state change will be indicated to any registered
         ///     <see cref="ChannelStateChanged" /> listener.
         /// </summary>
-        public void Detach()
+        public void Detach(Action<TimeSpan, ErrorInfo> callback = null)
         {
             if (State == ChannelState.Initialized || State == ChannelState.Detaching ||
                 State == ChannelState.Detached)
@@ -132,6 +141,12 @@ namespace IO.Ably.Realtime
             }
 
             SetChannelState(ChannelState.Detaching);
+            _detachedAwaiter.Wait(callback);
+        }
+
+        public Task<Result<TimeSpan>> DetachAsync()
+        {
+            return TaskWrapper.Wrap<TimeSpan>(Detach);
         }
 
         public void Subscribe(IMessageHandler handler)
@@ -247,6 +262,7 @@ namespace IO.Ably.Realtime
                         Connection.Connect();
                     }
 
+                    _timer.Abort();
                     _timer.Start(_connectionManager.Options.RealtimeRequestTimeout, OnAttachTimeout);
 
                     //Even thought the connection won't have connected yet the message will be queued and sent as soon as
@@ -279,8 +295,11 @@ namespace IO.Ably.Realtime
                         SetChannelState(ChannelState.Detached, error);
                     else
                     {
+                        _timer.Abort();
+                        _timer.Start(_connectionManager.Options.RealtimeRequestTimeout, OnDetachTimeout);
                         _connectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name), null);
                     }
+
                     break;
                 case ChannelState.Detached:
                     _connectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
@@ -288,6 +307,7 @@ namespace IO.Ably.Realtime
                     break;
                 case ChannelState.Failed:
                     _attachedAwaiter.Fail(error);
+                    _detachedAwaiter.Fail(error);
                     _connectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
                     ClearAndFailChannelQueuedMessages(error);
                     break;

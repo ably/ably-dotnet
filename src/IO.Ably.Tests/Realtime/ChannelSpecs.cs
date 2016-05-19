@@ -70,7 +70,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 var error = new ErrorInfo();
                 (_channel as RealtimeChannel).SetChannelState(state);
-                await _client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) {error = error});
+                await _client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = error });
 
                 _client.Connection.State.Should().Be(ConnectionStateType.Failed);
                 _channel.State.Should().Be(ChannelState.Failed);
@@ -157,7 +157,7 @@ namespace IO.Ably.Tests.Realtime
                 {
                     true.Should().BeFalse("This should not happen.");
                 };
-                
+
                 _channel.Attach();
             }
 
@@ -168,7 +168,7 @@ namespace IO.Ably.Tests.Realtime
                 //Closed
                 _client.Connection.ConnectionState = new ConnectionClosedState(_client.ConnectionManager);
                 Assert.Throws<AblyException>(() => _client.Get("closed").Attach());
-                
+
                 //Closing
                 _client.Connection.ConnectionState = new ConnectionClosingState(_client.ConnectionManager);
                 Assert.Throws<AblyException>(() => _client.Get("closing").Attach());
@@ -198,7 +198,7 @@ namespace IO.Ably.Tests.Realtime
                 _channel.State.Should().Be(ChannelState.Attached);
             }
 
-            
+
 
             [Fact]
             [Trait("spec", "RTL4f")]
@@ -301,7 +301,7 @@ namespace IO.Ably.Tests.Realtime
             [InlineData(ChannelState.Detached)]
             [InlineData(ChannelState.Detaching)]
             [Trait("spec", "RTL5a")]
-            public async Task WhenInitializedDetachedOrDetaching_ShouldDoNothing(ChannelState state)
+            public void WhenInitializedDetachedOrDetaching_ShouldDoNothing(ChannelState state)
             {
                 SetState(state);
                 bool changed = false;
@@ -309,9 +309,120 @@ namespace IO.Ably.Tests.Realtime
                 {
                     changed = true;
                 };
-                   
+
                 _channel.Detach();
                 changed.Should().BeFalse();
+            }
+
+            [Fact]
+            [Trait("spec", "RTL5b")]
+            public void WhenStateIsFailed_DetachShouldThrowAnError()
+            {
+                SetState(ChannelState.Failed, new ErrorInfo());
+
+                var ex = Assert.Throws<AblyException>(() => _channel.Detach());
+            }
+
+            [Fact]
+            [Trait("spec", "RTL5d")]
+            public async Task ShouldSendDetachMessageAndOnceDetachedReceviedShouldMigrateToDetached()
+            {
+                SetState(ChannelState.Attached);
+
+                _channel.Detach();
+
+                LastCreatedTransport.LastMessageSend.action.Should().Be(ProtocolMessage.MessageAction.Detach);
+                _channel.State.Should().Be(ChannelState.Detaching);
+                await _client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached) { channel = _channel.Name });
+
+                _channel.State.Should().Be(ChannelState.Detached);
+            }
+
+            [Fact]
+            [Trait("spec", "RTL5f")]
+            public async Task ShouldFailIfAttachMessageNotReceivedWithinDefaultTimeout()
+            {
+                SetState(ChannelState.Attached);
+                _client.Options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
+                _channel.Detach();
+
+                await Task.Delay(130);
+
+                _channel.State.Should().Be(ChannelState.Failed);
+                _channel.Reason.Should().NotBeNull();
+            }
+
+            [Fact]
+            [Trait("spec", "RTL5e")]
+            public async Task WithACallback_ShouldCallCallbackOnceDetach()
+            {
+                SetState(ChannelState.Attached);
+
+                var called = false;
+                _channel.Detach((span, info) =>
+                {
+                    called = true;
+                    info.Should().BeNull();
+                });
+
+                await ReceiveDetachedMessage();
+
+                called.Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RTL5e")]
+            public async Task WithACallback_ShouldCallCallbackWithErrorIfDetachFails()
+            {
+                SetState(ChannelState.Attached);
+
+                _client.Options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
+                bool called = false;
+                _channel.Detach((span, info) =>
+                {
+                    called = true;
+                    info.Should().NotBeNull();
+                });
+
+                await Task.Delay(120);
+
+                called.Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RTL5e")]
+            public async Task WhenCallingAsyncMethod_ShouldSucceedWhenChannelReachesDetached()
+            {
+                SetState(ChannelState.Attached);
+
+                var detachTask = _channel.DetachAsync();
+                await Task.WhenAll(detachTask, ReceiveDetachedMessage());
+
+                detachTask.Result.IsSuccess.Should().BeTrue();
+                detachTask.Result.Error.Should().BeNull();
+            }
+
+            [Fact]
+            [Trait("spec", "RTL5e")]
+            public async Task WhenCallingAsyncMethod_ShouldFailWithErrorWhenDetachFails()
+            {
+                SetState(ChannelState.Attached);
+
+                _client.Options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
+                var detachTask = _channel.DetachAsync();
+
+                await Task.WhenAll(Task.Delay(120), detachTask);
+
+                detachTask.Result.IsFailure.Should().BeTrue();
+                detachTask.Result.Error.Should().NotBeNull();
+            }
+
+            private async Task ReceiveDetachedMessage()
+            {
+                await _client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached)
+                {
+                    channel = _channel.Name
+                });
             }
 
             private void SetState(ChannelState state, ErrorInfo error = null, ProtocolMessage message = null)

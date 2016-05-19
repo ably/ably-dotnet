@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -94,6 +95,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTL4e")]
         public async Task WhenAttachingAChannelWithInsufficientPermissions_ShouldSetItToFailedWithError(
             Protocol protocol)
         {
@@ -106,6 +108,8 @@ namespace IO.Ably.Tests.Realtime
             var result = await channel.AttachAsync();
 
             result.IsFailure.Should().BeTrue();
+            result.Error.code.Should().Be(40160);
+            result.Error.statusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
 

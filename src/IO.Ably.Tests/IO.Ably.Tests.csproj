@@ -128,6 +128,7 @@
     <Compile Include="MessageEncodes\MessageEncodersAcceptanceTests.cs" />
     <Compile Include="Infrastructure\FakeAuth.cs" />
     <Compile Include="Realtime\ChannelSandboxSpecs.cs" />
+    <Compile Include="Realtime\ChannelSpecs.cs" />
     <Compile Include="Realtime\ConnectionAttempsInfoSpecs.cs" />
     <Compile Include="Realtime\ConnectionSandBoxSpecs.cs" />
     <Compile Include="Realtime\ConnectionSpecs\AckNackSpecs.cs" />

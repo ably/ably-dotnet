@@ -18,7 +18,9 @@ namespace IO.Ably.Realtime
 
         Task<Result<TimeSpan>> AttachAsync();
             
-        void Detach();
+        void Detach(Action<TimeSpan, ErrorInfo> callback = null);
+
+        Task<Result<TimeSpan>> DetachAsync();
 
         /// <summary>Subscribe a listener to all messages.</summary>
         void Subscribe(IMessageHandler handler);

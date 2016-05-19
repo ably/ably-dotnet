@@ -38,14 +38,13 @@ namespace IO.Ably.Realtime
             if (_channel.State == _awaitedState)
             {
                 _waiting = false;
-                callback(TimeSpan.Zero, null);
+                callback?.Invoke(TimeSpan.Zero, null);
             }
             _stopwatch.Reset();
             _stopwatch.Start();
             AttachListener();
         }
-
-
+        
         private void AttachListener()
         {
             _channel.ChannelStateChanged += ChannelOnChannelStateChanged;
