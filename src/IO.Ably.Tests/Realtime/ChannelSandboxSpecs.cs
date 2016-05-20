@@ -382,6 +382,27 @@ namespace IO.Ably.Tests.Realtime
             messageReceived.Should().BeTrue();
         }
 
+        [Theory]
+        [ProtocolData]
+        public async Task ConnectionIdShouldMatchThatOfThePublisher(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
+
+            client.Connect();
+            var connectionId = client.Connection.Id;
+            var channel = client.Get("test");
+            bool messageReceived = false;
+            channel.Subscribe(messages =>
+            {
+                var first = messages.First();
+                first.connectionId.Should().Be(connectionId);
+                messageReceived = true;
+            });
+
+            await channel.PublishAsync(new Message("test", "best"));
+            messageReceived.Should().BeTrue();
+        }
+
 
         public ChannelSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
         {
