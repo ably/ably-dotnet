@@ -7,7 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Events;
+using IO.Ably.Encryption;
 using IO.Ably.Realtime;
+using IO.Ably.Rest;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -417,6 +421,79 @@ namespace IO.Ably.Tests.Realtime
             error.statusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
+        public static IEnumerable<object[]> FixtureData
+        {
+            get {
+                yield return new object[] {Protocol.MsgPack, GetAES128FixtureData()};
+                yield return new object[] {Protocol.Json, GetAES128FixtureData()};
+                yield return new object[] {Protocol.MsgPack, GetAES256FixtureData()};
+                yield return new object[] {Protocol.Json, GetAES256FixtureData()};
+            }
+        }
+
+        [Theory]
+        [MemberData("FixtureData")]
+        [Trait("spec", "RTL7d")]
+        public async Task ShouldPublishAndReceiveFixtureData(Protocol protocol, JObject fixtureData)
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            var items = (JArray)fixtureData["items"];
+
+            var client = await GetRealtimeClient(protocol);
+            
+            var channel = client.Get("persisted:test".AddRandomSuffix(), GetOptions(fixtureData));
+            var count = 0;
+            Message lastMessage = null;
+            channel.Subscribe(message =>
+            {
+                lastMessage = message;
+            });
+
+            foreach (var item in items)
+            {
+                var encoded = item["encoded"];
+                var encoding = (string)encoded["encoding"];
+                var decodedData = DecodeData((string)encoded["data"], encoding);
+                await channel.PublishAsync((string)encoded["name"], decodedData);
+                if (lastMessage.data is byte[])
+                    (lastMessage.data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
+                else if (encoding == "json")
+                    JToken.DeepEquals((JToken)lastMessage.data, (JToken)decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
+                else
+                    lastMessage.data.Should().Be(decodedData, "Item number {0} data does not match decoded data", count);
+                count++;
+            }
+        }
+
+        private static JObject GetAES128FixtureData()
+        {
+            return JObject.Parse(ResourceHelper.GetResource("crypto-data-128.json"));
+        }
+
+        private static JObject GetAES256FixtureData()
+        {
+            return JObject.Parse(ResourceHelper.GetResource("crypto-data-256.json"));
+        }
+
+        private ChannelOptions GetOptions(JObject data)
+        {
+            var key = ((string)data["key"]);
+            var iv = ((string)data["iv"]);
+            var cipherParams = new CipherParams("aes", key, CipherMode.CBC, iv);
+            return new ChannelOptions(cipherParams);
+        }
+
+        private object DecodeData(string data, string encoding)
+        {
+            if (encoding == "json")
+            {
+                return JsonConvert.DeserializeObject(data);
+            }
+            if (encoding == "base64")
+                return data.FromBase64();
+
+            return data;
+        }
 
         public ChannelSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
         {
