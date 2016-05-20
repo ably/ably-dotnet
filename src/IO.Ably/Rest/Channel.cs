@@ -38,11 +38,12 @@ namespace IO.Ably.Rest
         /// </summary>
         /// <param name="name">The event name of the message to publish</param>
         /// <param name="data">The message payload. Allowed payloads are string, objects and byte[]</param>
-        public Task Publish(string name, object data)
+        /// <param name="clientId">Explicit message clientId</param>
+        public Task Publish(string name, object data, string clientId = null)
         {
             var request = _ablyRest.CreatePostRequest(_basePath + "/messages", Options);
 
-            request.PostData = new List<Message> { new Message(name, data)};
+            request.PostData = new List<Message> { new Message(name, data, clientId) };
             return _ablyRest.ExecuteRequest(request);
         }
 

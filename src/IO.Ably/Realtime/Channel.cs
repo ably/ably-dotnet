@@ -183,16 +183,17 @@ namespace IO.Ably.Realtime
         /// <summary>Publish a single message on this channel based on a given event name and payload.</summary>
         /// <param name="name">The event name.</param>
         /// <param name="data">The payload of the message.</param>
+        /// <param name="clientId"></param>
         /// <param name="callback"></param>
-        public void Publish(string name, object data, Action<bool, ErrorInfo> callback = null)
+        public void Publish(string name, object data, Action<bool, ErrorInfo> callback = null, string clientId = null)
         {
-            PublishImpl(new[] { new Message(name, data) }, callback);
+            PublishImpl(new[] { new Message(name, data, clientId) }, callback);
         }
 
         /// <summary>Publish a single message on this channel based on a given event name and payload.</summary>
-        public Task<Result> PublishAsync(string name, object data)
+        public Task<Result> PublishAsync(string name, object data, string clientId = null)
         {
-            return PublishAsync(new[] { new Message(name, data) });
+            return PublishAsync(new[] { new Message(name, data, clientId) });
         }
 
         public void Publish(Message message, Action<bool, ErrorInfo> callback = null)

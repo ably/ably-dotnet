@@ -348,6 +348,7 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTL6g4")]
+        [Trait("spec", "RTL6h")] //Look at PublishAsync
         public async Task
             WhenPublishingMessageWithInCompatibleClientIdBeforeClientIdHasBeenConfigured_ShouldPublishTheMessageAndReturnErrorFromTheServerAllowingFurtherMessagesToBePublished
             (Protocol protocol)
@@ -369,7 +370,7 @@ namespace IO.Ably.Tests.Realtime
                 messages.First().clientId.Should().Be(clientId);
             });
 
-            var result = await channel.PublishAsync(new Message("test", "best") { clientId = "client2" });
+            var result = await channel.PublishAsync("test", "best", "client2");
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().NotBeNull();
 

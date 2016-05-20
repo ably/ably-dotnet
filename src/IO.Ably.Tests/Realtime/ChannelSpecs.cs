@@ -589,8 +589,6 @@ namespace IO.Ably.Tests.Realtime
                 [Trait("spec", "RTL6g1a")]
                 public void WithClientIdInOptions_DoesNotSetClientIdOnPublishedMessages()
                 {
-                    Logger.LogLevel = LogLevel.Debug;
-                    ;
                     var client = GetConnectedClient(opts =>
                     {
                         opts.ClientId = "123";
@@ -601,6 +599,18 @@ namespace IO.Ably.Tests.Realtime
                     SetState(channel, ChannelState.Attached);
 
                     LastCreatedTransport.LastMessageSend.messages.First().clientId.Should().BeNullOrEmpty();
+                }
+
+                [Fact]
+                [Trait("spec", "RTL6h")]
+                public void CanEasilyAddClientIdWhenPublishingAMessage()
+                {
+                    var client = GetConnectedClient();
+                    var channel = client.Get("test");
+                    SetState(channel, ChannelState.Attached);
+                    channel.Publish("test", "best", clientId: "123");
+
+                    LastCreatedTransport.LastMessageSend.messages.First().clientId.Should().Be("123");
                 }
 
                 public ClientIdSpecs(ITestOutputHelper output) : base(output)

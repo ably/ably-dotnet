@@ -32,8 +32,8 @@ namespace IO.Ably.Realtime
 
         void Unsubscribe(IMessageHandler handler);
         void Unsubscribe(string eventName, IMessageHandler handler);
-        void Publish(string name, object data, Action<bool, ErrorInfo> callback = null);
-        Task<Result> PublishAsync(string eventName, object data); 
+        void Publish(string name, object data, Action<bool, ErrorInfo> callback = null, string clientId = null);
+        Task<Result> PublishAsync(string eventName, object data, string clientId = null); 
         void Publish(Message message, Action<bool, ErrorInfo> callback = null);
         Task<Result> PublishAsync(Message message);
         void Publish(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback = null);

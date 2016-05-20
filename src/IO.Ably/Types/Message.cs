@@ -16,10 +16,12 @@ namespace IO.Ably
         {
         }
 
-        public Message(string name, object data)
+        public Message(string name, object data, string clientId = null)
         {
             this.name = name;
             this.data = data;
+            if (clientId.IsNotEmpty())
+                this.clientId = clientId;
         }
 
         /// <summary>A globally unique message id</summary>
