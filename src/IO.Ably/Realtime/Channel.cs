@@ -74,8 +74,8 @@ namespace IO.Ably.Realtime
             }
         }
 
-        public event EventHandler<ChannelStateChangedEventArgs> ChannelStateChanged;
-        public event EventHandler<ChannelErrorEventArgs> OnChannelError;
+        public event EventHandler<ChannelStateChangedEventArgs> StateChanged;
+        public event EventHandler<ChannelErrorEventArgs> Error;
 
         public ChannelOptions Options
 
@@ -98,7 +98,7 @@ namespace IO.Ably.Realtime
 
         /// <summary>
         ///     Attach to this channel. Any resulting channel state change will be indicated to any registered
-        ///     <see cref="ChannelStateChanged" /> listener.
+        ///     <see cref="StateChanged" /> listener.
         /// </summary>
         public void Attach(Action<TimeSpan, ErrorInfo> callback = null)
         {
@@ -135,7 +135,7 @@ namespace IO.Ably.Realtime
 
         /// <summary>
         ///     Detach from this channel. Any resulting channel state change will be indicated to any registered
-        ///     <see cref="ChannelStateChanged" /> listener.
+        ///     <see cref="StateChanged" /> listener.
         /// </summary>
         public void Detach(Action<TimeSpan, ErrorInfo> callback = null)
         {
@@ -312,19 +312,17 @@ namespace IO.Ably.Realtime
                 Logger.Debug($"#{Name}: Changing state to: '{state}'. {errorMessage}");
             }
 
-            if(error != null)
-                OnChannelError?.Invoke(this, new ChannelErrorEventArgs(error));
+            OnError(error);
 
             HandleStateChange(state, error, protocolMessage);
 
             //TODO: Post the event back on the user's thread
-            ChannelStateChanged?.Invoke(this, new ChannelStateChangedEventArgs(state, error));
+            StateChanged?.Invoke(this, new ChannelStateChangedEventArgs(state, error));
         }
 
         private void HandleStateChange(ChannelState state, ErrorInfo error, ProtocolMessage protocolMessage)
         {
             State = state;
-            Reason = error; //Set or clear the error on the channel
 
             switch (state)
             {
@@ -342,6 +340,7 @@ namespace IO.Ably.Realtime
                     SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name));
                     break;
                 case ChannelState.Attached:
+
                     if (protocolMessage != null)
                     {
                         if (protocolMessage.HasPresenceFlag)
@@ -354,6 +353,8 @@ namespace IO.Ably.Realtime
                         }
 
                         AttachedSerial = protocolMessage.channelSerial;
+
+
                     }
                     SendQueuedMessages();
                     
@@ -450,12 +451,15 @@ namespace IO.Ably.Realtime
 
         public void OnError(ErrorInfo error)
         {
-            OnChannelError?.Invoke(this, new ChannelErrorEventArgs(error));
+            Reason = error; //Set or clear the error
+
+            if(error != null)
+                Error?.Invoke(this, new ChannelErrorEventArgs(error));
         }
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            _handlers.RemoveAll();
         }
     }
 }

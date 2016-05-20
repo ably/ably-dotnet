@@ -34,7 +34,7 @@ namespace IO.Ably.Realtime
             pendingPresence = new List<QueuedPresenceMessage>();
             this.connection = connection;
             this.channel = channel;
-            this.channel.ChannelStateChanged += OnChannelStateChanged;
+            this.channel.StateChanged += OnChannelStateChanged;
             clientId = cliendId;
         }
 

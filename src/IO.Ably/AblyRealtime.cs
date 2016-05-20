@@ -131,12 +131,13 @@ namespace IO.Ably
                 {
                     if (args.NewState == ChannelState.Detached || args.NewState == ChannelState.Failed)
                     {
-                        channel.ChannelStateChanged -= eventHandler;
+                        channel.StateChanged -= eventHandler;
                         IRealtimeChannel removedChannel;
-                        RealtimeChannels.TryRemove(name, out removedChannel);
+                        if (RealtimeChannels.TryRemove(name, out removedChannel))
+                            (removedChannel as RealtimeChannel).Dispose();
                     }
                 };
-                channel.ChannelStateChanged += eventHandler;
+                channel.StateChanged += eventHandler;
                 channel.Detach();
             }
         }

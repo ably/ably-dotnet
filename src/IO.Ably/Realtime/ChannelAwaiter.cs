@@ -58,12 +58,12 @@ namespace IO.Ably.Realtime
         
         private void AttachListener()
         {
-            _channel.ChannelStateChanged += ChannelOnChannelStateChanged;
+            _channel.StateChanged += ChannelOnChannelStateChanged;
         }
 
         private void DetachListener()
         {
-            _channel.ChannelStateChanged -= ChannelOnChannelStateChanged;
+            _channel.StateChanged -= ChannelOnChannelStateChanged;
         }
 
         private void ChannelOnChannelStateChanged(object sender, ChannelStateChangedEventArgs args)

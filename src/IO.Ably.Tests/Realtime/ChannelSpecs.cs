@@ -52,6 +52,37 @@ namespace IO.Ably.Tests.Realtime
                 channel.Presence.Should().BeOfType<Presence>();
             }
 
+            [Fact]
+            [Trait("spec", "RTL12")]
+            public async Task OnceAttachedWhenConsequentAttachMessageArriveWithError_ShouldEmitErrorOnChannelButNoStateChange()
+            {
+                var client = GetConnectedClient();
+                var channel = client.Get("test");
+                SetState(channel, ChannelState.Attached);
+
+                ErrorInfo expectedError = new ErrorInfo();
+                ErrorInfo error = null;
+                channel.Error += (sender, args) =>
+                {
+                    error = args.Reason;
+                };
+                bool stateChanged = false;
+                channel.StateChanged += (sender, args) =>
+                {
+                    stateChanged = true;
+                };
+
+                await
+                    client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
+                    {
+                        error = expectedError,
+                        channel = "test"
+                    });
+
+                error.Should().BeSameAs(expectedError);
+                stateChanged.Should().BeFalse();
+            }
+
             public GeneralSpecs(ITestOutputHelper output) : base(output)
             {
             }
@@ -73,7 +104,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL2b")]
             public void ShouldEmitTheFollowingStates(ChannelState state)
             {
-                _channel.ChannelStateChanged += (sender, args) =>
+                _channel.StateChanged += (sender, args) =>
                 {
                     args.NewState.Should().Be(state);
                     _channel.State.Should().Be(state);
@@ -87,7 +118,7 @@ namespace IO.Ably.Tests.Realtime
             public void ShouldEmmitErrorWithTheErrorThatHasOccuredOnTheChannel()
             {
                 var error = new ErrorInfo();
-                _channel.ChannelStateChanged += (sender, args) =>
+                _channel.StateChanged += (sender, args) =>
                 {
                     args.Reason.Should().BeSameAs(error);
                     _channel.Reason.Should().BeSameAs(error);
@@ -177,7 +208,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 SetState(state);
 
-                _channel.ChannelStateChanged += (sender, args) =>
+                _channel.StateChanged += (sender, args) =>
                 {
                     true.Should().BeFalse("This should not happen.");
                 };
@@ -330,7 +361,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 SetState(state);
                 bool changed = false;
-                _channel.ChannelStateChanged += (sender, args) =>
+                _channel.StateChanged += (sender, args) =>
                 {
                     changed = true;
                 };
@@ -714,7 +745,7 @@ namespace IO.Ably.Tests.Realtime
                     msgReceived = true;
                     msg.encoding.Should().Be("");
                 });
-                encryptedChannel.OnChannelError += (sender, args) =>
+                encryptedChannel.Error += (sender, args) =>
                 {
                     errorEmitted = true;
                     args.Reason.Should().NotBeNull();
@@ -742,7 +773,7 @@ namespace IO.Ably.Tests.Realtime
                 });
 
                 ErrorInfo error = null;
-                channel.OnChannelError += (sender, args) =>
+                channel.Error += (sender, args) =>
                 {
                     error = args.Reason;
                 };
@@ -839,10 +870,6 @@ namespace IO.Ably.Tests.Realtime
 
                 var ex = await Assert.ThrowsAsync<AblyException>(() => channel.History(true));
             }
-
-
-
-
 
             public HistorySpecs(ITestOutputHelper output) : base(output)
             {

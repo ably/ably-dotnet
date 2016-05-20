@@ -44,6 +44,11 @@ namespace IO.Ably.Realtime
                 case ProtocolMessage.MessageAction.Attached:
                     if (channel.State != ChannelState.Attached)
                         channel.SetChannelState(ChannelState.Attached, protocolMessage);
+                    else
+                    {
+                        if(protocolMessage.error != null)
+                            channel.OnError(protocolMessage.error);
+                    }
                     break;
                 case ProtocolMessage.MessageAction.Detach:
                 case ProtocolMessage.MessageAction.Detached:

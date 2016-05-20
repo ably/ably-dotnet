@@ -12,8 +12,8 @@ namespace IO.Ably.Realtime
         Presence Presence { get; }
         ChannelOptions Options { get; set; }
         ErrorInfo Reason { get; }
-        event EventHandler<ChannelStateChangedEventArgs> ChannelStateChanged;
-        event EventHandler<ChannelErrorEventArgs> OnChannelError;
+        event EventHandler<ChannelStateChangedEventArgs> StateChanged;
+        event EventHandler<ChannelErrorEventArgs> Error;
 
         void Attach(Action<TimeSpan, ErrorInfo> callback = null);
 

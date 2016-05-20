@@ -45,7 +45,7 @@ namespace IO.Ably.Tests.Realtime
             Semaphore signal = new Semaphore(0, 2);
             var args = new List<ChannelStateChangedEventArgs>();
             IRealtimeChannel target = client.Channels.Get("test");
-            target.ChannelStateChanged += (s, e) =>
+            target.StateChanged += (s, e) =>
             {
                 args.Add(e);
                 signal.Release();
