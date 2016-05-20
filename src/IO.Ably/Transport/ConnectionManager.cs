@@ -241,6 +241,7 @@ namespace IO.Ably.Transport
                 {
                     lock (PendingMessages)
                     {
+                        if(Logger.IsDebug) { Logger.Debug($"Queuing message with action: {message.action}. Connection State: {ConnectionState}");}
                         PendingMessages.Enqueue(new MessageAndCallback(message, callback));
                     }
                 }

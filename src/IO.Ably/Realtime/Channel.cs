@@ -239,6 +239,7 @@ namespace IO.Ably.Realtime
                 // Not connected, queue the message
                 lock (_lockQueue)
                 {
+                    if(Logger.IsDebug) Logger.Debug($"#{Name}:{State} queuing message");
                     QueuedMessages.Add(new MessageAndCallback(msg, callback));
                     return;
                 }

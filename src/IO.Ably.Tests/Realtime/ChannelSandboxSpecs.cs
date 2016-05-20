@@ -315,6 +315,72 @@ namespace IO.Ably.Tests.Realtime
             messageReceived.Should().BeFalse();
         }
 
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL6g4")]
+        public async Task
+            WhenPublishingMessageWithCompatibleClientIdBeforeClientIdHasBeenConfigured_ShouldPublishTheMessageSuccessfully
+            (Protocol protocol)
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            var clientId = "client1";
+            var rest = await GetRestClient(protocol);
+            var realtimeClient = await GetRealtimeClient(protocol, (opts, _) =>
+            {
+                opts.AutoConnect = false;
+                opts.AuthCallback = async @params => await rest.Auth.RequestToken(new TokenParams() {ClientId = clientId});
+            });
+
+            var channel = realtimeClient.Get("test");
+            bool messageReceived = false;
+            channel.Subscribe(messages =>
+            {
+                messageReceived = true;
+                messages.First().clientId.Should().Be(clientId);
+            });
+
+            channel.Publish(new Message("test", "best") { clientId = "client1" });
+
+            await Task.Delay(2000);
+            messageReceived.Should().BeTrue();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL6g4")]
+        public async Task
+            WhenPublishingMessageWithInCompatibleClientIdBeforeClientIdHasBeenConfigured_ShouldPublishTheMessageAndReturnErrorFromTheServerAllowingFurtherMessagesToBePublished
+            (Protocol protocol)
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            var clientId = "client1";
+            var rest = await GetRestClient(protocol);
+            var realtimeClient = await GetRealtimeClient(protocol, (opts, _) =>
+            {
+                opts.AutoConnect = false;
+                opts.AuthCallback = async @params => await rest.Auth.RequestToken(new TokenParams() { ClientId = clientId });
+            });
+
+            var channel = realtimeClient.Get("test");
+            bool messageReceived = false;
+            channel.Subscribe(messages =>
+            {
+                messageReceived = true;
+                messages.First().clientId.Should().Be(clientId);
+            });
+
+            var result = await channel.PublishAsync(new Message("test", "best") { clientId = "client2" });
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Should().NotBeNull();
+
+            messageReceived.Should().BeFalse();
+
+            //Send a followup message
+            var followupMessage = await channel.PublishAsync("followup", "message");
+            followupMessage.IsSuccess.Should().BeTrue();
+            messageReceived.Should().BeTrue();
+        }
+
 
         public ChannelSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
         {
