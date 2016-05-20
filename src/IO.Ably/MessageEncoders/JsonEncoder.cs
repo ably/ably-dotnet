@@ -11,7 +11,7 @@ namespace IO.Ably.MessageEncoders
             get { return "json"; }
         }
 
-        public override void Decode(IEncodedMessage payload, ChannelOptions options)
+        public override void Decode(IMessage payload, ChannelOptions options)
         {
             if (IsEmpty(payload.data) || CurrentEncodingIs(payload, EncodingName) == false) return;
 
@@ -26,7 +26,7 @@ namespace IO.Ably.MessageEncoders
             RemoveCurrentEncodingPart(payload);
         }
 
-        public override void Encode(IEncodedMessage payload, ChannelOptions options)
+        public override void Encode(IMessage payload, ChannelOptions options)
         {
             if (IsEmpty(payload.data)) return;
 
@@ -37,7 +37,7 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
-        public bool NeedsJsonEncoding(IEncodedMessage payload)
+        public bool NeedsJsonEncoding(IMessage payload)
         {
             return payload.data is string == false && payload.data is byte[] == false;
         }

@@ -57,6 +57,11 @@ namespace IO.Ably.Rest
         /// <param name="messages">a list of messages</param>
         public Task Publish(IEnumerable<Message> messages)
         {
+            var result = _ablyRest.AblyAuth.ValidateClientIds(messages);
+            if (result.IsFailure)
+            {
+                throw new AblyException(result.Error);
+            }
             var request = _ablyRest.CreatePostRequest(_basePath + "/messages", Options);
             request.PostData = messages;
             return _ablyRest.ExecuteRequest(request);

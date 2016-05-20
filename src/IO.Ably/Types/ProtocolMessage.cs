@@ -106,15 +106,15 @@ namespace IO.Ably.Types
                 channel = null;
 
             // Filter out empty messages
-            if (messages == null)
-                return;
+            if (messages != null)
+            {
+                messages = messages.Where(m => !m.IsEmpty).ToArray();
+                if (messages.Length == 0)
+                    messages = null;
+            }
 
-            messages = messages.Where(m => !m.IsEmpty).ToArray();
-            if (messages.Length == 0)
-                messages = null;
-
-            if (presence.Length == 0)
-                messages = null;
+            if (presence != null && presence.Length == 0)
+                presence = null;
         }
 
         public override string ToString()

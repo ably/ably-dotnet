@@ -82,9 +82,9 @@ namespace IO.Ably.MessageEncoders
             return payloads;
         }
 
-        private void ProcessMessages<T>(IEnumerable<T> payloads, ChannelOptions options) where T : IEncodedMessage
+        private void ProcessMessages<T>(IEnumerable<T> payloads, ChannelOptions options) where T : IMessage
         {
-            DecodePayloads(options, payloads as IEnumerable<IEncodedMessage>);
+            DecodePayloads(options, payloads as IEnumerable<IMessage>);
         }
 
         public void SetRequestBody(AblyRequest request)
@@ -117,19 +117,19 @@ namespace IO.Ably.MessageEncoders
             return JsonConvert.SerializeObject(payloads, Config.GetJsonSettings()).GetBytes();
         }
 
-        internal void EncodePayloads(ChannelOptions options, IEnumerable<IEncodedMessage> payloads)
+        internal void EncodePayloads(ChannelOptions options, IEnumerable<IMessage> payloads)
         {
             foreach (var payload in payloads)
                 EncodePayload(payload, options);
         }
 
-        internal void DecodePayloads(ChannelOptions options, IEnumerable<IEncodedMessage> payloads)
+        internal void DecodePayloads(ChannelOptions options, IEnumerable<IMessage> payloads)
         {
             foreach (var payload in payloads)
                 DecodePayload(payload, options);
         }
 
-        private void EncodePayload(IEncodedMessage payload, ChannelOptions options)
+        private void EncodePayload(IMessage payload, ChannelOptions options)
         {
             ValidatePayloadDataType(payload);
             foreach (var encoder in Encoders)
@@ -138,7 +138,7 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
-        private void ValidatePayloadDataType(IEncodedMessage payload)
+        private void ValidatePayloadDataType(IMessage payload)
         {
             if (payload.data == null)
                 return;
@@ -157,7 +157,7 @@ namespace IO.Ably.MessageEncoders
             return Nullable.GetUnderlyingType(type);
         }
 
-        private void DecodePayload(IEncodedMessage payload, ChannelOptions options)
+        private void DecodePayload(IMessage payload, ChannelOptions options)
         {
             foreach (var encoder in (Encoders as IEnumerable<MessageEncoder>).Reverse())
             {

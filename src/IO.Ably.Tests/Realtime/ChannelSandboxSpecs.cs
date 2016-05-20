@@ -172,6 +172,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTL6b")]
         public async Task With3ClientsAnd60MessagesAndCallbacks_ShouldExecuteAllCallbacks(Protocol protocol)
         {
             List<bool> successes = new List<bool>();
@@ -202,7 +203,116 @@ namespace IO.Ably.Tests.Realtime
 
             await Task.Delay(3000);
             successes.Where(x => x == true).Should().HaveCount(60, "Should have 60 successful callback executed");
+        }
 
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL6e")]
+        [Trait("spec", "RTL6e1")]
+        public async Task WithBasicAuthAndAMessageWithClientId_ShouldReturnTheMessageWithThatClientID(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+
+            client.Connect();
+            var channel = client.Get("test");
+            bool messageReceived = false;
+            channel.Subscribe(messages =>
+            {
+                var first = messages.First();
+                first.clientId.Should().Be("123");
+                messageReceived = true;
+            });
+
+            await channel.PublishAsync(new Message("test", "withClientId") { clientId = "123" });
+            messageReceived.Should().BeTrue();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL6g1b")]
+        public async Task WithAClientIdInOptions_ShouldReceiveMessageWithCorrectClientID(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
+
+            client.Connect();
+            var channel = client.Get("test");
+            bool messageReceived = false;
+            channel.Subscribe(messages =>
+            {
+                var first = messages.First();
+                first.clientId.Should().Be("999");
+                messageReceived = true;
+            });
+
+            await channel.PublishAsync(new Message("test", "withClientId"));
+            messageReceived.Should().BeTrue();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL6g1b")]
+        public async Task WithAnImplicitClientIdFromToken_ShouldReceiveMessageWithCorrectClientID(Protocol protocol)
+        {
+            var rest = await GetRestClient(protocol);
+            var token = await rest.Auth.RequestToken(new TokenParams() {ClientId = "1000"});
+            var client = await GetRealtimeClient(protocol, (opts, _) => opts.TokenDetails = token);
+
+            client.Connect();
+            var channel = client.Get("test");
+            bool messageReceived = false;
+            channel.Subscribe(messages =>
+            {
+                var first = messages.First();
+                first.clientId.Should().Be("1000");
+                messageReceived = true;
+            });
+
+            await channel.PublishAsync(new Message("test", "withClientId"));
+            messageReceived.Should().BeTrue();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL6g2")]
+        public async Task WithAClientIdInOptionsAndMatchingClientIdInMessage_ShouldSendAndReceiveMessageWithCorrectClientID(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
+
+            client.Connect();
+            var channel = client.Get("test");
+            bool messageReceived = false;
+            channel.Subscribe(messages =>
+            {
+                var first = messages.First();
+                first.clientId.Should().Be("999");
+                messageReceived = true;
+            });
+
+            await channel.PublishAsync(new Message("test", "data") { clientId = "999"});
+            messageReceived.Should().BeTrue();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL6g2")]
+        public async Task WithAClientIdInOptionsAndDifferentClientIdInMessage_ShouldNotSendMessageAndResultInAnError(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
+
+            client.Connect();
+            var channel = client.Get("test");
+            bool messageReceived = false;
+            channel.Subscribe(messages =>
+            {
+                var first = messages.First();
+                first.clientId.Should().Be("999");
+                messageReceived = true;
+            });
+            
+            var result = await channel.PublishAsync(new Message("test", "data") { clientId = "1000" });
+            result.IsSuccess.Should().BeFalse();
+            result.Error.Should().NotBeNull();
+            messageReceived.Should().BeFalse();
         }
 
 

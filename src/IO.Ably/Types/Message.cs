@@ -8,7 +8,7 @@ namespace IO.Ably
 {
     /// <summary>A class representing an individual message to be sent or received via the Ably realtime service</summary>
     [DebuggerDisplay("{ToString()}")]
-    public class Message : IEncodedMessage
+    public class Message : IMessage
     {
         private static readonly Message defaultInstance = new Message();
 

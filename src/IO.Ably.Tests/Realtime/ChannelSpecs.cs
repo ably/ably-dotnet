@@ -582,6 +582,32 @@ namespace IO.Ably.Tests.Realtime
                 }
             }
 
+            public class ClientIdSpecs : PublishSpecs
+            {
+                [Fact]
+                [Trait("spec", "RTL6g1")]
+                [Trait("spec", "RTL6g1a")]
+                public void WithClientIdInOptions_DoesNotSetClientIdOnPublishedMessages()
+                {
+                    Logger.LogLevel = LogLevel.Debug;
+                    ;
+                    var client = GetConnectedClient(opts =>
+                    {
+                        opts.ClientId = "123";
+                        opts.Token = "test";
+                    });
+                    var channel = client.Get("test");
+                    channel.Publish("test", "test");
+                    SetState(channel, ChannelState.Attached);
+
+                    LastCreatedTransport.LastMessageSend.messages.First().clientId.Should().BeNullOrEmpty();
+                }
+
+                public ClientIdSpecs(ITestOutputHelper output) : base(output)
+                {
+                }
+            }
+
             protected void SetState(IRealtimeChannel channel, ChannelState state, ErrorInfo error = null, ProtocolMessage message = null)
             {
                 (channel as RealtimeChannel).SetChannelState(state, error, message);

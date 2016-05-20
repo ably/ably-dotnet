@@ -195,6 +195,16 @@ namespace IO.Ably.Realtime
             return PublishAsync(new[] { new Message(name, data) });
         }
 
+        public void Publish(Message message, Action<bool, ErrorInfo> callback = null)
+        {
+            Publish(new[] {message}, callback);
+        }
+
+        public Task<Result> PublishAsync(Message message)
+        {
+            return PublishAsync(new [] { message });
+        }
+
         /// <summary>Publish several messages on this channel.</summary>
         public void Publish(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback = null)
         {

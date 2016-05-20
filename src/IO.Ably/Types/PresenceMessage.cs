@@ -3,7 +3,7 @@ using MsgPack.Serialization;
 
 namespace IO.Ably
 {
-    public class PresenceMessage : IEncodedMessage
+    public class PresenceMessage : IMessage
     {
         public enum ActionType : byte
         {

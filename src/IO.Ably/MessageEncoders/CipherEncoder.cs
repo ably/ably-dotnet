@@ -12,7 +12,7 @@ namespace IO.Ably.MessageEncoders
             get { return "cipher"; }
         }
 
-        public override void Decode(IEncodedMessage payload, ChannelOptions options)
+        public override void Decode(IMessage payload, ChannelOptions options)
         {
             if (IsEmpty(payload.data))
                 return;
@@ -49,12 +49,12 @@ namespace IO.Ably.MessageEncoders
             return "";
         }
 
-        public override void Encode(IEncodedMessage payload, ChannelOptions options)
+        public override void Encode(IMessage payload, ChannelOptions options)
         {
             if (IsEmpty(payload.data) || IsEncrypted(payload))
                 return;
 
-            if (options.Encrypted == false)
+            if (options.Encrypted == false)  
                 return;
 
             if (payload.data is string)
@@ -68,7 +68,7 @@ namespace IO.Ably.MessageEncoders
             AddEncoding(payload, string.Format("{0}+{1}", EncodingName, options.CipherParams.CipherType.ToLower()));
         }
 
-        private bool IsEncrypted(IEncodedMessage payload)
+        private bool IsEncrypted(IMessage payload)
         {
             return StringExtensions.IsNotEmpty(payload.encoding) && payload.encoding.Contains(EncodingName);
         }
