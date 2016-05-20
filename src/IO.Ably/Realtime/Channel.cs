@@ -14,8 +14,10 @@ namespace IO.Ably.Realtime
     /// <summary>Implement realtime channel.</summary>
     internal class RealtimeChannel : IRealtimeChannel, IDisposable
     {
-        private readonly IConnectionManager _connectionManager;
-        private Connection Connection => _connectionManager.Connection;
+        private AblyRealtime _realtimeClient;
+        private IConnectionManager ConnectionManager => _realtimeClient.ConnectionManager;
+        private Connection Connection => _realtimeClient.Connection;
+        private AblyRest RestClient => _realtimeClient.RestClient;
         private ConnectionStateType ConnectionState => Connection.State;
         public string AttachedSerial { get; set; }
         private readonly Handlers _handlers = new Handlers();
@@ -30,13 +32,13 @@ namespace IO.Ably.Realtime
         public List<MessageAndCallback> QueuedMessages { get; set; } = new List<MessageAndCallback>(16);
         public ErrorInfo Reason { get; internal set; }
 
-        internal RealtimeChannel(string name, string clientId, IConnectionManager connectionManager, ChannelOptions options)
+        internal RealtimeChannel(string name, string clientId, AblyRealtime realtimeClient, ChannelOptions options)
         {
             Name = name;
             Options = options;
             _timer = new CountdownTimer($"#{Name} timer");
-            Presence = new Presence(connectionManager, this, clientId);
-            _connectionManager = connectionManager;
+            Presence = new Presence(realtimeClient.ConnectionManager, this, clientId);
+            _realtimeClient = realtimeClient;
             State = ChannelState.Initialized;
             SubscribeToConnectionEvents();
             _attachedAwaiter = new ChannelAwaiter(this, ChannelState.Attached);
@@ -45,7 +47,7 @@ namespace IO.Ably.Realtime
 
         private void SubscribeToConnectionEvents()
         {
-            _connectionManager.Connection.ConnectionStateChanged += ConnectionOnConnectionStateChanged;
+            ConnectionManager.Connection.ConnectionStateChanged += ConnectionOnConnectionStateChanged;
         }
 
         private void ConnectionOnConnectionStateChanged(object sender, ConnectionStateChangedEventArgs args)
@@ -117,7 +119,7 @@ namespace IO.Ably.Realtime
 
         private void OnAttachTimeout()
         {
-            _connectionManager.Execute(() =>
+            ConnectionManager.Execute(() =>
             {
                 SetChannelState(ChannelState.Failed, new ErrorInfo("Channel didn't attach within the default timeout", 50000));
             });
@@ -125,7 +127,7 @@ namespace IO.Ably.Realtime
 
         private void OnDetachTimeout()
         {
-            _connectionManager.Execute(() =>
+            ConnectionManager.Execute(() =>
             {
                 SetChannelState(ChannelState.Failed, new ErrorInfo("Channel didn't detach within the default timeout", 50000));
             });
@@ -236,6 +238,36 @@ namespace IO.Ably.Realtime
             return tw.Task;
         }
 
+        public Task<PaginatedResult<Message>> History(bool untilAttached = false)
+        {
+            var query = new DataRequestQuery();
+            if (untilAttached)
+            {
+                AddUntilAttachedParameter(query);
+            }
+            return RestClient.Channels.Get(Name).History(query);
+        }
+
+        public Task<PaginatedResult<Message>> History(DataRequestQuery dataQuery, bool untilAttached = false)
+        {
+            var query = dataQuery ?? new DataRequestQuery();
+            if (untilAttached)
+            {
+                AddUntilAttachedParameter(query);
+            }
+                
+            return RestClient.Channels.Get(Name).History(query);
+        }
+
+        private void AddUntilAttachedParameter(DataRequestQuery query)
+        {
+            if (State != ChannelState.Attached)
+            {
+                throw new AblyException("Channel is not attached. Cannot use untilAttached parameter");
+            }
+            query.ExtraParameters.Add("fromSerial", AttachedSerial);
+        }
+
         private void PublishImpl(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback)
         {
             // Create protocol message
@@ -303,7 +335,7 @@ namespace IO.Ably.Realtime
                     }
 
                     _timer.Abort();
-                    _timer.Start(_connectionManager.Options.RealtimeRequestTimeout, OnAttachTimeout);
+                    _timer.Start(ConnectionManager.Options.RealtimeRequestTimeout, OnAttachTimeout);
 
                     //Even thought the connection won't have connected yet the message will be queued and sent as soon as
                     //the connection is made
@@ -336,19 +368,19 @@ namespace IO.Ably.Realtime
                     else
                     {
                         _timer.Abort();
-                        _timer.Start(_connectionManager.Options.RealtimeRequestTimeout, OnDetachTimeout);
+                        _timer.Start(ConnectionManager.Options.RealtimeRequestTimeout, OnDetachTimeout);
                         SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name));
                     }
 
                     break;
                 case ChannelState.Detached:
-                    _connectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
+                    ConnectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
                     ClearAndFailChannelQueuedMessages(error);
                     break;
                 case ChannelState.Failed:
                     _attachedAwaiter.Fail(error);
                     _detachedAwaiter.Fail(error);
-                    _connectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
+                    ConnectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
                     ClearAndFailChannelQueuedMessages(error);
                     break;
             }
@@ -413,7 +445,7 @@ namespace IO.Ably.Realtime
 
         private void SendMessage(ProtocolMessage protocolMessage, Action<bool, ErrorInfo> callback = null)
         {
-            _connectionManager.Send(protocolMessage, callback, Options);
+            ConnectionManager.Send(protocolMessage, callback, Options);
         }
 
         public void OnError(ErrorInfo error)

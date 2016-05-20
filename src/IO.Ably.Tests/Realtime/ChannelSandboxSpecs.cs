@@ -466,6 +466,33 @@ namespace IO.Ably.Tests.Realtime
             }
         }
 
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL10d")]
+        public async Task WithOneClientPublishingAnotherShouldBeAbleToRetrieveMessages(Protocol protocol)
+        {
+            var client1 = await GetRealtimeClient(protocol);
+
+            var channelName = "persisted:history".AddRandomSuffix();
+            var channel = client1.Get(channelName);
+            await channel.AttachAsync();
+            var messages = Enumerable.Range(1, 10).Select(x => new Message("name:" + x, "value:" + x));
+            await channel.PublishAsync(messages);
+
+            var client2 = await GetRealtimeClient(protocol);
+            var historyChannel = client2.Get(channelName);
+            var history = await historyChannel.History(new DataRequestQuery() { Direction = QueryDirection.Forwards});
+
+            history.Should().BeOfType<PaginatedResult<Message>>();
+            history.Should().HaveCount(10);
+            for (int i = 0; i < 10; i++)
+            {
+                var message = history[i];
+                message.name.Should().Be("name:" + (i + 1));
+                message.data.ToString().Should().Be("value:" + (i + 1));
+            }
+        }
+
         private static JObject GetAES128FixtureData()
         {
             return JObject.Parse(ResourceHelper.GetResource("crypto-data-128.json"));

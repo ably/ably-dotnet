@@ -101,7 +101,7 @@ namespace IO.Ably
             IRealtimeChannel result = null;
             if (!RealtimeChannels.TryGetValue(name, out result))
             {
-                var channel = new RealtimeChannel(name, Options.GetClientId(), ConnectionManager, options);
+                var channel = new RealtimeChannel(name, Options.GetClientId(), this, options);
                 result = RealtimeChannels.AddOrUpdate(name, channel, (s, realtimeChannel) =>
                 {
                     if (options != null)

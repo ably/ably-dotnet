@@ -17,6 +17,46 @@ namespace IO.Ably.Tests.Realtime
 {
     public class ChannelSpecs : ConnectionSpecsBase
     {
+        public class GeneralSpecs : ChannelSpecs
+        {
+            [Theory]
+            [InlineData(ChannelState.Detached)]
+            [InlineData(ChannelState.Failed)]
+            [Trait("spec", "RTL11")]
+            public void WhenDetachedOrFailed_AllQueuedMessagesShouldBeDeletedAndFailCallbackInvoked(ChannelState state)
+            {
+                var client = GetConnectedClient();
+                var channel = client.Channels.Get("test");
+                var expectedError = new ErrorInfo();
+                channel.Attach();
+
+                channel.Publish("test", "data", (success, error) =>
+                {
+                    success.Should().BeFalse();
+                    error.Should().BeSameAs(expectedError);
+                });
+
+                var realtimeChannel = (channel as RealtimeChannel);
+                realtimeChannel.QueuedMessages.Should().HaveCount(1);
+                realtimeChannel.SetChannelState(state, expectedError);
+                realtimeChannel.QueuedMessages.Should().HaveCount(0);
+            }
+
+            [Fact]
+            [Trait("spec", "RTL9")]
+            [Trait("spec", "RTL9a")]
+            public void ChannelPresenceShouldReturnAPresenceObject()
+            {
+                var client = GetConnectedClient();
+                var channel = client.Get("Test");
+                channel.Presence.Should().BeOfType<Presence>();
+            }
+
+            public GeneralSpecs(ITestOutputHelper output) : base(output)
+            {
+            }
+        }
+
         [Trait("spec", "RTL2")]
         public class EventEmitterSpecs : ChannelSpecs
         {
@@ -122,29 +162,7 @@ namespace IO.Ably.Tests.Realtime
             }
         }
 
-        [Theory]
-        [InlineData(ChannelState.Detached)]
-        [InlineData(ChannelState.Failed)]
-        [Trait("spec", "RTL11")]
-        public void WhenDetachedOrFailed_AllQueuedMessagesShouldBeDeletedAndFailCallbackInvoked(ChannelState state)
-        {
-            var client = GetConnectedClient();
-            var channel = client.Channels.Get("test");
-            var expectedError = new ErrorInfo();
-            channel.Attach();
-
-            channel.Publish("test", "data", (success, error) =>
-            {
-                success.Should().BeFalse();
-                error.Should().BeSameAs(expectedError);
-            });
-
-            var realtimeChannel = (channel as RealtimeChannel);
-            realtimeChannel.QueuedMessages.Should().HaveCount(1);
-            realtimeChannel.SetChannelState(state, expectedError);
-            realtimeChannel.QueuedMessages.Should().HaveCount(0);
-        }
-
+     
         [Trait("spec", "RTL4")]
         public class ChannelAttachSpecs : ChannelSpecs
         {
@@ -762,6 +780,7 @@ namespace IO.Ably.Tests.Realtime
             }
 
             [Fact]
+            [Trait("spec", "RTL8b")]
             public async Task WithEventName_ShouldUnsubscribeHandlerFromTheSpecifiedEvent()
             {
                 _channel.Subscribe("test", _handler);
@@ -783,6 +802,54 @@ namespace IO.Ably.Tests.Realtime
                 };
             }
         }
+
+        [Trait("spec", "RTL10")]
+        public class HistorySpecs : ChannelSpecs
+        {
+            private AblyRealtime _client;
+
+            [Fact]
+            public async Task ShouldCallRestClientToGetHistory()
+            {
+                var channel = _client.Get("history");
+
+                await channel.History();
+
+                Assert.Equal($"/channels/{channel.Name}/messages", LastRequest.Url);
+            }
+
+            [Fact]
+            [Trait("spec", "RTL10b")]
+            public async Task WithUntilAttach_ShouldPassAttachedSerialToHistoryQuery()
+            {
+                var channel = _client.Get("history");
+                SetState(channel, ChannelState.Attached, message: new ProtocolMessage(ProtocolMessage.MessageAction.Attached) { channelSerial = "101"});
+
+                await channel.History(untilAttached: true);
+
+                LastRequest.QueryParameters.Should()
+                    .ContainKey("fromSerial")
+                    .WhichValue.Should().Be("101");
+            }
+
+            [Fact]
+            public async Task WithUntilAttachButChannelNotAttached_ShouldThrowException()
+            {
+                var channel = _client.Get("history");
+
+                var ex = await Assert.ThrowsAsync<AblyException>(() => channel.History(true));
+            }
+
+
+
+
+
+            public HistorySpecs(ITestOutputHelper output) : base(output)
+            {
+                _client = GetConnectedClient();
+            }
+        }
+
 
         protected void SetState(IRealtimeChannel channel, ChannelState state, ErrorInfo error = null, ProtocolMessage message = null)
         {
