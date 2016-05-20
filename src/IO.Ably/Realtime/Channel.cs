@@ -160,11 +160,17 @@ namespace IO.Ably.Realtime
 
         public void Subscribe(IMessageHandler handler)
         {
+            if(State != ChannelState.Attached || State != ChannelState.Attaching)
+                Attach();
+
             _handlers.Add(handler);
         }
 
         public void Subscribe(string eventName, IMessageHandler handler)
         {
+            if (State != ChannelState.Attached || State != ChannelState.Attaching)
+                Attach();
+
             _handlers.Add(eventName, handler);
         }
 

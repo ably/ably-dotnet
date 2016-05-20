@@ -23,7 +23,7 @@ namespace IO.Ably.Tests.Realtime
         public void WithAutoConnect_CallsConnectOnTransport()
         {
             var client = GetClientWithFakeTransport(opts => opts.AutoConnect = true);
-            client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
             client.ConnectionManager.ConnectionState.Should().Be(ConnectionStateType.Connected);
             LastCreatedTransport.ConnectCalled.Should().BeTrue();
@@ -50,7 +50,7 @@ namespace IO.Ably.Tests.Realtime
                 clientId = "123",
                 connectionKey = "boo"
             };
-            client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
                 connectionDetails = connectionDetailsMessage,
                 connectionKey = "unimportant"
@@ -66,7 +66,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = GetClientWithFakeTransport();
 
-            client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
                 connectionKey = "unimportant"
             });
@@ -81,7 +81,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = GetClientWithFakeTransport();
 
-            client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
                 connectionDetails = new ConnectionDetailsMessage { clientId = "realtimeClient" }
             });

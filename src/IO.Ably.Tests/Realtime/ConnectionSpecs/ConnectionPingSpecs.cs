@@ -37,7 +37,7 @@ namespace IO.Ably.Tests.Realtime
                 if (message.Original.action == ProtocolMessage.MessageAction.Heartbeat)
                 {
                     await Task.Delay(1);
-                    await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
+                    await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
                 }
             };
             var result = await client.Connection.PingAsync();

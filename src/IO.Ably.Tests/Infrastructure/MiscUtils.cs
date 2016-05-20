@@ -27,24 +27,14 @@ namespace IO.Ably.Tests
             return Task.FromResult(r);
         }
 
-        static IMessageHandler Handler(Action<Message[]> act)
+        public static void Subscribe(this IRealtimeChannel target, string eventName, Action<Message> act)
         {
-            Action<Message> a2 = msg =>
-            {
-                Message[] arr = new Message[1] { msg };
-                act(arr);
-            };
-            return new MessageHandlerAction(a2);
+            target.Subscribe(eventName, new MessageHandlerAction(act));
         }
 
-        public static void Subscribe(this IRealtimeChannel target, string eventName, Action<Message[]> act)
+        public static void Subscribe(this IRealtimeChannel target, Action<Message> act)
         {
-            target.Subscribe(eventName, Handler(act));
-        }
-
-        public static void Subscribe(this IRealtimeChannel target, Action<Message[]> act)
-        {
-            target.Subscribe(Handler(act));
+            target.Subscribe(new MessageHandlerAction(act));
         }
 
         public static void Unsubscribe(this IRealtimeChannel target, string eventName, Action<Message[]> act)

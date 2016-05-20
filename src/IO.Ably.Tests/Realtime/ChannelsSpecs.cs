@@ -115,7 +115,7 @@ namespace IO.Ably.Tests.Realtime
             Channels.Release("test");
 
             // Act
-            await _realtime.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, "test"));
+            await _realtime.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, "test"));
 
             await Task.Delay(50);
             // Assert
@@ -132,7 +132,7 @@ namespace IO.Ably.Tests.Realtime
             Channels.Release("test");
 
             // Act
-            _realtime.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
+            _realtime.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
 
             // Assert
             Channels.Should().BeEmpty();
@@ -179,7 +179,7 @@ namespace IO.Ably.Tests.Realtime
             Channels.ReleaseAll();
 
             // Act
-            await _realtime.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, "test"));
+            await _realtime.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, "test"));
 
             // Assert
             Channels.Should().BeEmpty();
@@ -195,7 +195,7 @@ namespace IO.Ably.Tests.Realtime
             Channels.ReleaseAll();
 
             // Act
-            _realtime.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
+            _realtime.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
 
             // Assert
             Assert.False(Channels.Any());

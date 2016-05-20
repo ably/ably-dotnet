@@ -29,6 +29,17 @@ namespace IO.Ably.Realtime
             }
         }
 
+        public async Task<Result<TimeSpan>> WaitAsync(TimeSpan? timeout = null)
+        {
+            var wrappedTask = TaskWrapper.Wrap<TimeSpan>(Wait);
+                
+                var first = await Task.WhenAny(Task.Delay(timeout ?? TimeSpan.FromSeconds(2)), wrappedTask);
+                if (first == wrappedTask)
+                    return wrappedTask.Result;
+
+                return Result.Fail<TimeSpan>(new ErrorInfo("Timeout exceeded", 50000));
+        }
+
         public void Wait(Action<TimeSpan, ErrorInfo> callback)
         {
             if(_waiting) 

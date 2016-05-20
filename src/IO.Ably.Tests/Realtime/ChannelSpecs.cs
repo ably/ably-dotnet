@@ -73,7 +73,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 var error = new ErrorInfo();
                 (_channel as RealtimeChannel).SetChannelState(state);
-                await _client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = error });
+                await _client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = error });
 
                 _client.Connection.State.Should().Be(ConnectionStateType.Failed);
                 _channel.State.Should().Be(ChannelState.Failed);
@@ -90,7 +90,7 @@ namespace IO.Ably.Tests.Realtime
 
                 _client.Close();
 
-                await _client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
+                await _client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
 
                 _client.Connection.State.Should().Be(ConnectionStateType.Closed);
                 _channel.State.Should().Be(ChannelState.Detached);
@@ -281,7 +281,7 @@ namespace IO.Ably.Tests.Realtime
 
             private async Task ReceiveAttachedMessage()
             {
-                await _client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
+                await _client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
                 {
                     channel = _channel.Name
                 });
@@ -337,7 +337,7 @@ namespace IO.Ably.Tests.Realtime
 
                 LastCreatedTransport.LastMessageSend.action.Should().Be(ProtocolMessage.MessageAction.Detach);
                 _channel.State.Should().Be(ChannelState.Detaching);
-                await _client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached) { channel = _channel.Name });
+                await _client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached) { channel = _channel.Name });
 
                 _channel.State.Should().Be(ChannelState.Detached);
             }
@@ -423,7 +423,7 @@ namespace IO.Ably.Tests.Realtime
 
             private async Task ReceiveDetachedMessage()
             {
-                await _client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached)
+                await _client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached)
                 {
                     channel = _channel.Name
                 });
@@ -543,7 +543,7 @@ namespace IO.Ably.Tests.Realtime
                     client.ConnectionManager.PendingMessages.First().Message.messages.First().data.Should().Be("connecting");
 
                     //Not connect the client
-                    await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+                    await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
                     //Messages should be sent
                     LastCreatedTransport.LastMessageSend.Should().NotBeNull();
@@ -567,7 +567,7 @@ namespace IO.Ably.Tests.Realtime
 
                     //Now connect
                     client.Connect();
-                    await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+                    await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
                     //Pending messages are sent
                     LastCreatedTransport.LastMessageSend.Should().NotBeNull();
@@ -618,15 +618,76 @@ namespace IO.Ably.Tests.Realtime
                 }
             }
 
-            protected void SetState(IRealtimeChannel channel, ChannelState state, ErrorInfo error = null, ProtocolMessage message = null)
-            {
-                (channel as RealtimeChannel).SetChannelState(state, error, message);
-            }
-
             public PublishSpecs(ITestOutputHelper output) : base(output)
             {
                 _client = GetConnectedClient(opts => opts.UseBinaryProtocol = false); //Easier to test encoding with the json protocol
             }
+        }
+
+        public class SubscribeSpecs : ChannelSpecs
+        {
+            private AblyRealtime _client;
+
+            [Fact]
+            [Trait("spec", "RTL7a")]
+            public async Task WithNoArguments_AddsAListenerForAllMessages()
+            {
+                var channel = _client.Get("Test");
+                SetState(channel, ChannelState.Attached);
+                var messages = new List<Message>();
+                channel.Subscribe(message =>
+                {
+                    messages.Add(message);
+                });
+
+                await _client.FakeMessageReceived(new Message("test", "best"), "Test");
+                await _client.FakeMessageReceived(new Message("", "best"), "Test");
+                await _client.FakeMessageReceived(new Message("blah", "best"), "Test");
+
+                messages.Should().HaveCount(3);
+            }
+
+            [Fact]
+            [Trait("spec", "RTL7b")]
+            public async Task WithEventArguments_ShouldOnlyNotifyWhenNameMatchesMessageName()
+            {
+                var channel = _client.Get("test");
+                SetState(channel, ChannelState.Attached);
+                var messages = new List<Message>();
+                channel.Subscribe("test", message =>
+                {
+                    messages.Add(message);
+                });
+
+                await _client.FakeMessageReceived(new Message("test", "best"), "test");
+                await _client.FakeMessageReceived(new Message("", "best"), "test");
+                await _client.FakeMessageReceived(new Message("blah", "best"), "test");
+
+                messages.Should().HaveCount(1);
+            }
+
+            [Fact]
+            [Trait("spec", "RTL7c")]
+            public void ShouldImplicitlyAttachAChannel()
+            {
+                var channel = _client.Get("best");
+                channel.State.Should().Be(ChannelState.Initialized);
+                channel.Subscribe(message =>
+                {
+                    //do nothing
+                });
+                channel.State.Should().Be(ChannelState.Attaching);
+            }
+
+            public SubscribeSpecs(ITestOutputHelper output) : base(output)
+            {
+                _client = GetConnectedClient(opts => opts.UseBinaryProtocol = false); //Easier to test encoding with the json protocol
+            }
+        }
+
+        protected void SetState(IRealtimeChannel channel, ChannelState state, ErrorInfo error = null, ProtocolMessage message = null)
+        {
+            (channel as RealtimeChannel).SetChannelState(state, error, message);
         }
 
         public ChannelSpecs(ITestOutputHelper output) : base(output)

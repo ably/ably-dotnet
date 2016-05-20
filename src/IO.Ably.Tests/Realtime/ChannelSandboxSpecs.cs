@@ -73,10 +73,9 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol);
             IRealtimeChannel target = client.Channels.Get("test");
             var messagesReceived = new List<Message>();
-            target.Subscribe(messages =>
+            target.Subscribe(message =>
             {
-                
-                messagesReceived.AddRange(messages);
+                messagesReceived.Add(message);
             });
 
             // Act
@@ -123,9 +122,9 @@ namespace IO.Ably.Tests.Realtime
             IRealtimeChannel target = client.Channels.Get("test");
             target.Attach();
             List<Message> messagesReceived = new List<Message>();
-            target.Subscribe(messages =>
+            target.Subscribe(message =>
             {
-                messagesReceived.AddRange(messages);
+                messagesReceived.Add(message);
             });
 
             // Act
@@ -156,9 +155,9 @@ namespace IO.Ably.Tests.Realtime
             target.Attach();
 
             List<Message> messagesReceived = new List<Message>();
-            target.Subscribe(messages =>
+            target.Subscribe(message =>
             {
-                messagesReceived.AddRange(messages);
+                messagesReceived.Add(message);
                 signal.Set();
             });
 
@@ -216,10 +215,9 @@ namespace IO.Ably.Tests.Realtime
             client.Connect();
             var channel = client.Get("test");
             bool messageReceived = false;
-            channel.Subscribe(messages =>
+            channel.Subscribe(message =>
             {
-                var first = messages.First();
-                first.clientId.Should().Be("123");
+                message.clientId.Should().Be("123");
                 messageReceived = true;
             });
 
@@ -237,10 +235,9 @@ namespace IO.Ably.Tests.Realtime
             client.Connect();
             var channel = client.Get("test");
             bool messageReceived = false;
-            channel.Subscribe(messages =>
+            channel.Subscribe(message =>
             {
-                var first = messages.First();
-                first.clientId.Should().Be("999");
+                message.clientId.Should().Be("999");
                 messageReceived = true;
             });
 
@@ -260,10 +257,9 @@ namespace IO.Ably.Tests.Realtime
             client.Connect();
             var channel = client.Get("test");
             bool messageReceived = false;
-            channel.Subscribe(messages =>
+            channel.Subscribe(message =>
             {
-                var first = messages.First();
-                first.clientId.Should().Be("1000");
+                message.clientId.Should().Be("1000");
                 messageReceived = true;
             });
 
@@ -281,10 +277,9 @@ namespace IO.Ably.Tests.Realtime
             client.Connect();
             var channel = client.Get("test");
             bool messageReceived = false;
-            channel.Subscribe(messages =>
+            channel.Subscribe(message =>
             {
-                var first = messages.First();
-                first.clientId.Should().Be("999");
+                message.clientId.Should().Be("999");
                 messageReceived = true;
             });
 
@@ -302,10 +297,9 @@ namespace IO.Ably.Tests.Realtime
             client.Connect();
             var channel = client.Get("test");
             bool messageReceived = false;
-            channel.Subscribe(messages =>
+            channel.Subscribe(message =>
             {
-                var first = messages.First();
-                first.clientId.Should().Be("999");
+                message.clientId.Should().Be("999");
                 messageReceived = true;
             });
             
@@ -322,7 +316,6 @@ namespace IO.Ably.Tests.Realtime
             WhenPublishingMessageWithCompatibleClientIdBeforeClientIdHasBeenConfigured_ShouldPublishTheMessageSuccessfully
             (Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
             var clientId = "client1";
             var rest = await GetRestClient(protocol);
             var realtimeClient = await GetRealtimeClient(protocol, (opts, _) =>
@@ -333,10 +326,10 @@ namespace IO.Ably.Tests.Realtime
 
             var channel = realtimeClient.Get("test");
             bool messageReceived = false;
-            channel.Subscribe(messages =>
+            channel.Subscribe(message =>
             {
                 messageReceived = true;
-                messages.First().clientId.Should().Be(clientId);
+                message.clientId.Should().Be(clientId);
             });
 
             channel.Publish(new Message("test", "best") { clientId = "client1" });
@@ -353,7 +346,6 @@ namespace IO.Ably.Tests.Realtime
             WhenPublishingMessageWithInCompatibleClientIdBeforeClientIdHasBeenConfigured_ShouldPublishTheMessageAndReturnErrorFromTheServerAllowingFurtherMessagesToBePublished
             (Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
             var clientId = "client1";
             var rest = await GetRestClient(protocol);
             var realtimeClient = await GetRealtimeClient(protocol, (opts, _) =>
@@ -364,10 +356,10 @@ namespace IO.Ably.Tests.Realtime
 
             var channel = realtimeClient.Get("test");
             bool messageReceived = false;
-            channel.Subscribe(messages =>
+            channel.Subscribe(message =>
             {
                 messageReceived = true;
-                messages.First().clientId.Should().Be(clientId);
+                message.clientId.Should().Be(clientId);
             });
 
             var result = await channel.PublishAsync("test", "best", "client2");
@@ -384,23 +376,45 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTL6f")]
         public async Task ConnectionIdShouldMatchThatOfThePublisher(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
-
-            client.Connect();
             var connectionId = client.Connection.Id;
             var channel = client.Get("test");
             bool messageReceived = false;
-            channel.Subscribe(messages =>
+            channel.Subscribe(message =>
             {
-                var first = messages.First();
-                first.connectionId.Should().Be(connectionId);
+                message.connectionId.Should().Be(connectionId);
                 messageReceived = true;
             });
 
             await channel.PublishAsync(new Message("test", "best"));
             messageReceived.Should().BeTrue();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL7c")]
+        public async Task WhenSubscribingToAChannelWithInsufficientPermissions_ShouldSetItToFailedWithError(
+            Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.Key = settings.KeyWithChannelLimitations;
+            });
+
+            var channel = client.Get("nono");
+            channel.Subscribe(message =>
+            {
+                //do nothing
+            });
+            
+            var result = await new ChannelAwaiter(channel, ChannelState.Failed).WaitAsync();
+            result.IsSuccess.Should().BeTrue();
+
+            var error = channel.Reason;
+            error.statusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
 
