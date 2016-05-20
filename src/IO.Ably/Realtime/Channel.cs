@@ -74,6 +74,7 @@ namespace IO.Ably.Realtime
         }
 
         public event EventHandler<ChannelStateChangedEventArgs> ChannelStateChanged;
+        public event EventHandler<ChannelErrorEventArgs> OnChannelError;
 
         public ChannelOptions Options
 
@@ -277,6 +278,9 @@ namespace IO.Ably.Realtime
                 Logger.Debug($"#{Name}: Changing state to: '{state}'. {errorMessage}");
             }
 
+            if(error != null)
+                OnChannelError?.Invoke(this, new ChannelErrorEventArgs(error));
+
             HandleStateChange(state, error, protocolMessage);
 
             //TODO: Post the event back on the user's thread
@@ -408,6 +412,11 @@ namespace IO.Ably.Realtime
         private void SendMessage(ProtocolMessage protocolMessage, Action<bool, ErrorInfo> callback = null)
         {
             _connectionManager.Send(protocolMessage, callback, Options);
+        }
+
+        public void OnError(ErrorInfo error)
+        {
+            OnChannelError?.Invoke(this, new ChannelErrorEventArgs(error));
         }
     }
 }

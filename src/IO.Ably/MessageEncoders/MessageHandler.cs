@@ -117,25 +117,33 @@ namespace IO.Ably.MessageEncoders
             return JsonConvert.SerializeObject(payloads, Config.GetJsonSettings()).GetBytes();
         }
 
-        internal void EncodePayloads(ChannelOptions options, IEnumerable<IMessage> payloads)
+        internal Result EncodePayloads(ChannelOptions options, IEnumerable<IMessage> payloads)
         {
+            var result = Result.Ok();
             foreach (var payload in payloads)
-                EncodePayload(payload, options);
+                result = Result.Combine(result, EncodePayload(payload, options));
+
+            return result;
         }
 
-        internal void DecodePayloads(ChannelOptions options, IEnumerable<IMessage> payloads)
+        internal Result DecodePayloads(ChannelOptions options, IEnumerable<IMessage> payloads)
         {
+            var result = Result.Ok();
             foreach (var payload in payloads)
-                DecodePayload(payload, options);
+                result = Result.Combine(result, DecodePayload(payload, options));
+
+            return result;
         }
 
-        private void EncodePayload(IMessage payload, ChannelOptions options)
+        private Result EncodePayload(IMessage payload, ChannelOptions options)
         {
             ValidatePayloadDataType(payload);
+            var result = Result.Ok();
             foreach (var encoder in Encoders)
             {
-                encoder.Encode(payload, options);
+                result = Result.Combine(result, encoder.Encode(payload, options));
             }
+            return result;
         }
 
         private void ValidatePayloadDataType(IMessage payload)
@@ -157,12 +165,15 @@ namespace IO.Ably.MessageEncoders
             return Nullable.GetUnderlyingType(type);
         }
 
-        private void DecodePayload(IMessage payload, ChannelOptions options)
+        private Result DecodePayload(IMessage payload, ChannelOptions options)
         {
+            var result = Result.Ok();
             foreach (var encoder in (Encoders as IEnumerable<MessageEncoder>).Reverse())
             {
-                encoder.Decode(payload, options);
+                result = Result.Combine(result, encoder.Decode(payload, options));
             }
+
+            return result;
         }
 
         /// <summary>Parse paginated response using specified parser function.</summary>
@@ -256,31 +267,36 @@ namespace IO.Ably.MessageEncoders
             return protocolMessage;
         }
 
-        public void EncodeProtocolMessage(ProtocolMessage protocolMessage, ChannelOptions channelOptions)
+        public Result EncodeProtocolMessage(ProtocolMessage protocolMessage, ChannelOptions channelOptions)
         {
             var options = channelOptions ?? new ChannelOptions();
+            var result = Result.Ok();
             foreach (var message in protocolMessage.messages)
             {
-                EncodePayload(message, options);
+                result = Result.Combine(result, EncodePayload(message, options));
             }
 
             foreach (var presence in protocolMessage.presence)
             {
-                EncodePayload(presence, options);
+                result = Result.Combine(result, EncodePayload(presence, options));
             }
+            return result;
         }
 
-        public void DecodeProtocolMessage(ProtocolMessage protocolMessage, ChannelOptions channelOptions)
+        public Result DecodeProtocolMessage(ProtocolMessage protocolMessage, ChannelOptions channelOptions)
         {
             var option = channelOptions ?? new ChannelOptions();
+            var result = Result.Ok();
             foreach (var message in protocolMessage.messages ?? new Message[] { })
             {
-                DecodePayload(message, channelOptions);
+                result = Result.Combine(result, DecodePayload(message, channelOptions));
             }
             foreach (var presence in protocolMessage.presence ?? new PresenceMessage[] { })
             {
-                DecodePayload(presence, channelOptions);
+                result = Result.Combine(result, DecodePayload(presence, channelOptions));
             }
+
+            return result;
         }
 
         public RealtimeTransportData GetTransportData(ProtocolMessage protocolMessage)

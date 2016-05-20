@@ -9,17 +9,14 @@ namespace IO.Ably.MessageEncoders
         {
         }
 
-        public override string EncodingName
+        public override string EncodingName => "utf-8";
+
+        public override Result Encode(IMessage payload, ChannelOptions options)
         {
-            get { return "utf-8"; }
+            return Result.Ok();
         }
 
-        public override void Encode(IMessage payload, ChannelOptions options)
-        {
-
-        }
-
-        public override void Decode(IMessage payload, ChannelOptions options)
+        public override Result Decode(IMessage payload, ChannelOptions options)
         {
             //Assume all the other steps will always work with Utf8
             if (CurrentEncodingIs(payload, EncodingName))
@@ -27,6 +24,7 @@ namespace IO.Ably.MessageEncoders
                 payload.data = (payload.data as byte[]).GetText();
                 RemoveCurrentEncodingPart(payload);
             }
+            return Result.Ok();
         }
     }
 }

@@ -14,8 +14,8 @@ namespace IO.Ably.MessageEncoders
         }
 
         public abstract string EncodingName { get; }
-        public abstract void Encode(IMessage payload, ChannelOptions options);
-        public abstract void Decode(IMessage payload, ChannelOptions options);
+        public abstract Result Encode(IMessage payload, ChannelOptions options);
+        public abstract Result Decode(IMessage payload, ChannelOptions options);
 
         public bool IsEmpty(object data)
         {

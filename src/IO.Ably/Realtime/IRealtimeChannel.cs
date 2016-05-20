@@ -13,6 +13,7 @@ namespace IO.Ably.Realtime
         ChannelOptions Options { get; set; }
         ErrorInfo Reason { get; }
         event EventHandler<ChannelStateChangedEventArgs> ChannelStateChanged;
+        event EventHandler<ChannelErrorEventArgs> OnChannelError;
 
         void Attach(Action<TimeSpan, ErrorInfo> callback = null);
 

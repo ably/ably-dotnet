@@ -4,7 +4,9 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
+using IO.Ably.Rest;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
@@ -677,6 +679,33 @@ namespace IO.Ably.Tests.Realtime
                     //do nothing
                 });
                 channel.State.Should().Be(ChannelState.Attaching);
+            }
+
+            [Fact]
+            public async Task WithAMessageThatFailDecryption_ShouldDeliverMessageButEmmitErrorOnTheChannel()
+            {
+                var otherChannelOptions = new ChannelOptions(true);
+                var encryptedChannel = _client.Get("encrypted", new ChannelOptions(true));
+                SetState(encryptedChannel, ChannelState.Attached);
+                bool msgReceived = false, 
+                    errorEmitted = false;
+                encryptedChannel.Subscribe(msg =>
+                {
+                    msgReceived = true;
+                    msg.encoding.Should().Be("");
+                });
+                encryptedChannel.OnChannelError += (sender, args) =>
+                {
+                    errorEmitted = true;
+                    args.Reason.Should().NotBeNull();
+                };
+
+                var message = new Message("name", "encrypted with otherChannelOptions");
+                new MessageHandler(Protocol.Json).EncodePayloads(otherChannelOptions, new[] {message});
+                await _client.FakeMessageReceived(message, encryptedChannel.Name);
+
+                msgReceived.Should().BeTrue();
+                errorEmitted.Should().BeTrue();
             }
 
             public SubscribeSpecs(ITestOutputHelper output) : base(output)

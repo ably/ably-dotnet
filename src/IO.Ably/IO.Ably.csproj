@@ -69,6 +69,7 @@
     <Compile Include="CustomSerialisers\TimeSpanJsonConverter.cs" />
     <Compile Include="CustomSerialisers\TimespanMessagePackSerializer.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
+    <Compile Include="Realtime\ChannelErrorEventArgs.cs" />
     <Compile Include="Realtime\ChannelMessageProcessor.cs" />
     <Compile Include="Realtime\ChannelAwaiter.cs" />
     <Compile Include="Encryption\AesCipher.cs" />

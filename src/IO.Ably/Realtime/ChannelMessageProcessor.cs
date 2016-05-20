@@ -51,7 +51,7 @@ namespace IO.Ably.Realtime
                         channel.SetChannelState(ChannelState.Detached, protocolMessage);
                     break;
                 case ProtocolMessage.MessageAction.Message:
-                    _connectionManager.Handler.DecodeProtocolMessage(protocolMessage, channel.Options);
+                    var result = _connectionManager.Handler.DecodeProtocolMessage(protocolMessage, channel.Options);
                     foreach (var msg in protocolMessage.messages)
                     {
                         channel.OnMessage(msg);
