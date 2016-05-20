@@ -52,6 +52,10 @@ namespace IO.Ably.Realtime
                     break;
                 case ProtocolMessage.MessageAction.Message:
                     var result = _connectionManager.Handler.DecodeProtocolMessage(protocolMessage, channel.Options);
+                    if (result.IsFailure)
+                    {
+                        channel.OnError(result.Error);
+                    }
                     foreach (var msg in protocolMessage.messages)
                     {
                         channel.OnMessage(msg);

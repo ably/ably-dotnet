@@ -26,18 +26,5 @@ namespace IO.Ably.Tests
         {
             return Task.FromResult(r);
         }
-
-        public static void Subscribe(this IRealtimeChannel target, string eventName, Action<Message> act)
-        {
-            target.Subscribe(eventName, new MessageHandlerAction(act));
-        }
-
-        public static void Subscribe(this IRealtimeChannel target, Action<Message> act)
-        {
-            target.Subscribe(new MessageHandlerAction(act));
-        }
-
-        public static void Unsubscribe(this IRealtimeChannel target, string eventName, Action<Message[]> act)
-        { }
     }
 }

@@ -149,6 +149,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTL7f")]
         public async Task TestAttachChannel_SendingMessage_Doesnt_EchoesItBack(Protocol protocol)
         {
             // Arrange

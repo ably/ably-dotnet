@@ -24,15 +24,15 @@ namespace IO.Ably.Realtime
         Task<Result<TimeSpan>> DetachAsync();
 
         /// <summary>Subscribe a listener to all messages.</summary>
-        void Subscribe(IMessageHandler handler);
+        void Subscribe(Action<Message> handler);
 
         /// <summary>Subscribe a listener to only messages whose name member matches the string name.</summary>
         /// <param name="eventName"></param>
         /// <param name="handler"></param>
-        void Subscribe(string eventName, IMessageHandler handler);
+        void Subscribe(string eventName, Action<Message> handler);
 
-        void Unsubscribe(IMessageHandler handler);
-        void Unsubscribe(string eventName, IMessageHandler handler);
+        bool Unsubscribe(Action<Message> handler);
+        bool Unsubscribe(string eventName, Action<Message> handler);
         void Publish(string name, object data, Action<bool, ErrorInfo> callback = null, string clientId = null);
         Task<Result> PublishAsync(string eventName, object data, string clientId = null); 
         void Publish(Message message, Action<bool, ErrorInfo> callback = null);

@@ -12,7 +12,7 @@ using IO.Ably.Types;
 namespace IO.Ably.Realtime
 {
     /// <summary>Implement realtime channel.</summary>
-    internal class RealtimeChannel : IRealtimeChannel
+    internal class RealtimeChannel : IRealtimeChannel, IDisposable
     {
         private readonly IConnectionManager _connectionManager;
         private Connection Connection => _connectionManager.Connection;
@@ -23,7 +23,6 @@ namespace IO.Ably.Realtime
 
         private readonly object _lockQueue = new object();
 
-        private readonly object _lockSubscribers = new object();
         private readonly ChannelAwaiter _attachedAwaiter;
         private readonly ChannelAwaiter _detachedAwaiter;
         private ChannelOptions _options;
@@ -159,32 +158,35 @@ namespace IO.Ably.Realtime
             return TaskWrapper.Wrap<TimeSpan>(Detach);
         }
 
-        public void Subscribe(IMessageHandler handler)
+        public void Subscribe(Action<Message> handler)
         {
             if(State != ChannelState.Attached || State != ChannelState.Attaching)
                 Attach();
 
-            _handlers.Add(handler);
+            _handlers.Add(new MessageHandlerAction(handler));
         }
 
-        public void Subscribe(string eventName, IMessageHandler handler)
+        public void Subscribe(string eventName, Action<Message> handler)
         {
             if (State != ChannelState.Attached || State != ChannelState.Attaching)
                 Attach();
 
-            _handlers.Add(eventName, handler);
+            _handlers.Add(eventName, new MessageHandlerAction(handler));
         }
 
-        public void Unsubscribe(IMessageHandler handler)
+        public bool Unsubscribe(Action<Message> handler)
         {
-            if (_handlers.Remove(handler) == false)
-                Logger.Warning("Unsubscribe failed: was not subscribed");
+            return _handlers.Remove(new MessageHandlerAction(handler));
         }
 
-        public void Unsubscribe(string eventName, IMessageHandler handler = null)
+        public bool Unsubscribe(string eventName, Action<Message> handler)
         {
-            if (_handlers.Remove(eventName, handler) == false)
-                Logger.Warning("Unsubscribe failed: was not subscribed");
+            return _handlers.Remove(eventName, new MessageHandlerAction(handler));
+        }
+
+        public void UnsubscribeAll()
+        {
+            _handlers.RemoveAll();
         }
 
         /// <summary>Publish a single message on this channel based on a given event name and payload.</summary>
@@ -417,6 +419,11 @@ namespace IO.Ably.Realtime
         public void OnError(ErrorInfo error)
         {
             OnChannelError?.Invoke(this, new ChannelErrorEventArgs(error));
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
         }
     }
 }

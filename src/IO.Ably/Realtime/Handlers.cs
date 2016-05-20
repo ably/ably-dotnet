@@ -117,5 +117,19 @@ namespace IO.Ably.Realtime
                 _lock.ExitWriteLock();
             }
         }
+
+        public void RemoveAll()
+        {
+            try
+            {
+                _lock.EnterWriteLock();
+                _specificHandlers.Clear();
+                _handlers.Clear();
+            }
+            finally
+            {
+                _lock.ExitWriteLock();
+            }
+        }
     }
 }

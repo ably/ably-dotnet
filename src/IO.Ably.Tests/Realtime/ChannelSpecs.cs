@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
 using IO.Ably.Rest;
@@ -738,6 +739,48 @@ namespace IO.Ably.Tests.Realtime
             public SubscribeSpecs(ITestOutputHelper output) : base(output)
             {
                 _client = GetConnectedClient(opts => opts.UseBinaryProtocol = false); //Easier to test encoding with the json protocol
+            }
+        }
+
+        [Trait("spec", "RTL8")]
+        public class UnsubscribeSpecs : ChannelSpecs
+        {
+            private AblyRealtime _client;
+            private IRealtimeChannel _channel;
+            private Action<Message> _handler;
+
+            [Fact]
+            [Trait("spec", "RTL8a")]
+            public async Task ShouldReturnTrueAndRemoveHandlerFromSubscribers()
+            {
+                _channel.Subscribe(_handler);
+                var result = _channel.Unsubscribe(_handler);
+                result.Should().BeTrue();
+                await _client.FakeMessageReceived(new Message("test", "best"), _channel.Name);
+
+                //Handler should not throw
+            }
+
+            [Fact]
+            public async Task WithEventName_ShouldUnsubscribeHandlerFromTheSpecifiedEvent()
+            {
+                _channel.Subscribe("test", _handler);
+                var result = _channel.Unsubscribe("test", _handler);
+                result.Should().BeTrue();
+                await _client.FakeMessageReceived(new Message("test", "best"), _channel.Name);
+                //Handler should not throw
+            }
+
+            public UnsubscribeSpecs(ITestOutputHelper output) : base(output)
+            {
+                _client = GetConnectedClient(opts => opts.UseBinaryProtocol = false); //Easier to test encoding with the json protocol
+                _channel = _client.Get("test");
+
+                SetState(_channel, ChannelState.Attached);
+                _handler = message =>
+                {
+                    throw new AssertionFailedException("This handler should no longer be called");
+                };
             }
         }
 
