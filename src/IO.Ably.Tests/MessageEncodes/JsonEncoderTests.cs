@@ -36,6 +36,8 @@ namespace IO.Ably.Tests.MessageEncodes
             return payload;
         }
 
+
+
         public class Decode : JsonEncoderTests
         {
             [Fact]
@@ -69,11 +71,12 @@ namespace IO.Ably.Tests.MessageEncodes
                 payload.encoding.Should().Be("utf-8");
             }
 
-            [Fact(Skip = "Need to check")]
-            public void WithInvalidJsonPayload_ThrowsAblyException()
+            [Fact]
+            public void WithInvalidJsonPayload_ShouldReturnFailedResult()
             {
-                var error = Assert.Throws<AblyException>(delegate { DecodePayload("test", "json"); });
-                error.ErrorInfo.message.Should().Be("Invalid Json data: 'test'");
+                var result = encoder.Decode(new Message() { data = "test", encoding = "json" }, new ChannelOptions());
+                result.IsFailure.Should().BeTrue();
+                result.Error.message.Should().Be("Invalid Json data: 'test'");
             }
         }
 

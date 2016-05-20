@@ -682,6 +682,7 @@ namespace IO.Ably.Tests.Realtime
             }
 
             [Fact]
+            [Trait("spec", "RTL7d")]
             public async Task WithAMessageThatFailDecryption_ShouldDeliverMessageButEmmitErrorOnTheChannel()
             {
                 var otherChannelOptions = new ChannelOptions(true);
@@ -706,6 +707,32 @@ namespace IO.Ably.Tests.Realtime
 
                 msgReceived.Should().BeTrue();
                 errorEmitted.Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RTL7e")]
+            public async Task WithMessageThatCantBeDecoded_ShouldDeliverMessageWithResidualEncodingAndEmitTheErrorOnTheChannel()
+            {
+                var channel = _client.Get("test");
+                SetState(channel, ChannelState.Attached);
+
+                Message receivedMessage = null;
+                channel.Subscribe(msg =>
+                {
+                    receivedMessage = msg;
+                });
+
+                ErrorInfo error = null;
+                channel.OnChannelError += (sender, args) =>
+                {
+                    error = args.Reason;
+                };
+
+                var message = new Message("name", "encrypted with otherChannelOptions") { encoding = "json" };
+                await _client.FakeMessageReceived(message, channel.Name);
+
+                error.Should().NotBeNull();
+                receivedMessage.encoding.Should().Be("json");
             }
 
             public SubscribeSpecs(ITestOutputHelper output) : base(output)
