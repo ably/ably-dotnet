@@ -341,6 +341,7 @@ namespace IO.Ably.Realtime
                     break;
                 case ChannelState.Attached:
 
+                    _timer.Abort();
                     if (protocolMessage != null)
                     {
                         if (protocolMessage.HasPresenceFlag)
@@ -368,13 +369,13 @@ namespace IO.Ably.Realtime
                         SetChannelState(ChannelState.Detached, error);
                     else
                     {
-                        _timer.Abort();
                         _timer.Start(ConnectionManager.Options.RealtimeRequestTimeout, OnDetachTimeout);
                         SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name));
                     }
 
                     break;
                 case ChannelState.Detached:
+                    _timer.Abort();
                     ConnectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
                     ClearAndFailChannelQueuedMessages(error);
                     break;

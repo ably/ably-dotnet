@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 
 namespace IO.Ably.ConsoleTest
 {
@@ -12,7 +13,10 @@ namespace IO.Ably.ConsoleTest
             {
                 //Rest.Test().Wait();
                 var client = Realtime.Test();
-                client.Connect();
+                client.Connect(); 
+                var channel = client.Get("testchannel0");
+                channel.Attach();
+
                 Console.ReadLine();
                 ConsoleColor.Green.WriteLine("Success!");
             }
