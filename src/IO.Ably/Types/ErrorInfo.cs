@@ -41,6 +41,11 @@ namespace IO.Ably
 
         public ErrorInfo() { }
 
+        public ErrorInfo(string reason)
+        {
+            this.message = reason;
+        }
+
         public ErrorInfo(string reason, int code)
         {
             this.code = code;

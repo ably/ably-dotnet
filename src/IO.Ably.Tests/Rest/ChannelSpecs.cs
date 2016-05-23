@@ -7,13 +7,10 @@ using FluentAssertions;
 using Newtonsoft.Json;
 using Xunit;
 using IO.Ably.Encryption;
-using IO.Ably.Platform;
 using IO.Ably.Rest;
-using MsgPack.Serialization;
 using Xunit.Abstractions;
-using Xunit.Extensions;
 
-namespace IO.Ably.Tests
+namespace IO.Ably.Tests.Rest
 {
     public class ChannelSpecs : MockHttpRestSpecs
     {
@@ -186,7 +183,7 @@ namespace IO.Ably.Tests
                 LastRequest.RequestBody.GetText().Should().Be("[{}]");
             }
 
-            [Fact(Skip = "Currently the MsgPack serializer does not support skipping properties. Should be available in v0.7")]
+            [Fact]
             [Trait("spec", "RSL1e")]
             public async Task WithNoNameAndMsgPack_ShouldOnlySendDataProperty()
             {
@@ -312,6 +309,7 @@ namespace IO.Ably.Tests
             [InlineData(-1)]
             [InlineData(1001)]
             [Trait("spec", "RSL2b3")]
+            [Trait("spec", "RSP3a1")]
             public async Task WithLimitLessThan0andMoreThan1000_ShouldThrow(int limit)
             {
                 var ex = await

@@ -1,41 +1,74 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 
 namespace IO.Ably.Realtime
 {
-    using TheSet = HashSet<WeakReference<IMessageHandler>>;
-
-    /// <summary>This specialized collection keeps a set of weak references to IMessageHandler instances.</summary>
-    /// <remarks>The collection is not thread safe.</remarks>
     internal class Handlers
     {
-        private readonly TheSet _set = new TheSet();
+        private readonly List<IMessageHandler> _handlers = new List<IMessageHandler>();
+        private readonly Dictionary<string, List<IMessageHandler>> _specificHandlers = new Dictionary<string, List<IMessageHandler>>();
+        private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
 
-        public IEnumerable<IMessageHandler> GetAliveHandlers()
+        public IEnumerable<IMessageHandler> GetHandlers(string eventName = null)
         {
-            TheSet deadSet = new TheSet();
-            foreach (var reference in _set)
+            try
             {
-                IMessageHandler res;
-                if (reference.TryGetTarget(out res))
+                _lock.EnterReadLock();
+                if (eventName.IsNotEmpty())
                 {
-                    yield return res;
-                    continue;
+                    List<IMessageHandler> result;
+                    if (_specificHandlers.TryGetValue(eventName.ToLower(), out result))
+                    {
+                        return new List<IMessageHandler>(result);
+                    }
+                    return Enumerable.Empty<IMessageHandler>();
                 }
-                // Dead
-                deadSet.Add(reference);
+
+                return new List<IMessageHandler>(_handlers);
             }
-            _set.ExceptWith(deadSet);
+            finally
+            {
+                _lock.ExitReadLock();
+            }
         }
 
         /// <summary>Add handler to the collection.</summary>
         /// <param name="handler"></param>
         public void Add(IMessageHandler handler)
         {
-            if (handler == null)
-                throw new ArgumentNullException(nameof(handler), "Null handlers are not supported");
+            try
+            {
+                _lock.EnterWriteLock();
+                _handlers.Add(handler);
+            }
+            finally
+            {
+                _lock.ExitWriteLock();
+            }
+        }
 
-            _set.Add(new WeakReference<IMessageHandler>(handler));
+        public void Add(string eventName, IMessageHandler handler)
+        {
+            try
+            {
+                _lock.EnterWriteLock();
+                List<IMessageHandler> result;
+                if (_specificHandlers.TryGetValue(eventName, out result))
+                {
+                    if (result != null)
+                    {
+                        result.Add(handler);
+                        return;
+                    }
+                }
+                _specificHandlers[eventName] = new List<IMessageHandler>() { handler };
+            }
+            finally
+            {
+                _lock.ExitWriteLock();
+            }
         }
 
         /// <summary>Remove handler from the collection.</summary>
@@ -43,24 +76,60 @@ namespace IO.Ably.Realtime
         /// <returns>True if removed, false if not found.</returns>
         public bool Remove(IMessageHandler handler)
         {
-            var removed = false;
-            var setToRemove = new TheSet();
-            foreach (var reference in _set)
+            try
             {
-                IMessageHandler res;
-                if (reference.TryGetTarget(out res))
-                {
-                    if (res != handler)
-                        continue;
-                    // Found the requested handler, and it's alive.
-                    removed = true;
-                    setToRemove.Add(reference);
-                }
-                // Dead
-                setToRemove.Add(reference);
+                _lock.EnterWriteLock();
+                return _handlers.RemoveAll(x => x.Equals(handler)) > 0;
             }
-            _set.ExceptWith(setToRemove);
-            return removed;
+            finally 
+            {
+                _lock.ExitWriteLock();
+            }
+        }
+
+        public bool Remove(string eventName, IMessageHandler handler = null)
+        {
+            if (eventName.IsEmpty())
+                return false;
+
+            try
+            {
+                _lock.EnterWriteLock();
+                if (_specificHandlers.ContainsKey(eventName))
+                {
+                    if (handler == null)
+                    {
+                        _specificHandlers.Remove(eventName);
+                        return true;
+                    }
+                    else
+                    {
+                        return _specificHandlers[eventName].Remove(handler);
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            finally
+            {
+                _lock.ExitWriteLock();
+            }
+        }
+
+        public void RemoveAll()
+        {
+            try
+            {
+                _lock.EnterWriteLock();
+                _specificHandlers.Clear();
+                _handlers.Clear();
+            }
+            finally
+            {
+                _lock.ExitWriteLock();
+            }
         }
     }
 }

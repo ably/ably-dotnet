@@ -29,13 +29,16 @@ namespace IO.Ably.Tests.AuthTests
 
         [Fact]
         [Trait("spec", "RSA10a")]
+        [Trait("spec", "RSA10f")]
         public async Task Authorise_WithBasicAuthCreatesTokenAndUsesTokenAuthInTheFuture()
         {
             var client = GetRestClient();
 
             client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Basic);
 
-            await client.Auth.Authorise();
+            var tokenDetails = await client.Auth.Authorise();
+
+            tokenDetails.Should().NotBeNull();
 
             client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
         }

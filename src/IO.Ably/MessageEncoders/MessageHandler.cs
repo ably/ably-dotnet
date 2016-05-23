@@ -82,9 +82,9 @@ namespace IO.Ably.MessageEncoders
             return payloads;
         }
 
-        private void ProcessMessages<T>(IEnumerable<T> payloads, ChannelOptions options) where T : IEncodedMessage
+        private void ProcessMessages<T>(IEnumerable<T> payloads, ChannelOptions options) where T : IMessage
         {
-            DecodePayloads(options, payloads as IEnumerable<IEncodedMessage>);
+            DecodePayloads(options, payloads as IEnumerable<IMessage>);
         }
 
         public void SetRequestBody(AblyRequest request)
@@ -117,28 +117,36 @@ namespace IO.Ably.MessageEncoders
             return JsonConvert.SerializeObject(payloads, Config.GetJsonSettings()).GetBytes();
         }
 
-        internal void EncodePayloads(ChannelOptions options, IEnumerable<IEncodedMessage> payloads)
+        internal Result EncodePayloads(ChannelOptions options, IEnumerable<IMessage> payloads)
         {
+            var result = Result.Ok();
             foreach (var payload in payloads)
-                EncodePayload(payload, options);
+                result = Result.Combine(result, EncodePayload(payload, options));
+
+            return result;
         }
 
-        internal void DecodePayloads(ChannelOptions options, IEnumerable<IEncodedMessage> payloads)
+        internal Result DecodePayloads(ChannelOptions options, IEnumerable<IMessage> payloads)
         {
+            var result = Result.Ok();
             foreach (var payload in payloads)
-                DecodePayload(payload, options);
+                result = Result.Combine(result, DecodePayload(payload, options));
+
+            return result;
         }
 
-        private void EncodePayload(IEncodedMessage payload, ChannelOptions options)
+        private Result EncodePayload(IMessage payload, ChannelOptions options)
         {
             ValidatePayloadDataType(payload);
+            var result = Result.Ok();
             foreach (var encoder in Encoders)
             {
-                encoder.Encode(payload, options);
+                result = Result.Combine(result, encoder.Encode(payload, options));
             }
+            return result;
         }
 
-        private void ValidatePayloadDataType(IEncodedMessage payload)
+        private void ValidatePayloadDataType(IMessage payload)
         {
             if (payload.data == null)
                 return;
@@ -157,12 +165,15 @@ namespace IO.Ably.MessageEncoders
             return Nullable.GetUnderlyingType(type);
         }
 
-        private void DecodePayload(IEncodedMessage payload, ChannelOptions options)
+        private Result DecodePayload(IMessage payload, ChannelOptions options)
         {
+            var result = Result.Ok();
             foreach (var encoder in (Encoders as IEnumerable<MessageEncoder>).Reverse())
             {
-                encoder.Decode(payload, options);
+                result = Result.Combine(result, encoder.Decode(payload, options));
             }
+
+            return result;
         }
 
         /// <summary>Parse paginated response using specified parser function.</summary>
@@ -243,31 +254,63 @@ namespace IO.Ably.MessageEncoders
 
         public ProtocolMessage ParseRealtimeData(RealtimeTransportData data)
         {
-            ProtocolMessage message;
+            ProtocolMessage protocolMessage;
             if (_protocol == Protocol.MsgPack)
             {
-                message = (ProtocolMessage)MsgPackHelper.DeSerialise(data.Data, typeof(ProtocolMessage));
+                protocolMessage = (ProtocolMessage)MsgPackHelper.DeSerialise(data.Data, typeof(ProtocolMessage));
             }
             else
             {
-                message = JsonConvert.DeserializeObject<ProtocolMessage>(data.Text, Config.GetJsonSettings());
+                protocolMessage = JsonConvert.DeserializeObject<ProtocolMessage>(data.Text, Config.GetJsonSettings());
             }
 
-            return message;
+            return protocolMessage;
         }
 
-        public RealtimeTransportData GetTransportData(ProtocolMessage message)
+        public Result EncodeProtocolMessage(ProtocolMessage protocolMessage, ChannelOptions channelOptions)
+        {
+            var options = channelOptions ?? new ChannelOptions();
+            var result = Result.Ok();
+            foreach (var message in protocolMessage.messages)
+            {
+                result = Result.Combine(result, EncodePayload(message, options));
+            }
+
+            foreach (var presence in protocolMessage.presence)
+            {
+                result = Result.Combine(result, EncodePayload(presence, options));
+            }
+            return result;
+        }
+
+        public Result DecodeProtocolMessage(ProtocolMessage protocolMessage, ChannelOptions channelOptions)
+        {
+            var option = channelOptions ?? new ChannelOptions();
+            var result = Result.Ok();
+            foreach (var message in protocolMessage.messages ?? new Message[] { })
+            {
+                result = Result.Combine(result, DecodePayload(message, channelOptions));
+            }
+            foreach (var presence in protocolMessage.presence ?? new PresenceMessage[] { })
+            {
+                result = Result.Combine(result, DecodePayload(presence, channelOptions));
+            }
+
+            return result;
+        }
+
+        public RealtimeTransportData GetTransportData(ProtocolMessage protocolMessage)
         {
             RealtimeTransportData data;
             if (_protocol == Protocol.MsgPack)
             {
-                var bytes= MsgPackHelper.Serialise(message);
-                data = new RealtimeTransportData(bytes) { Original = message };
+                var bytes= MsgPackHelper.Serialise(protocolMessage);
+                data = new RealtimeTransportData(bytes) { Original = protocolMessage };
             }
             else
             {
-                var text = JsonConvert.SerializeObject(message, Config.GetJsonSettings());
-                data = new RealtimeTransportData(text) { Original = message };
+                var text = JsonConvert.SerializeObject(protocolMessage, Config.GetJsonSettings());
+                data = new RealtimeTransportData(text) { Original = protocolMessage };
             }
 
             return data;

@@ -7,26 +7,23 @@ namespace IO.Ably.MessageEncoders
 {
     internal class CipherEncoder : MessageEncoder
     {
-        public override string EncodingName
-        {
-            get { return "cipher"; }
-        }
+        public override string EncodingName => "cipher";
 
-        public override void Decode(IEncodedMessage payload, ChannelOptions options)
+        public override Result Decode(IMessage payload, ChannelOptions options)
         {
             if (IsEmpty(payload.data))
-                return;
+                return Result.Ok();
 
             var currentEncoding = GetCurrentEncoding(payload);
             if (currentEncoding.Contains(EncodingName) == false)
-                return;
+                return Result.Ok();
 
             var cipherType = GetCipherType(currentEncoding);
             if (cipherType.ToLower() != options.CipherParams.CipherType.ToLower())
             {
                 Logger.Error(
                     $"Cipher algorithm {options.CipherParams.CipherType.ToLower()} does not match message cipher algorithm of {currentEncoding}");
-                return;
+                return Result.Fail(new ErrorInfo($"Cipher algorithm {options.CipherParams.CipherType.ToLower()} does not match message cipher algorithm of {currentEncoding}"));
             }
 
             var cipher = Crypto.GetCipher(options.CipherParams);
@@ -34,10 +31,12 @@ namespace IO.Ably.MessageEncoders
             {
                 payload.data = cipher.Decrypt(payload.data as byte[]);
                 RemoveCurrentEncodingPart(payload);
+                return Result.Ok();
             }
             catch (AblyException ex)
             {
-                Logger.Error("Error decrypting payload. Leaving it encrypted", ex); 
+                Logger.Error($"Error decrypting payload using cypher {options.CipherParams.CipherType}. Leaving it encrypted", ex);
+                return Result.Fail($"Error decrypting payload using cypher {options.CipherParams.CipherType}. Leaving it encrypted");
             }
         }
 
@@ -49,13 +48,13 @@ namespace IO.Ably.MessageEncoders
             return "";
         }
 
-        public override void Encode(IEncodedMessage payload, ChannelOptions options)
+        public override Result Encode(IMessage payload, ChannelOptions options)
         {
             if (IsEmpty(payload.data) || IsEncrypted(payload))
-                return;
+                return Result.Ok();
 
             if (options.Encrypted == false)
-                return;
+                return Result.Ok();
 
             if (payload.data is string)
             {
@@ -65,12 +64,14 @@ namespace IO.Ably.MessageEncoders
 
             var cipher = Crypto.GetCipher(options.CipherParams);
             payload.data = cipher.Encrypt(payload.data as byte[]);
-            AddEncoding(payload, string.Format("{0}+{1}", EncodingName, options.CipherParams.CipherType.ToLower()));
+            AddEncoding(payload, $"{EncodingName}+{options.CipherParams.CipherType.ToLower()}");
+
+            return Result.Ok();
         }
 
-        private bool IsEncrypted(IEncodedMessage payload)
+        private bool IsEncrypted(IMessage payload)
         {
-            return StringExtensions.IsNotEmpty(payload.encoding) && payload.encoding.Contains(EncodingName);
+            return payload.encoding.IsNotEmpty() && payload.encoding.Contains(EncodingName);
         }
 
         public CipherEncoder(Protocol protocol)

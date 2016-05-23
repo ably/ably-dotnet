@@ -116,11 +116,14 @@ namespace IO.Ably.Tests
             return ShouldWeRenewTokenValue;
         }
 
-        public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null)
+        public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null, ChannelOptions channelOptions = null)
         {
             LastMessageSent = message;
             LastCallback = callback;
+            LastChannelOptions = channelOptions;
         }
+
+        public ChannelOptions LastChannelOptions { get; set; }
 
         public Action<bool, ErrorInfo> LastCallback { get; set; }
 
@@ -164,6 +167,13 @@ namespace IO.Ably.Tests
             CanUseFallBackUrlCalled = true;
             return CanUseFallBack ? TaskConstants.BooleanTrue : TaskConstants.BooleanFalse;
         }
+
+        public void DetachAttachedChannels(ErrorInfo error)
+        {
+            DetachAttachedChannelsCalled = true;
+        }
+
+        public bool DetachAttachedChannelsCalled { get; set; }
 
         public bool CanUseFallBackUrlCalled { get; set; }
 

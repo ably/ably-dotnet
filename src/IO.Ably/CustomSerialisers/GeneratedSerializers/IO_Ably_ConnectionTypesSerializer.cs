@@ -12,7 +12,6 @@ namespace IO.Ably.CustomSerialisers {
     
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("MsgPack.Serialization.CodeDomSerializers.CodeDomSerializerBuilder", "0.6.0.0")]
-    [System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public class IO_Ably_ConnectionTypesSerializer : MsgPack.Serialization.MessagePackSerializer<IO.Ably.ConnectionTypes> {
         
         private MsgPack.Serialization.MessagePackSerializer<string> _serializer0;
@@ -31,213 +30,154 @@ namespace IO.Ably.CustomSerialisers {
         
         protected override void PackToCore(MsgPack.Packer packer, IO.Ably.ConnectionTypes objectTree) {
             packer.PackMapHeader(3);
-            this._serializer0.PackTo(packer, "All");
+            this._serializer0.PackTo(packer, "all");
             this._serializer1.PackTo(packer, objectTree.All);
-            this._serializer0.PackTo(packer, "Plain");
+            this._serializer0.PackTo(packer, "plain");
             this._serializer1.PackTo(packer, objectTree.Plain);
-            this._serializer0.PackTo(packer, "Tls");
+            this._serializer0.PackTo(packer, "tls");
             this._serializer1.PackTo(packer, objectTree.Tls);
         }
         
-        protected override IO.Ably.ConnectionTypes UnpackFromCore(MsgPack.Unpacker unpacker) {
+        protected override IO.Ably.ConnectionTypes UnpackFromCore(MsgPack.Unpacker unpacker)
+        {
             IO.Ably.ConnectionTypes result = default(IO.Ably.ConnectionTypes);
             result = new IO.Ably.ConnectionTypes();
-            if (unpacker.IsArrayHeader) {
-                int unpacked = default(int);
-                int itemsCount = default(int);
-                itemsCount = MsgPack.Serialization.UnpackHelpers.GetItemsCount(unpacker);
-                IO.Ably.ResourceCount nullable = default(IO.Ably.ResourceCount);
-                if ((unpacked < itemsCount)) {
-                    if ((unpacker.Read() == false)) {
-                        throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(0);
+            int itemsCount0 = default(int);
+            itemsCount0 = MsgPack.Serialization.UnpackHelpers.GetItemsCount(unpacker);
+            for (int i = 0; (i < itemsCount0); i = (i + 1))
+            {
+                string key = default(string);
+                string nullable2 = default(string);
+                nullable2 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker,
+                    typeof(IO.Ably.ConnectionTypes), "MemberName");
+                if (((nullable2 == null)
+                     == false))
+                {
+                    key = nullable2;
+                }
+                else
+                {
+                    throw MsgPack.Serialization.SerializationExceptions.NewNullIsProhibited("MemberName");
+                }
+                if ((key == "tls"))
+                {
+                    IO.Ably.ResourceCount nullable5 = default(IO.Ably.ResourceCount);
+                    if ((unpacker.Read() == false))
+                    {
+                        throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
                     }
-                    if (((unpacker.IsArrayHeader == false) 
-                                && (unpacker.IsMapHeader == false))) {
-                        nullable = this._serializer1.UnpackFrom(unpacker);
+                    if (((unpacker.IsArrayHeader == false)
+                         && (unpacker.IsMapHeader == false)))
+                    {
+                        nullable5 = this._serializer1.UnpackFrom(unpacker);
                     }
-                    else {
-                        MsgPack.Unpacker disposable = default(MsgPack.Unpacker);
-                        disposable = unpacker.ReadSubtree();
-                        try {
-                            nullable = this._serializer1.UnpackFrom(disposable);
+                    else
+                    {
+                        MsgPack.Unpacker disposable4 = default(MsgPack.Unpacker);
+                        disposable4 = unpacker.ReadSubtree();
+                        try
+                        {
+                            nullable5 = this._serializer1.UnpackFrom(disposable4);
                         }
-                        finally {
-                            if (((disposable == null) 
-                                        == false)) {
-                                disposable.Dispose();
+                        finally
+                        {
+                            if (((disposable4 == null)
+                                 == false))
+                            {
+                                disposable4.Dispose();
                             }
                         }
                     }
-                }
-                if (((nullable == null) 
-                            == false)) {
-                    result.All = nullable;
-                }
-                unpacked = (unpacked + 1);
-                IO.Ably.ResourceCount nullable0 = default(IO.Ably.ResourceCount);
-                if ((unpacked < itemsCount)) {
-                    if ((unpacker.Read() == false)) {
-                        throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(1);
-                    }
-                    if (((unpacker.IsArrayHeader == false) 
-                                && (unpacker.IsMapHeader == false))) {
-                        nullable0 = this._serializer1.UnpackFrom(unpacker);
-                    }
-                    else {
-                        MsgPack.Unpacker disposable0 = default(MsgPack.Unpacker);
-                        disposable0 = unpacker.ReadSubtree();
-                        try {
-                            nullable0 = this._serializer1.UnpackFrom(disposable0);
-                        }
-                        finally {
-                            if (((disposable0 == null) 
-                                        == false)) {
-                                disposable0.Dispose();
-                            }
-                        }
+                    if (((nullable5 == null)
+                         == false))
+                    {
+                        result.Tls = nullable5;
                     }
                 }
-                if (((nullable0 == null) 
-                            == false)) {
-                    result.Plain = nullable0;
-                }
-                unpacked = (unpacked + 1);
-                IO.Ably.ResourceCount nullable1 = default(IO.Ably.ResourceCount);
-                if ((unpacked < itemsCount)) {
-                    if ((unpacker.Read() == false)) {
-                        throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(2);
-                    }
-                    if (((unpacker.IsArrayHeader == false) 
-                                && (unpacker.IsMapHeader == false))) {
-                        nullable1 = this._serializer1.UnpackFrom(unpacker);
-                    }
-                    else {
-                        MsgPack.Unpacker disposable1 = default(MsgPack.Unpacker);
-                        disposable1 = unpacker.ReadSubtree();
-                        try {
-                            nullable1 = this._serializer1.UnpackFrom(disposable1);
-                        }
-                        finally {
-                            if (((disposable1 == null) 
-                                        == false)) {
-                                disposable1.Dispose();
-                            }
-                        }
-                    }
-                }
-                if (((nullable1 == null) 
-                            == false)) {
-                    result.Tls = nullable1;
-                }
-                unpacked = (unpacked + 1);
-            }
-            else {
-                int itemsCount0 = default(int);
-                itemsCount0 = MsgPack.Serialization.UnpackHelpers.GetItemsCount(unpacker);
-                for (int i = 0; (i < itemsCount0); i = (i + 1)) {
-                    string key = default(string);
-                    string nullable2 = default(string);
-                    nullable2 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.ConnectionTypes), "MemberName");
-                    if (((nullable2 == null) 
-                                == false)) {
-                        key = nullable2;
-                    }
-                    else {
-                        throw MsgPack.Serialization.SerializationExceptions.NewNullIsProhibited("MemberName");
-                    }
-                    if ((key == "Tls")) {
-                        IO.Ably.ResourceCount nullable5 = default(IO.Ably.ResourceCount);
-                        if ((unpacker.Read() == false)) {
+                else
+                {
+                    if ((key == "plain"))
+                    {
+                        IO.Ably.ResourceCount nullable4 = default(IO.Ably.ResourceCount);
+                        if ((unpacker.Read() == false))
+                        {
                             throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
                         }
-                        if (((unpacker.IsArrayHeader == false) 
-                                    && (unpacker.IsMapHeader == false))) {
-                            nullable5 = this._serializer1.UnpackFrom(unpacker);
+                        if (((unpacker.IsArrayHeader == false)
+                             && (unpacker.IsMapHeader == false)))
+                        {
+                            nullable4 = this._serializer1.UnpackFrom(unpacker);
                         }
-                        else {
-                            MsgPack.Unpacker disposable4 = default(MsgPack.Unpacker);
-                            disposable4 = unpacker.ReadSubtree();
-                            try {
-                                nullable5 = this._serializer1.UnpackFrom(disposable4);
+                        else
+                        {
+                            MsgPack.Unpacker disposable3 = default(MsgPack.Unpacker);
+                            disposable3 = unpacker.ReadSubtree();
+                            try
+                            {
+                                nullable4 = this._serializer1.UnpackFrom(disposable3);
                             }
-                            finally {
-                                if (((disposable4 == null) 
-                                            == false)) {
-                                    disposable4.Dispose();
+                            finally
+                            {
+                                if (((disposable3 == null)
+                                     == false))
+                                {
+                                    disposable3.Dispose();
                                 }
                             }
                         }
-                        if (((nullable5 == null) 
-                                    == false)) {
-                            result.Tls = nullable5;
+                        if (((nullable4 == null)
+                             == false))
+                        {
+                            result.Plain = nullable4;
                         }
                     }
-                    else {
-                        if ((key == "Plain")) {
-                            IO.Ably.ResourceCount nullable4 = default(IO.Ably.ResourceCount);
-                            if ((unpacker.Read() == false)) {
+                    else
+                    {
+                        if ((key == "all"))
+                        {
+                            IO.Ably.ResourceCount nullable3 = default(IO.Ably.ResourceCount);
+                            if ((unpacker.Read() == false))
+                            {
                                 throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
                             }
-                            if (((unpacker.IsArrayHeader == false) 
-                                        && (unpacker.IsMapHeader == false))) {
-                                nullable4 = this._serializer1.UnpackFrom(unpacker);
+                            if (((unpacker.IsArrayHeader == false)
+                                 && (unpacker.IsMapHeader == false)))
+                            {
+                                nullable3 = this._serializer1.UnpackFrom(unpacker);
                             }
-                            else {
-                                MsgPack.Unpacker disposable3 = default(MsgPack.Unpacker);
-                                disposable3 = unpacker.ReadSubtree();
-                                try {
-                                    nullable4 = this._serializer1.UnpackFrom(disposable3);
+                            else
+                            {
+                                MsgPack.Unpacker disposable2 = default(MsgPack.Unpacker);
+                                disposable2 = unpacker.ReadSubtree();
+                                try
+                                {
+                                    nullable3 = this._serializer1.UnpackFrom(disposable2);
                                 }
-                                finally {
-                                    if (((disposable3 == null) 
-                                                == false)) {
-                                        disposable3.Dispose();
+                                finally
+                                {
+                                    if (((disposable2 == null)
+                                         == false))
+                                    {
+                                        disposable2.Dispose();
                                     }
                                 }
                             }
-                            if (((nullable4 == null) 
-                                        == false)) {
-                                result.Plain = nullable4;
+                            if (((nullable3 == null)
+                                 == false))
+                            {
+                                result.All = nullable3;
                             }
                         }
-                        else {
-                            if ((key == "All")) {
-                                IO.Ably.ResourceCount nullable3 = default(IO.Ably.ResourceCount);
-                                if ((unpacker.Read() == false)) {
-                                    throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
-                                }
-                                if (((unpacker.IsArrayHeader == false) 
-                                            && (unpacker.IsMapHeader == false))) {
-                                    nullable3 = this._serializer1.UnpackFrom(unpacker);
-                                }
-                                else {
-                                    MsgPack.Unpacker disposable2 = default(MsgPack.Unpacker);
-                                    disposable2 = unpacker.ReadSubtree();
-                                    try {
-                                        nullable3 = this._serializer1.UnpackFrom(disposable2);
-                                    }
-                                    finally {
-                                        if (((disposable2 == null) 
-                                                    == false)) {
-                                            disposable2.Dispose();
-                                        }
-                                    }
-                                }
-                                if (((nullable3 == null) 
-                                            == false)) {
-                                    result.All = nullable3;
-                                }
-                            }
-                            else {
-                                unpacker.Skip();
-                            }
+                        else
+                        {
+                            unpacker.Skip();
                         }
                     }
                 }
             }
             return result;
         }
-        
+
         private static T @__Conditional<T>(bool condition, T whenTrue, T whenFalse)
          {
             if (condition) {

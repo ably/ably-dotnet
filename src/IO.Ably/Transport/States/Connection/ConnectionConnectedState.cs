@@ -8,7 +8,7 @@ namespace IO.Ably.Transport.States.Connection
     internal class ConnectionConnectedState : ConnectionState
     {
         private readonly ConnectionInfo _info;
-        private bool _resumed = false;
+        private bool? _resumed = null;
         public ConnectionConnectedState(IConnectionContext context, ConnectionInfo info, ErrorInfo error = null) :
             base(context)
         {
@@ -62,7 +62,12 @@ namespace IO.Ably.Transport.States.Connection
         {
             if (_info != null)
             {
-                _resumed = Context.Connection.Id == _info.ConnectionId;
+                if (Context.Connection.Key.IsNotEmpty() &&
+                    Context.Connection.Id == _info.ConnectionId)
+                {
+                    _resumed = true;
+                }
+                
                 Context.Connection.Id = _info.ConnectionId;
                 Context.Connection.Key = _info.ConnectionKey;
                 Context.Connection.Serial = _info.ConnectionSerial;
@@ -71,16 +76,19 @@ namespace IO.Ably.Transport.States.Connection
                 Context.SetConnectionClientId(_info.ClientId);
             }
 
-            if(_resumed && Logger.IsDebug) Logger.Debug("Connection resumed!");
+            if(_resumed.HasValue && _resumed.Value && Logger.IsDebug) Logger.Debug("Connection resumed!");
         }
 
         public override Task OnAttachToContext()
         {
-            if (_resumed == false)
+            if (_resumed != true)
+            {
                 Context.ClearAckQueueAndFailMessages(null);
+            }
+            else if(_resumed.HasValue && _resumed.Value == false)
+                Context.DetachAttachedChannels(Error);
 
-            Context.SendPendingMessages(_resumed);
-
+            Context.SendPendingMessages(_resumed.GetValueOrDefault());
             return TaskConstants.BooleanTrue;
         }
     }

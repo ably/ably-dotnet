@@ -2,12 +2,12 @@
 
 namespace IO.Ably.Tests
 {
-    public class DataRequestQueryParseFacts
+    public class DataRequestQueryParseTests
     {
         private DataRequestQuery _query;
         public const string HeaderValue = "?start=1380794880000&end=1380794881058&limit=100&by=minute&direction=forwards&format=json&first_start=1380794880000";
 
-        public DataRequestQueryParseFacts()
+        public DataRequestQueryParseTests()
         {
             _query = DataRequestQuery.Parse(HeaderValue);
         }

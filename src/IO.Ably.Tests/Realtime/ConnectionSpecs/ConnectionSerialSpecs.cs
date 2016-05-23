@@ -15,7 +15,7 @@ namespace IO.Ably.Tests.Realtime
         public void OnceConnected_ConnectionSerialShouldBeMinusOne()
         {
             var client = GetClientWithFakeTransport();
-            client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
             client.Connection.Serial.Should().Be(-1);
         }
 
@@ -40,9 +40,9 @@ namespace IO.Ably.Tests.Realtime
         {
             // Arrange
             var client = GetClientWithFakeTransport();
-            client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
-            client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Message)
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Message)
             {
                 connectionSerial = 123456
             });
@@ -57,10 +57,10 @@ namespace IO.Ably.Tests.Realtime
         {
             // Arrange
             var client = GetClientWithFakeTransport();
-            client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
             var initialSerial = client.Connection.Serial;
 
-            client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Message));
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Message));
 
             // Act
             client.Connection.Serial.Should().Be(initialSerial);

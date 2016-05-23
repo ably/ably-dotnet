@@ -6,18 +6,23 @@ namespace IO.Ably.Transport
     /// <summary>This trivial class wraps legacy callback-style API into a Task API.</summary>
     internal class TaskWrapper
     {
-        readonly TaskCompletionSource<bool> _completionSource = new TaskCompletionSource<bool>();
+        readonly TaskCompletionSource<Result> _completionSource = new TaskCompletionSource<Result>();
 
-        public Task Task => _completionSource.Task;
+        public Task<Result> Task => _completionSource.Task;
 
         public void Callback(bool res, ErrorInfo ei)
         {
             if (res)
-                _completionSource.SetResult(true);
+                _completionSource.SetResult(Result.Ok());
             else if (ei != null)
-                _completionSource.SetException(ei.AsException());
+                _completionSource.SetResult(Result.Fail(ei));
             else
-                _completionSource.SetException(new Exception(""));
+                _completionSource.SetException(new Exception("Unexpected exception thrown by the TaskWrapper."));
+        }
+
+        public void SetException(Exception ex)
+        {
+            _completionSource.SetException(new AblyException(ex));
         }
 
         public static Task<Result<T>> Wrap<T>(Action<Action<T, ErrorInfo>> toWrapMethod)
@@ -31,7 +36,7 @@ namespace IO.Ably.Transport
             {
                 wrapper.SetException(ex);
             }
-            
+
             return wrapper.Task;
         }
     }
@@ -51,7 +56,7 @@ namespace IO.Ably.Transport
             else if (typeof(T).IsValueType == false && res != null)
                 _completionSource.SetResult(Result.Ok(res));
             else
-                _completionSource.SetException(new Exception("")); //Something bad happened
+                _completionSource.SetException(new Exception("Unexpected Exception from the TaskWrapper")); //Something bad happened
         }
 
 

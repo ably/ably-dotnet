@@ -32,9 +32,9 @@ namespace IO.Ably.Tests
 
         public bool AbortCalled { get; set; }
 
-        public ProtocolMessage LastMessageSend => LastTransportData.Original;
+        public ProtocolMessage LastMessageSend => LastTransportData?.Original;
         public List<RealtimeTransportData> SentMessages { get; set; } = new List<RealtimeTransportData>();
-        public RealtimeTransportData LastTransportData => SentMessages.Last();
+        public RealtimeTransportData LastTransportData => SentMessages.LastOrDefault();
         public TransportState State { get; set; }
         public ITransportListener Listener { get; set; }
 

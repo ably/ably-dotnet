@@ -48,7 +48,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                     raisedErrors.Add(args.Reason);
             };
 
-            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
             renewTokenCalled.Should().BeTrue();
             var currentToken = client.Auth.CurrentToken;
@@ -80,7 +80,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 return AblyResponse.EmptyResponse.ToTask();
             });
 
-            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
             renewTokenCalled.Should().BeFalse();
             client.Connection.State.Should().Be(ConnectionStateType.Failed);
@@ -107,7 +107,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 return AblyResponse.EmptyResponse.ToTask();
             });
 
-            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
             client.Connection.State.Should().Be(ConnectionStateType.Failed);
             client.Connection.Reason.Should().NotBeNull();
@@ -135,8 +135,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 return AblyResponse.EmptyResponse.ToTask();
             });
 
-            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
-            await client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
             renewCount.Should().Be(1);
             client.Connection.State.Should().Be(ConnectionStateType.Failed);
@@ -172,6 +172,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Fact]
         [Trait("spec", "RTN14d")]
         [Trait("spec", "RTN14e")]
+        [Trait("intermittent", "true")]
         public async Task WhenTransportFails_ShouldGoFromConnectingToDisconectedUntilConnectionStateTtlIsReachedAndStateIsSuspended()
         {
             Now = DateTimeOffset.UtcNow;

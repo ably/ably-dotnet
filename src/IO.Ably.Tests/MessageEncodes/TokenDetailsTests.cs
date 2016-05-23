@@ -9,7 +9,6 @@ namespace IO.Ably.Tests
 {
     public class TokenDetailsTests
     {
-
         [Fact]
         public void FromJson_ParsesTokenCorrectly()
             {

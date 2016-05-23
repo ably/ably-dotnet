@@ -39,9 +39,8 @@ namespace IO.Ably
         {
             if (ClientId.IsNotEmpty())
                 return ClientId;
-            if (DefaultTokenParams != null)
-                return DefaultTokenParams.ClientId;
-            return null;
+
+            return DefaultTokenParams?.ClientId;
         }
 
         /// <summary>

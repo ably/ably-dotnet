@@ -12,21 +12,10 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime
 {
-
-
     [Collection("AblyRest SandBox Collection")]
     [Trait("requires", "sandbox")]
     public class ConnectionSandBoxSpecs : SandboxSpecs
     {
-        private Task WaitForState(AblyRealtime realtime, ConnectionStateType awaitedState = ConnectionStateType.Connected, TimeSpan? waitSpan = null)
-        {
-            
-            var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
-            if (waitSpan.HasValue)
-                return connectionAwaiter.Wait(waitSpan.Value);
-            return connectionAwaiter.Wait();
-        }
-
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN6")]
@@ -46,7 +35,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN11a")]
         public async Task ANewConnectionShouldRaiseConnectingAndConnectedEvents(Protocol protocol)
         {
-            var client = await GetRealtimeClient(protocol, opts => opts.AutoConnect = false);
+            var client = await GetRealtimeClient(protocol, (opts, _) => opts.AutoConnect = false);
             var states = new List<ConnectionStateType>();
             client.Connection.ConnectionStateChanged += (sender, args) =>
             {
@@ -154,10 +143,10 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN14a")]
         public async Task WithInvalidApiKey_ShouldSetToFailedStateAndAddErrorMessageToEmittedState(Protocol protocol)
         {
-            var client = await GetRealtimeClient(protocol, options =>
+            var client = await GetRealtimeClient(protocol, (opts, _) =>
             {
-                options.AutoConnect = false;
-                options.Key = "baba.bobo:bosh";
+                opts.AutoConnect = false;
+                opts.Key = "baba.bobo:bosh";
             });
 
             ErrorInfo error = null;
@@ -185,7 +174,7 @@ namespace IO.Ably.Tests.Realtime
             //Use an old token which will result in 40143 Unrecognised token
             invalidToken.Token = invalidToken.Token.Split('.')[0] + ".DOcRVPgv1Wf1-YGgJFjyk2PNOGl_DFL7aCDzEPju8TYHorfxHHVoNoDGz5fKRW0UxePiVjD1EVEW0ZiknIK8u3S5p1FBq5Rtw_I7OX7fW8U4sGxJjAfMS_fTcXFdvouTQ";
 
-            var realtimeClient = await GetRealtimeClient(protocol, options =>
+            var realtimeClient = await GetRealtimeClient(protocol, (options, _) =>
             {
                 options.TokenDetails = invalidToken;
                 options.AutoConnect = false;
@@ -210,7 +199,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN14c")]
         public async Task ShouldFailIfConnectionIsNotEstablishedWithInDefaultTimeout(Protocol protocol)
         {
-            var client = await GetRealtimeClient(protocol, options =>
+            var client = await GetRealtimeClient(protocol, (options, _) =>
             {
                 options.RealtimeHost = "localhost";
                 options.AutoConnect = false;
@@ -228,12 +217,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15e")]
         public async Task ShouldUpdateConnectionKeyWhenConnectionIsResumed(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
-            
-            var client = await GetRealtimeClient(protocol, options =>
-            {
-                options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(500);
-            });
+            var client = await GetRealtimeClient(protocol);
 
             await WaitForState(client, ConnectionStateType.Connected);
             var initialConnectionKey = client.Connection.Key;
@@ -249,7 +233,6 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         public async Task WithAuthUrlShouldGetTokenFromUrl(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
             var client = await GetRestClient(protocol);
             var token = await client.Auth.RequestToken(new TokenParams() { ClientId = "*" });
             var settings = await Fixture.GetSettings();
@@ -270,13 +253,12 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN16d")]
         public async Task WhenRecoveringConnection_ShouldHaveSameConnectionIdButDifferentKey(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
             var client = await GetRealtimeClient(protocol);
             await WaitForState(client, ConnectionStateType.Connected);
             var id = client.Connection.Id;
             var key = client.Connection.Key;
 
-            var recoveryClient = await GetRealtimeClient(protocol, opts =>
+            var recoveryClient = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.Recover = client.Connection.RecoveryKey;
                 opts.AutoConnect = false;
@@ -297,7 +279,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN16e")]
         public async Task WithDummyRecoverData_ShouldConnectAndSetAReasonOnTheConnection(Protocol protocol)
         {
-            var client = await GetRealtimeClient(protocol, opts =>
+            var client = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.Recover = "c17a8!WeXvJum2pbuVYZtF-1b63c17a8:-1";
                 opts.AutoConnect = false;

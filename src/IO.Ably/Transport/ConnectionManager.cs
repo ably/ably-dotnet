@@ -10,12 +10,13 @@ using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Nito.AsyncEx;
 using Nito.AsyncEx.Synchronous;
+using IO.Ably.Rest;
 
 namespace IO.Ably.Transport
 {
     internal class ConnectionManager : IConnectionManager, ITransportListener, IConnectionContext
     {
-        private readonly Queue<MessageAndCallback> _pendingMessages;
+        public Queue<MessageAndCallback> PendingMessages { get; }
         internal readonly AsyncContextThread AsyncContextThread = new AsyncContextThread();
         private ITransportFactory GetTransportFactory() => Options.TransportFactory ?? Defaults.WebSocketTransportFactory;
         public IAcknowledgementProcessor AckProcessor { get; internal set; }
@@ -42,9 +43,22 @@ namespace IO.Ably.Transport
             return AttemptsInfo.CanFallback(error);
         }
 
+        public void DetachAttachedChannels(ErrorInfo error)
+        {
+            Logger.Warning("Force detaching all attached channels because the connection did not resume successfully!");
+
+            foreach(var channel in Connection.RealtimeClient.Channels)
+            {
+                if (channel.State == ChannelState.Attached || channel.State == ChannelState.Attaching)
+                {
+                    (channel as RealtimeChannel).SetChannelState(ChannelState.Detached, error);
+                }
+            }
+        }
+
         public ConnectionManager(Connection connection)
         {
-            _pendingMessages = new Queue<MessageAndCallback>();
+            PendingMessages = new Queue<MessageAndCallback>();
             AttemptsInfo = new ConnectionAttemptsInfo(connection);
             Connection = connection;
             AckProcessor = new AcknowledgementProcessor(connection);
@@ -198,12 +212,22 @@ namespace IO.Ably.Transport
             State.Close();
         }
 
-        public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null)
+        public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null, ChannelOptions channelOptions = null)
         {
             if (Logger.IsDebug)
             {
                 Logger.Debug($"Current state: {Connection.State}. Sending message: {message}");
             }
+
+            var result = VerifyMessageHasCompatibleClientId(message);
+            if (result.IsFailure)
+            {
+                callback?.Invoke(false, result.Error);
+                return;
+            }
+
+            //Encode message/presence payloads
+            Handler.EncodeProtocolMessage(message, channelOptions);
 
             if (State.CanSend)
             {
@@ -211,21 +235,32 @@ namespace IO.Ably.Transport
                 return;
             }
 
-            if (State.CanQueue && Options.QueueMessages)
+            if (State.CanQueue)
             {
-                lock (_pendingMessages)
+                if (Options.QueueMessages)
                 {
-                    _pendingMessages.Enqueue(new MessageAndCallback(message, callback));
+                    lock (PendingMessages)
+                    {
+                        if(Logger.IsDebug) { Logger.Debug($"Queuing message with action: {message.action}. Connection State: {ConnectionState}");}
+                        PendingMessages.Enqueue(new MessageAndCallback(message, callback));
+                    }
+                }
+                else
+                {
+                    throw new AblyException($"Current state is [{State.State}] which supports queuing but Options.QueueMessages is set to False.");
                 }
                 return;
             }
 
-            if (State.CanQueue && Options.QueueMessages == false)
-            {
-                throw new AblyException($"Current state is [{State.State}] which supports queuing but Options.QueueMessages is set to False.");
-            }
             throw new AblyException($"The current state [{State.State}] does not allow messages to be sent.");
+        }
 
+        private Result VerifyMessageHasCompatibleClientId(ProtocolMessage protocolMessage)
+        {
+            var messagesResult = RestClient.AblyAuth.ValidateClientIds(protocolMessage.messages);
+            var presenceResult = RestClient.AblyAuth.ValidateClientIds(protocolMessage.presence);
+
+            return Result.Combine(messagesResult, presenceResult);
         }
 
         private void SendMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
@@ -307,14 +342,22 @@ namespace IO.Ably.Transport
                 }
             }
 
-            lock (_pendingMessages)
+            lock (PendingMessages)
             {
-                while (_pendingMessages.Count > 0)
+                while (PendingMessages.Count > 0)
                 {
-                    var queuedMessage = _pendingMessages.Dequeue();
+                    var queuedMessage = PendingMessages.Dequeue();
                     SendMessage(queuedMessage.Message, queuedMessage.Callback);
                 } 
             }
+        }
+
+        public void FailMessageWaitingForAckAndClearOutgoingQueue(RealtimeChannel channel, ErrorInfo error)
+        {
+            error = error ?? new ErrorInfo($"Channel cannot publish messages whilst state is {channel.State}", 50000);
+            AckProcessor.FailChannelMessages(channel.Name, error);
+            
+            //TODO: Clear messages from the outgoing queue
         }
 
         void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)
@@ -366,7 +409,7 @@ namespace IO.Ably.Transport
             handled |= AckProcessor.OnMessageReceived(message);
             handled |= ConnectionHeartbeatRequest.CanHandleMessage(message);
 
-            if (message.connectionSerial != null)
+            if (message.connectionSerial.HasValue)
             {
                 Connection.Serial = message.connectionSerial.Value;
             }

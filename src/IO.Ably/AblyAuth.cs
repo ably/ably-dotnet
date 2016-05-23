@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using IO.Ably.Auth;
@@ -354,5 +355,36 @@ namespace IO.Ably
             TokenAuthMethod method = GetTokenAuthMethod();
             Logger.Info("Authentication method: {0}", method.ToEnumDescription());
         }
+
+        public Result ValidateClientIds(IEnumerable<IMessage> messages)
+        {
+            var libClientId = GetClientId();
+            if (libClientId.IsEmpty() || libClientId == "*")
+                return Result.Ok();
+
+            foreach (var message in messages)
+            {
+                if (message.clientId.IsNotEmpty() && message.clientId != libClientId)
+                {
+                    var errorMessage = "";
+                    if (message is Message)
+                    {
+                        errorMessage =
+                            $"{message.GetType().Name} with name '{(message as Message).name}' has incompatible clientId {message.clientId} as the current client is configured with {libClientId}";
+                    }
+                    else
+                    {
+                        errorMessage =
+                            $"{message.GetType().Name} has incompatible clientId '{message.clientId}' as the current client is configured with '{libClientId}'";
+                    }
+
+                    return Result.Fail(new ErrorInfo(errorMessage, 40012, (HttpStatusCode)400));
+                }
+            }
+
+            return Result.Ok();
+        }
+
+
     }
 }

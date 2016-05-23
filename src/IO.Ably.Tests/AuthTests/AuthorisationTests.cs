@@ -74,6 +74,7 @@ namespace IO.Ably.Tests
         }
 
 
+        [Trait("spec", "RSA9a")]
         [Trait("spec", "RSA9b")]
         [Trait("spec", "RSA9i")]
         public class CreateTokenRequestAuthOptionSpecs : AuthorisationTests

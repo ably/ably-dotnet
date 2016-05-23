@@ -7,9 +7,16 @@ namespace IO.Ably.Tests.Realtime
 {
     public static class AblyRealtimeTestExtensions
     {
-        public static Task FakeMessageReceived(this AblyRealtime client, ProtocolMessage message)
+        public static Task FakeProtocolMessageReceived(this AblyRealtime client, ProtocolMessage message)
         {
             return client.ConnectionManager.OnTransportMessageReceived(message);
+        }
+
+        public static Task FakeMessageReceived(this AblyRealtime client, Message message, string channel = null)
+        {
+            return
+                client.ConnectionManager.OnTransportMessageReceived(
+                    new ProtocolMessage(ProtocolMessage.MessageAction.Message) {messages = new[] {message}, channel = channel});
         }
     }
 
@@ -29,7 +36,7 @@ namespace IO.Ably.Tests.Realtime
         internal AblyRealtime GetConnectedClient(Action<ClientOptions> optionsAction = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
         {
             var client = GetClientWithFakeTransport(optionsAction, handleRequestFunc);
-            client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
                 connectionDetails = new ConnectionDetailsMessage() { connectionKey = "connectionKey"},
                 connectionId = "1",

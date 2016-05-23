@@ -138,7 +138,7 @@ namespace IO.Ably.Tests
         public void WhenSendingMessage_AckCallbackCalled_ForMultipleMessages()
         {
             // Arrange
-            AcknowledgementProcessor target = new AcknowledgementProcessor(new Connection(new AblyRest(ValidKey)));
+            AcknowledgementProcessor target = new AcknowledgementProcessor(new Connection(new AblyRealtime(ValidKey)));
             List<Tuple<bool, ErrorInfo>> callbacks = new List<Tuple<bool, ErrorInfo>>();
 
             // Act
@@ -201,7 +201,7 @@ namespace IO.Ably.Tests
 
         public AckProtocolTests(ITestOutputHelper output) : base(output)
         {
-            _connection = new Connection(new AblyRest(ValidKey));
+            _connection = new Connection(new AblyRealtime(ValidKey));
             _connection.Initialise();
             _ackProcessor = new AcknowledgementProcessor(_connection);
         }

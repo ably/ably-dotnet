@@ -15,26 +15,22 @@ namespace IO.Ably.Rest
     {
         public string Name { get; private set; }
         private readonly AblyRest _ablyRest;
-        public ChannelOptions Options { get; private set; }
-        private readonly string _basePath;
 
-        internal RestChannel(AblyRest ablyRest, string name,  ChannelOptions options)
+        public ChannelOptions Options
+        {
+            get { return _options; }
+            set { _options = value ?? new ChannelOptions(); }
+        }
+
+        private readonly string _basePath;
+        private ChannelOptions _options;
+
+        internal RestChannel(AblyRest ablyRest, string name, ChannelOptions options)
         {
             Name = name;
             _ablyRest = ablyRest;
-            SetOptions(options);
+            _options = options;
             _basePath = $"/channels/{name.EncodeUriPart()}";
-        }
-
-        internal void SetOptions(ChannelOptions options)
-        {
-            if (options == null)
-            {
-                Options = new ChannelOptions(false);
-                return;
-            }
-
-            Options = new ChannelOptions(options.Encrypted, options.CipherParams);
         }
 
         /// <summary>
@@ -42,11 +38,12 @@ namespace IO.Ably.Rest
         /// </summary>
         /// <param name="name">The event name of the message to publish</param>
         /// <param name="data">The message payload. Allowed payloads are string, objects and byte[]</param>
-        public Task Publish(string name, object data)
+        /// <param name="clientId">Explicit message clientId</param>
+        public Task Publish(string name, object data, string clientId = null)
         {
             var request = _ablyRest.CreatePostRequest(_basePath + "/messages", Options);
 
-            request.PostData = new List<Message> { new Message(name, data)};
+            request.PostData = new List<Message> { new Message(name, data, clientId) };
             return _ablyRest.ExecuteRequest(request);
         }
 
@@ -61,6 +58,11 @@ namespace IO.Ably.Rest
         /// <param name="messages">a list of messages</param>
         public Task Publish(IEnumerable<Message> messages)
         {
+            var result = _ablyRest.AblyAuth.ValidateClientIds(messages);
+            if (result.IsFailure)
+            {
+                throw new AblyException(result.Error);
+            }
             var request = _ablyRest.CreatePostRequest(_basePath + "/messages", Options);
             request.PostData = messages;
             return _ablyRest.ExecuteRequest(request);

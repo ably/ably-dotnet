@@ -5,26 +5,28 @@ using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
-using SuperSocket.ClientEngine;
 
 namespace IO.Ably.Realtime
 {
     public sealed class Connection : IDisposable
     {
-        internal AblyRest RestClient { get; }
+        internal AblyRest RestClient => RealtimeClient.RestClient;
+        internal AblyRealtime RealtimeClient { get; }
         internal ConnectionManager ConnectionManager { get; set; }
         internal List<string> FallbackHosts;
+        internal ChannelMessageProcessor ChannelMessageProcessor { get; set; }
         private string _host;
 
-        internal Connection(AblyRest restClient)
+        internal Connection(AblyRealtime realtimeClient)
         {
             FallbackHosts = Defaults.FallbackHosts.Shuffle().ToList();
-            RestClient = restClient;
+            RealtimeClient = realtimeClient;
         }
 
         internal void Initialise()
         {
             ConnectionManager = new ConnectionManager(this);
+            ChannelMessageProcessor = new ChannelMessageProcessor(ConnectionManager, RealtimeClient.Channels);
             ConnectionState = new ConnectionInitializedState(ConnectionManager);
         }
 
@@ -103,7 +105,6 @@ namespace IO.Ably.Realtime
         {
             ConnectionHeartbeatRequest.Execute(ConnectionManager, callback);
         }
-
 
         /// <summary>
         ///     Causes the connection to close, entering the <see cref="ConnectionStateType.Closed" /> state. Once closed,

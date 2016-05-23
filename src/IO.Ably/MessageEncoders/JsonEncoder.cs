@@ -11,9 +11,9 @@ namespace IO.Ably.MessageEncoders
             get { return "json"; }
         }
 
-        public override void Decode(IEncodedMessage payload, ChannelOptions options)
+        public override Result Decode(IMessage payload, ChannelOptions options)
         {
-            if (IsEmpty(payload.data) || CurrentEncodingIs(payload, EncodingName) == false) return;
+            if (IsEmpty(payload.data) || CurrentEncodingIs(payload, EncodingName) == false) return Result.Ok();
 
             try
             {
@@ -21,23 +21,26 @@ namespace IO.Ably.MessageEncoders
             }
             catch (Exception ex)
             {
-                throw new AblyException(new ErrorInfo(string.Format("Invalid Json data: '{0}'", payload.data), 50000), ex);
+                Logger.Error($"Invalid Json data: '{payload.data}'", ex);
+                return Result.Fail(new ErrorInfo($"Invalid Json data: '{payload.data}'"));
             }
             RemoveCurrentEncodingPart(payload);
+            return Result.Ok();
         }
 
-        public override void Encode(IEncodedMessage payload, ChannelOptions options)
+        public override Result Encode(IMessage payload, ChannelOptions options)
         {
-            if (IsEmpty(payload.data)) return;
+            if (IsEmpty(payload.data)) return Result.Ok();
 
             if (NeedsJsonEncoding(payload))
             {
                 payload.data = JsonConvert.SerializeObject(payload.data);
                 AddEncoding(payload, EncodingName);
             }
+            return Result.Ok();
         }
 
-        public bool NeedsJsonEncoding(IEncodedMessage payload)
+        public bool NeedsJsonEncoding(IMessage payload)
         {
             return payload.data is string == false && payload.data is byte[] == false;
         }

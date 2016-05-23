@@ -14,15 +14,15 @@ namespace IO.Ably.MessageEncoders
         }
 
         public abstract string EncodingName { get; }
-        public abstract void Encode(IEncodedMessage payload, ChannelOptions options);
-        public abstract void Decode(IEncodedMessage payload, ChannelOptions options);
+        public abstract Result Encode(IMessage payload, ChannelOptions options);
+        public abstract Result Decode(IMessage payload, ChannelOptions options);
 
         public bool IsEmpty(object data)
         {
             return data == null || (data is string && ((string)data).IsEmpty());
         }
 
-        public void AddEncoding(IEncodedMessage payload, string encoding = null)
+        public void AddEncoding(IMessage payload, string encoding = null)
         {
             var encodingToAdd = encoding ?? EncodingName;
             if (payload.encoding.IsEmpty())
@@ -33,12 +33,12 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
-        public bool CurrentEncodingIs(IEncodedMessage payload, string encoding)
+        public bool CurrentEncodingIs(IMessage payload, string encoding)
         {
             return payload.encoding.IsNotEmpty() && payload.encoding.EndsWith(encoding, StringComparison.CurrentCultureIgnoreCase);
         }
 
-        public string GetCurrentEncoding(IEncodedMessage payload)
+        public string GetCurrentEncoding(IMessage payload)
         {
             if (payload.encoding.IsEmpty())
                 return "";
@@ -46,7 +46,7 @@ namespace IO.Ably.MessageEncoders
             return payload.encoding.Split(new[] {'/'}, StringSplitOptions.RemoveEmptyEntries).Last();
         }
 
-        protected void RemoveCurrentEncodingPart(IEncodedMessage payload)
+        protected void RemoveCurrentEncodingPart(IMessage payload)
         {
             if (payload.encoding.IsEmpty())
                 return;

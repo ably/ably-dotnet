@@ -22,7 +22,7 @@ namespace IO.Ably.Tests.Realtime
         public void ConnectionIdSetBasedOnValueProvidedByAblyService()
         {
             var client = GetClientWithFakeTransport();
-            client.FakeMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { connectionId = "123" });
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { connectionId = "123" });
             client.Connection.Id.Should().Be("123");
         }
 

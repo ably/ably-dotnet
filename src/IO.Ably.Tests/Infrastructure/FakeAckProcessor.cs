@@ -37,6 +37,13 @@ namespace IO.Ably.Tests
             _queuedMessages.Clear();
         }
 
+        public void FailChannelMessages(string name, ErrorInfo error)
+        {
+            FailChannelMessagesCalled = true;
+        }
+
+        public bool FailChannelMessagesCalled { get; set; }
+
         public bool QueueCleared { get; set; }
     }
 }

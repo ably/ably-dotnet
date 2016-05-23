@@ -12,7 +12,6 @@ namespace IO.Ably.CustomSerialisers {
     
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("MsgPack.Serialization.CodeDomSerializers.CodeDomSerializerBuilder", "0.6.0.0")]
-    [System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public class IO_Ably_ResourceCountSerializer : MsgPack.Serialization.MessagePackSerializer<IO.Ably.ResourceCount> {
         
         private MsgPack.Serialization.MessagePackSerializer<string> _serializer0;
@@ -31,122 +30,100 @@ namespace IO.Ably.CustomSerialisers {
         
         protected override void PackToCore(MsgPack.Packer packer, IO.Ably.ResourceCount objectTree) {
             packer.PackMapHeader(5);
-            this._serializer0.PackTo(packer, "Mean");
+            this._serializer0.PackTo(packer, "mean");
             this._serializer1.PackTo(packer, objectTree.Mean);
-            this._serializer0.PackTo(packer, "Min");
+            this._serializer0.PackTo(packer, "min");
             this._serializer1.PackTo(packer, objectTree.Min);
-            this._serializer0.PackTo(packer, "Opened");
+            this._serializer0.PackTo(packer, "opened");
             this._serializer1.PackTo(packer, objectTree.Opened);
-            this._serializer0.PackTo(packer, "Peak");
+            this._serializer0.PackTo(packer, "peak");
             this._serializer1.PackTo(packer, objectTree.Peak);
-            this._serializer0.PackTo(packer, "Refused");
+            this._serializer0.PackTo(packer, "refused");
             this._serializer1.PackTo(packer, objectTree.Refused);
         }
         
-        protected override IO.Ably.ResourceCount UnpackFromCore(MsgPack.Unpacker unpacker) {
+        protected override IO.Ably.ResourceCount UnpackFromCore(MsgPack.Unpacker unpacker)
+        {
             IO.Ably.ResourceCount result = default(IO.Ably.ResourceCount);
             result = new IO.Ably.ResourceCount();
-            if (unpacker.IsArrayHeader) {
-                int unpacked = default(int);
-                int itemsCount = default(int);
-                itemsCount = MsgPack.Serialization.UnpackHelpers.GetItemsCount(unpacker);
-                System.Nullable<double> nullable = default(System.Nullable<double>);
-                if ((unpacked < itemsCount)) {
-                    nullable = MsgPack.Serialization.UnpackHelpers.UnpackNullableDoubleValue(unpacker, typeof(IO.Ably.ResourceCount), "Double Mean");
+            int itemsCount0 = default(int);
+            itemsCount0 = MsgPack.Serialization.UnpackHelpers.GetItemsCount(unpacker);
+            for (int i = 0; (i < itemsCount0); i = (i + 1))
+            {
+                string key = default(string);
+                string nullable4 = default(string);
+                nullable4 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker,
+                    typeof(IO.Ably.ResourceCount), "MemberName");
+                if (((nullable4 == null)
+                     == false))
+                {
+                    key = nullable4;
                 }
-                if (nullable.HasValue) {
-                    result.Mean = nullable.Value;
+                else
+                {
+                    throw MsgPack.Serialization.SerializationExceptions.NewNullIsProhibited("MemberName");
                 }
-                unpacked = (unpacked + 1);
-                System.Nullable<double> nullable0 = default(System.Nullable<double>);
-                if ((unpacked < itemsCount)) {
-                    nullable0 = MsgPack.Serialization.UnpackHelpers.UnpackNullableDoubleValue(unpacker, typeof(IO.Ably.ResourceCount), "Double Min");
-                }
-                if (nullable0.HasValue) {
-                    result.Min = nullable0.Value;
-                }
-                unpacked = (unpacked + 1);
-                System.Nullable<double> nullable1 = default(System.Nullable<double>);
-                if ((unpacked < itemsCount)) {
-                    nullable1 = MsgPack.Serialization.UnpackHelpers.UnpackNullableDoubleValue(unpacker, typeof(IO.Ably.ResourceCount), "Double Opened");
-                }
-                if (nullable1.HasValue) {
-                    result.Opened = nullable1.Value;
-                }
-                unpacked = (unpacked + 1);
-                System.Nullable<double> nullable2 = default(System.Nullable<double>);
-                if ((unpacked < itemsCount)) {
-                    nullable2 = MsgPack.Serialization.UnpackHelpers.UnpackNullableDoubleValue(unpacker, typeof(IO.Ably.ResourceCount), "Double Peak");
-                }
-                if (nullable2.HasValue) {
-                    result.Peak = nullable2.Value;
-                }
-                unpacked = (unpacked + 1);
-                System.Nullable<double> nullable3 = default(System.Nullable<double>);
-                if ((unpacked < itemsCount)) {
-                    nullable3 = MsgPack.Serialization.UnpackHelpers.UnpackNullableDoubleValue(unpacker, typeof(IO.Ably.ResourceCount), "Double Refused");
-                }
-                if (nullable3.HasValue) {
-                    result.Refused = nullable3.Value;
-                }
-                unpacked = (unpacked + 1);
-            }
-            else {
-                int itemsCount0 = default(int);
-                itemsCount0 = MsgPack.Serialization.UnpackHelpers.GetItemsCount(unpacker);
-                for (int i = 0; (i < itemsCount0); i = (i + 1)) {
-                    string key = default(string);
-                    string nullable4 = default(string);
-                    nullable4 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.ResourceCount), "MemberName");
-                    if (((nullable4 == null) 
-                                == false)) {
-                        key = nullable4;
+                if ((key == "refused"))
+                {
+                    System.Nullable<double> nullable9 = default(System.Nullable<double>);
+                    nullable9 = MsgPack.Serialization.UnpackHelpers.UnpackNullableDoubleValue(unpacker,
+                        typeof(IO.Ably.ResourceCount), "Double Refused");
+                    if (nullable9.HasValue)
+                    {
+                        result.Refused = nullable9.Value;
                     }
-                    else {
-                        throw MsgPack.Serialization.SerializationExceptions.NewNullIsProhibited("MemberName");
-                    }
-                    if ((key == "Refused")) {
-                        System.Nullable<double> nullable9 = default(System.Nullable<double>);
-                        nullable9 = MsgPack.Serialization.UnpackHelpers.UnpackNullableDoubleValue(unpacker, typeof(IO.Ably.ResourceCount), "Double Refused");
-                        if (nullable9.HasValue) {
-                            result.Refused = nullable9.Value;
+                }
+                else
+                {
+                    if ((key == "peak"))
+                    {
+                        System.Nullable<double> nullable8 = default(System.Nullable<double>);
+                        nullable8 = MsgPack.Serialization.UnpackHelpers.UnpackNullableDoubleValue(unpacker,
+                            typeof(IO.Ably.ResourceCount), "Double Peak");
+                        if (nullable8.HasValue)
+                        {
+                            result.Peak = nullable8.Value;
                         }
                     }
-                    else {
-                        if ((key == "Peak")) {
-                            System.Nullable<double> nullable8 = default(System.Nullable<double>);
-                            nullable8 = MsgPack.Serialization.UnpackHelpers.UnpackNullableDoubleValue(unpacker, typeof(IO.Ably.ResourceCount), "Double Peak");
-                            if (nullable8.HasValue) {
-                                result.Peak = nullable8.Value;
+                    else
+                    {
+                        if ((key == "opened"))
+                        {
+                            System.Nullable<double> nullable7 = default(System.Nullable<double>);
+                            nullable7 = MsgPack.Serialization.UnpackHelpers.UnpackNullableDoubleValue(unpacker,
+                                typeof(IO.Ably.ResourceCount), "Double Opened");
+                            if (nullable7.HasValue)
+                            {
+                                result.Opened = nullable7.Value;
                             }
                         }
-                        else {
-                            if ((key == "Opened")) {
-                                System.Nullable<double> nullable7 = default(System.Nullable<double>);
-                                nullable7 = MsgPack.Serialization.UnpackHelpers.UnpackNullableDoubleValue(unpacker, typeof(IO.Ably.ResourceCount), "Double Opened");
-                                if (nullable7.HasValue) {
-                                    result.Opened = nullable7.Value;
+                        else
+                        {
+                            if ((key == "min"))
+                            {
+                                System.Nullable<double> nullable6 = default(System.Nullable<double>);
+                                nullable6 = MsgPack.Serialization.UnpackHelpers.UnpackNullableDoubleValue(unpacker,
+                                    typeof(IO.Ably.ResourceCount), "Double Min");
+                                if (nullable6.HasValue)
+                                {
+                                    result.Min = nullable6.Value;
                                 }
                             }
-                            else {
-                                if ((key == "Min")) {
-                                    System.Nullable<double> nullable6 = default(System.Nullable<double>);
-                                    nullable6 = MsgPack.Serialization.UnpackHelpers.UnpackNullableDoubleValue(unpacker, typeof(IO.Ably.ResourceCount), "Double Min");
-                                    if (nullable6.HasValue) {
-                                        result.Min = nullable6.Value;
+                            else
+                            {
+                                if ((key == "mean"))
+                                {
+                                    System.Nullable<double> nullable5 = default(System.Nullable<double>);
+                                    nullable5 = MsgPack.Serialization.UnpackHelpers.UnpackNullableDoubleValue(unpacker,
+                                        typeof(IO.Ably.ResourceCount), "Double Mean");
+                                    if (nullable5.HasValue)
+                                    {
+                                        result.Mean = nullable5.Value;
                                     }
                                 }
-                                else {
-                                    if ((key == "Mean")) {
-                                        System.Nullable<double> nullable5 = default(System.Nullable<double>);
-                                        nullable5 = MsgPack.Serialization.UnpackHelpers.UnpackNullableDoubleValue(unpacker, typeof(IO.Ably.ResourceCount), "Double Mean");
-                                        if (nullable5.HasValue) {
-                                            result.Mean = nullable5.Value;
-                                        }
-                                    }
-                                    else {
-                                        unpacker.Skip();
-                                    }
+                                else
+                                {
+                                    unpacker.Skip();
                                 }
                             }
                         }
@@ -155,7 +132,7 @@ namespace IO.Ably.CustomSerialisers {
             }
             return result;
         }
-        
+
         private static T @__Conditional<T>(bool condition, T whenTrue, T whenFalse)
          {
             if (condition) {

@@ -12,12 +12,13 @@ namespace IO.Ably.Transport
         bool OnMessageReceived(ProtocolMessage message);
         IEnumerable<ProtocolMessage> GetQueuedMessages();
         void ClearQueueAndFailMessages(ErrorInfo error);
+        void FailChannelMessages(string name, ErrorInfo error);
     }
 
     internal class AcknowledgementProcessor : IAcknowledgementProcessor
     {
         private readonly Connection _connection;
-        private readonly Queue<MessageAndCallback> _queue = new Queue<MessageAndCallback>();
+        private readonly List<MessageAndCallback> _queue = new List<MessageAndCallback>();
         private object _syncObject = new object();
 
         public IEnumerable<ProtocolMessage> GetQueuedMessages()
@@ -41,7 +42,7 @@ namespace IO.Ably.Transport
                 lock (_syncObject)
                 {
                     message.MsgSerial = _connection.MessageSerial++;
-                    _queue.Enqueue(new MessageAndCallback(message, callback));
+                    _queue.Add(new MessageAndCallback(message, callback));
                 }
         }
 
@@ -63,9 +64,23 @@ namespace IO.Ably.Transport
                 foreach (var item in _queue.Where(x => x.Callback != null))
                 {
                     var messageError = error ?? ErrorInfo.ReasonUnknown;
-                    SafeExecute(item, false, messageError);
+                    item.SafeExecute(false, messageError);
                 }
                 Reset();
+            }
+        }
+
+        public void FailChannelMessages(string name, ErrorInfo error)
+        {
+            lock (_syncObject)
+            {
+                var messagesToRemove = _queue.Where(x => x.Message.channel == name);
+                foreach (var message in messagesToRemove)
+                {
+                    message.SafeExecute(false, error);
+                    _queue.Remove(message);
+                }
+
             }
         }
 
@@ -79,37 +94,25 @@ namespace IO.Ably.Transport
             lock (_syncObject)
             {
                 var endSerial = message.MsgSerial + (message.count - 1);
-                while (_queue.Count > 0)
+                var listForProcessing = new List<MessageAndCallback>(_queue);
+                foreach (var current in listForProcessing)
                 {
-                    var current = _queue.Peek();
                     if (current.Serial <= endSerial)
                     {
                         if (message.action == ProtocolMessage.MessageAction.Ack)
                         {
-                            SafeExecute(current, true, null);
+                            current.SafeExecute(true, null);
                         }
                         else
                         {
-                            SafeExecute(current, false, message.error ?? ErrorInfo.ReasonUnknown);
+                            current.SafeExecute(false, message.error ?? ErrorInfo.ReasonUnknown);
                         }
-                        _queue.Dequeue();
+                        _queue.Remove(current);
                     }
                 }
             }
         }
 
-        private void SafeExecute(MessageAndCallback info, bool success, ErrorInfo error)
-        {
-            try
-            {
-                info.Callback?.Invoke(success, error);
-            }
-            catch (Exception)
-            {
-                var result = success ? "Success" : "Failed";
-                var errorMessage = error != null ? $"Error: {error}" : "";
-                Logger.Error($"Error executing callback for message with serial {info.Message.MsgSerial}. Result: {result}. {errorMessage}");
-            }
-        }
+        
     }
 }

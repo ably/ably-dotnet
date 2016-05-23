@@ -84,6 +84,22 @@ namespace IO.Ably.Tests.MessagePack
         }
 
         [Fact]
+        public void CanSerialiseAndDeserialiseStatsCorrectly()
+        {
+            var bytes =
+                "kYqqaW50ZXJ2YWxJZLAyMDE1LTAyLTAzOjE1OjA1pHVuaXSmbWludXRlo2FsbIKjYWxsgqVjb3VudG6kZGF0Yc0q+KhtZXNzYWdlc4KlY291bnRupGRhdGHNKvinaW5ib3VuZIKjYWxsgqNhbGyCpWNvdW50RqRkYXRhzRtYqG1lc3NhZ2VzgqVjb3VudEakZGF0Yc0bWKhyZWFsdGltZYKjYWxsgqVjb3VudEakZGF0Yc0bWKhtZXNzYWdlc4KlY291bnRGpGRhdGHNG1iob3V0Ym91bmSCo2FsbIKjYWxsgqVjb3VudCikZGF0Yc0PoKhtZXNzYWdlc4KlY291bnQopGRhdGHND6CocmVhbHRpbWWCo2FsbIKlY291bnQopGRhdGHND6CobWVzc2FnZXOCpWNvdW50KKRkYXRhzQ+gqXBlcnNpc3RlZIKjYWxsgqVjb3VudBSkZGF0Yc0H0KhwcmVzZW5jZYKlY291bnQUpGRhdGHNB9CrY29ubmVjdGlvbnOCo2FsbIOkcGVhaxSjbWluAKZvcGVuZWQKo3Rsc4KkcGVhaxSmb3BlbmVkCqhjaGFubmVsc4KkcGVhazKmb3BlbmVkHqthcGlSZXF1ZXN0c4Kpc3VjY2VlZGVkMqZmYWlsZWQKrXRva2VuUmVxdWVzdHOCqXN1Y2NlZWRlZDymZmFpbGVkFA=="
+                    .FromBase64();
+
+            var expected = JsonConvert.DeserializeObject<List<Stats>>(ResourceHelper.GetResource("MsgPackStatsTest.json"),
+                Config.GetJsonSettings());
+
+            var unpacked = (List<Stats>) MsgPackHelper.DeSerialise(bytes, typeof(List<Stats>));
+
+            unpacked.ShouldBeEquivalentTo(expected);
+
+        }
+
+        [Fact]
         public void CanSerialiseAndDeserialiseTokenDetailsWithEmptyCapability()
         {
             var details = new TokenDetails()

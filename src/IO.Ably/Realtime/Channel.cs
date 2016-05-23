@@ -2,37 +2,87 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using IO.Ably.Rest;
 using IO.Ably.Transport;
+using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
 {
     /// <summary>Implement realtime channel.</summary>
-    internal class RealtimeChannel : IRealtimeChannel
+    internal class RealtimeChannel : IRealtimeChannel, IDisposable
     {
-        private readonly IConnectionManager _connection;
+        private AblyRealtime _realtimeClient;
+        private IConnectionManager ConnectionManager => _realtimeClient.ConnectionManager;
+        private Connection Connection => _realtimeClient.Connection;
+        private AblyRest RestClient => _realtimeClient.RestClient;
+        private ConnectionStateType ConnectionState => Connection.State;
+        public string AttachedSerial { get; set; }
         private readonly Handlers _handlers = new Handlers();
-        private readonly Dictionary<string, Handlers> _specificHandlers = new Dictionary<string, Handlers>();
+        private readonly CountdownTimer _timer;
 
         private readonly object _lockQueue = new object();
 
-        private readonly object _lockSubscribers = new object();
+        private readonly ChannelAwaiter _attachedAwaiter;
+        private readonly ChannelAwaiter _detachedAwaiter;
+        private ChannelOptions _options;
 
-        private List<MessageAndCallback> _queuedMessages;
+        public List<MessageAndCallback> QueuedMessages { get; set; } = new List<MessageAndCallback>(16);
+        public ErrorInfo Reason { get; internal set; }
 
-        internal RealtimeChannel(string name, string clientId, IConnectionManager connection)
+        internal RealtimeChannel(string name, string clientId, AblyRealtime realtimeClient, ChannelOptions options)
         {
             Name = name;
-            Presence = new Presence(connection, this, clientId);
-            _connection = connection;
-            _connection.MessageReceived += OnConnectionMessageReceived;
+            Options = options;
+            _timer = new CountdownTimer($"#{Name} timer");
+            Presence = new Presence(realtimeClient.ConnectionManager, this, clientId);
+            _realtimeClient = realtimeClient;
+            State = ChannelState.Initialized;
+            SubscribeToConnectionEvents();
+            _attachedAwaiter = new ChannelAwaiter(this, ChannelState.Attached);
+            _detachedAwaiter = new ChannelAwaiter(this, ChannelState.Detached);
         }
 
-        public event EventHandler<ChannelStateChangedEventArgs> ChannelStateChanged;
+        private void SubscribeToConnectionEvents()
+        {
+            ConnectionManager.Connection.ConnectionStateChanged += ConnectionOnConnectionStateChanged;
+        }
 
-        public ChannelOptions Options { get; set; }
+        private void ConnectionOnConnectionStateChanged(object sender, ConnectionStateChangedEventArgs args)
+        {
+            switch (args.CurrentState)
+            {
+                case ConnectionStateType.Closed:
+                    if (State == ChannelState.Attached || State == ChannelState.Attaching)
+                        SetChannelState(ChannelState.Detaching);
+                    break;
+                case ConnectionStateType.Suspended:
+                    if (State == ChannelState.Attached || State == ChannelState.Attaching)
+                    {
+                        SetChannelState(ChannelState.Detaching, ErrorInfo.ReasonSuspended);
+                    }
+                    break;
+                case ConnectionStateType.Failed:
+                    if (State != ChannelState.Detached || State != ChannelState.Initialized ||
+                        State != ChannelState.Failed)
+                    {
+                        SetChannelState(ChannelState.Failed, args.Reason ?? ErrorInfo.ReasonFailed);
+                    }
+                    break;
+            }
+        }
+
+        public event EventHandler<ChannelStateChangedEventArgs> StateChanged;
+        public event EventHandler<ChannelErrorEventArgs> Error;
+
+        public ChannelOptions Options
+
+        {
+            get { return _options; }
+            set { _options = value ?? new ChannelOptions(); }
+        }
 
         /// <summary>
         ///     The channel name
@@ -48,34 +98,51 @@ namespace IO.Ably.Realtime
 
         /// <summary>
         ///     Attach to this channel. Any resulting channel state change will be indicated to any registered
-        ///     <see cref="ChannelStateChanged" /> listener.
+        ///     <see cref="StateChanged" /> listener.
         /// </summary>
-        public void Attach()
+        public void Attach(Action<TimeSpan, ErrorInfo> callback = null)
         {
             if (State == ChannelState.Attaching || State == ChannelState.Attached)
             {
+                callback?.Invoke(TimeSpan.Zero, null);
                 return;
             }
 
-            if (!_connection.IsActive)
-            {
-                //TODO: This is backwards. Need to get it fixed
-                _connection.Connection.Connect();
-            }
-
+            _attachedAwaiter.Wait(callback);
             SetChannelState(ChannelState.Attaching);
-            _connection.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name), null);
+        }
+
+        public Task<Result<TimeSpan>> AttachAsync()
+        {
+            return TaskWrapper.Wrap<TimeSpan>(Attach);
+        }
+
+        private void OnAttachTimeout()
+        {
+            ConnectionManager.Execute(() =>
+            {
+                SetChannelState(ChannelState.Failed, new ErrorInfo("Channel didn't attach within the default timeout", 50000));
+            });
+        }
+
+        private void OnDetachTimeout()
+        {
+            ConnectionManager.Execute(() =>
+            {
+                SetChannelState(ChannelState.Failed, new ErrorInfo("Channel didn't detach within the default timeout", 50000));
+            });
         }
 
         /// <summary>
         ///     Detach from this channel. Any resulting channel state change will be indicated to any registered
-        ///     <see cref="ChannelStateChanged" /> listener.
+        ///     <see cref="StateChanged" /> listener.
         /// </summary>
-        public void Detach()
+        public void Detach(Action<TimeSpan, ErrorInfo> callback = null)
         {
             if (State == ChannelState.Initialized || State == ChannelState.Detaching ||
                 State == ChannelState.Detached)
             {
+                callback?.Invoke(TimeSpan.Zero, null);
                 return;
             }
 
@@ -84,78 +151,121 @@ namespace IO.Ably.Realtime
                 throw new AblyException("Channel is Failed");
             }
 
+            _detachedAwaiter.Wait(callback);
             SetChannelState(ChannelState.Detaching);
-            _connection.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name), null);
         }
 
-        public void Subscribe(IMessageHandler handler)
+        public Task<Result<TimeSpan>> DetachAsync()
         {
-            lock (_lockSubscribers)
-                _handlers.Add(handler);
+            return TaskWrapper.Wrap<TimeSpan>(Detach);
         }
 
-        public void Subscribe(string eventName, IMessageHandler handler)
+        public void Subscribe(Action<Message> handler)
         {
-            lock (_lockSubscribers)
-            {
-                Handlers handlers;
-                if (!_specificHandlers.TryGetValue(eventName, out handlers))
-                {
-                    handlers = new Handlers();
-                    _specificHandlers.Add(eventName, handlers);
-                }
-                handlers.Add(handler);
-            }
+            if(State != ChannelState.Attached || State != ChannelState.Attaching)
+                Attach();
+
+            _handlers.Add(new MessageHandlerAction(handler));
         }
 
-        public void Unsubscribe(IMessageHandler handler)
+        public void Subscribe(string eventName, Action<Message> handler)
         {
-            lock (_lockSubscribers)
-            {
-                if (_handlers.Remove(handler))
-                    return;
-            }
-            Logger.Warning("Unsubscribe failed: was not subscribed");
+            if (State != ChannelState.Attached || State != ChannelState.Attaching)
+                Attach();
+
+            _handlers.Add(eventName, new MessageHandlerAction(handler));
         }
 
-        public void Unsubscribe(string eventName, IMessageHandler handler)
+        public bool Unsubscribe(Action<Message> handler)
         {
-            lock (_lockSubscribers)
-            {
-                Handlers handlers;
-                if (_specificHandlers.TryGetValue(eventName, out handlers))
-                    if (handlers.Remove(handler))
-                        return;
-            }
-            Logger.Warning("Unsubscribe failed: was not subscribed");
+            return _handlers.Remove(new MessageHandlerAction(handler));
+        }
+
+        public bool Unsubscribe(string eventName, Action<Message> handler)
+        {
+            return _handlers.Remove(eventName, new MessageHandlerAction(handler));
+        }
+
+        public void UnsubscribeAll()
+        {
+            _handlers.RemoveAll();
         }
 
         /// <summary>Publish a single message on this channel based on a given event name and payload.</summary>
         /// <param name="name">The event name.</param>
         /// <param name="data">The payload of the message.</param>
-        public void Publish(string name, object data)
+        /// <param name="clientId"></param>
+        /// <param name="callback"></param>
+        public void Publish(string name, object data, Action<bool, ErrorInfo> callback = null, string clientId = null)
         {
-            PublishAsync(name, data).IgnoreExceptions();
+            PublishImpl(new[] { new Message(name, data, clientId) }, callback);
         }
 
         /// <summary>Publish a single message on this channel based on a given event name and payload.</summary>
-        public Task PublishAsync(string name, object data)
+        public Task<Result> PublishAsync(string name, object data, string clientId = null)
         {
-            return PublishAsync(new[] {new Message(name, data)});
+            return PublishAsync(new[] { new Message(name, data, clientId) });
+        }
+
+        public void Publish(Message message, Action<bool, ErrorInfo> callback = null)
+        {
+            Publish(new[] {message}, callback);
+        }
+
+        public Task<Result> PublishAsync(Message message)
+        {
+            return PublishAsync(new [] { message });
         }
 
         /// <summary>Publish several messages on this channel.</summary>
-        public void Publish(IEnumerable<Message> messages)
+        public void Publish(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback = null)
         {
-            PublishAsync(messages).IgnoreExceptions();
+            PublishImpl(messages, callback);
         }
 
         /// <summary>Publish several messages on this channel.</summary>
-        public Task PublishAsync(IEnumerable<Message> messages)
+        public Task<Result> PublishAsync(IEnumerable<Message> messages)
         {
             var tw = new TaskWrapper();
-            PublishImpl(messages, tw.Callback);
+            try
+            {
+                PublishImpl(messages, tw.Callback);
+            }
+            catch (Exception ex)
+            {
+                tw.SetException(ex);
+            }
             return tw.Task;
+        }
+
+        public Task<PaginatedResult<Message>> History(bool untilAttached = false)
+        {
+            var query = new DataRequestQuery();
+            if (untilAttached)
+            {
+                AddUntilAttachedParameter(query);
+            }
+            return RestClient.Channels.Get(Name).History(query);
+        }
+
+        public Task<PaginatedResult<Message>> History(DataRequestQuery dataQuery, bool untilAttached = false)
+        {
+            var query = dataQuery ?? new DataRequestQuery();
+            if (untilAttached)
+            {
+                AddUntilAttachedParameter(query);
+            }
+                
+            return RestClient.Channels.Get(Name).History(query);
+        }
+
+        private void AddUntilAttachedParameter(DataRequestQuery query)
+        {
+            if (State != ChannelState.Attached)
+            {
+                throw new AblyException("Channel is not attached. Cannot use untilAttached parameter");
+            }
+            query.ExtraParameters.Add("fromSerial", AttachedSerial);
         }
 
         private void PublishImpl(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback)
@@ -166,12 +276,13 @@ namespace IO.Ably.Realtime
 
             if (State == ChannelState.Initialized || State == ChannelState.Attaching)
             {
+                if(State == ChannelState.Initialized)
+                    Attach();
                 // Not connected, queue the message
                 lock (_lockQueue)
                 {
-                    if (_queuedMessages == null)
-                        _queuedMessages = new List<MessageAndCallback>(16);
-                    _queuedMessages.Add(new MessageAndCallback(msg, callback));
+                    if(Logger.IsDebug) Logger.Debug($"#{Name}:{State} queuing message");
+                    QueuedMessages.Add(new MessageAndCallback(msg, callback));
                     return;
                 }
             }
@@ -179,7 +290,7 @@ namespace IO.Ably.Realtime
             if (State == ChannelState.Attached)
             {
                 // Connected, send right now
-                _connection.Send(msg, callback);
+                SendMessage(msg, callback);
                 return;
             }
 
@@ -188,78 +299,168 @@ namespace IO.Ably.Realtime
                 HttpStatusCode.BadRequest));
         }
 
-        protected void SetChannelState(ChannelState state)
+        internal void SetChannelState(ChannelState state, ProtocolMessage protocolMessage)
+        {
+            SetChannelState(state, protocolMessage.error, protocolMessage);
+        }
+
+        internal void SetChannelState(ChannelState state, ErrorInfo error = null, ProtocolMessage protocolMessage = null)
+        {
+            if (Logger.IsDebug)
+            {
+                var errorMessage = error != null ? "Error: " + error : "";
+                Logger.Debug($"#{Name}: Changing state to: '{state}'. {errorMessage}");
+            }
+
+            OnError(error);
+
+            HandleStateChange(state, error, protocolMessage);
+
+            //TODO: Post the event back on the user's thread
+            StateChanged?.Invoke(this, new ChannelStateChangedEventArgs(state, error));
+        }
+
+        private void HandleStateChange(ChannelState state, ErrorInfo error, ProtocolMessage protocolMessage)
         {
             State = state;
-            OnChannelStateChanged(new ChannelStateChangedEventArgs(state));
-        }
 
-        private void OnChannelStateChanged(ChannelStateChangedEventArgs eventArgs)
-        {
-            ChannelStateChanged?.Invoke(this, eventArgs);
-        }
-
-        private void OnConnectionMessageReceived(ProtocolMessage message)
-        {
-            switch (message.action)
+            switch (state)
             {
-                case ProtocolMessage.MessageAction.Attached:
-                    if (State == ChannelState.Attaching)
+                case ChannelState.Attaching:
+                    if (ConnectionState == ConnectionStateType.Initialized)
                     {
-                        SetChannelState(ChannelState.Attached);
-                        SendQueuedMessages();
+                        Connection.Connect();
                     }
+
+                    _timer.Abort();
+                    _timer.Start(ConnectionManager.Options.RealtimeRequestTimeout, OnAttachTimeout);
+
+                    //Even thought the connection won't have connected yet the message will be queued and sent as soon as
+                    //the connection is made
+                    SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name));
                     break;
-                case ProtocolMessage.MessageAction.Detached:
-                    if (State == ChannelState.Detaching)
-                        SetChannelState(ChannelState.Detached);
+                case ChannelState.Attached:
+
+                    _timer.Abort();
+                    if (protocolMessage != null)
+                    {
+                        if (protocolMessage.HasPresenceFlag)
+                        {
+                            //Start sync
+                        }
+                        else
+                        {
+                            //Presence is in sync
+                        }
+
+                        AttachedSerial = protocolMessage.channelSerial;
+
+
+                    }
+                    SendQueuedMessages();
+                    
                     break;
-                case ProtocolMessage.MessageAction.Message:
-                    OnMessage(message);
+                case ChannelState.Detaching:
+                    //Fail timer if still waiting for attached.
+                    _attachedAwaiter.Fail(new ErrorInfo("Channel transitioned to detaching", 50000));
+
+                    if (ConnectionState == ConnectionStateType.Closed || ConnectionState == ConnectionStateType.Connecting ||
+                        ConnectionState == ConnectionStateType.Suspended)
+                        SetChannelState(ChannelState.Detached, error);
+                    else
+                    {
+                        _timer.Start(ConnectionManager.Options.RealtimeRequestTimeout, OnDetachTimeout);
+                        SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name));
+                    }
+
                     break;
-                case ProtocolMessage.MessageAction.Error:
-                    SetChannelState(ChannelState.Failed);
+                case ChannelState.Detached:
+                    _timer.Abort();
+                    ConnectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
+                    ClearAndFailChannelQueuedMessages(error);
                     break;
-                default:
-                    Logger.Error("Channel::OnConnectionMessageReceived(): Unexpected message action {0}", message.action);
+                case ChannelState.Failed:
+                    _attachedAwaiter.Fail(error);
+                    _detachedAwaiter.Fail(error);
+                    ConnectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
+                    ClearAndFailChannelQueuedMessages(error);
                     break;
             }
         }
 
-        private void OnMessage(ProtocolMessage message)
+        private void ClearAndFailChannelQueuedMessages(ErrorInfo error)
         {
-            foreach (var msg in message.messages)
+            lock (_lockQueue)
             {
-                lock (_lockSubscribers)
+                foreach (var messageAndCallback in QueuedMessages)
                 {
-                    foreach (var h in _handlers.GetAliveHandlers())
-                        h.Handle(msg);
-
-                    Handlers handlers;
-                    if (!_specificHandlers.TryGetValue(msg.name, out handlers))
-                        continue;
-                    foreach (var h in handlers.GetAliveHandlers())
-                        h.Handle(msg);
+                    messageAndCallback.SafeExecute(false, error);
                 }
+                QueuedMessages.Clear();
+            }
+        }
+
+        internal void OnMessage(Message message)
+        {
+            foreach (var handler in _handlers.GetHandlers())
+            {
+                SafeHandle(handler, message);
+            }
+            if (message.name.IsNotEmpty())
+            {
+                foreach (var specificHandler in _handlers.GetHandlers(message.name))
+                {
+                    SafeHandle(specificHandler, message);
+                }
+            }
+        }
+
+        private void SafeHandle(IMessageHandler handler, Message message)
+        {
+            try
+            {
+                handler.Handle(message);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error notifying subscriber", ex);
             }
         }
 
         private int SendQueuedMessages()
         {
-            List<MessageAndCallback> list = null;
+            List<MessageAndCallback> list;
             lock (_lockQueue)
             {
-                if (_queuedMessages == null || _queuedMessages.Count <= 0)
+                if (QueuedMessages.Count <= 0)
                     return 0;
 
                 // Swap the list.
-                list = _queuedMessages;
-                _queuedMessages = null;
+                list = new List<MessageAndCallback>(QueuedMessages);
+                QueuedMessages.Clear();
             }
 
             foreach (var qpm in list)
-                _connection.Send(qpm.Message, qpm.Callback);
+                SendMessage(qpm.Message, qpm.Callback);
             return list.Count;
+        }
+
+        private void SendMessage(ProtocolMessage protocolMessage, Action<bool, ErrorInfo> callback = null)
+        {
+            ConnectionManager.Send(protocolMessage, callback, Options);
+        }
+
+        public void OnError(ErrorInfo error)
+        {
+            Reason = error; //Set or clear the error
+
+            if(error != null)
+                Error?.Invoke(this, new ChannelErrorEventArgs(error));
+        }
+
+        public void Dispose()
+        {
+            _handlers.RemoveAll();
         }
     }
 }

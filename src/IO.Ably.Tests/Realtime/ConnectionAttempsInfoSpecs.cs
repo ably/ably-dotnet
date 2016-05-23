@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime
 {
-    public class ConnectionAttemptsInfoSpecs : MockHttpRestSpecs
+    public class ConnectionAttemptsInfoSpecs : MockHttpRealtimeSpecs
     {
         private readonly Connection _connection;
         private readonly ConnectionAttemptsInfo _info;
@@ -51,7 +51,7 @@ namespace IO.Ably.Tests.Realtime
         [Fact]
         public async Task CanAttemptFallback_ShouldBeFalseWithNonDefaultHost()
         {
-            var info = Create(new ClientOptions() { RealtimeHost = "test.test.com"});
+            var info = Create(opts => opts.RealtimeHost = "test.test.com");
 
             var result = await info.CanFallback(null);
             result.Should().BeFalse();
@@ -80,27 +80,27 @@ namespace IO.Ably.Tests.Realtime
             result.Should().BeFalse();
         }
 
-        private ConnectionAttemptsInfo Create(ClientOptions options = null)
+        private ConnectionAttemptsInfo Create(Action<ClientOptions> optionsAction = null)
         {
-            return new ConnectionAttemptsInfo(new Connection(GetRest(options)));
+            return new ConnectionAttemptsInfo(new Connection(GetRealtime(optionsAction)));
         }
 
         public ConnectionAttemptsInfoSpecs(ITestOutputHelper output) : base(output)
         {
-            _connection = new Connection(GetRest());
+            _connection = new Connection(GetRealtime());
             _info = new ConnectionAttemptsInfo(_connection);
         }
 
-        private AblyRest GetRest(ClientOptions options = null)
+        private AblyRealtime GetRealtime(Action<ClientOptions> optionsAction = null)
         {
-            return GetRestClient(request =>
+            return GetRealtimeClient(request =>
             {
                 if (request.Url == Defaults.InternetCheckURL)
                 {
                     return (_internetCheckOK ? Defaults.InternetCheckOKMessage : "Blah").ToAblyResponse();
                 }
                 return DefaultResponse.ToTask();
-            }, options ?? new ClientOptions(ValidKey));
+            }, optionsAction);
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using IO.Ably.CustomSerialisers;
 using Newtonsoft.Json;
 
@@ -7,22 +8,24 @@ namespace IO.Ably
     public class Stats
     {
         public MessageTypes All { get; set; }
-        public MessageTraffic Inbound { get; set; }
-        public MessageTraffic Outbound { get; set; }
+        public InboundMessageTraffic Inbound { get; set; }
+        public OutboundMessageTraffic Outbound { get; set; }
         public MessageTypes Persisted { get; set; }
         public ConnectionTypes Connections { get; set; }
         public ResourceCount Channels { get; set; }
         public RequestCount ApiRequests { get; set; }
         public RequestCount TokenRequests { get; set; }
+
         [JsonProperty("intervalId")]
-        [JsonConverter(typeof(StatsJsonDateConverter))]
-        public DateTimeOffset Interval { get; set; }
+        public string IntervalId { get; set; }
+
+        public DateTimeOffset Interval => DateTimeOffset.ParseExact(IntervalId, "yyyy-MM-dd:HH:mm", CultureInfo.InvariantCulture);
 
         public Stats()
         {
             All = new MessageTypes();
-            Inbound = new MessageTraffic();
-            Outbound = new MessageTraffic();
+            Inbound = new InboundMessageTraffic();
+            Outbound = new OutboundMessageTraffic();
             Persisted = new MessageTypes();
             Connections = new ConnectionTypes();
             Channels = new ResourceCount();
@@ -47,8 +50,8 @@ namespace IO.Ably
 
     public class MessageCount
     {
-        public double Count { get; set; }
-        public double Data { get; set; }
+        public long Count { get; set; }
+        public long Data { get; set; }
     }
 
     /**
@@ -72,29 +75,41 @@ namespace IO.Ably
     /**
      * A breakdown of summary stats data for traffic over various transport types.
      */
-    public class MessageTraffic
+    public class InboundMessageTraffic
     {
         public MessageTypes All { get; set; }
         public MessageTypes Realtime { get; set; }
         public MessageTypes Rest { get; set; }
-        public MessageTypes Push { get; set; }
-        public MessageTypes HttpStream { get; set; }
 
-        public MessageTraffic()
+        public InboundMessageTraffic()
         {
             All = new MessageTypes();
             Realtime = new MessageTypes();
             Rest = new MessageTypes();
-            Push = new MessageTypes();
-            HttpStream = new MessageTypes();
+        }
+    }
+
+    public class OutboundMessageTraffic
+    {
+        public MessageTypes All { get; set; }
+        public MessageTypes Realtime { get; set; }
+        public MessageTypes Rest { get; set; }
+        public MessageTypes Webhook { get; set; }
+
+        public OutboundMessageTraffic()
+        {
+            All = new MessageTypes();
+            Realtime = new MessageTypes();
+            Rest = new MessageTypes();
+            Webhook = new MessageTypes();
         }
     }
 
     public class RequestCount
     {
-        public double Succeeded { get; set; }
-        public double Failed { get; set; }
-        public double Refused { get; set; }
+        public long Succeeded { get; set; }
+        public long Failed { get; set; }
+        public long Refused { get; set; }
     }
 
     public class ResourceCount

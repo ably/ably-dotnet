@@ -8,6 +8,17 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
 {
+    public enum PresenceState
+    {
+        Initialized,
+        Entering,
+        Entered,
+        Leaving,
+        Left,
+        Failed
+    }
+
+
     public class Presence
     {
         private readonly IRealtimeChannel channel;
@@ -22,14 +33,12 @@ namespace IO.Ably.Realtime
             presence = new PresenceMap();
             pendingPresence = new List<QueuedPresenceMessage>();
             this.connection = connection;
-            this.connection.MessageReceived += OnConnectionMessageReceived;
             this.channel = channel;
-            this.channel.ChannelStateChanged += OnChannelStateChanged;
+            this.channel.StateChanged += OnChannelStateChanged;
             clientId = cliendId;
         }
 
         public event Action<PresenceMessage[]> MessageReceived;
-        // TODO: Subscribe with an action specifier
 
         public PresenceMessage[] Get()
         {
@@ -71,7 +80,7 @@ namespace IO.Ably.Realtime
             return UpdatePresence(new PresenceMessage(PresenceMessage.ActionType.Leave, clientId, clientData));
         }
 
-        private Task UpdatePresence(PresenceMessage msg)
+        internal Task UpdatePresence(PresenceMessage msg)
         {
             if (channel.State == ChannelState.Initialized || channel.State == ChannelState.Attaching)
             {
@@ -96,20 +105,7 @@ namespace IO.Ably.Realtime
                 HttpStatusCode.BadRequest);
         }
 
-        private void OnConnectionMessageReceived(ProtocolMessage message)
-        {
-            switch (message.action)
-            {
-                case ProtocolMessage.MessageAction.Presence:
-                    OnPresence(message.presence, null);
-                    break;
-                case ProtocolMessage.MessageAction.Sync:
-                    OnPresence(message.presence, message.channelSerial);
-                    break;
-            }
-        }
-
-        private void OnPresence(PresenceMessage[] messages, string syncChannelSerial)
+        internal void OnPresence(PresenceMessage[] messages, string syncChannelSerial)
         {
             string syncCursor = null;
             var broadcast = true;
@@ -206,6 +202,14 @@ namespace IO.Ably.Realtime
 
         private class PresenceMap
         {
+            public enum State
+            {
+                Initialized,
+                SyncStarting,
+                InSync,
+                Failed
+            }
+
             private bool isSyncInProgress;
 
             private readonly Dictionary<string, PresenceMessage> members;
