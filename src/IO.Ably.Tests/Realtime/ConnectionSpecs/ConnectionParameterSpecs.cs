@@ -81,6 +81,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTN2e")]
+        [Trait("spec", "RSA3c")]
         public void WithTokenAuth_ShouldSetTransportAccessTokeParameter()
         {
             var clientId = "123";

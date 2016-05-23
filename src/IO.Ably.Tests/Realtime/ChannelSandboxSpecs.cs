@@ -346,6 +346,7 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTL6g4")]
+        [Trait("spec", "RTL6g3")]
         [Trait("spec", "RTL6h")] //Look at PublishAsync
         public async Task
             WhenPublishingMessageWithInCompatibleClientIdBeforeClientIdHasBeenConfigured_ShouldPublishTheMessageAndReturnErrorFromTheServerAllowingFurtherMessagesToBePublished

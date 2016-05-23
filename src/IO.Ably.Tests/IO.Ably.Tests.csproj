@@ -159,7 +159,6 @@
     <Compile Include="Rest\ChannelSpecs.cs" />
     <Compile Include="AuthTests\AuthorisationTests.cs" />
     <Compile Include="CipherParamsTests.cs" />
-    <Compile Include="ClientConnectionAcceptanceTests.cs" />
     <Compile Include="DataRequestQueryParseFacts.cs" />
     <Compile Include="DataRequestQueryTests.cs" />
     <Compile Include="ErrorInfoTests.cs" />
@@ -183,7 +182,7 @@
     <Compile Include="Realtime\MsgPackMessageSerializerTests.cs" />
     <Compile Include="Realtime\RealtimeSpecs.cs" />
     <Compile Include="Infrastructure\ResourceHelper.cs" />
-    <Compile Include="RestApiTests.cs" />
+    <Compile Include="Infrastructure\TestHelpers.cs" />
     <Compile Include="RestProtocolTests.cs" />
     <Compile Include="Infrastructure\AblyCollectionFixture.cs" />
     <Compile Include="Infrastructure\AblySandboxFixture.cs" />
@@ -205,7 +204,7 @@
     <Compile Include="StatsParsingTests.cs" />
     <Compile Include="TokenParamsTests.cs" />
     <Compile Include="TokenRequestDataTests.cs" />
-    <Compile Include="TokenDetailsTests.cs" />
+    <Compile Include="MessageEncodes\TokenDetailsTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

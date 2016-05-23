@@ -65,7 +65,6 @@ namespace IO.Ably.Tests
             result["ttl"].Should().Be(@params.Ttl.Value.TotalMilliseconds.ToString());
             result["authKey1"].Should().Be("authValue1");
         }
-        
 
         public TokenParamsTests(ITestOutputHelper output) : base(output)
         {

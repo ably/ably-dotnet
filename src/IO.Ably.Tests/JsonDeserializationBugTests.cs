@@ -20,7 +20,6 @@ namespace Ably.Tests
             var deserialisedData = JsonConvert.DeserializeObject<TestClass>(convertedData, Config.GetJsonSettings());
             data.Data.Should().Be(deserialisedData.Data);
         }
-
     }
 
     public class TestClass

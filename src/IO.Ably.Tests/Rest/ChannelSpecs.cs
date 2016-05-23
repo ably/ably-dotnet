@@ -309,6 +309,7 @@ namespace IO.Ably.Tests.Rest
             [InlineData(-1)]
             [InlineData(1001)]
             [Trait("spec", "RSL2b3")]
+            [Trait("spec", "RSP3a1")]
             public async Task WithLimitLessThan0andMoreThan1000_ShouldThrow(int limit)
             {
                 var ex = await
