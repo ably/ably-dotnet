@@ -60,7 +60,7 @@ namespace RealtimeChat
                 return;
             }
 
-            channel.Publish(eventName, payload);
+            channel.PublishAsync(eventName, payload);
         }
 
         private void connection_ConnectionStateChanged(object sender, ConnectionStateChangedEventArgs e)

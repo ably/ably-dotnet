@@ -26,7 +26,7 @@ namespace IO.Ably.Tests.Rest
             var client = await GetRestClient(protocol);
             var channel = client.Channels.Get(TestEnvironmentSettings.PresenceChannelName);
 
-            var presence = await channel.Presence.Get();
+            var presence = await channel.Presence.GetAsync();
 
             presence.Should().HaveCount(6);
         }
@@ -40,7 +40,7 @@ namespace IO.Ably.Tests.Rest
             var settings = await Fixture.GetSettings();
             var channel = client.Channels.Get(TestEnvironmentSettings.PresenceChannelName, new ChannelOptions(settings.CipherParams));
 
-            var presence = await channel.Presence.Get();
+            var presence = await channel.Presence.GetAsync();
             foreach (var message in presence)
             {
                 message.encoding.Should().BeNullOrEmpty();

@@ -26,11 +26,11 @@ namespace IO.Ably.ConsoleTest
             IChannel channel = ably.Channels.Get("persisted:presence_fixtures");
 
             var tsPublish = DateTimeOffset.UtcNow;
-            await channel.Publish("test", true);
+            await channel.PublishAsync("test", true);
 
             ConsoleColor.DarkGreen.WriteLine("Getting the history..");
 
-            PaginatedResult<Message> history = await channel.History();
+            PaginatedResult<Message> history = await channel.HistoryAsync();
 
             if (history.Count <= 0)
                 throw new ApplicationException("Message lost: not on the history");

@@ -16,7 +16,7 @@ namespace IO.Ably.Tests
         public async Task<Stats> GetStats(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
-            var result = client.Stats(new StatsDataRequestQuery() { Start = StartInterval.AddMinutes(-30), Limit = 1 }).Result;
+            var result = client.StatsAsync(new StatsDataRequestQuery() { Start = StartInterval.AddMinutes(-30), Limit = 1 }).Result;
 
             return result.First();
         }

@@ -377,7 +377,7 @@ namespace IO.Ably.Realtime
             {
                 _channel.AddUntilAttachedParameter(query);
             }
-            return _channel.RestChannel.Presence.History(query);
+            return _channel.RestChannel.Presence.HistoryAsync(query);
         }
 
         public Task<PaginatedResult<PresenceMessage>> History(DataRequestQuery dataQuery, bool untilAttached = false)
@@ -388,7 +388,7 @@ namespace IO.Ably.Realtime
                 _channel.AddUntilAttachedParameter(query);
             }
 
-            return _channel.RestChannel.Presence.History(query);
+            return _channel.RestChannel.Presence.HistoryAsync(query);
         }
     }
 

@@ -98,7 +98,7 @@ namespace IO.Ably
             }
             else
             {
-                var currentValidToken = await GetCurrentValidTokenAndRenewIfNecessary();
+                var currentValidToken = await GetCurrentValidTokenAndRenewIfNecessaryAsync();
                 if (currentValidToken == null)
                 {
                     throw new AblyException("Invalid token credentials: " + CurrentToken, 40100, HttpStatusCode.Unauthorized);
@@ -108,7 +108,7 @@ namespace IO.Ably
             }
         }
 
-        public async Task<TokenDetails> GetCurrentValidTokenAndRenewIfNecessary()
+        public async Task<TokenDetails> GetCurrentValidTokenAndRenewIfNecessaryAsync()
         {
             if(AuthMethod == AuthMethod.Basic)
                 throw new AblyException("AuthMethod is set to Auth so there is no current valid token.");
@@ -118,7 +118,7 @@ namespace IO.Ably
 
             if (TokenRenewable)
             {
-                var token = await Authorise();
+                var token = await AuthoriseAsync();
                 if (token.IsValidToken())
                 {
                     CurrentToken = token;       
@@ -137,7 +137,7 @@ namespace IO.Ably
         /// <param name="options">Extra <see cref="AuthOptions"/> used for creating a token </param>
         /// <returns>A valid ably token</returns>
         /// <exception cref="AblyException"></exception>
-        public virtual async Task<TokenDetails> RequestToken(TokenParams tokenParams = null, AuthOptions options = null)
+        public virtual async Task<TokenDetails> RequestTokenAsync(TokenParams tokenParams = null, AuthOptions options = null)
         {
             var mergedOptions = options != null ? options.Merge(Options) : Options;
             string keyId = "", keyValue = "";
@@ -151,7 +151,7 @@ namespace IO.Ably
             var @params = MergeTokenParamsWithDefaults(tokenParams);
 
             if (mergedOptions.QueryTime.GetValueOrDefault(false))
-                @params.Timestamp = await _rest.Time();
+                @params.Timestamp = await _rest.TimeAsync();
 
             EnsureSecureConnection();
 
@@ -260,7 +260,7 @@ namespace IO.Ably
         /// <param name="options"><see cref="AuthOptions"/> custom options.</param>
         /// <returns>Returns a valid token</returns>
         /// <exception cref="AblyException">Throws an ably exception representing the server response</exception>
-        public async Task<TokenDetails> Authorise(TokenParams tokenParams = null, AuthOptions options = null)
+        public async Task<TokenDetails> AuthoriseAsync(TokenParams tokenParams = null, AuthOptions options = null)
         {
             var authOptions = options ?? new AuthOptions();
             bool force = authOptions.Force; //this is needed because I share the object and reset Force later on.
@@ -273,18 +273,18 @@ namespace IO.Ably
                 
             if (force)
             {
-                CurrentToken = await RequestToken(authTokenParams, options);
+                CurrentToken = await RequestTokenAsync(authTokenParams, options);
             }
             else if (CurrentToken != null)
             {
                 if ((Config.Now().AddSeconds(Defaults.TokenExpireBufferInSeconds)) >= CurrentToken.Expires)
                 {
-                    CurrentToken = await RequestToken(authTokenParams, options);
+                    CurrentToken = await RequestTokenAsync(authTokenParams, options);
                 }
             }
             else
             {
-                CurrentToken = await RequestToken(authTokenParams, options);
+                CurrentToken = await RequestTokenAsync(authTokenParams, options);
             }
 
             AuthMethod = AuthMethod.Token;
@@ -314,7 +314,7 @@ namespace IO.Ably
         /// <param name="tokenParams"><see cref="TokenParams"/>. If null a token request is generated from options passed when the client was created.</param>
         /// <param name="options"><see cref="AuthOptions"/>. If null the default AuthOptions are used.</param>
         /// <returns></returns>
-        public async Task<TokenRequest> CreateTokenRequest(TokenParams tokenParams, AuthOptions options)
+        public async Task<TokenRequest> CreateTokenRequestAsync(TokenParams tokenParams, AuthOptions options)
         {
             var mergedOptions = options != null ? options.Merge(Options) : Options;
 
@@ -324,7 +324,7 @@ namespace IO.Ably
             var @params = MergeTokenParamsWithDefaults(tokenParams);
 
             if (mergedOptions.QueryTime.GetValueOrDefault(false))
-                @params.Timestamp = await _rest.Time();
+                @params.Timestamp = await _rest.TimeAsync();
 
             ApiKey key = mergedOptions.ParseKey();
             var request = new TokenRequest().Populate(@params, key.KeyName, key.KeySecret);

@@ -59,7 +59,7 @@ namespace IO.Ably.AcceptanceTests
             {
                 var client = GetRestClient();
 
-                var ex = await Assert.ThrowsAsync<AblyException>(() => client.Channels.Get("test").Publish(message));
+                var ex = await Assert.ThrowsAsync<AblyException>(() => client.Channels.Get("test").PublishAsync(message));
                 ex.Message.Should().Contain("Unsupported payload");
             }
 
@@ -70,7 +70,7 @@ namespace IO.Ably.AcceptanceTests
             {
                 var client = GetRestClient();
 
-                await client.Channels.Get("test").Publish(message);
+                await client.Channels.Get("test").PublishAsync(message);
 
                 var processedMessages = JsonConvert.DeserializeObject<List<Message>>(LastRequest.RequestBody.GetText());
                 processedMessages.First().encoding.Should().Be(encoding);
@@ -101,7 +101,7 @@ namespace IO.Ably.AcceptanceTests
             public void WithStringData_DoesNotApplyAnyEncoding()
             {
                 //Act
-                _client.Channels.Get("Test").Publish("test", "test");
+                _client.Channels.Get("Test").PublishAsync("test", "test");
 
                 //Assert
                 var payload = GetPayload();
@@ -115,7 +115,7 @@ namespace IO.Ably.AcceptanceTests
             {
                 //Act
                 var bytes = new byte[] { 10, 111, 128 };
-                _client.Channels.Get("Test").Publish("test", bytes);
+                _client.Channels.Get("Test").PublishAsync("test", bytes);
 
                 //Assert
                 var payload = GetPayload();
@@ -132,7 +132,7 @@ namespace IO.Ably.AcceptanceTests
                 var obj = new { Test = "test", name = "name" };
 
                 //Act
-                _client.Channels.Get("test").Publish("test", obj);
+                _client.Channels.Get("test").PublishAsync("test", obj);
 
                 //Assert
                 var payload = GetPayload();
@@ -166,7 +166,7 @@ namespace IO.Ably.AcceptanceTests
                 var bytes = new byte[] { 1, 2, 3 };
 
                 //Act
-                _client.Channels.Get("test", options).Publish("test", bytes);
+                _client.Channels.Get("test", options).PublishAsync("test", bytes);
 
                 //Assert
                 var payload = GetPayload();
@@ -180,7 +180,7 @@ namespace IO.Ably.AcceptanceTests
             public void WithStringData_SetsEncodingAndDataCorrectly()
             {
                 //Act
-                _client.Channels.Get("test", options).Publish("test", "test");
+                _client.Channels.Get("test", options).PublishAsync("test", "test");
 
                 //Assert
                 var payload = GetPayload();
@@ -194,7 +194,7 @@ namespace IO.Ably.AcceptanceTests
             {
                 //Act
                 var obj = new { Test = "test", Name = "name" };
-                _client.Channels.Get("test", options).Publish("test", obj);
+                _client.Channels.Get("test", options).PublishAsync("test", obj);
 
                 //Assert
                 var payload = GetPayload();
@@ -231,7 +231,7 @@ namespace IO.Ably.AcceptanceTests
             public void WithString_DoesNotApplyAnyEncoding()
             {
                 //Act
-                _client.Channels.Get("Test").Publish("test", "test");
+                _client.Channels.Get("Test").PublishAsync("test", "test");
 
                 //Assert
                 var payload = GetPayload();
@@ -245,7 +245,7 @@ namespace IO.Ably.AcceptanceTests
             {
                 //Act
                 var bytes = new byte[] { 10, 111, 128};
-                _client.Channels.Get("Test").Publish("test", bytes);
+                _client.Channels.Get("Test").PublishAsync("test", bytes);
 
                 //Assert
                 var payload = GetPayload();
@@ -261,7 +261,7 @@ namespace IO.Ably.AcceptanceTests
                 var obj = new {Test = "test", name = "name"};
 
                 //Act
-                _client.Channels.Get("test").Publish("test", obj);
+                _client.Channels.Get("test").PublishAsync("test", obj);
 
                 //Assert
                 var payload = GetPayload();
@@ -299,7 +299,7 @@ namespace IO.Ably.AcceptanceTests
                 var bytes = new byte[] { 1, 2, 3 };
 
                 //Act
-                _client.Channels.Get("test", options).Publish("test", bytes);
+                _client.Channels.Get("test", options).PublishAsync("test", bytes);
 
                 //Assert
                 var payload = GetPayload();
@@ -312,7 +312,7 @@ namespace IO.Ably.AcceptanceTests
             public void WithStringData_SetsEncodingAndDataCorrectly()
             {
                 //Act
-                _client.Channels.Get("test", options).Publish("test", "test");
+                _client.Channels.Get("test", options).PublishAsync("test", "test");
 
                 //Assert
                 var payload = GetPayload();
@@ -326,7 +326,7 @@ namespace IO.Ably.AcceptanceTests
             {
                 //Act
                 var obj = new {Test = "test", Name = "name"};
-                _client.Channels.Get("test", options).Publish("test", obj);
+                _client.Channels.Get("test", options).PublishAsync("test", obj);
 
                 //Assert
                 var payload = GetPayload();

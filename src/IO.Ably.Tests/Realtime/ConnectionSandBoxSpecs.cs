@@ -169,7 +169,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task WithExpiredRenewableToken_ShouldAutomaticallyRenewTokenAndNoErrorShouldBeEmitted(Protocol protocol)
         {
             var restClient = await GetRestClient(protocol);
-            var invalidToken = await restClient.Auth.RequestToken();
+            var invalidToken = await restClient.Auth.RequestTokenAsync();
 
             //Use an old token which will result in 40143 Unrecognised token
             invalidToken.Token = invalidToken.Token.Split('.')[0] + ".DOcRVPgv1Wf1-YGgJFjyk2PNOGl_DFL7aCDzEPju8TYHorfxHHVoNoDGz5fKRW0UxePiVjD1EVEW0ZiknIK8u3S5p1FBq5Rtw_I7OX7fW8U4sGxJjAfMS_fTcXFdvouTQ";
@@ -234,7 +234,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task WithAuthUrlShouldGetTokenFromUrl(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
-            var token = await client.Auth.RequestToken(new TokenParams() { ClientId = "*" });
+            var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
             var settings = await Fixture.GetSettings();
             var authUrl = "http://echo.ably.io/?type=text&body=" + token.Token;
 

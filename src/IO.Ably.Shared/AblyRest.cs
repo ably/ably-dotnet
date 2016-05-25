@@ -2,13 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Rest;
 using System.Threading.Tasks;
-using IO.Ably.Auth;
-using IO.Ably.Transport;
 
 namespace IO.Ably
 {
@@ -111,7 +108,7 @@ namespace IO.Ably
                 if (ex.ErrorInfo.IsUnAuthorizedError
                     && ex.ErrorInfo.IsTokenError && AblyAuth.TokenRenewable)
                 {
-                    await AblyAuth.Authorise(null, new AuthOptions() {Force = true});
+                    await AblyAuth.AuthoriseAsync(null, new AuthOptions() {Force = true});
                     await AblyAuth.AddAuthHeader(request);
                     return await ExecuteHttpRequest(request);
                 }
@@ -135,7 +132,7 @@ namespace IO.Ably
 
         /// <summary>/// Retrieves the ably service time/// </summary>
         /// <returns></returns>
-        public async Task<DateTimeOffset> Time()
+        public async Task<DateTimeOffset> TimeAsync()
         {
             AblyRequest request = CreateGetRequest("/time");
             request.SkipAuthentication = true;
@@ -147,9 +144,9 @@ namespace IO.Ably
         /// Retrieves the stats for the application. Passed default <see cref="StatsDataRequestQuery"/> for the request
         /// </summary>
         /// <returns></returns>
-        public Task<PaginatedResult<Stats>> Stats()
+        public Task<PaginatedResult<Stats>> StatsAsync()
         {
-            return Stats(new StatsDataRequestQuery());
+            return StatsAsync(new StatsDataRequestQuery());
         }
 
         /// <summary>
@@ -157,23 +154,23 @@ namespace IO.Ably
         /// </summary>
         /// <param name="query">stats query</param>
         /// <returns></returns>
-        public Task<PaginatedResult<Stats>> Stats(StatsDataRequestQuery query)
+        public Task<PaginatedResult<Stats>> StatsAsync(StatsDataRequestQuery query)
         {
-            return Stats(query as DataRequestQuery);
+            return StatsAsync(query as DataRequestQuery);
         }
 
         /// <summary>
         /// Retrieves the stats for the application based on a custom query. It should be used with <see cref="DataRequestQuery"/>.
-        /// It is mainly because of the way a PaginatedResource defines its queries. For retrieving Stats with special parameters use <see cref="AblyRest.Stats(StatsDataRequestQuery query)"/>
+        /// It is mainly because of the way a PaginatedResource defines its queries. For retrieving Stats with special parameters use <see cref="StatsAsync(IO.Ably.StatsDataRequestQuery)"/>
         /// </summary>
         /// <example>
         /// var client = new AblyRest("validkey");
-        /// var stats = client.Stats();
-        /// var nextPage = cliest.Stats(stats.NextQuery);
+        /// var stats = client..StatsAsync();
+        /// var nextPage = cliest..StatsAsync(stats.NextQuery);
         /// </example>
         /// <param name="query"><see cref="DataRequestQuery"/> and <see cref="StatsDataRequestQuery"/></param>
         /// <returns></returns>
-        public Task<PaginatedResult<Stats>> Stats(DataRequestQuery query)
+        public Task<PaginatedResult<Stats>> StatsAsync(DataRequestQuery query)
         {
             query.Validate();
 

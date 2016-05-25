@@ -89,7 +89,7 @@ channel.ChannelStateChanged += (s, args) =>
 ### Publishing to a channel
 
 ```csharp
-channel.Publish("greeting", "Hello World!");
+channel.PublishAsync("greeting", "Hello World!");
 ```
 
 ## Using the REST API

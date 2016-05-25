@@ -113,7 +113,7 @@ namespace IO.Ably.Tests.Rest
             {
                 var rest = GetRestClient();
                 var channel = rest.Channels.Get("Test");
-                channel.Publish("event", "data");
+                channel.PublishAsync("event", "data");
 
                 LastRequest.Method.Should().Be(HttpMethod.Post);
                 LastRequest.Url.Should().Be($"/channels/{channel.Name}/messages");
@@ -134,7 +134,7 @@ namespace IO.Ably.Tests.Rest
                 var message = new Message() { name = "event", data = "data" };
                 var message1 = new Message() { name = "event1", data = "data" };
                 var message2 = new Message() { name = "event2", data = "data" };
-                channel.Publish(new List<Message> { message, message1, message2 });
+                channel.PublishAsync(new List<Message> { message, message1, message2 });
 
                 Requests.Count.Should().Be(1);
 
@@ -152,7 +152,7 @@ namespace IO.Ably.Tests.Rest
                 var client = GetRestClient();
 
                 var messageWithNoData = new Message() { name = "NoData" };
-                await client.Channels.Get("nodata").Publish(messageWithNoData);
+                await client.Channels.Get("nodata").PublishAsync(messageWithNoData);
 
                 LastRequest.RequestBody.GetText().Should().Be("[{\"name\":\"NoData\"}]");
             }
@@ -164,7 +164,7 @@ namespace IO.Ably.Tests.Rest
                 var client = GetRestClient();
 
                 var messageWithNoName = new Message() { data = "NoName" };
-                await client.Channels.Get("noname").Publish(messageWithNoName);
+                await client.Channels.Get("noname").PublishAsync(messageWithNoName);
 
 
                 LastRequest.RequestBody.GetText().Should().Be("[{\"data\":\"NoName\"}]");
@@ -177,7 +177,7 @@ namespace IO.Ably.Tests.Rest
                 var client = GetRestClient();
 
                 var messageWithNoName = new Message();
-                await client.Channels.Get("blank-message").Publish(messageWithNoName);
+                await client.Channels.Get("blank-message").PublishAsync(messageWithNoName);
 
 
                 LastRequest.RequestBody.GetText().Should().Be("[{}]");
@@ -190,7 +190,7 @@ namespace IO.Ably.Tests.Rest
                 var client = GetRestClient(null, opts => opts.UseBinaryProtocol = true);
 
                 var messageWithNoName = new Message() { data = "NoName" };
-                await client.Channels.Get("noname").Publish(messageWithNoName);
+                await client.Channels.Get("noname").PublishAsync(messageWithNoName);
 
                 Output.WriteLine("Message pack message: " + LastRequest.RequestBody.GetText());
             }
@@ -200,7 +200,7 @@ namespace IO.Ably.Tests.Rest
             {
                 var rest = GetRestClient();
                 var channel = rest.Channels.Get("Test");
-                channel.Publish("event", "data");
+                channel.PublishAsync("event", "data");
 
                 Assert.IsType<List<Message>>(LastRequest.PostData);
                 var messages = LastRequest.PostData as List<Message>;
@@ -214,7 +214,7 @@ namespace IO.Ably.Tests.Rest
             {
                 var rest = GetRestClient();
                 var channel = rest.Channels.Get("Test");
-                channel.Publish("event", new byte[] { 1, 2 });
+                channel.PublishAsync("event", new byte[] { 1, 2 });
 
                 Assert.IsType<List<Message>>(LastRequest.PostData);
                 var postData = (LastRequest.PostData as IList<Message>).First();
@@ -230,7 +230,7 @@ namespace IO.Ably.Tests.Rest
                 var channel = rest.Channels.Get("Test");
 
                 var message = new Message() { name = "event", data = "data" };
-                channel.Publish(new List<Message> { message });
+                channel.PublishAsync(new List<Message> { message });
 
                 var data = LastRequest.PostData as IEnumerable<Message>;
                 Assert.NotNull(data);
@@ -254,7 +254,7 @@ namespace IO.Ably.Tests.Rest
             [Trait("spec", "RSL2a")]
             public async Task WithNoOptions_CreateGetRequestWithValidPath()
             {
-                var result = await _channel.History();
+                var result = await _channel.HistoryAsync();
 
                 result.Should().BeOfType<PaginatedResult<Message>>();
                 Assert.Equal(HttpMethod.Get, LastRequest.Method);
@@ -271,7 +271,7 @@ namespace IO.Ably.Tests.Rest
                 query.End = now;
                 query.Direction = QueryDirection.Forwards;
                 query.Limit = 1000;
-                await _channel.History(query);
+                await _channel.HistoryAsync(query);
 
                 LastRequest.AssertContainsParameter("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
                 LastRequest.AssertContainsParameter("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
@@ -284,14 +284,14 @@ namespace IO.Ably.Tests.Rest
             public async Task WithStartBeforeEnd_Throws()
             {
                 var ex = await Assert.ThrowsAsync<AblyException>(() => 
-                        _channel.History(new DataRequestQuery() {Start = Now, End = Now.AddHours(-1)}));
+                        _channel.HistoryAsync(new DataRequestQuery() {Start = Now, End = Now.AddHours(-1)}));
             }
 
             [Fact]
             [Trait("spec", "RSL2b2")]
             public async Task WithoutDirection_ShouldDefaultToBackwards()
             {
-                await _channel.History();
+                await _channel.HistoryAsync();
 
                 LastRequest.AssertContainsParameter("direction", QueryDirection.Backwards.ToString().ToLower());
             }
@@ -300,7 +300,7 @@ namespace IO.Ably.Tests.Rest
             [Trait("spec", "RSL2b3")]
             public async Task WithOutLimit_ShouldUseDefaultOf100()
             {
-                await _channel.History();
+                await _channel.HistoryAsync();
 
                 LastRequest.AssertContainsParameter("limit", "100");
             }
@@ -313,7 +313,7 @@ namespace IO.Ably.Tests.Rest
             public async Task WithLimitLessThan0andMoreThan1000_ShouldThrow(int limit)
             {
                 var ex = await
-                    Assert.ThrowsAsync<AblyException>(() => _channel.History(new DataRequestQuery() {Limit = limit}));
+                    Assert.ThrowsAsync<AblyException>(() => _channel.HistoryAsync(new DataRequestQuery() {Limit = limit}));
             }
 
             [Theory]
@@ -324,7 +324,7 @@ namespace IO.Ably.Tests.Rest
                 var channel = rest.Channels.Get("Test");
                 var query = new DataRequestQuery() { Start = start, End = end };
 
-                Assert.Throws<AblyException>(delegate { channel.History(query); });
+                Assert.Throws<AblyException>(delegate { channel.HistoryAsync(query); });
             }
 
             public static IEnumerable<object[]> InvalidHistoryDates
@@ -350,7 +350,7 @@ namespace IO.Ably.Tests.Rest
                 var channel = rest.Channels.Get("test");
 
                 //Act
-                var result = await channel.History();
+                var result = await channel.HistoryAsync();
 
                 //Assert
                 Assert.NotNull(result.NextQuery);
@@ -379,7 +379,7 @@ namespace IO.Ably.Tests.Rest
                 var channel = rest.Channels.Get("test", new ChannelOptions(defaultParams));
 
                 //Act
-                var result = await channel.History();
+                var result = await channel.HistoryAsync();
 
                 //Assert
                 Assert.NotEmpty(result);

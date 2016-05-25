@@ -511,7 +511,7 @@ namespace IO.Ably.Tests.Realtime
 
                 SetState(channel, ChannelState.Attached);
 
-                channel.Publish("byte", bytes);
+                channel.PublishAsync("byte", bytes);
 
                 var sentMessage = LastCreatedTransport.LastMessageSend.messages.First();
                 LastCreatedTransport.SentMessages.Should().HaveCount(1);
@@ -531,7 +531,7 @@ namespace IO.Ably.Tests.Realtime
                     new Message("name", "test"),
                     new Message("test", "best")
                 };
-                channel.Publish(list);
+                channel.PublishAsync(list);
 
                 LastCreatedTransport.SentMessages.Should().HaveCount(1);
                 LastCreatedTransport.LastMessageSend.messages.Should().HaveCount(2);
@@ -544,7 +544,7 @@ namespace IO.Ably.Tests.Realtime
                 var channel = _client.Get("test");
                 SetState(channel, ChannelState.Attached);
 
-                channel.Publish(null, "data");
+                channel.PublishAsync(null, "data");
 
                 LastCreatedTransport.SentMessages.First().Text.Should().Contain("\"messages\":[{\"data\":\"data\"}]");
             }
@@ -556,7 +556,7 @@ namespace IO.Ably.Tests.Realtime
                 var channel = _client.Get("test");
                 SetState(channel, ChannelState.Attached);
 
-                channel.Publish("name", null);
+                channel.PublishAsync("name", null);
 
                 LastCreatedTransport.SentMessages.First().Text.Should().Contain("\"messages\":[{\"name\":\"name\"}]");
             }
@@ -573,7 +573,7 @@ namespace IO.Ably.Tests.Realtime
                     var channel = client.Channels.Get("test");
                     SetState(channel, ChannelState.Attached);
 
-                    channel.Publish("test", "best");
+                    channel.PublishAsync("test", "best");
 
                     var lastMessageSend = LastCreatedTransport.LastMessageSend;
                     lastMessageSend.channel.Should().Be("test");
@@ -590,7 +590,7 @@ namespace IO.Ably.Tests.Realtime
                     client.Connection.State.Should().Be(ConnectionStateType.Connecting);
                     var channel = client.Get("connecting");
                     SetState(channel, ChannelState.Attached);
-                    channel.Publish("test", "connecting");
+                    channel.PublishAsync("test", "connecting");
 
                     LastCreatedTransport.LastMessageSend.Should().BeNull();
                     client.ConnectionManager.PendingMessages.Should().HaveCount(1);
@@ -613,7 +613,7 @@ namespace IO.Ably.Tests.Realtime
                     client.Connection.State.Should().Be(ConnectionStateType.Disconnected);
                     var channel = client.Get("connecting");
                     SetState(channel, ChannelState.Attached);
-                    channel.Publish("test", "connecting");
+                    channel.PublishAsync("test", "connecting");
 
                     LastCreatedTransport.LastMessageSend.Should().BeNull();
                     client.ConnectionManager.PendingMessages.Should().HaveCount(1);
@@ -649,7 +649,7 @@ namespace IO.Ably.Tests.Realtime
                         opts.Token = "test";
                     });
                     var channel = client.Get("test");
-                    channel.Publish("test", "test");
+                    channel.PublishAsync("test", "test");
                     SetState(channel, ChannelState.Attached);
 
                     LastCreatedTransport.LastMessageSend.messages.First().clientId.Should().BeNullOrEmpty();
@@ -662,7 +662,7 @@ namespace IO.Ably.Tests.Realtime
                     var client = GetConnectedClient();
                     var channel = client.Get("test");
                     SetState(channel, ChannelState.Attached);
-                    channel.Publish("test", "best", clientId: "123");
+                    channel.PublishAsync("test", "best", clientId: "123");
 
                     LastCreatedTransport.LastMessageSend.messages.First().clientId.Should().Be("123");
                 }
@@ -847,7 +847,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 var channel = _client.Get("history");
 
-                await channel.History();
+                await channel.HistoryAsync();
 
                 Assert.Equal($"/channels/{channel.Name}/messages", LastRequest.Url);
             }
@@ -859,7 +859,7 @@ namespace IO.Ably.Tests.Realtime
                 var channel = _client.Get("history");
                 SetState(channel, ChannelState.Attached, message: new ProtocolMessage(ProtocolMessage.MessageAction.Attached) { channelSerial = "101"});
 
-                await channel.History(untilAttached: true);
+                await channel.HistoryAsync(untilAttached: true);
 
                 LastRequest.QueryParameters.Should()
                     .ContainKey("fromSerial")
@@ -871,7 +871,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 var channel = _client.Get("history");
 
-                var ex = await Assert.ThrowsAsync<AblyException>(() => channel.History(true));
+                var ex = await Assert.ThrowsAsync<AblyException>(() => channel.HistoryAsync(true));
             }
 
             public HistorySpecs(ITestOutputHelper output) : base(output)

@@ -1,9 +1,7 @@
-using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
-using IO.Ably.Transport;
 
 namespace IO.Ably
 {

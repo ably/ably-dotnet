@@ -83,7 +83,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             // Act
-            target.Publish("test", "test data");
+            target.PublishAsync("test", "test data");
             target.State.Should().Be(ChannelState.Attaching);
             await Task.Delay(2000);
 
@@ -132,9 +132,9 @@ namespace IO.Ably.Tests.Realtime
             });
 
             // Act
-            target.Publish("test1", "test 12");
-            target.Publish("test2", "test 123");
-            target.Publish("test3", "test 321");
+            target.PublishAsync("test1", "test 12");
+            target.PublishAsync("test2", "test 123");
+            target.PublishAsync("test3", "test 321");
 
             await Task.Delay(2000);
             // Assert
@@ -167,7 +167,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             // Act
-            target.Publish("test", "test data");
+            target.PublishAsync("test", "test data");
             signal.WaitOne(10000);
 
             // Assert
@@ -256,7 +256,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task WithAnImplicitClientIdFromToken_ShouldReceiveMessageWithCorrectClientID(Protocol protocol)
         {
             var rest = await GetRestClient(protocol);
-            var token = await rest.Auth.RequestToken(new TokenParams() {ClientId = "1000"});
+            var token = await rest.Auth.RequestTokenAsync(new TokenParams() {ClientId = "1000"});
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.TokenDetails = token);
 
             client.Connect();
@@ -326,7 +326,7 @@ namespace IO.Ably.Tests.Realtime
             var realtimeClient = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
-                opts.AuthCallback = async @params => await rest.Auth.RequestToken(new TokenParams() {ClientId = clientId});
+                opts.AuthCallback = async @params => await rest.Auth.RequestTokenAsync(new TokenParams() {ClientId = clientId});
             });
 
             var channel = realtimeClient.Get("test");
@@ -337,7 +337,7 @@ namespace IO.Ably.Tests.Realtime
                 message.clientId.Should().Be(clientId);
             });
 
-            channel.Publish(new Message("test", "best") { clientId = "client1" });
+            channel.PublishAsync(new Message("test", "best") { clientId = "client1" });
 
             await Task.Delay(2000);
             messageReceived.Should().BeTrue();
@@ -357,7 +357,7 @@ namespace IO.Ably.Tests.Realtime
             var realtimeClient = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
-                opts.AuthCallback = async @params => await rest.Auth.RequestToken(new TokenParams() { ClientId = clientId });
+                opts.AuthCallback = async @params => await rest.Auth.RequestTokenAsync(new TokenParams() { ClientId = clientId });
             });
 
             var channel = realtimeClient.Get("test");
@@ -481,7 +481,7 @@ namespace IO.Ably.Tests.Realtime
 
             var client2 = await GetRealtimeClient(protocol);
             var historyChannel = client2.Get(channelName);
-            var history = await historyChannel.History(new DataRequestQuery() { Direction = QueryDirection.Forwards});
+            var history = await historyChannel.HistoryAsync(new DataRequestQuery() { Direction = QueryDirection.Forwards});
 
             history.Should().BeOfType<PaginatedResult<Message>>();
             history.Should().HaveCount(10);

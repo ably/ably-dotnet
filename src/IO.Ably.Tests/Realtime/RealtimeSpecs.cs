@@ -51,7 +51,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RTC5a")]
             public void ShouldProxyRestClientStats()
             {
-                _client.Stats();
+                _client.StatsAsync();
                 LastRequest.Url.Should().Contain("stats");
             }
 

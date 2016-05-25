@@ -32,7 +32,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void WhenPublishing_WillSendATokenRequestToServer()
         {
-            Client.Channels.Get("test").Publish("test", "true");
+            Client.Channels.Get("test").PublishAsync("test", "true");
 
            ExecutionCount.Should().Be(2);
         }
@@ -46,7 +46,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void AfterSendingAMessage_CurrentTokenHasDefaultCapabilityAndTtl()
         {
-            Client.Channels.Get("test").Publish("test", "true");
+            Client.Channels.Get("test").PublishAsync("test", "true");
 
             Client.AblyAuth.CurrentToken.Should().NotBeNull();
         }

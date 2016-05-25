@@ -8,6 +8,7 @@ namespace IO.Ably
 {
     internal class MsgPackHelper
     {
+        //TODO: Look into reusing the Context instead of creating it every time
         public static SerializationContext GetContext()
         {
             var context = new SerializationContext() { SerializationMethod = SerializationMethod.Map};

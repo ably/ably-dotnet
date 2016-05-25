@@ -163,7 +163,7 @@ namespace IO.Ably.Tests
                     return AblyResponse.EmptyResponse.ToTask();
                 }, opts => opts.TokenDetails = tokenDetails);
 
-                await client.Stats();
+                await client.StatsAsync();
 
                 client.AblyAuth.CurrentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires);
                 client.AblyAuth.CurrentToken.ClientId.Should().Be(_returnedDummyTokenDetails.ClientId);
@@ -174,7 +174,7 @@ namespace IO.Ably.Tests
             {
                 var client = GetConfiguredRestClient(40100, null);
 
-                await Assert.ThrowsAsync<AblyException>(() => client.Stats());
+                await Assert.ThrowsAsync<AblyException>(() => client.StatsAsync());
             }
 
             [Fact]
@@ -184,7 +184,7 @@ namespace IO.Ably.Tests
             {
                 var client = GetConfiguredRestClient(Defaults.TokenErrorCodesRangeStart, null, useApiKey: false);
 
-                await Assert.ThrowsAsync<AblyException>(() => client.Stats());
+                await Assert.ThrowsAsync<AblyException>(() => client.StatsAsync());
             }
 
             private AblyRest GetConfiguredRestClient(int errorCode, TokenDetails tokenDetails, bool useApiKey = true)
@@ -279,7 +279,7 @@ namespace IO.Ably.Tests
 
             private static async Task MakeAnyRequest(AblyRest client)
             {
-                await client.Channels.Get("boo").Publish("boo", "baa");
+                await client.Channels.Get("boo").PublishAsync("boo", "baa");
             }
         }
 
@@ -477,7 +477,7 @@ namespace IO.Ably.Tests
 
             private static async Task MakeAnyRequest(AblyRest client)
             {
-                await client.Channels.Get("boo").Publish("boo", "baa");
+                await client.Channels.Get("boo").PublishAsync("boo", "baa");
             }
         }
 
@@ -497,7 +497,7 @@ namespace IO.Ably.Tests
 
             rest.ExecuteHttpRequest = delegate { return "[{}]".ToAblyResponse(); };
 
-            await rest.Stats();
+            await rest.StatsAsync();
 
             Assert.True(called, "Rest with Callback needs to request token using callback");
         }
@@ -530,7 +530,7 @@ namespace IO.Ably.Tests
                 return "[{}]".ToAblyResponse();
             };
 
-            await rest.Stats();
+            await rest.StatsAsync();
 
             Assert.True(called, "Rest with Callback needs to request token using callback");
         }
@@ -556,7 +556,7 @@ namespace IO.Ably.Tests
             rest.ExecuteHttpRequest = request => "[{}]".ToAblyResponse();
             rest.AblyAuth.CurrentToken = new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddDays(-2) };
 
-            await rest.Stats();
+            await rest.StatsAsync();
             newTokenRequested.Should().BeTrue();
             rest.AblyAuth.CurrentToken.Token.Should().Be("new.token");
         }
@@ -581,9 +581,9 @@ namespace IO.Ably.Tests
                 return "[{}]".ToAblyResponse();
             };
 
-            await rest.Stats();
-            await rest.Stats();
-            await rest.Stats();
+            await rest.StatsAsync();
+            await rest.StatsAsync();
+            await rest.StatsAsync();
         }
 
         [Fact]

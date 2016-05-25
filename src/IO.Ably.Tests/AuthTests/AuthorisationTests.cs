@@ -24,7 +24,7 @@ namespace IO.Ably.Tests
         public async Task WithTlsFalseAndBasicAuth_Throws()
         {
             var client = GetRestClient(setOptionsAction: options => { options.Tls = false; });
-            await Assert.ThrowsAsync<InsecureRequestException>(() => client.Auth.Authorise());
+            await Assert.ThrowsAsync<InsecureRequestException>(() => client.Auth.AuthoriseAsync());
         }
 
         [Fact]
@@ -32,7 +32,7 @@ namespace IO.Ably.Tests
         public async Task WithTlsTrueAndBasicAuth_ShouldWork()
         {
             var client = GetRestClient(setOptionsAction: options => { options.Tls = true; });
-            await client.Auth.Authorise();
+            await client.Auth.AuthoriseAsync();
 
             //Success
         }
@@ -41,7 +41,7 @@ namespace IO.Ably.Tests
         public void UsesKeyIdFromTheClient()
         {
             var client = GetRestClient();
-            var data = client.Auth.CreateTokenRequest(null, null).Result;
+            var data = client.Auth.CreateTokenRequestAsync(null, null).Result;
             data.KeyName.Should().Be(client.Options.ParseKey().KeyName);
         }
 
@@ -50,7 +50,7 @@ namespace IO.Ably.Tests
         public void UsesDefaultTtlWhenNoneIsSpecified()
         {
             var client = GetRestClient();
-            var data = client.Auth.CreateTokenRequest(null, null).Result;
+            var data = client.Auth.CreateTokenRequestAsync(null, null).Result;
             data.Ttl.Should().Be(Defaults.DefaultTokenTtl.TotalMilliseconds.ToString());
         }
 
@@ -59,7 +59,7 @@ namespace IO.Ably.Tests
         public void UsesTheDefaultCapability()
         {
             var client = GetRestClient();
-            var data = client.Auth.CreateTokenRequest(null, null).Result;
+            var data = client.Auth.CreateTokenRequestAsync(null, null).Result;
             data.Capability.Should().Be(Defaults.DefaultTokenCapability.ToJson());
         }
 
@@ -67,8 +67,8 @@ namespace IO.Ably.Tests
         public void UsesUniqueNonseWhichIsMoreThan16Characters()
         {
             var client = GetRestClient();
-            var data = client.Auth.CreateTokenRequest(null, null).Result;
-            var secondTime = client.Auth.CreateTokenRequest(null, null).Result;
+            var data = client.Auth.CreateTokenRequestAsync(null, null).Result;
+            var secondTime = client.Auth.CreateTokenRequestAsync(null, null).Result;
             data.Nonce.Should().NotBe(secondTime.Nonce);
             data.Nonce.Length.Should().BeGreaterOrEqualTo(16);
         }
@@ -103,7 +103,7 @@ namespace IO.Ably.Tests
             {
                 var client = GetClientWithTokenParams();
 
-                var request = await client.Auth.CreateTokenRequest();
+                var request = await client.Auth.CreateTokenRequestAsync();
                 request.Capability.Should().Be(Capability.AllowAll.ToJson());
                 request.ClientId.Should().Be("123");
                 request.KeyName.Should().Be(ApiKey.Parse(client.Options.Key).KeyName);
@@ -126,7 +126,7 @@ namespace IO.Ably.Tests
                     Timestamp = Now.AddMinutes(10)
                 };
 
-                var request = await client.Auth.CreateTokenRequest(overridingTokenParams);
+                var request = await client.Auth.CreateTokenRequestAsync(overridingTokenParams);
 
                 request.Capability.Should().Be("");
                 request.ClientId.Should().Be("999");
@@ -145,7 +145,7 @@ namespace IO.Ably.Tests
                     Key = "keyid.name:secret",
                 };
 
-                var request = await client.Auth.CreateTokenRequest(null, overrideAuthOptions);
+                var request = await client.Auth.CreateTokenRequestAsync(null, overrideAuthOptions);
 
                 request.KeyName.Should().Be("keyid.name");
             }
@@ -157,7 +157,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSA9h")]
             public async Task ReturnsASignedTokenRequest()
             {
-                var request = await Client.Auth.CreateTokenRequest();
+                var request = await Client.Auth.CreateTokenRequestAsync();
                 request.Should().NotBeNull();
                 request.Mac.Should().NotBeEmpty();
             }
@@ -166,7 +166,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSA9c")]
             public async Task WithEmptyNonce_ShouldGenerateANonceWithMoreThan16Characters()
             {
-                var request =await Client.Auth.CreateTokenRequest();
+                var request =await Client.Auth.CreateTokenRequestAsync();
                 request.Nonce.Length.Should().BeGreaterThan(16, "Nonce should be more than 16 characters");
             }
 
@@ -174,7 +174,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSA9d")]
             public async Task WithNoTimeStapmInRequest_ShouldUseSystemType()
             {
-                var request = await Client.Auth.CreateTokenRequest();
+                var request = await Client.Auth.CreateTokenRequestAsync();
                 request.Timestamp.Should().Be(Now.ToUnixTimeInMilliseconds().ToString());
             }
 
@@ -183,7 +183,7 @@ namespace IO.Ably.Tests
             public void WithTimeStampOverridesDefault()
             {
                 var date = new DateTimeOffset(2014, 1, 1, 0, 0, 0, TimeSpan.Zero);
-                var data = Client.Auth.CreateTokenRequest(new TokenParams() { Timestamp = date }, null).Result;
+                var data = Client.Auth.CreateTokenRequestAsync(new TokenParams() { Timestamp = date }, null).Result;
                 data.Timestamp.Should().Be(date.ToUnixTimeInMilliseconds().ToString());
             }
 
@@ -194,7 +194,7 @@ namespace IO.Ably.Tests
                 var currentTime = Config.Now().ToUnixTimeInMilliseconds();
                 var client = GetRestClient(x => ("[" + currentTime + "]").ToAblyJsonResponse());
 
-                var data = client.Auth.CreateTokenRequest(null, new AuthOptions() { QueryTime = true }).Result;
+                var data = client.Auth.CreateTokenRequestAsync(null, new AuthOptions() { QueryTime = true }).Result;
                 data.Timestamp.Should().Be(currentTime.ToString());
             }
 
@@ -202,7 +202,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSA9e")]
             public void WithTtlOverridesDefault()
             {
-                var data = Client.Auth.CreateTokenRequest(new TokenParams { Ttl = TimeSpan.FromHours(2) }, null).Result;
+                var data = Client.Auth.CreateTokenRequestAsync(new TokenParams { Ttl = TimeSpan.FromHours(2) }, null).Result;
 
                 data.Ttl.Should().Be(TimeSpan.FromHours(2).TotalMilliseconds.ToString());
             }
@@ -214,7 +214,7 @@ namespace IO.Ably.Tests
                 var capability = new Capability();
                 capability.AddResource("a").AllowAll();
                 var customParams = new TokenParams() { Capability = capability };
-                var request = await Client.Auth.CreateTokenRequest(customParams);
+                var request = await Client.Auth.CreateTokenRequestAsync(customParams);
                 request.Capability.Should().Be(capability.ToJson());
             }
 
@@ -222,21 +222,21 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSA9g")]
             public async Task GeneratesHMac()
             {
-                var data = await Client.Auth.CreateTokenRequest();
+                var data = await Client.Auth.CreateTokenRequestAsync();
                 data.Mac.Should().NotBeEmpty();
             }
 
             [Fact]
             public void WithNonceOverridesDefault()
             {
-                var data = Client.Auth.CreateTokenRequest(new TokenParams() { Nonce = "Blah" }, null).Result;
+                var data = Client.Auth.CreateTokenRequestAsync(new TokenParams() { Nonce = "Blah" }, null).Result;
                 data.Nonce.Should().Be("Blah");
             }
 
             [Fact]
             public void WithClientIdOverridesDefault()
             {
-                var data = Client.Auth.CreateTokenRequest(new TokenParams() { ClientId = "123" }, null).Result;
+                var data = Client.Auth.CreateTokenRequestAsync(new TokenParams() { ClientId = "123" }, null).Result;
                 data.ClientId.Should().Be("123");
             }
 
@@ -244,14 +244,14 @@ namespace IO.Ably.Tests
             public async void WithOutKeyIdThrowsException()
             {
                 var client = new AblyRest(new ClientOptions());
-                await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequest(null, null));
+                await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequestAsync(null, null));
             }
 
             [Fact]
             public async void WithOutKeyValueThrowsException()
             {
                 var client = new AblyRest(new ClientOptions() { Key = "111.222" });
-                await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequest(null, null));
+                await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequestAsync(null, null));
             }
 
             
@@ -274,7 +274,7 @@ namespace IO.Ably.Tests
                 options.UseTokenAuth = true;
             });
 
-            var ex = await Assert.ThrowsAsync<AblyException>(() => client.Auth.Authorise());
+            var ex = await Assert.ThrowsAsync<AblyException>(() => client.Auth.AuthoriseAsync());
             ex.ErrorInfo.message.Should().Be("TokenAuth is on but there is no way to generate one");
         }
 
@@ -300,7 +300,7 @@ namespace IO.Ably.Tests
             {
                 var client = GetRestClientWithClientId();
 
-                client.Channels["test"].Publish("boo", "baa");
+                client.Channels["test"].PublishAsync("boo", "baa");
 
                 var message = (LastRequest.PostData as List<Message>).First();
 
@@ -317,7 +317,7 @@ namespace IO.Ably.Tests
                     options.DefaultTokenParams = new TokenParams() { ClientId = "999" };
                 });
 
-                client.Auth.Authorise(null, new AuthOptions() { Force = true});
+                client.Auth.AuthoriseAsync(null, new AuthOptions() { Force = true});
                 var tokenRequest = LastRequest.PostData as TokenRequest;
                 tokenRequest.ClientId.Should().Be("123");
             }

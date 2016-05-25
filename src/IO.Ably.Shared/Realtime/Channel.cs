@@ -238,17 +238,17 @@ namespace IO.Ably.Realtime
             return tw.Task;
         }
 
-        public Task<PaginatedResult<Message>> History(bool untilAttached = false)
+        public Task<PaginatedResult<Message>> HistoryAsync(bool untilAttached = false)
         {
             var query = new DataRequestQuery();
             if (untilAttached)
             {
                 AddUntilAttachedParameter(query);
             }
-            return RestChannel.History(query);
+            return RestChannel.HistoryAsync(query);
         }
 
-        public Task<PaginatedResult<Message>> History(DataRequestQuery dataQuery, bool untilAttached = false)
+        public Task<PaginatedResult<Message>> HistoryAsync(DataRequestQuery dataQuery, bool untilAttached = false)
         {
             var query = dataQuery ?? new DataRequestQuery();
             if (untilAttached)
@@ -256,7 +256,7 @@ namespace IO.Ably.Realtime
                 AddUntilAttachedParameter(query);
             }
                 
-            return RestChannel.History(query);
+            return RestChannel.HistoryAsync(query);
         }
 
         public void OnError(ErrorInfo error)

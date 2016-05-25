@@ -13,7 +13,7 @@ namespace IO.Ably.Tests
         {
             var rest = GetRestClient();
 
-            await rest.Stats();
+            await rest.StatsAsync();
 
             Equal(HttpMethod.Get, LastRequest.Method);
             Equal("/stats", LastRequest.Url);
@@ -33,7 +33,7 @@ namespace IO.Ably.Tests
                 Limit = 1000
             };
 
-            await rest.Stats(query);
+            await rest.StatsAsync(query);
 
             LastRequest.AssertContainsParameter("start", query.Start.Value.ToUnixTimeInMilliseconds().ToString());
             LastRequest.AssertContainsParameter("end", query.End.Value.ToUnixTimeInMilliseconds().ToString());
@@ -56,7 +56,7 @@ namespace IO.Ably.Tests
             });
 
             //Act
-            var result = await rest.Stats();
+            var result = await rest.StatsAsync();
 
             //Assert
             NotNull(result.NextQuery);
@@ -67,7 +67,7 @@ namespace IO.Ably.Tests
         {
             var rest = GetRestClient();
 
-            await rest.Stats(query);
+            await rest.StatsAsync(query);
         }
 
         [Theory]

@@ -42,7 +42,7 @@ namespace IO.Ably.Transport
             }
             else
             {
-                var token = await auth.GetCurrentValidTokenAndRenewIfNecessary();
+                var token = await auth.GetCurrentValidTokenAndRenewIfNecessaryAsync();
                 if (token == null)
                     throw new AblyException("There is no valid token. Can't authenticate", 40100, HttpStatusCode.Unauthorized);
 

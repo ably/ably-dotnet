@@ -42,7 +42,7 @@ namespace IO.Ably.Tests.Rest
             message.data = new string('a', 50 * 1024 * 8); // 100KB
             var client = await GetRestClient(protocol);
             var ex = await Assert.ThrowsAsync<AblyException>(()
-                => client.Channels.Get("large").Publish(message));
+                => client.Channels.Get("large").PublishAsync(message));
 
             Output.WriteLine("Error: " + ex.Message);
         }
@@ -55,9 +55,9 @@ namespace IO.Ably.Tests.Rest
             var message = new Message("test", "test") {clientId = "123"};
             var client = await GetRestClient(protocol);
             var channel = client.Channels.Get("persisted:test");
-            await channel.Publish(message);
+            await channel.PublishAsync(message);
 
-            var result = await channel.History();
+            var result = await channel.HistoryAsync();
             result.First().clientId.Should().Be("123");
         }
 
@@ -70,9 +70,9 @@ namespace IO.Ably.Tests.Rest
             var message = new Message("test", "test") { clientId = null};
             var client = await GetRestClient(protocol, opts => opts.ClientId = "999");
             var channel = client.Channels.Get("persisted:test".AddRandomSuffix());
-            await channel.Publish(message);
+            await channel.PublishAsync(message);
 
-            var result = await channel.History();
+            var result = await channel.HistoryAsync();
             result.First().clientId.Should().Be("999");
         }
 
@@ -84,9 +84,9 @@ namespace IO.Ably.Tests.Rest
             var message = new Message("test", "test") { clientId = "999" };
             var client = await GetRestClient(protocol, opts => opts.ClientId = "999");
             var channel = client.Channels.Get("persisted:test".AddRandomSuffix());
-            await channel.Publish(message);
+            await channel.PublishAsync(message);
 
-            var result = await channel.History();
+            var result = await channel.HistoryAsync();
             result.First().clientId.Should().Be("999");
         }
 
@@ -99,11 +99,11 @@ namespace IO.Ably.Tests.Rest
             var message = new Message("test", "test") { clientId = "999" };
             var client = await GetRestClient(protocol, opts => opts.ClientId = "111");
             var channel = client.Channels.Get("test");
-            var ex = await Assert.ThrowsAsync<AblyException>(() => channel.Publish(message));
+            var ex = await Assert.ThrowsAsync<AblyException>(() => channel.PublishAsync(message));
             Output.WriteLine("Error: " + ex.Message);
 
             //Can publish further messages in the same channel
-            await channel.Publish("test", "test");
+            await channel.PublishAsync("test", "test");
         }
 
         [Theory]
@@ -126,8 +126,8 @@ namespace IO.Ably.Tests.Rest
                 var encoded = item["encoded"];
                 var encoding = (string)encoded["encoding"];
                 var decodedData = DecodeData((string)encoded["data"], encoding);
-                await channel.Publish((string)encoded["name"], decodedData);
-                var message = (await channel.History()).First();
+                await channel.PublishAsync((string)encoded["name"], decodedData);
+                var message = (await channel.HistoryAsync()).First();
                 if (message.data is byte[])
                     (message.data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
                 else if (encoding == "json")
@@ -155,8 +155,8 @@ namespace IO.Ably.Tests.Rest
                 var encoded = item["encoded"];
                 var encoding = (string)encoded["encoding"];
                 var decodedData = DecodeData((string)encoded["data"], encoding);
-                await channel.Publish((string)encoded["name"], decodedData);
-                var message = (await channel.History()).First();
+                await channel.PublishAsync((string)encoded["name"], decodedData);
+                var message = (await channel.HistoryAsync()).First();
                 if (message.data is byte[])
                     (message.data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
                 else if (encoding == "json")
@@ -178,16 +178,16 @@ namespace IO.Ably.Tests.Rest
             //Act
             for (int i = 0; i < 20; i++)
             {
-                await channel.Publish("name" + i, "data" + i);
+                await channel.PublishAsync("name" + i, "data" + i);
             }
 
             //Assert
-            var history = await channel.History(new DataRequestQuery() { Limit = 10 });
+            var history = await channel.HistoryAsync(new DataRequestQuery() { Limit = 10 });
             history.Should().HaveCount(10);
             history.HasNext.Should().BeTrue();
             history.First().name.Should().Be("name19");
 
-            var secondPage = await channel.History(history.NextQuery);
+            var secondPage = await channel.HistoryAsync(history.NextQuery);
             secondPage.Should().HaveCount(10);
             secondPage.First().name.Should().Be("name9");
         }
@@ -200,7 +200,7 @@ namespace IO.Ably.Tests.Rest
             var client = await GetRestClient(protocol);
             var channel = client.Channels.Get("persisted:test_" + protocol);
 
-            var ex = await Assert.ThrowsAsync<AblyException>(() => channel.Publish("int", 1));
+            var ex = await Assert.ThrowsAsync<AblyException>(() => channel.PublishAsync("int", 1));
         }
 
         class TestLoggerSink : ILoggerSink
@@ -227,10 +227,10 @@ namespace IO.Ably.Tests.Rest
                 var channel1 = client.Channels.Get("persisted:encryption", GetOptions(examples));
 
                 var payload = "test payload";
-                await channel1.Publish("test", payload);
+                await channel1.PublishAsync("test", payload);
 
                 var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(true));
-                var message = (await channel2.History()).First();
+                var message = (await channel2.HistoryAsync()).First();
 
                 loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
                 message.encoding.Should().Be("utf-8/cipher+aes-128-cbc");
@@ -250,10 +250,10 @@ namespace IO.Ably.Tests.Rest
                 var channel1 = client.Channels.Get("persisted:encryption", GetOptions(examples));
 
                 var payload = "test payload";
-                await channel1.Publish("test", payload);
+                await channel1.PublishAsync("test", payload);
 
                 var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(true, new CipherParams(Crypto.GetRandomKey(CipherMode.CBC, 128))));
-                var message = (await channel2.History()).First();
+                var message = (await channel2.HistoryAsync()).First();
 
                 loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
                 loggerSink.LastMessage.Should().Contain("Error decrypting payload");

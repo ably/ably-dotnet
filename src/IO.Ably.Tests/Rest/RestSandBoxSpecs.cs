@@ -20,7 +20,7 @@ namespace IO.Ably.Tests
         {
             var client = await GetRestClient(protocol);
 
-            var stats = await client.Stats(new StatsDataRequestQuery());
+            var stats = await client.StatsAsync(new StatsDataRequestQuery());
 
             stats.Should().NotBeNull();
         }
@@ -32,7 +32,7 @@ namespace IO.Ably.Tests
         {
             var client = await GetRestClient(protocol);
 
-            var now = await client.Time();
+            var now = await client.TimeAsync();
 
             now.Should().BeCloseTo(DateTimeOffset.UtcNow, (int)TimeSpan.FromHours(1).TotalMilliseconds);
         }
@@ -51,7 +51,7 @@ namespace IO.Ably.Tests
                 Output.WriteLine("Current time: " + Config.Now());
                 var authClient = await GetRestClient(protocol);
                 Output.WriteLine("Getting Token to expire in 1 second");
-                var almostExpiredToken = await authClient.Auth.RequestToken(new TokenParams {ClientId = "123", Ttl = TimeSpan.FromSeconds(1)}, null);
+                var almostExpiredToken = await authClient.Auth.RequestTokenAsync(new TokenParams {ClientId = "123", Ttl = TimeSpan.FromSeconds(1)}, null);
                 Output.WriteLine("Token: " + almostExpiredToken.ToString());
                 await Task.Delay(TimeSpan.FromSeconds(2));
                 
@@ -64,10 +64,10 @@ namespace IO.Ably.Tests
                     options.TokenDetails = almostExpiredToken;
                     options.ClientId = "123";
                     options.Key = "";
-                    options.AuthCallback = request => authClient.AblyAuth.RequestToken(request, null);
+                    options.AuthCallback = request => authClient.AblyAuth.RequestTokenAsync(request, null);
                 });
 
-                await client.Stats();
+                await client.StatsAsync();
                 client.AblyAuth.CurrentToken.IsValidToken().Should().BeTrue();
             }
         }

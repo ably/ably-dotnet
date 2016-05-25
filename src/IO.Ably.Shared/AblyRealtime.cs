@@ -63,19 +63,19 @@ namespace IO.Ably
         /// <summary>A reference to the connection object for this library instance.</summary>
         public Connection Connection { get; set; }
 
-        public Task<PaginatedResult<Stats>> Stats()
+        public Task<PaginatedResult<Stats>> StatsAsync()
         {
-            return RestClient.Stats();
+            return RestClient.StatsAsync();
         }
 
-        public Task<PaginatedResult<Stats>> Stats(StatsDataRequestQuery query)
+        public Task<PaginatedResult<Stats>> StatsAsync(StatsDataRequestQuery query)
         {
-            return RestClient.Stats(query);
+            return RestClient.StatsAsync(query);
         }
 
-        public Task<PaginatedResult<Stats>> Stats(DataRequestQuery query)
+        public Task<PaginatedResult<Stats>> StatsAsync(DataRequestQuery query)
         {
-            return RestClient.Stats(query);
+            return RestClient.StatsAsync(query);
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace IO.Ably
         /// <summary>Retrieves the ably service time</summary>
         public Task<DateTimeOffset> Time()
         {
-            return RestClient.Time();
+            return RestClient.TimeAsync();
         }
 
         public IRealtimeChannel Get(string name, ChannelOptions options = null)

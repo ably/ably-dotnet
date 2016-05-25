@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using IO.Ably.CustomSerialisers;
 using Newtonsoft.Json;
 
 namespace IO.Ably
