@@ -288,7 +288,6 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL4d")]
             public async Task WithACallback_ShouldCallCallbackWithErrorIfAttachFails()
             {
-                Logger.LogLevel = LogLevel.Debug;
                 _client.Options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
                 bool called = false;
                 _channel.Attach((span, info) =>

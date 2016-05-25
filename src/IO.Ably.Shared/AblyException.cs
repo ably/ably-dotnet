@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 
 namespace IO.Ably
 {
+    [Serializable]
     public class InsecureRequestException : AblyException
     {
         public InsecureRequestException() : base("Current action cannot be performed over http")
@@ -15,6 +16,7 @@ namespace IO.Ably
     /// Ably exception wrapper class. It includes error information <see cref="Ably.ErrorInfo"/> used by ably.
     /// All inner exceptions are wrapped in this class. Always check the inner exception property of the caught exception.
     /// </summary>
+    [Serializable]
     public class AblyException : Exception
     {
         /* public override void GetObjectData(SerializationInfo info, StreamingContext context)

@@ -40,7 +40,7 @@ namespace IO.Ably.Tests.Realtime
         [Fact]
         public void ShouldSuspend_WhenFirstAttemptEqualOrGreaterThanConnectionStateTtl_ShouldReturnTrue()
         {
-            _info.Attempts.Add(new ConnectionAttempt(Config.Now()));
+            _info.Attempts.Add(new ConnectionAttempt(Now));
             //Move now to default ConnetionStatettl - 1 second
             Now = Now.Add(Defaults.ConnectionStateTtl);
             _info.ShouldSuspend().Should().BeTrue(); // =

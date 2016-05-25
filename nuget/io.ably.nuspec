@@ -23,8 +23,8 @@
     </metadata>
     <files>
         <file src="..\src\IO.Ably.Net45\bin\Release\IO.Ably.dll" target="lib\net45\IO.Ably.dll" />
-        <file src="..\src\IO.Ably.Android\bin\Release\IO.Ably.dll" targe="lib\monoandroid\IO.Ably.dll" />
-        <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.dll" targe="lib\Xamarin.iOS\IO.Ably.dll" />
-        <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.dll" targe="lib\monotouch\IO.Ably.dll" />
+        <file src="..\src\IO.Ably.Android\bin\Release\IO.Ably.dll" target="lib\monoandroid\IO.Ably.dll" />
+        <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.dll" target="lib\Xamarin.iOS\IO.Ably.dll" />
+        <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.dll" target="lib\monotouch\IO.Ably.dll" />
     </files>
 </package>

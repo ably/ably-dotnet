@@ -438,7 +438,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTL7d")]
         public async Task ShouldPublishAndReceiveFixtureData(Protocol protocol, JObject fixtureData)
         {
-            Logger.LogLevel = LogLevel.Debug;
             var items = (JArray)fixtureData["items"];
 
             var client = await GetRealtimeClient(protocol);
