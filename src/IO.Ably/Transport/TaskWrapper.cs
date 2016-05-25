@@ -51,7 +51,7 @@ namespace IO.Ably.Transport
         {
             if (ei != null)
                 _completionSource.SetResult(Result.Fail<T>(ei));
-            else if (typeof(T).IsValueType && Equals(res, default(T)) == false)
+            else if (typeof(T).IsValueType && IsNotDefaultValue(res))
                 _completionSource.SetResult(Result.Ok(res));
             else if (typeof(T).IsValueType == false && res != null)
                 _completionSource.SetResult(Result.Ok(res));
@@ -59,6 +59,15 @@ namespace IO.Ably.Transport
                 _completionSource.SetException(new Exception("Unexpected Exception from the TaskWrapper")); //Something bad happened
         }
 
+        private static bool IsNotDefaultValue(object res)
+        {
+            if (res is TimeSpan)
+            {
+                var span =  (TimeSpan) res;
+                return span != TimeSpan.MinValue;
+            }
+            return Equals(res, default(T)) == false;
+        }
 
         public void SetException(Exception ex)
         {

@@ -1,7 +1,9 @@
-﻿using Ably;
-using Ably.Realtime;
+﻿using IO.Ably;
+using IO.Ably.Realtime;
 using System;
+using System.Threading;
 using System.Windows;
+using IO.Ably.Rest;
 
 namespace RealtimeChat
 {
@@ -10,8 +12,11 @@ namespace RealtimeChat
     /// </summary>
     public partial class MainWindow : Window
     {
+        private SynchronizationContext _appContext;
+
         public MainWindow()
         {
+            _appContext = SynchronizationContext.Current;
             InitializeComponent();
 
             payloadBox.Text = "{\"handle\":\"Your Name\",\"message\":\"Testing Message\"}";
@@ -20,7 +25,7 @@ namespace RealtimeChat
         private AblyRealtime client;
         private IRealtimeChannel channel;
 
-        private void Subscribe_Click(object sender, RoutedEventArgs e)
+        private async void Subscribe_Click(object sender, RoutedEventArgs e)
         {
             string channelName = this.channelBox.Text.Trim();
             if (string.IsNullOrEmpty(channelName))
@@ -30,17 +35,25 @@ namespace RealtimeChat
 
             string key = RealtimeChat.Properties.Settings.Default.ApiKey;
             string clientId = RealtimeChat.Properties.Settings.Default.ClientId;
-            AblyRealtimeOptions options = new AblyRealtimeOptions(key) { UseBinaryProtocol = false, Tls = true, AutoConnect = false, ClientId = clientId };
+            var options = new ClientOptions(key) { UseBinaryProtocol = false, Tls = true, AutoConnect = false, ClientId = clientId };
             this.client = new AblyRealtime(options);
             this.client.Connection.ConnectionStateChanged += this.connection_ConnectionStateChanged;
             this.client.Connect();
 
             this.channel = this.client.Channels.Get(channelName);
-            this.channel.ChannelStateChanged += channel_ChannelStateChanged;
-            this.channel.MessageReceived += this.channel_MessageReceived;
+            this.channel.StateChanged += channel_ChannelStateChanged;
+            this.channel.Subscribe(Handler);
             this.channel.Presence.MessageReceived += this.Presence_MessageReceived;
-            this.channel.Attach();
-            this.channel.Presence.Enter(null, null);
+            await channel.AttachAsync();
+            await channel.Presence.Enter("test data");
+        }
+
+        private void Handler(Message message)
+        {
+            _appContext.Post(delegate
+            {
+                outputBox.Items.Add($"Message: {message.ToString()}");
+            }, null);
         }
 
         private void Trigger_Click(object sender, RoutedEventArgs e)
@@ -58,28 +71,41 @@ namespace RealtimeChat
 
         private void connection_ConnectionStateChanged(object sender, ConnectionStateChangedEventArgs e)
         {
-            outputBox.Items.Add(string.Format("Connection: {0}", e.CurrentState));
+            _appContext.Post(delegate
+            {
+                outputBox.Items.Add(string.Format("Connection: {0}", e.CurrentState));
+            }, null);
         }
 
         private void channel_ChannelStateChanged(object sender, ChannelStateChangedEventArgs e)
         {
-            outputBox.Items.Add(string.Format("Channel: {0}", e.NewState));
+            _appContext.Post(delegate
+            {
+                outputBox.Items.Add(string.Format("Channel: {0}", e.NewState));
+            }, null);
         }
 
         private void channel_MessageReceived(Message[] messages)
         {
-            foreach (Message message in messages)
+            _appContext.Post(delegate
             {
-                outputBox.Items.Add(string.Format("{0}: {1}", message.Name, message.Data));
-            }
+                foreach (Message message in messages)
+                {
+                    outputBox.Items.Add(string.Format("{0}: {1}", message.name, message.data));
+                }
+            }, null);
+            
         }
 
         void Presence_MessageReceived(PresenceMessage[] messages)
         {
-            foreach (PresenceMessage message in messages)
+            _appContext.Post(delegate
             {
-                outputBox.Items.Add(string.Format("{0}: {1} {2}", message.Data, message.Action, message.ClientId));
-            }
+                foreach (PresenceMessage message in messages)
+                {
+                    outputBox.Items.Add(string.Format("{0}: {1} {2}", message.data, message.action, message.clientId));
+                }
+            }, null);
         }
     }
 }

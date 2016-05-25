@@ -840,6 +840,7 @@ namespace IO.Ably.Tests.Realtime
             private AblyRealtime _client;
 
             [Fact]
+            [Trait("spec", "RTL10a")]
             public async Task ShouldCallRestClientToGetHistory()
             {
                 var channel = _client.Get("history");

@@ -203,6 +203,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTS4a")]
+        [Trait("spec", "RTS1")]
         public void AllowsEnumeration()
         {
             // Arrange
