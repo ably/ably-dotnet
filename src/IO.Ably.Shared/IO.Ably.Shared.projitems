@@ -20,7 +20,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Capability.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CapabilityResource.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CipherParams.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Class1.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TaskConstants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ClientOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Config.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\CapabilityJsonConverter.cs" />
