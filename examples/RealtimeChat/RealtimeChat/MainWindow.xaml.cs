@@ -12,11 +12,8 @@ namespace RealtimeChat
     /// </summary>
     public partial class MainWindow : Window
     {
-        private SynchronizationContext _appContext;
-
         public MainWindow()
         {
-            _appContext = SynchronizationContext.Current;
             InitializeComponent();
 
             payloadBox.Text = "{\"handle\":\"Your Name\",\"message\":\"Testing Message\"}";
@@ -43,7 +40,7 @@ namespace RealtimeChat
             this.channel = this.client.Channels.Get(channelName);
             this.channel.StateChanged += channel_ChannelStateChanged;
             this.channel.Subscribe(Handler);
-            this.channel.Presence.MessageReceived += this.Presence_MessageReceived;
+            this.channel.Presence.Subscribe(Presence_MessageReceived);
             await channel.AttachAsync();
             await channel.Presence.Enter("test data");
         }
@@ -76,15 +73,9 @@ namespace RealtimeChat
             outputBox.Items.Add(string.Format("Channel: {0}", e.NewState));
         }
 
-        void Presence_MessageReceived(PresenceMessage[] messages)
+        void Presence_MessageReceived(PresenceMessage message)
         {
-            _appContext.Post(delegate
-            {
-                foreach (PresenceMessage message in messages)
-                {
-                    outputBox.Items.Add(string.Format("{0}: {1} {2}", message.data, message.action, message.clientId));
-                }
-            }, null);
+            outputBox.Items.Add(string.Format("{0}: {1} {2}", message.data, message.action, message.clientId));
         }
     }
 }

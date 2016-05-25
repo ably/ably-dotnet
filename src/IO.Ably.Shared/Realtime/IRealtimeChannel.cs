@@ -41,6 +41,6 @@ namespace IO.Ably.Realtime
         Task<Result> PublishAsync(IEnumerable<Message> messages);
         Task<PaginatedResult<Message>> History(bool untilAttached = false);
         Task<PaginatedResult<Message>> History(DataRequestQuery dataQuery, bool untilAttached = false);
-        void UnsubscribeAll();
+        void Unsubscribe();
     }
 }

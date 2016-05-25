@@ -13,6 +13,18 @@ namespace IO.Ably.Realtime
         {
             return new MessageHandlerAction<Message>(action);
         }
+
+        public static void SafeHandle<T>(this MessageHandlerAction<T> handler, T message) where T : IMessage
+        {
+            try
+            {
+                handler.Handle(message);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error notifying subscriber", ex);
+            }
+        }
     }
 
     /// <summary>Adapter to pass a delegate as IMessageHandler.</summary>

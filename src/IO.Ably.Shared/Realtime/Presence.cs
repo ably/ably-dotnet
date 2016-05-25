@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using IO.Ably.Rest;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 
@@ -20,7 +21,10 @@ namespace IO.Ably.Realtime
 
     public class Presence : IDisposable
     {
-        private readonly IRealtimeChannel _channel;
+        //TODO: Validate the logic is correct
+        public bool SyncComplete => presence.IsSyncInProgress == false;
+
+        private readonly RealtimeChannel _channel;
         private readonly string clientId;
         private readonly Handlers<PresenceMessage> _handlers = new Handlers<PresenceMessage>();
 
@@ -28,7 +32,7 @@ namespace IO.Ably.Realtime
         private readonly List<QueuedPresenceMessage> pendingPresence;
         private readonly PresenceMap presence;
 
-        internal Presence(IConnectionManager connection, IRealtimeChannel channel, string cliendId)
+        internal Presence(IConnectionManager connection, RealtimeChannel channel, string cliendId)
         {
             presence = new PresenceMap();
             pendingPresence = new List<QueuedPresenceMessage>();
@@ -38,10 +42,9 @@ namespace IO.Ably.Realtime
             clientId = cliendId;
         }
 
-        public event Action<PresenceMessage[]> MessageReceived;
-
-        public PresenceMessage[] Get()
+        public IEnumerable<PresenceMessage> Get(bool waitForSync = true, string clientId = "", string connectionId = "")
         {
+            //TODO: Implement the parameters
             return presence.Values;
         }
 
@@ -64,6 +67,11 @@ namespace IO.Ably.Realtime
         public bool Unsubscribe(Action<PresenceMessage> handler)
         {
             return _handlers.Remove(handler.ToHandlerAction());
+        }
+
+        public void Unsubscribe()
+        {
+            _handlers.RemoveAll();
         }
 
         public bool Unsubscribe(PresenceAction presenceAction, Action<PresenceMessage> handler)
@@ -91,14 +99,9 @@ namespace IO.Ably.Realtime
             return UpdatePresence(new PresenceMessage(PresenceAction.Update, clientId, clientData));
         }
 
-        public Task Leave(object clientData)
+        public Task Leave(object clientData = null)
         {
             return LeaveClient(clientId, clientData);
-        }
-
-        public Task Leave()
-        {
-            return LeaveClient(clientId, null);
         }
 
         public Task LeaveClient(string clientId, object clientData)
@@ -171,9 +174,24 @@ namespace IO.Ably.Realtime
 
         private void Publish(params PresenceMessage[] messages)
         {
-            if (MessageReceived != null)
+            foreach (var message in messages)
             {
-                MessageReceived(messages);
+                NotifySubscribers(message);
+            }
+        }
+
+        private void NotifySubscribers(PresenceMessage message)
+        {
+            foreach (var handler in _handlers.GetHandlers())
+            {
+                var loopHandler = handler;
+                _channel.RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message));
+            }
+
+            foreach (var specificHandler in _handlers.GetHandlers(message.action.ToString()))
+            {
+                var loopHandler = specificHandler;
+                _channel.RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message));
             }
         }
 
@@ -236,7 +254,7 @@ namespace IO.Ably.Realtime
                 Failed
             }
 
-            private bool isSyncInProgress;
+            public bool IsSyncInProgress { get; private set; }
 
             private readonly Dictionary<string, PresenceMessage> members;
             private ICollection<string> residualMembers;
@@ -257,30 +275,28 @@ namespace IO.Ably.Realtime
 
             public bool Put(PresenceMessage item)
             {
-                var key = MemberKey(item);
-
                 // we've seen this member, so do not remove it at the end of sync
                 if (residualMembers != null)
                 {
-                    residualMembers.Remove(key);
+                    residualMembers.Remove(item.MemberKey);
                 }
 
                 // compare the timestamp of the new item with any existing member (or ABSENT witness)
                 PresenceMessage existingItem;
-                if (members.TryGetValue(key, out existingItem) && item.timestamp < existingItem.timestamp)
+                if (members.TryGetValue(item.MemberKey, out existingItem) && item.timestamp < existingItem.timestamp)
                 {
                     // no item supersedes a newer item with the same key
                     return false;
                 }
 
                 // add or update
-                if (!members.ContainsKey(key))
+                if (!members.ContainsKey(item.MemberKey))
                 {
-                    members.Add(key, item);
+                    members.Add(item.MemberKey, item);
                 }
                 else
                 {
-                    members[key] = item;
+                    members[item.MemberKey] = item;
                 }
 
                 return true;
@@ -288,30 +304,29 @@ namespace IO.Ably.Realtime
 
             public bool Remove(PresenceMessage item)
             {
-                var key = MemberKey(item);
                 PresenceMessage existingItem;
-                if (members.TryGetValue(key, out existingItem) &&
+                if (members.TryGetValue(item.MemberKey, out existingItem) &&
                     existingItem.action == PresenceAction.Absent)
                 {
                     return false;
                 }
 
-                members.Remove(key);
+                members.Remove(item.MemberKey);
                 return true;
             }
 
             public void StartSync()
             {
-                if (!isSyncInProgress)
+                if (!IsSyncInProgress)
                 {
                     residualMembers = new HashSet<string>(members.Keys);
-                    isSyncInProgress = true;
+                    IsSyncInProgress = true;
                 }
             }
 
             public void EndSync()
             {
-                if (!isSyncInProgress)
+                if (!IsSyncInProgress)
                 {
                     return;
                 }
@@ -338,19 +353,35 @@ namespace IO.Ably.Realtime
                 }
                 finally
                 {
-                    isSyncInProgress = false;
+                    IsSyncInProgress = false;
                 }
-            }
-
-            private string MemberKey(PresenceMessage message)
-            {
-                return $"{message.connectionId}:{message.clientId}";
             }
         }
 
         public void Dispose()
         {
             _handlers.RemoveAll();
+        }
+
+        public Task<PaginatedResult<PresenceMessage>> History(bool untilAttached = false)
+        {
+            var query = new DataRequestQuery();
+            if (untilAttached)
+            {
+                _channel.AddUntilAttachedParameter(query);
+            }
+            return _channel.RestChannel.Presence.History(query);
+        }
+
+        public Task<PaginatedResult<PresenceMessage>> History(DataRequestQuery dataQuery, bool untilAttached = false)
+        {
+            var query = dataQuery ?? new DataRequestQuery();
+            if (untilAttached)
+            {
+                _channel.AddUntilAttachedParameter(query);
+            }
+
+            return _channel.RestChannel.Presence.History(query);
         }
     }
 

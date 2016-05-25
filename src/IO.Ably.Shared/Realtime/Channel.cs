@@ -14,14 +14,14 @@ namespace IO.Ably.Realtime
     /// <summary>Implement realtime channel.</summary>
     internal class RealtimeChannel : IRealtimeChannel, IDisposable
     {
-        private AblyRealtime _realtimeClient;
-        private IConnectionManager ConnectionManager => _realtimeClient.ConnectionManager;
-        private Connection Connection => _realtimeClient.Connection;
-        private AblyRest RestClient => _realtimeClient.RestClient;
+        internal AblyRealtime RealtimeClient { get; }
+        private IConnectionManager ConnectionManager => RealtimeClient.ConnectionManager;
+        private Connection Connection => RealtimeClient.Connection;
         private ConnectionStateType ConnectionState => Connection.State;
         public string AttachedSerial { get; set; }
         private readonly Handlers<Message> _handlers = new Handlers<Message>();
         private readonly CountdownTimer _timer;
+        internal IChannel RestChannel => RealtimeClient.RestClient.Channels.Get(Name);
 
         private readonly object _lockQueue = new object();
 
@@ -38,7 +38,7 @@ namespace IO.Ably.Realtime
             Options = options;
             _timer = new CountdownTimer($"#{Name} timer");
             Presence = new Presence(realtimeClient.ConnectionManager, this, clientId);
-            _realtimeClient = realtimeClient;
+            RealtimeClient = realtimeClient;
             State = ChannelState.Initialized;
             SubscribeToConnectionEvents();
             _attachedAwaiter = new ChannelAwaiter(this, ChannelState.Attached);
@@ -186,7 +186,7 @@ namespace IO.Ably.Realtime
             return _handlers.Remove(eventName, handler.ToHandlerAction());
         }
 
-        public void UnsubscribeAll()
+        public void Unsubscribe()
         {
             _handlers.RemoveAll();
         }
@@ -245,7 +245,7 @@ namespace IO.Ably.Realtime
             {
                 AddUntilAttachedParameter(query);
             }
-            return RestClient.Channels.Get(Name).History(query);
+            return RestChannel.History(query);
         }
 
         public Task<PaginatedResult<Message>> History(DataRequestQuery dataQuery, bool untilAttached = false)
@@ -256,10 +256,22 @@ namespace IO.Ably.Realtime
                 AddUntilAttachedParameter(query);
             }
                 
-            return RestClient.Channels.Get(Name).History(query);
+            return RestChannel.History(query);
         }
 
-        private void AddUntilAttachedParameter(DataRequestQuery query)
+        public void OnError(ErrorInfo error)
+        {
+            Reason = error; //Set or clear the error
+
+            RealtimeClient.NotifyExternalClients(() => Error.Invoke(this, new ChannelErrorEventArgs(error)));
+        }
+
+        public void Dispose()
+        {
+            _handlers.RemoveAll();
+        }
+
+        internal void AddUntilAttachedParameter(DataRequestQuery query)
         {
             if (State != ChannelState.Attached)
             {
@@ -316,7 +328,7 @@ namespace IO.Ably.Realtime
 
             HandleStateChange(state, error, protocolMessage);
 
-            _realtimeClient.NotifyExternalClients(
+            RealtimeClient.NotifyExternalClients(
                 () => StateChanged.Invoke(this, new ChannelStateChangedEventArgs(state, error)));
         }
 
@@ -405,7 +417,7 @@ namespace IO.Ably.Realtime
             foreach (var handler in _handlers.GetHandlers())
             {
                 var loopHandler = handler;
-                _realtimeClient.NotifyExternalClients(() => SafeHandle(loopHandler, message));
+                RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message));
             }
 
             if (message.name.IsNotEmpty())
@@ -413,20 +425,8 @@ namespace IO.Ably.Realtime
                 foreach (var specificHandler in _handlers.GetHandlers(message.name))
                 {
                     var loopHandler = specificHandler;
-                    _realtimeClient.NotifyExternalClients(() => SafeHandle(loopHandler, message));
+                    RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message));
                 }
-            }
-        }
-
-        private void SafeHandle(MessageHandlerAction<Message> handler, Message message)
-        {
-            try
-            {
-                handler.Handle(message);
-            }
-            catch (Exception ex)
-            {
-                Logger.Error("Error notifying subscriber", ex);
             }
         }
 
@@ -453,16 +453,6 @@ namespace IO.Ably.Realtime
             ConnectionManager.Send(protocolMessage, callback, Options);
         }
 
-        public void OnError(ErrorInfo error)
-        {
-            Reason = error; //Set or clear the error
-
-            _realtimeClient.NotifyExternalClients(() => Error.Invoke(this, new ChannelErrorEventArgs(error)));
-        }
-
-        public void Dispose()
-        {
-            _handlers.RemoveAll();
-        }
+        
     }
 }
