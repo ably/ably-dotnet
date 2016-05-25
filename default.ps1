@@ -10,7 +10,7 @@ properties {
 	$sln_name = "IO.Ably.sln"
 	
 	$project_name = "IO.Ably"
-	$build_number = "1.0.0.0"
+	$build_number = "0.8.1-Beta"
 	$solution_dir = "$build_script_dir\$sln_dir"
 	
 	$build_artifacts_dir_base = "$build_script_dir\build\artifacts"
@@ -40,14 +40,13 @@ task Assembly_Info {
 } 
 
 task Build -depends Assembly_Info, Init {
+	clean_directory $build_artifacts_dir_base
+	
 	$base_dir = "$build_script_dir\$sln_dir"
+
 	run_msbuild "$base_dir\$sln_name" $configuration
 
 	$package_dir = "$base_dir\$project_name\bin\$configuration"
-	
-	clean_directory $build_artifacts_dir_base
-	publish_build $package_dir $build_artifacts_dir
-	publish_tools $build_script_dir.ToString() $build_artifacts_tools_dir
 }
 
 task Unit_Tests {

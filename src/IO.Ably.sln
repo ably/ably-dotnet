@@ -10,12 +10,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1EA29F
 		.nuget\NuGet.Config = .nuget\NuGet.Config
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platforms", "Platforms", "{90C978EA-2B78-429D-8C12-766DE0A99A21}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.ConsoleTest", "Ably.ConsoleTest\Ably.ConsoleTest.csproj", "{2A1CC9E0-D5D8-423F-A9F1-C75391E0D43D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{258ABD2A-ACCA-4226-AEDD-B9C74075B367}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solution Items", "{258ABD2A-ACCA-4226-AEDD-B9C74075B367}"
 	ProjectSection(SolutionItems) = preProject
+		..\nuget\io.ably.nuspec = ..\nuget\io.ably.nuspec
 		Todo.txt = Todo.txt
 	EndProjectSection
 EndProject

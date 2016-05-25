@@ -11,7 +11,7 @@ namespace IO.Ably.ConsoleTest
             {
                 AuthUrl = new Uri("https://www.ably.io/ably-auth/token-request/demos"),
                 ClientId = "stan",
-                Tls = false,
+                Tls = false
             };
             return new AblyRealtime(options);
         }

@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>ably.io</id>
-        <version>0.7.2</version>
+        <version>0.8.1-Beta</version>
         <title>ably.io</title>
         <authors>Yavor Ivanov,Martin Georgiev</authors>
         <owners>Ably Real-time Ltd</owners>
@@ -12,23 +12,19 @@
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Ably .NET Realtime and REST client library.</description>
         <summary>Ably is a hugely scalable, superfast and secure hosted real-time messaging service for web-enabled devices.</summary>
-        <copyright>2015 Ably</copyright>
+        <copyright>2016 Ably</copyright>
         <language />
         <dependencies>
-            <group targetFramework=".NETFramework4.5">
-                <dependency id="Newtonsoft.Json" version="6.0.8" />
-                <dependency id="WebSocket4Net" version="0.12" />
-                <dependency id="MsgPack.Cli" version="0.5.8" />
-            </group>
-            <group targetFramework=".NETFramework4.0">
-                <dependency id="Newtonsoft.Json" version="6.0.8" />
-                <dependency id="WebSocket4Net" version="0.12" />
-                <dependency id="MsgPack.Cli" version="0.5.8" />
-            </group>
+            <dependency id="Newtonsoft.Json" version="8.0.3" />
+            <dependency id="Nito.AsyncEx" version="3.0.1" />
+            <dependency id="WebSocket4Net" version="0.14.1" />
+            <dependency id="MsgPack.Cli" version="0.6.8" />
         </dependencies>
     </metadata>
     <files>
-        <file src="..\src\Ably\bin\Release\Ably.dll" target="lib\net45\Ably.dll" />
-        <file src="..\src\Ably\bin\Release40\Ably.dll" target="lib\net40\Ably.dll" />
+        <file src="..\src\IO.Ably.Net45\bin\Release\IO.Ably.dll" target="lib\net45\IO.Ably.dll" />
+        <file src="..\src\IO.Ably.Android\bin\Release\IO.Ably.dll" targe="lib\monoandroid\IO.Ably.dll" />
+        <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.dll" targe="lib\Xamarin.iOS\IO.Ably.dll" />
+        <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.dll" targe="lib\monotouch\IO.Ably.dll" />
     </files>
 </package>
