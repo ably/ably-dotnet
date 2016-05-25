@@ -35,7 +35,6 @@ EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		IO.Ably.Shared\IO.Ably.Shared.projitems*{3553e1b2-8f1f-4e83-9524-08e702c14fcf}*SharedItemsImports = 13
-		IO.Ably.Shared\IO.Ably.Shared.projitems*{8bb7b13c-e9f4-4d1b-bccc-af890a23ece6}*SharedItemsImports = 4
 		IO.Ably.Shared\IO.Ably.Shared.projitems*{24b6fc97-9d3d-46ae-b5cb-47458354bee1}*SharedItemsImports = 4
 		IO.Ably.Shared\IO.Ably.Shared.projitems*{2d265650-b1ec-4f8d-b043-a2e3dcc23fd8}*SharedItemsImports = 4
 	EndGlobalSection
