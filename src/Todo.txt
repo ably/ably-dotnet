@@ -5,4 +5,3 @@
 6. Add AppVeyor integration
 7. Trim the public methods to what's necessary and force comments
 8. Generate documentation
-9. Look at capturing the current SynchronizationContext and posting events to it
