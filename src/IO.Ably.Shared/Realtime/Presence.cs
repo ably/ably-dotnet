@@ -42,10 +42,17 @@ namespace IO.Ably.Realtime
             clientId = cliendId;
         }
 
+        /// <summary>
+        /// Get current presence in the channel. WaitForSync is not implemented yet. Partial result may be returned
+        /// </summary>
+        /// <param name="waitForSync">Not implemented yet. </param>
+        /// <param name="clientId"></param>
+        /// <param name="connectionId"></param>
+        /// <returns></returns>
         public IEnumerable<PresenceMessage> Get(bool waitForSync = true, string clientId = "", string connectionId = "")
         {
-            //TODO: Implement the parameters
-            return presence.Values;
+            //TODO: waitForSync is not implemented yet
+            return presence.Values.Where(x => (clientId.IsEmpty() || x.clientId == clientId) && (connectionId.IsEmpty() || x.connectionId == connectionId));
         }
 
         public void Subscribe(Action<PresenceMessage> handler)

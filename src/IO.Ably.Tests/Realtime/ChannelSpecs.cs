@@ -54,6 +54,7 @@ namespace IO.Ably.Tests.Realtime
 
             [Fact]
             [Trait("spec", "RTL12")]
+            [Trait("intermittent", "true")]
             public async Task OnceAttachedWhenConsequentAttachMessageArriveWithError_ShouldEmitErrorOnChannelButNoStateChange()
             {
                 var client = GetConnectedClient();
