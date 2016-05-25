@@ -2,40 +2,23 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using IO.Ably.ConsoleTest.Sandbox;
 
 namespace IO.Ably.ConsoleTest
 {
     static class Rest
     {
-        static AblyRest GetRestClient()
-        {
-            ClientOptions options = new ClientOptions();
-            options.Environment = AblyEnvironment.Sandbox;
-            options.Tls = true;
-            options.UseBinaryProtocol = false;
-            return new AblyRest(options);
-        }
-
-        static TokenParams CreateTokenRequest(Capability capability, TimeSpan? ttl = null)
-        {
-            var tokenParams = new TokenParams();
-            tokenParams.ClientId = "John";
-            tokenParams.Capability = capability;
-            if (ttl.HasValue)
-                tokenParams.Ttl = ttl.Value;
-            return tokenParams;
-        }
-
         public static async Task Test()
         {
             ConsoleColor.DarkGreen.WriteLine("Creating sandbox app..");
-            TestApp sandboxTestData = await AblySandbox.CreateApp();
 
             ConsoleColor.DarkGreen.WriteLine("Creating REST client..");
 
             // Create REST client using that key
-            AblyRest ably = new AblyRest(sandboxTestData.ToAblyOptions());
+            AblyRest ably = new AblyRest(new ClientOptions()
+            {
+                AuthUrl = new Uri("https://www.ably.io/ably-auth/token-request/demos"),
+                Tls = false
+            });
 
             ConsoleColor.DarkGreen.WriteLine("Publishing a message..");
 

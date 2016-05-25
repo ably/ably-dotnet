@@ -7,10 +7,11 @@
     <ProjectGuid>{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>IO.Ably.Net45</RootNamespace>
-    <AssemblyName>IO.Ably.Net45</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <RootNamespace>IO.Ably</RootNamespace>
+    <AssemblyName>IO.Ably</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

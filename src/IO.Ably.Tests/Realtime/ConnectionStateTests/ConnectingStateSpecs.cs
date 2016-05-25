@@ -98,14 +98,10 @@ namespace IO.Ably.Tests
         public async Task ConnectingState_HandlesInboundErrorMessage()
         {
             // Arrange
-            Mock<IConnectionContext> context = new Mock<IConnectionContext>();
-            Mock<ITransport> transport = new Mock<ITransport>();
-            transport.Setup(c => c.State).Returns(TransportState.Connected);
-            context.Setup(c => c.Transport).Returns(transport.Object);
-            ConnectionConnectingState state = new ConnectionConnectingState(context.Object);
+            _context.Transport = GetConnectedTrasport();
 
             // Act
-            bool result = await state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
 
             // Assert
             Assert.True(result);

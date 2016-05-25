@@ -120,9 +120,9 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\IO.Ably\IO.Ably.csproj">
-      <Project>{ef341e0a-733d-4f79-8303-fd1b10d778eb}</Project>
-      <Name>IO.Ably</Name>
+    <ProjectReference Include="..\..\..\src\IO.Ably.Net45\IO.Ably.Net45.csproj">
+      <Project>{2d265650-b1ec-4f8d-b043-a2e3dcc23fd8}</Project>
+      <Name>IO.Ably.Net45</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

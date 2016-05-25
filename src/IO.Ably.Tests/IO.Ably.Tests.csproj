@@ -227,12 +227,11 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\IO.Ably\IO.Ably.csproj">
-      <Project>{ef341e0a-733d-4f79-8303-fd1b10d778eb}</Project>
-      <Name>IO.Ably</Name>
+    <ProjectReference Include="..\IO.Ably.Net45\IO.Ably.Net45.csproj">
+      <Project>{2d265650-b1ec-4f8d-b043-a2e3dcc23fd8}</Project>
+      <Name>IO.Ably.Net45</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
