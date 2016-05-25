@@ -66,7 +66,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             var client = GetConnectedClient();
 
             List<ConnectionStateType> states = new List<ConnectionStateType>();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 states.Add(args.CurrentState);
             };
@@ -87,7 +87,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             var client = GetConnectedClient();
 
             List<ConnectionStateType> states = new List<ConnectionStateType>();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 states.Add(args.CurrentState);
             };
@@ -108,7 +108,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             var client = GetConnectedClient();
 
             List<ConnectionStateType> states = new List<ConnectionStateType>();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 states.Add(args.CurrentState);
             };
@@ -162,7 +162,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             var client = GetConnectedClient(opts => opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10));
                
             List<ConnectionStateType> states = new List<ConnectionStateType>();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 states.Add(args.CurrentState);
             };
@@ -207,7 +207,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             });
 
             List<ConnectionStateType> states = new List<ConnectionStateType>();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 states.Add(args.CurrentState);
             };

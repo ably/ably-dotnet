@@ -47,10 +47,10 @@ namespace IO.Ably.Realtime
 
         private void SubscribeToConnectionEvents()
         {
-            ConnectionManager.Connection.ConnectionStateChanged += ConnectionOnConnectionStateChanged;
+            ConnectionManager.Connection.InternalStateChanged += InternalOnInternalStateChanged;
         }
 
-        private void ConnectionOnConnectionStateChanged(object sender, ConnectionStateChangedEventArgs args)
+        private void InternalOnInternalStateChanged(object sender, ConnectionStateChangedEventArgs args)
         {
             switch (args.CurrentState)
             {
@@ -74,8 +74,8 @@ namespace IO.Ably.Realtime
             }
         }
 
-        public event EventHandler<ChannelStateChangedEventArgs> StateChanged;
-        public event EventHandler<ChannelErrorEventArgs> Error;
+        public event EventHandler<ChannelStateChangedEventArgs> StateChanged = delegate {};
+        public event EventHandler<ChannelErrorEventArgs> Error = delegate { };
 
         public ChannelOptions Options
 
@@ -316,8 +316,8 @@ namespace IO.Ably.Realtime
 
             HandleStateChange(state, error, protocolMessage);
 
-            //TODO: Post the event back on the user's thread
-            StateChanged?.Invoke(this, new ChannelStateChangedEventArgs(state, error));
+            _realtimeClient.NotifyExternalClients(
+                () => StateChanged.Invoke(this, new ChannelStateChangedEventArgs(state, error)));
         }
 
         private void HandleStateChange(ChannelState state, ErrorInfo error, ProtocolMessage protocolMessage)
@@ -404,13 +404,16 @@ namespace IO.Ably.Realtime
         {
             foreach (var handler in _handlers.GetHandlers())
             {
-                SafeHandle(handler, message);
+                var loopHandler = handler;
+                _realtimeClient.NotifyExternalClients(() => SafeHandle(loopHandler, message));
             }
+
             if (message.name.IsNotEmpty())
             {
                 foreach (var specificHandler in _handlers.GetHandlers(message.name))
                 {
-                    SafeHandle(specificHandler, message);
+                    var loopHandler = specificHandler;
+                    _realtimeClient.NotifyExternalClients(() => SafeHandle(loopHandler, message));
                 }
             }
         }
@@ -454,8 +457,7 @@ namespace IO.Ably.Realtime
         {
             Reason = error; //Set or clear the error
 
-            if(error != null)
-                Error?.Invoke(this, new ChannelErrorEventArgs(error));
+            _realtimeClient.NotifyExternalClients(() => Error.Invoke(this, new ChannelErrorEventArgs(error)));
         }
 
         public void Dispose()

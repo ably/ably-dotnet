@@ -52,7 +52,7 @@ namespace IO.Ably.Tests.Realtime
 
             List<ConnectionStateType> states = new List<ConnectionStateType>();
             var errors = new List<ErrorInfo>();
-            client.Connection.ConnectionStateChanged += (sender, args) => 
+            client.Connection.InternalStateChanged += (sender, args) => 
             {
                 if (args.HasError)
                     errors.Add(args.Reason);
@@ -81,7 +81,7 @@ namespace IO.Ably.Tests.Realtime
 
             List<ConnectionStateType> states = new List<ConnectionStateType>();
             var errors = new List<ErrorInfo>();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 if (args.HasError)
                     errors.Add(args.Reason);
@@ -108,7 +108,7 @@ namespace IO.Ably.Tests.Realtime
 
             List<ConnectionStateType> states = new List<ConnectionStateType>();
             var errors = new List<ErrorInfo>();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 if (args.HasError)
                     errors.Add(args.Reason);
@@ -140,7 +140,7 @@ namespace IO.Ably.Tests.Realtime
 
             List<ConnectionStateType> states = new List<ConnectionStateType>();
             var errors = new List<ErrorInfo>();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 if (args.HasError)
                     errors.Add(args.Reason);
@@ -177,7 +177,7 @@ namespace IO.Ably.Tests.Realtime
 
             List<ConnectionStateType> states = new List<ConnectionStateType>();
             var errors = new List<ErrorInfo>();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 if (args.HasError)
                     errors.Add(args.Reason);
@@ -209,7 +209,7 @@ namespace IO.Ably.Tests.Realtime
 
             List<ConnectionStateType> states = new List<ConnectionStateType>();
             var errors = new List<ErrorInfo>();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 if (args.HasError)
                     errors.Add(args.Reason);
@@ -274,7 +274,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task AckMessagesAreResentWhenConnectionIsDroppedAndResumed()
         {
             var client = SetupConnectedClient();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 if (args.CurrentState == ConnectionStateType.Connecting)
                 {

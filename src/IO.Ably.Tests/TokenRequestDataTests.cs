@@ -1,7 +1,6 @@
 ﻿using System;
 using FluentAssertions;
 using IO.Ably.Encryption;
-using IO.Ably.Platform;
 using Xunit;
 
 namespace IO.Ably.Tests

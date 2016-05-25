@@ -37,7 +37,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.AutoConnect = false);
             var states = new List<ConnectionStateType>();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 args.Should().BeOfType<ConnectionStateChangedEventArgs>();
                 states.Add(args.CurrentState);
@@ -61,7 +61,7 @@ namespace IO.Ably.Tests.Realtime
             await WaitForState(client);
 
             var states = new List<ConnectionStateType>();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 args.Should().BeOfType<ConnectionStateChangedEventArgs>();
                 states.Add(args.CurrentState);
@@ -150,7 +150,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             ErrorInfo error = null;
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 error = args.Reason;
             };
@@ -181,7 +181,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             ErrorInfo error = null;
-            realtimeClient.Connection.ConnectionStateChanged += (o, args) =>
+            realtimeClient.Connection.InternalStateChanged += (o, args) =>
             {
                 error = args.Reason;
             };
@@ -284,7 +284,7 @@ namespace IO.Ably.Tests.Realtime
                 opts.Recover = "c17a8!WeXvJum2pbuVYZtF-1b63c17a8:-1";
                 opts.AutoConnect = false;
             });
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 if (args.CurrentState == ConnectionStateType.Connected)
                 {

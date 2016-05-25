@@ -38,7 +38,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = GetClientWithFakeTransport(opts => opts.AutoConnect = false);
             var states = new List<ConnectionStateType>();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 args.Should().BeOfType<ConnectionStateChangedEventArgs>();
                 states.Add(args.CurrentState);
@@ -64,7 +64,7 @@ namespace IO.Ably.Tests.Realtime
 
             //Start collecting events after the connection is open
             var states = new List<ConnectionStateType>();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 args.Should().BeOfType<ConnectionStateChangedEventArgs>();
                 states.Add(args.CurrentState);
@@ -90,7 +90,7 @@ namespace IO.Ably.Tests.Realtime
             var client = GetClientWithFakeTransport();
             bool hasError = false;
             ErrorInfo actualError = null;
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 hasError = args.HasError;
                 actualError = args.Reason;

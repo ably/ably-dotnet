@@ -5,7 +5,6 @@ using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
-using Moq;
 using Xunit;
 using Xunit.Abstractions;
 

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using IO.Ably.Rest;
@@ -12,33 +13,41 @@ namespace IO.Ably
 {
     public class AblyRealtime : IRealtimeClient, IRealtimeChannelCommands
     {
-        private readonly object _channelLock = new object();
+        private SynchronizationContext _synchronizationContext;
+
         internal ConcurrentDictionary<string, IRealtimeChannel> RealtimeChannels { get; private set; } = new ConcurrentDictionary<string, IRealtimeChannel>();
 
-        /// <summary></summary>
-        /// <param name="key"></param>
         public AblyRealtime(string key)
             : this(new ClientOptions(key))
         {
         }
 
-        /// <summary>
-        /// </summary>
-        /// <param name="options"></param>
-        public AblyRealtime(ClientOptions options) : 
+        public AblyRealtime(ClientOptions options) :
             this(options, clientOptions => new AblyRest(clientOptions))
         {
-            
+
         }
 
         internal AblyRealtime(ClientOptions options, Func<ClientOptions, AblyRest> createRestFunc)
         {
+            CaptureSynchronizationContext(options);
+
             RestClient = createRestFunc(options);
             Connection = new Connection(this);
             Connection.Initialise();
 
             if (options.AutoConnect)
                 Connect();
+        }
+
+        private void CaptureSynchronizationContext(ClientOptions options)
+        {
+            if (options.CustomContext != null)
+                _synchronizationContext = options.CustomContext;
+            else if (options.CaptureCurrentSynchronizationContext)
+            {
+                _synchronizationContext = SynchronizationContext.Current;
+            }
         }
 
         public AblyRest RestClient { get; }
@@ -164,6 +173,19 @@ namespace IO.Ably
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        internal void NotifyExternalClients(Action action)
+        {
+            var context = Volatile.Read(ref _synchronizationContext);
+            if (context != null)
+            {
+                context.Post(delegate { action(); }, null);
+            }
+            else
+            {
+                action();
+            }
         }
     }
 }

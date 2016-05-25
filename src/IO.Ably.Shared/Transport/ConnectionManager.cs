@@ -27,7 +27,7 @@ namespace IO.Ably.Transport
         public ClientOptions Options => RestClient.Options;
         public TimeSpan DefaultTimeout => Options.RealtimeRequestTimeout;
         public TimeSpan SuspendRetryTimeout => Options.SuspendedRetryTimeout;
-        public event MessageReceivedDelegate MessageReceived;
+        internal event MessageReceivedDelegate MessageReceived;
         public bool IsActive => State.CanQueue && State.CanSend;
         public Connection Connection { get; }
         public ConnectionStateType ConnectionState => Connection.State;

@@ -50,10 +50,7 @@ namespace RealtimeChat
 
         private void Handler(Message message)
         {
-            _appContext.Post(delegate
-            {
-                outputBox.Items.Add($"Message: {message.ToString()}");
-            }, null);
+            outputBox.Items.Add($"Message: {message}");
         }
 
         private void Trigger_Click(object sender, RoutedEventArgs e)
@@ -66,35 +63,17 @@ namespace RealtimeChat
                 return;
             }
 
-            this.channel.Publish(eventName, payload);
+            channel.Publish(eventName, payload);
         }
 
         private void connection_ConnectionStateChanged(object sender, ConnectionStateChangedEventArgs e)
         {
-            _appContext.Post(delegate
-            {
-                outputBox.Items.Add(string.Format("Connection: {0}", e.CurrentState));
-            }, null);
+            outputBox.Items.Add(string.Format("Connection: {0}", e.CurrentState));
         }
 
         private void channel_ChannelStateChanged(object sender, ChannelStateChangedEventArgs e)
         {
-            _appContext.Post(delegate
-            {
-                outputBox.Items.Add(string.Format("Channel: {0}", e.NewState));
-            }, null);
-        }
-
-        private void channel_MessageReceived(Message[] messages)
-        {
-            _appContext.Post(delegate
-            {
-                foreach (Message message in messages)
-                {
-                    outputBox.Items.Add(string.Format("{0}: {1}", message.name, message.data));
-                }
-            }, null);
-            
+            outputBox.Items.Add(string.Format("Channel: {0}", e.NewState));
         }
 
         void Presence_MessageReceived(PresenceMessage[] messages)

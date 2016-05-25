@@ -42,7 +42,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             });
 
             List<ErrorInfo> raisedErrors = new List<ErrorInfo>();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 if (args.HasError)
                     raisedErrors.Add(args.Reason);
@@ -160,7 +160,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             ConnectionStateChangedEventArgs stateChangeArgs = null;
 
             client.Connect();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 args.CurrentState.Should().Be(ConnectionStateType.Disconnected);
                 args.RetryIn.Should().Be(options.DisconnectedRetryTimeout);
@@ -192,7 +192,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             client.Connect();
             List<ConnectionStateChangedEventArgs> stateChanges = new List<ConnectionStateChangedEventArgs>();
-            client.Connection.ConnectionStateChanged += (sender, args) =>
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 stateChanges.Add(args);
             };

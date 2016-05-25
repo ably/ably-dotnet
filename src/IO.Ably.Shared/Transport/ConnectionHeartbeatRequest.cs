@@ -14,13 +14,13 @@ namespace IO.Ably.Transport
         public static readonly ErrorInfo TimeOutError = new ErrorInfo("Unable to ping service; Request timed out", 40800, HttpStatusCode.RequestTimeout);
 
         private Action<TimeSpan?, ErrorInfo> _callback;
-        private IConnectionManager _manager;
+        private ConnectionManager _manager;
         private ICountdownTimer _timer;
         private bool _finished;
         private object _syncLock = new object();
         private DateTimeOffset _start = DateTimeOffset.MinValue;
 
-        public ConnectionHeartbeatRequest(IConnectionManager manager, ICountdownTimer timer)
+        public ConnectionHeartbeatRequest(ConnectionManager manager, ICountdownTimer timer)
         {
             _manager = manager;
             _timer = timer;
@@ -31,12 +31,12 @@ namespace IO.Ably.Transport
             return message.action == ProtocolMessage.MessageAction.Heartbeat;
         }
 
-        public static ConnectionHeartbeatRequest Execute(IConnectionManager manager, Action<TimeSpan?, ErrorInfo> callback)
+        public static ConnectionHeartbeatRequest Execute(ConnectionManager manager, Action<TimeSpan?, ErrorInfo> callback)
         {
             return Execute(manager, new CountdownTimer("Connection heartbeat timer"), callback);
         }
 
-        public static ConnectionHeartbeatRequest Execute(IConnectionManager manager, ICountdownTimer timer,
+        public static ConnectionHeartbeatRequest Execute(ConnectionManager manager, ICountdownTimer timer,
             Action<TimeSpan?, ErrorInfo> callback)
         {
             var request = new ConnectionHeartbeatRequest(manager, timer);
@@ -60,7 +60,7 @@ namespace IO.Ably.Transport
             {
                 _callback = callback;
                 _manager.MessageReceived += OnMessageReceived;
-                _manager.Connection.ConnectionStateChanged += OnConnectionStateChanged;
+                _manager.Connection.InternalStateChanged += OnInternalStateChanged;
 
                 _manager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat), null);
                 _timer.Start(_manager.DefaultTimeout, () => FinishRequest(null, TimeOutError));
@@ -82,7 +82,7 @@ namespace IO.Ably.Transport
             return Config.Now() - _start;
         }  
 
-        private void OnConnectionStateChanged(object sender, ConnectionStateChangedEventArgs e)
+        private void OnInternalStateChanged(object sender, ConnectionStateChangedEventArgs e)
         {
             if (e.CurrentState != ConnectionStateType.Connected)
             {
@@ -101,7 +101,7 @@ namespace IO.Ably.Transport
                         _finished = true;
 
                         _manager.MessageReceived -= OnMessageReceived;
-                        _manager.Connection.ConnectionStateChanged -= OnConnectionStateChanged;
+                        _manager.Connection.InternalStateChanged -= OnInternalStateChanged;
                         _timer.Abort();
 
                         _callback?.Invoke(result, error);

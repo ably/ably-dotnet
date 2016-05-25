@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using IO.Ably.Rest;
 using IO.Ably.Transport;
 
@@ -144,7 +145,11 @@ namespace IO.Ably
         public AblyEnvironment? Environment { get; set; }
 
         public ITransportFactory TransportFactory { get; set; }
-        
+
+        public bool CaptureCurrentSynchronizationContext { get; set; } = true;
+
+        public SynchronizationContext CustomContext { get; set; }
+
         internal AuthMethod Method
         {
             get
