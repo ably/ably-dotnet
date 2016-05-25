@@ -19,7 +19,7 @@ namespace IO.Ably.Tests
             public void CanSerialiseAndDeserializeProtocolMessage()
             {
                 var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, "boo");
-                message.presence = new[] { new PresenceMessage(PresenceMessage.ActionType.Enter, "123", "my data") };
+                message.presence = new[] { new PresenceMessage(PresenceAction.Enter, "123", "my data") };
 
                 var data = MsgPackHelper.Serialise(message);
                 var result = MsgPackHelper.DeSerialise(data, typeof(ProtocolMessage)) as ProtocolMessage;

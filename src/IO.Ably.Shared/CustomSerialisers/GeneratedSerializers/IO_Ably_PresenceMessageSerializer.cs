@@ -20,20 +20,20 @@ namespace IO.Ably.CustomSerialisers {
         
         private MsgPack.Serialization.MessagePackSerializer<string> _serializer0;
         
-        private MsgPack.Serialization.MessagePackSerializer<IO.Ably.PresenceMessage.ActionType> _serializer1;
+        private MsgPack.Serialization.MessagePackSerializer<IO.Ably.PresenceAction> _serializer1;
         
         private MsgPack.Serialization.MessagePackSerializer<object> _serializer2;
         
         private MsgPack.Serialization.MessagePackSerializer<System.Nullable<System.DateTimeOffset>> _serializer3;
         
-        private MsgPack.Serialization.MessagePackSerializer<System.Nullable<IO.Ably.PresenceMessage.ActionType>> _serializer4;
+        private MsgPack.Serialization.MessagePackSerializer<System.Nullable<IO.Ably.PresenceAction>> _serializer4;
         
         public IO_Ably_PresenceMessageSerializer(MsgPack.Serialization.SerializationContext context) : 
                 base(context) {
             MsgPack.Serialization.PolymorphismSchema schema0 = default(MsgPack.Serialization.PolymorphismSchema);
             schema0 = null;
             this._serializer0 = context.GetSerializer<string>(schema0);
-            this._serializer1 = context.GetSerializer<IO.Ably.PresenceMessage.ActionType>(MsgPack.Serialization.EnumMessagePackSerializerHelpers.DetermineEnumSerializationMethod(context, typeof(IO.Ably.PresenceMessage.ActionType), MsgPack.Serialization.EnumMemberSerializationMethod.ByUnderlyingValue));
+            this._serializer1 = context.GetSerializer<IO.Ably.PresenceAction>(MsgPack.Serialization.EnumMessagePackSerializerHelpers.DetermineEnumSerializationMethod(context, typeof(IO.Ably.PresenceAction), MsgPack.Serialization.EnumMemberSerializationMethod.ByUnderlyingValue));
             MsgPack.Serialization.PolymorphismSchema schema1 = default(MsgPack.Serialization.PolymorphismSchema);
             schema1 = null;
             this._serializer2 = context.GetSerializer<object>(schema1);
@@ -42,7 +42,7 @@ namespace IO.Ably.CustomSerialisers {
             this._serializer3 = context.GetSerializer<System.Nullable<System.DateTimeOffset>>(schema2);
             MsgPack.Serialization.PolymorphismSchema schema3 = default(MsgPack.Serialization.PolymorphismSchema);
             schema3 = null;
-            this._serializer4 = context.GetSerializer<System.Nullable<IO.Ably.PresenceMessage.ActionType>>(schema3);
+            this._serializer4 = context.GetSerializer<System.Nullable<IO.Ably.PresenceAction>>(schema3);
         }
         
         protected override void PackToCore(MsgPack.Packer packer, IO.Ably.PresenceMessage objectTree)
@@ -109,7 +109,7 @@ namespace IO.Ably.CustomSerialisers {
                     result.id = nullable;
                 }
                 unpacked = (unpacked + 1);
-                System.Nullable<IO.Ably.PresenceMessage.ActionType> nullable0 = default(System.Nullable<IO.Ably.PresenceMessage.ActionType>);
+                System.Nullable<IO.Ably.PresenceAction> nullable0 = default(System.Nullable<IO.Ably.PresenceAction>);
                 if ((unpacked < itemsCount)) {
                     if ((unpacker.Read() == false)) {
                         throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(1);
@@ -329,7 +329,7 @@ namespace IO.Ably.CustomSerialisers {
                                     }
                                     else {
                                         if ((key == "action")) {
-                                            System.Nullable<IO.Ably.PresenceMessage.ActionType> nullable8 = default(System.Nullable<IO.Ably.PresenceMessage.ActionType>);
+                                            System.Nullable<IO.Ably.PresenceAction> nullable8 = default(System.Nullable<IO.Ably.PresenceAction>);
                                             if ((unpacker.Read() == false)) {
                                                 throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
                                             }

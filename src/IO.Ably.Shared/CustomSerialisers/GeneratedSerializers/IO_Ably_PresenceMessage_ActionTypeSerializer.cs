@@ -13,7 +13,7 @@ namespace IO.Ably.CustomSerialisers {
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("MsgPack.Serialization.CodeDomSerializers.CodeDomSerializerBuilder", "0.6.0.0")]
     [System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    public class IO_Ably_PresenceMessage_ActionTypeSerializer : MsgPack.Serialization.EnumMessagePackSerializer<IO.Ably.PresenceMessage.ActionType> {
+    public class IO_Ably_PresenceMessage_ActionTypeSerializer : MsgPack.Serialization.EnumMessagePackSerializer<IO.Ably.PresenceAction> {
         
         public IO_Ably_PresenceMessage_ActionTypeSerializer(MsgPack.Serialization.SerializationContext context) : 
                 this(context, MsgPack.Serialization.EnumSerializationMethod.ByUnderlyingValue) {
@@ -23,12 +23,12 @@ namespace IO.Ably.CustomSerialisers {
                 base(context, enumSerializationMethod) {
         }
         
-        protected override void PackUnderlyingValueTo(MsgPack.Packer packer, IO.Ably.PresenceMessage.ActionType enumValue) {
+        protected override void PackUnderlyingValueTo(MsgPack.Packer packer, IO.Ably.PresenceAction enumValue) {
             packer.Pack(((int)(enumValue)));
         }
         
-        protected override IO.Ably.PresenceMessage.ActionType UnpackFromUnderlyingValue(MsgPack.MessagePackObject messagePackObject) {
-            return ((IO.Ably.PresenceMessage.ActionType)(messagePackObject.AsInt32()));
+        protected override IO.Ably.PresenceAction UnpackFromUnderlyingValue(MsgPack.MessagePackObject messagePackObject) {
+            return ((IO.Ably.PresenceAction)(messagePackObject.AsInt32()));
         }
         
         private static T @__Conditional<T>(bool condition, T whenTrue, T whenFalse)

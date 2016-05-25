@@ -3,25 +3,25 @@ using MsgPack.Serialization;
 
 namespace IO.Ably
 {
+    public enum PresenceAction : byte
+    {
+        Absent = 0,
+        Present,
+        Enter,
+        Leave,
+        Update
+    }
+
     public class PresenceMessage : IMessage
     {
-        public enum ActionType : byte
-        {
-            Absent = 0,
-            Present,
-            Enter,
-            Leave,
-            Update
-        }
-
         public PresenceMessage()
         { }
 
-        public PresenceMessage(ActionType action, string clientId)
+        public PresenceMessage(PresenceAction action, string clientId)
             : this(action, clientId, null)
         { }
 
-        public PresenceMessage(ActionType action, string clientId, object data)
+        public PresenceMessage(PresenceAction action, string clientId, object data)
         {
             this.action = action;
             this.clientId = clientId;
@@ -32,7 +32,7 @@ namespace IO.Ably
         public string id { get; set; }
 
         [MessagePackMember(1)]
-        public ActionType action { get; set; }
+        public PresenceAction action { get; set; }
 
         [MessagePackMember(2)]
         public string clientId { get; set; }

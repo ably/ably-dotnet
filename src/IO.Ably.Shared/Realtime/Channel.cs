@@ -20,7 +20,7 @@ namespace IO.Ably.Realtime
         private AblyRest RestClient => _realtimeClient.RestClient;
         private ConnectionStateType ConnectionState => Connection.State;
         public string AttachedSerial { get; set; }
-        private readonly Handlers _handlers = new Handlers();
+        private readonly Handlers<Message> _handlers = new Handlers<Message>();
         private readonly CountdownTimer _timer;
 
         private readonly object _lockQueue = new object();
@@ -165,7 +165,7 @@ namespace IO.Ably.Realtime
             if(State != ChannelState.Attached || State != ChannelState.Attaching)
                 Attach();
 
-            _handlers.Add(new MessageHandlerAction(handler));
+            _handlers.Add(new MessageHandlerAction<Message>(handler));
         }
 
         public void Subscribe(string eventName, Action<Message> handler)
@@ -173,17 +173,17 @@ namespace IO.Ably.Realtime
             if (State != ChannelState.Attached || State != ChannelState.Attaching)
                 Attach();
 
-            _handlers.Add(eventName, new MessageHandlerAction(handler));
+            _handlers.Add(eventName, handler.ToHandlerAction());
         }
 
         public bool Unsubscribe(Action<Message> handler)
         {
-            return _handlers.Remove(new MessageHandlerAction(handler));
+            return _handlers.Remove(handler.ToHandlerAction());
         }
 
         public bool Unsubscribe(string eventName, Action<Message> handler)
         {
-            return _handlers.Remove(eventName, new MessageHandlerAction(handler));
+            return _handlers.Remove(eventName, handler.ToHandlerAction());
         }
 
         public void UnsubscribeAll()
@@ -418,7 +418,7 @@ namespace IO.Ably.Realtime
             }
         }
 
-        private void SafeHandle(IMessageHandler handler, Message message)
+        private void SafeHandle(MessageHandlerAction<Message> handler, Message message)
         {
             try
             {

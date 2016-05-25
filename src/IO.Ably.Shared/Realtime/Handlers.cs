@@ -5,28 +5,28 @@ using System.Threading;
 
 namespace IO.Ably.Realtime
 {
-    internal class Handlers
+    internal class Handlers<T> where T : IMessage
     {
-        private readonly List<IMessageHandler> _handlers = new List<IMessageHandler>();
-        private readonly Dictionary<string, List<IMessageHandler>> _specificHandlers = new Dictionary<string, List<IMessageHandler>>();
+        private readonly List<MessageHandlerAction<T>> _handlers = new List<MessageHandlerAction<T>>();
+        private readonly Dictionary<string, List<MessageHandlerAction<T>>> _specificHandlers = new Dictionary<string, List<MessageHandlerAction<T>>>();
         private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
 
-        public IEnumerable<IMessageHandler> GetHandlers(string eventName = null)
+        public IEnumerable<MessageHandlerAction<T>> GetHandlers(string eventName = null)
         {
             try
             {
                 _lock.EnterReadLock();
                 if (eventName.IsNotEmpty())
                 {
-                    List<IMessageHandler> result;
+                    List<MessageHandlerAction<T>> result;
                     if (_specificHandlers.TryGetValue(eventName.ToLower(), out result))
                     {
-                        return new List<IMessageHandler>(result);
+                        return new List<MessageHandlerAction<T>>(result);
                     }
-                    return Enumerable.Empty<IMessageHandler>();
+                    return Enumerable.Empty<MessageHandlerAction<T>>();
                 }
 
-                return new List<IMessageHandler>(_handlers);
+                return new List<MessageHandlerAction<T>>(_handlers);
             }
             finally
             {
@@ -36,7 +36,7 @@ namespace IO.Ably.Realtime
 
         /// <summary>Add handler to the collection.</summary>
         /// <param name="handler"></param>
-        public void Add(IMessageHandler handler)
+        public void Add(MessageHandlerAction<T> handler)
         {
             try
             {
@@ -49,12 +49,12 @@ namespace IO.Ably.Realtime
             }
         }
 
-        public void Add(string eventName, IMessageHandler handler)
+        public void Add(string eventName, MessageHandlerAction<T> handler)
         {
             try
             {
                 _lock.EnterWriteLock();
-                List<IMessageHandler> result;
+                List<MessageHandlerAction<T>> result;
                 if (_specificHandlers.TryGetValue(eventName, out result))
                 {
                     if (result != null)
@@ -63,7 +63,7 @@ namespace IO.Ably.Realtime
                         return;
                     }
                 }
-                _specificHandlers[eventName] = new List<IMessageHandler>() { handler };
+                _specificHandlers[eventName] = new List<MessageHandlerAction<T>>() { handler };
             }
             finally
             {
@@ -74,7 +74,7 @@ namespace IO.Ably.Realtime
         /// <summary>Remove handler from the collection.</summary>
         /// <param name="handler"></param>
         /// <returns>True if removed, false if not found.</returns>
-        public bool Remove(IMessageHandler handler)
+        public bool Remove(MessageHandlerAction<T> handler)
         {
             try
             {
@@ -87,7 +87,7 @@ namespace IO.Ably.Realtime
             }
         }
 
-        public bool Remove(string eventName, IMessageHandler handler = null)
+        public bool Remove(string eventName, MessageHandlerAction<T> handler = null)
         {
             if (eventName.IsEmpty())
                 return false;

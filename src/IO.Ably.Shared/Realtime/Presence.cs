@@ -8,21 +8,21 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
 {
-    public enum PresenceState
-    {
-        Initialized,
-        Entering,
-        Entered,
-        Leaving,
-        Left,
-        Failed
-    }
+    //public enum PresenceState
+    //{
+    //    Initialized,
+    //    Entering,
+    //    Entered,
+    //    Leaving,
+    //    Left,
+    //    Failed
+    //}
 
-
-    public class Presence
+    public class Presence : IDisposable
     {
-        private readonly IRealtimeChannel channel;
+        private readonly IRealtimeChannel _channel;
         private readonly string clientId;
+        private readonly Handlers<PresenceMessage> _handlers = new Handlers<PresenceMessage>();
 
         private readonly IConnectionManager connection;
         private readonly List<QueuedPresenceMessage> pendingPresence;
@@ -33,8 +33,8 @@ namespace IO.Ably.Realtime
             presence = new PresenceMap();
             pendingPresence = new List<QueuedPresenceMessage>();
             this.connection = connection;
-            this.channel = channel;
-            this.channel.StateChanged += OnChannelStateChanged;
+            this._channel = channel;
+            this._channel.StateChanged += OnChannelStateChanged;
             clientId = cliendId;
         }
 
@@ -45,6 +45,32 @@ namespace IO.Ably.Realtime
             return presence.Values;
         }
 
+        public void Subscribe(Action<PresenceMessage> handler)
+        {
+            if (_channel.State != ChannelState.Attached || _channel.State != ChannelState.Attaching)
+                _channel.Attach();
+
+            _handlers.Add(handler.ToHandlerAction());
+        }
+
+        public void Subscribe(PresenceAction presenceAction, Action<PresenceMessage> handler)
+        {
+            if (_channel.State != ChannelState.Attached || _channel.State != ChannelState.Attaching)
+                _channel.Attach();
+
+            _handlers.Add(presenceAction.ToString(), new MessageHandlerAction<PresenceMessage>(handler));
+        }
+
+        public bool Unsubscribe(Action<PresenceMessage> handler)
+        {
+            return _handlers.Remove(handler.ToHandlerAction());
+        }
+
+        public bool Unsubscribe(PresenceAction presenceAction, Action<PresenceMessage> handler)
+        {
+            return _handlers.Remove(presenceAction.ToString(), handler.ToHandlerAction());
+        }
+
         public Task Enter(object clientData)
         {
             return EnterClient(clientId, clientData);
@@ -52,7 +78,7 @@ namespace IO.Ably.Realtime
 
         public Task EnterClient(string clientId, object clientData)
         {
-            return UpdatePresence(new PresenceMessage(PresenceMessage.ActionType.Enter, clientId, clientData));
+            return UpdatePresence(new PresenceMessage(PresenceAction.Enter, clientId, clientData));
         }
 
         public Task Update(object clientData)
@@ -62,7 +88,7 @@ namespace IO.Ably.Realtime
 
         public Task UpdateClient(string clientId, object clientData)
         {
-            return UpdatePresence(new PresenceMessage(PresenceMessage.ActionType.Update, clientId, clientData));
+            return UpdatePresence(new PresenceMessage(PresenceAction.Update, clientId, clientData));
         }
 
         public Task Leave(object clientData)
@@ -77,25 +103,25 @@ namespace IO.Ably.Realtime
 
         public Task LeaveClient(string clientId, object clientData)
         {
-            return UpdatePresence(new PresenceMessage(PresenceMessage.ActionType.Leave, clientId, clientData));
+            return UpdatePresence(new PresenceMessage(PresenceAction.Leave, clientId, clientData));
         }
 
         internal Task UpdatePresence(PresenceMessage msg)
         {
-            if (channel.State == ChannelState.Initialized || channel.State == ChannelState.Attaching)
+            if (_channel.State == ChannelState.Initialized || _channel.State == ChannelState.Attaching)
             {
-                if (channel.State == ChannelState.Initialized)
+                if (_channel.State == ChannelState.Initialized)
                 {
-                    channel.Attach();
+                    _channel.Attach();
                 }
 
                 var tw = new TaskWrapper();
                 pendingPresence.Add(new QueuedPresenceMessage(msg, tw.Callback));
                 return tw.Task;
             }
-            if (channel.State == ChannelState.Attached)
+            if (_channel.State == ChannelState.Attached)
             {
-                var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, channel.Name);
+                var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name);
                 message.presence = new[] {msg};
                 connection.Send(message, null);
                 //TODO: Fix this;
@@ -121,12 +147,12 @@ namespace IO.Ably.Realtime
             {
                 switch (update.action)
                 {
-                    case PresenceMessage.ActionType.Enter:
-                    case PresenceMessage.ActionType.Update:
-                    case PresenceMessage.ActionType.Present:
+                    case PresenceAction.Enter:
+                    case PresenceAction.Update:
+                    case PresenceAction.Present:
                         broadcast &= presence.Put(update);
                         break;
-                    case PresenceMessage.ActionType.Leave:
+                    case PresenceAction.Leave:
                         broadcast &= presence.Remove(update);
                         break;
                 }
@@ -168,7 +194,7 @@ namespace IO.Ably.Realtime
             if (pendingPresence.Count == 0)
                 return;
 
-            var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, channel.Name);
+            var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name);
             message.presence = new PresenceMessage[pendingPresence.Count];
             var callbacks = new List<Action<bool, ErrorInfo>>();
             var i = 0;
@@ -224,7 +250,7 @@ namespace IO.Ably.Realtime
             {
                 get
                 {
-                    return members.Values.Where(c => c.action != PresenceMessage.ActionType.Absent)
+                    return members.Values.Where(c => c.action != PresenceAction.Absent)
                         .ToArray();
                 }
             }
@@ -265,7 +291,7 @@ namespace IO.Ably.Realtime
                 var key = MemberKey(item);
                 PresenceMessage existingItem;
                 if (members.TryGetValue(key, out existingItem) &&
-                    existingItem.action == PresenceMessage.ActionType.Absent)
+                    existingItem.action == PresenceAction.Absent)
                 {
                     return false;
                 }
@@ -296,7 +322,7 @@ namespace IO.Ably.Realtime
                     // received all of the out-of-order sync messages
                     foreach (var member in members.ToArray())
                     {
-                        if (member.Value.action == PresenceMessage.ActionType.Present)
+                        if (member.Value.action == PresenceAction.Present)
                         {
                             members.Remove(member.Key);
                         }
@@ -320,6 +346,11 @@ namespace IO.Ably.Realtime
             {
                 return $"{message.connectionId}:{message.clientId}";
             }
+        }
+
+        public void Dispose()
+        {
+            _handlers.RemoveAll();
         }
     }
 

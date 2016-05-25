@@ -28,7 +28,7 @@ namespace IO.Ably.Tests
             get
             {
                 yield return new object[] { new PresenceMessage[] { new PresenceMessage() } }; // 1 empty message
-                yield return new object[] { new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Enter, null) } }; // 1 empty message
+                yield return new object[] { new PresenceMessage[] { new PresenceMessage(PresenceAction.Enter, null) } }; // 1 empty message
             }
         }
 
@@ -50,8 +50,8 @@ namespace IO.Ably.Tests
             get
             {
                 yield return new object[] { "[]", new PresenceMessage[] { } };
-                yield return new object[] { "[{\"action\":2,\"clientId\":\"test\"}]", new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Enter, "test") } };
-                yield return new object[] { "[{\"action\":2,\"clientId\":\"test\"}, {\"action\":2,\"clientId\":\"test2\"}]", new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Enter, "test"), new PresenceMessage(PresenceMessage.ActionType.Enter, "test2") } };
+                yield return new object[] { "[{\"action\":2,\"clientId\":\"test\"}]", new PresenceMessage[] { new PresenceMessage(PresenceAction.Enter, "test") } };
+                yield return new object[] { "[{\"action\":2,\"clientId\":\"test\"}, {\"action\":2,\"clientId\":\"test2\"}]", new PresenceMessage[] { new PresenceMessage(PresenceAction.Enter, "test"), new PresenceMessage(PresenceAction.Enter, "test2") } };
                 yield return new object[] { "[{\"connectionId\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { connectionId = "test" } } };
                 yield return new object[] { "[{\"data\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { data = "test" } } };
                 yield return new object[] { "[{\"timestamp\":1430784000000}]", new PresenceMessage[] { new PresenceMessage() { timestamp = DateHelper.CreateDate(2015, 5, 5) } } };

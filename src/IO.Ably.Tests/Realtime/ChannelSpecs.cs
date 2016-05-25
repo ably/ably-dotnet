@@ -79,7 +79,7 @@ namespace IO.Ably.Tests.Realtime
                         channel = "test"
                     });
 
-                await Task.Delay(20); //As the notification happens on a different thread
+                await Task.Delay(50); //As the notification happens on a different thread
 
                 error.Should().BeSameAs(expectedError);
                 stateChanged.Should().BeFalse();

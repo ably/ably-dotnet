@@ -297,7 +297,6 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.Reason.code.Should().Be(80008);
         }
 
-
         public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
         {
         }

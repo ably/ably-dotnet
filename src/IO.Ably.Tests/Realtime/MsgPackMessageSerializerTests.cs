@@ -56,8 +56,8 @@ namespace IO.Ably.Tests
             {
                 yield return new object[] { new PresenceMessage[] { new PresenceMessage() } }; // 1 empty message
                 yield return new object[] { new PresenceMessage[] { new PresenceMessage(), new PresenceMessage() } }; // 2 empty messages
-                yield return new object[] { new PresenceMessage[] { new PresenceMessage(), new PresenceMessage(PresenceMessage.ActionType.Enter, "test") } }; // 1 empty, 1 mesage
-                yield return new object[] { new PresenceMessage[] { new PresenceMessage(PresenceMessage.ActionType.Enter, "test"), new PresenceMessage(PresenceMessage.ActionType.Enter, "test2") } }; // 2 messages
+                yield return new object[] { new PresenceMessage[] { new PresenceMessage(), new PresenceMessage(PresenceAction.Enter, "test") } }; // 1 empty, 1 mesage
+                yield return new object[] { new PresenceMessage[] { new PresenceMessage(PresenceAction.Enter, "test"), new PresenceMessage(PresenceAction.Enter, "test2") } }; // 2 messages
             }
         }
 

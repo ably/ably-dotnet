@@ -2,29 +2,37 @@
 
 namespace IO.Ably.Realtime
 {
-    public interface IMessageHandler
+    internal static class MessageHandlerAction
     {
-        void Handle(Message message);
+        public static MessageHandlerAction<PresenceMessage> ToHandlerAction(this Action<PresenceMessage> action)
+        {
+            return new MessageHandlerAction<PresenceMessage>(action);
+        }
+
+        public static MessageHandlerAction<Message> ToHandlerAction(this Action<Message> action)
+        {
+            return new MessageHandlerAction<Message>(action);
+        }
     }
 
     /// <summary>Adapter to pass a delegate as IMessageHandler.</summary>
-    public class MessageHandlerAction : IMessageHandler
+    internal class MessageHandlerAction<T> where T : IMessage
     {
-        private readonly Action<Message> action;
+        private readonly Action<T> action;
 
-        public MessageHandlerAction(Action<Message> action)
+        public MessageHandlerAction(Action<T> action)
         {
             if (null == action)
                 throw new ArgumentNullException();
             this.action = action;
         }
 
-        void IMessageHandler.Handle(Message message)
+        public void Handle(T message)
         {
             action(message);
         }
 
-        protected bool Equals(MessageHandlerAction other)
+        protected bool Equals(MessageHandlerAction<T> other)
         {
             return Equals(action, other.action);
         }
@@ -34,7 +42,7 @@ namespace IO.Ably.Realtime
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((MessageHandlerAction) obj);
+            return Equals((MessageHandlerAction<T>) obj);
         }
 
         public override int GetHashCode()
