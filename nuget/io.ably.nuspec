@@ -22,9 +22,9 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="..\src\IO.Ably.Net45\bin\Release\IO.Ably.dll" target="lib\net45\IO.Ably.dll" />
-        <file src="..\src\IO.Ably.Android\bin\Release\IO.Ably.dll" target="lib\monoandroid\IO.Ably.dll" />
-        <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.dll" target="lib\Xamarin.iOS\IO.Ably.dll" />
-        <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.dll" target="lib\monotouch\IO.Ably.dll" />
+        <file src="..\src\IO.Ably.Net45\bin\Release\IO.Ably.*" target="lib\net45" />
+        <file src="..\src\IO.Ably.Android\bin\Release\IO.Ably.*" target="lib\monoandroid" />
+        <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.*" target="lib\Xamarin.iOS" />
+        <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.*" target="lib\monotouch" />
     </files>
 </package>

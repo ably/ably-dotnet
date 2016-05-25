@@ -25,6 +25,8 @@ What's left
 * Add UWP apps support
 * Create portable library versions
 
+
+
 This repo contains the ably .NET client library.
 
 For complete API documentation, see the [ably documentation](https://ably.io/documentation).
@@ -39,7 +41,7 @@ The client library is available as a [nuget package](https://www.nuget.org/packa
 
 You can install it from the Package Manager Console using this command
 ```
-PM> Install-Package ably.io
+PM> Install-Package ably.io -Pre
 ```
 
 ## Using the Realtime API
