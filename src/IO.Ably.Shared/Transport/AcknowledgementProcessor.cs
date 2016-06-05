@@ -66,7 +66,7 @@ namespace IO.Ably.Transport
                     var messageError = error ?? ErrorInfo.ReasonUnknown;
                     item.SafeExecute(false, messageError);
                 }
-                Reset();
+                _queue.Clear();
             }
         }
 
@@ -74,19 +74,13 @@ namespace IO.Ably.Transport
         {
             lock (_syncObject)
             {
-                var messagesToRemove = _queue.Where(x => x.Message.channel == name);
+                var messagesToRemove = _queue.Where(x => x.Message.channel == name).ToList();
                 foreach (var message in messagesToRemove)
                 {
                     message.SafeExecute(false, error);
                     _queue.Remove(message);
                 }
-
             }
-        }
-
-        private void Reset()
-        {
-            _queue.Clear();
         }
 
         private void HandleMessageAcknowledgement(ProtocolMessage message)
