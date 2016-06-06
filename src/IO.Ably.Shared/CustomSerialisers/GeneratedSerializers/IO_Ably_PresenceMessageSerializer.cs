@@ -54,7 +54,6 @@ namespace IO.Ably.CustomSerialisers {
                 objectTree.connectionId.IsNotEmpty(),
                 objectTree.data != null,
                 objectTree.encoding.IsNotEmpty(),
-                objectTree.encoding.IsNotEmpty(),
                 objectTree.timestamp != null,
             }.Count(x => x) + 1; //one for action
 
@@ -93,279 +92,202 @@ namespace IO.Ably.CustomSerialisers {
             }
         }
         
-        protected override IO.Ably.PresenceMessage UnpackFromCore(MsgPack.Unpacker unpacker) {
+        protected override IO.Ably.PresenceMessage UnpackFromCore(MsgPack.Unpacker unpacker)
+        {
             IO.Ably.PresenceMessage result = default(IO.Ably.PresenceMessage);
             result = new IO.Ably.PresenceMessage();
-            if (unpacker.IsArrayHeader) {
-                int unpacked = default(int);
-                int itemsCount = default(int);
-                itemsCount = MsgPack.Serialization.UnpackHelpers.GetItemsCount(unpacker);
-                string nullable = default(string);
-                if ((unpacked < itemsCount)) {
-                    nullable = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.PresenceMessage), "System.String id");
+            int itemsCount0 = default(int);
+            itemsCount0 = MsgPack.Serialization.UnpackHelpers.GetItemsCount(unpacker);
+            for (int i = 0; (i < itemsCount0); i = (i + 1))
+            {
+                string key = default(string);
+                string nullable6 = default(string);
+                nullable6 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker,
+                    typeof(IO.Ably.PresenceMessage), "MemberName");
+                if (((nullable6 == null)
+                     == false))
+                {
+                    key = nullable6;
                 }
-                if (((nullable == null) 
-                            == false)) {
-                    result.id = nullable;
+                else
+                {
+                    throw MsgPack.Serialization.SerializationExceptions.NewNullIsProhibited("MemberName");
                 }
-                unpacked = (unpacked + 1);
-                System.Nullable<IO.Ably.PresenceAction> nullable0 = default(System.Nullable<IO.Ably.PresenceAction>);
-                if ((unpacked < itemsCount)) {
-                    if ((unpacker.Read() == false)) {
-                        throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(1);
+                if ((key == "timestamp"))
+                {
+                    System.Nullable<System.DateTimeOffset> nullable13 = default(System.Nullable<System.DateTimeOffset>);
+                    if ((unpacker.Read() == false))
+                    {
+                        throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
                     }
-                    if (((unpacker.IsArrayHeader == false) 
-                                && (unpacker.IsMapHeader == false))) {
-                        nullable0 = this._serializer4.UnpackFrom(unpacker);
+                    if (((unpacker.IsArrayHeader == false)
+                         && (unpacker.IsMapHeader == false)))
+                    {
+                        nullable13 = this._serializer3.UnpackFrom(unpacker);
                     }
-                    else {
-                        MsgPack.Unpacker disposable = default(MsgPack.Unpacker);
-                        disposable = unpacker.ReadSubtree();
-                        try {
-                            nullable0 = this._serializer4.UnpackFrom(disposable);
+                    else
+                    {
+                        MsgPack.Unpacker disposable4 = default(MsgPack.Unpacker);
+                        disposable4 = unpacker.ReadSubtree();
+                        try
+                        {
+                            nullable13 = this._serializer3.UnpackFrom(disposable4);
                         }
-                        finally {
-                            if (((disposable == null) 
-                                        == false)) {
-                                disposable.Dispose();
+                        finally
+                        {
+                            if (((disposable4 == null)
+                                 == false))
+                            {
+                                disposable4.Dispose();
                             }
                         }
                     }
-                }
-                if (nullable0.HasValue) {
-                    result.action = nullable0.Value;
-                }
-                unpacked = (unpacked + 1);
-                string nullable1 = default(string);
-                if ((unpacked < itemsCount)) {
-                    nullable1 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.PresenceMessage), "System.String clientId");
-                }
-                if (((nullable1 == null) 
-                            == false)) {
-                    result.clientId = nullable1;
-                }
-                unpacked = (unpacked + 1);
-                string nullable2 = default(string);
-                if ((unpacked < itemsCount)) {
-                    nullable2 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.PresenceMessage), "System.String connectionId");
-                }
-                if (((nullable2 == null) 
-                            == false)) {
-                    result.connectionId = nullable2;
-                }
-                unpacked = (unpacked + 1);
-                object nullable3 = default(object);
-                if ((unpacked < itemsCount)) {
-                    if ((unpacker.Read() == false)) {
-                        throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(4);
+                    if (nullable13.HasValue)
+                    {
+                        result.timestamp = nullable13;
                     }
-                    if (((unpacker.IsArrayHeader == false) 
-                                && (unpacker.IsMapHeader == false))) {
-                        nullable3 = this._serializer2.UnpackFrom(unpacker);
-                    }
-                    else {
-                        MsgPack.Unpacker disposable0 = default(MsgPack.Unpacker);
-                        disposable0 = unpacker.ReadSubtree();
-                        try {
-                            nullable3 = this._serializer2.UnpackFrom(disposable0);
+                }
+                else
+                {
+                    if ((key == "encoding"))
+                    {
+                        string nullable12 = default(string);
+                        nullable12 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker,
+                            typeof(IO.Ably.PresenceMessage), "System.String encoding");
+                        if (((nullable12 == null)
+                             == false))
+                        {
+                            result.encoding = nullable12;
                         }
-                        finally {
-                            if (((disposable0 == null) 
-                                        == false)) {
-                                disposable0.Dispose();
+                    }
+                    else
+                    {
+                        if ((key == "data"))
+                        {
+                            object nullable11 = default(object);
+                            if ((unpacker.Read() == false))
+                            {
+                                throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
                             }
-                        }
-                    }
-                }
-                if (((nullable3 == null) 
-                            == false)) {
-                    result.data = nullable3;
-                }
-                unpacked = (unpacked + 1);
-                string nullable4 = default(string);
-                if ((unpacked < itemsCount)) {
-                    nullable4 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.PresenceMessage), "System.String encoding");
-                }
-                if (((nullable4 == null) 
-                            == false)) {
-                    result.encoding = nullable4;
-                }
-                unpacked = (unpacked + 1);
-                System.Nullable<System.DateTimeOffset> nullable5 = default(System.Nullable<System.DateTimeOffset>);
-                if ((unpacked < itemsCount)) {
-                    if ((unpacker.Read() == false)) {
-                        throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(6);
-                    }
-                    if (((unpacker.IsArrayHeader == false) 
-                                && (unpacker.IsMapHeader == false))) {
-                        nullable5 = this._serializer3.UnpackFrom(unpacker);
-                    }
-                    else {
-                        MsgPack.Unpacker disposable1 = default(MsgPack.Unpacker);
-                        disposable1 = unpacker.ReadSubtree();
-                        try {
-                            nullable5 = this._serializer3.UnpackFrom(disposable1);
-                        }
-                        finally {
-                            if (((disposable1 == null) 
-                                        == false)) {
-                                disposable1.Dispose();
+                            if (((unpacker.IsArrayHeader == false)
+                                 && (unpacker.IsMapHeader == false)))
+                            {
+                                nullable11 = this._serializer2.UnpackFrom(unpacker);
                             }
-                        }
-                    }
-                }
-                if (nullable5.HasValue) {
-                    result.timestamp = nullable5;
-                }
-                unpacked = (unpacked + 1);
-            }
-            else {
-                int itemsCount0 = default(int);
-                itemsCount0 = MsgPack.Serialization.UnpackHelpers.GetItemsCount(unpacker);
-                for (int i = 0; (i < itemsCount0); i = (i + 1)) {
-                    string key = default(string);
-                    string nullable6 = default(string);
-                    nullable6 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.PresenceMessage), "MemberName");
-                    if (((nullable6 == null) 
-                                == false)) {
-                        key = nullable6;
-                    }
-                    else {
-                        throw MsgPack.Serialization.SerializationExceptions.NewNullIsProhibited("MemberName");
-                    }
-                    if ((key == "timestamp")) {
-                        System.Nullable<System.DateTimeOffset> nullable13 = default(System.Nullable<System.DateTimeOffset>);
-                        if ((unpacker.Read() == false)) {
-                            throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
-                        }
-                        if (((unpacker.IsArrayHeader == false) 
-                                    && (unpacker.IsMapHeader == false))) {
-                            nullable13 = this._serializer3.UnpackFrom(unpacker);
-                        }
-                        else {
-                            MsgPack.Unpacker disposable4 = default(MsgPack.Unpacker);
-                            disposable4 = unpacker.ReadSubtree();
-                            try {
-                                nullable13 = this._serializer3.UnpackFrom(disposable4);
-                            }
-                            finally {
-                                if (((disposable4 == null) 
-                                            == false)) {
-                                    disposable4.Dispose();
+                            else
+                            {
+                                MsgPack.Unpacker disposable3 = default(MsgPack.Unpacker);
+                                disposable3 = unpacker.ReadSubtree();
+                                try
+                                {
+                                    nullable11 = this._serializer2.UnpackFrom(disposable3);
                                 }
-                            }
-                        }
-                        if (nullable13.HasValue) {
-                            result.timestamp = nullable13;
-                        }
-                    }
-                    else {
-                        if ((key == "encoding")) {
-                            string nullable12 = default(string);
-                            nullable12 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.PresenceMessage), "System.String encoding");
-                            if (((nullable12 == null) 
-                                        == false)) {
-                                result.encoding = nullable12;
-                            }
-                        }
-                        else {
-                            if ((key == "data")) {
-                                object nullable11 = default(object);
-                                if ((unpacker.Read() == false)) {
-                                    throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
-                                }
-                                if (((unpacker.IsArrayHeader == false) 
-                                            && (unpacker.IsMapHeader == false))) {
-                                    nullable11 = this._serializer2.UnpackFrom(unpacker);
-                                }
-                                else {
-                                    MsgPack.Unpacker disposable3 = default(MsgPack.Unpacker);
-                                    disposable3 = unpacker.ReadSubtree();
-                                    try {
-                                        nullable11 = this._serializer2.UnpackFrom(disposable3);
+                                finally
+                                {
+                                    if (((disposable3 == null)
+                                         == false))
+                                    {
+                                        disposable3.Dispose();
                                     }
-                                    finally {
-                                        if (((disposable3 == null) 
-                                                    == false)) {
-                                            disposable3.Dispose();
+                                }
+                            }
+                            if (((nullable11 == null)
+                                 == false))
+                            {
+                                if (nullable11 is MsgPack.MessagePackObject)
+                                {
+                                    result.data = ((MessagePackObject) nullable11).ToObject();
+                                }
+                                else if (nullable11 is MessagePackObject[])
+                                {
+                                    result.data =
+                                        ((MessagePackObject[]) nullable11).Select(x => x.ToObject()).ToArray();
+                                }
+                                else
+                                {
+                                    result.data = nullable11;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if ((key == "connectionId"))
+                            {
+                                string nullable10 = default(string);
+                                nullable10 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker,
+                                    typeof(IO.Ably.PresenceMessage), "System.String connectionId");
+                                if (((nullable10 == null)
+                                     == false))
+                                {
+                                    result.connectionId = nullable10;
+                                }
+                            }
+                            else
+                            {
+                                if ((key == "clientId"))
+                                {
+                                    string nullable9 = default(string);
+                                    nullable9 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker,
+                                        typeof(IO.Ably.PresenceMessage), "System.String clientId");
+                                    if (((nullable9 == null)
+                                         == false))
+                                    {
+                                        result.clientId = nullable9;
+                                    }
+                                }
+                                else
+                                {
+                                    if ((key == "action"))
+                                    {
+                                        System.Nullable<IO.Ably.PresenceAction> nullable8 =
+                                            default(System.Nullable<IO.Ably.PresenceAction>);
+                                        if ((unpacker.Read() == false))
+                                        {
+                                            throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
                                         }
-                                    }
-                                }
-                                if (((nullable11 == null) 
-                                            == false)) {
-
-                                    if (nullable11 is MsgPack.MessagePackObject)
-                                    {
-                                        result.data = ((MessagePackObject)nullable11).ToObject();
-                                    }
-                                    else if (nullable11 is MessagePackObject[])
-                                    {
-                                        result.data =
-                                            ((MessagePackObject[]) nullable11).Select(x => x.ToObject()).ToArray();
+                                        if (((unpacker.IsArrayHeader == false)
+                                             && (unpacker.IsMapHeader == false)))
+                                        {
+                                            nullable8 = this._serializer4.UnpackFrom(unpacker);
+                                        }
+                                        else
+                                        {
+                                            MsgPack.Unpacker disposable2 = default(MsgPack.Unpacker);
+                                            disposable2 = unpacker.ReadSubtree();
+                                            try
+                                            {
+                                                nullable8 = this._serializer4.UnpackFrom(disposable2);
+                                            }
+                                            finally
+                                            {
+                                                if (((disposable2 == null)
+                                                     == false))
+                                                {
+                                                    disposable2.Dispose();
+                                                }
+                                            }
+                                        }
+                                        if (nullable8.HasValue)
+                                        {
+                                            result.action = nullable8.Value;
+                                        }
                                     }
                                     else
                                     {
-                                        result.data = nullable11;
-                                    }
-                                }
-                            }
-                            else {
-                                if ((key == "connectionId")) {
-                                    string nullable10 = default(string);
-                                    nullable10 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.PresenceMessage), "System.String connectionId");
-                                    if (((nullable10 == null) 
-                                                == false)) {
-                                        result.connectionId = nullable10;
-                                    }
-                                }
-                                else {
-                                    if ((key == "clientId")) {
-                                        string nullable9 = default(string);
-                                        nullable9 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.PresenceMessage), "System.String clientId");
-                                        if (((nullable9 == null) 
-                                                    == false)) {
-                                            result.clientId = nullable9;
-                                        }
-                                    }
-                                    else {
-                                        if ((key == "action")) {
-                                            System.Nullable<IO.Ably.PresenceAction> nullable8 = default(System.Nullable<IO.Ably.PresenceAction>);
-                                            if ((unpacker.Read() == false)) {
-                                                throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);
-                                            }
-                                            if (((unpacker.IsArrayHeader == false) 
-                                                        && (unpacker.IsMapHeader == false))) {
-                                                nullable8 = this._serializer4.UnpackFrom(unpacker);
-                                            }
-                                            else {
-                                                MsgPack.Unpacker disposable2 = default(MsgPack.Unpacker);
-                                                disposable2 = unpacker.ReadSubtree();
-                                                try {
-                                                    nullable8 = this._serializer4.UnpackFrom(disposable2);
-                                                }
-                                                finally {
-                                                    if (((disposable2 == null) 
-                                                                == false)) {
-                                                        disposable2.Dispose();
-                                                    }
-                                                }
-                                            }
-                                            if (nullable8.HasValue) {
-                                                result.action = nullable8.Value;
+                                        if ((key == "id"))
+                                        {
+                                            string nullable7 = default(string);
+                                            nullable7 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker,
+                                                typeof(IO.Ably.PresenceMessage), "System.String id");
+                                            if (((nullable7 == null)
+                                                 == false))
+                                            {
+                                                result.id = nullable7;
                                             }
                                         }
-                                        else {
-                                            if ((key == "id")) {
-                                                string nullable7 = default(string);
-                                                nullable7 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.PresenceMessage), "System.String id");
-                                                if (((nullable7 == null) 
-                                                            == false)) {
-                                                    result.id = nullable7;
-                                                }
-                                            }
-                                            else {
-                                                unpacker.Skip();
-                                            }
+                                        else
+                                        {
+                                            unpacker.Skip();
                                         }
                                     }
                                 }
@@ -376,7 +298,7 @@ namespace IO.Ably.CustomSerialisers {
             }
             return result;
         }
-        
+
         private static T @__Conditional<T>(bool condition, T whenTrue, T whenFalse)
          {
             if (condition) {

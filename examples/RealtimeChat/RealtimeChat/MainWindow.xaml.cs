@@ -7,15 +7,37 @@ using IO.Ably.Rest;
 
 namespace RealtimeChat
 {
+    public class PresenceData
+    {
+        public string[] Data { get; set; }
+    }
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
+        class CustomLoggerSink : ILoggerSink
+        {
+            private readonly Action<string> _logEvent;
+
+            public CustomLoggerSink(Action<string> logEvent)
+            {
+                _logEvent = logEvent;
+            }
+
+            public void LogEvent(LogLevel level, string message)
+            {
+                _logEvent($"{level}:{message}");
+            }
+        }
+
         public MainWindow()
         {
             InitializeComponent();
-
+            Logger.LogLevel = LogLevel.Debug;
+            var context = SynchronizationContext.Current;
+            Logger.LoggerSink = new CustomLoggerSink(message => context.Post(state => logBox.Items.Add(message), null));
             payloadBox.Text = "{\"handle\":\"Your Name\",\"message\":\"Testing Message\"}";
         }
 
@@ -32,7 +54,7 @@ namespace RealtimeChat
 
             string key = RealtimeChat.Properties.Settings.Default.ApiKey;
             string clientId = RealtimeChat.Properties.Settings.Default.ClientId;
-            var options = new ClientOptions(key) { UseBinaryProtocol = false, Tls = true, AutoConnect = false, ClientId = clientId };
+            var options = new ClientOptions(key) { UseBinaryProtocol = true, Tls = true, AutoConnect = false, ClientId = clientId };
             this.client = new AblyRealtime(options);
             this.client.Connection.ConnectionStateChanged += this.connection_ConnectionStateChanged;
             this.client.Connect();
@@ -42,7 +64,7 @@ namespace RealtimeChat
             this.channel.Subscribe(Handler);
             this.channel.Presence.Subscribe(Presence_MessageReceived);
             await channel.AttachAsync();
-            await channel.Presence.Enter("test data");
+            await channel.Presence.Enter(new PresenceData() { Data = new [] { "data1", "data2" }});
         }
 
         private void Handler(Message message)

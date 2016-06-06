@@ -1,5 +1,6 @@
 ﻿using System;
 using System.CodeDom;
+using System.Linq;
 
 namespace IO.Ably.ConsoleTest
 {
@@ -16,6 +17,8 @@ namespace IO.Ably.ConsoleTest
                 client.Connect(); 
                 var channel = client.Get("testchannel0");
                 channel.Attach();
+                channel.Presence.Subscribe(Presence_MessageReceived2);
+                channel.Presence.EnterClient("clientid1", "mydata");
 
                 Console.ReadLine();
                 ConsoleColor.Green.WriteLine("Success!");
@@ -24,6 +27,11 @@ namespace IO.Ably.ConsoleTest
             {
                 ex.LogError();
             }
+        }
+
+        private static void Presence_MessageReceived2(PresenceMessage obj)
+        {
+            Console.WriteLine(obj.connectionId + "\t" + obj.timestamp);
         }
     }
 }

@@ -19,6 +19,33 @@ namespace IO.Ably.Tests.Realtime
 {
     [Collection("AblyRest SandBox Collection")]
     [Trait("requires", "sandbox")]
+    public class PresenceSandboxSpecs : SandboxSpecs
+    {
+        [Theory]
+        [ProtocolData]
+        public async Task CanSend_EnterWithStringArray(Protocol protocol)
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            
+            var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "test");
+
+            var channel = client.Get("test");
+
+            await channel.Presence.Enter(new [] {"test", "best"});
+
+            var presence = channel.Presence.Get();
+
+            presence.Should().HaveCount(1);
+        }
+
+        public PresenceSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
+        {
+
+        }
+    }
+
+    [Collection("AblyRest SandBox Collection")]
+    [Trait("requires", "sandbox")]
     public class ChannelSandboxSpecs : SandboxSpecs
     {
         [Theory]
