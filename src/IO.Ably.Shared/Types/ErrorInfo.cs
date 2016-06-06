@@ -99,7 +99,7 @@ namespace IO.Ably
             return new AblyException(this);
         }
 
-        public bool IsRetyableStatusCode()
+        public bool IsRetryableStatusCode()
         {
             return statusCode.HasValue && IsRetryableStatusCode(statusCode.Value);
         }

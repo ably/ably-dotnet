@@ -55,7 +55,7 @@ namespace IO.Ably.Transport
 
         private bool IsRecoverableError()
         {
-            return (Error != null && Error.IsRetyableStatusCode());
+            return (Error != null && Error.IsRetryableStatusCode());
         }
     }
 
@@ -93,7 +93,7 @@ namespace IO.Ably.Transport
         public async Task<bool> CanFallback(ErrorInfo error)
         {
             return IsDefaultHost() &&
-                error != null && error.IsRetyableStatusCode() &&
+                error != null && error.IsRetryableStatusCode() &&
                 await RestClient.CanConnectToAbly();
         }
 
