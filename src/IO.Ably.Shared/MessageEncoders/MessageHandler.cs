@@ -45,13 +45,6 @@ namespace IO.Ably.MessageEncoders
             Logger.Debug(string.Format("Initializing message encodings. {0} initialized", string.Join(",", Encoders.Select(x => x.EncodingName))));
         }
 
-        public T ParseMessagesResponse<T>(AblyResponse response) where T : class
-        {
-            if (response.Type == ResponseType.Json)
-                return JsonConvert.DeserializeObject<T>(response.TextResponse);
-            return default(T);
-        }
-
         public IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response, ChannelOptions options)
         {
             if (response.Type == ResponseType.Json)
@@ -204,7 +197,6 @@ namespace IO.Ably.MessageEncoders
             var responseText = response.TextResponse;
             if (_protocol == Protocol.MsgPack)
             {
-                // A bit of a hack. Message pack serializer does not like capability objects
                 return (T)MsgPackHelper.DeSerialise(response.Body, typeof(T));
             }
             return (T)JsonConvert.DeserializeObject(responseText, typeof(T), Config.GetJsonSettings());
@@ -262,6 +254,17 @@ namespace IO.Ably.MessageEncoders
             else
             {
                 protocolMessage = JsonConvert.DeserializeObject<ProtocolMessage>(data.Text, Config.GetJsonSettings());
+            }
+
+            //Populate presence and message object timestamps
+            if (protocolMessage != null)
+            {
+                foreach (var presenceMessage in protocolMessage.presence)
+                    presenceMessage.timestamp = protocolMessage.timestamp;
+
+                foreach (var message in protocolMessage.messages)
+                    message.timestamp = protocolMessage.timestamp;
+
             }
 
             return protocolMessage;

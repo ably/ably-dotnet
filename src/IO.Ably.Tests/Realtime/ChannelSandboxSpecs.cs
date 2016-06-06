@@ -25,8 +25,6 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         public async Task CanSend_EnterWithStringArray(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
-            
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "test");
 
             var channel = client.Get("test");
@@ -36,6 +34,25 @@ namespace IO.Ably.Tests.Realtime
             var presence = channel.Presence.Get();
 
             presence.Should().HaveCount(1);
+        }
+
+        [Theory]
+        [ProtocolData]
+        public async Task Presence_HasCorrectTimeStamp(Protocol protocol)
+        {
+            Logger.LogLevel =LogLevel.Debug;
+                 
+            var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "test");
+
+            var channel = client.Get("test");
+            DateTimeOffset? time = null;
+            channel.Presence.Subscribe(message =>
+            {
+                Output.WriteLine($"{message.connectionId}:{message.timestamp}");
+                time = message.timestamp;
+            });
+            await channel.Presence.Enter(new[] { "test", "best" });
+            time.Should().HaveValue();
         }
 
         public PresenceSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
