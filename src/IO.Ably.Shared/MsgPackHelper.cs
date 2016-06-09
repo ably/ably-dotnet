@@ -3,13 +3,21 @@ using System.IO;
 using IO.Ably.CustomSerialisers;
 using MsgPack;
 using MsgPack.Serialization;
+using Nito.AsyncEx;
 
 namespace IO.Ably
 {
-    internal class MsgPackHelper
+    internal static class MsgPackHelper
     {
+        private readonly static SerializationContext Context;
+
+        static MsgPackHelper()
+        {
+            Context = GetContext();
+        }
+
         //TODO: Look into reusing the Context instead of creating it every time
-        public static SerializationContext GetContext()
+        private static SerializationContext GetContext()
         {
             var context = new SerializationContext() { SerializationMethod = SerializationMethod.Map};
             context.Serializers.Register(new DateTimeOffsetMessagePackSerializer(context));
@@ -39,7 +47,7 @@ namespace IO.Ably
 
         public static byte[] Serialise(object obj)
         {
-            var serialiser = GetContext().GetSerializer(obj.GetType());
+            var serialiser = Context.GetSerializer(obj.GetType());
             using (var ms = new MemoryStream())
             {
                 serialiser.Pack(ms, obj, PackerCompatibilityOptions.None);
@@ -54,7 +62,7 @@ namespace IO.Ably
 
             using (var ms = new MemoryStream(byteArray))
             {
-                var serialiser = GetContext().GetSerializer(objectType);
+                var serialiser = Context.GetSerializer(objectType);
                 return serialiser.Unpack(ms);
             }
         }
