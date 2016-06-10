@@ -191,7 +191,7 @@ namespace IO.Ably.Transport
                     case ConnectionStateType.Failed:
                     case ConnectionStateType.Closed:
                     case ConnectionStateType.Connected:
-                        Attempts.Clear();
+                        Reset();
                         break;
                     case ConnectionStateType.Suspended:
                     case ConnectionStateType.Disconnected:

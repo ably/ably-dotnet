@@ -40,6 +40,8 @@ namespace IO.Ably.Transport.States.Connection
 
                     return true;
                 case ProtocolMessage.MessageAction.Error:
+                    if (await Context.RetryBecauseOfTokenError(message.error))
+                        return true;
                     if (await Context.CanUseFallBackUrl(message.error))
                     {
                         Context.Connection.Key = null;

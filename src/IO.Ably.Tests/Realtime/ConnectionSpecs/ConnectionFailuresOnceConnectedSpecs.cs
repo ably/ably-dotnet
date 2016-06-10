@@ -226,8 +226,6 @@ namespace IO.Ably.Tests.Realtime
             var serial = client.Connection.Serial.Value;
             LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closed);
 
-            await new ConnectionAwaiter(client.Connection, ConnectionStateType.Connecting).Wait(TimeSpan.FromSeconds(5));
-
             var urlParams = LastCreatedTransport.Parameters.GetParams();
             urlParams.Should().ContainKey("resume")
                 .WhichValue.Should().Be(connectionKey);
@@ -274,22 +272,10 @@ namespace IO.Ably.Tests.Realtime
         public async Task AckMessagesAreResentWhenConnectionIsDroppedAndResumed()
         {
             var client = SetupConnectedClient();
-            client.Connection.InternalStateChanged += (sender, args) =>
-            {
-                if (args.CurrentState == ConnectionStateType.Connecting)
-                {
-                    client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
-                }
-            };
-            List<bool> callbackResults = new List<bool>();
-            Action<bool, ErrorInfo> callback = (b, info) =>
-            {
-                callbackResults.Add(b);
-            };
 
             string initialConnectionId = client.Connection.Id;
-            client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message), callback);
-            client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message), callback);
+            client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message));
+            client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message));
 
             await CloseAndWaitToReconnect(client, new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {

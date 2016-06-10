@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using IO.Ably.MessageEncoders;
@@ -33,6 +34,8 @@ namespace IO.Ably.Transport
         public ConnectionStateType ConnectionState => Connection.State;
         private readonly object _stateSyncLock = new object();
         private volatile ConnectionState _inTransitionToState;
+        private readonly object _transportQueueLock = new object();
+        private List<ProtocolMessage> _queuedTransportMessages = new List<ProtocolMessage>();
 
         public void ClearAckQueueAndFailMessages(ErrorInfo error) => AckProcessor.ClearQueueAndFailMessages(error);
         public Task<bool> CanUseFallBackUrl(ErrorInfo error)
@@ -87,7 +90,6 @@ namespace IO.Ably.Transport
             {
                 try
                 {
-
                     lock (_stateSyncLock)
                     {
                         if (State.State == newState.State)
@@ -113,9 +115,14 @@ namespace IO.Ably.Transport
                     }
                     else
                         if (Logger.IsDebug) Logger.Debug($"xx {newState.State}: Skipping attaching.");
+
+                    await ProcessQueuedMessages();
                 }
                 catch (AblyException ex)
                 {
+                    lock (_transportQueueLock)
+                        _queuedTransportMessages.Clear();
+
                     Connection.UpdateState(newState);
 
                     newState.AbortTimer();
@@ -132,10 +139,7 @@ namespace IO.Ably.Transport
                     if (_inTransitionToState == newState)
                     {
                         _inTransitionToState = null;
-                    }
-                    if (Logger.IsDebug)
-                    {
-                        Logger.Debug($"xx {newState.State}: Completed setting state");
+                        
                     }
                 }
             });
@@ -361,11 +365,6 @@ namespace IO.Ably.Transport
         {
             ExecuteOnManagerThread(() =>
             {
-                if (Logger.IsDebug)
-                {
-                    Logger.Debug("Message received: " + data.Explain());
-                }
-
                 var message = Handler.ParseRealtimeData(data);
                 return OnTransportMessageReceived(message);
             });
@@ -400,8 +399,41 @@ namespace IO.Ably.Transport
 
         public async Task OnTransportMessageReceived(ProtocolMessage message)
         {
-            Logger.Debug("ConnectionManager: Message Received {0}", message);
+            if (_inTransitionToState != null)
+            {
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug($"InState transition to '{_inTransitionToState}'. Queuing tranport message until state updates");
+                }
 
+                lock(_transportQueueLock)
+                    _queuedTransportMessages.Add(message);
+            }
+            else
+            {
+                await ProcessTransportMessage(message);
+            }
+        }
+
+        private async Task ProcessQueuedMessages()
+        {
+            List<ProtocolMessage> copy;
+            lock (_transportQueueLock)
+            {
+                copy = _queuedTransportMessages;
+                _queuedTransportMessages = new List<ProtocolMessage>();
+            }
+
+            foreach (var message in copy)
+            {
+                if(Logger.IsDebug) Logger.Debug("Proccessing queued message: " + message);
+
+                await ProcessTransportMessage(message);
+            }
+        }
+
+        private async Task ProcessTransportMessage(ProtocolMessage message)
+        {
             var handled = await State.OnMessageReceived(message);
             handled |= AckProcessor.OnMessageReceived(message);
             handled |= ConnectionHeartbeatRequest.CanHandleMessage(message);

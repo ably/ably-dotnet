@@ -297,6 +297,41 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.Reason.code.Should().Be(80008);
         }
 
+        [Theory]
+        [ProtocolData]
+        [Trait("issue", "65")]
+        public async Task WithShortlivedToken_ShouldRenewTokenMoreThanOnce(Protocol protocol)
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            var client = await GetRealtimeClient(protocol, (opts, _) =>
+            {
+                opts.AutoConnect = false;
+            });
+            
+            var stateChanges = new List<ConnectionStateType>();
+            var errors = new List<ErrorInfo>();
+
+            client.Connection.InternalStateChanged += (sender, args) =>
+            {
+                stateChanges.Add(args.CurrentState);
+                errors.Add(args.Reason);
+            };
+
+            await client.Auth.AuthoriseAsync(new TokenParams() { Ttl = TimeSpan.FromSeconds(2) });
+            var channel = client.Get("test");
+            int count = 0;
+            while (true)
+            {
+                count++;
+                channel.Publish("test", "test");
+                await Task.Delay(1000);
+                if (count == 10)
+                    break;
+            }
+            
+            client.Connection.State.Should().Be(ConnectionStateType.Connected);
+        }
+
         public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
         {
         }
