@@ -190,25 +190,27 @@ function global:setup_folder($directory)
 function global:generate_assembly_info
 {
 param(
-	[string]$clsCompliant = "true",
 	[string]$company, 
 	[string]$product, 
 	[string]$copyright,
 	[string]$version,
 	[string]$file = $(throw "file is a required parameter.")
 )
+
+$fileVersion = $version -replace "-\w+$", ""
+
 $asmInfo = "using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: CLSCompliantAttribute($clsCompliant )]
 [assembly: ComVisibleAttribute(false)]
 [assembly: AssemblyCompanyAttribute(""$company"")]
+[assembly: AssemblyDescription(""Client for ably.io realtime service"")]
 [assembly: AssemblyProductAttribute(""$product"")]
 [assembly: AssemblyCopyrightAttribute(""$copyright"")]
-[assembly: AssemblyVersionAttribute(""$version"")]
+[assembly: AssemblyVersionAttribute(""$fileVersion"")]
 [assembly: AssemblyInformationalVersionAttribute(""$version"")]
-[assembly: AssemblyFileVersionAttribute(""$version"")]
+[assembly: AssemblyFileVersionAttribute(""$fileVersion"")]
 "
 
 	$dir = [System.IO.Path]::GetDirectoryName($file)
@@ -217,6 +219,6 @@ using System.Runtime.InteropServices;
 		Write-Host "Creating directory $dir"
 		[System.IO.Directory]::CreateDirectory($dir)
 	}
-	Write-Host "Generating assembly info file: $file"
+	Write-Host "Generating assembly info file: $file. Version: $version"
 	Write-Output $asmInfo > $file
 }
