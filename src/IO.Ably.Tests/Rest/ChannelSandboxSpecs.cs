@@ -43,8 +43,6 @@ namespace IO.Ably.Tests.Rest
             var client = await GetRestClient(protocol);
             var ex = await Assert.ThrowsAsync<AblyException>(()
                 => client.Channels.Get("large").PublishAsync(message));
-
-            Output.WriteLine("Error: " + ex.Message);
         }
 
         [Theory]
@@ -100,7 +98,6 @@ namespace IO.Ably.Tests.Rest
             var client = await GetRestClient(protocol, opts => opts.ClientId = "111");
             var channel = client.Channels.Get("test");
             var ex = await Assert.ThrowsAsync<AblyException>(() => channel.PublishAsync(message));
-            Output.WriteLine("Error: " + ex.Message);
 
             //Can publish further messages in the same channel
             await channel.PublishAsync("test", "test");

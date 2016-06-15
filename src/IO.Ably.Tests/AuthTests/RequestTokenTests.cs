@@ -136,9 +136,7 @@ namespace IO.Ably.Tests.AuthTests
             var tokenParams = new TokenParams();
 
             var client = GetRestClient();
-            Output.WriteLine("Current time: " + Now.Ticks);
             await client.Auth.RequestTokenAsync(tokenParams, null);
-            Output.WriteLine("Current time: " + Now.Ticks);
 
             var data = LastRequest.PostData as TokenRequest;
             Assert.Equal(Now.ToUnixTimeInMilliseconds().ToString(), data.Timestamp);

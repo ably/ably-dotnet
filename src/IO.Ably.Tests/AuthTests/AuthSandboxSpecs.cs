@@ -252,12 +252,5 @@ namespace IO.Ably.Tests
             message.clientId.Should().Be("123");
             message.data.Should().Be("test");
         }
-
-        public class RequestTokenSpecs : AuthSandboxSpecs
-        {
-            public RequestTokenSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
-            {
-            }
-        }
     }
 }

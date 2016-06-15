@@ -193,7 +193,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             }
 
             retryHosts.Should().BeEquivalentTo(Defaults.FallbackHosts);
-            Output.WriteLine(string.Join(",", retryHosts));
         }
 
         [Fact]
@@ -237,9 +236,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                     error = new ErrorInfo() { statusCode = HttpStatusCode.GatewayTimeout }
                 });
             }
-
-            Output.WriteLine(string.Join(",", client.ConnectionManager.AttemptsInfo.Attempts.SelectMany(x => x.FailedStates).Select(x => x.State)));
-            Output.WriteLine(string.Join(",", retryHosts));
 
             retryHosts.Should().Contain("realtime.ably.io");
             retryHosts.Count(x => x == "realtime.ably.io").Should().Be(1);

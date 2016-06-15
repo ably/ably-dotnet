@@ -68,9 +68,11 @@ namespace IO.Ably.Tests.Realtime
                     error = args.Reason;
                 };
                 bool stateChanged = false;
+                ChannelState newState = ChannelState.Initialized;
                 channel.StateChanged += (sender, args) =>
                 {
                     stateChanged = true;
+                    newState = args.NewState;
                 };
 
                 await
@@ -83,7 +85,7 @@ namespace IO.Ably.Tests.Realtime
                 await Task.Delay(50); //As the notification happens on a different thread
 
                 error.Should().BeSameAs(expectedError);
-                stateChanged.Should().BeFalse();
+                stateChanged.Should().BeFalse("State should not have changed but is now: " + newState);
             }
 
             public GeneralSpecs(ITestOutputHelper output) : base(output)
@@ -105,29 +107,39 @@ namespace IO.Ably.Tests.Realtime
             [InlineData(ChannelState.Failed)]
             [Trait("spec", "RTL2a")]
             [Trait("spec", "RTL2b")]
-            public void ShouldEmitTheFollowingStates(ChannelState state)
+            public async Task ShouldEmitTheFollowingStates(ChannelState state)
             {
+                ChannelState newState = ChannelState.Initialized;
                 _channel.StateChanged += (sender, args) =>
                 {
-                    args.NewState.Should().Be(state);
-                    _channel.State.Should().Be(state);
+                    newState = args.NewState;
                 };
 
                 (_channel as RealtimeChannel).SetChannelState(state);
+                await Task.Delay(10);
+                _channel.State.Should().Be(state);
+                newState.Should().Be(state);
             }
 
             [Fact]
             [Trait("spec", "RTL2c")]
-            public void ShouldEmmitErrorWithTheErrorThatHasOccuredOnTheChannel()
+            public async Task ShouldEmmitErrorWithTheErrorThatHasOccuredOnTheChannel()
             {
                 var error = new ErrorInfo();
+                ErrorInfo expectedError = null;
                 _channel.StateChanged += (sender, args) =>
                 {
-                    args.Reason.Should().BeSameAs(error);
-                    _channel.Reason.Should().BeSameAs(error);
+                    expectedError = args.Reason;
+
                 };
 
                 (_channel as RealtimeChannel).SetChannelState(ChannelState.Attached, error);
+
+                await Task.Delay(10);
+
+                expectedError.Should().BeSameAs(error);
+                _channel.Reason.Should().BeSameAs(error);
+
             }
 
             public EventEmitterSpecs(ITestOutputHelper output) : base(output)
@@ -207,16 +219,21 @@ namespace IO.Ably.Tests.Realtime
             [InlineData(ChannelState.Attaching)]
             [InlineData(ChannelState.Attached)]
             [Trait("spec", "RTL4a")]
-            public void WhenAttachingOrAttached_ShouldDoNothing(ChannelState state)
+            public async Task WhenAttachingOrAttached_ShouldDoNothing(ChannelState state)
             {
-                SetState(state);
+                await SetState(state);
+                bool stateChanged = false;
+                ChannelState newState = ChannelState.Initialized;
 
                 _channel.StateChanged += (sender, args) =>
                 {
-                    true.Should().BeFalse("This should not happen.");
+                    newState = args.NewState;
+                    stateChanged = true;
                 };
 
                 _channel.Attach();
+                await Task.Delay(100);
+                stateChanged.Should().BeFalse("This should not happen. State changed to: " + newState);
             }
 
             [Fact]
@@ -328,9 +345,10 @@ namespace IO.Ably.Tests.Realtime
                 attachTask.Result.Error.Should().NotBeNull();
             }
 
-            private void SetState(ChannelState state, ErrorInfo error = null, ProtocolMessage message = null)
+            private async Task SetState(ChannelState state, ErrorInfo error = null, ProtocolMessage message = null)
             {
                 (_channel as RealtimeChannel).SetChannelState(state, error, message);
+                await Task.Delay(10);
             }
 
             private async Task ReceiveAttachedMessage()
@@ -363,6 +381,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 SetState(state);
                 bool changed = false;
+
                 _channel.StateChanged += (sender, args) =>
                 {
                     changed = true;
@@ -442,7 +461,7 @@ namespace IO.Ably.Tests.Realtime
                     info.Should().NotBeNull();
                 });
 
-                await Task.Delay(120);
+                await Task.Delay(180);
 
                 called.Should().BeTrue();
             }
@@ -531,7 +550,8 @@ namespace IO.Ably.Tests.Realtime
                     new Message("name", "test"),
                     new Message("test", "best")
                 };
-                await channel.PublishAsync(list);
+
+                channel.Publish(list);
 
                 LastCreatedTransport.SentMessages.Should().HaveCount(1);
                 LastCreatedTransport.LastMessageSend.messages.Should().HaveCount(2);
@@ -544,7 +564,7 @@ namespace IO.Ably.Tests.Realtime
                 var channel = _client.Get("test");
                 SetState(channel, ChannelState.Attached);
 
-                channel.PublishAsync(null, "data");
+                channel.Publish(null, "data");
 
                 LastCreatedTransport.SentMessages.First().Text.Should().Contain("\"messages\":[{\"data\":\"data\"}]");
             }
@@ -556,7 +576,7 @@ namespace IO.Ably.Tests.Realtime
                 var channel = _client.Get("test");
                 SetState(channel, ChannelState.Attached);
 
-                channel.PublishAsync("name", null);
+                channel.Publish("name", null);
 
                 LastCreatedTransport.SentMessages.First().Text.Should().Contain("\"messages\":[{\"name\":\"name\"}]");
             }
@@ -573,7 +593,7 @@ namespace IO.Ably.Tests.Realtime
                     var channel = client.Channels.Get("test");
                     SetState(channel, ChannelState.Attached);
 
-                    channel.PublishAsync("test", "best");
+                    channel.Publish("test", "best");
 
                     var lastMessageSend = LastCreatedTransport.LastMessageSend;
                     lastMessageSend.channel.Should().Be("test");
@@ -590,7 +610,7 @@ namespace IO.Ably.Tests.Realtime
                     client.Connection.State.Should().Be(ConnectionStateType.Connecting);
                     var channel = client.Get("connecting");
                     SetState(channel, ChannelState.Attached);
-                    channel.PublishAsync("test", "connecting");
+                    channel.Publish("test", "connecting");
 
                     LastCreatedTransport.LastMessageSend.Should().BeNull();
                     client.ConnectionManager.PendingMessages.Should().HaveCount(1);
@@ -613,7 +633,7 @@ namespace IO.Ably.Tests.Realtime
                     client.Connection.State.Should().Be(ConnectionStateType.Disconnected);
                     var channel = client.Get("connecting");
                     SetState(channel, ChannelState.Attached);
-                    channel.PublishAsync("test", "connecting");
+                    channel.Publish("test", "connecting");
 
                     LastCreatedTransport.LastMessageSend.Should().BeNull();
                     client.ConnectionManager.PendingMessages.Should().HaveCount(1);
@@ -745,12 +765,10 @@ namespace IO.Ably.Tests.Realtime
                 encryptedChannel.Subscribe(msg =>
                 {
                     msgReceived = true;
-                    msg.encoding.Should().Be("");
                 });
                 encryptedChannel.Error += (sender, args) =>
                 {
                     errorEmitted = true;
-                    args.Reason.Should().NotBeNull();
                 };
 
                 var message = new Message("name", "encrypted with otherChannelOptions");

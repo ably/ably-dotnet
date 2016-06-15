@@ -167,10 +167,10 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closing, new Exception());
         }
 
-        [Fact]
+        [Fact(Skip = "Requires a SandBox Spec")]
         [Trait("spec", "RTN14d")]
         [Trait("spec", "RTN14e")]
-        [Trait("intermittent", "true")]
+        [Trait("sandboxneeded", "true")]
         public async Task WhenTransportFails_ShouldGoFromConnectingToDisconectedUntilConnectionStateTtlIsReachedAndStateIsSuspended()
         {
             Now = DateTimeOffset.UtcNow;

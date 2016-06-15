@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IO.Ably.Auth;
 using IO.Ably.Realtime;
-using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -302,7 +299,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("issue", "65")]
         public async Task WithShortlivedToken_ShouldRenewTokenMoreThanOnce(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
             var client = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;

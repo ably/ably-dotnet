@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using Xunit;

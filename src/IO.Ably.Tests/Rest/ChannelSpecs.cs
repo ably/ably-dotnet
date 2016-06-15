@@ -191,8 +191,6 @@ namespace IO.Ably.Tests.Rest
 
                 var messageWithNoName = new Message() { data = "NoName" };
                 await client.Channels.Get("noname").PublishAsync(messageWithNoName);
-
-                Output.WriteLine("Message pack message: " + LastRequest.RequestBody.GetText());
             }
 
             [Fact]

@@ -100,8 +100,6 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.IsType<byte[]>(result);
-            Output.WriteLine(expectedMessage.ToArray().GetText());
-            Output.WriteLine((result as byte[]).GetText());
             Assert.Equal(expectedMessage.ToArray(), result as byte[]);
         }
 
@@ -133,8 +131,6 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.IsType<byte[]>(result);
-            Output.WriteLine(expectedMessage.ToArray().GetText());
-            Output.WriteLine((result as byte[]).GetText());
             Assert.Equal(expectedMessage.ToArray(), result as byte[]);
         }
 
@@ -168,8 +164,6 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.IsType<byte[]>(result);
-            Output.WriteLine(expectedMessage.ToArray().GetText());
-            Output.WriteLine((result as byte[]).GetText());
             Assert.Equal<byte[]>(expectedMessage.ToArray(), result as byte[]);
         }
 
@@ -205,8 +199,6 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.IsType<byte[]>(result);
-            Output.WriteLine(expectedMessage.ToArray().GetText());
-            Output.WriteLine((result as byte[]).GetText());
             Assert.Equal(expectedMessage.ToArray(), result as byte[]);
         }
 
@@ -247,8 +239,6 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.IsType<byte[]>(result);
-            Output.WriteLine(expectedMessage.ToArray().GetText());
-            Output.WriteLine((result as byte[]).GetText());
             Assert.Equal(expectedMessage.ToArray(), result as byte[]);
         }
 

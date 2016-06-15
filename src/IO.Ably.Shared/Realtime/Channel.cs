@@ -224,7 +224,7 @@ namespace IO.Ably.Realtime
         }
 
         /// <summary>Publish several messages on this channel.</summary>
-        public Task<Result> PublishAsync(IEnumerable<Message> messages)
+        public async Task<Result> PublishAsync(IEnumerable<Message> messages)
         {
             var tw = new TaskWrapper();
             try
@@ -235,7 +235,12 @@ namespace IO.Ably.Realtime
             {
                 tw.SetException(ex);
             }
-            return tw.Task;
+            var result = await Task.WhenAny(Task.Delay(RealtimeClient.Options.RealtimeRequestTimeout), tw.Task);
+            if (result == tw.Task)
+            {
+                return tw.Task.Result;
+            }
+            return Result.Fail(new ErrorInfo("PublishAsync timeout expired. Message was not confirmed by the server"));
         }
 
         public Task<PaginatedResult<Message>> HistoryAsync(bool untilAttached = false)

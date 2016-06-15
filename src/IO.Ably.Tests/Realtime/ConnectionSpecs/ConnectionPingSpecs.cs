@@ -13,16 +13,16 @@ namespace IO.Ably.Tests.Realtime
     [Trait("spec", "RTN13")]
     public class ConnectionPingSpecs : ConnectionSpecsBase
     {
-        [Fact]
-        [Trait("intermittent", "true")]
-        public async Task ShouldSendHeartbeatMessage()
-        {
-            var client = GetConnectedClient();
+        //[Fact]
+        //[Trait("intermittent", "true")]
+        //public async Task ShouldSendHeartbeatMessage()
+        //{
+        //    var client = GetConnectedClient();
 
-            var result = await client.Connection.PingAsync();
+        //    var result = await client.Connection.PingAsync();
 
-            LastCreatedTransport.LastMessageSend.action.Should().Be(ProtocolMessage.MessageAction.Heartbeat);
-        }
+        //    LastCreatedTransport.LastMessageSend.action.Should().Be(ProtocolMessage.MessageAction.Heartbeat);
+        //}
 
         [Fact]
         [Trait("spec", "RTN13a")]

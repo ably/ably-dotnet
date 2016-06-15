@@ -138,9 +138,8 @@ namespace IO.Ably.Tests
             [InlineData(Defaults.TokenErrorCodesRangeEnd)]
             [Trait("spec", "RSC10")]
             [Trait("intermittent", "true")]
-            public async Task WhenErrorCodeIsTokenSpecific_ShouldAutomaticallyTryToRenewTokenIfRequestFails(int errorCode)
+            public void WhenErrorCodeIsTokenSpecific_ShouldAutomaticallyTryToRenewTokenIfRequestFails(int errorCode)
             {
-                Output.WriteLine("Error code.");
                 Now = DateTimeOffset.Now;
                 var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
                 //Had to inline the method otherwise the tests intermittently fail.
@@ -149,21 +148,18 @@ namespace IO.Ably.Tests
                 {
                     if (request.Url.Contains("/keys"))
                     {
-                        Output.WriteLine("Requesting new token.");
                         return _returnedDummyTokenDetails.ToJson().ToAblyResponse();
                     }
 
                     if (firstAttempt)
                     {
-                        Output.WriteLine("First attempt!");
                         firstAttempt = false;
                         throw new AblyException(new ErrorInfo("", errorCode, HttpStatusCode.Unauthorized));
                     }
-                    Output.WriteLine("Generic request!");
                     return AblyResponse.EmptyResponse.ToTask();
                 }, opts => opts.TokenDetails = tokenDetails);
 
-                await client.StatsAsync();
+                var result = client.StatsAsync().Result;
 
                 client.AblyAuth.CurrentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires);
                 client.AblyAuth.CurrentToken.ClientId.Should().Be(_returnedDummyTokenDetails.ClientId);
@@ -425,7 +421,9 @@ namespace IO.Ably.Tests
                 var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
                 var firstAttemptHosts = _handler.Requests.Select(x => x.RequestUri.Host).ToList();
                 _handler.Requests.Clear();
+                await Task.Delay(10);
                 ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+
                 var secondAttemptHosts = _handler.Requests.Select(x => x.RequestUri.Host).ToList();
 
                 bool sameOrder = true;
@@ -433,8 +431,8 @@ namespace IO.Ably.Tests
                 {
                     sameOrder = sameOrder && firstAttemptHosts[i] == secondAttemptHosts[i];
                 }
-                Debug.WriteLine("FirstTryHosts: " + firstAttemptHosts.JoinStrings());
-                Debug.WriteLine("SecondTryHosts: " + secondAttemptHosts.JoinStrings());
+                Output.WriteLine("FirstTryHosts: " + firstAttemptHosts.JoinStrings());
+                Output.WriteLine("SecondTryHosts: " + secondAttemptHosts.JoinStrings());
                 sameOrder.Should().BeFalse();
             }
 

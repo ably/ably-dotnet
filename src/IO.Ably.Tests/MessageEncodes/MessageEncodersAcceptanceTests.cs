@@ -74,7 +74,6 @@ namespace IO.Ably.AcceptanceTests
 
                 var processedMessages = JsonConvert.DeserializeObject<List<Message>>(LastRequest.RequestBody.GetText());
                 processedMessages.First().encoding.Should().Be(encoding);
-                Output.WriteLine("Encoded message: " + LastRequest.RequestBody.GetText());
             }
             
         }

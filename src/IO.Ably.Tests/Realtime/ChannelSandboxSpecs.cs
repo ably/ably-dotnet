@@ -42,7 +42,7 @@ namespace IO.Ably.Tests.Realtime
         {
             Logger.LogLevel =LogLevel.Debug;
                  
-            var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "test");
+            var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "presence-timestamp-test");
 
             var channel = client.Get("test");
             DateTimeOffset? time = null;

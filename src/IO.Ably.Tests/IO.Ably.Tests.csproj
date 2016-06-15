@@ -15,6 +15,8 @@
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -52,17 +54,21 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FluentAssertions, Version=4.3.2.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
-      <HintPath>..\packages\FluentAssertions.4.3.2\lib\net45\FluentAssertions.dll</HintPath>
+    <Reference Include="Castle.Core, Version=3.3.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
+      <HintPath>..\packages\Castle.Core.3.3.3\lib\net45\Castle.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="FluentAssertions.Core, Version=4.3.2.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
-      <HintPath>..\packages\FluentAssertions.4.3.2\lib\net45\FluentAssertions.Core.dll</HintPath>
+    <Reference Include="FluentAssertions, Version=4.9.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
+      <HintPath>..\packages\FluentAssertions.4.9.0\lib\net45\FluentAssertions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FluentAssertions.Core, Version=4.9.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
+      <HintPath>..\packages\FluentAssertions.4.9.0\lib\net45\FluentAssertions.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
-    <Reference Include="Moq, Version=4.2.1510.2205, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
-      <HintPath>..\packages\Moq.4.2.1510.2205\lib\net40\Moq.dll</HintPath>
+    <Reference Include="Moq, Version=4.5.9.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
+      <HintPath>..\packages\Moq.4.5.9\lib\net45\Moq.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="MsgPack, Version=0.6.0.0, Culture=neutral, PublicKeyToken=a2625990d5dc0167, processorArchitecture=MSIL">
@@ -115,20 +121,44 @@
   <ItemGroup>
     <Compile Include="AblyResponseTests.cs" />
     <Compile Include="AuthTests\AuthOptionsTests.cs" />
+    <Compile Include="AuthTests\AuthorisationTests.cs" />
     <Compile Include="AuthTests\AuthoriseTests.cs" />
     <Compile Include="AuthTests\AuthSandboxSpecs.cs" />
     <Compile Include="AuthTests\RequestTokenTests.cs" />
     <Compile Include="CapabilityTests.cs" />
+    <Compile Include="DateHelper.cs" />
     <Compile Include="EncryptionSpecs.cs" />
     <Compile Include="Infrastructure\ConnectionAwaiter.cs" />
     <Compile Include="Infrastructure\FakeAckProcessor.cs" />
     <Compile Include="Infrastructure\FakeConnectionContext.cs" />
     <Compile Include="Infrastructure\FakeTimer.cs" />
     <Compile Include="Infrastructure\FakeTransport.cs" />
-    <Compile Include="MessageEncodes\MessageEncodersAcceptanceTests.cs" />
     <Compile Include="Infrastructure\FakeAuth.cs" />
+    <Compile Include="Infrastructure\FakeTransportFactory.cs" />
+    <Compile Include="CipherParamsTests.cs" />
+    <Compile Include="DataRequestQueryParseFacts.cs" />
+    <Compile Include="DataRequestQueryTests.cs" />
+    <Compile Include="ErrorInfoTests.cs" />
+    <Compile Include="Infrastructure\FakeHttpClient.cs" />
+    <Compile Include="Infrastructure\FakeResponseHandler.cs" />
+    <Compile Include="ImplicitTokenAuthWithClientId.cs" />
+    <Compile Include="JsonDeserializationBugTests.cs" />
+    <Compile Include="LoggerTests.cs" />
+    <Compile Include="Infrastructure\MiscUtils.cs" />
+    <Compile Include="Infrastructure\ResourceHelper.cs" />
+    <Compile Include="Infrastructure\TestHelpers.cs" />
+    <Compile Include="MessageEncodes\Base64EncoderTests.cs" />
+    <Compile Include="MessageEncodes\CipherEncoderTests.cs" />
+    <Compile Include="MessageEncodes\JsonEncoderTests.cs" />
+    <Compile Include="MessageEncodes\MessageEncodersAcceptanceTests.cs" />
+    <Compile Include="MessageEncodes\SerializationSpecs.cs" />
+    <Compile Include="MessageEncodes\TokenDetailsTests.cs" />
+    <Compile Include="MessageEncodes\Utf8EncoderTests.cs" />
+    <Compile Include="MessagePack\SerializationTests.cs" />
+    <Compile Include="Realtime\AckProtocolTests.cs" />
     <Compile Include="Realtime\ChannelSandboxSpecs.cs" />
     <Compile Include="Realtime\ChannelSpecs.cs" />
+    <Compile Include="Realtime\ChannelsSpecs.cs" />
     <Compile Include="Realtime\ConnectionAttempsInfoSpecs.cs" />
     <Compile Include="Realtime\ConnectionSandBoxSpecs.cs" />
     <Compile Include="Realtime\ConnectionSpecs\AckNackSpecs.cs" />
@@ -149,62 +179,38 @@
     <Compile Include="Realtime\ConnectionStateTests\ConnectedStateSpecs.cs" />
     <Compile Include="Realtime\ConnectionStateTests\ConnectingStateSpecs.cs" />
     <Compile Include="Realtime\ConnectionStateTests\DisconectedStateSpecs.cs" />
+    <Compile Include="Realtime\ConnectionStateTests\FailedStateSpecs.cs" />
     <Compile Include="Realtime\ConnectionStateTests\InitializedStateSpecs.cs" />
     <Compile Include="Realtime\ConnectionStateTests\SuspendedStateSpecs.cs" />
     <Compile Include="Realtime\CountDownTimerSpecs.cs" />
-    <Compile Include="Infrastructure\FakeTransportFactory.cs" />
-    <Compile Include="Realtime\MockHttpRealtimeSpecs.cs" />
-    <Compile Include="Rest\PresenceSandboxSpecs.cs" />
-    <Compile Include="Rest\ChannelSandboxSpecs.cs" />
-    <Compile Include="Rest\ChannelSpecs.cs" />
-    <Compile Include="AuthTests\AuthorisationTests.cs" />
-    <Compile Include="CipherParamsTests.cs" />
-    <Compile Include="DataRequestQueryParseFacts.cs" />
-    <Compile Include="DataRequestQueryTests.cs" />
-    <Compile Include="ErrorInfoTests.cs" />
-    <Compile Include="Infrastructure\FakeHttpClient.cs" />
-    <Compile Include="Infrastructure\FakeResponseHandler.cs" />
-    <Compile Include="ImplicitTokenAuthWithClientId.cs" />
-    <Compile Include="JsonDeserializationBugTests.cs" />
-    <Compile Include="LoggerTests.cs" />
-    <Compile Include="MessageEncodes\Base64EncoderTests.cs" />
-    <Compile Include="MessageEncodes\CipherEncoderTests.cs" />
-    <Compile Include="MessageEncodes\JsonEncoderTests.cs" />
-    <Compile Include="MessageEncodes\SerializationSpecs.cs" />
-    <Compile Include="MessageEncodes\Utf8EncoderTests.cs" />
-    <Compile Include="MessagePack\SerializationTests.cs" />
-    <Compile Include="Infrastructure\MiscUtils.cs" />
-    <Compile Include="Realtime\AckProtocolTests.cs" />
-    <Compile Include="Realtime\ChannelsSpecs.cs" />
-    <Compile Include="Realtime\ConnectionStateTests\FailedStateSpecs.cs" />
-    <Compile Include="Realtime\DateHelper.cs" />
     <Compile Include="Realtime\JsonMessageSerializerTests.cs" />
+    <Compile Include="Realtime\MockHttpRealtimeSpecs.cs" />
     <Compile Include="Realtime\MsgPackMessageSerializerTests.cs" />
     <Compile Include="Realtime\RealtimeSpecs.cs" />
-    <Compile Include="Infrastructure\ResourceHelper.cs" />
-    <Compile Include="Infrastructure\TestHelpers.cs" />
     <Compile Include="RestProtocolTests.cs" />
     <Compile Include="Infrastructure\AblyCollectionFixture.cs" />
     <Compile Include="Infrastructure\AblySandboxFixture.cs" />
     <Compile Include="Infrastructure\AblySpecs.cs" />
     <Compile Include="Infrastructure\AsyncLazy.cs" />
     <Compile Include="Infrastructure\ProtocolData.cs" />
-    <Compile Include="Rest\AblyHttpClientSpecs.cs" />
     <Compile Include="Infrastructure\FakeHttpMessageHandler.cs" />
+    <Compile Include="ApiKeyTests.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rest\AblyHttpClientSpecs.cs" />
+    <Compile Include="Rest\ChannelSandboxSpecs.cs" />
+    <Compile Include="Rest\ChannelSpecs.cs" />
     <Compile Include="Rest\MockHttpRestSpecs.cs" />
+    <Compile Include="Rest\PresenceSandboxSpecs.cs" />
     <Compile Include="Rest\PresenceSpecs.cs" />
     <Compile Include="Rest\RestInitSpecs.cs" />
     <Compile Include="Rest\RestSandBoxSpecs.cs" />
     <Compile Include="Rest\RestSpecs.cs" />
-    <Compile Include="ApiKeyTests.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rest\SandboxSpec.cs" />
     <Compile Include="Rest\StatsSandBoxSpecs.cs" />
     <Compile Include="Rest\StatsSpecs.cs" />
     <Compile Include="StatsParsingTests.cs" />
     <Compile Include="TokenParamsTests.cs" />
     <Compile Include="TokenRequestDataTests.cs" />
-    <Compile Include="MessageEncodes\TokenDetailsTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
