@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Configuration;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
+using MsgPack;
 using SuperSocket.ClientEngine;
 using WebSocket4Net;
 
@@ -177,7 +178,15 @@ namespace IO.Ably.Realtime
         {
             if (Logger.IsDebug)
             {
-                Logger.Debug("Websocket data message received. Raw: " + e.Data.GetText());
+                try
+                {
+                   var message = MsgPackHelper.DeSerialise(e.Data, typeof(MessagePackObject)).ToString();
+                   Logger.Debug("Websocket data message received. Raw: " + message);
+                }
+                catch (Exception)
+                {
+                    Logger.Debug("Error parsing message as MsgPack.");
+                }
             }
 
             Listener?.OnTransportDataReceived(new RealtimeTransportData(e.Data));
