@@ -145,7 +145,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
         [Fact]
         [Trait("spec", "RTN14d")]
-        public async Task WhenTransportFails_ShouldTransitionToDisconnectedAndEmitErrorWithRetry()
+        public void WhenTransportFails_ShouldTransitionToDisconnectedAndEmitErrorWithRetry()
         {
             _fakeTransportFactory.initialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false; //this will keep it in connecting state
@@ -156,8 +156,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 opts.AutoConnect = false;
                 options = opts;
             });
-
-            ConnectionStateChangedEventArgs stateChangeArgs = null;
 
             client.Connect();
             client.Connection.InternalStateChanged += (sender, args) =>
@@ -186,9 +184,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 opts.AutoConnect = false;
                 opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10);
             });
-
-            ConnectionStateChangedEventArgs stateChangeArgs = null;
-
 
             client.Connect();
             List<ConnectionStateChangedEventArgs> stateChanges = new List<ConnectionStateChangedEventArgs>();

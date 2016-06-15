@@ -285,7 +285,7 @@ namespace IO.Ably.Tests
 
         [Fact]
         [Trait("spec", "RSC13")]
-        public async Task HttpRequestTimeoutShouldComeFromClientOptions()
+        public void HttpRequestTimeoutShouldComeFromClientOptions()
         {
             var httpRequestTimeout = TimeSpan.FromMinutes(1);
             var client = new AblyRest(options =>

@@ -203,7 +203,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15b")]
         [Trait("spec", "RTN15b1")]
         [Trait("spec", "RTN15b2")]
-        public async Task WhenTransportCloses_ShouldResumeConnection()
+        public void WhenTransportCloses_ShouldResumeConnection()
         {
             var client = SetupConnectedClient();
 

@@ -531,7 +531,7 @@ namespace IO.Ably.Tests.Realtime
                     new Message("name", "test"),
                     new Message("test", "best")
                 };
-                channel.PublishAsync(list);
+                await channel.PublishAsync(list);
 
                 LastCreatedTransport.SentMessages.Should().HaveCount(1);
                 LastCreatedTransport.LastMessageSend.messages.Should().HaveCount(2);

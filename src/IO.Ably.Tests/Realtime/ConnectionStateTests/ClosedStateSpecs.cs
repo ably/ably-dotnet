@@ -43,7 +43,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public async Task BeforeTransition_ShouldDestroyTransport()
+        public void BeforeTransition_ShouldDestroyTransport()
         {
             // Arrange
             _context.Transport = new FakeTransport();

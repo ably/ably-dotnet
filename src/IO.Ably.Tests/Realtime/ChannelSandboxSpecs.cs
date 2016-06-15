@@ -381,7 +381,7 @@ namespace IO.Ably.Tests.Realtime
                 message.clientId.Should().Be(clientId);
             });
 
-            channel.PublishAsync(new Message("test", "best") { clientId = "client1" });
+            await channel.PublishAsync(new Message("test", "best") { clientId = "client1" });
 
             await Task.Delay(2000);
             messageReceived.Should().BeTrue();
