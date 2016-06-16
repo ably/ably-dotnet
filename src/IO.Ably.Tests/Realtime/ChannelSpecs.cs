@@ -540,7 +540,7 @@ namespace IO.Ably.Tests.Realtime
             [Fact]
             [Trait("spec", "RTL6i")]
             [Trait("spec", "RTL6i2")]
-            public async Task WithListOfMessages_ShouldPublishASingleProtocolMessageToTransport()
+            public void WithListOfMessages_ShouldPublishASingleProtocolMessageToTransport()
             {
                 var channel = _client.Get("test");
                 SetState(channel, ChannelState.Attached);

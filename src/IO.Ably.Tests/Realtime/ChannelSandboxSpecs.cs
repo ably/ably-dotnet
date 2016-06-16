@@ -127,7 +127,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             // Act
-            target.PublishAsync("test", "test data");
+            target.Publish("test", "test data");
             target.State.Should().Be(ChannelState.Attaching);
             await Task.Delay(2000);
 
@@ -176,9 +176,9 @@ namespace IO.Ably.Tests.Realtime
             });
 
             // Act
-            target.PublishAsync("test1", "test 12");
-            target.PublishAsync("test2", "test 123");
-            target.PublishAsync("test3", "test 321");
+            target.Publish("test1", "test 12");
+            target.Publish("test2", "test 123");
+            target.Publish("test3", "test 321");
 
             await Task.Delay(2000);
             // Assert
@@ -198,7 +198,6 @@ namespace IO.Ably.Tests.Realtime
         {
             // Arrange
             var client = await GetRealtimeClient(protocol, (o, _) => o.EchoMessages = false);
-            AutoResetEvent signal = new AutoResetEvent(false);
             var target = client.Channels.Get("test");
 
             target.Attach();
@@ -207,15 +206,13 @@ namespace IO.Ably.Tests.Realtime
             target.Subscribe(message =>
             {
                 messagesReceived.Add(message);
-                signal.Set();
             });
 
             // Act
-            target.PublishAsync("test", "test data");
-            signal.WaitOne(10000);
+            await target.PublishAsync("test", "test data");
 
             // Assert
-            messagesReceived.Count.ShouldBeEquivalentTo(0);
+            messagesReceived.Should().BeEmpty();
         }
 
         [Theory]

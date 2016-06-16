@@ -110,9 +110,9 @@ namespace IO.Ably.Tests
 
             [Fact]
             [Trait("spec", "RSP4b1")]
-            public async Task History_WithStartBeforeEnd_Throws()
+            public async Task  History_WithStartBeforeEnd_Throws()
             {
-                var ex = Assert.ThrowsAsync<AblyException>(() =>
+                await Assert.ThrowsAsync<AblyException>(() =>
                         _channel.Presence.HistoryAsync(new DataRequestQuery() { Start = Now, End = Now.AddHours(-1) }));
             }
 

@@ -281,7 +281,6 @@ namespace IO.Ably.Tests
         public class ClientIdSpecs : AuthorisationTests
         {
             private string _clientId = "123";
-            private string _wildcardClientId = "*";
 
             public ClientIdSpecs(ITestOutputHelper output) : base(output)
             {
