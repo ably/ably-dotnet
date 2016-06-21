@@ -21,5 +21,6 @@ namespace IO.Ably.Rest
         Task<PaginatedResult<PresenceMessage>> GetAsync(int? limit = null, string clientId = null, string connectionId = null);
         Task<PaginatedResult<PresenceMessage>> HistoryAsync();
         Task<PaginatedResult<PresenceMessage>> HistoryAsync(DataRequestQuery query);
+        Task<PaginatedResult<PresenceMessage>> GetAsync(DataRequestQuery query);
     }
 }

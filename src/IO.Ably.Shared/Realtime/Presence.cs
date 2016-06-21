@@ -370,7 +370,7 @@ namespace IO.Ably.Realtime
             _handlers.RemoveAll();
         }
 
-        public Task<PaginatedResult<PresenceMessage>> History(bool untilAttached = false)
+        public Task<PaginatedResult<PresenceMessage>> HistoryAsync(bool untilAttached = false)
         {
             var query = new DataRequestQuery();
             if (untilAttached)
@@ -380,7 +380,7 @@ namespace IO.Ably.Realtime
             return _channel.RestChannel.Presence.HistoryAsync(query);
         }
 
-        public Task<PaginatedResult<PresenceMessage>> History(DataRequestQuery dataQuery, bool untilAttached = false)
+        public Task<PaginatedResult<PresenceMessage>> HistoryAsync(DataRequestQuery dataQuery, bool untilAttached = false)
         {
             var query = dataQuery ?? new DataRequestQuery();
             if (untilAttached)

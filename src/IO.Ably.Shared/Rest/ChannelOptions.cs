@@ -40,5 +40,11 @@ namespace IO.Ably.Rest
             Encrypted = true;
             CipherParams = @params;
         }
+
+        public ChannelOptions(byte[] key)
+        {
+            Encrypted = true;
+            CipherParams = new CipherParams(key);
+        }
     }
 }

@@ -92,10 +92,24 @@ namespace IO.Ably.Rest
             return _ablyRest.ExecuteRequest<PaginatedResult<PresenceMessage>>(request);
         }
 
+        Task<PaginatedResult<PresenceMessage>> IPresence.GetAsync(DataRequestQuery query)
+        {
+            if (query == null) //Fall back on the default implementation
+            {
+                return Presence.GetAsync();
+            }
+
+            query.Validate();
+
+            var request = _ablyRest.CreateGetRequest(_basePath + "/presence", Options);
+            request.AddQueryParameters(query.GetParameters());
+            return _ablyRest.ExecuteRequest<PaginatedResult<PresenceMessage>>(request);
+        }
+        
         /// <summary>
-        /// Get the presence messages history for the channel
-        /// </summary>
-        /// <returns><see cref="PaginatedResult{T}"/></returns>
+            /// Get the presence messages history for the channel
+            /// </summary>
+            /// <returns><see cref="PaginatedResult{T}"/></returns>
         Task<PaginatedResult<PresenceMessage>> IPresence.HistoryAsync()
         {
             return Presence.HistoryAsync(new DataRequestQuery());
