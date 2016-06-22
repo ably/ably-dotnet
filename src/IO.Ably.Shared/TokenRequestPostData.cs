@@ -40,14 +40,6 @@ namespace IO.Ably
             return this;
         }
 
-        [JsonProperty("keyName")]
-        [MessagePackMember(10, Name = "keyName")]
-        public string KeyName { get; set; }
-
-        [JsonProperty("ttl")]
-        [MessagePackMember(20, Name = "ttl")]
-        public string Ttl { get; set; }
-
         [JsonProperty("capability", NullValueHandling = NullValueHandling.Ignore)]
         [MessagePackMember(30, Name = "capability")]
         public string Capability { get; set; }
@@ -56,19 +48,27 @@ namespace IO.Ably
         [MessagePackMember(40, Name = "clientId")]
         public string ClientId { get; set; }
 
-        [JsonProperty("timestamp")]
-        [MessagePackMember(50, Name = "timestamp")]
-        public string Timestamp { get; set; }
-
-        [JsonProperty("nonce")]
-        [MessagePackMember(60, Name = "nonce")]
-        public string Nonce { get; set; }
+        [JsonProperty("keyName")]
+        [MessagePackMember(10, Name = "keyName")]
+        public string KeyName { get; set; }
 
         [JsonProperty("mac")]
         [MessagePackMember(70, Name = "mac")]
         public string Mac { get; set; }
 
-        public void CalculateMac(string key)
+        [JsonProperty("nonce")]
+        [MessagePackMember(60, Name = "nonce")]
+        public string Nonce { get; set; }
+
+        [JsonProperty("timestamp")]
+        [MessagePackMember(50, Name = "timestamp")]
+        public string Timestamp { get; set; }
+
+        [JsonProperty("ttl")]
+        [MessagePackMember(20, Name = "ttl")]
+        public string Ttl { get; set; }
+
+        private void CalculateMac(string key)
         {
             var values = new[]
                 {
