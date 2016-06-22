@@ -12,7 +12,7 @@ namespace IO.Ably
         /// <summary>
         ///
         /// </summary>
-        public bool AutoConnect { get; set; }
+        public bool AutoConnect { get; set; } = true;
 
         /// <summary>
         /// The id of the client represented by this instance. The clientId is relevant
@@ -50,13 +50,13 @@ namespace IO.Ably
         /// connection to be established. Applications may use this option to disable that behaviour if they
         /// wish to have application-level control over the queueing under those conditions.
         /// </summary>
-        public bool QueueMessages { get; set; }
+        public bool QueueMessages { get; set; } = true;
 
         /// <summary>
         /// If <c>false</c>, prevents messages originating from this connection being echoed back on the same
         /// connection.
         /// </summary>
-        public bool EchoMessages { get; set; }
+        public bool EchoMessages { get; set; } = true;
 
         /// <summary>
         /// A connection recovery string, specified by a client when initializing the library
@@ -112,35 +112,35 @@ namespace IO.Ably
         /// <summary>
         ///  For development environments only; allows a non-default Ably port to be specified.
         /// </summary>
-        public int Port { get; set; }
-        
-        /// <summary>
-	    ///Encrypted transport: if true, TLS will be used for all connections (whether REST/HTTP
-	    ///or Realtime WebSocket or Comet connections).
-	    /// Default: true
-        ///</summary>
-        public bool Tls { get; set; }
+        public int Port { get; set; } = 80;
 
-        public int TlsPort { get; set; }
+        /// <summary>
+        ///Encrypted transport: if true, TLS will be used for all connections (whether REST/HTTP
+        ///or Realtime WebSocket or Comet connections).
+        /// Default: true
+        ///</summary>
+        public bool Tls { get; set; } = true;
+
+        public int TlsPort { get; set; } = 443;
 
         ///<summary>
         /// If false, forces the library to use the JSON encoding for REST and Realtime operations,
-	    /// instead of the default binary msgpack encoding.
-	    /// Default: true
+        /// instead of the default binary msgpack encoding.
+        /// Default: true
         /// </summary>
-        public bool UseBinaryProtocol { get; set; }
+        public bool UseBinaryProtocol { get; set; } = true;
 
-        public TimeSpan DisconnectedRetryTimeout { get; set; }
-        public TimeSpan SuspendedRetryTimeout { get; set; }
-        public TimeSpan HttpOpenTimeout { get; set; }
-        public TimeSpan HttpRequestTimeout { get; set; }
-        public int HttpMaxRetryCount { get; set; }
-        public TimeSpan HttpMaxRetryDuration { get; set; }
+        public TimeSpan DisconnectedRetryTimeout { get; set; } = Defaults.DisconnectedRetryTimeout;
+        public TimeSpan SuspendedRetryTimeout { get; set; } = TimeSpan.FromSeconds(30);
+        public TimeSpan HttpOpenTimeout { get; set; } = TimeSpan.FromSeconds(4);
+        public TimeSpan HttpRequestTimeout { get; set; } = TimeSpan.FromSeconds(15);
+        public int HttpMaxRetryCount { get; set; } = 3;
+        public TimeSpan HttpMaxRetryDuration { get; set; } = TimeSpan.FromSeconds(10);
 
         /// <summary>
         /// Provides Channels Setting for all Channels created. For more information see <see cref="ChannelOptions"/> 
         /// </summary>
-        public ChannelOptions ChannelDefaults { get; set; }
+        public ChannelOptions ChannelDefaults { get; set; } = new ChannelOptions();
 
         public AblyEnvironment? Environment { get; set; }
 
@@ -180,25 +180,7 @@ namespace IO.Ably
         /// </summary>
         public ClientOptions()
         {
-            InitialiseDefaults();
-        }
-
-        private void InitialiseDefaults()
-        {
-            Tls = true;
-            TlsPort = 443;
-            Port = 80;
-            UseBinaryProtocol = true;
-            ChannelDefaults = new ChannelOptions(false);
-            AutoConnect = true;
-            EchoMessages = true;
-            QueueMessages = true;
-            DisconnectedRetryTimeout = Defaults.DisconnectedRetryTimeout;
-            SuspendedRetryTimeout = TimeSpan.FromSeconds(30);
-            HttpOpenTimeout = TimeSpan.FromSeconds(4);
-            HttpRequestTimeout = TimeSpan.FromSeconds(15);
-            HttpMaxRetryCount = 3;
-            HttpMaxRetryDuration = TimeSpan.FromSeconds(10);
+        
         }
 
         /// <summary>
@@ -208,8 +190,6 @@ namespace IO.Ably
         /// <param name="key">Ably authentication key</param>
         public ClientOptions(string key) : base(key)
         {
-            InitialiseDefaults();
-            ChannelDefaults = new ChannelOptions();
         }
     }
 }
