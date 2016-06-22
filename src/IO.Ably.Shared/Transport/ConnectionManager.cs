@@ -71,7 +71,7 @@ namespace IO.Ably.Transport
 
         public void ClearTokenAndRecordRetry()
         {
-            RestClient.Auth.ExpireCurrentToken();
+            RestClient.AblyAuth.ExpireCurrentToken();
             AttemptsInfo.RecordTokenRetry();
         }
 
@@ -394,7 +394,7 @@ namespace IO.Ably.Transport
 
         internal async Task<TransportParams> CreateTransportParameters()
         {
-            return await TransportParams.Create(AttemptsInfo.GetHost(), RestClient.Auth, Options, Connection.Key, Connection.Serial);
+            return await TransportParams.Create(AttemptsInfo.GetHost(), RestClient.AblyAuth, Options, Connection.Key, Connection.Serial);
         }
 
         public async Task OnTransportMessageReceived(ProtocolMessage message)

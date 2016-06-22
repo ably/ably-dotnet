@@ -28,7 +28,7 @@ namespace IO.Ably.Transport
 
         }
 
-        internal static async Task<TransportParams> Create(string host, IAblyAuth auth, ClientOptions options, string connectionKey = null, long? connectionSerial = null)
+        internal static async Task<TransportParams> Create(string host, AblyAuth auth, ClientOptions options, string connectionKey = null, long? connectionSerial = null)
         {
             var result = new TransportParams();
             result.Host = host;

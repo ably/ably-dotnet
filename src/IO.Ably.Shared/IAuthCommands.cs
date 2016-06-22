@@ -13,11 +13,6 @@ namespace IO.Ably
         /// <remarks>This method is asynchronous, because when <see cref="AuthOptions.QueryTime"/> is set to true, it will issue a request and wait for response.</remarks>
         Task<TokenRequest> CreateTokenRequestAsync(TokenParams tokenParams = null, AuthOptions options = null);
 
-        AuthMethod AuthMethod { get; }
         string ClientId { get; }
-
-        Task<TokenDetails> GetCurrentValidTokenAndRenewIfNecessaryAsync();
-
-        void ExpireCurrentToken();
     }
 }
