@@ -11,7 +11,7 @@ using IO.Ably.Transport;
 
 namespace IO.Ably
 {
-    public class AblyRealtime : IRealtimeClient, IRealtimeChannelCommands
+    public class AblyRealtime : IRealtimeClient, IRealtimeChannels
     {
         private SynchronizationContext _synchronizationContext;
 
@@ -53,12 +53,13 @@ namespace IO.Ably
         public AblyRest RestClient { get; }
 
         public IAblyAuth Auth => RestClient.AblyAuth;
+
         internal ClientOptions Options => RestClient.Options;
 
         internal ConnectionManager ConnectionManager => Connection.ConnectionManager;
 
         /// <summary>The collection of channels instanced, indexed by channel name.</summary>
-        public IRealtimeChannelCommands Channels => this;
+        public IRealtimeChannels Channels => this;
 
         /// <summary>A reference to the connection object for this library instance.</summary>
         public Connection Connection { get; set; }

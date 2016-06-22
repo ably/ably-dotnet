@@ -4,7 +4,7 @@ using IO.Ably.Rest;
 
 namespace IO.Ably.Realtime
 {
-    public interface IRealtimeChannelCommands : IEnumerable<IRealtimeChannel>
+    public interface IRealtimeChannels : IEnumerable<IRealtimeChannel>
     {
         /// <summary>
         /// Create a channel with the specified name and options

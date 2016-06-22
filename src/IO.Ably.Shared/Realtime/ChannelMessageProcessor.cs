@@ -5,10 +5,10 @@ namespace IO.Ably.Realtime
 {
     internal class ChannelMessageProcessor
     {
-        private IRealtimeChannelCommands _channels;
+        private IRealtimeChannels _channels;
         private ConnectionManager _connectionManager;
 
-        public ChannelMessageProcessor(ConnectionManager connectionManager, IRealtimeChannelCommands channels)
+        public ChannelMessageProcessor(ConnectionManager connectionManager, IRealtimeChannels channels)
         {
             _connectionManager = connectionManager;
             _channels = channels;
