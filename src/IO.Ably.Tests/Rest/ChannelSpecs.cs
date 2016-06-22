@@ -19,7 +19,7 @@ namespace IO.Ably.Tests.Rest
         public void ChannelsIsACollectionOfChannelObjects()
         {
             var client = GetRestClient();
-            (client.Channels is IEnumerable<IChannel>).Should().BeTrue();
+            (client.Channels is IEnumerable<IRestChannel>).Should().BeTrue();
         }
 
         [Fact]
@@ -246,7 +246,7 @@ namespace IO.Ably.Tests.Rest
         public class ChannelHistory : ChannelSpecs
         {
             private AblyRest _client;
-            private IChannel _channel;
+            private IRestChannel _channel;
 
             [Fact]
             [Trait("spec", "RSL2a")]

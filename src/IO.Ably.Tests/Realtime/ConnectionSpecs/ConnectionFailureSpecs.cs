@@ -51,7 +51,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
             renewTokenCalled.Should().BeTrue();
-            var currentToken = client.Auth.CurrentToken;
+            var currentToken = client.RestClient.AblyAuth.CurrentToken;
             currentToken.Token.Should().Be(_returnedDummyTokenDetails.Token);
             currentToken.ClientId.Should().Be(_returnedDummyTokenDetails.ClientId);
             currentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires);

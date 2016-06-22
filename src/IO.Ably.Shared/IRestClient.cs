@@ -12,7 +12,7 @@ namespace IO.Ably
     public interface IRestClient : IStatsCommands, IChannelCommands
     {
         /// <summary>Authentication methods</summary>
-        IAuthCommands Auth { get; }
+        IAblyAuth Auth { get; }
 
         /// <summary>Channel methods</summary>
         IChannelCommands Channels { get; }

@@ -23,7 +23,7 @@ namespace IO.Ably.ConsoleTest
             ConsoleColor.DarkGreen.WriteLine("Publishing a message..");
 
             // Verify we can publish
-            IChannel channel = ably.Channels.Get("persisted:presence_fixtures");
+            IRestChannel channel = ably.Channels.Get("persisted:presence_fixtures");
 
             var tsPublish = DateTimeOffset.UtcNow;
             await channel.PublishAsync("test", true);

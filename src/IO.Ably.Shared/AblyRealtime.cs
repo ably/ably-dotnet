@@ -52,7 +52,7 @@ namespace IO.Ably
 
         public AblyRest RestClient { get; }
 
-        internal AblyAuth Auth => RestClient.AblyAuth;
+        public IAblyAuth Auth => RestClient.AblyAuth;
         internal ClientOptions Options => RestClient.Options;
 
         internal ConnectionManager ConnectionManager => Connection.ConnectionManager;

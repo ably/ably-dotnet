@@ -4,7 +4,7 @@ using IO.Ably.Auth;
 
 namespace IO.Ably.Tests
 {
-    public class FakeAuth : IAuthCommands
+    public class FakeAuth : IAblyAuth
     {
         public TokenDetails CurrentToken { get; set; }
 

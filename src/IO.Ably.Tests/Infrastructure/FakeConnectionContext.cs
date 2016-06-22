@@ -29,7 +29,7 @@ namespace IO.Ably.Tests
         }
 
         public ConnectionState LastSetState { get; set; }
-        public IAuthCommands Auth { get; set; }
+        public IAblyAuth Auth { get; set; }
 
         public bool RenewTokenValue { get; set; }
 

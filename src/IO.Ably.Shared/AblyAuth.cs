@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace IO.Ably
 {
-    internal class AblyAuth : IAuthCommands
+    internal class AblyAuth : IAblyAuth
     {
         internal AblyAuth(ClientOptions options, AblyRest rest)
         {

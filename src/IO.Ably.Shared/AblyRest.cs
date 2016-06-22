@@ -28,7 +28,7 @@ namespace IO.Ably
         /// <summary>
         /// Authentication methods
         /// </summary>
-        public IAuthCommands Auth => AblyAuth;
+        public IAblyAuth Auth => AblyAuth;
 
         internal Protocol Protocol => Options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
 

@@ -187,7 +187,7 @@ namespace IO.Ably.Tests.Realtime
 
             await WaitForState(realtimeClient, ConnectionStateType.Connected, TimeSpan.FromSeconds(10));
 
-            realtimeClient.Auth.CurrentToken.Expires.Should().BeAfter(Config.Now(), "The token should be valid and expire in the future.");
+            realtimeClient.RestClient.AblyAuth.CurrentToken.Expires.Should().BeAfter(Config.Now(), "The token should be valid and expire in the future.");
             error.Should().BeNull("No error should be raised!");
         }
 

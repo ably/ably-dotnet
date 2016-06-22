@@ -31,7 +31,7 @@ namespace IO.Ably.Tests
         public class GetSpecs : PresenceSpecs
         {
             private AblyRest _client;
-            private IChannel _channel;
+            private IRestChannel _channel;
 
 
             [Theory]

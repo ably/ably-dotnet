@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace IO.Ably
 {
-    public interface IAuthCommands
+    public interface IAblyAuth
     {
         Task<TokenDetails> RequestTokenAsync(TokenParams tokenParams = null, AuthOptions options = null);
         Task<TokenDetails> AuthoriseAsync(TokenParams tokenParams = null, AuthOptions options = null);
