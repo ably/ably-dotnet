@@ -326,7 +326,7 @@ namespace IO.Ably.Tests
             public void WhenNoClientIdIsSpecified_AuthClientIdShouldBeNull()
             {
                 var client = GetRestClient();
-                client.AblyAuth.GetClientId().Should().BeNullOrEmpty();
+                client.AblyAuth.ClientId.Should().BeNullOrEmpty();
             }
 
             [Fact]
@@ -336,7 +336,7 @@ namespace IO.Ably.Tests
             {
                 var options = new ClientOptions(ValidKey) { ClientId = "123" };
                 var client = new AblyRest(options);
-                client.AblyAuth.GetClientId().Should().Be(options.ClientId);
+                client.AblyAuth.ClientId.Should().Be(options.ClientId);
             }
 
             [Fact]
@@ -345,7 +345,7 @@ namespace IO.Ably.Tests
             {
                 var options = new ClientOptions() { TokenDetails = new TokenDetails() { ClientId = "*" } };
                 var client = new AblyRest(options);
-                client.AblyAuth.GetClientId().Should().Be("*");
+                client.AblyAuth.ClientId.Should().Be("*");
             }
 
             [Fact]

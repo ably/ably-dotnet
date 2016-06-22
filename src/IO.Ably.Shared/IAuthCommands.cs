@@ -14,6 +14,7 @@ namespace IO.Ably
         Task<TokenRequest> CreateTokenRequestAsync(TokenParams tokenParams = null, AuthOptions options = null);
 
         AuthMethod AuthMethod { get; }
+        string ClientId { get; }
 
         Task<TokenDetails> GetCurrentValidTokenAndRenewIfNecessaryAsync();
 

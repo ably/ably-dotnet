@@ -86,7 +86,7 @@ namespace IO.Ably.Tests.Realtime
                 connectionDetails = new ConnectionDetailsMessage { clientId = "realtimeClient" }
             });
 
-            client.RestClient.AblyAuth.GetClientId().Should().Be("realtimeClient");
+            client.RestClient.AblyAuth.ClientId.Should().Be("realtimeClient");
         }
 
         public GeneralConnectionSpecs(ITestOutputHelper output) : base(output)

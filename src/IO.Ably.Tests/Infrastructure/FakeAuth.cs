@@ -27,6 +27,7 @@ namespace IO.Ably.Tests
         }
 
         public AuthMethod AuthMethod { get; set; }
+        public string ClientId { get; set; }
 
         public Task<TokenDetails> GetCurrentValidTokenAndRenewIfNecessaryAsync()
         {

@@ -127,7 +127,7 @@ namespace IO.Ably.Tests
         {
             var ably = await GetRestClient(protocol);
             await ably.Auth.AuthoriseAsync(new TokenParams() {ClientId = "123"}, new AuthOptions() { Force = true});
-            ably.AblyAuth.GetClientId().Should().Be("123");
+            ably.AblyAuth.ClientId.Should().Be("123");
             ably.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
         }
 
@@ -146,7 +146,7 @@ namespace IO.Ably.Tests
                 UseBinaryProtocol = protocol == Protocol.MsgPack
             });
 
-            tokenClient.AblyAuth.GetClientId().Should().BeNullOrEmpty();
+            tokenClient.AblyAuth.ClientId.Should().BeNullOrEmpty();
             var channel = tokenClient.Channels["persisted:test".AddRandomSuffix()];
             await channel.PublishAsync("test", "test");
             var message = (await channel.HistoryAsync()).First();
@@ -180,7 +180,7 @@ namespace IO.Ably.Tests
 
             var channel = tokenClient.Channels["pesisted:test"];
             await channel.PublishAsync("test", "test");
-            tokenClient.AblyAuth.GetClientId().Should().Be("*");
+            tokenClient.AblyAuth.ClientId.Should().Be("*");
             var message = (await channel.HistoryAsync()).First();
             message.clientId.Should().BeNullOrEmpty();
             message.data.Should().Be("test");
@@ -199,7 +199,7 @@ namespace IO.Ably.Tests
 
             var channel = tokenClient.Channels["pesisted:test"];
             await channel.PublishAsync(new Message("test", "test") { clientId = "123"});
-            tokenClient.AblyAuth.GetClientId().Should().Be("*");
+            tokenClient.AblyAuth.ClientId.Should().Be("*");
             var message = (await channel.HistoryAsync()).First();
             message.clientId.Should().Be("123");
             message.data.Should().Be("test");

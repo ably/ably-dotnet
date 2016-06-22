@@ -34,10 +34,10 @@ namespace IO.Ably
 
         internal string ConnectionClientId { get; set; }
 
-        public string GetClientId()
-        {
-            return ConnectionClientId ?? CurrentToken?.ClientId ?? CurrentTokenParams?.ClientId ?? Options.GetClientId();
-        }
+        public string ClientId => ConnectionClientId 
+            ?? CurrentToken?.ClientId 
+            ?? CurrentTokenParams?.ClientId 
+            ?? Options.GetClientId();
 
         bool HasTokenId => Options.Token.IsNotEmpty();
         public bool TokenRenewable => TokenCreatedExternally || (HasApiKey && HasTokenId == false);
@@ -210,7 +210,7 @@ namespace IO.Ably
             if (@params == null)
             {
                 @params = CurrentTokenParams ?? TokenParams.WithDefaultsApplied();
-                @params.ClientId = GetClientId(); //Ensure the correct clientId is supplied
+                @params.ClientId = ClientId; //Ensure the correct clientId is supplied
             }
             
             return @params;
@@ -353,7 +353,7 @@ namespace IO.Ably
 
         public Result ValidateClientIds(IEnumerable<IMessage> messages)
         {
-            var libClientId = GetClientId();
+            var libClientId = ClientId;
             if (libClientId.IsEmpty() || libClientId == "*")
                 return Result.Ok();
 

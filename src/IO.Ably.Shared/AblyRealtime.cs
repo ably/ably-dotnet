@@ -53,6 +53,7 @@ namespace IO.Ably
         public AblyRest RestClient { get; }
 
         public IAblyAuth Auth => RestClient.AblyAuth;
+        public string ClientId => Auth.ClientId;
 
         internal ClientOptions Options => RestClient.Options;
 
@@ -62,7 +63,7 @@ namespace IO.Ably
         public IRealtimeChannels Channels => this;
 
         /// <summary>A reference to the connection object for this library instance.</summary>
-        public Connection Connection { get; set; }
+        public Connection Connection { get; }
 
         public Task<PaginatedResult<Stats>> StatsAsync()
         {
