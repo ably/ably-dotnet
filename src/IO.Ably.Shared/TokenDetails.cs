@@ -12,15 +12,20 @@ namespace IO.Ably.Auth
     public sealed class TokenDetails
     {
         /// <summary>
-        /// The token itself
+        /// The allowed capabilities for this token. <see cref="Capability"/>
         /// </summary>
-        [JsonProperty("token")]
-        [MessagePackMember(10, Name = "token")]
-        public string Token { get; set; }
+        [JsonProperty("capability")]
+        [MessagePackMember(50, Name = "capability", NilImplication = NilImplication.MemberDefault)]
+        [JsonConverter(typeof(CapabilityJsonConverter))]
+        public Capability Capability { get; set; }
 
-        [JsonProperty("keyName")]
-        [MessagePackMember(10, Name = "keyName")]
-        public string KeyName { get; set; }
+        /// <summary>
+        /// The clientId associated with the token
+        /// </summary>
+        [JsonProperty("clientId", NullValueHandling = NullValueHandling.Ignore)]
+        [MessagePackMember(60, Name = "clientId")]
+        public string ClientId { get; set; }
+
         /// <summary>
         /// Absolute token expiry date in UTC
         /// </summary>
@@ -38,21 +43,16 @@ namespace IO.Ably.Auth
         public DateTimeOffset Issued { get; set; }
 
         /// <summary>
-        /// The allowed capabilities for this token. <see cref="Capability"/>
+        /// The token itself
         /// </summary>
-        [JsonProperty("capability")]
-        [MessagePackMember(50, Name ="capability", NilImplication = NilImplication.MemberDefault)]
-        [JsonConverter(typeof(CapabilityJsonConverter))]
-        public Capability Capability { get; set; }
+        [JsonProperty("token")]
+        [MessagePackMember(10, Name = "token")]
+        public string Token { get; set; }
 
-        /// <summary>
-        /// The clientId associated with the token
-        /// </summary>
-        [JsonProperty("clientId", NullValueHandling = NullValueHandling.Ignore)]
-
-        [MessagePackMember(60, Name = "clientId")]
-        public string ClientId { get; set; }
-
+        [JsonProperty("keyName")]
+        [MessagePackMember(10, Name = "keyName")]
+        public string KeyName { get; set; }
+       
         public TokenDetails()
         {
         }
