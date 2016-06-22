@@ -98,7 +98,7 @@ namespace IO.Ably
         }
 
         /// <summary>Retrieves the ably service time</summary>
-        public Task<DateTimeOffset> Time()
+        public Task<DateTimeOffset> TimeAsync()
         {
             return RestClient.TimeAsync();
         }

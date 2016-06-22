@@ -151,7 +151,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 error = new ErrorInfo() { statusCode = HttpStatusCode.GatewayTimeout }
             });
 
-            await client.Time();
+            await client.TimeAsync();
             handler.Requests.Last().RequestUri.ToString().Should().Contain(client.Connection.Host);
         }
 

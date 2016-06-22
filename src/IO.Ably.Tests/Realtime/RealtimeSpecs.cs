@@ -67,7 +67,7 @@ namespace IO.Ably.Tests
             {
                 try
                 {
-                    await _client.Time();
+                    await _client.TimeAsync();
                 }
                 catch
                 {
