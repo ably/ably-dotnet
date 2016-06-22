@@ -85,10 +85,6 @@ namespace IO.Ably
         /// <returns></returns>
         public void Connect()
         {
-            var state = Connection.State;
-            if (state == ConnectionStateType.Connected)
-                return;
-
             Connection.Connect();
         }
 
