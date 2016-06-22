@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace IO.Ably.Rest
 {
-    public interface IChannel
+    public interface IRestChannel
     {
         Task PublishAsync(string name, object data, string clientId = null);
         Task PublishAsync(Message message);

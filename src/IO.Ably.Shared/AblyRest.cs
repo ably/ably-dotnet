@@ -23,7 +23,7 @@ namespace IO.Ably
 
         internal AblyAuth AblyAuth { get; private set; }
         private readonly object _channelLock = new object();
-        internal List<IChannel> RestChannels { get; private set; } = new List<IChannel>();
+        internal List<IRestChannel> RestChannels { get; private set; } = new List<IRestChannel>();
 
         /// <summary>
         /// Authentication methods
@@ -191,14 +191,14 @@ namespace IO.Ably
             return new AblyRequest(path, HttpMethod.Post, Protocol) {ChannelOptions = options};
         }
 
-        IChannel IChannelCommands.this[string name] => Channels.Get(name);
+        IRestChannel IChannelCommands.this[string name] => Channels.Get(name);
 
-        IChannel IChannelCommands.Get(string name)
+        IRestChannel IChannelCommands.Get(string name)
         {
             return Channels.Get(name, null);
         }
 
-        IChannel IChannelCommands.Get(string name, ChannelOptions options)
+        IRestChannel IChannelCommands.Get(string name, ChannelOptions options)
         {
             if (name.IsEmpty())
                 throw new ArgumentNullException(nameof(name), "Empty channel name");
@@ -235,7 +235,7 @@ namespace IO.Ably
             return false;
         }
 
-        public IEnumerator<IChannel> GetEnumerator()
+        public IEnumerator<IRestChannel> GetEnumerator()
         {
             return RestChannels.GetEnumerator();
         }

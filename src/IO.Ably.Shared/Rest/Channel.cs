@@ -11,7 +11,7 @@ namespace IO.Ably.Rest
     /// and every message broadcast by the service is associated with a unique channel.
     /// A channel cannot be instantiated but needs to be created using the AblyRest.Channels.Get("channelname")
     /// </summary>
-    public class RestChannel : IChannel, IPresence
+    public class RestChannel : IRestChannel, IPresence
     {
         public string Name { get; private set; }
         private readonly AblyRest _ablyRest;

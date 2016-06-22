@@ -21,7 +21,7 @@ namespace IO.Ably.Realtime
         public string AttachedSerial { get; set; }
         private readonly Handlers<Message> _handlers = new Handlers<Message>();
         private readonly CountdownTimer _timer;
-        internal IChannel RestChannel => RealtimeClient.RestClient.Channels.Get(Name);
+        internal IRestChannel RestChannel => RealtimeClient.RestClient.Channels.Get(Name);
 
         private readonly object _lockQueue = new object();
 
