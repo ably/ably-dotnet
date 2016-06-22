@@ -15,7 +15,7 @@ namespace IO.Ably.Tests.Realtime
     public class ChannelsSpecs : ConnectionSpecsBase
     {
         private AblyRealtime _realtime;
-        private IRealtimeChannelCommands Channels => _realtime.Channels;
+        private IRealtimeChannels Channels => _realtime.Channels;
 
 
         [Fact]

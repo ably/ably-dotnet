@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace IO.Ably.Rest
 {
-    public interface IChannelCommands : IEnumerable<IRestChannel>
+    public interface IRestChannels : IEnumerable<IRestChannel>
     {
         /// <summary>
         /// Create or retrieve a channel with the specified name

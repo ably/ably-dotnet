@@ -86,7 +86,7 @@ namespace IO.Ably
             AblyAuth = new AblyAuth(Options, this);
         }
 
-        public IChannelCommands Channels => this;
+        public IRestChannels Channels => this;
 
         internal Func<AblyRequest, Task<AblyResponse>> ExecuteHttpRequest;
 
@@ -191,14 +191,14 @@ namespace IO.Ably
             return new AblyRequest(path, HttpMethod.Post, Protocol) {ChannelOptions = options};
         }
 
-        IRestChannel IChannelCommands.this[string name] => Channels.Get(name);
+        IRestChannel IRestChannels.this[string name] => Channels.Get(name);
 
-        IRestChannel IChannelCommands.Get(string name)
+        IRestChannel IRestChannels.Get(string name)
         {
             return Channels.Get(name, null);
         }
 
-        IRestChannel IChannelCommands.Get(string name, ChannelOptions options)
+        IRestChannel IRestChannels.Get(string name, ChannelOptions options)
         {
             if (name.IsEmpty())
                 throw new ArgumentNullException(nameof(name), "Empty channel name");
@@ -224,7 +224,7 @@ namespace IO.Ably
             }
         }
 
-        bool IChannelCommands.Release(string name)
+        bool IRestChannels.Release(string name)
         {
             var channel = Channels.Get(name);
             if (channel != null)

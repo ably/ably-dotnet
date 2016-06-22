@@ -9,13 +9,13 @@ namespace IO.Ably
         
     }
 
-    public interface IRestClient : IStatsCommands, IChannelCommands
+    public interface IRestClient : IStatsCommands, IRestChannels
     {
         /// <summary>Authentication methods</summary>
         IAblyAuth Auth { get; }
 
         /// <summary>Channel methods</summary>
-        IChannelCommands Channels { get; }
+        IRestChannels Channels { get; }
 
         /// <summary>Retrieves the ably service time</summary>
         /// <returns></returns>
