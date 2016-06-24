@@ -87,37 +87,37 @@ namespace IO.Ably.Realtime
             return _handlers.Remove(presenceAction.ToString(), handler.ToHandlerAction());
         }
 
-        public Task Enter(object clientData)
+        public Task EnterAsync(object clientData)
         {
-            return EnterClient(clientId, clientData);
+            return EnterClientAsync(clientId, clientData);
         }
 
-        public Task EnterClient(string clientId, object clientData)
+        public Task EnterClientAsync(string clientId, object clientData)
         {
-            return UpdatePresence(new PresenceMessage(PresenceAction.Enter, clientId, clientData));
+            return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Enter, clientId, clientData));
         }
 
-        public Task Update(object clientData)
+        public Task UpdateAsync(object clientData)
         {
-            return UpdateClient(clientId, clientData);
+            return UpdateClientAsync(clientId, clientData);
         }
 
-        public Task UpdateClient(string clientId, object clientData)
+        public Task UpdateClientAsync(string clientId, object clientData)
         {
-            return UpdatePresence(new PresenceMessage(PresenceAction.Update, clientId, clientData));
+            return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Update, clientId, clientData));
         }
 
-        public Task Leave(object clientData = null)
+        public Task LeaveAsync(object clientData = null)
         {
-            return LeaveClient(clientId, clientData);
+            return LeaveClientAsync(clientId, clientData);
         }
 
-        public Task LeaveClient(string clientId, object clientData)
+        public Task LeaveClientAsync(string clientId, object clientData)
         {
-            return UpdatePresence(new PresenceMessage(PresenceAction.Leave, clientId, clientData));
+            return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Leave, clientId, clientData));
         }
 
-        internal Task UpdatePresence(PresenceMessage msg)
+        internal Task UpdatePresenceAsync(PresenceMessage msg)
         {
             if (_channel.State == ChannelState.Initialized || _channel.State == ChannelState.Attaching)
             {

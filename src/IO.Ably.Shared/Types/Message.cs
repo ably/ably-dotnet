@@ -14,9 +14,10 @@ namespace IO.Ably
 
         public Message()
         {
+            
         }
 
-        public Message(string name, object data, string clientId = null)
+        public Message(string name = null, object data = null, string clientId = null)
         {
             this.name = name;
             this.data = data;
@@ -36,14 +37,10 @@ namespace IO.Ably
         /// <summary>The event name, if available</summary>
         public string name { get; set; }
 
-        [JsonProperty("data")]
-        public object data_raw { get; set; }
-
         /// <summary>Timestamp when the message was received by the Ably real-time service</summary>
         public DateTimeOffset? timestamp { get; set; }
 
         /// <summary>The message payload. Supported data types are objects, byte[] and strings.</summary>
-        [JsonIgnore]
         public object data { get; set; }
 
         /// <summary>
@@ -52,31 +49,6 @@ namespace IO.Ably
         ///     Therefore, the `encoding` attribute should always be nil unless an Ably library decoding error has occurred.
         /// </summary>
         public string encoding { get; set; }
-
-        [OnSerializing]
-        internal void OnSerializing(StreamingContext context)
-        {
-            if (data is byte[])
-            {
-                data_raw = (data as byte[]).ToBase64();
-                encoding = "base64";
-            }
-            else
-                data_raw = data;
-        }
-
-        [OnSerialized]
-        internal void OnSerialized(StreamingContext context)
-        {
-            data_raw = null;
-        }
-
-        [OnDeserialized]
-        internal void OnDeserialized(StreamingContext context)
-        {
-            data = data_raw;
-            data_raw = null;
-        }
 
         public override string ToString()
         {

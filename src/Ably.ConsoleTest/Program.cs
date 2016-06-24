@@ -19,7 +19,7 @@ namespace IO.Ably.ConsoleTest
                 var channel = client.Channels.Get("testchannel0");
                 channel.Attach();
                 channel.Presence.Subscribe(Presence_MessageReceived2);
-                channel.Presence.EnterClient("clientid1", "mydata");
+                channel.Presence.EnterClientAsync("clientid1", "mydata");
 
                 while (true)
                 {

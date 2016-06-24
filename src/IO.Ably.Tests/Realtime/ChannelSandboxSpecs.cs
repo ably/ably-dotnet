@@ -29,7 +29,7 @@ namespace IO.Ably.Tests.Realtime
 
             var channel = client.Channels.Get("test" + protocol);
 
-            await channel.Presence.Enter(new [] {"test", "best"});
+            await channel.Presence.EnterAsync(new [] {"test", "best"});
 
             var presence = await channel.Presence.GetAsync();
 
@@ -49,7 +49,7 @@ namespace IO.Ably.Tests.Realtime
                 Output.WriteLine($"{message.connectionId}:{message.timestamp}");
                 time = message.timestamp;
             });
-            await channel.Presence.Enter(new[] { "test", "best" });
+            await channel.Presence.EnterAsync(new[] { "test", "best" });
             time.Should().HaveValue();
         }
 
