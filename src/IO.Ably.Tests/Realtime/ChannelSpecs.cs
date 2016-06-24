@@ -138,7 +138,7 @@ namespace IO.Ably.Tests.Realtime
                 await Task.Delay(10);
 
                 expectedError.Should().BeSameAs(error);
-                _channel.Reason.Should().BeSameAs(error);
+                _channel.ErrorReason.Should().BeSameAs(error);
 
             }
 
@@ -166,7 +166,7 @@ namespace IO.Ably.Tests.Realtime
 
                 _client.Connection.State.Should().Be(ConnectionStateType.Failed);
                 _channel.State.Should().Be(ChannelState.Failed);
-                _channel.Reason.Should().BeSameAs(error);
+                _channel.ErrorReason.Should().BeSameAs(error);
             }
 
             [Theory]
@@ -285,7 +285,7 @@ namespace IO.Ably.Tests.Realtime
                 await Task.Delay(130);
 
                 _channel.State.Should().Be(ChannelState.Failed);
-                _channel.Reason.Should().NotBeNull();
+                _channel.ErrorReason.Should().NotBeNull();
             }
 
             [Fact]
@@ -426,7 +426,7 @@ namespace IO.Ably.Tests.Realtime
                 await Task.Delay(130);
 
                 _channel.State.Should().Be(ChannelState.Failed);
-                _channel.Reason.Should().NotBeNull();
+                _channel.ErrorReason.Should().NotBeNull();
             }
 
             [Fact]

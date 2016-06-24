@@ -11,7 +11,8 @@ namespace IO.Ably.Realtime
         string Name { get; }
         Presence Presence { get; }
         ChannelOptions Options { get; }
-        ErrorInfo Reason { get; }
+        ErrorInfo ErrorReason { get; }
+
         event EventHandler<ChannelStateChangedEventArgs> StateChanged;
         event EventHandler<ChannelErrorEventArgs> Error;
 
@@ -33,12 +34,14 @@ namespace IO.Ably.Realtime
 
         bool Unsubscribe(Action<Message> handler);
         bool Unsubscribe(string eventName, Action<Message> handler);
+
         void Publish(string name, object data, Action<bool, ErrorInfo> callback = null, string clientId = null);
         Task<Result> PublishAsync(string eventName, object data, string clientId = null); 
         void Publish(Message message, Action<bool, ErrorInfo> callback = null);
         Task<Result> PublishAsync(Message message);
         void Publish(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback = null);
         Task<Result> PublishAsync(IEnumerable<Message> messages);
+
         Task<PaginatedResult<Message>> HistoryAsync(bool untilAttached = false);
         Task<PaginatedResult<Message>> HistoryAsync(DataRequestQuery dataQuery, bool untilAttached = false);
         void Unsubscribe();

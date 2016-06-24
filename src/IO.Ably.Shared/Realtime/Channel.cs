@@ -18,19 +18,36 @@ namespace IO.Ably.Realtime
         private IConnectionManager ConnectionManager => RealtimeClient.ConnectionManager;
         private Connection Connection => RealtimeClient.Connection;
         private ConnectionStateType ConnectionState => Connection.State;
-        public string AttachedSerial { get; set; }
         private readonly Handlers<Message> _handlers = new Handlers<Message>();
         private readonly CountdownTimer _timer;
         internal IRestChannel RestChannel => RealtimeClient.RestClient.Channels.Get(Name);
-
         private readonly object _lockQueue = new object();
-
         private readonly ChannelAwaiter _attachedAwaiter;
         private readonly ChannelAwaiter _detachedAwaiter;
         private ChannelOptions _options;
 
+        public string AttachedSerial { get; set; }
         public List<MessageAndCallback> QueuedMessages { get; set; } = new List<MessageAndCallback>(16);
-        public ErrorInfo Reason { get; internal set; }
+        public ErrorInfo ErrorReason { get; internal set; }
+
+        public event EventHandler<ChannelStateChangedEventArgs> StateChanged = delegate { };
+        public event EventHandler<ChannelErrorEventArgs> Error = delegate { };
+
+        public ChannelOptions Options
+
+        {
+            get { return _options; }
+            set { _options = value ?? new ChannelOptions(); }
+        }
+
+        public string Name { get; }
+
+        /// <summary>
+        ///     Indicates the current state of this channel.
+        /// </summary>
+        public ChannelState State { get; private set; }
+
+        public Presence Presence { get; }
 
         internal RealtimeChannel(string name, string clientId, AblyRealtime realtimeClient, ChannelOptions options)
         {
@@ -74,27 +91,7 @@ namespace IO.Ably.Realtime
             }
         }
 
-        public event EventHandler<ChannelStateChangedEventArgs> StateChanged = delegate {};
-        public event EventHandler<ChannelErrorEventArgs> Error = delegate { };
-
-        public ChannelOptions Options
-
-        {
-            get { return _options; }
-            set { _options = value ?? new ChannelOptions(); }
-        }
-
-        /// <summary>
-        ///     The channel name
-        /// </summary>
-        public string Name { get; }
-
-        /// <summary>
-        ///     Indicates the current state of this channel.
-        /// </summary>
-        public ChannelState State { get; private set; }
-
-        public Presence Presence { get; }
+        
 
         /// <summary>
         ///     Attach to this channel. Any resulting channel state change will be indicated to any registered
@@ -266,7 +263,7 @@ namespace IO.Ably.Realtime
 
         public void OnError(ErrorInfo error)
         {
-            Reason = error; //Set or clear the error
+            ErrorReason = error; //Set or clear the error
 
             RealtimeClient.NotifyExternalClients(() => Error.Invoke(this, new ChannelErrorEventArgs(error)));
         }
