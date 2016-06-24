@@ -141,7 +141,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.RestClient.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(10), handler);
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
-                connectionDetails = new ConnectionDetailsMessage() { connectionKey = "connectionKey" },
+                connectionDetails = new ConnectionDetails() { connectionKey = "connectionKey" },
                 connectionId = "1",
                 connectionSerial = 100
             });

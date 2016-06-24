@@ -45,7 +45,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = GetClientWithFakeTransport();
 
-            var connectionDetailsMessage = new ConnectionDetailsMessage()
+            var connectionDetailsMessage = new ConnectionDetails()
             {
                 clientId = "123",
                 connectionKey = "boo"
@@ -83,7 +83,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
-                connectionDetails = new ConnectionDetailsMessage { clientId = "realtimeClient" }
+                connectionDetails = new ConnectionDetails { clientId = "realtimeClient" }
             });
 
             client.RestClient.AblyAuth.ClientId.Should().Be("realtimeClient");

@@ -143,7 +143,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
-            ProtocolMessage message = new ProtocolMessage() { MsgSerial = msgSerial };
+            ProtocolMessage message = new ProtocolMessage() { msgSerial = msgSerial };
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x82);
             expectedMessage.AddRange(SerializeString("action"));
@@ -448,7 +448,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<long>(serial, target.MsgSerial);
+            Assert.Equal<long>(serial, target.msgSerial);
         }
 
         [Theory]

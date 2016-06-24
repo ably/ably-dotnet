@@ -81,13 +81,12 @@ namespace IO.Ably.Types
         }
 
         public long? connectionSerial { get; set; }
-        [JsonProperty("msgSerial")]
-        public long MsgSerial { get; set; }
+        public long msgSerial { get; set; }
         public DateTimeOffset? timestamp { get; set; }
         public Message[] messages { get; set; }
 
         public PresenceMessage[] presence { get; set; }
-        public ConnectionDetailsMessage connectionDetails { get; set; }
+        public ConnectionDetails connectionDetails { get; set; }
 
         [JsonIgnore]
         internal bool AckRequired => action == MessageAction.Message || action == MessageAction.Presence;

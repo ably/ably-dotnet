@@ -38,7 +38,7 @@ namespace IO.Ably.Tests.Realtime
             var client = GetClientWithFakeTransport(optionsAction, handleRequestFunc);
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
-                connectionDetails = new ConnectionDetailsMessage() { connectionKey = "connectionKey"},
+                connectionDetails = new ConnectionDetails() { connectionKey = "connectionKey"},
                 connectionId = "1",
                 connectionSerial = 100
             });

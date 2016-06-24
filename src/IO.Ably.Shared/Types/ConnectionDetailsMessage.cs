@@ -1,10 +1,8 @@
 ﻿using System;
-using IO.Ably.CustomSerialisers;
-using Newtonsoft.Json;
 
 namespace IO.Ably
 {
-    public class ConnectionDetailsMessage
+    public class ConnectionDetails
     {
         public string clientId { get; set; }
         public string connectionKey { get; set; }

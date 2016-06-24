@@ -20,7 +20,7 @@ namespace IO.Ably.CustomSerialisers {
         
         private MsgPack.Serialization.MessagePackSerializer<IO.Ably.Types.ProtocolMessage.MessageAction> _serializer1;
         
-        private MsgPack.Serialization.MessagePackSerializer<IO.Ably.ConnectionDetailsMessage> _serializer2;
+        private MsgPack.Serialization.MessagePackSerializer<IO.Ably.ConnectionDetails> _serializer2;
         
         private MsgPack.Serialization.MessagePackSerializer<System.Nullable<long>> _serializer3;
         
@@ -48,7 +48,7 @@ namespace IO.Ably.CustomSerialisers {
             this._serializer1 = context.GetSerializer<IO.Ably.Types.ProtocolMessage.MessageAction>(MsgPack.Serialization.EnumMessagePackSerializerHelpers.DetermineEnumSerializationMethod(context, typeof(IO.Ably.Types.ProtocolMessage.MessageAction), MsgPack.Serialization.EnumMemberSerializationMethod.ByUnderlyingValue));
             MsgPack.Serialization.PolymorphismSchema schema1 = default(MsgPack.Serialization.PolymorphismSchema);
             schema1 = null;
-            this._serializer2 = context.GetSerializer<IO.Ably.ConnectionDetailsMessage>(schema1);
+            this._serializer2 = context.GetSerializer<IO.Ably.ConnectionDetails>(schema1);
             MsgPack.Serialization.PolymorphismSchema schema2 = default(MsgPack.Serialization.PolymorphismSchema);
             schema2 = null;
             this._serializer3 = context.GetSerializer<System.Nullable<long>>(schema2);
@@ -151,7 +151,7 @@ namespace IO.Ably.CustomSerialisers {
                 this._serializer0.PackTo(packer, objectTree.id);
             }
             this._serializer0.PackTo(packer, "msgSerial");
-            this._serializer8.PackTo(packer, objectTree.MsgSerial);
+            this._serializer8.PackTo(packer, objectTree.msgSerial);
             if (objectTree.messages != null && objectTree.messages.Any(x => x.IsEmpty == false))
             {
                 this._serializer0.PackTo(packer, "messages");
@@ -270,7 +270,7 @@ namespace IO.Ably.CustomSerialisers {
                                 typeof(IO.Ably.Types.ProtocolMessage), "Int64 msgSerial");
                             if (nullable27.HasValue)
                             {
-                                result.MsgSerial = nullable27.Value;
+                                result.msgSerial = nullable27.Value;
                             }
                         }
                         else
@@ -459,8 +459,8 @@ namespace IO.Ably.CustomSerialisers {
                                                         {
                                                             if ((key == "connectionDetails"))
                                                             {
-                                                                IO.Ably.ConnectionDetailsMessage nullable18 =
-                                                                    default(IO.Ably.ConnectionDetailsMessage);
+                                                                IO.Ably.ConnectionDetails nullable18 =
+                                                                    default(IO.Ably.ConnectionDetails);
                                                                 if ((unpacker.Read() == false))
                                                                 {
                                                                     throw MsgPack.Serialization.SerializationExceptions

@@ -34,9 +34,9 @@ namespace IO.Ably.Tests
             _ackProcessor.QueueIfNecessary(targetMessage3, null);
 
             // Assert
-            Assert.Equal(0, targetMessage1.MsgSerial);
-            Assert.Equal(1, targetMessage2.MsgSerial);
-            Assert.Equal(2, targetMessage3.MsgSerial);
+            Assert.Equal(0, targetMessage1.msgSerial);
+            Assert.Equal(1, targetMessage2.msgSerial);
+            Assert.Equal(2, targetMessage3.msgSerial);
         }
 
         [Theory]
@@ -69,9 +69,9 @@ namespace IO.Ably.Tests
             _ackProcessor.QueueIfNecessary(targetMessage3, null);
 
             // Assert
-            Assert.Equal(0, targetMessage1.MsgSerial);
-            Assert.Equal(0, targetMessage2.MsgSerial);
-            Assert.Equal(0, targetMessage3.MsgSerial);
+            Assert.Equal(0, targetMessage1.msgSerial);
+            Assert.Equal(0, targetMessage2.msgSerial);
+            Assert.Equal(0, targetMessage3.msgSerial);
         }
 
         [Theory]
@@ -124,9 +124,9 @@ namespace IO.Ably.Tests
 
             // Act
             _ackProcessor.QueueIfNecessary(message, callback);
-            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = 0, count = 1 });
+            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { msgSerial = 0, count = 1 });
             _ackProcessor.QueueIfNecessary(message, callback);
-            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = 1, count = 1 });
+            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { msgSerial = 1, count = 1 });
 
             // Assert
             Assert.Equal(2, callbacks.Count);
@@ -145,7 +145,7 @@ namespace IO.Ably.Tests
             target.QueueIfNecessary(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 0) callbacks.Add(Tuple.Create(ack, err)); });
             target.QueueIfNecessary(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 1) callbacks.Add(Tuple.Create(ack, err)); });
             target.QueueIfNecessary(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 2) callbacks.Add(Tuple.Create(ack, err)); });
-            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = 0, count = 3 });
+            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { msgSerial = 0, count = 3 });
 
             // Assert
             Assert.Equal(3, callbacks.Count);
@@ -164,9 +164,9 @@ namespace IO.Ably.Tests
             // Act
 
             _ackProcessor.QueueIfNecessary(message, callback);
-            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 0, count = 1 });
+            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { msgSerial = 0, count = 1 });
             _ackProcessor.QueueIfNecessary(message, callback);
-            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 1, count = 1 });
+            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { msgSerial = 1, count = 1 });
 
             // Assert
             Assert.Equal(2, callbacks.Count);
@@ -187,7 +187,7 @@ namespace IO.Ably.Tests
             _ackProcessor.QueueIfNecessary(message, callback);
             _ackProcessor.QueueIfNecessary(message, callback);
             _ackProcessor.QueueIfNecessary(message, callback);
-            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 0, count = 3, error = error });
+            _ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { msgSerial = 0, count = 3, error = error });
 
             // Assert
             Assert.Equal(3, callbacks.Count);

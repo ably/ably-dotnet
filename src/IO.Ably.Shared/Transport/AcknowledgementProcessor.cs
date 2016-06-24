@@ -41,7 +41,7 @@ namespace IO.Ably.Transport
             if (message.AckRequired)
                 lock (_syncObject)
                 {
-                    message.MsgSerial = _connection.MessageSerial++;
+                    message.msgSerial = _connection.MessageSerial++;
                     _queue.Add(new MessageAndCallback(message, callback));
                 }
         }
@@ -87,7 +87,7 @@ namespace IO.Ably.Transport
         {
             lock (_syncObject)
             {
-                var endSerial = message.MsgSerial + (message.count - 1);
+                var endSerial = message.msgSerial + (message.count - 1);
                 var listForProcessing = new List<MessageAndCallback>(_queue);
                 foreach (var current in listForProcessing)
                 {
