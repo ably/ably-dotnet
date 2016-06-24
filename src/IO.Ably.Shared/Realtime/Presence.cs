@@ -210,7 +210,7 @@ namespace IO.Ably.Realtime
             }
             else if (e.NewState == ChannelState.Detached || e.NewState == ChannelState.Failed)
             {
-                FailQueuedMessages(e.Reason);
+                FailQueuedMessages(e.Error);
             }
         }
 

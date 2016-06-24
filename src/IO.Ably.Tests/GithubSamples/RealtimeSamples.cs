@@ -63,7 +63,7 @@ namespace IO.Ably.Tests.GithubSamples
             channel.StateChanged += (s, args) =>
             {
                 var state = args.NewState; //Current channel State
-                var error = args.Reason; // If the channel errored it will be refrected here
+                var error = args.Error; // If the channel errored it will be refrected here
 
                 if (state == ChannelState.Attached)
                 {

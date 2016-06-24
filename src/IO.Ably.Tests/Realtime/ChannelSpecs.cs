@@ -129,7 +129,7 @@ namespace IO.Ably.Tests.Realtime
                 ErrorInfo expectedError = null;
                 _channel.StateChanged += (sender, args) =>
                 {
-                    expectedError = args.Reason;
+                    expectedError = args.Error;
 
                 };
 

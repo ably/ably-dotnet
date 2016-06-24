@@ -102,13 +102,13 @@ namespace IO.Ably.Tests.Realtime
             signal.WaitOne(10000);
             args.Count.ShouldBeEquivalentTo(1);
             args[0].NewState.ShouldBeEquivalentTo(ChannelState.Attaching);
-            args[0].Reason.ShouldBeEquivalentTo(null);
+            args[0].Error.ShouldBeEquivalentTo(null);
             target.State.ShouldBeEquivalentTo(ChannelState.Attaching);
 
             signal.WaitOne(10000);
             args.Count.ShouldBeEquivalentTo(2);
             args[1].NewState.ShouldBeEquivalentTo(ChannelState.Attached);
-            args[1].Reason.ShouldBeEquivalentTo(null);
+            args[1].Error.ShouldBeEquivalentTo(null);
             target.State.ShouldBeEquivalentTo(ChannelState.Attached);
         }
 
@@ -460,7 +460,7 @@ namespace IO.Ably.Tests.Realtime
             var result = await new ChannelAwaiter(channel, ChannelState.Failed).WaitAsync();
             result.IsSuccess.Should().BeTrue();
 
-            var error = channel.Reason;
+            var error = channel.ErrorReason;
             error.statusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 

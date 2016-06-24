@@ -4,14 +4,14 @@ namespace IO.Ably.Realtime
 {
     public class ChannelStateChangedEventArgs : EventArgs
     {
-        public ChannelStateChangedEventArgs(ChannelState state, ErrorInfo reason = null)
+        public ChannelStateChangedEventArgs(ChannelState state, ErrorInfo error = null)
         {
             NewState = state;
-            Reason = reason;
+            Error = error;
         }
 
         public ChannelState NewState { get; }
 
-        public ErrorInfo Reason { get; }
+        public ErrorInfo Error { get; }
     }
 }
