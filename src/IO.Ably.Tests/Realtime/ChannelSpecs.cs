@@ -48,7 +48,7 @@ namespace IO.Ably.Tests.Realtime
             public void ChannelPresenceShouldReturnAPresenceObject()
             {
                 var client = GetConnectedClient();
-                var channel = client.Get("Test");
+                var channel = client.Channels.Get("Test");
                 channel.Presence.Should().BeOfType<Presence>();
             }
 
@@ -58,7 +58,7 @@ namespace IO.Ably.Tests.Realtime
             public async Task OnceAttachedWhenConsequentAttachMessageArriveWithError_ShouldEmitErrorOnChannelButNoStateChange()
             {
                 var client = GetConnectedClient();
-                var channel = client.Get("test");
+                var channel = client.Channels.Get("test");
                 SetState(channel, ChannelState.Attached);
 
                 ErrorInfo expectedError = new ErrorInfo();
@@ -242,19 +242,19 @@ namespace IO.Ably.Tests.Realtime
             {
                 //Closed
                 _client.Connection.ConnectionState = new ConnectionClosedState(_client.ConnectionManager);
-                Assert.Throws<AblyException>(() => _client.Get("closed").Attach());
+                Assert.Throws<AblyException>(() => _client.Channels.Get("closed").Attach());
 
                 //Closing
                 _client.Connection.ConnectionState = new ConnectionClosingState(_client.ConnectionManager);
-                Assert.Throws<AblyException>(() => _client.Get("closing").Attach());
+                Assert.Throws<AblyException>(() => _client.Channels.Get("closing").Attach());
 
                 //Suspended
                 _client.Connection.ConnectionState = new ConnectionSuspendedState(_client.ConnectionManager);
-                Assert.Throws<AblyException>(() => _client.Get("suspended").Attach());
+                Assert.Throws<AblyException>(() => _client.Channels.Get("suspended").Attach());
 
                 //Failed
                 _client.Connection.ConnectionState = new ConnectionFailedState(_client.ConnectionManager, ErrorInfo.ReasonFailed);
-                Assert.Throws<AblyException>(() => _client.Get("failed").Attach());
+                Assert.Throws<AblyException>(() => _client.Channels.Get("failed").Attach());
             }
 
             [Fact]
@@ -525,7 +525,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL6ia")]
             public void WithNameAndData_ShouldSendASingleProtocolMessageWithASingleEncodedMessageInside()
             {
-                var channel = _client.Get("test");
+                var channel = _client.Channels.Get("test");
                 var bytes = new byte[] { 1, 2, 3, 4, 5 };
 
                 SetState(channel, ChannelState.Attached);
@@ -542,7 +542,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL6i2")]
             public void WithListOfMessages_ShouldPublishASingleProtocolMessageToTransport()
             {
-                var channel = _client.Get("test");
+                var channel = _client.Channels.Get("test");
                 SetState(channel, ChannelState.Attached);
 
                 var list = new List<Message>
@@ -561,7 +561,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL6i3")]
             public void WithMessageWithOutData_ShouldSendOnlyData()
             {
-                var channel = _client.Get("test");
+                var channel = _client.Channels.Get("test");
                 SetState(channel, ChannelState.Attached);
 
                 channel.Publish(null, "data");
@@ -573,7 +573,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL6i3")]
             public void WithMessageWithOutName_ShouldSendOnlyData()
             {
-                var channel = _client.Get("test");
+                var channel = _client.Channels.Get("test");
                 SetState(channel, ChannelState.Attached);
 
                 channel.Publish("name", null);
@@ -608,7 +608,7 @@ namespace IO.Ably.Tests.Realtime
                     var client = GetClientWithFakeTransport();
                     client.Connect();
                     client.Connection.State.Should().Be(ConnectionStateType.Connecting);
-                    var channel = client.Get("connecting");
+                    var channel = client.Channels.Get("connecting");
                     SetState(channel, ChannelState.Attached);
                     channel.Publish("test", "connecting");
 
@@ -631,7 +631,7 @@ namespace IO.Ably.Tests.Realtime
                     var client = GetClientWithFakeTransport();
                     await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager));
                     client.Connection.State.Should().Be(ConnectionStateType.Disconnected);
-                    var channel = client.Get("connecting");
+                    var channel = client.Channels.Get("connecting");
                     SetState(channel, ChannelState.Attached);
                     channel.Publish("test", "connecting");
 
@@ -668,7 +668,7 @@ namespace IO.Ably.Tests.Realtime
                         opts.ClientId = "123";
                         opts.Token = "test";
                     });
-                    var channel = client.Get("test");
+                    var channel = client.Channels.Get("test");
                     channel.PublishAsync("test", "test");
                     SetState(channel, ChannelState.Attached);
 
@@ -680,7 +680,7 @@ namespace IO.Ably.Tests.Realtime
                 public void CanEasilyAddClientIdWhenPublishingAMessage()
                 {
                     var client = GetConnectedClient();
-                    var channel = client.Get("test");
+                    var channel = client.Channels.Get("test");
                     SetState(channel, ChannelState.Attached);
                     channel.PublishAsync("test", "best", clientId: "123");
 
@@ -706,7 +706,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL7a")]
             public async Task WithNoArguments_AddsAListenerForAllMessages()
             {
-                var channel = _client.Get("Test");
+                var channel = _client.Channels.Get("Test");
                 SetState(channel, ChannelState.Attached);
                 var messages = new List<Message>();
                 channel.Subscribe(message =>
@@ -725,7 +725,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL7b")]
             public async Task WithEventArguments_ShouldOnlyNotifyWhenNameMatchesMessageName()
             {
-                var channel = _client.Get("test");
+                var channel = _client.Channels.Get("test");
                 SetState(channel, ChannelState.Attached);
                 var messages = new List<Message>();
                 channel.Subscribe("test", message =>
@@ -744,7 +744,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL7c")]
             public void ShouldImplicitlyAttachAChannel()
             {
-                var channel = _client.Get("best");
+                var channel = _client.Channels.Get("best");
                 channel.State.Should().Be(ChannelState.Initialized);
                 channel.Subscribe(message =>
                 {
@@ -758,7 +758,7 @@ namespace IO.Ably.Tests.Realtime
             public async Task WithAMessageThatFailDecryption_ShouldDeliverMessageButEmmitErrorOnTheChannel()
             {
                 var otherChannelOptions = new ChannelOptions(true);
-                var encryptedChannel = _client.Get("encrypted", new ChannelOptions(true));
+                var encryptedChannel = _client.Channels.Get("encrypted", new ChannelOptions(true));
                 SetState(encryptedChannel, ChannelState.Attached);
                 bool msgReceived = false, 
                     errorEmitted = false;
@@ -783,7 +783,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL7e")]
             public async Task WithMessageThatCantBeDecoded_ShouldDeliverMessageWithResidualEncodingAndEmitTheErrorOnTheChannel()
             {
-                var channel = _client.Get("test");
+                var channel = _client.Channels.Get("test");
                 SetState(channel, ChannelState.Attached);
 
                 Message receivedMessage = null;
@@ -844,7 +844,7 @@ namespace IO.Ably.Tests.Realtime
             public UnsubscribeSpecs(ITestOutputHelper output) : base(output)
             {
                 _client = GetConnectedClient(opts => opts.UseBinaryProtocol = false); //Easier to test encoding with the json protocol
-                _channel = _client.Get("test");
+                _channel = _client.Channels.Get("test");
 
                 SetState(_channel, ChannelState.Attached);
                 _handler = message =>
@@ -863,7 +863,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL10a")]
             public async Task ShouldCallRestClientToGetHistory()
             {
-                var channel = _client.Get("history");
+                var channel = _client.Channels.Get("history");
 
                 await channel.HistoryAsync();
 
@@ -874,7 +874,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL10b")]
             public async Task WithUntilAttach_ShouldPassAttachedSerialToHistoryQuery()
             {
-                var channel = _client.Get("history");
+                var channel = _client.Channels.Get("history");
                 SetState(channel, ChannelState.Attached, message: new ProtocolMessage(ProtocolMessage.MessageAction.Attached) { channelSerial = "101"});
 
                 await channel.HistoryAsync(untilAttached: true);
@@ -887,7 +887,7 @@ namespace IO.Ably.Tests.Realtime
             [Fact]
             public async Task WithUntilAttachButChannelNotAttached_ShouldThrowException()
             {
-                var channel = _client.Get("history");
+                var channel = _client.Channels.Get("history");
 
                 var ex = await Assert.ThrowsAsync<AblyException>(() => channel.HistoryAsync(true));
             }

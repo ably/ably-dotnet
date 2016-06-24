@@ -27,7 +27,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "test");
 
-            var channel = client.Get("test");
+            var channel = client.Channels.Get("test");
 
             await channel.Presence.Enter(new [] {"test", "best"});
 
@@ -44,7 +44,7 @@ namespace IO.Ably.Tests.Realtime
                  
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "presence-timestamp-test");
 
-            var channel = client.Get("test");
+            var channel = client.Channels.Get("test");
             DateTimeOffset? time = null;
             channel.Presence.Subscribe(message =>
             {
@@ -151,7 +151,7 @@ namespace IO.Ably.Tests.Realtime
                 options.Key = settings.KeyWithChannelLimitations;
             });
 
-            var channel = client.Get("nono");
+            var channel = client.Channels.Get("nono");
             var result = await channel.AttachAsync();
 
             result.IsFailure.Should().BeTrue();
@@ -232,15 +232,15 @@ namespace IO.Ably.Tests.Realtime
 
             foreach (var message in messages)
             {
-                client1.Get("test").Publish(new [] { message }, (b, info) =>
+                client1.Channels.Get("test").Publish(new [] { message }, (b, info) =>
                 {
                     successes.Add(b);
                 });
-                client2.Get("test").Publish(new[] { message }, (b, info) =>
+                client2.Channels.Get("test").Publish(new[] { message }, (b, info) =>
                 {
                     successes.Add(b);
                 });
-                client3.Get("test").Publish(new[] { message }, (b, info) =>
+                client3.Channels.Get("test").Publish(new[] { message }, (b, info) =>
                 {
                     successes.Add(b);
                 });
@@ -259,7 +259,7 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol);
 
             client.Connect();
-            var channel = client.Get("test");
+            var channel = client.Channels.Get("test");
             bool messageReceived = false;
             channel.Subscribe(message =>
             {
@@ -279,7 +279,7 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
 
             client.Connect();
-            var channel = client.Get("test");
+            var channel = client.Channels.Get("test");
             bool messageReceived = false;
             channel.Subscribe(message =>
             {
@@ -301,7 +301,7 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.TokenDetails = token);
 
             client.Connect();
-            var channel = client.Get("test");
+            var channel = client.Channels.Get("test");
             bool messageReceived = false;
             channel.Subscribe(message =>
             {
@@ -321,7 +321,7 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
 
             client.Connect();
-            var channel = client.Get("test");
+            var channel = client.Channels.Get("test");
             bool messageReceived = false;
             channel.Subscribe(message =>
             {
@@ -341,7 +341,7 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
 
             client.Connect();
-            var channel = client.Get("test");
+            var channel = client.Channels.Get("test");
             bool messageReceived = false;
             channel.Subscribe(message =>
             {
@@ -370,7 +370,7 @@ namespace IO.Ably.Tests.Realtime
                 opts.AuthCallback = async @params => await rest.Auth.RequestTokenAsync(new TokenParams() {ClientId = clientId});
             });
 
-            var channel = realtimeClient.Get("test");
+            var channel = realtimeClient.Channels.Get("test");
             bool messageReceived = false;
             channel.Subscribe(message =>
             {
@@ -401,7 +401,7 @@ namespace IO.Ably.Tests.Realtime
                 opts.AuthCallback = async @params => await rest.Auth.RequestTokenAsync(new TokenParams() { ClientId = clientId });
             });
 
-            var channel = realtimeClient.Get("test");
+            var channel = realtimeClient.Channels.Get("test");
             bool messageReceived = false;
             channel.Subscribe(message =>
             {
@@ -428,7 +428,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
             var connectionId = client.Connection.Id;
-            var channel = client.Get("test");
+            var channel = client.Channels.Get("test");
             bool messageReceived = false;
             channel.Subscribe(message =>
             {
@@ -451,7 +451,7 @@ namespace IO.Ably.Tests.Realtime
                 options.Key = settings.KeyWithChannelLimitations;
             });
 
-            var channel = client.Get("nono");
+            var channel = client.Channels.Get("nono");
             channel.Subscribe(message =>
             {
                 //do nothing
@@ -483,7 +483,7 @@ namespace IO.Ably.Tests.Realtime
 
             var client = await GetRealtimeClient(protocol);
             
-            var channel = client.Get("persisted:test".AddRandomSuffix(), GetOptions(fixtureData));
+            var channel = client.Channels.Get("persisted:test".AddRandomSuffix(), GetOptions(fixtureData));
             var count = 0;
             Message lastMessage = null;
             channel.Subscribe(message =>
@@ -515,13 +515,13 @@ namespace IO.Ably.Tests.Realtime
             var client1 = await GetRealtimeClient(protocol);
 
             var channelName = "persisted:history".AddRandomSuffix();
-            var channel = client1.Get(channelName);
+            var channel = client1.Channels.Get(channelName);
             await channel.AttachAsync();
             var messages = Enumerable.Range(1, 10).Select(x => new Message("name:" + x, "value:" + x));
             await channel.PublishAsync(messages);
 
             var client2 = await GetRealtimeClient(protocol);
-            var historyChannel = client2.Get(channelName);
+            var historyChannel = client2.Channels.Get(channelName);
             var history = await historyChannel.HistoryAsync(new DataRequestQuery() { Direction = QueryDirection.Forwards});
 
             history.Should().BeOfType<PaginatedResult<Message>>();

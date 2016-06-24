@@ -11,11 +11,9 @@ using IO.Ably.Transport;
 
 namespace IO.Ably
 {
-    public class AblyRealtime : IRealtimeClient, IRealtimeChannels
+    public class AblyRealtime : IRealtimeClient
     {
         private SynchronizationContext _synchronizationContext;
-
-        internal ConcurrentDictionary<string, IRealtimeChannel> RealtimeChannels { get; private set; } = new ConcurrentDictionary<string, IRealtimeChannel>();
 
         public AblyRealtime(string key)
             : this(new ClientOptions(key))
@@ -33,6 +31,7 @@ namespace IO.Ably
             CaptureSynchronizationContext(options);
 
             RestClient = createRestFunc(options);
+            Channels = new RealtimeChannels(this);
             Connection = new Connection(this);
             Connection.Initialise();
 
@@ -60,7 +59,7 @@ namespace IO.Ably
         internal ConnectionManager ConnectionManager => Connection.ConnectionManager;
 
         /// <summary>The collection of channels instanced, indexed by channel name.</summary>
-        public IRealtimeChannels Channels => this;
+        public RealtimeChannels Channels { get; private set; }
 
         /// <summary>A reference to the connection object for this library instance.</summary>
         public Connection Connection { get; }
@@ -103,75 +102,7 @@ namespace IO.Ably
             return RestClient.TimeAsync();
         }
 
-        public IRealtimeChannel Get(string name, ChannelOptions options = null)
-        {
-            IRealtimeChannel result = null;
-            if (!RealtimeChannels.TryGetValue(name, out result))
-            {
-                var channel = new RealtimeChannel(name, Options.GetClientId(), this, options);
-                result = RealtimeChannels.AddOrUpdate(name, channel, (s, realtimeChannel) =>
-                {
-                    if (options != null)
-                    {
-                        realtimeChannel.Options = options;
-                    }
-                    return realtimeChannel;
-                });
-            }
-            else
-            {
-                if (options != null)
-                    result.Options = options;
-            }
-            return result;
-        }
-
-        public IRealtimeChannel this[string name] => Get(name);
-
-        public void Release(string name)
-        {
-            IRealtimeChannel channel = null;
-            if (RealtimeChannels.TryGetValue(name, out channel))
-            {
-                EventHandler<ChannelStateChangedEventArgs> eventHandler = null;
-                eventHandler = (s, args) =>
-                {
-                    if (args.NewState == ChannelState.Detached || args.NewState == ChannelState.Failed)
-                    {
-                        channel.StateChanged -= eventHandler;
-                        IRealtimeChannel removedChannel;
-                        if (RealtimeChannels.TryRemove(name, out removedChannel))
-                            (removedChannel as RealtimeChannel).Dispose();
-                    }
-                };
-                channel.StateChanged += eventHandler;
-                channel.Detach();
-            }
-        }
-
-        public void ReleaseAll()
-        {
-            var channelList = RealtimeChannels.Keys.ToArray();
-            foreach (var channelName in channelList)
-            {
-                Release(channelName);
-            }
-        }
-
-        public bool ContainsChannel(string name)
-        {
-            return RealtimeChannels.ContainsKey(name);
-        }
-
-        public IEnumerator<IRealtimeChannel> GetEnumerator()
-        {
-            return RealtimeChannels.ToArray().Select(x => x.Value).GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        
 
         internal void NotifyExternalClients(Action action)
         {

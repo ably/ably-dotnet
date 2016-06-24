@@ -18,18 +18,16 @@ namespace IO.Ably
         internal string CustomHost
         {
             get { return HttpClient.CustomHost; }
-            set { HttpClient.CustomHost = value;  }
+            set { HttpClient.CustomHost = value; }
         }
 
         internal AblyAuth AblyAuth { get; private set; }
-        private readonly object _channelLock = new object();
-        internal List<IRestChannel> RestChannels { get; private set; } = new List<IRestChannel>();
+        public RestChannels Channels { get; private set; }
 
         /// <summary>
         /// Authentication methods
         /// </summary>
         public IAblyAuth Auth => AblyAuth;
-
         internal Protocol Protocol => Options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
 
         internal ClientOptions Options { get; }
@@ -84,9 +82,8 @@ namespace IO.Ably
             HttpClient = new AblyHttpClient(new AblyHttpOptions(Options));
             ExecuteHttpRequest = HttpClient.Execute;
             AblyAuth = new AblyAuth(Options, this);
+            Channels = new RestChannels(this);
         }
-
-        public IRestChannels Channels => this;
 
         internal Func<AblyRequest, Task<AblyResponse>> ExecuteHttpRequest;
 
@@ -108,7 +105,7 @@ namespace IO.Ably
                 if (ex.ErrorInfo.IsUnAuthorizedError
                     && ex.ErrorInfo.IsTokenError && AblyAuth.TokenRenewable)
                 {
-                    await AblyAuth.AuthoriseAsync(null, new AuthOptions() {Force = true});
+                    await AblyAuth.AuthoriseAsync(null, new AuthOptions() { Force = true });
                     await AblyAuth.AddAuthHeader(request);
                     return await ExecuteHttpRequest(request);
                 }
@@ -183,66 +180,12 @@ namespace IO.Ably
 
         internal AblyRequest CreateGetRequest(string path, ChannelOptions options = null)
         {
-            return new AblyRequest(path, HttpMethod.Get, Protocol) {ChannelOptions = options};
+            return new AblyRequest(path, HttpMethod.Get, Protocol) { ChannelOptions = options };
         }
 
         internal AblyRequest CreatePostRequest(string path, ChannelOptions options = null)
         {
-            return new AblyRequest(path, HttpMethod.Post, Protocol) {ChannelOptions = options};
-        }
-
-        IRestChannel IRestChannels.this[string name] => Channels.Get(name);
-
-        IRestChannel IRestChannels.Get(string name)
-        {
-            return Channels.Get(name, null);
-        }
-
-        IRestChannel IRestChannels.Get(string name, ChannelOptions options)
-        {
-            if (name.IsEmpty())
-                throw new ArgumentNullException(nameof(name), "Empty channel name");
-
-            lock (_channelLock)
-            {
-                var channel = RestChannels.FirstOrDefault(x => x.Name.EqualsTo(name)) as RestChannel;
-                if (channel == null)
-                {
-                    var channelOptions = options ?? Options.ChannelDefaults;
-                    channel = new RestChannel(this, name, channelOptions);
-                    RestChannels.Add(channel);
-                }
-                else
-                {
-                    if (options != null &&
-                        Equals(channel.Options, options) == false)
-                    {
-                        channel.Options = options;
-                    }
-                }
-                return channel;
-            }
-        }
-
-        bool IRestChannels.Release(string name)
-        {
-            var channel = Channels.Get(name);
-            if (channel != null)
-            {
-                lock (_channelLock)
-                    return RestChannels.Remove(channel);
-            }
-            return false;
-        }
-
-        public IEnumerator<IRestChannel> GetEnumerator()
-        {
-            return RestChannels.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
+            return new AblyRequest(path, HttpMethod.Post, Protocol) { ChannelOptions = options };
         }
 
         public async Task<bool> CanConnectToAbly()

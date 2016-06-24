@@ -2,6 +2,7 @@ using System;
 using IO.Ably.Rest;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
+using IO.Ably.Rest;
 
 namespace IO.Ably
 {
@@ -12,17 +13,17 @@ namespace IO.Ably
         IAblyAuth Auth { get; }
         Connection Connection { get; }
         string ClientId { get; }
-        IRealtimeChannels Channels { get; }
+        RealtimeChannels Channels { get; }
         Task<DateTimeOffset> TimeAsync();
     }
 
-    public interface IRestClient : IStatsCommands, IRestChannels
+    public interface IRestClient : IStatsCommands
     {
         /// <summary>Authentication methods</summary>
         IAblyAuth Auth { get; }
 
         /// <summary>Channel methods</summary>
-        IRestChannels Channels { get; }
+        RestChannels Channels { get; }
 
         /// <summary>Retrieves the ably service time</summary>
         /// <returns></returns>

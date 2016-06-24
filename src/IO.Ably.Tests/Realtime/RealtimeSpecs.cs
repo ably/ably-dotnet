@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Rest;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -36,7 +37,7 @@ namespace IO.Ably.Tests
             public void ShouldAllowAccessToChannelsObject()
             {
                 _client.Channels.Should().NotBeNull();
-                (_client.Channels is IRealtimeChannels).Should().BeTrue();
+                (_client.Channels is IChannels<IRealtimeChannel>).Should().BeTrue();
             }
 
             [Fact]

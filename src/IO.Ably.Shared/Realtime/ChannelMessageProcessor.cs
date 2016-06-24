@@ -1,3 +1,4 @@
+using IO.Ably.Rest;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 
@@ -5,10 +6,10 @@ namespace IO.Ably.Realtime
 {
     internal class ChannelMessageProcessor
     {
-        private IRealtimeChannels _channels;
+        private IChannels<IRealtimeChannel> _channels;
         private ConnectionManager _connectionManager;
 
-        public ChannelMessageProcessor(ConnectionManager connectionManager, IRealtimeChannels channels)
+        public ChannelMessageProcessor(ConnectionManager connectionManager, IChannels<IRealtimeChannel> channels)
         {
             _connectionManager = connectionManager;
             _channels = channels;
@@ -25,7 +26,7 @@ namespace IO.Ably.Realtime
             if (protocolMessage.channel.IsEmpty())
                 return;
 
-            var channel = _channels.ContainsChannel(protocolMessage.channel) ? GetChannel(protocolMessage.channel) : null;
+            var channel = _channels.Exists(protocolMessage.channel) ? GetChannel(protocolMessage.channel) : null;
             if (channel == null)
             {
                 Logger.Warning($"Message received {protocolMessage} for a channel that does not exist {protocolMessage.channel}");

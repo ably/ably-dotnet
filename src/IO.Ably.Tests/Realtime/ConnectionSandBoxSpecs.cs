@@ -313,18 +313,19 @@ namespace IO.Ably.Tests.Realtime
                 errors.Add(args.Reason);
             };
 
-            await client.Auth.AuthoriseAsync(new TokenParams() { Ttl = TimeSpan.FromSeconds(2) });
-            var channel = client.Get("test");
+            await client.Auth.AuthoriseAsync(new TokenParams() { Ttl = TimeSpan.FromSeconds(10) });
+            var channel = client.Channels.Get("test");
             int count = 0;
             while (true)
             {
                 count++;
                 channel.Publish("test", "test");
-                await Task.Delay(1000);
+                await Task.Delay(3000);
                 if (count == 10)
                     break;
             }
-            
+
+            stateChanges.Count(x => x == ConnectionStateType.Connected).Should().BeGreaterThan(2);
             client.Connection.State.Should().Be(ConnectionStateType.Connected);
         }
 

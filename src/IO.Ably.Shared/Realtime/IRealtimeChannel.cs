@@ -10,7 +10,7 @@ namespace IO.Ably.Realtime
         ChannelState State { get; }
         string Name { get; }
         Presence Presence { get; }
-        ChannelOptions Options { get; set; }
+        ChannelOptions Options { get; }
         ErrorInfo Reason { get; }
         event EventHandler<ChannelStateChangedEventArgs> StateChanged;
         event EventHandler<ChannelErrorEventArgs> Error;

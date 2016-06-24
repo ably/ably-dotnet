@@ -52,7 +52,7 @@ namespace IO.Ably.Tests.GithubSamples
             var realtime = new AblyRealtime(new ClientOptions(placeholderKey) { AutoConnect = false });
             var channel = realtime.Channels.Get("test");
             //or
-            var channel2 = realtime.Get("shortcut");
+            var channel2 = realtime.Channels.Get("shortcut");
 
             channel.Subscribe(message =>
             {
@@ -81,7 +81,7 @@ namespace IO.Ably.Tests.GithubSamples
             var result = await channel.PublishAsync("greeting", "Hello World!");
 
             var secret = Crypto.GetRandomKey();
-            var encryptedChannel = realtime.Get("encrypted", new ChannelOptions(secret));
+            var encryptedChannel = realtime.Channels.Get("encrypted", new ChannelOptions(secret));
             encryptedChannel.Subscribe(message =>
             {
                 var data = message.data; // sensitive data (encrypted before published)
@@ -93,7 +93,7 @@ namespace IO.Ably.Tests.GithubSamples
         public async Task ChannelHistory()
         {
             var realtime = new AblyRealtime(placeholderKey);
-            var channel = realtime.Get("test");
+            var channel = realtime.Channels.Get("test");
             var history = await channel.HistoryAsync();
             var firstMessage = history.FirstOrDefault();
             //loop through current history page
@@ -134,7 +134,7 @@ namespace IO.Ably.Tests.GithubSamples
             {
                 await channel.PublishAsync("name", "data");
             }
-            catch (AblyException ablyError)
+            catch (AblyException)
             {
                 // Log error
             }

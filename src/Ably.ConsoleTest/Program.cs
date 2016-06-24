@@ -16,7 +16,7 @@ namespace IO.Ably.ConsoleTest
                 //Rest.Test().Wait();
                 var client = Realtime.Test();
                 client.Connect(); 
-                var channel = client.Get("testchannel0");
+                var channel = client.Channels.Get("testchannel0");
                 channel.Attach();
                 channel.Presence.Subscribe(Presence_MessageReceived2);
                 channel.Presence.EnterClient("clientid1", "mydata");
