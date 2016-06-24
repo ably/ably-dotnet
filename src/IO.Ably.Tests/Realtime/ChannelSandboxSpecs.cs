@@ -27,11 +27,11 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "test");
 
-            var channel = client.Channels.Get("test");
+            var channel = client.Channels.Get("test" + protocol);
 
             await channel.Presence.Enter(new [] {"test", "best"});
 
-            var presence = channel.Presence.Get();
+            var presence = await channel.Presence.GetAsync();
 
             presence.Should().HaveCount(1);
         }
@@ -40,8 +40,6 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         public async Task Presence_HasCorrectTimeStamp(Protocol protocol)
         {
-            Logger.LogLevel =LogLevel.Debug;
-                 
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "presence-timestamp-test");
 
             var channel = client.Channels.Get("test");

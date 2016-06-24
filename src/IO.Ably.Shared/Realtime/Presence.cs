@@ -49,10 +49,11 @@ namespace IO.Ably.Realtime
         /// <param name="clientId"></param>
         /// <param name="connectionId"></param>
         /// <returns></returns>
-        public IEnumerable<PresenceMessage> Get(bool waitForSync = true, string clientId = "", string connectionId = "")
+        public Task<IEnumerable<PresenceMessage>> GetAsync(bool waitForSync = true, string clientId = "", string connectionId = "")
         {
             //TODO: waitForSync is not implemented yet
-            return presence.Values.Where(x => (clientId.IsEmpty() || x.clientId == clientId) && (connectionId.IsEmpty() || x.connectionId == connectionId));
+            var result = presence.Values.Where(x => (clientId.IsEmpty() || x.clientId == clientId) && (connectionId.IsEmpty() || x.connectionId == connectionId));
+            return Task.FromResult(result);
         }
 
         public void Subscribe(Action<PresenceMessage> handler)
