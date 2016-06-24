@@ -18,6 +18,12 @@ namespace IO.Ably
         [JsonProperty("intervalId")]
         public string IntervalId { get; set; }
 
+        [JsonProperty("intervalGranularity")]
+        public StatsINtervalGranularity IntervalGranularity { get; set; }
+
+        [JsonProperty("intervalTime")]
+        public DateTimeOffset IntervalTime { get; set; }
+
         public DateTimeOffset Interval => DateTimeOffset.ParseExact(IntervalId, "yyyy-MM-dd:HH:mm", CultureInfo.InvariantCulture);
 
         public Stats()
@@ -127,5 +133,13 @@ namespace IO.Ably
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public double Refused { get; set; }
+    }
+
+    public enum StatsINtervalGranularity
+    {
+        Minute,
+        Hour,
+        Day,
+        Month
     }
 }
