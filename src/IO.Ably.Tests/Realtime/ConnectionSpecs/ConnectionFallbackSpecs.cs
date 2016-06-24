@@ -68,7 +68,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             List<ConnectionStateType> states = new List<ConnectionStateType>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
-                states.Add(args.CurrentState);
+                states.Add(args.Current);
             };
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
@@ -89,7 +89,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             List<ConnectionStateType> states = new List<ConnectionStateType>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
-                states.Add(args.CurrentState);
+                states.Add(args.Current);
             };
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
@@ -110,7 +110,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             List<ConnectionStateType> states = new List<ConnectionStateType>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
-                states.Add(args.CurrentState);
+                states.Add(args.Current);
             };
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
@@ -164,7 +164,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             List<ConnectionStateType> states = new List<ConnectionStateType>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
-                states.Add(args.CurrentState);
+                states.Add(args.Current);
             };
 
             List<string> retryHosts = new List<string>();
@@ -208,7 +208,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             List<ConnectionStateType> states = new List<ConnectionStateType>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
-                states.Add(args.CurrentState);
+                states.Add(args.Current);
             };
 
             List<string> retryHosts = new List<string>();

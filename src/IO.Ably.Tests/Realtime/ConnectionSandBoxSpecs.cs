@@ -37,7 +37,7 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 args.Should().BeOfType<ConnectionStateChangedEventArgs>();
-                states.Add(args.CurrentState);
+                states.Add(args.Current);
             };
 
             client.Connect();
@@ -61,7 +61,7 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 args.Should().BeOfType<ConnectionStateChangedEventArgs>();
-                states.Add(args.CurrentState);
+                states.Add(args.Current);
             };
             client.Close();
 
@@ -157,7 +157,7 @@ namespace IO.Ably.Tests.Realtime
             await WaitForState(client, ConnectionStateType.Failed);
 
             error.Should().NotBeNull();
-            client.Connection.Reason.Should().BeSameAs(error);
+            client.Connection.ErrorReason.Should().BeSameAs(error);
         }
 
         [Theory]
@@ -206,7 +206,7 @@ namespace IO.Ably.Tests.Realtime
             client.Connect();
 
             await WaitForState(client, ConnectionStateType.Disconnected);
-            client.Connection.Reason.Should().NotBeNull();
+            client.Connection.ErrorReason.Should().NotBeNull();
         }
 
         [Theory]
@@ -283,7 +283,7 @@ namespace IO.Ably.Tests.Realtime
             });
             client.Connection.InternalStateChanged += (sender, args) =>
             {
-                if (args.CurrentState == ConnectionStateType.Connected)
+                if (args.Current == ConnectionStateType.Connected)
                 {
                     args.Reason.Should().NotBeNull();
                 }
@@ -291,7 +291,7 @@ namespace IO.Ably.Tests.Realtime
             client.Connect();
 
             await WaitForState(client, ConnectionStateType.Connected, TimeSpan.FromSeconds(10));
-            client.Connection.Reason.code.Should().Be(80008);
+            client.Connection.ErrorReason.code.Should().Be(80008);
         }
 
         [Theory]
@@ -309,7 +309,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.Connection.InternalStateChanged += (sender, args) =>
             {
-                stateChanges.Add(args.CurrentState);
+                stateChanges.Add(args.Current);
                 errors.Add(args.Reason);
             };
 

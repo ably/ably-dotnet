@@ -84,8 +84,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             renewTokenCalled.Should().BeFalse();
             client.Connection.State.Should().Be(ConnectionStateType.Failed);
-            client.Connection.Reason.Should().NotBeNull();
-            client.Connection.Reason.code.Should().Be(_tokenErrorCode);
+            client.Connection.ErrorReason.Should().NotBeNull();
+            client.Connection.ErrorReason.code.Should().Be(_tokenErrorCode);
         }
 
         [Fact]
@@ -110,8 +110,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
             client.Connection.State.Should().Be(ConnectionStateType.Failed);
-            client.Connection.Reason.Should().NotBeNull();
-            client.Connection.Reason.code.Should().Be(123);
+            client.Connection.ErrorReason.Should().NotBeNull();
+            client.Connection.ErrorReason.code.Should().Be(123);
         }
 
         [Fact]
@@ -140,7 +140,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             renewCount.Should().Be(1);
             client.Connection.State.Should().Be(ConnectionStateType.Failed);
-            client.Connection.Reason.Should().NotBeNull();
+            client.Connection.ErrorReason.Should().NotBeNull();
         }
 
         [Fact]
@@ -160,7 +160,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.Connect();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
-                args.CurrentState.Should().Be(ConnectionStateType.Disconnected);
+                args.Current.Should().Be(ConnectionStateType.Disconnected);
                 args.RetryIn.Should().Be(options.DisconnectedRetryTimeout);
                 args.Reason.Should().NotBeNull();
             };
@@ -201,10 +201,10 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             client.Connection.State.Should().Be(ConnectionStateType.Suspended);
 
-            stateChanges.Select(x => x.CurrentState).Distinct()
+            stateChanges.Select(x => x.Current).Distinct()
                 .ShouldBeEquivalentTo(new[] { ConnectionStateType.Connecting, ConnectionStateType.Disconnected, ConnectionStateType.Suspended, });
             int numberOfAttemps = (int)Math.Floor(Defaults.ConnectionStateTtl.TotalSeconds / 30);
-            stateChanges.Count(x => x.CurrentState == ConnectionStateType.Connecting).Should().Be(numberOfAttemps);
+            stateChanges.Count(x => x.Current == ConnectionStateType.Connecting).Should().Be(numberOfAttemps);
         }
 
         [Fact]

@@ -41,7 +41,7 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 args.Should().BeOfType<ConnectionStateChangedEventArgs>();
-                states.Add(args.CurrentState);
+                states.Add(args.Current);
             };
 
             client.Connect();
@@ -67,7 +67,7 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 args.Should().BeOfType<ConnectionStateChangedEventArgs>();
-                states.Add(args.CurrentState);
+                states.Add(args.Current);
             };
             LastCreatedTransport.SendAction = message =>
             {

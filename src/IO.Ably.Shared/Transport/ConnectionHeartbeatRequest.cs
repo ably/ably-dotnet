@@ -84,7 +84,7 @@ namespace IO.Ably.Transport
 
         private void OnInternalStateChanged(object sender, ConnectionStateChangedEventArgs e)
         {
-            if (e.CurrentState != ConnectionStateType.Connected)
+            if (e.Current != ConnectionStateType.Connected)
             {
                 FinishRequest(default(TimeSpan), DefaultError);
             }

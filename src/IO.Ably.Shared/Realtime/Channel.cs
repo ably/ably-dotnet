@@ -69,7 +69,7 @@ namespace IO.Ably.Realtime
 
         private void InternalOnInternalStateChanged(object sender, ConnectionStateChangedEventArgs args)
         {
-            switch (args.CurrentState)
+            switch (args.Current)
             {
                 case ConnectionStateType.Closed:
                     if (State == ChannelState.Attached || State == ChannelState.Attaching)

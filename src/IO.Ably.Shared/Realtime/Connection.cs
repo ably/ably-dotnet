@@ -65,7 +65,7 @@ namespace IO.Ably.Realtime
         ///     message and, in the failed state in particular, provides diagnostic
         ///     error information.
         /// </summary>
-        public ErrorInfo Reason { get; private set; }
+        public ErrorInfo ErrorReason { get; private set; }
 
         public string Host
         {
@@ -129,8 +129,8 @@ namespace IO.Ably.Realtime
             var oldState = ConnectionState.State;
             var newState = state.State;
             ConnectionState = state;
-            Reason = state.Error;
-            var stateArgs = new ConnectionStateChangedEventArgs(oldState, newState, state.RetryIn, Reason);
+            ErrorReason = state.Error;
+            var stateArgs = new ConnectionStateChangedEventArgs(oldState, newState, state.RetryIn, ErrorReason);
 
             var internalHandlers = Volatile.Read(ref InternalStateChanged); //Make sure we get all the subscribers on all threads
             var externalHandlers = Volatile.Read(ref ConnectionStateChanged); //Make sure we get all the subscribers on all threads

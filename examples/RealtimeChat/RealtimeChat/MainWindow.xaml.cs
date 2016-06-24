@@ -87,7 +87,7 @@ namespace RealtimeChat
 
         private void connection_ConnectionStateChanged(object sender, ConnectionStateChangedEventArgs e)
         {
-            outputBox.Items.Add(string.Format("Connection: {0}", e.CurrentState));
+            outputBox.Items.Add(string.Format("Connection: {0}", e.Current));
         }
 
         private void channel_ChannelStateChanged(object sender, ChannelStateChangedEventArgs e)

@@ -26,7 +26,7 @@ namespace IO.Ably.Tests.GithubSamples
             var realtime = new AblyRealtime(placeholderKey);
             realtime.Connection.ConnectionStateChanged += (s, args) =>
             {
-                if (args.CurrentState == ConnectionStateType.Connected)
+                if (args.Current == ConnectionStateType.Connected)
                 {
                     // Do stuff
                 }
@@ -40,8 +40,8 @@ namespace IO.Ably.Tests.GithubSamples
             realtime.Connect();
             realtime.Connection.ConnectionStateChanged += (s, args) =>
             {
-                var currentState = args.CurrentState; //Current state the connection transitioned to
-                var previousState = args.PreviousState; // Previous state
+                var currentState = args.Current; //Current state the connection transitioned to
+                var previousState = args.Previous; // Previous state
                 var error = args.Reason; // If the connection errored the Reason object will be populated.
             };
         }

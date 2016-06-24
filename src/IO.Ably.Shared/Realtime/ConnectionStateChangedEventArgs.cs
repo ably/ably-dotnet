@@ -13,15 +13,15 @@ namespace IO.Ably.Realtime
         public ConnectionStateChangedEventArgs(ConnectionStateType previous, ConnectionStateType current, TimeSpan? retryIn = null,
             ErrorInfo reason = null)
         {
-            PreviousState = previous;
-            CurrentState = current;
+            Previous = previous;
+            Current = current;
             RetryIn = retryIn;
             Reason = reason;
         }
 
-        public ConnectionStateType PreviousState { get; }
+        public ConnectionStateType Previous { get; }
 
-        public ConnectionStateType CurrentState { get; }
+        public ConnectionStateType Current { get; }
 
         public TimeSpan? RetryIn { get;  }
 

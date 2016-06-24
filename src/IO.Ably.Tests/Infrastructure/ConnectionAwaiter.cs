@@ -37,7 +37,7 @@ namespace IO.Ably.Tests
 
         private void conn_StateChanged(object sender, ConnectionStateChangedEventArgs e)
         {
-            if (_awaitedStates.Contains(e.CurrentState))
+            if (_awaitedStates.Contains(e.Current))
             {
                 Logger.Debug($"[{_id}] Desired state was reached.");
                 RemoveListener();

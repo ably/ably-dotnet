@@ -57,7 +57,7 @@ namespace IO.Ably.Tests.Realtime
                 if (args.HasError)
                     errors.Add(args.Reason);
 
-                states.Add(args.CurrentState);
+                states.Add(args.Current);
             };
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { error = _tokenErrorInfo });
@@ -86,8 +86,8 @@ namespace IO.Ably.Tests.Realtime
                 if (args.HasError)
                     errors.Add(args.Reason);
 
-                states.Add(args.CurrentState);
-                if (args.CurrentState == ConnectionStateType.Connecting)
+                states.Add(args.Current);
+                if (args.Current == ConnectionStateType.Connecting)
                 {
                     client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
                 }
@@ -113,7 +113,7 @@ namespace IO.Ably.Tests.Realtime
                 if (args.HasError)
                     errors.Add(args.Reason);
 
-                states.Add(args.CurrentState);
+                states.Add(args.Current);
             };
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
@@ -145,7 +145,7 @@ namespace IO.Ably.Tests.Realtime
                 if (args.HasError)
                     errors.Add(args.Reason);
 
-                states.Add(args.CurrentState);
+                states.Add(args.Current);
             };
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
@@ -182,7 +182,7 @@ namespace IO.Ably.Tests.Realtime
                 if (args.HasError)
                     errors.Add(args.Reason);
 
-                states.Add(args.CurrentState);
+                states.Add(args.Current);
             };
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
@@ -214,8 +214,8 @@ namespace IO.Ably.Tests.Realtime
                 if (args.HasError)
                     errors.Add(args.Reason);
 
-                states.Add(args.CurrentState);
-                if (args.CurrentState == ConnectionStateType.Connecting)
+                states.Add(args.Current);
+                if (args.Current == ConnectionStateType.Connecting)
                 {
                     client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
                 }
