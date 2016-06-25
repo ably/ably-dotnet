@@ -32,10 +32,10 @@ namespace IO.Ably.ConsoleTest
 
             PaginatedResult<Message> history = await channel.HistoryAsync();
 
-            if (history.Count <= 0)
+            if (history.Items.Count <= 0)
                 throw new ApplicationException("Message lost: not on the history");
 
-            Message msg = history.First();
+            Message msg = history.Items.First();
             var tsNow = DateTimeOffset.UtcNow;
             var tsHistory = msg.timestamp.Value;
 

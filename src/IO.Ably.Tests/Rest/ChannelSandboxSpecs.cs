@@ -56,7 +56,7 @@ namespace IO.Ably.Tests.Rest
             await channel.PublishAsync(message);
 
             var result = await channel.HistoryAsync();
-            result.First().clientId.Should().Be("123");
+            result.Items.First().clientId.Should().Be("123");
         }
 
         //RSL1g
@@ -71,7 +71,7 @@ namespace IO.Ably.Tests.Rest
             await channel.PublishAsync(message);
 
             var result = await channel.HistoryAsync();
-            result.First().clientId.Should().Be("999");
+            result.Items.First().clientId.Should().Be("999");
         }
 
         [Theory]
@@ -85,7 +85,7 @@ namespace IO.Ably.Tests.Rest
             await channel.PublishAsync(message);
 
             var result = await channel.HistoryAsync();
-            result.First().clientId.Should().Be("999");
+            result.Items.First().clientId.Should().Be("999");
         }
 
         [Theory]
@@ -124,7 +124,7 @@ namespace IO.Ably.Tests.Rest
                 var encoding = (string)encoded["encoding"];
                 var decodedData = DecodeData((string)encoded["data"], encoding);
                 await channel.PublishAsync((string)encoded["name"], decodedData);
-                var message = (await channel.HistoryAsync()).First();
+                var message = (await channel.HistoryAsync()).Items.First();
                 if (message.data is byte[])
                     (message.data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
                 else if (encoding == "json")
@@ -153,7 +153,7 @@ namespace IO.Ably.Tests.Rest
                 var encoding = (string)encoded["encoding"];
                 var decodedData = DecodeData((string)encoded["data"], encoding);
                 await channel.PublishAsync((string)encoded["name"], decodedData);
-                var message = (await channel.HistoryAsync()).First();
+                var message = (await channel.HistoryAsync()).Items.First();
                 if (message.data is byte[])
                     (message.data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
                 else if (encoding == "json")
@@ -180,13 +180,13 @@ namespace IO.Ably.Tests.Rest
 
             //Assert
             var history = await channel.HistoryAsync(new DataRequestQuery() { Limit = 10 });
-            history.Should().HaveCount(10);
+            history.Items.Should().HaveCount(10);
             history.HasNext.Should().BeTrue();
-            history.First().name.Should().Be("name19");
+            history.Items.First().name.Should().Be("name19");
 
             var secondPage = await channel.HistoryAsync(history.NextQuery);
-            secondPage.Should().HaveCount(10);
-            secondPage.First().name.Should().Be("name9");
+            secondPage.Items.Should().HaveCount(10);
+            secondPage.Items.First().name.Should().Be("name9");
         }
 
         [Theory]
@@ -227,7 +227,7 @@ namespace IO.Ably.Tests.Rest
                 await channel1.PublishAsync("test", payload);
 
                 var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(true));
-                var message = (await channel2.HistoryAsync()).First();
+                var message = (await channel2.HistoryAsync()).Items.First();
 
                 loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
                 message.encoding.Should().Be("utf-8/cipher+aes-128-cbc");
@@ -250,7 +250,7 @@ namespace IO.Ably.Tests.Rest
                 await channel1.PublishAsync("test", payload);
 
                 var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(true, new CipherParams(Crypto.GetRandomKey(CipherMode.CBC, 128))));
-                var message = (await channel2.HistoryAsync()).First();
+                var message = (await channel2.HistoryAsync()).Items.First();
 
                 loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
                 loggerSink.LastMessage.Should().Contain("Error decrypting payload");

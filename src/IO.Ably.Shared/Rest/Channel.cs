@@ -89,7 +89,7 @@ namespace IO.Ably.Rest
             if (connectionId.IsNotEmpty())
                 request.QueryParameters.Add("connectionId", connectionId);
 
-            return _ablyRest.ExecuteRequest<PaginatedResult<PresenceMessage>>(request);
+            return _ablyRest.ExecutePaginatedRequest(request, Presence.GetAsync);
         }
 
         Task<PaginatedResult<PresenceMessage>> IPresence.GetAsync(DataRequestQuery query)
@@ -103,7 +103,7 @@ namespace IO.Ably.Rest
 
             var request = _ablyRest.CreateGetRequest(_basePath + "/presence", Options);
             request.AddQueryParameters(query.GetParameters());
-            return _ablyRest.ExecuteRequest<PaginatedResult<PresenceMessage>>(request);
+            return _ablyRest.ExecutePaginatedRequest(request, Presence.GetAsync);
         }
         
         /// <summary>
@@ -127,7 +127,7 @@ namespace IO.Ably.Rest
 
             var request = _ablyRest.CreateGetRequest(_basePath + "/presence/history", Options);
             request.AddQueryParameters(query.GetParameters());
-            return _ablyRest.ExecuteRequest<PaginatedResult<PresenceMessage>>(request);
+            return _ablyRest.ExecutePaginatedRequest(request, Presence.HistoryAsync);
         }
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace IO.Ably.Rest
 
             request.AddQueryParameters(query.GetParameters());
 
-            return _ablyRest.ExecuteRequest<PaginatedResult<Message>>(request);
+            return _ablyRest.ExecutePaginatedRequest(request, HistoryAsync);
         }
     }
 }

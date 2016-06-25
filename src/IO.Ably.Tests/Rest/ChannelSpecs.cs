@@ -380,8 +380,8 @@ namespace IO.Ably.Tests.Rest
                 var result = await channel.HistoryAsync();
 
                 //Assert
-                Assert.NotEmpty(result);
-                var firstMessage = result.First();
+                Assert.NotEmpty(result.Items);
+                var firstMessage = result.Items.First();
                 Assert.Equal(message.data, firstMessage.data);
             }
 

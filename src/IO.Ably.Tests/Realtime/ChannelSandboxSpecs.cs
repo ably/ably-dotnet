@@ -523,10 +523,10 @@ namespace IO.Ably.Tests.Realtime
             var history = await historyChannel.HistoryAsync(new DataRequestQuery() { Direction = QueryDirection.Forwards});
 
             history.Should().BeOfType<PaginatedResult<Message>>();
-            history.Should().HaveCount(10);
+            history.Items.Should().HaveCount(10);
             for (int i = 0; i < 10; i++)
             {
-                var message = history[i];
+                var message = history.Items[i];
                 message.name.Should().Be("name:" + (i + 1));
                 message.data.ToString().Should().Be("value:" + (i + 1));
             }

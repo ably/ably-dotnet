@@ -95,9 +95,9 @@ namespace IO.Ably.Tests.GithubSamples
             var realtime = new AblyRealtime(placeholderKey);
             var channel = realtime.Channels.Get("test");
             var history = await channel.HistoryAsync();
-            var firstMessage = history.FirstOrDefault();
+            var firstMessage = history.Items.FirstOrDefault();
             //loop through current history page
-            foreach (var message in history)
+            foreach (var message in history.Items)
             {
                 //Do something with message
             }
@@ -109,9 +109,9 @@ namespace IO.Ably.Tests.GithubSamples
             }
 
             var presenceHistory = await channel.Presence.HistoryAsync();
-            var firstPresenceMessage = presenceHistory.FirstOrDefault();
+            var firstPresenceMessage = presenceHistory.Items.FirstOrDefault();
             //loop through the presence messages
-            foreach (var presence in presenceHistory)
+            foreach (var presence in presenceHistory.Items)
             {
                 //Do something with the messages
             }
@@ -141,25 +141,25 @@ namespace IO.Ably.Tests.GithubSamples
 
             //History
             var historyPage = await channel.HistoryAsync();
-            var firstMessage = historyPage.FirstOrDefault();
-            foreach (var message in historyPage)
+            var firstMessage = historyPage.Items.FirstOrDefault();
+            foreach (var message in historyPage.Items)
             {
                 //Do something with each message
             }
             //get next page if there is one
             if (historyPage.HasNext)
             {
-                var nextPage = await channel.HistoryAsync(historyPage.NextQuery);
+                var nextPage = await historyPage.NextAsync();
             }
 
             //Current presence
             var presence = await channel.Presence.GetAsync();
-            var first = presence.FirstOrDefault();
+            var first = presence.Items.FirstOrDefault();
             var clientId = first.clientId; //clientId of the first member present
             if (presence.HasNext)
             {
                 var nextPage = await channel.Presence.GetAsync(presence.NextQuery);
-                foreach (var presenceMessage in nextPage)
+                foreach (var presenceMessage in nextPage.Items)
                 {
                     //do stuff with next page presence messages
                 }
@@ -167,8 +167,8 @@ namespace IO.Ably.Tests.GithubSamples
 
             // Presence history
             var presenceHistory = await channel.Presence.HistoryAsync();
-            var firstHistoryMessage = presenceHistory.FirstOrDefault();
-            foreach (var presenceMessage in presenceHistory)
+            var firstHistoryMessage = presenceHistory.Items.FirstOrDefault();
+            foreach (var presenceMessage in presenceHistory.Items)
             {
                 // Do stuff with presence messages
             }
@@ -176,7 +176,7 @@ namespace IO.Ably.Tests.GithubSamples
             if (presenceHistory.HasNext)
             {
                 var nextPage = await channel.Presence.HistoryAsync(presenceHistory.NextQuery);
-                foreach (var presenceMessage in nextPage)
+                foreach (var presenceMessage in nextPage.Items)
                 {
                     // Do stuff with next page messages
                 }
@@ -187,7 +187,7 @@ namespace IO.Ably.Tests.GithubSamples
             var encryptedChannel = client.Channels.Get("encryptedChannel", new ChannelOptions(secret));
             await encryptedChannel.PublishAsync("name", "sensitive data"); //Data will be encrypted before publish
             var history = await encryptedChannel.HistoryAsync();
-            var data = history.First().data;
+            var data = history.Items.First().data;
             // "sensitive data" the message will be automatically decrypted once received
 
             //Generate a token
@@ -199,7 +199,7 @@ namespace IO.Ably.Tests.GithubSamples
 
             //Stats
             var stats = await client.StatsAsync();
-            var firstItem = stats.First();
+            var firstItem = stats.Items.First();
             if (stats.HasNext)
             {
                 var nextPage = await client.StatsAsync(stats.NextQuery);

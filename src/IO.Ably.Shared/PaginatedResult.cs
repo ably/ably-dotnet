@@ -1,21 +1,26 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
 
 namespace IO.Ably
 {
-    public class PaginatedResult<T> : List<T>
+    public class PaginatedResult<T> where T : class
     {
         private readonly int _limit;
+        private Func<DataRequestQuery, Task<PaginatedResult<T>>> ExecuteDataQueryFunc { get; }
+        public List<T> Items { get; set; } = new List<T>();
 
-        public PaginatedResult() : this(null, Defaults.QueryLimit)
+        private PaginatedResult()
         {
-
+            
         }
 
-        public PaginatedResult(HttpHeaders headers, int limit)
+        internal PaginatedResult(HttpHeaders headers, int limit, Func<DataRequestQuery, Task<PaginatedResult<T>>> executeDataQueryFunc)
         {
             _limit = limit;
-            if (null != headers)
+            ExecuteDataQueryFunc = executeDataQueryFunc;
+            if (headers != null)
             {
                 CurrentQuery = DataRequestQuery.GetLinkQuery(headers, DataRequestLinkType.Current);
                 NextQuery = DataRequestQuery.GetLinkQuery(headers, DataRequestLinkType.Next);
@@ -23,7 +28,24 @@ namespace IO.Ably
             }
         }
 
-        public bool HasNext => null != NextQuery && NextQuery.IsEmpty == false;
+        public bool HasNext => NextQuery != null && NextQuery.IsEmpty == false;
+
+        public Task<PaginatedResult<T>> NextAsync()
+        {
+            if (HasNext && ExecuteDataQueryFunc != null)
+                return ExecuteDataQueryFunc(NextQuery);
+
+            return Task.FromResult(new PaginatedResult<T>());
+        }
+
+        public Task<PaginatedResult<T>> FirstAsync()
+        {
+            if (FirstQuery != null && FirstQuery.IsEmpty == false && ExecuteDataQueryFunc != null)
+                return ExecuteDataQueryFunc(FirstQuery);
+
+            return Task.FromResult(new PaginatedResult<T>());
+        }
+
 
         public DataRequestQuery NextQuery { get; }
         public DataRequestQuery FirstQuery { get; private set; }

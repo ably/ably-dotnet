@@ -124,7 +124,23 @@ namespace IO.Ably
                 if (response.Body != null)
                     Logger.Debug("Raw response (base64):" + response.Body.ToBase64());
             }
+
             return MessageHandler.ParseResponse<T>(request, response);
+        }
+
+        internal async Task<PaginatedResult<T>> ExecutePaginatedRequest<T>(AblyRequest request, Func<DataRequestQuery, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
+        {
+            var response = await ExecuteRequest(request);
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Response received. Status: " + response.StatusCode);
+                Logger.Debug("Content type: " + response.ContentType);
+                Logger.Debug("Encoding: " + response.Encoding);
+                if (response.Body != null)
+                    Logger.Debug("Raw response (base64):" + response.Body.ToBase64());
+            }
+
+            return MessageHandler.ParsePaginatedResponse<T>(request, response, executeDataQueryRequest);
         }
 
         /// <summary>/// Retrieves the ably service time/// </summary>
@@ -175,7 +191,7 @@ namespace IO.Ably
 
             request.AddQueryParameters(query.GetParameters());
 
-            return ExecuteRequest<PaginatedResult<Stats>>(request);
+            return ExecutePaginatedRequest(request, StatsAsync);
         }
 
         internal AblyRequest CreateGetRequest(string path, ChannelOptions options = null)

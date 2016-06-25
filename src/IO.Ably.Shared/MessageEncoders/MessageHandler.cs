@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Types;
@@ -175,24 +176,40 @@ namespace IO.Ably.MessageEncoders
         /// <param name="response"></param>
         /// <param name="funcParse">Function to parse HTTP response into a sequence of items.</param>
         /// <returns></returns>
-        internal static PaginatedResult<T> Paginated<T>(AblyRequest request, AblyResponse response, Func<AblyResponse, ChannelOptions, IEnumerable<T>> funcParse)
+        internal static PaginatedResult<T> Paginated<T>(AblyRequest request, AblyResponse response, Func<DataRequestQuery, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
         {
-            PaginatedResult<T> res = new PaginatedResult<T>(response.Headers, GetLimit(request));
-            res.AddRange(funcParse(response, request.ChannelOptions));
+            PaginatedResult<T> res = new PaginatedResult<T>(response.Headers, GetLimit(request), executeDataQueryRequest);
             return res;
+        }
+
+        public PaginatedResult<T> ParsePaginatedResponse<T>(AblyRequest request, AblyResponse response, Func<DataRequestQuery, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
+        {
+            LogResponse(response);
+            var result = Paginated(request, response, executeDataQueryRequest);
+            if (typeof(T) == typeof(Message))
+            {
+                var typedResult = result as PaginatedResult<Message>;
+                typedResult.Items.AddRange(ParseMessagesResponse(response, request.ChannelOptions));
+            }
+
+            if (typeof(T) == typeof(Stats))
+            {
+                var typedResult = result as PaginatedResult<Stats>;
+                typedResult?.Items.AddRange(ParseStatsResponse(response, request.ChannelOptions));
+            }
+
+            if (typeof(T) == typeof(PresenceMessage))
+            {
+                var typedResult = result as PaginatedResult<PresenceMessage>;
+                typedResult.Items.AddRange(ParsePresenceMessages(response, request.ChannelOptions));
+            }
+
+            return result;
         }
 
         public T ParseResponse<T>(AblyRequest request, AblyResponse response) where T : class
         {
             LogResponse(response);
-            if (typeof(T) == typeof(PaginatedResult<Message>))
-                return Paginated(request, response, ParseMessagesResponse) as T;
-
-            if (typeof(T) == typeof(PaginatedResult<Stats>))
-                return Paginated(request, response, ParseStatsResponse) as T;
-
-            if (typeof(T) == typeof(PaginatedResult<PresenceMessage>))
-                return Paginated(request, response, ParsePresenceMessages) as T;
 
             var responseText = response.TextResponse;
             if (_protocol == Protocol.MsgPack)
