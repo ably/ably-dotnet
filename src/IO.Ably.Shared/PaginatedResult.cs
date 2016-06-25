@@ -23,32 +23,32 @@ namespace IO.Ably
             if (headers != null)
             {
                 CurrentQuery = DataRequestQuery.GetLinkQuery(headers, DataRequestLinkType.Current);
-                NextQuery = DataRequestQuery.GetLinkQuery(headers, DataRequestLinkType.Next);
-                FirstQuery = DataRequestQuery.GetLinkQuery(headers, DataRequestLinkType.First);
+                NextDataQuery = DataRequestQuery.GetLinkQuery(headers, DataRequestLinkType.Next);
+                FirstDataQuery = DataRequestQuery.GetLinkQuery(headers, DataRequestLinkType.First);
             }
         }
 
-        public bool HasNext => NextQuery != null && NextQuery.IsEmpty == false;
+        public bool HasNext => NextDataQuery != null && NextDataQuery.IsEmpty == false;
 
         public Task<PaginatedResult<T>> NextAsync()
         {
             if (HasNext && ExecuteDataQueryFunc != null)
-                return ExecuteDataQueryFunc(NextQuery);
+                return ExecuteDataQueryFunc(NextDataQuery);
 
             return Task.FromResult(new PaginatedResult<T>());
         }
 
         public Task<PaginatedResult<T>> FirstAsync()
         {
-            if (FirstQuery != null && FirstQuery.IsEmpty == false && ExecuteDataQueryFunc != null)
-                return ExecuteDataQueryFunc(FirstQuery);
+            if (FirstDataQuery != null && FirstDataQuery.IsEmpty == false && ExecuteDataQueryFunc != null)
+                return ExecuteDataQueryFunc(FirstDataQuery);
 
             return Task.FromResult(new PaginatedResult<T>());
         }
 
 
-        public DataRequestQuery NextQuery { get; }
-        public DataRequestQuery FirstQuery { get; private set; }
+        public DataRequestQuery NextDataQuery { get; }
+        public DataRequestQuery FirstDataQuery { get; private set; }
         public DataRequestQuery CurrentQuery { get; private set; }
     }
 }

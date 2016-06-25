@@ -104,7 +104,7 @@ namespace IO.Ably.Tests.GithubSamples
             //check if next page exists and get it
             if (history.HasNext)
             {
-                var nextPage = await channel.HistoryAsync(history.NextQuery);
+                var nextPage = await history.NextAsync();
                 //Do stuff with next page
             }
 
@@ -118,7 +118,7 @@ namespace IO.Ably.Tests.GithubSamples
             //check if next page exists and get it
             if (presenceHistory.HasNext)
             {
-                var nextPage = await channel.Presence.HistoryAsync(presenceHistory.NextQuery);
+                var nextPage = await presenceHistory.NextAsync();
                 //Continue work with the next page
             }
 
@@ -158,7 +158,7 @@ namespace IO.Ably.Tests.GithubSamples
             var clientId = first.clientId; //clientId of the first member present
             if (presence.HasNext)
             {
-                var nextPage = await channel.Presence.GetAsync(presence.NextQuery);
+                var nextPage = await presence.NextAsync();
                 foreach (var presenceMessage in nextPage.Items)
                 {
                     //do stuff with next page presence messages
@@ -175,7 +175,7 @@ namespace IO.Ably.Tests.GithubSamples
 
             if (presenceHistory.HasNext)
             {
-                var nextPage = await channel.Presence.HistoryAsync(presenceHistory.NextQuery);
+                var nextPage = await presenceHistory.NextAsync();
                 foreach (var presenceMessage in nextPage.Items)
                 {
                     // Do stuff with next page messages
@@ -202,7 +202,7 @@ namespace IO.Ably.Tests.GithubSamples
             var firstItem = stats.Items.First();
             if (stats.HasNext)
             {
-                var nextPage = await client.StatsAsync(stats.NextQuery);
+                var nextPage = await stats.NextAsync();
             }
 
             var time = await client.TimeAsync();

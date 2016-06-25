@@ -351,9 +351,9 @@ namespace IO.Ably.Tests.Rest
                 var result = await channel.HistoryAsync();
 
                 //Assert
-                Assert.NotNull(result.NextQuery);
+                Assert.NotNull(result.NextDataQuery);
                 Assert.NotNull(result.CurrentQuery);
-                Assert.NotNull(result.FirstQuery);
+                Assert.NotNull(result.FirstDataQuery);
             }
 
             [Fact]

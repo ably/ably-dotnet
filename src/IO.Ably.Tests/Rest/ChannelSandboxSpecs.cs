@@ -184,7 +184,7 @@ namespace IO.Ably.Tests.Rest
             history.HasNext.Should().BeTrue();
             history.Items.First().name.Should().Be("name19");
 
-            var secondPage = await channel.HistoryAsync(history.NextQuery);
+            var secondPage = await history.NextAsync();
             secondPage.Items.Should().HaveCount(10);
             secondPage.Items.First().name.Should().Be("name9");
         }
