@@ -40,17 +40,5 @@ namespace IO.Ably
         /// <param name="query">stats query</param>
         /// <returns></returns>
         Task<PaginatedResult<Stats>> StatsAsync(StatsDataRequestQuery query);
-
-        /// <summary>Retrieves the stats for the application based on a custom query. It should be used with <see cref="DataRequestQuery"/>.
-        /// It is mainly because of the way a PaginatedResource defines its queries. For retrieving Stats with special parameters use <see cref="AblyRest.StatsAsync(IO.Ably.StatsDataRequestQuery)"/>
-        /// </summary>
-        /// <example>
-        /// var client = new AblyRest("validkey");
-        /// var stats = client..StatsAsync();
-        /// var nextPage = cliest..StatsAsync(stats.NextQuery);
-        /// </example>
-        /// <param name="query"><see cref="DataRequestQuery"/> and <see cref="StatsDataRequestQuery"/></param>
-        /// <returns></returns>
-        Task<PaginatedResult<Stats>> StatsAsync(DataRequestQuery query);
     }
 }
