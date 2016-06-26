@@ -5,10 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
+using IO.Ably;
 
 namespace IO.Ably.Realtime
 {
-    public sealed class Connection : IDisposable
+    public sealed class Connection : EventEmitter<ConnectionStateType, ConnectionStateChangedEventArgs>, IDisposable
     {
         internal AblyRest RestClient => RealtimeClient.RestClient;
         internal AblyRealtime RealtimeClient { get; }
@@ -25,6 +26,7 @@ namespace IO.Ably.Realtime
 
         internal void Initialise()
         {
+            
             ConnectionManager = new ConnectionManager(this);
             ChannelMessageProcessor = new ChannelMessageProcessor(ConnectionManager, RealtimeClient.Channels);
             ConnectionState = new ConnectionInitializedState(ConnectionManager);
@@ -135,7 +137,19 @@ namespace IO.Ably.Realtime
             var internalHandlers = Volatile.Read(ref InternalStateChanged); //Make sure we get all the subscribers on all threads
             var externalHandlers = Volatile.Read(ref ConnectionStateChanged); //Make sure we get all the subscribers on all threads
             internalHandlers(this, stateArgs);
-            RealtimeClient.NotifyExternalClients(() => externalHandlers(this, stateArgs));
+            RealtimeClient.NotifyExternalClients(() =>
+            {
+                try
+                {
+                    externalHandlers(this, stateArgs);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error("Error notifying Connection state changed handlers", ex);
+                }
+
+                Emit(newState, stateArgs);
+            });
         }
     }
 }
