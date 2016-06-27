@@ -22,7 +22,6 @@ namespace IO.Ably.Transport
         public AblyRest RestClient => Connection.RestClient;
         public MessageHandler Handler => RestClient.MessageHandler;
         public ConnectionStateBase State => Connection.ConnectionState;
-        public TransportState TransportState => Transport.State;
         public ITransport Transport { get; private set; }
         public ClientOptions Options => RestClient.Options;
         public TimeSpan DefaultTimeout => Options.RealtimeRequestTimeout;

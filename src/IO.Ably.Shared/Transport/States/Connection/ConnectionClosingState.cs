@@ -53,7 +53,8 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Task OnAttachToContext()
         {
-            if (Context.TransportState == TransportState.Connected)
+            var transport = Context.Transport;
+            if (transport?.State == TransportState.Connected)
             {
                 Context.SendToTransport(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
                 _timer.Start(TimeSpan.FromMilliseconds(CloseTimeout), OnTimeOut);

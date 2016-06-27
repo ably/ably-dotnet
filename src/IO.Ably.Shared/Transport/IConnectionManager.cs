@@ -69,7 +69,6 @@ namespace IO.Ably.Transport
         TimeSpan RetryTimeout { get; }
         void SendToTransport(ProtocolMessage message);
         Task Execute(Action action);
-        TransportState TransportState { get; }
         ITransport Transport { get; }
         Connection Connection { get; }
         TimeSpan SuspendRetryTimeout { get; }
