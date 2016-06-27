@@ -1,6 +1,6 @@
 # ably-dotnet
 
-[![Build Status](https://travis-ci.org/ably/ably-dotnet.svg?branch=v0.8)](https://travis-ci.org/ably/ably-dotnet)
+[![Build Status](https://travis-ci.org/ably/ably-dotnet.svg?branch=master)](https://travis-ci.org/ably/ably-dotnet)
 
 A .Net client library for [ably.io](https://www.ably.io), the realtime messaging service.
 
@@ -17,10 +17,8 @@ The client library is available as a [nuget package](https://www.nuget.org/packa
 You can install it from the Package Manager Console using this command
 
 ```
-PM> Install-Package ably.io -Pre
+PM> Install-Package ably.io
 ```
-
-The library is production ready. The beta label will be going soon.
 
 ## Using the Realtime API
 
@@ -42,16 +40,16 @@ If you do not have an API key, [sign up for a free API key now](https://www.ably
 
 ### Connection
 
-Connecting and observing connection state changes. By default the library automatically initiallises a connection. 
+Connecting and observing connection state changes. By default the library automatically initialises a connection. 
 
 ```csharp
- realtime.Connection.On(ConnectionState.Connected, args =>
+realtime.Connection.On(ConnectionState.Connected, args =>
 {
     //Do stuff  
 });
 
 ```
-To disable that behaviour set *AutoConnect=false* when initialising the client.
+To disable the default automatic connect behaviour of the library, set `AutoConnect=false` when initialising the client.
 
 ```csharp
 var realtime = new AblyRealtime(new ClientOptions("<api key>") {AutoConnect = false});
@@ -133,10 +131,15 @@ channel.Publish("greeting", "Hello World!", (success, error) =>
 });
 ```
 
-and the async version which if you `await` it will complete when the message has been acknowledged by the ably service:
+and the async version which if you `await` it will complete when the message has been acknowledged by the Ably service:
 
 ```csharp
 var result = await channel.PublishAsync("greeting", "Hello World!");
+//You can check if the message failed
+if (result.IsFailure)
+{
+    var error = result.Error; // The error reason can be accessed as well
+}
 ```
 
 ### Getting channel history
@@ -145,7 +148,6 @@ Calling history returns a paginated list of message. The object is of type `Pagi
 
 ```csharp
 var history = await channel.HistoryAsync();
-var firstMessage = history.Items.FirstOrDefault();
 //loop through current history page
 foreach (var message in history.Items)
 {
@@ -161,7 +163,6 @@ Getting presence history is similar to how message history works. You get back `
 
 ```csharp
 var presenceHistory = await channel.Presence.HistoryAsync();
-var firstPresenceMessage = presenceHistory.Items.FirstOrDefault();
 //loop through the presence messages
 foreach (var presence in presenceHistory.Items)
 {
@@ -223,7 +224,6 @@ catch(AblyException ablyError)
 
 ```csharp
 var historyPage = await channel.HistoryAsync();
-var firstMessage = historyPage.Items.FirstOrDefault();
 foreach (var message in historyPage.Items)
 {
     //Do something with each message
@@ -250,7 +250,6 @@ foreach (var presenceMessage in nextPresencePage.Items)
 ```csharp
 // Presence history
 var presenceHistory = await channel.Presence.HistoryAsync();
-var firstHistoryMessage = presenceHistory.Items.FirstOrDefault();
 foreach (var presenceMessage in presenceHistory.Items)
 {
     // Do stuff with presence messages
