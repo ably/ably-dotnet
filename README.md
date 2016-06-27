@@ -2,9 +2,13 @@
 
 [![Build Status](https://travis-ci.org/ably/ably-dotnet.svg?branch=master)](https://travis-ci.org/ably/ably-dotnet)
 
-This repo contains the ably .NET client library.
+This repo contains the [Ably](https://www.ably.io) .NET client library.
 
-For complete API documentation, see the [ably documentation](https://ably.io/documentation).
+For complete API documentation, see the [Ably documentation](https://www.ably.io/documentation).
+
+## Warning: Pre-release status
+
+This client library's API is subject to change significantly in April 2016. We believe that the current API is unsuitalbe for the modern .NET ecosystem (specifically Xamarin, Mono, and Windows Mobile) and as such we are updating the entire API to use the [async/await Task API for asynchronous .NET APIs](https://msdn.microsoft.com/en-us/library/hh191443.aspx). If you plan on using this client library, please expect a significant breaking change in the next release. [Contact our tech team](https://www.ably.io/contact) if you would like to get an update on the status, would perhaps like to use our WIP API, or have any questions. 
 
 ## Documentation
 
