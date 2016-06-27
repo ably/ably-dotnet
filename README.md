@@ -131,7 +131,7 @@ channel.Publish("greeting", "Hello World!", (success, error) =>
 });
 ```
 
-and the async version which if you `await` it will complete when the message has been acknowledged by the Ably service:
+and the async version which if you `await` it will complete when the message has been acknowledged or rejected by the Ably service:
 
 ```csharp
 var result = await channel.PublishAsync("greeting", "Hello World!");

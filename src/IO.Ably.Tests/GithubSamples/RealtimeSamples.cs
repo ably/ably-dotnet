@@ -92,6 +92,11 @@ namespace IO.Ably.Tests.GithubSamples
             });
 
             var result = await channel.PublishAsync("greeting", "Hello World!");
+            //You can check if the message failed
+            if (result.IsFailure)
+            {
+                var error = result.Error; // The error reason can be accessed as well
+            }
 
             var secret = Crypto.GetRandomKey();
             var encryptedChannel = realtime.Channels.Get("encrypted", new ChannelOptions(secret));
@@ -108,7 +113,6 @@ namespace IO.Ably.Tests.GithubSamples
             var realtime = new AblyRealtime(placeholderKey);
             var channel = realtime.Channels.Get("test");
             var history = await channel.HistoryAsync();
-            var firstMessage = history.Items.FirstOrDefault();
             //loop through current history page
             foreach (var message in history.Items)
             {
@@ -117,7 +121,6 @@ namespace IO.Ably.Tests.GithubSamples
             var nextPage = await history.NextAsync();
 
             var presenceHistory = await channel.Presence.HistoryAsync();
-            var firstPresenceMessage = presenceHistory.Items.FirstOrDefault();
             //loop through the presence messages
             foreach (var presence in presenceHistory.Items)
             {
@@ -144,7 +147,6 @@ namespace IO.Ably.Tests.GithubSamples
 
             //History
             var historyPage = await channel.HistoryAsync();
-            var firstMessage = historyPage.Items.FirstOrDefault();
             foreach (var message in historyPage.Items)
             {
                 //Do something with each message
@@ -164,7 +166,6 @@ namespace IO.Ably.Tests.GithubSamples
 
             // Presence history
             var presenceHistory = await channel.Presence.HistoryAsync();
-            var firstHistoryMessage = presenceHistory.Items.FirstOrDefault();
             foreach (var presenceMessage in presenceHistory.Items)
             {
                 // Do stuff with presence messages
