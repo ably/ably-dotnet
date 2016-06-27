@@ -1,5 +1,22 @@
 # Change Log
 
+## [0.8.3](https://github.com/ably/ably-dotnet/tree/0.8.3) (2016-06-27)
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/v0.8.2-beta...0.8.3)
+
+**Breaking changes**
+
+- `ConnectionStateType` renamed to `ConnectionState`
+- `PaginatedResult<>`. `NextQuery` renamed to `NextDataQuery`. `FirstQuery` -> `FirstDataQuery`
+
+**Implemented enhancements:**
+
+- `PaginatedResult<>` now supports `NextAsync` method which simplifies getting the results for the next page
+- `Connection` and `RealtimeChannel` implement IEventEmitter interface and now match the ably [IDL](http://docs.ably.io/client-lib-development-guide/features/#idl)
+
+**Fixed bugs:**
+
+- NullReferenceException in ConnectionManager.cs [\#72](https://github.com/ably/ably-dotnet/issues/72) 
+
 ## [v0.8.2-beta](https://github.com/ably/ably-dotnet/tree/v0.8.2-beta) (2016-06-10)
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/v0.7.2...v0.8.2-beta)
 
@@ -26,6 +43,7 @@
 **Closed issues:**
 
 - useBinaryProtocol=true memory leak? [\#66](https://github.com/ably/ably-dotnet/issues/66)
+- Collection was modified exception [\#64](https://github.com/ably/ably-dotnet/issues/64)
 - Attaching to a channel fails. [\#62](https://github.com/ably/ably-dotnet/issues/62)
 - Custom AuthUrl gets called twice. [\#58](https://github.com/ably/ably-dotnet/issues/58)
 - Presence timestamp init issue [\#56](https://github.com/ably/ably-dotnet/issues/56)
