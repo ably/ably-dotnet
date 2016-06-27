@@ -21,7 +21,7 @@ namespace IO.Ably.Transport
         public TimeSpan RetryTimeout => Options.DisconnectedRetryTimeout;
         public AblyRest RestClient => Connection.RestClient;
         public MessageHandler Handler => RestClient.MessageHandler;
-        public ConnectionState State => Connection.ConnectionState;
+        public ConnectionStateBase State => Connection.ConnectionState;
         public TransportState TransportState => Transport.State;
         public ITransport Transport { get; private set; }
         public ClientOptions Options => RestClient.Options;
@@ -30,9 +30,9 @@ namespace IO.Ably.Transport
         internal event MessageReceivedDelegate MessageReceived;
         public bool IsActive => State.CanQueue && State.CanSend;
         public Connection Connection { get; }
-        public ConnectionStateType ConnectionState => Connection.State;
+        public ConnectionState ConnectionState => Connection.State;
         private readonly object _stateSyncLock = new object();
-        private volatile ConnectionState _inTransitionToState;
+        private volatile ConnectionStateBase _inTransitionToState;
         private readonly object _transportQueueLock = new object();
         private List<ProtocolMessage> _queuedTransportMessages = new List<ProtocolMessage>();
 
@@ -79,7 +79,7 @@ namespace IO.Ably.Transport
             State.Connect();
         }
 
-        public Task SetState(ConnectionState newState, bool skipAttach = false)
+        public Task SetState(ConnectionStateBase newState, bool skipAttach = false)
         {
             if (Logger.IsDebug) Logger.Debug($"xx Changing state from {ConnectionState} => {newState.State}. SkipAttach = {skipAttach}.");
 
@@ -127,7 +127,7 @@ namespace IO.Ably.Transport
                     newState.AbortTimer();
 
                     Logger.Error("Error attaching to context", ex);
-                    if (newState.State != ConnectionStateType.Failed)
+                    if (newState.State != Realtime.ConnectionState.Failed)
                     {
                         SetState(new ConnectionFailedState(this, ex.ErrorInfo));
                     }
@@ -194,7 +194,7 @@ namespace IO.Ably.Transport
                 if (ShouldWeRenewToken(error))
                 {
                     ClearTokenAndRecordRetry();
-                    await SetState(new ConnectionDisconnectedState(this), skipAttach: ConnectionState == ConnectionStateType.Connecting);
+                    await SetState(new ConnectionDisconnectedState(this), skipAttach: ConnectionState == Realtime.ConnectionState.Connecting);
                     await SetState(new ConnectionConnectingState(this));
                 }
                 else
@@ -291,13 +291,13 @@ namespace IO.Ably.Transport
                     var connectionState = _inTransitionToState?.State ?? ConnectionState;
                     switch (connectionState)
                     {
-                        case ConnectionStateType.Closing:
+                        case Realtime.ConnectionState.Closing:
                             SetState(new ConnectionClosedState(this) {Exception = ex});
                             break;
-                        case ConnectionStateType.Connecting:
+                        case Realtime.ConnectionState.Connecting:
                             HandleConnectingFailure(null, ex);
                             break;
-                        case ConnectionStateType.Connected:
+                        case Realtime.ConnectionState.Connected:
                             var disconnectedState = new ConnectionDisconnectedState(this, GetErrorInfoFromTransportException(ex, ErrorInfo.ReasonDisconnected)) { Exception = ex };
                             disconnectedState.RetryInstantly = Connection.ConnectionResumable;
                             SetState(disconnectedState);

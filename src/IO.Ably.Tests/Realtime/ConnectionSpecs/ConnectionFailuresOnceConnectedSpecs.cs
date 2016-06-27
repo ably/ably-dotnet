@@ -50,7 +50,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = SetupConnectedClient();
 
-            List<ConnectionStateType> states = new List<ConnectionStateType>();
+            List<ConnectionState> states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
             client.Connection.InternalStateChanged += (sender, args) => 
             {
@@ -64,7 +64,7 @@ namespace IO.Ably.Tests.Realtime
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
             _renewTokenCalled.Should().BeTrue();
-            Assert.Equal(new[] { ConnectionStateType.Disconnected, ConnectionStateType.Connecting, ConnectionStateType.Connected }, states);
+            Assert.Equal(new[] { ConnectionState.Disconnected, ConnectionState.Connecting, ConnectionState.Connected }, states);
             errors.Should().BeEmpty("There should be no errors emitted by the client");
 
             var currentToken = client.RestClient.AblyAuth.CurrentToken;
@@ -79,7 +79,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = SetupConnectedClient();
 
-            List<ConnectionStateType> states = new List<ConnectionStateType>();
+            List<ConnectionState> states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
@@ -87,7 +87,7 @@ namespace IO.Ably.Tests.Realtime
                     errors.Add(args.Reason);
 
                 states.Add(args.Current);
-                if (args.Current == ConnectionStateType.Connecting)
+                if (args.Current == ConnectionState.Connecting)
                 {
                     client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
                 }
@@ -106,7 +106,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = SetupConnectedClient(failRenewal: true);
 
-            List<ConnectionStateType> states = new List<ConnectionStateType>();
+            List<ConnectionState> states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
@@ -123,9 +123,9 @@ namespace IO.Ably.Tests.Realtime
 
             Assert.Equal(new[]
             {
-                ConnectionStateType.Disconnected,
-                ConnectionStateType.Connecting,
-                ConnectionStateType.Failed
+                ConnectionState.Disconnected,
+                ConnectionState.Connecting,
+                ConnectionState.Failed
             }, states);
 
             errors.Should().NotBeEmpty();
@@ -138,7 +138,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = SetupConnectedClient();
 
-            List<ConnectionStateType> states = new List<ConnectionStateType>();
+            List<ConnectionState> states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
@@ -160,9 +160,9 @@ namespace IO.Ably.Tests.Realtime
 
             Assert.Equal(new[]
             {
-                ConnectionStateType.Disconnected,
-                ConnectionStateType.Connecting,
-                ConnectionStateType.Failed
+                ConnectionState.Disconnected,
+                ConnectionState.Connecting,
+                ConnectionState.Failed
             }, states);
 
             errors.Should().NotBeEmpty();
@@ -175,7 +175,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = SetupConnectedClient(renewable: false);
 
-            List<ConnectionStateType> states = new List<ConnectionStateType>();
+            List<ConnectionState> states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
@@ -192,7 +192,7 @@ namespace IO.Ably.Tests.Realtime
 
             Assert.Equal(new[]
             {
-                ConnectionStateType.Failed
+                ConnectionState.Failed
             }, states);
 
             errors.Should().NotBeEmpty();
@@ -207,7 +207,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = SetupConnectedClient();
 
-            List<ConnectionStateType> states = new List<ConnectionStateType>();
+            List<ConnectionState> states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
@@ -215,7 +215,7 @@ namespace IO.Ably.Tests.Realtime
                     errors.Add(args.Reason);
 
                 states.Add(args.Current);
-                if (args.Current == ConnectionStateType.Connecting)
+                if (args.Current == ConnectionState.Connecting)
                 {
                     client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
                 }
@@ -263,7 +263,7 @@ namespace IO.Ably.Tests.Realtime
         {
             protocolMessage = protocolMessage ?? new ProtocolMessage(ProtocolMessage.MessageAction.Connected);
             LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closed);
-            await new ConnectionAwaiter(client.Connection, ConnectionStateType.Connecting).Wait();
+            await new ConnectionAwaiter(client.Connection, ConnectionState.Connecting).Wait();
             await client.FakeProtocolMessageReceived(protocolMessage);
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
@@ -21,7 +22,9 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol);
             await WaitForState(client);
 
-            client.Connection.State.Should().Be(ConnectionStateType.Connected);
+
+
+            client.Connection.State.Should().Be(ConnectionState.Connected);
         }
 
         [Theory]
@@ -33,19 +36,20 @@ namespace IO.Ably.Tests.Realtime
         public async Task ANewConnectionShouldRaiseConnectingAndConnectedEvents(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.AutoConnect = false);
-            var states = new List<ConnectionStateType>();
-            client.Connection.InternalStateChanged += (sender, args) =>
+            var states = new List<ConnectionState>();
+            client.Connection.On((args) =>
             {
                 args.Should().BeOfType<ConnectionStateChangedEventArgs>();
                 states.Add(args.Current);
-            };
+            });
 
             client.Connect();
 
             await WaitForState(client);
+            await Task.Delay(10);
 
-            states.Should().BeEquivalentTo(new[] { ConnectionStateType.Connecting, ConnectionStateType.Connected });
-            client.Connection.State.Should().Be(ConnectionStateType.Connected);
+            states.Should().BeEquivalentTo(new[] { ConnectionState.Connecting, ConnectionState.Connected });
+            client.Connection.State.Should().Be(ConnectionState.Connected);
         }
 
         [Theory]
@@ -57,18 +61,19 @@ namespace IO.Ably.Tests.Realtime
             //Start collecting events after the connection is open
             await WaitForState(client);
 
-            var states = new List<ConnectionStateType>();
+            var states = new List<ConnectionState>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 args.Should().BeOfType<ConnectionStateChangedEventArgs>();
                 states.Add(args.Current);
             };
+
             client.Close();
 
-            await WaitForState(client, ConnectionStateType.Closed, TimeSpan.FromSeconds(5));
+            await WaitForState(client, ConnectionState.Closed, TimeSpan.FromSeconds(5));
 
-            states.Should().BeEquivalentTo(new[] { ConnectionStateType.Closing, ConnectionStateType.Closed });
-            client.Connection.State.Should().Be(ConnectionStateType.Closed);
+            states.Should().BeEquivalentTo(new[] { ConnectionState.Closing, ConnectionState.Closed });
+            client.Connection.State.Should().Be(ConnectionState.Closed);
         }
 
         [Theory]
@@ -154,7 +159,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.Connect();
 
-            await WaitForState(client, ConnectionStateType.Failed);
+            await WaitForState(client, ConnectionState.Failed);
 
             error.Should().NotBeNull();
             client.Connection.ErrorReason.Should().BeSameAs(error);
@@ -185,7 +190,7 @@ namespace IO.Ably.Tests.Realtime
 
             realtimeClient.Connect();
 
-            await WaitForState(realtimeClient, ConnectionStateType.Connected, TimeSpan.FromSeconds(10));
+            await WaitForState(realtimeClient, ConnectionState.Connected, TimeSpan.FromSeconds(10));
 
             realtimeClient.RestClient.AblyAuth.CurrentToken.Expires.Should().BeAfter(Config.Now(), "The token should be valid and expire in the future.");
             error.Should().BeNull("No error should be raised!");
@@ -205,7 +210,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.Connect();
 
-            await WaitForState(client, ConnectionStateType.Disconnected);
+            await WaitForState(client, ConnectionState.Disconnected);
             client.Connection.ErrorReason.Should().NotBeNull();
         }
 
@@ -216,12 +221,12 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetRealtimeClient(protocol);
 
-            await WaitForState(client, ConnectionStateType.Connected);
+            await WaitForState(client, ConnectionState.Connected);
             var initialConnectionKey = client.Connection.Key;
             var initialConnectionId = client.Connection.Id;
             client.ConnectionManager.Transport.Close(false);
-            await WaitForState(client, ConnectionStateType.Disconnected);
-            await WaitForState(client, ConnectionStateType.Connected, TimeSpan.FromSeconds(5));
+            await WaitForState(client, ConnectionState.Disconnected);
+            await WaitForState(client, ConnectionState.Connected, TimeSpan.FromSeconds(5));
             client.Connection.Id.Should().Be(initialConnectionId);
             client.Connection.Key.Should().NotBe(initialConnectionKey);
         }
@@ -251,7 +256,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task WhenRecoveringConnection_ShouldHaveSameConnectionIdButDifferentKey(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
-            await WaitForState(client, ConnectionStateType.Connected);
+            await WaitForState(client, ConnectionState.Connected);
             var id = client.Connection.Id;
             var key = client.Connection.Key;
 
@@ -265,7 +270,7 @@ namespace IO.Ably.Tests.Realtime
             client.ConnectionManager.Transport.Close(true);
 
             recoveryClient.Connect();
-            await WaitForState(recoveryClient, ConnectionStateType.Connected, TimeSpan.FromSeconds(5));
+            await WaitForState(recoveryClient, ConnectionState.Connected, TimeSpan.FromSeconds(5));
 
             recoveryClient.Connection.Id.Should().Be(id);
             recoveryClient.Connection.Key.Should().NotBe(key);
@@ -283,14 +288,14 @@ namespace IO.Ably.Tests.Realtime
             });
             client.Connection.InternalStateChanged += (sender, args) =>
             {
-                if (args.Current == ConnectionStateType.Connected)
+                if (args.Current == ConnectionState.Connected)
                 {
                     args.Reason.Should().NotBeNull();
                 }
             };
             client.Connect();
 
-            await WaitForState(client, ConnectionStateType.Connected, TimeSpan.FromSeconds(10));
+            await WaitForState(client, ConnectionState.Connected, TimeSpan.FromSeconds(10));
             client.Connection.ErrorReason.code.Should().Be(80008);
         }
 
@@ -304,7 +309,7 @@ namespace IO.Ably.Tests.Realtime
                 opts.AutoConnect = false;
             });
             
-            var stateChanges = new List<ConnectionStateType>();
+            var stateChanges = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
 
             client.Connection.InternalStateChanged += (sender, args) =>
@@ -325,8 +330,8 @@ namespace IO.Ably.Tests.Realtime
                     break;
             }
 
-            stateChanges.Count(x => x == ConnectionStateType.Connected).Should().BeGreaterThan(2);
-            client.Connection.State.Should().Be(ConnectionStateType.Connected);
+            stateChanges.Count(x => x == ConnectionState.Connected).Should().BeGreaterThan(2);
+            client.Connection.State.Should().Be(ConnectionState.Connected);
         }
 
         public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)

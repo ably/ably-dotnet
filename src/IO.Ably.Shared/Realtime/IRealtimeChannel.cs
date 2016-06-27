@@ -5,7 +5,7 @@ using IO.Ably.Rest;
 
 namespace IO.Ably.Realtime
 {
-    public interface IRealtimeChannel
+    public interface IRealtimeChannel : IEventEmitter<ChannelState, ChannelStateChangedEventArgs>
     {
         ChannelState State { get; }
         string Name { get; }

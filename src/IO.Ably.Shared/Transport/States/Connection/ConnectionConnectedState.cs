@@ -5,7 +5,7 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
-    internal class ConnectionConnectedState : ConnectionState
+    internal class ConnectionConnectedState : ConnectionStateBase
     {
         private readonly ConnectionInfo _info;
         private bool? _resumed = null;
@@ -16,7 +16,7 @@ namespace IO.Ably.Transport.States.Connection
             Error = error;
         }
 
-        public override ConnectionStateType State => ConnectionStateType.Connected;
+        public override ConnectionState State => ConnectionState.Connected;
 
         public override bool CanSend => true;
 

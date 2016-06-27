@@ -16,7 +16,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void ShouldHaveClosingState()
         {
-            _state.State.Should().Be(ConnectionStateType.Closing);
+            _state.State.Should().Be(ConnectionState.Closing);
         }
 
         [Fact]

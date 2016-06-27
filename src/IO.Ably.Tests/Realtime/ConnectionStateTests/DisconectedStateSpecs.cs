@@ -32,7 +32,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void ShouldHaveDisconnectedTypes()
         {
-            _state.State.Should().Be(ConnectionStateType.Disconnected);
+            _state.State.Should().Be(ConnectionState.Disconnected);
         }
 
         [Theory]

@@ -19,7 +19,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
 
-            client.Connection.State.Should().Be(ConnectionStateType.Closed);
+            client.Connection.State.Should().Be(ConnectionState.Closed);
             client.Connection.Id.Should().BeNullOrEmpty();
             client.Connection.Key.Should().BeNullOrEmpty();
         }

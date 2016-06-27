@@ -24,13 +24,23 @@ namespace IO.Ably.Tests.GithubSamples
         public void SuccessfulConnection()
         {
             var realtime = new AblyRealtime(placeholderKey);
+
+            realtime.Connection.On(ConnectionState.Connected, args =>
+            {
+                //Do stuff  
+            });
+
+            //or 
+
             realtime.Connection.ConnectionStateChanged += (s, args) =>
             {
-                if (args.Current == ConnectionStateType.Connected)
+                if (args.Current == ConnectionState.Connected)
                 {
                     // Do stuff
                 }
             };
+
+
         }
 
         [Fact]
@@ -38,12 +48,13 @@ namespace IO.Ably.Tests.GithubSamples
         {
             var realtime = new AblyRealtime(new ClientOptions(placeholderKey) { AutoConnect = false });
             realtime.Connect();
-            realtime.Connection.ConnectionStateChanged += (s, args) =>
+
+            realtime.Connection.On(args =>
             {
                 var currentState = args.Current; //Current state the connection transitioned to
                 var previousState = args.Previous; // Previous state
                 var error = args.Reason; // If the connection errored the Reason object will be populated.
-            };
+            });
         }
 
         [Fact(Skip = "Used to make sure samples compile")]
@@ -60,16 +71,18 @@ namespace IO.Ably.Tests.GithubSamples
                 var data = message.data;
             });
 
-            channel.StateChanged += (s, args) =>
+            channel.On(args =>
             {
                 var state = args.NewState; //Current channel State
                 var error = args.Error; // If the channel errored it will be refrected here
 
-                if (state == ChannelState.Attached)
-                {
-                    // Do stuff
-                }
-            };
+                
+            });
+
+            channel.On(ChannelState.Attached, args =>
+            {
+                // Do stuff when channel is attached
+            });
 
             channel.Publish("greeting", "Hello World!");
             channel.Publish("greeting", "Hello World!", (success, error) =>
@@ -101,12 +114,7 @@ namespace IO.Ably.Tests.GithubSamples
             {
                 //Do something with message
             }
-            //check if next page exists and get it
-            if (history.HasNext)
-            {
-                var nextPage = await history.NextAsync();
-                //Do stuff with next page
-            }
+            var nextPage = await history.NextAsync();
 
             var presenceHistory = await channel.Presence.HistoryAsync();
             var firstPresenceMessage = presenceHistory.Items.FirstOrDefault();
@@ -115,13 +123,8 @@ namespace IO.Ably.Tests.GithubSamples
             {
                 //Do something with the messages
             }
-            //check if next page exists and get it
-            if (presenceHistory.HasNext)
-            {
-                var nextPage = await presenceHistory.NextAsync();
-                //Continue work with the next page
-            }
 
+            var presenceNextPage = await presenceHistory.NextAsync();
         }
 
         [Fact(Skip = "Making sure the samples compile")]
@@ -146,23 +149,17 @@ namespace IO.Ably.Tests.GithubSamples
             {
                 //Do something with each message
             }
-            //get next page if there is one
-            if (historyPage.HasNext)
-            {
-                var nextPage = await historyPage.NextAsync();
-            }
+            //get next page
+            var nextHistoryPage = await historyPage.NextAsync();
 
             //Current presence
             var presence = await channel.Presence.GetAsync();
             var first = presence.Items.FirstOrDefault();
             var clientId = first.clientId; //clientId of the first member present
-            if (presence.HasNext)
+            var nextPresencePage = await presence.NextAsync();
+            foreach (var presenceMessage in nextPresencePage.Items)
             {
-                var nextPage = await presence.NextAsync();
-                foreach (var presenceMessage in nextPage.Items)
-                {
-                    //do stuff with next page presence messages
-                }
+                //do stuff with next page presence messages
             }
 
             // Presence history
@@ -173,13 +170,10 @@ namespace IO.Ably.Tests.GithubSamples
                 // Do stuff with presence messages
             }
 
-            if (presenceHistory.HasNext)
+            var nextPage = await presenceHistory.NextAsync();
+            foreach (var presenceMessage in nextPage.Items)
             {
-                var nextPage = await presenceHistory.NextAsync();
-                foreach (var presenceMessage in nextPage.Items)
-                {
-                    // Do stuff with next page messages
-                }
+                // Do stuff with next page messages
             }
 
             // publishing encrypted messages
@@ -200,10 +194,7 @@ namespace IO.Ably.Tests.GithubSamples
             //Stats
             var stats = await client.StatsAsync();
             var firstItem = stats.Items.First();
-            if (stats.HasNext)
-            {
-                var nextPage = await stats.NextAsync();
-            }
+            var nextStatsPage = await stats.NextAsync();
 
             var time = await client.TimeAsync();
         }

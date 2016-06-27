@@ -9,7 +9,7 @@ using IO.Ably;
 
 namespace IO.Ably.Realtime
 {
-    public sealed class Connection : EventEmitter<ConnectionStateType, ConnectionStateChangedEventArgs>, IDisposable
+    public sealed class Connection : EventEmitter<ConnectionState, ConnectionStateChangedEventArgs>, IDisposable
     {
         internal AblyRest RestClient => RealtimeClient.RestClient;
         internal AblyRealtime RealtimeClient { get; }
@@ -35,9 +35,9 @@ namespace IO.Ably.Realtime
         /// <summary>
         ///     Indicates the current state of this connection.
         /// </summary>
-        public ConnectionStateType State => ConnectionState.State;
+        public ConnectionState State => ConnectionState.State;
 
-        internal ConnectionState ConnectionState { get; set; }
+        internal ConnectionStateBase ConnectionState { get; set; }
 
         /// <summary>
         ///     The id of the current connection. This string may be
@@ -110,7 +110,7 @@ namespace IO.Ably.Realtime
         }
 
         /// <summary>
-        ///     Causes the connection to close, entering the <see cref="ConnectionStateType.Closed" /> state. Once closed,
+        ///     Causes the connection to close, entering the <see cref="Realtime.ConnectionState.Closed" /> state. Once closed,
         ///     the library will not attempt to re-establish the connection without a call
         ///     to <see cref="Connect()" />.
         /// </summary>
@@ -119,7 +119,7 @@ namespace IO.Ably.Realtime
             ConnectionManager.CloseConnection();
         }
 
-        internal void UpdateState(ConnectionState state)
+        internal void UpdateState(ConnectionStateBase state)
         {
             if (state.State == State)
                 return;
@@ -137,6 +137,7 @@ namespace IO.Ably.Realtime
             var internalHandlers = Volatile.Read(ref InternalStateChanged); //Make sure we get all the subscribers on all threads
             var externalHandlers = Volatile.Read(ref ConnectionStateChanged); //Make sure we get all the subscribers on all threads
             internalHandlers(this, stateArgs);
+
             RealtimeClient.NotifyExternalClients(() =>
             {
                 try

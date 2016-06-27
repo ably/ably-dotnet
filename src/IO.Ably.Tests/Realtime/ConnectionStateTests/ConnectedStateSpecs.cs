@@ -29,7 +29,7 @@ namespace IO.Ably.Tests
         public void ConnectedState_CorrectState()
         {
             // Assert
-            _state.State.Should().Be(ConnectionStateType.Connected);
+            _state.State.Should().Be(ConnectionState.Connected);
         }
 
         [Theory]

@@ -16,7 +16,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN4a")]
         public void EmittedEventTypesShouldBe()
         {
-            var states = Enum.GetNames(typeof(ConnectionStateType));
+            var states = Enum.GetNames(typeof(ConnectionState));
             states.ShouldBeEquivalentTo(new[]
             {
                 "Initialized",
@@ -37,7 +37,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task ANewConnectionShouldRaiseConnectingAndConnectedEvents()
         {
             var client = GetClientWithFakeTransport(opts => opts.AutoConnect = false);
-            var states = new List<ConnectionStateType>();
+            var states = new List<ConnectionState>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 args.Should().BeOfType<ConnectionStateChangedEventArgs>();
@@ -50,8 +50,8 @@ namespace IO.Ably.Tests.Realtime
             await client.ConnectionManager.OnTransportMessageReceived(
                 new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
-            states.Should().BeEquivalentTo(new[] { ConnectionStateType.Connecting, ConnectionStateType.Connected });
-            client.Connection.State.Should().Be(ConnectionStateType.Connected);
+            states.Should().BeEquivalentTo(new[] { ConnectionState.Connecting, ConnectionState.Connected });
+            client.Connection.State.Should().Be(ConnectionState.Connected);
         }
 
         [Fact]
@@ -63,7 +63,7 @@ namespace IO.Ably.Tests.Realtime
             var client = GetClientWithFakeTransport();
 
             //Start collecting events after the connection is open
-            var states = new List<ConnectionStateType>();
+            var states = new List<ConnectionState>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 args.Should().BeOfType<ConnectionStateChangedEventArgs>();
@@ -78,8 +78,8 @@ namespace IO.Ably.Tests.Realtime
             };
 
             client.Close();
-            states.Should().BeEquivalentTo(new[] { ConnectionStateType.Closing, ConnectionStateType.Closed });
-            client.Connection.State.Should().Be(ConnectionStateType.Closed);
+            states.Should().BeEquivalentTo(new[] { ConnectionState.Closing, ConnectionState.Closed });
+            client.Connection.State.Should().Be(ConnectionState.Closed);
         }
 
         [Fact]

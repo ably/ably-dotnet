@@ -4,7 +4,7 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
-    internal class ConnectionClosingState : ConnectionState
+    internal class ConnectionClosingState : ConnectionStateBase
     {
         private const int CloseTimeout = 1000;
         private readonly ICountdownTimer _timer;
@@ -21,7 +21,7 @@ namespace IO.Ably.Transport.States.Connection
             Error = error ?? ErrorInfo.ReasonClosed;
         }
 
-        public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Closing;
+        public override Realtime.ConnectionState State => Realtime.ConnectionState.Closing;
 
         public override Task<bool> OnMessageReceived(ProtocolMessage message)
         {
@@ -71,7 +71,7 @@ namespace IO.Ably.Transport.States.Connection
                 Context.SetState(new ConnectionClosedState(Context)));
         }
 
-        private void TransitionState(ConnectionState newState)
+        private void TransitionState(ConnectionStateBase newState)
         {
             _timer.Abort();
             Context.SetState(newState);

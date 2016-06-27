@@ -68,12 +68,15 @@ namespace IO.Ably.Tests.Realtime
                     error = args.Reason;
                 };
                 bool stateChanged = false;
+
+                await Task.Delay(10); //Allow the notification thread to fire
+
                 ChannelState newState = ChannelState.Initialized;
-                channel.StateChanged += (sender, args) =>
+                channel.On((args) =>
                 {
                     stateChanged = true;
                     newState = args.NewState;
-                };
+                });
 
                 await
                     client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
@@ -82,7 +85,7 @@ namespace IO.Ably.Tests.Realtime
                         channel = "test"
                     });
 
-                await Task.Delay(50); //As the notification happens on a different thread
+                await Task.Delay(10); //Allow the notification thread to fire
 
                 error.Should().BeSameAs(expectedError);
                 stateChanged.Should().BeFalse("State should not have changed but is now: " + newState);
@@ -110,10 +113,10 @@ namespace IO.Ably.Tests.Realtime
             public async Task ShouldEmitTheFollowingStates(ChannelState state)
             {
                 ChannelState newState = ChannelState.Initialized;
-                _channel.StateChanged += (sender, args) =>
+                _channel.On(x =>
                 {
-                    newState = args.NewState;
-                };
+                    newState = x.NewState;
+                });
 
                 (_channel as RealtimeChannel).SetChannelState(state);
                 await Task.Delay(10);
@@ -127,11 +130,10 @@ namespace IO.Ably.Tests.Realtime
             {
                 var error = new ErrorInfo();
                 ErrorInfo expectedError = null;
-                _channel.StateChanged += (sender, args) =>
+                _channel.On((args) =>
                 {
                     expectedError = args.Error;
-
-                };
+                });
 
                 (_channel as RealtimeChannel).SetChannelState(ChannelState.Attached, error);
 
@@ -164,7 +166,7 @@ namespace IO.Ably.Tests.Realtime
                 (_channel as RealtimeChannel).SetChannelState(state);
                 await _client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = error });
 
-                _client.Connection.State.Should().Be(ConnectionStateType.Failed);
+                _client.Connection.State.Should().Be(ConnectionState.Failed);
                 _channel.State.Should().Be(ChannelState.Failed);
                 _channel.ErrorReason.Should().BeSameAs(error);
             }
@@ -181,7 +183,7 @@ namespace IO.Ably.Tests.Realtime
 
                 await _client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
 
-                _client.Connection.State.Should().Be(ConnectionStateType.Closed);
+                _client.Connection.State.Should().Be(ConnectionState.Closed);
                 _channel.State.Should().Be(ChannelState.Detached);
             }
 
@@ -197,7 +199,7 @@ namespace IO.Ably.Tests.Realtime
 
                 await _client.ConnectionManager.SetState(new ConnectionSuspendedState(_client.ConnectionManager));
 
-                _client.Connection.State.Should().Be(ConnectionStateType.Suspended);
+                _client.Connection.State.Should().Be(ConnectionState.Suspended);
                 _channel.State.Should().Be(ChannelState.Detached);
             }
 
@@ -225,11 +227,11 @@ namespace IO.Ably.Tests.Realtime
                 bool stateChanged = false;
                 ChannelState newState = ChannelState.Initialized;
 
-                _channel.StateChanged += (sender, args) =>
+                _channel.On((args) =>
                 {
                     newState = args.NewState;
                     stateChanged = true;
-                };
+                });
 
                 _channel.Attach();
                 await Task.Delay(100);
@@ -382,10 +384,10 @@ namespace IO.Ably.Tests.Realtime
                 SetState(state);
                 bool changed = false;
 
-                _channel.StateChanged += (sender, args) =>
+                _channel.On((args) =>
                 {
                     changed = true;
-                };
+                });
 
                 _channel.Detach();
                 changed.Should().BeFalse();
@@ -607,7 +609,7 @@ namespace IO.Ably.Tests.Realtime
                 {
                     var client = GetClientWithFakeTransport();
                     client.Connect();
-                    client.Connection.State.Should().Be(ConnectionStateType.Connecting);
+                    client.Connection.State.Should().Be(ConnectionState.Connecting);
                     var channel = client.Channels.Get("connecting");
                     SetState(channel, ChannelState.Attached);
                     channel.Publish("test", "connecting");
@@ -630,7 +632,7 @@ namespace IO.Ably.Tests.Realtime
                 {
                     var client = GetClientWithFakeTransport();
                     await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager));
-                    client.Connection.State.Should().Be(ConnectionStateType.Disconnected);
+                    client.Connection.State.Should().Be(ConnectionState.Disconnected);
                     var channel = client.Channels.Get("connecting");
                     SetState(channel, ChannelState.Attached);
                     channel.Publish("test", "connecting");

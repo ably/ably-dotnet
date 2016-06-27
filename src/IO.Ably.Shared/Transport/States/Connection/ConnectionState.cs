@@ -6,15 +6,15 @@ using IO.Ably.Types;
 namespace IO.Ably.Transport.States.Connection
 {
     [DebuggerDisplay("{State}")]
-    internal abstract class ConnectionState
+    internal abstract class ConnectionStateBase
     {
-        public ConnectionState(IConnectionContext context)
+        public ConnectionStateBase(IConnectionContext context)
         {
             this.Context = context;
         }
 
         protected readonly IConnectionContext Context;
-        public abstract Realtime.ConnectionStateType State { get; }
+        public abstract Realtime.ConnectionState State { get; }
         public ErrorInfo Error { get; protected set; }
         
         public Exception Exception { get; set; }

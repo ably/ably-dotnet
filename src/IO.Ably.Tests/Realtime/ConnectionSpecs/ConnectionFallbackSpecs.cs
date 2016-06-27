@@ -28,7 +28,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 error = new ErrorInfo() {statusCode = HttpStatusCode.GatewayTimeout }
             });
 
-            client.Connection.State.Should().Be(ConnectionStateType.Failed);
+            client.Connection.State.Should().Be(ConnectionState.Failed);
         }
 
         [Fact]
@@ -42,7 +42,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 error = new ErrorInfo() { statusCode = HttpStatusCode.GatewayTimeout }
             });
 
-            client.Connection.State.Should().Be(ConnectionStateType.Failed);
+            client.Connection.State.Should().Be(ConnectionState.Failed);
         }
 
         [Fact]
@@ -56,7 +56,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 error = new ErrorInfo() { statusCode = HttpStatusCode.GatewayTimeout }
             });
 
-            client.Connection.State.Should().Be(ConnectionStateType.Failed);
+            client.Connection.State.Should().Be(ConnectionState.Failed);
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         {
             var client = GetConnectedClient();
 
-            List<ConnectionStateType> states = new List<ConnectionStateType>();
+            List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 states.Add(args.Current);
@@ -86,7 +86,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         {
             var client = GetConnectedClient();
 
-            List<ConnectionStateType> states = new List<ConnectionStateType>();
+            List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 states.Add(args.Current);
@@ -97,8 +97,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 error = new ErrorInfo() { statusCode = HttpStatusCode.GatewayTimeout }
             });
 
-            states.First().Should().Be(ConnectionStateType.Disconnected);
-            states.Last().Should().Be(ConnectionStateType.Connecting);
+            states.First().Should().Be(ConnectionState.Disconnected);
+            states.Last().Should().Be(ConnectionState.Connecting);
         }
 
         [Fact]
@@ -107,7 +107,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         {
             var client = GetConnectedClient();
 
-            List<ConnectionStateType> states = new List<ConnectionStateType>();
+            List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 states.Add(args.Current);
@@ -118,8 +118,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 error = new ErrorInfo() { statusCode = HttpStatusCode.GatewayTimeout }
             });
 
-            states.First().Should().Be(ConnectionStateType.Disconnected);
-            states.Last().Should().Be(ConnectionStateType.Connecting);
+            states.First().Should().Be(ConnectionState.Disconnected);
+            states.Last().Should().Be(ConnectionState.Connecting);
 
             Defaults.FallbackHosts.Should().Contain(LastCreatedTransport.Parameters.Host);
             client.Connection.Host.Should().Be(LastCreatedTransport.Parameters.Host);
@@ -161,7 +161,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         {
             var client = GetConnectedClient(opts => opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10));
                
-            List<ConnectionStateType> states = new List<ConnectionStateType>();
+            List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 states.Add(args.Current);
@@ -176,7 +176,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             for (int i = 0; i < 5; i++)
             {
-                if (client.Connection.State == ConnectionStateType.Connecting)
+                if (client.Connection.State == ConnectionState.Connecting)
                 {
                     retryHosts.Add(LastCreatedTransport.Parameters.Host);
                 }
@@ -205,7 +205,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(10);
             });
 
-            List<ConnectionStateType> states = new List<ConnectionStateType>();
+            List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 states.Add(args.Current);
@@ -221,7 +221,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             for (int i = 0; i < 5; i++)
             {
                 Now = Now.AddSeconds(60);
-                if (client.Connection.State == ConnectionStateType.Connecting)
+                if (client.Connection.State == ConnectionState.Connecting)
                 {
                     retryHosts.Add(LastCreatedTransport.Parameters.Host);
                 }
@@ -261,7 +261,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 error = new ErrorInfo() { statusCode = HttpStatusCode.GatewayTimeout }
             });
 
-            client.Connection.State.Should().Be(ConnectionStateType.Failed);
+            client.Connection.State.Should().Be(ConnectionState.Failed);
         }
 
         public ConnectionFallbackSpecs(ITestOutputHelper output) : base(output)

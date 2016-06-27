@@ -17,7 +17,7 @@ namespace IO.Ably.Realtime
         internal AblyRealtime RealtimeClient { get; }
         private IConnectionManager ConnectionManager => RealtimeClient.ConnectionManager;
         private Connection Connection => RealtimeClient.Connection;
-        private ConnectionStateType ConnectionState => Connection.State;
+        private ConnectionState ConnectionState => Connection.State;
         private readonly Handlers<Message> _handlers = new Handlers<Message>();
         private readonly CountdownTimer _timer;
         internal IRestChannel RestChannel => RealtimeClient.RestClient.Channels.Get(Name);
@@ -71,17 +71,17 @@ namespace IO.Ably.Realtime
         {
             switch (args.Current)
             {
-                case ConnectionStateType.Closed:
+                case Realtime.ConnectionState.Closed:
                     if (State == ChannelState.Attached || State == ChannelState.Attaching)
                         SetChannelState(ChannelState.Detaching);
                     break;
-                case ConnectionStateType.Suspended:
+                case Realtime.ConnectionState.Suspended:
                     if (State == ChannelState.Attached || State == ChannelState.Attaching)
                     {
                         SetChannelState(ChannelState.Detaching, ErrorInfo.ReasonSuspended);
                     }
                     break;
-                case ConnectionStateType.Failed:
+                case Realtime.ConnectionState.Failed:
                     if (State != ChannelState.Detached || State != ChannelState.Initialized ||
                         State != ChannelState.Failed)
                     {
@@ -330,8 +330,7 @@ namespace IO.Ably.Realtime
 
             HandleStateChange(state, error, protocolMessage);
 
-            RealtimeClient.NotifyExternalClients(
-                () =>
+            RealtimeClient.NotifyExternalClients(() =>
                 {
                     var args = new ChannelStateChangedEventArgs(state, error);
                     try
@@ -354,7 +353,7 @@ namespace IO.Ably.Realtime
             switch (state)
             {
                 case ChannelState.Attaching:
-                    if (ConnectionState == ConnectionStateType.Initialized)
+                    if (ConnectionState == Realtime.ConnectionState.Initialized)
                     {
                         Connection.Connect();
                     }
@@ -391,8 +390,8 @@ namespace IO.Ably.Realtime
                     //Fail timer if still waiting for attached.
                     _attachedAwaiter.Fail(new ErrorInfo("Channel transitioned to detaching", 50000));
 
-                    if (ConnectionState == ConnectionStateType.Closed || ConnectionState == ConnectionStateType.Connecting ||
-                        ConnectionState == ConnectionStateType.Suspended)
+                    if (ConnectionState == Realtime.ConnectionState.Closed || ConnectionState == Realtime.ConnectionState.Connecting ||
+                        ConnectionState == Realtime.ConnectionState.Suspended)
                         SetChannelState(ChannelState.Detached, error);
                     else
                     {

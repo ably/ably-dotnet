@@ -11,7 +11,7 @@ namespace IO.Ably.Tests
     {
         public bool QueueIfNecessaryCalled { get; set; }
         public bool OnMessageReceivedCalled { get; set; }
-        public ConnectionState LastState { get; set; }
+        public ConnectionStateBase LastState { get; set; }
         public Queue<MessageAndCallback> _queuedMessages = new Queue<MessageAndCallback>();
 
         public void QueueIfNecessary(ProtocolMessage message, Action<bool, ErrorInfo> callback)

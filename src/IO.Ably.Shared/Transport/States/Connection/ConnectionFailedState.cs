@@ -3,7 +3,7 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
-    internal class ConnectionFailedState : ConnectionState
+    internal class ConnectionFailedState : ConnectionStateBase
     {
         public ConnectionFailedState(IConnectionContext context, ErrorInfo error) :
             base(context)
@@ -11,7 +11,7 @@ namespace IO.Ably.Transport.States.Connection
             Error = error ?? ErrorInfo.ReasonFailed;
         }
 
-        public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Failed;
+        public override Realtime.ConnectionState State => Realtime.ConnectionState.Failed;
 
         public override void Connect()
         {

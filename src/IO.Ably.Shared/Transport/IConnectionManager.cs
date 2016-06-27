@@ -74,7 +74,7 @@ namespace IO.Ably.Transport
         Connection Connection { get; }
         TimeSpan SuspendRetryTimeout { get; }
         void ClearTokenAndRecordRetry();
-        Task SetState(States.Connection.ConnectionState state, bool skipAttach = false);
+        Task SetState(States.Connection.ConnectionStateBase state, bool skipAttach = false);
         Task CreateTransport();
         void DestroyTransport(bool suppressClosedEvent = true);
         void SetConnectionClientId(string clientId);

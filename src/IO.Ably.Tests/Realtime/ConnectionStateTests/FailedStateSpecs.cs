@@ -30,7 +30,7 @@ namespace IO.Ably.Tests
         public void ShouldHaveCorrectState()
         {
             // Arrange
-            _state.State.Should().Be(ConnectionStateType.Failed);
+            _state.State.Should().Be(ConnectionState.Failed);
         }
 
         [Fact]

@@ -9,23 +9,23 @@ namespace IO.Ably.Tests
     /// <summary>Utility class to wait for a specified state of the connection, with timeout.</summary>
     internal class ConnectionAwaiter
     {
-        private static readonly HashSet<ConnectionStateType> PermanentlyFailedStates = new HashSet<ConnectionStateType>
+        private static readonly HashSet<ConnectionState> PermanentlyFailedStates = new HashSet<ConnectionState>
         {
-            ConnectionStateType.Suspended,
-            ConnectionStateType.Closed,
-            ConnectionStateType.Failed
+            ConnectionState.Suspended,
+            ConnectionState.Closed,
+            ConnectionState.Failed
         };
 
-        private readonly List<ConnectionStateType> _awaitedStates = new List<ConnectionStateType>();
+        private readonly List<ConnectionState> _awaitedStates = new List<ConnectionState>();
 
         public readonly Connection Connection;
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private readonly string _id = Guid.NewGuid().ToString("D").Split('-')[0];
 
-        public ConnectionAwaiter(Connection connection, params ConnectionStateType[] awaitedStates)
+        public ConnectionAwaiter(Connection connection, params ConnectionState[] awaitedStates)
         {
             Connection = connection;
-            _awaitedStates.AddRange(awaitedStates ?? new []{ConnectionStateType.Connected});
+            _awaitedStates.AddRange(awaitedStates ?? new []{ConnectionState.Connected});
             
         }
 

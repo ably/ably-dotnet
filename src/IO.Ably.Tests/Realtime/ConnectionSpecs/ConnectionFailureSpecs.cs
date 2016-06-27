@@ -83,7 +83,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
             renewTokenCalled.Should().BeFalse();
-            client.Connection.State.Should().Be(ConnectionStateType.Failed);
+            client.Connection.State.Should().Be(ConnectionState.Failed);
             client.Connection.ErrorReason.Should().NotBeNull();
             client.Connection.ErrorReason.code.Should().Be(_tokenErrorCode);
         }
@@ -109,7 +109,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
-            client.Connection.State.Should().Be(ConnectionStateType.Failed);
+            client.Connection.State.Should().Be(ConnectionState.Failed);
             client.Connection.ErrorReason.Should().NotBeNull();
             client.Connection.ErrorReason.code.Should().Be(123);
         }
@@ -139,7 +139,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
             renewCount.Should().Be(1);
-            client.Connection.State.Should().Be(ConnectionStateType.Failed);
+            client.Connection.State.Should().Be(ConnectionState.Failed);
             client.Connection.ErrorReason.Should().NotBeNull();
         }
 
@@ -160,7 +160,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.Connect();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
-                args.Current.Should().Be(ConnectionStateType.Disconnected);
+                args.Current.Should().Be(ConnectionState.Disconnected);
                 args.RetryIn.Should().Be(options.DisconnectedRetryTimeout);
                 args.Reason.Should().NotBeNull();
             };
@@ -197,14 +197,14 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 LastCreatedTransport.Listener?.OnTransportEvent(TransportState.Closing, new Exception());
                 await WaitForConnectingOrSuspended(client);
                 Now = Now.AddSeconds(30);
-            } while (client.Connection.State != ConnectionStateType.Suspended);
+            } while (client.Connection.State != ConnectionState.Suspended);
 
-            client.Connection.State.Should().Be(ConnectionStateType.Suspended);
+            client.Connection.State.Should().Be(ConnectionState.Suspended);
 
             stateChanges.Select(x => x.Current).Distinct()
-                .ShouldBeEquivalentTo(new[] { ConnectionStateType.Connecting, ConnectionStateType.Disconnected, ConnectionStateType.Suspended, });
+                .ShouldBeEquivalentTo(new[] { ConnectionState.Connecting, ConnectionState.Disconnected, ConnectionState.Suspended, });
             int numberOfAttemps = (int)Math.Floor(Defaults.ConnectionStateTtl.TotalSeconds / 30);
-            stateChanges.Count(x => x.Current == ConnectionStateType.Connecting).Should().Be(numberOfAttemps);
+            stateChanges.Count(x => x.Current == ConnectionState.Connecting).Should().Be(numberOfAttemps);
         }
 
         [Fact]
@@ -232,9 +232,9 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 await WaitForConnectingOrSuspended(client);
                 Now = Now.AddSeconds(30);
 
-            } while (client.Connection.State != ConnectionStateType.Suspended);
+            } while (client.Connection.State != ConnectionState.Suspended);
 
-            var awaiter = new ConnectionAwaiter(client.Connection, ConnectionStateType.Connecting);
+            var awaiter = new ConnectionAwaiter(client.Connection, ConnectionState.Connecting);
             var elapsed = await awaiter.Wait();
             elapsed.Should().BeCloseTo(client.Options.SuspendedRetryTimeout, 100);
         }
@@ -243,7 +243,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         {
             await
                 Task.WhenAll(
-                    new ConnectionAwaiter(client.Connection, ConnectionStateType.Connecting, ConnectionStateType.Suspended).Wait
+                    new ConnectionAwaiter(client.Connection, ConnectionState.Connecting, ConnectionState.Suspended).Wait
                         (),
                     Task.Delay(10));
         }
@@ -272,10 +272,10 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 LastCreatedTransport.Listener?.OnTransportEvent(TransportState.Closing, new Exception());
                 await WaitForConnectingOrSuspended(client);
                 Now = Now.AddSeconds(30);
-            } while (client.Connection.State != ConnectionStateType.Suspended);
+            } while (client.Connection.State != ConnectionState.Suspended);
 
-            await new ConnectionAwaiter(client.Connection, ConnectionStateType.Connecting).Wait();
-            await new ConnectionAwaiter(client.Connection, ConnectionStateType.Suspended).Wait();
+            await new ConnectionAwaiter(client.Connection, ConnectionState.Connecting).Wait();
+            await new ConnectionAwaiter(client.Connection, ConnectionState.Suspended).Wait();
         }
 
         public ConnectingFailureSpecs(ITestOutputHelper output) : base(output)

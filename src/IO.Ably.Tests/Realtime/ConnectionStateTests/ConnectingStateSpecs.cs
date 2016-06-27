@@ -31,7 +31,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void HasCorrectState()
         {
-            _state.State.Should().Be(Ably.Realtime.ConnectionStateType.Connecting);
+            _state.State.Should().Be(Ably.Realtime.ConnectionState.Connecting);
         }
 
         [Theory]

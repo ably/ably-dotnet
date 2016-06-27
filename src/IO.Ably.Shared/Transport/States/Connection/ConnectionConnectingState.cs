@@ -3,7 +3,7 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
-    internal class ConnectionConnectingState : ConnectionState
+    internal class ConnectionConnectingState : ConnectionStateBase
     {
       
     private readonly ICountdownTimer _timer;
@@ -21,7 +21,7 @@ namespace IO.Ably.Transport.States.Connection
             _timer = timer;
         }
 
-        public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Connecting;
+        public override Realtime.ConnectionState State => Realtime.ConnectionState.Connecting;
 
         public override bool CanQueue => true;
 
@@ -102,7 +102,7 @@ namespace IO.Ably.Transport.States.Connection
             Context.Execute(() => Context.HandleConnectingFailure(null, null));
         }
 
-        private void TransitionState(ConnectionState newState)
+        private void TransitionState(ConnectionStateBase newState)
         {
             _timer.Abort();
             Context.SetState(newState);

@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
-using IO.Ably.Rest;
 using IO.Ably.Transport;
 
 namespace IO.Ably

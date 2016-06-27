@@ -4,7 +4,7 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
-    internal class ConnectionSuspendedState : ConnectionState
+    internal class ConnectionSuspendedState : ConnectionStateBase
     {
         private readonly ICountdownTimer _timer;
 
@@ -26,7 +26,7 @@ namespace IO.Ably.Transport.States.Connection
             RetryIn = context.SuspendRetryTimeout;
         }
 
-        public override Realtime.ConnectionStateType State => Realtime.ConnectionStateType.Suspended;
+        public override Realtime.ConnectionState State => Realtime.ConnectionState.Suspended;
 
         public override void Connect()
         {

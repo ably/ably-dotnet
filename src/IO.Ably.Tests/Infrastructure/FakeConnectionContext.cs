@@ -28,7 +28,7 @@ namespace IO.Ably.Tests
             Connection = new Connection(null);
         }
 
-        public ConnectionState LastSetState { get; set; }
+        public ConnectionStateBase LastSetState { get; set; }
         public IAblyAuth Auth { get; set; }
 
         public bool RenewTokenValue { get; set; }
@@ -52,7 +52,7 @@ namespace IO.Ably.Tests
             return TaskConstants.BooleanTrue;
         }
 
-        public ConnectionState State { get; set; }
+        public ConnectionStateBase State { get; set; }
         public TransportState TransportState => Transport.State;
         public ITransport Transport { get; set; }
         public AblyRest RestClient { get; set; }
@@ -67,7 +67,7 @@ namespace IO.Ably.Tests
 
         public bool TriedToRenewToken { get; set; }
 
-        public Task SetState(ConnectionState state, bool skipAttach)
+        public Task SetState(ConnectionStateBase state, bool skipAttach)
         {
             State = state;
             LastSetState = state;
@@ -190,7 +190,7 @@ namespace IO.Ably.Tests
         public bool ShouldSuspendValue { get; set; }
         public bool CanUseFallBack { get; set; }
 
-        public T StateShouldBe<T>() where T : ConnectionState
+        public T StateShouldBe<T>() where T : ConnectionStateBase
         {
             LastSetState.Should().BeOfType<T>();
             return (T) LastSetState;

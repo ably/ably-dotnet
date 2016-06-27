@@ -32,7 +32,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void ShouldHaveSuspendedState()
         {
-            _state.State.Should().Be(ConnectionStateType.Suspended);
+            _state.State.Should().Be(ConnectionState.Suspended);
         }
 
         [Theory]

@@ -23,15 +23,15 @@ namespace IO.Ably.Transport
     {
         public ErrorInfo Error { get; private set; }
         public Exception Exception { get; private set; }
-        public ConnectionStateType State { get; private set; }
+        public ConnectionState State { get; private set; }
 
-        public AttemptFailedState(ConnectionStateType state, ErrorInfo error)
+        public AttemptFailedState(ConnectionState state, ErrorInfo error)
         {
             State = state;
             Error = error;
         }
 
-        public AttemptFailedState(ConnectionStateType state, Exception ex)
+        public AttemptFailedState(ConnectionState state, Exception ex)
         {
             State = state;
             Exception = ex;
@@ -45,7 +45,7 @@ namespace IO.Ably.Transport
 
         private bool IsFailedOrSuspendedState()
         {
-            return State == ConnectionStateType.Disconnected || State == ConnectionStateType.Suspended;
+            return State == ConnectionState.Disconnected || State == ConnectionState.Suspended;
         }
 
         private bool IsRecoverableException()
@@ -111,7 +111,7 @@ namespace IO.Ably.Transport
             }
         }
 
-        public void RecordAttemptFailure(ConnectionStateType state, ErrorInfo error)
+        public void RecordAttemptFailure(ConnectionState state, ErrorInfo error)
         {
             lock (_syncLock)
             {
@@ -122,7 +122,7 @@ namespace IO.Ably.Transport
             }
         }
 
-        public void RecordAttemptFailure(ConnectionStateType state, Exception ex)
+        public void RecordAttemptFailure(ConnectionState state, Exception ex)
         {
             lock (_syncLock)
             {
@@ -150,8 +150,8 @@ namespace IO.Ably.Transport
             }
         }
 
-        public int DisconnectedCount => Attempts.SelectMany(x => x.FailedStates).Count(x => x.State == ConnectionStateType.Disconnected && x.ShouldUseFallback());
-        public int SuspendedCount => Attempts.SelectMany(x => x.FailedStates).Count(x => x.State == ConnectionStateType.Suspended && x.ShouldUseFallback());
+        public int DisconnectedCount => Attempts.SelectMany(x => x.FailedStates).Count(x => x.State == ConnectionState.Disconnected && x.ShouldUseFallback());
+        public int SuspendedCount => Attempts.SelectMany(x => x.FailedStates).Count(x => x.State == ConnectionState.Suspended && x.ShouldUseFallback());
 
         public string GetHost()
         {
@@ -159,11 +159,11 @@ namespace IO.Ably.Transport
             string customHost = "";
             if (lastFailedState != null)
             {
-                if (lastFailedState.State == ConnectionStateType.Disconnected)
+                if (lastFailedState.State == ConnectionState.Disconnected)
                 {
                     customHost = _connection.FallbackHosts[DisconnectedCount%_connection.FallbackHosts.Count];
                 }
-                if (lastFailedState.State == ConnectionStateType.Suspended && SuspendedCount > 1)
+                if (lastFailedState.State == ConnectionState.Suspended && SuspendedCount > 1)
                 {
                     customHost =
                         _connection.FallbackHosts[(DisconnectedCount + SuspendedCount)%_connection.FallbackHosts.Count];
@@ -180,21 +180,21 @@ namespace IO.Ably.Transport
             return _connection.Host;
         }
 
-        public void UpdateAttemptState(ConnectionState newState)
+        public void UpdateAttemptState(ConnectionStateBase newState)
         {
             lock (_syncLock)
                 switch (newState.State)
                 {
-                    case ConnectionStateType.Connecting:
+                    case ConnectionState.Connecting:
                         Attempts.Add(new ConnectionAttempt(Config.Now()));
                         break;
-                    case ConnectionStateType.Failed:
-                    case ConnectionStateType.Closed:
-                    case ConnectionStateType.Connected:
+                    case ConnectionState.Failed:
+                    case ConnectionState.Closed:
+                    case ConnectionState.Connected:
                         Reset();
                         break;
-                    case ConnectionStateType.Suspended:
-                    case ConnectionStateType.Disconnected:
+                    case ConnectionState.Suspended:
+                    case ConnectionState.Disconnected:
                         if (newState.Exception != null)
                         {
                             RecordAttemptFailure(newState.State, newState.Exception);

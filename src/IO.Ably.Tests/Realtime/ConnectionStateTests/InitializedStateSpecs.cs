@@ -24,7 +24,7 @@ namespace IO.Ably.Tests
         public void InitializedState_CorrectState()
         {
             // Assert
-            _state.State.Should().Be(ConnectionStateType.Initialized);
+            _state.State.Should().Be(ConnectionState.Initialized);
         }
 
         [Theory]

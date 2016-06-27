@@ -25,7 +25,7 @@ namespace IO.Ably.Tests.Realtime
             var client = GetClientWithFakeTransport(opts => opts.AutoConnect = true);
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
-            client.ConnectionManager.ConnectionState.Should().Be(ConnectionStateType.Connected);
+            client.ConnectionManager.ConnectionState.Should().Be(ConnectionState.Connected);
             LastCreatedTransport.ConnectCalled.Should().BeTrue();
         }
 
@@ -35,7 +35,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = GetClientWithFakeTransport(opts => opts.AutoConnect = false);
 
-            client.ConnectionManager.ConnectionState.Should().Be(ConnectionStateType.Initialized);
+            client.ConnectionManager.ConnectionState.Should().Be(ConnectionState.Initialized);
             LastCreatedTransport.Should().BeNull("Transport shouldn't be created without calling connect when AutoConnect is false");
         }
 
@@ -56,7 +56,7 @@ namespace IO.Ably.Tests.Realtime
                 connectionKey = "unimportant"
             });
 
-            client.Connection.State.Should().Be(ConnectionStateType.Connected);
+            client.Connection.State.Should().Be(ConnectionState.Connected);
             client.Connection.Key.Should().Be("boo");
         }
 

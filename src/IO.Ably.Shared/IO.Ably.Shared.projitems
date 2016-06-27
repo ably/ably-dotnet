@@ -22,6 +22,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CipherParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EventEmitter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IChannelCommands.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IRealtimeClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeChannels.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\RestChannels.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TaskConstants.cs" />

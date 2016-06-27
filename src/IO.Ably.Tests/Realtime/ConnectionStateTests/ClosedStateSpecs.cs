@@ -22,7 +22,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void ShouldHaveCorrectState()
         {
-            _state.State.Should().Be(ConnectionStateType.Closed);
+            _state.State.Should().Be(ConnectionState.Closed);
         }
 
         [Fact]
