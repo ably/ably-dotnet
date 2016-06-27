@@ -1,35 +1,45 @@
-﻿using Ably.AcceptanceTests;
-using Ably.Tests;
-using System.Reflection;
+﻿using System;
+using System.CodeDom;
+using System.Linq;
+using System.Threading;
 
-namespace Ably.ConsoleTest
+namespace IO.Ably.ConsoleTest
 {
-    static class Program
+    class Program
     {
-
-        static void Main( string[] args )
+        static void Main(string[] args)
         {
-            // === NUnit ===
-            Assembly ass = typeof(LoggerTests).Assembly;
+            IO.Ably.Logger.LoggerSink = new MyLogger();
+            //Logger.LogLevel = LogLevel.Debug;
+            try
+            {
+                //Rest.Test().Wait();
+                var client = Realtime.Test();
+                client.Connect(); 
+                var channel = client.Channels.Get("testchannel0");
+                channel.Attach();
+                channel.Presence.Subscribe(Presence_MessageReceived2);
+                channel.Presence.EnterClientAsync("clientid1", "mydata");
 
-            // Run all of them, with brief output
-            NUnit.Run( ass, false, false, false );
+                while (true)
+                {
+                    channel.Publish(new Random().Next(1000000000, 1000000000).ToString(), new Random().Next(1000000000, 1000000000).ToString());
+                    Thread.Sleep(1000);
+                    Console.WriteLine("Bytes used: " + GC.GetTotalMemory(true));
+                }
 
-            // Run all of them, with verbose output, and stop on errors
-            // NUnit.Run( ass, true, true, true );
+                //Console.ReadLine();
+                //ConsoleColor.Green.WriteLine("Success!");
+            }
+            catch (Exception ex)
+            {
+                ex.LogError();
+            }
+        }
 
-            // Run the single test
-            // NUnit.Run( ass, true, true, true, "Ably.AcceptanceTests.RealtimeAcceptanceTests(MsgPack).TestCreateRealtimeClient_AutoConnect_False_ConnectsSuccessfuly" );
-
-            // === XUnit ===
-            Assembly x = typeof( AuthOptionsMergeTests ).Assembly;
-            string strTest = null;
-
-            // Run all of them, with brief output
-            XUnit.Run( x, null, false, false );
-
-            // strTest = "CipherEncoderTests+WithInvalidChannelOptions.WithInvalidAlgorithm_Throws";
-            // XUnit.Run( x, strTest, true );
+        private static void Presence_MessageReceived2(PresenceMessage obj)
+        {
+            Console.WriteLine(obj.connectionId + "\t" + obj.timestamp);
         }
     }
 }

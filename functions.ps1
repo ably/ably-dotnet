@@ -40,8 +40,8 @@ function global:run_tests($test_result_file, $xunit_console_dir, $solution_dir, 
 
 		Write-Output "TestAssemblies: $testAssemblies"
 
-		$xunit_console = "$xunit_console_dir\xunit.console.clr4.exe"
-		& "$xunit_console" $testAssemblies /noshadow /nunit "$test_result_file"
+		$xunit_console = "$xunit_console_dir\xunit.console.exe"
+		& "$xunit_console" $testAssemblies -parallel none -nunit "$test_result_file"
 
 		Write-Output "##teamcity[importData type='nunit' path='$test_result_file']"
 	}
@@ -62,7 +62,7 @@ function global:run_nunit_tests($test_result_folder, $console_dir, $test_root, $
 	
 	$testAssemblies = @()
 	$testDlls = (get-childitem "$test_root\" -r -i "*$testType.dll" -exclude "*.config")
-	$nunit_console = "$console_dir\nunit-console.exe"
+	$nunit_console = "$console_dir\nunit3-console.exe"
 	
 	try {
 		foreach($testDll in $testDlls) {
@@ -190,25 +190,27 @@ function global:setup_folder($directory)
 function global:generate_assembly_info
 {
 param(
-	[string]$clsCompliant = "true",
 	[string]$company, 
 	[string]$product, 
 	[string]$copyright,
 	[string]$version,
 	[string]$file = $(throw "file is a required parameter.")
 )
+
+$fileVersion = $version -replace "-\w+$", ""
+
 $asmInfo = "using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: CLSCompliantAttribute($clsCompliant )]
 [assembly: ComVisibleAttribute(false)]
 [assembly: AssemblyCompanyAttribute(""$company"")]
+[assembly: AssemblyDescription(""Client for ably.io realtime service"")]
 [assembly: AssemblyProductAttribute(""$product"")]
 [assembly: AssemblyCopyrightAttribute(""$copyright"")]
-[assembly: AssemblyVersionAttribute(""$version"")]
+[assembly: AssemblyVersionAttribute(""$fileVersion"")]
 [assembly: AssemblyInformationalVersionAttribute(""$version"")]
-[assembly: AssemblyFileVersionAttribute(""$version"")]
+[assembly: AssemblyFileVersionAttribute(""$fileVersion"")]
 "
 
 	$dir = [System.IO.Path]::GetDirectoryName($file)
@@ -217,6 +219,6 @@ using System.Runtime.InteropServices;
 		Write-Host "Creating directory $dir"
 		[System.IO.Directory]::CreateDirectory($dir)
 	}
-	Write-Host "Generating assembly info file: $file"
+	Write-Host "Generating assembly info file: $file. Version: $version"
 	Write-Output $asmInfo > $file
 }

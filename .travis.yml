@@ -1,6 +1,8 @@
+sudo: false
 language: csharp
-solution: Ably.sln
+solution: IO.Ably.sln
 install:
-  - nuget restore ./src/Ably.sln
+  - nuget restore ./src/IO.Ably.Travis.sln
 script:
-  - xbuild /p:Configuration='Release 4.0' ./src/Ably.sln
+  - xbuild /p:Configuration='Release' ./src/IO.Ably.Travis.sln
+  - mono ./tools/xunit-runners/tools/xunit.console.exe ./src/IO.Ably.Tests/bin/Release/IO.Ably.Tests.dll -parallel none -noappdomain -verbose

@@ -1,4 +1,4 @@
-Framework "4.0"
+Framework "4.5.1"
 $ErrorActionPreference = 'Stop'
 
 properties { 
@@ -7,10 +7,10 @@ properties {
 	$tools_dir = "$build_script_dir\tools"
 	$configuration = 'debug'
 	$sln_dir = "src"
-	$sln_name = "Ably.sln"
+	$sln_name = "IO.Ably.sln"
 	
-	$project_name = "Ably"
-	$build_number = "1.0.0.0"
+	$project_name = "IO.Ably"
+	$build_number = "0.8.2-Beta"
 	$solution_dir = "$build_script_dir\$sln_dir"
 	
 	$build_artifacts_dir_base = "$build_script_dir\build\artifacts"
@@ -40,19 +40,18 @@ task Assembly_Info {
 } 
 
 task Build -depends Assembly_Info, Init {
+	clean_directory $build_artifacts_dir_base
+	
 	$base_dir = "$build_script_dir\$sln_dir"
+
 	run_msbuild "$base_dir\$sln_name" $configuration
 
 	$package_dir = "$base_dir\$project_name\bin\$configuration"
-	
-	clean_directory $build_artifacts_dir_base
-	publish_build $package_dir $build_artifacts_dir
-	publish_tools $build_script_dir.ToString() $build_artifacts_tools_dir
 }
 
 task Unit_Tests {
 
-	$base_dir = "$build_script_dir\$sln_dir\Ably.Tests\bin\$configuration"
+	$base_dir = "$build_script_dir\$sln_dir\IO.Ably.Tests\bin\$configuration"
 
 	$xunit_runner = "$build_script_dir\tools\xunit-runners\tools"
 

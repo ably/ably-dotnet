@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>ably.io</id>
+        <version>0.8.2-Beta</version>
+        <title>ably.io</title>
+        <authors>Yavor Ivanov,Martin Georgiev</authors>
+        <owners>Ably Real-time Ltd</owners>
+        <licenseUrl>https://github.com/ably/ably-dotnet/blob/master/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/ably/ably-dotnet</projectUrl>
+        <iconUrl>http://docs.ably.io/assets/ably-logo.png</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Ably .NET Realtime and REST client library.</description>
+        <summary>Ably is a hugely scalable, superfast and secure hosted real-time messaging service for web-enabled devices.</summary>
+        <copyright>2016 Ably</copyright>
+        <language />
+        <dependencies>
+            <dependency id="Newtonsoft.Json" version="8.0.3" />
+            <dependency id="Nito.AsyncEx" version="3.0.1" />
+            <dependency id="WebSocket4Net" version="0.14.1" />
+            <dependency id="MsgPack.Cli" version="0.6.8" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\src\IO.Ably.Net45\bin\Release\IO.Ably.*" target="lib\net45" />
+        <file src="..\src\IO.Ably.Android\bin\Release\IO.Ably.*" target="lib\monoandroid" />
+        <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.*" target="lib\Xamarin.iOS" />
+        <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.*" target="lib\monotouch" />
+    </files>
+</package>
