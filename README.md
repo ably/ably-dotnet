@@ -45,13 +45,11 @@ If you do not have an API key, [sign up for a free API key now](https://www.ably
 Connecting and observing connection state changes. By default the library automatically initiallises a connection. 
 
 ```csharp
-realtime.Connection.ConnectionStateChanged += (s, args) =>
+ realtime.Connection.On(ConnectionState.Connected, args =>
 {
-    if (args.CurrentState == ConnectionState.Connected)
-    {
-        // Do stuff
-    }
-};
+    //Do stuff  
+});
+
 ```
 To disable that behaviour set *AutoConnect=false* when initialising the client.
 
@@ -64,14 +62,13 @@ realtime.Connect();
 Subscribing to connection state changes and observing errors:
 
 ```csharp
-realtime.Connection.ConnectionStateChanged += (s, args) =>
+realtime.Connection.On(args =>
 {
-    var currentState = args.CurrentState; //Current state the connection transitioned to
-    var previousState = args.PreviousState; // Previous state
+    var currentState = args.Current; //Current state the connection transitioned to
+    var previousState = args.Previous; // Previous state
     var error = args.Reason; // If the connection errored the Reason object will be populated.
-};
+});
 ```
-
 
 ### Subscribing to a channel
 
@@ -79,8 +76,6 @@ Create a channel
 
 ```csharp
 var channel = realtime.Channels.Get("test");
-//or
-var channel2 = realtime.Get("shortcut");
 ```
 
 Subscribing to all events:
@@ -106,16 +101,18 @@ channel.Subscribe("myEvent", message =>
 Observing channel state changes and errors:
 
 ```csharp
-channel.StateChanged += (s, args) =>
+channel.On(args =>
 {
     var state = args.NewState; //Current channel State
-    var error = args.Reason; // If the channel errored it will be refrected here
+    var error = args.Error; // If the channel errored it will be refrected here
+});
 
-    if (state == ChannelState.Attached)
-    {
-        // Do stuff
-    }
-};
+//or
+
+channel.On(ChannelState.Attached, args =>
+{
+    // Do stuff when channel is attached
+});
 ```
 
 ### Publishing to a channel
@@ -137,6 +134,7 @@ channel.Publish("greeting", "Hello World!", (success, error) =>
 ```
 
 and the async version which if you `await` it will complete when the message has been acknowledged by the ably service:
+
 ```csharp
 var result = await channel.PublishAsync("greeting", "Hello World!");
 ```
@@ -147,21 +145,15 @@ Calling history returns a paginated list of message. The object is of type `Pagi
 
 ```csharp
 var history = await channel.HistoryAsync();
-var firstMessage = history.FirstOrDefault();
+var firstMessage = history.Items.FirstOrDefault();
 //loop through current history page
-foreach (var message in history)
+foreach (var message in history.Items)
 {
     //Do something with message
 }
-//check if next page exists and get it
-if (history.HasNext)
-{
-    var nextPage = await channel.HistoryAsync(history.NextQuery);
-    //Do stuff with next page
-}
+//Get next page.
+var nextPage = await history.NextAsync();
 ```
-
-
 
 ### Getting presence history
 
@@ -169,18 +161,14 @@ Getting presence history is similar to how message history works. You get back `
 
 ```csharp
 var presenceHistory = await channel.Presence.HistoryAsync();
-var firstPresenceMessage = presenceHistory.FirstOrDefault();
+var firstPresenceMessage = presenceHistory.Items.FirstOrDefault();
 //loop through the presence messages
-foreach (var presence in presenceHistory)
+foreach (var presence in presenceHistory.Items)
 {
     //Do something with the messages
 }
-//check if next page exists and get it
-if (presenceHistory.HasNext)
-{
-    var nextPage = await channel.Presence.HistoryAsync(presenceHistory.NextQuery);
-    //Continue work with the next page
-}
+
+var presenceNextPage = await presenceHistory.NextAsync();
 ```
 
 ### Symmetric end-to-end encrypted payloads on a channel
@@ -235,51 +223,43 @@ catch(AblyException ablyError)
 
 ```csharp
 var historyPage = await channel.HistoryAsync();
-var firstMessage = historyPage.FirstOrDefault();
-foreach (var message in historyPage)
+var firstMessage = historyPage.Items.FirstOrDefault();
+foreach (var message in historyPage.Items)
 {
     //Do something with each message
 }
-//get next page if there is one
-if (historyPage.HasNext)
-{
-    var nextPage = await channel.HistoryAsync(historyPage.NextQuery);
-}
+//get next page
+var nextHistoryPage = await historyPage.NextAsync();
 ```
 
 ### Current presence members on a channel
 
 ```csharp
 var presence = await channel.Presence.GetAsync();
-var first = presence.FirstOrDefault();
+var first = presence.Items.FirstOrDefault();
 var clientId = first.clientId; //clientId of the first member present
-if (presence.HasNext)
+var nextPresencePage = await presence.NextAsync();
+foreach (var presenceMessage in nextPresencePage.Items)
 {
-    var nextPage = await channel.Presence.GetAsync(presence.NextQuery);
-    foreach (var presenceMessage in nextPage)
-    {
-        //do stuff with next page presence messages
-    }
+    //do stuff with next page presence messages
 }
 ```
 
 ### Querying the presence history
 
 ```csharp
+// Presence history
 var presenceHistory = await channel.Presence.HistoryAsync();
-var firstHistoryMessage = presenceHistory.FirstOrDefault();
-foreach (var presenceMessage in presenceHistory)
+var firstHistoryMessage = presenceHistory.Items.FirstOrDefault();
+foreach (var presenceMessage in presenceHistory.Items)
 {
     // Do stuff with presence messages
 }
 
-if (presenceHistory.HasNext)
+var nextPage = await presenceHistory.NextAsync();
+foreach (var presenceMessage in nextPage.Items)
 {
-    var nextPage = await channel.Presence.HistoryAsync(presenceHistory.NextQuery);
-    foreach (var presenceMessage in nextPage)
-    {
-        // Do stuff with next page messages
-    }
+    // Do stuff with next page messages
 }
 ```
 
@@ -316,11 +296,8 @@ var data = history.First().data; // "sensitive data" the message will be automat
 
 ```csharp
 var stats = await client.StatsAsync();
-var firstItem = stats.First();
-if (stats.HasNext)
-{
-    var nextPage = await client.StatsAsync(stats.NextQuery);
-}
+var firstItem = stats.Items.First();
+var nextStatsPage = await stats.NextAsync();
 ```
 
 ### Fetching the Ably service time
