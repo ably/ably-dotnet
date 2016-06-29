@@ -164,9 +164,10 @@ namespace IO.Ably.Tests.Realtime
         {
             // Arrange
             var client = await GetRealtimeClient(protocol);
-            AutoResetEvent signal = new AutoResetEvent(false);
+            
             IRealtimeChannel target = client.Channels.Get("test");
             target.Attach();
+            
             List<Message> messagesReceived = new List<Message>();
             target.Subscribe(message =>
             {
@@ -244,7 +245,7 @@ namespace IO.Ably.Tests.Realtime
                 });
             }
 
-            await Task.Delay(3000);
+            await Task.Delay(6000);
             successes.Where(x => x == true).Should().HaveCount(60, "Should have 60 successful callback executed");
         }
 
@@ -495,6 +496,7 @@ namespace IO.Ably.Tests.Realtime
                 var encoding = (string)encoded["encoding"];
                 var decodedData = DecodeData((string)encoded["data"], encoding);
                 await channel.PublishAsync((string)encoded["name"], decodedData);
+                await Task.Delay(100);
                 if (lastMessage.data is byte[])
                     (lastMessage.data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
                 else if (encoding == "json")

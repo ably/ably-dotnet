@@ -145,7 +145,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
         [Fact]
         [Trait("spec", "RTN14d")]
-        public void WhenTransportFails_ShouldTransitionToDisconnectedAndEmitErrorWithRetry()
+        public async Task WhenTransportFails_ShouldTransitionToDisconnectedAndEmitErrorWithRetry()
         {
             _fakeTransportFactory.initialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false; //this will keep it in connecting state
@@ -158,13 +158,20 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             });
 
             client.Connect();
+
+            await WaitForConnectingOrSuspended(client);
+            ConnectionStateChangedEventArgs connectionArgs = null;
             client.Connection.InternalStateChanged += (sender, args) =>
             {
-                args.Current.Should().Be(ConnectionState.Disconnected);
-                args.RetryIn.Should().Be(options.DisconnectedRetryTimeout);
-                args.Reason.Should().NotBeNull();
+                connectionArgs = args;
+                Done();
             };
             LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closing, new Exception());
+
+            WaitOne();
+            connectionArgs.Current.Should().Be(ConnectionState.Disconnected);
+            connectionArgs.RetryIn.Should().Be(options.DisconnectedRetryTimeout);
+            connectionArgs.Reason.Should().NotBeNull();
         }
 
         [Fact(Skip = "Requires a SandBox Spec")]

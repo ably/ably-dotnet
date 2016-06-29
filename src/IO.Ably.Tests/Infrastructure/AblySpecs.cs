@@ -1,11 +1,26 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
     public abstract class AblyRealtimeSpecs : MockHttpRestSpecs
     {
+        AutoResetEvent Signal = new AutoResetEvent(false);
+
+        public void WaitOne()
+        {
+            var result = Signal.WaitOne(2000);
+            Assert.True(result, "Result was not returned withing 2000ms");
+        }
+
+        public void Done()
+        {
+            Signal.Set();
+        }
+
         internal virtual AblyRealtime GetRealtimeClient(ClientOptions options = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
         {
             var clientOptions = options ?? new ClientOptions(ValidKey);
@@ -19,6 +34,7 @@ namespace IO.Ably.Tests
             var options = new ClientOptions(ValidKey);
             options.SkipInternetCheck = true; //This is for the Unit tests
             options.UseSyncForTesting = true;
+            options.CaptureCurrentSynchronizationContext = false;
             optionsAction?.Invoke(options);
             return new AblyRealtime(options, clientOptions => GetRestClient(handleRequestFunc, clientOptions));
         }

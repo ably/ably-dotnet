@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -116,10 +117,13 @@ namespace IO.Ably.Tests.Realtime
                 _channel.On(x =>
                 {
                     newState = x.NewState;
+                    Done();
                 });
 
                 (_channel as RealtimeChannel).SetChannelState(state);
-                await Task.Delay(10);
+                
+                WaitOne();
+
                 _channel.State.Should().Be(state);
                 newState.Should().Be(state);
             }
@@ -133,11 +137,12 @@ namespace IO.Ably.Tests.Realtime
                 _channel.On((args) =>
                 {
                     expectedError = args.Error;
+                    Done();
                 });
 
                 (_channel as RealtimeChannel).SetChannelState(ChannelState.Attached, error);
 
-                await Task.Delay(10);
+                WaitOne();
 
                 expectedError.Should().BeSameAs(error);
                 _channel.ErrorReason.Should().BeSameAs(error);
@@ -234,7 +239,9 @@ namespace IO.Ably.Tests.Realtime
                 });
 
                 _channel.Attach();
+
                 await Task.Delay(100);
+
                 stateChanged.Should().BeFalse("This should not happen. State changed to: " + newState);
             }
 
@@ -299,10 +306,11 @@ namespace IO.Ably.Tests.Realtime
                 {
                     called = true;
                     info.Should().BeNull();
+                    Done();
                 });
 
                 await ReceiveAttachedMessage();
-
+                WaitOne();
                 called.Should().BeTrue();
             }
 
@@ -316,9 +324,10 @@ namespace IO.Ably.Tests.Realtime
                 {
                     called = true;
                     info.Should().NotBeNull();
+                    Done();
                 });
 
-                await Task.Delay(120);
+                WaitOne();
 
                 called.Should().BeTrue();
             }
@@ -390,6 +399,7 @@ namespace IO.Ably.Tests.Realtime
                 });
 
                 _channel.Detach();
+
                 changed.Should().BeFalse();
             }
 
@@ -437,16 +447,20 @@ namespace IO.Ably.Tests.Realtime
             {
                 SetState(ChannelState.Attached);
 
-                var called = false;
+                bool called = false;
+                var detached = false;
                 _channel.Detach((span, info) =>
                 {
                     called = true;
-                    info.Should().BeNull();
+                    Assert.Null(info);
+                    Done();
                 });
 
                 await ReceiveDetachedMessage();
 
-                called.Should().BeTrue();
+                WaitOne();
+
+                Assert.True(called);
             }
 
             [Fact]
@@ -461,9 +475,10 @@ namespace IO.Ably.Tests.Realtime
                 {
                     called = true;
                     info.Should().NotBeNull();
+                    Done();
                 });
 
-                await Task.Delay(180);
+                WaitOne();
 
                 called.Should().BeTrue();
             }
@@ -733,11 +748,14 @@ namespace IO.Ably.Tests.Realtime
                 channel.Subscribe("test", message =>
                 {
                     messages.Add(message);
+                    Done();
                 });
 
                 await _client.FakeMessageReceived(new Message("test", "best"), "test");
                 await _client.FakeMessageReceived(new Message("", "best"), "test");
                 await _client.FakeMessageReceived(new Message("blah", "best"), "test");
+
+                WaitOne();
 
                 messages.Should().HaveCount(1);
             }
@@ -771,11 +789,14 @@ namespace IO.Ably.Tests.Realtime
                 encryptedChannel.Error += (sender, args) =>
                 {
                     errorEmitted = true;
+                    Done();
                 };
 
                 var message = new Message("name", "encrypted with otherChannelOptions");
                 new MessageHandler(Protocol.Json).EncodePayloads(otherChannelOptions, new[] {message});
                 await _client.FakeMessageReceived(message, encryptedChannel.Name);
+
+                WaitOne();
 
                 msgReceived.Should().BeTrue();
                 errorEmitted.Should().BeTrue();
