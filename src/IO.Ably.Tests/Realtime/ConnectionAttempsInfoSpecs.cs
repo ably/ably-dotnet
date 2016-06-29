@@ -40,12 +40,13 @@ namespace IO.Ably.Tests.Realtime
         [Fact]
         public void ShouldSuspend_WhenFirstAttemptEqualOrGreaterThanConnectionStateTtl_ShouldReturnTrue()
         {
+            Now = DateTimeOffset.Now;
             _info.Attempts.Add(new ConnectionAttempt(Now));
             //Move now to default ConnetionStatettl - 1 second
             Now = Now.Add(Defaults.ConnectionStateTtl);
-            _info.ShouldSuspend().Should().BeTrue(); // =
+            _info.ShouldSuspend().Should().BeTrue("When time is equal"); // =
             Now = Now.AddSeconds(1);
-            _info.ShouldSuspend().Should().BeTrue(); // >
+            _info.ShouldSuspend().Should().BeTrue("When time is greater than"); // >
         }
 
         [Fact]

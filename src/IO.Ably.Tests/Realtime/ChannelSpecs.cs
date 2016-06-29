@@ -726,14 +726,20 @@ namespace IO.Ably.Tests.Realtime
                 var channel = _client.Channels.Get("Test");
                 SetState(channel, ChannelState.Attached);
                 var messages = new List<Message>();
+                int count = 0;
                 channel.Subscribe(message =>
                 {
                     messages.Add(message);
+                    count++;
+                    if (count == 2)
+                        Done();
                 });
 
                 await _client.FakeMessageReceived(new Message("test", "best"), "Test");
                 await _client.FakeMessageReceived(new Message("", "best"), "Test");
                 await _client.FakeMessageReceived(new Message("blah", "best"), "Test");
+
+                WaitOne();
 
                 messages.Should().HaveCount(3);
             }
@@ -819,10 +825,13 @@ namespace IO.Ably.Tests.Realtime
                 channel.Error += (sender, args) =>
                 {
                     error = args.Reason;
+                    Done();
                 };
 
                 var message = new Message("name", "encrypted with otherChannelOptions") { encoding = "json" };
                 await _client.FakeMessageReceived(message, channel.Name);
+
+                WaitOne();
 
                 error.Should().NotBeNull();
                 receivedMessage.encoding.Should().Be("json");
