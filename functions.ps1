@@ -41,7 +41,7 @@ function global:run_tests($test_result_file, $xunit_console_dir, $solution_dir, 
 		Write-Output "TestAssemblies: $testAssemblies"
 
 		$xunit_console = "$xunit_console_dir\xunit.console.exe"
-		& "$xunit_console" $testAssemblies -parallel none -nunit "$test_result_file"
+		& "$xunit_console" $testAssemblies -diagnostics -noappdomain -verbose -maxthread 2 -nunit "$test_result_file"
 
 		Write-Output "##teamcity[importData type='nunit' path='$test_result_file']"
 	}
