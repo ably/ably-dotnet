@@ -32,7 +32,7 @@ namespace IO.Ably.Tests.Realtime
             await channel.Presence.EnterAsync(new [] {"test", "best"});
             
             var presence = await channel.Presence.GetAsync();
-            
+            await Task.Delay(2000);
             presence.Should().HaveCount(1);
         }
 
@@ -42,7 +42,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "presence-timestamp-test");
 
-            var channel = client.Channels.Get("test");
+            var channel = client.Channels.Get("test".AddRandomSuffix());
             DateTimeOffset? time = null;
             channel.Presence.Subscribe(message =>
             {
@@ -52,6 +52,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             await channel.Presence.EnterAsync(new[] { "test", "best" });
+
             _resetEvent.WaitOne(2000);
             time.Should().HaveValue();
         }

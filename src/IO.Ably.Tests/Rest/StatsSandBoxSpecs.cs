@@ -7,7 +7,6 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    [Collection("AblyRest SandBox Collection")]
     [Trait("requires", "sandbox")]
     public class StatsSandBoxSpecs : SandboxSpecs
     {
@@ -25,6 +24,7 @@ namespace IO.Ably.Tests
         [ProtocolData]
         public async Task ShouldHaveCorrectStatsAsPerStatsSpec(Protocol protocol)
         {
+            
             var stats = await GetStats(protocol);
             stats.All.Messages.Count.Should().Be(40 + 70);
             stats.All.Messages.Data.Should().Be(4000 + 7000);
@@ -46,8 +46,9 @@ namespace IO.Ably.Tests
             stats.TokenRequests.Failed.Should().Be(20);
         }
 
-        public StatsSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
+        public StatsSandBoxSpecs(ITestOutputHelper output) : base(new AblySandboxFixture(), output)
         {
+            
         }
     }
 }
