@@ -181,22 +181,26 @@ namespace IO.Ably.Tests.Realtime
             // Act
             await _realtime.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, "test"));
 
+            await new ChannelAwaiter(channel, ChannelState.Detached).WaitAsync();
             // Assert
             Channels.Should().BeEmpty();
         }
 
         [Fact]
         [Trait("spec", "RTS4a")]
-        public void ReleaseAll_ShouldRemoveChannelWhenFailded()
+        public async Task ReleaseAll_ShouldRemoveChannelWhenFailded()
         {
+            Logger.LogLevel = LogLevel.Debug;
+            
             // Arrange
             var channel = Channels.Get("test");
             channel.Attach();
             Channels.ReleaseAll();
 
             // Act
-            _realtime.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
+            await _realtime.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
 
+            
             // Assert
             Assert.False(Channels.Any());
         }

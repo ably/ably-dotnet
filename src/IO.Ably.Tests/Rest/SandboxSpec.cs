@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using Xunit.Abstractions;
@@ -9,9 +10,11 @@ namespace IO.Ably.Tests
     {
         protected readonly AblySandboxFixture Fixture;
         protected readonly ITestOutputHelper Output;
+        protected ManualResetEvent _resetEvent;
 
         public SandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
         {
+            _resetEvent = new ManualResetEvent(false);
             Fixture = fixture;
             Output = output;
             //Reset time in case other tests have changed it

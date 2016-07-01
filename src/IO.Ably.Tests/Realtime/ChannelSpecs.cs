@@ -310,7 +310,9 @@ namespace IO.Ably.Tests.Realtime
                 });
 
                 await ReceiveAttachedMessage();
+
                 WaitOne();
+
                 called.Should().BeTrue();
             }
 

@@ -43,7 +43,7 @@ namespace IO.Ably.Tests.Realtime
             var result = await client.Connection.PingAsync();
 
             result.IsSuccess.Should().BeTrue();
-            result.Value.Value.Should().Be(TimeSpan.FromMilliseconds(100));
+            result.Value.Value.Should().Be(TimeSpan.FromMilliseconds(500));
         }
 
         [Fact]

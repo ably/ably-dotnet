@@ -50,18 +50,26 @@ namespace IO.Ably.Realtime
 
         public bool Release(string name)
         {
+            if(Logger.IsDebug) {  Logger.Debug($"Releasing channel #{name}"); }
             RealtimeChannel channel = null;
             if (_channels.TryGetValue(name, out channel))
             {
                 EventHandler<ChannelStateChangedEventArgs> eventHandler = null;
                 eventHandler = (s, args) =>
                 {
+                    var detachedChannel = (RealtimeChannel) s;
                     if (args.NewState == ChannelState.Detached || args.NewState == ChannelState.Failed)
                     {
-                        channel.StateChanged -= eventHandler;
+                        if (Logger.IsDebug) { Logger.Debug($"Channel #{name} was removed from Channel list. State {args.NewState}"); }
+                        detachedChannel.StateChanged -= eventHandler;
+
                         RealtimeChannel removedChannel;
                         if (_channels.TryRemove(name, out removedChannel))
                             removedChannel.Dispose();
+                    }
+                    else
+                    {
+                        if (Logger.IsDebug) { Logger.Debug($"Waiting to remove Channel #{name}. State {args.NewState}"); }
                     }
                 };
                 channel.StateChanged += eventHandler;

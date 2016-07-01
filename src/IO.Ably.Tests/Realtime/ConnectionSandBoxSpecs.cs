@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime
 {
-    [Collection("AblyRest SandBox Collection")]
+    [Collection("SandBox Connection")]
     [Trait("requires", "sandbox")]
     public class ConnectionSandBoxSpecs : SandboxSpecs
     {
@@ -99,8 +99,9 @@ namespace IO.Ably.Tests.Realtime
                 await GetRealtimeClient(protocol)
             };
 
-            //Wait for the clients to connect
-            await Task.Delay(TimeSpan.FromSeconds(3));
+            int count = 0;
+
+            await Task.Delay(5000);
 
             var distinctConnectionIds = clients.Select(x => x.Connection.Id).Distinct();
             distinctConnectionIds.Should().HaveCount(3);
@@ -190,7 +191,7 @@ namespace IO.Ably.Tests.Realtime
 
             realtimeClient.Connect();
 
-            await WaitForState(realtimeClient, ConnectionState.Connected, TimeSpan.FromSeconds(10));
+            await WaitForState(realtimeClient, ConnectionState.Connected, TimeSpan.FromSeconds(15));
 
             realtimeClient.RestClient.AblyAuth.CurrentToken.Expires.Should().BeAfter(Config.Now(), "The token should be valid and expire in the future.");
             error.Should().BeNull("No error should be raised!");
@@ -226,7 +227,7 @@ namespace IO.Ably.Tests.Realtime
             var initialConnectionId = client.Connection.Id;
             client.ConnectionManager.Transport.Close(false);
             await WaitForState(client, ConnectionState.Disconnected);
-            await WaitForState(client, ConnectionState.Connected, TimeSpan.FromSeconds(5));
+            await WaitForState(client, ConnectionState.Connected, TimeSpan.FromSeconds(10));
             client.Connection.Id.Should().Be(initialConnectionId);
             client.Connection.Key.Should().NotBe(initialConnectionKey);
         }
@@ -319,7 +320,7 @@ namespace IO.Ably.Tests.Realtime
             };
 
             await client.Auth.AuthoriseAsync(new TokenParams() { Ttl = TimeSpan.FromSeconds(10) });
-            var channel = client.Channels.Get("test");
+            var channel = client.Channels.Get("shortToken_test" + protocol);
             int count = 0;
             while (true)
             {
