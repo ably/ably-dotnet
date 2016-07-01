@@ -126,12 +126,13 @@ namespace IO.Ably.Tests.Realtime
             target.Subscribe(message =>
             {
                 messagesReceived.Add(message);
+                _resetEvent.Set();
             });
 
             // Act
             target.Publish("test", "test data");
             target.State.Should().Be(ChannelState.Attaching);
-            await Task.Delay(2000);
+            _resetEvent.WaitOne(4000);
 
             // Assert
             target.State.Should().Be(ChannelState.Attached);
@@ -278,7 +279,7 @@ namespace IO.Ably.Tests.Realtime
                 _resetEvent.Set();
             });
 
-            _resetEvent.WaitOne(2000);
+            _resetEvent.WaitOne(4000).Should().BeTrue();
 
             await channel.PublishAsync(new Message("test", "withClientId") { clientId = "123" });
             messageReceived.Should().BeTrue();
@@ -344,7 +345,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             await channel.PublishAsync(new Message("test", "data") { clientId = "999"});
-            _resetEvent.WaitOne(2000);
+            _resetEvent.WaitOne(4000).Should().BeTrue("Timed out");
 
             messageReceived.Should().BeTrue();
         }
@@ -450,9 +451,12 @@ namespace IO.Ably.Tests.Realtime
             {
                 message.connectionId.Should().Be(connectionId);
                 messageReceived = true;
+                _resetEvent.Set();
             });
 
             await channel.PublishAsync(new Message("test", "best"));
+
+            _resetEvent.WaitOne();
             messageReceived.Should().BeTrue();
         }
 
