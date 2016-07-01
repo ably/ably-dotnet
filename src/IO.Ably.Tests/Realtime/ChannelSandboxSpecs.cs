@@ -155,7 +155,7 @@ namespace IO.Ably.Tests.Realtime
 
             var channel = client.Channels.Get("nono_" + protocol);
             var result = await channel.AttachAsync();
-            Output.WriteLine("Value: "+ result.Value);
+
             result.IsFailure.Should().BeTrue();
             result.Error.code.Should().Be(40160);
             result.Error.statusCode.Should().Be(HttpStatusCode.Unauthorized);

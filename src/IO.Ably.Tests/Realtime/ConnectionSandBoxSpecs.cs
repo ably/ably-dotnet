@@ -184,14 +184,15 @@ namespace IO.Ably.Tests.Realtime
             });
 
             ErrorInfo error = null;
-            realtimeClient.Connection.InternalStateChanged += (o, args) =>
+            realtimeClient.Connection.On(ConnectionState.Connected, (args) =>
             {
                 error = args.Reason;
-            };
+                _resetEvent.Set();
+            });
 
             realtimeClient.Connect();
 
-            await WaitForState(realtimeClient, ConnectionState.Connected, TimeSpan.FromSeconds(15));
+            _resetEvent.WaitOne(10000);
 
             realtimeClient.RestClient.AblyAuth.CurrentToken.Expires.Should().BeAfter(Config.Now(), "The token should be valid and expire in the future.");
             error.Should().BeNull("No error should be raised!");
