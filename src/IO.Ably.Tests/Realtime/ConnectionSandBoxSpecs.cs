@@ -272,7 +272,8 @@ namespace IO.Ably.Tests.Realtime
             client.ConnectionManager.Transport.Close(true);
 
             recoveryClient.Connect();
-            await WaitForState(recoveryClient, ConnectionState.Connected, TimeSpan.FromSeconds(5));
+
+            await WaitForState(recoveryClient, ConnectionState.Connected);
 
             recoveryClient.Connection.Id.Should().Be(id);
             recoveryClient.Connection.Key.Should().NotBe(key);
@@ -288,16 +289,18 @@ namespace IO.Ably.Tests.Realtime
                 opts.Recover = "c17a8!WeXvJum2pbuVYZtF-1b63c17a8:-1";
                 opts.AutoConnect = false;
             });
+
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 if (args.Current == ConnectionState.Connected)
                 {
-                    args.Reason.Should().NotBeNull();
+                    _resetEvent.Set();
                 }
             };
             client.Connect();
 
-            await WaitForState(client, ConnectionState.Connected, TimeSpan.FromSeconds(10));
+            var result = _resetEvent.WaitOne(10000);
+            result.Should().BeTrue("Timeout");
             client.Connection.ErrorReason.code.Should().Be(80008);
         }
 

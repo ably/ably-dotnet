@@ -190,8 +190,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTS4a")]
         public async Task ReleaseAll_ShouldRemoveChannelWhenFailded()
         {
-            Logger.LogLevel = LogLevel.Debug;
-            
             // Arrange
             var channel = Channels.Get("test");
             channel.Attach();

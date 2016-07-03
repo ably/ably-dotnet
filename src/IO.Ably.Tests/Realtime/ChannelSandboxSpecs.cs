@@ -279,9 +279,10 @@ namespace IO.Ably.Tests.Realtime
                 _resetEvent.Set();
             });
 
+            await channel.PublishAsync(new Message("test", "withClientId") { clientId = "123" });
+
             _resetEvent.WaitOne(4000).Should().BeTrue("Operation timed out");
 
-            await channel.PublishAsync(new Message("test", "withClientId") { clientId = "123" });
             messageReceived.Should().BeTrue();
         }
 
