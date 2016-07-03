@@ -47,7 +47,7 @@ namespace IO.Ably.Tests
 
         public Task<TimeSpan> Wait()
         {
-            return Wait(TimeSpan.FromSeconds(5));
+            return Wait(TimeSpan.FromSeconds(8));
         }
 
         public async Task<TimeSpan> Wait(TimeSpan timeout)

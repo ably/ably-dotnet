@@ -279,7 +279,7 @@ namespace IO.Ably.Tests.Realtime
                 _resetEvent.Set();
             });
 
-            _resetEvent.WaitOne(4000).Should().BeTrue();
+            _resetEvent.WaitOne(4000).Should().BeTrue("Operation timed out");
 
             await channel.PublishAsync(new Message("test", "withClientId") { clientId = "123" });
             messageReceived.Should().BeTrue();
@@ -518,8 +518,8 @@ namespace IO.Ably.Tests.Realtime
                 var encoding = (string)encoded["encoding"];
                 var decodedData = DecodeData((string)encoded["data"], encoding);
                 await channel.PublishAsync((string)encoded["name"], decodedData);
-                var result = resetEvent.WaitOne(5000);
-                result.Should().BeTrue();
+                var result = resetEvent.WaitOne(10000);
+                result.Should().BeTrue("Operation timed out");
                 if (lastMessage.data is byte[])
                     (lastMessage.data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
                 else if (encoding == "json")
@@ -543,6 +543,8 @@ namespace IO.Ably.Tests.Realtime
             await channel.AttachAsync();
             var messages = Enumerable.Range(1, 10).Select(x => new Message("name:" + x, "value:" + x));
             await channel.PublishAsync(messages);
+
+            await Task.Delay(2000);
 
             var client2 = await GetRealtimeClient(protocol);
             var historyChannel = client2.Channels.Get(channelName);
