@@ -128,7 +128,8 @@
     <Compile Include="CapabilityTests.cs" />
     <Compile Include="DateHelper.cs" />
     <Compile Include="EncryptionSpecs.cs" />
-    <Compile Include="GithubSamples\RealtimeSamples.cs" />
+    <Compile Include="Samples\DocumentationSamples.cs" />
+    <Compile Include="Samples\RealtimeSamples.cs" />
     <Compile Include="Infrastructure\ConnectionAwaiter.cs" />
     <Compile Include="Infrastructure\FakeAckProcessor.cs" />
     <Compile Include="Infrastructure\FakeConnectionContext.cs" />
