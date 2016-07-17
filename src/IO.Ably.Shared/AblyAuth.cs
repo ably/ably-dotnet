@@ -312,11 +312,11 @@ namespace IO.Ably
         /// signed requests for submission by another client.
         /// </summary>
         /// <param name="tokenParams"><see cref="TokenParams"/>. If null a token request is generated from options passed when the client was created.</param>
-        /// <param name="options"><see cref="AuthOptions"/>. If null the default AuthOptions are used.</param>
+        /// <param name="authOptions"><see cref="AuthOptions"/>. If null the default AuthOptions are used.</param>
         /// <returns></returns>
-        public async Task<TokenRequest> CreateTokenRequestAsync(TokenParams tokenParams, AuthOptions options)
+        public async Task<TokenRequest> CreateTokenRequestAsync(TokenParams tokenParams, AuthOptions authOptions)
         {
-            var mergedOptions = options != null ? options.Merge(Options) : Options;
+            var mergedOptions = authOptions != null ? authOptions.Merge(Options) : Options;
 
             if (string.IsNullOrEmpty(mergedOptions.Key))
                 throw new AblyException("No key specified", 40101, HttpStatusCode.Unauthorized);
