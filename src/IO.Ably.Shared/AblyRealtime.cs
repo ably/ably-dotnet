@@ -69,11 +69,6 @@ namespace IO.Ably
             return RestClient.StatsAsync(query);
         }
 
-        public Task<PaginatedResult<Stats>> StatsAsync(DataRequestQuery query)
-        {
-            return RestClient.StatsAsync(query);
-        }
-
         /// <summary>
         /// </summary>
         /// <returns></returns>
@@ -96,8 +91,6 @@ namespace IO.Ably
         {
             return RestClient.TimeAsync();
         }
-
-        
 
         internal void NotifyExternalClients(Action action)
         {
