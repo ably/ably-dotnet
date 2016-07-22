@@ -19,7 +19,7 @@ namespace IO.Ably
         public string IntervalId { get; set; }
 
         [JsonProperty("intervalGranularity")]
-        public StatsINtervalGranularity IntervalGranularity { get; set; }
+        public StatsIntervalGranularity IntervalGranularity { get; set; }
 
         [JsonProperty("intervalTime")]
         public DateTimeOffset IntervalTime { get; set; }
@@ -135,7 +135,7 @@ namespace IO.Ably
         public double Refused { get; set; }
     }
 
-    public enum StatsINtervalGranularity
+    public enum StatsIntervalGranularity
     {
         Minute,
         Hour,
