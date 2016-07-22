@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Remoting.Channels;
-using System.Text;
 using System.Threading.Tasks;
 using IO.Ably.Auth;
 using IO.Ably.Encryption;
@@ -155,6 +151,16 @@ namespace IO.Ably.Tests.Samples
             {
                 var nextPage = await history.NextAsync();
             }
+        }
+
+        public async Task StatsExample()
+        {
+            var realtime = new AblyRealtime("{{API_KEY}}");
+            var query = new StatsDataRequestQuery() { By = StatsBy.Hour };
+            var results = await realtime.StatsAsync(query);
+            Stats thisHour = results.items[0];
+            Console.WriteLine("Published this hour " + thisHour.Inbound.All.All);
+
         }
     }
 }
