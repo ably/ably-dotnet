@@ -76,7 +76,7 @@ namespace IO.Ably.Tests.Realtime
                 channel.On((args) =>
                 {
                     stateChanged = true;
-                    newState = args.NewState;
+                    newState = args.Current;
                 });
 
                 await
@@ -116,7 +116,7 @@ namespace IO.Ably.Tests.Realtime
                 ChannelState newState = ChannelState.Initialized;
                 _channel.On(x =>
                 {
-                    newState = x.NewState;
+                    newState = x.Current;
                     Done();
                 });
 
@@ -234,7 +234,7 @@ namespace IO.Ably.Tests.Realtime
 
                 _channel.On((args) =>
                 {
-                    newState = args.NewState;
+                    newState = args.Current;
                     stateChanged = true;
                 });
 

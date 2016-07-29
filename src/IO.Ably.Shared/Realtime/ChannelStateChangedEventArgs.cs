@@ -6,11 +6,11 @@ namespace IO.Ably.Realtime
     {
         public ChannelStateChangedEventArgs(ChannelState state, ErrorInfo error = null)
         {
-            NewState = state;
+            Current = state;
             Error = error;
         }
 
-        public ChannelState NewState { get; }
+        public ChannelState Current { get; }
 
         public ErrorInfo Error { get; }
     }

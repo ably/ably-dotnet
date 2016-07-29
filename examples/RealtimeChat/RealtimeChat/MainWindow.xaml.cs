@@ -92,7 +92,7 @@ namespace RealtimeChat
 
         private void channel_ChannelStateChanged(object sender, ChannelStateChangedEventArgs e)
         {
-            outputBox.Items.Add(string.Format("Channel: {0}", e.NewState));
+            outputBox.Items.Add(string.Format("Channel: {0}", e.Current));
         }
 
         void Presence_MessageReceived(PresenceMessage message)

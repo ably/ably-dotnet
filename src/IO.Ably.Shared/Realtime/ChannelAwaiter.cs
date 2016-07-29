@@ -68,7 +68,7 @@ namespace IO.Ably.Realtime
 
         private void ChannelOnChannelStateChanged(object sender, ChannelStateChangedEventArgs args)
         {
-            if (args.NewState == _awaitedState)
+            if (args.Current == _awaitedState)
             {
                 _stopwatch.Stop();
                 DetachListener();

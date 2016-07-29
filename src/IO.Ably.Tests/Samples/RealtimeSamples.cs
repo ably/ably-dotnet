@@ -73,7 +73,7 @@ namespace IO.Ably.Tests.GithubSamples
 
             channel.On(args =>
             {
-                var state = args.NewState; //Current channel State
+                var state = args.Current; //Current channel State
                 var error = args.Error; // If the channel errored it will be refrected here
 
                 
