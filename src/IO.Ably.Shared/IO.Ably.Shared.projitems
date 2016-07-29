@@ -84,9 +84,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)MsgPackHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaginatedResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Platform\HttpUtility.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Platform\ICrypto.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Platform\IoC.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Platform\IPlatform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Protocol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)QueryDirection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Channel.cs" />
