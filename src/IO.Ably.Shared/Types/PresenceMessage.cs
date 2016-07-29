@@ -1,5 +1,4 @@
 ﻿using System;
-using MsgPack.Serialization;
 using Newtonsoft.Json;
 
 namespace IO.Ably

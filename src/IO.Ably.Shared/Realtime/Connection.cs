@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
-using IO.Ably;
 
 namespace IO.Ably.Realtime
 {
