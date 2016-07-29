@@ -29,6 +29,7 @@ namespace IO.Ably
         }
 
         public bool HasNext => NextDataQuery != null && NextDataQuery.IsEmpty == false;
+        public bool IsLast => HasNext == false;
 
         public Task<PaginatedResult<T>> NextAsync()
         {
@@ -45,7 +46,6 @@ namespace IO.Ably
 
             return Task.FromResult(new PaginatedResult<T>());
         }
-
 
         public DataRequestQuery NextDataQuery { get; }
         public DataRequestQuery FirstDataQuery { get; private set; }

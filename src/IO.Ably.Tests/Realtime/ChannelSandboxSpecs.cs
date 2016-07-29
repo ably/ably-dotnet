@@ -555,7 +555,7 @@ namespace IO.Ably.Tests.Realtime
             history.Items.Should().HaveCount(10);
             for (int i = 0; i < 10; i++)
             {
-                var message = history.Items[i];
+                var message = history.Items.ElementAt(i);
                 message.name.Should().Be("name:" + (i + 1));
                 message.data.ToString().Should().Be("value:" + (i + 1));
             }

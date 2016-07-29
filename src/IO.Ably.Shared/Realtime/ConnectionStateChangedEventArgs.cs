@@ -20,13 +20,9 @@ namespace IO.Ably.Realtime
         }
 
         public ConnectionState Previous { get; }
-
         public ConnectionState Current { get; }
-
         public TimeSpan? RetryIn { get;  }
-
         public ErrorInfo Reason { get; }
-
         public bool HasError => Reason != null;
     }
 }

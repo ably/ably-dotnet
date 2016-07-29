@@ -10,7 +10,6 @@ namespace IO.Ably.ConsoleTest
         {
             { LogLevel.Error, ConsoleColor.Red },
             { LogLevel.Warning, ConsoleColor.Yellow},
-            { LogLevel.Info, ConsoleColor.White },
             { LogLevel.Debug, ConsoleColor.Cyan },
         };
 

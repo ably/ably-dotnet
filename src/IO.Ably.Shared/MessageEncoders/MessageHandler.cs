@@ -186,6 +186,7 @@ namespace IO.Ably.MessageEncoders
         {
             LogResponse(response);
             var result = Paginated(request, response, executeDataQueryRequest);
+            var items = new List<T>();
             if (typeof(T) == typeof(Message))
             {
                 var typedResult = result as PaginatedResult<Message>;
