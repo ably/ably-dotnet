@@ -1,11 +1,10 @@
 using IO.Ably.Encryption;
-using IO.Ably.Platform;
 
-namespace IO.Ably.Rest
+namespace IO.Ably
 {
     public class ChannelOptions
     {
-        protected bool Equals(ChannelOptions other)
+        private bool Equals(ChannelOptions other)
         {
             return Encrypted == other.Encrypted && Equals(CipherParams, other.CipherParams);
         }

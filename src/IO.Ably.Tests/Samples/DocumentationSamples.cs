@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using IO.Ably.Auth;
 using IO.Ably.Encryption;
@@ -73,7 +75,7 @@ namespace IO.Ably.Tests.Samples
                 );
             channel.Publish("example", "message data");
 
-            byte[] key = Crypto.GetRandomKey();
+            byte[] key = Crypto.GenerateRandomKey();
             var cipherParams = Crypto.GetDefaultParams(key);
             var encryptedChannel = realtime.Channels.Get("channelName", new ChannelOptions(cipherParams));
         }
@@ -134,7 +136,7 @@ namespace IO.Ably.Tests.Samples
             });
 
             var result = await channel.PublishAsync("event", "payload");
-            if(result.IsFailure)
+            if (result.IsFailure)
                 Console.WriteLine("Unable to publish message. Reason: " + result.Error.message);
             else
                 Console.WriteLine("Message published sucessfully");
@@ -158,9 +160,135 @@ namespace IO.Ably.Tests.Samples
             var realtime = new AblyRealtime("{{API_KEY}}");
             var query = new StatsDataRequestQuery() { By = StatsBy.Hour };
             var results = await realtime.StatsAsync(query);
-            Stats thisHour = results.items[0];
+            Stats thisHour = results.Items[0];
             Console.WriteLine("Published this hour " + thisHour.Inbound.All.All);
+        }
+
+        public async Task PresenceExample()
+        {
+            var options = new ClientOptions("{{API_KEY}}") { ClientId = "bob" };
+            var realtime = new AblyRealtime(options);
+            var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}");
+            channel.Presence.Subscribe(member => Console.WriteLine("Member " + member.clientId + " : " + member.action));
+            await channel.Presence.EnterAsync(null);
+
+            /* Subscribe to presence enter and update events */
+            channel.Presence.Subscribe(member =>
+            {
+                switch (member.action)
+                {
+                    case PresenceAction.Enter:
+                    case PresenceAction.Update:
+                        {
+                            Console.WriteLine(member.data); // => travelling North
+                            break;
+                        }
+                }
+            });
+
+            /* Enter this client with data and update once entered */
+            await channel.Presence.EnterAsync("not moving");
+            await channel.Presence.EnterAsync("travelling North");
+
+            IEnumerable<PresenceMessage> presence = await channel.Presence.GetAsync();
+            Console.WriteLine($"There are {presence.Count()} members on this channel");
+            Console.WriteLine($"The first member has client ID: {presence.First().clientId}");
+
+            PaginatedResult<PresenceMessage> resultPage = await channel.Presence.HistoryAsync(untilAttached: true);
+            Console.WriteLine(resultPage.Items.Count + " presence events received in first page");
+            if (resultPage.HasNext)
+            {
+                PaginatedResult<PresenceMessage> nextPage = await resultPage.NextAsync();
+                Console.WriteLine(nextPage.Items.Count + " presence events received in 2nd page");
+            }
+        }
+
+        public async Task PresenceExamples2()
+        {
+            /* request a wildcard token */
+            AblyRest rest = new AblyRest("{{API_KEY}}");
+            TokenParams @params = new TokenParams() { ClientId = "*" };
+            ClientOptions options = new ClientOptions();
+            options.TokenDetails = await rest.Auth.RequestTokenAsync(@params, null);
+
+            AblyRealtime realtime = new AblyRealtime(options);
+            var channel = realtime.Channels.Get("realtime-chat");
+
+            channel.Presence.Subscribe(member =>
+                    {
+                        Console.WriteLine(member.clientId + " entered realtime-chat");
+                    });
+
+            await channel.Presence.EnterClientAsync("Bob", null); /* => Bob entered realtime-chat */
+            await channel.Presence.EnterClientAsync("Mary", null); /* => Mary entered realtime-chat */
+        }
+
+        public async Task HistoryExamples()
+        {
+            var realtime = new AblyRealtime("{{API_KEY}}");
+            var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}");
+            channel.Publish("example", "message data", async (success, error) =>
+            {
+                PaginatedResult<Message> resultPage = await channel.HistoryAsync(null);
+                Message lastMessage = resultPage.Items[0];
+                Console.WriteLine("Last message: " + lastMessage.id + " - " + lastMessage.data);
+            });
+
 
         }
+
+        public async Task HistoryExample2()
+        {
+            var realtime = new AblyRealtime("{{API_KEY}}");
+            var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}");
+            await channel.AttachAsync();
+            PaginatedResult<Message> resultPage = await channel.HistoryAsync(untilAttached: true);
+            Message lastMessage = resultPage.Items[0];
+            Console.WriteLine("Last message before attach: " + lastMessage.data);
+        }
+
+        public async Task EncryptionExample()
+        {
+            var realtime = new AblyRealtime("{{API_KEY}}");
+            var key = Crypto.GenerateRandomKey();
+            var options = new ChannelOptions(key);
+            var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}", options);
+            channel.Subscribe(message =>
+                {
+                    Console.WriteLine("Decrypted data: " + message.data);
+                });
+            channel.Publish("unencrypted", "encrypted secret payload");
+
+            
+        }
+
+        public async Task EncryptionExample2()
+        {
+            var @params = Crypto.GetDefaultParams();
+            ChannelOptions options = new ChannelOptions(@params);
+            var realtime = new AblyRealtime("{{API_KEY}}");
+            var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}", options);
+
+            
+        }
+
+        public async Task EncryptionExample3()
+        {
+            var realtime = new AblyRealtime("{{API_KEY}}");
+            byte[] key = Crypto.GenerateRandomKey(keyLength: 128);
+            ChannelOptions options = new ChannelOptions(key);
+            var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}", options);
+        }
+
+        public async Task ConnectionExamples()
+        {
+            AblyRealtime realtime = new AblyRealtime("{{API_KEY}}");
+            realtime.Connection.On(ConnectionState.Connected, args => Console.WriteLine("Connected, that was easy"));
+            Action<ConnectionStateChangedEventArgs> action = args => Console.WriteLine("New state is " + args.Current);
+            realtime.Connection.On(action);
+            realtime.Connection.Off(action);
+
+        }
+
     }
 }
