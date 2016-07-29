@@ -250,9 +250,9 @@ namespace IO.Ably.Realtime
             return RestChannel.HistoryAsync(query);
         }
 
-        public Task<PaginatedResult<Message>> HistoryAsync(DataRequestQuery dataQuery, bool untilAttached = false)
+        public Task<PaginatedResult<Message>> HistoryAsync(DataRequestQuery query, bool untilAttached = false)
         {
-            var query = dataQuery ?? new DataRequestQuery();
+            query = query ?? new DataRequestQuery();
             if (untilAttached)
             {
                 AddUntilAttachedParameter(query);
