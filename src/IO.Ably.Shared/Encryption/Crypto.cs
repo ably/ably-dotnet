@@ -96,7 +96,7 @@ namespace IO.Ably.Encryption
                 return new CipherParams(DefaultAlgorithm, key, mode, iv);
             }
 
-            return new CipherParams(GetRandomKey(mode));
+            return new CipherParams(GenerateRandomKey(mode));
         }
 
         private static void ValidateKeyLength(int keyLength)
@@ -125,7 +125,7 @@ namespace IO.Ably.Encryption
             }
         }
 
-        public static byte[] GetRandomKey(CipherMode? mode = null, int? keyLength = null)
+        public static byte[] GenerateRandomKey(CipherMode? mode = null, int? keyLength = null)
         {
             if(keyLength.HasValue)
                 ValidateKeyLength(keyLength.Value);

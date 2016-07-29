@@ -249,7 +249,7 @@ namespace IO.Ably.Tests.Rest
                 var payload = "test payload";
                 await channel1.PublishAsync("test", payload);
 
-                var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(true, new CipherParams(Crypto.GetRandomKey(CipherMode.CBC, 128))));
+                var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(true, new CipherParams(Crypto.GenerateRandomKey(CipherMode.CBC, 128))));
                 var message = (await channel2.HistoryAsync()).Items.First();
 
                 loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);

@@ -98,7 +98,7 @@ namespace IO.Ably.Tests.GithubSamples
                 var error = result.Error; // The error reason can be accessed as well
             }
 
-            var secret = Crypto.GetRandomKey();
+            var secret = Crypto.GenerateRandomKey();
             var encryptedChannel = realtime.Channels.Get("encrypted", new ChannelOptions(secret));
             encryptedChannel.Subscribe(message =>
             {
@@ -178,7 +178,7 @@ namespace IO.Ably.Tests.GithubSamples
             }
 
             // publishing encrypted messages
-            var secret = Crypto.GetRandomKey();
+            var secret = Crypto.GenerateRandomKey();
             var encryptedChannel = client.Channels.Get("encryptedChannel", new ChannelOptions(secret));
             await encryptedChannel.PublishAsync("name", "sensitive data"); //Data will be encrypted before publish
             var history = await encryptedChannel.HistoryAsync();
