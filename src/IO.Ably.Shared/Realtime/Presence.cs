@@ -64,12 +64,12 @@ namespace IO.Ably.Realtime
             _handlers.Add(handler.ToHandlerAction());
         }
 
-        public void Subscribe(PresenceAction presenceAction, Action<PresenceMessage> handler)
+        public void Subscribe(PresenceAction action, Action<PresenceMessage> handler)
         {
             if (_channel.State != ChannelState.Attached || _channel.State != ChannelState.Attaching)
                 _channel.Attach();
 
-            _handlers.Add(presenceAction.ToString(), new MessageHandlerAction<PresenceMessage>(handler));
+            _handlers.Add(action.ToString(), new MessageHandlerAction<PresenceMessage>(handler));
         }
 
         public bool Unsubscribe(Action<PresenceMessage> handler)
@@ -87,34 +87,34 @@ namespace IO.Ably.Realtime
             return _handlers.Remove(presenceAction.ToString(), handler.ToHandlerAction());
         }
 
-        public Task EnterAsync(object clientData)
+        public Task EnterAsync(object data)
         {
-            return EnterClientAsync(clientId, clientData);
+            return EnterClientAsync(clientId, data);
         }
 
-        public Task EnterClientAsync(string clientId, object clientData)
+        public Task EnterClientAsync(string clientId, object data)
         {
-            return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Enter, clientId, clientData));
+            return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Enter, clientId, data));
         }
 
-        public Task UpdateAsync(object clientData)
+        public Task UpdateAsync(object data)
         {
-            return UpdateClientAsync(clientId, clientData);
+            return UpdateClientAsync(clientId, data);
         }
 
-        public Task UpdateClientAsync(string clientId, object clientData)
+        public Task UpdateClientAsync(string clientId, object data)
         {
-            return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Update, clientId, clientData));
+            return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Update, clientId, data));
         }
 
-        public Task LeaveAsync(object clientData = null)
+        public Task LeaveAsync(object data = null)
         {
-            return LeaveClientAsync(clientId, clientData);
+            return LeaveClientAsync(clientId, data);
         }
 
-        public Task LeaveClientAsync(string clientId, object clientData)
+        public Task LeaveClientAsync(string clientId, object data)
         {
-            return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Leave, clientId, clientData));
+            return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Leave, clientId, data));
         }
 
         internal Task UpdatePresenceAsync(PresenceMessage msg)
@@ -205,11 +205,11 @@ namespace IO.Ably.Realtime
 
         private void OnChannelStateChanged(object sender, ChannelStateChangedEventArgs e)
         {
-            if (e.NewState == ChannelState.Attached)
+            if (e.Current == ChannelState.Attached)
             {
                 SendQueuedMessages();
             }
-            else if (e.NewState == ChannelState.Detached || e.NewState == ChannelState.Failed)
+            else if (e.Current == ChannelState.Detached || e.Current == ChannelState.Failed)
             {
                 FailQueuedMessages(e.Error);
             }
@@ -381,9 +381,9 @@ namespace IO.Ably.Realtime
             return _channel.RestChannel.Presence.HistoryAsync(query);
         }
 
-        public Task<PaginatedResult<PresenceMessage>> HistoryAsync(DataRequestQuery dataQuery, bool untilAttached = false)
+        public Task<PaginatedResult<PresenceMessage>> HistoryAsync(DataRequestQuery query, bool untilAttached = false)
         {
-            var query = dataQuery ?? new DataRequestQuery();
+            query = query ?? new DataRequestQuery();
             if (untilAttached)
             {
                 _channel.AddUntilAttachedParameter(query);
