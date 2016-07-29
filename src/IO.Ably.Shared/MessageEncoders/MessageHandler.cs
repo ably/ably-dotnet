@@ -223,7 +223,7 @@ namespace IO.Ably.MessageEncoders
         {
             if (Logger.IsDebug)
             {
-                Logger.Info("Protocol:" + _protocol);
+                Logger.Debug("Protocol:" + _protocol);
                 try
                 {
                     var responseBody = response.TextResponse;

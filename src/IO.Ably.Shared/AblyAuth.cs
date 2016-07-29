@@ -59,7 +59,7 @@ namespace IO.Ably
                 return;
             }
 
-            Logger.Info("Using token authentication.");
+            Logger.Debug("Using token authentication.");
             if (Options.TokenDetails != null)
             {
                 CurrentToken = Options.TokenDetails;
@@ -347,8 +347,11 @@ namespace IO.Ably
 
         private void LogCurrentAuthenticationMethod()
         {
-            TokenAuthMethod method = GetTokenAuthMethod();
-            Logger.Info("Authentication method: {0}", method.ToEnumDescription());
+            if (Logger.IsDebug)
+            {
+                TokenAuthMethod method = GetTokenAuthMethod();
+                Logger.Debug("Authentication method: {0}", method.ToEnumDescription());
+            }
         }
 
         public Result ValidateClientIds(IEnumerable<IMessage> messages)
@@ -379,7 +382,5 @@ namespace IO.Ably
 
             return Result.Ok();
         }
-
-
     }
 }

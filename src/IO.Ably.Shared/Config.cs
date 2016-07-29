@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using IO.Ably.CustomSerialisers;
 using IO.Ably.Encryption;
-using IO.Ably.Platform;
 
 namespace IO.Ably
 {

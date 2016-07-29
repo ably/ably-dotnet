@@ -89,7 +89,7 @@ namespace IO.Ably
 
         internal async Task<AblyResponse> ExecuteRequest(AblyRequest request)
         {
-            Logger.Info("Sending {0} request to {1}", request.Method, request.Url);
+            Logger.Debug("Sending {0} request to {1}", request.Method, request.Url);
 
             if (request.SkipAuthentication == false)
                 await AblyAuth.AddAuthHeader(request);

@@ -71,12 +71,12 @@ namespace IO.Ably
 
                     if (IsRetryableResponse(response) && Options.IsDefaultHost)
                     {
-                        Logger.Info("Failed response. Retrying. Returned response with status code: " +
+                        Logger.Warning("Failed response. Retrying. Returned response with status code: " +
                                     response.StatusCode);
 
                         if (TryGetNextRandomHost(fallbackHosts, random, out host))
                         {
-                            Logger.Info("Retrying using host {0}", host);
+                            Logger.Debug("Retrying using host {0}", host);
                             currentTry++;
                             continue;
                         }
@@ -89,7 +89,7 @@ namespace IO.Ably
 
                     if (TryGetNextRandomHost(fallbackHosts, random, out host))
                     {
-                        Logger.Info("Retrying using host {0}", host);
+                        Logger.Debug("Retrying using host {0}", host);
                         currentTry++;
                         continue;
                     }
@@ -102,7 +102,7 @@ namespace IO.Ably
                     Logger.Warning("Error making a connection to Ably servers. Retrying", ex);
                     if (TryGetNextRandomHost(fallbackHosts, random, out host))
                     {
-                        Logger.Info("Retrying using host {0}", host);
+                        Logger.Debug("Retrying using host {0}", host);
                         currentTry++;
                         continue;
                     }

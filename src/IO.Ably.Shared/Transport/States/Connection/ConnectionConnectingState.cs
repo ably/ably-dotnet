@@ -27,7 +27,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void Connect()
         {
-            Logger.Info("Already connecting!");
+            Logger.Debug("Already connecting!");
         }
 
         public override void Close()
