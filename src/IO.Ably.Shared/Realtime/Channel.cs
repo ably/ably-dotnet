@@ -327,12 +327,12 @@ namespace IO.Ably.Realtime
             }
 
             OnError(error);
-
+            var previousState = State;
             HandleStateChange(state, error, protocolMessage);
 
             RealtimeClient.NotifyExternalClients(() =>
                 {
-                    var args = new ChannelStateChangedEventArgs(state, error);
+                    var args = new ChannelStateChangedEventArgs(state, previousState, error);
                     try
                     {
                         StateChanged.Invoke(this, args);
