@@ -3,8 +3,6 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using AblyPlatform.Cryptography;
-using IO.Ably.Platform;
-using IO.Ably.Rest;
 
 namespace IO.Ably.Encryption
 {
@@ -71,7 +69,7 @@ namespace IO.Ably.Encryption
         CTS = 5
     }
 
-    public class Crypto
+    public static class Crypto
     {
         public const string DefaultAlgorithm = "AES";
         public const int DefaultKeylength = 256; ///bits
@@ -96,7 +94,7 @@ namespace IO.Ably.Encryption
                 return new CipherParams(DefaultAlgorithm, key, mode, iv);
             }
 
-            return new CipherParams(GenerateRandomKey(mode));
+            return new CipherParams(GenerateRandomKey(mode: mode));
         }
 
         private static void ValidateKeyLength(int keyLength)
@@ -125,7 +123,7 @@ namespace IO.Ably.Encryption
             }
         }
 
-        public static byte[] GenerateRandomKey(CipherMode? mode = null, int? keyLength = null)
+        public static byte[] GenerateRandomKey(int? keyLength = null, CipherMode? mode = null)
         {
             if(keyLength.HasValue)
                 ValidateKeyLength(keyLength.Value);

@@ -113,7 +113,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSE2b")]
             public void WithKeyLength_GenerateAESKeyWithCorrectLength(int length)
             {
-                var key = Crypto.GenerateRandomKey(null, length);
+                var key = Crypto.GenerateRandomKey(length);
                 (key.Length * 8).Should().Be(length);
             }
 
@@ -121,7 +121,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSE2a")]
             public void WithInvalidKeyLength_Throws()
             {
-                Assert.Throws<AblyException>(() => Crypto.GenerateRandomKey(null, 111));
+                Assert.Throws<AblyException>(() => Crypto.GenerateRandomKey(111));
             }
 
             public GenerateRandomKeyTests(ITestOutputHelper output) : base(output)
