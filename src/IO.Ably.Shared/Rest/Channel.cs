@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using IO.Ably.Encryption;
 using System.Threading.Tasks;
 
 namespace IO.Ably.Rest
@@ -142,11 +141,11 @@ namespace IO.Ably.Rest
         /// <summary>
         /// Return the message history of the channel
         /// </summary>
-        /// <param name="dataQuery"><see cref="DataRequestQuery"/></param>
+        /// <param name="query"><see cref="DataRequestQuery"/></param>
         /// <returns><see cref="PaginatedResult{T}"/> of Messages</returns>
-        public Task<PaginatedResult<Message>> HistoryAsync(DataRequestQuery dataQuery)
+        public Task<PaginatedResult<Message>> HistoryAsync(DataRequestQuery query)
         {
-            var query = dataQuery ?? new DataRequestQuery();
+            query = query ?? new DataRequestQuery();
 
             query.Validate();
 

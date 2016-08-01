@@ -10,7 +10,7 @@ namespace IO.Ably.Rest
         Task PublishAsync(IEnumerable<Message> messages);
 
         Task<PaginatedResult<Message>> HistoryAsync();
-        Task<PaginatedResult<Message>> HistoryAsync(DataRequestQuery dataQuery);
+        Task<PaginatedResult<Message>> HistoryAsync(DataRequestQuery query);
         string Name { get; }
         
         IPresence Presence { get; }
