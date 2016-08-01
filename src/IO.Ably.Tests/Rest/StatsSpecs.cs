@@ -154,21 +154,21 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [InlineData(StatsBy.Month)]
-        [InlineData(StatsBy.Day)]
-        [InlineData(StatsBy.Hour)]
-        [InlineData(StatsBy.Minute)]
+        [InlineData(StatsGranularity.Month)]
+        [InlineData(StatsGranularity.Day)]
+        [InlineData(StatsGranularity.Hour)]
+        [InlineData(StatsGranularity.Minute)]
         [InlineData(null)]
         [Trait("spec", "RSC6b4")]
-        public async Task ShouldPassStatsByToQueryWithDefaultOfMinute(StatsBy? statsBy)
+        public async Task ShouldPassStatsByToQueryWithDefaultOfMinute(StatsGranularity? statsGranularity)
         {
             var query = new StatsDataRequestQuery();
-            if (statsBy.HasValue)
-                query.By = statsBy.Value;
+            if (statsGranularity.HasValue)
+                query.Unit = statsGranularity.Value;
 
             await ExecuteStatsQuery(query);
 
-            LastRequest.AssertContainsParameter("by", statsBy.GetValueOrDefault(StatsBy.Minute).ToString().ToLower());
+            LastRequest.AssertContainsParameter("by", statsGranularity.GetValueOrDefault(StatsGranularity.Minute).ToString().ToLower());
         }
 
         public StatsSpecs(ITestOutputHelper output) : base(output)

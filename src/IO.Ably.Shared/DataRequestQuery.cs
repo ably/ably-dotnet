@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace IO.Ably
 {
-    public enum StatsBy
+    public enum StatsGranularity
     {
         Minute,
         Hour,
@@ -22,11 +22,11 @@ namespace IO.Ably
         /// <summary>
         /// Define how the stats will be aggregated and presented.
         /// </summary>
-        public StatsBy? By { get; set; }
+        public StatsGranularity? Unit { get; set; }
 
         public StatsDataRequestQuery()
         {
-            By = StatsBy.Minute;
+            Unit = StatsGranularity.Minute;
             Direction = QueryDirection.Backwards;
             Limit = Defaults.QueryLimit;
         }
@@ -34,8 +34,8 @@ namespace IO.Ably
         internal override IEnumerable<KeyValuePair<string, string>> GetParameters()
         {
             var result = new List<KeyValuePair<string, string>>(base.GetParameters());
-            if (By.HasValue)
-                result.Add(new KeyValuePair<string, string>("by", By.ToString().ToLower()));
+            if (Unit.HasValue)
+                result.Add(new KeyValuePair<string, string>("by", Unit.ToString().ToLower()));
             return result;
         }
     }
