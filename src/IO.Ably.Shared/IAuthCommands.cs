@@ -1,4 +1,3 @@
-using IO.Ably.Auth;
 using System.Threading.Tasks;
 
 namespace IO.Ably

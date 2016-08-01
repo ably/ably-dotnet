@@ -13,7 +13,7 @@ namespace IO.Ably.CustomSerialisers
 
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("MsgPack.Serialization.CodeDomSerializers.CodeDomSerializerBuilder", "0.6.0.0")]
-    public class IO_Ably_Auth_TokenDetailsSerializer : MsgPack.Serialization.MessagePackSerializer<IO.Ably.Auth.TokenDetails>
+    public class IO_Ably_Auth_TokenDetailsSerializer : MsgPack.Serialization.MessagePackSerializer<TokenDetails>
     {
 
         private MsgPack.Serialization.MessagePackSerializer<string> _serializer0;
@@ -39,7 +39,7 @@ namespace IO.Ably.CustomSerialisers
             this._serializer3 = context.GetSerializer<System.Nullable<System.DateTimeOffset>>(schema2);
         }
 
-        protected override void PackToCore(MsgPack.Packer packer, IO.Ably.Auth.TokenDetails objectTree)
+        protected override void PackToCore(MsgPack.Packer packer, TokenDetails objectTree)
         {
             packer.PackMapHeader(6);
             this._serializer0.PackTo(packer, "token");
@@ -56,10 +56,10 @@ namespace IO.Ably.CustomSerialisers
             this._serializer0.PackTo(packer, objectTree.ClientId);
         }
 
-        protected override IO.Ably.Auth.TokenDetails UnpackFromCore(MsgPack.Unpacker unpacker)
+        protected override TokenDetails UnpackFromCore(MsgPack.Unpacker unpacker)
         {
-            IO.Ably.Auth.TokenDetails result = default(IO.Ably.Auth.TokenDetails);
-            result = new IO.Ably.Auth.TokenDetails();
+            TokenDetails result = default(TokenDetails);
+            result = new TokenDetails();
             {
                 int itemsCount0 = default(int);
                 itemsCount0 = MsgPack.Serialization.UnpackHelpers.GetItemsCount(unpacker);
@@ -67,7 +67,7 @@ namespace IO.Ably.CustomSerialisers
                 {
                     string key = default(string);
                     string nullable4 = default(string);
-                    nullable4 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.Auth.TokenDetails), "MemberName");
+                    nullable4 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(TokenDetails), "MemberName");
                     if (((nullable4 == null)
                                 == false))
                     {
@@ -80,7 +80,7 @@ namespace IO.Ably.CustomSerialisers
                     if ((key == "clientId"))
                     {
                         string nullable9 = default(string);
-                        nullable9 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.Auth.TokenDetails), "System.String ClientId");
+                        nullable9 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(TokenDetails), "System.String ClientId");
                         if (((nullable9 == null)
                                     == false))
                         {
@@ -236,7 +236,7 @@ namespace IO.Ably.CustomSerialisers
                                     if ((key == "token"))
                                     {
                                         string nullable5 = default(string);
-                                        nullable5 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.Auth.TokenDetails), "System.String Token");
+                                        nullable5 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(TokenDetails), "System.String Token");
                                         if (((nullable5 == null)
                                                     == false))
                                         {
