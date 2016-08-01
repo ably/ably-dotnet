@@ -1,8 +1,6 @@
 using System;
 using System.Globalization;
 using IO.Ably.Encryption;
-using IO.Ably.Platform;
-using IO.Ably.Transport;
 using MsgPack.Serialization;
 using Newtonsoft.Json;
 
