@@ -8,9 +8,9 @@ namespace IO.Ably.Realtime
     /// If the connection state change includes error information, then the reason attribute will contain an ErrorInfo object describing the reason for the error
     /// <see cref="http://docs.ably.io/client-lib-development-guide/features/#TA1"/>
     /// </summary>
-    public class ConnectionStateChangedEventArgs : EventArgs
+    public class ConnectionStateChange : EventArgs
     {
-        public ConnectionStateChangedEventArgs(ConnectionState previous, ConnectionState current, TimeSpan? retryIn = null,
+        public ConnectionStateChange(ConnectionState previous, ConnectionState current, TimeSpan? retryIn = null,
             ErrorInfo reason = null)
         {
             Previous = previous;

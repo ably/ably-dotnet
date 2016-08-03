@@ -39,7 +39,7 @@ namespace IO.Ably.Tests.Realtime
             var states = new List<ConnectionState>();
             client.Connection.On((args) =>
             {
-                args.Should().BeOfType<ConnectionStateChangedEventArgs>();
+                args.Should().BeOfType<ConnectionStateChange>();
                 states.Add(args.Current);
             });
 
@@ -64,7 +64,7 @@ namespace IO.Ably.Tests.Realtime
             var states = new List<ConnectionState>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
-                args.Should().BeOfType<ConnectionStateChangedEventArgs>();
+                args.Should().BeOfType<ConnectionStateChange>();
                 states.Add(args.Current);
             };
 

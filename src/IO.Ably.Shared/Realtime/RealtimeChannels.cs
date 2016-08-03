@@ -54,7 +54,7 @@ namespace IO.Ably.Realtime
             RealtimeChannel channel = null;
             if (_channels.TryGetValue(name, out channel))
             {
-                EventHandler<ChannelStateChangedEventArgs> eventHandler = null;
+                EventHandler<ChannelStateChange> eventHandler = null;
                 eventHandler = (s, args) =>
                 {
                     var detachedChannel = (RealtimeChannel) s;

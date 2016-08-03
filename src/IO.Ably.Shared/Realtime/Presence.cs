@@ -203,7 +203,7 @@ namespace IO.Ably.Realtime
             }
         }
 
-        private void OnChannelStateChanged(object sender, ChannelStateChangedEventArgs e)
+        private void OnChannelStateChanged(object sender, ChannelStateChange e)
         {
             if (e.Current == ChannelState.Attached)
             {

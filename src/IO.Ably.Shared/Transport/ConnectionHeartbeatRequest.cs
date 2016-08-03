@@ -82,7 +82,7 @@ namespace IO.Ably.Transport
             return Config.Now() - _start;
         }  
 
-        private void OnInternalStateChanged(object sender, ConnectionStateChangedEventArgs e)
+        private void OnInternalStateChanged(object sender, ConnectionStateChange e)
         {
             if (e.Current != ConnectionState.Connected)
             {

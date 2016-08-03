@@ -159,7 +159,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.Connect();
 
             await WaitForConnectingOrSuspended(client);
-            ConnectionStateChangedEventArgs connectionArgs = null;
+            ConnectionStateChange connectionArgs = null;
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 connectionArgs = args;
@@ -192,7 +192,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             });
 
             client.Connect();
-            List<ConnectionStateChangedEventArgs> stateChanges = new List<ConnectionStateChangedEventArgs>();
+            List<ConnectionStateChange> stateChanges = new List<ConnectionStateChange>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 stateChanges.Add(args);

@@ -35,7 +35,7 @@ namespace IO.Ably.Tests
             Connection.InternalStateChanged -= conn_StateChanged;
         }
 
-        private void conn_StateChanged(object sender, ConnectionStateChangedEventArgs e)
+        private void conn_StateChanged(object sender, ConnectionStateChange e)
         {
             if (_awaitedStates.Contains(e.Current))
             {

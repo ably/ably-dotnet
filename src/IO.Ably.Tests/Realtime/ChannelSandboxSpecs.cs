@@ -89,7 +89,7 @@ namespace IO.Ably.Tests.Realtime
             // Arrange
             var client = await GetRealtimeClient(protocol);
             Semaphore signal = new Semaphore(0, 2);
-            var args = new List<ChannelStateChangedEventArgs>();
+            var args = new List<ChannelStateChange>();
             IRealtimeChannel target = client.Channels.Get("test");
             target.StateChanged += (s, e) =>
             {

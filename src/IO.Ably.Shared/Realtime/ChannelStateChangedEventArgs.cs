@@ -2,9 +2,9 @@
 
 namespace IO.Ably.Realtime
 {
-    public class ChannelStateChangedEventArgs : EventArgs
+    public class ChannelStateChange : EventArgs
     {
-        public ChannelStateChangedEventArgs(ChannelState state, ChannelState previous, ErrorInfo error = null)
+        public ChannelStateChange(ChannelState state, ChannelState previous, ErrorInfo error = null)
         {
             Previous = previous;
             Current = state;

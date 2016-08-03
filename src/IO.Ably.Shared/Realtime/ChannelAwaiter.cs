@@ -66,7 +66,7 @@ namespace IO.Ably.Realtime
             _channel.StateChanged -= ChannelOnChannelStateChanged;
         }
 
-        private void ChannelOnChannelStateChanged(object sender, ChannelStateChangedEventArgs args)
+        private void ChannelOnChannelStateChanged(object sender, ChannelStateChange args)
         {
             if (args.Current == _awaitedState)
             {

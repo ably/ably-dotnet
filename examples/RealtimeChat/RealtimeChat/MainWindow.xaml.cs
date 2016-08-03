@@ -85,12 +85,12 @@ namespace RealtimeChat
             channel.PublishAsync(eventName, payload);
         }
 
-        private void connection_ConnectionStateChanged(object sender, ConnectionStateChangedEventArgs e)
+        private void connection_ConnectionStateChanged(object sender, ConnectionStateChange e)
         {
             outputBox.Items.Add(string.Format("Connection: {0}", e.Current));
         }
 
-        private void channel_ChannelStateChanged(object sender, ChannelStateChangedEventArgs e)
+        private void channel_ChannelStateChanged(object sender, ChannelStateChange e)
         {
             outputBox.Items.Add(string.Format("Channel: {0}", e.Current));
         }

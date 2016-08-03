@@ -8,7 +8,7 @@ using IO.Ably.Transport.States.Connection;
 
 namespace IO.Ably.Realtime
 {
-    public sealed class Connection : EventEmitter<ConnectionState, ConnectionStateChangedEventArgs>, IDisposable
+    public sealed class Connection : EventEmitter<ConnectionState, ConnectionStateChange>, IDisposable
     {
         internal AblyRest RestClient => RealtimeClient.RestClient;
         internal AblyRealtime RealtimeClient { get; }
@@ -85,8 +85,8 @@ namespace IO.Ably.Realtime
 
         /// <summary>
         /// </summary>
-        internal event EventHandler<ConnectionStateChangedEventArgs> InternalStateChanged = delegate { };
-        public event EventHandler<ConnectionStateChangedEventArgs> ConnectionStateChanged = delegate { };
+        internal event EventHandler<ConnectionStateChange> InternalStateChanged = delegate { };
+        public event EventHandler<ConnectionStateChange> ConnectionStateChanged = delegate { };
         //TODO: Add IDisposable and clear all event hadlers when the connection is disposed
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace IO.Ably.Realtime
             var newState = state.State;
             ConnectionState = state;
             ErrorReason = state.Error;
-            var stateArgs = new ConnectionStateChangedEventArgs(oldState, newState, state.RetryIn, ErrorReason);
+            var stateArgs = new ConnectionStateChange(oldState, newState, state.RetryIn, ErrorReason);
 
             var internalHandlers = Volatile.Read(ref InternalStateChanged); //Make sure we get all the subscribers on all threads
             var externalHandlers = Volatile.Read(ref ConnectionStateChanged); //Make sure we get all the subscribers on all threads

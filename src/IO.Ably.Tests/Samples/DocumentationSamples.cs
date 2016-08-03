@@ -104,7 +104,7 @@ namespace IO.Ably.Tests.Samples
             channel.On(ChannelState.Attached, args => Console.WriteLine("channel " + channel.Name + " is now attached"));
             channel.On(args => Console.WriteLine("channel state is " + channel.State));
 
-            Action<ChannelStateChangedEventArgs> channelStateListener = args => Console.WriteLine("channel state is " + channel.State);
+            Action<ChannelStateChange> channelStateListener = args => Console.WriteLine("channel state is " + channel.State);
             // remove the listener registered for a single event
             channel.Off(ChannelState.Attached, channelStateListener);
 
@@ -293,7 +293,7 @@ namespace IO.Ably.Tests.Samples
         {
             AblyRealtime realtime = new AblyRealtime("{{API_KEY}}");
             realtime.Connection.On(ConnectionState.Connected, args => Console.WriteLine("Connected, that was easy"));
-            Action<ConnectionStateChangedEventArgs> action = args => Console.WriteLine("New state is " + args.Current);
+            Action<ConnectionStateChange> action = args => Console.WriteLine("New state is " + args.Current);
             realtime.Connection.On(action);
             realtime.Connection.Off(action);
 

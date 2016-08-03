@@ -12,7 +12,7 @@ using IO.Ably.Types;
 namespace IO.Ably.Realtime
 {
     /// <summary>Implement realtime channel.</summary>
-    internal class RealtimeChannel : EventEmitter<ChannelState, ChannelStateChangedEventArgs>, IRealtimeChannel, IDisposable
+    internal class RealtimeChannel : EventEmitter<ChannelState, ChannelStateChange>, IRealtimeChannel, IDisposable
     {
         internal AblyRealtime RealtimeClient { get; }
         private IConnectionManager ConnectionManager => RealtimeClient.ConnectionManager;
@@ -30,7 +30,7 @@ namespace IO.Ably.Realtime
         public List<MessageAndCallback> QueuedMessages { get; set; } = new List<MessageAndCallback>(16);
         public ErrorInfo ErrorReason { get; internal set; }
 
-        public event EventHandler<ChannelStateChangedEventArgs> StateChanged = delegate { };
+        public event EventHandler<ChannelStateChange> StateChanged = delegate { };
         public event EventHandler<ChannelErrorEventArgs> Error = delegate { };
 
         public ChannelOptions Options
@@ -67,7 +67,7 @@ namespace IO.Ably.Realtime
             ConnectionManager.Connection.InternalStateChanged += InternalOnInternalStateChanged;
         }
 
-        private void InternalOnInternalStateChanged(object sender, ConnectionStateChangedEventArgs args)
+        private void InternalOnInternalStateChanged(object sender, ConnectionStateChange args)
         {
             switch (args.Current)
             {
@@ -332,7 +332,7 @@ namespace IO.Ably.Realtime
 
             RealtimeClient.NotifyExternalClients(() =>
                 {
-                    var args = new ChannelStateChangedEventArgs(state, previousState, error);
+                    var args = new ChannelStateChange(state, previousState, error);
                     try
                     {
                         StateChanged.Invoke(this, args);

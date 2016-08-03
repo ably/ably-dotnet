@@ -5,7 +5,7 @@ using IO.Ably.Rest;
 
 namespace IO.Ably.Realtime
 {
-    public interface IRealtimeChannel : IEventEmitter<ChannelState, ChannelStateChangedEventArgs>
+    public interface IRealtimeChannel : IEventEmitter<ChannelState, ChannelStateChange>
     {
         ChannelState State { get; }
         string Name { get; }
@@ -13,7 +13,7 @@ namespace IO.Ably.Realtime
         ChannelOptions Options { get; }
         ErrorInfo ErrorReason { get; }
 
-        event EventHandler<ChannelStateChangedEventArgs> StateChanged;
+        event EventHandler<ChannelStateChange> StateChanged;
         event EventHandler<ChannelErrorEventArgs> Error;
 
         void Attach(Action<TimeSpan, ErrorInfo> callback = null);
