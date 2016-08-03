@@ -176,13 +176,13 @@ namespace IO.Ably.MessageEncoders
         /// <param name="response"></param>
         /// <param name="funcParse">Function to parse HTTP response into a sequence of items.</param>
         /// <returns></returns>
-        internal static PaginatedResult<T> Paginated<T>(AblyRequest request, AblyResponse response, Func<DataRequestQuery, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
+        internal static PaginatedResult<T> Paginated<T>(AblyRequest request, AblyResponse response, Func<HistoryRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
         {
             PaginatedResult<T> res = new PaginatedResult<T>(response.Headers, GetLimit(request), executeDataQueryRequest);
             return res;
         }
 
-        public PaginatedResult<T> ParsePaginatedResponse<T>(AblyRequest request, AblyResponse response, Func<DataRequestQuery, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
+        public PaginatedResult<T> ParsePaginatedResponse<T>(AblyRequest request, AblyResponse response, Func<HistoryRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
         {
             LogResponse(response);
             var result = Paginated(request, response, executeDataQueryRequest);

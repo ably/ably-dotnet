@@ -242,7 +242,7 @@ namespace IO.Ably.Realtime
 
         public Task<PaginatedResult<Message>> HistoryAsync(bool untilAttached = false)
         {
-            var query = new DataRequestQuery();
+            var query = new HistoryRequestParams();
             if (untilAttached)
             {
                 AddUntilAttachedParameter(query);
@@ -250,9 +250,9 @@ namespace IO.Ably.Realtime
             return RestChannel.HistoryAsync(query);
         }
 
-        public Task<PaginatedResult<Message>> HistoryAsync(DataRequestQuery query, bool untilAttached = false)
+        public Task<PaginatedResult<Message>> HistoryAsync(HistoryRequestParams query, bool untilAttached = false)
         {
-            query = query ?? new DataRequestQuery();
+            query = query ?? new HistoryRequestParams();
             if (untilAttached)
             {
                 AddUntilAttachedParameter(query);
@@ -273,7 +273,7 @@ namespace IO.Ably.Realtime
             _handlers.RemoveAll();
         }
 
-        internal void AddUntilAttachedParameter(DataRequestQuery query)
+        internal void AddUntilAttachedParameter(HistoryRequestParams query)
         {
             if (State != ChannelState.Attached)
             {

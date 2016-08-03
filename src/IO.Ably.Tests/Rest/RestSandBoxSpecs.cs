@@ -19,7 +19,7 @@ namespace IO.Ably.Tests
         {
             var client = await GetRestClient(protocol);
 
-            var stats = await client.StatsAsync(new StatsDataRequestQuery());
+            var stats = await client.StatsAsync(new StatsRequestParams());
 
             stats.Should().NotBeNull();
         }

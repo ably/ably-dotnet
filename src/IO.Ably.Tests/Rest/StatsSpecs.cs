@@ -25,7 +25,7 @@ namespace IO.Ably.Tests
         {
             var rest = GetRestClient();
 
-            var query = new StatsDataRequestQuery
+            var query = new StatsRequestParams
             {
                 Start = Now.AddHours(-1),
                 End = Now,
@@ -63,7 +63,7 @@ namespace IO.Ably.Tests
             NotNull(result.FirstDataQuery);
         }
 
-        private async Task ExecuteStatsQuery(StatsDataRequestQuery query)
+        private async Task ExecuteStatsQuery(StatsRequestParams query)
         {
             var rest = GetRestClient();
 
@@ -78,7 +78,7 @@ namespace IO.Ably.Tests
         [InlineData(0, 1, QueryDirection.Backwards)]
         public async Task ShouldAcceptStartAndEndDateTimes(int startOffset, int endOffset, QueryDirection direction)
         {
-            var query = new StatsDataRequestQuery
+            var query = new StatsRequestParams
             {
                 Start = Now.AddHours(startOffset),
                 End = Now.AddHours(endOffset),
@@ -97,7 +97,7 @@ namespace IO.Ably.Tests
         [InlineData(1, 0, QueryDirection.Backwards)]
         public void ShouldThrowIfStartIsGreaterThanEnd(int startOffset, int endOffset, QueryDirection direction)
         {
-            var query = new StatsDataRequestQuery
+            var query = new StatsRequestParams
             {
                 Start = Now.AddHours(startOffset),
                 End = Now.AddHours(endOffset),
@@ -114,7 +114,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC6b2")]
         public async Task ShouldPassDirectionToRequestWithBackwardsAsDefault(QueryDirection? direction)
         {
-            var query = new StatsDataRequestQuery
+            var query = new StatsRequestParams
             {
                 Start = Now,
                 End = Now
@@ -135,7 +135,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC6b3")]
         public async Task ShouldPassLimitWithDefaultof100(int? limit)
         {
-            var query = new StatsDataRequestQuery();
+            var query = new StatsRequestParams();
             if (limit.HasValue)
                 query.Limit = limit.Value;
 
@@ -150,7 +150,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSCb3")]
         public void ShouldThrowIfLimitExceeds1000orLessThan0(int limit)
         {
-            ThrowsAsync<AblyException>(() => ExecuteStatsQuery(new StatsDataRequestQuery() {Limit = limit}));
+            ThrowsAsync<AblyException>(() => ExecuteStatsQuery(new StatsRequestParams() {Limit = limit}));
         }
 
         [Theory]
@@ -162,7 +162,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC6b4")]
         public async Task ShouldPassStatsByToQueryWithDefaultOfMinute(StatsGranularity? statsGranularity)
         {
-            var query = new StatsDataRequestQuery();
+            var query = new StatsRequestParams();
             if (statsGranularity.HasValue)
                 query.Unit = statsGranularity.Value;
 

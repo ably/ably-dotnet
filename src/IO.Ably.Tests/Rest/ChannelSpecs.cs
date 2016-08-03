@@ -263,7 +263,7 @@ namespace IO.Ably.Tests.Rest
             [Trait("spec", "RSL2b")]
             public async Task WithOptions_AddsParametersToRequest()
             {
-                var query = new DataRequestQuery();
+                var query = new HistoryRequestParams();
                 var now = DateTimeOffset.Now;
                 query.Start = now.AddHours(-1);
                 query.End = now;
@@ -282,7 +282,7 @@ namespace IO.Ably.Tests.Rest
             public async Task WithStartBeforeEnd_Throws()
             {
                 var ex = await Assert.ThrowsAsync<AblyException>(() => 
-                        _channel.HistoryAsync(new DataRequestQuery() {Start = Now, End = Now.AddHours(-1)}));
+                        _channel.HistoryAsync(new HistoryRequestParams() {Start = Now, End = Now.AddHours(-1)}));
             }
 
             [Fact]
@@ -311,7 +311,7 @@ namespace IO.Ably.Tests.Rest
             public async Task WithLimitLessThan0andMoreThan1000_ShouldThrow(int limit)
             {
                 var ex = await
-                    Assert.ThrowsAsync<AblyException>(() => _channel.HistoryAsync(new DataRequestQuery() {Limit = limit}));
+                    Assert.ThrowsAsync<AblyException>(() => _channel.HistoryAsync(new HistoryRequestParams() {Limit = limit}));
             }
 
             [Theory]
@@ -320,7 +320,7 @@ namespace IO.Ably.Tests.Rest
             {
                 var rest = GetRestClient();
                 var channel = rest.Channels.Get("Test");
-                var query = new DataRequestQuery() { Start = start, End = end };
+                var query = new HistoryRequestParams() { Start = start, End = end };
 
                 Assert.Throws<AblyException>(delegate { channel.HistoryAsync(query); });
             }

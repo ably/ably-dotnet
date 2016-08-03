@@ -28,7 +28,7 @@ namespace IO.Ably.SyncExtensions
             return AsyncHelper.RunSync(restChannel.HistoryAsync);
         }
 
-        public static PaginatedResult<Message> History(this IRestChannel restChannel, DataRequestQuery query)
+        public static PaginatedResult<Message> History(this IRestChannel restChannel, HistoryRequestParams query)
         {
             return AsyncHelper.RunSync(() => restChannel.HistoryAsync(query));
         }
@@ -48,7 +48,7 @@ namespace IO.Ably.SyncExtensions
             return AsyncHelper.RunSync(statsCommands.StatsAsync);
         }
 
-        public static PaginatedResult<Stats> Stats(this IStatsCommands statsCommands, StatsDataRequestQuery query)
+        public static PaginatedResult<Stats> Stats(this IStatsCommands statsCommands, StatsRequestParams query)
         {
             return AsyncHelper.RunSync(() => statsCommands.StatsAsync(query));
         }

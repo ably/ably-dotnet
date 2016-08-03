@@ -64,7 +64,7 @@ namespace IO.Ably
             return RestClient.StatsAsync();
         }
 
-        public Task<PaginatedResult<Stats>> StatsAsync(StatsDataRequestQuery query)
+        public Task<PaginatedResult<Stats>> StatsAsync(StatsRequestParams query)
         {
             return RestClient.StatsAsync(query);
         }

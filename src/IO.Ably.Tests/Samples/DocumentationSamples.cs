@@ -157,7 +157,7 @@ namespace IO.Ably.Tests.Samples
         public async Task StatsExample()
         {
             var realtime = new AblyRealtime("{{API_KEY}}");
-            var query = new StatsDataRequestQuery() { Unit = StatsGranularity.Hour };
+            var query = new StatsRequestParams() { Unit = StatsGranularity.Hour };
             var results = await realtime.StatsAsync(query);
             Stats thisHour = results.Items[0];
             Console.WriteLine("Published this hour " + thisHour.Inbound.All.All);
@@ -433,7 +433,7 @@ namespace IO.Ably.Tests.Samples
         public async Task RestStatsSamples()
         {
             AblyRest rest = new AblyRest("{{API_KEY}}");
-            PaginatedResult<Stats> results = await rest.StatsAsync(new StatsDataRequestQuery() { Unit = StatsGranularity.Hour });
+            PaginatedResult<Stats> results = await rest.StatsAsync(new StatsRequestParams() { Unit = StatsGranularity.Hour });
             Stats thisHour = results.Items[0];
             Console.WriteLine("Published this hour " + thisHour.Inbound.All.All.Count);
         }
