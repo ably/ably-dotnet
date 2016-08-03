@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using IO.Ably.Auth;
 
 namespace IO.Ably.Tests
 {

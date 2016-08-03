@@ -1,7 +1,6 @@
 using System;
 using Xunit;
 using FluentAssertions;
-using IO.Ably.Auth;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

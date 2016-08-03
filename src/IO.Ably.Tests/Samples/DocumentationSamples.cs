@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using IO.Ably.Auth;
 using IO.Ably.Encryption;
 using IO.Ably.Realtime;
 using IO.Ably.Rest;
@@ -433,10 +432,10 @@ namespace IO.Ably.Tests.Samples
 
         public async Task RestStatsSamples()
         {
-        AblyRest rest = new AblyRest("{{API_KEY}}");
-        PaginatedResult<Stats> results = await rest.StatsAsync(new StatsDataRequestQuery() { Unit = StatsGranularity.Hour });
-        Stats thisHour = results.Items[0];
-        Console.WriteLine("Published this hour " + thisHour.Inbound.All.All.Count);
+            AblyRest rest = new AblyRest("{{API_KEY}}");
+            PaginatedResult<Stats> results = await rest.StatsAsync(new StatsDataRequestQuery() { Unit = StatsGranularity.Hour });
+            Stats thisHour = results.Items[0];
+            Console.WriteLine("Published this hour " + thisHour.Inbound.All.All.Count);
         }
 
         

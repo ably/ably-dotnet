@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IO.Ably.Auth;
 using IO.Ably.Transport;
 using Xunit;
 using Xunit.Abstractions;

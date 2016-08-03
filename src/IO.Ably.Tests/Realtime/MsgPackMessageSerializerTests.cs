@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using FluentAssertions;
-using IO.Ably.Auth;
 using IO.Ably.Types;
 using MsgPack.Serialization;
 using Xunit;

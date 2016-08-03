@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using FluentAssertions;
-using IO.Ably.Auth;
 using Newtonsoft.Json;
 using Xunit;
 using System.Threading.Tasks;

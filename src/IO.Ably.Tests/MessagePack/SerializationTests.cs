@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
-using IO.Ably.Auth;
 using IO.Ably.CustomSerialisers;
 using IO.Ably.Types;
 using MsgPack;

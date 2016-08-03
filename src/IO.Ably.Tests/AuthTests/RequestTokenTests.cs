@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IO.Ably.Auth;
 using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;

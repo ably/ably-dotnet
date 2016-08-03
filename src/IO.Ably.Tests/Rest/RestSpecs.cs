@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.AcceptanceTests;
-using IO.Ably.Auth;
 using Xunit;
 using Xunit.Abstractions;
 
