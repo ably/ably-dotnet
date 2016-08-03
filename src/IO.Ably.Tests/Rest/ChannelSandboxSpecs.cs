@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Encryption;
 using IO.Ably.Rest;
+using IO.Ably.SyncExtensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -185,6 +186,31 @@ namespace IO.Ably.Tests.Rest
             history.Items.First().name.Should().Be("name19");
 
             var secondPage = await history.NextAsync();
+            secondPage.Items.Should().HaveCount(10);
+            secondPage.Items.First().name.Should().Be("name9");
+        }
+
+        [Theory]
+        [ProtocolData]
+        public async Task Send20MessagesAndThenPaginateHistorySync(Protocol protocol)
+        {
+            //Arrange
+            var client = await GetRestClient(protocol);
+            IRestChannel channel = client.Channels.Get("persisted:historyTest:" + protocol);
+
+            //Act
+            for (int i = 0; i < 20; i++)
+            {
+                channel.Publish("name" + i, "data" + i);
+            }
+
+            //Assert
+            var history = channel.History(new DataRequestQuery() { Limit = 10 });
+            history.Items.Should().HaveCount(10);
+            history.HasNext.Should().BeTrue();
+            history.Items.First().name.Should().Be("name19");
+
+            var secondPage = history.Next();
             secondPage.Items.Should().HaveCount(10);
             secondPage.Items.First().name.Should().Be("name9");
         }
