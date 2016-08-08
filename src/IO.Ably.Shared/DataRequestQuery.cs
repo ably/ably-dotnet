@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace IO.Ably
 {
-    public enum StatsGranularity
+    public enum StatsIntervalGranularity
     {
         Minute,
         Hour,
@@ -22,11 +22,11 @@ namespace IO.Ably
         /// <summary>
         /// Define how the stats will be aggregated and presented.
         /// </summary>
-        public StatsGranularity? Unit { get; set; }
+        public StatsIntervalGranularity? Unit { get; set; }
 
         public StatsRequestParams()
         {
-            Unit = StatsGranularity.Minute;
+            Unit = StatsIntervalGranularity.Minute;
             Direction = QueryDirection.Backwards;
             Limit = Defaults.QueryLimit;
         }

@@ -154,13 +154,13 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [InlineData(StatsGranularity.Month)]
-        [InlineData(StatsGranularity.Day)]
-        [InlineData(StatsGranularity.Hour)]
-        [InlineData(StatsGranularity.Minute)]
+        [InlineData(StatsIntervalGranularity.Month)]
+        [InlineData(StatsIntervalGranularity.Day)]
+        [InlineData(StatsIntervalGranularity.Hour)]
+        [InlineData(StatsIntervalGranularity.Minute)]
         [InlineData(null)]
         [Trait("spec", "RSC6b4")]
-        public async Task ShouldPassStatsByToQueryWithDefaultOfMinute(StatsGranularity? statsGranularity)
+        public async Task ShouldPassStatsByToQueryWithDefaultOfMinute(StatsIntervalGranularity? statsGranularity)
         {
             var query = new StatsRequestParams();
             if (statsGranularity.HasValue)
@@ -168,7 +168,7 @@ namespace IO.Ably.Tests
 
             await ExecuteStatsQuery(query);
 
-            LastRequest.AssertContainsParameter("by", statsGranularity.GetValueOrDefault(StatsGranularity.Minute).ToString().ToLower());
+            LastRequest.AssertContainsParameter("by", statsGranularity.GetValueOrDefault(StatsIntervalGranularity.Minute).ToString().ToLower());
         }
 
         public StatsSpecs(ITestOutputHelper output) : base(output)
