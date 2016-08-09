@@ -97,7 +97,7 @@ namespace RealtimeChat
 
         void Presence_MessageReceived(PresenceMessage message)
         {
-            outputBox.Items.Add(string.Format("{0}: {1} {2}", message.data, message.action, message.clientId));
+            outputBox.Items.Add(string.Format("{0}: {1} {2}", message.Data, message.action, message.ClientId));
         }
     }
 }

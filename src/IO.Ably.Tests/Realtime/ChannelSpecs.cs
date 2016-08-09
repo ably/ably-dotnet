@@ -553,7 +553,7 @@ namespace IO.Ably.Tests.Realtime
 
                 var sentMessage = LastCreatedTransport.LastMessageSend.messages.First();
                 LastCreatedTransport.SentMessages.Should().HaveCount(1);
-                sentMessage.encoding.Should().Be("base64");
+                sentMessage.Encoding.Should().Be("base64");
             }
 
             [Fact]
@@ -616,8 +616,8 @@ namespace IO.Ably.Tests.Realtime
 
                     var lastMessageSend = LastCreatedTransport.LastMessageSend;
                     lastMessageSend.channel.Should().Be("test");
-                    lastMessageSend.messages.First().name.Should().Be("test");
-                    lastMessageSend.messages.First().data.Should().Be("best");
+                    lastMessageSend.messages.First().Name.Should().Be("test");
+                    lastMessageSend.messages.First().Data.Should().Be("best");
                 }
 
                 [Fact]
@@ -633,7 +633,7 @@ namespace IO.Ably.Tests.Realtime
 
                     LastCreatedTransport.LastMessageSend.Should().BeNull();
                     client.ConnectionManager.PendingMessages.Should().HaveCount(1);
-                    client.ConnectionManager.PendingMessages.First().Message.messages.First().data.Should().Be("connecting");
+                    client.ConnectionManager.PendingMessages.First().Message.messages.First().Data.Should().Be("connecting");
 
                     //Not connect the client
                     await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
@@ -656,7 +656,7 @@ namespace IO.Ably.Tests.Realtime
 
                     LastCreatedTransport.LastMessageSend.Should().BeNull();
                     client.ConnectionManager.PendingMessages.Should().HaveCount(1);
-                    client.ConnectionManager.PendingMessages.First().Message.messages.First().data.Should().Be("connecting");
+                    client.ConnectionManager.PendingMessages.First().Message.messages.First().Data.Should().Be("connecting");
 
                     //Now connect
                     client.Connect();
@@ -691,7 +691,7 @@ namespace IO.Ably.Tests.Realtime
                     channel.PublishAsync("test", "test");
                     SetState(channel, ChannelState.Attached);
 
-                    LastCreatedTransport.LastMessageSend.messages.First().clientId.Should().BeNullOrEmpty();
+                    LastCreatedTransport.LastMessageSend.messages.First().ClientId.Should().BeNullOrEmpty();
                 }
 
                 [Fact]
@@ -703,7 +703,7 @@ namespace IO.Ably.Tests.Realtime
                     SetState(channel, ChannelState.Attached);
                     channel.PublishAsync("test", "best", clientId: "123");
 
-                    LastCreatedTransport.LastMessageSend.messages.First().clientId.Should().Be("123");
+                    LastCreatedTransport.LastMessageSend.messages.First().ClientId.Should().Be("123");
                 }
 
                 public ClientIdSpecs(ITestOutputHelper output) : base(output)
@@ -830,13 +830,13 @@ namespace IO.Ably.Tests.Realtime
                     Done();
                 };
 
-                var message = new Message("name", "encrypted with otherChannelOptions") { encoding = "json" };
+                var message = new Message("name", "encrypted with otherChannelOptions") { Encoding = "json" };
                 await _client.FakeMessageReceived(message, channel.Name);
 
                 WaitOne();
 
                 error.Should().NotBeNull();
-                receivedMessage.encoding.Should().Be("json");
+                receivedMessage.Encoding.Should().Be("json");
             }
 
             public SubscribeSpecs(ITestOutputHelper output) : base(output)

@@ -52,7 +52,7 @@ namespace IO.Ably.Realtime
         public Task<IEnumerable<PresenceMessage>> GetAsync(bool waitForSync = true, string clientId = "", string connectionId = "")
         {
             //TODO: waitForSync is not implemented yet
-            var result = presence.Values.Where(x => (clientId.IsEmpty() || x.clientId == clientId) && (connectionId.IsEmpty() || x.connectionId == connectionId));
+            var result = presence.Values.Where(x => (clientId.IsEmpty() || x.ClientId == clientId) && (connectionId.IsEmpty() || x.connectionId == connectionId));
             return Task.FromResult(result);
         }
 
@@ -291,7 +291,7 @@ namespace IO.Ably.Realtime
 
                 // compare the timestamp of the new item with any existing member (or ABSENT witness)
                 PresenceMessage existingItem;
-                if (members.TryGetValue(item.MemberKey, out existingItem) && item.timestamp < existingItem.timestamp)
+                if (members.TryGetValue(item.MemberKey, out existingItem) && item.Timestamp < existingItem.Timestamp)
                 {
                     // no item supersedes a newer item with the same key
                     return false;

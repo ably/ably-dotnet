@@ -150,8 +150,8 @@ namespace IO.Ably.Tests
             var channel = tokenClient.Channels["persisted:test".AddRandomSuffix()];
             await channel.PublishAsync("test", "test");
             var message = (await channel.HistoryAsync()).Items.First();
-            message.clientId.Should().BeNullOrEmpty();
-            message.data.Should().Be("test");
+            message.ClientId.Should().BeNullOrEmpty();
+            message.Data.Should().Be("test");
         }
 
         [Theory]
@@ -164,7 +164,7 @@ namespace IO.Ably.Tests
             var token = await client.Auth.RequestTokenAsync();
             var tokenClient = new AblyRest(new ClientOptions
             { TokenDetails = token, Environment = settings.Environment, UseBinaryProtocol = protocol == Protocol.MsgPack });
-            await Assert.ThrowsAsync<AblyException>(() => tokenClient.Channels["test"].PublishAsync(new Message("test", "test") { clientId = "123"}));
+            await Assert.ThrowsAsync<AblyException>(() => tokenClient.Channels["test"].PublishAsync(new Message("test", "test") { ClientId = "123"}));
         }
 
         [Theory]
@@ -182,8 +182,8 @@ namespace IO.Ably.Tests
             await channel.PublishAsync("test", "test");
             tokenClient.AblyAuth.ClientId.Should().Be("*");
             var message = (await channel.HistoryAsync()).Items.First();
-            message.clientId.Should().BeNullOrEmpty();
-            message.data.Should().Be("test");
+            message.ClientId.Should().BeNullOrEmpty();
+            message.Data.Should().Be("test");
         }
 
         [Theory]
@@ -198,11 +198,11 @@ namespace IO.Ably.Tests
             { TokenDetails = token, Environment = settings.Environment, UseBinaryProtocol = protocol == Protocol.MsgPack });
 
             var channel = tokenClient.Channels["pesisted:test"];
-            await channel.PublishAsync(new Message("test", "test") { clientId = "123"});
+            await channel.PublishAsync(new Message("test", "test") { ClientId = "123"});
             tokenClient.AblyAuth.ClientId.Should().Be("*");
             var message = (await channel.HistoryAsync()).Items.First();
-            message.clientId.Should().Be("123");
-            message.data.Should().Be("test");
+            message.ClientId.Should().Be("123");
+            message.Data.Should().Be("test");
         }
 
         [Theory]
@@ -222,11 +222,11 @@ namespace IO.Ably.Tests
             });
 
             var channel = authUrlClient.Channels["pesisted:test"];
-            await channel.PublishAsync(new Message("test", "test") { clientId = "123" });
+            await channel.PublishAsync(new Message("test", "test") { ClientId = "123" });
 
             var message = (await channel.HistoryAsync()).Items.First();
-            message.clientId.Should().Be("123");
-            message.data.Should().Be("test");
+            message.ClientId.Should().Be("123");
+            message.Data.Should().Be("test");
         }
 
         [Theory]
@@ -246,11 +246,11 @@ namespace IO.Ably.Tests
             });
 
             var channel = authUrlClient.Channels["pesisted:test"];
-            await channel.PublishAsync(new Message("test", "test") { clientId = "123" });
+            await channel.PublishAsync(new Message("test", "test") { ClientId = "123" });
 
             var message = (await channel.HistoryAsync()).Items.First();
-            message.clientId.Should().Be("123");
-            message.data.Should().Be("test");
+            message.ClientId.Should().Be("123");
+            message.Data.Should().Be("test");
         }
     }
 }

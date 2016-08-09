@@ -126,12 +126,12 @@ namespace IO.Ably.Types
                 text.Append(", mesasages=[ ");
                 foreach (var message in messages)
                 {
-                    text.AppendFormat("{{ name=\"{0}\"", message.name);
-                    if (message.timestamp.HasValue && message.timestamp.Value.Ticks > 0)
+                    text.AppendFormat("{{ name=\"{0}\"", message.Name);
+                    if (message.Timestamp.HasValue && message.Timestamp.Value.Ticks > 0)
                     {
-                        text.AppendFormat(", timestamp=\"{0}\"}}", message.timestamp);
+                        text.AppendFormat(", timestamp=\"{0}\"}}", message.Timestamp);
                     }
-                    text.AppendFormat(", data={0}}}", message.data);
+                    text.AppendFormat(", data={0}}}", message.Data);
                 }
                 text.Append(" ]");
             }

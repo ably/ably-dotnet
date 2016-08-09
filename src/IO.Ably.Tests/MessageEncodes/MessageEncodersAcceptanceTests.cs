@@ -73,7 +73,7 @@ namespace IO.Ably.AcceptanceTests
                 await client.Channels.Get("test").PublishAsync(message);
 
                 var processedMessages = JsonConvert.DeserializeObject<List<Message>>(LastRequest.RequestBody.GetText());
-                processedMessages.First().encoding.Should().Be(encoding);
+                processedMessages.First().Encoding.Should().Be(encoding);
             }
             
         }
@@ -104,8 +104,8 @@ namespace IO.Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                payload.data.Should().Be("test");
-                payload.encoding.Should().BeNull();
+                payload.Data.Should().Be("test");
+                payload.Encoding.Should().BeNull();
             }
 
             [Fact]
@@ -118,9 +118,9 @@ namespace IO.Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                byte[] data = (payload.data as string).FromBase64();
+                byte[] data = (payload.Data as string).FromBase64();
                 data.ShouldBeEquivalentTo( bytes );
-                payload.encoding.Should().Be("base64");
+                payload.Encoding.Should().Be("base64");
             }
 
             [Fact]
@@ -135,8 +135,8 @@ namespace IO.Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                payload.data.Should().Be(JsonConvert.SerializeObject(obj));
-                payload.encoding.Should().Be("json");
+                payload.Data.Should().Be(JsonConvert.SerializeObject(obj));
+                payload.Encoding.Should().Be("json");
             }
         }
 
@@ -169,8 +169,8 @@ namespace IO.Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                payload.encoding.Should().Be("cipher+aes-256-cbc/base64");
-                var encryptedBytes = (payload.data as string).FromBase64();
+                payload.Encoding.Should().Be("cipher+aes-256-cbc/base64");
+                var encryptedBytes = (payload.Data as string).FromBase64();
                 Crypto.GetCipher(options.CipherParams).Decrypt(encryptedBytes).Should().BeEquivalentTo(bytes);
             }
 
@@ -183,8 +183,8 @@ namespace IO.Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                payload.encoding.Should().Be("utf-8/cipher+aes-256-cbc/base64");
-                var encryptedBytes = (payload.data as string).FromBase64();
+                payload.Encoding.Should().Be("utf-8/cipher+aes-256-cbc/base64");
+                var encryptedBytes = (payload.Data as string).FromBase64();
                 Crypto.GetCipher(options.CipherParams).Decrypt(encryptedBytes).GetText().Should().BeEquivalentTo("test");
             }
 
@@ -197,8 +197,8 @@ namespace IO.Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                payload.encoding.Should().Be("json/utf-8/cipher+aes-256-cbc/base64");
-                var encryptedBytes = (payload.data as string).FromBase64();
+                payload.Encoding.Should().Be("json/utf-8/cipher+aes-256-cbc/base64");
+                var encryptedBytes = (payload.Data as string).FromBase64();
                 var decryptedString = Crypto.GetCipher(options.CipherParams).Decrypt(encryptedBytes).GetText();
                 decryptedString.Should().Be(JsonConvert.SerializeObject(obj));
             }
@@ -215,7 +215,7 @@ namespace IO.Ably.AcceptanceTests
                 {
                     var context = SerializationContext.Default.GetSerializer<List<Message>>();
                     var payload = context.Unpack(stream).FirstOrDefault();
-                    payload.data = ((MessagePackObject)payload.data).ToObject();
+                    payload.Data = ((MessagePackObject)payload.Data).ToObject();
                     return payload;
                 }
             }
@@ -234,8 +234,8 @@ namespace IO.Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                payload.data.Should().Be("test");
-                payload.encoding.Should().BeNull();
+                payload.Data.Should().Be("test");
+                payload.Encoding.Should().BeNull();
             }
 
             [Fact]
@@ -248,8 +248,8 @@ namespace IO.Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                (payload.data as byte[]).Should().BeEquivalentTo(bytes);
-                payload.encoding.Should().BeNull();
+                (payload.Data as byte[]).Should().BeEquivalentTo(bytes);
+                payload.Encoding.Should().BeNull();
             }
 
             [Fact]
@@ -264,8 +264,8 @@ namespace IO.Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                payload.data.Should().Be(JsonConvert.SerializeObject(obj));
-                payload.encoding.Should().Be("json");
+                payload.Data.Should().Be(JsonConvert.SerializeObject(obj));
+                payload.Encoding.Should().Be("json");
             }
         }
 
@@ -286,7 +286,7 @@ namespace IO.Ably.AcceptanceTests
                 {
                     var context = SerializationContext.Default.GetSerializer<List<Message>>();
                     var payload = context.Unpack(stream).FirstOrDefault();
-                    payload.data = ((MessagePackObject) payload.data).ToObject();
+                    payload.Data = ((MessagePackObject) payload.Data).ToObject();
                     return payload;
                 }
             }
@@ -302,8 +302,8 @@ namespace IO.Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                payload.encoding.Should().Be("cipher+aes-256-cbc");
-                var encryptedBytes = (payload.data as byte[]);
+                payload.Encoding.Should().Be("cipher+aes-256-cbc");
+                var encryptedBytes = (payload.Data as byte[]);
                 Crypto.GetCipher(options.CipherParams).Decrypt(encryptedBytes).Should().BeEquivalentTo(bytes);
             }
 
@@ -315,8 +315,8 @@ namespace IO.Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                payload.encoding.Should().Be("utf-8/cipher+aes-256-cbc");
-                var encryptedBytes = (payload.data as byte[]);
+                payload.Encoding.Should().Be("utf-8/cipher+aes-256-cbc");
+                var encryptedBytes = (payload.Data as byte[]);
                 Crypto.GetCipher(options.CipherParams).Decrypt(encryptedBytes).GetText().Should().BeEquivalentTo("test");
             }
 
@@ -329,8 +329,8 @@ namespace IO.Ably.AcceptanceTests
 
                 //Assert
                 var payload = GetPayload();
-                payload.encoding.Should().Be("json/utf-8/cipher+aes-256-cbc");
-                var encryptedBytes = (payload.data as byte[]);
+                payload.Encoding.Should().Be("json/utf-8/cipher+aes-256-cbc");
+                var encryptedBytes = (payload.Data as byte[]);
                 var decryptedString = Crypto.GetCipher(options.CipherParams).Decrypt(encryptedBytes).GetText();
                 decryptedString.Should().Be(JsonConvert.SerializeObject(obj));
             }

@@ -70,7 +70,7 @@ namespace IO.Ably.Tests.Samples
             AblyRealtime realtime = new AblyRealtime("{{API_KEY}}");
             var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}");
             channel.Subscribe(message =>
-                        Console.WriteLine($"Message: {message.name}:{message.data} received")
+                        Console.WriteLine($"Message: {message.Name}:{message.Data} received")
                 );
             channel.Publish("example", "message data");
 
@@ -93,7 +93,7 @@ namespace IO.Ably.Tests.Samples
         {
             AblyRealtime realtime = new AblyRealtime("{{API_KEY}}");
             var channel = realtime.Channels.Get("chatroom");
-            channel.Subscribe(message => Console.WriteLine("Message received:" + message.data));
+            channel.Subscribe(message => Console.WriteLine("Message received:" + message.Data));
             channel.Publish("action", "boom");
         }
 
@@ -122,8 +122,8 @@ namespace IO.Ably.Tests.Samples
 
             channel.Subscribe("myEvent", message =>
             {
-                Console.WriteLine($"message received for event {message.name}");
-                Console.WriteLine($"message data: {message.data}");
+                Console.WriteLine($"message received for event {message.Name}");
+                Console.WriteLine($"message data: {message.Data}");
             });
 
             channel.Publish("event", "payload", (success, error) =>
@@ -168,7 +168,7 @@ namespace IO.Ably.Tests.Samples
             var options = new ClientOptions("{{API_KEY}}") { ClientId = "bob" };
             var realtime = new AblyRealtime(options);
             var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}");
-            channel.Presence.Subscribe(member => Console.WriteLine("Member " + member.clientId + " : " + member.action));
+            channel.Presence.Subscribe(member => Console.WriteLine("Member " + member.ClientId + " : " + member.action));
             await channel.Presence.EnterAsync(null);
 
             /* Subscribe to presence enter and update events */
@@ -179,7 +179,7 @@ namespace IO.Ably.Tests.Samples
                     case PresenceAction.Enter:
                     case PresenceAction.Update:
                         {
-                            Console.WriteLine(member.data); // => travelling North
+                            Console.WriteLine(member.Data); // => travelling North
                             break;
                         }
                 }
@@ -191,7 +191,7 @@ namespace IO.Ably.Tests.Samples
 
             IEnumerable<PresenceMessage> presence = await channel.Presence.GetAsync();
             Console.WriteLine($"There are {presence.Count()} members on this channel");
-            Console.WriteLine($"The first member has client ID: {presence.First().clientId}");
+            Console.WriteLine($"The first member has client ID: {presence.First().ClientId}");
 
             PaginatedResult<PresenceMessage> resultPage = await channel.Presence.HistoryAsync(untilAttached: true);
             Console.WriteLine(resultPage.Items.Count + " presence events received in first page");
@@ -215,7 +215,7 @@ namespace IO.Ably.Tests.Samples
 
             channel.Presence.Subscribe(member =>
                     {
-                        Console.WriteLine(member.clientId + " entered realtime-chat");
+                        Console.WriteLine(member.ClientId + " entered realtime-chat");
                     });
 
             await channel.Presence.EnterClientAsync("Bob", null); /* => Bob entered realtime-chat */
@@ -230,7 +230,7 @@ namespace IO.Ably.Tests.Samples
             {
                 PaginatedResult<Message> resultPage = await channel.HistoryAsync(null);
                 Message lastMessage = resultPage.Items[0];
-                Console.WriteLine("Last message: " + lastMessage.id + " - " + lastMessage.data);
+                Console.WriteLine("Last message: " + lastMessage.Id + " - " + lastMessage.Data);
             });
         }
 
@@ -241,17 +241,17 @@ namespace IO.Ably.Tests.Samples
             await channel.AttachAsync();
             PaginatedResult<Message> resultPage = await channel.HistoryAsync(untilAttached: true);
             Message lastMessage = resultPage.Items[0];
-            Console.WriteLine("Last message before attach: " + lastMessage.data);
+            Console.WriteLine("Last message before attach: " + lastMessage.Data);
 
 
             //Part of the _paginated_result sample
             PaginatedResult<Message> firstPage = await channel.HistoryAsync(null);
             Message firstMessage = firstPage.Items[0];
-            Console.WriteLine("Page 0 item 0: " + firstMessage.data);
+            Console.WriteLine("Page 0 item 0: " + firstMessage.Data);
             if (firstPage.HasNext)
             {
                 var nextPage = await firstPage.NextAsync();
-                Console.WriteLine("Page 1 item 1:" + nextPage.Items[1].data);
+                Console.WriteLine("Page 1 item 1:" + nextPage.Items[1].Data);
                 Console.WriteLine("More pages?: " + nextPage.HasNext);
             }
         }
@@ -264,7 +264,7 @@ namespace IO.Ably.Tests.Samples
             var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}", options);
             channel.Subscribe(message =>
                 {
-                    Console.WriteLine("Decrypted data: " + message.data);
+                    Console.WriteLine("Decrypted data: " + message.Data);
                 });
             channel.Publish("unencrypted", "encrypted secret payload");
 
@@ -354,7 +354,7 @@ namespace IO.Ably.Tests.Samples
             var channel = rest.Channels.Get("{{RANDOM_CHANNEL_NAME}}");
             await channel.PublishAsync("example", "message data");
             PaginatedResult<Message> resultPage = await channel.HistoryAsync();
-            Console.WriteLine("Last published message ID: " + resultPage.Items[0].id);
+            Console.WriteLine("Last published message ID: " + resultPage.Items[0].Id);
 
             byte[] key = null;
             CipherParams cipherParams = Crypto.GetDefaultParams(key);
@@ -405,7 +405,7 @@ namespace IO.Ably.Tests.Samples
             await channel.PublishAsync("example", "message data");
             PaginatedResult<Message> resultPage = await channel.HistoryAsync();
             Message recentMessage = resultPage.Items[0];
-            Console.WriteLine("Most recent message: " + recentMessage.id + " - " + recentMessage.data);
+            Console.WriteLine("Most recent message: " + recentMessage.Id + " - " + recentMessage.Data);
         }
 
         public async Task RestPresenceSamples()

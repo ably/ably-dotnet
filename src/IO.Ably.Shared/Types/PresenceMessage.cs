@@ -24,25 +24,25 @@ namespace IO.Ably
         public PresenceMessage(PresenceAction action, string clientId, object data)
         {
             this.action = action;
-            this.clientId = clientId;
-            this.data = data;
+            this.ClientId = clientId;
+            this.Data = data;
         }
 
-        public string id { get; set; }
+        public string Id { get; set; }
 
         public PresenceAction action { get; set; }
 
-        public string clientId { get; set; }
+        public string ClientId { get; set; }
 
         public string connectionId { get; set; }
 
-        public object data { get; set; }
+        public object Data { get; set; }
 
-        public string encoding { get; set; }
+        public string Encoding { get; set; }
 
-        public DateTimeOffset? timestamp { get; set; }
+        public DateTimeOffset? Timestamp { get; set; }
 
         [JsonIgnore]
-        public string MemberKey => $"{clientId}:{connectionId}";
+        public string MemberKey => $"{ClientId}:{connectionId}";
     }
 }

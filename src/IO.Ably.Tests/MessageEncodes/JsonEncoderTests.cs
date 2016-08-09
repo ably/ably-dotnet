@@ -24,14 +24,14 @@ namespace IO.Ably.Tests.MessageEncodes
 
         private Message EncodePayload(object data, string encoding = "")
         {
-            var payload = new Message() {data = data, encoding = encoding};
+            var payload = new Message() {Data = data, Encoding = encoding};
             encoder.Encode(payload, new ChannelOptions());
             return payload;
         }
 
         private Message DecodePayload(object data, string encoding = "")
         {
-            var payload = new Message() { data = data, encoding = encoding };
+            var payload = new Message() { Data = data, Encoding = encoding };
             encoder.Decode(payload, new ChannelOptions());
             return payload;
         }
@@ -45,12 +45,12 @@ namespace IO.Ably.Tests.MessageEncodes
             {
                 var payload = DecodePayload(_jsonData, "json");
 
-                payload.data.Should().BeOfType<JObject>();
+                payload.Data.Should().BeOfType<JObject>();
 
-                var obj =(payload.data as JObject).ToObject(_objectData.GetType());
+                var obj =(payload.Data as JObject).ToObject(_objectData.GetType());
                 obj.Should().Be(_objectData);
 
-                payload.encoding.Should().BeEmpty();
+                payload.Encoding.Should().BeEmpty();
             }
 
             [Fact]
@@ -58,8 +58,8 @@ namespace IO.Ably.Tests.MessageEncodes
             {
                 var payload = DecodePayload(_jsonData, "utf-8/json");
 
-                payload.data.Should().BeOfType<JObject>();
-                payload.encoding.Should().Be("utf-8");
+                payload.Data.Should().BeOfType<JObject>();
+                payload.Encoding.Should().Be("utf-8");
             }
 
             [Fact]
@@ -67,14 +67,14 @@ namespace IO.Ably.Tests.MessageEncodes
             {
                 var payload = DecodePayload("test", "utf-8");
 
-                payload.data.Should().Be("test");
-                payload.encoding.Should().Be("utf-8");
+                payload.Data.Should().Be("test");
+                payload.Encoding.Should().Be("utf-8");
             }
 
             [Fact]
             public void WithInvalidJsonPayload_ShouldReturnFailedResult()
             {
-                var result = encoder.Decode(new Message() { data = "test", encoding = "json" }, new ChannelOptions());
+                var result = encoder.Decode(new Message() { Data = "test", Encoding = "json" }, new ChannelOptions());
                 result.IsFailure.Should().BeTrue();
                 result.Error.message.Should().Be("Invalid Json data: 'test'");
             }
@@ -87,8 +87,8 @@ namespace IO.Ably.Tests.MessageEncodes
             {
                 var payload = EncodePayload(_objectData);
 
-                payload.data.Should().Be(_jsonData);
-                payload.encoding.Should().Be("json");
+                payload.Data.Should().Be(_jsonData);
+                payload.Encoding.Should().Be("json");
             }
 
             [Fact]
@@ -96,8 +96,8 @@ namespace IO.Ably.Tests.MessageEncodes
             {
                 var payload = EncodePayload(_objectData, "utf-8");
 
-                payload.data.Should().Be(_jsonData);
-                payload.encoding.Should().Be("utf-8/json");
+                payload.Data.Should().Be(_jsonData);
+                payload.Encoding.Should().Be("utf-8/json");
             }
 
             [Fact]
@@ -105,8 +105,8 @@ namespace IO.Ably.Tests.MessageEncodes
             {
                 var payload = EncodePayload(_arrayData);
 
-                payload.data.Should().Be(_jsonArrayData);
-                payload.encoding.Should().Be("json");
+                payload.Data.Should().Be(_jsonArrayData);
+                payload.Encoding.Should().Be("json");
             }
 
             [Fact]
@@ -114,8 +114,8 @@ namespace IO.Ably.Tests.MessageEncodes
             {
                 var payload = EncodePayload("test");
 
-                payload.data.Should().Be("test");
-                payload.encoding.Should().BeEmpty();
+                payload.Data.Should().Be("test");
+                payload.Encoding.Should().BeEmpty();
             }
 
             [Fact]
@@ -123,8 +123,8 @@ namespace IO.Ably.Tests.MessageEncodes
             {
                 var payload = EncodePayload(null);
 
-                payload.data.Should().BeNull();
-                payload.encoding.Should().BeEmpty();
+                payload.Data.Should().BeNull();
+                payload.Encoding.Should().BeEmpty();
             }
         }
 

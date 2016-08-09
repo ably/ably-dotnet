@@ -302,7 +302,7 @@ namespace IO.Ably.Tests
 
                 var message = (LastRequest.PostData as List<Message>).First();
 
-                message.clientId.Should().BeNullOrEmpty();
+                message.ClientId.Should().BeNullOrEmpty();
             }
 
             [Fact]

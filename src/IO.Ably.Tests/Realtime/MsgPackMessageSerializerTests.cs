@@ -179,7 +179,7 @@ namespace IO.Ably.Tests
             expectedMessage.Add(0);
             expectedMessage.AddRange(SerializeString("msgSerial"));
             expectedMessage.Add(0);
-            var validMessages = messages.Where(c => !string.IsNullOrEmpty(c.name));
+            var validMessages = messages.Where(c => !string.IsNullOrEmpty(c.Name));
             if (validMessages.Any())
             {
                 expectedMessage[0]++;
@@ -189,7 +189,7 @@ namespace IO.Ably.Tests
                 {
                     expectedMessage.Add((0x08 << 4) + 1);
                     expectedMessage.AddRange(SerializeString("name"));
-                    expectedMessage.AddRange(SerializeString(msg.name));
+                    expectedMessage.AddRange(SerializeString(msg.Name));
                 }
             }
 
@@ -222,13 +222,13 @@ namespace IO.Ably.Tests
                 foreach (PresenceMessage msg in messages)
                 {
                     expectedMessage.Add((0x08 << 4) + 1);
-                    expectedMessage[expectedMessage.Count - 1] += (byte)(string.IsNullOrEmpty(msg.clientId) ? 0 : 1);
+                    expectedMessage[expectedMessage.Count - 1] += (byte)(string.IsNullOrEmpty(msg.ClientId) ? 0 : 1);
                     expectedMessage.AddRange(SerializeString("action"));
                     expectedMessage.Add((byte)msg.action);
-                    if (!string.IsNullOrEmpty(msg.clientId))
+                    if (!string.IsNullOrEmpty(msg.ClientId))
                     {
                         expectedMessage.AddRange(SerializeString("clientId"));
-                        expectedMessage.AddRange(SerializeString(msg.clientId));
+                        expectedMessage.AddRange(SerializeString(msg.ClientId));
                     }
                 }
             }
@@ -491,8 +491,8 @@ namespace IO.Ably.Tests
             Assert.Equal<int>(expectedMessages.Length, target.messages.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
-                Assert.Equal<string>(expectedMessages[i].name, target.messages[i].name);
-                Assert.Equal(expectedMessages[i].data, target.messages[i].data);
+                Assert.Equal<string>(expectedMessages[i].Name, target.messages[i].Name);
+                Assert.Equal(expectedMessages[i].Data, target.messages[i].Data);
             }
         }
 

@@ -31,8 +31,8 @@ namespace IO.Ably.Tests.MessagePack
             var result = MsgPackHelper.DeSerialise(serialised, typeof (List<Message>)) as List<Message>;
             var resultMessage = result.First();
 
-            resultMessage.data.Should().Be(message.data);
-            resultMessage.name.Should().Be(message.name);
+            resultMessage.Data.Should().Be(message.Data);
+            resultMessage.Name.Should().Be(message.Name);
 
         }
 
@@ -114,12 +114,12 @@ namespace IO.Ably.Tests.MessagePack
         [Fact]
         public void CanSerialiseAndDeserialiseBase64ByteArray()
         {
-            var message = new Message() {name = "example", data = "AAECAwQFBgcICQoLDA0ODw==".FromBase64()};
+            var message = new Message() {Name = "example", Data = "AAECAwQFBgcICQoLDA0ODw==".FromBase64()};
             var serialised = MsgPackHelper.Serialise(new List<Message> { message });
             var resultMessage = MsgPackHelper.DeSerialise(serialised, typeof(List<Message>)) as List<Message>;
-            var data = resultMessage.First().data as byte[];
-            data.Should().BeEquivalentTo(message.data as byte[]);
-            resultMessage.First().name.Should().Be(message.name);
+            var data = resultMessage.First().Data as byte[];
+            data.Should().BeEquivalentTo(message.Data as byte[]);
+            resultMessage.First().Name.Should().Be(message.Name);
         }
 
         [Fact]

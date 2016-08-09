@@ -25,34 +25,34 @@ namespace IO.Ably.MessageEncoders
         public void AddEncoding(IMessage payload, string encoding = null)
         {
             var encodingToAdd = encoding ?? EncodingName;
-            if (payload.encoding.IsEmpty())
-                payload.encoding = encodingToAdd;
+            if (payload.Encoding.IsEmpty())
+                payload.Encoding = encodingToAdd;
             else
             {
-                payload.encoding += "/" + encodingToAdd;
+                payload.Encoding += "/" + encodingToAdd;
             }
         }
 
         public bool CurrentEncodingIs(IMessage payload, string encoding)
         {
-            return payload.encoding.IsNotEmpty() && payload.encoding.EndsWith(encoding, StringComparison.CurrentCultureIgnoreCase);
+            return payload.Encoding.IsNotEmpty() && payload.Encoding.EndsWith(encoding, StringComparison.CurrentCultureIgnoreCase);
         }
 
         public string GetCurrentEncoding(IMessage payload)
         {
-            if (payload.encoding.IsEmpty())
+            if (payload.Encoding.IsEmpty())
                 return "";
 
-            return payload.encoding.Split(new[] {'/'}, StringSplitOptions.RemoveEmptyEntries).Last();
+            return payload.Encoding.Split(new[] {'/'}, StringSplitOptions.RemoveEmptyEntries).Last();
         }
 
         protected void RemoveCurrentEncodingPart(IMessage payload)
         {
-            if (payload.encoding.IsEmpty())
+            if (payload.Encoding.IsEmpty())
                 return;
 
-            var encodings = payload.encoding.Split(new[] { '/' });
-            payload.encoding = string.Join("/", encodings.Take(encodings.Length - 1));
+            var encodings = payload.Encoding.Split(new[] { '/' });
+            payload.Encoding = string.Join("/", encodings.Take(encodings.Length - 1));
         }
     }
 }

@@ -53,8 +53,8 @@ namespace IO.Ably.Tests
                 yield return new object[] { "[{\"action\":2,\"clientId\":\"test\"}]", new PresenceMessage[] { new PresenceMessage(PresenceAction.Enter, "test") } };
                 yield return new object[] { "[{\"action\":2,\"clientId\":\"test\"}, {\"action\":2,\"clientId\":\"test2\"}]", new PresenceMessage[] { new PresenceMessage(PresenceAction.Enter, "test"), new PresenceMessage(PresenceAction.Enter, "test2") } };
                 yield return new object[] { "[{\"connectionId\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { connectionId = "test" } } };
-                yield return new object[] { "[{\"data\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { data = "test" } } };
-                yield return new object[] { "[{\"timestamp\":1430784000000}]", new PresenceMessage[] { new PresenceMessage() { timestamp = DateHelper.CreateDate(2015, 5, 5) } } };
+                yield return new object[] { "[{\"data\":\"test\"}]", new PresenceMessage[] { new PresenceMessage() { Data = "test" } } };
+                yield return new object[] { "[{\"timestamp\":1430784000000}]", new PresenceMessage[] { new PresenceMessage() { Timestamp = DateHelper.CreateDate(2015, 5, 5) } } };
             }
         }
 
@@ -147,13 +147,13 @@ namespace IO.Ably.Tests
             JsonMessageSerializer serializer = new JsonMessageSerializer();
             ProtocolMessage message = new ProtocolMessage() { messages = messages };
             StringBuilder expectedMessage = new StringBuilder("{\"action\":0,\"msgSerial\":0");
-            var validMessages = messages.Where(c => !string.IsNullOrEmpty(c.name));
+            var validMessages = messages.Where(c => !string.IsNullOrEmpty(c.Name));
             if (validMessages.Any())
             {
                 expectedMessage.Append(",\"messages\":[");
                 foreach (Message msg in validMessages)
                 {
-                    expectedMessage.AppendFormat("{{\"name\":\"{0}\"}},", msg.name);
+                    expectedMessage.AppendFormat("{{\"name\":\"{0}\"}},", msg.Name);
                 }
                 expectedMessage.Remove(expectedMessage.Length - 1, 1) // last comma
                     .Append("]");
@@ -407,8 +407,8 @@ namespace IO.Ably.Tests
             Assert.Equal<int>(expectedMessages.Length, target.messages.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
-                Assert.Equal<string>(expectedMessages[i].name, target.messages[i].name);
-                Assert.Equal(expectedMessages[i].data, target.messages[i].data);
+                Assert.Equal<string>(expectedMessages[i].Name, target.messages[i].Name);
+                Assert.Equal(expectedMessages[i].Data, target.messages[i].Data);
             }
         }
 
@@ -430,12 +430,12 @@ namespace IO.Ably.Tests
             Assert.Equal<int>(expectedMessages.Length, target.presence.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
-                Assert.Equal<string>(expectedMessages[i].clientId, target.presence[i].clientId);
+                Assert.Equal<string>(expectedMessages[i].ClientId, target.presence[i].ClientId);
                 Assert.Equal<string>(expectedMessages[i].connectionId, target.presence[i].connectionId);
                 Assert.Equal(expectedMessages[i].action, target.presence[i].action);
-                Assert.Equal(expectedMessages[i].id, target.presence[i].id);
-                Assert.Equal(expectedMessages[i].timestamp, target.presence[i].timestamp);
-                Assert.Equal(expectedMessages[i].data, target.presence[i].data);
+                Assert.Equal(expectedMessages[i].Id, target.presence[i].Id);
+                Assert.Equal(expectedMessages[i].Timestamp, target.presence[i].Timestamp);
+                Assert.Equal(expectedMessages[i].Data, target.presence[i].Data);
             }
         }
     }

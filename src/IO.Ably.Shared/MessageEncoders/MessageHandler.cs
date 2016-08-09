@@ -142,10 +142,10 @@ namespace IO.Ably.MessageEncoders
 
         private void ValidatePayloadDataType(IMessage payload)
         {
-            if (payload.data == null)
+            if (payload.Data == null)
                 return;
 
-            var dataType = payload.data.GetType();
+            var dataType = payload.Data.GetType();
             var testType = GetNullableType(dataType) ?? dataType;
             if (UnsupportedTypes.Contains(testType))
             {
@@ -278,10 +278,10 @@ namespace IO.Ably.MessageEncoders
             if (protocolMessage != null)
             {
                 foreach (var presenceMessage in protocolMessage.presence)
-                    presenceMessage.timestamp = protocolMessage.timestamp;
+                    presenceMessage.Timestamp = protocolMessage.timestamp;
 
                 foreach (var message in protocolMessage.messages)
-                    message.timestamp = protocolMessage.timestamp;
+                    message.Timestamp = protocolMessage.timestamp;
 
             }
 

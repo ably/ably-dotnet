@@ -11,7 +11,7 @@ namespace IO.Ably.MessageEncoders
 
         public override Result Decode(IMessage payload, ChannelOptions options)
         {
-            if (IsEmpty(payload.data))
+            if (IsEmpty(payload.Data))
                 return Result.Ok();
 
             var currentEncoding = GetCurrentEncoding(payload);
@@ -29,7 +29,7 @@ namespace IO.Ably.MessageEncoders
             var cipher = Crypto.GetCipher(options.CipherParams);
             try
             {
-                payload.data = cipher.Decrypt(payload.data as byte[]);
+                payload.Data = cipher.Decrypt(payload.Data as byte[]);
                 RemoveCurrentEncodingPart(payload);
                 return Result.Ok();
             }
@@ -50,20 +50,20 @@ namespace IO.Ably.MessageEncoders
 
         public override Result Encode(IMessage payload, ChannelOptions options)
         {
-            if (IsEmpty(payload.data) || IsEncrypted(payload))
+            if (IsEmpty(payload.Data) || IsEncrypted(payload))
                 return Result.Ok();
 
             if (options.Encrypted == false)
                 return Result.Ok();
 
-            if (payload.data is string)
+            if (payload.Data is string)
             {
-                payload.data = ((string)payload.data).GetBytes();
+                payload.Data = ((string)payload.Data).GetBytes();
                 AddEncoding(payload, "utf-8");
             }
 
             var cipher = Crypto.GetCipher(options.CipherParams);
-            payload.data = cipher.Encrypt(payload.data as byte[]);
+            payload.Data = cipher.Encrypt(payload.Data as byte[]);
             AddEncoding(payload, $"{EncodingName}+{options.CipherParams.CipherType.ToLower()}");
 
             return Result.Ok();
@@ -71,7 +71,7 @@ namespace IO.Ably.MessageEncoders
 
         private bool IsEncrypted(IMessage payload)
         {
-            return payload.encoding.IsNotEmpty() && payload.encoding.Contains(EncodingName);
+            return payload.Encoding.IsNotEmpty() && payload.Encoding.Contains(EncodingName);
         }
 
         public CipherEncoder(Protocol protocol)

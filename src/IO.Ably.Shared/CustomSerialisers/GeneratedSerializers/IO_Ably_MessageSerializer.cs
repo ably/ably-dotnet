@@ -44,50 +44,50 @@ namespace IO.Ably.CustomSerialisers
         {
             var nonNullFields = new bool[]
             {
-                objectTree.clientId.IsNotEmpty(),
-                objectTree.connectionId.IsNotEmpty(),
-                objectTree.data != null,
-                objectTree.encoding.IsNotEmpty(),
-                objectTree.id.IsNotEmpty(),
-                objectTree.name.IsNotEmpty(),
-                objectTree.timestamp != null,
+                objectTree.ClientId.IsNotEmpty(),
+                objectTree.ConnectionId.IsNotEmpty(),
+                objectTree.Data != null,
+                objectTree.Encoding.IsNotEmpty(),
+                objectTree.Id.IsNotEmpty(),
+                objectTree.Name.IsNotEmpty(),
+                objectTree.Timestamp != null,
             }.Count(x => x);
 
             packer.PackMapHeader(nonNullFields);
-            if (objectTree.clientId.IsNotEmpty())
+            if (objectTree.ClientId.IsNotEmpty())
             {
                 this._serializer0.PackTo(packer, "clientId");
-                this._serializer0.PackTo(packer, objectTree.clientId);
+                this._serializer0.PackTo(packer, objectTree.ClientId);
             }
-            if (objectTree.connectionId.IsNotEmpty())
+            if (objectTree.ConnectionId.IsNotEmpty())
             {
                 this._serializer0.PackTo(packer, "connectionId");
-                this._serializer0.PackTo(packer, objectTree.connectionId);
+                this._serializer0.PackTo(packer, objectTree.ConnectionId);
             }
-            if (objectTree.data != null)
+            if (objectTree.Data != null)
             {
                 this._serializer0.PackTo(packer, "data");
-                this._serializer1.PackTo(packer, objectTree.data);
+                this._serializer1.PackTo(packer, objectTree.Data);
             }
-            if (objectTree.encoding.IsNotEmpty())
+            if (objectTree.Encoding.IsNotEmpty())
             {
                 this._serializer0.PackTo(packer, "encoding");
-                this._serializer0.PackTo(packer, objectTree.encoding);
+                this._serializer0.PackTo(packer, objectTree.Encoding);
             }
-            if (objectTree.id.IsNotEmpty())
+            if (objectTree.Id.IsNotEmpty())
             {
                 this._serializer0.PackTo(packer, "id");
-                this._serializer0.PackTo(packer, objectTree.id);
+                this._serializer0.PackTo(packer, objectTree.Id);
             }
-            if (objectTree.name.IsNotEmpty())
+            if (objectTree.Name.IsNotEmpty())
             {
                 this._serializer0.PackTo(packer, "name");
-                this._serializer0.PackTo(packer, objectTree.name);
+                this._serializer0.PackTo(packer, objectTree.Name);
             }
-            if (objectTree.timestamp != null)
+            if (objectTree.Timestamp != null)
             {
                 this._serializer0.PackTo(packer, "timestamp");
-                this._serializer2.PackTo(packer, objectTree.timestamp);
+                this._serializer2.PackTo(packer, objectTree.Timestamp);
             }
         }
 
@@ -143,7 +143,7 @@ namespace IO.Ably.CustomSerialisers
                     }
                     if (nullable15.HasValue)
                     {
-                        result.timestamp = nullable15;
+                        result.Timestamp = nullable15;
                     }
                 }
                 else
@@ -156,7 +156,7 @@ namespace IO.Ably.CustomSerialisers
                         if (((nullable14 == null)
                              == false))
                         {
-                            result.name = nullable14;
+                            result.Name = nullable14;
                         }
                     }
                     else
@@ -169,7 +169,7 @@ namespace IO.Ably.CustomSerialisers
                             if (((nullable13 == null)
                                  == false))
                             {
-                                result.id = nullable13;
+                                result.Id = nullable13;
                             }
                         }
                         else
@@ -182,7 +182,7 @@ namespace IO.Ably.CustomSerialisers
                                 if (((nullable12 == null)
                                      == false))
                                 {
-                                    result.encoding = nullable12;
+                                    result.Encoding = nullable12;
                                 }
                             }
                             else
@@ -224,17 +224,17 @@ namespace IO.Ably.CustomSerialisers
                                             nullable10 = ((MessagePackObject) nullable10).ToObject();
                                             if (nullable10 is MessagePackObject[])
                                             {
-                                                result.data =
+                                                result.Data =
                                                     ((MessagePackObject[])nullable10).Select(x => x.ToObject()).ToArray();
                                             }
                                             else
                                             {
-                                                result.data = nullable10;
+                                                result.Data = nullable10;
                                             }
                                         }
                                         else
                                         {
-                                            result.data = nullable10;
+                                            result.Data = nullable10;
                                         }
                                     }
                                 }
@@ -248,7 +248,7 @@ namespace IO.Ably.CustomSerialisers
                                         if (((nullable9 == null)
                                              == false))
                                         {
-                                            result.connectionId = nullable9;
+                                            result.ConnectionId = nullable9;
                                         }
                                     }
                                     else
@@ -261,7 +261,7 @@ namespace IO.Ably.CustomSerialisers
                                             if (((nullable8 == null)
                                                  == false))
                                             {
-                                                result.clientId = nullable8;
+                                                result.ClientId = nullable8;
                                             }
                                         }
                                         else

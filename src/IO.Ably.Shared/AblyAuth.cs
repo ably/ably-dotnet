@@ -361,18 +361,18 @@ namespace IO.Ably
 
             foreach (var message in messages)
             {
-                if (message.clientId.IsNotEmpty() && message.clientId != libClientId)
+                if (message.ClientId.IsNotEmpty() && message.ClientId != libClientId)
                 {
                     var errorMessage = "";
                     if (message is Message)
                     {
                         errorMessage =
-                            $"{message.GetType().Name} with name '{(message as Message).name}' has incompatible clientId {message.clientId} as the current client is configured with {libClientId}";
+                            $"{message.GetType().Name} with name '{(message as Message).Name}' has incompatible clientId {message.ClientId} as the current client is configured with {libClientId}";
                     }
                     else
                     {
                         errorMessage =
-                            $"{message.GetType().Name} has incompatible clientId '{message.clientId}' as the current client is configured with '{libClientId}'";
+                            $"{message.GetType().Name} has incompatible clientId '{message.ClientId}' as the current client is configured with '{libClientId}'";
                     }
 
                     return Result.Fail(new ErrorInfo(errorMessage, 40012, (HttpStatusCode)400));

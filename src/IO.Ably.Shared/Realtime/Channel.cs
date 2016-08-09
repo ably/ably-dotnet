@@ -434,9 +434,9 @@ namespace IO.Ably.Realtime
                 RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message));
             }
 
-            if (message.name.IsNotEmpty())
+            if (message.Name.IsNotEmpty())
             {
-                foreach (var specificHandler in _handlers.GetHandlers(message.name))
+                foreach (var specificHandler in _handlers.GetHandlers(message.Name))
                 {
                     var loopHandler = specificHandler;
                     RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message));
