@@ -240,7 +240,7 @@ namespace IO.Ably.Transport
                 {
                     lock (PendingMessages)
                     {
-                        if(Logger.IsDebug) { Logger.Debug($"Queuing message with action: {message.action}. Connection State: {ConnectionState}");}
+                        if(Logger.IsDebug) { Logger.Debug($"Queuing message with action: {message.Action}. Connection State: {ConnectionState}");}
                         PendingMessages.Enqueue(new MessageAndCallback(message, callback));
                     }
                 }
@@ -256,8 +256,8 @@ namespace IO.Ably.Transport
 
         private Result VerifyMessageHasCompatibleClientId(ProtocolMessage protocolMessage)
         {
-            var messagesResult = RestClient.AblyAuth.ValidateClientIds(protocolMessage.messages);
-            var presenceResult = RestClient.AblyAuth.ValidateClientIds(protocolMessage.presence);
+            var messagesResult = RestClient.AblyAuth.ValidateClientIds(protocolMessage.Messages);
+            var presenceResult = RestClient.AblyAuth.ValidateClientIds(protocolMessage.Presence);
 
             return Result.Combine(messagesResult, presenceResult);
         }
@@ -436,9 +436,9 @@ namespace IO.Ably.Transport
             handled |= AckProcessor.OnMessageReceived(message);
             handled |= ConnectionHeartbeatRequest.CanHandleMessage(message);
 
-            if (message.connectionSerial.HasValue)
+            if (message.ConnectionSerial.HasValue)
             {
-                Connection.Serial = message.connectionSerial.Value;
+                Connection.Serial = message.ConnectionSerial.Value;
             }
 
             MessageReceived?.Invoke(message);

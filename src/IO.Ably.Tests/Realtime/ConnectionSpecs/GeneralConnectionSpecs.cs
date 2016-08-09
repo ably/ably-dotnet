@@ -52,8 +52,8 @@ namespace IO.Ably.Tests.Realtime
             };
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
-                connectionDetails = connectionDetailsMessage,
-                connectionKey = "unimportant"
+                ConnectionDetails = connectionDetailsMessage,
+                ConnectionKey = "unimportant"
             });
 
             client.Connection.State.Should().Be(ConnectionState.Connected);
@@ -68,7 +68,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
-                connectionKey = "unimportant"
+                ConnectionKey = "unimportant"
             });
 
             client.Connection.Key.Should().Be("unimportant");
@@ -83,7 +83,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
-                connectionDetails = new ConnectionDetails { clientId = "realtimeClient" }
+                ConnectionDetails = new ConnectionDetails { clientId = "realtimeClient" }
             });
 
             client.RestClient.AblyAuth.ClientId.Should().Be("realtimeClient");

@@ -277,11 +277,11 @@ namespace IO.Ably.MessageEncoders
             //Populate presence and message object timestamps
             if (protocolMessage != null)
             {
-                foreach (var presenceMessage in protocolMessage.presence)
-                    presenceMessage.Timestamp = protocolMessage.timestamp;
+                foreach (var presenceMessage in protocolMessage.Presence)
+                    presenceMessage.Timestamp = protocolMessage.Timestamp;
 
-                foreach (var message in protocolMessage.messages)
-                    message.Timestamp = protocolMessage.timestamp;
+                foreach (var message in protocolMessage.Messages)
+                    message.Timestamp = protocolMessage.Timestamp;
 
             }
 
@@ -292,12 +292,12 @@ namespace IO.Ably.MessageEncoders
         {
             var options = channelOptions ?? new ChannelOptions();
             var result = Result.Ok();
-            foreach (var message in protocolMessage.messages)
+            foreach (var message in protocolMessage.Messages)
             {
                 result = Result.Combine(result, EncodePayload(message, options));
             }
 
-            foreach (var presence in protocolMessage.presence)
+            foreach (var presence in protocolMessage.Presence)
             {
                 result = Result.Combine(result, EncodePayload(presence, options));
             }
@@ -308,11 +308,11 @@ namespace IO.Ably.MessageEncoders
         {
             var option = channelOptions ?? new ChannelOptions();
             var result = Result.Ok();
-            foreach (var message in protocolMessage.messages ?? new Message[] { })
+            foreach (var message in protocolMessage.Messages ?? new Message[] { })
             {
                 result = Result.Combine(result, DecodePayload(message, channelOptions));
             }
-            foreach (var presence in protocolMessage.presence ?? new PresenceMessage[] { })
+            foreach (var presence in protocolMessage.Presence ?? new PresenceMessage[] { })
             {
                 result = Result.Combine(result, DecodePayload(presence, channelOptions));
             }

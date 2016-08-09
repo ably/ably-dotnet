@@ -73,7 +73,7 @@ namespace IO.Ably.Tests
         {
             ErrorInfo targetError = new ErrorInfo("test", 123);
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError });
 
             // Assert
             result.Should().BeTrue();
@@ -104,7 +104,7 @@ namespace IO.Ably.Tests
             await _state.OnAttachToContext();
 
             // Assert
-            _context.LastMessageSent.action.Should().Be(ProtocolMessage.MessageAction.Close);
+            _context.LastMessageSent.Action.Should().Be(ProtocolMessage.MessageAction.Close);
         }
 
         [Theory]

@@ -133,7 +133,7 @@ namespace IO.Ably.Realtime
             if (_channel.State == ChannelState.Attached)
             {
                 var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name);
-                message.presence = new[] {msg};
+                message.Presence = new[] {msg};
                 connection.Send(message, null);
                 //TODO: Fix this;
                 return TaskConstants.BooleanTrue;
@@ -221,12 +221,12 @@ namespace IO.Ably.Realtime
                 return;
 
             var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name);
-            message.presence = new PresenceMessage[pendingPresence.Count];
+            message.Presence = new PresenceMessage[pendingPresence.Count];
             var callbacks = new List<Action<bool, ErrorInfo>>();
             var i = 0;
             foreach (var presenceMessage in pendingPresence)
             {
-                message.presence[i++] = presenceMessage.Message;
+                message.Presence[i++] = presenceMessage.Message;
                 if (presenceMessage.Callback != null)
                 {
                     callbacks.Add(presenceMessage.Callback);

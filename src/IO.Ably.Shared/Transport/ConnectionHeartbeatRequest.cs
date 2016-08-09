@@ -28,7 +28,7 @@ namespace IO.Ably.Transport
 
         public static bool CanHandleMessage(ProtocolMessage message)
         {
-            return message.action == ProtocolMessage.MessageAction.Heartbeat;
+            return message.Action == ProtocolMessage.MessageAction.Heartbeat;
         }
 
         public static ConnectionHeartbeatRequest Execute(ConnectionManager manager, Action<TimeSpan?, ErrorInfo> callback)

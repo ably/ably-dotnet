@@ -71,7 +71,7 @@ namespace IO.Ably.Tests.Realtime
             };
             LastCreatedTransport.SendAction = message =>
             {
-                if (message.Original.action == ProtocolMessage.MessageAction.Close)
+                if (message.Original.Action == ProtocolMessage.MessageAction.Close)
                 {
                     LastCreatedTransport.Close(false);
                 }
@@ -98,7 +98,7 @@ namespace IO.Ably.Tests.Realtime
             var expectedError = new ErrorInfo();
 
             await client.ConnectionManager.OnTransportMessageReceived(
-                new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = expectedError });
+                new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = expectedError });
 
             hasError.Should().BeTrue();
             actualError.Should().Be(expectedError);

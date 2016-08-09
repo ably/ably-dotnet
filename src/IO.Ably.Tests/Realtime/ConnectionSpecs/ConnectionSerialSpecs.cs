@@ -44,7 +44,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Message)
             {
-                connectionSerial = 123456
+                ConnectionSerial = 123456
             });
 
             // Act

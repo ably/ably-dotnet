@@ -27,29 +27,29 @@ namespace IO.Ably.Transport.States.Connection
 
         public override async Task<bool> OnMessageReceived(ProtocolMessage message)
         {
-            switch (message.action)
+            switch (message.Action)
             {
                 case ProtocolMessage.MessageAction.Close:
-                    Context.SetState(new ConnectionClosedState(Context, message.error));
+                    Context.SetState(new ConnectionClosedState(Context, message.Error));
                     return true;
                 case ProtocolMessage.MessageAction.Disconnected:
-                    var error = message.error;
+                    var error = message.Error;
                     var result = await Context.RetryBecauseOfTokenError(error);
                     if (result == false)
-                        Context.SetState(new ConnectionDisconnectedState(Context, message.error));
+                        Context.SetState(new ConnectionDisconnectedState(Context, message.Error));
 
                     return true;
                 case ProtocolMessage.MessageAction.Error:
-                    if (await Context.RetryBecauseOfTokenError(message.error))
+                    if (await Context.RetryBecauseOfTokenError(message.Error))
                         return true;
-                    if (await Context.CanUseFallBackUrl(message.error))
+                    if (await Context.CanUseFallBackUrl(message.Error))
                     {
                         Context.Connection.Key = null;
-                        Context.SetState(new ConnectionDisconnectedState(Context, message.error) { RetryInstantly = true });
+                        Context.SetState(new ConnectionDisconnectedState(Context, message.Error) { RetryInstantly = true });
                         return true;
                     }
 
-                    Context.SetState(new ConnectionFailedState(Context, message.error));
+                    Context.SetState(new ConnectionFailedState(Context, message.Error));
                     return true;
             }
             return false;

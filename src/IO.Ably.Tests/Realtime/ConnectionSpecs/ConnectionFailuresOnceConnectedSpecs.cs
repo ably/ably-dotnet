@@ -59,7 +59,7 @@ namespace IO.Ably.Tests.Realtime
                 states.Add(args.Current);
             };
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { error = _tokenErrorInfo });
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = _tokenErrorInfo });
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
             _renewTokenCalled.Should().BeTrue();
@@ -92,7 +92,7 @@ namespace IO.Ably.Tests.Realtime
                 }
             };
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { error = _tokenErrorInfo });
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = _tokenErrorInfo });
 
             var urlParams = LastCreatedTransport.Parameters.GetParams();
             urlParams.Should().ContainKey("resume");
@@ -117,7 +117,7 @@ namespace IO.Ably.Tests.Realtime
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
                 {
-                    error = _tokenErrorInfo
+                    Error = _tokenErrorInfo
                 });
 
             Assert.Equal(new[]
@@ -149,12 +149,12 @@ namespace IO.Ably.Tests.Realtime
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
             {
-                error = _tokenErrorInfo
+                Error = _tokenErrorInfo
             });
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
-                error = _tokenErrorInfo
+                Error = _tokenErrorInfo
             });
 
             Assert.Equal(new[]
@@ -186,7 +186,7 @@ namespace IO.Ably.Tests.Realtime
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
             {
-                error = _tokenErrorInfo
+                Error = _tokenErrorInfo
             });
 
             Assert.Equal(new[]
@@ -278,7 +278,7 @@ namespace IO.Ably.Tests.Realtime
 
             await CloseAndWaitToReconnect(client, new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
-                connectionId = initialConnectionId // if the connection ids match then the connection has been resumed
+                ConnectionId = initialConnectionId // if the connection ids match then the connection has been resumed
             });
 
             LastCreatedTransport.SentMessages.Should().HaveCount(2);

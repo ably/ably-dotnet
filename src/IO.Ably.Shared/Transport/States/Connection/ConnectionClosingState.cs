@@ -25,7 +25,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Task<bool> OnMessageReceived(ProtocolMessage message)
         {
-            switch (message.action)
+            switch (message.Action)
             {
                 case ProtocolMessage.MessageAction.Closed:
                     {
@@ -34,12 +34,12 @@ namespace IO.Ably.Transport.States.Connection
                     }
                 case ProtocolMessage.MessageAction.Disconnected:
                     {
-                        TransitionState(new ConnectionDisconnectedState(Context, message.error));
+                        TransitionState(new ConnectionDisconnectedState(Context, message.Error));
                         return TaskConstants.BooleanTrue;
                     }
                 case ProtocolMessage.MessageAction.Error:
                     {
-                        TransitionState(new ConnectionFailedState(Context, message.error));
+                        TransitionState(new ConnectionFailedState(Context, message.Error));
                         return TaskConstants.BooleanTrue;
                     }
             }

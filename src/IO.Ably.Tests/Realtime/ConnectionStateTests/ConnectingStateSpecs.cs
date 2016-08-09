@@ -116,7 +116,7 @@ namespace IO.Ably.Tests
             ErrorInfo targetError = new ErrorInfo("test", 123);
 
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError });
 
             // Assert
             _context.LastSetState.Should().BeOfType<ConnectionFailedState>();
@@ -132,7 +132,7 @@ namespace IO.Ably.Tests
             ErrorInfo targetError = new ErrorInfo("test", 123);
 
             // Act
-            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = targetError });
+            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError });
 
             // Assert
             _context.HandledConnectionFailureCalled.Should().BeTrue();
@@ -147,7 +147,7 @@ namespace IO.Ably.Tests
             _context.Connection.Key = "123";
 
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = new ErrorInfo("test", 123, System.Net.HttpStatusCode.InternalServerError) });
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("test", 123, System.Net.HttpStatusCode.InternalServerError) });
 
             // Assert
             _context.Connection.Key.Should().BeNullOrEmpty();

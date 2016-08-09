@@ -82,8 +82,8 @@ namespace IO.Ably.Tests.Realtime
                 await
                     client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
                     {
-                        error = expectedError,
-                        channel = "test"
+                        Error = expectedError,
+                        Channel = "test"
                     });
 
                 await Task.Delay(10); //Allow the notification thread to fire
@@ -169,7 +169,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 var error = new ErrorInfo();
                 (_channel as RealtimeChannel).SetChannelState(state);
-                await _client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = error });
+                await _client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = error });
 
                 _client.Connection.State.Should().Be(ConnectionState.Failed);
                 _channel.State.Should().Be(ChannelState.Failed);
@@ -274,8 +274,8 @@ namespace IO.Ably.Tests.Realtime
                 _channel.State.Should().Be(ChannelState.Attaching);
 
                 var lastMessageSend = LastCreatedTransport.LastMessageSend;
-                lastMessageSend.action.Should().Be(ProtocolMessage.MessageAction.Attach);
-                lastMessageSend.channel.Should().Be(_channel.Name);
+                lastMessageSend.Action.Should().Be(ProtocolMessage.MessageAction.Attach);
+                lastMessageSend.Channel.Should().Be(_channel.Name);
 
                 await ReceiveAttachedMessage();
 
@@ -368,7 +368,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 await _client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
                 {
-                    channel = _channel.Name
+                    Channel = _channel.Name
                 });
             }
 
@@ -422,9 +422,9 @@ namespace IO.Ably.Tests.Realtime
 
                 _channel.Detach();
 
-                LastCreatedTransport.LastMessageSend.action.Should().Be(ProtocolMessage.MessageAction.Detach);
+                LastCreatedTransport.LastMessageSend.Action.Should().Be(ProtocolMessage.MessageAction.Detach);
                 _channel.State.Should().Be(ChannelState.Detaching);
-                await _client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached) { channel = _channel.Name });
+                await _client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached) { Channel = _channel.Name });
 
                 _channel.State.Should().Be(ChannelState.Detached);
             }
@@ -517,7 +517,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 await _client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached)
                 {
-                    channel = _channel.Name
+                    Channel = _channel.Name
                 });
             }
 
@@ -551,7 +551,7 @@ namespace IO.Ably.Tests.Realtime
 
                 channel.PublishAsync("byte", bytes);
 
-                var sentMessage = LastCreatedTransport.LastMessageSend.messages.First();
+                var sentMessage = LastCreatedTransport.LastMessageSend.Messages.First();
                 LastCreatedTransport.SentMessages.Should().HaveCount(1);
                 sentMessage.Encoding.Should().Be("base64");
             }
@@ -573,7 +573,7 @@ namespace IO.Ably.Tests.Realtime
                 channel.Publish(list);
 
                 LastCreatedTransport.SentMessages.Should().HaveCount(1);
-                LastCreatedTransport.LastMessageSend.messages.Should().HaveCount(2);
+                LastCreatedTransport.LastMessageSend.Messages.Should().HaveCount(2);
             }
 
             [Fact]
@@ -615,9 +615,9 @@ namespace IO.Ably.Tests.Realtime
                     channel.Publish("test", "best");
 
                     var lastMessageSend = LastCreatedTransport.LastMessageSend;
-                    lastMessageSend.channel.Should().Be("test");
-                    lastMessageSend.messages.First().Name.Should().Be("test");
-                    lastMessageSend.messages.First().Data.Should().Be("best");
+                    lastMessageSend.Channel.Should().Be("test");
+                    lastMessageSend.Messages.First().Name.Should().Be("test");
+                    lastMessageSend.Messages.First().Data.Should().Be("best");
                 }
 
                 [Fact]
@@ -633,7 +633,7 @@ namespace IO.Ably.Tests.Realtime
 
                     LastCreatedTransport.LastMessageSend.Should().BeNull();
                     client.ConnectionManager.PendingMessages.Should().HaveCount(1);
-                    client.ConnectionManager.PendingMessages.First().Message.messages.First().Data.Should().Be("connecting");
+                    client.ConnectionManager.PendingMessages.First().Message.Messages.First().Data.Should().Be("connecting");
 
                     //Not connect the client
                     await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
@@ -656,7 +656,7 @@ namespace IO.Ably.Tests.Realtime
 
                     LastCreatedTransport.LastMessageSend.Should().BeNull();
                     client.ConnectionManager.PendingMessages.Should().HaveCount(1);
-                    client.ConnectionManager.PendingMessages.First().Message.messages.First().Data.Should().Be("connecting");
+                    client.ConnectionManager.PendingMessages.First().Message.Messages.First().Data.Should().Be("connecting");
 
                     //Now connect
                     client.Connect();
@@ -691,7 +691,7 @@ namespace IO.Ably.Tests.Realtime
                     channel.PublishAsync("test", "test");
                     SetState(channel, ChannelState.Attached);
 
-                    LastCreatedTransport.LastMessageSend.messages.First().ClientId.Should().BeNullOrEmpty();
+                    LastCreatedTransport.LastMessageSend.Messages.First().ClientId.Should().BeNullOrEmpty();
                 }
 
                 [Fact]
@@ -703,7 +703,7 @@ namespace IO.Ably.Tests.Realtime
                     SetState(channel, ChannelState.Attached);
                     channel.PublishAsync("test", "best", clientId: "123");
 
-                    LastCreatedTransport.LastMessageSend.messages.First().ClientId.Should().Be("123");
+                    LastCreatedTransport.LastMessageSend.Messages.First().ClientId.Should().Be("123");
                 }
 
                 public ClientIdSpecs(ITestOutputHelper output) : base(output)
@@ -909,7 +909,7 @@ namespace IO.Ably.Tests.Realtime
             public async Task WithUntilAttach_ShouldPassAttachedSerialToHistoryQuery()
             {
                 var channel = _client.Channels.Get("history");
-                SetState(channel, ChannelState.Attached, message: new ProtocolMessage(ProtocolMessage.MessageAction.Attached) { channelSerial = "101"});
+                SetState(channel, ChannelState.Attached, message: new ProtocolMessage(ProtocolMessage.MessageAction.Attached) { ChannelSerial = "101"});
 
                 await channel.HistoryAsync(untilAttached: true);
 

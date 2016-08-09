@@ -82,90 +82,90 @@ namespace IO.Ably.CustomSerialisers {
         {
             var nonNullFields = new bool []
             {
-                objectTree.channel.IsNotEmpty(),
-                objectTree.channelSerial.IsNotEmpty(),
-                objectTree.connectionDetails != null,
-                objectTree.connectionId.IsNotEmpty(),
-                objectTree.connectionKey.IsNotEmpty(),
-                objectTree.connectionSerial != null,
-                objectTree.count != null,
-                objectTree.error != null,
-                objectTree.flags != null,
-                objectTree.id.IsNotEmpty(),
-                objectTree.timestamp != null,
-                objectTree.messages != null && objectTree.messages.Any(x => x.IsEmpty == false),
-                objectTree.presence != null && objectTree.presence.Any()
+                objectTree.Channel.IsNotEmpty(),
+                objectTree.ChannelSerial.IsNotEmpty(),
+                objectTree.ConnectionDetails != null,
+                objectTree.ConnectionId.IsNotEmpty(),
+                objectTree.ConnectionKey.IsNotEmpty(),
+                objectTree.ConnectionSerial != null,
+                objectTree.Count != null,
+                objectTree.Error != null,
+                objectTree.Flags != null,
+                objectTree.Id.IsNotEmpty(),
+                objectTree.Timestamp != null,
+                objectTree.Messages != null && objectTree.Messages.Any(x => x.IsEmpty == false),
+                objectTree.Presence != null && objectTree.Presence.Any()
             }.Count(x => x) + 2; //One for MsgSerial and one for Action as this is always serialised
 
             packer.PackMapHeader(nonNullFields);
             this._serializer0.PackTo(packer, "action");
-            this._serializer1.PackTo(packer, objectTree.action);
-            if (objectTree.channel.IsNotEmpty())
+            this._serializer1.PackTo(packer, objectTree.Action);
+            if (objectTree.Channel.IsNotEmpty())
             {
                 this._serializer0.PackTo(packer, "channel");
-                this._serializer0.PackTo(packer, objectTree.channel);
+                this._serializer0.PackTo(packer, objectTree.Channel);
             }
-            if (objectTree.channelSerial.IsNotEmpty())
+            if (objectTree.ChannelSerial.IsNotEmpty())
             {
                 this._serializer0.PackTo(packer, "channelSerial");
-                this._serializer0.PackTo(packer, objectTree.channelSerial);
+                this._serializer0.PackTo(packer, objectTree.ChannelSerial);
             }
-            if (objectTree.connectionDetails != null)
+            if (objectTree.ConnectionDetails != null)
             {
                 this._serializer0.PackTo(packer, "connectionDetails");
-                this._serializer2.PackTo(packer, objectTree.connectionDetails);
+                this._serializer2.PackTo(packer, objectTree.ConnectionDetails);
             }
-            if (objectTree.connectionId.IsNotEmpty())
+            if (objectTree.ConnectionId.IsNotEmpty())
             {
                 this._serializer0.PackTo(packer, "connectionId");
-                this._serializer0.PackTo(packer, objectTree.connectionId);
+                this._serializer0.PackTo(packer, objectTree.ConnectionId);
             }
-            if (objectTree.connectionKey.IsNotEmpty())
+            if (objectTree.ConnectionKey.IsNotEmpty())
             {
                 this._serializer0.PackTo(packer, "connectionKey");
-                this._serializer0.PackTo(packer, objectTree.connectionKey);
+                this._serializer0.PackTo(packer, objectTree.ConnectionKey);
             }
-            if (objectTree.connectionSerial != null)
+            if (objectTree.ConnectionSerial != null)
             {
                 this._serializer0.PackTo(packer, "connectionSerial");
-                this._serializer3.PackTo(packer, objectTree.connectionSerial);
+                this._serializer3.PackTo(packer, objectTree.ConnectionSerial);
             }
-            if (objectTree.count != null)
+            if (objectTree.Count != null)
             {
                 this._serializer0.PackTo(packer, "count");
-                this._serializer4.PackTo(packer, objectTree.count);
+                this._serializer4.PackTo(packer, objectTree.Count);
             }
-            if (objectTree.error != null)
+            if (objectTree.Error != null)
             {
                 this._serializer0.PackTo(packer, "error");
-                this._serializer5.PackTo(packer, objectTree.error);
+                this._serializer5.PackTo(packer, objectTree.Error);
             }
-            if (objectTree.flags != null)
+            if (objectTree.Flags != null)
             {
                 this._serializer0.PackTo(packer, "flags");
-                this._serializer6.PackTo(packer, objectTree.flags);
+                this._serializer6.PackTo(packer, objectTree.Flags);
             }
-            if (objectTree.id.IsNotEmpty())
+            if (objectTree.Id.IsNotEmpty())
             {
                 this._serializer0.PackTo(packer, "id");
-                this._serializer0.PackTo(packer, objectTree.id);
+                this._serializer0.PackTo(packer, objectTree.Id);
             }
             this._serializer0.PackTo(packer, "msgSerial");
-            this._serializer8.PackTo(packer, objectTree.msgSerial);
-            if (objectTree.messages != null && objectTree.messages.Any(x => x.IsEmpty == false))
+            this._serializer8.PackTo(packer, objectTree.MsgSerial);
+            if (objectTree.Messages != null && objectTree.Messages.Any(x => x.IsEmpty == false))
             {
                 this._serializer0.PackTo(packer, "messages");
-                this._serializer7.PackTo(packer, objectTree.messages.Where(x => x.IsEmpty == false).ToArray());
+                this._serializer7.PackTo(packer, objectTree.Messages.Where(x => x.IsEmpty == false).ToArray());
             }
-            if (objectTree.presence != null && objectTree.presence.Any())
+            if (objectTree.Presence != null && objectTree.Presence.Any())
             {
                 this._serializer0.PackTo(packer, "presence");
-                this._serializer9.PackTo(packer, objectTree.presence);
+                this._serializer9.PackTo(packer, objectTree.Presence);
             }
-            if (objectTree.timestamp != null)
+            if (objectTree.Timestamp != null)
             {
                 this._serializer0.PackTo(packer, "timestamp");
-                this._serializer10.PackTo(packer, objectTree.timestamp);
+                this._serializer10.PackTo(packer, objectTree.Timestamp);
             }
         }
         
@@ -221,7 +221,7 @@ namespace IO.Ably.CustomSerialisers {
                     }
                     if (nullable29.HasValue)
                     {
-                        result.timestamp = nullable29;
+                        result.Timestamp = nullable29;
                     }
                 }
                 else
@@ -258,7 +258,7 @@ namespace IO.Ably.CustomSerialisers {
                         if (((nullable28 == null)
                              == false))
                         {
-                            result.presence = nullable28;
+                            result.Presence = nullable28;
                         }
                     }
                     else
@@ -270,7 +270,7 @@ namespace IO.Ably.CustomSerialisers {
                                 typeof(IO.Ably.Types.ProtocolMessage), "Int64 msgSerial");
                             if (nullable27.HasValue)
                             {
-                                result.msgSerial = nullable27.Value;
+                                result.MsgSerial = nullable27.Value;
                             }
                         }
                         else
@@ -307,7 +307,7 @@ namespace IO.Ably.CustomSerialisers {
                                 if (((nullable26 == null)
                                      == false))
                                 {
-                                    result.messages = nullable26;
+                                    result.Messages = nullable26;
                                 }
                             }
                             else
@@ -320,7 +320,7 @@ namespace IO.Ably.CustomSerialisers {
                                     if (((nullable25 == null)
                                          == false))
                                     {
-                                        result.id = nullable25;
+                                        result.Id = nullable25;
                                     }
                                 }
                                 else
@@ -357,7 +357,7 @@ namespace IO.Ably.CustomSerialisers {
                                         }
                                         if (nullable24.HasValue)
                                         {
-                                            result.flags = nullable24;
+                                            result.Flags = nullable24;
                                         }
                                     }
                                     else
@@ -394,7 +394,7 @@ namespace IO.Ably.CustomSerialisers {
                                             if (((nullable23 == null)
                                                  == false))
                                             {
-                                                result.error = nullable23;
+                                                result.Error = nullable23;
                                             }
                                         }
                                         else
@@ -408,7 +408,7 @@ namespace IO.Ably.CustomSerialisers {
                                                         "System.Nullable`1[System.Int32] count");
                                                 if (nullable22.HasValue)
                                                 {
-                                                    result.count = nullable22;
+                                                    result.Count = nullable22;
                                                 }
                                             }
                                             else
@@ -422,7 +422,7 @@ namespace IO.Ably.CustomSerialisers {
                                                             "System.Nullable`1[System.Int64] connectionSerial");
                                                     if (nullable21.HasValue)
                                                     {
-                                                        result.connectionSerial = nullable21;
+                                                        result.ConnectionSerial = nullable21;
                                                     }
                                                 }
                                                 else
@@ -437,7 +437,7 @@ namespace IO.Ably.CustomSerialisers {
                                                         if (((nullable20 == null)
                                                              == false))
                                                         {
-                                                            result.connectionKey = nullable20;
+                                                            result.ConnectionKey = nullable20;
                                                         }
                                                     }
                                                     else
@@ -452,7 +452,7 @@ namespace IO.Ably.CustomSerialisers {
                                                             if (((nullable19 == null)
                                                                  == false))
                                                             {
-                                                                result.connectionId = nullable19;
+                                                                result.ConnectionId = nullable19;
                                                             }
                                                         }
                                                         else
@@ -493,7 +493,7 @@ namespace IO.Ably.CustomSerialisers {
                                                                 if (((nullable18 == null)
                                                                      == false))
                                                                 {
-                                                                    result.connectionDetails = nullable18;
+                                                                    result.ConnectionDetails = nullable18;
                                                                 }
                                                             }
                                                             else
@@ -509,7 +509,7 @@ namespace IO.Ably.CustomSerialisers {
                                                                     if (((nullable17 == null)
                                                                          == false))
                                                                     {
-                                                                        result.channelSerial = nullable17;
+                                                                        result.ChannelSerial = nullable17;
                                                                     }
                                                                 }
                                                                 else
@@ -525,7 +525,7 @@ namespace IO.Ably.CustomSerialisers {
                                                                         if (((nullable16 == null)
                                                                              == false))
                                                                         {
-                                                                            result.channel = nullable16;
+                                                                            result.Channel = nullable16;
                                                                         }
                                                                     }
                                                                     else
@@ -579,7 +579,7 @@ namespace IO.Ably.CustomSerialisers {
                                                                             }
                                                                             if (nullable15.HasValue)
                                                                             {
-                                                                                result.action = nullable15.Value;
+                                                                                result.Action = nullable15.Value;
                                                                             }
                                                                         }
                                                                         else

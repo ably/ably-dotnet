@@ -286,7 +286,7 @@ namespace IO.Ably.Realtime
         {
             // Create protocol message
             var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Message, Name);
-            msg.messages = messages.ToArray();
+            msg.Messages = messages.ToArray();
 
             if (State == ChannelState.Initialized || State == ChannelState.Attaching)
             {
@@ -315,7 +315,7 @@ namespace IO.Ably.Realtime
 
         internal void SetChannelState(ChannelState state, ProtocolMessage protocolMessage)
         {
-            SetChannelState(state, protocolMessage.error, protocolMessage);
+            SetChannelState(state, protocolMessage.Error, protocolMessage);
         }
 
         internal void SetChannelState(ChannelState state, ErrorInfo error = null, ProtocolMessage protocolMessage = null)
@@ -379,7 +379,7 @@ namespace IO.Ably.Realtime
                             //Presence is in sync
                         }
 
-                        AttachedSerial = protocolMessage.channelSerial;
+                        AttachedSerial = protocolMessage.ChannelSerial;
 
 
                     }

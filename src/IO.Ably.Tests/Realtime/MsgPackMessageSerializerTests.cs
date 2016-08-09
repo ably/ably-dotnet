@@ -111,7 +111,7 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_Channel(string channel)
         {
             // Arrange
-            ProtocolMessage message = new ProtocolMessage() { channel = channel };
+            ProtocolMessage message = new ProtocolMessage() { Channel = channel };
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x82);
             expectedMessage.AddRange(SerializeString("action"));
@@ -142,7 +142,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
-            ProtocolMessage message = new ProtocolMessage() { msgSerial = msgSerial };
+            ProtocolMessage message = new ProtocolMessage() { MsgSerial = msgSerial };
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x82);
             expectedMessage.AddRange(SerializeString("action"));
@@ -172,7 +172,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
-            ProtocolMessage message = new ProtocolMessage() { messages = messages };
+            ProtocolMessage message = new ProtocolMessage() { Messages = messages };
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x82);
             expectedMessage.AddRange(SerializeString("action"));
@@ -207,7 +207,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
-            ProtocolMessage message = new ProtocolMessage() { presence = messages };
+            ProtocolMessage message = new ProtocolMessage() { Presence = messages };
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x82);
             expectedMessage.AddRange(SerializeString("action"));
@@ -262,7 +262,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal(action, target.action);
+            Assert.Equal(action, target.Action);
         }
 
         [Theory]
@@ -292,7 +292,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(channel, target.channel);
+            Assert.Equal<string>(channel, target.Channel);
         }
 
         [Theory]
@@ -321,7 +321,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(serial, target.channelSerial);
+            Assert.Equal<string>(serial, target.ChannelSerial);
         }
 
         [Theory]
@@ -343,7 +343,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(connectionId, target.connectionId);
+            Assert.Equal<string>(connectionId, target.ConnectionId);
         }
 
         [Theory]
@@ -365,7 +365,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(connectionKey, target.connectionKey);
+            Assert.Equal<string>(connectionKey, target.ConnectionKey);
         }
 
         [Theory]
@@ -387,7 +387,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(id, target.id);
+            Assert.Equal<string>(id, target.Id);
         }
 
         [Theory]
@@ -408,7 +408,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<long>(connectionSerial, target.connectionSerial.Value);
+            Assert.Equal<long>(connectionSerial, target.ConnectionSerial.Value);
         }
 
         [Theory]
@@ -419,14 +419,14 @@ namespace IO.Ably.Tests
         {
             // Arrange
             MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
-            byte[] expectedMessage = serializer.SerializeProtocolMessage(new ProtocolMessage() {count = count}) as byte[];
+            byte[] expectedMessage = serializer.SerializeProtocolMessage(new ProtocolMessage() {Count = count}) as byte[];
 
             // Act
             ProtocolMessage target = serializer.DeserializeProtocolMessage(expectedMessage);
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal(count, target.count.Value);
+            Assert.Equal(count, target.Count.Value);
         }
 
         [Theory]
@@ -447,7 +447,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<long>(serial, target.msgSerial);
+            Assert.Equal<long>(serial, target.MsgSerial);
         }
 
         [Theory]
@@ -468,7 +468,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<byte>((byte)flags, (byte)target.flags);
+            Assert.Equal<byte>((byte)flags, (byte)target.Flags);
         }
 
         [Theory]
@@ -487,12 +487,12 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.NotNull(target.messages);
-            Assert.Equal<int>(expectedMessages.Length, target.messages.Length);
+            Assert.NotNull(target.Messages);
+            Assert.Equal<int>(expectedMessages.Length, target.Messages.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
-                Assert.Equal<string>(expectedMessages[i].Name, target.messages[i].Name);
-                Assert.Equal(expectedMessages[i].Data, target.messages[i].Data);
+                Assert.Equal<string>(expectedMessages[i].Name, target.Messages[i].Name);
+                Assert.Equal(expectedMessages[i].Data, target.Messages[i].Data);
             }
         }
 

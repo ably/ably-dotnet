@@ -34,7 +34,7 @@ namespace IO.Ably.Tests.Realtime
             _fakeTransportFactory.LastCreatedTransport.SendAction = async message =>
             {
                 Now = Now.AddMilliseconds(100);
-                if (message.Original.action == ProtocolMessage.MessageAction.Heartbeat)
+                if (message.Original.Action == ProtocolMessage.MessageAction.Heartbeat)
                 {
                     await Task.Delay(1);
                     await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
