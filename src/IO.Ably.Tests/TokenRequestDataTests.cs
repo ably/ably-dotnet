@@ -57,9 +57,9 @@ namespace IO.Ably.Tests
             var tokenParams = GetTokenParams();
 
             var request = Populate(tokenParams);
-            var expectedTtl = tokenParams.Ttl.Value.TotalMilliseconds;
+            var expectedTtl = tokenParams.Ttl.Value;
 
-            request.Ttl.Should().Be(expectedTtl.ToString());
+            request.Ttl.Should().Be(expectedTtl);
         }
 
         [Fact]
@@ -68,9 +68,9 @@ namespace IO.Ably.Tests
             var tokenParams = new TokenParams();
             var request = Populate(tokenParams);
 
-            var expectedTtl = TimeSpan.FromHours(1).TotalMilliseconds;
+            var expectedTtl = TimeSpan.FromHours(1);
 
-            request.Ttl.Should().Be(expectedTtl.ToString());
+            request.Ttl.Should().Be(expectedTtl);
         }
 
         [Fact]
@@ -79,7 +79,7 @@ namespace IO.Ably.Tests
             var tokenParams = GetTokenParams();
             var request = Populate(tokenParams);
 
-            Assert.Equal(tokenParams.Capability.ToJson(), request.Capability);
+            Assert.Equal(tokenParams.Capability, request.Capability);
         }
 
         [Fact]
@@ -97,7 +97,7 @@ namespace IO.Ably.Tests
             var tokenParams = GetTokenParams();
             var request = Populate(tokenParams);
 
-            request.Timestamp.Should().Be(Now.ToUnixTimeInMilliseconds().ToString());
+            request.Timestamp.Should().Be(Now);
         }
 
         [Fact]
@@ -120,10 +120,10 @@ namespace IO.Ably.Tests
             var values = new[]
             {
                 request.KeyName,
-                request.Ttl,
-                request.Capability,
+                request.Ttl?.TotalMilliseconds.ToString(),
+                request.Capability.ToJson(),
                 request.ClientId,
-                request.Timestamp,
+                request.Timestamp?.ToUnixTimeInMilliseconds().ToString(),
                 request.Nonce
             };
             var signText = string.Join("\n", values) + "\n";

@@ -8,73 +8,90 @@ namespace IO.Ably
 {
     public class TokenRequest
     {
+
         public TokenRequest()
         {
             Nonce = Guid.NewGuid().ToString("N").ToLower();
         }
 
+        /// <summary>
+        /// The Id against which the request is made
+        /// </summary>
+        [JsonProperty("keyName")]
+        public string KeyName { get; set; }
+
+        /// <summary>
+        /// Requested time to live for the token. If the token request
+		/// is successful, the TTL of the returned token will be less
+		/// than or equal to this value depending on application settings
+		/// and the attributes of the issuing key
+        /// </summary>
+        [JsonProperty("ttl")]
+        public TimeSpan? Ttl { get; set; }
+
+
+        /// <summary>
+		/// <see cref="Capability"/> of the token. If the token request is successful,
+		/// the capability of the returned token will be the intersection of
+		/// this capability with the capability of the issuing key.
+        /// </summary>
+        [JsonProperty("capability", NullValueHandling = NullValueHandling.Ignore)]
+        public Capability Capability { get; set; }
+
+        /// <summary>
+        /// ClientId to associate with the current token. The generated token may be to authenticate as this tokenId.
+        /// </summary>
+        [JsonProperty("clientId", NullValueHandling = NullValueHandling.Ignore)]
+        public string ClientId { get; set; }
+
+        /// <summary>
+        /// The timestamp  of this request. If not supplied the timestamp is automatically set to the current UTC time
+		/// Timestamps, in conjunction with the nonce, are used to prevent
+		/// token requests from being replayed.
+        /// </summary>
+        [JsonProperty("timestamp")]
+        public DateTimeOffset? Timestamp { get; set; }
+
+        /// <summary>
+		/// An opaque nonce string of at least 16 characters to ensure
+		/// uniqueness of this request. Any subsequent request using the
+		/// same nonce will be rejected.
+        /// </summary>
+        /// 
+        [JsonProperty("nonce")]
+        public string Nonce { get; set; }
+
+        [JsonProperty("mac")]
+        public string Mac { get; set; }
+
         internal TokenRequest Populate(TokenParams tokenParams, string keyName, string keyValue)
         {
             this.KeyName = keyName;
-            Capability = (tokenParams.Capability ?? Ably.Capability.AllowAll).ToJson();
+            Capability = tokenParams.Capability ?? Capability.AllowAll;
             ClientId = tokenParams.ClientId;
             var now = Config.Now();
 
             if (tokenParams.Nonce.IsNotEmpty())
                 Nonce = tokenParams.Nonce;
 
-            if (tokenParams.Ttl.HasValue)
-                Ttl = tokenParams.Ttl.Value.TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
-            else
-                Ttl = Defaults.DefaultTokenTtl.TotalMilliseconds.ToString(CultureInfo.InvariantCulture);
+            Ttl = tokenParams.Ttl ?? Defaults.DefaultTokenTtl;
 
-            if (tokenParams.Timestamp.HasValue)
-                Timestamp = tokenParams.Timestamp.Value.ToUnixTimeInMilliseconds().ToString();
-            else
-                Timestamp = now.ToUnixTimeInMilliseconds().ToString();
+            Timestamp = tokenParams.Timestamp ?? now;
 
             CalculateMac(keyValue);
 
             return this;
         }
 
-        [JsonProperty("capability", NullValueHandling = NullValueHandling.Ignore)]
-        [MessagePackMember(30, Name = "capability")]
-        public string Capability { get; set; }
-
-        [JsonProperty("clientId", NullValueHandling = NullValueHandling.Ignore)]
-        [MessagePackMember(40, Name = "clientId")]
-        public string ClientId { get; set; }
-
-        [JsonProperty("keyName")]
-        [MessagePackMember(10, Name = "keyName")]
-        public string KeyName { get; set; }
-
-        [JsonProperty("mac")]
-        [MessagePackMember(70, Name = "mac")]
-        public string Mac { get; set; }
-
-        [JsonProperty("nonce")]
-        [MessagePackMember(60, Name = "nonce")]
-        public string Nonce { get; set; }
-
-        [JsonProperty("timestamp")]
-        [MessagePackMember(50, Name = "timestamp")]
-        public string Timestamp { get; set; }
-
-        [JsonProperty("ttl")]
-        [MessagePackMember(20, Name = "ttl")]
-        public string Ttl { get; set; }
-
         private void CalculateMac(string key)
         {
             var values = new[]
                 {
                     KeyName,
-                    Ttl,
-                    Capability,
+                    Ttl?.TotalMilliseconds.ToString(),
+                    Capability?.ToJson(),
                     ClientId,
-                    Timestamp,
+                    Timestamp?.ToUnixTimeInMilliseconds().ToString(),
                     Nonce
                 };
 
@@ -101,4 +118,5 @@ namespace IO.Ably
                 && Mac == other.Mac;
         }
     }
+
 }

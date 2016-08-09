@@ -50,7 +50,7 @@ namespace IO.Ably.Tests
         {
             var client = GetRestClient();
             var data = client.Auth.CreateTokenRequestAsync(null, null).Result;
-            data.Ttl.Should().Be(Defaults.DefaultTokenTtl.TotalMilliseconds.ToString());
+            data.Ttl.Should().Be(Defaults.DefaultTokenTtl);
         }
 
         [Fact]
@@ -106,8 +106,8 @@ namespace IO.Ably.Tests
                 request.Capability.Should().Be(Capability.AllowAll.ToJson());
                 request.ClientId.Should().Be("123");
                 request.KeyName.Should().Be(ApiKey.Parse(client.Options.Key).KeyName);
-                request.Ttl.Should().Be(TimeSpan.FromHours(2).TotalMilliseconds.ToString());
-                request.Timestamp.Should().Be(Now.AddMinutes(1).ToUnixTimeInMilliseconds().ToString());
+                request.Ttl.Should().Be(TimeSpan.FromHours(2));
+                request.Timestamp.Should().Be(Now.AddMinutes(1));
                 request.Nonce.Should().Be("defaultnonce");
             }
 
@@ -129,8 +129,8 @@ namespace IO.Ably.Tests
 
                 request.Capability.Should().Be("");
                 request.ClientId.Should().Be("999");
-                request.Ttl.Should().Be(TimeSpan.FromHours(1).TotalMilliseconds.ToString());
-                request.Timestamp.Should().Be(Now.AddMinutes(10).ToUnixTimeInMilliseconds().ToString());
+                request.Ttl.Should().Be(TimeSpan.FromHours(1));
+                request.Timestamp.Should().Be(Now.AddMinutes(10));
                 request.Nonce.Should().Be("overrideNonce");
             }
 
@@ -174,7 +174,7 @@ namespace IO.Ably.Tests
             public async Task WithNoTimeStapmInRequest_ShouldUseSystemType()
             {
                 var request = await Client.Auth.CreateTokenRequestAsync();
-                request.Timestamp.Should().Be(Now.ToUnixTimeInMilliseconds().ToString());
+                request.Timestamp.Should().Be(Now);
             }
 
             [Fact]
@@ -183,18 +183,18 @@ namespace IO.Ably.Tests
             {
                 var date = new DateTimeOffset(2014, 1, 1, 0, 0, 0, TimeSpan.Zero);
                 var data = Client.Auth.CreateTokenRequestAsync(new TokenParams() { Timestamp = date }, null).Result;
-                data.Timestamp.Should().Be(date.ToUnixTimeInMilliseconds().ToString());
+                data.Timestamp.Should().Be(date);
             }
 
             [Fact]
             [Trait("spec", "RSA9d")]
             public void WithQueryTimeQueriesForTimestamp()
             {
-                var currentTime = Config.Now().ToUnixTimeInMilliseconds();
+                var currentTime = Config.Now();
                 var client = GetRestClient(x => ("[" + currentTime + "]").ToAblyJsonResponse());
 
                 var data = client.Auth.CreateTokenRequestAsync(null, new AuthOptions() { QueryTime = true }).Result;
-                data.Timestamp.Should().Be(currentTime.ToString());
+                data.Timestamp.Should().Be(currentTime);
             }
 
             [Fact]
@@ -203,7 +203,7 @@ namespace IO.Ably.Tests
             {
                 var data = Client.Auth.CreateTokenRequestAsync(new TokenParams { Ttl = TimeSpan.FromHours(2) }, null).Result;
 
-                data.Ttl.Should().Be(TimeSpan.FromHours(2).TotalMilliseconds.ToString());
+                data.Ttl.Should().Be(TimeSpan.FromHours(2));
             }
 
             [Fact]
