@@ -34,8 +34,8 @@ namespace IO.Ably.Transport
             ConnectionId = message.ConnectionId;
             ConnectionSerial = message.ConnectionSerial ?? -1;
             ConnectionKey = message.ConnectionKey;
-            ClientId = message.ConnectionDetails?.clientId;
-            ConnectionStateTtl = message.ConnectionDetails?.connectionStateTtl;
+            ClientId = message.ConnectionDetails?.ClientId;
+            ConnectionStateTtl = message.ConnectionDetails?.ConnectionStateTtl;
         }
 
         public TimeSpan? ConnectionStateTtl { get; private set; }

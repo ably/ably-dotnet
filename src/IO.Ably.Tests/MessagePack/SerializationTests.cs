@@ -143,7 +143,7 @@ namespace IO.Ably.Tests.MessagePack
         [Fact]
         public void CanDeserialiseConnectionDetailsMessages()
         {
-            var connectionDetails = new ConnectionDetails() { clientId = "123", connectionStateTtl = TimeSpan.FromSeconds(60)};
+            var connectionDetails = new ConnectionDetails() { ClientId = "123", ConnectionStateTtl = TimeSpan.FromSeconds(60)};
             var serialized = MsgPackHelper.Serialise(connectionDetails);
             var deserialized = MsgPackHelper.DeSerialise(serialized, typeof(ConnectionDetails));
             deserialized.ShouldBeEquivalentTo(connectionDetails);
