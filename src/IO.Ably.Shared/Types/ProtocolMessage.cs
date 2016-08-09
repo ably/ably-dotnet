@@ -107,13 +107,6 @@ namespace IO.Ably.Types
         [JsonIgnore]
         internal bool AckRequired => Action == MessageAction.Message || Action == MessageAction.Presence;
 
-        public bool ShouldSerializemessages()
-        {
-            if (null == Messages)
-                return false;
-            return Messages.Any(m => !m.IsEmpty);
-        }
-
         [OnSerializing]
         internal void onSerializing(StreamingContext context)
         {
