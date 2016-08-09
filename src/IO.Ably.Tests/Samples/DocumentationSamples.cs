@@ -168,13 +168,13 @@ namespace IO.Ably.Tests.Samples
             var options = new ClientOptions("{{API_KEY}}") { ClientId = "bob" };
             var realtime = new AblyRealtime(options);
             var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}");
-            channel.Presence.Subscribe(member => Console.WriteLine("Member " + member.ClientId + " : " + member.action));
+            channel.Presence.Subscribe(member => Console.WriteLine("Member " + member.ClientId + " : " + member.Action));
             await channel.Presence.EnterAsync(null);
 
             /* Subscribe to presence enter and update events */
             channel.Presence.Subscribe(member =>
             {
-                switch (member.action)
+                switch (member.Action)
                 {
                     case PresenceAction.Enter:
                     case PresenceAction.Update:

@@ -50,7 +50,7 @@ namespace IO.Ably.CustomSerialisers {
             {
                 objectTree.Id.IsNotEmpty(),
                 objectTree.ClientId.IsNotEmpty(),
-                objectTree.connectionId.IsNotEmpty(),
+                objectTree.ConnectionId.IsNotEmpty(),
                 objectTree.Data != null,
                 objectTree.Encoding.IsNotEmpty(),
                 objectTree.Timestamp != null,
@@ -63,16 +63,16 @@ namespace IO.Ably.CustomSerialisers {
                 this._serializer0.PackTo(packer, objectTree.Id);
             }
             this._serializer0.PackTo(packer, "action");
-            this._serializer1.PackTo(packer, objectTree.action);
+            this._serializer1.PackTo(packer, objectTree.Action);
             if (objectTree.ClientId.IsNotEmpty())
             {
                 this._serializer0.PackTo(packer, "clientId");
                 this._serializer0.PackTo(packer, objectTree.ClientId);
             }
-            if (objectTree.connectionId.IsNotEmpty())
+            if (objectTree.ConnectionId.IsNotEmpty())
             {
                 this._serializer0.PackTo(packer, "connectionId");
-                this._serializer0.PackTo(packer, objectTree.connectionId);
+                this._serializer0.PackTo(packer, objectTree.ConnectionId);
             }
             if (objectTree.Data != null)
             {
@@ -218,7 +218,7 @@ namespace IO.Ably.CustomSerialisers {
                                 if (((nullable10 == null)
                                      == false))
                                 {
-                                    result.connectionId = nullable10;
+                                    result.ConnectionId = nullable10;
                                 }
                             }
                             else
@@ -268,7 +268,7 @@ namespace IO.Ably.CustomSerialisers {
                                         }
                                         if (nullable8.HasValue)
                                         {
-                                            result.action = nullable8.Value;
+                                            result.Action = nullable8.Value;
                                         }
                                     }
                                     else

@@ -46,7 +46,7 @@ namespace IO.Ably.Tests.Realtime
             DateTimeOffset? time = null;
             channel.Presence.Subscribe(message =>
             {
-                Output.WriteLine($"{message.connectionId}:{message.Timestamp}");
+                Output.WriteLine($"{message.ConnectionId}:{message.Timestamp}");
                 time = message.Timestamp;
                 _resetEvent.Set();
             });

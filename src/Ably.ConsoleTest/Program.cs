@@ -39,7 +39,7 @@ namespace IO.Ably.ConsoleTest
 
         private static void Presence_MessageReceived2(PresenceMessage obj)
         {
-            Console.WriteLine(obj.connectionId + "\t" + obj.Timestamp);
+            Console.WriteLine(obj.ConnectionId + "\t" + obj.Timestamp);
         }
     }
 }

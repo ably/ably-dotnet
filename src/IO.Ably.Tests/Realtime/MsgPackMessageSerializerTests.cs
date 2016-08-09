@@ -224,7 +224,7 @@ namespace IO.Ably.Tests
                     expectedMessage.Add((0x08 << 4) + 1);
                     expectedMessage[expectedMessage.Count - 1] += (byte)(string.IsNullOrEmpty(msg.ClientId) ? 0 : 1);
                     expectedMessage.AddRange(SerializeString("action"));
-                    expectedMessage.Add((byte)msg.action);
+                    expectedMessage.Add((byte)msg.Action);
                     if (!string.IsNullOrEmpty(msg.ClientId))
                     {
                         expectedMessage.AddRange(SerializeString("clientId"));

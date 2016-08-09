@@ -52,7 +52,7 @@ namespace IO.Ably.Realtime
         public Task<IEnumerable<PresenceMessage>> GetAsync(bool waitForSync = true, string clientId = "", string connectionId = "")
         {
             //TODO: waitForSync is not implemented yet
-            var result = presence.Values.Where(x => (clientId.IsEmpty() || x.ClientId == clientId) && (connectionId.IsEmpty() || x.connectionId == connectionId));
+            var result = presence.Values.Where(x => (clientId.IsEmpty() || x.ClientId == clientId) && (connectionId.IsEmpty() || x.ConnectionId == connectionId));
             return Task.FromResult(result);
         }
 
@@ -156,7 +156,7 @@ namespace IO.Ably.Realtime
             }
             foreach (var update in messages)
             {
-                switch (update.action)
+                switch (update.Action)
                 {
                     case PresenceAction.Enter:
                     case PresenceAction.Update:
@@ -196,7 +196,7 @@ namespace IO.Ably.Realtime
                 _channel.RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message));
             }
 
-            foreach (var specificHandler in _handlers.GetHandlers(message.action.ToString()))
+            foreach (var specificHandler in _handlers.GetHandlers(message.Action.ToString()))
             {
                 var loopHandler = specificHandler;
                 _channel.RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message));
@@ -276,7 +276,7 @@ namespace IO.Ably.Realtime
             {
                 get
                 {
-                    return members.Values.Where(c => c.action != PresenceAction.Absent)
+                    return members.Values.Where(c => c.Action != PresenceAction.Absent)
                         .ToArray();
                 }
             }
@@ -314,7 +314,7 @@ namespace IO.Ably.Realtime
             {
                 PresenceMessage existingItem;
                 if (members.TryGetValue(item.MemberKey, out existingItem) &&
-                    existingItem.action == PresenceAction.Absent)
+                    existingItem.Action == PresenceAction.Absent)
                 {
                     return false;
                 }
@@ -345,7 +345,7 @@ namespace IO.Ably.Realtime
                     // received all of the out-of-order sync messages
                     foreach (var member in members.ToArray())
                     {
-                        if (member.Value.action == PresenceAction.Present)
+                        if (member.Value.Action == PresenceAction.Present)
                         {
                             members.Remove(member.Key);
                         }
