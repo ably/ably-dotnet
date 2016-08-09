@@ -84,7 +84,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             renewTokenCalled.Should().BeFalse();
             client.Connection.State.Should().Be(ConnectionState.Failed);
             client.Connection.ErrorReason.Should().NotBeNull();
-            client.Connection.ErrorReason.code.Should().Be(_tokenErrorCode);
+            client.Connection.ErrorReason.Code.Should().Be(_tokenErrorCode);
         }
 
         [Fact]
@@ -100,7 +100,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             {
                 if (request.Url.Contains("/keys"))
                 {
-                    throw new AblyException(new ErrorInfo() { code = 123 });
+                    throw new AblyException(new ErrorInfo() { Code = 123 });
                 }
 
                 return AblyResponse.EmptyResponse.ToTask();
@@ -110,7 +110,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             client.Connection.State.Should().Be(ConnectionState.Failed);
             client.Connection.ErrorReason.Should().NotBeNull();
-            client.Connection.ErrorReason.code.Should().Be(123);
+            client.Connection.ErrorReason.Code.Should().Be(123);
         }
 
         [Fact]

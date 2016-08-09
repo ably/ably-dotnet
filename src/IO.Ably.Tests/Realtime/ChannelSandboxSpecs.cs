@@ -158,8 +158,8 @@ namespace IO.Ably.Tests.Realtime
             var result = await channel.AttachAsync();
 
             result.IsFailure.Should().BeTrue();
-            result.Error.code.Should().Be(40160);
-            result.Error.statusCode.Should().Be(HttpStatusCode.Unauthorized);
+            result.Error.Code.Should().Be(40160);
+            result.Error.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
 
@@ -482,7 +482,7 @@ namespace IO.Ably.Tests.Realtime
             result.IsSuccess.Should().BeTrue();
 
             var error = channel.ErrorReason;
-            error.statusCode.Should().Be(HttpStatusCode.Unauthorized);
+            error.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         public static IEnumerable<object[]> FixtureData

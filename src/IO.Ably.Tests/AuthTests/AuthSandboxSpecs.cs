@@ -81,8 +81,8 @@ namespace IO.Ably.Tests
             var tokenAbly = new AblyRest(new ClientOptions { Token = token.Token, Environment = AblyEnvironment.Sandbox });
 
             var error = await Assert.ThrowsAsync<AblyException>(() => tokenAbly.Channels.Get("boo").PublishAsync("test", "true"));
-            error.ErrorInfo.code.Should().Be(40160);
-            error.ErrorInfo.statusCode.Should().Be(HttpStatusCode.Unauthorized);
+            error.ErrorInfo.Code.Should().Be(40160);
+            error.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [Theory]
@@ -98,8 +98,8 @@ namespace IO.Ably.Tests
                 return ably.Auth.RequestTokenAsync(tokenParams, new AuthOptions() { QueryTime = false});
             });
 
-            error.ErrorInfo.code.Should().Be(40101);
-            error.ErrorInfo.statusCode.Should().Be(HttpStatusCode.Unauthorized);
+            error.ErrorInfo.Code.Should().Be(40101);
+            error.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [Theory]

@@ -77,7 +77,7 @@ namespace IO.Ably.Tests.Realtime
             var result = await client.Connection.PingAsync();
 
             result.IsSuccess.Should().BeFalse();
-            result.Error.statusCode.Should().Be(HttpStatusCode.RequestTimeout);
+            result.Error.StatusCode.Should().Be(HttpStatusCode.RequestTimeout);
         }
 
         public ConnectionPingSpecs(ITestOutputHelper output) : base(output)

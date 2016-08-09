@@ -37,11 +37,11 @@ namespace IO.Ably.CustomSerialisers {
         protected override void PackToCore(MsgPack.Packer packer, IO.Ably.ErrorInfo objectTree) {
             packer.PackMapHeader(3);
             this._serializer0.PackTo(packer, "code");
-            this._serializer1.PackTo(packer, objectTree.code);
+            this._serializer1.PackTo(packer, objectTree.Code);
             this._serializer0.PackTo(packer, "message");
-            this._serializer0.PackTo(packer, objectTree.message);
+            this._serializer0.PackTo(packer, objectTree.Message);
             this._serializer0.PackTo(packer, "statusCode");
-            this._serializer2.PackTo(packer, objectTree.statusCode);
+            this._serializer2.PackTo(packer, objectTree.StatusCode);
         }
         
         protected override IO.Ably.ErrorInfo UnpackFromCore(MsgPack.Unpacker unpacker)
@@ -97,7 +97,7 @@ namespace IO.Ably.CustomSerialisers {
                     }
                     if (nullable7.HasValue)
                     {
-                        result.statusCode = nullable7;
+                        result.StatusCode = nullable7;
                     }
                 }
                 else
@@ -110,7 +110,7 @@ namespace IO.Ably.CustomSerialisers {
                         if (((nullable5 == null)
                              == false))
                         {
-                            result.message = nullable5;
+                            result.Message = nullable5;
                         }
                     }
                     else
@@ -122,7 +122,7 @@ namespace IO.Ably.CustomSerialisers {
                                 typeof(IO.Ably.ErrorInfo), "Int32 code");
                             if (nullable4.HasValue)
                             {
-                                result.code = nullable4.Value;
+                                result.Code = nullable4.Value;
                             }
                         }
                         else

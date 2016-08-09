@@ -76,7 +76,7 @@ namespace IO.Ably.Tests.MessageEncodes
             {
                 var result = encoder.Decode(new Message() { Data = "test", Encoding = "json" }, new ChannelOptions());
                 result.IsFailure.Should().BeTrue();
-                result.Error.message.Should().Be("Invalid Json data: 'test'");
+                result.Error.Message.Should().Be("Invalid Json data: 'test'");
             }
         }
 

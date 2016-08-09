@@ -379,7 +379,7 @@ namespace IO.Ably.Tests
                 var client = CreateClient(options => options.RestHost = "boo.com");
 
                 var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
-                ex.ErrorInfo.statusCode.Should().Be(_response.StatusCode);
+                ex.ErrorInfo.StatusCode.Should().Be(_response.StatusCode);
                 _handler.NumberOfRequests.Should().Be(1);
             }
 

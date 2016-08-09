@@ -274,7 +274,7 @@ namespace IO.Ably.Tests
             });
 
             var ex = await Assert.ThrowsAsync<AblyException>(() => client.Auth.AuthoriseAsync());
-            ex.ErrorInfo.message.Should().Be("TokenAuth is on but there is no way to generate one");
+            ex.ErrorInfo.Message.Should().Be("TokenAuth is on but there is no way to generate one");
         }
 
         public class ClientIdSpecs : AuthorisationTests

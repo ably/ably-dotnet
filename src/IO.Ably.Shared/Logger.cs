@@ -107,9 +107,9 @@ namespace IO.Ably
             var ablyException = ex as AblyException;
             if (ablyException != null)
             {
-                message.AppendLine("Error code: " + ablyException.ErrorInfo.code);
-                message.AppendLine("Status code: " + ablyException.ErrorInfo.statusCode);
-                message.AppendLine("Reason: " + ablyException.ErrorInfo.message);
+                message.AppendLine("Error code: " + ablyException.ErrorInfo.Code);
+                message.AppendLine("Status code: " + ablyException.ErrorInfo.StatusCode);
+                message.AppendLine("Reason: " + ablyException.ErrorInfo.Message);
             }
 
             message.AppendLine(ex.Message);

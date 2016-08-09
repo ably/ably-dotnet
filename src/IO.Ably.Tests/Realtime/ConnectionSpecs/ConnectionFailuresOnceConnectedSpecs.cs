@@ -128,7 +128,7 @@ namespace IO.Ably.Tests.Realtime
             }, states);
 
             errors.Should().NotBeEmpty();
-            errors.First().code.Should().Be(_failedRenewalErorrCode);
+            errors.First().Code.Should().Be(_failedRenewalErorrCode);
         }
 
         [Fact]
@@ -165,7 +165,7 @@ namespace IO.Ably.Tests.Realtime
             }, states);
 
             errors.Should().NotBeEmpty();
-            errors.First().code.Should().Be(_tokenErrorInfo.code);
+            errors.First().Code.Should().Be(_tokenErrorInfo.Code);
         }
 
         [Fact]
@@ -292,7 +292,7 @@ namespace IO.Ably.Tests.Realtime
             Now = DateTimeOffset.Now;
             _validToken = new TokenDetails("id") { Expires = Now.AddHours(1) };
             _renewTokenCalled = false;
-            _tokenErrorInfo = new ErrorInfo() { code = _tokenErrorCode, statusCode = HttpStatusCode.Unauthorized };
+            _tokenErrorInfo = new ErrorInfo() { Code = _tokenErrorCode, StatusCode = HttpStatusCode.Unauthorized };
         }
     }
 }

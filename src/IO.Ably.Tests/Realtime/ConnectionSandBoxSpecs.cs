@@ -301,7 +301,7 @@ namespace IO.Ably.Tests.Realtime
 
             var result = _resetEvent.WaitOne(10000);
             result.Should().BeTrue("Timeout");
-            client.Connection.ErrorReason.code.Should().Be(80008);
+            client.Connection.ErrorReason.Code.Should().Be(80008);
         }
 
         [Theory]

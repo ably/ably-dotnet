@@ -116,7 +116,7 @@ namespace IO.Ably.Tests.Samples
             {
                 if (error != null)
                 {
-                    Console.WriteLine("Attach failed: " + error.message);
+                    Console.WriteLine("Attach failed: " + error.Message);
                 }
             });
 
@@ -129,14 +129,14 @@ namespace IO.Ably.Tests.Samples
             channel.Publish("event", "payload", (success, error) =>
             {
                 if (error != null)
-                    Console.WriteLine("Unable to publish message. Reason: " + error.message);
+                    Console.WriteLine("Unable to publish message. Reason: " + error.Message);
                 else
                     Console.WriteLine("Message published sucessfully");
             });
 
             var result = await channel.PublishAsync("event", "payload");
             if (result.IsFailure)
-                Console.WriteLine("Unable to publish message. Reason: " + result.Error.message);
+                Console.WriteLine("Unable to publish message. Reason: " + result.Error.Message);
             else
                 Console.WriteLine("Message published sucessfully");
 
