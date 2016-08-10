@@ -11,24 +11,24 @@ namespace IO.Ably
         void On(Action<TArgs> listener);
         void Once(Action<TArgs> listener);
         void Off(Action<TArgs> listener);
-        void On(TEvent @event, Action<TArgs> action);
-        void Once(TEvent @event, Action<TArgs> action);
-        void Off(TEvent @event, Action<TArgs> action);
+        void On(TEvent state, Action<TArgs> action);
+        void Once(TEvent state, Action<TArgs> action);
+        void Off(TEvent state, Action<TArgs> action);
     }
 
-    public abstract class EventEmitter<TEvent, TArgs> : IEventEmitter<TEvent, TArgs> where TEvent : struct
+    public abstract class EventEmitter<TState, TArgs> : IEventEmitter<TState, TArgs> where TState : struct
         where TArgs : EventArgs
     {
-        readonly List<Emitter<TEvent, TArgs>> _emitters = new List<Emitter<TEvent, TArgs>>();
+        readonly List<Emitter<TState, TArgs>> _emitters = new List<Emitter<TState, TArgs>>();
         private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
 
-        private class Emitter<TEvent, TArgs> where TEvent : struct
+        private class Emitter<TState, TArgs> where TState : struct
         {
             public Action<TArgs> Action { get; }
             public bool Once { get; }
-            public TEvent? Event { get; }
+            public TState? State { get; }
 
-            public Emitter(Action<TArgs> action, TEvent? @event = null, bool once = false)
+            public Emitter(Action<TArgs> action, TState? state = null, bool once = false)
             {
                 if (action == null)
                 {
@@ -36,7 +36,7 @@ namespace IO.Ably
                 }
 
                 Action = action;
-                Event = @event;
+                State = state;
                 Once = once;
             }
         }
@@ -64,7 +64,7 @@ namespace IO.Ably
                     _lock.EnterWriteLock();
                     try
                     {
-                        _emitters.Add(new Emitter<TEvent, TArgs>(listener));
+                        _emitters.Add(new Emitter<TState, TArgs>(listener));
                     }
                     finally
                     {
@@ -88,7 +88,7 @@ namespace IO.Ably
                     _lock.EnterWriteLock();
                     try
                     {
-                        _emitters.Add(new Emitter<TEvent, TArgs>(listener, once: true));
+                        _emitters.Add(new Emitter<TState, TArgs>(listener, once: true));
                     }
                     finally
                     {
@@ -115,12 +115,12 @@ namespace IO.Ably
             }
         }
 
-        public void On(TEvent @event, Action<TArgs> action)
+        public void On(TState state, Action<TArgs> action)
         {
             _lock.EnterWriteLock();
             try
             {
-                _emitters.Add(new Emitter<TEvent, TArgs>(action, @event));
+                _emitters.Add(new Emitter<TState, TArgs>(action, state));
             }
             finally
             {
@@ -128,12 +128,12 @@ namespace IO.Ably
             }
         }
 
-        public void Once(TEvent @event, Action<TArgs> action)
+        public void Once(TState state, Action<TArgs> action)
         {
             _lock.EnterWriteLock();
             try
             {
-                _emitters.Add(new Emitter<TEvent, TArgs>(action, @event, true));
+                _emitters.Add(new Emitter<TState, TArgs>(action, state, true));
             }
             finally
             {
@@ -141,12 +141,12 @@ namespace IO.Ably
             }
         }
 
-        public void Off(TEvent @event, Action<TArgs> action)
+        public void Off(TState state, Action<TArgs> action)
         {
             _lock.EnterWriteLock();
             try
             {
-                _emitters.RemoveAll(x => x.Action == action && x.Event.HasValue && x.Event.Value.Equals(@event));
+                _emitters.RemoveAll(x => x.Action == action && x.State.HasValue && x.State.Value.Equals(state));
             }
             finally
             {
@@ -154,14 +154,14 @@ namespace IO.Ably
             }
         }
 
-        public void Emit(TEvent @event, TArgs data)
+        public void Emit(TState state, TArgs data)
         {
-            List<Emitter<TEvent, TArgs>> emitters;
+            List<Emitter<TState, TArgs>> emitters;
             _lock.EnterUpgradeableReadLock();
             try
             {
-                emitters = _emitters.Where(x => x.Event == null
-                                            || x.Event.Value.Equals(@event)).ToList();
+                emitters = _emitters.Where(x => x.State == null
+                                            || x.State.Value.Equals(state)).ToList();
 
                 if (emitters.Any(x => x.Once))
                 {
@@ -192,7 +192,7 @@ namespace IO.Ably
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error($"Error executing on event: {@event}", ex);
+                    Logger.Error($"Error executing on event: {state}", ex);
                 }
             }
         }

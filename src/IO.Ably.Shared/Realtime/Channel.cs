@@ -67,9 +67,9 @@ namespace IO.Ably.Realtime
             ConnectionManager.Connection.InternalStateChanged += InternalOnInternalStateChanged;
         }
 
-        private void InternalOnInternalStateChanged(object sender, ConnectionStateChange args)
+        private void InternalOnInternalStateChanged(object sender, ConnectionStateChange connectionStateChange)
         {
-            switch (args.Current)
+            switch (connectionStateChange.Current)
             {
                 case Realtime.ConnectionState.Closed:
                     if (State == ChannelState.Attached || State == ChannelState.Attaching)
@@ -85,7 +85,7 @@ namespace IO.Ably.Realtime
                     if (State != ChannelState.Detached || State != ChannelState.Initialized ||
                         State != ChannelState.Failed)
                     {
-                        SetChannelState(ChannelState.Failed, args.Reason ?? ErrorInfo.ReasonFailed);
+                        SetChannelState(ChannelState.Failed, connectionStateChange.Reason ?? ErrorInfo.ReasonFailed);
                     }
                     break;
             }

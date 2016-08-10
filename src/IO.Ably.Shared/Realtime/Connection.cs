@@ -131,24 +131,24 @@ namespace IO.Ably.Realtime
             var newState = state.State;
             ConnectionState = state;
             ErrorReason = state.Error;
-            var stateArgs = new ConnectionStateChange(oldState, newState, state.RetryIn, ErrorReason);
+            var stateChange = new ConnectionStateChange(oldState, newState, state.RetryIn, ErrorReason);
 
             var internalHandlers = Volatile.Read(ref InternalStateChanged); //Make sure we get all the subscribers on all threads
             var externalHandlers = Volatile.Read(ref ConnectionStateChanged); //Make sure we get all the subscribers on all threads
-            internalHandlers(this, stateArgs);
+            internalHandlers(this, stateChange);
 
             RealtimeClient.NotifyExternalClients(() =>
             {
                 try
                 {
-                    externalHandlers(this, stateArgs);
+                    externalHandlers(this, stateChange);
                 }
                 catch (Exception ex)
                 {
                     Logger.Error("Error notifying Connection state changed handlers", ex);
                 }
 
-                Emit(newState, stateArgs);
+                Emit(newState, stateChange);
             });
         }
     }
