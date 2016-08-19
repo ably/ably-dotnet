@@ -208,11 +208,11 @@ namespace IO.Ably.Tests.Rest
             var history = channel.History(new HistoryRequestParams() { Limit = 10 });
             history.Items.Should().HaveCount(10);
             history.HasNext.Should().BeTrue();
-            history.Items.First().name.Should().Be("name19");
+            history.Items.First().Name.Should().Be("name19");
 
             var secondPage = history.Next();
             secondPage.Items.Should().HaveCount(10);
-            secondPage.Items.First().name.Should().Be("name9");
+            secondPage.Items.First().Name.Should().Be("name9");
         }
 
         [Theory]
