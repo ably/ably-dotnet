@@ -32,8 +32,9 @@ namespace IO.Ably.Realtime
         /// <param name="handler"></param>
         void Subscribe(string eventName, Action<Message> handler);
 
-        bool Unsubscribe(Action<Message> handler);
-        bool Unsubscribe(string eventName, Action<Message> handler);
+        void Unsubscribe(Action<Message> handler);
+        void Unsubscribe(string eventName, Action<Message> handler);
+        void Unsubscribe();
 
         void Publish(string name, object data, Action<bool, ErrorInfo> callback = null, string clientId = null);
         Task<Result> PublishAsync(string eventName, object data, string clientId = null); 
@@ -44,6 +45,6 @@ namespace IO.Ably.Realtime
 
         Task<PaginatedResult<Message>> HistoryAsync(bool untilAttached = false);
         Task<PaginatedResult<Message>> HistoryAsync(HistoryRequestParams query, bool untilAttached = false);
-        void Unsubscribe();
+        
     }
 }

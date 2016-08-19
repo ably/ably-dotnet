@@ -173,14 +173,14 @@ namespace IO.Ably.Realtime
             _handlers.Add(eventName, handler.ToHandlerAction());
         }
 
-        public bool Unsubscribe(Action<Message> handler)
+        public void Unsubscribe(Action<Message> handler)
         {
-            return _handlers.Remove(handler.ToHandlerAction());
+            _handlers.Remove(handler.ToHandlerAction());
         }
 
-        public bool Unsubscribe(string eventName, Action<Message> handler)
+        public void Unsubscribe(string eventName, Action<Message> handler)
         {
-            return _handlers.Remove(eventName, handler.ToHandlerAction());
+            _handlers.Remove(eventName, handler.ToHandlerAction());
         }
 
         public void Unsubscribe()

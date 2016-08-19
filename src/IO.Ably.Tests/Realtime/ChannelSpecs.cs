@@ -854,11 +854,10 @@ namespace IO.Ably.Tests.Realtime
 
             [Fact]
             [Trait("spec", "RTL8a")]
-            public async Task ShouldReturnTrueAndRemoveHandlerFromSubscribers()
+            public async Task ShouldRemoveHandlerFromSubscribers()
             {
                 _channel.Subscribe(_handler);
-                var result = _channel.Unsubscribe(_handler);
-                result.Should().BeTrue();
+                _channel.Unsubscribe(_handler);
                 await _client.FakeMessageReceived(new Message("test", "best"), _channel.Name);
 
                 //Handler should not throw
@@ -869,8 +868,7 @@ namespace IO.Ably.Tests.Realtime
             public async Task WithEventName_ShouldUnsubscribeHandlerFromTheSpecifiedEvent()
             {
                 _channel.Subscribe("test", _handler);
-                var result = _channel.Unsubscribe("test", _handler);
-                result.Should().BeTrue();
+                _channel.Unsubscribe("test", _handler);
                 await _client.FakeMessageReceived(new Message("test", "best"), _channel.Name);
                 //Handler should not throw
             }
