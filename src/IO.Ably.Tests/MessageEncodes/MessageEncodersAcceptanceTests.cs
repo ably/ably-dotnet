@@ -286,7 +286,8 @@ namespace IO.Ably.AcceptanceTests
                 {
                     var context = SerializationContext.Default.GetSerializer<List<Message>>();
                     var payload = context.Unpack(stream).FirstOrDefault();
-                    payload.Data = ((MessagePackObject) payload.Data).ToObject();
+                    if(payload.Data != null)
+                        payload.Data = ((MessagePackObject) payload.Data).ToObject();
                     return payload;
                 }
             }

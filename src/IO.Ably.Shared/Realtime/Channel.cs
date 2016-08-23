@@ -97,11 +97,11 @@ namespace IO.Ably.Realtime
         ///     Attach to this channel. Any resulting channel state change will be indicated to any registered
         ///     <see cref="StateChanged" /> listener.
         /// </summary>
-        public void Attach(Action<TimeSpan, ErrorInfo> callback = null)
+        public void Attach(Action<bool, ErrorInfo> callback = null)
         {
             if (State == ChannelState.Attaching || State == ChannelState.Attached)
             {
-                callback?.Invoke(TimeSpan.Zero, null);
+                callback?.Invoke(true, null);
                 return;
             }
 
@@ -109,9 +109,9 @@ namespace IO.Ably.Realtime
             SetChannelState(ChannelState.Attaching);
         }
 
-        public Task<Result<TimeSpan>> AttachAsync()
+        public Task<Result> AttachAsync()
         {
-            return TaskWrapper.Wrap<TimeSpan>(Attach);
+            return TaskWrapper.Wrap(Attach);
         }
 
         private void OnAttachTimeout()
@@ -134,12 +134,12 @@ namespace IO.Ably.Realtime
         ///     Detach from this channel. Any resulting channel state change will be indicated to any registered
         ///     <see cref="StateChanged" /> listener.
         /// </summary>
-        public void Detach(Action<TimeSpan, ErrorInfo> callback = null)
+        public void Detach(Action<bool, ErrorInfo> callback = null)
         {
             if (State == ChannelState.Initialized || State == ChannelState.Detaching ||
                 State == ChannelState.Detached)
             {
-                callback?.Invoke(TimeSpan.Zero, null);
+                callback?.Invoke(true, null);
                 return;
             }
 
@@ -152,9 +152,9 @@ namespace IO.Ably.Realtime
             SetChannelState(ChannelState.Detaching);
         }
 
-        public Task<Result<TimeSpan>> DetachAsync()
+        public Task<Result> DetachAsync()
         {
-            return TaskWrapper.Wrap<TimeSpan>(Detach);
+            return TaskWrapper.Wrap(Detach);
         }
 
         public void Subscribe(Action<Message> handler)

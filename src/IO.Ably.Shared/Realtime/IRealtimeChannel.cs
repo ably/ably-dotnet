@@ -16,13 +16,13 @@ namespace IO.Ably.Realtime
         event EventHandler<ChannelStateChange> StateChanged;
         event EventHandler<ChannelErrorEventArgs> Error;
 
-        void Attach(Action<TimeSpan, ErrorInfo> callback = null);
+        void Attach(Action<bool, ErrorInfo> callback = null);
 
-        Task<Result<TimeSpan>> AttachAsync();
+        Task<Result> AttachAsync();
             
-        void Detach(Action<TimeSpan, ErrorInfo> callback = null);
+        void Detach(Action<bool, ErrorInfo> callback = null);
 
-        Task<Result<TimeSpan>> DetachAsync();
+        Task<Result> DetachAsync();
 
         /// <summary>Subscribe a listener to all messages.</summary>
         void Subscribe(Action<Message> handler);

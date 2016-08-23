@@ -98,25 +98,5 @@ namespace IO.Ably
             var signText = string.Join("\n", values) + "\n";
             Mac = Crypto.ComputeHMacSha256(signText, key);
         }
-
-        public override int GetHashCode()
-        {
-            return KeyName.GetHashCode();
-        }
-
-        public override bool Equals(object obj)
-        {
-            var other = obj as TokenRequest;
-            if (other == null)
-                return false;
-            return KeyName == other.KeyName
-                && Ttl == other.Ttl
-                && Capability == other.Capability
-                && ClientId == other.ClientId
-                && Timestamp == other.Timestamp
-                && Nonce == other.Nonce
-                && Mac == other.Mac;
-        }
     }
-
 }

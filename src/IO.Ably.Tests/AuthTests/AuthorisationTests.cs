@@ -59,7 +59,7 @@ namespace IO.Ably.Tests
         {
             var client = GetRestClient();
             var data = client.Auth.CreateTokenRequestAsync(null, null).Result;
-            data.Capability.Should().Be(Defaults.DefaultTokenCapability.ToJson());
+            data.Capability.Should().Be(Defaults.DefaultTokenCapability);
         }
 
         [Fact]
@@ -103,7 +103,7 @@ namespace IO.Ably.Tests
                 var client = GetClientWithTokenParams();
 
                 var request = await client.Auth.CreateTokenRequestAsync();
-                request.Capability.Should().Be(Capability.AllowAll.ToJson());
+                request.Capability.Should().Be(Capability.AllowAll);
                 request.ClientId.Should().Be("123");
                 request.KeyName.Should().Be(ApiKey.Parse(client.Options.Key).KeyName);
                 request.Ttl.Should().Be(TimeSpan.FromHours(2));
@@ -127,7 +127,7 @@ namespace IO.Ably.Tests
 
                 var request = await client.Auth.CreateTokenRequestAsync(overridingTokenParams);
 
-                request.Capability.Should().Be("");
+                request.Capability.Should().Be(Capability.Empty);
                 request.ClientId.Should().Be("999");
                 request.Ttl.Should().Be(TimeSpan.FromHours(1));
                 request.Timestamp.Should().Be(Now.AddMinutes(10));
@@ -188,12 +188,12 @@ namespace IO.Ably.Tests
 
             [Fact]
             [Trait("spec", "RSA9d")]
-            public void WithQueryTimeQueriesForTimestamp()
+            public async Task WithQueryTimeQueriesForTimestamp()
             {
                 var currentTime = Config.Now();
-                var client = GetRestClient(x => ("[" + currentTime + "]").ToAblyJsonResponse());
+                var client = GetRestClient(x => ("[" + currentTime.ToUnixTimeInMilliseconds() + "]").ToAblyJsonResponse());
 
-                var data = client.Auth.CreateTokenRequestAsync(null, new AuthOptions() { QueryTime = true }).Result;
+                var data = await client.Auth.CreateTokenRequestAsync(null, new AuthOptions() { QueryTime = true });
                 data.Timestamp.Should().Be(currentTime);
             }
 
@@ -214,7 +214,7 @@ namespace IO.Ably.Tests
                 capability.AddResource("a").AllowAll();
                 var customParams = new TokenParams() { Capability = capability };
                 var request = await Client.Auth.CreateTokenRequestAsync(customParams);
-                request.Capability.Should().Be(capability.ToJson());
+                request.Capability.Should().Be(capability);
             }
 
             [Fact]
