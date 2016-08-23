@@ -32,13 +32,13 @@ namespace IO.Ably.AcceptanceTests
             }
 
             public static IEnumerable<object[]> SupportedMessages
-            {  
+            {
                 get
                 {
-                    
-                    yield return new object[] {new Message("string", "string"), null};
-                    yield return new object[] {new Message("string", new byte[] {1,2,4}), "base64"};
-                    yield return new object[] { new Message("object", new TestObject() { Age = 40, Name = "Bob", DoB = new DateTime(1976, 1,1)}), "json"};
+
+                    yield return new object[] { new Message("string", "string"), null };
+                    yield return new object[] { new Message("string", new byte[] { 1, 2, 4 }), "base64" };
+                    yield return new object[] { new Message("object", new TestObject() { Age = 40, Name = "Bob", DoB = new DateTime(1976, 1, 1) }), "json" };
                 }
             }
 
@@ -48,7 +48,7 @@ namespace IO.Ably.AcceptanceTests
                 {
                     yield return new object[] { new Message("int", 1) };
                     yield return new object[] { new Message("float", 1.1) };
-                    yield return new object[] { new Message("date", Config.Now())};
+                    yield return new object[] { new Message("date", Config.Now()) };
                 }
             }
 
@@ -75,7 +75,7 @@ namespace IO.Ably.AcceptanceTests
                 var processedMessages = JsonConvert.DeserializeObject<List<Message>>(LastRequest.RequestBody.GetText());
                 processedMessages.First().Encoding.Should().Be(encoding);
             }
-            
+
         }
 
 
@@ -90,7 +90,7 @@ namespace IO.Ably.AcceptanceTests
                 return payloads.FirstOrDefault();
             }
 
-            public WithTextProtocolWithoutEncryption(ITestOutputHelper output): base(output)
+            public WithTextProtocolWithoutEncryption(ITestOutputHelper output) : base(output)
             {
                 _client = GetRestClient();
             }
@@ -119,7 +119,7 @@ namespace IO.Ably.AcceptanceTests
                 //Assert
                 var payload = GetPayload();
                 byte[] data = (payload.Data as string).FromBase64();
-                data.ShouldBeEquivalentTo( bytes );
+                data.ShouldBeEquivalentTo(bytes);
                 payload.Encoding.Should().Be("base64");
             }
 
@@ -211,13 +211,8 @@ namespace IO.Ably.AcceptanceTests
 
             private Message GetPayload()
             {
-                using (var stream = new MemoryStream(LastRequest.RequestBody))
-                {
-                    var context = SerializationContext.Default.GetSerializer<List<Message>>();
-                    var payload = context.Unpack(stream).FirstOrDefault();
-                    payload.Data = ((MessagePackObject)payload.Data).ToObject();
-                    return payload;
-                }
+                var messages = MsgPackHelper.DeSerialise(LastRequest.RequestBody, typeof(List<Message>)) as List<Message>;
+                return messages.First();
             }
 
             public WithBinaryProtocolWithoutEncryption(ITestOutputHelper output) : base(output)
@@ -243,7 +238,7 @@ namespace IO.Ably.AcceptanceTests
             public void WithBinaryData_DoesNotApplyAnyEncoding()
             {
                 //Act
-                var bytes = new byte[] { 10, 111, 128};
+                var bytes = new byte[] { 10, 111, 128 };
                 _client.Channels.Get("Test").PublishAsync("test", bytes);
 
                 //Assert
@@ -257,7 +252,7 @@ namespace IO.Ably.AcceptanceTests
             public void WithJsonData_AppliesCorrectEncoding()
             {
                 //Arrange
-                var obj = new {Test = "test", name = "name"};
+                var obj = new { Test = "test", name = "name" };
 
                 //Act
                 _client.Channels.Get("test").PublishAsync("test", obj);
@@ -286,8 +281,8 @@ namespace IO.Ably.AcceptanceTests
                 {
                     var context = SerializationContext.Default.GetSerializer<List<Message>>();
                     var payload = context.Unpack(stream).FirstOrDefault();
-                    if(payload.Data != null)
-                        payload.Data = ((MessagePackObject) payload.Data).ToObject();
+                    if (payload.Data != null)
+                        payload.Data = ((MessagePackObject)payload.Data).ToObject();
                     return payload;
                 }
             }
@@ -325,7 +320,7 @@ namespace IO.Ably.AcceptanceTests
             public void WithJsonData_SetsEncodingAndDataCorrectly()
             {
                 //Act
-                var obj = new {Test = "test", Name = "name"};
+                var obj = new { Test = "test", Name = "name" };
                 _client.Channels.Get("test", options).PublishAsync("test", obj);
 
                 //Assert
