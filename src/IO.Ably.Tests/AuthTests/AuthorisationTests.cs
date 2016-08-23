@@ -194,7 +194,7 @@ namespace IO.Ably.Tests
                 var client = GetRestClient(x => ("[" + currentTime.ToUnixTimeInMilliseconds() + "]").ToAblyJsonResponse());
 
                 var data = await client.Auth.CreateTokenRequestAsync(null, new AuthOptions() { QueryTime = true });
-                data.Timestamp.Should().Be(currentTime);
+                data.Timestamp.Should().BeCloseTo(currentTime);
             }
 
             [Fact]
