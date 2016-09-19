@@ -6,6 +6,22 @@ namespace IO.Ably
     internal static class Defaults
     {
         public const string ProtocolVersion = "0.8";
+
+        private static string _libraryVersion = null;
+        public static string LibraryVersion
+        {
+            get
+            {
+                return _libraryVersion ?? (_libraryVersion = GetLibraryVersion());
+            }
+        }
+
+        private static string GetLibraryVersion()
+        {
+            var assemblyName = typeof(Defaults).Assembly.GetName();
+            return $"{assemblyName.Name}-{assemblyName.Version}";
+        }
+
         public const int QueryLimit = 100;
 
         public const string InternetCheckURL = "https://internet-up.ably-realtime.com/is-the-internet-up.txt";
@@ -34,7 +50,7 @@ namespace IO.Ably
 
         static Defaults()
         {
-            FallbackHosts = new [] { "a.ably-realtime.com", "b.ably-realtime.com", "c.ably-realtime.com", "d.ably-realtime.com", "e.ably-realtime.com" };
+            FallbackHosts = new[] { "a.ably-realtime.com", "b.ably-realtime.com", "c.ably-realtime.com", "d.ably-realtime.com", "e.ably-realtime.com" };
         }
     }
 }
