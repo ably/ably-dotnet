@@ -3,21 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using IO.Ably.Rest;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
 {
-    //public enum PresenceState
-    //{
-    //    Initialized,
-    //    Entering,
-    //    Entered,
-    //    Leaving,
-    //    Left,
-    //    Failed
-    //}
+    public class GetOptions
+    {
+        public bool WaitForSync { get; set; } = true;
+        public string ClientId { get; set; }
+        public string ConnectionId { get; set; }
+    }
 
     public class Presence : IDisposable
     {
@@ -25,7 +21,7 @@ namespace IO.Ably.Realtime
         public bool SyncComplete => presence.IsSyncInProgress == false;
 
         private readonly RealtimeChannel _channel;
-        private readonly string clientId;
+        private readonly string _clientId;
         private readonly Handlers<PresenceMessage> _handlers = new Handlers<PresenceMessage>();
 
         private readonly IConnectionManager connection;
@@ -39,20 +35,19 @@ namespace IO.Ably.Realtime
             this.connection = connection;
             this._channel = channel;
             this._channel.StateChanged += OnChannelStateChanged;
-            clientId = cliendId;
+            _clientId = cliendId;
         }
 
         /// <summary>
         /// Get current presence in the channel. WaitForSync is not implemented yet. Partial result may be returned
         /// </summary>
-        /// <param name="waitForSync">Not implemented yet. </param>
-        /// <param name="clientId"></param>
-        /// <param name="connectionId"></param>
         /// <returns></returns>
-        public Task<IEnumerable<PresenceMessage>> GetAsync(bool waitForSync = true, string clientId = "", string connectionId = "")
+        public Task<IEnumerable<PresenceMessage>> GetAsync(GetOptions options = null)
         {
+            var getOptions = options ?? new GetOptions();
             //TODO: waitForSync is not implemented yet
-            var result = presence.Values.Where(x => (clientId.IsEmpty() || x.ClientId == clientId) && (connectionId.IsEmpty() || x.ConnectionId == connectionId));
+            var result = presence.Values.Where(x => (getOptions.ClientId.IsEmpty() || x.ClientId == getOptions.ClientId) 
+            && (getOptions.ConnectionId.IsEmpty() || x.ConnectionId == getOptions.ConnectionId));
             return Task.FromResult(result);
         }
 
@@ -89,7 +84,7 @@ namespace IO.Ably.Realtime
 
         public Task EnterAsync(object data = null)
         {
-            return EnterClientAsync(clientId, data);
+            return EnterClientAsync(_clientId, data);
         }
 
         public Task EnterClientAsync(string clientId, object data)
@@ -99,7 +94,7 @@ namespace IO.Ably.Realtime
 
         public Task UpdateAsync(object data = null)
         {
-            return UpdateClientAsync(clientId, data);
+            return UpdateClientAsync(_clientId, data);
         }
 
         public Task UpdateClientAsync(string clientId, object data)
@@ -109,7 +104,7 @@ namespace IO.Ably.Realtime
 
         public Task LeaveAsync(object data = null)
         {
-            return LeaveClientAsync(clientId, data);
+            return LeaveClientAsync(_clientId, data);
         }
 
         public Task LeaveClientAsync(string clientId, object data)
