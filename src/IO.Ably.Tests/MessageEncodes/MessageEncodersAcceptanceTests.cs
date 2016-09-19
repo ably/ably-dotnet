@@ -277,14 +277,8 @@ namespace IO.Ably.AcceptanceTests
 
             private Message GetPayload()
             {
-                using (var stream = new MemoryStream(LastRequest.RequestBody))
-                {
-                    var context = SerializationContext.Default.GetSerializer<List<Message>>();
-                    var payload = context.Unpack(stream).FirstOrDefault();
-                    if (payload.Data != null)
-                        payload.Data = ((MessagePackObject)payload.Data).ToObject();
-                    return payload;
-                }
+                var messages = MsgPackHelper.DeSerialise(LastRequest.RequestBody, typeof(List<Message>)) as List<Message>;
+                return messages.First();
             }
 
             [Fact]

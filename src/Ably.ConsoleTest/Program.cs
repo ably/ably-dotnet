@@ -9,8 +9,8 @@ namespace IO.Ably.ConsoleTest
     {
         static void Main(string[] args)
         {
-            IO.Ably.Logger.LoggerSink = new MyLogger();
-            //Logger.LogLevel = LogLevel.Debug;
+            //IO.Ably.Logger.LoggerSink = new MyLogger();
+            Logger.LogLevel = LogLevel.Debug;
             try
             {
                 //Rest.Test().Wait();

@@ -20,7 +20,7 @@ namespace IO.Ably
         {
 
         }
-
+        
         internal AblyRealtime(ClientOptions options, Func<ClientOptions, AblyRest> createRestFunc)
         {
             CaptureSynchronizationContext(options);
