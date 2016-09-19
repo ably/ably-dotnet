@@ -87,7 +87,7 @@ namespace IO.Ably.Realtime
             return _handlers.Remove(presenceAction.ToString(), handler.ToHandlerAction());
         }
 
-        public Task EnterAsync(object data)
+        public Task EnterAsync(object data = null)
         {
             return EnterClientAsync(clientId, data);
         }
@@ -97,7 +97,7 @@ namespace IO.Ably.Realtime
             return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Enter, clientId, data));
         }
 
-        public Task UpdateAsync(object data)
+        public Task UpdateAsync(object data = null)
         {
             return UpdateClientAsync(clientId, data);
         }
