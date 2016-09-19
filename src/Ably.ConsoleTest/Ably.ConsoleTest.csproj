@@ -48,9 +48,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Ably.ConsoleUnitTests\ConsoleEx.cs">
-      <Link>ConsoleEx.cs</Link>
-    </Compile>
     <Compile Include="..\Ably.ConsoleUnitTests\MyLogger.cs">
       <Link>MyLogger.cs</Link>
     </Compile>

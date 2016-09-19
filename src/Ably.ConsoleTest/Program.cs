@@ -28,8 +28,8 @@ namespace IO.Ably.ConsoleTest
                     Console.WriteLine("Bytes used: " + GC.GetTotalMemory(true));
                 }
 
-                //Console.ReadLine();
-                //ConsoleColor.Green.WriteLine("Success!");
+                Console.ReadLine();
+                ConsoleColor.Green.WriteLine("Success!");
             }
             catch (Exception ex)
             {
