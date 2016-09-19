@@ -371,22 +371,22 @@ namespace IO.Ably.Realtime
             _handlers.RemoveAll();
         }
 
-        public Task<PaginatedResult<PresenceMessage>> HistoryAsync(bool untilAttached = false)
+        public Task<PaginatedResult<PresenceMessage>> HistoryAsync(bool untilAttach = false)
         {
             var query = new HistoryRequestParams();
-            if (untilAttached)
+            if (untilAttach)
             {
-                _channel.AddUntilAttachedParameter(query);
+                _channel.AddUntilAttachParameter(query);
             }
             return _channel.RestChannel.Presence.HistoryAsync(query);
         }
 
-        public Task<PaginatedResult<PresenceMessage>> HistoryAsync(HistoryRequestParams query, bool untilAttached = false)
+        public Task<PaginatedResult<PresenceMessage>> HistoryAsync(HistoryRequestParams query, bool untilAttach = false)
         {
             query = query ?? new HistoryRequestParams();
-            if (untilAttached)
+            if (untilAttach)
             {
-                _channel.AddUntilAttachedParameter(query);
+                _channel.AddUntilAttachParameter(query);
             }
 
             return _channel.RestChannel.Presence.HistoryAsync(query);

@@ -146,7 +146,7 @@ namespace IO.Ably.Tests.Samples
         {
             AblyRealtime realtime = new AblyRealtime("{{API_KEY}}");
             var channel = realtime.Channels.Get("chatroom");
-            var history = await channel.HistoryAsync(untilAttached: true);
+            var history = await channel.HistoryAsync(untilAttach: true);
             Console.WriteLine($"{history.Items.Count} messages received in the first page");
             if (history.HasNext)
             {
@@ -193,7 +193,7 @@ namespace IO.Ably.Tests.Samples
             Console.WriteLine($"There are {presence.Count()} members on this channel");
             Console.WriteLine($"The first member has client ID: {presence.First().ClientId}");
 
-            PaginatedResult<PresenceMessage> resultPage = await channel.Presence.HistoryAsync(untilAttached: true);
+            PaginatedResult<PresenceMessage> resultPage = await channel.Presence.HistoryAsync(untilAttach: true);
             Console.WriteLine(resultPage.Items.Count + " presence events received in first page");
             if (resultPage.HasNext)
             {
@@ -239,7 +239,7 @@ namespace IO.Ably.Tests.Samples
             var realtime = new AblyRealtime("{{API_KEY}}");
             var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}");
             await channel.AttachAsync();
-            PaginatedResult<Message> resultPage = await channel.HistoryAsync(untilAttached: true);
+            PaginatedResult<Message> resultPage = await channel.HistoryAsync(untilAttach: true);
             Message lastMessage = resultPage.Items[0];
             Console.WriteLine("Last message before attach: " + lastMessage.Data);
 

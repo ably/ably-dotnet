@@ -240,22 +240,22 @@ namespace IO.Ably.Realtime
             return Result.Fail(new ErrorInfo("PublishAsync timeout expired. Message was not confirmed by the server"));
         }
 
-        public Task<PaginatedResult<Message>> HistoryAsync(bool untilAttached = false)
+        public Task<PaginatedResult<Message>> HistoryAsync(bool untilAttach = false)
         {
             var query = new HistoryRequestParams();
-            if (untilAttached)
+            if (untilAttach)
             {
-                AddUntilAttachedParameter(query);
+                AddUntilAttachParameter(query);
             }
             return RestChannel.HistoryAsync(query);
         }
 
-        public Task<PaginatedResult<Message>> HistoryAsync(HistoryRequestParams query, bool untilAttached = false)
+        public Task<PaginatedResult<Message>> HistoryAsync(HistoryRequestParams query, bool untilAttach = false)
         {
             query = query ?? new HistoryRequestParams();
-            if (untilAttached)
+            if (untilAttach)
             {
-                AddUntilAttachedParameter(query);
+                AddUntilAttachParameter(query);
             }
                 
             return RestChannel.HistoryAsync(query);
@@ -273,11 +273,11 @@ namespace IO.Ably.Realtime
             _handlers.RemoveAll();
         }
 
-        internal void AddUntilAttachedParameter(HistoryRequestParams query)
+        internal void AddUntilAttachParameter(HistoryRequestParams query)
         {
             if (State != ChannelState.Attached)
             {
-                throw new AblyException("Channel is not attached. Cannot use untilAttached parameter");
+                throw new AblyException("Channel is not attached. Cannot use untilAttach parameter");
             }
             query.ExtraParameters.Add("fromSerial", AttachedSerial);
         }

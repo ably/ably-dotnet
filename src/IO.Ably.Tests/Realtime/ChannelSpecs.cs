@@ -909,7 +909,7 @@ namespace IO.Ably.Tests.Realtime
                 var channel = _client.Channels.Get("history");
                 SetState(channel, ChannelState.Attached, message: new ProtocolMessage(ProtocolMessage.MessageAction.Attached) { ChannelSerial = "101"});
 
-                await channel.HistoryAsync(untilAttached: true);
+                await channel.HistoryAsync(untilAttach: true);
 
                 LastRequest.QueryParameters.Should()
                     .ContainKey("fromSerial")
