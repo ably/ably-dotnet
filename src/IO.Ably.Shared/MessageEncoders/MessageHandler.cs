@@ -84,6 +84,24 @@ namespace IO.Ably.MessageEncoders
         public void SetRequestBody(AblyRequest request)
         {
             request.RequestBody = GetRequestBody(request);
+            if (_protocol == Protocol.MsgPack && Logger.IsDebug)
+            {
+                LogRequestBody(request.RequestBody);
+            }
+        }
+
+        private void LogRequestBody(byte[] requestBody)
+        {
+            try
+            {
+                var body = MsgPackHelper.DeSerialise(requestBody, typeof(MessagePackObject)).ToString();
+                
+                Logger.Debug("RequestBody: " + body);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error while logging request body.", ex);
+            }
         }
 
         public byte[] GetRequestBody(AblyRequest request)

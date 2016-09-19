@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 
 namespace IO.Ably.Types
 {
+    //TODO: Cleanup
     public class JsonMessageSerializer : IMessageSerializer
     {
         public ProtocolMessage DeserializeProtocolMessage( object value )

@@ -23,6 +23,7 @@ namespace IO.Ably
             context.Serializers.Register(new DateTimeOffsetMessagePackSerializer(context));
             context.Serializers.Register(new TimespanMessagePackSerializer(context));
             context.Serializers.Register(new IO_Ably_CapabilitySerializer(context));
+            context.Serializers.Register(new IO_Ably_TokenRequestSerializer(context));
             context.Serializers.Register(new IO_Ably_Auth_TokenDetailsSerializer(context));
             context.Serializers.Register(new IO_Ably_ConnectionDetailsMessageSerializer(context));
             context.Serializers.Register(new IO_Ably_ErrorInfoSerializer(context));

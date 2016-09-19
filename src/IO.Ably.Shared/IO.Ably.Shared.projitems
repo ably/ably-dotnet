@@ -20,6 +20,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Capability.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CapabilityResource.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CipherParams.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\GeneratedSerializers\IO_Ably_TokenRequestSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EventEmitter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IChannelCommands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IRealtimeClient.cs" />

@@ -28,9 +28,10 @@ namespace IO.Ably.Tests
                 SerializationMethod = SerializationMethod.Map // You tweak it to generate 'map' based serializers.
             },
                 applicationLibraryAssembly.GetTypes().Where(type =>
-                    type == typeof(Message) || type == typeof(ProtocolMessage) || type == typeof(PresenceMessage) ||
-                    type == typeof(PaginatedResult<Stats>) || type == typeof(TokenDetails) || type == typeof(Stats)
-                    /* ...you can filter types to be serialized by their namespace, custom attributes, etc... */
+                    type == typeof(TokenRequest)
+                    //type == typeof(Message) || type == typeof(ProtocolMessage) || type == typeof(PresenceMessage) ||
+                    //type == typeof(PaginatedResult<Stats>) || type == typeof(TokenDetails) || type == typeof(Stats)
+                    ///* ...you can filter types to be serialized by their namespace, custom attributes, etc... */
                 )
             );
         }

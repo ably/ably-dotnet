@@ -66,6 +66,7 @@ namespace IO.Ably.Tests.Rest
         [Trait("spec", "RSL1g1b")]
         public async Task WithImplicitClientIdComingFromOptions_ReturnsMessageWithCorrectClientId(Protocol protocol)
         {
+            Logger.LogLevel = LogLevel.Debug;
             var message = new Message("test", "test") { ClientId = null};
             var client = await GetRestClient(protocol, opts => opts.ClientId = "999");
             var channel = client.Channels.Get("persisted:test".AddRandomSuffix());
@@ -80,6 +81,7 @@ namespace IO.Ably.Tests.Rest
         [Trait("spec", "RSL1g2")]
         public async Task WithExplicitClientIdMatchingClientIdInOptions_ReturnsMessageWithCorrectClientId(Protocol protocol)
         {
+            Logger.LogLevel = LogLevel.Debug;
             var message = new Message("test", "test") { ClientId = "999" };
             var client = await GetRestClient(protocol, opts => opts.ClientId = "999");
             var channel = client.Channels.Get("persisted:test".AddRandomSuffix());
