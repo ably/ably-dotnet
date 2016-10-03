@@ -46,7 +46,7 @@ namespace IO.Ably.Tests
             await client.Execute(new AblyRequest("/test", HttpMethod.Get));
             var values = handler.LastRequest.Headers.GetValues("X-Ably-Lib");
             values.Should().NotBeEmpty();
-            values.First().Should().Be(Defaults.LibraryVersion);
+            values.First().Should().Be("dotnet-" + typeof(Defaults).Assembly.GetName().Version.ToString(3));
         }
 
         [Fact]

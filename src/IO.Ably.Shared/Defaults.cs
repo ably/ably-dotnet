@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using IO.Ably.Transport;
 
 namespace IO.Ably
@@ -6,26 +7,14 @@ namespace IO.Ably
     internal static class Defaults
     {
         public const string ProtocolVersion = "0.8";
+        private static readonly AssemblyName AssemblyName = typeof(Defaults).Assembly.GetName();
 
-        private static string _libraryVersion = null;
-        public static string LibraryVersion
-        {
-            get
-            {
-                return _libraryVersion ?? (_libraryVersion = GetLibraryVersion());
-            }
-        }
-
-        private static string GetLibraryVersion()
-        {
-            var assemblyName = typeof(Defaults).Assembly.GetName();
-            return $"{assemblyName.Name}-{assemblyName.Version}";
-        }
+        public static string LibraryVersion => $"dotnet-{AssemblyName.Version.ToString(3)}";
 
         public const int QueryLimit = 100;
 
-        public const string InternetCheckURL = "https://internet-up.ably-realtime.com/is-the-internet-up.txt";
-        public static readonly string InternetCheckOKMessage = "yes";
+        public const string InternetCheckUrl = "https://internet-up.ably-realtime.com/is-the-internet-up.txt";
+        public static readonly string InternetCheckOkMessage = "yes";
 
         public static readonly string RestHost = "rest.ably.io";
         public static readonly string RealtimeHost = "realtime.ably.io";

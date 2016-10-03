@@ -211,9 +211,9 @@ namespace IO.Ably
 
             try
             {
-                var request = new AblyRequest(Defaults.InternetCheckURL, HttpMethod.Get);
+                var request = new AblyRequest(Defaults.InternetCheckUrl, HttpMethod.Get);
                 var response = await ExecuteHttpRequest(request);
-                return response.TextResponse == Defaults.InternetCheckOKMessage;
+                return response.TextResponse == Defaults.InternetCheckOkMessage;
             }
             catch (Exception ex)
             {

@@ -248,7 +248,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         {
             var client = GetConnectedClient(null, request =>
             {
-                if (request.Url == Defaults.InternetCheckURL)
+                if (request.Url == Defaults.InternetCheckUrl)
                 {
                     return "no".ToAblyResponse();
                 }

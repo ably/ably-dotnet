@@ -96,9 +96,9 @@ namespace IO.Ably.Tests.Realtime
         {
             return GetRealtimeClient(request =>
             {
-                if (request.Url == Defaults.InternetCheckURL)
+                if (request.Url == Defaults.InternetCheckUrl)
                 {
-                    return (_internetCheckOK ? Defaults.InternetCheckOKMessage : "Blah").ToAblyResponse();
+                    return (_internetCheckOK ? Defaults.InternetCheckOkMessage : "Blah").ToAblyResponse();
                 }
                 return DefaultResponse.ToTask();
             }, optionsAction);
