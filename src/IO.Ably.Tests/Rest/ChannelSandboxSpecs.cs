@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Encryption;
 using IO.Ably.Rest;
-using IO.Ably.SyncExtensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;

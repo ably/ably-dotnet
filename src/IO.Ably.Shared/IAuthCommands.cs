@@ -13,5 +13,14 @@ namespace IO.Ably
         Task<TokenRequest> CreateTokenRequestAsync(TokenParams tokenParams = null, AuthOptions authOptions = null);
 
         string ClientId { get; }
+
+        TokenDetails RequestToken(TokenParams tokenParams = null,
+            AuthOptions options = null);
+
+        TokenDetails Authorise(TokenParams tokenParams = null,
+            AuthOptions options = null);
+
+        TokenRequest CreateTokenRequest(TokenParams tokenParams = null,
+            AuthOptions authOptions = null);
     }
 }

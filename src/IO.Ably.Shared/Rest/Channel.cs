@@ -155,5 +155,30 @@ namespace IO.Ably.Rest
 
             return _ablyRest.ExecutePaginatedRequest(request, HistoryAsync);
         }
+
+        public void Publish(string name, object data, string clientId = null)
+        {
+            AsyncHelper.RunSync(() => PublishAsync(name, data, clientId));
+        }
+
+        public void Publish(Message message)
+        {
+            AsyncHelper.RunSync(() => PublishAsync(message));
+        }
+
+        public void Publish(IEnumerable<Message> messages)
+        {
+            AsyncHelper.RunSync(() => PublishAsync(messages));
+        }
+
+        public PaginatedResult<Message> History()
+        {
+            return AsyncHelper.RunSync(HistoryAsync);
+        }
+
+        public PaginatedResult<Message> History(HistoryRequestParams query)
+        {
+            return AsyncHelper.RunSync(() => HistoryAsync(query));
+        }
     }
 }

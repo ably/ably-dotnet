@@ -47,6 +47,16 @@ namespace IO.Ably
             return Task.FromResult(new PaginatedResult<T>());
         }
 
+        public PaginatedResult<T> Next()
+        {
+            return AsyncHelper.RunSync(NextAsync);
+        }
+
+        public PaginatedResult<T> First()
+        {
+            return AsyncHelper.RunSync(FirstAsync);
+        }
+
         public HistoryRequestParams NextDataQuery { get; }
         public HistoryRequestParams FirstDataQuery { get; private set; }
         public HistoryRequestParams CurrentQuery { get; private set; }

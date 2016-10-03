@@ -14,6 +14,12 @@ namespace IO.Ably.Rest
         string Name { get; }
         
         IPresence Presence { get; }
+
+        void Publish(string name, object data, string clientId = null);
+        void Publish(Message message);
+        void Publish(IEnumerable<Message> messages);
+        PaginatedResult<Message> History();
+        PaginatedResult<Message> History(HistoryRequestParams query);
     }
 
     public interface IPresence

@@ -28,6 +28,21 @@ namespace IO.Ably.Tests
         public AuthMethod AuthMethod { get; set; }
         public string ClientId { get; set; }
 
+        public TokenDetails RequestToken(TokenParams tokenParams = null, AuthOptions options = null)
+        {
+            return CurrentToken;
+        }
+
+        public TokenDetails Authorise(TokenParams tokenParams = null, AuthOptions options = null)
+        {
+            return CurrentToken;
+        }
+
+        public TokenRequest CreateTokenRequest(TokenParams tokenParams = null, AuthOptions authOptions = null)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<TokenDetails> GetCurrentValidTokenAndRenewIfNecessaryAsync()
         {
             return Task.FromResult(CurrentToken);

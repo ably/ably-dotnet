@@ -69,6 +69,16 @@ namespace IO.Ably
             return RestClient.StatsAsync(query);
         }
 
+        public PaginatedResult<Stats> Stats()
+        {
+            return RestClient.Stats();
+        }
+
+        public PaginatedResult<Stats> Stats(StatsRequestParams query)
+        {
+            return RestClient.Stats(query);
+        }
+
         /// <summary>
         /// </summary>
         /// <returns></returns>

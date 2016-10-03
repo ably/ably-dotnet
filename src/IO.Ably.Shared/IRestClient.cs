@@ -15,6 +15,8 @@ namespace IO.Ably
         /// <summary>Retrieves the ably service time</summary>
         /// <returns></returns>
         Task<DateTimeOffset> TimeAsync();
+
+        DateTimeOffset Time();
     }
 
     public interface IStatsCommands
@@ -27,5 +29,8 @@ namespace IO.Ably
         /// <param name="query">stats query</param>
         /// <returns></returns>
         Task<PaginatedResult<Stats>> StatsAsync(StatsRequestParams query);
+
+        PaginatedResult<Stats> Stats();
+        PaginatedResult<Stats> Stats(StatsRequestParams query);
     }
 }

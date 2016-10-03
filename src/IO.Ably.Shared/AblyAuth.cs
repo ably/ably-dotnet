@@ -381,5 +381,24 @@ namespace IO.Ably
 
             return Result.Ok();
         }
+
+
+        public TokenDetails RequestToken(TokenParams tokenParams = null,
+            AuthOptions options = null)
+        {
+            return AsyncHelper.RunSync(() => RequestTokenAsync(tokenParams, options));
+        }
+
+        public TokenDetails Authorise(TokenParams tokenParams = null,
+            AuthOptions options = null)
+        {
+            return AsyncHelper.RunSync(() => AuthoriseAsync(tokenParams, options));
+        }
+
+        public TokenRequest CreateTokenRequest(TokenParams tokenParams = null,
+            AuthOptions authOptions = null)
+        {
+            return AsyncHelper.RunSync(() => CreateTokenRequestAsync(tokenParams, authOptions));
+        }
     }
 }

@@ -221,5 +221,22 @@ namespace IO.Ably
                 return false;
             }
         }
+
+        public PaginatedResult<Stats> Stats()
+        {
+            return AsyncHelper.RunSync(StatsAsync);
+        }
+
+        public PaginatedResult<Stats> Stats(StatsRequestParams query)
+        {
+            return AsyncHelper.RunSync(() => StatsAsync(query));
+        }
+
+        public DateTimeOffset Time()
+        {
+            return AsyncHelper.RunSync(TimeAsync);
+        }
+
+        
     }
 }
