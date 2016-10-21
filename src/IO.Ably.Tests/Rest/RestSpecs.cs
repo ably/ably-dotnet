@@ -534,7 +534,7 @@ namespace IO.Ably.Tests
                  });
             }
 
-            [Theory]
+            [Fact]
             public async Task WhenCallbackReturnsAnObjectThatIsNotTokenRequestOrTokenDetails_ThrowsAblyException()
             {
                 var objects = new object[] {new object(), String.Empty, new Uri("http://test")};

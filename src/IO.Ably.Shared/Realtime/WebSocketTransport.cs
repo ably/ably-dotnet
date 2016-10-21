@@ -86,10 +86,6 @@ namespace IO.Ably.Realtime
                     Logger.Warning(
                         $"Error while closing the socket transport. suppressClosedEvent={suppressClosedEvent}. Error message: {ex.Message}");
                 }
-                finally
-                {
-                    _socket = null;
-                }
             }
         }
 

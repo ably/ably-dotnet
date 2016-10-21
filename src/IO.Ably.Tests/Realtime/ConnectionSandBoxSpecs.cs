@@ -219,7 +219,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15e")]
         public async Task ShouldUpdateConnectionKeyWhenConnectionIsResumed(Protocol protocol)
         {
-            var client = await GetRealtimeClient(protocol);
+            var client = await GetRealtimeClient(protocol, (options, _) => options.LogLevel = LogLevel.Debug);
 
             await WaitForState(client, ConnectionState.Connected);
             var initialConnectionKey = client.Connection.Key;
@@ -310,6 +310,7 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
+                opts.LogLevel = LogLevel.Debug;
             });
             
             var stateChanges = new List<ConnectionState>();
@@ -321,14 +322,14 @@ namespace IO.Ably.Tests.Realtime
                 errors.Add(args.Reason);
             };
 
-            await client.Auth.AuthoriseAsync(new TokenParams() { Ttl = TimeSpan.FromSeconds(10) });
+            await client.Auth.AuthoriseAsync(new TokenParams() { Ttl = TimeSpan.FromSeconds(5) });
             var channel = client.Channels.Get("shortToken_test" + protocol);
             int count = 0;
             while (true)
             {
-                count++;
+                Interlocked.Increment(ref count);
                 channel.Publish("test", "test");
-                await Task.Delay(3000);
+                await Task.Delay(2000);
                 if (count == 10)
                     break;
             }

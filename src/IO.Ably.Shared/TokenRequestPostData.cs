@@ -8,6 +8,7 @@ namespace IO.Ably
 {
     public class TokenRequest
     {
+        private DateTimeOffset? _timestamp;
 
         public TokenRequest()
         {
@@ -46,16 +47,24 @@ namespace IO.Ably
 
         /// <summary>
         /// The timestamp  of this request. If not supplied the timestamp is automatically set to the current UTC time
-		/// Timestamps, in conjunction with the nonce, are used to prevent
-		/// token requests from being replayed.
+        /// Timestamps, in conjunction with the nonce, are used to prevent
+        /// token requests from being replayed.
         /// </summary>
         [JsonProperty("timestamp")]
-        public DateTimeOffset? Timestamp { get; set; }
+        public DateTimeOffset? Timestamp
+        {
+            get { return _timestamp; }
+            set
+            {
+                if(value != DateTimeOffset.MinValue)
+                    _timestamp = value;
+            }
+        }
 
         /// <summary>
-		/// An opaque nonce string of at least 16 characters to ensure
-		/// uniqueness of this request. Any subsequent request using the
-		/// same nonce will be rejected.
+        /// An opaque nonce string of at least 16 characters to ensure
+        /// uniqueness of this request. Any subsequent request using the
+        /// same nonce will be rejected.
         /// </summary>
         /// 
         [JsonProperty("nonce")]
