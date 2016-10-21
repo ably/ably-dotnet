@@ -272,6 +272,32 @@ namespace IO.Ably.Tests
                 _handler.LastRequest.RequestUri.Host.Should().Be("www.test.com");
             }
 
+            [Fact]
+            [Trait("spec", "TO3b")]
+            public void WithLogLevel_ShouldUseNewLogLevel()
+            {
+                CreateClient(options =>
+                {
+                    options.LogLevel = LogLevel.Warning;
+                });
+
+                Logger.LogLevel.Should().Be(LogLevel.Warning);
+            }
+
+            private class TestLogHandler : ILoggerSink
+            {
+                public void LogEvent(LogLevel level, string message) { }
+            }
+
+            [Fact]
+            [Trait("spec", "TO3c")]
+            public void WithLogHandler_ShouldUseNewLogHandler()
+            {
+                new AblyRest(new ClientOptions(ValidKey) { LogHander = new TestLogHandler() });
+
+                Logger.LoggerSink.Should().BeOfType<TestLogHandler>();
+            }
+
             private static async Task MakeAnyRequest(AblyRest client)
             {
                 await client.Channels.Get("boo").PublishAsync("boo", "baa");

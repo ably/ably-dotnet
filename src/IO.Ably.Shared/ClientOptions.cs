@@ -70,6 +70,10 @@ namespace IO.Ably
         /// </summary>
         public string RealtimeHost { get; set; }
 
+        public LogLevel? LogLevel { get; set; }
+
+        public ILoggerSink LogHander { get; set; }
+
         /// <summary>
         /// For development environments only. Allows a non default host for the rest service
         /// </summary>

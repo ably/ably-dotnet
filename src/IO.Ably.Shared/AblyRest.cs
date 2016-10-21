@@ -76,6 +76,16 @@ namespace IO.Ably
                 throw new AblyException("Invalid options");
             }
 
+            if (Options.LogLevel.HasValue)
+            {
+                Logger.LogLevel = Options.LogLevel.Value;
+            }
+
+            if (Options.LogHander != null)
+            {
+                Logger.LoggerSink = Options.LogHander;
+            }
+
             Logger.Debug("Protocol set to: " + Protocol);
             MessageHandler = new MessageHandler(Protocol);
 
