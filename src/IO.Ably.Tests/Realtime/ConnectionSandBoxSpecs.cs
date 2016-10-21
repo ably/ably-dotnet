@@ -22,8 +22,6 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol);
             await WaitForState(client);
 
-
-
             client.Connection.State.Should().Be(ConnectionState.Connected);
         }
 

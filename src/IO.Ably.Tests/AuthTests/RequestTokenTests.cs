@@ -193,7 +193,7 @@ namespace IO.Ably.Tests.AuthTests
                 AuthCallback = (x) =>
                 {
                     authCallbackCalled = true;
-                    return Task.FromResult(token);
+                    return Task.FromResult<object>(token);
                 }
             };
             var result = await rest.Auth.RequestTokenAsync(tokenRequest, options);

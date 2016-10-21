@@ -14,7 +14,7 @@ namespace IO.Ably
         /// <summary>
         /// Callback used when requesting a new token. A <see cref="TokenRequest"/> is passed and it needs to return <see cref="TokenDetails"/>
         /// </summary>
-        public Func<TokenParams, Task<TokenDetails>> AuthCallback;
+        public Func<TokenParams, Task<object>> AuthCallback;
 
         /// <summary>
         /// A URL to query to obtain either a signed token request (<see cref="TokenRequest"/>) or a valid <see cref="TokenDetails"/>

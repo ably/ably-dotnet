@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -504,25 +503,62 @@ namespace IO.Ably.Tests
             }
         }
 
-       
-
-        [Fact]
-        public async Task Init_WithCallback_ExecutesCallbackOnFirstRequest()
+        public class AuthCallbackSpecs : AblySpecs
         {
-            bool called = false;
-            var options = new ClientOptions
+            public AuthCallbackSpecs(ITestOutputHelper output) : base(output)
             {
-                AuthCallback = (x) => { called = true; return Task.FromResult(new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddHours(1) }); },
-                UseBinaryProtocol = false
-            };
+            }
 
-            var rest = new AblyRest(options);
+            [Fact]
+            public async Task WithCallback_ExecutesCallbackOnFirstRequest()
+            {
+                bool called = false;
 
-            rest.ExecuteHttpRequest = delegate { return "[{}]".ToAblyResponse(); };
+                Func<TokenParams, Task<object>> callback = (x) =>
+                {
+                    called = true;
+                    return Task.FromResult<object>(new TokenDetails() {Expires = DateTimeOffset.UtcNow.AddHours(1)});
+                };
 
-            await rest.StatsAsync();
+                await GetClient(callback).StatsAsync();
 
-            Assert.True(called, "Rest with Callback needs to request token using callback");
+                called.Should().BeTrue("Rest with Callback needs to request token using callback");
+            }
+
+            [Fact]
+            public async Task WhenCallbackReturnsNull_ThrowsAblyException()
+            {
+                await Assert.ThrowsAsync<AblyException>(() =>
+                 {
+                     return GetClient(_ => Task.FromResult<object>(null)).StatsAsync();
+                 });
+            }
+
+            [Theory]
+            public async Task WhenCallbackReturnsAnObjectThatIsNotTokenRequestOrTokenDetails_ThrowsAblyException()
+            {
+                var objects = new object[] {new object(), String.Empty, new Uri("http://test")};
+                foreach (var obj in objects)
+                {
+                    await Assert.ThrowsAsync<AblyException>(() =>
+                    {
+                        return GetClient(_ => Task.FromResult(obj)).StatsAsync();
+                    });
+                }
+            }
+
+            private static AblyRest GetClient(Func<TokenParams, Task<object>> authCallback)
+            {
+                var options = new ClientOptions
+                {
+                    AuthCallback = authCallback,
+                    UseBinaryProtocol = false
+                };
+
+                var rest = new AblyRest(options);
+                rest.ExecuteHttpRequest = delegate { return "[{}]".ToAblyResponse(); };
+                return rest;
+            }
         }
 
         [Fact]
@@ -568,7 +604,7 @@ namespace IO.Ably.Tests
                 AuthCallback = (x) =>
                 {
                     newTokenRequested = true;
-                    return Task.FromResult(new TokenDetails("new.token")
+                    return Task.FromResult<object>(new TokenDetails("new.token")
                     {
                         Expires = DateTimeOffset.UtcNow.AddDays(1)
                     });

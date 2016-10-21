@@ -60,7 +60,7 @@ namespace IO.Ably.Tests
                     options.TokenDetails = almostExpiredToken;
                     options.ClientId = "123";
                     options.Key = "";
-                    options.AuthCallback = request => authClient.AblyAuth.RequestTokenAsync(request, null);
+                    options.AuthCallback = request => authClient.AblyAuth.RequestTokenAsync(request, null).Convert();
                 });
 
                 await client.StatsAsync();

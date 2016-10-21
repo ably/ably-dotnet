@@ -159,13 +159,26 @@ namespace IO.Ably
             TokenRequest postData = null;
             if (mergedOptions.AuthCallback != null)
             {
-                var token = await mergedOptions.AuthCallback(@params);
-                if (token != null)
-                    return token;
-                throw new AblyException("AuthCallback returned an invalid token");
-            }
+                var callbackResult = await mergedOptions.AuthCallback(@params);
 
-            if (mergedOptions.AuthUrl.IsNotEmpty())
+                if(callbackResult == null)
+                    throw new AblyException("AuthCallback returned null");
+
+                if (callbackResult is TokenDetails)
+                    return callbackResult as TokenDetails;
+
+                if (callbackResult is TokenRequest)
+                {
+                    postData = callbackResult as TokenRequest;
+
+                    request.Url = $"/keys/{postData.KeyName}/requestToken";
+                }
+                else
+                {
+                    throw new AblyException($"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest");
+                }
+            }
+            else if (mergedOptions.AuthUrl.IsNotEmpty())
             {
                 var response = await CallAuthUrl(mergedOptions, @params);
 
@@ -197,8 +210,9 @@ namespace IO.Ably
 
             TokenDetails result = await _rest.ExecuteRequest<TokenDetails>(request);
 
-            if (null == result)
+            if (result == null)
                 throw new AblyException(new ErrorInfo("Invalid token response returned", 500));
+
             return result;
         }
 
