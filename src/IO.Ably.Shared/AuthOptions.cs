@@ -12,7 +12,7 @@ namespace IO.Ably
     public class AuthOptions
     {
         /// <summary>
-        /// Callback used when requesting a new token. A <see cref="TokenRequest"/> is passed and it needs to return <see cref="TokenDetails"/>
+        /// Callback used to get a new Token or TokenRequest. It is used for RequestTokenAsync.
         /// </summary>
         public Func<TokenParams, Task<object>> AuthCallback;
 

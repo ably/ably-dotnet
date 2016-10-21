@@ -13,13 +13,13 @@ namespace IO.Ably.Realtime
     {
         private static readonly Dictionary<WebSocketState, TransportState> StateDict = new Dictionary
             <WebSocketState, TransportState>
-        {
-            {WebSocketState.None, TransportState.Initialized},
-            {WebSocketState.Connecting, TransportState.Connecting},
-            {WebSocketState.Open, TransportState.Connected},
-            {WebSocketState.Closing, TransportState.Closing},
-            {WebSocketState.Closed, TransportState.Closed}
-        };
+            {
+                {WebSocketState.None, TransportState.Initialized},
+                {WebSocketState.Connecting, TransportState.Connecting},
+                {WebSocketState.Open, TransportState.Connected},
+                {WebSocketState.Closing, TransportState.Closing},
+                {WebSocketState.Closed, TransportState.Closed}
+            };
 
 
         private WebSocket _socket;
@@ -28,7 +28,7 @@ namespace IO.Ably.Realtime
         {
             if (parameters == null)
                 throw new ArgumentNullException(nameof(parameters), "Null parameters are not allowed");
-        
+
             BinaryProtocol = parameters.UseBinaryProtocol;
             WebSocketUri = parameters.GetUri();
         }
@@ -57,7 +57,7 @@ namespace IO.Ably.Realtime
                 _socket = CreateSocket(WebSocketUri);
                 AttachEvents();
             }
-            
+
             if (Logger.IsDebug)
             {
                 Logger.Debug("Connecting socket");
@@ -71,14 +71,25 @@ namespace IO.Ably.Realtime
             {
                 Logger.Debug("Closing socket. Current socket is " + (_socket == null ? "null" : "not null"));
             }
+
             if (_socket != null)
             {
-                if(suppressClosedEvent)
+                if (suppressClosedEvent)
                     DetachEvents();
 
-                _socket.Close();
-
-                
+                try
+                {
+                    _socket.Close();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warning(
+                        $"Error while closing the socket transport. suppressClosedEvent={suppressClosedEvent}. Error message: {ex.Message}");
+                }
+                finally
+                {
+                    _socket = null;
+                }
             }
         }
 
@@ -95,7 +106,7 @@ namespace IO.Ably.Realtime
         }
 
         private WebSocket CreateSocket(Uri uri)
-        { 
+        {
             if (Logger.IsDebug)
             {
                 Logger.Debug("Connecting to web socket on url: " + uri);
@@ -130,7 +141,7 @@ namespace IO.Ably.Realtime
                 }
                 catch (Exception ex)
                 {
-                    Logger.Warning("Error while detaching events handlers. Error: {0}", ex.Message);   
+                    Logger.Warning("Error while detaching events handlers. Error: {0}", ex.Message);
                 }
             }
         }
@@ -152,7 +163,7 @@ namespace IO.Ably.Realtime
                 Logger.Debug("Websocket closed!");
             }
             Listener?.OnTransportEvent(State);
-            
+
 
             DetachEvents();
             _socket = null;
@@ -180,8 +191,8 @@ namespace IO.Ably.Realtime
             {
                 try
                 {
-                   var message = MsgPackHelper.DeSerialise(e.Data, typeof(MessagePackObject)).ToString();
-                   Logger.Debug("Websocket data message received. Raw: " + message);
+                    var message = MsgPackHelper.DeSerialise(e.Data, typeof(MessagePackObject)).ToString();
+                    Logger.Debug("Websocket data message received. Raw: " + message);
                 }
                 catch (Exception)
                 {
