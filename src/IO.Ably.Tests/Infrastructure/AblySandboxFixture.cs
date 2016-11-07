@@ -24,7 +24,7 @@ namespace IO.Ably.Tests
                 Tls = true,
             };
 
-            JObject testAppSpec = JObject.Parse(ResourceHelper.GetResource("testAppSpec.json"));
+            JObject testAppSpec = JObject.Parse(ResourceHelper.GetResource("test-app-setup.json"));
 
             var cipher = testAppSpec["cipher"];
             settings.CipherParams = new CipherParams(

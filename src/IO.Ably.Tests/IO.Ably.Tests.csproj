@@ -215,18 +215,25 @@
     <Compile Include="TokenRequestDataTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\..\common\test-resources\messages-encoding.json">
+      <Link>messages-encoding.json</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\common\test-resources\test-app-setup.json">
+      <Link>test-app-setup.json</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\common\test-resources\crypto-data-128.json">
+      <Link>crypto-data-128.json</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\common\test-resources\crypto-data-256.json">
+      <Link>crypto-data-256.json</Link>
+    </EmbeddedResource>
     <None Include="App.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </None>
     <EmbeddedResource Include="MsgPackStatsTest.json" />
-    <EmbeddedResource Include="crypto-data-128.json" />
-    <EmbeddedResource Include="crypto-data-256.json" />
     <None Include="packages.config" />
     <EmbeddedResource Include="StatsFixture.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="testAppSpec.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="StatsInterval.json" />
