@@ -7,7 +7,6 @@ using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Nito.AsyncEx;
 using Nito.AsyncEx.Synchronous;
-using IO.Ably.Rest;
 
 namespace IO.Ably.Transport
 {
@@ -34,8 +33,10 @@ namespace IO.Ably.Transport
         public Connection Connection { get; }
         public ConnectionState ConnectionState => Connection.State;
         private readonly object _stateSyncLock = new object();
-        private volatile ConnectionStateBase _inTransitionToState;
         private readonly object _transportQueueLock = new object();
+        private readonly object _pendingQueueLock = new object();
+        private volatile ConnectionStateBase _inTransitionToState;
+        
         private List<ProtocolMessage> _queuedTransportMessages = new List<ProtocolMessage>();
 
         public void ClearAckQueueAndFailMessages(ErrorInfo error) => AckProcessor.ClearQueueAndFailMessages(error);
@@ -256,7 +257,7 @@ namespace IO.Ably.Transport
             {
                 if (Options.QueueMessages)
                 {
-                    lock (PendingMessages)
+                    lock (_pendingQueueLock)
                     {
                         if(Logger.IsDebug) { Logger.Debug($"Queuing message with action: {message.Action}. Connection State: {ConnectionState}");}
                         PendingMessages.Enqueue(new MessageAndCallback(message, callback));
@@ -359,7 +360,7 @@ namespace IO.Ably.Transport
                 }
             }
 
-            lock (PendingMessages)
+            lock (_pendingQueueLock)
             {
                 while (PendingMessages.Count > 0)
                 {
