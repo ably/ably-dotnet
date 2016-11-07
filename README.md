@@ -314,9 +314,11 @@ The library use the following packages:
 
 ## Supported platforms
 
-* Xamarin iOS and Android
+* Xamarin iOS and Android 
 * .Net 4.5+
 * Mono
+
+Currently a portable version is not available.
 
 ## Support, feedback and troubleshooting
 
