@@ -1,8 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Encryption;
 using IO.Ably.Rest;
+using IO.Ably.Tests.Infrastructure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -256,6 +259,85 @@ namespace IO.Ably.Tests.Rest
 
                 loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
                 message.Encoding.Should().Be("utf-8/cipher+aes-128-cbc");
+            }
+        }
+
+        [Theory]
+        [InteropabilityMessagePayloadData]
+        [Trait("spec", "RSL6a1")]
+        public async Task WithTestMessagePayloadsWhenDecoding_ShouldDecodeMessagesAsPerSpec(Protocol protocol,
+            JObject messageData)
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            
+            var channelName = "channel-name-" + new Random().Next(int.MaxValue);
+
+            var httpClient = (await Fixture.GetSettings()).GetHttpClient();
+
+            JObject rawMessage = new JObject();
+            rawMessage["data"] = messageData["data"];
+            rawMessage["encoding"] = messageData["encoding"];
+
+            var request = new AblyRequest($"/channels/{channelName}/messages", HttpMethod.Post, Protocol.Json);
+            request.RequestBody = rawMessage.ToJson().GetBytes();
+
+            var client1 = await GetRestClient(protocol);
+            await client1.AblyAuth.AddAuthHeader(request);
+            await httpClient.Execute(request);
+
+            var channel = client1.Channels.Get(channelName);
+            var result = await channel.HistoryAsync();
+
+            var returnedMessage = result.Items.First();
+            var expectedType = (string) messageData["expectedType"];
+            if (expectedType == "binary")
+            {
+                ((byte[]) returnedMessage.Data).ToHexString().Should().Be((string) messageData["expectedHexValue"]);
+            }
+            else
+            {
+                var returnedData = expectedType == "string" ? returnedMessage.Data.ToString() : returnedMessage.Data.ToJson();
+                var expectedValue = expectedType == "string" ? (string)messageData["expectedValue"] : messageData["expectedValue"].ToJson();
+                returnedData.Should().Be(expectedValue);
+            }
+        }
+
+        [Theory]
+        [InteropabilityMessagePayloadData]
+        [Trait("spec", "RSL6a1")]
+        public async Task WithTestMessagePayloadsWhenDecoding_ShouldEncodeMessagesAsPerSpec(Protocol protocol,
+            JObject messageData)
+        {
+            var channelName = "channel-name-" + new Random().Next(int.MaxValue);
+            var httpClient = (await Fixture.GetSettings()).GetHttpClient();
+            var expectedType = (string)messageData["expectedType"];
+
+            var client1 = await GetRestClient(protocol);
+            var channel = client1.Channels.Get(channelName);
+
+            //Act
+            if(expectedType == "binary")
+                await channel.PublishAsync("event", ((string)messageData["expectedHexValue"]).ToByteArray());
+            else if (expectedType == "string")
+                await channel.PublishAsync("event", (string)messageData["expectedValue"]);
+            else
+                await channel.PublishAsync("event", messageData["expectedValue"]);
+
+            var request = new AblyRequest($"/channels/{channelName}/messages", HttpMethod.Get, Protocol.Json);
+            await client1.AblyAuth.AddAuthHeader(request);
+            var response = await httpClient.Execute(request);
+            
+            //Assert
+            var historyData = JArray.Parse(response.TextResponse);
+            var responseData = (JObject)historyData.First;
+
+            if (expectedType == "binary")
+                ((string)responseData["data"]).Should().Be((string)messageData["data"]);
+            else if (expectedType == "json")
+                responseData["data"].ToJson().Should().Be(messageData["data"].ToJson());
+            else
+            {
+                ((string) responseData["data"]).Should().Be((string) messageData["data"]);
             }
         }
 
