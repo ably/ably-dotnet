@@ -187,7 +187,7 @@ namespace IO.Ably.Realtime
             {
                 try
                 {
-                    var message = MsgPackHelper.DeSerialise(e.Data, typeof(MessagePackObject)).ToString();
+                    var message = MsgPackHelper.Deserialise(e.Data, typeof(MessagePackObject)).ToString();
                     Logger.Debug("Websocket data message received. Raw: " + message);
                 }
                 catch (Exception)

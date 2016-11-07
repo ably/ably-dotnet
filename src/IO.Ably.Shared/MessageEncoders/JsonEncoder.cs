@@ -17,7 +17,7 @@ namespace IO.Ably.MessageEncoders
 
             try
             {
-                payload.Data = JsonConvert.DeserializeObject(payload.Data as string);
+                payload.Data = JsonHelper.Deserialize(payload.Data as string);
             }
             catch (Exception ex)
             {
@@ -34,7 +34,7 @@ namespace IO.Ably.MessageEncoders
 
             if (NeedsJsonEncoding(payload))
             {
-                payload.Data = JsonConvert.SerializeObject(payload.Data);
+                payload.Data = JsonHelper.Serialize(payload.Data);
                 AddEncoding(payload, EncodingName);
             }
             return Result.Ok();

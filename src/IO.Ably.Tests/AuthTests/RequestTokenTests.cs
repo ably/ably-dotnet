@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -236,7 +234,7 @@ namespace IO.Ably.Tests.AuthTests
         {
             if (request.Url.Contains("authUrl"))
             {
-                return JsonConvert.SerializeObject(new TokenRequest() { ClientId = "123" }).ToAblyResponse();
+                return JsonHelper.Serialize(new TokenRequest { ClientId = "123" }).ToAblyResponse();
             }
             return DummyTokenResponse.ToTask();
         }
@@ -377,7 +375,7 @@ namespace IO.Ably.Tests.AuthTests
                 requests.Add(x);
                 if (x.Url == options.AuthUrl.ToString())
                 {
-                    return JsonConvert.SerializeObject(requestdata).ToAblyResponse();
+                    return JsonHelper.Serialize(requestdata).ToAblyResponse();
                 }
                 return DummyTokenResponse.ToTask();
             };

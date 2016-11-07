@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using IO.Ably.CustomSerialisers;
-using IO.Ably.Types;
 using MsgPack;
 using Newtonsoft.Json;
 using Xunit;
@@ -15,11 +14,7 @@ namespace IO.Ably.Tests.MessagePack
     {
         public MessagePackSerializationTests(ITestOutputHelper output) : base(output)
         {
-            JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
-            {
-                Converters = new List<JsonConverter>() {  new DateTimeOffsetJsonConverter(),
-                    new CapabilityJsonConverter() }
-            };
+            
         }
 
         [Fact]
@@ -28,7 +23,7 @@ namespace IO.Ably.Tests.MessagePack
             var message = new Message("example", "The quick brown fox jumped over the lazy dog");
             var serialised = MsgPackHelper.Serialise(new List<Message> {message});
 
-            var result = MsgPackHelper.DeSerialise(serialised, typeof (List<Message>)) as List<Message>;
+            var result = MsgPackHelper.Deserialise(serialised, typeof (List<Message>)) as List<Message>;
             var resultMessage = result.First();
 
             resultMessage.Data.Should().Be(message.Data);
@@ -50,7 +45,7 @@ namespace IO.Ably.Tests.MessagePack
             foreach (var item in list)
             {
                 var data = MsgPackHelper.Serialise(item);
-                var unpacked = MsgPackHelper.DeSerialise(data, typeof(Capability));
+                var unpacked = MsgPackHelper.Deserialise(data, typeof(Capability));
                 Assert.Equal(item, unpacked);
             }
         }
@@ -73,9 +68,9 @@ namespace IO.Ably.Tests.MessagePack
                     .FromBase64();
 
             var packed = MsgPackHelper.Serialise(details);
-            var unpacked = (TokenDetails)MsgPackHelper.DeSerialise(packed, typeof(TokenDetails));
+            var unpacked = (TokenDetails)MsgPackHelper.Deserialise(packed, typeof(TokenDetails));
             unpacked.ShouldBeEquivalentTo(details);
-            var unpackedFromRaw = MsgPackHelper.DeSerialise(bytes, typeof(TokenDetails));
+            var unpackedFromRaw = MsgPackHelper.Deserialise(bytes, typeof(TokenDetails));
             unpackedFromRaw.ShouldBeEquivalentTo(details);
         }
 
@@ -86,10 +81,9 @@ namespace IO.Ably.Tests.MessagePack
                 "kYqqaW50ZXJ2YWxJZLAyMDE1LTAyLTAzOjE1OjA1pHVuaXSmbWludXRlo2FsbIKjYWxsgqVjb3VudG6kZGF0Yc0q+KhtZXNzYWdlc4KlY291bnRupGRhdGHNKvinaW5ib3VuZIKjYWxsgqNhbGyCpWNvdW50RqRkYXRhzRtYqG1lc3NhZ2VzgqVjb3VudEakZGF0Yc0bWKhyZWFsdGltZYKjYWxsgqVjb3VudEakZGF0Yc0bWKhtZXNzYWdlc4KlY291bnRGpGRhdGHNG1iob3V0Ym91bmSCo2FsbIKjYWxsgqVjb3VudCikZGF0Yc0PoKhtZXNzYWdlc4KlY291bnQopGRhdGHND6CocmVhbHRpbWWCo2FsbIKlY291bnQopGRhdGHND6CobWVzc2FnZXOCpWNvdW50KKRkYXRhzQ+gqXBlcnNpc3RlZIKjYWxsgqVjb3VudBSkZGF0Yc0H0KhwcmVzZW5jZYKlY291bnQUpGRhdGHNB9CrY29ubmVjdGlvbnOCo2FsbIOkcGVhaxSjbWluAKZvcGVuZWQKo3Rsc4KkcGVhaxSmb3BlbmVkCqhjaGFubmVsc4KkcGVhazKmb3BlbmVkHqthcGlSZXF1ZXN0c4Kpc3VjY2VlZGVkMqZmYWlsZWQKrXRva2VuUmVxdWVzdHOCqXN1Y2NlZWRlZDymZmFpbGVkFA=="
                     .FromBase64();
 
-            var expected = JsonConvert.DeserializeObject<List<Stats>>(ResourceHelper.GetResource("MsgPackStatsTest.json"),
-                Config.GetJsonSettings());
+            var expected = JsonHelper.Deserialize<List<Stats>>(ResourceHelper.GetResource("MsgPackStatsTest.json"));
 
-            var unpacked = (List<Stats>) MsgPackHelper.DeSerialise(bytes, typeof(List<Stats>));
+            var unpacked = (List<Stats>) MsgPackHelper.Deserialise(bytes, typeof(List<Stats>));
 
             unpacked.ShouldBeEquivalentTo(expected);
 
@@ -107,7 +101,7 @@ namespace IO.Ably.Tests.MessagePack
             };
 
             var packed = MsgPackHelper.Serialise(details);
-            var unpacked = (TokenDetails)MsgPackHelper.DeSerialise(packed, typeof(TokenDetails));
+            var unpacked = (TokenDetails)MsgPackHelper.Deserialise(packed, typeof(TokenDetails));
             unpacked.ShouldBeEquivalentTo(details);
         }
 
@@ -116,7 +110,7 @@ namespace IO.Ably.Tests.MessagePack
         {
             var message = new Message() {Name = "example", Data = "AAECAwQFBgcICQoLDA0ODw==".FromBase64()};
             var serialised = MsgPackHelper.Serialise(new List<Message> { message });
-            var resultMessage = MsgPackHelper.DeSerialise(serialised, typeof(List<Message>)) as List<Message>;
+            var resultMessage = MsgPackHelper.Deserialise(serialised, typeof(List<Message>)) as List<Message>;
             var data = resultMessage.First().Data as byte[];
             data.Should().BeEquivalentTo(message.Data as byte[]);
             resultMessage.First().Name.Should().Be(message.Name);
@@ -128,9 +122,9 @@ namespace IO.Ably.Tests.MessagePack
             var value =
                 "gaxhY2Nlc3NfdG9rZW6GpXRva2Vu2YhnNFg2UVEuRHlCYzlMZUdvdy1saWVEcG4zTXRsd09uUEhoN2VtN3MyQ3JTZ1pLM2NUNkRvZUo1dlQxWXRwNDFvaTVWUUtNUkxuSVdDckFadHVOb3F5Q0lvVFphQjFfb1FFX0Utb3c2Y3hKX1EwcFUyZ3lpb2xRNGp1VDM1TjI0Qzgzd0p6aUI5p2tleU5hbWWtZzRYNlFRLnV0ekdsZ6Zpc3N1ZWTOVMEP1qdleHBpcmVzzlTBHeaqY2FwYWJpbGl0eYGhKpGhKqhjbGllbnRJZKMxMjM=";
 
-            var decodedMessagePack = MsgPackHelper.DeSerialise(value.FromBase64(), typeof (MessagePackObject)).ToString();
+            var decodedMessagePack = MsgPackHelper.Deserialise(value.FromBase64(), typeof (MessagePackObject)).ToString();
 
-            var response = JsonConvert.DeserializeObject<TokenResponse>(decodedMessagePack);
+            var response = JsonHelper.Deserialize<TokenResponse>(decodedMessagePack);
 
             response.AccessToken.Should().NotBeNull();
             response.AccessToken.Capability.ToJson().Should().Be("{ \"*\": [ \"*\" ] }");
@@ -145,22 +139,13 @@ namespace IO.Ably.Tests.MessagePack
         {
             var connectionDetails = new ConnectionDetails() { ClientId = "123", ConnectionStateTtl = TimeSpan.FromSeconds(60)};
             var serialized = MsgPackHelper.Serialise(connectionDetails);
-            var deserialized = MsgPackHelper.DeSerialise(serialized, typeof(ConnectionDetails));
+            var deserialized = MsgPackHelper.Deserialise(serialized, typeof(ConnectionDetails));
             deserialized.ShouldBeEquivalentTo(connectionDetails);
         }
     }
 
     public class JsonSerializationTests
     {
-        public JsonSerializationTests()
-        {
-            JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
-            {
-                Converters = new List<JsonConverter>() {  new DateTimeOffsetJsonConverter(),
-                    new CapabilityJsonConverter() }
-            };
-        }
-
         [Fact]
         public void CanDeserialiseTokenResponse()
         {
@@ -181,7 +166,7 @@ namespace IO.Ably.Tests.MessagePack
 
 
 
-            var response = JsonConvert.DeserializeObject<TokenResponse>(value);
+            var response = JsonHelper.Deserialize<TokenResponse>(value);
 
             response.AccessToken.Should().NotBeNull();
             response.AccessToken.Capability.ToJson().Should().Be("{ \"*\": [ \"*\" ] }");

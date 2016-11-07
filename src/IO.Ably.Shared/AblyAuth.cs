@@ -188,11 +188,10 @@ namespace IO.Ably
                 var signedData = response.TextResponse;
                 var jData = JObject.Parse(signedData);
 
-                //TODO: How do you know if it is a valid token
                 if (TokenDetails.IsToken(jData))
-                    return jData.ToObject<TokenDetails>();
+                    return JsonHelper.DeserializeObject<TokenDetails>(jData);
 
-                postData = JsonConvert.DeserializeObject<TokenRequest>(signedData);
+                postData = JsonHelper.Deserialize<TokenRequest>(signedData);
 
                 request.Url = $"/keys/{postData.KeyName}/requestToken";
             }

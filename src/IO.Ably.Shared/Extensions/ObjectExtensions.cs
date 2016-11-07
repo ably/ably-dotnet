@@ -6,7 +6,7 @@ namespace IO.Ably
     {
         public static string ToJson(this object obj)
         {
-            return JsonConvert.SerializeObject(obj, Config.GetJsonSettings());
+            return JsonHelper.Serialize(obj);
         }
     }
 }

@@ -287,7 +287,7 @@ namespace IO.Ably.Tests.Rest
         {
             if (encoding == "json")
             {
-                return JsonConvert.DeserializeObject(data);
+                return JsonHelper.Deserialize(data);
             }
             if (encoding == "base64")
                 return data.FromBase64();

@@ -154,7 +154,7 @@
     <Compile Include="MessageEncodes\JsonEncoderTests.cs" />
     <Compile Include="MessageEncodes\MessageEncodersAcceptanceTests.cs" />
     <Compile Include="MessageEncodes\SerializationSpecs.cs" />
-    <Compile Include="MessageEncodes\TokenDetailsTests.cs" />
+    <Compile Include="TokenDetailsTests.cs" />
     <Compile Include="MessageEncodes\Utf8EncoderTests.cs" />
     <Compile Include="MessagePack\SerializationTests.cs" />
     <Compile Include="Realtime\AckProtocolTests.cs" />
@@ -185,9 +185,9 @@
     <Compile Include="Realtime\ConnectionStateTests\InitializedStateSpecs.cs" />
     <Compile Include="Realtime\ConnectionStateTests\SuspendedStateSpecs.cs" />
     <Compile Include="Realtime\CountDownTimerSpecs.cs" />
-    <Compile Include="Realtime\JsonMessageSerializerTests.cs" />
+    <Compile Include="JsonMessageSerializerTests.cs" />
     <Compile Include="Realtime\MockHttpRealtimeSpecs.cs" />
-    <Compile Include="Realtime\MsgPackMessageSerializerTests.cs" />
+    <Compile Include="MsgPackMessageSerializerTests.cs" />
     <Compile Include="Realtime\RealtimeSpecs.cs" />
     <Compile Include="RestProtocolTests.cs" />
     <Compile Include="Infrastructure\AblyCollectionFixture.cs" />

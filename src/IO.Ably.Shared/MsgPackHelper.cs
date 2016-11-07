@@ -3,13 +3,12 @@ using System.IO;
 using IO.Ably.CustomSerialisers;
 using MsgPack;
 using MsgPack.Serialization;
-using Nito.AsyncEx;
 
 namespace IO.Ably
 {
     internal static class MsgPackHelper
     {
-        private readonly static SerializationContext Context;
+        private static readonly SerializationContext Context;
 
         static MsgPackHelper()
         {
@@ -56,7 +55,7 @@ namespace IO.Ably
             }
         }
 
-        public static object DeSerialise(byte[] byteArray, Type objectType)
+        public static object Deserialise(byte[] byteArray, Type objectType)
         {
             if (byteArray == null || byteArray.Length == 0)
                 return null;
@@ -66,6 +65,11 @@ namespace IO.Ably
                 var serialiser = Context.GetSerializer(objectType);
                 return serialiser.Unpack(ms);
             }
+        }
+
+        public static T Deserialise<T>(byte[] byteArray)
+        {
+            return (T) Deserialise(byteArray, typeof(T));
         }
     }
 }

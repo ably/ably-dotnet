@@ -369,7 +369,7 @@ namespace IO.Ably.Tests.Rest
                     var response = new AblyResponse()
                     {
                         Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
-                        TextResponse = $"[{JsonConvert.SerializeObject(message)}]"
+                        TextResponse = $"[{JsonHelper.Serialize(message)}]"
                     };
                     return response.ToTask();
                 };

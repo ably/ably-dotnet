@@ -142,7 +142,6 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_MsgSerial(long msgSerial)
         {
             // Arrange
-            MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
             ProtocolMessage message = new ProtocolMessage() { MsgSerial = msgSerial };
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x82);
@@ -160,7 +159,7 @@ namespace IO.Ably.Tests
             }
 
             // Act
-            object result = serializer.SerializeProtocolMessage(message);
+            object result = MsgPackHelper.Serialise(message);
 
             // Assert
             Assert.IsType<byte[]>(result);
@@ -172,7 +171,7 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_Messages(params Message[] messages)
         {
             // Arrange
-            MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
+            
             ProtocolMessage message = new ProtocolMessage() { Messages = messages };
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x82);
@@ -195,7 +194,7 @@ namespace IO.Ably.Tests
             }
 
             // Act
-            object result = serializer.SerializeProtocolMessage(message);
+            object result = MsgPackHelper.Serialise(message);
 
             // Assert
             Assert.IsType<byte[]>(result);
@@ -207,7 +206,6 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_Presence(params PresenceMessage[] messages)
         {
             // Arrange
-            MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
             ProtocolMessage message = new ProtocolMessage() { Presence = messages };
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x82);
@@ -235,7 +233,7 @@ namespace IO.Ably.Tests
             }
 
             // Act
-            object result = serializer.SerializeProtocolMessage(message);
+            object result = MsgPackHelper.Serialise(message);
 
             // Assert
             Assert.IsType<byte[]>(result);
@@ -252,14 +250,13 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Action(ProtocolMessage.MessageAction action)
         {
             // Arrange
-            MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x81);
             expectedMessage.AddRange(SerializeString("action"));
             expectedMessage.Add((byte)action);
 
             // Act
-            ProtocolMessage target = serializer.DeserializeProtocolMessage(expectedMessage.ToArray());
+            ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
             Assert.NotNull(target);
@@ -275,7 +272,6 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Channel(string channel)
         {
             // Arrange
-            MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x81);
             expectedMessage.AddRange(SerializeString("channel"));
@@ -289,7 +285,7 @@ namespace IO.Ably.Tests
             }
 
             // Act
-            ProtocolMessage target = serializer.DeserializeProtocolMessage(expectedMessage.ToArray());
+            ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
             Assert.NotNull(target);
@@ -304,7 +300,6 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_ChannelSerial(string serial)
         {
             // Arrange
-            MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x81);
             expectedMessage.AddRange(SerializeString("channelSerial"));
@@ -318,7 +313,7 @@ namespace IO.Ably.Tests
             }
 
             // Act
-            ProtocolMessage target = serializer.DeserializeProtocolMessage(expectedMessage.ToArray());
+            ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
             Assert.NotNull(target);
@@ -333,14 +328,13 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_ConnectionId(string connectionId)
         {
             // Arrange
-            MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x81);
             expectedMessage.AddRange(SerializeString("connectionId"));
             expectedMessage.AddRange(SerializeString(connectionId));
 
             // Act
-            ProtocolMessage target = serializer.DeserializeProtocolMessage(expectedMessage.ToArray());
+            ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
             Assert.NotNull(target);
@@ -355,14 +349,13 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_ConnectionKey(string connectionKey)
         {
             // Arrange
-            MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x81);
             expectedMessage.AddRange(SerializeString("connectionKey"));
             expectedMessage.AddRange(SerializeString(connectionKey));
 
             // Act
-            ProtocolMessage target = serializer.DeserializeProtocolMessage(expectedMessage.ToArray());
+            ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
             Assert.NotNull(target);
@@ -377,14 +370,13 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Id(string id)
         {
             // Arrange
-            MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x81);
             expectedMessage.AddRange(SerializeString("id"));
             expectedMessage.AddRange(SerializeString(id));
 
             // Act
-            ProtocolMessage target = serializer.DeserializeProtocolMessage(expectedMessage.ToArray());
+            ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
             Assert.NotNull(target);
@@ -398,14 +390,13 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_ConnectionSerial(long connectionSerial)
         {
             // Arrange
-            MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x81);
             expectedMessage.AddRange(SerializeString("connectionSerial"));
             expectedMessage.Add(BitConverter.GetBytes(connectionSerial).First());
 
             // Act
-            ProtocolMessage target = serializer.DeserializeProtocolMessage(expectedMessage.ToArray());
+            ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
             Assert.NotNull(target);
@@ -419,11 +410,10 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Count(int count)
         {
             // Arrange
-            MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
-            byte[] expectedMessage = serializer.SerializeProtocolMessage(new ProtocolMessage() {Count = count}) as byte[];
+            byte[] expectedMessage = MsgPackHelper.Serialise(new ProtocolMessage() {Count = count}) as byte[];
 
             // Act
-            ProtocolMessage target = serializer.DeserializeProtocolMessage(expectedMessage);
+            ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage);
 
             // Assert
             Assert.NotNull(target);
@@ -437,14 +427,13 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_MsgSerial(long serial)
         {
             // Arrange
-            MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x81);
             expectedMessage.AddRange(SerializeString("msgSerial"));
             expectedMessage.Add(BitConverter.GetBytes(serial).First());
 
             // Act
-            ProtocolMessage target = serializer.DeserializeProtocolMessage(expectedMessage.ToArray());
+            ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
             Assert.NotNull(target);
@@ -458,14 +447,14 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Flags(int flags)
         {
             // Arrange
-            MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
+            
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x81);
             expectedMessage.AddRange(SerializeString("flags"));
             expectedMessage.Add((byte)flags);
 
             // Act
-            ProtocolMessage target = serializer.DeserializeProtocolMessage(expectedMessage.ToArray());
+            ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
             Assert.NotNull(target);
@@ -477,14 +466,14 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Messages(byte[] messageBin, params Message[] expectedMessages)
         {
             // Arrange
-            MsgPackMessageSerializer serializer = new MsgPackMessageSerializer();
+
             List<byte> expectedMessage = new List<byte>();
             expectedMessage.Add(0x81);
             expectedMessage.AddRange(SerializeString("messages"));
             expectedMessage.AddRange(messageBin);
 
             // Act
-            ProtocolMessage target = serializer.DeserializeProtocolMessage(expectedMessage.ToArray());
+            ProtocolMessage target = MsgPackHelper.Deserialise<ProtocolMessage>(expectedMessage.ToArray());
 
             // Assert
             Assert.NotNull(target);

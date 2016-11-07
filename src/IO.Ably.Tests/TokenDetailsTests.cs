@@ -1,7 +1,6 @@
 using System;
 using Xunit;
 using FluentAssertions;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Tests
@@ -10,8 +9,8 @@ namespace IO.Ably.Tests
     {
         [Fact]
         public void FromJson_ParsesTokenCorrectly()
-            {
-                string json = @"{
+        {
+            string json = @"{
 	                            ""access_token"": {
 		                            ""token"": ""QF_CjTvDs2kFQMKLwpccEhIkNcKpw5ovPsOnLsOgJMKow5ACXHvCgGzCtcK7"",
 		                            ""key"": ""3lJG9Q"",
@@ -25,16 +24,16 @@ namespace IO.Ably.Tests
 	                            }
                             }";
 
-                var token = ((JObject)JObject.Parse(json)["access_token"]).ToObject<TokenDetails>();
+            var token = JsonHelper.DeserializeObject<TokenDetails>((JObject)JObject.Parse(json)["access_token"]);
 
-                Assert.Equal("QF_CjTvDs2kFQMKLwpccEhIkNcKpw5ovPsOnLsOgJMKow5ACXHvCgGzCtcK7", token.Token);
-                //Assert.Equal("3lJG9Q", token.ClientId
-                Assert.Equal(1430784000000, token.Issued.ToUnixTimeInMilliseconds());
-                Assert.Equal(1430784000000, token.Expires.ToUnixTimeInMilliseconds());
-                var expectedCapability = new Capability();
-                expectedCapability.AddResource("*").AllowAll();
-                Assert.Equal(expectedCapability.ToJson(), token.Capability.ToJson());
-            }
+            Assert.Equal("QF_CjTvDs2kFQMKLwpccEhIkNcKpw5ovPsOnLsOgJMKow5ACXHvCgGzCtcK7", token.Token);
+            //Assert.Equal("3lJG9Q", token.ClientId
+            Assert.Equal(1430784000000, token.Issued.ToUnixTimeInMilliseconds());
+            Assert.Equal(1430784000000, token.Expires.ToUnixTimeInMilliseconds());
+            var expectedCapability = new Capability();
+            expectedCapability.AddResource("*").AllowAll();
+            Assert.Equal(expectedCapability.ToJson(), token.Capability.ToJson());
+        }
 
         [Fact]
         public void ShouldSerializeDatesInMilliseconds()
@@ -45,18 +44,18 @@ namespace IO.Ably.Tests
                 Issued = DateTimeOffset.UtcNow.AddSeconds(1),
             };
 
-            var json = JsonConvert.SerializeObject(details);
+            var json = JsonHelper.Serialize(details);
 
             var jobject = JObject.Parse(json);
-            ((string) jobject["expires"]).Should().Be(details.Expires.ToUnixTimeInMilliseconds().ToString());
-            ((string) jobject["issued"]).Should().Be(details.Issued.ToUnixTimeInMilliseconds().ToString());
+            ((string)jobject["expires"]).Should().Be(details.Expires.ToUnixTimeInMilliseconds().ToString());
+            ((string)jobject["issued"]).Should().Be(details.Issued.ToUnixTimeInMilliseconds().ToString());
         }
 
         [Fact]
         public void ShouldExcludeClientIdWhenNull()
         {
             var details = new TokenDetails("123");
-            var json = JsonConvert.SerializeObject(details);
+            var json = JsonHelper.Serialize(details);
             json.Should().NotContain("clientId");
         }
     }
