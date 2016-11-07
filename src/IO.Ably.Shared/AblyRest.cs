@@ -102,24 +102,39 @@ namespace IO.Ably
             Logger.Debug("Sending {0} request to {1}", request.Method, request.Url);
 
             if (request.SkipAuthentication == false)
+            {
                 await AblyAuth.AddAuthHeader(request);
-
-            MessageHandler.SetRequestBody(request);
+            }
 
             try
             {
+                MessageHandler.SetRequestBody(request);
                 return await ExecuteHttpRequest(request);
             }
             catch (AblyException ex)
             {
+                if (Logger.IsDebug)
+                    Logger.Debug("Error Executing request. Message: " + ex.Message);
+
                 if (ex.ErrorInfo.IsUnAuthorizedError
                     && ex.ErrorInfo.IsTokenError && AblyAuth.TokenRenewable)
                 {
-                    await AblyAuth.AuthoriseAsync(null, new AuthOptions() { Force = true });
+                    if (Logger.IsDebug)
+                        Logger.Debug("Handling UnAuthorized Error and repeating request.");
+
+                    await AblyAuth.AuthoriseAsync(null, new AuthOptions() {Force = true});
                     await AblyAuth.AddAuthHeader(request);
                     return await ExecuteHttpRequest(request);
+
                 }
                 throw;
+            }
+            catch (Exception ex)
+            {
+                if(Logger.IsDebug)
+                    Logger.Debug("Error Executing request. Message: " + ex.Message);
+
+                throw new AblyException(ex);
             }
         }
 

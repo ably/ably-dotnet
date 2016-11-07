@@ -33,6 +33,8 @@ namespace IO.Ably
 
         public static string JoinStrings(this IEnumerable<string> input, string delimiter = ", ")
         {
+            if (input == null) return "";
+
             return string.Join(delimiter, input.Where(IsNotEmpty));
         }
 

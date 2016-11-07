@@ -62,9 +62,15 @@ namespace IO.Ably
                 try
                 {
                     var message = GetRequestMessage(request, host);
+
+                    await LogMessage(message);
+
                     var response = await Client.SendAsync(message, HttpCompletionOption.ResponseContentRead);
 
                     var ablyResponse = await GetAblyResponse(response);
+
+                    LogResponse(ablyResponse, request.Url);
+
                     if (response.IsSuccessStatusCode)
                     {
                         return ablyResponse;
@@ -114,6 +120,53 @@ namespace IO.Ably
             }
 
             throw new AblyException(new ErrorInfo("Error exectuting request", 500));
+        }
+
+        private void LogResponse(AblyResponse ablyResponse, string url)
+        {
+            if (Logger.IsDebug == false) return;
+            
+            Logger.Debug($"Response from: {url}");
+            Logger.Debug($"Status code: {(int)ablyResponse.StatusCode} {ablyResponse.StatusCode}");
+            Logger.Debug("---- Response Headers ----");
+            foreach (var header in ablyResponse.Headers)
+            {
+                Logger.Debug($"{header.Key}: {header.Value.JoinStrings()}");
+            }
+            Logger.Debug($"Content Type: {ablyResponse.ContentType}");
+            Logger.Debug($"Encoding: {ablyResponse.Encoding}");
+            Logger.Debug($"Type: {ablyResponse.Type}");
+
+            Logger.Debug("---- Response Body ----");
+            if (ablyResponse.Type != ResponseType.Binary)
+            {
+                Logger.Debug(ablyResponse.TextResponse);
+            }
+            else if(ablyResponse.Body != null)
+            {
+                Logger.Debug(ablyResponse.Body.GetText());
+            }
+        }
+
+        private async Task LogMessage(HttpRequestMessage message)
+        {
+            if (Logger.IsDebug == false) return;
+
+            Logger.Debug("---- Headers ----");
+            foreach (var header in message.Headers)
+            {
+                Logger.Debug($"{header.Key}:{header.Value.JoinStrings()}");
+            }
+            Logger.Debug("-----------------");
+
+            if (message.Content != null)
+            {
+                var body = await message.Content.ReadAsStringAsync();
+                Logger.Debug("---- Body ----");
+                Logger.Debug(body);
+                Logger.Debug("--------------");
+
+            }
         }
 
         private bool TryGetNextRandomHost(List<string> hosts, Random random, out string host)

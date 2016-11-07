@@ -113,9 +113,16 @@ namespace IO.Ably.MessageEncoders
                 return GetMessagesRequestBody(request.PostData as IEnumerable<Message>,
                     request.ChannelOptions);
 
+            byte[] result;
             if (_protocol == Protocol.Json)
-                return JsonConvert.SerializeObject(request.PostData, Config.GetJsonSettings()).GetBytes();
-            return MsgPackHelper.Serialise(request.PostData);
+                result = JsonConvert.SerializeObject(request.PostData, Config.GetJsonSettings()).GetBytes();
+            else
+            {
+                result = MsgPackHelper.Serialise(request.PostData);
+            }
+            if (Logger.IsDebug) Logger.Debug("Request body: " + result.GetText());
+
+            return result;
         }
 
         private byte[] GetMessagesRequestBody(IEnumerable<Message> payloads, ChannelOptions options)

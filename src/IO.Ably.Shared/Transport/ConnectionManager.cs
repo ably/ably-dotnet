@@ -15,7 +15,10 @@ namespace IO.Ably.Transport
     {
         public Queue<MessageAndCallback> PendingMessages { get; }
         internal readonly AsyncContextThread AsyncContextThread = new AsyncContextThread();
-        private ITransportFactory GetTransportFactory() => Options.TransportFactory ?? Defaults.WebSocketTransportFactory;
+
+        private ITransportFactory GetTransportFactory()
+            => Options.TransportFactory ?? Defaults.WebSocketTransportFactory;
+
         public IAcknowledgementProcessor AckProcessor { get; internal set; }
         internal ConnectionAttemptsInfo AttemptsInfo { get; }
         public TimeSpan RetryTimeout => Options.DisconnectedRetryTimeout;
@@ -36,6 +39,7 @@ namespace IO.Ably.Transport
         private List<ProtocolMessage> _queuedTransportMessages = new List<ProtocolMessage>();
 
         public void ClearAckQueueAndFailMessages(ErrorInfo error) => AckProcessor.ClearQueueAndFailMessages(error);
+
         public Task<bool> CanUseFallBackUrl(ErrorInfo error)
         {
             return AttemptsInfo.CanFallback(error);
@@ -45,7 +49,7 @@ namespace IO.Ably.Transport
         {
             Logger.Warning("Force detaching all attached channels because the connection did not resume successfully!");
 
-            foreach(var channel in Connection.RealtimeClient.Channels)
+            foreach (var channel in Connection.RealtimeClient.Channels)
             {
                 if (channel.State == ChannelState.Attached || channel.State == ChannelState.Attaching)
                 {
@@ -80,7 +84,8 @@ namespace IO.Ably.Transport
 
         public Task SetState(ConnectionStateBase newState, bool skipAttach = false)
         {
-            if (Logger.IsDebug) Logger.Debug($"xx Changing state from {ConnectionState} => {newState.State}. SkipAttach = {skipAttach}.");
+            if (Logger.IsDebug)
+                Logger.Debug($"xx Changing state from {ConnectionState} => {newState.State}. SkipAttach = {skipAttach}.");
 
             _inTransitionToState = newState;
 
@@ -92,7 +97,8 @@ namespace IO.Ably.Transport
                     {
                         if (State.State == newState.State)
                         {
-                            if(Logger.IsDebug) Logger.Debug($"xx State is already {State.State}. Skipping SetState action.");
+                            if (Logger.IsDebug)
+                                Logger.Debug($"xx State is already {State.State}. Skipping SetState action.");
                             return;
                         }
 
@@ -111,13 +117,14 @@ namespace IO.Ably.Transport
 
                         await newState.OnAttachToContext();
                     }
-                    else
-                        if (Logger.IsDebug) Logger.Debug($"xx {newState.State}: Skipping attaching.");
+                    else if (Logger.IsDebug) Logger.Debug($"xx {newState.State}: Skipping attaching.");
 
                     await ProcessQueuedMessages();
                 }
                 catch (AblyException ex)
                 {
+                    Logger.Error("Error attaching to context", ex);
+
                     lock (_transportQueueLock)
                         _queuedTransportMessages.Clear();
 
@@ -125,7 +132,7 @@ namespace IO.Ably.Transport
 
                     newState.AbortTimer();
 
-                    Logger.Error("Error attaching to context", ex);
+
                     if (newState.State != Realtime.ConnectionState.Failed)
                     {
                         SetState(new ConnectionFailedState(this, ex.ErrorInfo));
@@ -137,7 +144,7 @@ namespace IO.Ably.Transport
                     if (_inTransitionToState == newState)
                     {
                         _inTransitionToState = null;
-                        
+
                     }
                 }
             });
@@ -146,14 +153,25 @@ namespace IO.Ably.Transport
         public async Task CreateTransport()
         {
             if (Logger.IsDebug) Logger.Debug("Creating transport");
-            
+
             if (Transport != null)
                 (this as IConnectionContext).DestroyTransport();
 
-            var transport = GetTransportFactory().CreateTransport(await CreateTransportParameters());
-            transport.Listener = this;
-            Transport = transport;
-            Transport.Connect();
+            try
+            {
+                var transport = GetTransportFactory().CreateTransport(await CreateTransportParameters());
+                transport.Listener = this;
+                Transport = transport;
+                Transport.Connect();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error while creating transport!. Message: " + ex.Message);
+                if(ex is AblyException)
+                    throw;
+
+                throw new AblyException(ex);
+            }
         }
 
         public void DestroyTransport(bool suppressClosedEvent)

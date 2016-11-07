@@ -1,11 +1,8 @@
 # ably-dotnet
 
-[![Build Status](https://travis-ci.org/ably/ably-dotnet.svg?branch=master)](https://travis-ci.org/ably/ably-dotnet)
-[![Build status](https://ci.appveyor.com/api/projects/status/l15405ljdea4goii/branch/master?svg=true)](https://ci.appveyor.com/project/marto83/ably-dotnet-ghjjf/branch/master)
+A .Net client library for [www.ably.io](https://www.ably.io), the realtime messaging service.
 
-A .Net client library for [ably.io](https://www.ably.io), the realtime messaging service.
-
-For complete API documentation, see the [ably documentation](https://ably.io/documentation).
+For complete API documentation, see the [ably documentation](https://www.ably.io/documentation).
 
 ## Documentation
 
