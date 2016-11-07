@@ -82,6 +82,7 @@ namespace IO.Ably.Transport
             }
 
             result["v"] = Defaults.ProtocolVersion;
+            result["lib"] = Defaults.LibraryVersion;
             //Url encode all the params at the time of creating the query string
             result["format"] = UseBinaryProtocol ? "msgpack" : "json";
             result["echo"] = EchoMessages.ToString().ToLower();
