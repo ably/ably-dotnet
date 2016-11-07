@@ -136,7 +136,7 @@ namespace IO.Ably.Tests
             [InlineData(Defaults.TokenErrorCodesRangeEnd)]
             [Trait("spec", "RSC10")]
             [Trait("intermittent", "true")]
-            public void WhenErrorCodeIsTokenSpecific_ShouldAutomaticallyTryToRenewTokenIfRequestFails(int errorCode)
+            public async Task WhenErrorCodeIsTokenSpecific_ShouldAutomaticallyTryToRenewTokenIfRequestFails(int errorCode)
             {
                 Now = DateTimeOffset.Now;
                 var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
@@ -157,7 +157,7 @@ namespace IO.Ably.Tests
                     return AblyResponse.EmptyResponse.ToTask();
                 }, opts => opts.TokenDetails = tokenDetails);
 
-                var result = client.StatsAsync().Result;
+                await client.StatsAsync();
 
                 client.AblyAuth.CurrentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires);
                 client.AblyAuth.CurrentToken.ClientId.Should().Be(_returnedDummyTokenDetails.ClientId);
