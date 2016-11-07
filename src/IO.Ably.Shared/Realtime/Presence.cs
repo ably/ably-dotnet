@@ -53,7 +53,7 @@ namespace IO.Ably.Realtime
 
         public void Subscribe(Action<PresenceMessage> handler)
         {
-            if (_channel.State != ChannelState.Attached || _channel.State != ChannelState.Attaching)
+            if (_channel.State != ChannelState.Attached && _channel.State != ChannelState.Attaching)
                 _channel.Attach();
 
             _handlers.Add(handler.ToHandlerAction());
@@ -61,7 +61,7 @@ namespace IO.Ably.Realtime
 
         public void Subscribe(PresenceAction action, Action<PresenceMessage> handler)
         {
-            if (_channel.State != ChannelState.Attached || _channel.State != ChannelState.Attaching)
+            if (_channel.State != ChannelState.Attached && _channel.State != ChannelState.Attaching)
                 _channel.Attach();
 
             _handlers.Add(action.ToString(), new MessageHandlerAction<PresenceMessage>(handler));
