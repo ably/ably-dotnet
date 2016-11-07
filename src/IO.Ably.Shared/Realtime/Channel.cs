@@ -82,7 +82,7 @@ namespace IO.Ably.Realtime
                     }
                     break;
                 case Realtime.ConnectionState.Failed:
-                    if (State != ChannelState.Detached || State != ChannelState.Initialized ||
+                    if (State != ChannelState.Detached && State != ChannelState.Initialized &&
                         State != ChannelState.Failed)
                     {
                         SetChannelState(ChannelState.Failed, connectionStateChange.Reason ?? ErrorInfo.ReasonFailed);
@@ -159,7 +159,7 @@ namespace IO.Ably.Realtime
 
         public void Subscribe(Action<Message> handler)
         {
-            if(State != ChannelState.Attached || State != ChannelState.Attaching)
+            if(State != ChannelState.Attached && State != ChannelState.Attaching)
                 Attach();
 
             _handlers.Add(new MessageHandlerAction<Message>(handler));
@@ -167,7 +167,7 @@ namespace IO.Ably.Realtime
 
         public void Subscribe(string eventName, Action<Message> handler)
         {
-            if (State != ChannelState.Attached || State != ChannelState.Attaching)
+            if (State != ChannelState.Attached && State != ChannelState.Attaching)
                 Attach();
 
             _handlers.Add(eventName, handler.ToHandlerAction());
@@ -271,6 +271,7 @@ namespace IO.Ably.Realtime
         public void Dispose()
         {
             _handlers.RemoveAll();
+            Presence?.Dispose();
         }
 
         internal void AddUntilAttachParameter(HistoryRequestParams query)
