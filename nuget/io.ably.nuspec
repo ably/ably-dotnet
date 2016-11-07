@@ -15,10 +15,10 @@
         <copyright>2016 Ably</copyright>
         <language />
         <dependencies>
-            <dependency id="Newtonsoft.Json" version="8.0.3" />
+            <dependency id="Newtonsoft.Json" version="9.0.1" />
             <dependency id="Nito.AsyncEx" version="3.0.1" />
-            <dependency id="WebSocket4Net" version="0.14.1" />
-            <dependency id="MsgPack.Cli" version="0.6.8" />
+            <dependency id="WebSocket4Net" version="[0.14.1]" />
+            <dependency id="MsgPack.Cli" version="[0.8.0]" />
         </dependencies>
     </metadata>
     <files>
