@@ -13,100 +13,133 @@ namespace IO.Ably.Tests.Realtime
     [Trait("requires", "sandbox")]
     public class PresenceSandboxSpecs : SandboxSpecs
     {
-        [Theory]
-        [ProtocolData]
-        [Trait("spec", "RTP1")]
-        public async Task WhenAttachingToAChannelWithNoMembers_PresenceShouldBeConsideredInSync(Protocol protocol)
+        public class GeneralPresenceSandBoxSpecs : PresenceSandboxSpecs
         {
-            var client = await GetRealtimeClient(protocol);
-            var channel = client.Channels.Get(GetTestChannelName());
-
-            await channel.AttachAsync();
-
-            channel.Presence.SyncComplete.Should().BeTrue();
-        }
-
-        [Theory]
-        [ProtocolData]
-        [Trait("spec", "RTP1")]
-        public async Task WhenAttachingToAChannelWithMembers_PresenceShouldBeInProgress(Protocol protocol)
-        {
-            Logger.LogLevel = LogLevel.Debug;
-            var testChannel = GetTestChannelName();
-            var client = await GetRealtimeClient(protocol);
-            var client2 = await GetRealtimeClient(protocol);
-            var channel = client.Channels.Get(testChannel);
-            List<Task> tasks = new List<Task>();
-            for (int count = 1; count < 10; count++)
+            public GeneralPresenceSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
             {
-                tasks.Add(channel.Presence.EnterClientAsync($"client-{count}", null));
             }
 
-            Task.WaitAll(tasks.ToArray());
-
-            var channel2 = client2.Channels.Get(testChannel) as RealtimeChannel;
-
-            bool inSync = channel2.Presence.Map.IsSyncInProgress;
-            bool syncComplete = channel2.Presence.SyncComplete;
-
-            channel2.InternalStateChanged += (_, args) =>
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RTP1")]
+            public async Task WhenAttachingToAChannelWithNoMembers_PresenceShouldBeConsideredInSync(Protocol protocol)
             {
-                if (args.Current == ChannelState.Attached)
+                var client = await GetRealtimeClient(protocol);
+                var channel = client.Channels.Get(GetTestChannelName());
+
+                await channel.AttachAsync();
+
+                channel.Presence.SyncComplete.Should().BeTrue();
+            }
+
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RTP1")]
+            public async Task WhenAttachingToAChannelWithMembers_PresenceShouldBeInProgress(Protocol protocol)
+            {
+                Logger.LogLevel = LogLevel.Debug;
+                var testChannel = GetTestChannelName();
+                var client = await GetRealtimeClient(protocol);
+                var client2 = await GetRealtimeClient(protocol);
+                var channel = client.Channels.Get(testChannel);
+                List<Task> tasks = new List<Task>();
+                for (int count = 1; count < 10; count++)
                 {
-                    inSync = channel2.Presence.Map.IsSyncInProgress;
-                    syncComplete = channel2.Presence.SyncComplete;
+                    tasks.Add(channel.Presence.EnterClientAsync($"client-{count}", null));
                 }
-            };
 
-            await channel2.AttachAsync();
+                Task.WaitAll(tasks.ToArray());
 
-            inSync.Should().BeTrue();
-            syncComplete.Should().BeFalse();
-        }
+                var channel2 = client2.Channels.Get(testChannel) as RealtimeChannel;
 
+                bool inSync = channel2.Presence.Map.IsSyncInProgress;
+                bool syncComplete = channel2.Presence.SyncComplete;
 
-        [Theory]
-        [ProtocolData]
-        public async Task CanSend_EnterWithStringArray(Protocol protocol)
-        {
-            var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "test");
+                channel2.InternalStateChanged += (_, args) =>
+                {
+                    if (args.Current == ChannelState.Attached)
+                    {
+                        inSync = channel2.Presence.Map.IsSyncInProgress;
+                        syncComplete = channel2.Presence.SyncComplete;
+                    }
+                };
 
-            var channel = client.Channels.Get("test" + protocol);
+                await channel2.AttachAsync();
 
-            await channel.Presence.EnterAsync(new [] {"test", "best"});
-            
-            var presence = await channel.Presence.GetAsync();
-            await Task.Delay(2000);
-            presence.Should().HaveCount(1);
-        }
+                inSync.Should().BeTrue();
+                syncComplete.Should().BeFalse();
+            }
 
-        [Theory]
-        [ProtocolData]
-        public async Task Presence_HasCorrectTimeStamp(Protocol protocol)
-        {
-            var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "presence-timestamp-test");
-
-            var channel = client.Channels.Get("test".AddRandomSuffix());
-            DateTimeOffset? time = null;
-            channel.Presence.Subscribe(message =>
+            [Theory]
+            [ProtocolData]
+            public async Task CanSend_EnterWithStringArray(Protocol protocol)
             {
-                Output.WriteLine($"{message.ConnectionId}:{message.Timestamp}");
-                time = message.Timestamp;
-                _resetEvent.Set();
-            });
+                var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "test");
 
-            await channel.Presence.EnterAsync(new[] { "test", "best" });
+                var channel = client.Channels.Get("test" + protocol);
 
-            _resetEvent.WaitOne(2000);
-            time.Should().HaveValue();
+                await channel.Presence.EnterAsync(new[] { "test", "best" });
+
+                var presence = await channel.Presence.GetAsync();
+                await Task.Delay(2000);
+                presence.Should().HaveCount(1);
+            }
+
+            [Theory]
+            [ProtocolData]
+            public async Task Presence_HasCorrectTimeStamp(Protocol protocol)
+            {
+                var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "presence-timestamp-test");
+
+                var channel = client.Channels.Get("test".AddRandomSuffix());
+                DateTimeOffset? time = null;
+                channel.Presence.Subscribe(message =>
+                {
+                    Output.WriteLine($"{message.ConnectionId}:{message.Timestamp}");
+                    time = message.Timestamp;
+                    _resetEvent.Set();
+                });
+
+                await channel.Presence.EnterAsync(new[] { "test", "best" });
+
+                _resetEvent.WaitOne(2000);
+                time.Should().HaveValue();
+            }
         }
+
+        public class With250PresentMembersOnAChannel : PresenceSandboxSpecs
+        {
+            private const int ExpectedEnterCount = 250;
+            private string _channelName;
+
+
+            private void SetupMembers(IRealtimeClient client)
+            {
+                var channel = client.Channels.Get(_channelName);
+                for (int i = 0; i < ExpectedEnterCount; i++)
+                {
+                    var clientId = "client:#" + i;
+                    channel.Presence.EnterClientAsync(clientId, null);
+                }
+            }
+
+            public With250PresentMembersOnAChannel(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
+            {
+                _channelName = GetTestChannelName();
+            }
+
+
+
+        }
+
+
 
         public PresenceSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
         {
             
         }
 
-        private string GetTestChannelName()
+        protected string GetTestChannelName()
         {
             return "presence-" + Guid.NewGuid().ToString().Split('-').First();
         }
