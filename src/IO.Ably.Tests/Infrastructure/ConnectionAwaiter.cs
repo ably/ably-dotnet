@@ -25,8 +25,12 @@ namespace IO.Ably.Tests
         public ConnectionAwaiter(Connection connection, params ConnectionState[] awaitedStates)
         {
             Connection = connection;
-            _awaitedStates.AddRange(awaitedStates ?? new []{ConnectionState.Connected});
-            
+            if (awaitedStates != null && awaitedStates.Length > 0)
+            {
+                _awaitedStates.AddRange(awaitedStates);
+            }
+            else
+                throw new ArgumentNullException(nameof(awaitedStates), "Please add at least one awaited state");
         }
 
         private void RemoveListener()

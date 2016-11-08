@@ -22,7 +22,7 @@ namespace IO.Ably.Realtime
 
         private WebSocket _socket;
 
-        private WebSocketTransport(TransportParams parameters)
+        protected WebSocketTransport(TransportParams parameters)
         {
             if (parameters == null)
                 throw new ArgumentNullException(nameof(parameters), "Null parameters are not allowed");

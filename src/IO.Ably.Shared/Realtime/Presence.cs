@@ -54,6 +54,7 @@ namespace IO.Ably.Realtime
         public Task<IEnumerable<PresenceMessage>> GetAsync(GetOptions options = null)
         {
             var getOptions = options ?? new GetOptions();
+
             //TODO: waitForSync is not implemented yet
             var result = Map.Values.Where(x => (getOptions.ClientId.IsEmpty() || (x.ClientId == getOptions.ClientId))
                                                &&
@@ -156,6 +157,7 @@ namespace IO.Ably.Realtime
                 if (syncCursor.Length > 1)
                     Map.StartSync();
             }
+
             foreach (var update in messages)
                 switch (update.Action)
                 {
@@ -184,13 +186,17 @@ namespace IO.Ably.Realtime
 
         private void NotifySubscribers(PresenceMessage message)
         {
-            foreach (var handler in _handlers.GetHandlers())
+            var handlers = _handlers.GetHandlers();
+            if(Logger.IsDebug) Logger.Debug("Notifying Presence handlers: " + handlers.Count());
+            foreach (var handler in handlers)
             {
                 var loopHandler = handler;
                 _channel.RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message));
             }
 
-            foreach (var specificHandler in _handlers.GetHandlers(message.Action.ToString()))
+            var specificHandlers = _handlers.GetHandlers(message.Action.ToString());
+            if(Logger.IsDebug) Logger.Debug("Notifying specific handlers for Message: " + message.Action + ". Count: " + specificHandlers.Count());
+            foreach (var specificHandler in specificHandlers)
             {
                 var loopHandler = specificHandler;
                 _channel.RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message));

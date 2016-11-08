@@ -128,7 +128,9 @@
     <Compile Include="CapabilityTests.cs" />
     <Compile Include="DateHelper.cs" />
     <Compile Include="EncryptionSpecs.cs" />
+    <Compile Include="Infrastructure\TestTransportWrapper.cs" />
     <Compile Include="Infrastructure\InteropabilityMessagePayloadDataAttribute.cs" />
+    <Compile Include="Infrastructure\TestTransportFactory.cs" />
     <Compile Include="Realtime\PresenceSandboxSpecs.cs" />
     <Compile Include="Samples\DocumentationSamples.cs" />
     <Compile Include="Samples\RealtimeSamples.cs" />
@@ -156,6 +158,7 @@
     <Compile Include="MessageEncodes\JsonEncoderTests.cs" />
     <Compile Include="MessageEncodes\MessageEncodersAcceptanceTests.cs" />
     <Compile Include="MessageEncodes\SerializationSpecs.cs" />
+    <Compile Include="TestExtensions.cs" />
     <Compile Include="TokenDetailsTests.cs" />
     <Compile Include="MessageEncodes\Utf8EncoderTests.cs" />
     <Compile Include="MessagePack\SerializationTests.cs" />

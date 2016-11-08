@@ -65,6 +65,7 @@ namespace IO.Ably.Transport
             AttemptsInfo = new ConnectionAttemptsInfo(connection);
             Connection = connection;
             AckProcessor = new AcknowledgementProcessor(connection);
+            
 
             if (Logger.IsDebug)
             {

@@ -54,7 +54,8 @@ namespace IO.Ably.Realtime
             {
                 _lock.EnterWriteLock();
                 List<MessageHandlerAction<T>> result;
-                if (_specificHandlers.TryGetValue(eventName, out result))
+                var key = eventName.ToLower();
+                if (_specificHandlers.TryGetValue(key, out result))
                 {
                     if (result != null)
                     {
@@ -62,7 +63,7 @@ namespace IO.Ably.Realtime
                         return;
                     }
                 }
-                _specificHandlers[eventName] = new List<MessageHandlerAction<T>> { handler };
+                _specificHandlers[key] = new List<MessageHandlerAction<T>> { handler };
             }
             finally
             {
@@ -94,16 +95,17 @@ namespace IO.Ably.Realtime
             try
             {
                 _lock.EnterWriteLock();
-                if (_specificHandlers.ContainsKey(eventName))
+                var key = eventName.ToLower();
+                if (_specificHandlers.ContainsKey(key))
                 {
                     if (handler == null)
                     {
-                        _specificHandlers.Remove(eventName);
+                        _specificHandlers.Remove(key);
                         return true;
                     }
                     else
                     {
-                        return _specificHandlers[eventName].Remove(handler);
+                        return _specificHandlers[key].Remove(handler);
                     }
                 }
                 else

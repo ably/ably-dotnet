@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -121,7 +122,7 @@ namespace IO.Ably.Tests.Realtime
                 await SetupMembers(protocol);
                 var testClient = await GetRealtimeClient(protocol);
                 var channel = testClient.Channels.Get(_channelName);
-                
+
                 List<PresenceMessage> presenceMessages = new List<PresenceMessage>();
                 channel.Presence.Subscribe(x => presenceMessages.Add(x));
 
@@ -134,12 +135,79 @@ namespace IO.Ably.Tests.Realtime
                     if (presenceMessages.Count == ExpectedEnterCount)
                         return;
 
-                    await Task.Delay(1000); 
+                    await Task.Delay(1000);
                 }
 
                 throw new Exception("Failed to receive messages for all memebers");
             }
 
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RTP2")]
+            public async Task WhenAMemberLeavesBeforeSYNCOperationIsComplete_ShouldEmitLeaveMessageForMember(
+                Protocol protocol)
+            {
+                Logger.LogLevel = LogLevel.Debug;
+
+                await SetupMembers(protocol);
+                var client = await GetRealtimeClient(protocol);
+                var channel = client.Channels.Get(_channelName);
+
+                ConcurrentBag<PresenceMessage> presenceMessages = new ConcurrentBag<PresenceMessage>();
+                string leaveClientId = "";
+                channel.Presence.Subscribe(PresenceAction.Present, x =>
+                {
+                    Logger.Debug($"[{client.Connection.Id}] Adding message #" + (presenceMessages.Count + 1));
+                    presenceMessages.Add(x);
+                });
+                channel.Presence.Subscribe(PresenceAction.Leave, x => leaveClientId = x.ClientId);
+
+                await new ConnectionAwaiter(client.Connection, ConnectionState.Connected).Wait();
+
+                SendLeaveMessageAfterFirstSyncMessageReceived(client, GetClientId(0));
+
+                //Wait for 30s max
+                await WaitFor30sOrUntilTrue(() =>
+                {
+                    var count = presenceMessages.Count();
+                    Logger.Debug("Presence message count: " + count);
+                    return presenceMessages.Count() == ExpectedEnterCount;
+                });
+
+                presenceMessages.Count.Should().Be(ExpectedEnterCount);
+                channel.Presence.SyncComplete.Should().BeTrue();
+                leaveClientId.Should().Be(GetClientId(0));
+            }
+
+            private void SendLeaveMessageAfterFirstSyncMessageReceived(AblyRealtime client, string clientId)
+            {
+                var transport = client.GetTestTransport();
+
+                int syncMessageCount = 0;
+                transport.AfterDataReceived = message =>
+                {
+                    if (message.Action == ProtocolMessage.MessageAction.Sync)
+                    {
+                        syncMessageCount++;
+                        if (syncMessageCount == 1)
+                        {
+                            var leaveMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channelName)
+                            {
+                                Presence = new[]
+                                {
+                                    new PresenceMessage(PresenceAction.Leave, clientId)
+                                    {
+                                        ConnectionId = $"{client.Connection.Id}",
+                                        Id = $"{client.Connection.Id}-#{clientId}:0",
+                                        Timestamp = Config.Now(),
+                                    }
+                                }
+                            };
+                            transport.FakeReceivedMessage(leaveMessage);
+                        }
+                    }
+                };
+            }
 
             private async Task SetupMembers(Protocol protocol)
             {
@@ -147,9 +215,14 @@ namespace IO.Ably.Tests.Realtime
                 var channel = client.Channels.Get(_channelName);
                 for (int i = 0; i < ExpectedEnterCount; i++)
                 {
-                    var clientId = "client:#" + i;
-                    channel.Presence.EnterClientAsync(clientId, null);
+                    var clientId = GetClientId(i);
+                    await channel.Presence.EnterClientAsync(clientId, null);
                 }
+            }
+
+            private string GetClientId(int count)
+            {
+                return "client:#" + count;
             }
 
             public With250PresentMembersOnAChannel(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
@@ -157,15 +230,13 @@ namespace IO.Ably.Tests.Realtime
                 _channelName = GetTestChannelName();
             }
 
-
-
         }
 
 
 
         public PresenceSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
         {
-            
+
         }
 
         protected string GetTestChannelName()
