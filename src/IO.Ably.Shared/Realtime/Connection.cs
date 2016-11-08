@@ -123,10 +123,8 @@ namespace IO.Ably.Realtime
             if (state.State == State)
                 return;
 
-            if (Logger.IsDebug)
-            {
-                Logger.Debug($"Connection notifying subscribers for state change `{state.State}`");
-            }
+            if (Logger.IsDebug) Logger.Debug($"Connection notifying subscribers for state change `{state.State}`");
+
             var oldState = ConnectionState.State;
             var newState = state.State;
             ConnectionState = state;

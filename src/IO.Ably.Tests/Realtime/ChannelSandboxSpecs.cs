@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -17,52 +16,6 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime
 {
-    [Collection("Presence Sandbox")]
-    [Trait("requires", "sandbox")]
-    public class PresenceSandboxSpecs : SandboxSpecs
-    {
-        [Theory]
-        [ProtocolData]
-        public async Task CanSend_EnterWithStringArray(Protocol protocol)
-        {
-            var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "test");
-
-            var channel = client.Channels.Get("test" + protocol);
-
-            await channel.Presence.EnterAsync(new [] {"test", "best"});
-            
-            var presence = await channel.Presence.GetAsync();
-            await Task.Delay(2000);
-            presence.Should().HaveCount(1);
-        }
-
-        [Theory]
-        [ProtocolData]
-        public async Task Presence_HasCorrectTimeStamp(Protocol protocol)
-        {
-            var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "presence-timestamp-test");
-
-            var channel = client.Channels.Get("test".AddRandomSuffix());
-            DateTimeOffset? time = null;
-            channel.Presence.Subscribe(message =>
-            {
-                Output.WriteLine($"{message.ConnectionId}:{message.Timestamp}");
-                time = message.Timestamp;
-                _resetEvent.Set();
-            });
-
-            await channel.Presence.EnterAsync(new[] { "test", "best" });
-
-            _resetEvent.WaitOne(2000);
-            time.Should().HaveValue();
-        }
-
-        public PresenceSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
-        {
-
-        }
-    }
-
     [Collection("Channel SandBox")]
     [Trait("requires", "sandbox")]
     public class ChannelSandboxSpecs : SandboxSpecs

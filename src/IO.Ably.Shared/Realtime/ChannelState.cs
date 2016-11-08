@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace IO.Ably.Realtime
+﻿namespace IO.Ably.Realtime
 {
     /// <summary>
     /// States defined for a channel.
@@ -42,5 +40,5 @@ namespace IO.Ably.Realtime
         /// necessary access rights).
         /// </summary>
         Failed
-    };
+    }
 }

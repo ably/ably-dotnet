@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
 
@@ -8,14 +6,14 @@ namespace IO.Ably.Realtime
 {
     internal class ChannelAwaiter
     {
-        private readonly IRealtimeChannel _channel;
+        private readonly RealtimeChannel _channel;
         private readonly ChannelState _awaitedState;
         private Action<bool, ErrorInfo> _callback;
-        private volatile bool _waiting = false;
+        private volatile bool _waiting;
 
         public ChannelAwaiter(IRealtimeChannel channel, ChannelState awaitedState)
         {
-            _channel = channel;
+            _channel = channel as RealtimeChannel;
             _awaitedState = awaitedState;
         }
 
@@ -54,12 +52,12 @@ namespace IO.Ably.Realtime
         
         private void AttachListener()
         {
-            _channel.StateChanged += ChannelOnChannelStateChanged;
+            _channel.InternalStateChanged += ChannelOnChannelStateChanged;
         }
 
         private void DetachListener()
         {
-            _channel.StateChanged -= ChannelOnChannelStateChanged;
+            _channel.InternalStateChanged -= ChannelOnChannelStateChanged;
         }
 
         private void ChannelOnChannelStateChanged(object sender, ChannelStateChange args)

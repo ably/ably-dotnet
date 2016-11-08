@@ -129,6 +129,7 @@
     <Compile Include="DateHelper.cs" />
     <Compile Include="EncryptionSpecs.cs" />
     <Compile Include="Infrastructure\InteropabilityMessagePayloadDataAttribute.cs" />
+    <Compile Include="Realtime\PresenceSandboxSpecs.cs" />
     <Compile Include="Samples\DocumentationSamples.cs" />
     <Compile Include="Samples\RealtimeSamples.cs" />
     <Compile Include="Infrastructure\ConnectionAwaiter.cs" />

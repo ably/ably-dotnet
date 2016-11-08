@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using IO.Ably.Rest;
 using IO.Ably.Transport;
@@ -31,6 +30,7 @@ namespace IO.Ably.Realtime
         public ErrorInfo ErrorReason { get; internal set; }
 
         public event EventHandler<ChannelStateChange> StateChanged = delegate { };
+        internal event EventHandler<ChannelStateChange> InternalStateChanged = delegate { };
         public event EventHandler<ChannelErrorEventArgs> Error = delegate { };
 
         public ChannelOptions Options
@@ -71,17 +71,17 @@ namespace IO.Ably.Realtime
         {
             switch (connectionStateChange.Current)
             {
-                case Realtime.ConnectionState.Closed:
+                case ConnectionState.Closed:
                     if (State == ChannelState.Attached || State == ChannelState.Attaching)
                         SetChannelState(ChannelState.Detaching);
                     break;
-                case Realtime.ConnectionState.Suspended:
+                case ConnectionState.Suspended:
                     if (State == ChannelState.Attached || State == ChannelState.Attaching)
                     {
                         SetChannelState(ChannelState.Detaching, ErrorInfo.ReasonSuspended);
                     }
                     break;
-                case Realtime.ConnectionState.Failed:
+                case ConnectionState.Failed:
                     if (State != ChannelState.Detached && State != ChannelState.Initialized &&
                         State != ChannelState.Failed)
                     {
@@ -90,8 +90,6 @@ namespace IO.Ably.Realtime
                     break;
             }
         }
-
-        
 
         /// <summary>
         ///     Attach to this channel. Any resulting channel state change will be indicated to any registered
@@ -293,6 +291,7 @@ namespace IO.Ably.Realtime
             {
                 if(State == ChannelState.Initialized)
                     Attach();
+
                 // Not connected, queue the message
                 lock (_lockQueue)
                 {
@@ -304,7 +303,6 @@ namespace IO.Ably.Realtime
 
             if (State == ChannelState.Attached)
             {
-                // Connected, send right now
                 SendMessage(msg, callback);
                 return;
             }
@@ -329,8 +327,13 @@ namespace IO.Ably.Realtime
 
             OnError(error);
             var previousState = State;
-            HandleStateChange(state, error, protocolMessage);
 
+            HandleStateChange(state, error, protocolMessage);
+            
+            //Notify internal clients on the Managed thread
+            InternalStateChanged.Invoke(this, new ChannelStateChange(state, previousState, error));
+
+            //Notify external client using the thread they subscribe on
             RealtimeClient.NotifyExternalClients(() =>
                 {
                     var args = new ChannelStateChange(state, previousState, error);
@@ -354,7 +357,7 @@ namespace IO.Ably.Realtime
             switch (state)
             {
                 case ChannelState.Attaching:
-                    if (ConnectionState == Realtime.ConnectionState.Initialized)
+                    if (ConnectionState == ConnectionState.Initialized)
                     {
                         Connection.Connect();
                     }
@@ -374,10 +377,8 @@ namespace IO.Ably.Realtime
                         if (protocolMessage.HasPresenceFlag)
                         {
                             //Start sync
-                        }
-                        else
-                        {
-                            //Presence is in sync
+                            if(Logger.IsDebug) Logger.Debug($"Protocol message has presence flag. Starting Presence SYNC. Flag: {protocolMessage.Flags}");
+                            Presence.AwaitSync();
                         }
 
                         AttachedSerial = protocolMessage.ChannelSerial;
@@ -391,8 +392,8 @@ namespace IO.Ably.Realtime
                     //Fail timer if still waiting for attached.
                     _attachedAwaiter.Fail(new ErrorInfo("Channel transitioned to detaching", 50000));
 
-                    if (ConnectionState == Realtime.ConnectionState.Closed || ConnectionState == Realtime.ConnectionState.Connecting ||
-                        ConnectionState == Realtime.ConnectionState.Suspended)
+                    if (ConnectionState == ConnectionState.Closed || ConnectionState == ConnectionState.Connecting ||
+                        ConnectionState == ConnectionState.Suspended)
                         SetChannelState(ChannelState.Detached, error);
                     else
                     {

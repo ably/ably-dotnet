@@ -1,4 +1,3 @@
-using IO.Ably.Rest;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 

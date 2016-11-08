@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
@@ -63,7 +62,7 @@ namespace IO.Ably.Realtime
                         return;
                     }
                 }
-                _specificHandlers[eventName] = new List<MessageHandlerAction<T>>() { handler };
+                _specificHandlers[eventName] = new List<MessageHandlerAction<T>> { handler };
             }
             finally
             {

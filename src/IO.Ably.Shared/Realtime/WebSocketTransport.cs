@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Configuration;
-using System.Threading.Tasks;
 using IO.Ably.Transport;
 using MsgPack;
 using SuperSocket.ClientEngine;

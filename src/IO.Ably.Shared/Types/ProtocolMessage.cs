@@ -32,10 +32,10 @@ namespace IO.Ably.Types
         }
 
         [Flags]
-        public enum MessageFlag : byte
+        public enum MessageFlag
         {
-            Presence,
-            Backlog
+            Presence = 1,
+            Backlog = 1 << 1
         }
 
         public ProtocolMessage()

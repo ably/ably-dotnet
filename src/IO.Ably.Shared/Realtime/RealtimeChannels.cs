@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using IO.Ably.Rest;
 
 namespace IO.Ably.Realtime
 {
@@ -61,7 +60,7 @@ namespace IO.Ably.Realtime
                     if (args.Current == ChannelState.Detached || args.Current == ChannelState.Failed)
                     {
                         if (Logger.IsDebug) { Logger.Debug($"Channel #{name} was removed from Channel list. State {args.Current}"); }
-                        detachedChannel.StateChanged -= eventHandler;
+                        detachedChannel.InternalStateChanged -= eventHandler;
 
                         RealtimeChannel removedChannel;
                         if (_channels.TryRemove(name, out removedChannel))
@@ -72,7 +71,8 @@ namespace IO.Ably.Realtime
                         if (Logger.IsDebug) { Logger.Debug($"Waiting to remove Channel #{name}. State {args.Current}"); }
                     }
                 };
-                channel.StateChanged += eventHandler;
+
+                channel.InternalStateChanged += eventHandler;
                 channel.Detach();
                 return true;
             }
