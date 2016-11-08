@@ -302,24 +302,24 @@ namespace IO.Ably.Realtime
                 if (members.TryGetValue(item.MemberKey, out existingItem) && (item.Timestamp < existingItem.Timestamp))
                     return false;
 
-                // add or update
-                if (!members.ContainsKey(item.MemberKey))
-                    members.Add(item.MemberKey, item);
-                else
-                    members[item.MemberKey] = item;
+                members[item.MemberKey] = item;
 
                 return true;
             }
 
             public bool Remove(PresenceMessage item)
             {
+                bool result = true;
+
                 PresenceMessage existingItem;
                 if (members.TryGetValue(item.MemberKey, out existingItem) &&
-                    (existingItem.Action == PresenceAction.Absent))
-                    return false;
+                    existingItem.Action == PresenceAction.Absent)
+                {
+                    result = false;
+                }
 
                 members.Remove(item.MemberKey);
-                return true;
+                return result;
             }
 
             public void StartSync()
