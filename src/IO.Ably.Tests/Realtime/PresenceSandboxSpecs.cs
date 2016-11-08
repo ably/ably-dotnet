@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
@@ -112,9 +113,37 @@ namespace IO.Ably.Tests.Realtime
             private const int ExpectedEnterCount = 250;
             private string _channelName;
 
-
-            private void SetupMembers(IRealtimeClient client)
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RTP4")]
+            public async Task WhenAClientAttachedToPresenceChannel_ShouldEmitPresentForEachMember(Protocol protocol)
             {
+                await SetupMembers(protocol);
+                var testClient = await GetRealtimeClient(protocol);
+                var channel = testClient.Channels.Get(_channelName);
+                
+                List<PresenceMessage> presenceMessages = new List<PresenceMessage>();
+                channel.Presence.Subscribe(x => presenceMessages.Add(x));
+
+                //Wait for 30s max
+                int count = 0;
+                while (count < 30)
+                {
+                    count++;
+
+                    if (presenceMessages.Count == ExpectedEnterCount)
+                        return;
+
+                    await Task.Delay(1000); 
+                }
+
+                throw new Exception("Failed to receive messages for all memebers");
+            }
+
+
+            private async Task SetupMembers(Protocol protocol)
+            {
+                var client = await GetRealtimeClient(protocol);
                 var channel = client.Channels.Get(_channelName);
                 for (int i = 0; i < ExpectedEnterCount; i++)
                 {
