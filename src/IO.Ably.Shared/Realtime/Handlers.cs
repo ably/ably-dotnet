@@ -19,7 +19,7 @@ namespace IO.Ably.Realtime
                 if (eventName.IsNotEmpty())
                 {
                     List<MessageHandlerAction<T>> result;
-                    if (_specificHandlers.TryGetValue(eventName.ToLower(), out result))
+                    if (_specificHandlers.TryGetValue(eventName, out result))
                     {
                         return new List<MessageHandlerAction<T>>(result);
                     }
