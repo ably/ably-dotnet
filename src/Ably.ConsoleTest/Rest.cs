@@ -37,7 +37,7 @@ namespace IO.Ably.ConsoleTest
 
             Message msg = history.Items.First();
             var tsNow = DateTimeOffset.UtcNow;
-            var tsHistory = msg.timestamp.Value;
+            var tsHistory = msg.Timestamp.Value;
 
             if (tsHistory < tsPublish)
                 throw new ApplicationException("Timestamp's too early. Please ensure your PC's time is correct, use e.g. time.nist.gov server.");

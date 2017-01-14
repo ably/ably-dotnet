@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>ably.io</id>
-        <version>0.8.3</version>
+        <version>0.8.4</version>
         <title>ably.io</title>
         <authors>Yavor Ivanov,Martin Georgiev</authors>
         <owners>Ably Real-time Ltd</owners>
@@ -15,10 +15,10 @@
         <copyright>2016 Ably</copyright>
         <language />
         <dependencies>
-            <dependency id="Newtonsoft.Json" version="8.0.3" />
+            <dependency id="Newtonsoft.Json" version="9.0.1" />
             <dependency id="Nito.AsyncEx" version="3.0.1" />
-            <dependency id="WebSocket4Net" version="0.14.1" />
-            <dependency id="MsgPack.Cli" version="0.6.8" />
+            <dependency id="WebSocket4Net" version="[0.14.1]" />
+            <dependency id="MsgPack.Cli" version="[0.8.0]" />
         </dependencies>
     </metadata>
     <files>

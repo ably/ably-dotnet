@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using IO.Ably.Rest;
 
 namespace IO.Ably.Realtime
 {
-    public interface IRealtimeChannel : IEventEmitter<ChannelState, ChannelStateChangedEventArgs>
+    public interface IRealtimeChannel : IEventEmitter<ChannelState, ChannelStateChange>
     {
         ChannelState State { get; }
         string Name { get; }
@@ -13,16 +12,16 @@ namespace IO.Ably.Realtime
         ChannelOptions Options { get; }
         ErrorInfo ErrorReason { get; }
 
-        event EventHandler<ChannelStateChangedEventArgs> StateChanged;
+        event EventHandler<ChannelStateChange> StateChanged;
         event EventHandler<ChannelErrorEventArgs> Error;
 
-        void Attach(Action<TimeSpan, ErrorInfo> callback = null);
+        void Attach(Action<bool, ErrorInfo> callback = null);
 
-        Task<Result<TimeSpan>> AttachAsync();
+        Task<Result> AttachAsync();
             
-        void Detach(Action<TimeSpan, ErrorInfo> callback = null);
+        void Detach(Action<bool, ErrorInfo> callback = null);
 
-        Task<Result<TimeSpan>> DetachAsync();
+        Task<Result> DetachAsync();
 
         /// <summary>Subscribe a listener to all messages.</summary>
         void Subscribe(Action<Message> handler);
@@ -32,8 +31,9 @@ namespace IO.Ably.Realtime
         /// <param name="handler"></param>
         void Subscribe(string eventName, Action<Message> handler);
 
-        bool Unsubscribe(Action<Message> handler);
-        bool Unsubscribe(string eventName, Action<Message> handler);
+        void Unsubscribe(Action<Message> handler);
+        void Unsubscribe(string eventName, Action<Message> handler);
+        void Unsubscribe();
 
         void Publish(string name, object data, Action<bool, ErrorInfo> callback = null, string clientId = null);
         Task<Result> PublishAsync(string eventName, object data, string clientId = null); 
@@ -42,8 +42,8 @@ namespace IO.Ably.Realtime
         void Publish(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback = null);
         Task<Result> PublishAsync(IEnumerable<Message> messages);
 
-        Task<PaginatedResult<Message>> HistoryAsync(bool untilAttached = false);
-        Task<PaginatedResult<Message>> HistoryAsync(DataRequestQuery dataQuery, bool untilAttached = false);
-        void Unsubscribe();
+        Task<PaginatedResult<Message>> HistoryAsync(bool untilAttach = false);
+        Task<PaginatedResult<Message>> HistoryAsync(HistoryRequestParams query, bool untilAttach = false);
+        
     }
 }

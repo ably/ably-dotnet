@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using IO.Ably.Encryption;
 using System.Threading.Tasks;
 
 namespace IO.Ably.Rest
@@ -92,7 +91,7 @@ namespace IO.Ably.Rest
             return _ablyRest.ExecutePaginatedRequest(request, Presence.GetAsync);
         }
 
-        Task<PaginatedResult<PresenceMessage>> IPresence.GetAsync(DataRequestQuery query)
+        Task<PaginatedResult<PresenceMessage>> IPresence.GetAsync(HistoryRequestParams query)
         {
             if (query == null) //Fall back on the default implementation
             {
@@ -112,16 +111,16 @@ namespace IO.Ably.Rest
             /// <returns><see cref="PaginatedResult{T}"/></returns>
         Task<PaginatedResult<PresenceMessage>> IPresence.HistoryAsync()
         {
-            return Presence.HistoryAsync(new DataRequestQuery());
+            return Presence.HistoryAsync(new HistoryRequestParams());
         }
 
         /// <summary>
         /// Get the presence messages history for the channel by specifying a query
         /// </summary>
         /// <returns><see cref="PaginatedResult{T}"/></returns>
-        Task<PaginatedResult<PresenceMessage>> IPresence.HistoryAsync(DataRequestQuery query)
+        Task<PaginatedResult<PresenceMessage>> IPresence.HistoryAsync(HistoryRequestParams query)
         {
-            query = query ?? new DataRequestQuery();
+            query = query ?? new HistoryRequestParams();
 
             query.Validate();
 
@@ -136,17 +135,17 @@ namespace IO.Ably.Rest
         /// <returns><see cref="PaginatedResult{T}"/> of Messages</returns>
         public Task<PaginatedResult<Message>> HistoryAsync()
         {
-            return HistoryAsync(new DataRequestQuery());
+            return HistoryAsync(new HistoryRequestParams());
         }
 
         /// <summary>
         /// Return the message history of the channel
         /// </summary>
-        /// <param name="dataQuery"><see cref="DataRequestQuery"/></param>
+        /// <param name="query"><see cref="HistoryRequestParams"/></param>
         /// <returns><see cref="PaginatedResult{T}"/> of Messages</returns>
-        public Task<PaginatedResult<Message>> HistoryAsync(DataRequestQuery dataQuery)
+        public Task<PaginatedResult<Message>> HistoryAsync(HistoryRequestParams query)
         {
-            var query = dataQuery ?? new DataRequestQuery();
+            query = query ?? new HistoryRequestParams();
 
             query.Validate();
 
@@ -155,6 +154,31 @@ namespace IO.Ably.Rest
             request.AddQueryParameters(query.GetParameters());
 
             return _ablyRest.ExecutePaginatedRequest(request, HistoryAsync);
+        }
+
+        public void Publish(string name, object data, string clientId = null)
+        {
+            AsyncHelper.RunSync(() => PublishAsync(name, data, clientId));
+        }
+
+        public void Publish(Message message)
+        {
+            AsyncHelper.RunSync(() => PublishAsync(message));
+        }
+
+        public void Publish(IEnumerable<Message> messages)
+        {
+            AsyncHelper.RunSync(() => PublishAsync(messages));
+        }
+
+        public PaginatedResult<Message> History()
+        {
+            return AsyncHelper.RunSync(HistoryAsync);
+        }
+
+        public PaginatedResult<Message> History(HistoryRequestParams query)
+        {
+            return AsyncHelper.RunSync(() => HistoryAsync(query));
         }
     }
 }

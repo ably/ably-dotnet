@@ -59,8 +59,10 @@ namespace IO.Ably.Tests
             var token = await ably.Auth.RequestTokenAsync(CreateTokenParams(capability), null);
 
             var options = await Fixture.GetSettings();
-            var httpTokenAbly = new AblyRest(new ClientOptions { Token = token.Token, Environment = options.Environment, Tls = false});
-            var httpsTokenAbly = new AblyRest(new ClientOptions { Token = token.Token, Environment = options.Environment, Tls = true });
+            var httpTokenAbly =
+                new AblyRest(new ClientOptions { Token = token.Token, Environment = options.Environment, Tls = false });
+            var httpsTokenAbly =
+                new AblyRest(new ClientOptions { Token = token.Token, Environment = options.Environment, Tls = true });
 
             //If it doesn't throw we are good :)
             await httpTokenAbly.Channels.Get("foo").PublishAsync("test", "true");
@@ -80,9 +82,11 @@ namespace IO.Ably.Tests
 
             var tokenAbly = new AblyRest(new ClientOptions { Token = token.Token, Environment = AblyEnvironment.Sandbox });
 
-            var error = await Assert.ThrowsAsync<AblyException>(() => tokenAbly.Channels.Get("boo").PublishAsync("test", "true"));
-            error.ErrorInfo.code.Should().Be(40160);
-            error.ErrorInfo.statusCode.Should().Be(HttpStatusCode.Unauthorized);
+            var error =
+                await
+                    Assert.ThrowsAsync<AblyException>(() => tokenAbly.Channels.Get("boo").PublishAsync("test", "true"));
+            error.ErrorInfo.Code.Should().Be(40160);
+            error.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [Theory]
@@ -95,11 +99,11 @@ namespace IO.Ably.Tests
             {
                 var tokenParams = CreateTokenParams(null);
                 tokenParams.Timestamp = DateTimeOffset.UtcNow.AddDays(-1);
-                return ably.Auth.RequestTokenAsync(tokenParams, new AuthOptions() { QueryTime = false});
+                return ably.Auth.RequestTokenAsync(tokenParams, new AuthOptions() { QueryTime = false });
             });
 
-            error.ErrorInfo.code.Should().Be(40101);
-            error.ErrorInfo.statusCode.Should().Be(HttpStatusCode.Unauthorized);
+            error.ErrorInfo.Code.Should().Be(40101);
+            error.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [Theory]
@@ -115,7 +119,9 @@ namespace IO.Ably.Tests
 
             token.Should().NotBeNull();
             token.ClientId.Should().Be("123");
-            token.Expires.Should().BeWithin(TimeSpan.FromSeconds(20)).Before(DateTimeOffset.UtcNow + Defaults.DefaultTokenTtl);
+            token.Expires.Should()
+                .BeWithin(TimeSpan.FromSeconds(20))
+                .Before(DateTimeOffset.UtcNow + Defaults.DefaultTokenTtl);
             token.Capability.ToJson().Should().Be(Defaults.DefaultTokenCapability.ToJson());
         }
 
@@ -126,7 +132,7 @@ namespace IO.Ably.Tests
         public async Task WithoutClientId_WhenAuthorisedWithTokenParamsWithClientId_SetsClientId(Protocol protocol)
         {
             var ably = await GetRestClient(protocol);
-            await ably.Auth.AuthoriseAsync(new TokenParams() {ClientId = "123"}, new AuthOptions() { Force = true});
+            await ably.Auth.AuthoriseAsync(new TokenParams() { ClientId = "123" }, new AuthOptions() { Force = true });
             ably.AblyAuth.ClientId.Should().Be("123");
             ably.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
         }
@@ -150,8 +156,8 @@ namespace IO.Ably.Tests
             var channel = tokenClient.Channels["persisted:test".AddRandomSuffix()];
             await channel.PublishAsync("test", "test");
             var message = (await channel.HistoryAsync()).Items.First();
-            message.clientId.Should().BeNullOrEmpty();
-            message.data.Should().Be("test");
+            message.ClientId.Should().BeNullOrEmpty();
+            message.Data.Should().Be("test");
         }
 
         [Theory]
@@ -163,46 +169,63 @@ namespace IO.Ably.Tests
             var settings = await Fixture.GetSettings();
             var token = await client.Auth.RequestTokenAsync();
             var tokenClient = new AblyRest(new ClientOptions
-            { TokenDetails = token, Environment = settings.Environment, UseBinaryProtocol = protocol == Protocol.MsgPack });
-            await Assert.ThrowsAsync<AblyException>(() => tokenClient.Channels["test"].PublishAsync(new Message("test", "test") { clientId = "123"}));
+            {
+                TokenDetails = token,
+                Environment = settings.Environment,
+                UseBinaryProtocol = protocol == Protocol.MsgPack
+            });
+            await
+                Assert.ThrowsAsync<AblyException>(
+                    () => tokenClient.Channels["test"].PublishAsync(new Message("test", "test") { ClientId = "123" }));
         }
 
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSA8f3")]
-        public async Task TokenAuthWithWildcardClientId_ShouldPublishMessageSuccessufflyAndClientIdShouldBeSetToWildcard(Protocol protocol)
-        {
-            var client = await GetRestClient(protocol);
-            var settings = await Fixture.GetSettings();
-            var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*"});
-            var tokenClient = new AblyRest(new ClientOptions
-            { TokenDetails = token, Environment = settings.Environment, UseBinaryProtocol = protocol == Protocol.MsgPack });
-
-            var channel = tokenClient.Channels["pesisted:test"];
-            await channel.PublishAsync("test", "test");
-            tokenClient.AblyAuth.ClientId.Should().Be("*");
-            var message = (await channel.HistoryAsync()).Items.First();
-            message.clientId.Should().BeNullOrEmpty();
-            message.data.Should().Be("test");
-        }
-
-        [Theory]
-        [ProtocolData]
-        [Trait("spec", "RSA8f4")]
-        public async Task TokenAuthWithWildcardClientId_WhenPublishingMessageWithClientId_ShouldExpectClientIdToBeSentWithTheMessage(Protocol protocol)
+        public async Task TokenAuthWithWildcardClientId_ShouldPublishMessageSuccessufflyAndClientIdShouldBeSetToWildcard
+            (Protocol protocol)
         {
             var client = await GetRestClient(protocol);
             var settings = await Fixture.GetSettings();
             var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
             var tokenClient = new AblyRest(new ClientOptions
-            { TokenDetails = token, Environment = settings.Environment, UseBinaryProtocol = protocol == Protocol.MsgPack });
+            {
+                TokenDetails = token,
+                Environment = settings.Environment,
+                UseBinaryProtocol = protocol == Protocol.MsgPack
+            });
 
             var channel = tokenClient.Channels["pesisted:test"];
-            await channel.PublishAsync(new Message("test", "test") { clientId = "123"});
+            await channel.PublishAsync("test", "test");
             tokenClient.AblyAuth.ClientId.Should().Be("*");
             var message = (await channel.HistoryAsync()).Items.First();
-            message.clientId.Should().Be("123");
-            message.data.Should().Be("test");
+            message.ClientId.Should().BeNullOrEmpty();
+            message.Data.Should().Be("test");
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSA8f4")]
+        public async Task
+            TokenAuthWithWildcardClientId_WhenPublishingMessageWithClientId_ShouldExpectClientIdToBeSentWithTheMessage(
+                Protocol protocol)
+        {
+            var client = await GetRestClient(protocol);
+            var settings = await Fixture.GetSettings();
+            var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
+            var tokenClient = new AblyRest(new ClientOptions
+            {
+                TokenDetails = token,
+                Environment = settings.Environment,
+                UseBinaryProtocol = protocol == Protocol.MsgPack
+            });
+
+            var channel = tokenClient.Channels["pesisted:test"];
+            await channel.PublishAsync(new Message("test", "test") { ClientId = "123" });
+            tokenClient.AblyAuth.ClientId.Should().Be("*");
+            var message = (await channel.HistoryAsync()).Items.First();
+            message.ClientId.Should().Be("123");
+            message.Data.Should().Be("test");
         }
 
         [Theory]
@@ -210,7 +233,7 @@ namespace IO.Ably.Tests
         public async Task TokenAuthUrlWhenPlainTextTokenIsReturn_ShouldBeAblyToPublishWithNewToken(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
-            var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*"});
+            var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
             var settings = await Fixture.GetSettings();
             var authUrl = "http://echo.ably.io/?type=text&body=" + token.Token;
 
@@ -222,16 +245,16 @@ namespace IO.Ably.Tests
             });
 
             var channel = authUrlClient.Channels["pesisted:test"];
-            await channel.PublishAsync(new Message("test", "test") { clientId = "123" });
+            await channel.PublishAsync(new Message("test", "test") { ClientId = "123" });
 
             var message = (await channel.HistoryAsync()).Items.First();
-            message.clientId.Should().Be("123");
-            message.data.Should().Be("test");
+            message.ClientId.Should().Be("123");
+            message.Data.Should().Be("test");
         }
 
         [Theory]
         [ProtocolData]
-        public async Task TokenAuthUrlWithJsonTokenReturned_ShouldBeAblyToPublishWithNewToken(Protocol protocol)
+        public async Task TokenAuthUrlWithJsonTokenReturned_ShouldBeAbleToPublishWithNewToken(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
             var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
@@ -246,11 +269,53 @@ namespace IO.Ably.Tests
             });
 
             var channel = authUrlClient.Channels["pesisted:test"];
-            await channel.PublishAsync(new Message("test", "test") { clientId = "123" });
+            await channel.PublishAsync(new Message("test", "test") { ClientId = "123" });
 
             var message = (await channel.HistoryAsync()).Items.First();
-            message.clientId.Should().Be("123");
-            message.data.Should().Be("test");
+            message.ClientId.Should().Be("123");
+            message.Data.Should().Be("test");
+        }
+
+        [Theory]
+        [ProtocolData]
+        public async Task TokenAuthCallbackWithTokenDetailsReturned_ShouldBeAbleToPublishWithNewToken(Protocol protocol)
+        {
+            var settings = await Fixture.GetSettings();
+            var tokenClient = await GetRestClient(protocol);
+            var authCallbackClient = await GetRestClient(protocol, options =>
+            {
+                options.AuthCallback = tokenParams => tokenClient.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" }).Convert();
+                options.Environment = settings.Environment;
+                options.UseBinaryProtocol = protocol == Protocol.MsgPack;
+            });
+
+            var channel = authCallbackClient.Channels["pesisted:test"];
+            await channel.PublishAsync(new Message("test", "test") { ClientId = "123" });
+
+            var message = (await channel.HistoryAsync()).Items.First();
+            message.ClientId.Should().Be("123");
+            message.Data.Should().Be("test");
+        }
+
+        [Theory]
+        [ProtocolData]
+        public async Task TokenAuthCallbackWithTokenRequestReturned_ShouldBeAbleToGetATokenAndPublishWithNewToken(Protocol protocol)
+        {
+            var settings = await Fixture.GetSettings();
+            var tokenClient = await GetRestClient(protocol);
+            var authCallbackClient = await GetRestClient(protocol, options =>
+            {
+                options.AuthCallback = tokenParams => tokenClient.Auth.CreateTokenRequestAsync(new TokenParams() { ClientId = "*" }).Convert();
+                options.Environment = settings.Environment;
+                options.UseBinaryProtocol = protocol == Protocol.MsgPack;
+            });
+
+            var channel = authCallbackClient.Channels["pesisted:test"];
+            await channel.PublishAsync(new Message("test", "test") { ClientId = "123" });
+
+            var message = (await channel.HistoryAsync()).Items.First();
+            message.ClientId.Should().Be("123");
+            message.Data.Should().Be("test");
         }
     }
 }

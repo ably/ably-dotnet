@@ -27,34 +27,34 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithBase64EncodedPayload_ConvertsItBackToBinaryData()
             {
-                var payload = new Message() {data = _base64Data, encoding = "base64"};
+                var payload = new Message() {Data = _base64Data, Encoding = "base64"};
 
                 encoder.Decode(payload, new ChannelOptions());
 
-                ((byte[])payload.data).Should().BeEquivalentTo(_binaryData);
-                payload.encoding.Should().BeEmpty();
+                ((byte[])payload.Data).Should().BeEquivalentTo(_binaryData);
+                payload.Encoding.Should().BeEmpty();
             }
 
             [Fact]
             public void WithBase64EncodingBeforeOtherEncodings_ConvertsDataAndStripsEncodingCorrectly()
             {
-                var payload = new Message() { data = _base64Data, encoding = "utf-8/base64" };
+                var payload = new Message() { Data = _base64Data, Encoding = "utf-8/base64" };
 
                 encoder.Decode(payload, new ChannelOptions());
 
-                ((byte[])payload.data).Should().BeEquivalentTo(_binaryData);
-                payload.encoding.Should().Be("utf-8");
+                ((byte[])payload.Data).Should().BeEquivalentTo(_binaryData);
+                payload.Encoding.Should().Be("utf-8");
             }
 
             [Fact]
             public void WithMessageAnotherEncoding_LeavesDataAndEncodingIntact()
             {
-                var payload = new Message() {data = _stringData, encoding = "utf-8"};
+                var payload = new Message() {Data = _stringData, Encoding = "utf-8"};
 
                 encoder.Decode(payload, new ChannelOptions());
 
-                payload.data.Should().Be(_stringData);
-                payload.encoding.Should().Be("utf-8");
+                payload.Data.Should().Be(_stringData);
+                payload.Encoding.Should().Be("utf-8");
             }
         }
 
@@ -69,12 +69,12 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithBinaryData_LeavesDataAndEncodingIntact()
             {
-                var payload = new Message() {data = _binaryData};
+                var payload = new Message() {Data = _binaryData};
 
                 encoder.Encode(payload, new ChannelOptions());
 
-                payload.data.Should().Be(_binaryData);
-                payload.encoding.Should().BeNull();
+                payload.Data.Should().Be(_binaryData);
+                payload.Encoding.Should().BeNull();
             }
         }
 
@@ -87,34 +87,34 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithBinaryPayloadWithoutPriorEncoding_ConvertsDataToBase64StringAndSetsEnconding()
             {
-                var payload = new Message() {data = _binaryData};
+                var payload = new Message() {Data = _binaryData};
 
                 encoder.Encode(payload, new ChannelOptions());
 
-                payload.data.Should().Be(_base64Data);
-                payload.encoding.Should().Be(encoder.EncodingName);
+                payload.Data.Should().Be(_base64Data);
+                payload.Encoding.Should().Be(encoder.EncodingName);
             }
 
             [Fact]
             public void WithBinaryPayloadAndExsitingEncoding_ConvertsDataToBase64StringAndAddsBase64Encoding()
             {
-                var payload = new Message() {data = _binaryData, encoding = "cipher"};
+                var payload = new Message() {Data = _binaryData, Encoding = "cipher"};
 
                 encoder.Encode(payload, new ChannelOptions());
 
-                payload.data.Should().Be(_base64Data);
-                payload.encoding.Should().Be("cipher/" + encoder.EncodingName);
+                payload.Data.Should().Be(_base64Data);
+                payload.Encoding.Should().Be("cipher/" + encoder.EncodingName);
             }
 
             [Fact]
             public void WithStringPayload_LeavesDataAndEncodingIntact()
             {
-                var payload = new Message() {data = _stringData};
+                var payload = new Message() {Data = _stringData};
 
                 encoder.Encode(payload, new ChannelOptions());
 
-                payload.data.Should().Be(_stringData);
-                payload.encoding.Should().BeNull();
+                payload.Data.Should().Be(_stringData);
+                payload.Encoding.Should().BeNull();
             }
 
             [Fact]
@@ -124,8 +124,8 @@ namespace IO.Ably.Tests.MessageEncodes
 
                 encoder.Encode(payload, new ChannelOptions());
 
-                payload.data.Should().BeNull();
-                payload.encoding.Should().BeNull();
+                payload.Data.Should().BeNull();
+                payload.Encoding.Should().BeNull();
             }
         }
     }

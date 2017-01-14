@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.Net;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 
@@ -27,45 +26,48 @@ namespace IO.Ably
         internal const string ReasonPropertyName = "message";
 
         /// <summary>Ably error code (see https://github.com/ably/ably-common/blob/master/protocol/errors.json) </summary>
-        public int code { get; set; }
+        [JsonProperty("code")]
+        public int Code { get; set; }
         /// <summary>The http status code corresponding to this error</summary>
-        public HttpStatusCode? statusCode { get; set; }
+        [JsonProperty("statusCode")]
+        public HttpStatusCode? StatusCode { get; set; }
         /// <summary>Additional reason information, where available</summary>
-        public string message { get; set; }
+        [JsonProperty("message")]
+        public string Message { get; set; }
 
-        public bool IsUnAuthorizedError => statusCode.HasValue &&
-                                           statusCode.Value == HttpStatusCode.Unauthorized;
+        public bool IsUnAuthorizedError => StatusCode.HasValue &&
+                                           StatusCode.Value == HttpStatusCode.Unauthorized;
 
-        public bool IsTokenError => code >= Defaults.TokenErrorCodesRangeStart &&
-                                    code <= Defaults.TokenErrorCodesRangeEnd;
+        public bool IsTokenError => Code >= Defaults.TokenErrorCodesRangeStart &&
+                                    Code <= Defaults.TokenErrorCodesRangeEnd;
 
         public ErrorInfo() { }
 
         public ErrorInfo(string reason)
         {
-            this.message = reason;
+            Message = reason;
         }
 
         public ErrorInfo(string reason, int code)
         {
-            this.code = code;
-            this.message = reason;
+            Code = code;
+            Message = reason;
         }
 
         public ErrorInfo(string reason, int code, HttpStatusCode? statusCode = null)
         {
-            this.code = code;
-            this.statusCode = statusCode;
-            this.message = reason;
+            Code = code;
+            StatusCode = statusCode;
+            Message = reason;
         }
 
         public override string ToString()
         {
-            if (statusCode.HasValue == false)
+            if (StatusCode.HasValue == false)
             {
-                return string.Format("Reason: {0}; Code: {1}", message, code);
+                return string.Format("Reason: {0}; Code: {1}", Message, Code);
             }
-            return string.Format("Reason: {0}; Code: {1}; HttpStatusCode: ({2}){3}", message, code, (int)statusCode.Value, statusCode);
+            return string.Format("Reason: {0}; Code: {1}; HttpStatusCode: ({2}){3}", Message, Code, (int)StatusCode.Value, StatusCode);
         }
 
         internal static ErrorInfo Parse(AblyResponse response)
@@ -87,7 +89,7 @@ namespace IO.Ably
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine( ex.Message );
+                    Debug.WriteLine(ex.Message);
                     //If there is no json or there is something wrong we don't want to throw from here. The
                 }
             }
@@ -101,12 +103,12 @@ namespace IO.Ably
 
         public bool IsRetryableStatusCode()
         {
-            return statusCode.HasValue && IsRetryableStatusCode(statusCode.Value);
+            return StatusCode.HasValue && IsRetryableStatusCode(StatusCode.Value);
         }
 
         public static bool IsRetryableStatusCode(HttpStatusCode statusCode)
         {
-            return statusCode >= (HttpStatusCode) 500 && statusCode <= (HttpStatusCode) 504;
+            return statusCode >= (HttpStatusCode)500 && statusCode <= (HttpStatusCode)504;
         }
     }
 }

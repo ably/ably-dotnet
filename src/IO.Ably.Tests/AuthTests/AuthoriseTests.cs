@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IO.Ably.Auth;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -55,7 +54,7 @@ namespace IO.Ably.Tests.AuthTests
             await client.Auth.AuthoriseAsync(null, new AuthOptions() { Force = true});
             var data = LastRequest.PostData as TokenRequest;
             client.AblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(tokenParams);
-            data.Ttl.Should().Be(TimeSpan.FromMinutes(260).TotalMilliseconds.ToString());
+            data.Ttl.Should().Be(TimeSpan.FromMinutes(260));
         }
 
         [Fact]

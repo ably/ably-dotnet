@@ -26,16 +26,16 @@ namespace IO.Ably.Transport
             if(message == null)
                 throw new ArgumentNullException(nameof(message), "Null message");
 
-            if (message.action != ProtocolMessage.MessageAction.Connected)
+            if (message.Action != ProtocolMessage.MessageAction.Connected)
             {
-                throw new InvalidOperationException("Can only create Connection info from Connected message. Current passed: " + message.action);
+                throw new InvalidOperationException("Can only create Connection info from Connected message. Current passed: " + message.Action);
             }
 
-            ConnectionId = message.connectionId;
-            ConnectionSerial = message.connectionSerial ?? -1;
-            ConnectionKey = message.connectionKey;
-            ClientId = message.connectionDetails?.clientId;
-            ConnectionStateTtl = message.connectionDetails?.connectionStateTtl;
+            ConnectionId = message.ConnectionId;
+            ConnectionSerial = message.ConnectionSerial ?? -1;
+            ConnectionKey = message.ConnectionKey;
+            ClientId = message.ConnectionDetails?.ClientId;
+            ConnectionStateTtl = message.ConnectionDetails?.ConnectionStateTtl;
         }
 
         public TimeSpan? ConnectionStateTtl { get; private set; }

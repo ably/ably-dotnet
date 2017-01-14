@@ -25,7 +25,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
-                error = new ErrorInfo() {statusCode = HttpStatusCode.GatewayTimeout }
+                Error = new ErrorInfo() {StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
             client.Connection.State.Should().Be(ConnectionState.Failed);
@@ -39,7 +39,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
-                error = new ErrorInfo() { statusCode = HttpStatusCode.GatewayTimeout }
+                Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
             client.Connection.State.Should().Be(ConnectionState.Failed);
@@ -53,7 +53,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
-                error = new ErrorInfo() { statusCode = HttpStatusCode.GatewayTimeout }
+                Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
             client.Connection.State.Should().Be(ConnectionState.Failed);
@@ -73,7 +73,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
-                error = new ErrorInfo() { statusCode = HttpStatusCode.GatewayTimeout }
+                Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
             await client.ConnectionManager.SetState(new ConnectionFailedState(client.ConnectionManager, ErrorInfo.ReasonFailed));
             client.Connect();
@@ -94,7 +94,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
-                error = new ErrorInfo() { statusCode = HttpStatusCode.GatewayTimeout }
+                Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
             states.First().Should().Be(ConnectionState.Disconnected);
@@ -115,7 +115,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
-                error = new ErrorInfo() { statusCode = HttpStatusCode.GatewayTimeout }
+                Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
             states.First().Should().Be(ConnectionState.Disconnected);
@@ -141,14 +141,14 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.RestClient.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(10), handler);
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
-                connectionDetails = new ConnectionDetails() { connectionKey = "connectionKey" },
-                connectionId = "1",
-                connectionSerial = 100
+                ConnectionDetails = new ConnectionDetails() { ConnectionKey = "connectionKey" },
+                ConnectionId = "1",
+                ConnectionSerial = 100
             });
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
-                error = new ErrorInfo() { statusCode = HttpStatusCode.GatewayTimeout }
+                Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
             await client.TimeAsync();
@@ -171,7 +171,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
-                error = new ErrorInfo() { statusCode = HttpStatusCode.GatewayTimeout }
+                Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
             for (int i = 0; i < 5; i++)
@@ -188,7 +188,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
                 await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
                 {
-                    error = new ErrorInfo() { statusCode = HttpStatusCode.GatewayTimeout }
+                    Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
                 });
             }
 
@@ -215,7 +215,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
-                error = new ErrorInfo() { statusCode = HttpStatusCode.GatewayTimeout }
+                Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
             for (int i = 0; i < 5; i++)
@@ -233,7 +233,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
                 await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
                 {
-                    error = new ErrorInfo() { statusCode = HttpStatusCode.GatewayTimeout }
+                    Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
                 });
             }
 
@@ -248,7 +248,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         {
             var client = GetConnectedClient(null, request =>
             {
-                if (request.Url == Defaults.InternetCheckURL)
+                if (request.Url == Defaults.InternetCheckUrl)
                 {
                     return "no".ToAblyResponse();
                 }
@@ -258,7 +258,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
-                error = new ErrorInfo() { statusCode = HttpStatusCode.GatewayTimeout }
+                Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
             client.Connection.State.Should().Be(ConnectionState.Failed);

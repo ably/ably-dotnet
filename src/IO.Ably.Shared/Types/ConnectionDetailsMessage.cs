@@ -1,15 +1,23 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace IO.Ably
 {
     public class ConnectionDetails
     {
-        public string clientId { get; set; }
-        public string connectionKey { get; set; }
-        public TimeSpan? connectionStateTtl { get; set; }
-        public long maxFrameSize { get; set; }
-        public long maxInboundRate { get; set; }
-        public long maxMessageSize { get; set; }
-        public string serverId { get; set; }
+        [JsonProperty("clientId")]
+        public string ClientId { get; set; }
+        [JsonProperty("connectionKey")]
+        public string ConnectionKey { get; set; }
+        [JsonProperty("connectionStateTtl")]
+        public TimeSpan? ConnectionStateTtl { get; set; }
+        [JsonProperty("maxFrameSize")]
+        public long MaxFrameSize { get; set; }
+        [JsonProperty("maxInboundRate")]
+        public long MaxInboundRate { get; set; }
+        [JsonProperty("maxMessageSize")]
+        public long MaxMessageSize { get; set; }
+        [JsonProperty("serverId")]
+        public string ServerId { get; set; }
     }
 }

@@ -40,6 +40,8 @@ namespace IO.Ably.Tests.Realtime
                 .WhichValue.Should().Be(echo.ToString().ToLower());
         }
 
+
+
         [Fact]
         [Trait("spec", "RTN2d")]
         public void WithClientId_ShouldSetTransportClientIdCorrectly()
@@ -109,6 +111,16 @@ namespace IO.Ably.Tests.Realtime
             LastCreatedTransport.Parameters.GetParams()
                 .Should().ContainKey("v")
                 .WhichValue.Should().Be("0.8");
+        }
+
+        [Trait("spec", "RTN2g")]
+        public void ShouldSetTransportLibVersionParamater()
+        {
+            var client = GetClientWithFakeTransport();
+
+            LastCreatedTransport.Parameters.GetParams()
+                .Should().ContainKey("lib")
+                .WhichValue.Should().Be("dotnet-0.8.4");
         }
 
         public ConnectionParameterSpecs(ITestOutputHelper output) : base(output)

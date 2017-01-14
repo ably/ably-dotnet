@@ -1,5 +1,4 @@
-﻿using IO.Ably.Encryption;
-using IO.Ably.Realtime;
+﻿using IO.Ably.Realtime;
 using IO.Ably.Transport;
 
 namespace IO.Ably.Platform

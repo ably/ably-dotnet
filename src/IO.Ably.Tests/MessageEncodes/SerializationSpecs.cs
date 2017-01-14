@@ -19,13 +19,13 @@ namespace IO.Ably.Tests
             public void CanSerialiseAndDeserializeProtocolMessage()
             {
                 var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, "boo");
-                message.presence = new[] { new PresenceMessage(PresenceAction.Enter, "123", "my data") };
+                message.Presence = new[] { new PresenceMessage(PresenceAction.Enter, "123", "my data") };
 
                 var data = MsgPackHelper.Serialise(message);
-                var result = MsgPackHelper.DeSerialise(data, typeof(ProtocolMessage)) as ProtocolMessage;
+                var result = MsgPackHelper.Deserialise(data, typeof(ProtocolMessage)) as ProtocolMessage;
 
-                result.action.Should().Be(message.action);
-                result.presence.First().data.Should().Be(message.presence[0].data);
+                result.Action.Should().Be(message.Action);
+                result.Presence.First().Data.Should().Be(message.Presence[0].Data);
             }
         }
 

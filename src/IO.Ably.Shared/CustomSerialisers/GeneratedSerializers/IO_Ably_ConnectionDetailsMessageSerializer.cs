@@ -37,19 +37,19 @@ namespace IO.Ably.CustomSerialisers {
         protected override void PackToCore(MsgPack.Packer packer, IO.Ably.ConnectionDetails objectTree) {
             packer.PackMapHeader(7);
             this._serializer0.PackTo(packer, "clientId");
-            this._serializer0.PackTo(packer, objectTree.clientId);
+            this._serializer0.PackTo(packer, objectTree.ClientId);
             this._serializer0.PackTo(packer, "connectionKey");
-            this._serializer0.PackTo(packer, objectTree.connectionKey);
+            this._serializer0.PackTo(packer, objectTree.ConnectionKey);
             this._serializer0.PackTo(packer, "connectionStateTtl");
-            this._serializer1.PackTo(packer, objectTree.connectionStateTtl);
+            this._serializer1.PackTo(packer, objectTree.ConnectionStateTtl);
             this._serializer0.PackTo(packer, "maxFrameSize");
-            this._serializer2.PackTo(packer, objectTree.maxFrameSize);
+            this._serializer2.PackTo(packer, objectTree.MaxFrameSize);
             this._serializer0.PackTo(packer, "maxInboundRate");
-            this._serializer2.PackTo(packer, objectTree.maxInboundRate);
+            this._serializer2.PackTo(packer, objectTree.MaxInboundRate);
             this._serializer0.PackTo(packer, "maxMessageSize");
-            this._serializer2.PackTo(packer, objectTree.maxMessageSize);
+            this._serializer2.PackTo(packer, objectTree.MaxMessageSize);
             this._serializer0.PackTo(packer, "serverId");
-            this._serializer0.PackTo(packer, objectTree.serverId);
+            this._serializer0.PackTo(packer, objectTree.ServerId);
         }
         
         protected override IO.Ably.ConnectionDetails UnpackFromCore(MsgPack.Unpacker unpacker) {
@@ -65,7 +65,7 @@ namespace IO.Ably.CustomSerialisers {
                 }
                 if (((nullable == null) 
                             == false)) {
-                    result.clientId = nullable;
+                    result.ClientId = nullable;
                 }
                 unpacked = (unpacked + 1);
                 string nullable0 = default(string);
@@ -74,7 +74,7 @@ namespace IO.Ably.CustomSerialisers {
                 }
                 if (((nullable0 == null) 
                             == false)) {
-                    result.connectionKey = nullable0;
+                    result.ConnectionKey = nullable0;
                 }
                 unpacked = (unpacked + 1);
                 System.Nullable<System.TimeSpan> nullable1 = default(System.Nullable<System.TimeSpan>);
@@ -101,7 +101,7 @@ namespace IO.Ably.CustomSerialisers {
                     }
                 }
                 if (nullable1.HasValue) {
-                    result.connectionStateTtl = nullable1;
+                    result.ConnectionStateTtl = nullable1;
                 }
                 unpacked = (unpacked + 1);
                 System.Nullable<long> nullable2 = default(System.Nullable<long>);
@@ -109,7 +109,7 @@ namespace IO.Ably.CustomSerialisers {
                     nullable2 = MsgPack.Serialization.UnpackHelpers.UnpackNullableInt64Value(unpacker, typeof(IO.Ably.ConnectionDetails), "Int64 maxFrameSize");
                 }
                 if (nullable2.HasValue) {
-                    result.maxFrameSize = nullable2.Value;
+                    result.MaxFrameSize = nullable2.Value;
                 }
                 unpacked = (unpacked + 1);
                 System.Nullable<long> nullable3 = default(System.Nullable<long>);
@@ -117,7 +117,7 @@ namespace IO.Ably.CustomSerialisers {
                     nullable3 = MsgPack.Serialization.UnpackHelpers.UnpackNullableInt64Value(unpacker, typeof(IO.Ably.ConnectionDetails), "Int64 maxInboundRate");
                 }
                 if (nullable3.HasValue) {
-                    result.maxInboundRate = nullable3.Value;
+                    result.MaxInboundRate = nullable3.Value;
                 }
                 unpacked = (unpacked + 1);
                 System.Nullable<long> nullable4 = default(System.Nullable<long>);
@@ -125,7 +125,7 @@ namespace IO.Ably.CustomSerialisers {
                     nullable4 = MsgPack.Serialization.UnpackHelpers.UnpackNullableInt64Value(unpacker, typeof(IO.Ably.ConnectionDetails), "Int64 maxMessageSize");
                 }
                 if (nullable4.HasValue) {
-                    result.maxMessageSize = nullable4.Value;
+                    result.MaxMessageSize = nullable4.Value;
                 }
                 unpacked = (unpacked + 1);
                 string nullable5 = default(string);
@@ -134,7 +134,7 @@ namespace IO.Ably.CustomSerialisers {
                 }
                 if (((nullable5 == null) 
                             == false)) {
-                    result.serverId = nullable5;
+                    result.ServerId = nullable5;
                 }
                 unpacked = (unpacked + 1);
             }
@@ -157,7 +157,7 @@ namespace IO.Ably.CustomSerialisers {
                         nullable13 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.ConnectionDetails), "System.String serverId");
                         if (((nullable13 == null) 
                                     == false)) {
-                            result.serverId = nullable13;
+                            result.ServerId = nullable13;
                         }
                     }
                     else {
@@ -165,7 +165,7 @@ namespace IO.Ably.CustomSerialisers {
                             System.Nullable<long> nullable12 = default(System.Nullable<long>);
                             nullable12 = MsgPack.Serialization.UnpackHelpers.UnpackNullableInt64Value(unpacker, typeof(IO.Ably.ConnectionDetails), "Int64 maxMessageSize");
                             if (nullable12.HasValue) {
-                                result.maxMessageSize = nullable12.Value;
+                                result.MaxMessageSize = nullable12.Value;
                             }
                         }
                         else {
@@ -173,7 +173,7 @@ namespace IO.Ably.CustomSerialisers {
                                 System.Nullable<long> nullable11 = default(System.Nullable<long>);
                                 nullable11 = MsgPack.Serialization.UnpackHelpers.UnpackNullableInt64Value(unpacker, typeof(IO.Ably.ConnectionDetails), "Int64 maxInboundRate");
                                 if (nullable11.HasValue) {
-                                    result.maxInboundRate = nullable11.Value;
+                                    result.MaxInboundRate = nullable11.Value;
                                 }
                             }
                             else {
@@ -181,7 +181,7 @@ namespace IO.Ably.CustomSerialisers {
                                     System.Nullable<long> nullable10 = default(System.Nullable<long>);
                                     nullable10 = MsgPack.Serialization.UnpackHelpers.UnpackNullableInt64Value(unpacker, typeof(IO.Ably.ConnectionDetails), "Int64 maxFrameSize");
                                     if (nullable10.HasValue) {
-                                        result.maxFrameSize = nullable10.Value;
+                                        result.MaxFrameSize = nullable10.Value;
                                     }
                                 }
                                 else {
@@ -208,7 +208,7 @@ namespace IO.Ably.CustomSerialisers {
                                             }
                                         }
                                         if (nullable9.HasValue) {
-                                            result.connectionStateTtl = nullable9;
+                                            result.ConnectionStateTtl = nullable9;
                                         }
                                     }
                                     else {
@@ -217,7 +217,7 @@ namespace IO.Ably.CustomSerialisers {
                                             nullable8 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.ConnectionDetails), "System.String connectionKey");
                                             if (((nullable8 == null) 
                                                         == false)) {
-                                                result.connectionKey = nullable8;
+                                                result.ConnectionKey = nullable8;
                                             }
                                         }
                                         else {
@@ -226,7 +226,7 @@ namespace IO.Ably.CustomSerialisers {
                                                 nullable7 = MsgPack.Serialization.UnpackHelpers.UnpackStringValue(unpacker, typeof(IO.Ably.ConnectionDetails), "System.String clientId");
                                                 if (((nullable7 == null) 
                                                             == false)) {
-                                                    result.clientId = nullable7;
+                                                    result.ClientId = nullable7;
                                                 }
                                             }
                                             else {

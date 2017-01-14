@@ -32,106 +32,115 @@ namespace IO.Ably.Types
         }
 
         [Flags]
-        public enum MessageFlag : byte
+        public enum MessageFlag
         {
-            Presence,
-            Backlog
+            Presence = 1,
+            Backlog = 1 << 1
         }
 
         public ProtocolMessage()
         {
-            messages = new Message[] {};
-            presence = new PresenceMessage[] {};
+            Messages = new Message[] {};
+            Presence = new PresenceMessage[] {};
         }
 
         internal ProtocolMessage(MessageAction action) : this()
         {
-            this.action = action;
+            Action = action;
         }
 
         internal ProtocolMessage(MessageAction action, string channel) : this(action)
         {
-            this.channel = channel;
+            this.Channel = channel;
         }
 
-        public MessageAction action { get; set; }
+        [JsonProperty("action")]
+        public MessageAction Action { get; set; }
 
-        public MessageFlag? flags { get; set; }
+        [JsonProperty("flags")]
+        public MessageFlag? Flags { get; set; }
 
         [JsonIgnore]
-        public bool HasPresenceFlag => flags == MessageFlag.Presence;
+        public bool HasPresenceFlag => Flags == MessageFlag.Presence;
         [JsonIgnore]
-        public bool HasBacklogFlag => flags == MessageFlag.Backlog;
-        public int? count { get; set; }
-        public ErrorInfo error { get; set; }
-        public string id { get; set; }
-        public string channel { get; set; }
-        public string channelSerial { get; set; }
-        public string connectionId { get; set; }
+        public bool HasBacklogFlag => Flags == MessageFlag.Backlog;
 
-        public string connectionKey
+        [JsonProperty("count")]
+        public int? Count { get; set; }
+        [JsonProperty("error")]
+        public ErrorInfo Error { get; set; }
+        [JsonProperty("id")]
+        public string Id { get; set; }
+        [JsonProperty("channel")]
+        public string Channel { get; set; }
+        [JsonProperty("channelSerial")]
+        public string ChannelSerial { get; set; }
+        [JsonProperty("connectionId")]
+        public string ConnectionId { get; set; }
+
+        [JsonProperty("connectionKey")]
+        public string ConnectionKey
         {
             get
             {
-                if(connectionDetails != null && connectionDetails.connectionKey.IsNotEmpty())
-                    return connectionDetails.connectionKey;
+                if(ConnectionDetails != null && ConnectionDetails.ConnectionKey.IsNotEmpty())
+                    return ConnectionDetails.ConnectionKey;
                 return _connectionKey;
             }
             set { _connectionKey = value; }
         }
 
-        public long? connectionSerial { get; set; }
-        public long msgSerial { get; set; }
-        public DateTimeOffset? timestamp { get; set; }
-        public Message[] messages { get; set; }
+        [JsonProperty("connectionSerial")]
+        public long? ConnectionSerial { get; set; }
+        [JsonProperty("msgSerial")]
+        public long MsgSerial { get; set; }
+        [JsonProperty("timestamp")]
+        public DateTimeOffset? Timestamp { get; set; }
+        [JsonProperty("messages")]
+        public Message[] Messages { get; set; }
 
-        public PresenceMessage[] presence { get; set; }
-        public ConnectionDetails connectionDetails { get; set; }
+        [JsonProperty("presence")]
+        public PresenceMessage[] Presence { get; set; }
+        [JsonProperty("connectionDetails")]
+        public ConnectionDetails ConnectionDetails { get; set; }
 
         [JsonIgnore]
-        internal bool AckRequired => action == MessageAction.Message || action == MessageAction.Presence;
-
-        public bool ShouldSerializemessages()
-        {
-            if (null == messages)
-                return false;
-            return messages.Any(m => !m.IsEmpty);
-        }
+        internal bool AckRequired => Action == MessageAction.Message || Action == MessageAction.Presence;
 
         [OnSerializing]
         internal void onSerializing(StreamingContext context)
         {
-            if (channel == "")
-                channel = null;
+            if (Channel == "")
+                Channel = null;
 
             // Filter out empty messages
-            if (messages != null)
+            if (Messages != null)
             {
-                messages = messages.Where(m => !m.IsEmpty).ToArray();
-                if (messages.Length == 0)
-                    messages = null;
+                Messages = Messages.Where(m => !m.IsEmpty).ToArray();
+                if (Messages.Length == 0)
+                    Messages = null;
             }
 
-            if (presence != null && presence.Length == 0)
-                presence = null;
+            if (Presence != null && Presence.Length == 0)
+                Presence = null;
         }
 
         public override string ToString()
         {
             var text = new StringBuilder();
             text.Append("{ ")
-                .AppendFormat("action={0}", action);
-            if (messages != null && messages.Length > 0)
+                .AppendFormat("action={0}", Action);
+            if (Messages != null && Messages.Length > 0)
             {
                 text.Append(", mesasages=[ ");
-                foreach (var message in messages)
+                foreach (var message in Messages)
                 {
-                    text.AppendFormat("{{ name=\"{0}\"", message.name);
-                    if (message.timestamp.HasValue && message.timestamp.Value.Ticks > 0)
+                    text.AppendFormat("{{ name=\"{0}\"", message.Name);
+                    if (message.Timestamp.HasValue && message.Timestamp.Value.Ticks > 0)
                     {
-                        text.AppendFormat(", timestamp=\"{0}\"}}", message.timestamp);
+                        text.AppendFormat(", timestamp=\"{0}\"}}", message.Timestamp);
                     }
-                    text.AppendFormat(", data={0}}}", message.data);
+                    text.AppendFormat(", data={0}}}", message.Data);
                 }
                 text.Append(" ]");
             }

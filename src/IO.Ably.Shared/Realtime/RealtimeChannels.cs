@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using IO.Ably.Rest;
 
 namespace IO.Ably.Realtime
 {
@@ -50,21 +49,30 @@ namespace IO.Ably.Realtime
 
         public bool Release(string name)
         {
+            if(Logger.IsDebug) {  Logger.Debug($"Releasing channel #{name}"); }
             RealtimeChannel channel = null;
             if (_channels.TryGetValue(name, out channel))
             {
-                EventHandler<ChannelStateChangedEventArgs> eventHandler = null;
+                EventHandler<ChannelStateChange> eventHandler = null;
                 eventHandler = (s, args) =>
                 {
-                    if (args.NewState == ChannelState.Detached || args.NewState == ChannelState.Failed)
+                    var detachedChannel = (RealtimeChannel) s;
+                    if (args.Current == ChannelState.Detached || args.Current == ChannelState.Failed)
                     {
-                        channel.StateChanged -= eventHandler;
+                        if (Logger.IsDebug) { Logger.Debug($"Channel #{name} was removed from Channel list. State {args.Current}"); }
+                        detachedChannel.InternalStateChanged -= eventHandler;
+
                         RealtimeChannel removedChannel;
                         if (_channels.TryRemove(name, out removedChannel))
                             removedChannel.Dispose();
                     }
+                    else
+                    {
+                        if (Logger.IsDebug) { Logger.Debug($"Waiting to remove Channel #{name}. State {args.Current}"); }
+                    }
                 };
-                channel.StateChanged += eventHandler;
+
+                channel.InternalStateChanged += eventHandler;
                 channel.Detach();
                 return true;
             }

@@ -43,7 +43,7 @@ namespace IO.Ably.Tests.Rest
             var presence = await channel.Presence.GetAsync();
             foreach (var message in presence.Items)
             {
-                message.encoding.Should().BeNullOrEmpty();
+                message.Encoding.Should().BeNullOrEmpty();
             }
         }
     }

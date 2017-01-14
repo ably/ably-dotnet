@@ -39,6 +39,21 @@ namespace IO.Ably.Transport
 
             return wrapper.Task;
         }
+
+        public static Task<Result> Wrap(Action<Action<bool, ErrorInfo>> toWrapMethod)
+        {
+            var wrapper = new TaskWrapper();
+            try
+            {
+                toWrapMethod(wrapper.Callback);
+            }
+            catch (Exception ex)
+            {
+                wrapper.SetException(ex);
+            }
+
+            return wrapper.Task;
+        }
     }
 
     internal class TaskWrapper<T>

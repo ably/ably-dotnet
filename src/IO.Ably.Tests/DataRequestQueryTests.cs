@@ -40,10 +40,10 @@ namespace IO.Ably.Tests
         {
             //Arrange
 
-            var nextDataRequest = DataRequestQuery.Parse(NextQueryString);
+            var nextDataRequest = HistoryRequestParams.Parse(NextQueryString);
 
             //Act
-            var actual = DataRequestQuery.GetLinkQuery(GetSampleHistoryRequestHeaders(), "next");
+            var actual = HistoryRequestParams.GetLinkQuery(GetSampleHistoryRequestHeaders(), "next");
 
             //Assert
             Assert.Equal(nextDataRequest, actual);
@@ -54,12 +54,12 @@ namespace IO.Ably.Tests
         {
             //Arrange
             var firstDataRequest =
-                DataRequestQuery.Parse(
+                HistoryRequestParams.Parse(
                     FirstQueryString);
 
             //Act
             //Act
-            var actual = DataRequestQuery.GetLinkQuery(GetSampleHistoryRequestHeaders(), "first");
+            var actual = HistoryRequestParams.GetLinkQuery(GetSampleHistoryRequestHeaders(), "first");
 
             //Assert
             Assert.Equal(firstDataRequest, actual);

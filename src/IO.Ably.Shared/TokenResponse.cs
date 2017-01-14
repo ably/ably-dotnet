@@ -1,4 +1,3 @@
-using IO.Ably.Auth;
 using MsgPack.Serialization;
 using Newtonsoft.Json;
 

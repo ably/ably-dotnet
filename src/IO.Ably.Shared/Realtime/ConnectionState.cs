@@ -64,5 +64,5 @@
         /// onnect() on the connection object.
         /// </remarks>
         Failed
-    };
+    }
 }

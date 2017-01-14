@@ -20,7 +20,7 @@ namespace IO.Ably
         {
 
         }
-
+        
         internal AblyRealtime(ClientOptions options, Func<ClientOptions, AblyRest> createRestFunc)
         {
             CaptureSynchronizationContext(options);
@@ -64,14 +64,19 @@ namespace IO.Ably
             return RestClient.StatsAsync();
         }
 
-        public Task<PaginatedResult<Stats>> StatsAsync(StatsDataRequestQuery query)
+        public Task<PaginatedResult<Stats>> StatsAsync(StatsRequestParams query)
         {
             return RestClient.StatsAsync(query);
         }
 
-        public Task<PaginatedResult<Stats>> StatsAsync(DataRequestQuery query)
+        public PaginatedResult<Stats> Stats()
         {
-            return RestClient.StatsAsync(query);
+            return RestClient.Stats();
+        }
+
+        public PaginatedResult<Stats> Stats(StatsRequestParams query)
+        {
+            return RestClient.Stats(query);
         }
 
         /// <summary>
@@ -96,8 +101,6 @@ namespace IO.Ably
         {
             return RestClient.TimeAsync();
         }
-
-        
 
         internal void NotifyExternalClients(Action action)
         {

@@ -1,6 +1,8 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
+using IO.Ably.Tests.Infrastructure;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
@@ -9,9 +11,11 @@ namespace IO.Ably.Tests
     {
         protected readonly AblySandboxFixture Fixture;
         protected readonly ITestOutputHelper Output;
+        protected ManualResetEvent _resetEvent;
 
         public SandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
         {
+            _resetEvent = new ManualResetEvent(false);
             Fixture = fixture;
             Output = output;
             //Reset time in case other tests have changed it
@@ -37,6 +41,7 @@ namespace IO.Ably.Tests
             var settings = await Fixture.GetSettings();
             var defaultOptions = settings.CreateDefaultOptions();
             defaultOptions.UseBinaryProtocol = protocol == Protocol.MsgPack;
+            defaultOptions.TransportFactory = new TestTransportFactory();
             optionsAction?.Invoke(defaultOptions, settings);
             return new AblyRealtime(defaultOptions);
         }
@@ -62,6 +67,20 @@ namespace IO.Ably.Tests
             if (waitSpan.HasValue)
                 return connectionAwaiter.Wait(waitSpan.Value);
             return connectionAwaiter.Wait();
+        }
+
+        protected static async Task WaitFor30sOrUntilTrue(Func<bool> predicate)
+        {
+            int count = 0;
+            while (count < 30)
+            {
+                count++;
+
+                if (predicate())
+                    break;
+
+                await Task.Delay(1000);
+            }
         }
     }
 }

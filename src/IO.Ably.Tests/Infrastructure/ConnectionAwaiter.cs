@@ -25,8 +25,12 @@ namespace IO.Ably.Tests
         public ConnectionAwaiter(Connection connection, params ConnectionState[] awaitedStates)
         {
             Connection = connection;
-            _awaitedStates.AddRange(awaitedStates ?? new []{ConnectionState.Connected});
-            
+            if (awaitedStates != null && awaitedStates.Length > 0)
+            {
+                _awaitedStates.AddRange(awaitedStates);
+            }
+            else
+                throw new ArgumentNullException(nameof(awaitedStates), "Please add at least one awaited state");
         }
 
         private void RemoveListener()
@@ -35,7 +39,7 @@ namespace IO.Ably.Tests
             Connection.InternalStateChanged -= conn_StateChanged;
         }
 
-        private void conn_StateChanged(object sender, ConnectionStateChangedEventArgs e)
+        private void conn_StateChanged(object sender, ConnectionStateChange e)
         {
             if (_awaitedStates.Contains(e.Current))
             {
@@ -47,7 +51,7 @@ namespace IO.Ably.Tests
 
         public Task<TimeSpan> Wait()
         {
-            return Wait(TimeSpan.FromSeconds(2));
+            return Wait(TimeSpan.FromSeconds(8));
         }
 
         public async Task<TimeSpan> Wait(TimeSpan timeout)

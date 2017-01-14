@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using IO.Ably.Auth;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
@@ -59,7 +58,7 @@ namespace IO.Ably
                 return;
             }
 
-            Logger.Info("Using token authentication.");
+            Logger.Debug("Using token authentication.");
             if (Options.TokenDetails != null)
             {
                 CurrentToken = Options.TokenDetails;
@@ -160,13 +159,26 @@ namespace IO.Ably
             TokenRequest postData = null;
             if (mergedOptions.AuthCallback != null)
             {
-                var token = await mergedOptions.AuthCallback(@params);
-                if (token != null)
-                    return token;
-                throw new AblyException("AuthCallback returned an invalid token");
-            }
+                var callbackResult = await mergedOptions.AuthCallback(@params);
 
-            if (mergedOptions.AuthUrl.IsNotEmpty())
+                if(callbackResult == null)
+                    throw new AblyException("AuthCallback returned null");
+
+                if (callbackResult is TokenDetails)
+                    return callbackResult as TokenDetails;
+
+                if (callbackResult is TokenRequest)
+                {
+                    postData = callbackResult as TokenRequest;
+
+                    request.Url = $"/keys/{postData.KeyName}/requestToken";
+                }
+                else
+                {
+                    throw new AblyException($"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest");
+                }
+            }
+            else if (mergedOptions.AuthUrl.IsNotEmpty())
             {
                 var response = await CallAuthUrl(mergedOptions, @params);
 
@@ -176,11 +188,10 @@ namespace IO.Ably
                 var signedData = response.TextResponse;
                 var jData = JObject.Parse(signedData);
 
-                //TODO: How do you know if it is a valid token
                 if (TokenDetails.IsToken(jData))
-                    return jData.ToObject<TokenDetails>();
+                    return JsonHelper.DeserializeObject<TokenDetails>(jData);
 
-                postData = JsonConvert.DeserializeObject<TokenRequest>(signedData);
+                postData = JsonHelper.Deserialize<TokenRequest>(signedData);
 
                 request.Url = $"/keys/{postData.KeyName}/requestToken";
             }
@@ -198,8 +209,9 @@ namespace IO.Ably
 
             TokenDetails result = await _rest.ExecuteRequest<TokenDetails>(request);
 
-            if (null == result)
+            if (result == null)
                 throw new AblyException(new ErrorInfo("Invalid token response returned", 500));
+
             return result;
         }
 
@@ -312,11 +324,11 @@ namespace IO.Ably
         /// signed requests for submission by another client.
         /// </summary>
         /// <param name="tokenParams"><see cref="TokenParams"/>. If null a token request is generated from options passed when the client was created.</param>
-        /// <param name="options"><see cref="AuthOptions"/>. If null the default AuthOptions are used.</param>
+        /// <param name="authOptions"><see cref="AuthOptions"/>. If null the default AuthOptions are used.</param>
         /// <returns></returns>
-        public async Task<TokenRequest> CreateTokenRequestAsync(TokenParams tokenParams, AuthOptions options)
+        public async Task<TokenRequest> CreateTokenRequestAsync(TokenParams tokenParams, AuthOptions authOptions)
         {
-            var mergedOptions = options != null ? options.Merge(Options) : Options;
+            var mergedOptions = authOptions != null ? authOptions.Merge(Options) : Options;
 
             if (string.IsNullOrEmpty(mergedOptions.Key))
                 throw new AblyException("No key specified", 40101, HttpStatusCode.Unauthorized);
@@ -347,8 +359,11 @@ namespace IO.Ably
 
         private void LogCurrentAuthenticationMethod()
         {
-            TokenAuthMethod method = GetTokenAuthMethod();
-            Logger.Info("Authentication method: {0}", method.ToEnumDescription());
+            if (Logger.IsDebug)
+            {
+                TokenAuthMethod method = GetTokenAuthMethod();
+                Logger.Debug("Authentication method: {0}", method.ToEnumDescription());
+            }
         }
 
         public Result ValidateClientIds(IEnumerable<IMessage> messages)
@@ -359,18 +374,18 @@ namespace IO.Ably
 
             foreach (var message in messages)
             {
-                if (message.clientId.IsNotEmpty() && message.clientId != libClientId)
+                if (message.ClientId.IsNotEmpty() && message.ClientId != libClientId)
                 {
                     var errorMessage = "";
                     if (message is Message)
                     {
                         errorMessage =
-                            $"{message.GetType().Name} with name '{(message as Message).name}' has incompatible clientId {message.clientId} as the current client is configured with {libClientId}";
+                            $"{message.GetType().Name} with name '{(message as Message).Name}' has incompatible clientId {message.ClientId} as the current client is configured with {libClientId}";
                     }
                     else
                     {
                         errorMessage =
-                            $"{message.GetType().Name} has incompatible clientId '{message.clientId}' as the current client is configured with '{libClientId}'";
+                            $"{message.GetType().Name} has incompatible clientId '{message.ClientId}' as the current client is configured with '{libClientId}'";
                     }
 
                     return Result.Fail(new ErrorInfo(errorMessage, 40012, (HttpStatusCode)400));
@@ -381,5 +396,22 @@ namespace IO.Ably
         }
 
 
+        public TokenDetails RequestToken(TokenParams tokenParams = null,
+            AuthOptions options = null)
+        {
+            return AsyncHelper.RunSync(() => RequestTokenAsync(tokenParams, options));
+        }
+
+        public TokenDetails Authorise(TokenParams tokenParams = null,
+            AuthOptions options = null)
+        {
+            return AsyncHelper.RunSync(() => AuthoriseAsync(tokenParams, options));
+        }
+
+        public TokenRequest CreateTokenRequest(TokenParams tokenParams = null,
+            AuthOptions authOptions = null)
+        {
+            return AsyncHelper.RunSync(() => CreateTokenRequestAsync(tokenParams, authOptions));
+        }
     }
 }

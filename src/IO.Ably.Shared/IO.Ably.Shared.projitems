@@ -20,11 +20,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)Capability.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CapabilityResource.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CipherParams.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\GeneratedSerializers\IO_Ably_TokenRequestSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EventEmitter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IChannelCommands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IRealtimeClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)JsonHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeChannels.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\RestChannels.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyncExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TaskConstants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ClientOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Config.cs" />
@@ -61,7 +64,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\DictionaryExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\EnumerableExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\EnumExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Extensions\JTokenExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ObjectExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\StringExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\UriExtensions.cs" />
@@ -84,9 +86,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)MsgPackHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaginatedResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Platform\HttpUtility.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Platform\ICrypto.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Platform\IoC.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Platform\IPlatform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Protocol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)QueryDirection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Channel.cs" />
@@ -135,13 +135,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Types\ConnectionDetailsMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\ErrorInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\IEncodedMessage.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Types\IMessageSerializer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Types\JsonMessageSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\Message.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Types\MsgPack\MsgPackMessageSerializer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Types\MsgPack\MsgPackUtils.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Types\MsgPack\PropertyMetadata.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Types\MsgPack\TypeMetadata.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\PresenceMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\ProtocolMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\ActionOnDispose.cs" />

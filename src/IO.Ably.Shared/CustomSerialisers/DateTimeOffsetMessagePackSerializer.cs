@@ -10,7 +10,7 @@ namespace IO.Ably.CustomSerialisers
 
         protected override void PackToCore(Packer packer, DateTimeOffset objectTree)
         {
-            packer.Pack(objectTree.ToUnixTimeInMilliseconds());
+            packer.Pack((long)objectTree.ToUnixTimeInMilliseconds());
         }
 
         protected override DateTimeOffset UnpackFromCore(Unpacker unpacker)

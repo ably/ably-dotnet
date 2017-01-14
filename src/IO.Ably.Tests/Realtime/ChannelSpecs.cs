@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -75,14 +76,14 @@ namespace IO.Ably.Tests.Realtime
                 channel.On((args) =>
                 {
                     stateChanged = true;
-                    newState = args.NewState;
+                    newState = args.Current;
                 });
 
                 await
                     client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
                     {
-                        error = expectedError,
-                        channel = "test"
+                        Error = expectedError,
+                        Channel = "test"
                     });
 
                 await Task.Delay(10); //Allow the notification thread to fire
@@ -115,11 +116,14 @@ namespace IO.Ably.Tests.Realtime
                 ChannelState newState = ChannelState.Initialized;
                 _channel.On(x =>
                 {
-                    newState = x.NewState;
+                    newState = x.Current;
+                    Done();
                 });
 
                 (_channel as RealtimeChannel).SetChannelState(state);
-                await Task.Delay(10);
+                
+                WaitOne();
+
                 _channel.State.Should().Be(state);
                 newState.Should().Be(state);
             }
@@ -133,11 +137,12 @@ namespace IO.Ably.Tests.Realtime
                 _channel.On((args) =>
                 {
                     expectedError = args.Error;
+                    Done();
                 });
 
                 (_channel as RealtimeChannel).SetChannelState(ChannelState.Attached, error);
 
-                await Task.Delay(10);
+                WaitOne();
 
                 expectedError.Should().BeSameAs(error);
                 _channel.ErrorReason.Should().BeSameAs(error);
@@ -164,7 +169,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 var error = new ErrorInfo();
                 (_channel as RealtimeChannel).SetChannelState(state);
-                await _client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { error = error });
+                await _client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = error });
 
                 _client.Connection.State.Should().Be(ConnectionState.Failed);
                 _channel.State.Should().Be(ChannelState.Failed);
@@ -229,12 +234,14 @@ namespace IO.Ably.Tests.Realtime
 
                 _channel.On((args) =>
                 {
-                    newState = args.NewState;
+                    newState = args.Current;
                     stateChanged = true;
                 });
 
                 _channel.Attach();
+
                 await Task.Delay(100);
+
                 stateChanged.Should().BeFalse("This should not happen. State changed to: " + newState);
             }
 
@@ -267,8 +274,8 @@ namespace IO.Ably.Tests.Realtime
                 _channel.State.Should().Be(ChannelState.Attaching);
 
                 var lastMessageSend = LastCreatedTransport.LastMessageSend;
-                lastMessageSend.action.Should().Be(ProtocolMessage.MessageAction.Attach);
-                lastMessageSend.channel.Should().Be(_channel.Name);
+                lastMessageSend.Action.Should().Be(ProtocolMessage.MessageAction.Attach);
+                lastMessageSend.Channel.Should().Be(_channel.Name);
 
                 await ReceiveAttachedMessage();
 
@@ -299,9 +306,12 @@ namespace IO.Ably.Tests.Realtime
                 {
                     called = true;
                     info.Should().BeNull();
+                    Done();
                 });
 
                 await ReceiveAttachedMessage();
+
+                WaitOne();
 
                 called.Should().BeTrue();
             }
@@ -316,9 +326,10 @@ namespace IO.Ably.Tests.Realtime
                 {
                     called = true;
                     info.Should().NotBeNull();
+                    Done();
                 });
 
-                await Task.Delay(120);
+                WaitOne();
 
                 called.Should().BeTrue();
             }
@@ -357,7 +368,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 await _client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
                 {
-                    channel = _channel.Name
+                    Channel = _channel.Name
                 });
             }
 
@@ -390,6 +401,7 @@ namespace IO.Ably.Tests.Realtime
                 });
 
                 _channel.Detach();
+
                 changed.Should().BeFalse();
             }
 
@@ -410,9 +422,9 @@ namespace IO.Ably.Tests.Realtime
 
                 _channel.Detach();
 
-                LastCreatedTransport.LastMessageSend.action.Should().Be(ProtocolMessage.MessageAction.Detach);
+                LastCreatedTransport.LastMessageSend.Action.Should().Be(ProtocolMessage.MessageAction.Detach);
                 _channel.State.Should().Be(ChannelState.Detaching);
-                await _client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached) { channel = _channel.Name });
+                await _client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached) { Channel = _channel.Name });
 
                 _channel.State.Should().Be(ChannelState.Detached);
             }
@@ -437,16 +449,20 @@ namespace IO.Ably.Tests.Realtime
             {
                 SetState(ChannelState.Attached);
 
-                var called = false;
+                bool called = false;
+                var detached = false;
                 _channel.Detach((span, info) =>
                 {
                     called = true;
-                    info.Should().BeNull();
+                    Assert.Null(info);
+                    Done();
                 });
 
                 await ReceiveDetachedMessage();
 
-                called.Should().BeTrue();
+                WaitOne();
+
+                Assert.True(called);
             }
 
             [Fact]
@@ -461,9 +477,10 @@ namespace IO.Ably.Tests.Realtime
                 {
                     called = true;
                     info.Should().NotBeNull();
+                    Done();
                 });
 
-                await Task.Delay(180);
+                WaitOne();
 
                 called.Should().BeTrue();
             }
@@ -500,7 +517,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 await _client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached)
                 {
-                    channel = _channel.Name
+                    Channel = _channel.Name
                 });
             }
 
@@ -534,9 +551,9 @@ namespace IO.Ably.Tests.Realtime
 
                 channel.PublishAsync("byte", bytes);
 
-                var sentMessage = LastCreatedTransport.LastMessageSend.messages.First();
+                var sentMessage = LastCreatedTransport.LastMessageSend.Messages.First();
                 LastCreatedTransport.SentMessages.Should().HaveCount(1);
-                sentMessage.encoding.Should().Be("base64");
+                sentMessage.Encoding.Should().Be("base64");
             }
 
             [Fact]
@@ -556,7 +573,7 @@ namespace IO.Ably.Tests.Realtime
                 channel.Publish(list);
 
                 LastCreatedTransport.SentMessages.Should().HaveCount(1);
-                LastCreatedTransport.LastMessageSend.messages.Should().HaveCount(2);
+                LastCreatedTransport.LastMessageSend.Messages.Should().HaveCount(2);
             }
 
             [Fact]
@@ -598,9 +615,9 @@ namespace IO.Ably.Tests.Realtime
                     channel.Publish("test", "best");
 
                     var lastMessageSend = LastCreatedTransport.LastMessageSend;
-                    lastMessageSend.channel.Should().Be("test");
-                    lastMessageSend.messages.First().name.Should().Be("test");
-                    lastMessageSend.messages.First().data.Should().Be("best");
+                    lastMessageSend.Channel.Should().Be("test");
+                    lastMessageSend.Messages.First().Name.Should().Be("test");
+                    lastMessageSend.Messages.First().Data.Should().Be("best");
                 }
 
                 [Fact]
@@ -616,7 +633,7 @@ namespace IO.Ably.Tests.Realtime
 
                     LastCreatedTransport.LastMessageSend.Should().BeNull();
                     client.ConnectionManager.PendingMessages.Should().HaveCount(1);
-                    client.ConnectionManager.PendingMessages.First().Message.messages.First().data.Should().Be("connecting");
+                    client.ConnectionManager.PendingMessages.First().Message.Messages.First().Data.Should().Be("connecting");
 
                     //Not connect the client
                     await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
@@ -639,7 +656,7 @@ namespace IO.Ably.Tests.Realtime
 
                     LastCreatedTransport.LastMessageSend.Should().BeNull();
                     client.ConnectionManager.PendingMessages.Should().HaveCount(1);
-                    client.ConnectionManager.PendingMessages.First().Message.messages.First().data.Should().Be("connecting");
+                    client.ConnectionManager.PendingMessages.First().Message.Messages.First().Data.Should().Be("connecting");
 
                     //Now connect
                     client.Connect();
@@ -674,7 +691,7 @@ namespace IO.Ably.Tests.Realtime
                     channel.PublishAsync("test", "test");
                     SetState(channel, ChannelState.Attached);
 
-                    LastCreatedTransport.LastMessageSend.messages.First().clientId.Should().BeNullOrEmpty();
+                    LastCreatedTransport.LastMessageSend.Messages.First().ClientId.Should().BeNullOrEmpty();
                 }
 
                 [Fact]
@@ -686,7 +703,7 @@ namespace IO.Ably.Tests.Realtime
                     SetState(channel, ChannelState.Attached);
                     channel.PublishAsync("test", "best", clientId: "123");
 
-                    LastCreatedTransport.LastMessageSend.messages.First().clientId.Should().Be("123");
+                    LastCreatedTransport.LastMessageSend.Messages.First().ClientId.Should().Be("123");
                 }
 
                 public ClientIdSpecs(ITestOutputHelper output) : base(output)
@@ -711,14 +728,20 @@ namespace IO.Ably.Tests.Realtime
                 var channel = _client.Channels.Get("Test");
                 SetState(channel, ChannelState.Attached);
                 var messages = new List<Message>();
+                int count = 0;
                 channel.Subscribe(message =>
                 {
                     messages.Add(message);
+                    count++;
+                    if (count == 2)
+                        Done();
                 });
 
                 await _client.FakeMessageReceived(new Message("test", "best"), "Test");
                 await _client.FakeMessageReceived(new Message("", "best"), "Test");
                 await _client.FakeMessageReceived(new Message("blah", "best"), "Test");
+
+                WaitOne();
 
                 messages.Should().HaveCount(3);
             }
@@ -733,11 +756,14 @@ namespace IO.Ably.Tests.Realtime
                 channel.Subscribe("test", message =>
                 {
                     messages.Add(message);
+                    Done();
                 });
 
                 await _client.FakeMessageReceived(new Message("test", "best"), "test");
                 await _client.FakeMessageReceived(new Message("", "best"), "test");
                 await _client.FakeMessageReceived(new Message("blah", "best"), "test");
+
+                WaitOne();
 
                 messages.Should().HaveCount(1);
             }
@@ -771,11 +797,14 @@ namespace IO.Ably.Tests.Realtime
                 encryptedChannel.Error += (sender, args) =>
                 {
                     errorEmitted = true;
+                    Done();
                 };
 
                 var message = new Message("name", "encrypted with otherChannelOptions");
                 new MessageHandler(Protocol.Json).EncodePayloads(otherChannelOptions, new[] {message});
                 await _client.FakeMessageReceived(message, encryptedChannel.Name);
+
+                WaitOne();
 
                 msgReceived.Should().BeTrue();
                 errorEmitted.Should().BeTrue();
@@ -798,13 +827,16 @@ namespace IO.Ably.Tests.Realtime
                 channel.Error += (sender, args) =>
                 {
                     error = args.Reason;
+                    Done();
                 };
 
-                var message = new Message("name", "encrypted with otherChannelOptions") { encoding = "json" };
+                var message = new Message("name", "encrypted with otherChannelOptions") { Encoding = "json" };
                 await _client.FakeMessageReceived(message, channel.Name);
 
+                WaitOne();
+
                 error.Should().NotBeNull();
-                receivedMessage.encoding.Should().Be("json");
+                receivedMessage.Encoding.Should().Be("json");
             }
 
             public SubscribeSpecs(ITestOutputHelper output) : base(output)
@@ -822,11 +854,10 @@ namespace IO.Ably.Tests.Realtime
 
             [Fact]
             [Trait("spec", "RTL8a")]
-            public async Task ShouldReturnTrueAndRemoveHandlerFromSubscribers()
+            public async Task ShouldRemoveHandlerFromSubscribers()
             {
                 _channel.Subscribe(_handler);
-                var result = _channel.Unsubscribe(_handler);
-                result.Should().BeTrue();
+                _channel.Unsubscribe(_handler);
                 await _client.FakeMessageReceived(new Message("test", "best"), _channel.Name);
 
                 //Handler should not throw
@@ -837,8 +868,7 @@ namespace IO.Ably.Tests.Realtime
             public async Task WithEventName_ShouldUnsubscribeHandlerFromTheSpecifiedEvent()
             {
                 _channel.Subscribe("test", _handler);
-                var result = _channel.Unsubscribe("test", _handler);
-                result.Should().BeTrue();
+                _channel.Unsubscribe("test", _handler);
                 await _client.FakeMessageReceived(new Message("test", "best"), _channel.Name);
                 //Handler should not throw
             }
@@ -877,9 +907,9 @@ namespace IO.Ably.Tests.Realtime
             public async Task WithUntilAttach_ShouldPassAttachedSerialToHistoryQuery()
             {
                 var channel = _client.Channels.Get("history");
-                SetState(channel, ChannelState.Attached, message: new ProtocolMessage(ProtocolMessage.MessageAction.Attached) { channelSerial = "101"});
+                SetState(channel, ChannelState.Attached, message: new ProtocolMessage(ProtocolMessage.MessageAction.Attached) { ChannelSerial = "101"});
 
-                await channel.HistoryAsync(untilAttached: true);
+                await channel.HistoryAsync(untilAttach: true);
 
                 LastRequest.QueryParameters.Should()
                     .ContainKey("fromSerial")

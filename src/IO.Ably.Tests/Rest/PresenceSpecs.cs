@@ -83,7 +83,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSP4a")]
             public async Task History_WithRequestQuery_CreateGetRequestWithValidPath()
             {
-                var result = await _channel.Presence.HistoryAsync(new DataRequestQuery());
+                var result = await _channel.Presence.HistoryAsync(new HistoryRequestParams());
 
                 result.Should().BeOfType<PaginatedResult<PresenceMessage>>();
                 Assert.Equal(HttpMethod.Get, LastRequest.Method);
@@ -94,7 +94,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSP4")]
             public async Task History_WithRequestQuery_AddsParametersToRequest()
             {
-                var query = new DataRequestQuery();
+                var query = new HistoryRequestParams();
                 var now = DateTimeOffset.Now;
                 query.Start = now.AddHours(-1);
                 query.End = now;
@@ -113,7 +113,7 @@ namespace IO.Ably.Tests
             public async Task  History_WithStartBeforeEnd_Throws()
             {
                 await Assert.ThrowsAsync<AblyException>(() =>
-                        _channel.Presence.HistoryAsync(new DataRequestQuery() { Start = Now, End = Now.AddHours(-1) }));
+                        _channel.Presence.HistoryAsync(new HistoryRequestParams() { Start = Now, End = Now.AddHours(-1) }));
             }
 
             [Fact]
@@ -141,7 +141,7 @@ namespace IO.Ably.Tests
             public async Task History_WithLimitLessThan0andMoreThan1000_ShouldThrow(int limit)
             {
                 var ex = await
-                    Assert.ThrowsAsync<AblyException>(() => _channel.Presence.HistoryAsync(new DataRequestQuery() { Limit = limit }));
+                    Assert.ThrowsAsync<AblyException>(() => _channel.Presence.HistoryAsync(new HistoryRequestParams() { Limit = limit }));
             }
 
             [Theory]
@@ -150,7 +150,7 @@ namespace IO.Ably.Tests
             {
                 var rest = GetRestClient();
                 var channel = rest.Channels.Get("Test");
-                var query = new DataRequestQuery() { Start = start, End = end };
+                var query = new HistoryRequestParams() { Start = start, End = end };
 
                 Assert.Throws<AblyException>(delegate { channel.HistoryAsync(query); });
             }

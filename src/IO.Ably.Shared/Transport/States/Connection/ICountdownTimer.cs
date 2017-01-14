@@ -141,7 +141,7 @@ namespace IO.Ably.Transport.States.Connection
             catch (Exception ex)
             {
                 Logger.Error("Error in method called by timer.", ex);
-                throw;
+                //throw;
             }
         }
         

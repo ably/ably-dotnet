@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -17,49 +16,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime
 {
-    [Collection("AblyRest SandBox Collection")]
-    [Trait("requires", "sandbox")]
-    public class PresenceSandboxSpecs : SandboxSpecs
-    {
-        [Theory]
-        [ProtocolData]
-        public async Task CanSend_EnterWithStringArray(Protocol protocol)
-        {
-            var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "test");
-
-            var channel = client.Channels.Get("test" + protocol);
-
-            await channel.Presence.EnterAsync(new [] {"test", "best"});
-
-            var presence = await channel.Presence.GetAsync();
-
-            presence.Should().HaveCount(1);
-        }
-
-        [Theory]
-        [ProtocolData]
-        public async Task Presence_HasCorrectTimeStamp(Protocol protocol)
-        {
-            var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "presence-timestamp-test");
-
-            var channel = client.Channels.Get("test");
-            DateTimeOffset? time = null;
-            channel.Presence.Subscribe(message =>
-            {
-                Output.WriteLine($"{message.connectionId}:{message.timestamp}");
-                time = message.timestamp;
-            });
-            await channel.Presence.EnterAsync(new[] { "test", "best" });
-            time.Should().HaveValue();
-        }
-
-        public PresenceSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
-        {
-
-        }
-    }
-
-    [Collection("AblyRest SandBox Collection")]
+    [Collection("Channel SandBox")]
     [Trait("requires", "sandbox")]
     public class ChannelSandboxSpecs : SandboxSpecs
     {
@@ -85,7 +42,7 @@ namespace IO.Ably.Tests.Realtime
             // Arrange
             var client = await GetRealtimeClient(protocol);
             Semaphore signal = new Semaphore(0, 2);
-            var args = new List<ChannelStateChangedEventArgs>();
+            var args = new List<ChannelStateChange>();
             IRealtimeChannel target = client.Channels.Get("test");
             target.StateChanged += (s, e) =>
             {
@@ -99,13 +56,13 @@ namespace IO.Ably.Tests.Realtime
             // Assert
             signal.WaitOne(10000);
             args.Count.ShouldBeEquivalentTo(1);
-            args[0].NewState.ShouldBeEquivalentTo(ChannelState.Attaching);
+            args[0].Current.ShouldBeEquivalentTo(ChannelState.Attaching);
             args[0].Error.ShouldBeEquivalentTo(null);
             target.State.ShouldBeEquivalentTo(ChannelState.Attaching);
 
             signal.WaitOne(10000);
             args.Count.ShouldBeEquivalentTo(2);
-            args[1].NewState.ShouldBeEquivalentTo(ChannelState.Attached);
+            args[1].Current.ShouldBeEquivalentTo(ChannelState.Attached);
             args[1].Error.ShouldBeEquivalentTo(null);
             target.State.ShouldBeEquivalentTo(ChannelState.Attached);
         }
@@ -122,18 +79,19 @@ namespace IO.Ably.Tests.Realtime
             target.Subscribe(message =>
             {
                 messagesReceived.Add(message);
+                _resetEvent.Set();
             });
 
             // Act
             target.Publish("test", "test data");
             target.State.Should().Be(ChannelState.Attaching);
-            await Task.Delay(2000);
+            _resetEvent.WaitOne(4000);
 
             // Assert
             target.State.Should().Be(ChannelState.Attached);
             messagesReceived.Count.ShouldBeEquivalentTo(1);
-            messagesReceived[0].name.ShouldBeEquivalentTo("test");
-            messagesReceived[0].data.ShouldBeEquivalentTo("test data");
+            messagesReceived[0].Name.ShouldBeEquivalentTo("test");
+            messagesReceived[0].Data.ShouldBeEquivalentTo("test data");
         }
 
         //TODO: RTL1 Spec about presence and sync messages
@@ -149,12 +107,12 @@ namespace IO.Ably.Tests.Realtime
                 options.Key = settings.KeyWithChannelLimitations;
             });
 
-            var channel = client.Channels.Get("nono");
+            var channel = client.Channels.Get("nono_" + protocol);
             var result = await channel.AttachAsync();
 
             result.IsFailure.Should().BeTrue();
-            result.Error.code.Should().Be(40160);
-            result.Error.statusCode.Should().Be(HttpStatusCode.Unauthorized);
+            result.Error.Code.Should().Be(40160);
+            result.Error.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
 
@@ -164,13 +122,19 @@ namespace IO.Ably.Tests.Realtime
         {
             // Arrange
             var client = await GetRealtimeClient(protocol);
-            AutoResetEvent signal = new AutoResetEvent(false);
-            IRealtimeChannel target = client.Channels.Get("test");
+            
+            ManualResetEvent resetEvent = new ManualResetEvent(false);
+            IRealtimeChannel target = client.Channels.Get("test" + protocol);
             target.Attach();
+            
             List<Message> messagesReceived = new List<Message>();
+            int count = 0;
             target.Subscribe(message =>
             {
                 messagesReceived.Add(message);
+                count++;
+                if (count == 3)
+                    resetEvent.Set();
             });
 
             // Act
@@ -178,15 +142,17 @@ namespace IO.Ably.Tests.Realtime
             target.Publish("test2", "test 123");
             target.Publish("test3", "test 321");
 
-            await Task.Delay(2000);
+            bool result = resetEvent.WaitOne(8000);
+            result.Should().BeTrue();
+
             // Assert
             messagesReceived.Count.ShouldBeEquivalentTo(3);
-            messagesReceived[0].name.ShouldBeEquivalentTo("test1");
-            messagesReceived[0].data.ShouldBeEquivalentTo("test 12");
-            messagesReceived[1].name.ShouldBeEquivalentTo("test2");
-            messagesReceived[1].data.ShouldBeEquivalentTo("test 123");
-            messagesReceived[2].name.ShouldBeEquivalentTo("test3");
-            messagesReceived[2].data.ShouldBeEquivalentTo("test 321");
+            messagesReceived[0].Name.ShouldBeEquivalentTo("test1");
+            messagesReceived[0].Data.ShouldBeEquivalentTo("test 12");
+            messagesReceived[1].Name.ShouldBeEquivalentTo("test2");
+            messagesReceived[1].Data.ShouldBeEquivalentTo("test 123");
+            messagesReceived[2].Name.ShouldBeEquivalentTo("test3");
+            messagesReceived[2].Data.ShouldBeEquivalentTo("test 321");
         }
 
         [Theory]
@@ -244,7 +210,7 @@ namespace IO.Ably.Tests.Realtime
                 });
             }
 
-            await Task.Delay(3000);
+            await Task.Delay(6000);
             successes.Where(x => x == true).Should().HaveCount(60, "Should have 60 successful callback executed");
         }
 
@@ -261,11 +227,15 @@ namespace IO.Ably.Tests.Realtime
             bool messageReceived = false;
             channel.Subscribe(message =>
             {
-                message.clientId.Should().Be("123");
+                message.ClientId.Should().Be("123");
                 messageReceived = true;
+                _resetEvent.Set();
             });
 
-            await channel.PublishAsync(new Message("test", "withClientId") { clientId = "123" });
+            await channel.PublishAsync(new Message("test", "withClientId") { ClientId = "123" });
+
+            _resetEvent.WaitOne(4000).Should().BeTrue("Operation timed out");
+
             messageReceived.Should().BeTrue();
         }
 
@@ -281,7 +251,7 @@ namespace IO.Ably.Tests.Realtime
             bool messageReceived = false;
             channel.Subscribe(message =>
             {
-                message.clientId.Should().Be("999");
+                message.ClientId.Should().Be("999");
                 messageReceived = true;
             });
 
@@ -303,7 +273,7 @@ namespace IO.Ably.Tests.Realtime
             bool messageReceived = false;
             channel.Subscribe(message =>
             {
-                message.clientId.Should().Be("1000");
+                message.ClientId.Should().Be("1000");
                 messageReceived = true;
             });
 
@@ -317,17 +287,20 @@ namespace IO.Ably.Tests.Realtime
         public async Task WithAClientIdInOptionsAndMatchingClientIdInMessage_ShouldSendAndReceiveMessageWithCorrectClientID(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
-
+            
             client.Connect();
             var channel = client.Channels.Get("test");
             bool messageReceived = false;
             channel.Subscribe(message =>
             {
-                message.clientId.Should().Be("999");
+                message.ClientId.Should().Be("999");
                 messageReceived = true;
+                _resetEvent.Set();
             });
 
-            await channel.PublishAsync(new Message("test", "data") { clientId = "999"});
+            await channel.PublishAsync(new Message("test", "data") { ClientId = "999"});
+            _resetEvent.WaitOne(4000).Should().BeTrue("Timed out");
+
             messageReceived.Should().BeTrue();
         }
 
@@ -343,11 +316,11 @@ namespace IO.Ably.Tests.Realtime
             bool messageReceived = false;
             channel.Subscribe(message =>
             {
-                message.clientId.Should().Be("999");
+                message.ClientId.Should().Be("999");
                 messageReceived = true;
             });
             
-            var result = await channel.PublishAsync(new Message("test", "data") { clientId = "1000" });
+            var result = await channel.PublishAsync(new Message("test", "data") { ClientId = "1000" });
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().NotBeNull();
             messageReceived.Should().BeFalse();
@@ -373,10 +346,10 @@ namespace IO.Ably.Tests.Realtime
             channel.Subscribe(message =>
             {
                 messageReceived = true;
-                message.clientId.Should().Be(clientId);
+                message.ClientId.Should().Be(clientId);
             });
 
-            await channel.PublishAsync(new Message("test", "best") { clientId = "client1" });
+            await channel.PublishAsync(new Message("test", "best") { ClientId = "client1" });
 
             await Task.Delay(2000);
             messageReceived.Should().BeTrue();
@@ -404,7 +377,7 @@ namespace IO.Ably.Tests.Realtime
             channel.Subscribe(message =>
             {
                 messageReceived = true;
-                message.clientId.Should().Be(clientId);
+                message.ClientId.Should().Be(clientId);
             });
 
             var result = await channel.PublishAsync("test", "best", "client2");
@@ -430,11 +403,14 @@ namespace IO.Ably.Tests.Realtime
             bool messageReceived = false;
             channel.Subscribe(message =>
             {
-                message.connectionId.Should().Be(connectionId);
+                message.ConnectionId.Should().Be(connectionId);
                 messageReceived = true;
+                _resetEvent.Set();
             });
 
             await channel.PublishAsync(new Message("test", "best"));
+
+            _resetEvent.WaitOne();
             messageReceived.Should().BeTrue();
         }
 
@@ -459,7 +435,7 @@ namespace IO.Ably.Tests.Realtime
             result.IsSuccess.Should().BeTrue();
 
             var error = channel.ErrorReason;
-            error.statusCode.Should().Be(HttpStatusCode.Unauthorized);
+            error.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         public static IEnumerable<object[]> FixtureData
@@ -478,7 +454,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task ShouldPublishAndReceiveFixtureData(Protocol protocol, JObject fixtureData)
         {
             var items = (JArray)fixtureData["items"];
-
+            ManualResetEvent resetEvent = new ManualResetEvent(false);
             var client = await GetRealtimeClient(protocol);
             
             var channel = client.Channels.Get("persisted:test".AddRandomSuffix(), GetOptions(fixtureData));
@@ -487,6 +463,7 @@ namespace IO.Ably.Tests.Realtime
             channel.Subscribe(message =>
             {
                 lastMessage = message;
+                resetEvent.Set();
             });
 
             foreach (var item in items)
@@ -495,13 +472,16 @@ namespace IO.Ably.Tests.Realtime
                 var encoding = (string)encoded["encoding"];
                 var decodedData = DecodeData((string)encoded["data"], encoding);
                 await channel.PublishAsync((string)encoded["name"], decodedData);
-                if (lastMessage.data is byte[])
-                    (lastMessage.data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
+                var result = resetEvent.WaitOne(10000);
+                result.Should().BeTrue("Operation timed out");
+                if (lastMessage.Data is byte[])
+                    (lastMessage.Data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
                 else if (encoding == "json")
-                    JToken.DeepEquals((JToken)lastMessage.data, (JToken)decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
+                    JToken.DeepEquals((JToken)lastMessage.Data, (JToken)decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
                 else
-                    lastMessage.data.Should().Be(decodedData, "Item number {0} data does not match decoded data", count);
+                    lastMessage.Data.Should().Be(decodedData, "Item number {0} data does not match decoded data", count);
                 count++;
+                resetEvent.Reset();
             }
         }
 
@@ -518,17 +498,19 @@ namespace IO.Ably.Tests.Realtime
             var messages = Enumerable.Range(1, 10).Select(x => new Message("name:" + x, "value:" + x));
             await channel.PublishAsync(messages);
 
+            await Task.Delay(2000);
+
             var client2 = await GetRealtimeClient(protocol);
             var historyChannel = client2.Channels.Get(channelName);
-            var history = await historyChannel.HistoryAsync(new DataRequestQuery() { Direction = QueryDirection.Forwards});
+            var history = await historyChannel.HistoryAsync(new HistoryRequestParams() { Direction = QueryDirection.Forwards});
 
             history.Should().BeOfType<PaginatedResult<Message>>();
             history.Items.Should().HaveCount(10);
             for (int i = 0; i < 10; i++)
             {
-                var message = history.Items[i];
-                message.name.Should().Be("name:" + (i + 1));
-                message.data.ToString().Should().Be("value:" + (i + 1));
+                var message = history.Items.ElementAt(i);
+                message.Name.Should().Be("name:" + (i + 1));
+                message.Data.ToString().Should().Be("value:" + (i + 1));
             }
         }
 
@@ -554,7 +536,7 @@ namespace IO.Ably.Tests.Realtime
         {
             if (encoding == "json")
             {
-                return JsonConvert.DeserializeObject(data);
+                return JsonHelper.Deserialize(data);
             }
             if (encoding == "base64")
                 return data.FromBase64();

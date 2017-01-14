@@ -8,10 +8,11 @@ namespace IO.Ably
     /// <summary>Level of a log message.</summary>
     public enum LogLevel : byte
     {
-        Error = 0,
-        Warning = 1,
-        Info = 2,
-        Debug = 3,
+        Debug = 0,
+        Warning,
+        Error,
+        None = 99
+        
     }
 
     /// <summary>An interface that actually logs that messages somewhere.</summary>
@@ -60,13 +61,13 @@ namespace IO.Ably
         static void Message(LogLevel level, string message, params object[] args)
         {
             var timeStamp = GetLogMessagePreifx();
-            ILoggerSink i = LoggerSink;
-            if (level > LogLevel || null == i)
+            ILoggerSink loggerSink = LoggerSink;
+            if (LogLevel == LogLevel.None || level < LogLevel || loggerSink == null)
                 return;
             if(args == null || args.Length == 0)
-                i.LogEvent(level, timeStamp + " " + message);
+                loggerSink.LogEvent(level, timeStamp + " " + message);
             else
-                i.LogEvent(level, timeStamp + " " + string.Format(message, args));
+                loggerSink.LogEvent(level, timeStamp + " " + string.Format(message, args));
         }
 
         private static string GetLogMessagePreifx()
@@ -93,12 +94,6 @@ namespace IO.Ably
             Message(LogLevel.Warning, message, args);
         }
 
-        /// <summary>Log an informational message.</summary>
-        internal static void Info(string message, params object[] args)
-        {
-            Message(LogLevel.Info, message, args);
-        }
-
         /// <summary>Log a debug message.</summary>
         internal static void Debug(string message, params object[] args)
         {
@@ -112,9 +107,9 @@ namespace IO.Ably
             var ablyException = ex as AblyException;
             if (ablyException != null)
             {
-                message.AppendLine("Error code: " + ablyException.ErrorInfo.code);
-                message.AppendLine("Status code: " + ablyException.ErrorInfo.statusCode);
-                message.AppendLine("Reason: " + ablyException.ErrorInfo.message);
+                message.AppendLine("Error code: " + ablyException.ErrorInfo.Code);
+                message.AppendLine("Status code: " + ablyException.ErrorInfo.StatusCode);
+                message.AppendLine("Reason: " + ablyException.ErrorInfo.Message);
             }
 
             message.AppendLine(ex.Message);

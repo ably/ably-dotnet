@@ -8,7 +8,7 @@ namespace IO.Ably
     public class PaginatedResult<T> where T : class
     {
         private readonly int _limit;
-        private Func<DataRequestQuery, Task<PaginatedResult<T>>> ExecuteDataQueryFunc { get; }
+        private Func<HistoryRequestParams, Task<PaginatedResult<T>>> ExecuteDataQueryFunc { get; }
         public List<T> Items { get; set; } = new List<T>();
 
         private PaginatedResult()
@@ -16,19 +16,20 @@ namespace IO.Ably
             
         }
 
-        internal PaginatedResult(HttpHeaders headers, int limit, Func<DataRequestQuery, Task<PaginatedResult<T>>> executeDataQueryFunc)
+        internal PaginatedResult(HttpHeaders headers, int limit, Func<HistoryRequestParams, Task<PaginatedResult<T>>> executeDataQueryFunc)
         {
             _limit = limit;
             ExecuteDataQueryFunc = executeDataQueryFunc;
             if (headers != null)
             {
-                CurrentQuery = DataRequestQuery.GetLinkQuery(headers, DataRequestLinkType.Current);
-                NextDataQuery = DataRequestQuery.GetLinkQuery(headers, DataRequestLinkType.Next);
-                FirstDataQuery = DataRequestQuery.GetLinkQuery(headers, DataRequestLinkType.First);
+                CurrentQuery = HistoryRequestParams.GetLinkQuery(headers, DataRequestLinkType.Current);
+                NextDataQuery = HistoryRequestParams.GetLinkQuery(headers, DataRequestLinkType.Next);
+                FirstDataQuery = HistoryRequestParams.GetLinkQuery(headers, DataRequestLinkType.First);
             }
         }
 
         public bool HasNext => NextDataQuery != null && NextDataQuery.IsEmpty == false;
+        public bool IsLast => HasNext == false;
 
         public Task<PaginatedResult<T>> NextAsync()
         {
@@ -46,9 +47,18 @@ namespace IO.Ably
             return Task.FromResult(new PaginatedResult<T>());
         }
 
+        public PaginatedResult<T> Next()
+        {
+            return AsyncHelper.RunSync(NextAsync);
+        }
 
-        public DataRequestQuery NextDataQuery { get; }
-        public DataRequestQuery FirstDataQuery { get; private set; }
-        public DataRequestQuery CurrentQuery { get; private set; }
+        public PaginatedResult<T> First()
+        {
+            return AsyncHelper.RunSync(FirstAsync);
+        }
+
+        public HistoryRequestParams NextDataQuery { get; }
+        public HistoryRequestParams FirstDataQuery { get; private set; }
+        public HistoryRequestParams CurrentQuery { get; private set; }
     }
 }

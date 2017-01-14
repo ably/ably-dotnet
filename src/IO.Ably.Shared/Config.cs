@@ -1,9 +1,5 @@
 using System;
-using Newtonsoft.Json;
-using System.Collections.Generic;
-using IO.Ably.CustomSerialisers;
 using IO.Ably.Encryption;
-using IO.Ably.Platform;
 
 namespace IO.Ably
 {
@@ -22,19 +18,5 @@ namespace IO.Ably
         public const int SuspendedTimeout = 60000;
 
         public static int ProtocolVersion = 1;
-
-        internal static JsonSerializerSettings GetJsonSettings()
-        {
-            JsonSerializerSettings res = new JsonSerializerSettings();
-            res.Converters = new List<JsonConverter>()
-            {
-                new DateTimeOffsetJsonConverter(),
-                new CapabilityJsonConverter(),
-                new TimeSpanJsonConverter()
-            };
-            res.DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind;
-            res.NullValueHandling = NullValueHandling.Ignore;
-            return res;
-        }
     }
 }

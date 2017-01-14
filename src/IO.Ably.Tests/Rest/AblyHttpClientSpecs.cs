@@ -44,6 +44,20 @@ namespace IO.Ably.Tests
             var client = new AblyHttpClient(new AblyHttpOptions(), handler);
 
             await client.Execute(new AblyRequest("/test", HttpMethod.Get));
+            var values = handler.LastRequest.Headers.GetValues("X-Ably-Lib");
+            values.Should().NotBeEmpty();
+            values.First().Should().Be("dotnet-" + typeof(Defaults).Assembly.GetName().Version.ToString(3));
+        }
+
+        [Fact]
+        //[Trait("spec", "RSC7a")]
+        public async Task WhenCallingUrl_AddsDefaultAblyLibraryVersionHeader()
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
+            var handler = new FakeHttpMessageHandler(response);
+            var client = new AblyHttpClient(new AblyHttpOptions(), handler);
+
+            await client.Execute(new AblyRequest("/test", HttpMethod.Get));
             var values = handler.LastRequest.Headers.GetValues("X-Ably-Version");
             values.Should().NotBeEmpty();
             values.First().Should().Be(Defaults.ProtocolVersion);

@@ -9,8 +9,8 @@ namespace IO.Ably.ConsoleTest
     {
         static void Main(string[] args)
         {
-            IO.Ably.Logger.LoggerSink = new MyLogger();
-            //Logger.LogLevel = LogLevel.Debug;
+            //IO.Ably.Logger.LoggerSink = new MyLogger();
+            Logger.LogLevel = LogLevel.Debug;
             try
             {
                 //Rest.Test().Wait();
@@ -28,8 +28,8 @@ namespace IO.Ably.ConsoleTest
                     Console.WriteLine("Bytes used: " + GC.GetTotalMemory(true));
                 }
 
-                //Console.ReadLine();
-                //ConsoleColor.Green.WriteLine("Success!");
+                Console.ReadLine();
+                ConsoleColor.Green.WriteLine("Success!");
             }
             catch (Exception ex)
             {
@@ -39,7 +39,7 @@ namespace IO.Ably.ConsoleTest
 
         private static void Presence_MessageReceived2(PresenceMessage obj)
         {
-            Console.WriteLine(obj.connectionId + "\t" + obj.timestamp);
+            Console.WriteLine(obj.ConnectionId + "\t" + obj.Timestamp);
         }
     }
 }

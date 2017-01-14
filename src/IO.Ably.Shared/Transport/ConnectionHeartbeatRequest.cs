@@ -28,7 +28,7 @@ namespace IO.Ably.Transport
 
         public static bool CanHandleMessage(ProtocolMessage message)
         {
-            return message.action == ProtocolMessage.MessageAction.Heartbeat;
+            return message.Action == ProtocolMessage.MessageAction.Heartbeat;
         }
 
         public static ConnectionHeartbeatRequest Execute(ConnectionManager manager, Action<TimeSpan?, ErrorInfo> callback)
@@ -82,7 +82,7 @@ namespace IO.Ably.Transport
             return Config.Now() - _start;
         }  
 
-        private void OnInternalStateChanged(object sender, ConnectionStateChangedEventArgs e)
+        private void OnInternalStateChanged(object sender, ConnectionStateChange e)
         {
             if (e.Current != ConnectionState.Connected)
             {

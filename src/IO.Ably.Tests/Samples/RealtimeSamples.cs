@@ -67,13 +67,13 @@ namespace IO.Ably.Tests.GithubSamples
 
             channel.Subscribe(message =>
             {
-                var name = message.name;
-                var data = message.data;
+                var name = message.Name;
+                var data = message.Data;
             });
 
             channel.On(args =>
             {
-                var state = args.NewState; //Current channel State
+                var state = args.Current; //Current channel State
                 var error = args.Error; // If the channel errored it will be refrected here
 
                 
@@ -98,11 +98,11 @@ namespace IO.Ably.Tests.GithubSamples
                 var error = result.Error; // The error reason can be accessed as well
             }
 
-            var secret = Crypto.GetRandomKey();
+            var secret = Crypto.GenerateRandomKey();
             var encryptedChannel = realtime.Channels.Get("encrypted", new ChannelOptions(secret));
             encryptedChannel.Subscribe(message =>
             {
-                var data = message.data; // sensitive data (encrypted before published)
+                var data = message.Data; // sensitive data (encrypted before published)
             });
             encryptedChannel.Publish("name (not encrypted)", "sensitive data (encrypted before published)");
         }
@@ -157,7 +157,7 @@ namespace IO.Ably.Tests.GithubSamples
             //Current presence
             var presence = await channel.Presence.GetAsync();
             var first = presence.Items.FirstOrDefault();
-            var clientId = first.clientId; //clientId of the first member present
+            var clientId = first.ClientId; //clientId of the first member present
             var nextPresencePage = await presence.NextAsync();
             foreach (var presenceMessage in nextPresencePage.Items)
             {
@@ -178,11 +178,11 @@ namespace IO.Ably.Tests.GithubSamples
             }
 
             // publishing encrypted messages
-            var secret = Crypto.GetRandomKey();
+            var secret = Crypto.GenerateRandomKey();
             var encryptedChannel = client.Channels.Get("encryptedChannel", new ChannelOptions(secret));
             await encryptedChannel.PublishAsync("name", "sensitive data"); //Data will be encrypted before publish
             var history = await encryptedChannel.HistoryAsync();
-            var data = history.Items.First().data;
+            var data = history.Items.First().Data;
             // "sensitive data" the message will be automatically decrypted once received
 
             //Generate a token

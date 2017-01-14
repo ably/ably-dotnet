@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IO.Ably.Auth;
 using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Types;
@@ -60,7 +59,7 @@ namespace IO.Ably.Tests.Realtime
                 states.Add(args.Current);
             };
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { error = _tokenErrorInfo });
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = _tokenErrorInfo });
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
             _renewTokenCalled.Should().BeTrue();
@@ -93,7 +92,7 @@ namespace IO.Ably.Tests.Realtime
                 }
             };
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { error = _tokenErrorInfo });
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = _tokenErrorInfo });
 
             var urlParams = LastCreatedTransport.Parameters.GetParams();
             urlParams.Should().ContainKey("resume");
@@ -118,7 +117,7 @@ namespace IO.Ably.Tests.Realtime
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
                 {
-                    error = _tokenErrorInfo
+                    Error = _tokenErrorInfo
                 });
 
             Assert.Equal(new[]
@@ -129,7 +128,7 @@ namespace IO.Ably.Tests.Realtime
             }, states);
 
             errors.Should().NotBeEmpty();
-            errors.First().code.Should().Be(_failedRenewalErorrCode);
+            errors.First().Code.Should().Be(_failedRenewalErorrCode);
         }
 
         [Fact]
@@ -150,12 +149,12 @@ namespace IO.Ably.Tests.Realtime
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
             {
-                error = _tokenErrorInfo
+                Error = _tokenErrorInfo
             });
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
-                error = _tokenErrorInfo
+                Error = _tokenErrorInfo
             });
 
             Assert.Equal(new[]
@@ -166,7 +165,7 @@ namespace IO.Ably.Tests.Realtime
             }, states);
 
             errors.Should().NotBeEmpty();
-            errors.First().code.Should().Be(_tokenErrorInfo.code);
+            errors.First().Code.Should().Be(_tokenErrorInfo.Code);
         }
 
         [Fact]
@@ -187,7 +186,7 @@ namespace IO.Ably.Tests.Realtime
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
             {
-                error = _tokenErrorInfo
+                Error = _tokenErrorInfo
             });
 
             Assert.Equal(new[]
@@ -279,7 +278,7 @@ namespace IO.Ably.Tests.Realtime
 
             await CloseAndWaitToReconnect(client, new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
-                connectionId = initialConnectionId // if the connection ids match then the connection has been resumed
+                ConnectionId = initialConnectionId // if the connection ids match then the connection has been resumed
             });
 
             LastCreatedTransport.SentMessages.Should().HaveCount(2);
@@ -293,7 +292,7 @@ namespace IO.Ably.Tests.Realtime
             Now = DateTimeOffset.Now;
             _validToken = new TokenDetails("id") { Expires = Now.AddHours(1) };
             _renewTokenCalled = false;
-            _tokenErrorInfo = new ErrorInfo() { code = _tokenErrorCode, statusCode = HttpStatusCode.Unauthorized };
+            _tokenErrorInfo = new ErrorInfo() { Code = _tokenErrorCode, StatusCode = HttpStatusCode.Unauthorized };
         }
     }
 }

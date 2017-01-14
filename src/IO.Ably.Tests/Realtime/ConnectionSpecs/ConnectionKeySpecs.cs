@@ -23,7 +23,7 @@ namespace IO.Ably.Tests.Realtime
         public void OnceConnected_ShouldUseKeyFromConnectedMessage()
         {
             var client = GetClientWithFakeTransport();
-            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { connectionDetails = new ConnectionDetails() { connectionKey = "key" } });
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { ConnectionDetails = new ConnectionDetails() { ConnectionKey = "key" } });
             client.Connection.Key.Should().Be("key");
         }
 

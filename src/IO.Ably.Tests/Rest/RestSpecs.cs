@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.AcceptanceTests;
-using IO.Ably.Auth;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -138,7 +136,7 @@ namespace IO.Ably.Tests
             [InlineData(Defaults.TokenErrorCodesRangeEnd)]
             [Trait("spec", "RSC10")]
             [Trait("intermittent", "true")]
-            public void WhenErrorCodeIsTokenSpecific_ShouldAutomaticallyTryToRenewTokenIfRequestFails(int errorCode)
+            public async Task WhenErrorCodeIsTokenSpecific_ShouldAutomaticallyTryToRenewTokenIfRequestFails(int errorCode)
             {
                 Now = DateTimeOffset.Now;
                 var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
@@ -159,7 +157,7 @@ namespace IO.Ably.Tests
                     return AblyResponse.EmptyResponse.ToTask();
                 }, opts => opts.TokenDetails = tokenDetails);
 
-                var result = client.StatsAsync().Result;
+                await client.StatsAsync();
 
                 client.AblyAuth.CurrentToken.Expires.Should().BeCloseTo(_returnedDummyTokenDetails.Expires);
                 client.AblyAuth.CurrentToken.ClientId.Should().Be(_returnedDummyTokenDetails.ClientId);
@@ -273,6 +271,32 @@ namespace IO.Ably.Tests
                 _handler.LastRequest.RequestUri.Host.Should().Be("www.test.com");
             }
 
+            [Fact]
+            [Trait("spec", "TO3b")]
+            public void WithLogLevel_ShouldUseNewLogLevel()
+            {
+                CreateClient(options =>
+                {
+                    options.LogLevel = LogLevel.Warning;
+                });
+
+                Logger.LogLevel.Should().Be(LogLevel.Warning);
+            }
+
+            private class TestLogHandler : ILoggerSink
+            {
+                public void LogEvent(LogLevel level, string message) { }
+            }
+
+            [Fact]
+            [Trait("spec", "TO3c")]
+            public void WithLogHandler_ShouldUseNewLogHandler()
+            {
+                new AblyRest(new ClientOptions(ValidKey) { LogHander = new TestLogHandler() });
+
+                Logger.LoggerSink.Should().BeOfType<TestLogHandler>();
+            }
+
             private static async Task MakeAnyRequest(AblyRest client)
             {
                 await client.Channels.Get("boo").PublishAsync("boo", "baa");
@@ -380,7 +404,7 @@ namespace IO.Ably.Tests
                 var client = CreateClient(options => options.RestHost = "boo.com");
 
                 var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
-                ex.ErrorInfo.statusCode.Should().Be(_response.StatusCode);
+                ex.ErrorInfo.StatusCode.Should().Be(_response.StatusCode);
                 _handler.NumberOfRequests.Should().Be(1);
             }
 
@@ -479,25 +503,62 @@ namespace IO.Ably.Tests
             }
         }
 
-       
-
-        [Fact]
-        public async Task Init_WithCallback_ExecutesCallbackOnFirstRequest()
+        public class AuthCallbackSpecs : AblySpecs
         {
-            bool called = false;
-            var options = new ClientOptions
+            public AuthCallbackSpecs(ITestOutputHelper output) : base(output)
             {
-                AuthCallback = (x) => { called = true; return Task.FromResult(new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddHours(1) }); },
-                UseBinaryProtocol = false
-            };
+            }
 
-            var rest = new AblyRest(options);
+            [Fact]
+            public async Task WithCallback_ExecutesCallbackOnFirstRequest()
+            {
+                bool called = false;
 
-            rest.ExecuteHttpRequest = delegate { return "[{}]".ToAblyResponse(); };
+                Func<TokenParams, Task<object>> callback = (x) =>
+                {
+                    called = true;
+                    return Task.FromResult<object>(new TokenDetails() {Expires = DateTimeOffset.UtcNow.AddHours(1)});
+                };
 
-            await rest.StatsAsync();
+                await GetClient(callback).StatsAsync();
 
-            Assert.True(called, "Rest with Callback needs to request token using callback");
+                called.Should().BeTrue("Rest with Callback needs to request token using callback");
+            }
+
+            [Fact]
+            public async Task WhenCallbackReturnsNull_ThrowsAblyException()
+            {
+                await Assert.ThrowsAsync<AblyException>(() =>
+                 {
+                     return GetClient(_ => Task.FromResult<object>(null)).StatsAsync();
+                 });
+            }
+
+            [Fact]
+            public async Task WhenCallbackReturnsAnObjectThatIsNotTokenRequestOrTokenDetails_ThrowsAblyException()
+            {
+                var objects = new object[] {new object(), String.Empty, new Uri("http://test")};
+                foreach (var obj in objects)
+                {
+                    await Assert.ThrowsAsync<AblyException>(() =>
+                    {
+                        return GetClient(_ => Task.FromResult(obj)).StatsAsync();
+                    });
+                }
+            }
+
+            private static AblyRest GetClient(Func<TokenParams, Task<object>> authCallback)
+            {
+                var options = new ClientOptions
+                {
+                    AuthCallback = authCallback,
+                    UseBinaryProtocol = false
+                };
+
+                var rest = new AblyRest(options);
+                rest.ExecuteHttpRequest = delegate { return "[{}]".ToAblyResponse(); };
+                return rest;
+            }
         }
 
         [Fact]
@@ -543,7 +604,7 @@ namespace IO.Ably.Tests
                 AuthCallback = (x) =>
                 {
                     newTokenRequested = true;
-                    return Task.FromResult(new TokenDetails("new.token")
+                    return Task.FromResult<object>(new TokenDetails("new.token")
                     {
                         Expires = DateTimeOffset.UtcNow.AddDays(1)
                     });

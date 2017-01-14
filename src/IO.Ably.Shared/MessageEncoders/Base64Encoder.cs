@@ -9,9 +9,9 @@ namespace IO.Ably.MessageEncoders
 
         public override Result Decode(IMessage payload, ChannelOptions options)
         {
-            if (CurrentEncodingIs(payload, EncodingName) && payload.data is string)
+            if (CurrentEncodingIs(payload, EncodingName) && payload.Data is string)
             {
-                payload.data = ((string) payload.data).FromBase64();
+                payload.Data = ((string) payload.Data).FromBase64();
                 RemoveCurrentEncodingPart(payload);
             }
             return Result.Ok();
@@ -19,14 +19,14 @@ namespace IO.Ably.MessageEncoders
 
         public override Result Encode(IMessage payload, ChannelOptions options)
         {
-            var data = payload.data;
+            var data = payload.Data;
             if (IsEmpty(data))
                 return Result.Ok();
 
             var bytes = data as byte[];
             if (bytes != null && Protocol == Protocol.Json)
             {
-                payload.data = bytes.ToBase64();
+                payload.Data = bytes.ToBase64();
                 AddEncoding(payload, EncodingName);
             }
             return Result.Ok();

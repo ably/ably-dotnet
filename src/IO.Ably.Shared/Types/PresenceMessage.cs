@@ -1,5 +1,4 @@
 ﻿using System;
-using MsgPack.Serialization;
 using Newtonsoft.Json;
 
 namespace IO.Ably
@@ -24,26 +23,33 @@ namespace IO.Ably
 
         public PresenceMessage(PresenceAction action, string clientId, object data)
         {
-            this.action = action;
-            this.clientId = clientId;
-            this.data = data;
+            Action = action;
+            ClientId = clientId;
+            Data = data;
         }
 
-        public string id { get; set; }
+        [JsonProperty("id")]
+        public string Id { get; set; }
 
-        public PresenceAction action { get; set; }
+        [JsonProperty("action")]
+        public PresenceAction Action { get; set; }
 
-        public string clientId { get; set; }
+        [JsonProperty("clientId")]
+        public string ClientId { get; set; }
 
-        public string connectionId { get; set; }
+        [JsonProperty("connectionId")]
+        public string ConnectionId { get; set; }
 
-        public object data { get; set; }
+        [JsonProperty("data")]
+        public object Data { get; set; }
 
-        public string encoding { get; set; }
+        [JsonProperty("encoding")]
+        public string Encoding { get; set; }
 
-        public DateTimeOffset? timestamp { get; set; }
+        [JsonProperty("timestamp")]
+        public DateTimeOffset? Timestamp { get; set; }
 
         [JsonIgnore]
-        public string MemberKey => $"{clientId}:{connectionId}";
+        public string MemberKey => $"{ClientId}:{ConnectionId}";
     }
 }

@@ -27,7 +27,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void Connect()
         {
-            Logger.Info("Already connecting!");
+            Logger.Debug("Already connecting!");
         }
 
         public override void Close()
@@ -37,26 +37,26 @@ namespace IO.Ably.Transport.States.Connection
 
         public override async Task<bool> OnMessageReceived(ProtocolMessage message)
         {
-            switch (message.action)
+            switch (message.Action)
             {
                 case ProtocolMessage.MessageAction.Connected:
                     {
                         if (Context.Transport.State == TransportState.Connected)
                         {
                             var info = new ConnectionInfo(message);
-                            TransitionState(new ConnectionConnectedState(Context, info, message.error));
+                            TransitionState(new ConnectionConnectedState(Context, info, message.Error));
                         }
                         return true;
                     }
                 case ProtocolMessage.MessageAction.Disconnected:
                     {
-                        Context.HandleConnectingFailure(message.error, null);
+                        Context.HandleConnectingFailure(message.Error, null);
                         return true;
                     }
                 case ProtocolMessage.MessageAction.Error:
                     {
                         //If the error is a token error do some magic
-                        if (Context.ShouldWeRenewToken(message.error))
+                        if (Context.ShouldWeRenewToken(message.Error))
                         {
                             try
                             {
@@ -72,14 +72,14 @@ namespace IO.Ably.Transport.States.Connection
                             }
                         }
 
-                        if (await Context.CanUseFallBackUrl(message.error))
+                        if (await Context.CanUseFallBackUrl(message.Error))
                         {
                             Context.Connection.Key = null;
-                            Context.HandleConnectingFailure(message.error, null);
+                            Context.HandleConnectingFailure(message.Error, null);
                             return true;
                         }
 
-                        TransitionState(new ConnectionFailedState(Context, message.error));
+                        TransitionState(new ConnectionFailedState(Context, message.Error));
                         return true;
                     }
             }

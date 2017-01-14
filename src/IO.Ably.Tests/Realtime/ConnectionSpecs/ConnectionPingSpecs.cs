@@ -34,7 +34,7 @@ namespace IO.Ably.Tests.Realtime
             _fakeTransportFactory.LastCreatedTransport.SendAction = async message =>
             {
                 Now = Now.AddMilliseconds(100);
-                if (message.Original.action == ProtocolMessage.MessageAction.Heartbeat)
+                if (message.Original.Action == ProtocolMessage.MessageAction.Heartbeat)
                 {
                     await Task.Delay(1);
                     await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
@@ -43,7 +43,8 @@ namespace IO.Ably.Tests.Realtime
             var result = await client.Connection.PingAsync();
 
             result.IsSuccess.Should().BeTrue();
-            result.Value.Value.Should().Be(TimeSpan.FromMilliseconds(100));
+            // Because the now object is static when executed in parallel with other tests the results are affected
+            result.Value.Value.Should().BeGreaterThan(TimeSpan.FromMilliseconds(0)); 
         }
 
         [Fact]
@@ -76,7 +77,7 @@ namespace IO.Ably.Tests.Realtime
             var result = await client.Connection.PingAsync();
 
             result.IsSuccess.Should().BeFalse();
-            result.Error.statusCode.Should().Be(HttpStatusCode.RequestTimeout);
+            result.Error.StatusCode.Should().Be(HttpStatusCode.RequestTimeout);
         }
 
         public ConnectionPingSpecs(ITestOutputHelper output) : base(output)

@@ -58,12 +58,12 @@
       <HintPath>..\packages\Castle.Core.3.3.3\lib\net45\Castle.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="FluentAssertions, Version=4.9.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
-      <HintPath>..\packages\FluentAssertions.4.9.0\lib\net45\FluentAssertions.dll</HintPath>
+    <Reference Include="FluentAssertions, Version=4.16.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
+      <HintPath>..\packages\FluentAssertions.4.16.0\lib\net45\FluentAssertions.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="FluentAssertions.Core, Version=4.9.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
-      <HintPath>..\packages\FluentAssertions.4.9.0\lib\net45\FluentAssertions.Core.dll</HintPath>
+    <Reference Include="FluentAssertions.Core, Version=4.16.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
+      <HintPath>..\packages\FluentAssertions.4.16.0\lib\net45\FluentAssertions.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
@@ -71,12 +71,12 @@
       <HintPath>..\packages\Moq.4.5.9\lib\net45\Moq.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="MsgPack, Version=0.6.0.0, Culture=neutral, PublicKeyToken=a2625990d5dc0167, processorArchitecture=MSIL">
-      <HintPath>..\packages\MsgPack.Cli.0.6.8\lib\net45\MsgPack.dll</HintPath>
+    <Reference Include="MsgPack, Version=0.8.0.0, Culture=neutral, PublicKeyToken=a2625990d5dc0167, processorArchitecture=MSIL">
+      <HintPath>..\packages\MsgPack.Cli.0.8.0\lib\net45\MsgPack.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Nito.AsyncEx, Version=3.0.1.0, Culture=neutral, processorArchitecture=MSIL">
@@ -128,7 +128,12 @@
     <Compile Include="CapabilityTests.cs" />
     <Compile Include="DateHelper.cs" />
     <Compile Include="EncryptionSpecs.cs" />
-    <Compile Include="GithubSamples\RealtimeSamples.cs" />
+    <Compile Include="Infrastructure\TestTransportWrapper.cs" />
+    <Compile Include="Infrastructure\InteropabilityMessagePayloadDataAttribute.cs" />
+    <Compile Include="Infrastructure\TestTransportFactory.cs" />
+    <Compile Include="Realtime\PresenceSandboxSpecs.cs" />
+    <Compile Include="Samples\DocumentationSamples.cs" />
+    <Compile Include="Samples\RealtimeSamples.cs" />
     <Compile Include="Infrastructure\ConnectionAwaiter.cs" />
     <Compile Include="Infrastructure\FakeAckProcessor.cs" />
     <Compile Include="Infrastructure\FakeConnectionContext.cs" />
@@ -153,7 +158,8 @@
     <Compile Include="MessageEncodes\JsonEncoderTests.cs" />
     <Compile Include="MessageEncodes\MessageEncodersAcceptanceTests.cs" />
     <Compile Include="MessageEncodes\SerializationSpecs.cs" />
-    <Compile Include="MessageEncodes\TokenDetailsTests.cs" />
+    <Compile Include="TestExtensions.cs" />
+    <Compile Include="TokenDetailsTests.cs" />
     <Compile Include="MessageEncodes\Utf8EncoderTests.cs" />
     <Compile Include="MessagePack\SerializationTests.cs" />
     <Compile Include="Realtime\AckProtocolTests.cs" />
@@ -184,9 +190,9 @@
     <Compile Include="Realtime\ConnectionStateTests\InitializedStateSpecs.cs" />
     <Compile Include="Realtime\ConnectionStateTests\SuspendedStateSpecs.cs" />
     <Compile Include="Realtime\CountDownTimerSpecs.cs" />
-    <Compile Include="Realtime\JsonMessageSerializerTests.cs" />
+    <Compile Include="JsonMessageSerializerTests.cs" />
     <Compile Include="Realtime\MockHttpRealtimeSpecs.cs" />
-    <Compile Include="Realtime\MsgPackMessageSerializerTests.cs" />
+    <Compile Include="MsgPackMessageSerializerTests.cs" />
     <Compile Include="Realtime\RealtimeSpecs.cs" />
     <Compile Include="RestProtocolTests.cs" />
     <Compile Include="Infrastructure\AblyCollectionFixture.cs" />
@@ -214,18 +220,25 @@
     <Compile Include="TokenRequestDataTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\..\common\test-resources\messages-encoding.json">
+      <Link>messages-encoding.json</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\common\test-resources\test-app-setup.json">
+      <Link>test-app-setup.json</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\common\test-resources\crypto-data-128.json">
+      <Link>crypto-data-128.json</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\common\test-resources\crypto-data-256.json">
+      <Link>crypto-data-256.json</Link>
+    </EmbeddedResource>
     <None Include="App.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </None>
     <EmbeddedResource Include="MsgPackStatsTest.json" />
-    <EmbeddedResource Include="crypto-data-128.json" />
-    <EmbeddedResource Include="crypto-data-256.json" />
     <None Include="packages.config" />
     <EmbeddedResource Include="StatsFixture.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="testAppSpec.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="StatsInterval.json" />

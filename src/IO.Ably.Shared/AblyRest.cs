@@ -76,6 +76,16 @@ namespace IO.Ably
                 throw new AblyException("Invalid options");
             }
 
+            if (Options.LogLevel.HasValue)
+            {
+                Logger.LogLevel = Options.LogLevel.Value;
+            }
+
+            if (Options.LogHander != null)
+            {
+                Logger.LoggerSink = Options.LogHander;
+            }
+
             Logger.Debug("Protocol set to: " + Protocol);
             MessageHandler = new MessageHandler(Protocol);
 
@@ -89,27 +99,42 @@ namespace IO.Ably
 
         internal async Task<AblyResponse> ExecuteRequest(AblyRequest request)
         {
-            Logger.Info("Sending {0} request to {1}", request.Method, request.Url);
+            Logger.Debug("Sending {0} request to {1}", request.Method, request.Url);
 
             if (request.SkipAuthentication == false)
+            {
                 await AblyAuth.AddAuthHeader(request);
-
-            MessageHandler.SetRequestBody(request);
+            }
 
             try
             {
+                MessageHandler.SetRequestBody(request);
                 return await ExecuteHttpRequest(request);
             }
             catch (AblyException ex)
             {
+                if (Logger.IsDebug)
+                    Logger.Debug("Error Executing request. Message: " + ex.Message);
+
                 if (ex.ErrorInfo.IsUnAuthorizedError
                     && ex.ErrorInfo.IsTokenError && AblyAuth.TokenRenewable)
                 {
-                    await AblyAuth.AuthoriseAsync(null, new AuthOptions() { Force = true });
+                    if (Logger.IsDebug)
+                        Logger.Debug("Handling UnAuthorized Error and repeating request.");
+
+                    await AblyAuth.AuthoriseAsync(null, new AuthOptions() {Force = true});
                     await AblyAuth.AddAuthHeader(request);
                     return await ExecuteHttpRequest(request);
+
                 }
                 throw;
+            }
+            catch (Exception ex)
+            {
+                if(Logger.IsDebug)
+                    Logger.Debug("Error Executing request. Message: " + ex.Message);
+
+                throw new AblyException(ex);
             }
         }
 
@@ -128,7 +153,7 @@ namespace IO.Ably
             return MessageHandler.ParseResponse<T>(request, response);
         }
 
-        internal async Task<PaginatedResult<T>> ExecutePaginatedRequest<T>(AblyRequest request, Func<DataRequestQuery, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
+        internal async Task<PaginatedResult<T>> ExecutePaginatedRequest<T>(AblyRequest request, Func<HistoryRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
         {
             var response = await ExecuteRequest(request);
             if (Logger.IsDebug)
@@ -154,36 +179,36 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// Retrieves the stats for the application. Passed default <see cref="StatsDataRequestQuery"/> for the request
+        /// Retrieves the stats for the application. Passed default <see cref="StatsRequestParams"/> for the request
         /// </summary>
         /// <returns></returns>
         public Task<PaginatedResult<Stats>> StatsAsync()
         {
-            return StatsAsync(new StatsDataRequestQuery());
+            return StatsAsync(new StatsRequestParams());
         }
 
         /// <summary>
-        /// Retrieves the stats for the application using a more specific stats query. Check <see cref="StatsDataRequestQuery"/> for more information
+        /// Retrieves the stats for the application using a more specific stats query. Check <see cref="StatsRequestParams"/> for more information
         /// </summary>
         /// <param name="query">stats query</param>
         /// <returns></returns>
-        public Task<PaginatedResult<Stats>> StatsAsync(StatsDataRequestQuery query)
+        public Task<PaginatedResult<Stats>> StatsAsync(StatsRequestParams query)
         {
-            return StatsAsync(query as DataRequestQuery);
+            return StatsAsync(query as HistoryRequestParams);
         }
 
         /// <summary>
-        /// Retrieves the stats for the application based on a custom query. It should be used with <see cref="DataRequestQuery"/>.
-        /// It is mainly because of the way a PaginatedResource defines its queries. For retrieving Stats with special parameters use <see cref="StatsAsync(IO.Ably.StatsDataRequestQuery)"/>
+        /// Retrieves the stats for the application based on a custom query. It should be used with <see cref="HistoryRequestParams"/>.
+        /// It is mainly because of the way a PaginatedResource defines its queries. For retrieving Stats with special parameters use <see cref="StatsAsync(StatsRequestParams)"/>
         /// </summary>
         /// <example>
         /// var client = new AblyRest("validkey");
         /// var stats = client..StatsAsync();
         /// var nextPage = cliest..StatsAsync(stats.NextQuery);
         /// </example>
-        /// <param name="query"><see cref="DataRequestQuery"/> and <see cref="StatsDataRequestQuery"/></param>
+        /// <param name="query"><see cref="HistoryRequestParams"/> and <see cref="StatsRequestParams"/></param>
         /// <returns></returns>
-        public Task<PaginatedResult<Stats>> StatsAsync(DataRequestQuery query)
+        public Task<PaginatedResult<Stats>> StatsAsync(HistoryRequestParams query)
         {
             query.Validate();
 
@@ -211,9 +236,9 @@ namespace IO.Ably
 
             try
             {
-                var request = new AblyRequest(Defaults.InternetCheckURL, HttpMethod.Get);
+                var request = new AblyRequest(Defaults.InternetCheckUrl, HttpMethod.Get);
                 var response = await ExecuteHttpRequest(request);
-                return response.TextResponse == Defaults.InternetCheckOKMessage;
+                return response.TextResponse == Defaults.InternetCheckOkMessage;
             }
             catch (Exception ex)
             {
@@ -221,5 +246,22 @@ namespace IO.Ably
                 return false;
             }
         }
+
+        public PaginatedResult<Stats> Stats()
+        {
+            return AsyncHelper.RunSync(StatsAsync);
+        }
+
+        public PaginatedResult<Stats> Stats(StatsRequestParams query)
+        {
+            return AsyncHelper.RunSync(() => StatsAsync(query));
+        }
+
+        public DateTimeOffset Time()
+        {
+            return AsyncHelper.RunSync(TimeAsync);
+        }
+
+        
     }
 }

@@ -5,8 +5,29 @@ using Xunit;
 
 namespace IO.Ably.Tests
 {
-    [CollectionDefinition("AblyRest SandBox Collection")]
     public class AblyCollectionFixture : ICollectionFixture<AblySandboxFixture> { }
+
+    [CollectionDefinition("AblyRest SandBox Collection")]
+    public class SandboxRestFixture : AblyCollectionFixture
+    {
+    }
+
+    [CollectionDefinition("SandBox Connection")]
+    public class SandBoxConnectionFixture : AblyCollectionFixture
+    {
+    }
+
+    [CollectionDefinition("Presence Sandbox")]
+    public class SandBoxPresenceFixture : AblyCollectionFixture
+    {
+    }
+
+    [CollectionDefinition("Channel SandBox")]
+    public class SandBoxChannelFixture : AblyCollectionFixture
+    {
+    }
+
+
 
     public class Key
     {

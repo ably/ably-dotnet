@@ -5,7 +5,7 @@ namespace IO.Ably.Transport
 {
     internal class MessageAndCallback
     {
-        public long Serial => Message.msgSerial;
+        public long Serial => Message.MsgSerial;
         public ProtocolMessage Message { get;  }
         public Action<bool, ErrorInfo> Callback { get; }
 
@@ -17,7 +17,7 @@ namespace IO.Ably.Transport
 
         protected bool Equals(MessageAndCallback other)
         {
-            return Equals(Message.msgSerial, other.Message.msgSerial);
+            return Equals(Message.MsgSerial, other.Message.MsgSerial);
         }
 
         public override bool Equals(object obj)
@@ -30,7 +30,7 @@ namespace IO.Ably.Transport
 
         public override int GetHashCode()
         {
-            return Message?.msgSerial.GetHashCode() ?? 0;
+            return Message?.MsgSerial.GetHashCode() ?? 0;
         }
     }
 
@@ -46,7 +46,7 @@ namespace IO.Ably.Transport
             {
                 var result = success ? "Success" : "Failed";
                 var errorMessage = error != null ? $"Error: {error}" : "";
-                Logger.Error($"Error executing callback for message with serial {info.Message.msgSerial}. Result: {result}. {errorMessage}");
+                Logger.Error($"Error executing callback for message with serial {info.Message.MsgSerial}. Result: {result}. {errorMessage}");
             }
         }
     }

@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime
 {
-    [Collection("AblyRest SandBox Collection")]
+    [Collection("SandBox Connection")]
     [Trait("requires", "sandbox")]
     public class ConnectionSandBoxSpecs : SandboxSpecs
     {
@@ -21,8 +21,6 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetRealtimeClient(protocol);
             await WaitForState(client);
-
-
 
             client.Connection.State.Should().Be(ConnectionState.Connected);
         }
@@ -39,7 +37,7 @@ namespace IO.Ably.Tests.Realtime
             var states = new List<ConnectionState>();
             client.Connection.On((args) =>
             {
-                args.Should().BeOfType<ConnectionStateChangedEventArgs>();
+                args.Should().BeOfType<ConnectionStateChange>();
                 states.Add(args.Current);
             });
 
@@ -64,7 +62,7 @@ namespace IO.Ably.Tests.Realtime
             var states = new List<ConnectionState>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
-                args.Should().BeOfType<ConnectionStateChangedEventArgs>();
+                args.Should().BeOfType<ConnectionStateChange>();
                 states.Add(args.Current);
             };
 
@@ -99,8 +97,9 @@ namespace IO.Ably.Tests.Realtime
                 await GetRealtimeClient(protocol)
             };
 
-            //Wait for the clients to connect
-            await Task.Delay(TimeSpan.FromSeconds(3));
+            int count = 0;
+
+            await Task.Delay(5000);
 
             var distinctConnectionIds = clients.Select(x => x.Connection.Id).Distinct();
             distinctConnectionIds.Should().HaveCount(3);
@@ -183,14 +182,15 @@ namespace IO.Ably.Tests.Realtime
             });
 
             ErrorInfo error = null;
-            realtimeClient.Connection.InternalStateChanged += (o, args) =>
+            realtimeClient.Connection.On(ConnectionState.Connected, (args) =>
             {
                 error = args.Reason;
-            };
+                _resetEvent.Set();
+            });
 
             realtimeClient.Connect();
 
-            await WaitForState(realtimeClient, ConnectionState.Connected, TimeSpan.FromSeconds(10));
+            _resetEvent.WaitOne(10000);
 
             realtimeClient.RestClient.AblyAuth.CurrentToken.Expires.Should().BeAfter(Config.Now(), "The token should be valid and expire in the future.");
             error.Should().BeNull("No error should be raised!");
@@ -219,14 +219,14 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15e")]
         public async Task ShouldUpdateConnectionKeyWhenConnectionIsResumed(Protocol protocol)
         {
-            var client = await GetRealtimeClient(protocol);
+            var client = await GetRealtimeClient(protocol, (options, _) => options.LogLevel = LogLevel.Debug);
 
             await WaitForState(client, ConnectionState.Connected);
             var initialConnectionKey = client.Connection.Key;
             var initialConnectionId = client.Connection.Id;
             client.ConnectionManager.Transport.Close(false);
             await WaitForState(client, ConnectionState.Disconnected);
-            await WaitForState(client, ConnectionState.Connected, TimeSpan.FromSeconds(5));
+            await WaitForState(client, ConnectionState.Connected, TimeSpan.FromSeconds(10));
             client.Connection.Id.Should().Be(initialConnectionId);
             client.Connection.Key.Should().NotBe(initialConnectionKey);
         }
@@ -270,7 +270,8 @@ namespace IO.Ably.Tests.Realtime
             client.ConnectionManager.Transport.Close(true);
 
             recoveryClient.Connect();
-            await WaitForState(recoveryClient, ConnectionState.Connected, TimeSpan.FromSeconds(5));
+
+            await WaitForState(recoveryClient, ConnectionState.Connected);
 
             recoveryClient.Connection.Id.Should().Be(id);
             recoveryClient.Connection.Key.Should().NotBe(key);
@@ -286,17 +287,19 @@ namespace IO.Ably.Tests.Realtime
                 opts.Recover = "c17a8!WeXvJum2pbuVYZtF-1b63c17a8:-1";
                 opts.AutoConnect = false;
             });
+
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 if (args.Current == ConnectionState.Connected)
                 {
-                    args.Reason.Should().NotBeNull();
+                    _resetEvent.Set();
                 }
             };
             client.Connect();
 
-            await WaitForState(client, ConnectionState.Connected, TimeSpan.FromSeconds(10));
-            client.Connection.ErrorReason.code.Should().Be(80008);
+            var result = _resetEvent.WaitOne(10000);
+            result.Should().BeTrue("Timeout");
+            client.Connection.ErrorReason.Code.Should().Be(80008);
         }
 
         [Theory]
@@ -307,6 +310,7 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
+                opts.LogLevel = LogLevel.Debug;
             });
             
             var stateChanges = new List<ConnectionState>();
@@ -318,14 +322,14 @@ namespace IO.Ably.Tests.Realtime
                 errors.Add(args.Reason);
             };
 
-            await client.Auth.AuthoriseAsync(new TokenParams() { Ttl = TimeSpan.FromSeconds(10) });
-            var channel = client.Channels.Get("test");
+            await client.Auth.AuthoriseAsync(new TokenParams() { Ttl = TimeSpan.FromSeconds(5) });
+            var channel = client.Channels.Get("shortToken_test" + protocol);
             int count = 0;
             while (true)
             {
-                count++;
+                Interlocked.Increment(ref count);
                 channel.Publish("test", "test");
-                await Task.Delay(3000);
+                await Task.Delay(2000);
                 if (count == 10)
                     break;
             }

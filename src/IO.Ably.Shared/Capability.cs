@@ -25,7 +25,8 @@ namespace IO.Ably
         /// <summary>
         /// Capability to allow all actions. This is the default passed to requests where the capability is not explicitly set
         /// </summary>
-        public readonly static Capability AllowAll = new Capability("{ \"*\": [ \"*\" ] }");
+        public static readonly Capability AllowAll = new Capability("{ \"*\": [ \"*\" ] }");
+        public static readonly Capability Empty = new Capability();
 
         public List<CapabilityResource> Resources { get; set; }
 

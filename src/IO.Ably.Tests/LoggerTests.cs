@@ -34,7 +34,7 @@ namespace IO.Ably.AcceptanceTests
 
                 // null destination shouldn't throw
                 Logger.LoggerSink = null;
-                Logger.Info("msg");
+                Logger.Debug("msg");
 
                 Logger.LoggerSink = sink;
 
@@ -43,8 +43,8 @@ namespace IO.Ably.AcceptanceTests
                 sink.LastLevel.ShouldBeEquivalentTo(LogLevel.Error);
                 sink.LastMessage.Should().EndWith("Test Error Message");
 
-                Logger.Info("Test Info Message");
-                sink.LastLevel.ShouldBeEquivalentTo(LogLevel.Info);
+                Logger.Debug("Test Info Message");
+                sink.LastLevel.ShouldBeEquivalentTo(LogLevel.Debug);
                 sink.LastMessage.Should().EndWith("Test Info Message");
 
                 Logger.Debug("Test Debug Message");
@@ -54,7 +54,7 @@ namespace IO.Ably.AcceptanceTests
                 // Verify the log level works
                 Logger.LogLevel = LogLevel.Warning;
                 Logger.Error("Test Error Message");
-                Logger.Info("Test Info Message");
+                Logger.Debug("Test Info Message");
                 Logger.Debug("Test Debug Message");
                 sink.LastLevel.ShouldBeEquivalentTo(LogLevel.Error);
                 sink.LastMessage.Should().EndWith("Test Error Message");

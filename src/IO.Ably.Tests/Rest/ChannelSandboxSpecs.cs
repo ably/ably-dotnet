@@ -1,8 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Encryption;
 using IO.Ably.Rest;
+using IO.Ably.Tests.Infrastructure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -38,8 +41,8 @@ namespace IO.Ably.Tests.Rest
         public async Task SendingAVeryLargeMessage_ShouldThrowErrorToIndicateSendingFailed(Protocol protocol)
         {
             var message = new Message();
-            message.name = "large";
-            message.data = new string('a', 50 * 1024 * 8); // 100KB
+            message.Name = "large";
+            message.Data = new string('a', 50 * 1024 * 8); // 100KB
             var client = await GetRestClient(protocol);
             var ex = await Assert.ThrowsAsync<AblyException>(()
                 => client.Channels.Get("large").PublishAsync(message));
@@ -50,13 +53,13 @@ namespace IO.Ably.Tests.Rest
         [Trait("spec", "RSL1f1")]
         public async Task WithBasicAuthWhenMessageHasClientId_ShouldRetrieveMessageWithSameClientId(Protocol protocol)
         {
-            var message = new Message("test", "test") {clientId = "123"};
+            var message = new Message("test", "test") {ClientId = "123"};
             var client = await GetRestClient(protocol);
             var channel = client.Channels.Get("persisted:test");
             await channel.PublishAsync(message);
 
             var result = await channel.HistoryAsync();
-            result.Items.First().clientId.Should().Be("123");
+            result.Items.First().ClientId.Should().Be("123");
         }
 
         //RSL1g
@@ -65,13 +68,13 @@ namespace IO.Ably.Tests.Rest
         [Trait("spec", "RSL1g1b")]
         public async Task WithImplicitClientIdComingFromOptions_ReturnsMessageWithCorrectClientId(Protocol protocol)
         {
-            var message = new Message("test", "test") { clientId = null};
+            var message = new Message("test", "test") { ClientId = null};
             var client = await GetRestClient(protocol, opts => opts.ClientId = "999");
             var channel = client.Channels.Get("persisted:test".AddRandomSuffix());
             await channel.PublishAsync(message);
 
             var result = await channel.HistoryAsync();
-            result.Items.First().clientId.Should().Be("999");
+            result.Items.First().ClientId.Should().Be("999");
         }
 
         [Theory]
@@ -79,13 +82,13 @@ namespace IO.Ably.Tests.Rest
         [Trait("spec", "RSL1g2")]
         public async Task WithExplicitClientIdMatchingClientIdInOptions_ReturnsMessageWithCorrectClientId(Protocol protocol)
         {
-            var message = new Message("test", "test") { clientId = "999" };
+            var message = new Message("test", "test") { ClientId = "999" };
             var client = await GetRestClient(protocol, opts => opts.ClientId = "999");
             var channel = client.Channels.Get("persisted:test".AddRandomSuffix());
             await channel.PublishAsync(message);
 
             var result = await channel.HistoryAsync();
-            result.Items.First().clientId.Should().Be("999");
+            result.Items.First().ClientId.Should().Be("999");
         }
 
         [Theory]
@@ -94,7 +97,7 @@ namespace IO.Ably.Tests.Rest
         [Trait("spec", "RSL1g4")]
         public async Task WithExplicitClientIdNotMatchingClientIdInOptions_ReturnsMessageWithCorrectClientId(Protocol protocol)
         {
-            var message = new Message("test", "test") { clientId = "999" };
+            var message = new Message("test", "test") { ClientId = "999" };
             var client = await GetRestClient(protocol, opts => opts.ClientId = "111");
             var channel = client.Channels.Get("test");
             var ex = await Assert.ThrowsAsync<AblyException>(() => channel.PublishAsync(message));
@@ -125,12 +128,12 @@ namespace IO.Ably.Tests.Rest
                 var decodedData = DecodeData((string)encoded["data"], encoding);
                 await channel.PublishAsync((string)encoded["name"], decodedData);
                 var message = (await channel.HistoryAsync()).Items.First();
-                if (message.data is byte[])
-                    (message.data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
+                if (message.Data is byte[])
+                    (message.Data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
                 else if (encoding == "json")
-                    JToken.DeepEquals((JToken)message.data, (JToken)decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
+                    JToken.DeepEquals((JToken)message.Data, (JToken)decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
                 else
-                    message.data.Should().Be(decodedData, "Item number {0} data does not match decoded data", count);
+                    message.Data.Should().Be(decodedData, "Item number {0} data does not match decoded data", count);
                 count++;
             }
         }
@@ -154,12 +157,12 @@ namespace IO.Ably.Tests.Rest
                 var decodedData = DecodeData((string)encoded["data"], encoding);
                 await channel.PublishAsync((string)encoded["name"], decodedData);
                 var message = (await channel.HistoryAsync()).Items.First();
-                if (message.data is byte[])
-                    (message.data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
+                if (message.Data is byte[])
+                    (message.Data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
                 else if (encoding == "json")
-                    JToken.DeepEquals((JToken)message.data, (JToken)decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
+                    JToken.DeepEquals((JToken)message.Data, (JToken)decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
                 else
-                    message.data.Should().Be(decodedData, "Item number {0} data does not match decoded data", count);
+                    message.Data.Should().Be(decodedData, "Item number {0} data does not match decoded data", count);
                 count++;
             }
         }
@@ -179,14 +182,39 @@ namespace IO.Ably.Tests.Rest
             }
 
             //Assert
-            var history = await channel.HistoryAsync(new DataRequestQuery() { Limit = 10 });
+            var history = await channel.HistoryAsync(new HistoryRequestParams() { Limit = 10 });
             history.Items.Should().HaveCount(10);
             history.HasNext.Should().BeTrue();
-            history.Items.First().name.Should().Be("name19");
+            history.Items.First().Name.Should().Be("name19");
 
             var secondPage = await history.NextAsync();
             secondPage.Items.Should().HaveCount(10);
-            secondPage.Items.First().name.Should().Be("name9");
+            secondPage.Items.First().Name.Should().Be("name9");
+        }
+
+        [Theory]
+        [ProtocolData]
+        public async Task Send20MessagesAndThenPaginateHistorySync(Protocol protocol)
+        {
+            //Arrange
+            var client = await GetRestClient(protocol);
+            IRestChannel channel = client.Channels.Get("persisted:historyTest:" + protocol);
+
+            //Act
+            for (int i = 0; i < 20; i++)
+            {
+                channel.Publish("name" + i, "data" + i);
+            }
+
+            //Assert
+            var history = channel.History(new HistoryRequestParams() { Limit = 10 });
+            history.Items.Should().HaveCount(10);
+            history.HasNext.Should().BeTrue();
+            history.Items.First().Name.Should().Be("name19");
+
+            var secondPage = history.Next();
+            secondPage.Items.Should().HaveCount(10);
+            secondPage.Items.First().Name.Should().Be("name9");
         }
 
         [Theory]
@@ -230,7 +258,86 @@ namespace IO.Ably.Tests.Rest
                 var message = (await channel2.HistoryAsync()).Items.First();
 
                 loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
-                message.encoding.Should().Be("utf-8/cipher+aes-128-cbc");
+                message.Encoding.Should().Be("utf-8/cipher+aes-128-cbc");
+            }
+        }
+
+        [Theory]
+        [InteropabilityMessagePayloadData]
+        [Trait("spec", "RSL6a1")]
+        public async Task WithTestMessagePayloadsWhenDecoding_ShouldDecodeMessagesAsPerSpec(Protocol protocol,
+            JObject messageData)
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            
+            var channelName = "channel-name-" + new Random().Next(int.MaxValue);
+
+            var httpClient = (await Fixture.GetSettings()).GetHttpClient();
+
+            JObject rawMessage = new JObject();
+            rawMessage["data"] = messageData["data"];
+            rawMessage["encoding"] = messageData["encoding"];
+
+            var request = new AblyRequest($"/channels/{channelName}/messages", HttpMethod.Post, Protocol.Json);
+            request.RequestBody = rawMessage.ToJson().GetBytes();
+
+            var client1 = await GetRestClient(protocol);
+            await client1.AblyAuth.AddAuthHeader(request);
+            await httpClient.Execute(request);
+
+            var channel = client1.Channels.Get(channelName);
+            var result = await channel.HistoryAsync();
+
+            var returnedMessage = result.Items.First();
+            var expectedType = (string) messageData["expectedType"];
+            if (expectedType == "binary")
+            {
+                ((byte[]) returnedMessage.Data).ToHexString().Should().Be((string) messageData["expectedHexValue"]);
+            }
+            else
+            {
+                var returnedData = expectedType == "string" ? returnedMessage.Data.ToString() : returnedMessage.Data.ToJson();
+                var expectedValue = expectedType == "string" ? (string)messageData["expectedValue"] : messageData["expectedValue"].ToJson();
+                returnedData.Should().Be(expectedValue);
+            }
+        }
+
+        [Theory]
+        [InteropabilityMessagePayloadData]
+        [Trait("spec", "RSL6a1")]
+        public async Task WithTestMessagePayloadsWhenDecoding_ShouldEncodeMessagesAsPerSpec(Protocol protocol,
+            JObject messageData)
+        {
+            var channelName = "channel-name-" + new Random().Next(int.MaxValue);
+            var httpClient = (await Fixture.GetSettings()).GetHttpClient();
+            var expectedType = (string)messageData["expectedType"];
+
+            var client1 = await GetRestClient(protocol);
+            var channel = client1.Channels.Get(channelName);
+
+            //Act
+            if(expectedType == "binary")
+                await channel.PublishAsync("event", ((string)messageData["expectedHexValue"]).ToByteArray());
+            else if (expectedType == "string")
+                await channel.PublishAsync("event", (string)messageData["expectedValue"]);
+            else
+                await channel.PublishAsync("event", messageData["expectedValue"]);
+
+            var request = new AblyRequest($"/channels/{channelName}/messages", HttpMethod.Get, Protocol.Json);
+            await client1.AblyAuth.AddAuthHeader(request);
+            var response = await httpClient.Execute(request);
+            
+            //Assert
+            var historyData = JArray.Parse(response.TextResponse);
+            var responseData = (JObject)historyData.First;
+
+            if (expectedType == "binary")
+                ((string)responseData["data"]).Should().Be((string)messageData["data"]);
+            else if (expectedType == "json")
+                responseData["data"].ToJson().Should().Be(messageData["data"].ToJson());
+            else
+            {
+                ((string) responseData["data"]).Should().Be((string) messageData["data"]);
             }
         }
 
@@ -249,12 +356,12 @@ namespace IO.Ably.Tests.Rest
                 var payload = "test payload";
                 await channel1.PublishAsync("test", payload);
 
-                var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(true, new CipherParams(Crypto.GetRandomKey(CipherMode.CBC, 128))));
+                var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(true, new CipherParams(Crypto.GenerateRandomKey(128, CipherMode.CBC))));
                 var message = (await channel2.HistoryAsync()).Items.First();
 
                 loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
                 loggerSink.LastMessage.Should().Contain("Error decrypting payload");
-                message.encoding.Should().Be("utf-8/cipher+aes-128-cbc");
+                message.Encoding.Should().Be("utf-8/cipher+aes-128-cbc");
             }
         }
 
@@ -262,7 +369,7 @@ namespace IO.Ably.Tests.Rest
         {
             if (encoding == "json")
             {
-                return JsonConvert.DeserializeObject(data);
+                return JsonHelper.Deserialize(data);
             }
             if (encoding == "base64")
                 return data.FromBase64();

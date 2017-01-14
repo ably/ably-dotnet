@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace IO.Ably
 {
-    public enum StatsBy
+    public enum StatsIntervalGranularity
     {
         Minute,
         Hour,
@@ -17,16 +17,16 @@ namespace IO.Ably
     /// <summary>
     /// Stats query. Allows you query for application statistics
     /// </summary>
-    public class StatsDataRequestQuery : DataRequestQuery
+    public class StatsRequestParams : HistoryRequestParams
     {
         /// <summary>
         /// Define how the stats will be aggregated and presented.
         /// </summary>
-        public StatsBy? By { get; set; }
+        public StatsIntervalGranularity? Unit { get; set; }
 
-        public StatsDataRequestQuery()
+        public StatsRequestParams()
         {
-            By = StatsBy.Minute;
+            Unit = StatsIntervalGranularity.Minute;
             Direction = QueryDirection.Backwards;
             Limit = Defaults.QueryLimit;
         }
@@ -34,8 +34,8 @@ namespace IO.Ably
         internal override IEnumerable<KeyValuePair<string, string>> GetParameters()
         {
             var result = new List<KeyValuePair<string, string>>(base.GetParameters());
-            if (By.HasValue)
-                result.Add(new KeyValuePair<string, string>("by", By.ToString().ToLower()));
+            if (Unit.HasValue)
+                result.Add(new KeyValuePair<string, string>("by", Unit.ToString().ToLower()));
             return result;
         }
     }
@@ -52,9 +52,9 @@ namespace IO.Ably
     /// Data request query used for querying stats and history
     /// It makes it easier to pass parameters to the ably service by encapsulating the query string parameters passed
     /// </summary>
-    public class DataRequestQuery
+    public class HistoryRequestParams
     {
-        protected bool Equals(DataRequestQuery other)
+        protected bool Equals(HistoryRequestParams other)
         {
             return Start.Equals(other.Start)
                 && End.Equals(other.End)
@@ -113,10 +113,10 @@ namespace IO.Ably
             get { return StringExtensions.IsEmpty(QueryString); }
         }
 
-        public static readonly DataRequestQuery Empty = new DataRequestQuery();
+        public static readonly HistoryRequestParams Empty = new HistoryRequestParams();
 
 
-        public DataRequestQuery()
+        public HistoryRequestParams()
         {
             ExtraParameters = new Dictionary<string, string>();
             Direction = QueryDirection.Backwards;
@@ -166,12 +166,12 @@ namespace IO.Ably
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((DataRequestQuery)obj);
+            return Equals((HistoryRequestParams)obj);
         }
 
-        internal static DataRequestQuery Parse(string querystring)
+        internal static HistoryRequestParams Parse(string querystring)
         {
-            var query = new DataRequestQuery();
+            var query = new HistoryRequestParams();
             query.QueryString = querystring;
             HttpValueCollection queryParameters = HttpUtility.ParseQueryString(querystring);
             foreach (var key in queryParameters.AllKeys)
@@ -202,7 +202,7 @@ namespace IO.Ably
             return query;
         }
 
-        internal static DataRequestQuery GetLinkQuery(HttpHeaders headers, string link)
+        internal static HistoryRequestParams GetLinkQuery(HttpHeaders headers, string link)
         {
             var linkPattern = "\\s*<(.*)>;\\s*rel=\"(.*)\"";
             IEnumerable<string> linkHeaders;

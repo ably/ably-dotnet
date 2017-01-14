@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
 
@@ -8,39 +6,37 @@ namespace IO.Ably.Realtime
 {
     internal class ChannelAwaiter
     {
-        private readonly IRealtimeChannel _channel;
+        private readonly RealtimeChannel _channel;
         private readonly ChannelState _awaitedState;
-        private Stopwatch _stopwatch = new Stopwatch();
-        private Action<TimeSpan, ErrorInfo> _callback;
-        private volatile bool _waiting = false;
+        private Action<bool, ErrorInfo> _callback;
+        private volatile bool _waiting;
 
         public ChannelAwaiter(IRealtimeChannel channel, ChannelState awaitedState)
         {
-            _channel = channel;
+            _channel = channel as RealtimeChannel;
             _awaitedState = awaitedState;
         }
 
         public void Fail(ErrorInfo error)
         {
-            if (_waiting && _stopwatch.IsRunning)
+            if (_waiting)
             {
-                _stopwatch.Stop();
-                _callback?.Invoke(_stopwatch.Elapsed, error);
+                _callback?.Invoke(false, error);
             }
         }
 
-        public async Task<Result<TimeSpan>> WaitAsync(TimeSpan? timeout = null)
+        public async Task<Result<bool>> WaitAsync(TimeSpan? timeout = null)
         {
-            var wrappedTask = TaskWrapper.Wrap<TimeSpan>(Wait);
+            var wrappedTask = TaskWrapper.Wrap<bool>(Wait);
                 
                 var first = await Task.WhenAny(Task.Delay(timeout ?? TimeSpan.FromSeconds(2)), wrappedTask);
                 if (first == wrappedTask)
                     return wrappedTask.Result;
 
-                return Result.Fail<TimeSpan>(new ErrorInfo("Timeout exceeded", 50000));
+                return Result.Fail<bool>(new ErrorInfo("Timeout exceeded", 50000));
         }
 
-        public void Wait(Action<TimeSpan, ErrorInfo> callback)
+        public void Wait(Action<bool, ErrorInfo> callback)
         {
             if(_waiting) 
                 throw new AblyException("This awaiter is already in waiting state.");
@@ -49,33 +45,30 @@ namespace IO.Ably.Realtime
             if (_channel.State == _awaitedState)
             {
                 _waiting = false;
-                callback?.Invoke(TimeSpan.Zero, null);
+                callback?.Invoke(true, null);
             }
-            _stopwatch.Reset();
-            _stopwatch.Start();
             AttachListener();
         }
         
         private void AttachListener()
         {
-            _channel.StateChanged += ChannelOnChannelStateChanged;
+            _channel.InternalStateChanged += ChannelOnChannelStateChanged;
         }
 
         private void DetachListener()
         {
-            _channel.StateChanged -= ChannelOnChannelStateChanged;
+            _channel.InternalStateChanged -= ChannelOnChannelStateChanged;
         }
 
-        private void ChannelOnChannelStateChanged(object sender, ChannelStateChangedEventArgs args)
+        private void ChannelOnChannelStateChanged(object sender, ChannelStateChange args)
         {
-            if (args.NewState == _awaitedState)
+            if (args.Current == _awaitedState)
             {
-                _stopwatch.Stop();
                 DetachListener();
                 try
                 {
                     _waiting = false;
-                    _callback?.Invoke(_stopwatch.Elapsed, null);
+                    _callback?.Invoke(true, null);
                 }
                 catch (Exception ex)
                 {

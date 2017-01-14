@@ -41,15 +41,15 @@ namespace IO.Ably.Transport
             if (message.AckRequired)
                 lock (_syncObject)
                 {
-                    message.msgSerial = _connection.MessageSerial++;
+                    message.MsgSerial = _connection.MessageSerial++;
                     _queue.Add(new MessageAndCallback(message, callback));
                 }
         }
 
         public bool OnMessageReceived(ProtocolMessage message)
         {
-            if (message.action == ProtocolMessage.MessageAction.Ack ||
-                message.action == ProtocolMessage.MessageAction.Nack)
+            if (message.Action == ProtocolMessage.MessageAction.Ack ||
+                message.Action == ProtocolMessage.MessageAction.Nack)
             {
                 HandleMessageAcknowledgement(message);
                 return true;
@@ -74,7 +74,7 @@ namespace IO.Ably.Transport
         {
             lock (_syncObject)
             {
-                var messagesToRemove = _queue.Where(x => x.Message.channel == name).ToList();
+                var messagesToRemove = _queue.Where(x => x.Message.Channel == name).ToList();
                 foreach (var message in messagesToRemove)
                 {
                     message.SafeExecute(false, error);
@@ -87,19 +87,19 @@ namespace IO.Ably.Transport
         {
             lock (_syncObject)
             {
-                var endSerial = message.msgSerial + (message.count - 1);
+                var endSerial = message.MsgSerial + (message.Count - 1);
                 var listForProcessing = new List<MessageAndCallback>(_queue);
                 foreach (var current in listForProcessing)
                 {
                     if (current.Serial <= endSerial)
                     {
-                        if (message.action == ProtocolMessage.MessageAction.Ack)
+                        if (message.Action == ProtocolMessage.MessageAction.Ack)
                         {
                             current.SafeExecute(true, null);
                         }
                         else
                         {
-                            current.SafeExecute(false, message.error ?? ErrorInfo.ReasonUnknown);
+                            current.SafeExecute(false, message.Error ?? ErrorInfo.ReasonUnknown);
                         }
                         _queue.Remove(current);
                     }

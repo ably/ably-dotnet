@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IO.Ably.Auth;
 using IO.Ably.Transport;
 using Xunit;
 using Xunit.Abstractions;
@@ -100,7 +99,7 @@ namespace IO.Ably.Tests
             {
                 var client = new AblyRest(opts =>
                 {
-                    opts.AuthCallback = @params => Task.FromResult(new TokenDetails());
+                    opts.AuthCallback = @params => Task.FromResult<object>(new TokenDetails());
                 });
 
                 client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
@@ -133,13 +132,11 @@ namespace IO.Ably.Tests
             [Fact]
             public void WithAuthCallback_SetsTokenRenewableToTrue()
             {
-                var rest = new AblyRest(new ClientOptions() { AuthCallback = token => Task.FromResult(new TokenDetails())});
+                var rest = new AblyRest(new ClientOptions() { AuthCallback = token => Task.FromResult<object>(new TokenDetails())});
 
                 rest.AblyAuth.TokenRenewable.Should().BeTrue();
             }
         }
-
-
 
         [Fact]
         public void Init_WithTlsAndSpecificPort_ShouldInitialiseHttpClientWithCorrectPort()

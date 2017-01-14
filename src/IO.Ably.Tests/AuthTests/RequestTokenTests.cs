@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IO.Ably.Auth;
-using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -26,7 +23,7 @@ namespace IO.Ably.Tests.AuthTests
             client.Auth.RequestTokenAsync();
             var data = LastRequest.PostData as TokenRequest;
             data.ClientId.Should().Be("123");
-            data.Ttl.Should().Be(TimeSpan.FromHours(2).TotalMilliseconds.ToString());
+            data.Ttl.Should().Be(TimeSpan.FromHours(2));
         }
 
         [Fact]
@@ -38,7 +35,7 @@ namespace IO.Ably.Tests.AuthTests
 
             var data = LastRequest.PostData as TokenRequest;
             data.KeyName.Should().Be(KeyId);
-            data.Capability.Should().Be(Capability.AllowAll.ToJson());
+            data.Capability.Should().Be(Capability.AllowAll);
             data.ClientId.Should().Be(client.Options.ClientId);
         }
 
@@ -52,6 +49,7 @@ namespace IO.Ably.Tests.AuthTests
                                     ClientId = "123",
                                     Ttl = TimeSpan.FromHours(2)
                                 });
+
             var capability = new Capability();
             capability.AddResource("a").AllowAll();
             var methodParams = new TokenParams()
@@ -66,11 +64,11 @@ namespace IO.Ably.Tests.AuthTests
             await client.Auth.RequestTokenAsync(methodParams);
 
             var data = LastRequest.PostData as TokenRequest;
-            data.Capability.Should().Be(capability.ToJson());
+            data.Capability.Should().Be(capability);
             data.ClientId.Should().Be(methodParams.ClientId);
-            data.Ttl.Should().Be(methodParams.Ttl.Value.TotalMilliseconds.ToString());
+            data.Ttl.Should().Be(methodParams.Ttl);
             data.Nonce.Should().Be(methodParams.Nonce);
-            data.Timestamp.Should().Be(methodParams.Timestamp.Value.ToUnixTimeInMilliseconds().ToString());
+            data.Timestamp.Should().Be(methodParams.Timestamp);
         }
 
         [Fact]
@@ -113,7 +111,7 @@ namespace IO.Ably.Tests.AuthTests
             await client.Auth.RequestTokenAsync(tokenParams, null);
 
             var data = LastRequest.PostData as TokenRequest;
-            Assert.Equal(Capability.AllowAll.ToJson(), data.Capability);
+            Assert.Equal(Capability.AllowAll, data.Capability);
         }
 
         [Fact]
@@ -127,7 +125,7 @@ namespace IO.Ably.Tests.AuthTests
             await client.Auth.RequestTokenAsync(tokenParams, null);
 
             var data = LastRequest.PostData as TokenRequest;
-            Assert.Equal(date.ToUnixTimeInMilliseconds().ToString(), data.Timestamp);
+            Assert.Equal(date, data.Timestamp);
         }
 
         [Fact]
@@ -139,7 +137,7 @@ namespace IO.Ably.Tests.AuthTests
             await client.Auth.RequestTokenAsync(tokenParams, null);
 
             var data = LastRequest.PostData as TokenRequest;
-            Assert.Equal(Now.ToUnixTimeInMilliseconds().ToString(), data.Timestamp);
+            Assert.Equal(Now, data.Timestamp);
         }
 
         [Fact]
@@ -154,7 +152,7 @@ namespace IO.Ably.Tests.AuthTests
 
                 //Assert
                 var data = x.PostData as TokenRequest;
-                Assert.Equal(data.Timestamp, currentTime.ToUnixTimeInMilliseconds().ToString());
+                data.Timestamp.Should().BeCloseTo(currentTime);
                 return DummyTokenResponse.ToTask();
             };
             var tokenParams = new TokenParams { Capability = new Capability(), ClientId = "ClientId", Ttl = TimeSpan.FromMinutes(10) };
@@ -193,7 +191,7 @@ namespace IO.Ably.Tests.AuthTests
                 AuthCallback = (x) =>
                 {
                     authCallbackCalled = true;
-                    return Task.FromResult(token);
+                    return Task.FromResult<object>(token);
                 }
             };
             var result = await rest.Auth.RequestTokenAsync(tokenRequest, options);
@@ -216,8 +214,6 @@ namespace IO.Ably.Tests.AuthTests
                 opts.AuthParams = new Dictionary<string, string> { { "Test", "Test" }, { "TTl", "123" } };
             });
 
-
-
             //Act
             await rest.Auth.RequestTokenAsync(null, null);
 
@@ -238,7 +234,7 @@ namespace IO.Ably.Tests.AuthTests
         {
             if (request.Url.Contains("authUrl"))
             {
-                return JsonConvert.SerializeObject(new TokenRequest() { ClientId = "123" }).ToAblyResponse();
+                return JsonHelper.Serialize(new TokenRequest { ClientId = "123" }).ToAblyResponse();
             }
             return DummyTokenResponse.ToTask();
         }
@@ -373,13 +369,13 @@ namespace IO.Ably.Tests.AuthTests
                 AuthUrl = new Uri("http://authUrl")
             };
             List<AblyRequest> requests = new List<AblyRequest>();
-            var requestdata = new TokenRequest { KeyName = KeyId, Capability = "123", Mac = "mac" };
+            var requestdata = new TokenRequest { KeyName = KeyId, Capability = new Capability(), Mac = "mac" };
             rest.ExecuteHttpRequest = (x) =>
             {
                 requests.Add(x);
                 if (x.Url == options.AuthUrl.ToString())
                 {
-                    return JsonConvert.SerializeObject(requestdata).ToAblyResponse();
+                    return JsonHelper.Serialize(requestdata).ToAblyResponse();
                 }
                 return DummyTokenResponse.ToTask();
             };
@@ -388,8 +384,9 @@ namespace IO.Ably.Tests.AuthTests
 
             await rest.Auth.RequestTokenAsync(tokenParams, options);
 
-            Assert.Equal(2, requests.Count);
-            Assert.Equal(requestdata, requests.Last().PostData);
+            requests.Count.Should().Be(2);
+            var last = requests.Last().PostData as TokenRequest;
+            last.ShouldBeEquivalentTo(requestdata);
         }
 
         [Fact]

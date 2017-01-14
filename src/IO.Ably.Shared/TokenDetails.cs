@@ -4,7 +4,7 @@ using MsgPack.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace IO.Ably.Auth
+namespace IO.Ably
 {
     /// <summary>
     /// A class providing details of a token and its associated metadata
@@ -16,7 +16,6 @@ namespace IO.Ably.Auth
         /// </summary>
         [JsonProperty("capability")]
         [MessagePackMember(50, Name = "capability", NilImplication = NilImplication.MemberDefault)]
-        [JsonConverter(typeof(CapabilityJsonConverter))]
         public Capability Capability { get; set; }
 
         /// <summary>
@@ -31,7 +30,6 @@ namespace IO.Ably.Auth
         /// </summary>
         [JsonProperty("expires")]
         [MessagePackMember(30, Name = "expires")]
-        [JsonConverter(typeof(DateTimeOffsetJsonConverter))]
         public DateTimeOffset Expires { get; set; }
 
         /// <summary>
@@ -39,7 +37,6 @@ namespace IO.Ably.Auth
         /// </summary>
         [JsonProperty("issued")]
         [MessagePackMember(40, Name = "issued")]
-        [JsonConverter(typeof(DateTimeOffsetJsonConverter))]
         public DateTimeOffset Issued { get; set; }
 
         /// <summary>
@@ -93,11 +90,11 @@ namespace IO.Ably.Auth
         {
             unchecked
             {
-                var hashCode = (Token != null ? Token.GetHashCode() : 0);
+                var hashCode = Token?.GetHashCode() ?? 0;
                 hashCode = (hashCode*397) ^ Expires.GetHashCode();
                 hashCode = (hashCode*397) ^ Issued.GetHashCode();
-                hashCode = (hashCode*397) ^ (Capability != null ? Capability.GetHashCode() : 0);
-                hashCode = (hashCode*397) ^ (ClientId != null ? ClientId.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (Capability?.GetHashCode() ?? 0);
+                hashCode = (hashCode*397) ^ (ClientId?.GetHashCode() ?? 0);
                 return hashCode;
             }
         }

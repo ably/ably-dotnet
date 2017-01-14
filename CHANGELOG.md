@@ -1,5 +1,31 @@
 # Change Log
 
+## [0.8.4](https://github.com/ably/ably-dotnet/tree/0.8.3) (2016-06-27)
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/0.8.3...0.8.4)
+
+**Breaking changes**
+
+- Renamed `StatsDataRequestQuery` to `StatsRequestParams`
+- Updated properties of `ConnectionDetailsMessage`, `ErrorInfo`, `Message`, `PresenceMessage` to use the standard pascal casing used throughout .Net
+
+**Implemented enhancements:**
+
+- Added syncronous methods for `AblyAuth`, `AblyRest` and `RestChannel`
+- Added the ability to specify the `LogLevel` and `LogHandler` through the ably `ClientOptions`
+- Added extra logging when sending and receiving Http requests
+- Added a `None` Log level to completely switch off logging
+- Improved realtime presence handling
+- Include version info in requests [\#82](https://github.com/ably/ably-dotnet/issues/82)
+- Sync REST methods [\#80](https://github.com/ably/ably-dotnet/issues/80)
+- Interoperability tests [\#83](https://github.com/ably/ably-dotnet/issues/83)
+- Add documentation to README about which platforms are supported [\#28](https://github.com/ably/ably-dotnet/issues/28)
+
+**Fixed bugs:**
+
+- Various inconsistencies following review of documentation [\#81](https://github.com/ably/ably-dotnet/issues/81)
+- Possible minor issues [\#68](https://github.com/ably/ably-dotnet/issues/68)
+- Fixed the MsgPack dependency issue
+
 ## [0.8.3](https://github.com/ably/ably-dotnet/tree/0.8.3) (2016-06-27)
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/v0.8.2-beta...0.8.3)
 
