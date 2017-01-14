@@ -1,6 +1,6 @@
 # Change Log
 
-## [0.8.4](https://github.com/ably/ably-dotnet/tree/0.8.3) (2016-06-27)
+## [0.8.4](https://github.com/ably/ably-dotnet/tree/0.8.4) (2016-06-27)
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/0.8.3...0.8.4)
 
 **Breaking changes**
