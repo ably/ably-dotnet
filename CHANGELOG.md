@@ -24,6 +24,7 @@
 
 - Various inconsistencies following review of documentation [\#81](https://github.com/ably/ably-dotnet/issues/81)
 - Possible minor issues [\#68](https://github.com/ably/ably-dotnet/issues/68)
+- Fixed the MsgPack dependency issue
 
 ## [0.8.3](https://github.com/ably/ably-dotnet/tree/0.8.3) (2016-06-27)
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/v0.8.2-beta...0.8.3)
