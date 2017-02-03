@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 
 namespace IO.Ably.ConsoleTest
 {
@@ -7,11 +6,13 @@ namespace IO.Ably.ConsoleTest
     {
         public static AblyRealtime Test()
         {
-            var options = new ClientOptions()
+            var options = new ClientOptions("lNj80Q.iGyVcQ:2QKX7FFASfX-7H9H")
             {
-                AuthUrl = new Uri("https://www.ably.io/ably-auth/token-request/demos"),
                 ClientId = "stan",
-                Tls = false
+                Tls = true,
+                UseBinaryProtocol = true,
+                LogLevel = LogLevel.Debug,
+                LogHander = new MyLogger()
             };
             return new AblyRealtime(options);
         }

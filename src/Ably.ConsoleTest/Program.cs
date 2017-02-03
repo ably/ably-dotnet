@@ -1,7 +1,7 @@
 ﻿using System;
-using System.CodeDom;
-using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace IO.Ably.ConsoleTest
 {
@@ -9,17 +9,19 @@ namespace IO.Ably.ConsoleTest
     {
         static void Main(string[] args)
         {
+            MainAsync(args).GetAwaiter().GetResult();
+        }
+
+        static async Task MainAsync(string[] args)
+        {
             //IO.Ably.Logger.LoggerSink = new MyLogger();
-            Logger.LogLevel = LogLevel.Debug;
             try
             {
                 //Rest.Test().Wait();
                 var client = Realtime.Test();
                 client.Connect(); 
                 var channel = client.Channels.Get("testchannel0");
-                channel.Attach();
-                channel.Presence.Subscribe(Presence_MessageReceived2);
-                channel.Presence.EnterClientAsync("clientid1", "mydata");
+                await channel.AttachAsync();
 
                 while (true)
                 {

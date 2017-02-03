@@ -91,9 +91,9 @@ namespace IO.Ably.MessageEncoders
         {
             try
             {
-                var body = MsgPackHelper.Deserialise(requestBody, typeof(MessagePackObject)).ToString();
+                var body = MsgPackHelper.Deserialise(requestBody, typeof(MessagePackObject))?.ToString();
                 
-                Logger.Debug("RequestBody: " + body);
+                Logger.Debug("RequestBody: " + (body ?? "No body present"));
             }
             catch (Exception ex)
             {
