@@ -1,9 +1,9 @@
-﻿using IO.Ably;
-using IO.Ably.Encryption;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using IO.Ably;
+using IO.Ably.Encryption;
 using CipherMode = IO.Ably.Encryption.CipherMode;
 
 namespace AblyPlatform.Cryptography
@@ -22,16 +22,14 @@ namespace AblyPlatform.Cryptography
             _params = @params;
         }
 
-        static readonly Dictionary<IO.Ably.Encryption.CipherMode, System.Security.Cryptography.CipherMode> ModesMap = new Dictionary<IO.Ably.Encryption.CipherMode, System.Security.Cryptography.CipherMode>()
+        static readonly Dictionary<CipherMode, System.Security.Cryptography.CipherMode> ModesMap = new Dictionary<CipherMode, System.Security.Cryptography.CipherMode>
         {
-            { IO.Ably.Encryption.CipherMode.CBC, System.Security.Cryptography.CipherMode.CBC },
-            { IO.Ably.Encryption.CipherMode.ECB, System.Security.Cryptography.CipherMode.ECB },
-            { IO.Ably.Encryption.CipherMode.OFB, System.Security.Cryptography.CipherMode.OFB },
-            { IO.Ably.Encryption.CipherMode.CFB , System.Security.Cryptography.CipherMode.CFB },
-            { IO.Ably.Encryption.CipherMode.CTS , System.Security.Cryptography.CipherMode.CTS },
+            { CipherMode.CBC, System.Security.Cryptography.CipherMode.CBC },
+            { CipherMode.ECB, System.Security.Cryptography.CipherMode.ECB },
+            { CipherMode.CTS , System.Security.Cryptography.CipherMode.CTS }
         };
 
-        public static System.Security.Cryptography.CipherMode MapAblyMode(IO.Ably.Encryption.CipherMode? mode)
+        public static System.Security.Cryptography.CipherMode MapAblyMode(CipherMode? mode)
         {
             if(mode == null)
                 return System.Security.Cryptography.CipherMode.CBC;
@@ -40,7 +38,8 @@ namespace AblyPlatform.Cryptography
 
         public static byte[] GenerateKey(CipherMode? mode, int? keyLength)
         {
-            using (var aes = new AesCryptoServiceProvider())
+           
+            using (var aes = Aes.Create())
             {
                 aes.KeySize = keyLength ?? Crypto.DefaultKeylength;
                 aes.Mode = MapAblyMode(mode);
@@ -53,7 +52,7 @@ namespace AblyPlatform.Cryptography
 
         private static byte[] Encrypt(byte[] input, byte[] key, int keySize, System.Security.Cryptography.CipherMode mode, byte[] iv = null)
         {
-            using (var aesEncryption = new RijndaelManaged())
+            using (var aesEncryption = Aes.Create())
             {
                 if (iv == null)
                     aesEncryption.GenerateIV();
@@ -81,7 +80,7 @@ namespace AblyPlatform.Cryptography
         static byte[] Decrypt(byte[] input, byte[] key, int keySize, System.Security.Cryptography.CipherMode mode)
         {
             byte[] iv = input.Take(Crypto.DefaultBlocklength).ToArray();
-            using (var aesEncryption = new RijndaelManaged())
+            using (var aesEncryption = Aes.Create())
             {
                 aesEncryption.KeySize = keySize;
                 aesEncryption.BlockSize = Crypto.DefaultBlocklength * 8;

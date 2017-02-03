@@ -49,7 +49,7 @@ namespace IO.Ably
         public static bool EqualsTo(this string input, string other, bool caseSensitive = false)
         {
             return string.Equals(input, other,
-                caseSensitive ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase);
+                caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
         }
 
         public static byte[] ToByteArray(this string hex)

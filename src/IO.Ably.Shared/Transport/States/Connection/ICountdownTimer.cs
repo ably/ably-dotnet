@@ -1,73 +1,24 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 
 namespace IO.Ably.Transport.States.Connection
 {
     public interface ICountdownTimer
     {
-        void Start(TimeSpan delay, Action onTimeOut, bool autoReset = false);
-        void StartAsync(TimeSpan delay, Func<Task> onTimeOut, bool autoReset = false);
+        void Start(TimeSpan delay, Action onTimeOut);
+        void StartAsync(TimeSpan delay, Func<Task> onTimeOut);
         void Abort();
     }
 
-    //internal sealed class Timer : CancellationTokenSource, IDisposable
-    //{
-    //    private readonly Func<Task> _callback;
-    //    private readonly TimeSpan _period;
-    //    private readonly Action _action;
-
-    //    internal Timer(Func<Task> callback, TimeSpan period)
-    //    {
-    //        if(callback == null)
-    //            throw new ArgumentNullException(nameof(callback));
-    //        if (period == TimeSpan.Zero)
-    //            throw new ArgumentException("Period can't be zero!", nameof(period));
-
-    //        _callback = callback;
-    //        _period = period;
-    //    }
-
-    //    internal Timer(Action action, TimeSpan period)
-    //    {
-    //        if (action == null)
-    //            throw new ArgumentNullException(nameof(action));
-    //        if (period == TimeSpan.Zero)
-    //            throw new ArgumentException("Period can't be zero!", nameof(period));
-
-    //        _action = action;
-    //        _period = period;
-    //    }
-
-    //    public async Task Start()
-    //    {
-    //        while (!IsCancellationRequested)
-    //        {
-    //            await Task.Delay(_period, Token);
-
-    //            if (!IsCancellationRequested)
-    //            {
-    //                if(_callback != null)
-    //                    await _callback();
-
-    //                _action?.Invoke();
-    //            }
-    //        }
-    //    }
-
-    //    public new void Dispose()
-    //    {
-    //        Cancel();
-    //    }
-    //}
+    
 
     public class CountdownTimer : ICountdownTimer
     {
         private readonly string _name;
-        private System.Timers.Timer _timer;
-        private Action _onTimeOut;
-        private Func<Task> _onTimeOutFunc;
+        private Timer _timer;
+        private Action _elapsedSync;
+        private Func<Task> _elapsedAsync;
         private TimeSpan _delay;
         private volatile bool _aborted;
 
@@ -76,38 +27,35 @@ namespace IO.Ably.Transport.States.Connection
             _name = name;
         }
 
-        public void Start(TimeSpan delay, Action onTimeOut, bool autoReset = false)
+        public void Start(TimeSpan delay, Action elapsedSync)
         {
-            if (onTimeOut == null)
-                throw new ArgumentNullException(nameof(onTimeOut));
+            if (elapsedSync == null)
+                throw new ArgumentNullException(nameof(elapsedSync));
 
             if (Logger.IsDebug)
             {
-                Logger.Debug($"Setting up timer '{_name}' to run action after {delay.TotalSeconds} seconds. Autoreset: {autoReset}");
+                Logger.Debug($"Setting up timer '{_name}' to run action after {delay.TotalSeconds} seconds.");
             }
 
-            _onTimeOut = onTimeOut;
+            _elapsedSync = elapsedSync;
 
             if (_timer != null)
             {
                 Abort();
             }
 
-            _timer = SetupTimer(delay, autoReset);
-            _timer.Start();
+            _timer = StartTimer(delay);
         }
 
-        private System.Timers.Timer SetupTimer(TimeSpan delay, bool autoReset)
+        private Timer StartTimer(TimeSpan delay)
         {
             _aborted = false;
             _delay = delay;
-            var timer = new System.Timers.Timer(delay.TotalMilliseconds);
-            timer.AutoReset = autoReset;
-            timer.Elapsed += OnTimerOnElapsed;
+            var timer = new Timer(state => OnTimerOnElapsed(), null, (int)delay.TotalMilliseconds, Timeout.Infinite);
             return timer;
         }
 
-        private async void OnTimerOnElapsed(object sender, ElapsedEventArgs args)
+        private async void OnTimerOnElapsed()
         {
             if (_aborted)
             {
@@ -120,14 +68,14 @@ namespace IO.Ably.Transport.States.Connection
 
             try
             {
-                if (_onTimeOut != null)
+                if (_elapsedSync != null)
                 {
                     if (Logger.IsDebug)
                     {
                         Logger.Debug($"Timer '{_name}' interval {_delay.TotalSeconds} seconds elapsed and calling action.");    
                     }
 
-                    _onTimeOut();
+                    _elapsedSync();
                 }
                 else
                 {
@@ -135,25 +83,25 @@ namespace IO.Ably.Transport.States.Connection
                     {
                         Logger.Debug($"Timer '{_name}' interval {_delay.TotalSeconds} seconds elapsed and calling async action.");
                     }
-                    await _onTimeOutFunc();
+                    await _elapsedAsync();
                 }
             }
             catch (Exception ex)
             {
                 Logger.Error("Error in method called by timer.", ex);
-                //throw;
+                //throw; //TODO: BAD ME!
             }
         }
         
 
-        public void StartAsync(TimeSpan delay, Func<Task> onTimeOut, bool autoReset = false)
+        public void StartAsync(TimeSpan delay, Func<Task> onTimeOut)
         {
             if (onTimeOut == null)
                 throw new ArgumentNullException(nameof(onTimeOut));
 
             if (Logger.IsDebug)
             {
-                Logger.Debug($"Setting up timer '{_name}' to run action after {delay.TotalSeconds} seconds. Autoreset: {autoReset}");
+                Logger.Debug($"Setting up timer '{_name}' to run action after {delay.TotalSeconds} seconds");
             }
 
             if (_timer != null)
@@ -161,10 +109,9 @@ namespace IO.Ably.Transport.States.Connection
                 Abort();
             }
 
-            _onTimeOutFunc = onTimeOut;
+            _elapsedAsync = onTimeOut;
 
-            _timer = SetupTimer(delay, autoReset);
-            _timer.Start();
+            _timer = StartTimer(delay);
         }
 
         public void Abort()
@@ -176,7 +123,6 @@ namespace IO.Ably.Transport.States.Connection
             }
             if (_timer != null)
             {
-                _timer.Stop();
                 _timer.Dispose();
                 _timer = null;
             }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace IO.Ably.Transport
@@ -66,9 +67,9 @@ namespace IO.Ably.Transport
         {
             if (ei != null)
                 _completionSource.SetResult(Result.Fail<T>(ei));
-            else if (typeof(T).IsValueType && IsNotDefaultValue(res))
+            else if (typeof(T).GetTypeInfo().IsValueType && IsNotDefaultValue(res))
                 _completionSource.SetResult(Result.Ok(res));
-            else if (typeof(T).IsValueType == false && res != null)
+            else if (typeof(T).GetTypeInfo().IsValueType == false && res != null)
                 _completionSource.SetResult(Result.Ok(res));
             else
                 _completionSource.SetException(new Exception("Unexpected Exception from the TaskWrapper")); //Something bad happened

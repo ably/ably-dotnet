@@ -18,20 +18,18 @@ namespace IO.Ably.Tests
 
         public bool Aborted { get; set; }
 
-        public void Start(TimeSpan delay, Action onTimeOut, bool autoReset = false)
+        public void Start(TimeSpan delay, Action onTimeOut)
         {
             OnTimeOut = onTimeOut;
             StartedWithAction = true;
             LastDelay = delay;
-            AutoRest = autoReset;
         }
 
-        public void StartAsync(TimeSpan delay, Func<Task> onTimeOut, bool autoReset = false)
+        public void StartAsync(TimeSpan delay, Func<Task> onTimeOut)
         {
             OnTimeOutFunc = onTimeOut;
             StartedWithFunc = true;
             LastDelay = delay;
-            AutoRest = autoReset;
         }
 
         public void Abort()

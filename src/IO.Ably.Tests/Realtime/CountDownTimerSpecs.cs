@@ -93,12 +93,12 @@ namespace IO.Ably.Tests.Realtime
             };
 
             // Act
-            timer.Start(timeout, callback1, true);
-            timer.Start(timeout, callback2, true);
+            timer.Start(timeout, callback1);
+            timer.Start(timeout, callback2);
             await Task.Delay(50);
 
             // Assert
-            called2.Should().BeGreaterThan(1);
+            called2.Should().Be(1);
             called1.Should().Be(0);
         }
     }
