@@ -6,7 +6,6 @@ namespace IO.Ably
     public static class Config
     {
         public static Func<CipherParams, IChannelCipher> GetCipher = Crypto.GetCipher;
-
         internal static Func<DateTimeOffset> Now = () => DateTimeOffset.UtcNow;
         
         public static string Host = "rest.ably.io";
@@ -16,7 +15,6 @@ namespace IO.Ably
         public const int CommulativeFailedRequestTimeOutInSeconds = 10;
         public const int DisconnectTimeout = 10000;
         public const int SuspendedTimeout = 60000;
-
         public static int ProtocolVersion = 1;
     }
 }
