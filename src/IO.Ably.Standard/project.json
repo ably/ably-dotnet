@@ -1,0 +1,16 @@
+﻿{
+  "supports": {},
+  "dependencies": {
+    "MsgPack.Cli": "0.8.1",
+    "Newtonsoft.Json": "9.0.1",
+    "Nito.AsyncEx.Context": "1.1.0",
+    "Nito.AsyncEx.Tasks": "1.1.0",
+    "System.Net.Http": "4.3.0",
+    "System.Net.Requests": "4.3.0",
+    "System.Threading.Thread": "4.3.0",
+    "WebSocket4Net": "0.15.0-beta6"
+  },
+  "frameworks": {
+    "netstandard1.3": {}
+  }
+}

@@ -118,8 +118,8 @@ namespace IO.Ably.Encryption
             byte[] keyBytes = key.GetBytes();
             using (var hmac = new HMACSHA256(keyBytes))
             {
-                hmac.ComputeHash(bytes);
-                return Convert.ToBase64String(hmac.Hash);
+                var hash = hmac.ComputeHash(bytes);
+                return Convert.ToBase64String(hash);
             }
         }
 

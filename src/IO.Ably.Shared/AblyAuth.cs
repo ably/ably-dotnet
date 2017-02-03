@@ -362,7 +362,28 @@ namespace IO.Ably
             if (Logger.IsDebug)
             {
                 TokenAuthMethod method = GetTokenAuthMethod();
-                Logger.Debug("Authentication method: {0}", method.ToEnumDescription());
+                string authMethodDescription;
+                switch (method)
+                {
+                    case TokenAuthMethod.None:
+                        authMethodDescription = "None, no authentication parameters";
+                        break;
+                    case TokenAuthMethod.Callback:
+                        authMethodDescription = "Token auth with callback";
+                        break;
+                    case TokenAuthMethod.Url:
+                        authMethodDescription = "Token auth with URL";
+                        break;
+                    case TokenAuthMethod.Signing:
+                        authMethodDescription = "Token auth with client-side signing";
+                        break;
+                    case TokenAuthMethod.JustToken:
+                        authMethodDescription = "Token auth with supplied token only";
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+                Logger.Debug("Authentication method: {0}", authMethodDescription);
             }
         }
 

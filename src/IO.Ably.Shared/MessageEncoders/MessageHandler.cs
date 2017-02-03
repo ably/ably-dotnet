@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using IO.Ably.Types;
@@ -177,7 +178,7 @@ namespace IO.Ably.MessageEncoders
 
         static Type GetNullableType(Type type)
         {
-            if (type.IsValueType == false) return null; // ref-type
+            if (type.GetTypeInfo().IsValueType == false) return null; // ref-type
             return Nullable.GetUnderlyingType(type);
         }
 

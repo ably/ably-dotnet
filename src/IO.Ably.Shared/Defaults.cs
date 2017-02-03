@@ -7,9 +7,9 @@ namespace IO.Ably
     internal static class Defaults
     {
         public const string ProtocolVersion = "0.8";
-        private static readonly AssemblyName AssemblyName = typeof(Defaults).Assembly.GetName();
+        private static readonly string AssemblyVersion = typeof(Defaults).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
 
-        public static string LibraryVersion => $"dotnet-{AssemblyName.Version.ToString(3)}";
+        public static string LibraryVersion => $"dotnet-{AssemblyVersion}";
 
         public const int QueryLimit = 100;
 
