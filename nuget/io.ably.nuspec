@@ -15,16 +15,13 @@
         <copyright>2017 Ably</copyright>
         <language />
         <dependencies>
-            <dependency id="Newtonsoft.Json" version="9.0.1" />
-            <dependency id="Nito.AsyncEx" version="3.0.1" />
-            <dependency id="WebSocket4Net" version="[0.14.1]" />
             <dependency id="MsgPack.Cli" version="[0.8.1]" />
         </dependencies>
     </metadata>
     <files>
-        <file src="..\src\IO.Ably.Net45\bin\Release\IO.Ably.*" target="lib\net45" />
-        <file src="..\src\IO.Ably.Android\bin\Release\IO.Ably.*" target="lib\monoandroid" />
-        <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.*" target="lib\Xamarin.iOS" />
-        <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.*" target="lib\monotouch" />
+        <file src="..\src\IO.Ably.Net45\bin\Release\Packaged\IO.Ably.*" target="lib\net45" />
+        <file src="..\src\IO.Ably.Android\bin\Release\Packaged\IO.Ably.*" target="lib\monoandroid" />
+        <file src="..\src\IO.Ably.iOS\bin\Release\Packaged\IO.Ably.*" target="lib\Xamarin.iOS" />
+        <file src="..\src\IO.Ably.iOS\bin\Release\Packaged\IO.Ably.*" target="lib\monotouch" />
     </files>
 </package>

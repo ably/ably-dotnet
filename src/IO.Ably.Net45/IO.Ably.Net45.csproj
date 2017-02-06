@@ -95,18 +95,11 @@
       <InputAssemblies Include="$(OutputPath)\IO.Ably.dll" />
       <InputAssemblies Include="$(OutputPath)\Newtonsoft.*.dll" />
       <InputAssemblies Include="$(OutputPath)\Nito.*.dll" />
-      <InputAssemblies Include="$(OutputPath)\MsgPack.dll" />
       <InputAssemblies Include="$(OutputPath)\WebSocket4Net.dll" />
     </ItemGroup>
-    
-    <ILRepack
-      Parallel="true"
-      Internalize="true"
-      InputAssemblies="@(InputAssemblies)"
-      XmlDocumentation="true"
-      TargetKind="DLL"
-      OutputFile="$(OutputPath)\Packaged\$(AssemblyName).dll"
-    />
-
+    <ItemGroup>
+     <LibraryPaths Include="..\packages\MsgPack.Cli.0.8.1\lib\net45"/>
+    </ItemGroup>
+    <ILRepack Parallel="true" Internalize="true" InputAssemblies="@(InputAssemblies)" LibraryPath="@(LibraryPaths)" XmlDocumentation="true" TargetKind="DLL" OutputFile="$(OutputPath)\Packaged\$(AssemblyName).dll" />
   </Target>
 </Project>
