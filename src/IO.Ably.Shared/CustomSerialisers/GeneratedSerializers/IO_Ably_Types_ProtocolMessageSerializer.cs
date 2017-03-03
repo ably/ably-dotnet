@@ -28,7 +28,7 @@ namespace IO.Ably.CustomSerialisers {
         
         private MsgPack.Serialization.MessagePackSerializer<IO.Ably.ErrorInfo> _serializer5;
         
-        private MsgPack.Serialization.MessagePackSerializer<System.Nullable<IO.Ably.Types.ProtocolMessage.MessageFlag>> _serializer6;
+        private MsgPack.Serialization.MessagePackSerializer<System.Nullable<int>> _serializer6;
         
         private MsgPack.Serialization.MessagePackSerializer<IO.Ably.Message[]> _serializer7;
         
@@ -60,7 +60,7 @@ namespace IO.Ably.CustomSerialisers {
             this._serializer5 = context.GetSerializer<IO.Ably.ErrorInfo>(schema4);
             MsgPack.Serialization.PolymorphismSchema schema5 = default(MsgPack.Serialization.PolymorphismSchema);
             schema5 = null;
-            this._serializer6 = context.GetSerializer<System.Nullable<IO.Ably.Types.ProtocolMessage.MessageFlag>>(schema5);
+            this._serializer6 = context.GetSerializer<System.Nullable<int>>(schema5);
             MsgPack.Serialization.PolymorphismSchema schema6 = default(MsgPack.Serialization.PolymorphismSchema);
             schema6 = null;
             this._serializer7 = context.GetSerializer<IO.Ably.Message[]>(schema6);
@@ -327,8 +327,8 @@ namespace IO.Ably.CustomSerialisers {
                                 {
                                     if ((key == "flags"))
                                     {
-                                        System.Nullable<IO.Ably.Types.ProtocolMessage.MessageFlag> nullable24 =
-                                            default(System.Nullable<IO.Ably.Types.ProtocolMessage.MessageFlag>);
+                                        System.Nullable<int> nullable24 =
+                                            default(System.Nullable<int>);
                                         if ((unpacker.Read() == false))
                                         {
                                             throw MsgPack.Serialization.SerializationExceptions.NewMissingItem(i);

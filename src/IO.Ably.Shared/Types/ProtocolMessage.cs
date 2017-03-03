@@ -31,11 +31,17 @@ namespace IO.Ably.Types
             Sync
         }
 
-        [Flags]
-        public enum MessageFlag
+        public class MessageFlags
         {
-            Presence = 1,
-            Backlog = 1 << 1
+            public const int Presence = 1;
+            public const int Backlog = 1 << 1;
+
+            public static bool HasFlag(int? value, int flag)
+            {
+                if (value == null) return false;
+
+                return (value.Value & flag) != 0;
+            }
         }
 
         public ProtocolMessage()
@@ -58,12 +64,12 @@ namespace IO.Ably.Types
         public MessageAction Action { get; set; }
 
         [JsonProperty("flags")]
-        public MessageFlag? Flags { get; set; }
+        public int? Flags { get; set; }
 
         [JsonIgnore]
-        public bool HasPresenceFlag => Flags == MessageFlag.Presence;
+        public bool HasPresenceFlag => MessageFlags.HasFlag(Flags, MessageFlags.Presence);
         [JsonIgnore]
-        public bool HasBacklogFlag => Flags == MessageFlag.Backlog;
+        public bool HasBacklogFlag => MessageFlags.HasFlag(Flags, MessageFlags.Backlog);
 
         [JsonProperty("count")]
         public int? Count { get; set; }

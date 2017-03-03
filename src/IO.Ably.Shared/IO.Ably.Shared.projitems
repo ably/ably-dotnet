@@ -52,7 +52,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\GeneratedSerializers\IO_Ably_StatsSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\GeneratedSerializers\IO_Ably_Types_ProtocolMessageSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\GeneratedSerializers\IO_Ably_Types_ProtocolMessage_MessageActionSerializer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\GeneratedSerializers\IO_Ably_Types_ProtocolMessage_MessageFlagSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\GeneratedSerializers\System_Net_HttpStatusCodeSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\TimeSpanJsonConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\TimespanMessagePackSerializer.cs" />
