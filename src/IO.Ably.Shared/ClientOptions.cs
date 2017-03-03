@@ -79,7 +79,7 @@ namespace IO.Ably
         /// </summary>
         public string RestHost { get; set; }
 
-        internal bool IsLiveEnvironment => Environment.HasValue == false || Environment == AblyEnvironment.Live;
+        internal bool IsLiveEnvironment => Environment.IsEmpty() || Environment == "live";
 
         internal bool IsDefaultRestHost => RestHost.IsEmpty() && IsDefaultPort && IsLiveEnvironment;
 
@@ -146,7 +146,7 @@ namespace IO.Ably
         /// </summary>
         public ChannelOptions ChannelDefaults { get; set; } = new ChannelOptions();
 
-        public AblyEnvironment? Environment { get; set; }
+        public string Environment { get; set; }
 
         public ITransportFactory TransportFactory { get; set; }
 

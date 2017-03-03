@@ -250,8 +250,8 @@ namespace IO.Ably.Tests
             }
 
             [Theory]
-            [InlineData(AblyEnvironment.Sandbox)]
-            public async Task WithEnvironmentAndNoCustomHost_ShouldPrefixEnvironment(AblyEnvironment environment)
+            [InlineData("sandbox")]
+            public async Task WithEnvironmentAndNoCustomHost_ShouldPrefixEnvironment(string environment)
             {
                 var client = CreateClient(options => { options.Environment = environment; });
                 await MakeAnyRequest(client);
@@ -264,7 +264,7 @@ namespace IO.Ably.Tests
             {
                 var client = CreateClient(options =>
                 {
-                    options.Environment = AblyEnvironment.Sandbox;
+                    options.Environment = "sandbox";
                     options.RestHost = "www.test.com";
                 });
                 await MakeAnyRequest(client);

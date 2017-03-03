@@ -48,7 +48,7 @@ namespace IO.Ably.Tests
         public string KeyWithChannelLimitations => Keys[2].KeyStr;
 
         public bool Tls { get; set; }
-        public AblyEnvironment Environment => AblyEnvironment.Sandbox;
+        public string Environment => "sandbox";
         public CipherParams CipherParams { get; set; }
 
         public TestEnvironmentSettings()

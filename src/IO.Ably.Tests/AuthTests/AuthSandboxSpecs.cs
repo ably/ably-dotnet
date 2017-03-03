@@ -80,7 +80,7 @@ namespace IO.Ably.Tests
 
             var token = ably.Auth.RequestTokenAsync(CreateTokenParams(capability), null).Result;
 
-            var tokenAbly = new AblyRest(new ClientOptions { Token = token.Token, Environment = AblyEnvironment.Sandbox });
+            var tokenAbly = new AblyRest(new ClientOptions { Token = token.Token, Environment = "sandbox" });
 
             var error =
                 await

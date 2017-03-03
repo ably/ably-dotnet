@@ -10,7 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AblyAuth.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)AblyEnvironment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AblyException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AblyRealtime.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AblyRest.cs" />
