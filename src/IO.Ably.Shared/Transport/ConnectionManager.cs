@@ -134,7 +134,6 @@ namespace IO.Ably.Transport
 
                     newState.AbortTimer();
 
-
                     if (newState.State != Realtime.ConnectionState.Failed)
                     {
                         SetState(new ConnectionFailedState(this, ex.ErrorInfo));
@@ -291,6 +290,7 @@ namespace IO.Ably.Transport
 
         public void SendToTransport(ProtocolMessage message)
         {
+            if(Logger.IsDebug) Logger.Debug($"Sending message ({message.Action}) to transport");
             var data = Handler.GetTransportData(message);
             Transport.Send(data);
         }
@@ -363,6 +363,8 @@ namespace IO.Ably.Transport
 
             lock (_pendingQueueLock)
             {
+                if(Logger.IsDebug) Logger.Debug("Sending pending message: Count: " + PendingMessages.Count);
+
                 while (PendingMessages.Count > 0)
                 {
                     var queuedMessage = PendingMessages.Dequeue();
