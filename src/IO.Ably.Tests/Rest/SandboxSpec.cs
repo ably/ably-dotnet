@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions.Common;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
 using Xunit.Abstractions;
