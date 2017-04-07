@@ -13,16 +13,16 @@ namespace IO.Ably.Transport
         public void Callback(bool res, ErrorInfo ei)
         {
             if (res)
-                _completionSource.SetResult(Result.Ok());
+                _completionSource.TrySetResult(Result.Ok());
             else if (ei != null)
-                _completionSource.SetResult(Result.Fail(ei));
+                _completionSource.TrySetResult(Result.Fail(ei));
             else
-                _completionSource.SetException(new Exception("Unexpected exception thrown by the TaskWrapper."));
+                _completionSource.TrySetException(new Exception("Unexpected exception thrown by the TaskWrapper."));
         }
 
         public void SetException(Exception ex)
         {
-            _completionSource.SetException(new AblyException(ex));
+            _completionSource.TrySetException(new AblyException(ex));
         }
 
         public static Task<Result<T>> Wrap<T>(Action<Action<T, ErrorInfo>> toWrapMethod)
@@ -65,13 +65,13 @@ namespace IO.Ably.Transport
         public void Callback(T res, ErrorInfo ei)
         {
             if (ei != null)
-                _completionSource.SetResult(Result.Fail<T>(ei));
+                _completionSource.TrySetResult(Result.Fail<T>(ei));
             else if (typeof(T).IsValueType && IsNotDefaultValue(res))
-                _completionSource.SetResult(Result.Ok(res));
+                _completionSource.TrySetResult(Result.Ok(res));
             else if (typeof(T).IsValueType == false && res != null)
-                _completionSource.SetResult(Result.Ok(res));
+                _completionSource.TrySetResult(Result.Ok(res));
             else
-                _completionSource.SetException(new Exception("Unexpected Exception from the TaskWrapper")); //Something bad happened
+                _completionSource.TrySetException(new Exception("Unexpected Exception from the TaskWrapper")); //Something bad happened
         }
 
         private static bool IsNotDefaultValue(object res)
@@ -86,7 +86,7 @@ namespace IO.Ably.Transport
 
         public void SetException(Exception ex)
         {
-            _completionSource.SetException(new AblyException(ex));
+            _completionSource.TrySetException(new AblyException(ex));
         }
     }
 }
