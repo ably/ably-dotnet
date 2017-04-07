@@ -11,7 +11,7 @@ namespace IO.Ably.Tests
     public class StatsSandBoxSpecs : SandboxSpecs
     {
         public readonly static DateTimeOffset StartInterval = DateHelper.CreateDate(DateTimeOffset.UtcNow.Year - 1, 2, 3, 15, 5);
-        
+
         public async Task<Stats> GetStats(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
@@ -24,7 +24,8 @@ namespace IO.Ably.Tests
         [ProtocolData]
         public async Task ShouldHaveCorrectStatsAsPerStatsSpec(Protocol protocol)
         {
-            
+            await Fixture.SetupStats();
+            await Task.Delay(5000);
             var stats = await GetStats(protocol);
             stats.All.Messages.Count.Should().Be(40 + 70);
             stats.All.Messages.Data.Should().Be(4000 + 7000);
