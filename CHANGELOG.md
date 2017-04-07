@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.8.4.2]
+
+Bug fix release. Added extra logging. 
+
+**Fixed bugs:**
+
+- (partly) Xamarin Android crash [\#96](https://github.com/ably/ably-dotnet/issues/96)
+
 ## [0.8.4](https://github.com/ably/ably-dotnet/tree/0.8.4) (2016-06-27)
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/0.8.3...0.8.4)
 
