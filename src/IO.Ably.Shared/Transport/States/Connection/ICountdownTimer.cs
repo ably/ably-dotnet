@@ -20,7 +20,8 @@ namespace IO.Ably.Transport.States.Connection
         private Action _elapsedSync;
         private Func<Task> _elapsedAsync;
         private TimeSpan _delay;
-        private volatile bool _aborted;
+        private bool _aborted;
+        private readonly object _lock = new object();
 
         public CountdownTimer(string name)
         {
@@ -49,7 +50,9 @@ namespace IO.Ably.Transport.States.Connection
 
         private Timer StartTimer(TimeSpan delay)
         {
-            _aborted = false;
+            lock (_lock)
+                _aborted = false;
+
             _delay = delay;
             var timer = new Timer(state => OnTimerOnElapsed(), null, (int)delay.TotalMilliseconds, Timeout.Infinite);
             return timer;
@@ -57,13 +60,16 @@ namespace IO.Ably.Transport.States.Connection
 
         private async void OnTimerOnElapsed()
         {
-            if (_aborted)
+            lock (_lock)
             {
-                if (Logger.IsDebug)
+                if (_aborted)
                 {
-                    Logger.Debug($"Timer '{_name}' aborted. Skipping OnElapsed callback.");
+                    if (Logger.IsDebug)
+                    {
+                        Logger.Debug($"Timer '{_name}' aborted. Skipping OnElapsed callback.");
+                    }
+                    return;
                 }
-                return;
             }
 
             try
@@ -116,11 +122,10 @@ namespace IO.Ably.Transport.States.Connection
 
         public void Abort()
         {
-            _aborted = true;
-            if (Logger.IsDebug)
-            {
-                Logger.Debug($"Aborting timer '{_name}'");
-            }
+            lock(_lock)
+                _aborted = true;
+
+            if (Logger.IsDebug) Logger.Debug($"Aborting timer '{_name}'");
             if (_timer != null)
             {
                 _timer.Dispose();

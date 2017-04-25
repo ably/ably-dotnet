@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -124,11 +125,11 @@ namespace IO.Ably.Tests.Realtime
         {
             // Arrange
             var client = await GetRealtimeClient(protocol);
-            
+
             ManualResetEvent resetEvent = new ManualResetEvent(false);
             IRealtimeChannel target = client.Channels.Get("test" + protocol);
             target.Attach();
-            
+
             List<Message> messagesReceived = new List<Message>();
             int count = 0;
             target.Subscribe(message =>
@@ -198,10 +199,10 @@ namespace IO.Ably.Tests.Realtime
 
             foreach (var message in messages)
             {
-                client1.Channels.Get("test").Publish(new [] { message }, (b, info) =>
-                {
-                    successes.Add(b);
-                });
+                client1.Channels.Get("test").Publish(new[] { message }, (b, info) =>
+               {
+                   successes.Add(b);
+               });
                 client2.Channels.Get("test").Publish(new[] { message }, (b, info) =>
                 {
                     successes.Add(b);
@@ -246,19 +247,22 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTL6g1b")]
         public async Task WithAClientIdInOptions_ShouldReceiveMessageWithCorrectClientID(Protocol protocol)
         {
-            var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
+            var clientId = (new Random().Next(1, 100000) % 1000).ToString();
+            var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = clientId);
 
             client.Connect();
             var channel = client.Channels.Get("test");
-            bool messageReceived = false;
+            int messagesReceived = 0;
+            string receivedClienId = "";
             channel.Subscribe(message =>
             {
-                message.ClientId.Should().Be("999");
-                messageReceived = true;
+                receivedClienId = message.ClientId;
+                Interlocked.Increment(ref messagesReceived);
             });
 
             await channel.PublishAsync(new Message("test", "withClientId"));
-            messageReceived.Should().BeTrue();
+            receivedClienId.Should().Be(clientId);
+            messagesReceived.Should().BeGreaterThan(0);
         }
 
         [Theory]
@@ -266,8 +270,9 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTL6g1b")]
         public async Task WithAnImplicitClientIdFromToken_ShouldReceiveMessageWithCorrectClientID(Protocol protocol)
         {
+            Logger.LogLevel = LogLevel.Debug;
             var rest = await GetRestClient(protocol);
-            var token = await rest.Auth.RequestTokenAsync(new TokenParams() {ClientId = "1000"});
+            var token = await rest.Auth.RequestTokenAsync(new TokenParams() { ClientId = "1000" });
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.TokenDetails = token);
 
             client.Connect();
@@ -289,7 +294,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task WithAClientIdInOptionsAndMatchingClientIdInMessage_ShouldSendAndReceiveMessageWithCorrectClientID(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
-            
+
             client.Connect();
             var channel = client.Channels.Get("test");
             bool messageReceived = false;
@@ -300,7 +305,7 @@ namespace IO.Ably.Tests.Realtime
                 _resetEvent.Set();
             });
 
-            await channel.PublishAsync(new Message("test", "data") { ClientId = "999"});
+            await channel.PublishAsync(new Message("test", "data") { ClientId = "999" });
             _resetEvent.WaitOne(4000).Should().BeTrue("Timed out");
 
             messageReceived.Should().BeTrue();
@@ -321,7 +326,7 @@ namespace IO.Ably.Tests.Realtime
                 message.ClientId.Should().Be("999");
                 messageReceived = true;
             });
-            
+
             var result = await channel.PublishAsync(new Message("test", "data") { ClientId = "1000" });
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().NotBeNull();
@@ -340,7 +345,7 @@ namespace IO.Ably.Tests.Realtime
             var realtimeClient = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
-                opts.AuthCallback = async @params => await rest.Auth.RequestTokenAsync(new TokenParams() {ClientId = clientId});
+                opts.AuthCallback = async @params => await rest.Auth.RequestTokenAsync(new TokenParams() { ClientId = clientId });
             });
 
             var channel = realtimeClient.Channels.Get("test");
@@ -353,7 +358,7 @@ namespace IO.Ably.Tests.Realtime
 
             await channel.PublishAsync(new Message("test", "best") { ClientId = "client1" });
 
-            await Task.Delay(2000);
+            await Task.Delay(4000);
             messageReceived.Should().BeTrue();
         }
 
@@ -432,7 +437,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 //do nothing
             });
-            
+
             var result = await new ChannelAwaiter(channel, ChannelState.Failed).WaitAsync();
             result.IsSuccess.Should().BeTrue();
 
@@ -442,11 +447,12 @@ namespace IO.Ably.Tests.Realtime
 
         public static IEnumerable<object[]> FixtureData
         {
-            get {
-                yield return new object[] {Protocol.MsgPack, GetAES128FixtureData()};
-                yield return new object[] {Protocol.Json, GetAES128FixtureData()};
-                yield return new object[] {Protocol.MsgPack, GetAES256FixtureData()};
-                yield return new object[] {Protocol.Json, GetAES256FixtureData()};
+            get
+            {
+                yield return new object[] { Protocol.MsgPack, GetAES128FixtureData() };
+                yield return new object[] { Protocol.Json, GetAES128FixtureData() };
+                yield return new object[] { Protocol.MsgPack, GetAES256FixtureData() };
+                yield return new object[] { Protocol.Json, GetAES256FixtureData() };
             }
         }
 
@@ -456,11 +462,10 @@ namespace IO.Ably.Tests.Realtime
         public async Task ShouldPublishAndReceiveFixtureData(Protocol protocol, JObject fixtureData)
         {
             Logger.LogLevel = LogLevel.Debug;
-            
             var items = (JArray)fixtureData["items"];
             ManualResetEvent resetEvent = new ManualResetEvent(false);
             var client = await GetRealtimeClient(protocol);
-            
+
             var channel = client.Channels.Get("persisted:test".AddRandomSuffix(), GetOptions(fixtureData));
             var count = 0;
             Message lastMessage = null;
@@ -487,6 +492,7 @@ namespace IO.Ably.Tests.Realtime
                 count++;
                 resetEvent.Reset();
             }
+            client.Close();
         }
 
         [Theory]
@@ -494,6 +500,8 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTL10d")]
         public async Task WithOneClientPublishingAnotherShouldBeAbleToRetrieveMessages(Protocol protocol)
         {
+            Logger.LogLevel = LogLevel.Debug;
+
             var client1 = await GetRealtimeClient(protocol);
 
             var channelName = "persisted:history".AddRandomSuffix();
@@ -506,7 +514,7 @@ namespace IO.Ably.Tests.Realtime
 
             var client2 = await GetRealtimeClient(protocol);
             var historyChannel = client2.Channels.Get(channelName);
-            var history = await historyChannel.HistoryAsync(new HistoryRequestParams() { Direction = QueryDirection.Forwards});
+            var history = await historyChannel.HistoryAsync(new HistoryRequestParams() { Direction = QueryDirection.Forwards });
 
             history.Should().BeOfType<PaginatedResult<Message>>();
             history.Items.Should().HaveCount(10);

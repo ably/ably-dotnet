@@ -43,6 +43,7 @@ namespace IO.Ably.Transport
                 {
                     message.MsgSerial = _connection.MessageSerial++;
                     _queue.Add(new MessageAndCallback(message, callback));
+                    if(Logger.IsDebug) Logger.Debug($"Message ({message.Action}) with serial ({message.MsgSerial}) was queued to get Ack");
                 }
         }
 

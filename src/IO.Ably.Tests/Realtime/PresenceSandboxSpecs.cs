@@ -61,6 +61,7 @@ namespace IO.Ably.Tests.Realtime
                 {
                     if (args.Current == ChannelState.Attached)
                     {
+                        Logger.Debug("Test: Setting inSync to - " + channel2.Presence.Map.IsSyncInProgress);
                         inSync = channel2.Presence.Map.IsSyncInProgress;
                         syncComplete = channel2.Presence.SyncComplete;
                     }

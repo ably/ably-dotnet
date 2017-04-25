@@ -58,9 +58,14 @@ namespace IO.Ably.Tests
                 settings.Keys.Add(testkey);
             }
 
-            await SetupSampleStats(settings);
+            //await SetupSampleStats(settings);
 
             return settings;
+        }
+
+        public async Task SetupStats()
+        {
+            await SetupSampleStats(await GetSettings());
         }
 
         public static async Task SetupSampleStats(TestEnvironmentSettings settings)

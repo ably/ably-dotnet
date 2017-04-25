@@ -89,6 +89,7 @@ namespace IO.Ably.Realtime
 
         public void Send(RealtimeTransportData data)
         {
+            if (Logger.IsDebug) Logger.Debug($"Transport state ({_socket?.State}): Sending message. Action: {data.Original.Action} - " + data.Explain());
             if (BinaryProtocol)
             {
                 _socket.Send(data.Data, 0, data.Length);

@@ -83,11 +83,12 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Task OnAttachToContext()
         {
+            if(Logger.IsDebug) Logger.Debug("Processing Connected:OnAttached. Resumed: " + _resumed);
             if (_resumed != true)
             {
                 Context.ClearAckQueueAndFailMessages(null);
             }
-            else if(_resumed.HasValue && _resumed.Value == false)
+            else if(_resumed.Value == false)
                 Context.DetachAttachedChannels(Error);
 
             Context.SendPendingMessages(_resumed.GetValueOrDefault());
