@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using static System.String;
 
 namespace IO.Ably
 {
@@ -8,12 +9,12 @@ namespace IO.Ably
     {
         public static bool IsNotEmpty(this string text)
         {
-            return string.IsNullOrEmpty(text) == false;
+            return IsNullOrEmpty(text) == false;
         }
 
         public static bool IsEmpty(this string text)
         {
-            return string.IsNullOrEmpty(text);
+            return IsNullOrEmpty(text);
         }
 
         public static bool IsJson(this string input)
@@ -26,24 +27,19 @@ namespace IO.Ably
                    || input.StartsWith("[") && input.EndsWith("]");
         }
 
-        internal static bool IsNotEmpty(object nonce)
-        {
-            throw new NotImplementedException();
-        }
-
         public static string JoinStrings(this IEnumerable<string> input, string delimiter = ", ")
         {
             if (input == null) return "";
 
-            return string.Join(delimiter, input.Where(IsNotEmpty));
+            return String.Join(delimiter, input.Where(IsNotEmpty));
         }
 
         public static string Join<T>(this IEnumerable<T> listOfTs, Func<T, string> selector, string delimiter = ",") where T : class
         {
             if (listOfTs != null)
-                return String.Join(delimiter, listOfTs.Select(selector));
+                return string.Join(delimiter, listOfTs.Select(selector));
 
-            return string.Empty;
+            return Empty;
         }
 
         public static bool EqualsTo(this string input, string other, bool caseSensitive = false)

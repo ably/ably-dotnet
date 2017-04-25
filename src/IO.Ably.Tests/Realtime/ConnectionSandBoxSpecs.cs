@@ -235,6 +235,8 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         public async Task WithAuthUrlShouldGetTokenFromUrl(Protocol protocol)
         {
+            Logger.LogLevel = LogLevel.Debug;
+            
             var client = await GetRestClient(protocol);
             var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
             var settings = await Fixture.GetSettings();

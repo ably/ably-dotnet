@@ -1,11 +1,7 @@
-using System.Reflection;
 using System.Security.Cryptography;
-using IO.Ably;
 using FluentAssertions;
 using IO.Ably.Encryption;
 using IO.Ably.MessageEncoders;
-using IO.Ably.Platform;
-using IO.Ably.Rest;
 using Xunit;
 
 namespace IO.Ably.Tests.MessageEncodes

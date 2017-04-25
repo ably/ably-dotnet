@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using IO.Ably.Transport;
 
@@ -7,7 +8,13 @@ namespace IO.Ably
     internal static class Defaults
     {
         public const string ProtocolVersion = "0.8";
-        private static readonly string AssemblyVersion = typeof(Defaults).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+        private static readonly string AssemblyVersion = GetVersion();
+
+        private static string GetVersion()
+        {
+            var version =  typeof(Defaults).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+            return version.Split('.').Take(3).JoinStrings(".");
+        }
 
         public static string LibraryVersion => $"dotnet-{AssemblyVersion}";
 
@@ -29,7 +36,7 @@ namespace IO.Ably
         public static readonly TimeSpan DisconnectedRetryTimeout = TimeSpan.FromSeconds(15);
         public static readonly TimeSpan ConnectionStateTtl = TimeSpan.FromSeconds(60);
 
-        public static readonly ITransportFactory WebSocketTransportFactory = Platform.IoC.WebSockets;
+        public static readonly ITransportFactory WebSocketTransportFactory = IoC.TransportFactory;
 
         internal const int TokenErrorCodesRangeStart = 40140;
         internal const int TokenErrorCodesRangeEnd = 40149;

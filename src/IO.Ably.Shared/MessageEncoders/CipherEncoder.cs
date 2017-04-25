@@ -1,7 +1,4 @@
-using System;
 using IO.Ably.Encryption;
-using IO.Ably.Platform;
-using IO.Ably.Rest;
 
 namespace IO.Ably.MessageEncoders
 {

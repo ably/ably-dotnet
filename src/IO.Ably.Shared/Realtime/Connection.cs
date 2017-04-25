@@ -81,6 +81,16 @@ namespace IO.Ably.Realtime
         public void Dispose()
         {
             Close();
+            ClearAllDelegatesOfStateChangeEventHandler();
+        }
+
+        private void ClearAllDelegatesOfStateChangeEventHandler()
+        {
+            foreach (var d in InternalStateChanged.GetInvocationList())
+                InternalStateChanged -= (EventHandler<ConnectionStateChange>) d;
+
+            foreach (var handler in ConnectionStateChanged.GetInvocationList())
+                ConnectionStateChanged -= (EventHandler<ConnectionStateChange>) handler;
         }
 
         /// <summary>

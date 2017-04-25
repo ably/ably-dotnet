@@ -72,6 +72,8 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTL1")]
         public async Task SendingAMessageAttachesTheChannel_BeforeReceivingTheMessages(Protocol protocol)
         {
+            Logger.LogLevel = LogLevel.Debug;
+            ;
             // Arrange
             var client = await GetRealtimeClient(protocol);
             IRealtimeChannel target = client.Channels.Get("test");
@@ -85,7 +87,7 @@ namespace IO.Ably.Tests.Realtime
             // Act
             target.Publish("test", "test data");
             target.State.Should().Be(ChannelState.Attaching);
-            _resetEvent.WaitOne(4000);
+            _resetEvent.WaitOne(6000);
 
             // Assert
             target.State.Should().Be(ChannelState.Attached);
@@ -210,7 +212,7 @@ namespace IO.Ably.Tests.Realtime
                 });
             }
 
-            await Task.Delay(6000);
+            await Task.Delay(10000);
             successes.Where(x => x == true).Should().HaveCount(60, "Should have 60 successful callback executed");
         }
 
@@ -453,6 +455,8 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTL7d")]
         public async Task ShouldPublishAndReceiveFixtureData(Protocol protocol, JObject fixtureData)
         {
+            Logger.LogLevel = LogLevel.Debug;
+            
             var items = (JArray)fixtureData["items"];
             ManualResetEvent resetEvent = new ManualResetEvent(false);
             var client = await GetRealtimeClient(protocol);

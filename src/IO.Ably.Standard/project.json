@@ -7,6 +7,7 @@
     "Nito.AsyncEx.Tasks": "1.1.0",
     "System.Net.Http": "4.3.0",
     "System.Net.Requests": "4.3.0",
+    "System.Net.WebSockets.Client": "4.3.0",
     "System.Threading.Thread": "4.3.0",
     "WebSocket4Net": "0.15.0-beta6"
   },

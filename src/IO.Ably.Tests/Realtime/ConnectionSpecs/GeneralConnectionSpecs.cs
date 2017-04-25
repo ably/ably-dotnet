@@ -1,5 +1,6 @@
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Transport;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -14,7 +15,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = GetRealtimeClient();
 
-            client.ConnectionManager.Transport.GetType().Should().Be(typeof(WebSocketTransport));
+            client.ConnectionManager.Transport.GetType().Should().BeAssignableTo<ITransport>();
         }
 
         [Fact]

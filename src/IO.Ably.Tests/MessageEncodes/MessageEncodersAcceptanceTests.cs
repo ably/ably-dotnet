@@ -1,16 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Encryption;
-using IO.Ably.Platform;
-using IO.Ably.Rest;
 using IO.Ably.Tests;
-using MsgPack;
-using MsgPack.Serialization;
-using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 

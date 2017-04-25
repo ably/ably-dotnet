@@ -21,7 +21,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)CipherParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\GeneratedSerializers\IO_Ably_TokenRequestSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EventEmitter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HttpUtility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IChannelCommands.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IoC.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IPlatform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IRealtimeClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JsonHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeChannels.cs" />
@@ -82,8 +85,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\Utf8Encoder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MsgPackHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaginatedResult.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Platform\HttpUtility.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Platform\IoC.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Protocol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)QueryDirection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Channel.cs" />
@@ -129,6 +130,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Transport\States\Connection\ICountdownTimer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\TaskWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\TransportParams.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transport\MsWebSocketTransport.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transport\MsWebSocketConnection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\ConnectionDetailsMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\ErrorInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\IEncodedMessage.cs" />
