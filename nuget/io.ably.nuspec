@@ -31,7 +31,7 @@
           <group targetFramework="Xamarin.iOS">
             <dependency id="Nito.AsyncEx" version="4.0.1" />
           </group>
-          <group targetFramework="netstandard1.3">
+          <group targetFramework="netstandard">
             <dependency id="System.Net.WebSockets.Client" />
             <dependency id="Nito.AsyncEx.Tasks" />
             <dependency id="Nito.AsyncEx.Context" />
@@ -47,6 +47,6 @@
         <file src="..\src\IO.Ably.Android\bin\Release\IO.Ably.*" target="lib\monoandroid" />
         <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.*" target="lib\Xamarin.iOS" />
         <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.*" target="lib\monotouch" />
-        <file src="..\src\IO.Ably.Standard\bin\Release\IO.Ably.*" target="lib\netstandard1.3" />
+        <file src="..\src\IO.Ably.Standard\bin\Release\IO.Ably.*" target="lib\netstandard" />
     </files>
 </package>

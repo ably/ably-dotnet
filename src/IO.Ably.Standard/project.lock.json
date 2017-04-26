@@ -1287,7 +1287,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.2/_._": {}
+          "ref/netstandard1.2/System.Threading.Timer.dll": {}
         }
       },
       "System.Xml.ReaderWriter/4.0.11": {
@@ -5074,7 +5074,8 @@
       "System.Net.Http >= 4.3.0",
       "System.Net.Requests >= 4.3.0",
       "System.Net.WebSockets.Client >= 4.3.0",
-      "System.Threading.Thread >= 4.3.0"
+      "System.Threading.Thread >= 4.3.0",
+      "System.Threading.Timer >= 4.3.0"
     ],
     ".NETStandard,Version=v1.3": []
   },
