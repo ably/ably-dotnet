@@ -101,7 +101,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\IRealtimeChannel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeTransportData.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Realtime\WebSocketTransport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\Channel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\ChannelOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\IChannel.cs" />

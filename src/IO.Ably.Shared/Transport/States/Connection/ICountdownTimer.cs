@@ -11,8 +11,6 @@ namespace IO.Ably.Transport.States.Connection
         void Abort();
     }
 
-    
-
     public class CountdownTimer : ICountdownTimer
     {
         private readonly string _name;

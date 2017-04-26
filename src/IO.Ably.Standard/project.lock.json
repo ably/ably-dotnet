@@ -307,24 +307,6 @@
           }
         }
       },
-      "SuperSocket.ClientEngine.Core/0.8.0.6": {
-        "type": "package",
-        "dependencies": {
-          "System.Linq": "4.1.0",
-          "System.Net.NameResolution": "4.0.0",
-          "System.Net.Security": "4.0.0",
-          "System.Net.Sockets": "4.1.0",
-          "System.Runtime.Extensions": "4.1.0",
-          "System.Runtime.InteropServices": "4.1.0",
-          "System.Security.Cryptography.X509Certificates": "4.1.0"
-        },
-        "compile": {
-          "lib/netstandard1.3/SuperSocket.ClientEngine.dll": {}
-        },
-        "runtime": {
-          "lib/netstandard1.3/SuperSocket.ClientEngine.dll": {}
-        }
-      },
       "System.Buffers/4.3.0": {
         "type": "package",
         "dependencies": {
@@ -695,7 +677,7 @@
           "runtime.native.System": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/System.Net.NameResolution.dll": {}
+          "ref/netstandard1.3/_._": {}
         },
         "runtimeTargets": {
           "runtimes/unix/lib/netstandard1.3/System.Net.NameResolution.dll": {
@@ -778,7 +760,7 @@
           "System.Threading.ThreadPool": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/System.Net.Security.dll": {}
+          "ref/netstandard1.3/_._": {}
         },
         "runtimeTargets": {
           "runtimes/win/lib/netstandard1.3/System.Net.Security.dll": {
@@ -798,7 +780,7 @@
           "System.Threading.Tasks": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/System.Net.Sockets.dll": {}
+          "ref/netstandard1.3/_._": {}
         }
       },
       "System.Net.WebHeaderCollection/4.3.0": {
@@ -1164,7 +1146,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.0/System.Security.Principal.dll": {}
+          "ref/netstandard1.0/_._": {}
         },
         "runtime": {
           "lib/netstandard1.0/System.Security.Principal.dll": {}
@@ -1305,7 +1287,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.2/System.Threading.Timer.dll": {}
+          "ref/netstandard1.2/_._": {}
         }
       },
       "System.Xml.ReaderWriter/4.0.11": {
@@ -1355,24 +1337,6 @@
         },
         "runtime": {
           "lib/netstandard1.3/System.Xml.XDocument.dll": {}
-        }
-      },
-      "WebSocket4Net/0.15.0-beta6": {
-        "type": "package",
-        "dependencies": {
-          "SuperSocket.ClientEngine.Core": "0.8.0.6",
-          "System.Linq": "4.1.0",
-          "System.Net.NameResolution": "4.0.0",
-          "System.Net.Sockets": "4.1.0",
-          "System.Text.RegularExpressions": "4.1.0",
-          "System.Threading": "4.0.11",
-          "System.Threading.Timer": "4.0.1"
-        },
-        "compile": {
-          "lib/netstandard1.3/WebSocket4Net.dll": {}
-        },
-        "runtime": {
-          "lib/netstandard1.3/WebSocket4Net.dll": {}
         }
       }
     }
@@ -1741,25 +1705,6 @@
         "runtime.ubuntu.16.10-x64.runtime.native.System.Security.Cryptography.OpenSsl.4.3.0.nupkg.sha512",
         "runtime.ubuntu.16.10-x64.runtime.native.System.Security.Cryptography.OpenSsl.nuspec",
         "runtimes/ubuntu.16.10-x64/native/System.Security.Cryptography.Native.OpenSsl.so"
-      ]
-    },
-    "SuperSocket.ClientEngine.Core/0.8.0.6": {
-      "sha512": "LMJlyP1raOYVVZ1tTHl6vz5rop2mep5YK30uDJBIeM0vzuWcaehCvmfU26hoGoGR8Cvg0yffz7KyfKadE1ay1g==",
-      "type": "package",
-      "path": "SuperSocket.ClientEngine.Core/0.8.0.6",
-      "files": [
-        "SuperSocket.ClientEngine.Core.0.8.0.6.nupkg.sha512",
-        "SuperSocket.ClientEngine.Core.nuspec",
-        "lib/monoandroid10/SuperSocket.ClientEngine.dll",
-        "lib/monotouch10/SuperSocket.ClientEngine.dll",
-        "lib/net20/SuperSocket.ClientEngine.dll",
-        "lib/net35-client/SuperSocket.ClientEngine.dll",
-        "lib/net40-client/SuperSocket.ClientEngine.dll",
-        "lib/net45/SuperSocket.ClientEngine.dll",
-        "lib/netstandard1.3/SuperSocket.ClientEngine.dll",
-        "lib/sl50/SuperSocket.ClientEngine.dll",
-        "lib/wp80/SuperSocket.ClientEngine.dll",
-        "lib/xamarinios10/SuperSocket.ClientEngine.dll"
       ]
     },
     "System.Buffers/4.3.0": {
@@ -5118,25 +5063,6 @@
         "ref/xamarintvos10/_._",
         "ref/xamarinwatchos10/_._"
       ]
-    },
-    "WebSocket4Net/0.15.0-beta6": {
-      "sha512": "/gSM9LpNneoa3w6uEc7Q9g/IQ4rSetlsjbnXNVfzjOZirgy7rVR61dSUNuy+cH4LD7fHnNi+RjEfiI+hhvuhmQ==",
-      "type": "package",
-      "path": "WebSocket4Net/0.15.0-beta6",
-      "files": [
-        "WebSocket4Net.0.15.0-beta6.nupkg.sha512",
-        "WebSocket4Net.nuspec",
-        "lib/monoandroid10/WebSocket4Net.dll",
-        "lib/monotouch10/WebSocket4Net.dll",
-        "lib/net20/WebSocket4Net.dll",
-        "lib/net35/WebSocket4Net.dll",
-        "lib/net40/WebSocket4Net.dll",
-        "lib/net45/WebSocket4Net.dll",
-        "lib/netstandard1.3/WebSocket4Net.dll",
-        "lib/sl50/WebSocket4Net.dll",
-        "lib/wp80/WebSocket4Net.dll",
-        "lib/xamarinios10/WebSocket4Net.dll"
-      ]
     }
   },
   "projectFileDependencyGroups": {
@@ -5148,8 +5074,7 @@
       "System.Net.Http >= 4.3.0",
       "System.Net.Requests >= 4.3.0",
       "System.Net.WebSockets.Client >= 4.3.0",
-      "System.Threading.Thread >= 4.3.0",
-      "WebSocket4Net >= 0.15.0-beta6"
+      "System.Threading.Thread >= 4.3.0"
     ],
     ".NETStandard,Version=v1.3": []
   },

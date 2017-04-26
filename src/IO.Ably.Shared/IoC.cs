@@ -26,6 +26,6 @@ namespace IO.Ably
             }
         }
 
-        public static ITransportFactory TransportFactory => Platform?.TransportFactory ?? new WebSocketTransport.WebSocketTransportFactory(); 
+        public static ITransportFactory TransportFactory => Platform?.TransportFactory ?? new MsWebSocketTransport.TransportFactory(); 
     }
 }

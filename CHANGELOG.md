@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.8.5]
+
+Upgraded Websocket transport with one that's compatible with netstandard1.3. 
+
+
 ## [0.8.4.2]
 
 Bug fix release. Added extra logging. 

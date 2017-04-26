@@ -118,7 +118,7 @@ namespace IO.Ably.Tests.Realtime
             };
 
             //Wait for the clients to connect
-            await Task.Delay(TimeSpan.FromSeconds(3));
+            await Task.Delay(TimeSpan.FromSeconds(6));
 
             var distinctConnectionIds = clients.Select(x => x.Connection.Key).Distinct();
             distinctConnectionIds.Should().HaveCount(3);

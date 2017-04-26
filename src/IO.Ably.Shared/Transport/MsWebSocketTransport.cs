@@ -190,7 +190,7 @@ namespace IO.Ably.Transport
             }
         }
 
-        public class WebSocketTransportFactory : ITransportFactory
+        public class TransportFactory : ITransportFactory
         {
             public ITransport CreateTransport(TransportParams parameters)
             {

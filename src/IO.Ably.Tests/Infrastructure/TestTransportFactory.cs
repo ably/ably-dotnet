@@ -7,7 +7,7 @@ namespace IO.Ably.Tests.Infrastructure
     {
         public ITransport CreateTransport(TransportParams parameters)
         {
-            var factory = new WebSocketTransport.WebSocketTransportFactory();
+            var factory = new MsWebSocketTransport.TransportFactory();
             return new TestTransportWrapper(factory.CreateTransport(parameters), parameters.UseBinaryProtocol ? Protocol.MsgPack : Protocol.Json);
         }
     }
