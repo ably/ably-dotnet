@@ -10,7 +10,7 @@ properties {
 	$sln_name = "IO.Ably.sln"
 	
 	$project_name = "IO.Ably"
-	$build_number = "0.8.4"
+	$build_number = "0.8.5"
 	$solution_dir = "$build_script_dir\$sln_dir"
 	
 	$build_artifacts_dir_base = "$build_script_dir\build\artifacts"
