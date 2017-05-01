@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>ably.io</id>
-        <version>0.8.5-beta4</version>
+        <version>0.8.5-beta5</version>
         <title>ably.io</title>
         <authors>Yavor Ivanov,Martin Georgiev</authors>
         <owners>Ably Real-time Ltd</owners>
@@ -20,22 +20,22 @@
           </group>
           <group targetFramework="net45">
             <dependency id="Nito.AsyncEx" version="4.0.1" />
-            <dependency id="Newtonsoft.Json" version="9.0.1" />
+            <dependency id="Newtonsoft.Json" version="10.0.2" />
             <dependency id="MsgPack.Cli" version="[0.8.1]" />
           </group>
           <group targetFramework="monoandroid">
             <dependency id="Nito.AsyncEx" version="4.0.1" />
-            <dependency id="Newtonsoft.Json" version="9.0.1" />
+            <dependency id="Newtonsoft.Json" version="10.0.2" />
             <dependency id="MsgPack.Cli" version="[0.8.1]" />
           </group>
           <group targetFramework="monotouch">
             <dependency id="Nito.AsyncEx" version="4.0.1" />
-            <dependency id="Newtonsoft.Json" version="9.0.1" />
+            <dependency id="Newtonsoft.Json" version="10.0.2" />
             <dependency id="MsgPack.Cli" version="[0.8.1]" />
           </group>
           <group targetFramework="Xamarin.iOS">
             <dependency id="Nito.AsyncEx" version="4.0.1" />
-            <dependency id="Newtonsoft.Json" version="9.0.1" />
+            <dependency id="Newtonsoft.Json" version="10.0.2" />
             <dependency id="MsgPack.Cli" version="[0.8.1]" />
           </group>
           <group targetFramework="netstandard1.3">
@@ -45,7 +45,7 @@
             <dependency id="System.Net.Http" version="4.3.0" />
             <dependency id="System.Net.Requests" version="4.3.0" />
             <dependency id="System.Threading.Timer" version="4.3.0" />
-            <dependency id="Newtonsoft.Json" version="9.0.1" />
+            <dependency id="Newtonsoft.Json" version="10.0.2" />
             <dependency id="MsgPack.Cli" version="[0.8.1]" />
           </group>
         </dependencies>
