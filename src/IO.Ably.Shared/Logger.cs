@@ -73,7 +73,7 @@ namespace IO.Ably
         private static string GetLogMessagePreifx()
         {
             var timeStamp = Config.Now().ToString("hh:mm:ss.fff");
-            return $"{timeStamp} #{Thread.CurrentThread.ManagedThreadId}";
+            return $"{timeStamp}";
         }
 
         /// <summary>Log an error message.</summary>
