@@ -14,10 +14,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.ConsoleTest", "Ably.Co
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solution Items", "{258ABD2A-ACCA-4226-AEDD-B9C74075B367}"
 	ProjectSection(SolutionItems) = preProject
+		..\build.ps1 = ..\build.ps1
 		..\CHANGELOG.md = ..\CHANGELOG.md
+		..\default.ps1 = ..\default.ps1
+		..\functions.ps1 = ..\functions.ps1
 		..\nuget\io.ably.nuspec = ..\nuget\io.ably.nuspec
+		..\package.ps1 = ..\package.ps1
 		..\README.md = ..\README.md
-		Todo.txt = Todo.txt
 	EndProjectSection
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "IO.Ably.Shared", "IO.Ably.Shared\IO.Ably.Shared.shproj", "{3553E1B2-8F1F-4E83-9524-08E702C14FCF}"

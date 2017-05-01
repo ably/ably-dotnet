@@ -1,3 +1,12 @@
-C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\msbuild.exe /property:Configuration=Release .\\src\\Ably.sln
-C:\\Windows\\Microsoft.NET\\Framework\\v4.0.30319\\msbuild.exe /property:Configuration="Release 4.0" .\\src\\Ably.sln
-.\\tools\\NuGet.exe pack .\\nuget\\io.ably.nuspec
+cd tools\psake
+import-module .\psake.psm1
+cd..
+cd..
+
+$psake.use_exit_on_error = $true
+invoke-psake ./default.ps1 -properties @{ configuration = "release" } -framework '4.0' -verbose Package
+
+cd tools\psake
+remove-module psake
+cd..
+cd..

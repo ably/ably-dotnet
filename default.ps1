@@ -49,6 +49,10 @@ task Build -depends Assembly_Info, Init {
 	$package_dir = "$base_dir\$project_name\bin\$configuration"
 }
 
+task Package -depends Build {
+	& "$build_script_dir\tools\NuGet.exe" pack ".\nuget\io.ably.nuspec"
+}
+
 task Unit_Tests {
 
 	$base_dir = "$build_script_dir\$sln_dir\IO.Ably.Tests\bin\$configuration"

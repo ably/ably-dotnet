@@ -1,7 +1,0 @@
-1. Allow custom json.net settings to be used when serialising the data
-3. Test what happens when event subscribers block for a long time
-4. Add a list of error codes accessible to the use
-5. Add StyleCop to the solution
-6. Add AppVeyor integration
-7. Trim the public methods to what's necessary and force comments
-8. Generate documentation
