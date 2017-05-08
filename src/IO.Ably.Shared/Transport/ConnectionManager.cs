@@ -182,8 +182,8 @@ namespace IO.Ably.Transport
             if (Transport == null)
                 return;
 
-            Transport.Close(suppressClosedEvent);
             Transport.Listener = null;
+            Transport.Dispose();
             Transport = null;
         }
 

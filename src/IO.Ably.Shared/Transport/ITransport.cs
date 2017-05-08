@@ -12,7 +12,7 @@ namespace IO.Ably.Transport
         Closed,
     }
 
-    public interface ITransport
+    public interface ITransport : IDisposable
     {
         TransportState State { get; }
 

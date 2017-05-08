@@ -297,7 +297,6 @@ namespace IO.Ably.MessageEncoders
                 protocolMessage = JsonHelper.Deserialize<ProtocolMessage>(data.Text);
             }
 
-            //Populate presence and message object timestamps
             if (protocolMessage != null)
             {
                 foreach (var presenceMessage in protocolMessage.Presence)

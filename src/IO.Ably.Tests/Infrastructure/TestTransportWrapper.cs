@@ -87,5 +87,10 @@ namespace IO.Ably.Tests.Infrastructure
         {
             _wrappedTransport.Send(data);
         }
+
+        public void Dispose()
+        {
+            
+        }
     }
 }

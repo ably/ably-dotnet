@@ -75,5 +75,9 @@ namespace IO.Ably.Tests
 
         public Action<RealtimeTransportData> SendAction = delegate { };
         private volatile bool _connectCalled;
+        public void Dispose()
+        {
+            
+        }
     }
 }

@@ -197,5 +197,11 @@ namespace IO.Ably.Transport
                 return new MsWebSocketTransport(parameters);
             }
         }
+
+        public void Dispose()
+        {
+            DisposeSocketConnection();
+            WebSocketThread?.Dispose();
+        }
     }
 }
