@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Net.WebSockets;
 using System.Threading;
@@ -20,10 +21,12 @@ namespace IO.Ably.Transport
 
         private readonly Uri _uri;
         private Action<ConnectionState, Exception> _handler;
+        private BlockingCollection<ValueTuple<ArraySegment<byte>, WebSocketMessageType>> _sendQueue = new BlockingCollection<ValueTuple<ArraySegment<byte>, WebSocketMessageType>>();
 
         public string ConnectionId { get; set; }
 
         private ClientWebSocket _clientWebSocket { get; set; }
+        private readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
 
         public MsWebSocketConnection(Uri uri)
         {
@@ -41,13 +44,14 @@ namespace IO.Ably.Transport
             _handler = null;
         }
 
-
         public async Task StartConnectionAsync()
         {
             _handler?.Invoke(ConnectionState.Connecting, null);
             try
             {
                 await _clientWebSocket.ConnectAsync(_uri, CancellationToken.None).ConfigureAwait(false);
+                //initialise sender
+                StartSenderQueueConsumer();
                 _handler?.Invoke(ConnectionState.Connected, null);
             }
             catch (Exception ex)
@@ -56,8 +60,20 @@ namespace IO.Ably.Transport
             }
         }
 
+        private void StartSenderQueueConsumer()
+        {
+            Task.Run((async () =>
+            {
+                foreach ((ArraySegment<byte> bytes, WebSocketMessageType type) in _sendQueue.GetConsumingEnumerable())
+                {
+                    await Send(bytes, type, _tokenSource.Token);
+                }
+            }), _tokenSource.Token);
+        }
+
         public async Task StopConnectionAsync()
         {
+            _tokenSource.Cancel();
             _handler?.Invoke(ConnectionState.Closing, null);
             try
             {
@@ -72,21 +88,27 @@ namespace IO.Ably.Transport
             }
         }
 
-        public async Task SendText(string message)
+        public void SendText(string message)
         {
             if(Logger.IsDebug) Logger.Debug("Sending text");
+
             var bytes = new ArraySegment<byte>(message.GetBytes());
-            await _clientWebSocket.SendAsync(bytes, WebSocketMessageType.Text, true, CancellationToken.None)
-                .ConfigureAwait(false);
+            _sendQueue.TryAdd((bytes, WebSocketMessageType.Text), 1000, _tokenSource.Token);
         }
 
-        public async Task SendData(byte[] data)
+        public void SendData(byte[] data)
         {
             if (Logger.IsDebug) Logger.Debug("Sending binary data");
 
             var bytes = new ArraySegment<byte>(data);
-            await _clientWebSocket.SendAsync(bytes, WebSocketMessageType.Binary, true, CancellationToken.None)
-                .ConfigureAwait(false);
+            _sendQueue.TryAdd((bytes, WebSocketMessageType.Binary), 1000, _tokenSource.Token);
+        }
+
+        private Task Send(ArraySegment<byte> data, WebSocketMessageType type, CancellationToken token)
+        {
+            var sendTask = _clientWebSocket.SendAsync(data, type, true, token);
+            sendTask.ConfigureAwait(false);
+            return sendTask;
         }
 
         public async Task Receive(Action<RealtimeTransportData> handleMessage)
@@ -101,7 +123,7 @@ namespace IO.Ably.Transport
                     {
                         do
                         {
-                            result = await _clientWebSocket.ReceiveAsync(buffer, CancellationToken.None).ConfigureAwait(false);
+                            result = await _clientWebSocket.ReceiveAsync(buffer, _tokenSource.Token).ConfigureAwait(false);
                             ms.Write(buffer.Array, buffer.Offset, result.Count);
                         }
                         while (!result.EndOfMessage);
@@ -137,6 +159,8 @@ namespace IO.Ably.Transport
 
         public void Dispose()
         {
+            _tokenSource.Cancel();
+            _sendQueue.Dispose();
             _clientWebSocket?.Dispose();
         }
     }

@@ -1449,6 +1449,20 @@
           "ref/netstandard1.2/System.Threading.Timer.dll": {}
         }
       },
+      "System.ValueTuple/4.3.1": {
+        "type": "package",
+        "dependencies": {
+          "System.Collections": "4.3.0",
+          "System.Resources.ResourceManager": "4.3.0",
+          "System.Runtime": "4.3.0"
+        },
+        "compile": {
+          "lib/netstandard1.0/System.ValueTuple.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard1.0/System.ValueTuple.dll": {}
+        }
+      },
       "System.Xml.ReaderWriter/4.3.0": {
         "type": "package",
         "dependencies": {
@@ -5468,6 +5482,33 @@
         "ref/xamarinwatchos10/_._"
       ]
     },
+    "System.ValueTuple/4.3.1": {
+      "sha512": "xzDmg26Wb2x2rFDjwziaMYQJqxhrK+b4OUC008o7CnZhUMb2p5XfwgOgAQ/WlKhqxMUSDWRUm5/lNTKdh27pJA==",
+      "type": "package",
+      "path": "system.valuetuple/4.3.1",
+      "files": [
+        "ThirdPartyNotices.txt",
+        "dotnet_library_license.txt",
+        "lib/MonoAndroid10/_._",
+        "lib/MonoTouch10/_._",
+        "lib/netstandard1.0/.xml",
+        "lib/netstandard1.0/System.ValueTuple.dll",
+        "lib/portable-net40+sl4+win8+wp8/.xml",
+        "lib/portable-net40+sl4+win8+wp8/System.ValueTuple.dll",
+        "lib/xamarinios10/_._",
+        "lib/xamarinmac20/_._",
+        "lib/xamarintvos10/_._",
+        "lib/xamarinwatchos10/_._",
+        "ref/MonoAndroid10/_._",
+        "ref/MonoTouch10/_._",
+        "ref/xamarinios10/_._",
+        "ref/xamarinmac20/_._",
+        "ref/xamarintvos10/_._",
+        "ref/xamarinwatchos10/_._",
+        "system.valuetuple.4.3.1.nupkg.sha512",
+        "system.valuetuple.nuspec"
+      ]
+    },
     "System.Xml.ReaderWriter/4.3.0": {
       "sha512": "GrprA+Z0RUXaR4N7/eW71j1rgMnEnEVlgii49GZyAjTH7uliMnrOU3HNFBr6fEDBCJCIdlVNq9hHbaDR621XBA==",
       "type": "package",
@@ -5653,7 +5694,8 @@
       "System.Net.Http >= 4.3.1",
       "System.Net.Requests >= 4.3.0",
       "System.Net.WebSockets.Client >= 4.3.0",
-      "System.Threading.Timer >= 4.3.0"
+      "System.Threading.Timer >= 4.3.0",
+      "System.ValueTuple >= 4.3.1"
     ],
     ".NETStandard,Version=v1.3": []
   },
@@ -5676,7 +5718,11 @@
       "System.Net.Http": "4.3.1",
       "System.Net.Requests": "4.3.0",
       "System.Net.WebSockets.Client": "4.3.0",
-      "System.Threading.Timer": "4.3.0"
+      "System.Threading.Timer": "4.3.0",
+      "System.ValueTuple": {
+        "target": "Package",
+        "version": "[4.3.1, )"
+      }
     },
     "frameworks": {
       "netstandard1.3": {}
