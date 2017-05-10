@@ -8,8 +8,7 @@
     "System.Net.Http": "4.3.1",
     "System.Net.Requests": "4.3.0",
     "System.Net.WebSockets.Client": "4.3.0",
-    "System.Threading.Timer": "4.3.0",
-    "System.ValueTuple": "4.3.1"
+    "System.Threading.Timer": "4.3.0"
   },
   "frameworks": {
     "netstandard1.3": {}

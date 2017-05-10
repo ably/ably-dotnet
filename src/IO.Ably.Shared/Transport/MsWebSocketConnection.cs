@@ -21,7 +21,8 @@ namespace IO.Ably.Transport
 
         private readonly Uri _uri;
         private Action<ConnectionState, Exception> _handler;
-        private BlockingCollection<ValueTuple<ArraySegment<byte>, WebSocketMessageType>> _sendQueue = new BlockingCollection<ValueTuple<ArraySegment<byte>, WebSocketMessageType>>();
+        private readonly BlockingCollection<Tuple<ArraySegment<byte>, WebSocketMessageType>> _sendQueue 
+            = new BlockingCollection<Tuple<ArraySegment<byte>, WebSocketMessageType>>();
 
         public string ConnectionId { get; set; }
 
@@ -64,9 +65,9 @@ namespace IO.Ably.Transport
         {
             Task.Run((async () =>
             {
-                foreach ((ArraySegment<byte> bytes, WebSocketMessageType type) in _sendQueue.GetConsumingEnumerable())
+                foreach (var tuple in _sendQueue.GetConsumingEnumerable())
                 {
-                    await Send(bytes, type, _tokenSource.Token);
+                    await Send(tuple.Item1, tuple.Item2, _tokenSource.Token);
                 }
             }), _tokenSource.Token);
         }
@@ -93,7 +94,7 @@ namespace IO.Ably.Transport
             if(Logger.IsDebug) Logger.Debug("Sending text");
 
             var bytes = new ArraySegment<byte>(message.GetBytes());
-            _sendQueue.TryAdd((bytes, WebSocketMessageType.Text), 1000, _tokenSource.Token);
+            _sendQueue.TryAdd(Tuple.Create(bytes, WebSocketMessageType.Text), 1000, _tokenSource.Token);
         }
 
         public void SendData(byte[] data)
@@ -101,7 +102,7 @@ namespace IO.Ably.Transport
             if (Logger.IsDebug) Logger.Debug("Sending binary data");
 
             var bytes = new ArraySegment<byte>(data);
-            _sendQueue.TryAdd((bytes, WebSocketMessageType.Binary), 1000, _tokenSource.Token);
+            _sendQueue.TryAdd(Tuple.Create(bytes, WebSocketMessageType.Binary), 1000, _tokenSource.Token);
         }
 
         private Task Send(ArraySegment<byte> data, WebSocketMessageType type, CancellationToken token)
