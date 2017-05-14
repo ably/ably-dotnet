@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
-using IO.Ably.Rest;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport

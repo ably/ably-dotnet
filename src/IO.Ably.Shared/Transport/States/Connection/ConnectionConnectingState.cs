@@ -1,14 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionConnectingState : ConnectionStateBase
     {
-      
-    private readonly ICountdownTimer _timer;
-
-        
+        private readonly ICountdownTimer _timer;
 
         public ConnectionConnectingState(IConnectionContext context) :
             this(context, new CountdownTimer("Connecting state timer"))
@@ -37,6 +35,9 @@ namespace IO.Ably.Transport.States.Connection
 
         public override async Task<bool> OnMessageReceived(ProtocolMessage message)
         {
+            if (message == null)
+                throw new ArgumentNullException(nameof(message), "Null message passed to Connection Connecting State");
+
             switch (message.Action)
             {
                 case ProtocolMessage.MessageAction.Connected:

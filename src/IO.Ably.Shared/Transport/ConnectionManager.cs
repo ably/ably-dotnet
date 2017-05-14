@@ -454,16 +454,20 @@ namespace IO.Ably.Transport
 
         private async Task ProcessTransportMessage(ProtocolMessage message)
         {
-            var handled = await State.OnMessageReceived(message);
-            handled |= AckProcessor.OnMessageReceived(message);
-            handled |= ConnectionHeartbeatRequest.CanHandleMessage(message);
-
-            if (message.ConnectionSerial.HasValue)
+            try
             {
-                Connection.Serial = message.ConnectionSerial.Value;
-            }
+                var handled = await State.OnMessageReceived(message);
+                handled |= AckProcessor.OnMessageReceived(message);
+                handled |= ConnectionHeartbeatRequest.CanHandleMessage(message);
 
-            MessageReceived?.Invoke(message);
+                Connection.UpdateSerial(message);
+                MessageReceived?.Invoke(message);
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error processing message: " + message, e);
+                throw new AblyException(e);
+            }
         }
     }
 }
