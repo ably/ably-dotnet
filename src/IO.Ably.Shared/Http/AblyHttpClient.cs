@@ -204,7 +204,11 @@ namespace IO.Ably
                 var webEx = httpEx.InnerException as WebException;
                 return webEx.Status == WebExceptionStatus.NameResolutionFailure || 
                     webEx.Status == WebExceptionStatus.Timeout ||
-                    webEx.Status == WebExceptionStatus.ConnectFailure;
+                    webEx.Status == WebExceptionStatus.ConnectFailure ||
+                    webEx.Status == WebExceptionStatus.ReceiveFailure ||
+                    webEx.Status == WebExceptionStatus.ConnectionClosed ||
+                    webEx.Status == WebExceptionStatus.SendFailure ||
+                    webEx.Status == WebExceptionStatus.ServerProtocolViolation;
             }
             return false;
         }
