@@ -103,8 +103,8 @@ namespace IO.Ably.Realtime
                 return;
             }
 
-            _attachedAwaiter.Wait(callback);
-            SetChannelState(ChannelState.Attaching);
+            if(_attachedAwaiter.Wait(callback))
+                SetChannelState(ChannelState.Attaching);
         }
 
         public Task<Result> AttachAsync()

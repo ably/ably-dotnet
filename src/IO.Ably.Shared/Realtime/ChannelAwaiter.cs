@@ -27,7 +27,7 @@ namespace IO.Ably.Realtime
 
         public async Task<Result<bool>> WaitAsync(TimeSpan? timeout = null)
         {
-            var wrappedTask = TaskWrapper.Wrap<bool>(Wait);
+            var wrappedTask = TaskWrapper.Wrap<bool, bool>(Wait);
                 
                 var first = await Task.WhenAny(Task.Delay(timeout ?? TimeSpan.FromSeconds(2)), wrappedTask);
                 if (first == wrappedTask)
@@ -36,10 +36,14 @@ namespace IO.Ably.Realtime
                 return Result.Fail<bool>(new ErrorInfo("Timeout exceeded", 50000));
         }
 
-        public void Wait(Action<bool, ErrorInfo> callback)
+        public bool Wait(Action<bool, ErrorInfo> callback)
         {
-            if(_waiting) 
-                throw new AblyException("This awaiter is already in waiting state.");
+            if (_waiting)
+            {
+                Logger.Warning($"Awaiter for {_awaitedState} has been called multiple times. Most likely a consurrency issue.");
+                return false;
+            }
+
             _waiting = true;
             _callback = callback;
             if (_channel.State == _awaitedState)
@@ -48,6 +52,7 @@ namespace IO.Ably.Realtime
                 callback?.Invoke(true, null);
             }
             AttachListener();
+            return true;
         }
         
         private void AttachListener()
