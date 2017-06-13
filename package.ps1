@@ -1,12 +1,8 @@
-cd tools\psake
-import-module .\psake.psm1
-cd..
-cd..
+import-module .\tools\psake\psake.psm1
 
 $psake.use_exit_on_error = $true
-invoke-psake ./default.ps1 -properties @{ configuration = "release" } -framework '4.0' -verbose Package
+invoke-psake ./default.ps1 Build -properties @{ configuration = "package"; sln_name = "IO.Ably.Package.sln" } -framework '4.0' 
 
-cd tools\psake
 remove-module psake
-cd..
-cd..
+
+.\\tools\\NuGet.exe pack .\\nuget\\io.ably.nuspec

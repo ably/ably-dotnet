@@ -4,7 +4,7 @@
         <id>ably.io</id>
         <version>0.8.5-beta6</version>
         <title>ably.io</title>
-        <authors>Yavor Ivanov,Martin Georgiev</authors>
+        <authors>Martin Georgiev, Yavor Ivanov</authors>
         <owners>Ably Real-time Ltd</owners>
         <licenseUrl>https://github.com/ably/ably-dotnet/blob/master/LICENSE</licenseUrl>
         <projectUrl>https://github.com/ably/ably-dotnet</projectUrl>
@@ -12,7 +12,7 @@
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Ably .NET Realtime and REST client library.</description>
         <summary>Ably is realtime data delivery platform for internet-enabled devices. See https://www.ably.io for more info</summary>
-        <copyright>2016 Ably</copyright>
+        <copyright>2017 Ably</copyright>
         <language />
         <dependencies>
           <group>

@@ -495,6 +495,25 @@ namespace IO.Ably.Tests.Realtime
             client.Close();
         }
 
+        [Fact]
+        [Trait("bug", "102")]
+        public async Task WhenAttachingToAChannelFromMultipleThreads_ItShouldNotThrowAnError()
+        {
+            Logger.LogLevel = LogLevel.Debug;
+
+            var client1 = await GetRealtimeClient(Protocol.Json);
+            var channel = client1.Channels.Get("test");
+            var task = Task.Run(() => channel.Attach());
+            task.ConfigureAwait(false);
+            var task2 = Task.Run(() => channel.Attach());
+            task2.ConfigureAwait(false);
+
+            await Task.WhenAll(task, task2);
+
+            var result = await new ChannelAwaiter(channel, ChannelState.Attached).WaitAsync();
+            result.IsSuccess.Should().BeTrue();
+        }
+
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTL10d")]

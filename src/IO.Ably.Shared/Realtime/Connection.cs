@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
+using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
 {
@@ -158,6 +159,14 @@ namespace IO.Ably.Realtime
 
                 Emit(newState, stateChange);
             });
+        }
+
+        public void UpdateSerial(ProtocolMessage message)
+        {
+            if (message.ConnectionSerial.HasValue)
+            {
+                Serial = message.ConnectionSerial.Value;
+            }
         }
     }
 }
