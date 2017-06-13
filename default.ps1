@@ -11,7 +11,9 @@ properties {
 	
 	$project_name = "IO.Ably"
 	$build_number = "0.8.4"
+	$main_version = "0.8"
 	$solution_dir = "$build_script_dir\$sln_dir"
+	$signKeyPath = "$build_script_dir\IO.Ably.snk"
 	
 	$build_artifacts_dir_base = "$build_script_dir\build\artifacts"
 	$build_artifacts_dir = "$build_artifacts_dir_base\library"
@@ -35,7 +37,8 @@ task Assembly_Info {
 		-file  "$base_dir\CommonAssemblyInfo.cs" `
 		-company "Ably" `
 		-product "Ably .Net Library" `
-		-version $build_number `
+		-assembly_version $main_version `
+		-full_version $build_number `
 		-copyright "Ably" . [DateTime]::Now`
 } 
 
@@ -44,7 +47,7 @@ task Build -depends Assembly_Info, Init {
 	
 	$base_dir = "$build_script_dir\$sln_dir"
 
-	run_msbuild "$base_dir\$sln_name" $configuration
+	run_msbuild "$base_dir\$sln_name" $configuration $signKeyPath
 
 	$package_dir = "$base_dir\$project_name\bin\$configuration"
 }

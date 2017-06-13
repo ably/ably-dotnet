@@ -1,4 +1,4 @@
-function global:run_msbuild($solutionPath, $configuration)
+function global:run_msbuild($solutionPath, $configuration, $signKeyPath)
 {
 	clear-obj-artifacts $solutionPath
 
@@ -7,10 +7,9 @@ function global:run_msbuild($solutionPath, $configuration)
 	try {
 		switch($configuration)
 		{
-			"test" { exec { msbuild $solutionPath "/t:clean;build" "/v:Quiet"
-			"/p:Configuration=$configuration;Platform=Any CPU" } }
-			"release" { exec { msbuild $solutionPath "/t:clean;build" "/p:Configuration=$configuration;Platform=Any CPU" } }
-			default { exec { msbuild $solutionPath "/t:clean;build" "/p:Configuration=$configuration;Platform=Any CPU" } }
+			"package" { exec { msbuild $solutionPath "/t:clean;build" "/p:Configuration=release;Platform=Any CPU" "/p:AssemblyOriginatorKeyFile=$signKeyPath" "/p:SignAssembly=true" "/p:DefineConstants=PACKAGE" } }
+			"release" { exec { msbuild $solutionPath "/t:clean;build" "/p:Configuration=$configuration;Platform=Any CPU"} }
+			default { exec { msbuild $solutionPath "/t:clean;build" "/p:Configuration=$configuration;Platform=Any CPU"  } }
 		}
 	}
 	catch {
@@ -193,11 +192,12 @@ param(
 	[string]$company, 
 	[string]$product, 
 	[string]$copyright,
-	[string]$version,
+	[string]$full_version,
+	[string]$assembly_version,
 	[string]$file = $(throw "file is a required parameter.")
 )
 
-$fileVersion = $version -replace "-\w+$", ""
+$fileVersion = $full_version -replace "-\w+$", ""
 
 $asmInfo = "using System;
 using System.Reflection;
@@ -208,8 +208,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription(""Client for ably.io realtime service"")]
 [assembly: AssemblyProductAttribute(""$product"")]
 [assembly: AssemblyCopyrightAttribute(""$copyright"")]
-[assembly: AssemblyVersionAttribute(""$fileVersion"")]
-[assembly: AssemblyInformationalVersionAttribute(""$version"")]
+[assembly: AssemblyVersionAttribute(""$assembly_version"")]
+[assembly: AssemblyInformationalVersionAttribute(""$full_version"")]
 [assembly: AssemblyFileVersionAttribute(""$fileVersion"")]
 "
 

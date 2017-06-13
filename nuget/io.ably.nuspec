@@ -2,9 +2,9 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>ably.io</id>
-        <version>0.8.4.4</version>
+        <version>0.8.4.5</version>
         <title>ably.io</title>
-        <authors>Yavor Ivanov,Martin Georgiev</authors>
+        <authors>Martin Georgiev, Yavor Ivanov</authors>
         <owners>Ably Real-time Ltd</owners>
         <licenseUrl>https://github.com/ably/ably-dotnet/blob/master/LICENSE</licenseUrl>
         <projectUrl>https://github.com/ably/ably-dotnet</projectUrl>

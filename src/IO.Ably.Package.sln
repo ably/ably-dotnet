@@ -8,31 +8,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1EA29F
 		.nuget\NuGet.Config = .nuget\NuGet.Config
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ably.ConsoleTest", "Ably.ConsoleTest\Ably.ConsoleTest.csproj", "{2A1CC9E0-D5D8-423F-A9F1-C75391E0D43D}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solution Items", "{258ABD2A-ACCA-4226-AEDD-B9C74075B367}"
-	ProjectSection(SolutionItems) = preProject
-		..\CHANGELOG.md = ..\CHANGELOG.md
-		..\nuget\io.ably.nuspec = ..\nuget\io.ably.nuspec
-		..\README.md = ..\README.md
-		Todo.txt = Todo.txt
-	EndProjectSection
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "IO.Ably.Shared", "IO.Ably.Shared\IO.Ably.Shared.shproj", "{3553E1B2-8F1F-4E83-9524-08E702C14FCF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.Android", "IO.Ably.Android\IO.Ably.Android.csproj", "{24B6FC97-9D3D-46AE-B5CB-47458354BEE1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.iOS", "IO.Ably.iOS\IO.Ably.iOS.csproj", "{8BB7B13C-E9F4-4D1B-BCCC-AF890A23ECE6}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{E02CFEF3-4CE4-49F6-A778-26503A1479D5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealtimeChat", "..\examples\RealtimeChat\RealtimeChat\RealtimeChat.csproj", "{D7513FBC-942B-4D2A-A590-87EE09570CC1}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.Net45", "IO.Ably.Net45\IO.Ably.Net45.csproj", "{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ably", "Ably", "{8A0F718E-2168-4CC7-8F7B-A65508B52B0F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.Tests", "IO.Ably.Tests\IO.Ably.Tests.csproj", "{4E136C14-03D4-4194-8DE7-3E9A26C5B028}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -309,11 +293,9 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{2A1CC9E0-D5D8-423F-A9F1-C75391E0D43D} = {E02CFEF3-4CE4-49F6-A778-26503A1479D5}
 		{3553E1B2-8F1F-4E83-9524-08E702C14FCF} = {8A0F718E-2168-4CC7-8F7B-A65508B52B0F}
 		{24B6FC97-9D3D-46AE-B5CB-47458354BEE1} = {8A0F718E-2168-4CC7-8F7B-A65508B52B0F}
 		{8BB7B13C-E9F4-4D1B-BCCC-AF890A23ECE6} = {8A0F718E-2168-4CC7-8F7B-A65508B52B0F}
-		{D7513FBC-942B-4D2A-A590-87EE09570CC1} = {E02CFEF3-4CE4-49F6-A778-26503A1479D5}
 		{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8} = {8A0F718E-2168-4CC7-8F7B-A65508B52B0F}
 	EndGlobalSection
 EndGlobal
