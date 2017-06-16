@@ -20,68 +20,6 @@ function global:run_msbuild($solutionPath, $configuration, $signKeyPath)
 	}
 }
 
-function global:run_tests($test_result_file, $xunit_console_dir, $solution_dir, $configuration, $testType)
-{
-	$configType = $configuration.ToString().ToLower()
-	$testAssemblies = @()
-	$testDlls = (get-childitem "$solution_dir\" -r -i "*$testType.dll" -exclude "*.config")
-	foreach($testDll in $testDlls) {
-		if($testDll.ToString().ToLower().Contains("bin\" + $configTYpe))
-		{
-			$testAssemblies += $testDll
-		}
-	}
-
-	try {
-		if(Test-Path $test_result_file) {
-			Remove-Item $test_result_file -Force
-		}
-
-		Write-Output "TestAssemblies: $testAssemblies"
-
-		$xunit_console = "$xunit_console_dir\xunit.console.exe"
-		& "$xunit_console" $testAssemblies -diagnostics -noappdomain -parallel none -nunit "$test_result_file"
-
-		Write-Output "##teamcity[importData type='nunit' path='$test_result_file']"
-	}
-	catch {
-		Write-Output "##teamcity[buildStatus text='Error running unit tests' status='ERROR']"
-		Write-Host $_
-		Write-Host ("************************ Unit Test failure ***************************")
-		exit 1
-	}
-}
-
-function global:run_nunit_tests($test_result_folder, $console_dir, $test_root, $testType)
-{
-	Write-Host "Test Result Folder: $test_result_folder"
-	Write-Host "Console dir: $console_dir"
-	Write-Host "Test root: $test_root"
-	Write-Host "Test type: $testType"
-	
-	$testAssemblies = @()
-	$testDlls = (get-childitem "$test_root\" -r -i "*$testType.dll" -exclude "*.config")
-	$nunit_console = "$console_dir\nunit3-console.exe"
-	
-	try {
-		foreach($testDll in $testDlls) {
-			
-				$resultsFile = "$test_result_folder" + [System.IO.Path]::GetFileNameWithoutExtension($testDll) + ".xml"
-				& "$nunit_console" $testDll /noshadow /xml:"$resultsFile"
-				Write-Output "##teamcity[importData type='nunit' path='$resultsFile']"
-			
-		}
-	
-	}
-	catch {
-		Write-Output "##teamcity[buildStatus text='Error running unit tests' status='ERROR']"
-		Write-Host $_
-		Write-Host ("************************ Unit Test failure ***************************")
-		exit 1
-	}
-}
-
-
 function global:clear-obj-artifacts($directory)
 {
 	try {
@@ -91,63 +29,6 @@ function global:clear-obj-artifacts($directory)
 		Write-Output "##teamcity[buildStatus text='Clearing the obj folder generated an error - try again' status='ERROR']"
 		Write-Host $_
 		Write-Host ("************************ Build Failed ***************************")
-		exit 1
-	}
-}
-
-function global:publish_build($source_dir, $artifacts_dir)
-{
-	try
-	{
-		Write-Output "Publishing from $source_dir to $artifacts_dir"
-
-		setup_folder $artifacts_dir
-
-		clean_directory $artifacts_dir
-
-		$itemsToCopy = Get-EnhancedChildItem $source_dir -Recurse -Force
-		Write-Output 'Items to copy: ' $itemsToCopy.Count
-		foreach ($item in $itemsToCopy)
-		{
-			$dest = Join-Path $artifacts_dir $item.FullName.Substring($source_dir.length)
-			Write-Host "Copying item from " $item.FullName " to $dest"
-			Copy-Item $item.FullName $dest
-			
-		}
-		Write-Host "All copied...."
-		remove_empty_directories $artifacts_dir
-	}
-	catch {
-		Write-Output "##teamcity[buildStatus text='Pushing to artifacts fails' status='ERROR']"
-		Write-Host $_
-		Write-Host ("******************** Artifact Push Failure ********************")
-		exit 1
-	}
-}
-
-function global:publish_tools($root, $build_afrtifacts_tools_dir)
-{
-	try
-	{
-		setup_folder $build_afrtifacts_tools_dir
-		
-		clean_directory $build_afrtifacts_tools_dir
-		Write-Host 'Getting children from: ' $root
-		$itemsToCopy = Get-ChildItem "$root\*.ps1"
-		Write-Host 'Items to copy: ' $itemsToCopy.Count
-		foreach ($item in $itemsToCopy)
-		{
-			$dest = Join-Path $build_afrtifacts_tools_dir $item.FullName.Substring($root.length)
-			Write-Host "Copying item from $item to $dest"
-			Copy-Item $item $dest
-		}
-		
-		Copy-Item "$root/tools" "$build_afrtifacts_tools_dir/tools" -Recurse
-	}
-	catch {
-		Write-Output "##teamcity[buildStatus text='Pushing to artifacts fails' status='ERROR']"
-		Write-Host $_
-		Write-Host ("******************** Artifact Push Failure ********************")
 		exit 1
 	}
 }

@@ -9,8 +9,9 @@ namespace IO.Ably.ConsoleTest
     {
         static void Main(string[] args)
         {
-            //IO.Ably.Logger.LoggerSink = new MyLogger();
+            IO.Ably.Logger.LoggerSink = new MyLogger();
             Logger.LogLevel = LogLevel.Debug;
+            DateTime start = DateTime.Now;
             try
             {
                 //Rest.Test().Wait();
@@ -26,6 +27,7 @@ namespace IO.Ably.ConsoleTest
                     channel.Publish(new Random().Next(1000000000, 1000000000).ToString(), new Random().Next(1000000000, 1000000000).ToString());
                     Thread.Sleep(1000);
                     Console.WriteLine("Bytes used: " + GC.GetTotalMemory(true));
+                    Console.WriteLine("Connected time: " + (DateTime.Now - start).TotalSeconds + " seconds");
                 }
 
                 Console.ReadLine();

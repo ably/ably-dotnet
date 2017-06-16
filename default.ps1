@@ -48,8 +48,6 @@ task Build -depends Assembly_Info, Init {
 	$base_dir = "$build_script_dir\$sln_dir"
 
 	run_msbuild "$base_dir\$sln_name" $configuration $signKeyPath
-
-	$package_dir = "$base_dir\$project_name\bin\$configuration"
 }
 
 task Package -depends Build {
@@ -60,11 +58,30 @@ task Unit_Tests {
 
 	$base_dir = "$build_script_dir\$sln_dir\IO.Ably.Tests\bin\$configuration"
 
-	$xunit_runner = "$build_script_dir\tools\xunit-runners\tools"
-
 	setup_folder $build_output_dir
 
-	run_tests "$build_output_dir\TestResults.xml" $xunit_runner $base_dir $configuration ".Tests"
-	run_nunit_tests "$build_output_dir\AcceptanceTestResults.xml" "$build_script_dir\tools\nunit-runners" $base_dir $configuration ".AcceptanceTests"
-	Write-Host "Running unit tests"
+	$unit_test_results= "$build_output_dir\TestResults.xml"
+	$sandbox_test_results= "$build_output_dir\SandboxTestResults.xml"
+
+	$testDll = "$base_dir\IO.Ably.Tests.dll"
+	
+	try {
+		if(Test-Path $unit_test_results) {
+			Remove-Item $unit_test_results -Force
+		}
+		if(Test-Path $sandbox_test_results) {
+			Remove-Item $sandbox_test_results -Force
+		}
+
+		$xunit_console = "$tools_dir\xunit\xunit.console.exe"
+		
+		#Run all the unit tests first
+		& "$xunit_console" $testDll -noappdomain -nunit "$unit_test_results" -notrait "requires=sandbox"
+		#& "$xunit_console" $testDll -diagnostics -nunit "$sandbox_test_results" -trait "requires=sandbox"
+	}
+	catch {
+		Write-Host $_
+		Write-Host ("************************ Unit Test failure ***************************")
+		exit 1
+	}
 }

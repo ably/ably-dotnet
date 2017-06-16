@@ -9,9 +9,10 @@ namespace IO.Ably.ConsoleTest
         {
             var options = new ClientOptions()
             {
-                AuthUrl = new Uri("https://www.ably.io/ably-auth/token-request/demos"),
+                Key = "key goes here",
                 ClientId = "stan",
-                Tls = false
+                Tls = true, 
+                UseBinaryProtocol = false
             };
             return new AblyRealtime(options);
         }
