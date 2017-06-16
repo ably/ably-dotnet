@@ -139,7 +139,7 @@ namespace IO.Ably.Transport
 
         private void HandleStateChange(MsWebSocketConnection.ConnectionState state, Exception error)
         {
-            if(Logger.IsDebug) Logger.Debug($"Transport State: {state}. Error is {error?.Message ?? "empty"}" );
+            if(Logger.IsDebug) Logger.Debug($"Transport State: {state}. Error is {error?.Message ?? "empty"}. {error?.StackTrace}" );
             switch (state)
             {
                 case MsWebSocketConnection.ConnectionState.Connecting:

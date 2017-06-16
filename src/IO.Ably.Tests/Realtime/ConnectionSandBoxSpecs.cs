@@ -281,6 +281,38 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTN16d")]
+        public async Task WhenConnectionFailsToRecover_ShouldEmmitDetachedMessageToChannels(Protocol protocol)
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            var stateChanges = new List<ChannelStateChange>();
+
+            var client = await GetRealtimeClient(protocol);
+            client.Connect();
+
+            await WaitForState(client, ConnectionState.Connected);
+
+            var channel1 = client.Channels.Get("test");
+            channel1.On(x => stateChanges.Add(x));
+
+            await channel1.PublishAsync("test", "best");
+            await channel1.PublishAsync("test", "best");
+
+            await Task.Delay(2000);
+            
+            client.Connection.Key = "e02789NdQA86c7!inI5Ydc-ytp7UOm3-3632e02789NdQA86c7";
+            //Kill the transport
+            client.ConnectionManager.Transport.Close(false);
+
+            await Task.Delay(2000);
+
+            await WaitForState(client, ConnectionState.Connected);
+
+            stateChanges.Should().Contain(x => x.Current == ChannelState.Detached);
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RTN16e")]
         public async Task WithDummyRecoverData_ShouldConnectAndSetAReasonOnTheConnection(Protocol protocol)
         {

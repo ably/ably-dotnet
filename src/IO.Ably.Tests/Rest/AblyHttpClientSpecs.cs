@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Transport;
@@ -45,8 +46,9 @@ namespace IO.Ably.Tests
 
             await client.Execute(new AblyRequest("/test", HttpMethod.Get));
             var values = handler.LastRequest.Headers.GetValues("X-Ably-Lib");
+            var fileVersion = typeof(Defaults).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
             values.Should().NotBeEmpty();
-            values.First().Should().Be("dotnet-" + typeof(Defaults).Assembly.GetName().Version.ToString(3));
+            values.First().Should().Be("dotnet-" + typeof(Defaults).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version.ToString(3));
         }
 
         [Fact]

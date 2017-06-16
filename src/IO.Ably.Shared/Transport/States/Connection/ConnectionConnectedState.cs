@@ -64,10 +64,9 @@ namespace IO.Ably.Transport.States.Connection
         {
             if (_info != null)
             {
-                if (Context.Connection.Key.IsNotEmpty() &&
-                    Context.Connection.Id == _info.ConnectionId)
+                if (HasThereBeenAPreviousConnection())
                 {
-                    _resumed = true;
+                    _resumed = Context.Connection.Id == _info.ConnectionId;
                 }
                 
                 Context.Connection.Id = _info.ConnectionId;
@@ -81,15 +80,19 @@ namespace IO.Ably.Transport.States.Connection
             if(_resumed.HasValue && _resumed.Value && Logger.IsDebug) Logger.Debug("Connection resumed!");
         }
 
+        private bool HasThereBeenAPreviousConnection()
+        {
+            return Context.Connection.Key.IsNotEmpty();
+        }
+
         public override Task OnAttachToContext()
         {
             if(Logger.IsDebug) Logger.Debug("Processing Connected:OnAttached. Resumed: " + _resumed);
-            if (_resumed != true)
+            if (_resumed.HasValue && _resumed ==false)
             {
                 Context.ClearAckQueueAndFailMessages(null);
-            }
-            else if(_resumed.Value == false)
                 Context.DetachAttachedChannels(Error);
+            }
 
             Context.SendPendingMessages(_resumed.GetValueOrDefault());
             return TaskConstants.BooleanTrue;

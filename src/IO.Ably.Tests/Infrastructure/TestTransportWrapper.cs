@@ -37,7 +37,7 @@ namespace IO.Ably.Tests.Infrastructure
 
             public void OnTransportEvent(TransportState state, Exception exception = null)
             {
-                _wrappedListener.OnTransportEvent(state, exception);
+                _wrappedListener?.OnTransportEvent(state, exception);
             }
         }
 

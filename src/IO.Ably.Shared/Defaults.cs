@@ -12,7 +12,7 @@ namespace IO.Ably
 
         private static string GetVersion()
         {
-            var version =  typeof(Defaults).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+            var version =  typeof(Defaults).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
             return version.Split('.').Take(3).JoinStrings(".");
         }
 
