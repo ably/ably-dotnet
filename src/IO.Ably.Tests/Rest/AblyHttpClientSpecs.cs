@@ -48,7 +48,7 @@ namespace IO.Ably.Tests
             var values = handler.LastRequest.Headers.GetValues("X-Ably-Lib");
             var fileVersion = typeof(Defaults).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
             values.Should().NotBeEmpty();
-            values.First().Should().Be("dotnet-" + typeof(Defaults).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version.ToString(3));
+            values.First().Should().Be("dotnet-" + fileVersion);
         }
 
         [Fact]
