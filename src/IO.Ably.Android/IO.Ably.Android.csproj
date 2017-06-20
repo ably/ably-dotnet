@@ -104,6 +104,6 @@
     <ItemGroup>
      <LibraryPaths Include="..\packages\MsgPack.Cli.0.8.1\lib\net45"/>
     </ItemGroup>
-    <ILRepack Parallel="true" Internalize="true" InputAssemblies="@(InputAssemblies)" LibraryPath="@(LibraryPaths)" XmlDocumentation="true" TargetKind="DLL" OutputFile="$(OutputPath)\Packaged\$(AssemblyName).dll" />
+    <ILRepack KeyFile="..\..\IO.Ably.snk" Parallel="true" Internalize="true" InputAssemblies="@(InputAssemblies)" LibraryPath="@(LibraryPaths)" XmlDocumentation="true" TargetKind="DLL" OutputFile="$(OutputPath)\Packaged\$(AssemblyName).dll" />
   </Target>
 </Project>
