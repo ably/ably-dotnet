@@ -839,6 +839,125 @@ namespace IO.Ably.Tests.Realtime
                 receivedMessage.Encoding.Should().Be("json");
             }
 
+            [Fact]
+            public async Task WithMultipleMessages_ShouldSetIdOnEachMessage()
+            {
+                var channel = _client.Channels.Get("test");
+
+                SetState(channel, ChannelState.Attached);
+
+                List<Message> receivedMessages = new List<Message>();
+                channel.Subscribe(msg =>
+                {
+                    receivedMessages.Add(msg);
+                });
+
+                var protocolMessage = SetupTestProtocolmessage();
+                await _client.FakeProtocolMessageReceived(protocolMessage);
+
+                receivedMessages.Should().HaveCount(3);
+                receivedMessages.Select(x => x.Id)
+                    .Should()
+                    .BeEquivalentTo(new[]
+                        {$"{protocolMessage.Id}:0", $"{protocolMessage.Id}:1", $"{protocolMessage.Id}:2"});
+            }
+
+            [Fact]
+            public async Task WithMultipleMessagesHaveIds_ShouldPreserveTheirIds()
+            {
+                var channel = _client.Channels.Get("test");
+
+                SetState(channel, ChannelState.Attached);
+
+                List<Message> receivedMessages = new List<Message>();
+                channel.Subscribe(msg =>
+                {
+                    receivedMessages.Add(msg);
+                });
+
+                var protocolMessage = SetupTestProtocolmessage(messages: new[]
+                {
+                    new Message("message1", "data") {Id = "1"},
+                    new Message("message2", "data") {Id = "2"},
+                    new Message("message3", "data") {Id = "3"},
+                });
+                    
+                await _client.FakeProtocolMessageReceived(protocolMessage);
+
+                receivedMessages.Should().HaveCount(3);
+                receivedMessages.Select(x => x.Id)
+                    .Should()
+                    .BeEquivalentTo("1", "2", "3");
+            }
+
+            [Theory]
+            [InlineData("protocolMessageConnId", null, "protocolMessageConnId")]
+            [InlineData("protocolMessageConnId", "messageConId", "messageConId")]
+            public async Task WithMessageWithConnectionIdEqualTo_ShouldBeEqualToExpected(string protocolMessageConId, string messageConId, string expectedConnId)
+            {
+                var channel = _client.Channels.Get("test");
+
+                SetState(channel, ChannelState.Attached);
+
+                Message receivedMessage = null;
+                channel.Subscribe(msg =>
+                {
+                    receivedMessage = msg;
+                });
+
+                var protocolMessage = SetupTestProtocolmessage(connectionId: protocolMessageConId, messages: new[]
+                {
+                    new Message("message1", "data") {Id = "1", ConnectionId = messageConId},
+                });
+
+                await _client.FakeProtocolMessageReceived(protocolMessage);
+
+                receivedMessage.ConnectionId.Should().Be(expectedConnId);
+            }
+
+            [Fact]
+            public async Task WithProtocolMessage_ShouldSetMessageTimestampWhenNotThere()
+            {
+                var channel = _client.Channels.Get("test");
+
+                SetState(channel, ChannelState.Attached);
+
+                List<Message> receivedMessages = new List<Message>();
+                channel.Subscribe(msg =>
+                {
+                    receivedMessages.Add(msg);
+                });
+
+                var protocolMessage = SetupTestProtocolmessage(timestamp: Now, messages: new[]
+                {
+                    new Message("message1", "data"),
+                    new Message("message1", "data") {Timestamp = Now.AddMinutes(1)},
+                });
+
+                await _client.FakeProtocolMessageReceived(protocolMessage);
+
+                receivedMessages.First().Timestamp.Should().Be(Now);
+                receivedMessages.Last().Timestamp.Should().Be(Now.AddMinutes(1));
+            }
+
+            private ProtocolMessage SetupTestProtocolmessage(string connectionId = null, DateTimeOffset? timestamp = null,  Message[] messages = null)
+            {
+                var protocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message, "test")
+                {
+                    ConnectionId = connectionId,
+                    Timestamp = timestamp,
+                    Id = "protocolMessageId",
+                    Messages = messages ?? new[]
+                    {
+                        new Message("message1", "data"),
+                        new Message("message2", "data"),
+                        new Message("message3", "data"),
+                    }
+                };
+                return protocolMessage;
+            }
+
+
             public SubscribeSpecs(ITestOutputHelper output) : base(output)
             {
                 _client = GetConnectedClient(opts => opts.UseBinaryProtocol = false); //Easier to test encoding with the json protocol

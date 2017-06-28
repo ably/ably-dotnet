@@ -328,18 +328,35 @@ namespace IO.Ably.MessageEncoders
 
         public Result DecodeProtocolMessage(ProtocolMessage protocolMessage, ChannelOptions channelOptions)
         {
-            var option = channelOptions ?? new ChannelOptions();
-            var result = Result.Ok();
-            foreach (var message in protocolMessage.Messages ?? new Message[] { })
-            {
-                result = Result.Combine(result, DecodePayload(message, channelOptions));
-            }
-            foreach (var presence in protocolMessage.Presence ?? new PresenceMessage[] { })
-            {
-                result = Result.Combine(result, DecodePayload(presence, channelOptions));
-            }
+            var options = channelOptions ?? new ChannelOptions();
 
+            return Result.Combine(
+                DecodeMessages(protocolMessage, protocolMessage.Messages, options),
+                DecodeMessages(protocolMessage, protocolMessage.Presence, options)
+            );
+        }
+
+        private Result DecodeMessages(ProtocolMessage protocolMessage, IEnumerable<IMessage> messages, ChannelOptions options)
+        {
+            var result = Result.Ok();
+            var index = 0;
+            foreach(var message in messages ?? Enumerable.Empty<IMessage>())
+            {
+                SetMessageIdConnectionIdAndTimestamp(protocolMessage, message, index);
+                result = Result.Combine(result, DecodePayload(message, options));
+                index++;
+            }
             return result;
+        }
+
+        private static void SetMessageIdConnectionIdAndTimestamp(ProtocolMessage protocolMessage, IMessage message, int i)
+        {
+            if (message.Id.IsEmpty())
+                message.Id = $"{protocolMessage.Id}:{i}";
+            if (message.ConnectionId.IsEmpty())
+                message.ConnectionId = protocolMessage.ConnectionId;
+            if (message.Timestamp.HasValue == false)
+                message.Timestamp = protocolMessage.Timestamp;
         }
 
         public RealtimeTransportData GetTransportData(ProtocolMessage protocolMessage)
