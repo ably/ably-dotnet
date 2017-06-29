@@ -21,6 +21,10 @@ namespace IO.Ably.Tests.Realtime
             {
             }
 
+
+            //TODO: Add tests to makes sure Presense messages id, timestamp and connectionId are set
+
+
             [Theory]
             [ProtocolData]
             [Trait("spec", "RTP1")]

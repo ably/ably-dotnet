@@ -137,9 +137,9 @@ namespace IO.Ably
         public TimeSpan DisconnectedRetryTimeout { get; set; } = Defaults.DisconnectedRetryTimeout;
         public TimeSpan SuspendedRetryTimeout { get; set; } = TimeSpan.FromSeconds(30);
         public TimeSpan HttpOpenTimeout { get; set; } = TimeSpan.FromSeconds(4);
-        public TimeSpan HttpRequestTimeout { get; set; } = TimeSpan.FromSeconds(15);
+        public TimeSpan HttpRequestTimeout { get; set; } = TimeSpan.FromSeconds(10);
         public int HttpMaxRetryCount { get; set; } = 3;
-        public TimeSpan HttpMaxRetryDuration { get; set; } = TimeSpan.FromSeconds(10);
+        public TimeSpan HttpMaxRetryDuration { get; set; } = TimeSpan.FromSeconds(15);
 
         /// <summary>
         /// Provides Channels Setting for all Channels created. For more information see <see cref="ChannelOptions"/> 

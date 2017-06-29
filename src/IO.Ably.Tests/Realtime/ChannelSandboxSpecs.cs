@@ -405,20 +405,51 @@ namespace IO.Ably.Tests.Realtime
         public async Task ConnectionIdShouldMatchThatOfThePublisher(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
-            var connectionId = client.Connection.Id;
             var channel = client.Channels.Get("test");
-            bool messageReceived = false;
+            Message testMessage = null;
             channel.Subscribe(message =>
             {
-                message.ConnectionId.Should().Be(connectionId);
-                messageReceived = true;
+                testMessage = message;
                 _resetEvent.Set();
             });
 
             await channel.PublishAsync(new Message("test", "best"));
 
             _resetEvent.WaitOne();
-            messageReceived.Should().BeTrue();
+            var connectionId = client.Connection.Id;
+            testMessage.Should().NotBeNull();
+            testMessage.ConnectionId.Should().Be(connectionId);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL6f")]
+        public async Task PublishedMessagesShouldContainMessageIdsWhenReceived(Protocol protocol)
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            
+            var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
+            var channel = client.Channels.Get("test");
+            List<Message> testMessages = new List<Message>();
+            channel.Subscribe(message =>
+            {
+                testMessages.Add(message);
+                if(testMessages.Count == 5)
+                    _resetEvent.Set();
+            });
+            var messages = new[]
+            {
+                new Message("test", "best"),
+                new Message("test", "best"),
+                new Message("test", "best"),
+                new Message("test", "best"),
+                new Message("test", "best")
+            };
+
+            await channel.PublishAsync(messages);
+
+            _resetEvent.WaitOne();
+            testMessages.Select(x => x.Id).Should().NotContainNulls();
         }
 
         [Theory]

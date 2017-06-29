@@ -15,7 +15,7 @@ namespace IO.Ably.Tests.Realtime
         public static Task FakeMessageReceived(this AblyRealtime client, Message message, string channel = null)
         {
             return
-                client.ConnectionManager.OnTransportMessageReceived(
+                client.FakeProtocolMessageReceived(
                     new ProtocolMessage(ProtocolMessage.MessageAction.Message) {Messages = new[] {message}, Channel = channel});
         }
     }

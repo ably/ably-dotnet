@@ -15,7 +15,6 @@ namespace IO.Ably
             Context = GetContext();
         }
 
-        //TODO: Look into reusing the Context instead of creating it every time
         private static SerializationContext GetContext()
         {
             var context = new SerializationContext() { SerializationMethod = SerializationMethod.Map};

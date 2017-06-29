@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 
 namespace IO.Ably.ConsoleTest
 {
@@ -7,7 +6,7 @@ namespace IO.Ably.ConsoleTest
     {
         public static AblyRealtime Test()
         {
-            var options = new ClientOptions()
+            var options = new ClientOptions("lNj80Q.iGyVcQ:2QKX7FFASfX-7H9H")
             {
                 Key = "key goes here",
                 ClientId = "stan",
