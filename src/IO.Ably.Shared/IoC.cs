@@ -22,7 +22,7 @@ namespace IO.Ably
             }
             else
             {
-                Logger.Debug("Platform class does not exist. Defaulting WebSocket4Net socket library.");
+                Logger.Debug("Platform class does not exist. Defaulting Microsoft Websocket library.");
             }
         }
 
