@@ -28,12 +28,12 @@ namespace IO.Ably.Realtime
         public async Task<Result<bool>> WaitAsync(TimeSpan? timeout = null)
         {
             var wrappedTask = TaskWrapper.Wrap<bool, bool>(Wait);
-                
-                var first = await Task.WhenAny(Task.Delay(timeout ?? TimeSpan.FromSeconds(2)), wrappedTask);
-                if (first == wrappedTask)
-                    return wrappedTask.Result;
 
-                return Result.Fail<bool>(new ErrorInfo("Timeout exceeded", 50000));
+            var first = await Task.WhenAny(Task.Delay(timeout ?? TimeSpan.FromSeconds(2)), wrappedTask);
+            if (first == wrappedTask)
+                return wrappedTask.Result;
+
+            return Result.Fail<bool>(new ErrorInfo("Timeout exceeded", 50000));
         }
 
         public bool Wait(Action<bool, ErrorInfo> callback)
@@ -54,7 +54,7 @@ namespace IO.Ably.Realtime
             AttachListener();
             return true;
         }
-        
+
         private void AttachListener()
         {
             _channel.InternalStateChanged += ChannelOnChannelStateChanged;
