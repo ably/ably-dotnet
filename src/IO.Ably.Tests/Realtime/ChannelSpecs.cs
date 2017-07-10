@@ -282,18 +282,23 @@ namespace IO.Ably.Tests.Realtime
                 _channel.State.Should().Be(ChannelState.Attached);
             }
 
-
-
-            [Fact]
+            [Theory]
+            [InlineData(ChannelState.Initialized)]
+            [InlineData(ChannelState.Detached)]
+            [InlineData(ChannelState.Detaching)]
+            [InlineData(ChannelState.Failed)]
             [Trait("spec", "RTL4f")]
-            public async Task ShouldFailIfAttachMessageNotReceivedWithinDefaultTimeout()
+            public async Task ShouldReturnToPreviousStateIfAttachMessageNotReceivedWithinDefaultTimeout(ChannelState previousState)
             {
+                SetState(_channel, previousState);
+
                 _client.Options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
                 _channel.Attach();
 
                 await Task.Delay(130);
 
-                _channel.State.Should().Be(ChannelState.Failed);
+
+                _channel.State.Should().Be(previousState);
                 _channel.ErrorReason.Should().NotBeNull();
             }
 
