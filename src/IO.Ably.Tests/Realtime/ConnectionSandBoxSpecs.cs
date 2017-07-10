@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -226,7 +227,7 @@ namespace IO.Ably.Tests.Realtime
             var initialConnectionId = client.Connection.Id;
             client.ConnectionManager.Transport.Close(false);
             await WaitForState(client, ConnectionState.Disconnected);
-            await WaitForState(client, ConnectionState.Connected, TimeSpan.FromSeconds(10));
+            await WaitForState(client, ConnectionState.Connected, TimeSpan.FromSeconds(13));
             client.Connection.Id.Should().Be(initialConnectionId);
             client.Connection.Key.Should().NotBe(initialConnectionKey);
         }
@@ -373,6 +374,71 @@ namespace IO.Ably.Tests.Realtime
         }
 
         public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
+        {
+        }
+    }
+
+    [Collection("SandBox Connection")]
+    [Trait("requires", "sandbox")]
+    public class ConnectionSandboxTransportSideEffectsSpecs : SandboxSpecs
+    {
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN19b")]
+        public async Task
+            WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed(Protocol protocol)
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            var client = await GetRealtimeClient(protocol);
+            var sentMessages = new List<ProtocolMessage>();
+            client.SetOnTransportCreated(wrapper =>
+            {
+                wrapper.MessageSent = sentMessages.Add;
+            });
+
+            await WaitForState(client, ConnectionState.Connected);
+            var channel = client.Channels.Get("test-channel");
+            channel.Once(ChannelState.Attaching, change => client.GetTestTransport().Close(false));
+            channel.Attach();
+
+            await WaitForState(client, ConnectionState.Connected);
+
+            await Task.Delay(2000);
+            sentMessages.Where(x => x.Channel == "test-channel" && x.Action == ProtocolMessage.MessageAction.Attach)
+                .Should().HaveCount(2);
+            channel.State.Should().Be(ChannelState.Attached);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN19b")]
+        public async Task
+            WithChannelInDetachingState_WhenTransportIsDisconnected_ShouldResendDetachMessageOnConnectionResumed(Protocol protocol)
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            var client = await GetRealtimeClient(protocol);
+            var sentMessages = new List<ProtocolMessage>();
+            client.SetOnTransportCreated(wrapper =>
+            {
+                wrapper.MessageSent = sentMessages.Add;
+            });
+
+            await WaitForState(client, ConnectionState.Connected);
+            var channel = client.Channels.Get("test-channel");
+            channel.Once(ChannelState.Attached, change => channel.Detach());
+            channel.Once(ChannelState.Detaching, change => client.GetTestTransport().Close(false));
+            channel.Attach();
+
+            await WaitForState(client, ConnectionState.Connected);
+
+            await Task.Delay(2000);
+            sentMessages.Where(x => x.Channel == "test-channel" && x.Action == ProtocolMessage.MessageAction.Detach)
+                .Should().HaveCount(2);
+            channel.State.Should().Be(ChannelState.Detached);
+        }
+
+
+        public ConnectionSandboxTransportSideEffectsSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
         {
         }
     }

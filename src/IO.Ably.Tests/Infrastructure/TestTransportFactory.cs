@@ -1,14 +1,20 @@
-﻿using IO.Ably.Realtime;
+﻿using System;
+using IO.Ably.Realtime;
 using IO.Ably.Transport;
 
 namespace IO.Ably.Tests.Infrastructure
 {
     public class TestTransportFactory : ITransportFactory
     {
+        internal Action<TestTransportWrapper> OnTransportCreated = delegate { };
+
         public ITransport CreateTransport(TransportParams parameters)
         {
             var factory = new MsWebSocketTransport.TransportFactory();
-            return new TestTransportWrapper(factory.CreateTransport(parameters), parameters.UseBinaryProtocol ? Protocol.MsgPack : Protocol.Json);
+            var transport
+                = new TestTransportWrapper(factory.CreateTransport(parameters), parameters.UseBinaryProtocol ? Protocol.MsgPack : Protocol.Json);
+            OnTransportCreated(transport);
+            return transport;
         }
     }
 }

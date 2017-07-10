@@ -24,7 +24,15 @@ namespace IO.Ably.Tests.Infrastructure
 
             public void OnTransportDataReceived(RealtimeTransportData data)
             {
-                _wrappedListener.OnTransportDataReceived(data);
+                try
+                {
+                    _wrappedListener.OnTransportDataReceived(data);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
                 try
                 {
                     _afterMessage(_handler.ParseRealtimeData(data));
@@ -39,6 +47,8 @@ namespace IO.Ably.Tests.Infrastructure
             {
                 _wrappedListener?.OnTransportEvent(state, exception);
             }
+
+
         }
 
         private readonly ITransport _wrappedTransport;
@@ -47,6 +57,7 @@ namespace IO.Ably.Tests.Infrastructure
         private MessageHandler _handler;
 
         public Action<ProtocolMessage> AfterDataReceived = delegate { };
+        public Action<ProtocolMessage> MessageSent = delegate { };
 
         public TestTransportWrapper(ITransport wrappedTransport, Protocol protocol)
         {
@@ -85,6 +96,7 @@ namespace IO.Ably.Tests.Infrastructure
 
         public void Send(RealtimeTransportData data)
         {
+            MessageSent(data.Original);
             _wrappedTransport.Send(data);
         }
 

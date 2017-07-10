@@ -85,6 +85,18 @@ namespace IO.Ably.Realtime
         {
             switch (connectionStateChange.Current)
             {
+                case ConnectionState.Disconnected:
+                    if (State == ChannelState.Attaching)
+                    {
+                        if(Logger.IsDebug) Logger.Debug($"#{Name} Queuing attach message because channel failed to attach");
+                        SendAttachMessageWithTimeout(Defaults.ConnectionStateTtl + ConnectionManager.Options.RealtimeRequestTimeout);
+                    }
+                    if (State == ChannelState.Detaching)
+                    {
+                        if (Logger.IsDebug) Logger.Debug($"#{Name} Queuing detach message because channel failed to detach.");
+                        SendDetachMessageWithTimeout(Defaults.ConnectionStateTtl + ConnectionManager.Options.RealtimeRequestTimeout);
+                    }
+                    break;
                 case ConnectionState.Closed:
                     if (State == ChannelState.Attached || State == ChannelState.Attaching)
                         SetChannelState(ChannelState.Detaching);
@@ -379,12 +391,7 @@ namespace IO.Ably.Realtime
                         Connection.Connect();
                     }
 
-                    _timer.Abort();
-                    _timer.Start(ConnectionManager.Options.RealtimeRequestTimeout, OnAttachTimeout);
-
-                    //Even thought the connection won't have connected yet the message will be queued and sent as soon as
-                    //the connection is made
-                    SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name));
+                    SendAttachMessageWithTimeout(ConnectionManager.Options.RealtimeRequestTimeout);
                     break;
                 case ChannelState.Attached:
 
@@ -414,8 +421,8 @@ namespace IO.Ably.Realtime
                         SetChannelState(ChannelState.Detached, error);
                     else
                     {
-                        _timer.Start(ConnectionManager.Options.RealtimeRequestTimeout, OnDetachTimeout);
-                        SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name));
+                        SendDetachMessageWithTimeout(ConnectionManager.Options.RealtimeRequestTimeout);
+                        
                     }
 
                     break;
@@ -489,11 +496,26 @@ namespace IO.Ably.Realtime
             return list.Count;
         }
 
+        private void SendAttachMessageWithTimeout(TimeSpan attachTimeoutDuration)
+        {
+            _timer.Abort();
+            _timer.Start(attachTimeoutDuration, OnAttachTimeout);
+
+            //Even thought the connection won't have connected yet the message will be queued and sent as soon as
+            //the connection is made
+            SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name));
+        }
+
+        private void SendDetachMessageWithTimeout(TimeSpan detachTimeoutDuration)
+        {
+            _timer.Abort();
+            _timer.Start(detachTimeoutDuration, OnDetachTimeout);
+            SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name));
+        }
+
         private void SendMessage(ProtocolMessage protocolMessage, Action<bool, ErrorInfo> callback = null)
         {
             ConnectionManager.Send(protocolMessage, callback, Options);
         }
-
-        
     }
 }

@@ -45,7 +45,7 @@ namespace IO.Ably.Transport
                 if (Logger.IsDebug)
                 {
                     Logger.Debug("Connecting socket");
-                } 
+                }
 
                 await _socket.StartConnectionAsync();
 
@@ -137,7 +137,7 @@ namespace IO.Ably.Transport
 
         private void HandleStateChange(MsWebSocketConnection.ConnectionState state, Exception error)
         {
-            if(Logger.IsDebug) Logger.Debug($"Transport State: {state}. Error is {error?.Message ?? "empty"}. {error?.StackTrace}" );
+            if (Logger.IsDebug) Logger.Debug($"Transport State: {state}. Error is {error?.Message ?? "empty"}. {error?.StackTrace}");
             switch (state)
             {
                 case MsWebSocketConnection.ConnectionState.Connecting:
@@ -149,7 +149,10 @@ namespace IO.Ably.Transport
                     State = TransportState.Connected;
                     break;
                 case MsWebSocketConnection.ConnectionState.Error:
-                    Listener?.OnTransportEvent(TransportState.Closing, error);
+                    if (State != TransportState.Closing && State != TransportState.Closed)
+                    {
+                        Listener?.OnTransportEvent(TransportState.Closing, error);
+                    }
                     DisposeSocketConnection();
                     break;
                 case MsWebSocketConnection.ConnectionState.Closing:
@@ -157,7 +160,7 @@ namespace IO.Ably.Transport
                     Listener?.OnTransportEvent(TransportState.Closing, error);
                     break;
                 case MsWebSocketConnection.ConnectionState.Closed:
-                    State =  TransportState.Closed;
+                    State = TransportState.Closed;
                     Listener?.OnTransportEvent(TransportState.Closed, error);
                     DisposeSocketConnection();
                     break;

@@ -93,7 +93,7 @@ namespace IO.Ably.Transport
             }
             catch (Exception ex)
             {
-                _handler?.Invoke(ConnectionState.Error, ex);
+                _handler?.Invoke(ConnectionState.Closed, ex);
             }
         }
 
@@ -158,7 +158,7 @@ namespace IO.Ably.Transport
                         break;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) 
                 {
                     _handler?.Invoke(ConnectionState.Error, ex);
                     break;
