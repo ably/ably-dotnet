@@ -196,10 +196,6 @@ namespace IO.Ably.Tests.Realtime
             Assert.True(callbacks.TrueForAll(c => ReferenceEquals(c.Item2, error))); // Error
         }
 
-        
-
-        
-
         public AckProtocolTests(ITestOutputHelper output) : base(output)
         {
             GetAckProcessor();
@@ -209,7 +205,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var connection = new Connection(new AblyRealtime(ValidKey));
             connection.Initialise();
-            return new AcknowledgementProcessor(_connection);
+            return new AcknowledgementProcessor(connection);
         }
     }
 }

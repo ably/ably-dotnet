@@ -22,7 +22,7 @@ namespace IO.Ably.ConsoleTest
                 client.Connect(); 
                 var channel = client.Channels.Get("testchannel0");
                 await channel.AttachAsync();
-
+                DateTime start = DateTime.Now;
                 while (true)
                 {
                     channel.Publish(new Random().Next(1000000000, 1000000000).ToString(), new Random().Next(1000000000, 1000000000).ToString());
