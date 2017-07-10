@@ -78,9 +78,17 @@ namespace IO.Ably.Transport
             _handler?.Invoke(ConnectionState.Closing, null);
             try
             {
-                await
+                if (_clientWebSocket.CloseStatus.HasValue)
+                    Logger.Debug("Closing websocket. Close status: " +
+                                 Enum.GetName(typeof(WebSocketCloseStatus), _clientWebSocket.CloseStatus) + ", Description: " + _clientWebSocket.CloseStatusDescription);
+
+                if(_clientWebSocket.State != WebSocketState.Closed)
+                {
+                    await
                     _clientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None)
                         .ConfigureAwait(false);
+                }
+
                 _handler?.Invoke(ConnectionState.Closed, null);
             }
             catch (Exception ex)
