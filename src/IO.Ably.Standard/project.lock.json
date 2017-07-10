@@ -5634,16 +5634,10 @@
       "Newtonsoft.Json": "10.0.2",
       "Nito.AsyncEx.Context": "1.1.0",
       "Nito.AsyncEx.Tasks": "1.1.0",
+      "System.Net.Http": "4.3.2",
       "System.Net.Requests": "4.3.0",
-      "System.Threading.Timer": "4.3.0",
-      "System.Net.Http": {
-        "target": "Package",
-        "version": "[4.3.2, )"
-      },
-      "System.Net.WebSockets.Client": {
-        "target": "Package",
-        "version": "[4.3.1, )"
-      }
+      "System.Net.WebSockets.Client": "4.3.1",
+      "System.Threading.Timer": "4.3.0"
     },
     "frameworks": {
       "netstandard1.3": {}
