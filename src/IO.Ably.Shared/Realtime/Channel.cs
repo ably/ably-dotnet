@@ -24,6 +24,7 @@ namespace IO.Ably.Realtime
         private readonly ChannelAwaiter _attachedAwaiter;
         private readonly ChannelAwaiter _detachedAwaiter;
         private ChannelOptions _options;
+        private ChannelState _state;
 
         public string AttachedSerial { get; set; }
         public List<MessageAndCallback> QueuedMessages { get; set; } = new List<MessageAndCallback>(16);
@@ -45,7 +46,20 @@ namespace IO.Ably.Realtime
         /// <summary>
         ///     Indicates the current state of this channel.
         /// </summary>
-        public ChannelState State { get; private set; }
+        public ChannelState State
+        {
+            get { return _state; }
+            private set
+            {
+                if (value != _state)
+                {
+                    PreviousState = _state;
+                    _state = value;
+                }
+            }
+        }
+
+        internal ChannelState PreviousState { get; set; }
 
         public Presence Presence { get; }
 
@@ -114,17 +128,20 @@ namespace IO.Ably.Realtime
 
         private void OnAttachTimeout()
         {
+            if(Logger.IsDebug) Logger.Debug($"#{Name} didn't Attach within {ConnectionManager.Options.RealtimeRequestTimeout}. Setting state back to {PreviousState}");
             ConnectionManager.Execute(() =>
             {
-                SetChannelState(ChannelState.Failed, new ErrorInfo("Channel didn't attach within the default timeout", 50000));
+                SetChannelState(PreviousState, new ErrorInfo("Channel didn't attach within the default timeout", 50000));
             });
         }
 
         private void OnDetachTimeout()
         {
+            if (Logger.IsDebug) Logger.Debug($"#{Name} didn't Detach within {ConnectionManager.Options.RealtimeRequestTimeout}. Setting state back to {PreviousState}");
+
             ConnectionManager.Execute(() =>
             {
-                SetChannelState(ChannelState.Failed, new ErrorInfo("Channel didn't detach within the default timeout", 50000));
+                SetChannelState(PreviousState, new ErrorInfo("Channel didn't detach within the default timeout", 50000));
             });
         }
 
@@ -418,6 +435,8 @@ namespace IO.Ably.Realtime
 
         private void ClearAndFailChannelQueuedMessages(ErrorInfo error)
         {
+            if (Logger.IsDebug) Logger.Debug($"Clearing channel #{Name} queued messages. Count: " + QueuedMessages.Count);
+
             lock (_lockQueue)
             {
                 foreach (var messageAndCallback in QueuedMessages)
@@ -430,7 +449,10 @@ namespace IO.Ably.Realtime
 
         internal void OnMessage(Message message)
         {
-            foreach (var handler in _handlers.GetHandlers())
+            var channelHandlers = _handlers.GetHandlers().ToList();
+            if (Logger.IsDebug) Logger.Debug($"Notifying {channelHandlers.Count} handlers in #{Name} channel");
+
+            foreach (var handler in channelHandlers)
             {
                 var loopHandler = handler;
                 RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message));
@@ -438,7 +460,10 @@ namespace IO.Ably.Realtime
 
             if (message.Name.IsNotEmpty())
             {
-                foreach (var specificHandler in _handlers.GetHandlers(message.Name))
+                var namedHandlers = _handlers.GetHandlers(message.Name).ToList();
+                if (Logger.IsDebug) Logger.Debug($"Notifying {namedHandlers.Count} handlers for messages {message.Name} in #{Name} channel");
+
+                foreach (var specificHandler in namedHandlers)
                 {
                     var loopHandler = specificHandler;
                     RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message));
