@@ -45,20 +45,18 @@ namespace IO.Ably.Transport
                 if (Logger.IsDebug)
                 {
                     Logger.Debug("Connecting socket");
-                }
-                Listener?.OnTransportEvent(TransportState.Connecting);
-                
+                } 
+
                 await _socket.StartConnectionAsync();
 
                 if (Logger.IsDebug) Logger.Debug("Socket connected");
-                Listener?.OnTransportEvent(TransportState.Connected);
 
                 await _socket.Receive(HandleMessageReceived);
             }
             catch (Exception ex)
             {
                 if (Logger.IsDebug) Logger.Debug("Socket couldn't connect. Error: " + ex.Message);
-                Listener?.OnTransportEvent(TransportState.Connecting, ex);
+                Listener?.OnTransportEvent(TransportState.Closed, ex);
             }
         }
 
