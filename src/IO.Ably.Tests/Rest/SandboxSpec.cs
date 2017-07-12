@@ -31,6 +31,7 @@ namespace IO.Ably.Tests
         {
             var settings = await Fixture.GetSettings();
             var defaultOptions = settings.CreateDefaultOptions();
+            //defaultOptions.TransportFactory = new WebSocketTransport.WebSocketTransportFactory();
             defaultOptions.UseBinaryProtocol = protocol == Protocol.MsgPack;
             optionsAction?.Invoke(defaultOptions);
             return new AblyRest(defaultOptions);

@@ -10,7 +10,7 @@ namespace IO.Ably.Tests.Infrastructure
 
         public ITransport CreateTransport(TransportParams parameters)
         {
-            var factory = new MsWebSocketTransport.TransportFactory();
+            var factory = IoC.TransportFactory;
             var transport
                 = new TestTransportWrapper(factory.CreateTransport(parameters), parameters.UseBinaryProtocol ? Protocol.MsgPack : Protocol.Json);
             OnTransportCreated(transport);

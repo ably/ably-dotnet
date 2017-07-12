@@ -91,6 +91,7 @@ namespace IO.Ably.Tests.Infrastructure
 
         public void Close(bool suppressClosedEvent = true)
         {
+            Logger.Debug("Closing test transport!");
             _wrappedTransport.Close(suppressClosedEvent);
         }
 
