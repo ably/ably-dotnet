@@ -64,7 +64,7 @@ namespace IO.Ably.Transport.States.Connection
         {
             if (_info != null)
             {
-                if (HasThereBeenAPreviousConnection())
+                if (WasThereAPreviousConnection())
                 {
                     _resumed = Context.Connection.Id == _info.ConnectionId;
                 }
@@ -80,7 +80,7 @@ namespace IO.Ably.Transport.States.Connection
             if(_resumed.HasValue && _resumed.Value && Logger.IsDebug) Logger.Debug("Connection resumed!");
         }
 
-        private bool HasThereBeenAPreviousConnection()
+        private bool WasThereAPreviousConnection()
         {
             return Context.Connection.Key.IsNotEmpty();
         }

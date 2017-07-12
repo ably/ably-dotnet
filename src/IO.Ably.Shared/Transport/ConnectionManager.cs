@@ -36,7 +36,7 @@ namespace IO.Ably.Transport
         private readonly object _transportQueueLock = new object();
         private readonly object _pendingQueueLock = new object();
         private volatile ConnectionStateBase _inTransitionToState;
-        
+
         private List<ProtocolMessage> _queuedTransportMessages = new List<ProtocolMessage>();
 
         public void ClearAckQueueAndFailMessages(ErrorInfo error) => AckProcessor.ClearQueueAndFailMessages(error);
@@ -65,7 +65,7 @@ namespace IO.Ably.Transport
             AttemptsInfo = new ConnectionAttemptsInfo(connection);
             Connection = connection;
             AckProcessor = new AcknowledgementProcessor(connection);
-            
+
 
             if (Logger.IsDebug)
             {
@@ -168,7 +168,7 @@ namespace IO.Ably.Transport
             catch (Exception ex)
             {
                 Logger.Error("Error while creating transport!. Message: " + ex.Message);
-                if(ex is AblyException)
+                if (ex is AblyException)
                     throw;
 
                 throw new AblyException(ex);
@@ -259,7 +259,7 @@ namespace IO.Ably.Transport
                 {
                     lock (_pendingQueueLock)
                     {
-                        if(Logger.IsDebug) { Logger.Debug($"Queuing message with action: {message.Action}. Connection State: {ConnectionState}");}
+                        if (Logger.IsDebug) { Logger.Debug($"Queuing message with action: {message.Action}. Connection State: {ConnectionState}"); }
                         PendingMessages.Enqueue(new MessageAndCallback(message, callback));
                     }
                 }
@@ -290,7 +290,7 @@ namespace IO.Ably.Transport
 
         public void SendToTransport(ProtocolMessage message)
         {
-            if(Logger.IsDebug) Logger.Debug($"Sending message ({message.Action}) to transport");
+            if (Logger.IsDebug) Logger.Debug($"Sending message ({message.Action}) to transport");
             var data = Handler.GetTransportData(message);
             Transport.Send(data);
         }
@@ -311,7 +311,7 @@ namespace IO.Ably.Transport
                     switch (connectionState)
                     {
                         case Realtime.ConnectionState.Closing:
-                            SetState(new ConnectionClosedState(this) {Exception = ex});
+                            SetState(new ConnectionClosedState(this) { Exception = ex });
                             break;
                         case Realtime.ConnectionState.Connecting:
                             HandleConnectingFailure(null, ex);
@@ -363,13 +363,13 @@ namespace IO.Ably.Transport
 
             lock (_pendingQueueLock)
             {
-                if(Logger.IsDebug) Logger.Debug("Sending pending message: Count: " + PendingMessages.Count);
+                if (Logger.IsDebug) Logger.Debug("Sending pending message: Count: " + PendingMessages.Count);
 
                 while (PendingMessages.Count > 0)
                 {
                     var queuedMessage = PendingMessages.Dequeue();
                     SendMessage(queuedMessage.Message, queuedMessage.Callback);
-                } 
+                }
             }
         }
 
@@ -377,7 +377,7 @@ namespace IO.Ably.Transport
         {
             error = error ?? new ErrorInfo($"Channel cannot publish messages whilst state is {channel.State}", 50000);
             AckProcessor.FailChannelMessages(channel.Name, error);
-            
+
             //TODO: Clear messages from the outgoing queue
         }
 
@@ -426,7 +426,7 @@ namespace IO.Ably.Transport
                     Logger.Debug($"InState transition to '{_inTransitionToState}'. Queuing tranport message until state updates");
                 }
 
-                lock(_transportQueueLock)
+                lock (_transportQueueLock)
                     _queuedTransportMessages.Add(message);
             }
             else
@@ -446,7 +446,7 @@ namespace IO.Ably.Transport
 
             foreach (var message in copy)
             {
-                if(Logger.IsDebug) Logger.Debug("Proccessing queued message: " + message);
+                if (Logger.IsDebug) Logger.Debug("Proccessing queued message: " + message);
 
                 await ProcessTransportMessage(message);
             }
@@ -467,6 +467,31 @@ namespace IO.Ably.Transport
             {
                 Logger.Error("Error processing message: " + message, e);
                 throw new AblyException(e);
+            }
+        }
+
+        public void HandleNetworkStateChange(NetworkState state)
+        {
+            switch (state)
+            {
+                case NetworkState.Online:
+                    if (ConnectionState == ConnectionState.Disconnected ||
+                        ConnectionState == ConnectionState.Suspended)
+                    {
+                        if (Logger.IsDebug) Logger.Debug("Network state is Online. Attempting reconnect.");
+                        Connect();
+                    }
+                    break;
+                case NetworkState.Offline:
+                    if (ConnectionState == ConnectionState.Connected ||
+                        ConnectionState == ConnectionState.Connecting)
+                    {
+                        if (Logger.IsDebug) Logger.Debug("Network state is Offline. Moving to disconnected.");
+                        SetState(new ConnectionDisconnectedState(this,
+                            new ErrorInfo("Connection closed due to Operating system network going offline", 80017)));
+                    }
+                    break;
+
             }
         }
     }

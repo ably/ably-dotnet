@@ -38,7 +38,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void Close()
         {
-            _timer.Abort();
+            AbortTimer();
             Context.SetState(new ConnectionClosedState(Context));
         }
 
@@ -66,7 +66,6 @@ namespace IO.Ably.Transport.States.Connection
         private void OnTimeOut()
         {
             Context.Execute(() => Context.SetState(new ConnectionConnectingState(Context)));
-
         }
     }
 }

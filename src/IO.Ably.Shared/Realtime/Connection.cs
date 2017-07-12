@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -9,8 +10,33 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
 {
+    public enum NetworkState
+    {
+        Online,
+        Offline
+    }
+
     public sealed class Connection : EventEmitter<ConnectionState, ConnectionStateChange>, IDisposable
     {
+        private static readonly ConcurrentBag<WeakReference<Action<NetworkState>>> OsEventSubscribers = new ConcurrentBag<WeakReference<Action<NetworkState>>>();
+
+        public static void NotifyOperatingSystemNetworkState(NetworkState state)
+        {
+            if(Logger.IsDebug) Logger.Debug("OS Network connection state: " + state);
+
+            foreach (var subscriber in OsEventSubscribers.ToArray())
+            {
+                if (subscriber.TryGetTarget(out Action<NetworkState> stateAction))
+                    stateAction?.Invoke(state);
+            }
+        }
+
+        private void RegisterWithOSNetworkStateEvents(Action<NetworkState> stateAction)
+        {
+            OsEventSubscribers.Add(new WeakReference<Action<NetworkState>>(stateAction));
+        }
+        
+
         internal AblyRest RestClient => RealtimeClient.RestClient;
         internal AblyRealtime RealtimeClient { get; }
         internal ConnectionManager ConnectionManager { get; set; }
@@ -22,11 +48,11 @@ namespace IO.Ably.Realtime
         {
             FallbackHosts = Defaults.FallbackHosts.Shuffle().ToList();
             RealtimeClient = realtimeClient;
+            RegisterWithOSNetworkStateEvents(HandleNetworkStateChange);
         }
 
         internal void Initialise()
         {
-            
             ConnectionManager = new ConnectionManager(this);
             ChannelMessageProcessor = new ChannelMessageProcessor(ConnectionManager, RealtimeClient.Channels);
             ConnectionState = new ConnectionInitializedState(ConnectionManager);
@@ -36,6 +62,14 @@ namespace IO.Ably.Realtime
         ///     Indicates the current state of this connection.
         /// </summary>
         public ConnectionState State => ConnectionState.State;
+
+        internal NetworkState NetworkState { get; set; } = NetworkState.Online;
+
+        private void HandleNetworkStateChange(NetworkState state)
+        {
+            NetworkState = state;
+            ConnectionManager.HandleNetworkStateChange(state);
+        }
 
         internal ConnectionStateBase ConnectionState { get; set; }
 
