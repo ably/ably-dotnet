@@ -26,7 +26,8 @@ namespace IO.Ably.Realtime
 
             foreach (var subscriber in OsEventSubscribers.ToArray())
             {
-                if (subscriber.TryGetTarget(out Action<NetworkState> stateAction))
+                Action<Realtime.NetworkState> stateAction = null;
+                if (subscriber.TryGetTarget(out stateAction))
                     stateAction?.Invoke(state);
             }
         }
