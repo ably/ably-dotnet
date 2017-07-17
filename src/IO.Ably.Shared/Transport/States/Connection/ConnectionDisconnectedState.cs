@@ -51,6 +51,7 @@ namespace IO.Ably.Transport.States.Connection
         {
             Context.DestroyTransport();
             
+            if(Logger.IsDebug) Logger.Debug("RetryInstantly set to '" + RetryInstantly + "'");
             if (RetryInstantly)
             {
                 Context.SetState(new ConnectionConnectingState(Context));

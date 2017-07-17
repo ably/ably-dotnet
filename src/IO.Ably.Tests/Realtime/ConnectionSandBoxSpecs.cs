@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -47,7 +48,7 @@ namespace IO.Ably.Tests.Realtime
             await WaitForState(client);
             await Task.Delay(10);
 
-            states.Should().BeEquivalentTo(new[] { ConnectionState.Connecting, ConnectionState.Connected });
+            states.Should().BeEquivalentTo(new[] {ConnectionState.Connecting, ConnectionState.Connected});
             client.Connection.State.Should().Be(ConnectionState.Connected);
         }
 
@@ -71,7 +72,7 @@ namespace IO.Ably.Tests.Realtime
 
             await WaitForState(client, ConnectionState.Closed, TimeSpan.FromSeconds(5));
 
-            states.Should().BeEquivalentTo(new[] { ConnectionState.Closing, ConnectionState.Closed });
+            states.Should().BeEquivalentTo(new[] {ConnectionState.Closing, ConnectionState.Closed});
             client.Connection.State.Should().Be(ConnectionState.Closed);
         }
 
@@ -168,13 +169,15 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN14b")]
-        public async Task WithExpiredRenewableToken_ShouldAutomaticallyRenewTokenAndNoErrorShouldBeEmitted(Protocol protocol)
+        public async Task
+            WithExpiredRenewableToken_ShouldAutomaticallyRenewTokenAndNoErrorShouldBeEmitted(Protocol protocol)
         {
             var restClient = await GetRestClient(protocol);
             var invalidToken = await restClient.Auth.RequestTokenAsync();
 
             //Use an old token which will result in 40143 Unrecognised token
-            invalidToken.Token = invalidToken.Token.Split('.')[0] + ".DOcRVPgv1Wf1-YGgJFjyk2PNOGl_DFL7aCDzEPju8TYHorfxHHVoNoDGz5fKRW0UxePiVjD1EVEW0ZiknIK8u3S5p1FBq5Rtw_I7OX7fW8U4sGxJjAfMS_fTcXFdvouTQ";
+            invalidToken.Token = invalidToken.Token.Split('.')[0] +
+                                 ".DOcRVPgv1Wf1-YGgJFjyk2PNOGl_DFL7aCDzEPju8TYHorfxHHVoNoDGz5fKRW0UxePiVjD1EVEW0ZiknIK8u3S5p1FBq5Rtw_I7OX7fW8U4sGxJjAfMS_fTcXFdvouTQ";
 
             var realtimeClient = await GetRealtimeClient(protocol, (options, _) =>
             {
@@ -193,7 +196,8 @@ namespace IO.Ably.Tests.Realtime
 
             _resetEvent.WaitOne(10000);
 
-            realtimeClient.RestClient.AblyAuth.CurrentToken.Expires.Should().BeAfter(Config.Now(), "The token should be valid and expire in the future.");
+            realtimeClient.RestClient.AblyAuth.CurrentToken.Expires.Should()
+                .BeAfter(Config.Now(), "The token should be valid and expire in the future.");
             error.Should().BeNull("No error should be raised!");
         }
 
@@ -237,9 +241,9 @@ namespace IO.Ably.Tests.Realtime
         public async Task WithAuthUrlShouldGetTokenFromUrl(Protocol protocol)
         {
             Logger.LogLevel = LogLevel.Debug;
-            
+
             var client = await GetRestClient(protocol);
-            var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
+            var token = await client.Auth.RequestTokenAsync(new TokenParams() {ClientId = "*"});
             var settings = await Fixture.GetSettings();
             var authUrl = "http://echo.ably.io/?type=text&body=" + token.Token;
 
@@ -300,7 +304,7 @@ namespace IO.Ably.Tests.Realtime
             await channel1.PublishAsync("test", "best");
 
             await Task.Delay(2000);
-            
+
             client.Connection.Key = "e02789NdQA86c7!inI5Ydc-ytp7UOm3-3632e02789NdQA86c7";
             //Kill the transport
             client.ConnectionManager.Transport.Close(false);
@@ -347,7 +351,7 @@ namespace IO.Ably.Tests.Realtime
                 opts.AutoConnect = false;
                 opts.LogLevel = LogLevel.Debug;
             });
-            
+
             var stateChanges = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
 
@@ -357,7 +361,7 @@ namespace IO.Ably.Tests.Realtime
                 errors.Add(args.Reason);
             };
 
-            await client.Auth.AuthoriseAsync(new TokenParams() { Ttl = TimeSpan.FromSeconds(5) });
+            await client.Auth.AuthoriseAsync(new TokenParams() {Ttl = TimeSpan.FromSeconds(5)});
             var channel = client.Channels.Get("shortToken_test" + protocol);
             int count = 0;
             while (true)
@@ -386,7 +390,8 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         [Trait("spec", "RTN19b")]
         public async Task
-            WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed(Protocol protocol)
+            WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed(
+                Protocol protocol)
         {
             Logger.LogLevel = LogLevel.Debug;
             var client = await GetRealtimeClient(protocol);
@@ -413,7 +418,8 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         [Trait("spec", "RTN19b")]
         public async Task
-            WithChannelInDetachingState_WhenTransportIsDisconnected_ShouldResendDetachMessageOnConnectionResumed(Protocol protocol)
+            WithChannelInDetachingState_WhenTransportIsDisconnected_ShouldResendDetachMessageOnConnectionResumed(
+                Protocol protocol)
         {
             Logger.LogLevel = LogLevel.Debug;
             var client = await GetRealtimeClient(protocol);
@@ -437,8 +443,97 @@ namespace IO.Ably.Tests.Realtime
             channel.State.Should().Be(ChannelState.Detached);
         }
 
+        
 
-        public ConnectionSandboxTransportSideEffectsSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
+
+        public ConnectionSandboxTransportSideEffectsSpecs(AblySandboxFixture fixture, ITestOutputHelper output) :
+            base(fixture, output)
+        {
+        }
+    }
+
+    [Collection("SandBox Connection")]
+    [Trait("requires", "sandbox")]
+    public class ConnectionSandboxOperatingSystemEventsForNetworkSpecs : SandboxSpecs
+    {
+        [Theory]
+        [InlineData(Protocol.MsgPack, ConnectionState.Connected)]
+        [InlineData(Protocol.MsgPack, ConnectionState.Connecting)]
+        [InlineData(Protocol.Json, ConnectionState.Connected)]
+        [InlineData(Protocol.Json, ConnectionState.Connecting)]
+        [Trait("spec", "RTN20a")]
+        public async Task
+            WhenOperatingSystemNetworkIsNotAvailable_ShouldTransitionToDisconnectedAndRetry(Protocol protocol,
+                ConnectionState initialState)
+        {
+            var client = await GetRealtimeClient(protocol, (options, _) => options.AutoConnect = false);
+
+            client.Connect();
+
+            await WaitForState(client, initialState);
+
+            List<ConnectionState> states = new List<ConnectionState>();
+            client.Connection.On(stateChange => states.Add(stateChange.Current));
+
+            Connection.NotifyOperatingSystemNetworkState(NetworkState.Offline);
+
+            await Task.Delay(TimeSpan.FromSeconds(2));
+
+            states.Should().Contain(ConnectionState.Disconnected);
+            states.Should().Contain(ConnectionState.Connecting);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN20b")]
+        public async Task
+            WhenOperatingSystemNetworkBecomesAvailableAndStateIsDisconnected_ShouldTransitionTryToConnectImmediately(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, (options, _) => options.AutoConnect = false);
+
+            client.Connect();
+
+            await WaitForState(client);
+
+            await client.ConnectionManager.SetState(
+                new ConnectionDisconnectedState(client.ConnectionManager) {RetryInstantly = false});
+
+            client.Connection.State.Should().Be(ConnectionState.Disconnected);
+            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online);
+
+            List<ConnectionState> states = new List<ConnectionState>();
+            client.Connection.On(stateChange => states.Add(stateChange.Current));
+
+            await WaitForState(client, ConnectionState.Connecting);
+        }
+
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN20b")]
+        public async Task
+            WhenOperatingSystemNetworkBecomesAvailableAndStateIsSuspended_ShouldTransitionTryToConnectImmediately(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, (options, _) => options.AutoConnect = false);
+
+            client.Connect();
+
+            await WaitForState(client);
+
+            await client.ConnectionManager.SetState(
+                new ConnectionSuspendedState(client.ConnectionManager));
+
+            client.Connection.State.Should().Be(ConnectionState.Suspended);
+            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online);
+
+            List<ConnectionState> states = new List<ConnectionState>();
+            client.Connection.On(stateChange => states.Add(stateChange.Current));
+
+            await WaitForState(client, ConnectionState.Connecting);
+        }
+
+        public ConnectionSandboxOperatingSystemEventsForNetworkSpecs(AblySandboxFixture fixture,
+            ITestOutputHelper output) : base(fixture, output)
         {
         }
     }

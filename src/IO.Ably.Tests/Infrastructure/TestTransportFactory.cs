@@ -1,5 +1,4 @@
 ﻿using System;
-using IO.Ably.Realtime;
 using IO.Ably.Transport;
 
 namespace IO.Ably.Tests.Infrastructure

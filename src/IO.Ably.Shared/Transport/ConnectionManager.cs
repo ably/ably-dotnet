@@ -484,11 +484,14 @@ namespace IO.Ably.Transport
                     break;
                 case NetworkState.Offline:
                     if (ConnectionState == ConnectionState.Connected ||
-                        ConnectionState == ConnectionState.Connecting)
+                        ConnectionState == ConnectionState.Connecting )
                     {
                         if (Logger.IsDebug) Logger.Debug("Network state is Offline. Moving to disconnected.");
                         SetState(new ConnectionDisconnectedState(this,
-                            new ErrorInfo("Connection closed due to Operating system network going offline", 80017)));
+                            new ErrorInfo("Connection closed due to Operating system network going offline", 80017))
+                        {
+                            RetryInstantly = true
+                        });
                     }
                     break;
 
