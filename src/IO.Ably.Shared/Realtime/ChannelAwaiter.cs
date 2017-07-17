@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
 
@@ -8,7 +9,7 @@ namespace IO.Ably.Realtime
     {
         private readonly RealtimeChannel _channel;
         private readonly ChannelState _awaitedState;
-        private Action<bool, ErrorInfo> _callback;
+        private readonly ConcurrentBag<Action<bool, ErrorInfo>> _callbacks = new ConcurrentBag<Action<bool, ErrorInfo>>();
         private volatile bool _waiting;
 
         public ChannelAwaiter(IRealtimeChannel channel, ChannelState awaitedState)
@@ -21,13 +22,21 @@ namespace IO.Ably.Realtime
         {
             if (_waiting)
             {
-                _callback?.Invoke(false, error);
+                InvokeCallbacks(false, error);
+            }
+        }
+
+        private void InvokeCallbacks(bool success, ErrorInfo error)
+        {
+            foreach (var callback in _callbacks)
+            {
+                callback?.Invoke(success, error);
             }
         }
 
         public async Task<Result<bool>> WaitAsync(TimeSpan? timeout = null)
         {
-            var wrappedTask = TaskWrapper.Wrap<bool, bool>(Wait);
+            var wrappedTask = TaskWrapper.Wrap<bool, bool>(StartWait);
 
             var first = await Task.WhenAny(Task.Delay(timeout ?? TimeSpan.FromSeconds(2)), wrappedTask);
             if (first == wrappedTask)
@@ -36,20 +45,22 @@ namespace IO.Ably.Realtime
             return Result.Fail<bool>(new ErrorInfo("Timeout exceeded", 50000));
         }
 
-        public bool Wait(Action<bool, ErrorInfo> callback)
+        public bool StartWait(Action<bool, ErrorInfo> callback)
         {
             if (_waiting)
             {
-                Logger.Warning($"Awaiter for {_awaitedState} has been called multiple times. Most likely a consurrency issue.");
+                Logger.Warning($"Awaiter for {_awaitedState} has been called multiple times. Most likely a concurrency issue.");
+                _callbacks.Add(callback);
                 return false;
             }
 
             _waiting = true;
-            _callback = callback;
+            _callbacks.Add(callback);
             if (_channel.State == _awaitedState)
             {
                 _waiting = false;
-                callback?.Invoke(true, null);
+                InvokeCallbacks(true, null);
+                return false;
             }
             AttachListener();
             return true;
@@ -73,7 +84,7 @@ namespace IO.Ably.Realtime
                 try
                 {
                     _waiting = false;
-                    _callback?.Invoke(true, null);
+                    InvokeCallbacks(true, null);
                 }
                 catch (Exception ex)
                 {

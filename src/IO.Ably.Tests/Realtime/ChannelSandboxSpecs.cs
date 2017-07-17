@@ -10,6 +10,7 @@ using FluentAssertions.Events;
 using IO.Ably.Encryption;
 using IO.Ably.Realtime;
 using IO.Ably.Rest;
+using IO.Ably.Transport.States.Connection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -575,6 +576,29 @@ namespace IO.Ably.Tests.Realtime
                 message.Data.ToString().Should().Be("value:" + (i + 1));
             }
         }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("issue", "117")]
+        public async Task AttachAwaitShouldtimeoutIfStateChanges(Protocol protocol)
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            var client1 = await GetRealtimeClient(protocol, (opts, _) => opts.AutoConnect = false);
+
+            var channelName = "test".AddRandomSuffix();
+            var channel = client1.Channels.Get(channelName);
+            client1.Connection.On(ConnectionState.Connected, state => client1.GetTestTransport().Close(false));
+
+            await client1.ConnectionManager.SetState(new ConnectionSuspendedState(client1.ConnectionManager));
+            client1.Connect();
+            var task = Task.Delay(TimeSpan.FromSeconds(11))
+                .ContinueWith(task1 => throw new Exception("Attach didn't time out"));
+
+            var result = await channel.AttachAsync();
+            result.Error.Should().NotBeNull();
+            result.Error.Message.Should().Contain("Connection was disconnected");
+        }
+
 
         private static JObject GetAES128FixtureData()
         {

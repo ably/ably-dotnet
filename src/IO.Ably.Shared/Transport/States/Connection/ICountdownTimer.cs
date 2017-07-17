@@ -8,7 +8,7 @@ namespace IO.Ably.Transport.States.Connection
     {
         void Start(TimeSpan delay, Action onTimeOut);
         void StartAsync(TimeSpan delay, Func<Task> onTimeOut);
-        void Abort();
+        void Abort(bool trigger = false);
     }
 
     public class CountdownTimer : ICountdownTimer
@@ -118,9 +118,12 @@ namespace IO.Ably.Transport.States.Connection
             _timer = StartTimer(delay);
         }
 
-        public void Abort()
+        public void Abort(bool trigger = false)
         {
-            lock(_lock)
+            if (trigger)
+                OnTimerOnElapsed();
+
+            lock (_lock)
                 _aborted = true;
 
             if (Logger.IsDebug) Logger.Debug($"Aborting timer '{_name}'");

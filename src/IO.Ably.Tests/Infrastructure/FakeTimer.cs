@@ -32,7 +32,7 @@ namespace IO.Ably.Tests
             LastDelay = delay;
         }
 
-        public void Abort()
+        public void Abort(bool trigger = false)
         {
             Aborted = true;
         }

@@ -89,11 +89,13 @@ namespace IO.Ably.Realtime
                     if (State == ChannelState.Attaching)
                     {
                         if(Logger.IsDebug) Logger.Debug($"#{Name} Queuing attach message because channel failed to attach");
+                        _attachedAwaiter.Fail(new ErrorInfo("Connection was disconnected while attaching. Retrying action"));
                         SendAttachMessageWithTimeout(Defaults.ConnectionStateTtl + ConnectionManager.Options.RealtimeRequestTimeout);
                     }
                     if (State == ChannelState.Detaching)
                     {
                         if (Logger.IsDebug) Logger.Debug($"#{Name} Queuing detach message because channel failed to detach.");
+                        _detachedAwaiter.Fail(new ErrorInfo("Connection was disconnected while detaching. Retrying action"));
                         SendDetachMessageWithTimeout(Defaults.ConnectionStateTtl + ConnectionManager.Options.RealtimeRequestTimeout);
                     }
                     break;
@@ -129,8 +131,10 @@ namespace IO.Ably.Realtime
                 return;
             }
 
-            if(_attachedAwaiter.Wait(callback))
+            if (_attachedAwaiter.StartWait(callback))
+            {
                 SetChannelState(ChannelState.Attaching);
+            }
         }
 
         public Task<Result> AttachAsync()
@@ -175,7 +179,7 @@ namespace IO.Ably.Realtime
                 throw new AblyException("Channel is Failed");
             }
 
-            _detachedAwaiter.Wait(callback);
+            _detachedAwaiter.StartWait(callback);
             SetChannelState(ChannelState.Detaching);
         }
 
@@ -406,8 +410,6 @@ namespace IO.Ably.Realtime
                         }
 
                         AttachedSerial = protocolMessage.ChannelSerial;
-
-
                     }
                     SendQueuedMessages();
                     
@@ -422,7 +424,6 @@ namespace IO.Ably.Realtime
                     else
                     {
                         SendDetachMessageWithTimeout(ConnectionManager.Options.RealtimeRequestTimeout);
-                        
                     }
 
                     break;
