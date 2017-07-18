@@ -274,7 +274,7 @@ var tokenClient = new AblyRest(new ClientOptions { TokenDetails = token });
 Token requests are issued by your servers and signed using your private API key. This is the preferred method of authentication as no secrets are ever shared, and the token request can be issued to trusted clients without communicating with Ably.
 
 ```csharp
-var tokenRequest = await client.Auth.CreateTokenRequestAsync();
+string tokenRequest = await client.Auth.CreateTokenRequestAsync();
 ```
 
 ### Symmetric end-to-end encrypted payloads on a channel

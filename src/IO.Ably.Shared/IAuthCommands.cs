@@ -10,7 +10,7 @@ namespace IO.Ably
         // Async because uses server time,
         /// <summary>Returns a signed TokenRequest object that can be used to obtain a token from Ably.</summary>
         /// <remarks>This method is asynchronous, because when <see cref="AuthOptions.QueryTime"/> is set to true, it will issue a request and wait for response.</remarks>
-        Task<TokenRequest> CreateTokenRequestAsync(TokenParams tokenParams = null, AuthOptions authOptions = null);
+        Task<string> CreateTokenRequestAsync(TokenParams tokenParams = null, AuthOptions authOptions = null);
 
         string ClientId { get; }
 
@@ -20,7 +20,7 @@ namespace IO.Ably
         TokenDetails Authorise(TokenParams tokenParams = null,
             AuthOptions options = null);
 
-        TokenRequest CreateTokenRequest(TokenParams tokenParams = null,
+        string CreateTokenRequest(TokenParams tokenParams = null,
             AuthOptions authOptions = null);
     }
 }

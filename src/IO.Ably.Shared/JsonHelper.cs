@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace IO.Ably
 {
-    internal static class JsonHelper
+    public static class JsonHelper
     {
         internal static JsonSerializerSettings GetJsonSettings()
         {
@@ -35,7 +35,7 @@ namespace IO.Ably
         private static JsonSerializerSettings _settings;
         internal static JsonSerializerSettings Settings => _settings ?? (_settings = GetJsonSettings());
 
-        internal static string Serialize(object obj)
+        public static string Serialize(object obj)
         {
             if(obj == null)
                 throw new ArgumentNullException(nameof(obj), "Cannot serialize null object");
@@ -43,22 +43,22 @@ namespace IO.Ably
             return SerializeObject(obj, obj.GetType());
         }
 
-        internal static T Deserialize<T>(string json)
+        public static T Deserialize<T>(string json)
         {
             return (T) DeserializeObject(json, typeof(T));
         }
 
-        internal static object Deserialize(string json)
+        public static object Deserialize(string json)
         {
             return DeserializeObject(json, null);
         }
 
-        internal static T DeserializeObject<T>(JObject obj)
+        public static T DeserializeObject<T>(JObject obj)
         {
             return obj.ToObject<T>(GetSerializer());
         }
 
-        private static string SerializeObject(object value, Type type)
+        public static string SerializeObject(object value, Type type)
         {
             var jsonSerializer = GetSerializer();
             StringWriter stringWriter = new StringWriter(new StringBuilder(256), CultureInfo.InvariantCulture);
@@ -70,7 +70,7 @@ namespace IO.Ably
             return stringWriter.ToString();
         }
 
-        internal static object DeserializeObject(string value, Type type)
+        public static object DeserializeObject(string value, Type type)
         {
             JsonSerializer jsonSerializer = GetSerializer();
             jsonSerializer.CheckAdditionalContent = true;

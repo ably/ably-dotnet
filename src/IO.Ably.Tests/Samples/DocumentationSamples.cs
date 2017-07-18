@@ -14,7 +14,7 @@ namespace IO.Ably.Tests.Samples
         {
             AblyRealtime realtime = new AblyRealtime("{{API_KEY}}");
             TokenParams tokenParams = new TokenParams { ClientId = "Bob" };
-            TokenRequest tokenRequest = await realtime.Auth.CreateTokenRequestAsync(tokenParams);
+            string tokenRequest = await realtime.Auth.CreateTokenRequestAsync(tokenParams);
             /* ... issue the TokenRequest to a client ... */
         }
 
@@ -40,7 +40,7 @@ namespace IO.Ably.Tests.Samples
             try
             {
                 TokenParams tokenParams = new TokenParams { ClientId = "bob" };
-                TokenRequest tokenRequest = await client.Auth.CreateTokenRequestAsync(tokenParams);
+                string tokenRequest = await client.Auth.CreateTokenRequestAsync(tokenParams);
                 Console.WriteLine("Success; token request issued");
             }
             catch (AblyException e)
@@ -308,7 +308,7 @@ namespace IO.Ably.Tests.Samples
         {
             var rest = new AblyRest(new ClientOptions {Key = "{{API_KEY}}"});
             var tokenParams = new TokenParams {ClientId = "Bob"};
-            TokenRequest tokenRequest = await rest.Auth.CreateTokenRequestAsync(tokenParams);
+            string tokenRequest = await rest.Auth.CreateTokenRequestAsync(tokenParams);
             /* ... issue the TokenRequest to a client ... */
         }
 

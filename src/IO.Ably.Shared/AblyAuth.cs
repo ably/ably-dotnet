@@ -326,7 +326,7 @@ namespace IO.Ably
         /// <param name="tokenParams"><see cref="TokenParams"/>. If null a token request is generated from options passed when the client was created.</param>
         /// <param name="authOptions"><see cref="AuthOptions"/>. If null the default AuthOptions are used.</param>
         /// <returns></returns>
-        public async Task<TokenRequest> CreateTokenRequestAsync(TokenParams tokenParams, AuthOptions authOptions)
+        public async Task<string> CreateTokenRequestAsync(TokenParams tokenParams, AuthOptions authOptions)
         {
             var mergedOptions = authOptions != null ? authOptions.Merge(Options) : Options;
 
@@ -340,8 +340,7 @@ namespace IO.Ably
 
             ApiKey key = mergedOptions.ParseKey();
             var request = new TokenRequest().Populate(@params, key.KeyName, key.KeySecret);
-
-            return request;
+            return JsonHelper.Serialize(request);
         }
 
         internal TokenAuthMethod GetTokenAuthMethod()
@@ -429,7 +428,7 @@ namespace IO.Ably
             return AsyncHelper.RunSync(() => AuthoriseAsync(tokenParams, options));
         }
 
-        public TokenRequest CreateTokenRequest(TokenParams tokenParams = null,
+        public string CreateTokenRequest(TokenParams tokenParams = null,
             AuthOptions authOptions = null)
         {
             return AsyncHelper.RunSync(() => CreateTokenRequestAsync(tokenParams, authOptions));
