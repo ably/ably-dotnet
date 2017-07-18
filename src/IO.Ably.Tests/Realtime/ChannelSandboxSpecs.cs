@@ -597,6 +597,33 @@ namespace IO.Ably.Tests.Realtime
             result.Error.Message.Should().Contain("Timeout exceeded");
         }
 
+        [Theory]
+        [ProtocolData]
+        [Trait("issue", "104")]
+        public async Task AttachWithMultipleConcurrentClientsShouldWork(Protocol protocol)
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            var clients = new List<IRealtimeClient>
+            {
+                await GetRealtimeClient(protocol, (opts, _) => opts.AutoConnect = false),
+                await GetRealtimeClient(protocol, (opts, _) => opts.AutoConnect = false),
+                await GetRealtimeClient(protocol, (opts, _) => opts.AutoConnect = false),
+                await GetRealtimeClient(protocol, (opts, _) => opts.AutoConnect = false),
+                await GetRealtimeClient(protocol, (opts, _) => opts.AutoConnect = false)
+            };
+
+            var channelName = "test".AddRandomSuffix();
+            foreach (var client in clients)
+            {
+                client.Connect();
+                client.Channels.Get(channelName).Attach();
+            }
+
+            await Task.Delay(TimeSpan.FromSeconds(15));
+            foreach (var client in clients)
+                client.Channels.Get(channelName).State.Should().Be(ChannelState.Attached);
+        }
+
 
         private static JObject GetAES128FixtureData()
         {
