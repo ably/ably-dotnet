@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -12,12 +13,12 @@ namespace IO.Ably.Tests
     {
         public readonly static DateTimeOffset StartInterval = DateHelper.CreateDate(DateTimeOffset.UtcNow.Year - 1, 2, 3, 15, 5);
 
-        public async Task<Stats> GetStats(Protocol protocol)
+        public async Task<List<Stats>> GetStats(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
-            var result = client.StatsAsync(new StatsRequestParams() { Start = StartInterval.AddMinutes(-30), Limit = 1 }).Result;
+            var result = await client.StatsAsync(new StatsRequestParams() { Start = StartInterval.AddMinutes(-2), End = StartInterval.AddMinutes(1)});
 
-            return result.Items.First();
+            return result.Items;
         }
 
         [Theory]
@@ -27,7 +28,8 @@ namespace IO.Ably.Tests
             Logger.LogLevel = LogLevel.Debug;
             await Fixture.SetupStats();
             await Task.Delay(16000);
-            var stats = await GetStats(protocol);
+            var allStats = await GetStats(protocol);
+            var stats = allStats.First();
             stats.All.Messages.Count.Should().Be(40 + 70);
             stats.All.Messages.Data.Should().Be(4000 + 7000);
             stats.Inbound.Realtime.All.Count.Should().Be(70);

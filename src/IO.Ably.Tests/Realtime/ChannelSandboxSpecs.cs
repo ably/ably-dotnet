@@ -379,8 +379,8 @@ namespace IO.Ably.Tests.Realtime
                 opts.AutoConnect = false;
                 opts.AuthCallback = async @params => await rest.Auth.RequestTokenAsync(new TokenParams() { ClientId = clientId });
             });
-
-            var channel = realtimeClient.Channels.Get("test");
+            var channelName = "test".AddRandomSuffix();
+            var channel = realtimeClient.Channels.Get(channelName);
             bool messageReceived = false;
             channel.Subscribe(message =>
             {
@@ -591,12 +591,10 @@ namespace IO.Ably.Tests.Realtime
 
             await client1.ConnectionManager.SetState(new ConnectionSuspendedState(client1.ConnectionManager));
             client1.Connect();
-            var task = Task.Delay(TimeSpan.FromSeconds(11))
-                .ContinueWith(task1 => throw new Exception("Attach didn't time out"));
 
             var result = await channel.AttachAsync();
             result.Error.Should().NotBeNull();
-            result.Error.Message.Should().Contain("Connection was disconnected");
+            result.Error.Message.Should().Contain("Timeout exceeded");
         }
 
 

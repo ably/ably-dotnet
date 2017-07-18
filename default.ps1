@@ -25,7 +25,7 @@ $base_dir = ""
 
 .\functions.ps1
 
-task default -depends Init, Build #, Unit_Tests
+task default -depends Init, Build, Unit_Tests
 
 task Init {
 	Import-Module $tools_dir\powershell\FileSupport -Force

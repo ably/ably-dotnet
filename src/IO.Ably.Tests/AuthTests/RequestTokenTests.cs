@@ -125,7 +125,7 @@ namespace IO.Ably.Tests.AuthTests
             await client.Auth.RequestTokenAsync(tokenParams, null);
 
             var data = LastRequest.PostData as TokenRequest;
-            Assert.Equal(date, data.Timestamp);
+            date.Should().BeCloseTo(data.Timestamp.Value);
         }
 
         [Fact]
@@ -137,7 +137,7 @@ namespace IO.Ably.Tests.AuthTests
             await client.Auth.RequestTokenAsync(tokenParams, null);
 
             var data = LastRequest.PostData as TokenRequest;
-            Assert.Equal(Now, data.Timestamp);
+            Now.Should().BeCloseTo(data.Timestamp.Value);
         }
 
         [Fact]

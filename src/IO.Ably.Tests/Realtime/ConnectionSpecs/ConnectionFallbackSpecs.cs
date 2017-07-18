@@ -192,7 +192,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 });
             }
 
-            retryHosts.Should().BeEquivalentTo(Defaults.FallbackHosts);
+            retryHosts.Count.Should().BeGreaterOrEqualTo(3);
+            retryHosts.Distinct().Count().Should().BeGreaterOrEqualTo(3);
         }
 
         [Fact]

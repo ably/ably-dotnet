@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
+using IO.Ably.Transport.States.Connection;
+using System.Linq;
 
 namespace IO.Ably.Realtime
 {
@@ -9,61 +12,107 @@ namespace IO.Ably.Realtime
     {
         private readonly RealtimeChannel _channel;
         private readonly ChannelState _awaitedState;
-        private readonly ConcurrentBag<Action<bool, ErrorInfo>> _callbacks = new ConcurrentBag<Action<bool, ErrorInfo>>();
-        private volatile bool _waiting;
+        private readonly List<Action<bool, ErrorInfo>> _callbacks = new List<Action<bool, ErrorInfo>>();
+        private bool _waiting;
+        private readonly CountdownTimer _timer;
+        private readonly string _name;
+        private object _lock = new object();
+        private Action _onTimeout;
 
-        public ChannelAwaiter(IRealtimeChannel channel, ChannelState awaitedState)
+        public ChannelAwaiter(IRealtimeChannel channel, ChannelState awaitedState, Action onTimeout = null)
         {
+            _name = $"#{channel.Name}:{awaitedState} awaiter";
             _channel = channel as RealtimeChannel;
             _awaitedState = awaitedState;
+            _timer = new CountdownTimer(_name + " timer");
+            _onTimeout = onTimeout;
         }
 
         public void Fail(ErrorInfo error)
         {
-            if (_waiting)
+            lock (_lock)
             {
-                InvokeCallbacks(false, error);
+                if (_waiting == false) return;
+
+                _timer.Abort();
+                _waiting = false;
             }
+
+            InvokeCallbacks(false, error);
         }
 
         private void InvokeCallbacks(bool success, ErrorInfo error)
         {
-            foreach (var callback in _callbacks)
+            List<Action<bool, ErrorInfo>> callbacks;
+            lock (_lock)
             {
-                callback?.Invoke(success, error);
+                DetachListener();
+                callbacks = _callbacks.ToList();
+                _callbacks.Clear();
+            }
+
+            foreach (var callback in callbacks)
+            {
+                try
+                {
+                    callback?.Invoke(success, error);
+                }
+                catch (Exception e)
+                {
+                    Logger.Error("Error invoking callback for - " + _name, e);
+                }
             }
         }
 
         public async Task<Result<bool>> WaitAsync(TimeSpan? timeout = null)
         {
-            var wrappedTask = TaskWrapper.Wrap<bool, bool>(StartWait);
+            Func<Action<bool, ErrorInfo>, bool> func = action => StartWait(action, timeout ?? TimeSpan.FromSeconds(2));
 
-            var first = await Task.WhenAny(Task.Delay(timeout ?? TimeSpan.FromSeconds(2)), wrappedTask);
-            if (first == wrappedTask)
-                return wrappedTask.Result;
-
-            return Result.Fail<bool>(new ErrorInfo("Timeout exceeded", 50000));
+            return await TaskWrapper.Wrap(func);
         }
 
-        public bool StartWait(Action<bool, ErrorInfo> callback)
+        public bool StartWait(Action<bool, ErrorInfo> callback, TimeSpan timeout)
         {
-            if (_waiting)
+            if (_channel.State == _awaitedState)
             {
-                Logger.Warning($"Awaiter for {_awaitedState} has been called multiple times. Most likely a concurrency issue.");
-                _callbacks.Add(callback);
+                try
+                {
+                    callback?.Invoke(true, null);
+                }
+                catch (Exception e)
+                {
+                    Logger.Error("Error invoking callback for - " + _name, e);
+                }
                 return false;
             }
 
-            _waiting = true;
-            _callbacks.Add(callback);
-            if (_channel.State == _awaitedState)
+            lock (_lock)
             {
-                _waiting = false;
-                InvokeCallbacks(true, null);
-                return false;
+                if (_waiting)
+                {
+                    Logger.Warning(
+                        $"Awaiter for {_awaitedState} has been called multiple times. Adding action to callbacks");
+                    _callbacks.Add(callback);
+                    return false;
+                }
+
+                _timer.Start(timeout, ElapsedSync);
+                _waiting = true;
+                _callbacks.Add(callback);
+                AttachListener();
+
+                return true;
             }
-            AttachListener();
-            return true;
+        }
+
+        private void ElapsedSync()
+        {
+            lock (_lock)
+                DetachListener();
+
+            _onTimeout?.Invoke();
+
+            InvokeCallbacks(false, new ErrorInfo("Timeout exceeded for " + _name, 50000));
         }
 
         private void AttachListener()
@@ -80,16 +129,13 @@ namespace IO.Ably.Realtime
         {
             if (args.Current == _awaitedState)
             {
-                DetachListener();
-                try
+                lock (_lock)
                 {
+                    DetachListener();
                     _waiting = false;
-                    InvokeCallbacks(true, null);
                 }
-                catch (Exception ex)
-                {
-                    Logger.Error("Error in callback for Channel state: " + _awaitedState, ex);
-                }
+
+                InvokeCallbacks(true, null);
             }
         }
     }

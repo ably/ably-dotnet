@@ -431,13 +431,13 @@ namespace IO.Ably.Tests.Realtime
 
             await WaitForState(client, ConnectionState.Connected);
             var channel = client.Channels.Get("test-channel");
-            channel.Once(ChannelState.Attached, change => channel.Detach());
-            channel.Once(ChannelState.Attached, change => client.GetTestTransport().Close(false));
-            channel.Attach();
+            channel.Once(ChannelState.Detaching, change => client.GetTestTransport().Close(false));
+            await channel.AttachAsync();
+            channel.Detach();
 
             await WaitForState(client, ConnectionState.Connected);
 
-            await Task.Delay(2000);
+            await Task.Delay(1000);
             sentMessages.Where(x => x.Channel == "test-channel" && x.Action == ProtocolMessage.MessageAction.Detach)
                 .Should().HaveCount(2);
             channel.State.Should().Be(ChannelState.Detached);

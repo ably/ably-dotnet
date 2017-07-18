@@ -18,11 +18,10 @@ namespace IO.Ably.Realtime
         private Connection Connection => RealtimeClient.Connection;
         private ConnectionState ConnectionState => Connection.State;
         private readonly Handlers<Message> _handlers = new Handlers<Message>();
-        private readonly CountdownTimer _timer;
         internal IRestChannel RestChannel => RealtimeClient.RestClient.Channels.Get(Name);
         private readonly object _lockQueue = new object();
-        private readonly ChannelAwaiter _attachedAwaiter;
-        private readonly ChannelAwaiter _detachedAwaiter;
+        internal ChannelAwaiter AttachedAwaiter { get; }
+        internal ChannelAwaiter DetachedAwaiter { get; }
         private ChannelOptions _options;
         private ChannelState _state;
 
@@ -67,13 +66,12 @@ namespace IO.Ably.Realtime
         {
             Name = name;
             Options = options;
-            _timer = new CountdownTimer($"#{Name} timer");
             Presence = new Presence(realtimeClient.ConnectionManager, this, clientId);
             RealtimeClient = realtimeClient;
             State = ChannelState.Initialized;
             SubscribeToConnectionEvents();
-            _attachedAwaiter = new ChannelAwaiter(this, ChannelState.Attached);
-            _detachedAwaiter = new ChannelAwaiter(this, ChannelState.Detached);
+            AttachedAwaiter = new ChannelAwaiter(this, ChannelState.Attached, OnAttachTimeout);
+            DetachedAwaiter = new ChannelAwaiter(this, ChannelState.Detached, OnDetachTimeout);
         }
 
         private void SubscribeToConnectionEvents()
@@ -88,15 +86,13 @@ namespace IO.Ably.Realtime
                 case ConnectionState.Disconnected:
                     if (State == ChannelState.Attaching)
                     {
-                        if(Logger.IsDebug) Logger.Debug($"#{Name} Queuing attach message because channel failed to attach");
-                        _attachedAwaiter.Fail(new ErrorInfo("Connection was disconnected while attaching. Retrying action"));
-                        SendAttachMessageWithTimeout(Defaults.ConnectionStateTtl + ConnectionManager.Options.RealtimeRequestTimeout);
+                        if(Logger.IsDebug) Logger.Debug($"#{Name} Resending Attach because connection became disconnected while the channel was attaching.");
+                        SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name));
                     }
                     if (State == ChannelState.Detaching)
                     {
-                        if (Logger.IsDebug) Logger.Debug($"#{Name} Queuing detach message because channel failed to detach.");
-                        _detachedAwaiter.Fail(new ErrorInfo("Connection was disconnected while detaching. Retrying action"));
-                        SendDetachMessageWithTimeout(Defaults.ConnectionStateTtl + ConnectionManager.Options.RealtimeRequestTimeout);
+                        if (Logger.IsDebug) Logger.Debug($"#{Name} Resending Detach because connection became disconnected while the channel was attaching.");
+                        SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name));
                     }
                     break;
                 case ConnectionState.Closed:
@@ -127,11 +123,19 @@ namespace IO.Ably.Realtime
         {
             if (State == ChannelState.Attaching || State == ChannelState.Attached)
             {
-                callback?.Invoke(true, null);
+                try
+                {
+                    callback?.Invoke(true, null);
+                }
+                catch (Exception e)
+                {
+                    Logger.Error("Error in attach callback", e);
+                }
+               
                 return;
             }
 
-            if (_attachedAwaiter.StartWait(callback))
+            if (AttachedAwaiter.StartWait(callback, ConnectionManager.Options.RealtimeRequestTimeout))
             {
                 SetChannelState(ChannelState.Attaching);
             }
@@ -170,7 +174,14 @@ namespace IO.Ably.Realtime
             if (State == ChannelState.Initialized || State == ChannelState.Detaching ||
                 State == ChannelState.Detached)
             {
-                callback?.Invoke(true, null);
+                try
+                {
+                    callback?.Invoke(true, null);
+                }
+                catch (Exception e)
+                {
+                    Logger.Error("Error in detach callback", e);
+                }
                 return;
             }
 
@@ -179,8 +190,8 @@ namespace IO.Ably.Realtime
                 throw new AblyException("Channel is Failed");
             }
 
-            _detachedAwaiter.StartWait(callback);
-            SetChannelState(ChannelState.Detaching);
+            if(DetachedAwaiter.StartWait(callback, ConnectionManager.Options.RealtimeRequestTimeout))
+                SetChannelState(ChannelState.Detaching);
         }
 
         public Task<Result> DetachAsync()
@@ -395,16 +406,14 @@ namespace IO.Ably.Realtime
                         Connection.Connect();
                     }
 
-                    SendAttachMessageWithTimeout(ConnectionManager.Options.RealtimeRequestTimeout);
+                    SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name));
                     break;
                 case ChannelState.Attached:
 
-                    _timer.Abort();
                     if (protocolMessage != null)
                     {
                         if (protocolMessage.HasPresenceFlag)
                         {
-                            //Start sync
                             if(Logger.IsDebug) Logger.Debug($"Protocol message has presence flag. Starting Presence SYNC. Flag: {protocolMessage.Flags}");
                             Presence.AwaitSync();
                         }
@@ -415,26 +424,26 @@ namespace IO.Ably.Realtime
                     
                     break;
                 case ChannelState.Detaching:
-                    //Fail timer if still waiting for attached.
-                    _attachedAwaiter.Fail(new ErrorInfo("Channel transitioned to detaching", 50000));
+                    AttachedAwaiter.Fail(new ErrorInfo("Channel transitioned to detaching", 50000));
 
                     if (ConnectionState == ConnectionState.Closed || ConnectionState == ConnectionState.Connecting ||
                         ConnectionState == ConnectionState.Suspended)
+                    {
                         SetChannelState(ChannelState.Detached, error);
+                    }
                     else
                     {
-                        SendDetachMessageWithTimeout(ConnectionManager.Options.RealtimeRequestTimeout);
+                        SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name));
                     }
 
                     break;
                 case ChannelState.Detached:
-                    _timer.Abort();
                     ConnectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
                     ClearAndFailChannelQueuedMessages(error);
                     break;
                 case ChannelState.Failed:
-                    _attachedAwaiter.Fail(error);
-                    _detachedAwaiter.Fail(error);
+                    AttachedAwaiter.Fail(error);
+                    DetachedAwaiter.Fail(error);
                     ConnectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
                     ClearAndFailChannelQueuedMessages(error);
                     break;
@@ -495,23 +504,6 @@ namespace IO.Ably.Realtime
             foreach (var qpm in list)
                 SendMessage(qpm.Message, qpm.Callback);
             return list.Count;
-        }
-
-        private void SendAttachMessageWithTimeout(TimeSpan attachTimeoutDuration)
-        {
-            _timer.Abort();
-            _timer.Start(attachTimeoutDuration, OnAttachTimeout);
-
-            //Even thought the connection won't have connected yet the message will be queued and sent as soon as
-            //the connection is made
-            SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name));
-        }
-
-        private void SendDetachMessageWithTimeout(TimeSpan detachTimeoutDuration)
-        {
-            _timer.Abort();
-            _timer.Start(detachTimeoutDuration, OnDetachTimeout);
-            SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name));
         }
 
         private void SendMessage(ProtocolMessage protocolMessage, Action<bool, ErrorInfo> callback = null)

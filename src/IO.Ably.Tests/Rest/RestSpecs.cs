@@ -442,11 +442,11 @@ namespace IO.Ably.Tests
                 _response.StatusCode = HttpStatusCode.BadGateway;
                 var client = CreateClient(options => options.HttpMaxRetryCount = 5); //Increasing the max try to make the randomness easier to test
 
-                var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
                 var firstAttemptHosts = _handler.Requests.Select(x => x.RequestUri.Host).ToList();
                 _handler.Requests.Clear();
-                await Task.Delay(10);
-                ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                await Task.Delay(100);
+                await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
 
                 var secondAttemptHosts = _handler.Requests.Select(x => x.RequestUri.Host).ToList();
 
