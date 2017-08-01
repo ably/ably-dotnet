@@ -428,14 +428,14 @@ namespace IO.Ably.Tests.Realtime
         public async Task PublishedMessagesShouldContainMessageIdsWhenReceived(Protocol protocol)
         {
             Logger.LogLevel = LogLevel.Debug;
-            
+
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
             var channel = client.Channels.Get("test");
             List<Message> testMessages = new List<Message>();
             channel.Subscribe(message =>
             {
                 testMessages.Add(message);
-                if(testMessages.Count == 5)
+                if (testMessages.Count == 5)
                     _resetEvent.Set();
             });
             var messages = new[]
@@ -624,6 +624,49 @@ namespace IO.Ably.Tests.Realtime
                 client.Channels.Get(channelName).State.Should().Be(ChannelState.Attached);
         }
 
+        [Theory]
+        [ProtocolData]
+        [Trait("issue", "116")]
+        public async Task FailureOfHistoryAPICallMeansChannelsNoLongerAttach(Protocol protocol)
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            var client = await GetRealtimeClient(protocol, (opts, _) => opts.AutoConnect = false);
+            client.Connection.On(ConnectionState.Connected, async args =>
+            {
+                await client.Channels.Get("test")
+                    .HistoryAsync(new HistoryRequestParams() { Start = DateHelper.CreateDate(1969, 1, 1) });
+            });
+
+
+            var result = await client.Channels.Get("name").AttachAsync();
+
+            result.IsSuccess.Should().BeTrue();
+            result.Error.Should().BeNull();
+
+        }
+
+        [Theory]
+        [ProtocolData]
+        public async Task WhenAttachAsyncCalledAfterSubscribe_ShouldWaitUntilChannelIsAttached(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+
+            var channel = client.Channels.Get("test".AddRandomSuffix());
+            channel.Subscribe(delegate(Message message) {  });
+            await channel.AttachAsync();
+            channel.State.Should().Be(ChannelState.Attached);
+        }
+        //[Theory]
+        //[ProtocolData]
+        //public async Task WhenAttachAsyncCalledAfterSubscribe_ShouldWaitUntilChannelIsAttached(Protocol protocol)
+        //{
+        //    var client = await GetRealtimeClient(protocol);
+
+        //    var channel = client.Channels.Get("test".AddRandomSuffix());
+        //    channel.Subscribe(delegate (Message message) { });
+        //    await channel.AttachAsync();
+        //    channel.State.Should().Be(ChannelState.Attached);
+        //}
 
         private static JObject GetAES128FixtureData()
         {
