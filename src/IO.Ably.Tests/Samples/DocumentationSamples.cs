@@ -312,6 +312,19 @@ namespace IO.Ably.Tests.Samples
             /* ... issue the TokenRequest to a client ... */
         }
 
+        public async Task NotifyNetworkChanges()
+        {
+            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online);
+            Connection.NotifyOperatingSystemNetworkState(NetworkState.Offline);
+        }
+
+        public async Task UsingWebsocket4NetTransport()
+        {
+            var options = new ClientOptions();
+            options.TransportFactory = new WebSocketTransport.WebSocketTransportFactory();
+            var client = new AblyRealtime(options);
+        }
+
         public async Task RestAuthorizeSample()
         {
             var client = new AblyRest("{{API_KEY}}");
