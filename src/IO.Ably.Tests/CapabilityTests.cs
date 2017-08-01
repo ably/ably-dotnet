@@ -21,7 +21,7 @@ namespace IO.Ably.Tests
             capability
                 .AddResource("name").AllowPublish() ;
 
-            Assert.Equal("{ \"name\": [ \"publish\" ] }", capability.ToJson());
+            Assert.Equal("{\"name\":[\"publish\"]}", capability.ToJson());
             
         }
 
@@ -33,7 +33,7 @@ namespace IO.Ably.Tests
             capability
                 .AddResource("name").AllowSubscribe().AllowPublish().AllowPresence();
 
-            Assert.Equal("{ \"name\": [ \"presence\", \"publish\", \"subscribe\" ] }", capability.ToJson());
+            Assert.Equal("{\"name\":[\"presence\",\"publish\",\"subscribe\"]}", capability.ToJson());
         }
 
         [Fact]
@@ -42,7 +42,7 @@ namespace IO.Ably.Tests
             var capability = new Capability();
             capability.AddResource("name").AllowPublish().AllowAll();
 
-            Assert.Equal("{ \"name\": [ \"*\" ] }", capability.ToJson());
+            Assert.Equal("{\"name\":[\"*\"]}", capability.ToJson());
         }
 
         [Fact]
@@ -62,13 +62,13 @@ namespace IO.Ably.Tests
             capability.AddResource("second").AllowPublish();
             capability.AddResource("first").AllowAll();
 
-            Assert.Equal("{ \"first\": [ \"*\" ], \"second\": [ \"publish\" ] }", capability.ToJson());
+            Assert.Equal("{\"first\":[\"*\"],\"second\":[\"publish\"]}", capability.ToJson());
         }
 
         [Fact]
         public void Capability_InitializedWith2Resources_AddsThemCorrectlyToAllowedResourced()
         {
-            var capabilityString = "{ \"first\": [ \"*\" ], \"second\": [ \"publish\" ] }";
+            var capabilityString = "{\"first\":[\"*\"],\"second\":[\"publish\"]}";
             var capability = new Capability(capabilityString);
 
             Assert.Equal(2, capability.Resources.Count);    
@@ -79,11 +79,10 @@ namespace IO.Ably.Tests
         [Fact]
         public void Capability_WithDefaultAllAll_AddsThemCorrectly()
         {
-            var capabilityString = "{ \"*\": [ \"*\" ] }";
+            var capabilityString = "{\"*\":[\"*\"]}";
             var capability = new Capability(capabilityString);
 
             capability.ToJson().Should().Be(capabilityString);
         }
-        
     }
 }
