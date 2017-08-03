@@ -305,7 +305,7 @@ namespace IO.Ably.Tests
             var tokenClient = await GetRestClient(protocol);
             var authCallbackClient = await GetRestClient(protocol, options =>
             {
-                options.AuthCallback = tokenParams => tokenClient.Auth.CreateTokenRequestAsync(new TokenParams() { ClientId = "*" }).Convert();
+                options.AuthCallback = async tokenParams => await tokenClient.Auth.CreateTokenRequestAsync(new TokenParams() { ClientId = "*" });
                 options.Environment = settings.Environment;
                 options.UseBinaryProtocol = protocol == Protocol.MsgPack;
             });

@@ -167,12 +167,13 @@ namespace IO.Ably
                 if (callbackResult is TokenDetails)
                     return callbackResult as TokenDetails;
 
-                if (callbackResult is TokenRequest)
+                if (callbackResult is TokenRequest || callbackResult is string)
                 {
-                    postData = callbackResult as TokenRequest;
+                    postData = GetTokenRequest(callbackResult);
 
                     request.Url = $"/keys/{postData.KeyName}/requestToken";
                 }
+                
                 else
                 {
                     throw new AblyException($"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest");
@@ -213,6 +214,25 @@ namespace IO.Ably
                 throw new AblyException(new ErrorInfo("Invalid token response returned", 500));
 
             return result;
+        }
+
+        private static TokenRequest GetTokenRequest(object callbackResult)
+        {
+            if(callbackResult is TokenRequest)
+                return callbackResult as TokenRequest;
+            
+            try
+            {
+                var result = JsonHelper.Deserialize<TokenRequest>((string)callbackResult);
+                if(result == null)
+                    throw new AblyException(new ErrorInfo($"AuthCallback returned a string which can't be converted to TokenRequest. ({callbackResult})."));
+
+                return result;
+            }
+            catch (Exception e)
+            {
+                throw new AblyException(new ErrorInfo($"AuthCallback returned a string which can't be converted to TokenRequest. ({callbackResult})."), e);
+            }
         }
 
         private TokenParams MergeTokenParamsWithDefaults(TokenParams tokenParams)

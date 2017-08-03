@@ -121,7 +121,7 @@ namespace IO.Ably.Tests
                 request.ClientId.Should().Be("123");
                 request.KeyName.Should().Be(ApiKey.Parse(client.Options.Key).KeyName);
                 request.Ttl.Should().Be(TimeSpan.FromHours(2));
-                request.Timestamp.Should().Be(Now.AddMinutes(1));
+                request.Timestamp.Value.Should().BeCloseTo(Now.AddMinutes(1));
                 request.Nonce.Should().Be("defaultnonce");
             }
 
@@ -144,7 +144,7 @@ namespace IO.Ably.Tests
                 request.Capability.Should().Be(Capability.Empty);
                 request.ClientId.Should().Be("999");
                 request.Ttl.Should().Be(TimeSpan.FromHours(1));
-                request.Timestamp.Should().Be(Now.AddMinutes(10));
+                request.Timestamp.Value.Should().BeCloseTo(Now.AddMinutes(10));
                 request.Nonce.Should().Be("overrideNonce");
             }
 
@@ -188,7 +188,7 @@ namespace IO.Ably.Tests
             public async Task WithNoTimeStapmInRequest_ShouldUseSystemType()
             {
                 var request = await CreateTokenRequest(Client);
-                request.Timestamp.Should().Be(Now);
+                request.Timestamp.Value.Should().BeCloseTo(Now);
             }
 
             [Fact]
