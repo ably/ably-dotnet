@@ -20,6 +20,8 @@ namespace IO.Ably.Realtime
     {
         private static readonly ConcurrentBag<WeakReference<Action<NetworkState>>> OsEventSubscribers = new ConcurrentBag<WeakReference<Action<NetworkState>>>();
 
+        protected override Action<Action> NotifyClient => RealtimeClient.NotifyExternalClients;
+
         public static void NotifyOperatingSystemNetworkState(NetworkState state)
         {
             if(Logger.IsDebug) Logger.Debug("OS Network connection state: " + state);

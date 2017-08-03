@@ -24,6 +24,7 @@ namespace IO.Ably.Realtime
         internal ChannelAwaiter DetachedAwaiter { get; }
         private ChannelOptions _options;
         private ChannelState _state;
+        protected override Action<Action> NotifyClient => RealtimeClient.NotifyExternalClients;
 
         public string AttachedSerial { get; set; }
         public List<MessageAndCallback> QueuedMessages { get; set; } = new List<MessageAndCallback>(16);
@@ -121,7 +122,7 @@ namespace IO.Ably.Realtime
         /// </summary>
         public void Attach(Action<bool, ErrorInfo> callback = null)
         {
-            if (State == ChannelState.Attaching || State == ChannelState.Attached)
+            if ( State == ChannelState.Attached)
             {
                 try
                 {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace IO.Ably
 {
@@ -21,10 +22,12 @@ namespace IO.Ably
     {
         readonly List<Emitter<TState, TArgs>> _emitters = new List<Emitter<TState, TArgs>>();
         private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
+        protected abstract Action<Action> NotifyClient { get; }
 
         private class Emitter<TState, TArgs> where TState : struct
         {
             public Action<TArgs> Action { get; }
+            public Func<TArgs, Task> AsyncAction { get; }
             public bool Once { get; }
             public TState? State { get; }
 
@@ -36,6 +39,18 @@ namespace IO.Ably
                 }
 
                 Action = action;
+                State = state;
+                Once = once;
+            }
+
+            public Emitter(Func<TArgs, Task> asyncAction, TState? state = null, bool once = false)
+            {
+                if (asyncAction == null)
+                {
+                    throw new ArgumentException("Cannot pass a null action to the EventEmitter");
+                }
+
+                AsyncAction = asyncAction;
                 State = state;
                 Once = once;
             }
@@ -78,12 +93,60 @@ namespace IO.Ably
             }
         }
 
+        public void On(Func<TArgs, Task> listener)
+        {
+            _lock.EnterUpgradeableReadLock();
+            try
+            {
+                if (_emitters.Any(x => x.AsyncAction == listener) == false)
+                {
+                    _lock.EnterWriteLock();
+                    try
+                    {
+                        _emitters.Add(new Emitter<TState, TArgs>(listener));
+                    }
+                    finally
+                    {
+                        _lock.ExitWriteLock();
+                    }
+                }
+            }
+            finally
+            {
+                _lock.ExitUpgradeableReadLock();
+            }
+        }
+
         public void Once(Action<TArgs> listener)
         {
             _lock.EnterUpgradeableReadLock();
             try
             {
                 if (_emitters.Any(x => x.Action == listener) == false)
+                {
+                    _lock.EnterWriteLock();
+                    try
+                    {
+                        _emitters.Add(new Emitter<TState, TArgs>(listener, once: true));
+                    }
+                    finally
+                    {
+                        _lock.ExitWriteLock();
+                    }
+                }
+            }
+            finally
+            {
+                _lock.ExitUpgradeableReadLock();
+            }
+        }
+
+        public void Once(Func<TArgs, Task> listener)
+        {
+            _lock.EnterUpgradeableReadLock();
+            try
+            {
+                if (_emitters.Any(x => x.AsyncAction == listener) == false)
                 {
                     _lock.EnterWriteLock();
                     try
@@ -115,7 +178,33 @@ namespace IO.Ably
             }
         }
 
+        public void Off(Func<TArgs, Task> listener)
+        {
+            _lock.EnterWriteLock();
+            try
+            {
+                _emitters.RemoveAll(x => x.AsyncAction == listener);
+            }
+            finally
+            {
+                _lock.ExitWriteLock();
+            }
+        }
+
         public void On(TState state, Action<TArgs> action)
+        {
+            _lock.EnterWriteLock();
+            try
+            {
+                _emitters.Add(new Emitter<TState, TArgs>(action, state));
+            }
+            finally
+            {
+                _lock.ExitWriteLock();
+            }
+        }
+
+        public void On(TState state, Func<TArgs, Task> action)
         {
             _lock.EnterWriteLock();
             try
@@ -141,6 +230,19 @@ namespace IO.Ably
             }
         }
 
+        public void Once(TState state, Func<TArgs, Task> action)
+        {
+            _lock.EnterWriteLock();
+            try
+            {
+                _emitters.Add(new Emitter<TState, TArgs>(action, state, true));
+            }
+            finally
+            {
+                _lock.ExitWriteLock();
+            }
+        }
+
         public void Off(TState state, Action<TArgs> action)
         {
             _lock.EnterWriteLock();
@@ -154,7 +256,20 @@ namespace IO.Ably
             }
         }
 
-        public void Emit(TState state, TArgs data)
+        public void Off(TState state, Func<TArgs, Task> action)
+        {
+            _lock.EnterWriteLock();
+            try
+            {
+                _emitters.RemoveAll(x => x.AsyncAction == action && x.State.HasValue && x.State.Value.Equals(state));
+            }
+            finally
+            {
+                _lock.ExitWriteLock();
+            }
+        }
+
+        protected void Emit(TState state, TArgs data)
         {
             List<Emitter<TState, TArgs>> emitters;
             _lock.EnterUpgradeableReadLock();
@@ -186,14 +301,19 @@ namespace IO.Ably
 
             foreach (var emitter in emitters)
             {
-                try
+                var current = emitter;
+                NotifyClient(delegate
                 {
-                    emitter.Action(data);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error($"Error executing on event: {state}", ex);
-                }
+                    try
+                    {
+                        current.Action?.Invoke(data);
+                        current.AsyncAction?.Invoke(data);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error($"Error executing on event: {state}", ex);
+                    }
+                });
             }
         }
 
