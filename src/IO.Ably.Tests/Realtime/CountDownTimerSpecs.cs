@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Transport.States.Connection;
@@ -57,7 +58,7 @@ namespace IO.Ably.Tests.Realtime
 
             var timeout = TimeSpan.FromMilliseconds(10);
             int called = 0;
-            Action callback = () => called++;
+            Action callback = () => Interlocked.Increment(ref called);
             timer.Start(timeout, callback);
 
             // Act
