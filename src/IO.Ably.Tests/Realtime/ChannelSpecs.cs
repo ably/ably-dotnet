@@ -223,10 +223,9 @@ namespace IO.Ably.Tests.Realtime
             private IRealtimeChannel _channel;
 
             [Theory]
-            [InlineData(ChannelState.Attaching)]
             [InlineData(ChannelState.Attached)]
             [Trait("spec", "RTL4a")]
-            public async Task WhenAttachingOrAttached_ShouldDoNothing(ChannelState state)
+            public async Task WhenAttached_ShouldDoNothing(ChannelState state)
             {
                 await SetState(state);
                 bool stateChanged = false;
@@ -244,6 +243,25 @@ namespace IO.Ably.Tests.Realtime
 
                 stateChanged.Should().BeFalse("This should not happen. State changed to: " + newState);
             }
+
+            [Fact]
+            [Trait("spec", "RTL4h")]
+            public async Task WhenAttaching_ShouldAddMultipleAwaitingHandlers()
+            {
+                await SetState(ChannelState.Attaching);
+                bool stateChanged = false;
+                ChannelState newState = ChannelState.Initialized;
+                int counter = 0;
+
+                _channel.Attach((b, info) => counter++);
+                _channel.Attach((b, info) => counter++);
+
+                await ReceiveAttachedMessage();
+
+                counter.Should().Be(2);
+            }
+
+
 
             [Fact]
             [Trait("spec", "RTL4b")]
