@@ -413,7 +413,8 @@ namespace IO.Ably.Tests.Realtime
         public async Task ConnectionIdShouldMatchThatOfThePublisher(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
-            var channel = client.Channels.Get("test");
+            var channelName = "test".AddRandomSuffix();
+            var channel = client.Channels.Get(channelName);
             Message testMessage = null;
             channel.Subscribe(message =>
             {
@@ -437,7 +438,8 @@ namespace IO.Ably.Tests.Realtime
             Logger.LogLevel = LogLevel.Debug;
 
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
-            var channel = client.Channels.Get("test");
+            var channelName = "test".AddRandomSuffix();
+            var channel = client.Channels.Get(channelName);
             List<Message> testMessages = new List<Message>();
             channel.Subscribe(message =>
             {
