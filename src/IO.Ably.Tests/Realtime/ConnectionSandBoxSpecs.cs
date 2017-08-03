@@ -465,7 +465,9 @@ namespace IO.Ably.Tests.Realtime
         public async Task
             WhenOperatingSystemNetworkIsNotAvailable_ShouldTransitionToDisconnectedAndRetry(Protocol protocol,
                 ConnectionState initialState)
+
         {
+            Logger.LogLevel = LogLevel.Debug;
             var client = await GetRealtimeClient(protocol, (options, _) => options.AutoConnect = false);
 
             client.Connect();

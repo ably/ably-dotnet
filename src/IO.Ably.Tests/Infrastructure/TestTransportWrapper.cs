@@ -30,8 +30,7 @@ namespace IO.Ably.Tests.Infrastructure
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
-                    throw;
+                    Logger.Error("Test transport factor on receive error ", e);
                 }
                 try
                 {

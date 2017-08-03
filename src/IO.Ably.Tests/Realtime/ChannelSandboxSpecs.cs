@@ -188,6 +188,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTL6b")]
         public async Task With3ClientsAnd60MessagesAndCallbacks_ShouldExecuteAllCallbacks(Protocol protocol)
         {
+            var channelName = "test".AddRandomSuffix();
             List<bool> successes = new List<bool>();
             var client1 = await GetRealtimeClient(protocol);
             var client2 = await GetRealtimeClient(protocol);
@@ -200,22 +201,22 @@ namespace IO.Ably.Tests.Realtime
 
             foreach (var message in messages)
             {
-                client1.Channels.Get("test").Publish(new[] { message }, (b, info) =>
+                client1.Channels.Get(channelName).Publish(new[] { message }, (b, info) =>
                {
                    successes.Add(b);
                });
-                client2.Channels.Get("test").Publish(new[] { message }, (b, info) =>
+                client2.Channels.Get(channelName).Publish(new[] { message }, (b, info) =>
                 {
                     successes.Add(b);
                 });
-                client3.Channels.Get("test").Publish(new[] { message }, (b, info) =>
+                client3.Channels.Get(channelName).Publish(new[] { message }, (b, info) =>
                 {
                     successes.Add(b);
                 });
             }
 
             await Task.Delay(10000);
-            successes.Where(x => x == true).Should().HaveCount(60, "Should have 60 successful callback executed");
+            successes.Where(x => x).Should().HaveCount(60, "Should have 60 successful callback executed");
         }
 
         [Theory]
@@ -227,7 +228,8 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol);
 
             client.Connect();
-            var channel = client.Channels.Get("test");
+            var channelName = "test".AddRandomSuffix();
+            var channel = client.Channels.Get(channelName);
             bool messageReceived = false;
             channel.Subscribe(message =>
             {
@@ -252,7 +254,8 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = clientId);
 
             client.Connect();
-            var channel = client.Channels.Get("test");
+            var channelName = "test".AddRandomSuffix();
+            var channel = client.Channels.Get(channelName);
             int messagesReceived = 0;
             string receivedClienId = "";
             channel.Subscribe(message =>
@@ -277,7 +280,8 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.TokenDetails = token);
 
             client.Connect();
-            var channel = client.Channels.Get("test");
+            var channelName = "test".AddRandomSuffix();
+            var channel = client.Channels.Get(channelName);
             bool messageReceived = false;
             channel.Subscribe(message =>
             {
@@ -297,7 +301,8 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
 
             client.Connect();
-            var channel = client.Channels.Get("test");
+            var channelName = "test".AddRandomSuffix();
+            var channel = client.Channels.Get(channelName);
             bool messageReceived = false;
             channel.Subscribe(message =>
             {
@@ -320,7 +325,8 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
 
             client.Connect();
-            var channel = client.Channels.Get("test");
+            var channelName = "test".AddRandomSuffix();
+            var channel = client.Channels.Get(channelName);
             bool messageReceived = false;
             channel.Subscribe(message =>
             {
@@ -349,7 +355,8 @@ namespace IO.Ably.Tests.Realtime
                 opts.AuthCallback = async @params => await rest.Auth.RequestTokenAsync(new TokenParams() { ClientId = clientId });
             });
 
-            var channel = realtimeClient.Channels.Get("test");
+            var channelName = "test".AddRandomSuffix();
+            var channel = realtimeClient.Channels.Get(channelName);
             bool messageReceived = false;
             channel.Subscribe(message =>
             {

@@ -316,13 +316,13 @@ namespace IO.Ably.Tests.Rest
 
             [Theory]
             [MemberData("InvalidHistoryDates")]
-            public void History_WithInvalidStartOrEnd_Throws(DateTimeOffset? start, DateTimeOffset? end)
+            public async Task History_WithInvalidStartOrEnd_Throws(DateTimeOffset? start, DateTimeOffset? end)
             {
                 var rest = GetRestClient();
                 var channel = rest.Channels.Get("Test");
                 var query = new HistoryRequestParams() { Start = start, End = end };
 
-                Assert.Throws<AblyException>(delegate { channel.HistoryAsync(query); });
+                await Assert.ThrowsAsync<AblyException>(async () => await channel.HistoryAsync(query));
             }
 
             public static IEnumerable<object[]> InvalidHistoryDates
