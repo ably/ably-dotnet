@@ -79,8 +79,8 @@
     <Reference Include="Moq, Version=4.7.25.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
       <HintPath>..\packages\Moq.4.7.25\lib\net45\Moq.dll</HintPath>
     </Reference>
-    <Reference Include="MsgPack, Version=0.8.0.0, Culture=neutral, PublicKeyToken=a2625990d5dc0167, processorArchitecture=MSIL">
-      <HintPath>..\packages\MsgPack.Cli.0.8.1\lib\net45\MsgPack.dll</HintPath>
+    <Reference Include="MsgPack, Version=0.9.0.0, Culture=neutral, PublicKeyToken=a2625990d5dc0167, processorArchitecture=MSIL">
+      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta2\lib\net45\MsgPack.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">

@@ -42,8 +42,8 @@
       <HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\portable-net45+win8+wpa81\Microsoft.Threading.Tasks.Extensions.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="MsgPack, Version=0.8.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MsgPack.Cli.0.8.1\lib\Xamarin.iOS10\MsgPack.dll</HintPath>
+    <Reference Include="MsgPack, Version=0.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MsgPack.Cli.0.9.0-beta2\lib\Xamarin.iOS10\MsgPack.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
