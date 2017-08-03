@@ -307,7 +307,7 @@ namespace IO.Ably
                     try
                     {
                         current.Action?.Invoke(data);
-                        current.AsyncAction?.Invoke(data);
+                        current.AsyncAction?.Invoke(data)?.ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
