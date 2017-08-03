@@ -26,32 +26,25 @@ namespace IO.Ably.Transport
 
         public string ConnectionId { get; set; }
 
-        private ClientWebSocket _clientWebSocket { get; set; }
+        private ClientWebSocket ClientWebSocket { get; }
         private readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
 
         public MsWebSocketConnection(Uri uri)
         {
             _uri = uri;
-            _clientWebSocket = new ClientWebSocket();
+            ClientWebSocket = new ClientWebSocket();
         }
 
-        public void SubscribeToEvents(Action<ConnectionState, Exception> handler)
-        {
-            _handler = handler;
-        }
+        public void SubscribeToEvents(Action<ConnectionState, Exception> handler) => _handler = handler;
 
-        public void ClearStateHandler()
-        {
-            _handler = null;
-        }
+        public void ClearStateHandler() => _handler = null;
 
         public async Task StartConnectionAsync()
         {
             _handler?.Invoke(ConnectionState.Connecting, null);
             try
             {
-                await _clientWebSocket.ConnectAsync(_uri, CancellationToken.None).ConfigureAwait(false);
-                //initialise sender
+                await ClientWebSocket.ConnectAsync(_uri, CancellationToken.None).ConfigureAwait(false);
                 StartSenderQueueConsumer();
                 _handler?.Invoke(ConnectionState.Connected, null);
             }
@@ -63,13 +56,13 @@ namespace IO.Ably.Transport
 
         private void StartSenderQueueConsumer()
         {
-            Task.Run((async () =>
+            Task.Run(async () =>
             {
                 foreach (var tuple in _sendQueue.GetConsumingEnumerable())
                 {
                     await Send(tuple.Item1, tuple.Item2, _tokenSource.Token);
                 }
-            }), _tokenSource.Token);
+            }, _tokenSource.Token).ConfigureAwait(false);
         }
 
         public async Task StopConnectionAsync()
@@ -78,14 +71,14 @@ namespace IO.Ably.Transport
             _handler?.Invoke(ConnectionState.Closing, null);
             try
             {
-                if (_clientWebSocket.CloseStatus.HasValue)
+                if (ClientWebSocket.CloseStatus.HasValue)
                     Logger.Debug("Closing websocket. Close status: " +
-                                 Enum.GetName(typeof(WebSocketCloseStatus), _clientWebSocket.CloseStatus) + ", Description: " + _clientWebSocket.CloseStatusDescription);
+                                 Enum.GetName(typeof(WebSocketCloseStatus), ClientWebSocket.CloseStatus) + ", Description: " + ClientWebSocket.CloseStatusDescription);
 
-                if(_clientWebSocket.State != WebSocketState.Closed)
+                if(ClientWebSocket.State != WebSocketState.Closed)
                 {
                     await
-                    _clientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None)
+                    ClientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None)
                         .ConfigureAwait(false);
                 }
 
@@ -115,14 +108,20 @@ namespace IO.Ably.Transport
 
         private Task Send(ArraySegment<byte> data, WebSocketMessageType type, CancellationToken token)
         {
-            var sendTask = _clientWebSocket.SendAsync(data, type, true, token);
-            sendTask.ConfigureAwait(false);
-            return sendTask;
+            if (ClientWebSocket.State == WebSocketState.Open)
+            {
+                var sendTask = ClientWebSocket.SendAsync(data, type, true, token);
+                sendTask.ConfigureAwait(false);
+                return sendTask;
+            }
+
+            Logger.Warning($"Trying to send message of type {type} when the socket is already closed. Ack for this message will fail shortly.");
+            return Task.FromResult(true);
         }
 
         public async Task Receive(Action<RealtimeTransportData> handleMessage)
         {
-            while (_clientWebSocket.State == WebSocketState.Open)
+            while (ClientWebSocket.State == WebSocketState.Open)
             {
                 try
                 {
@@ -132,7 +131,7 @@ namespace IO.Ably.Transport
                     {
                         do
                         {
-                            result = await _clientWebSocket.ReceiveAsync(buffer, _tokenSource.Token).ConfigureAwait(false);
+                            result = await ClientWebSocket.ReceiveAsync(buffer, _tokenSource.Token).ConfigureAwait(false);
                             ms.Write(buffer.Array, buffer.Offset, result.Count);
                         }
                         while (!result.EndOfMessage);
@@ -170,7 +169,7 @@ namespace IO.Ably.Transport
         {
             _tokenSource.Cancel();
             _sendQueue.Dispose();
-            _clientWebSocket?.Dispose();
+            ClientWebSocket?.Dispose();
         }
     }
 }

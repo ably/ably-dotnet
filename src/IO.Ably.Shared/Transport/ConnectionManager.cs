@@ -167,7 +167,7 @@ namespace IO.Ably.Transport
             }
             catch (Exception ex)
             {
-                Logger.Error("Error while creating transport!. Message: " + ex.Message);
+                Logger.Error("Error while creating transport!.", ex.Message);
                 if (ex is AblyException)
                     throw;
 
@@ -182,9 +182,19 @@ namespace IO.Ably.Transport
             if (Transport == null)
                 return;
 
-            Transport.Listener = null;
-            Transport.Dispose();
-            Transport = null;
+            try
+            {
+                Transport.Listener = null;
+                Transport.Dispose();
+            }
+            catch (Exception e)
+            {
+                Logger.Warning("Error while destroying transport. Nothing to worry about. Cleaning up. Error: " + e.Message);
+            }
+            finally
+            {
+                Transport = null;
+            }
         }
 
         public void SetConnectionClientId(string clientId)
@@ -292,7 +302,15 @@ namespace IO.Ably.Transport
         {
             if (Logger.IsDebug) Logger.Debug($"Sending message ({message.Action}) to transport");
             var data = Handler.GetTransportData(message);
-            Transport.Send(data);
+            try
+            {
+                Transport.Send(data);
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error while sending to transport. Trying to reconnect.", e);
+                ((ITransportListener)this).OnTransportEvent(TransportState.Closed, e);
+            }
         }
 
         void ITransportListener.OnTransportEvent(TransportState transportState, Exception ex)

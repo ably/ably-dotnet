@@ -111,8 +111,7 @@ namespace IO.Ably.Transport
         {
             if (BinaryProtocol)
             {
-                WebSocketThread.Factory.StartNew(() => _socket.SendData(data.Data))
-                ;
+                WebSocketThread.Factory.StartNew(() => _socket.SendData(data.Data));
             }
             else
             {
@@ -172,8 +171,18 @@ namespace IO.Ably.Transport
         private void DisposeSocketConnection()
         {
             DetachEvents();
-            _socket?.Dispose();
-            _socket = null;
+            try
+            {
+                _socket?.Dispose();
+            }
+            catch (Exception e)
+            {
+                Logger.Warning("Error while disposing socket. Nothing to worry about. Message: " + e.Message);
+            }
+            finally
+            {
+                _socket = null;
+            }
         }
 
         private void DetachEvents()
