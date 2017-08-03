@@ -169,7 +169,7 @@ namespace IO.Ably.Tests.MessagePack
             var response = JsonHelper.Deserialize<TokenResponse>(value);
 
             response.AccessToken.Should().NotBeNull();
-            response.AccessToken.Capability.ToJson().Should().Be("{ \"*\": [ \"*\" ] }");
+            response.AccessToken.Capability.ToJson().Should().Be("{\"*\":[\"*\"]}");
             response.AccessToken.ClientId.Should().Be("123");
             response.AccessToken.Token.Should().Be("_SYo4Q.D3WmHhU");
             response.AccessToken.Issued.Should().Be(((long)1449163326485).FromUnixTimeInMilliseconds());
