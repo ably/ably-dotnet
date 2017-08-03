@@ -117,16 +117,17 @@ namespace IO.Ably.Tests.Realtime
         public class With250PresentMembersOnAChannel : PresenceSandboxSpecs
         {
             private const int ExpectedEnterCount = 250;
-            private string _channelName;
 
             [Theory]
             [ProtocolData]
             [Trait("spec", "RTP4")]
             public async Task WhenAClientAttachedToPresenceChannel_ShouldEmitPresentForEachMember(Protocol protocol)
             {
-                await SetupMembers(protocol);
+                var channelName = "presence".AddRandomSuffix();
+
+                await SetupMembers(protocol, channelName);
                 var testClient = await GetRealtimeClient(protocol);
-                var channel = testClient.Channels.Get(_channelName);
+                var channel = testClient.Channels.Get(channelName);
 
                 List<PresenceMessage> presenceMessages = new List<PresenceMessage>();
                 channel.Presence.Subscribe(x => presenceMessages.Add(x));
@@ -153,10 +154,12 @@ namespace IO.Ably.Tests.Realtime
                 Protocol protocol)
             {
                 Logger.LogLevel = LogLevel.Debug;
+                var channelName = "presence".AddRandomSuffix();
 
-                await SetupMembers(protocol);
+                await SetupMembers(protocol, channelName);
+
                 var client = await GetRealtimeClient(protocol);
-                var channel = client.Channels.Get(_channelName);
+                var channel = client.Channels.Get(channelName);
 
                 ConcurrentBag<PresenceMessage> presenceMessages = new ConcurrentBag<PresenceMessage>();
                 string leaveClientId = "";
@@ -169,7 +172,7 @@ namespace IO.Ably.Tests.Realtime
 
                 await new ConnectionAwaiter(client.Connection, ConnectionState.Connected).Wait();
 
-                SendLeaveMessageAfterFirstSyncMessageReceived(client, GetClientId(0));
+                SendLeaveMessageAfterFirstSyncMessageReceived(client, GetClientId(0), channelName);
 
                 //Wait for 30s max
                 await WaitFor30sOrUntilTrue(() =>
@@ -184,7 +187,7 @@ namespace IO.Ably.Tests.Realtime
                 leaveClientId.Should().Be(GetClientId(0));
             }
 
-            private void SendLeaveMessageAfterFirstSyncMessageReceived(AblyRealtime client, string clientId)
+            private void SendLeaveMessageAfterFirstSyncMessageReceived(AblyRealtime client, string clientId, string channelName)
             {
                 var transport = client.GetTestTransport();
 
@@ -196,7 +199,7 @@ namespace IO.Ably.Tests.Realtime
                         syncMessageCount++;
                         if (syncMessageCount == 1)
                         {
-                            var leaveMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channelName)
+                            var leaveMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, channelName)
                             {
                                 Presence = new[]
                                 {
@@ -214,10 +217,10 @@ namespace IO.Ably.Tests.Realtime
                 };
             }
 
-            private async Task SetupMembers(Protocol protocol)
+            private async Task SetupMembers(Protocol protocol, string channelName)
             {
                 var client = await GetRealtimeClient(protocol);
-                var channel = client.Channels.Get(_channelName);
+                var channel = client.Channels.Get(channelName);
                 for (int i = 0; i < ExpectedEnterCount; i++)
                 {
                     var clientId = GetClientId(i);
@@ -232,7 +235,6 @@ namespace IO.Ably.Tests.Realtime
 
             public With250PresentMembersOnAChannel(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
             {
-                _channelName = GetTestChannelName();
             }
 
         }
