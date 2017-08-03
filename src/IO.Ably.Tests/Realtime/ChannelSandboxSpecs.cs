@@ -381,10 +381,10 @@ namespace IO.Ably.Tests.Realtime
             });
             var channelName = "test".AddRandomSuffix();
             var channel = realtimeClient.Channels.Get(channelName);
-            bool messageReceived = false;
+            int messageReceived = 0;
             channel.Subscribe(message =>
             {
-                messageReceived = true;
+                Interlocked.Add(ref messageReceived, 1);
                 message.ClientId.Should().Be(clientId);
             });
 
@@ -392,12 +392,12 @@ namespace IO.Ably.Tests.Realtime
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().NotBeNull();
 
-            messageReceived.Should().BeFalse();
+            messageReceived.Should().Be(0);
 
             //Send a followup message
             var followupMessage = await channel.PublishAsync("followup", "message");
             followupMessage.IsSuccess.Should().BeTrue();
-            messageReceived.Should().BeTrue();
+            messageReceived.Should().Be(1);
         }
 
         [Theory]
@@ -589,7 +589,6 @@ namespace IO.Ably.Tests.Realtime
             var channel = client1.Channels.Get(channelName);
             client1.Connection.On(ConnectionState.Connected, state => client1.GetTestTransport().Close(false));
 
-            await client1.ConnectionManager.SetState(new ConnectionSuspendedState(client1.ConnectionManager));
             client1.Connect();
 
             var result = await channel.AttachAsync();
@@ -656,6 +655,7 @@ namespace IO.Ably.Tests.Realtime
             await channel.AttachAsync();
             channel.State.Should().Be(ChannelState.Attached);
         }
+
         //[Theory]
         //[ProtocolData]
         //public async Task WhenAttachAsyncCalledAfterSubscribe_ShouldWaitUntilChannelIsAttached(Protocol protocol)
