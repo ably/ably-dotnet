@@ -11,7 +11,7 @@ namespace IO.Ably
 {
     public static class JsonHelper
     {
-        internal static JsonSerializerSettings GetJsonSettings()
+        private static JsonSerializerSettings GetJsonSettings()
         {
             JsonSerializerSettings res = new JsonSerializerSettings();
             res.Converters = new List<JsonConverter>()
@@ -25,7 +25,7 @@ namespace IO.Ably
             return res;
         }
 
-        internal static JsonSerializer GetSerializer()
+        private static JsonSerializer GetSerializer()
         {
             var settings = GetJsonSettings();
 
@@ -58,7 +58,7 @@ namespace IO.Ably
             return obj.ToObject<T>(GetSerializer());
         }
 
-        public static string SerializeObject(object value, Type type)
+        private static string SerializeObject(object value, Type type)
         {
             var jsonSerializer = GetSerializer();
             StringWriter stringWriter = new StringWriter(new StringBuilder(256), CultureInfo.InvariantCulture);
@@ -70,7 +70,7 @@ namespace IO.Ably
             return stringWriter.ToString();
         }
 
-        public static object DeserializeObject(string value, Type type)
+        private static object DeserializeObject(string value, Type type)
         {
             JsonSerializer jsonSerializer = GetSerializer();
             jsonSerializer.CheckAdditionalContent = true;
