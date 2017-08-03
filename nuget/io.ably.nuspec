@@ -55,7 +55,7 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="..\src\IO.Ably.Net45\bin\Release\IO.Ably.*" target="lib\net45" />
+        <file src="..\src\IO.Ably.Net45\bin\Release\IO.Ably.*" target="lib\net46" />
         <file src="..\src\IO.Ably.Android\bin\Release\IO.Ably.*" target="lib\monoandroid" />
         <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.*" target="lib\Xamarin.iOS" />
         <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.*" target="lib\monotouch" />
