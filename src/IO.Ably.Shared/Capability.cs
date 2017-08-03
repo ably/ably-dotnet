@@ -125,7 +125,7 @@ namespace IO.Ably
 
         private string CleanUpWhiteSpace(string jsonString)
         {
-            return Regex.Replace(jsonString, @"\s+", " ", RegexOptions.Singleline);
+            return Regex.Replace(jsonString, @"\s+", "", RegexOptions.Singleline);
         }
 
         protected bool Equals(Capability other)
