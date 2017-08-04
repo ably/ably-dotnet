@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using IO.Ably.CustomSerialisers;
 using IO.Ably.Encryption;
 using MsgPack.Serialization;
 using Newtonsoft.Json;
@@ -28,6 +29,7 @@ namespace IO.Ably
 		/// and the attributes of the issuing key
         /// </summary>
         [JsonProperty("ttl")]
+        [JsonConverter(typeof(TimeSpanJsonConverter))]
         public TimeSpan? Ttl { get; set; }
 
 
@@ -37,6 +39,7 @@ namespace IO.Ably
 		/// this capability with the capability of the issuing key.
         /// </summary>
         [JsonProperty("capability", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonConverter(typeof(CapabilityJsonConverter))]
         public Capability Capability { get; set; }
 
         /// <summary>
@@ -51,6 +54,7 @@ namespace IO.Ably
         /// token requests from being replayed.
         /// </summary>
         [JsonProperty("timestamp")]
+        [JsonConverter(typeof(DateTimeOffsetJsonConverter))]
         public DateTimeOffset? Timestamp
         {
             get { return _timestamp; }
