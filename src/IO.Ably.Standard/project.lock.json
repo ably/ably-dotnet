@@ -1,5 +1,4 @@
 {
-  "locked": false,
   "version": 2,
   "targets": {
     ".NETStandard,Version=v1.3": {
@@ -1664,7 +1663,7 @@
     "MsgPack.Cli/0.9.0-beta2": {
       "sha512": "0m9CLnfCOOZotvVY5tEL4vXL5+U94PnxcXun+Xce8UqDbxBlmXJJe3RlxjT01sPox8jcL1/TksuToHIPz9EiyQ==",
       "type": "package",
-      "path": "MsgPack.Cli/0.9.0-beta2",
+      "path": "msgpack.cli/0.9.0-beta2",
       "files": [
         "MsgPack.Cli.0.9.0-beta2.nupkg.sha512",
         "MsgPack.Cli.nuspec",
@@ -1729,7 +1728,7 @@
     "Nito.AsyncEx.Context/5.0.0-pre-02": {
       "sha512": "yU6henMHQwSKJy9SHqQ4/OyHzzv/l0ueTN3BDFb9y9PsbXiuAPdlrb02+nVcdwV6HhTIbdp0kp8kYhl3ciEwWQ==",
       "type": "package",
-      "path": "Nito.AsyncEx.Context/5.0.0-pre-02",
+      "path": "nito.asyncex.context/5.0.0-pre-02",
       "files": [
         "Nito.AsyncEx.Context.5.0.0-pre-02.nupkg.sha512",
         "Nito.AsyncEx.Context.nuspec",
@@ -1740,7 +1739,7 @@
     "Nito.AsyncEx.Tasks/5.0.0-pre-02": {
       "sha512": "R2uUUCZFuUYsSoa5W4zS0hI2/PNTAf7lcqvo2KGQ22l/EQyoMwr9dX6JjZg4X+sDMmH/iaHUMrIGTpjtancBzg==",
       "type": "package",
-      "path": "Nito.AsyncEx.Tasks/5.0.0-pre-02",
+      "path": "nito.asyncex.tasks/5.0.0-pre-02",
       "files": [
         "Nito.AsyncEx.Tasks.5.0.0-pre-02.nupkg.sha512",
         "Nito.AsyncEx.Tasks.nuspec",
@@ -1751,7 +1750,7 @@
     "Nito.Disposables/1.1.0": {
       "sha512": "FH/Z0oTFaUBFqbo1D/TAiqC9WwJ8bc7/ILPJbHWFmh0WSoXdvcX+0FReG0l/T82vqJlUzh67oz4qF9otF084oA==",
       "type": "package",
-      "path": "Nito.Disposables/1.1.0",
+      "path": "nito.disposables/1.1.0",
       "files": [
         "Nito.Disposables.1.1.0.nupkg.sha512",
         "Nito.Disposables.nuspec",
@@ -2118,7 +2117,7 @@
     "System.Collections.Immutable/1.2.0": {
       "sha512": "Huqft1ayRykgECsKnuvK6cKJufYCfSRtAqkL5cuubIOMim49lofAJ89aa2RRbgHMbQ1/rb3KhtqLQe76T4/4MA==",
       "type": "package",
-      "path": "System.Collections.Immutable/1.2.0",
+      "path": "system.collections.immutable/1.2.0",
       "files": [
         "System.Collections.Immutable.1.2.0.nupkg.sha512",
         "System.Collections.Immutable.nuspec",
@@ -5643,11 +5642,32 @@
       "Nito.AsyncEx.Tasks >= 5.0.0-pre-02",
       "System.Net.Http >= 4.3.2",
       "System.Net.Requests >= 4.3.0",
-      "System.Net.WebSockets.Client >= 4.3.1",
-      "System.Threading.Timer >= 4.3.0"
+      "System.Net.WebSockets.Client >= 4.3.1"
     ],
     ".NETStandard,Version=v1.3": []
   },
-  "tools": {},
-  "projectFileToolGroups": {}
+  "packageFolders": {
+    "C:\\Users\\marto83\\.nuget\\packages\\": {}
+  },
+  "project": {
+    "restore": {
+      "projectUniqueName": "C:\\projects\\ably-dotnet\\src\\IO.Ably.Standard\\IO.Ably.Standard.csproj",
+      "projectName": "IO.Ably.Standard",
+      "projectPath": "C:\\projects\\ably-dotnet\\src\\IO.Ably.Standard\\IO.Ably.Standard.csproj",
+      "projectJsonPath": "C:\\projects\\ably-dotnet\\src\\IO.Ably.Standard\\project.json",
+      "projectStyle": "ProjectJson"
+    },
+    "dependencies": {
+      "MsgPack.Cli": "0.9.0-beta2",
+      "Newtonsoft.Json": "10.0.2",
+      "Nito.AsyncEx.Context": "5.0.0-pre-02",
+      "Nito.AsyncEx.Tasks": "5.0.0-pre-02",
+      "System.Net.Http": "4.3.2",
+      "System.Net.Requests": "4.3.0",
+      "System.Net.WebSockets.Client": "4.3.1"
+    },
+    "frameworks": {
+      "netstandard1.3": {}
+    }
+  }
 }

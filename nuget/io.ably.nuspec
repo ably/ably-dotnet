@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>ably.io</id>
-        <version>0.8.5-beta13</version>
+        <version>0.8.5-beta14</version>
         <title>ably.io</title>
         <authors>Martin Georgiev, Yavor Ivanov</authors>
         <owners>Ably Real-time Ltd</owners>
@@ -48,7 +48,6 @@
             <dependency id="Nito.AsyncEx.Context" version="5.0.0-pre-02"  />
             <dependency id="System.Net.Http" version="4.3.2" />
             <dependency id="System.Net.Requests" version="4.3.0" />
-            <dependency id="System.Threading.Timer" version="4.3.1" />
             <dependency id="Newtonsoft.Json" version="10.0.2" />
             <dependency id="MsgPack.Cli" version="0.9.0-beta2" />
           </group>
