@@ -63,8 +63,16 @@ namespace RealtimeChat
             this.channel.StateChanged += channel_ChannelStateChanged;
             this.channel.Subscribe(Handler);
             this.channel.Presence.Subscribe(Presence_MessageReceived);
-            await channel.AttachAsync();
-            await channel.Presence.EnterAsync(new PresenceData() { Data = new [] { "data1", "data2" }});
+            try
+            {
+                await channel.AttachAsync();
+                await channel.Presence.EnterAsync(new PresenceData() { Data = new[] { "data1", "data2" } });
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+            }
+            
         }
 
         private void Handler(Message message)
