@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace IO.Ably.Realtime
 {
-    internal class ChannelAwaiter
+    internal class ChannelAwaiter : IDisposable
     {
         private readonly RealtimeChannel _channel;
         private readonly ChannelState _awaitedState;
@@ -26,6 +26,7 @@ namespace IO.Ably.Realtime
             _awaitedState = awaitedState;
             _timer = new CountdownTimer(_name + " timer");
             _onTimeout = onTimeout;
+            AttachListener();
         }
 
         public void Fail(ErrorInfo error)
@@ -46,7 +47,6 @@ namespace IO.Ably.Realtime
             List<Action<bool, ErrorInfo>> callbacks;
             lock (_lock)
             {
-                DetachListener();
                 callbacks = _callbacks.ToList();
                 _callbacks.Clear();
             }
@@ -99,7 +99,6 @@ namespace IO.Ably.Realtime
                 _timer.Start(timeout, ElapsedSync);
                 _waiting = true;
                 _callbacks.Add(callback);
-                AttachListener();
 
                 return true;
             }
@@ -108,7 +107,7 @@ namespace IO.Ably.Realtime
         private void ElapsedSync()
         {
             lock (_lock)
-                DetachListener();
+                _waiting = false;
 
             _onTimeout?.Invoke();
 
@@ -127,16 +126,25 @@ namespace IO.Ably.Realtime
 
         private void ChannelOnChannelStateChanged(object sender, ChannelStateChange args)
         {
+            lock (_lock)
+            {
+                if (_waiting == false) return;
+            }
+
             if (args.Current == _awaitedState)
             {
                 lock (_lock)
                 {
-                    DetachListener();
                     _waiting = false;
                 }
 
                 InvokeCallbacks(true, null);
             }
+        }
+
+        public void Dispose()
+        {
+            DetachListener();
         }
     }
 }
