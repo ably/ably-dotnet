@@ -23,6 +23,13 @@
             <dependency id="MsgPack.Cli" version="0.9.0-beta2" />
             <dependency id="WebSocket4Net" version="0.15.0-beta9" />
           </group>
+          <group targetFramework="uap">
+            <dependency id="Newtonsoft.Json" version="10.0.2" />
+            <dependency id="MsgPack.Cli" version="0.9.0-beta2" />
+            <dependency id="WebSocket4Net" version="0.15.0-beta9" />
+            <dependency id="TaskThread" version="1.1.0" />
+            <dependency id="System.Net.WebSockets.Client" version="4.3.1" />
+          </group>
           <group targetFramework="monoandroid">
             <dependency id="Newtonsoft.Json" version="10.0.2" />
             <dependency id="WebSocket4Net" version="0.15.0-beta9" />
