@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
@@ -54,27 +55,26 @@ namespace IO.Ably.Tests.Realtime
                     tasks.Add(channel.Presence.EnterClientAsync($"client-{count}", null));
                 }
 
-                Task.WaitAll(tasks.ToArray());
+                await Task.WhenAll(tasks.ToArray());
 
                 var channel2 = client2.Channels.Get(testChannel) as RealtimeChannel;
-
-                bool inSync = channel2.Presence.Map.IsSyncInProgress;
-                bool syncComplete = channel2.Presence.SyncComplete;
+                int inSync = 0;
+                int syncComplete = 0;
 
                 channel2.InternalStateChanged += (_, args) =>
                 {
                     if (args.Current == ChannelState.Attached)
                     {
                         Logger.Debug("Test: Setting inSync to - " + channel2.Presence.Map.IsSyncInProgress);
-                        inSync = channel2.Presence.Map.IsSyncInProgress;
-                        syncComplete = channel2.Presence.SyncComplete;
+                        Interlocked.Add(ref inSync, channel2.Presence.Map.IsSyncInProgress ? 1: 0);
+                        Interlocked.Add(ref syncComplete, channel2.Presence.SyncComplete ? 1: 0);
                     }
                 };
 
                 await channel2.AttachAsync();
-
-                inSync.Should().BeTrue();
-                syncComplete.Should().BeFalse();
+                await Task.Delay(1000);
+                inSync.Should().Be(1);
+                syncComplete.Should().Be(0);
             }
 
             [Theory]

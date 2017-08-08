@@ -277,8 +277,8 @@ namespace IO.Ably.Tests.Realtime
 
                 //Suspended
                 _client.Connection.ConnectionState = new ConnectionSuspendedState(_client.ConnectionManager);
-                Assert.Throws<AblyException>(() => _client.Channels.Get("suspended").Attach());
-
+                var error = Assert.Throws<AblyException>(() => _client.Channels.Get("suspended").Attach());
+                error.ErrorInfo.Code.Should().Be(500);
                 //Failed
                 _client.Connection.ConnectionState = new ConnectionFailedState(_client.ConnectionManager, ErrorInfo.ReasonFailed);
                 Assert.Throws<AblyException>(() => _client.Channels.Get("failed").Attach());

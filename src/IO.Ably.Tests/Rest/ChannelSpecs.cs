@@ -322,7 +322,7 @@ namespace IO.Ably.Tests.Rest
                 var channel = rest.Channels.Get("Test");
                 var query = new HistoryRequestParams() { Start = start, End = end };
 
-                await Assert.ThrowsAsync<AblyException>(async () => await channel.HistoryAsync(query));
+                var ex = await Assert.ThrowsAsync<AblyException>(async () => await channel.HistoryAsync(query));
             }
 
             public static IEnumerable<object[]> InvalidHistoryDates
