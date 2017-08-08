@@ -97,10 +97,14 @@ namespace IO.Ably.Realtime
                     }
                     break;
                 case ConnectionState.Closed:
+                    AttachedAwaiter.Fail(new ErrorInfo("Connection is closed"));
+                    DetachedAwaiter.Fail(new ErrorInfo("Connection is closed"));
                     if (State == ChannelState.Attached || State == ChannelState.Attaching)
                         SetChannelState(ChannelState.Detaching);
                     break;
                 case ConnectionState.Suspended:
+                    AttachedAwaiter.Fail(new ErrorInfo("Connection is suspended"));
+                    DetachedAwaiter.Fail(new ErrorInfo("Connection is suspended"));
                     if (State == ChannelState.Attached || State == ChannelState.Attaching)
                     {
                         SetChannelState(ChannelState.Detaching, ErrorInfo.ReasonSuspended);
@@ -313,6 +317,8 @@ namespace IO.Ably.Realtime
 
         public void Dispose()
         {
+            AttachedAwaiter?.Dispose();
+            DetachedAwaiter?.Dispose();
             _handlers.RemoveAll();
             Presence?.Dispose();
         }
