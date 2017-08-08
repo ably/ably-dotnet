@@ -19,6 +19,7 @@ properties {
 	$build_artifacts_dir = "$build_artifacts_dir_base\library"
 	$build_artifacts_tools_dir = "$build_artifacts_dir_base\tools"
 	$build_output_dir = "$build_script_dir\build\output"
+	$msbuild = "C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\MSBuild.exe"
 }
 
 $base_dir = ""
@@ -47,7 +48,7 @@ task Build -depends Assembly_Info, Init {
 	
 	$base_dir = "$build_script_dir\$sln_dir"
 
-	run_msbuild "$base_dir\$sln_name" $configuration $signKeyPath
+	run_msbuild $msbuild "$base_dir\$sln_name" $configuration $signKeyPath
 }
 
 task Package -depends Build {
