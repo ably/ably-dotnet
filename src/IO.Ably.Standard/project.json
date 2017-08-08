@@ -2,14 +2,25 @@
   "supports": {},
   "dependencies": {
     "MsgPack.Cli": "0.9.0-beta2",
+    "NETStandard.Library": "1.6.1",
     "Newtonsoft.Json": "10.0.2",
-    "Nito.AsyncEx.Context": "5.0.0-pre-02",
-    "Nito.AsyncEx.Tasks": "5.0.0-pre-02",
     "System.Net.Http": "4.3.2",
     "System.Net.Requests": "4.3.0",
-    "System.Net.WebSockets.Client": "4.3.1"
+    "System.Net.WebSockets.Client": "4.3.1",
+    "System.Threading.Thread": "4.3.0"
   },
   "frameworks": {
-    "netstandard1.3": {}
+    "netstandard1.4": {
+      "buildOptions": {
+        "define": [
+          "NETSTANDARD"
+        ]
+      }
+    }
+  },
+  "buildOptions": {
+    "define": [
+      "NETSTANDARD"
+    ]
   }
 }

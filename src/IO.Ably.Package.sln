@@ -17,6 +17,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.Net45", "IO.Ably.Net45\IO.Ably.Net45.csproj", "{2D265650-B1EC-4F8D-B043-A2E3DCC23FD8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ably", "Ably", "{8A0F718E-2168-4CC7-8F7B-A65508B52B0F}"
+	ProjectSection(SolutionItems) = preProject
+		IO.Ably.UWP\IO.Ably.UWP.csproj = IO.Ably.UWP\IO.Ably.UWP.csproj
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.Ably.Standard", "IO.Ably.Standard\IO.Ably.Standard.csproj", "{A10B2558-D263-48E1-BCCB-3E56CF1101F4}"
 EndProject
