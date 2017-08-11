@@ -6,8 +6,7 @@
     "Newtonsoft.Json": "10.0.2",
     "System.Net.Http": "4.3.2",
     "System.Net.Requests": "4.3.0",
-    "System.Net.WebSockets.Client": "4.3.1",
-    "System.Threading.Thread": "4.3.0"
+    "System.Net.WebSockets.Client": "4.3.1"
   },
   "frameworks": {
     "netstandard1.4": {

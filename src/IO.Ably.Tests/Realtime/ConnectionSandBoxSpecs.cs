@@ -46,7 +46,7 @@ namespace IO.Ably.Tests.Realtime
             client.Connect();
 
             await WaitForState(client);
-            await Task.Delay(10);
+            await Task.Delay(100);
 
             states.Should().BeEquivalentTo(new[] {ConnectionState.Connecting, ConnectionState.Connected});
             client.Connection.State.Should().Be(ConnectionState.Connected);
@@ -308,10 +308,11 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.Key = "e02789NdQA86c7!inI5Ydc-ytp7UOm3-3632e02789NdQA86c7";
             //Kill the transport
             client.ConnectionManager.Transport.Close(false);
+            await Task.Delay(1000);
 
-            await Task.Delay(2000);
 
             await WaitForState(client, ConnectionState.Connected);
+            await Task.Delay(100);
 
             stateChanges.Should().Contain(x => x.Current == ChannelState.Detached);
         }

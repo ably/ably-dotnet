@@ -5,15 +5,13 @@ using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
-using Nito.AsyncEx;
-using Nito.AsyncEx.Synchronous;
 
 namespace IO.Ably.Transport
 {
     internal class ConnectionManager : IConnectionManager, ITransportListener, IConnectionContext
     {
         public Queue<MessageAndCallback> PendingMessages { get; }
-        internal readonly AsyncContextThread AsyncContextThread = new AsyncContextThread();
+        //internal readonly AsyncContextThread AsyncContextThread = new AsyncContextThread();
 
         private ITransportFactory GetTransportFactory()
             => Options.TransportFactory ?? Defaults.WebSocketTransportFactory;
@@ -108,6 +106,7 @@ namespace IO.Ably.Transport
                         State.AbortTimer();
                         if (Logger.IsDebug) Logger.Debug($"xx {newState.State}: BeforeTransition");
                         newState.BeforeTransition();
+                        if (Logger.IsDebug) Logger.Debug($"xx {newState.State}: BeforeTransition end");
 
                         AttemptsInfo.UpdateAttemptState(newState);
                         Connection.UpdateState(newState);
@@ -412,11 +411,13 @@ namespace IO.Ably.Transport
         {
             if (Options != null && Options.UseSyncForTesting)
             {
-                AsyncContextThread.Factory.StartNew(action).WaitAndUnwrapException();
+                Task.Run(action).WaitAndUnwrapException();
                 return TaskConstants.BooleanTrue;
             }
 
-            return AsyncContextThread.Factory.StartNew(action);
+            var task = Task.Run(action);
+            task.ConfigureAwait(false);
+            return task;
         }
 
         public Task ExecuteOnManagerThread(Func<Task> asyncOperation)
@@ -427,7 +428,9 @@ namespace IO.Ably.Transport
                 return TaskConstants.BooleanTrue;
             }
 
-            return AsyncContextThread.Factory.Run(asyncOperation);
+            var task = Task.Run(asyncOperation);
+            task.ConfigureAwait(false);
+            return task;
         }
 
         internal async Task<TransportParams> CreateTransportParameters()

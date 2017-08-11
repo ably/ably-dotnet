@@ -20,14 +20,13 @@ namespace IO.Ably.ConsoleTest
                 //Rest.Test().Wait();
                 var client = Realtime.Test();
                 client.Connect(); 
-                var channel = client.Channels.Get("testchannel0");
+                var channel = client.Channels.Get("test");
                 await channel.AttachAsync();
                 DateTime start = DateTime.Now;
                 while (true)
                 {
                     channel.Publish(new Random().Next(1000000000, 1000000000).ToString(), new Random().Next(1000000000, 1000000000).ToString());
                     Thread.Sleep(1000);
-                    Console.WriteLine("Bytes used: " + GC.GetTotalMemory(true));
                     Console.WriteLine("Connected time: " + (DateTime.Now - start).TotalSeconds + " seconds");
                 }
 

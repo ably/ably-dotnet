@@ -2,13 +2,11 @@
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using MsgPack;
-using Nito.AsyncEx;
 
 namespace IO.Ably.Transport
 {
     internal class MsWebSocketTransport : ITransport
     {
-        internal readonly AsyncContextThread WebSocketThread = new AsyncContextThread();
         private MsWebSocketConnection _socket;
 
         protected MsWebSocketTransport(TransportParams parameters)
@@ -35,7 +33,7 @@ namespace IO.Ably.Transport
                 AttachEvents();
             }
 
-            WebSocketThread.Factory.StartNew(ConnectAndStartListening);
+            Task.Run(ConnectAndStartListening).ConfigureAwait(false);
         }
 
         private async Task ConnectAndStartListening()
@@ -103,7 +101,7 @@ namespace IO.Ably.Transport
                 if (suppressClosedEvent)
                     DetachEvents();
 
-                WebSocketThread.Factory.StartNew(_socket.StopConnectionAsync);
+                Task.Run(_socket.StopConnectionAsync).ConfigureAwait(false);
             }
         }
 
@@ -111,11 +109,11 @@ namespace IO.Ably.Transport
         {
             if (BinaryProtocol)
             {
-                WebSocketThread.Factory.StartNew(() => _socket.SendData(data.Data));
+                Task.Run(() => _socket.SendData(data.Data));
             }
             else
             {
-                WebSocketThread.Factory.StartNew(() => _socket.SendText(data.Text));
+                Task.Run(() => _socket.SendText(data.Text));
             }
         }
 
@@ -211,7 +209,6 @@ namespace IO.Ably.Transport
         public void Dispose()
         {
             DisposeSocketConnection();
-            WebSocketThread?.Dispose();
         }
     }
 }

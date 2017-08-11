@@ -27,7 +27,7 @@ namespace IO.Ably.Transport
         public string ConnectionId { get; set; }
 
         private ClientWebSocket ClientWebSocket { get; }
-        private readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
+        private CancellationTokenSource _tokenSource = new CancellationTokenSource();
 
         public MsWebSocketConnection(Uri uri)
         {
@@ -41,6 +41,7 @@ namespace IO.Ably.Transport
 
         public async Task StartConnectionAsync()
         {
+            _tokenSource = new CancellationTokenSource();
             _handler?.Invoke(ConnectionState.Connecting, null);
             try
             {
@@ -125,13 +126,15 @@ namespace IO.Ably.Transport
             {
                 try
                 {
-                    var buffer = new ArraySegment<byte>(new byte[1024 * 4]);
+                    var buffer = new ArraySegment<byte>(new byte[1024 * 16]); //Default receive buffer size
                     WebSocketReceiveResult result = null;
                     using (var ms = new MemoryStream())
                     {
                         do
                         {
-                            result = await ClientWebSocket.ReceiveAsync(buffer, _tokenSource.Token).ConfigureAwait(false);
+                            result = await ClientWebSocket.ReceiveAsync(buffer, _tokenSource.Token);
+                            if (result.MessageType == WebSocketMessageType.Close)
+                                break;
                             ms.Write(buffer.Array, buffer.Offset, result.Count);
                         }
                         while (!result.EndOfMessage);

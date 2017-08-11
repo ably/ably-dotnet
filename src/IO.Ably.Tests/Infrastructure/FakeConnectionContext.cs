@@ -7,7 +7,6 @@ using IO.Ably.Rest;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
-using Nito.AsyncEx.Synchronous;
 
 namespace IO.Ably.Tests
 {

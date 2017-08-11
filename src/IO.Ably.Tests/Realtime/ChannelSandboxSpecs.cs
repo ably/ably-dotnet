@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -131,11 +132,11 @@ namespace IO.Ably.Tests.Realtime
             IRealtimeChannel target = client.Channels.Get("test" + protocol);
             target.Attach();
 
-            List<Message> messagesReceived = new List<Message>();
+            ConcurrentQueue<Message> messagesReceived = new ConcurrentQueue<Message>();
             int count = 0;
             target.Subscribe(message =>
             {
-                messagesReceived.Add(message);
+                messagesReceived.Enqueue(message);
                 count++;
                 if (count == 3)
                     resetEvent.Set();
@@ -147,16 +148,18 @@ namespace IO.Ably.Tests.Realtime
             target.Publish("test3", "test 321");
 
             bool result = resetEvent.WaitOne(8000);
+            await Task.Delay(100);
             result.Should().BeTrue();
 
             // Assert
             messagesReceived.Count.ShouldBeEquivalentTo(3);
-            messagesReceived[0].Name.ShouldBeEquivalentTo("test1");
-            messagesReceived[0].Data.ShouldBeEquivalentTo("test 12");
-            messagesReceived[1].Name.ShouldBeEquivalentTo("test2");
-            messagesReceived[1].Data.ShouldBeEquivalentTo("test 123");
-            messagesReceived[2].Name.ShouldBeEquivalentTo("test3");
-            messagesReceived[2].Data.ShouldBeEquivalentTo("test 321");
+            var messages = messagesReceived.ToList();
+            messages[0].Name.ShouldBeEquivalentTo("test1");
+            messages[0].Data.ShouldBeEquivalentTo("test 12");
+            messages[1].Name.ShouldBeEquivalentTo("test2");
+            messages[1].Data.ShouldBeEquivalentTo("test 123");
+            messages[2].Name.ShouldBeEquivalentTo("test3");
+            messages[2].Data.ShouldBeEquivalentTo("test 321");
         }
 
         [Theory]
@@ -265,8 +268,9 @@ namespace IO.Ably.Tests.Realtime
             });
 
             await channel.PublishAsync(new Message("test", "withClientId"));
-            receivedClienId.Should().Be(clientId);
+            await Task.Delay(1000);
             messagesReceived.Should().BeGreaterThan(0);
+            receivedClienId.Should().Be(clientId);
         }
 
         [Theory]
@@ -290,6 +294,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             await channel.PublishAsync(new Message("test", "withClientId"));
+            await Task.Delay(100);
             messageReceived.Should().BeTrue();
         }
 
@@ -404,6 +409,7 @@ namespace IO.Ably.Tests.Realtime
             //Send a followup message
             var followupMessage = await channel.PublishAsync("followup", "message");
             followupMessage.IsSuccess.Should().BeTrue();
+            await Task.Delay(100);
             messageReceived.Should().Be(1);
         }
 
@@ -480,6 +486,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             var result = await new ChannelAwaiter(channel, ChannelState.Failed).WaitAsync();
+            await Task.Delay(100);
             result.IsSuccess.Should().BeTrue();
 
             var error = channel.ErrorReason;
