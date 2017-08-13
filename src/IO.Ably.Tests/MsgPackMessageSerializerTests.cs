@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using FluentAssertions;
 using IO.Ably.Types;
 using MsgPack.Serialization;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Extensions;
 
 namespace IO.Ably.Tests
 {

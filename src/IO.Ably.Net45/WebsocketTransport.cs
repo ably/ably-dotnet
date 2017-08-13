@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using WebSocket4Net;
 using IO.Ably.Transport;
-using MsgPack;
 using SuperSocket.ClientEngine;
 
 namespace IO.Ably
@@ -190,7 +186,7 @@ namespace IO.Ably
             {
                 try
                 {
-                    var message = MsgPackHelper.Deserialise(e.Data, typeof(MessagePackObject)).ToString();
+                    var message = MsgPackHelper.DeserialiseMsgPackObject(e.Data).ToString();
                     Logger.Debug("Websocket data message received. Raw: " + message);
                 }
                 catch (Exception)

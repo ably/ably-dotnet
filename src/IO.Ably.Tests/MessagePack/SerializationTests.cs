@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
-using IO.Ably.CustomSerialisers;
 using MsgPack;
-using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 

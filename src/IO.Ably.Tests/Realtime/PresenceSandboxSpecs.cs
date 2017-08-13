@@ -87,8 +87,8 @@ namespace IO.Ably.Tests.Realtime
 
                 await channel.Presence.EnterAsync(new[] { "test", "best" });
 
-                var presence = await channel.Presence.GetAsync();
                 await Task.Delay(2000);
+                var presence = await channel.Presence.GetAsync();
                 presence.Should().HaveCount(1);
             }
 

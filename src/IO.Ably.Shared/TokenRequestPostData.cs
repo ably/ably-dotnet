@@ -1,7 +1,5 @@
 using System;
-using System.Globalization;
 using IO.Ably.Encryption;
-using MsgPack.Serialization;
 using Newtonsoft.Json;
 
 namespace IO.Ably

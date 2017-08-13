@@ -1,5 +1,3 @@
-using MsgPack;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -41,7 +39,8 @@ namespace IO.Ably.MessageEncoders
             Encoders.Add(new CipherEncoder(protocol));
             Encoders.Add(new Base64Encoder(protocol));
 
-            Logger.Debug(string.Format("Initializing message encodings. {0} initialized", string.Join(",", Encoders.Select(x => x.EncodingName))));
+            Logger.Debug(
+                $"Initializing message encodings. {string.Join(",", Encoders.Select(x => x.EncodingName))} initialized");
         }
 
         public IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response, ChannelOptions options)
@@ -92,7 +91,7 @@ namespace IO.Ably.MessageEncoders
         {
             try
             {
-                var body = MsgPackHelper.Deserialise(requestBody, typeof(MessagePackObject))?.ToString();
+                var body = MsgPackHelper.DeserialiseMsgPackObject(requestBody)?.ToString();
                 
                 Logger.Debug("RequestBody: " + (body ?? "No body present"));
             }
@@ -253,7 +252,7 @@ namespace IO.Ably.MessageEncoders
                     var responseBody = response.TextResponse;
                     if (_protocol == Protocol.MsgPack && response.Body != null)
                     {
-                        responseBody = MsgPackHelper.Deserialise(response.Body, typeof (MessagePackObject)).ToString();
+                        responseBody = MsgPackHelper.DeserialiseMsgPackObject(response.Body).ToString();
                     }
                     Logger.Debug("Response: " + responseBody);
                 }

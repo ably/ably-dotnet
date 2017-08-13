@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
-using MsgPack;
 
 namespace IO.Ably.Transport
 {
@@ -66,7 +65,7 @@ namespace IO.Ably.Transport
                 {
                     try
                     {
-                        var message = MsgPackHelper.Deserialise(data.Data, typeof(MessagePackObject)).ToString();
+                        var message = MsgPackHelper.DeserialiseMsgPackObject(data.Data).ToString();
                         Logger.Debug("Websocket data message received. Raw: " + message);
                     }
                     catch (Exception)

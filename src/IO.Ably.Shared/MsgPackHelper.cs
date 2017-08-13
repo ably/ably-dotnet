@@ -65,6 +65,11 @@ namespace IO.Ably
             }
         }
 
+        public static object DeserialiseMsgPackObject(byte[] byteArray)
+        {
+            return Deserialise(byteArray, typeof(MessagePackObject));
+        }
+
         public static T Deserialise<T>(byte[] byteArray)
         {
             return (T) Deserialise(byteArray, typeof(T));

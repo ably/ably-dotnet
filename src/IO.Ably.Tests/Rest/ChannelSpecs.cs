@@ -321,13 +321,13 @@ namespace IO.Ably.Tests.Rest
                 var channel = rest.Channels.Get("Test");
                 foreach (object[] dates in InvalidHistoryDates())
                 {
-                    var query = new HistoryRequestParams() { Start = (DateTimeOffset)dates.First(), End = (DateTimeOffset)dates.Last()};
+                    var query = new HistoryRequestParams() { Start = (DateTimeOffset?)dates.First(), End = (DateTimeOffset)dates.Last()};
 
                     var ex = await Assert.ThrowsAsync<AblyException>(async () => await channel.HistoryAsync(query));
                 }
             }
 
-            public static IEnumerable<object[]> InvalidHistoryDates()
+            private static IEnumerable<object[]> InvalidHistoryDates()
             {
                     yield return new object[] { new DateTimeOffset(1969, 1, 1, 0, 0, 0, TimeSpan.Zero), DateTimeOffset.Now };
                     yield return new object[] { new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero), new DateTimeOffset(1999, 12, 31, 0, 0, 0, TimeSpan.Zero) };
