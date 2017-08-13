@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -144,18 +145,21 @@ namespace IO.Ably.Tests
                     Assert.ThrowsAsync<AblyException>(() => _channel.Presence.HistoryAsync(new HistoryRequestParams() { Limit = limit }));
             }
 
-            [Theory]
-            [MemberData("InvalidHistoryDates")]
-            public async Task History_WithInvalidStartOrEnd_Throws(DateTimeOffset? start, DateTimeOffset? end)
+            [Fact]
+            public async Task History_WithInvalidStartOrEnd_Throws()
             {
                 var rest = GetRestClient();
                 var channel = rest.Channels.Get("Test");
-                var query = new HistoryRequestParams() { Start = start, End = end };
+                foreach (object[] dates in InvalidHistoryDates)
+                {
+                    var query = new HistoryRequestParams() { Start = (DateTimeOffset?)dates.First(), End = (DateTimeOffset)dates.Last() };
 
-                await Assert.ThrowsAsync<AblyException>(async () => await channel.HistoryAsync(query));
+                    await Assert.ThrowsAsync<AblyException>(async () => await channel.HistoryAsync(query));
+                }
+                
             }
 
-            public static IEnumerable<object[]> InvalidHistoryDates
+            private static IEnumerable<object[]> InvalidHistoryDates
             {
                 get
                 {

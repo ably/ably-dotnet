@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -269,6 +270,7 @@ namespace IO.Ably.Realtime
         internal class PresenceMap
         {
             private readonly string _channelName;
+            private object _lock = new Object();
 
             public enum State
             {
@@ -278,13 +280,13 @@ namespace IO.Ably.Realtime
                 Failed
             }
 
-            private readonly Dictionary<string, PresenceMessage> members;
+            private readonly ConcurrentDictionary<string, PresenceMessage> members;
             private ICollection<string> residualMembers;
 
             public PresenceMap(string channelName)
             {
                 _channelName = channelName;
-                members = new Dictionary<string, PresenceMessage>();
+                members = new ConcurrentDictionary<string, PresenceMessage>();
             }
 
             public bool IsSyncInProgress { get; private set; }
@@ -300,8 +302,11 @@ namespace IO.Ably.Realtime
 
             public bool Put(PresenceMessage item)
             {
-                // we've seen this member, so do not remove it at the end of sync
-                residualMembers?.Remove(item.MemberKey);
+                lock (_lock)
+                {
+                    // we've seen this member, so do not remove it at the end of sync
+                    residualMembers?.Remove(item.MemberKey);
+                }
 
                 // compare the timestamp of the new item with any existing member (or ABSENT witness)
                 PresenceMessage existingItem;
@@ -324,7 +329,8 @@ namespace IO.Ably.Realtime
                     result = false;
                 }
 
-                members.Remove(item.MemberKey);
+                members.TryRemove(item.MemberKey, out PresenceMessage _);
+
                 return result;
             }
 
@@ -333,8 +339,11 @@ namespace IO.Ably.Realtime
                 if(Logger.IsDebug) Logger.Debug($"StartSync | Channel: {_channelName}, SyncInProgress: {IsSyncInProgress}");
                 if (!IsSyncInProgress)
                 {
-                    residualMembers = new HashSet<string>(members.Keys);
-                    IsSyncInProgress = true;
+                    lock (_lock)
+                    {
+                        residualMembers = new HashSet<string>(members.Keys);
+                        IsSyncInProgress = true;
+                    }
                 }
             }
 
@@ -351,13 +360,17 @@ namespace IO.Ably.Realtime
                     // received all of the out-of-order sync messages
                     foreach (var member in members.ToArray())
                         if (member.Value.Action == PresenceAction.Present)
-                            members.Remove(member.Key);
+                            members.TryRemove(member.Key, out PresenceMessage _);
 
-                    // Any members that were present at the start of the sync,
-                    // and have not been seen in sync, can be removed
-                    foreach (var member in residualMembers)
-                        members.Remove(member);
-                    residualMembers = null;
+                    lock (_lock)
+                    {
+                        // Any members that were present at the start of the sync,
+                        // and have not been seen in sync, can be removed
+                        foreach (var member in residualMembers)
+                            members.TryRemove(member, out PresenceMessage _);
+
+                        residualMembers = null;
+                    }
                 }
                 finally
                 {

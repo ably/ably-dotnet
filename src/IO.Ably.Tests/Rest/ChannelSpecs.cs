@@ -314,25 +314,24 @@ namespace IO.Ably.Tests.Rest
                     Assert.ThrowsAsync<AblyException>(() => _channel.HistoryAsync(new HistoryRequestParams() {Limit = limit}));
             }
 
-            [Theory]
-            [MemberData("InvalidHistoryDates")]
-            public async Task History_WithInvalidStartOrEnd_Throws(DateTimeOffset? start, DateTimeOffset? end)
+            [Fact]
+            public async Task History_WithInvalidStartOrEnd_Throws()
             {
                 var rest = GetRestClient();
                 var channel = rest.Channels.Get("Test");
-                var query = new HistoryRequestParams() { Start = start, End = end };
+                foreach (object[] dates in InvalidHistoryDates())
+                {
+                    var query = new HistoryRequestParams() { Start = (DateTimeOffset)dates.First(), End = (DateTimeOffset)dates.Last()};
 
-                var ex = await Assert.ThrowsAsync<AblyException>(async () => await channel.HistoryAsync(query));
+                    var ex = await Assert.ThrowsAsync<AblyException>(async () => await channel.HistoryAsync(query));
+                }
             }
 
-            public static IEnumerable<object[]> InvalidHistoryDates
+            public static IEnumerable<object[]> InvalidHistoryDates()
             {
-                get
-                {
                     yield return new object[] { new DateTimeOffset(1969, 1, 1, 0, 0, 0, TimeSpan.Zero), DateTimeOffset.Now };
                     yield return new object[] { new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero), new DateTimeOffset(1999, 12, 31, 0, 0, 0, TimeSpan.Zero) };
                     yield return new object[] { null, new DateTimeOffset(1969, 12, 31, 0, 0, 0, TimeSpan.Zero) };
-                }
             }
 
             [Fact]
