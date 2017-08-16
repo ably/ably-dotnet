@@ -64,6 +64,7 @@ namespace IO.Ably
             ILoggerSink loggerSink = LoggerSink;
             if (LogLevel == LogLevel.None || level < LogLevel || loggerSink == null)
                 return;
+
             if(args == null || args.Length == 0)
                 loggerSink.LogEvent(level, timeStamp + " " + message);
             else

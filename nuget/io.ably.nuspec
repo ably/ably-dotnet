@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>ably.io</id>
-        <version>0.8.5-beta18</version>
+        <version>0.8.5-rc1</version>
         <title>ably.io</title>
         <authors>Martin Georgiev, Yavor Ivanov</authors>
         <owners>Ably Real-time Ltd</owners>
@@ -19,9 +19,7 @@
             
           </group>
           <group targetFramework="net46">
-            <dependency id="Newtonsoft.Json" version="10.0.2" />
             <dependency id="MsgPack.Cli" version="0.9.0-beta2" />
-            <dependency id="WebSocket4Net" version="0.15.0-beta9" />
           </group>
           <group targetFramework="uap">
             <dependency id="Newtonsoft.Json" version="10.0.2" />
@@ -30,18 +28,13 @@
             <dependency id="System.Net.WebSockets.Client" version="4.3.1" />
           </group>
           <group targetFramework="monoandroid">
-            <dependency id="Newtonsoft.Json" version="10.0.2" />
-            <dependency id="WebSocket4Net" version="0.15.0-beta9" />
             <dependency id="MsgPack.Cli" version="0.9.0-beta2" />
           </group>
           <group targetFramework="monotouch">
-            <dependency id="Newtonsoft.Json" version="10.0.2" />
             <dependency id="WebSocket4Net" version="0.15.0-beta9" />
             <dependency id="MsgPack.Cli" version="0.9.0-beta2" />
           </group>
           <group targetFramework="Xamarin.iOS">
-            <dependency id="Newtonsoft.Json" version="10.0.2" />
-            <dependency id="WebSocket4Net" version="0.15.0-beta9" />
             <dependency id="MsgPack.Cli" version="0.9.0-beta2" />
           </group>
           <group targetFramework="netstandard1.4">
@@ -57,10 +50,10 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="..\src\IO.Ably.Net45\bin\Release\IO.Ably.*" target="lib\net46" />
-        <file src="..\src\IO.Ably.Android\bin\Release\IO.Ably.*" target="lib\monoandroid" />
-        <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.*" target="lib\Xamarin.iOS" />
-        <file src="..\src\IO.Ably.iOS\bin\Release\IO.Ably.*" target="lib\monotouch" />
+        <file src="..\src\IO.Ably.Net45\bin\Release\Packaged\IO.Ably.*" target="lib\net46" />
+        <file src="..\src\IO.Ably.Android\bin\Release\Packaged\IO.Ably.*" target="lib\monoandroid" />
+        <file src="..\src\IO.Ably.iOS\bin\Release\Packaged\IO.Ably.*" target="lib\Xamarin.iOS" />
+        <file src="..\src\IO.Ably.iOS\bin\Release\Packaged\IO.Ably.*" target="lib\monotouch" />
         <file src="..\src\IO.Ably.Standard\bin\Release\IO.Ably.*" target="lib\netstandard1.4" />
         <file src="..\src\IO.Ably.UWP\bin\Release\IO.Ably.*" target="lib\uap" />
     </files>
