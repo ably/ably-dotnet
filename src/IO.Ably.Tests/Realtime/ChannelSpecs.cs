@@ -381,6 +381,7 @@ namespace IO.Ably.Tests.Realtime
                 attachTask.Result.Error.Should().NotBeNull();
             }
 
+
             private async Task SetState(ChannelState state, ErrorInfo error = null, ProtocolMessage message = null)
             {
                 (_channel as RealtimeChannel).SetChannelState(state, error, message);

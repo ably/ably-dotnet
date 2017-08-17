@@ -14,7 +14,8 @@ namespace IO.Ably.ConsoleTest
 
         static async Task MainAsync(string[] args)
         {
-            //IO.Ably.Logger.LoggerSink = new MyLogger();
+            IO.Ably.Logger.LoggerSink = new MyLogger();
+            Logger.LogLevel = LogLevel.Debug;
             try
             {
                 //Rest.Test().Wait();
