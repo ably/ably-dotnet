@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "targets": {
     ".NETStandard,Version=v1.4": {
       "Microsoft.CSharp/4.3.0": {
@@ -5552,7 +5552,20 @@
       "projectName": "IO.Ably.Standard",
       "projectPath": "C:\\projects\\ably-dotnet\\src\\IO.Ably.Standard\\IO.Ably.Standard.csproj",
       "projectJsonPath": "C:\\projects\\ably-dotnet\\src\\IO.Ably.Standard\\project.json",
-      "projectStyle": "ProjectJson"
+      "packagesPath": "C:\\Users\\marto83\\.nuget\\packages\\",
+      "outputPath": "C:\\projects\\ably-dotnet\\src\\IO.Ably.Standard\\obj\\",
+      "projectStyle": "ProjectJson",
+      "configFilePaths": [
+        "C:\\projects\\ably-dotnet\\src\\.nuget\\NuGet.Config",
+        "C:\\Users\\marto83\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+      ],
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "https://api.nuget.org/v3/index.json": {},
+        "https://www.myget.org/F/ably-beta/api/v3/index.json": {},
+        "https://www.myget.org/F/marto-playground/api/v3/index.json": {}
+      }
     },
     "dependencies": {
       "MsgPack.Cli": "0.9.0-beta2",
