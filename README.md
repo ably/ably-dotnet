@@ -79,8 +79,8 @@ Subscribing to all events:
 ```csharp
 channel.Subscribe(message =>
 {
-    var name = message.name;
-    var data = message.data;
+    var name = message.Name;
+    var data = message.Data;
 });
 ```
 
@@ -89,8 +89,8 @@ Subscribing to specific events:
 ```csharp
 channel.Subscribe("myEvent", message =>
 {
-    var name = message.name;
-    var data = message.data;
+    var name = message.Name;
+    var data = message.Data;
 });
 ```
 
