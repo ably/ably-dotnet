@@ -58,7 +58,7 @@
           "ref/netstandard1.3/Microsoft.Win32.Primitives.dll": {}
         }
       },
-      "MsgPack.Cli/0.9.0-beta2": {
+      "MsgPack.Cli/0.9.1": {
         "type": "package",
         "dependencies": {
           "System.Collections": "4.0.11",
@@ -1608,31 +1608,31 @@
         "ref/xamarinwatchos10/_._"
       ]
     },
-    "MsgPack.Cli/0.9.0-beta2": {
-      "sha512": "0m9CLnfCOOZotvVY5tEL4vXL5+U94PnxcXun+Xce8UqDbxBlmXJJe3RlxjT01sPox8jcL1/TksuToHIPz9EiyQ==",
+    "MsgPack.Cli/0.9.1": {
+      "sha512": "tvKBi2yFPou8iexgAhKqWXi2Fwew94PcI0J8thWBBDtEX1wEiOqaA+2p0Vu98ACc9MyW8paA7yWk/TdY8Yyxuw==",
       "type": "package",
-      "path": "msgpack.cli/0.9.0-beta2",
+      "path": "msgpack.cli/0.9.1",
       "files": [
-        "MsgPack.Cli.0.9.0-beta2.nupkg.sha512",
-        "MsgPack.Cli.nuspec",
+        "lib/MonoAndroid10/MsgPack.XML",
         "lib/MonoAndroid10/MsgPack.dll",
-        "lib/MonoAndroid10/MsgPack.xml",
         "lib/Xamarin.iOS10/MsgPack.XML",
         "lib/Xamarin.iOS10/MsgPack.dll",
-        "lib/net35-client/MsgPack.XML",
-        "lib/net35-client/MsgPack.dll",
+        "lib/net35/MsgPack.XML",
+        "lib/net35/MsgPack.dll",
         "lib/net45/MsgPack.XML",
         "lib/net45/MsgPack.dll",
         "lib/net46/MsgPack.XML",
         "lib/net46/MsgPack.dll",
+        "lib/netstandard1.1/MsgPack.XML",
         "lib/netstandard1.1/MsgPack.dll",
-        "lib/netstandard1.1/MsgPack.xml",
+        "lib/netstandard1.3/MsgPack.XML",
         "lib/netstandard1.3/MsgPack.dll",
-        "lib/netstandard1.3/MsgPack.xml",
         "lib/sl5/MsgPack.XML",
         "lib/sl5/MsgPack.dll",
         "lib/windowsphone8/MsgPack.XML",
-        "lib/windowsphone8/MsgPack.dll"
+        "lib/windowsphone8/MsgPack.dll",
+        "msgpack.cli.0.9.1.nupkg.sha512",
+        "msgpack.cli.nuspec"
       ]
     },
     "NETStandard.Library/1.6.1": {
@@ -5534,7 +5534,7 @@
   },
   "projectFileDependencyGroups": {
     "": [
-      "MsgPack.Cli >= 0.9.0-beta2",
+      "MsgPack.Cli >= 0.9.1",
       "NETStandard.Library >= 1.6.1",
       "Newtonsoft.Json >= 10.0.2",
       "System.Net.Http >= 4.3.2",
@@ -5568,7 +5568,7 @@
       }
     },
     "dependencies": {
-      "MsgPack.Cli": "0.9.0-beta2",
+      "MsgPack.Cli": "[0.9.1, )",
       "NETStandard.Library": "1.6.1",
       "Newtonsoft.Json": "10.0.2",
       "System.Net.Http": "4.3.2",

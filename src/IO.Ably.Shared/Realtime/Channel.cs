@@ -192,7 +192,7 @@ namespace IO.Ably.Realtime
 
             if (State == ChannelState.Failed)
             {
-                throw new AblyException("Channel is Failed");
+                throw new AblyException("Cannot Detach channel because it is in Failed state.");
             }
 
             if (DetachedAwaiter.StartWait(callback, ConnectionManager.Options.RealtimeRequestTimeout))

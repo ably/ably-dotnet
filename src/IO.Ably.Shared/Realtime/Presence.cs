@@ -364,12 +364,15 @@ namespace IO.Ably.Realtime
 
                     lock (_lock)
                     {
-                        // Any members that were present at the start of the sync,
-                        // and have not been seen in sync, can be removed
-                        foreach (var member in residualMembers)
-                            members.TryRemove(member, out PresenceMessage _);
+                        if (residualMembers != null)
+                        {
+                            // Any members that were present at the start of the sync,
+                            // and have not been seen in sync, can be removed
+                            foreach (var member in residualMembers)
+                                members.TryRemove(member, out PresenceMessage _);
 
-                        residualMembers = null;
+                            residualMembers = null;
+                        }
                     }
                 }
                 finally
