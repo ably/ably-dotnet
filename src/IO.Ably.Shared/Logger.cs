@@ -39,22 +39,21 @@ namespace IO.Ably
     public static class Logger
     {
         private static readonly Object SyncLock = new Object();
-        private static InternalLogger _loggerInsance;
-
+        private static InternalLogger _loggerInstance;
         internal static InternalLogger LoggerInstance
         {
             get
             {
-                if (_loggerInsance == null)
+                if (_loggerInstance == null)
                 {
                     lock (SyncLock)
                     {
-                        _loggerInsance = new InternalLogger();
+                        _loggerInstance = new InternalLogger();
                     }
                 }
-                return _loggerInsance;
+                return _loggerInstance;
             }
-            set => _loggerInsance = value;
+            set => _loggerInstance = value;
         }
 
         /// <summary>Maximum level to log.</summary>
