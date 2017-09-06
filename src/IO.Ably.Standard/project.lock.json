@@ -5568,7 +5568,7 @@
       }
     },
     "dependencies": {
-      "MsgPack.Cli": "[0.9.1, )",
+      "MsgPack.Cli": "0.9.1",
       "NETStandard.Library": "1.6.1",
       "Newtonsoft.Json": "10.0.2",
       "System.Net.Http": "4.3.2",
