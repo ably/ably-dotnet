@@ -23,48 +23,51 @@ namespace IO.Ably.AcceptanceTests
         public void TestLogger()
         {
             var sink = new TestLoggerSink();
+            var logger = new Logger.InternalLogger();
 
-            using (Logger.SetTempDestination(null))
+            using (logger.SetTempDestination(null))
             {
                 sink.LastLevel.ShouldBeEquivalentTo(null);
                 sink.LastMessage.ShouldBeEquivalentTo(null);
 
-                Logger.LogLevel.ShouldBeEquivalentTo(Defaults.DefaultLogLevel);
-                Logger.LogLevel = LogLevel.Debug;
+                logger.LogLevel.ShouldBeEquivalentTo(Defaults.DefaultLogLevel);
+                logger.LogLevel = LogLevel.Debug;
 
                 // null destination shouldn't throw
-                Logger.LoggerSink = null;
-                Logger.Debug("msg");
+                logger.LoggerSink = null;
+                logger.Debug("msg");
 
-                Logger.LoggerSink = sink;
+                logger.LoggerSink = sink;
 
                 // Basic messages
-                Logger.Error("Test Error Message");
+                logger.Error("Test Error Message");
                 sink.LastLevel.ShouldBeEquivalentTo(LogLevel.Error);
                 sink.LastMessage.Should().EndWith("Test Error Message");
 
-                Logger.Debug("Test Info Message");
+                logger.Debug("Test Info Message");
                 sink.LastLevel.ShouldBeEquivalentTo(LogLevel.Debug);
                 sink.LastMessage.Should().EndWith("Test Info Message");
 
-                Logger.Debug("Test Debug Message");
+                logger.Debug("Test Debug Message");
                 sink.LastLevel.ShouldBeEquivalentTo(LogLevel.Debug);
                 sink.LastMessage.Should().EndWith("Test Debug Message");
 
                 // Verify the log level works
-                Logger.LogLevel = LogLevel.Warning;
-                Logger.Error("Test Error Message");
-                Logger.Debug("Test Info Message");
-                Logger.Debug("Test Debug Message");
+                logger.LogLevel = LogLevel.Warning;
+                logger.Error("Test Error Message");
+                logger.Debug("Test Info Message");
+                logger.Debug("Test Debug Message");
                 sink.LastLevel.ShouldBeEquivalentTo(LogLevel.Error);
                 sink.LastMessage.Should().EndWith("Test Error Message");
 
                 // Revert the level
-                Logger.LogLevel = Defaults.DefaultLogLevel;
+                logger.LogLevel = Defaults.DefaultLogLevel;
             }
+
+            // test that the Logger gets instanced
+            Assert.NotNull(Logger.LoggerInstance);
         }
-
-
+        
         public void Dispose()
         {
             Logger.LoggerSink = new DefaultLoggerSink();
