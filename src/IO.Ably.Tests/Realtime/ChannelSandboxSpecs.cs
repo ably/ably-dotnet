@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -600,18 +601,29 @@ namespace IO.Ably.Tests.Realtime
         [Trait("issue", "117")]
         public async Task AttachAwaitShouldtimeoutIfStateChanges(Protocol protocol)
         {
+
             Logger.LogLevel = LogLevel.Debug;
-            var client1 = await GetRealtimeClient(protocol, (opts, _) => opts.AutoConnect = false);
+            var client1 = await GetRealtimeClient(protocol, (opts, _) =>
+            {
+                opts.AutoConnect = false;
+                opts.RealtimeRequestTimeout = new TimeSpan(0,0,30);
+            });
 
             var channelName = "test".AddRandomSuffix();
             var channel = client1.Channels.Get(channelName);
-            client1.Connection.On(ConnectionState.Connected, state => client1.GetTestTransport().Close(false));
 
+            TaskCompletionSource<bool> tsc = new TaskCompletionSource<bool>();
+            client1.Connection.On(ConnectionState.Connected, async state =>
+            {
+                tsc.SetResult(true);
+                client1.GetTestTransport().Close(false);
+                var result = await channel.AttachAsync();
+                result.Error.Should().NotBeNull();
+                result.Error.Message.Should().Contain("Timeout exceeded");
+            });
             client1.Connect();
-
-            var result = await channel.AttachAsync();
-            result.Error.Should().NotBeNull();
-            result.Error.Message.Should().Contain("Timeout exceeded");
+            var didConnect = await tsc.Task;
+            didConnect.ShouldBeEquivalentTo(true, "this indicates that the connection event was handled.");
         }
 
         [Theory]
