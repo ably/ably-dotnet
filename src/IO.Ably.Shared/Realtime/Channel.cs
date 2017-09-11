@@ -142,7 +142,7 @@ namespace IO.Ably.Realtime
 
             if (IsTerminalConnectionState)
             {
-                throw new AblyException($"Cannot attach when connection is in {ConnectionState.ToString()} state");
+                throw new AblyException($"Cannot attach when connection is in {ConnectionState} state");
             }
 
             if (AttachedAwaiter.StartWait(callback, ConnectionManager.Options.RealtimeRequestTimeout))
