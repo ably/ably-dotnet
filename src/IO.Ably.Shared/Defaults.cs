@@ -45,7 +45,7 @@ namespace IO.Ably
         /// <summary>The default log level you'll see in the debug output.</summary>
         internal const LogLevel DefaultLogLevel = LogLevel.Warning;
 
-        public static readonly INowProvider NowProvider = new DefaultNowProvider();
+        public static INowProvider NowProvider() => new DefaultNowProvider();
 
 
         static Defaults()

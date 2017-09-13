@@ -30,7 +30,7 @@ namespace IO.Ably
             HttpMaxRetryCount = 3;
             HttpMaxRetryDuration = TimeSpan.FromSeconds(10);
 
-            NowProvider = Defaults.NowProvider;
+            NowProvider = Defaults.NowProvider();
         }
 
         public AblyHttpOptions(ClientOptions options)

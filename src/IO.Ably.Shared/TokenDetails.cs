@@ -45,7 +45,7 @@ namespace IO.Ably
 
         public TokenDetails()
         {
-            NowProvider = Defaults.NowProvider;
+            NowProvider = Defaults.NowProvider();
         }
         public TokenDetails(INowProvider nowProvider)
         {
@@ -55,7 +55,7 @@ namespace IO.Ably
         public TokenDetails(string token)
         {
             Token = token;
-            NowProvider = Defaults.NowProvider;
+            NowProvider = Defaults.NowProvider();
         }
         public TokenDetails(string token, INowProvider nowProvider)
         {

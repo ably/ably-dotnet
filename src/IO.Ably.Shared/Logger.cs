@@ -121,7 +121,7 @@ namespace IO.Ably
             {
                 LogLevel = logLevel;
                 LoggerSink = loggerSink;
-                NowProvider = nowProvider ?? Defaults.NowProvider;
+                NowProvider = nowProvider ?? Defaults.NowProvider();
             }
 
             public IDisposable SetTempDestination(ILoggerSink i)

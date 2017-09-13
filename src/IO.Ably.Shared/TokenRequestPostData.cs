@@ -11,7 +11,7 @@ namespace IO.Ably
 
         public TokenRequest()
         {
-            NowProvider = Defaults.NowProvider;
+            NowProvider = Defaults.NowProvider();
         }
         public TokenRequest(INowProvider nowProvider)
         {

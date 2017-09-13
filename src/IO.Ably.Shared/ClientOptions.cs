@@ -158,7 +158,7 @@ namespace IO.Ably
 
         public INowProvider NowProvider
         {
-            get => _nowProvider ?? (_nowProvider = Defaults.NowProvider);
+            get => _nowProvider ?? (_nowProvider = Defaults.NowProvider());
             set => _nowProvider = value;
         }
 
