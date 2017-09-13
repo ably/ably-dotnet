@@ -1,4 +1,5 @@
 ﻿using System;
+using IO.Ably.Shared;
 
 namespace IO.Ably
 {
@@ -15,6 +16,8 @@ namespace IO.Ably
         internal TimeSpan HttpMaxRetryDuration { get; set; }
         public bool IsDefaultHost { get; set; } = true;
 
+        public INowProvider NowProvider { get; set; }
+
         public AblyHttpOptions() //Used for testing
         {
             Host = Defaults.RestHost;
@@ -26,6 +29,8 @@ namespace IO.Ably
             HttpRequestTimeout = TimeSpan.FromSeconds(15);
             HttpMaxRetryCount = 3;
             HttpMaxRetryDuration = TimeSpan.FromSeconds(10);
+
+            NowProvider = Defaults.NowProvider;
         }
 
         public AblyHttpOptions(ClientOptions options)
@@ -40,6 +45,8 @@ namespace IO.Ably
             HttpRequestTimeout = options.HttpRequestTimeout;
             HttpMaxRetryCount = options.IsDefaultRestHost ? options.HttpMaxRetryCount : 1;
             HttpMaxRetryDuration = options.HttpMaxRetryDuration;
+
+            NowProvider = options.NowProvider;
         }
     }
 }

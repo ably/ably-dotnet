@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
+using IO.Ably.Shared;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport
 {
-    internal class ConnectionManager : IConnectionManager, ITransportListener, IConnectionContext
+    internal class ConnectionManager : NowProviderConcern, IConnectionManager, ITransportListener, IConnectionContext
     {
         public Queue<MessageAndCallback> PendingMessages { get; }
         //internal readonly AsyncContextThread AsyncContextThread = new AsyncContextThread();
@@ -57,10 +58,11 @@ namespace IO.Ably.Transport
             }
         }
 
-        public ConnectionManager(Connection connection)
+        public ConnectionManager(Connection connection, INowProvider nowProvider)
         {
+            NowProvider = nowProvider;
             PendingMessages = new Queue<MessageAndCallback>();
-            AttemptsInfo = new ConnectionAttemptsInfo(connection);
+            AttemptsInfo = new ConnectionAttemptsInfo(connection, nowProvider);
             Connection = connection;
             AckProcessor = new AcknowledgementProcessor(connection);
 

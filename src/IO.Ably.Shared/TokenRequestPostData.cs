@@ -1,15 +1,21 @@
 using System;
 using IO.Ably.Encryption;
+using IO.Ably.Shared;
 using Newtonsoft.Json;
 
 namespace IO.Ably
 {
-    public class TokenRequest
+    public class TokenRequest : NowProviderConcern
     {
         private DateTimeOffset? _timestamp;
 
         public TokenRequest()
         {
+            NowProvider = Defaults.NowProvider;
+        }
+        public TokenRequest(INowProvider nowProvider)
+        {
+            NowProvider = nowProvider;
             Nonce = Guid.NewGuid().ToString("N").ToLower();
         }
 
@@ -76,7 +82,7 @@ namespace IO.Ably
             this.KeyName = keyName;
             Capability = tokenParams.Capability ?? Capability.AllowAll;
             ClientId = tokenParams.ClientId;
-            var now = Config.Now();
+            var now = Now();
 
             if (tokenParams.Nonce.IsNotEmpty())
                 Nonce = tokenParams.Nonce;
