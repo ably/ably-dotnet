@@ -313,7 +313,14 @@ namespace IO.Ably.Tests.Realtime
                 _client.Options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
                 _channel.Attach();
 
-                await Task.Delay(150);
+                await Task.Delay(120);
+                for (int i = 0; i < 10; i++)
+                {
+                    if (_channel.State != previousState)
+                        await Task.Delay(50);
+                    else
+                        break;
+                }
 
 
                 _channel.State.Should().Be(previousState);
