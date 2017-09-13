@@ -42,7 +42,7 @@ namespace IO.Ably.AcceptanceTests
                 {
                     yield return new object[] { new Message("int", 1) };
                     yield return new object[] { new Message("float", 1.1) };
-                    yield return new object[] { new Message("date", Config.Now()) };
+                    yield return new object[] { new Message("date", TestHelpers.Now()) };
                 }
             }
 

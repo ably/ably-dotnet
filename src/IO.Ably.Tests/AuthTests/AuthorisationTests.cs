@@ -204,7 +204,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSA9d")]
             public async Task WithQueryTimeQueriesForTimestamp()
             {
-                var currentTime = Config.Now();
+                var currentTime = TestHelpers.Now();
                 var client = GetRestClient(x => ("[" + currentTime.ToUnixTimeInMilliseconds() + "]").ToAblyJsonResponse());
 
                 var data = await CreateTokenRequest(client, null, new AuthOptions() { QueryTime = true });

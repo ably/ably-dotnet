@@ -19,7 +19,7 @@ namespace IO.Ably.Tests.AuthTests
         [Trait("spec", "RSA10a")]
         public async Task Authorise_WithNotExpiredCurrentTokenAndForceFalse_ReturnsCurrentToken()
         {
-            var client = GetRestClient(null, opts => opts.TokenDetails = new TokenDetails() { Expires = Config.Now().AddHours(1) });
+            var client = GetRestClient(null, opts => opts.TokenDetails = new TokenDetails() { Expires = TestHelpers.Now().AddHours(1) });
 
             var token = await client.Auth.AuthoriseAsync();
 
@@ -62,7 +62,7 @@ namespace IO.Ably.Tests.AuthTests
         public async Task Authorise_WithNotExpiredCurrentTokenAndForceTrue_RequestsNewToken()
         {
             var client = GetRestClient();
-            var initialToken = new TokenDetails() { Expires = Config.Now().AddHours(1) };
+            var initialToken = new TokenDetails() { Expires = TestHelpers.Now().AddHours(1) };
             client.AblyAuth.CurrentToken = initialToken;
 
             var token = await client.Auth.AuthoriseAsync(new TokenParams() { ClientId = "123", Capability = new Capability() }, new AuthOptions { Force = true});
@@ -76,7 +76,7 @@ namespace IO.Ably.Tests.AuthTests
         public async Task Authorise_WithExpiredCurrentToken_RequestsNewToken()
         {
             var client = GetRestClient();
-            var initialToken = new TokenDetails() { Expires = Config.Now().AddHours(-1) };
+            var initialToken = new TokenDetails() { Expires = TestHelpers.Now().AddHours(-1) };
             client.AblyAuth.CurrentToken = initialToken;
 
             var token = await client.Auth.AuthoriseAsync();

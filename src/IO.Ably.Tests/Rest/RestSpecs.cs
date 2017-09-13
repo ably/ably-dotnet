@@ -141,7 +141,7 @@ namespace IO.Ably.Tests
             [Trait("intermittent", "true")]
             public async Task WhenErrorCodeIsTokenSpecific_ShouldAutomaticallyTryToRenewTokenIfRequestFails(int errorCode)
             {
-                Now = DateTimeOffset.Now;
+                //Now = DateTimeOffset.Now;
                 var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
                 //Had to inline the method otherwise the tests intermittently fail.
                 bool firstAttempt = true;
@@ -600,7 +600,6 @@ namespace IO.Ably.Tests
         [Fact]
         public async Task ClientWithExpiredTokenAutomaticallyCreatesANewOne()
         {
-            Config.Now = () => DateTimeOffset.UtcNow;
             bool newTokenRequested = false;
             var options = new ClientOptions
             {
@@ -612,7 +611,8 @@ namespace IO.Ably.Tests
                         Expires = DateTimeOffset.UtcNow.AddDays(1)
                     });
                 },
-                UseBinaryProtocol = false
+                UseBinaryProtocol = false,
+                NowProvider = TestHelpers.NowProvider()
             };
             var rest = new AblyRest(options);
             rest.ExecuteHttpRequest = request => "[{}]".ToAblyResponse();
@@ -630,7 +630,8 @@ namespace IO.Ably.Tests
             {
                 ClientId = "test",
                 Key = "best",
-                UseBinaryProtocol = false
+                UseBinaryProtocol = false,
+                NowProvider = TestHelpers.NowProvider()
             };
             var rest = new AblyRest(options);
             var token = new TokenDetails("123") { Expires = DateTimeOffset.UtcNow.AddHours(1) };

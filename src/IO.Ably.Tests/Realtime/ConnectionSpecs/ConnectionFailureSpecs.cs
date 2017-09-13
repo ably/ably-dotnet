@@ -15,7 +15,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 {
     public class ConnectingFailureSpecs : ConnectionSpecsBase
     {
-        private TokenDetails _returnedDummyTokenDetails = new TokenDetails("123") { Expires = Config.Now().AddDays(1), ClientId = "123" };
+        private TokenDetails _returnedDummyTokenDetails = new TokenDetails("123") { Expires = TestHelpers.Now().AddDays(1), ClientId = "123" };
         private int _tokenErrorCode = 40140;
 
         [Fact]

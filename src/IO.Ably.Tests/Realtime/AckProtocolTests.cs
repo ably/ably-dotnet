@@ -137,7 +137,7 @@ namespace IO.Ably.Tests.Realtime
         {
             // Arrange
             var ackProcessor = GetAckProcessor();
-            AcknowledgementProcessor target = new AcknowledgementProcessor(new Connection(new AblyRealtime(ValidKey)));
+            AcknowledgementProcessor target = new AcknowledgementProcessor(new Connection(new AblyRealtime(ValidKey), TestHelpers.NowProvider()));
             List<Tuple<bool, ErrorInfo>> callbacks = new List<Tuple<bool, ErrorInfo>>();
 
             // Act
@@ -203,7 +203,7 @@ namespace IO.Ably.Tests.Realtime
 
         private AcknowledgementProcessor GetAckProcessor()
         {
-            var connection = new Connection(new AblyRealtime(ValidKey));
+            var connection = new Connection(new AblyRealtime(ValidKey), TestHelpers.NowProvider());
             connection.Initialise();
             return new AcknowledgementProcessor(connection);
         }

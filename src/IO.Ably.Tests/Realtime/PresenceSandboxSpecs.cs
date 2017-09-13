@@ -207,7 +207,7 @@ namespace IO.Ably.Tests.Realtime
                                     {
                                         ConnectionId = $"{client.Connection.Id}",
                                         Id = $"{client.Connection.Id}-#{clientId}:0",
-                                        Timestamp = Config.Now(),
+                                        Timestamp = TestHelpers.Now(),
                                     }
                                 }
                             };
