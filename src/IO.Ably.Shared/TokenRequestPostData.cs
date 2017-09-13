@@ -9,10 +9,8 @@ namespace IO.Ably
     {
         private DateTimeOffset? _timestamp;
 
-        public TokenRequest()
-        {
-            NowProvider = Defaults.NowProvider();
-        }
+        public TokenRequest() : this(Defaults.NowProvider())
+        {}
         public TokenRequest(INowProvider nowProvider)
         {
             NowProvider = nowProvider;
