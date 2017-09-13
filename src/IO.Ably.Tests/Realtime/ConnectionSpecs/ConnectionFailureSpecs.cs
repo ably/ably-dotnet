@@ -22,7 +22,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN14b")]
         public async Task WithTokenErrorAndRenewableToken_ShouldRenewTokenAutomaticallyWithoutEmittingError()
         {
-            Now = DateTimeOffset.Now;
+            //Now = DateTimeOffset.Now;
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
             bool renewTokenCalled = false;
             var client = GetClientWithFakeTransport(opts =>
@@ -179,7 +179,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("sandboxneeded", "true")]
         public async Task WhenTransportFails_ShouldGoFromConnectingToDisconectedUntilConnectionStateTtlIsReachedAndStateIsSuspended()
         {
-            Now = DateTimeOffset.UtcNow;
+            SetNowFunc(() => DateTimeOffset.UtcNow);
 
             _fakeTransportFactory.initialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false;
@@ -202,7 +202,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             {
                 LastCreatedTransport.Listener?.OnTransportEvent(TransportState.Closing, new Exception());
                 await WaitForConnectingOrSuspended(client);
-                Now = Now.AddSeconds(30);
+                SetNowFunc(() => DateTimeOffset.UtcNow.AddSeconds(30));
             } while (client.Connection.State != ConnectionState.Suspended);
 
             client.Connection.State.Should().Be(ConnectionState.Suspended);
@@ -213,11 +213,16 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             stateChanges.Count(x => x.Current == ConnectionState.Connecting).Should().Be(numberOfAttemps);
         }
 
+        private DateTimeOffset NowFunc()
+        {
+            return DateTimeOffset.UtcNow;
+        }
+
         [Fact]
         [Trait("spec", "RTN14e")]
         public async Task WhenInSuspendedState_ShouldTryAndReconnectAfterSuspendRetryTimeoutIsReached()
         {
-            Now = DateTimeOffset.UtcNow;
+            SetNowFunc(() => DateTimeOffset.UtcNow);
 
             _fakeTransportFactory.initialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false;
@@ -236,7 +241,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 LastCreatedTransport.Listener?.OnTransportEvent(TransportState.Closing, new Exception());
                 
                 await WaitForConnectingOrSuspended(client);
-                Now = Now.AddSeconds(30);
+                NowAddSeconds(30);
 
             } while (client.Connection.State != ConnectionState.Suspended);
 
@@ -258,7 +263,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN14f")]
         public async Task WhenInSuspendedStateAfterRetrying_ShouldGoBackToSuspendedState()
         {
-            Now = DateTimeOffset.UtcNow;
+            SetNowFunc(() => DateTimeOffset.UtcNow);
 
             _fakeTransportFactory.initialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false;
@@ -277,7 +282,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             {
                 LastCreatedTransport.Listener?.OnTransportEvent(TransportState.Closing, new Exception());
                 await WaitForConnectingOrSuspended(client);
-                Now = Now.AddSeconds(30);
+                NowAddSeconds(30);
             } while (client.Connection.State != ConnectionState.Suspended);
 
             await new ConnectionAwaiter(client.Connection, ConnectionState.Connecting).Wait();

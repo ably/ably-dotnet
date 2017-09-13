@@ -28,12 +28,13 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN13a")]
         public async Task OnHeartBeatMessageReceived_ShouldReturnElapsedTime()
         {
-            Now = DateTimeOffset.UtcNow;
+            SetNowFunc(() => DateTimeOffset.UtcNow);
             var client = GetConnectedClient();
 
             _fakeTransportFactory.LastCreatedTransport.SendAction = async message =>
             {
-                Now = Now.AddMilliseconds(100);
+
+                NowAdd(TimeSpan.FromMilliseconds(100));
                 if (message.Original.Action == ProtocolMessage.MessageAction.Heartbeat)
                 {
                     await Task.Delay(1);

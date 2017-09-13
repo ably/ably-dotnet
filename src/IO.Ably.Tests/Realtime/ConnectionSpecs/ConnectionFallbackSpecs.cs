@@ -213,15 +213,15 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             };
 
             List<string> retryHosts = new List<string>();
+            retryHosts.Add(LastCreatedTransport.Parameters.Host);
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
                 Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
-
             for (int i = 0; i < 5; i++)
             {
-                Now = Now.AddSeconds(60);
+                SetNowFunc(() => DateTimeOffset.UtcNow.AddSeconds(60));
                 if (client.Connection.State == ConnectionState.Connecting)
                 {
                     retryHosts.Add(LastCreatedTransport.Parameters.Host);

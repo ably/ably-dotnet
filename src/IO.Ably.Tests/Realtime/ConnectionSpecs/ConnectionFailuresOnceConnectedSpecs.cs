@@ -289,7 +289,7 @@ namespace IO.Ably.Tests.Realtime
 
         public ConnectionFailuresOnceConnectedSpecs(ITestOutputHelper output) : base(output)
         {
-            Now = DateTimeOffset.Now;
+            SetNowFunc(() => DateTimeOffset.UtcNow);
             _validToken = new TokenDetails("id") { Expires = Now.AddHours(1) };
             _renewTokenCalled = false;
             _tokenErrorInfo = new ErrorInfo() { Code = _tokenErrorCode, StatusCode = HttpStatusCode.Unauthorized };
