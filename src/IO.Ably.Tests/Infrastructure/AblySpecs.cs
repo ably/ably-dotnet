@@ -51,15 +51,23 @@ namespace IO.Ably.Tests
         public ITestOutputHelper Output { get; }
         public const string ValidKey = "1iZPfA.BjcI_g:wpNhw5RCw6rDjisl";
 
-        public DateTimeOffset Now
-        {
-            get => NowProvider.Now();
-            set { throw new NotImplementedException(); }
-        }
+        public DateTimeOffset Now => NowProvider.Now();
 
         public INowProvider NowProvider { get; set; }
 
-        public AblySpecs(ITestOutputHelper output)
+        public void SetNowFunc(Func<DateTimeOffset> nowFunc) => ((AblySpecsNowProvider) NowProvider).NowFunc = nowFunc;
+
+        public void NowAddSeconds(int s)
+        {
+            NowAdd(TimeSpan.FromSeconds(s));
+        }
+        public void NowAdd(TimeSpan ts)
+        {
+            var n = Now.Add(ts);
+            SetNowFunc(() => n);
+        }
+        
+        protected AblySpecs(ITestOutputHelper output)
         {
             NowProvider = new AblySpecsNowProvider();
             Output = output;
@@ -67,10 +75,16 @@ namespace IO.Ably.Tests
 
         internal class AblySpecsNowProvider : INowProvider
         {
+            public AblySpecsNowProvider()
+            {
+                NowFunc = TestHelpers.Now;
+            }
             public DateTimeOffset Now()
             {
-                return TestHelpers.Now();
+                return NowFunc();
             }
+
+            public Func<DateTimeOffset> NowFunc { get; set; }
         }
     }
 }

@@ -20,7 +20,7 @@ namespace IO.Ably.Tests
 
         public static INowProvider NowProvider()
         {
-            return Defaults.NowProvider;
+            return Defaults.NowProvider();
         }
     }
 }
