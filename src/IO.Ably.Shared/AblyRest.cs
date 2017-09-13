@@ -6,12 +6,14 @@ using System.Net.Http;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Rest;
 using System.Threading.Tasks;
+using IO.Ably.Shared;
 
 namespace IO.Ably
 {
     /// <summary>Client for the ably rest API</summary>
-    public sealed class AblyRest : IRestClient
+    public sealed class AblyRest : IRestClient, ILoggerConcern
     {
+
         internal AblyHttpClient HttpClient { get; private set; }
         internal MessageHandler MessageHandler { get; private set; }
 
@@ -31,6 +33,13 @@ namespace IO.Ably
         internal Protocol Protocol => Options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
 
         internal ClientOptions Options { get; }
+
+        private ILogger _logger;
+        public ILogger Logger
+        {
+            get => _logger;
+            set => _logger = value;
+        }
 
         /// <summary>Initializes the RestClient using the api key provided</summary>
         /// <param name="apiKey">Full api key</param>
@@ -72,18 +81,27 @@ namespace IO.Ably
         {
             if (Options == null)
             {
-                Logger.Error("No options provider to Ably rest");
+                IO.Ably.Logger.Error("No options provider to Ably rest");
                 throw new AblyException("Invalid options");
+            }
+
+            if (Options.Logger != null)
+            {
+                _logger = Options.Logger;
+            }
+            else
+            {
+                _logger = IO.Ably.Logger.LoggerInstance;
             }
 
             if (Options.LogLevel.HasValue)
             {
-                Logger.LogLevel = Options.LogLevel.Value;
+                _logger.LogLevel = Options.LogLevel.Value;
             }
 
             if (Options.LogHander != null)
             {
-                Logger.LoggerSink = Options.LogHander;
+                _logger.LoggerSink = Options.LogHander;
             }
 
             Logger.Debug("Protocol set to: " + Protocol);
@@ -261,7 +279,6 @@ namespace IO.Ably
         {
             return AsyncHelper.RunSync(TimeAsync);
         }
-
         
     }
 }

@@ -106,7 +106,7 @@ namespace IO.Ably
         }
 
 
-        internal class InternalLogger : NowProviderConcern
+        internal class InternalLogger : NowProviderConcern, ILogger
         {
             /// <summary>Maximum level to log.</summary>
             /// <remarks>E.g. set to LogLevel.Warning to have only errors and warnings in the log.</remarks>

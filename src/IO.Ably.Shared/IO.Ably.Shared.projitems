@@ -24,6 +24,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\TaskExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HttpUtility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IChannelCommands.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ILogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ILoggerConcern.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)INowProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IoC.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IPlatform.cs" />
