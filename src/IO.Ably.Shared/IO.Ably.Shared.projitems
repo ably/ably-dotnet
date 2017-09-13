@@ -29,7 +29,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)IPlatform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IRealtimeClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JsonHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)NowProviderFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NowProviderConcern.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeChannels.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\RestChannels.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncExtensions.cs" />
