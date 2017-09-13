@@ -374,7 +374,15 @@ namespace IO.Ably.Tests.Realtime
 
             await channel.PublishAsync(new Message("test", "best") { ClientId = "client1" });
 
-            await Task.Delay(4000);
+            // wait up to ten seconds
+            for (var i = 0; i < 100; i++)
+            {
+                if (!messageReceived)
+                    await Task.Delay(100);
+                else
+                    break;
+            }
+
             messageReceived.Should().BeTrue();
         }
 
