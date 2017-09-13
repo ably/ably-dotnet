@@ -490,7 +490,7 @@ namespace IO.Ably.Tests
                     () =>
                     {
                         //Tweak time to pretend 10 seconds have ellapsed
-                        Now += TimeSpan.FromSeconds(10);
+                        NowAddSeconds(10);
                     });
 
                 client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
