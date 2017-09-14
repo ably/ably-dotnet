@@ -1,4 +1,5 @@
 using IO.Ably.Encryption;
+using IO.Ably.Shared;
 
 namespace IO.Ably
 {
@@ -25,23 +26,22 @@ namespace IO.Ably
             }
         }
 
+        public ILogger Logger { get; private set; }
         public bool Encrypted { get; private set; }
         public CipherParams CipherParams { get; private set; }
-
-        public ChannelOptions(bool encrypted = false, CipherParams @params = null)
+        
+        public ChannelOptions(CipherParams @params) : this(IO.Ably.Logger.LoggerInstance, true, @params) {}
+        public ChannelOptions(bool encrypted = false, CipherParams @params = null) : this(null, encrypted, @params) { }
+        public ChannelOptions(ILogger logger, bool encrypted = false, CipherParams @params = null)
         {
+            Logger = logger ?? IO.Ably.Logger.LoggerInstance;
             Encrypted = encrypted;
             CipherParams = @params ?? Crypto.GetDefaultParams();
         }
-
-        public ChannelOptions(CipherParams @params)
-        {
-            Encrypted = true;
-            CipherParams = @params;
-        }
-
+        
         public ChannelOptions(byte[] key)
         {
+            Logger = IO.Ably.Logger.LoggerInstance;
             Encrypted = true;
             CipherParams = new CipherParams(key);
         }
