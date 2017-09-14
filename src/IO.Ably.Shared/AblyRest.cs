@@ -11,7 +11,7 @@ using IO.Ably.Shared;
 namespace IO.Ably
 {
     /// <summary>Client for the ably rest API</summary>
-    public sealed class AblyRest : IRestClient, ILoggerConcern
+    public sealed class AblyRest : IRestClient
     {
 
         internal AblyHttpClient HttpClient { get; private set; }
@@ -34,12 +34,7 @@ namespace IO.Ably
 
         internal ClientOptions Options { get; }
 
-        private ILogger _logger;
-        public ILogger Logger
-        {
-            get => _logger;
-            set => _logger = value;
-        }
+        internal ILogger Logger { get; set; }
 
         /// <summary>Initializes the RestClient using the api key provided</summary>
         /// <param name="apiKey">Full api key</param>
@@ -87,21 +82,21 @@ namespace IO.Ably
 
             if (Options.Logger != null)
             {
-                _logger = Options.Logger;
+                Logger = Options.Logger;
             }
             else
             {
-                _logger = IO.Ably.Logger.LoggerInstance;
+                Logger = IO.Ably.Logger.LoggerInstance;
             }
 
             if (Options.LogLevel.HasValue)
             {
-                _logger.LogLevel = Options.LogLevel.Value;
+                Logger.LogLevel = Options.LogLevel.Value;
             }
 
             if (Options.LogHander != null)
             {
-                _logger.LoggerSink = Options.LogHander;
+                Logger.LoggerSink = Options.LogHander;
             }
 
             Logger.Debug("Protocol set to: " + Protocol);

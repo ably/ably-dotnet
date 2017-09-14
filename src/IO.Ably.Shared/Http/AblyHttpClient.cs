@@ -12,6 +12,8 @@ namespace IO.Ably
 {
     internal class AblyHttpClient : NowProviderConcern, IAblyHttpClient
     {
+        internal ILogger Logger { get; set; }
+
         internal AblyHttpOptions Options { get; }
 
         internal string CustomHost { get; set; }
@@ -21,6 +23,7 @@ namespace IO.Ably
         internal AblyHttpClient(AblyHttpOptions options, HttpMessageHandler messageHandler = null)
         {
             NowProvider = options.NowProvider;
+            Logger = options.Logger ?? IO.Ably.Logger.LoggerInstance;
             Options = options;
             CreateInternalHttpClient(options.HttpRequestTimeout, messageHandler);
         }
@@ -291,7 +294,7 @@ namespace IO.Ably
                 return "?" + query;
             return string.Empty;
         }
-        
+
     }
 
 

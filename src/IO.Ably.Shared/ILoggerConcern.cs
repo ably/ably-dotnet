@@ -4,7 +4,7 @@ using System.Text;
 
 namespace IO.Ably.Shared
 {
-    public interface ILoggerConcern
+    internal interface ILoggerConcern
     {
         ILogger Logger { get; set; }
     }

@@ -116,6 +116,7 @@ namespace IO.Ably
             public bool IsDebug => LogLevel == LogLevel.Debug;
 
             public InternalLogger() : this(Defaults.DefaultLogLevel, new DefaultLoggerSink()) {}
+            public InternalLogger(ILoggerSink loggerSink) : this(Defaults.DefaultLogLevel, loggerSink) { }
             public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink): this(logLevel, loggerSink, null ) {} 
             public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink, INowProvider nowProvider)
             {
