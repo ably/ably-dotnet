@@ -19,9 +19,9 @@ namespace IO.Ably.Tests
         {
             var key = ApiKey.Parse("123.456:789");
 
-            Assert.Equal(key.AppId, "123");
-            Assert.Equal(key.KeyName, "123.456");
-            Assert.Equal(key.KeySecret, "789");
+            Assert.Equal("123", key.AppId);
+            Assert.Equal("123.456", key.KeyName);
+            Assert.Equal("789", key.KeySecret);
         }
 
         [Fact]
@@ -29,9 +29,9 @@ namespace IO.Ably.Tests
         {
             var key = ApiKey.Parse(" 123.456:789 ");
 
-            Assert.Equal(key.AppId, "123");
-            Assert.Equal(key.KeyName, "123.456");
-            Assert.Equal(key.KeySecret, "789");
+            Assert.Equal("123", key.AppId);
+            Assert.Equal("123.456", key.KeyName);
+            Assert.Equal("789", key.KeySecret);
         }
     }
 }
