@@ -113,6 +113,7 @@ namespace IO.Ably.Tests.Realtime
                 .WhichValue.Should().Be("0.8");
         }
 
+        [Fact]
         [Trait("spec", "RTN2g")]
         public void ShouldSetTransportLibVersionParamater()
         {

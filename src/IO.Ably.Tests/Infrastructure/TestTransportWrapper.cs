@@ -51,9 +51,7 @@ namespace IO.Ably.Tests.Infrastructure
         }
 
         private readonly ITransport _wrappedTransport;
-        private readonly Protocol _protocol;
-        private ITransportListener _listener;
-        private MessageHandler _handler;
+        private readonly MessageHandler _handler;
 
         public Action<ProtocolMessage> AfterDataReceived = delegate { };
         public Action<ProtocolMessage> MessageSent = delegate { };

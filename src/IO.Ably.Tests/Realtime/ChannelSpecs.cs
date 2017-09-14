@@ -249,7 +249,6 @@ namespace IO.Ably.Tests.Realtime
             public async Task WhenAttaching_ShouldAddMultipleAwaitingHandlers()
             {
                 await SetState(ChannelState.Attaching);
-                bool stateChanged = false;
                 ChannelState newState = ChannelState.Initialized;
                 int counter = 0;
 
@@ -510,7 +509,6 @@ namespace IO.Ably.Tests.Realtime
                 SetState(ChannelState.Attached);
 
                 bool called = false;
-                var detached = false;
                 _channel.Detach((span, info) =>
                 {
                     called = true;

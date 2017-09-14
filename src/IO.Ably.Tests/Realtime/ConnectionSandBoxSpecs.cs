@@ -98,9 +98,7 @@ namespace IO.Ably.Tests.Realtime
                 await GetRealtimeClient(protocol),
                 await GetRealtimeClient(protocol)
             };
-
-            int count = 0;
-
+            
             await Task.Delay(5000);
 
             var distinctConnectionIds = clients.Select(x => x.Connection.Id).Distinct();
