@@ -138,7 +138,7 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [MemberData("Messages")]
+        [MemberData(nameof(Messages))]
         public void SerializesMessageCorrectly_Messages(params Message[] messages)
         {
             // Arrange
@@ -163,7 +163,7 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [MemberData("PresenceMessages")]
+        [MemberData(nameof(PresenceMessages))]
         public void SerializesMessageCorrectly_Presence(params PresenceMessage[] messages)
         {
             // Arrange
@@ -224,7 +224,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(channel, target.Channel);
+            Assert.Equal(channel, target.Channel);
         }
 
         [Theory]
@@ -243,7 +243,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(serial, target.ChannelSerial);
+            Assert.Equal(serial, target.ChannelSerial);
         }
 
         [Theory]
@@ -262,7 +262,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(connectionId, target.ConnectionId);
+            Assert.Equal(connectionId, target.ConnectionId);
         }
 
         [Theory]
@@ -281,7 +281,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(connectionKey, target.ConnectionKey);
+            Assert.Equal(connectionKey, target.ConnectionKey);
         }
 
         [Theory]
@@ -300,7 +300,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(id, target.Id);
+            Assert.Equal(id, target.Id);
         }
 
         [Theory]
@@ -388,7 +388,7 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [MemberData("JsonMessages")]
+        [MemberData(nameof(JsonMessages))]
         public void DeserializesMessageCorrectly_Messages(string messageJson, params Message[] expectedMessages)
         {
             // Arrange
@@ -405,13 +405,13 @@ namespace IO.Ably.Tests
             Assert.Equal<int>(expectedMessages.Length, target.Messages.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
-                Assert.Equal<string>(expectedMessages[i].Name, target.Messages[i].Name);
+                Assert.Equal(expectedMessages[i].Name, target.Messages[i].Name);
                 Assert.Equal(expectedMessages[i].Data, target.Messages[i].Data);
             }
         }
 
         [Theory]
-        [MemberData("JsonPresence")]
+        [MemberData(nameof(JsonPresence))]
         public void DeserializesMessageCorrectly_Presence(string messageJson, params PresenceMessage[] expectedMessages)
         {
             // Arrange
@@ -428,8 +428,8 @@ namespace IO.Ably.Tests
             Assert.Equal<int>(expectedMessages.Length, target.Presence.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
-                Assert.Equal<string>(expectedMessages[i].ClientId, target.Presence[i].ClientId);
-                Assert.Equal<string>(expectedMessages[i].ConnectionId, target.Presence[i].ConnectionId);
+                Assert.Equal(expectedMessages[i].ClientId, target.Presence[i].ClientId);
+                Assert.Equal(expectedMessages[i].ConnectionId, target.Presence[i].ConnectionId);
                 Assert.Equal(expectedMessages[i].Action, target.Presence[i].Action);
                 Assert.Equal(expectedMessages[i].Id, target.Presence[i].Id);
                 Assert.Equal(expectedMessages[i].Timestamp, target.Presence[i].Timestamp);
