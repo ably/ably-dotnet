@@ -508,7 +508,7 @@ namespace IO.Ably.Tests.Realtime
             await WaitForState(client);
 
             await client.ConnectionManager.SetState(
-                new ConnectionDisconnectedState(client.ConnectionManager) {RetryInstantly = false});
+                new ConnectionDisconnectedState(client.ConnectionManager, this.Logger) {RetryInstantly = false});
 
             client.Connection.State.Should().Be(ConnectionState.Disconnected);
             Connection.NotifyOperatingSystemNetworkState(NetworkState.Online);
@@ -533,7 +533,7 @@ namespace IO.Ably.Tests.Realtime
             await WaitForState(client);
 
             await client.ConnectionManager.SetState(
-                new ConnectionSuspendedState(client.ConnectionManager));
+                new ConnectionSuspendedState(client.ConnectionManager, Logger));
 
             client.Connection.State.Should().Be(ConnectionState.Suspended);
             Connection.NotifyOperatingSystemNetworkState(NetworkState.Online);

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Encryption;
 using IO.Ably.Rest;
+using IO.Ably;
 using IO.Ably.Tests.Infrastructure;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -245,21 +246,29 @@ namespace IO.Ably.Tests.Rest
         public async Task WithEncryptionCipherMismatch_ShouldLeaveMessageEncryptedAndLogError(Protocol protocol)
         {
             var loggerSink = new TestLoggerSink();
+            ILogger logger = new IO.Ably.Logger.InternalLogger(LogLevel.Error, loggerSink);
 
-            using (Logger.SetTempDestination(loggerSink))
+            logger.LogLevel.ShouldBeEquivalentTo(LogLevel.Error);
+            logger.IsDebug.ShouldBeEquivalentTo(false);
+            
+            var client = await GetRestClient(protocol, options =>
             {
-                var client = await GetRestClient(protocol);
-                var channel1 = client.Channels.Get("persisted:encryption", GetOptions(examples));
+                options.Logger = logger; // pass the logger into the client
+            });
 
-                var payload = "test payload";
-                await channel1.PublishAsync("test", payload);
+            var opts = GetOptions(examples);
+            opts.Logger = logger;
+            var channel1 = client.Channels.Get("persisted:encryption", opts );
 
-                var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(true));
-                var message = (await channel2.HistoryAsync()).Items.First();
+            var payload = "test payload";
+            await channel1.PublishAsync("test", payload);
 
-                loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
-                message.Encoding.Should().Be("utf-8/cipher+aes-128-cbc");
-            }
+            var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(logger, true));
+            var message = (await channel2.HistoryAsync()).Items.First();
+
+            loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
+            message.Encoding.Should().Be("utf-8/cipher+aes-128-cbc");
+            
         }
 
         [Theory]
@@ -347,22 +356,22 @@ namespace IO.Ably.Tests.Rest
         public async Task WithEncryptionCipherAlgorithmMismatch_ShouldLeaveMessageEncryptedAndLogError(Protocol protocol)
         {
             var loggerSink = new TestLoggerSink();
+            var logger = new IO.Ably.Logger.InternalLogger(Defaults.DefaultLogLevel, loggerSink);
+            
+            
+            var client = await GetRestClient(protocol);
+            var channel1 = client.Channels.Get("persisted:encryption", GetOptions(examples));
 
-            using (Logger.SetTempDestination(loggerSink))
-            {
-                var client = await GetRestClient(protocol);
-                var channel1 = client.Channels.Get("persisted:encryption", GetOptions(examples));
+            var payload = "test payload";
+            await channel1.PublishAsync("test", payload);
 
-                var payload = "test payload";
-                await channel1.PublishAsync("test", payload);
+            var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(logger, true, new CipherParams(Crypto.GenerateRandomKey(128, CipherMode.CBC))));
+            var message = (await channel2.HistoryAsync()).Items.First();
 
-                var channel2 = client.Channels.Get("persisted:encryption", new ChannelOptions(true, new CipherParams(Crypto.GenerateRandomKey(128, CipherMode.CBC))));
-                var message = (await channel2.HistoryAsync()).Items.First();
-
-                loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
-                loggerSink.LastMessage.Should().Contain("Error decrypting payload");
-                message.Encoding.Should().Be("utf-8/cipher+aes-128-cbc");
-            }
+            loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
+            loggerSink.LastMessage.Should().Contain("Error decrypting payload");
+            message.Encoding.Should().Be("utf-8/cipher+aes-128-cbc");
+            
         }
 
         private object DecodeData(string data, string encoding)

@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.AcceptanceTests;
 using IO.Ably.Realtime;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -12,11 +13,14 @@ namespace IO.Ably.Tests
     {
         private FakeConnectionContext _context;
         private ConnectionClosedState _state;
+        private IO.Ably.Logger.InternalLogger _logger;
 
         public ClosedStateSpecs(ITestOutputHelper output) : base(output)
         {
+            var sink = new TestLoggerSink();
+            _logger = new IO.Ably.Logger.InternalLogger(Defaults.DefaultLogLevel, sink);
             _context = new FakeConnectionContext();
-            _state = new ConnectionClosedState(_context);
+            _state = new ConnectionClosedState(_context, _logger);
         }
 
         [Fact]
@@ -39,7 +43,7 @@ namespace IO.Ably.Tests
         public void WhenCloseCalled_ShouldDoNothing()
         {
             // Act
-            new ConnectionClosedState(null).Close();
+            new ConnectionClosedState(null, _logger).Close();
         }
 
         [Fact]

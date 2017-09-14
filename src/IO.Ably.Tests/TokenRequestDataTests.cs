@@ -1,7 +1,7 @@
 ﻿using System;
 using FluentAssertions;
 using IO.Ably.Encryption;
-using IO.Ably.Shared;
+using IO.Ably;
 using Xunit;
 
 namespace IO.Ably.Tests

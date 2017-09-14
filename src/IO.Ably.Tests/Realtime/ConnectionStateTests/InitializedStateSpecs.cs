@@ -17,7 +17,7 @@ namespace IO.Ably.Tests
         public InitializedStateSpecs(ITestOutputHelper output) : base(output)
         {
             _context = new FakeConnectionContext();
-            _state = new ConnectionInitializedState(_context);
+            _state = new ConnectionInitializedState(_context, Logger);
         }
 
         [Fact]

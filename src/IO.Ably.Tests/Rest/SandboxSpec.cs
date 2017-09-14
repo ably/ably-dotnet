@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions.Common;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
 using Xunit.Abstractions;
@@ -10,6 +9,8 @@ namespace IO.Ably.Tests
 {
     public abstract class SandboxSpecs
     {
+        protected ILogger Logger { get; set; }
+
         protected readonly AblySandboxFixture Fixture;
         protected readonly ITestOutputHelper Output;
         protected ManualResetEvent _resetEvent;
@@ -19,6 +20,7 @@ namespace IO.Ably.Tests
             _resetEvent = new ManualResetEvent(false);
             Fixture = fixture;
             Output = output;
+            Logger = IO.Ably.Logger.LoggerInstance;
             //Reset time in case other tests have changed it
             //Config.Now = () => DateTimeOffset.UtcNow;
 
