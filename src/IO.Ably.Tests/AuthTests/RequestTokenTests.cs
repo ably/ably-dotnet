@@ -167,7 +167,7 @@ namespace IO.Ably.Tests.AuthTests
             var rest = GetRestClient();
             rest.ExecuteHttpRequest = x =>
             {
-                Assert.False(x.Url.Contains("time"));
+                Assert.DoesNotContain("time", x.Url);
                 return DummyTokenResponse.ToTask();
             };
 
