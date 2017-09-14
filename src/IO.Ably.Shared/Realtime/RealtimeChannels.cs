@@ -17,13 +17,17 @@ namespace IO.Ably.Realtime
 
         internal RealtimeChannels(AblyRealtime realtimeClient)
         {
-            Logger = _realtimeClient.Logger;
+            Logger = realtimeClient.Logger;
             _realtimeClient = realtimeClient;
         }
 
         public IRealtimeChannel Get(string name)
         {
-            return Get(name, null);
+            var opts = new ChannelOptions()
+            {
+                Logger = Logger
+            };
+            return Get(name, opts);
         }
 
         public IRealtimeChannel Get(string name, ChannelOptions options)
