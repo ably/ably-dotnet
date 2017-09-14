@@ -3,17 +3,21 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using IO.Ably;
 
 namespace IO.Ably.Realtime
 {
     public class RealtimeChannels : IChannels<IRealtimeChannel>
     {
+        internal ILogger Logger { get; private set; }
+
         private ConcurrentDictionary<string, RealtimeChannel> _channels { get; } = new ConcurrentDictionary<string, RealtimeChannel>();
 
         private readonly AblyRealtime _realtimeClient;
 
         internal RealtimeChannels(AblyRealtime realtimeClient)
         {
+            Logger = _realtimeClient.Logger;
             _realtimeClient = realtimeClient;
         }
 

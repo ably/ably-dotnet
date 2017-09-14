@@ -1,5 +1,5 @@
 using IO.Ably.Encryption;
-using IO.Ably.Shared;
+using IO.Ably;
 
 namespace IO.Ably
 {
@@ -26,7 +26,7 @@ namespace IO.Ably
             }
         }
 
-        public ILogger Logger { get; private set; }
+        public ILogger Logger { get; set; }
         public bool Encrypted { get; private set; }
         public CipherParams CipherParams { get; private set; }
         

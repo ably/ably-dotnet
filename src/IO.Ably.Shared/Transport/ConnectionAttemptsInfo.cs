@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
-using IO.Ably.Shared;
+using IO.Ably;
 using IO.Ably.Transport.States.Connection;
 
 namespace IO.Ably.Transport

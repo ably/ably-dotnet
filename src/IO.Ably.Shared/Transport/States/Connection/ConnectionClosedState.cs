@@ -1,17 +1,18 @@
 ﻿using System.Threading.Tasks;
+using IO.Ably;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionClosedState : ConnectionStateBase
     {
-        public ConnectionClosedState(IConnectionContext context) :
-            this(context, null)
+        public ConnectionClosedState(IConnectionContext context, ILogger logger) :
+            this(context, null, logger)
         {
         }
 
-        public ConnectionClosedState(IConnectionContext context, ErrorInfo error) :
-            base(context)
+        public ConnectionClosedState(IConnectionContext context, ErrorInfo error, ILogger logger) :
+            base(context, logger)
         {
             Error = error ?? ErrorInfo.ReasonClosed;
         }
@@ -20,7 +21,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void Connect()
         {
-            Context.SetState(new ConnectionConnectingState(Context));
+            Context.SetState(new ConnectionConnectingState(Context, Logger));
         }
 
         public override void BeforeTransition()

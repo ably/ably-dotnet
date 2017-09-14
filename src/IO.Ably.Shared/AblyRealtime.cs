@@ -2,12 +2,15 @@
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
+using IO.Ably;
 using IO.Ably.Transport;
 
 namespace IO.Ably
 {
     public class AblyRealtime : IRealtimeClient
     {
+        internal ILogger Logger { get; private set; }
+
         private SynchronizationContext _synchronizationContext;
 
         public AblyRealtime(string key)
@@ -23,11 +26,12 @@ namespace IO.Ably
         
         internal AblyRealtime(ClientOptions options, Func<ClientOptions, AblyRest> createRestFunc)
         {
+            Logger = options.Logger;
             CaptureSynchronizationContext(options);
 
             RestClient = createRestFunc(options);
             Channels = new RealtimeChannels(this);
-            Connection = new Connection(this, options.NowProvider);
+            Connection = new Connection(this, options.NowProvider, options.Logger);
             Connection.Initialise();
 
             if (options.AutoConnect)

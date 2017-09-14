@@ -1,3 +1,4 @@
+using IO.Ably;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 
@@ -5,11 +6,13 @@ namespace IO.Ably.Realtime
 {
     internal class ChannelMessageProcessor
     {
+        internal ILogger Logger { get; private set; }
         private IChannels<IRealtimeChannel> _channels;
         private ConnectionManager _connectionManager;
 
         public ChannelMessageProcessor(ConnectionManager connectionManager, IChannels<IRealtimeChannel> channels)
         {
+            Logger = connectionManager.Logger;
             _connectionManager = connectionManager;
             _channels = channels;
             _connectionManager.MessageReceived += MessageReceived;

@@ -1,5 +1,5 @@
 using IO.Ably.Encryption;
-using IO.Ably.Shared;
+using IO.Ably;
 
 namespace IO.Ably.MessageEncoders
 {

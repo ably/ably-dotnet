@@ -92,7 +92,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)PaginatedResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Protocol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)QueryDirection.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Realtime\Channel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeChannel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelAwaiter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelErrorEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelMessageProcessor.cs" />

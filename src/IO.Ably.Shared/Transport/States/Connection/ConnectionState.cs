@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using IO.Ably;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
@@ -8,9 +9,12 @@ namespace IO.Ably.Transport.States.Connection
     [DebuggerDisplay("{State}")]
     internal abstract class ConnectionStateBase
     {
-        public ConnectionStateBase(IConnectionContext context)
+        internal ILogger Logger { get; private set; }
+
+        protected ConnectionStateBase(IConnectionContext context, ILogger logger)
         {
-            this.Context = context;
+            Logger = logger ?? IO.Ably.Logger.LoggerInstance;
+            Context = context;
         }
 
         protected readonly IConnectionContext Context;

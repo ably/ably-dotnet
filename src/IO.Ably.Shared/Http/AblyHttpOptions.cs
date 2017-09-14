@@ -1,5 +1,5 @@
 ﻿using System;
-using IO.Ably.Shared;
+using IO.Ably;
 
 namespace IO.Ably
 {

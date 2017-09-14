@@ -6,7 +6,7 @@ using System.Net.Http;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Rest;
 using System.Threading.Tasks;
-using IO.Ably.Shared;
+using IO.Ably;
 
 namespace IO.Ably
 {
@@ -76,18 +76,11 @@ namespace IO.Ably
         {
             if (Options == null)
             {
-                IO.Ably.Logger.Error("No options provider to Ably rest");
+                Logger.Error("No options provider to Ably rest");
                 throw new AblyException("Invalid options");
             }
 
-            if (Options.Logger != null)
-            {
-                Logger = Options.Logger;
-            }
-            else
-            {
-                Logger = IO.Ably.Logger.LoggerInstance;
-            }
+            Logger = Options.Logger ?? IO.Ably.Logger.LoggerInstance;
 
             if (Options.LogLevel.HasValue)
             {

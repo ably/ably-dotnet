@@ -2,7 +2,7 @@
 using System.Net;
 using System.Threading;
 using IO.Ably.Realtime;
-using IO.Ably.Shared;
+using IO.Ably;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 
@@ -20,9 +20,11 @@ namespace IO.Ably.Transport
         private bool _finished;
         private object _syncLock = new object();
         private DateTimeOffset _start = DateTimeOffset.MinValue;
+        internal ILogger Logger { get; private set; }
 
         public ConnectionHeartbeatRequest(ConnectionManager manager, ICountdownTimer timer, INowProvider nowProvider)
         {
+            Logger = manager.Logger;
             _manager = manager;
             _timer = timer;
             NowProvider = nowProvider;
@@ -35,7 +37,7 @@ namespace IO.Ably.Transport
 
         public static ConnectionHeartbeatRequest Execute(ConnectionManager manager, INowProvider nowProvider, Action<TimeSpan?, ErrorInfo> callback)
         {
-            return Execute(manager, new CountdownTimer("Connection heartbeat timer"), nowProvider, callback);
+            return Execute(manager, new CountdownTimer("Connection heartbeat timer", manager.Logger), nowProvider, callback);
         }
 
         public static ConnectionHeartbeatRequest Execute(ConnectionManager manager, ICountdownTimer timer,

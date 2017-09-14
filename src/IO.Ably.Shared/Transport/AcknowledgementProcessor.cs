@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using IO.Ably.Realtime;
+using IO.Ably;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport
@@ -17,6 +18,8 @@ namespace IO.Ably.Transport
 
     internal class AcknowledgementProcessor : IAcknowledgementProcessor
     {
+        internal ILogger Logger { get; private set; }
+
         private readonly Connection _connection;
         private readonly List<MessageAndCallback> _queue = new List<MessageAndCallback>();
         private object _syncObject = new object();
@@ -33,6 +36,7 @@ namespace IO.Ably.Transport
 
         public AcknowledgementProcessor(Connection connection)
         {
+            Logger = connection.Logger;
             _connection = connection;
         }
 

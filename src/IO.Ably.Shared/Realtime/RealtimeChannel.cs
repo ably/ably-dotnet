@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using IO.Ably.Rest;
+using IO.Ably;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -13,6 +14,7 @@ namespace IO.Ably.Realtime
     /// <summary>Implement realtime channel.</summary>
     internal class RealtimeChannel : EventEmitter<ChannelState, ChannelStateChange>, IRealtimeChannel, IDisposable
     {
+        internal ILogger Logger { get; private set; }
         internal AblyRealtime RealtimeClient { get; }
         private IConnectionManager ConnectionManager => RealtimeClient.ConnectionManager;
         private Connection Connection => RealtimeClient.Connection;
@@ -35,10 +37,9 @@ namespace IO.Ably.Realtime
         public event EventHandler<ChannelErrorEventArgs> Error = delegate { };
 
         public ChannelOptions Options
-
         {
-            get { return _options; }
-            set { _options = value ?? new ChannelOptions(); }
+            get => _options;
+            set => _options = value ?? new ChannelOptions();
         }
 
         public string Name { get; }
@@ -48,7 +49,7 @@ namespace IO.Ably.Realtime
         /// </summary>
         public ChannelState State
         {
-            get { return _state; }
+            get => _state;
             private set
             {
                 if (value != _state)
@@ -63,16 +64,17 @@ namespace IO.Ably.Realtime
 
         public Presence Presence { get; }
 
-        internal RealtimeChannel(string name, string clientId, AblyRealtime realtimeClient, ChannelOptions options)
+        internal RealtimeChannel(string name, string clientId, AblyRealtime realtimeClient, ChannelOptions options) : base(options.Logger)
         {
+            Logger = options.Logger;
             Name = name;
             Options = options;
-            Presence = new Presence(realtimeClient.ConnectionManager, this, clientId);
+            Presence = new Presence(realtimeClient.ConnectionManager, this, clientId, Logger);
             RealtimeClient = realtimeClient;
             State = ChannelState.Initialized;
             SubscribeToConnectionEvents();
-            AttachedAwaiter = new ChannelAwaiter(this, ChannelState.Attached, OnAttachTimeout);
-            DetachedAwaiter = new ChannelAwaiter(this, ChannelState.Detached, OnDetachTimeout);
+            AttachedAwaiter = new ChannelAwaiter(this, ChannelState.Attached, Logger, OnAttachTimeout);
+            DetachedAwaiter = new ChannelAwaiter(this, ChannelState.Detached, Logger, OnDetachTimeout);
         }
 
         private void SubscribeToConnectionEvents()
