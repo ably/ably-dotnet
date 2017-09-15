@@ -233,6 +233,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 opts.AutoConnect = false;
                 opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10);
                 opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(100);
+                opts.NowProvider = NowProvider;
             });
 
             client.Connect();
