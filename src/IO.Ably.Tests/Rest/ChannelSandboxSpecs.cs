@@ -246,7 +246,7 @@ namespace IO.Ably.Tests.Rest
         public async Task WithEncryptionCipherMismatch_ShouldLeaveMessageEncryptedAndLogError(Protocol protocol)
         {
             var loggerSink = new TestLoggerSink();
-            ILogger logger = new IO.Ably.Logger.InternalLogger(LogLevel.Error, loggerSink);
+            ILogger logger = new IO.Ably.DefaultLogger.InternalLogger(LogLevel.Error, loggerSink);
 
             logger.LogLevel.ShouldBeEquivalentTo(LogLevel.Error);
             logger.IsDebug.ShouldBeEquivalentTo(false);
@@ -356,7 +356,7 @@ namespace IO.Ably.Tests.Rest
         public async Task WithEncryptionCipherAlgorithmMismatch_ShouldLeaveMessageEncryptedAndLogError(Protocol protocol)
         {
             var loggerSink = new TestLoggerSink();
-            var logger = new IO.Ably.Logger.InternalLogger(Defaults.DefaultLogLevel, loggerSink);
+            var logger = new IO.Ably.DefaultLogger.InternalLogger(Defaults.DefaultLogLevel, loggerSink);
             
             
             var client = await GetRestClient(protocol);
@@ -371,7 +371,6 @@ namespace IO.Ably.Tests.Rest
             loggerSink.LastLoggedLevel.Should().Be(LogLevel.Error);
             loggerSink.LastMessage.Should().Contain("Error decrypting payload");
             message.Encoding.Should().Be("utf-8/cipher+aes-128-cbc");
-            
         }
 
         private object DecodeData(string data, string encoding)

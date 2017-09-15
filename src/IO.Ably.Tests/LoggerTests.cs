@@ -23,7 +23,7 @@ namespace IO.Ably.AcceptanceTests
         public void TestLogger()
         {
             var sink = new TestLoggerSink();
-            var logger = new Logger.InternalLogger();
+            var logger = new DefaultLogger.InternalLogger();
 
             using (logger.SetTempDestination(null))
             {
@@ -65,12 +65,12 @@ namespace IO.Ably.AcceptanceTests
             }
 
             // test that the Logger gets instanced
-            Assert.NotNull(Logger.LoggerInstance);
+            Assert.NotNull(DefaultLogger.LoggerInstance);
         }
         
         public void Dispose()
         {
-            Logger.LoggerSink = new DefaultLoggerSink();
+            DefaultLogger.LoggerSink = new DefaultLoggerSink();
         }
     }
 }

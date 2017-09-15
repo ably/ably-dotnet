@@ -56,18 +56,18 @@ namespace IO.Ably
                 AttachEvents();
             }
 
-            if (Logger.IsDebug)
+            if (DefaultLogger.IsDebug)
             {
-                Logger.Debug("Connecting socket");
+                DefaultLogger.Debug("Connecting socket");
             }
             _socket.Open();
         }
 
         public void Close(bool suppressClosedEvent = true)
         {
-            if (Logger.IsDebug)
+            if (DefaultLogger.IsDebug)
             {
-                Logger.Debug("Closing socket. Current socket is " + (_socket == null ? "null" : "not null"));
+                DefaultLogger.Debug("Closing socket. Current socket is " + (_socket == null ? "null" : "not null"));
             }
 
             if (_socket != null)
@@ -81,7 +81,7 @@ namespace IO.Ably
                 }
                 catch (Exception ex)
                 {
-                    Logger.Warning(
+                    DefaultLogger.Warning(
                         $"Error while closing the socket transport. suppressClosedEvent={suppressClosedEvent}. Error message: {ex.Message}");
                 }
             }
@@ -89,7 +89,7 @@ namespace IO.Ably
 
         public void Send(RealtimeTransportData data)
         {
-            if (Logger.IsDebug) Logger.Debug($"Transport state ({_socket?.State}): Sending message. Action: {data.Original.Action} - " + data.Explain());
+            if (DefaultLogger.IsDebug) DefaultLogger.Debug($"Transport state ({_socket?.State}): Sending message. Action: {data.Original.Action} - " + data.Explain());
             if (BinaryProtocol)
             {
                 _socket.Send(data.Data, 0, data.Length);
@@ -102,9 +102,9 @@ namespace IO.Ably
 
         private WebSocket CreateSocket(Uri uri)
         {
-            if (Logger.IsDebug)
+            if (DefaultLogger.IsDebug)
             {
-                Logger.Debug("Connecting to web socket on url: " + uri);
+                DefaultLogger.Debug("Connecting to web socket on url: " + uri);
             }
 
             return new WebSocket(uri.ToString(), "", WebSocketVersion.Rfc6455);
@@ -136,16 +136,16 @@ namespace IO.Ably
                 }
                 catch (Exception ex)
                 {
-                    Logger.Warning("Error while detaching events handlers. Error: {0}", ex.Message);
+                    DefaultLogger.Warning("Error while detaching events handlers. Error: {0}", ex.Message);
                 }
             }
         }
 
         private void socket_Opened(object sender, EventArgs e)
         {
-            if (Logger.IsDebug)
+            if (DefaultLogger.IsDebug)
             {
-                Logger.Debug("Websocket opened!");
+                DefaultLogger.Debug("Websocket opened!");
             }
 
             Listener?.OnTransportEvent(State);
@@ -153,9 +153,9 @@ namespace IO.Ably
 
         private void socket_Closed(object sender, EventArgs e)
         {
-            if (Logger.IsDebug)
+            if (DefaultLogger.IsDebug)
             {
-                Logger.Debug("Websocket closed!");
+                DefaultLogger.Debug("Websocket closed!");
             }
             Listener?.OnTransportEvent(State);
 
@@ -166,15 +166,15 @@ namespace IO.Ably
 
         private void socket_Error(object sender, ErrorEventArgs e)
         {
-            Logger.Error("Websocket error!", e.Exception);
+            DefaultLogger.Error("Websocket error!", e.Exception);
             Listener?.OnTransportEvent(State, e.Exception);
         }
 
         private void socket_MessageReceived(object sender, MessageReceivedEventArgs e)
         {
-            if (Logger.IsDebug)
+            if (DefaultLogger.IsDebug)
             {
-                Logger.Debug("Websocket message received. Raw: " + e.Message);
+                DefaultLogger.Debug("Websocket message received. Raw: " + e.Message);
             }
 
             Listener?.OnTransportDataReceived(new RealtimeTransportData(e.Message));
@@ -182,16 +182,16 @@ namespace IO.Ably
 
         private void socket_DataReceived(object sender, DataReceivedEventArgs e)
         {
-            if (Logger.IsDebug)
+            if (DefaultLogger.IsDebug)
             {
                 try
                 {
                     var message = MsgPackHelper.DeserialiseMsgPackObject(e.Data).ToString();
-                    Logger.Debug("Websocket data message received. Raw: " + message);
+                    DefaultLogger.Debug("Websocket data message received. Raw: " + message);
                 }
                 catch (Exception)
                 {
-                    Logger.Debug("Error parsing message as MsgPack.");
+                    DefaultLogger.Debug("Error parsing message as MsgPack.");
                 }
             }
 

@@ -20,7 +20,7 @@ namespace IO.Ably.Tests
             _resetEvent = new ManualResetEvent(false);
             Fixture = fixture;
             Output = output;
-            Logger = IO.Ably.Logger.LoggerInstance;
+            Logger = IO.Ably.DefaultLogger.LoggerInstance;
             //Reset time in case other tests have changed it
             //Config.Now = () => DateTimeOffset.UtcNow;
 

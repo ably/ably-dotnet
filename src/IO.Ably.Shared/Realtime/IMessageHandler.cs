@@ -22,7 +22,7 @@ namespace IO.Ably.Realtime
             }
             catch (Exception ex)
             {
-                IO.Ably.Logger.Error("Error notifying subscriber", ex);
+                IO.Ably.DefaultLogger.Error("Error notifying subscriber", ex);
             }
         }
     }

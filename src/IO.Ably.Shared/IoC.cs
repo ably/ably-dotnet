@@ -21,7 +21,7 @@ namespace IO.Ably
             }
             else
             {
-                Logger.Debug("Platform class does not exist. Defaulting Microsoft Websocket library.");
+                DefaultLogger.Debug("Platform class does not exist. Defaulting Microsoft Websocket library.");
             }
         }
 

@@ -63,7 +63,7 @@ namespace IO.Ably.Transport
         public ConnectionManager(Connection connection, INowProvider nowProvider, ILogger logger)
         {
             NowProvider = nowProvider;
-            Logger = logger ?? IO.Ably.Logger.LoggerInstance;
+            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
             PendingMessages = new Queue<MessageAndCallback>();
             AttemptsInfo = new ConnectionAttemptsInfo(connection, nowProvider);
             Connection = connection;

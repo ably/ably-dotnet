@@ -33,7 +33,7 @@ namespace IO.Ably
             HttpMaxRetryDuration = TimeSpan.FromSeconds(10);
 
             NowProvider = Defaults.NowProvider();
-            Logger = IO.Ably.Logger.LoggerInstance;
+            Logger = IO.Ably.DefaultLogger.LoggerInstance;
         }
 
         public AblyHttpOptions(ClientOptions options)

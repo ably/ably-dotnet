@@ -22,9 +22,9 @@ namespace IO.Ably.MessageEncoders
         private readonly Protocol _protocol;
         public readonly List<MessageEncoder> Encoders = new List<MessageEncoder>();
 
-        public MessageHandler() : this(IO.Ably.Logger.LoggerInstance, Protocol.MsgPack) {}
+        public MessageHandler() : this(IO.Ably.DefaultLogger.LoggerInstance, Protocol.MsgPack) {}
 
-        public MessageHandler(Protocol protocol) : this(IO.Ably.Logger.LoggerInstance, protocol) {}
+        public MessageHandler(Protocol protocol) : this(IO.Ably.DefaultLogger.LoggerInstance, protocol) {}
 
         public MessageHandler(ILogger logger, Protocol protocol)
         {

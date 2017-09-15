@@ -70,7 +70,7 @@ namespace IO.Ably.Tests
         
         protected AblySpecs(ITestOutputHelper output)
         {
-            Logger = IO.Ably.Logger.LoggerInstance;
+            Logger = IO.Ably.DefaultLogger.LoggerInstance;
             NowProvider = new AblySpecsNowProvider();
             Output = output;
         }

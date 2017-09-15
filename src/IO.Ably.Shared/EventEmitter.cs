@@ -23,7 +23,7 @@ namespace IO.Ably
     {
         protected EventEmitter(ILogger logger)
         {
-            Logger = logger ?? IO.Ably.Logger.LoggerInstance;
+            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
         }
         internal ILogger Logger { get; private set; }
 

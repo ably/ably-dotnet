@@ -30,7 +30,7 @@ namespace IO.Ably.Tests.Infrastructure
                 }
                 catch (Exception e)
                 {
-                    Logger.Error("Test transport factor on receive error ", e);
+                    DefaultLogger.Error("Test transport factor on receive error ", e);
                 }
                 try
                 {
@@ -38,7 +38,7 @@ namespace IO.Ably.Tests.Infrastructure
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error("Error handling afterMessage helper.", ex);
+                    DefaultLogger.Error("Error handling afterMessage helper.", ex);
                 }
             }
 
@@ -88,7 +88,7 @@ namespace IO.Ably.Tests.Infrastructure
 
         public void Close(bool suppressClosedEvent = true)
         {
-            Logger.Debug("Closing test transport!");
+            DefaultLogger.Debug("Closing test transport!");
             _wrappedTransport.Close(suppressClosedEvent);
         }
 

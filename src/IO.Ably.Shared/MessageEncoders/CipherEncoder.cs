@@ -10,7 +10,7 @@ namespace IO.Ably.MessageEncoders
 
         public override Result Decode(IMessage payload, ChannelOptions options)
         {
-            Logger = options.Logger ?? IO.Ably.Logger.LoggerInstance;
+            Logger = options.Logger ?? IO.Ably.DefaultLogger.LoggerInstance;
 
             if (IsEmpty(payload.Data))
                 return Result.Ok();

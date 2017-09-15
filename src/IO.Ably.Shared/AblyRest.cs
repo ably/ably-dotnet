@@ -80,7 +80,7 @@ namespace IO.Ably
                 throw new AblyException("Invalid options");
             }
 
-            Logger = Options.Logger ?? IO.Ably.Logger.LoggerInstance;
+            Logger = Options.Logger ?? IO.Ably.DefaultLogger.LoggerInstance;
 
             if (Options.LogLevel.HasValue)
             {

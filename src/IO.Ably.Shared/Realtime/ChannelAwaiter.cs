@@ -24,7 +24,7 @@ namespace IO.Ably.Realtime
 
         public ChannelAwaiter(IRealtimeChannel channel, ChannelState awaitedState, ILogger logger = null, Action onTimeout = null)
         {
-            Logger = logger ?? IO.Ably.Logger.LoggerInstance;
+            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
             _name = $"#{channel.Name}:{awaitedState} awaiter";
             _channel = channel as RealtimeChannel;
             _awaitedState = awaitedState;

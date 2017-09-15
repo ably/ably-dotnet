@@ -13,7 +13,7 @@ namespace IO.Ably.Transport.States.Connection
 
         protected ConnectionStateBase(IConnectionContext context, ILogger logger)
         {
-            Logger = logger ?? IO.Ably.Logger.LoggerInstance;
+            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
             Context = context;
         }
 

@@ -13,12 +13,12 @@ namespace IO.Ably.Tests
     {
         private FakeConnectionContext _context;
         private ConnectionClosedState _state;
-        private IO.Ably.Logger.InternalLogger _logger;
+        private IO.Ably.DefaultLogger.InternalLogger _logger;
 
         public ClosedStateSpecs(ITestOutputHelper output) : base(output)
         {
             var sink = new TestLoggerSink();
-            _logger = new IO.Ably.Logger.InternalLogger(Defaults.DefaultLogLevel, sink);
+            _logger = new IO.Ably.DefaultLogger.InternalLogger(Defaults.DefaultLogLevel, sink);
             _context = new FakeConnectionContext();
             _state = new ConnectionClosedState(_context, _logger);
         }

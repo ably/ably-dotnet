@@ -25,7 +25,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)HttpUtility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IChannelCommands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ILogger.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ILoggerConcern.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)INowProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IoC.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IPlatform.cs" />
@@ -81,7 +80,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)IAuthCommands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IChannelCipher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IRestClient.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Logger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DefaultLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\Base64Encoder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\CipherEncoder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\JsonEncoder.cs" />

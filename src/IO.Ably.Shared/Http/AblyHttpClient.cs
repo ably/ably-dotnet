@@ -23,7 +23,7 @@ namespace IO.Ably
         internal AblyHttpClient(AblyHttpOptions options, HttpMessageHandler messageHandler = null)
         {
             NowProvider = options.NowProvider;
-            Logger = options.Logger ?? IO.Ably.Logger.LoggerInstance;
+            Logger = options.Logger ?? IO.Ably.DefaultLogger.LoggerInstance;
             Options = options;
             CreateInternalHttpClient(options.HttpRequestTimeout, messageHandler);
         }

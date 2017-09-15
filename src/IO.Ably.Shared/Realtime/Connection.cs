@@ -26,7 +26,7 @@ namespace IO.Ably.Realtime
 
         public static void NotifyOperatingSystemNetworkState(NetworkState state)
         {
-            if(IO.Ably.Logger.IsDebug) IO.Ably.Logger.Debug("OS Network connection state: " + state);
+            if(IO.Ably.DefaultLogger.IsDebug) IO.Ably.DefaultLogger.Debug("OS Network connection state: " + state);
 
             foreach (var subscriber in OsEventSubscribers.ToArray())
             {
@@ -54,7 +54,7 @@ namespace IO.Ably.Realtime
         internal Connection(AblyRealtime realtimeClient, INowProvider nowProvider, ILogger logger = null) : base(logger)
         {
             NowProvider = nowProvider;
-            Logger = logger ?? IO.Ably.Logger.LoggerInstance;
+            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
             FallbackHosts = Defaults.FallbackHosts.Shuffle().ToList();
             RealtimeClient = realtimeClient;
             RegisterWithOSNetworkStateEvents(HandleNetworkStateChange);

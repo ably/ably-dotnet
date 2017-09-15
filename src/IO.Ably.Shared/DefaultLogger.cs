@@ -37,7 +37,7 @@ namespace IO.Ably
     }
 
     /// <summary>An utility class for logging various messages.</summary>
-    public static class Logger
+    public static class DefaultLogger
     {
         private static readonly Object SyncLock = new Object();
         private static InternalLogger _loggerInstance;
