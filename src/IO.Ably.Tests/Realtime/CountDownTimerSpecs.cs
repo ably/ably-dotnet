@@ -58,13 +58,24 @@ namespace IO.Ably.Tests.Realtime
 
             var timeout = TimeSpan.FromMilliseconds(10);
             int called = 0;
-            Action callback = () => Interlocked.Increment(ref called);
-            timer.Start(timeout, callback);
+            void Callback()
+            {
+                Interlocked.Increment(ref called);
+            }
+
+            timer.Start(timeout, Callback);
 
             // Act
             timer.Abort();
-            timer.Start(timeout, callback);
-            await Task.Delay(50);
+            timer.Start(timeout, Callback);
+
+            for (var i = 0; i < 20; i++)
+            {
+                if (called == 0)
+                    await Task.Delay(50);
+                else
+                    break;
+            }
 
             // Assert
             called.Should().Be(1);
