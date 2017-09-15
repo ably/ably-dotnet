@@ -439,8 +439,17 @@ namespace IO.Ably.Tests.Realtime
             await WaitForState(client, ConnectionState.Connected);
 
             await Task.Delay(1000);
-            sentMessages.Where(x => x.Channel == "test-channel" && x.Action == ProtocolMessage.MessageAction.Detach)
-                .Should().HaveCount(2);
+            int count = 0;
+            for (var i = 0; i < 20; i++)
+            {
+                count = sentMessages.Count(x => x.Channel == "test-channel" && x.Action == ProtocolMessage.MessageAction.Detach);
+                if (count < 2)
+                    await Task.Delay(100);
+                else
+                    break;
+            }
+
+            count.ShouldBeEquivalentTo(2);
             channel.State.Should().Be(ChannelState.Detached);
         }
 
