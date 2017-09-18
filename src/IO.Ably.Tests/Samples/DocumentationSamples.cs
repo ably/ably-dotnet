@@ -314,8 +314,8 @@ namespace IO.Ably.Tests.Samples
 
         public async Task NotifyNetworkChanges()
         {
-            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online);
-            Connection.NotifyOperatingSystemNetworkState(NetworkState.Offline);
+            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, DefaultLogger.LoggerInstance);
+            Connection.NotifyOperatingSystemNetworkState(NetworkState.Offline, DefaultLogger.LoggerInstance);
         }
 
         public async Task UsingWebsocket4NetTransport()

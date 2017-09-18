@@ -484,7 +484,7 @@ namespace IO.Ably.Tests.Realtime
             List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.On(stateChange => states.Add(stateChange.Current));
 
-            Connection.NotifyOperatingSystemNetworkState(NetworkState.Offline);
+            Connection.NotifyOperatingSystemNetworkState(NetworkState.Offline, Logger);
 
             await Task.Delay(TimeSpan.FromSeconds(2));
 
@@ -508,7 +508,7 @@ namespace IO.Ably.Tests.Realtime
                 new ConnectionDisconnectedState(client.ConnectionManager, this.Logger) {RetryInstantly = false});
 
             client.Connection.State.Should().Be(ConnectionState.Disconnected);
-            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online);
+            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, Logger);
 
             List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.On(stateChange => states.Add(stateChange.Current));
@@ -533,7 +533,7 @@ namespace IO.Ably.Tests.Realtime
                 new ConnectionSuspendedState(client.ConnectionManager, Logger));
 
             client.Connection.State.Should().Be(ConnectionState.Suspended);
-            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online);
+            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, Logger);
 
             List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.On(stateChange => states.Add(stateChange.Current));
