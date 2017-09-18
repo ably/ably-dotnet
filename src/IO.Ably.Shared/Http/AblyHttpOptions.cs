@@ -16,7 +16,7 @@ namespace IO.Ably
         internal TimeSpan HttpMaxRetryDuration { get; set; }
         public bool IsDefaultHost { get; set; } = true;
 
-        public INowProvider NowProvider { get; set; }
+        internal INowProvider NowProvider { get; set; }
 
         public AblyHttpOptions() //Used for testing
         {

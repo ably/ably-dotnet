@@ -11,7 +11,7 @@ namespace IO.Ably
 
         public TokenRequest() : this(Defaults.NowProvider())
         {}
-        public TokenRequest(INowProvider nowProvider)
+        internal TokenRequest(INowProvider nowProvider)
         {
             NowProvider = nowProvider;
             Nonce = Guid.NewGuid().ToString("N").ToLower();

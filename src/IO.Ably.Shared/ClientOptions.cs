@@ -156,7 +156,7 @@ namespace IO.Ably
 
         public SynchronizationContext CustomContext { get; set; }
 
-        public INowProvider NowProvider
+        internal INowProvider NowProvider
         {
             get => _nowProvider ?? (_nowProvider = Defaults.NowProvider());
             set => _nowProvider = value;

@@ -48,7 +48,7 @@ namespace IO.Ably.Realtime
         internal ChannelMessageProcessor ChannelMessageProcessor { get; set; }
         private string _host;
 
-        public INowProvider NowProvider { get; }
+        internal INowProvider NowProvider { get; }
 
         internal Connection(AblyRealtime realtimeClient, INowProvider nowProvider)
         {
