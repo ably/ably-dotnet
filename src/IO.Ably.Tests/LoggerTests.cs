@@ -67,7 +67,30 @@ namespace IO.Ably.AcceptanceTests
             // test that the Logger gets instanced
             Assert.NotNull(DefaultLogger.LoggerInstance);
         }
-        
+
+        [Fact]
+        public void ClientOptionsWithNoLoggerSpecified_ShouldUseTheDefaultLogger()
+        {
+            var opts = new ClientOptions();
+            Assert.Same(opts.Logger, DefaultLogger.LoggerInstance);
+        }
+
+        [Fact]
+        public void LoggerInstances_ShouldNotInteract()
+        {
+            var logger1 = new DefaultLogger.InternalLogger();
+            var logger2 = new DefaultLogger.InternalLogger();
+
+            logger1.LogLevel.ShouldBeEquivalentTo(logger2.LogLevel);
+            logger1.LogLevel = LogLevel.Debug;
+            logger2.LogLevel = LogLevel.Error;
+
+            logger1.LogLevel.ShouldBeEquivalentTo(LogLevel.Debug);
+            logger2.LogLevel.ShouldBeEquivalentTo(LogLevel.Error);
+            logger1.LogLevel.Should().NotBe(logger2.LogLevel);
+        }
+
+
         public void Dispose()
         {
             DefaultLogger.LoggerSink = new DefaultLoggerSink();
