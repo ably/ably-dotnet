@@ -470,7 +470,6 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL5f")]
             public async Task ShouldReturnToPreviousStateIfDetachedMessageWasNotReceivedWithinDefaultTimeout()
             {
-                TaskCompletionSource<bool> tsc = new TaskCompletionSource<bool>();
                 SetState(ChannelState.Attached);
                 _client.Options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
                 bool detachSuccess = true;
