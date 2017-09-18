@@ -313,7 +313,14 @@ namespace IO.Ably.Tests.Realtime
                 _client.Options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
                 _channel.Attach();
 
-                await Task.Delay(150);
+                await Task.Delay(120);
+                for (int i = 0; i < 10; i++)
+                {
+                    if (_channel.State != previousState)
+                        await Task.Delay(50);
+                    else
+                        break;
+                }
 
                 for (var i = 0; i < 5; i++)
                 {
@@ -959,6 +966,9 @@ namespace IO.Ably.Tests.Realtime
             [Fact]
             public async Task WithProtocolMessage_ShouldSetMessageTimestampWhenNotThere()
             {
+                SetNowFunc(() => DateTimeOffset.UtcNow);
+                var timeStamp = Now;
+
                 var channel = _client.Channels.Get("test");
 
                 SetState(channel, ChannelState.Attached);
@@ -969,16 +979,16 @@ namespace IO.Ably.Tests.Realtime
                     receivedMessages.Add(msg);
                 });
 
-                var protocolMessage = SetupTestProtocolmessage(timestamp: Now, messages: new[]
+                var protocolMessage = SetupTestProtocolmessage(timestamp: timeStamp, messages: new[]
                 {
                     new Message("message1", "data"),
-                    new Message("message1", "data") {Timestamp = Now.AddMinutes(1)},
+                    new Message("message1", "data") {Timestamp = timeStamp.AddMinutes(1)},
                 });
 
                 await _client.FakeProtocolMessageReceived(protocolMessage);
 
-                receivedMessages.First().Timestamp.Should().Be(Now);
-                receivedMessages.Last().Timestamp.Should().Be(Now.AddMinutes(1));
+                receivedMessages.First().Timestamp.Should().Be(timeStamp);
+                receivedMessages.Last().Timestamp.Should().Be(timeStamp.AddMinutes(1));
             }
 
             private ProtocolMessage SetupTestProtocolmessage(string connectionId = null, DateTimeOffset? timestamp = null,  Message[] messages = null)

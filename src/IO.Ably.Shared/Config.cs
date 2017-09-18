@@ -1,12 +1,14 @@
 using System;
 using IO.Ably.Encryption;
+using IO.Ably.Shared;
 
 namespace IO.Ably
 {
     public static class Config
     {
         public static Func<CipherParams, IChannelCipher> GetCipher = Crypto.GetCipher;
-        internal static Func<DateTimeOffset> Now = () => DateTimeOffset.UtcNow;
+
+        //internal static Func<DateTimeOffset> Now = () => DateTimeOffset.UtcNow;
         
         public static string Host = "rest.ably.io";
         public const int Port = 80;

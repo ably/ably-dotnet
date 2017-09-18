@@ -1,4 +1,5 @@
 ﻿using System;
+using IO.Ably.Shared;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -7,7 +8,7 @@ namespace IO.Ably
     /// <summary>
     /// A class providing details of a token and its associated metadata
     /// </summary>
-    public sealed class TokenDetails
+    public sealed class TokenDetails : NowProviderConcern
     {
         /// <summary>
         /// The allowed capabilities for this token. <see cref="Capability"/>
@@ -41,19 +42,30 @@ namespace IO.Ably
 
         [JsonProperty("keyName")]
         public string KeyName { get; set; }
-       
+
         public TokenDetails()
         {
+            NowProvider = Defaults.NowProvider();
+        }
+        public TokenDetails(INowProvider nowProvider)
+        {
+            NowProvider = nowProvider;
         }
 
         public TokenDetails(string token)
         {
             Token = token;
+            NowProvider = Defaults.NowProvider();
+        }
+        public TokenDetails(string token, INowProvider nowProvider)
+        {
+            Token = token;
+            NowProvider = nowProvider;
         }
 
         public void Expire()
         {
-            Expires = Config.Now().AddDays(-1);
+            Expires = Now().AddDays(-1);
         }
 
         /// <summary>
@@ -105,7 +117,7 @@ namespace IO.Ably
             if (token == null)
                 return false;
             var exp = token.Expires;
-            return (exp == DateTimeOffset.MinValue) || (exp >= Config.Now());
+            return (exp == DateTimeOffset.MinValue) || (exp >= token.Now());
         }
     }
 }

@@ -197,7 +197,7 @@ namespace IO.Ably.Tests.Realtime
             _resetEvent.WaitOne(10000);
 
             realtimeClient.RestClient.AblyAuth.CurrentToken.Expires.Should()
-                .BeAfter(Config.Now(), "The token should be valid and expire in the future.");
+                .BeAfter(TestHelpers.Now(), "The token should be valid and expire in the future.");
             error.Should().BeNull("No error should be raised!");
         }
 

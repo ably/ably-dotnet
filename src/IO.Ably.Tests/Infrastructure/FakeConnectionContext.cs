@@ -24,7 +24,7 @@ namespace IO.Ably.Tests
 
         public FakeConnectionContext()
         {
-            Connection = new Connection(null);
+            Connection = new Connection(null, TestHelpers.NowProvider());
         }
 
         public ConnectionStateBase LastSetState { get; set; }

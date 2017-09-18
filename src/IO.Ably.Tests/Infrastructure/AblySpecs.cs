@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using IO.Ably.Shared;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -50,13 +51,40 @@ namespace IO.Ably.Tests
         public ITestOutputHelper Output { get; }
         public const string ValidKey = "1iZPfA.BjcI_g:wpNhw5RCw6rDjisl";
 
-        public DateTimeOffset Now { get; set; }
+        public DateTimeOffset Now => NowProvider.Now();
 
-        public AblySpecs(ITestOutputHelper output)
+        public INowProvider NowProvider { get; set; }
+
+        public void SetNowFunc(Func<DateTimeOffset> nowFunc) => ((AblySpecsNowProvider) NowProvider).NowFunc = nowFunc;
+
+        public void NowAddSeconds(int s)
         {
-            Now = Config.Now();
-            Config.Now = () => Now;    
+            NowAdd(TimeSpan.FromSeconds(s));
+        }
+        public void NowAdd(TimeSpan ts)
+        {
+            var n = Now.Add(ts);
+            SetNowFunc(() => n);
+        }
+        
+        protected AblySpecs(ITestOutputHelper output)
+        {
+            NowProvider = new AblySpecsNowProvider();
             Output = output;
+        }
+
+        internal class AblySpecsNowProvider : INowProvider
+        {
+            public AblySpecsNowProvider()
+            {
+                NowFunc = TestHelpers.Now;
+            }
+            public DateTimeOffset Now()
+            {
+                return NowFunc();
+            }
+
+            public Func<DateTimeOffset> NowFunc { get; set; }
         }
     }
 }

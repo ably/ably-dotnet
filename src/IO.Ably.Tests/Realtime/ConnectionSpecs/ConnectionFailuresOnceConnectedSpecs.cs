@@ -15,7 +15,7 @@ namespace IO.Ably.Tests.Realtime
     [Trait("spec", "RTN15")]
     public class ConnectionFailuresOnceConnectedSpecs : ConnectionSpecsBase
     {
-        private TokenDetails _returnedDummyTokenDetails = new TokenDetails("123") { Expires = Config.Now().AddDays(1), ClientId = "123" };
+        private TokenDetails _returnedDummyTokenDetails = new TokenDetails("123") { Expires = TestHelpers.Now().AddDays(1), ClientId = "123" };
         private int _tokenErrorCode = 40140;
         private bool _renewTokenCalled;
         private TokenDetails _validToken;
@@ -289,7 +289,7 @@ namespace IO.Ably.Tests.Realtime
 
         public ConnectionFailuresOnceConnectedSpecs(ITestOutputHelper output) : base(output)
         {
-            Now = DateTimeOffset.Now;
+            SetNowFunc(() => DateTimeOffset.UtcNow);
             _validToken = new TokenDetails("id") { Expires = Now.AddHours(1) };
             _renewTokenCalled = false;
             _tokenErrorInfo = new ErrorInfo() { Code = _tokenErrorCode, StatusCode = HttpStatusCode.Unauthorized };

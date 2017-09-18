@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using IO.Ably.Rest;
+using IO.Ably.Shared;
 using IO.Ably.Transport;
 
 namespace IO.Ably
@@ -8,6 +9,7 @@ namespace IO.Ably
     public class ClientOptions : AuthOptions
     {
         private string _clientId;
+        private INowProvider _nowProvider;
 
         /// <summary>
         ///
@@ -153,6 +155,12 @@ namespace IO.Ably
         public bool CaptureCurrentSynchronizationContext { get; set; } = true;
 
         public SynchronizationContext CustomContext { get; set; }
+
+        internal INowProvider NowProvider
+        {
+            get => _nowProvider ?? (_nowProvider = Defaults.NowProvider());
+            set => _nowProvider = value;
+        }
 
         internal AuthMethod Method
         {

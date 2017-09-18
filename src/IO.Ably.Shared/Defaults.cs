@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using IO.Ably.Shared;
 using IO.Ably.Transport;
 
 namespace IO.Ably
@@ -44,9 +45,20 @@ namespace IO.Ably
         /// <summary>The default log level you'll see in the debug output.</summary>
         internal const LogLevel DefaultLogLevel = LogLevel.Warning;
 
+        internal static INowProvider NowProvider() => new DefaultNowProvider();
+
+
         static Defaults()
         {
             FallbackHosts = new[] { "a.ably-realtime.com", "b.ably-realtime.com", "c.ably-realtime.com", "d.ably-realtime.com", "e.ably-realtime.com" };
         }
+
+        private class DefaultNowProvider : INowProvider {
+            public DateTimeOffset Now()
+            {
+                return DateTimeOffset.UtcNow;
+            }
+        }
+
     }
 }

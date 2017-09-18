@@ -32,21 +32,26 @@ namespace IO.Ably.Tests.Realtime
         [Fact]
         public void ShouldSuspend_WhenFirstAttemptIsWithinConnectionStateTtl_ShouldReturnFalse()
         {
-            _info.Attempts.Add(new ConnectionAttempt(Config.Now()));
+            SetNowFunc(() => DateTimeOffset.UtcNow);
+            _info.Attempts.Add(new ConnectionAttempt(Now));
             //Move now to default ConnetionStatettl - 1 second
-            Now = Now.Add(Defaults.ConnectionStateTtl.Add(TimeSpan.FromSeconds(-1)));
+            NowAdd(Defaults.ConnectionStateTtl.Add(TimeSpan.FromSeconds(-1)));
             _info.ShouldSuspend().Should().BeFalse();
         }
         [Fact]
         public void ShouldSuspend_WhenFirstAttemptEqualOrGreaterThanConnectionStateTtl_ShouldReturnTrue()
         {
-            Now = DateTimeOffset.Now;
-            _info.Attempts.Add(new ConnectionAttempt(Now));
+            SetNowFunc(() => DateTimeOffset.UtcNow);
+            var connection = new Connection(GetRealtime(), NowProvider);
+            var info = new ConnectionAttemptsInfo(connection);
+
+            //_info.Reset();
+            info.Attempts.Add(new ConnectionAttempt(Now));
             //Move now to default ConnetionStatettl - 1 second
-            Now = Now.Add(Defaults.ConnectionStateTtl);
-            _info.ShouldSuspend().Should().BeTrue("When time is equal"); // =
-            Now = Now.AddSeconds(10);
-            _info.ShouldSuspend().Should().BeTrue("When time is greater than"); // >
+            NowAdd(Defaults.ConnectionStateTtl);
+            info.ShouldSuspend().Should().BeTrue("When time is equal"); // =
+            NowAddSeconds(60);
+            info.ShouldSuspend().Should().BeTrue("When time is greater than"); // >
         }
 
         [Fact]
@@ -83,12 +88,12 @@ namespace IO.Ably.Tests.Realtime
 
         private ConnectionAttemptsInfo Create(Action<ClientOptions> optionsAction = null)
         {
-            return new ConnectionAttemptsInfo(new Connection(GetRealtime(optionsAction)));
+            return new ConnectionAttemptsInfo(new Connection(GetRealtime(optionsAction), TestHelpers.NowProvider()));
         }
 
         public ConnectionAttemptsInfoSpecs(ITestOutputHelper output) : base(output)
         {
-            _connection = new Connection(GetRealtime());
+            _connection = new Connection(GetRealtime(), TestHelpers.NowProvider());
             _info = new ConnectionAttemptsInfo(_connection);
         }
 

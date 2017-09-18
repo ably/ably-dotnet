@@ -6,10 +6,11 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using IO.Ably.Shared;
 
 namespace IO.Ably
 {
-    internal class AblyHttpClient : IAblyHttpClient
+    internal class AblyHttpClient : NowProviderConcern, IAblyHttpClient
     {
         internal AblyHttpOptions Options { get; }
 
@@ -17,8 +18,9 @@ namespace IO.Ably
 
         internal HttpClient Client { get; set; }
 
-        internal AblyHttpClient(AblyHttpOptions options, HttpMessageHandler messageHandler =null)
+        internal AblyHttpClient(AblyHttpOptions options, HttpMessageHandler messageHandler = null)
         {
+            NowProvider = options.NowProvider;
             Options = options;
             CreateInternalHttpClient(options.HttpRequestTimeout, messageHandler);
         }
@@ -44,13 +46,13 @@ namespace IO.Ably
             var random = new Random();
 
             int currentTry = 0;
-            var startTime = Config.Now();
+            var startTime = Now();
             var numberOfRetries = Options.HttpMaxRetryCount;
             var host = CustomHost.IsNotEmpty() ? CustomHost : Options.Host;
 
             while (currentTry < numberOfRetries)
             {
-                var requestTime = Config.Now();
+                DateTimeOffset requestTime = Now();
                 if ((requestTime - startTime).TotalSeconds >= Options.HttpMaxRetryDuration.TotalSeconds)
                 {
                     Logger.Error("Cumulative retry timeout of {0}s was exceeded", Config.CommulativeFailedRequestTimeOutInSeconds);
@@ -289,6 +291,7 @@ namespace IO.Ably
                 return "?" + query;
             return string.Empty;
         }
+        
     }
 
 

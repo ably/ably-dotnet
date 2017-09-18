@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
+using IO.Ably.Shared;
 
 namespace IO.Ably
 {
@@ -105,7 +106,7 @@ namespace IO.Ably
         }
 
 
-        internal class InternalLogger
+        internal class InternalLogger : NowProviderConcern
         {
             /// <summary>Maximum level to log.</summary>
             /// <remarks>E.g. set to LogLevel.Warning to have only errors and warnings in the log.</remarks>
@@ -115,10 +116,12 @@ namespace IO.Ably
             public bool IsDebug => LogLevel == LogLevel.Debug;
 
             public InternalLogger() : this(Defaults.DefaultLogLevel, new DefaultLoggerSink()) {}
-            public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink)
+            public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink): this(logLevel, loggerSink, null ) {} 
+            public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink, INowProvider nowProvider)
             {
                 LogLevel = logLevel;
                 LoggerSink = loggerSink;
+                NowProvider = nowProvider ?? Defaults.NowProvider();
             }
 
             public IDisposable SetTempDestination(ILoggerSink i)
@@ -143,7 +146,7 @@ namespace IO.Ably
 
             public string GetLogMessagePreifx()
             {
-                var timeStamp = Config.Now().ToString("hh:mm:ss.fff");
+                var timeStamp = Now().ToString("hh:mm:ss.fff");
                 return $"{timeStamp}";
             }
 

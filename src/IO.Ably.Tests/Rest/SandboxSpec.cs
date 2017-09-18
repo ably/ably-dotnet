@@ -20,7 +20,7 @@ namespace IO.Ably.Tests
             Fixture = fixture;
             Output = output;
             //Reset time in case other tests have changed it
-            Config.Now = () => DateTimeOffset.UtcNow;
+            //Config.Now = () => DateTimeOffset.UtcNow;
 
             // Very useful for debugging failing tests.
             //Logger.LoggerSink = new OutputLoggerSink(output);
