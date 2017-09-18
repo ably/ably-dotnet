@@ -162,7 +162,7 @@ namespace IO.Ably
             set => _nowProvider = value;
         }
 
-        public ILogger Logger { get; set; } = IO.Ably.DefaultLogger.LoggerInstance;
+        internal ILogger Logger { get; set; } = IO.Ably.DefaultLogger.LoggerInstance;
 
         internal AuthMethod Method
         {
