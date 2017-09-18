@@ -14,7 +14,7 @@ namespace IO.Ably.Tests
         public void WaitOne()
         {
             var result = Signal.WaitOne(2000);
-            Assert.True(result, "Result was not returned withing 2000ms");
+            Assert.True(result, "Result was not returned within 2000ms");
         }
 
         public void Done()
