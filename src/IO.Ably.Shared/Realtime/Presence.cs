@@ -196,7 +196,7 @@ namespace IO.Ably.Realtime
             foreach (var handler in handlers)
             {
                 var loopHandler = handler;
-                _channel.RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message));
+                _channel.RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message, Logger));
             }
 
             var specificHandlers = _handlers.GetHandlers(message.Action.ToString());
@@ -204,7 +204,7 @@ namespace IO.Ably.Realtime
             foreach (var specificHandler in specificHandlers)
             {
                 var loopHandler = specificHandler;
-                _channel.RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message));
+                _channel.RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message, Logger));
             }
         }
 

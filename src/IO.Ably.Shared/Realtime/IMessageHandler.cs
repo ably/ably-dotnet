@@ -14,7 +14,7 @@ namespace IO.Ably.Realtime
             return new MessageHandlerAction<Message>(action);
         }
 
-        public static void SafeHandle<T>(this MessageHandlerAction<T> handler, T message) where T : IMessage
+        public static void SafeHandle<T>(this MessageHandlerAction<T> handler, T message, ILogger logger) where T : IMessage
         {
             try
             {
@@ -22,7 +22,7 @@ namespace IO.Ably.Realtime
             }
             catch (Exception ex)
             {
-                IO.Ably.DefaultLogger.Error("Error notifying subscriber", ex);
+                logger.Error("Error notifying subscriber", ex);
             }
         }
     }

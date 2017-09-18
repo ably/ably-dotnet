@@ -490,7 +490,7 @@ namespace IO.Ably.Realtime
             foreach (var handler in channelHandlers)
             {
                 var loopHandler = handler;
-                RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message));
+                RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message, Logger));
             }
 
             if (message.Name.IsNotEmpty())
@@ -501,7 +501,7 @@ namespace IO.Ably.Realtime
                 foreach (var specificHandler in namedHandlers)
                 {
                     var loopHandler = specificHandler;
-                    RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message));
+                    RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message, Logger));
                 }
             }
         }
