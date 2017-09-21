@@ -9,7 +9,7 @@ namespace IO.Ably.Transport
 {
     public class TransportParams
     {
-        public ILogger Logger { get; private set; }
+        internal ILogger Logger { get; private set; }
         public string Host { get; private set; }
         public bool Tls { get; private set; }
         public string[] FallbackHosts { get; private set; }

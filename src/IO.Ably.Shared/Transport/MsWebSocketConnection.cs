@@ -9,7 +9,7 @@ using IO.Ably;
 
 namespace IO.Ably.Transport
 {
-    public class MsWebSocketConnection : IDisposable
+    internal class MsWebSocketConnection : IDisposable
     {
         public enum ConnectionState
         {

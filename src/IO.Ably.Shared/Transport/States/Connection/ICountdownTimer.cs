@@ -12,7 +12,7 @@ namespace IO.Ably.Transport.States.Connection
         void Abort(bool trigger = false);
     }
 
-    public class CountdownTimer : ICountdownTimer
+    internal class CountdownTimer : ICountdownTimer
     {
         internal ILogger Logger { get; private set; }
 

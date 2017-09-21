@@ -4,7 +4,7 @@ using System.Text;
 
 namespace IO.Ably
 {
-    public interface ILogger
+    internal interface ILogger
     {
         LogLevel LogLevel { get; set; }
         bool IsDebug { get; }

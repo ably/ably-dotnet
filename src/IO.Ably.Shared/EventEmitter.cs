@@ -21,7 +21,7 @@ namespace IO.Ably
     public abstract class EventEmitter<TState, TArgs> : IEventEmitter<TState, TArgs> where TState : struct
         where TArgs : EventArgs
     {
-        protected EventEmitter(ILogger logger)
+        internal EventEmitter(ILogger logger)
         {
             Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
         }

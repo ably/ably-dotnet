@@ -24,7 +24,7 @@ namespace IO.Ably.Realtime
 
         protected override Action<Action> NotifyClient => RealtimeClient.NotifyExternalClients;
 
-        public static void NotifyOperatingSystemNetworkState(NetworkState state, ILogger logger)
+        internal static void NotifyOperatingSystemNetworkState(NetworkState state, ILogger logger)
         {
             if(logger.IsDebug) logger.Debug("OS Network connection state: " + state);
 
