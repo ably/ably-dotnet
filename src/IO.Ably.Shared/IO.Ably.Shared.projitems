@@ -25,7 +25,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)HttpUtility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IChannelCommands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ILogger.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)INowProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IoC.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IPlatform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IRealtimeClient.cs" />
