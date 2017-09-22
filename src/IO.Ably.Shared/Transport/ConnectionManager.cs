@@ -9,8 +9,9 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport
 {
-    internal class ConnectionManager : NowProviderConcern, IConnectionManager, ITransportListener, IConnectionContext
+    internal class ConnectionManager : IConnectionManager, ITransportListener, IConnectionContext
     {
+        internal INowProvider NowProvider { get; set; }
         internal ILogger Logger { get; private set; }
 
         public Queue<MessageAndCallback> PendingMessages { get; }

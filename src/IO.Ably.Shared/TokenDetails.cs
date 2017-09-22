@@ -8,8 +8,10 @@ namespace IO.Ably
     /// <summary>
     /// A class providing details of a token and its associated metadata
     /// </summary>
-    public sealed class TokenDetails : NowProviderConcern
+    public sealed class TokenDetails
     {
+        internal INowProvider NowProvider { get; set; }
+
         /// <summary>
         /// The allowed capabilities for this token. <see cref="Capability"/>
         /// </summary>
@@ -65,7 +67,7 @@ namespace IO.Ably
 
         public void Expire()
         {
-            Expires = Now().AddDays(-1);
+            Expires = NowProvider.Now().AddDays(-1);
         }
 
         /// <summary>
@@ -117,7 +119,7 @@ namespace IO.Ably
             if (token == null)
                 return false;
             var exp = token.Expires;
-            return (exp == DateTimeOffset.MinValue) || (exp >= token.Now());
+            return (exp == DateTimeOffset.MinValue) || (exp >= token.NowProvider.Now());
         }
     }
 }

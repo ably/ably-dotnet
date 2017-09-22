@@ -106,7 +106,7 @@ namespace IO.Ably
         }
 
 
-        internal class InternalLogger : NowProviderConcern, ILogger
+        internal class InternalLogger : ILogger
         {
             /// <summary>Maximum level to log.</summary>
             /// <remarks>E.g. set to LogLevel.Warning to have only errors and warnings in the log.</remarks>
@@ -114,6 +114,8 @@ namespace IO.Ably
 
             public ILoggerSink LoggerSink { get; set; }
             public bool IsDebug => LogLevel == LogLevel.Debug;
+
+            internal INowProvider NowProvider { get; set; }
 
             public InternalLogger() : this(Defaults.DefaultLogLevel, new DefaultLoggerSink()) {}
             public InternalLogger(ILoggerSink loggerSink) : this(Defaults.DefaultLogLevel, loggerSink) { }
@@ -147,7 +149,7 @@ namespace IO.Ably
 
             public string GetLogMessagePreifx()
             {
-                var timeStamp = Now().ToString("hh:mm:ss.fff");
+                var timeStamp = NowProvider.Now().ToString("hh:mm:ss.fff");
                 return $"{timeStamp}";
             }
 

@@ -60,8 +60,9 @@ namespace IO.Ably.Transport
         }
     }
 
-    internal sealed class ConnectionAttemptsInfo : NowProviderConcern
+    internal sealed class ConnectionAttemptsInfo
     {
+        internal INowProvider NowProvider { get; set; }
         private static readonly ISet<HttpStatusCode> FallbackReasons;
 
         static ConnectionAttemptsInfo()
@@ -120,10 +121,10 @@ namespace IO.Ably.Transport
         {
             lock (_syncLock)
             {
-                var attempt = Attempts.LastOrDefault() ?? new ConnectionAttempt(Now());
+                var attempt = Attempts.LastOrDefault() ?? new ConnectionAttempt(NowProvider.Now());
                 attempt.FailedStates.Add(new AttemptFailedState(state, error));
                 if(Attempts.Count == 0)
-                    Attempts.Add(attempt);
+                    Attempts.Add(attempt); 
             }
         }
 
@@ -151,7 +152,7 @@ namespace IO.Ably.Transport
             {
                 if (FirstAttempt == null)
                     return false;
-                return (Now() - FirstAttempt.Value) >= _connection.ConnectionStateTtl;
+                return (NowProvider.Now() - FirstAttempt.Value) >= _connection.ConnectionStateTtl;
             }
         }
 
@@ -191,7 +192,7 @@ namespace IO.Ably.Transport
                 switch (newState.State)
                 {
                     case ConnectionState.Connecting:
-                        Attempts.Add(new ConnectionAttempt(Now()));
+                        Attempts.Add(new ConnectionAttempt(NowProvider.Now()));
                         break;
                     case ConnectionState.Failed:
                     case ConnectionState.Closed:

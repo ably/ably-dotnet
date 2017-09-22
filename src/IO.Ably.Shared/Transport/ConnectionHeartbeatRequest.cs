@@ -8,7 +8,7 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport
 {
-    internal class ConnectionHeartbeatRequest : NowProviderConcern
+    internal class ConnectionHeartbeatRequest
     {
         public static readonly ErrorInfo DefaultError = new ErrorInfo("Unable to ping service; not connected", 40000,
             HttpStatusCode.BadRequest);
@@ -20,6 +20,7 @@ namespace IO.Ably.Transport
         private bool _finished;
         private object _syncLock = new object();
         private DateTimeOffset _start = DateTimeOffset.MinValue;
+        internal INowProvider NowProvider { get; set; }
         internal ILogger Logger { get; private set; }
 
         public ConnectionHeartbeatRequest(ConnectionManager manager, ICountdownTimer timer, INowProvider nowProvider)
@@ -49,7 +50,7 @@ namespace IO.Ably.Transport
 
         private ConnectionHeartbeatRequest Send(Action<TimeSpan?, ErrorInfo> callback)
         {
-            _start = Now();
+            _start = NowProvider.Now();
 
             if (_manager.Connection.State != ConnectionState.Connected)
             {
@@ -81,7 +82,7 @@ namespace IO.Ably.Transport
 
         private TimeSpan? GetElapsedTime()
         {
-            return Now() - _start;
+            return NowProvider.Now() - _start;
         }  
 
         private void OnInternalStateChanged(object sender, ConnectionStateChange e)

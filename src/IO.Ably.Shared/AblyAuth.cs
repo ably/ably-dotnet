@@ -9,7 +9,7 @@ using IO.Ably;
 
 namespace IO.Ably
 {
-    internal class AblyAuth : NowProviderConcern, IAblyAuth
+    internal class AblyAuth : IAblyAuth
     {
         internal AblyAuth(ClientOptions options, AblyRest rest)
         {
@@ -19,7 +19,7 @@ namespace IO.Ably
             Logger = options.Logger;
             Initialise();
         }
-
+        internal INowProvider NowProvider { get; set; }
         internal ILogger Logger { get; private set; }
 
         public AuthMethod AuthMethod { get; private set; }
@@ -313,7 +313,7 @@ namespace IO.Ably
             }
             else if (CurrentToken != null)
             {
-                if ((Now().AddSeconds(Defaults.TokenExpireBufferInSeconds)) >= CurrentToken.Expires)
+                if (NowProvider.Now().AddSeconds(Defaults.TokenExpireBufferInSeconds) >= CurrentToken.Expires)
                 {
                     CurrentToken = await RequestTokenAsync(authTokenParams, options);
                 }

@@ -10,8 +10,9 @@ using IO.Ably;
 
 namespace IO.Ably
 {
-    internal class AblyHttpClient : NowProviderConcern, IAblyHttpClient
+    internal class AblyHttpClient : IAblyHttpClient
     {
+        internal INowProvider NowProvider { get; set; }
         internal ILogger Logger { get; set; }
 
         internal AblyHttpOptions Options { get; }
@@ -49,13 +50,13 @@ namespace IO.Ably
             var random = new Random();
 
             int currentTry = 0;
-            var startTime = Now();
+            var startTime = NowProvider.Now();
             var numberOfRetries = Options.HttpMaxRetryCount;
             var host = CustomHost.IsNotEmpty() ? CustomHost : Options.Host;
 
             while (currentTry < numberOfRetries)
             {
-                DateTimeOffset requestTime = Now();
+                DateTimeOffset requestTime = NowProvider.Now();
                 if ((requestTime - startTime).TotalSeconds >= Options.HttpMaxRetryDuration.TotalSeconds)
                 {
                     Logger.Error("Cumulative retry timeout of {0}s was exceeded", Config.CommulativeFailedRequestTimeOutInSeconds);
