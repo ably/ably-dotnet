@@ -11,7 +11,7 @@ namespace IO.Ably.Transport
 {
     internal class ConnectionManager : IConnectionManager, ITransportListener, IConnectionContext
     {
-        internal INowProvider NowProvider { get; set; }
+        internal Func<DateTimeOffset> Now { get; set; }
         internal ILogger Logger { get; private set; }
 
         public Queue<MessageAndCallback> PendingMessages { get; }
@@ -61,12 +61,12 @@ namespace IO.Ably.Transport
             }
         }
 
-        public ConnectionManager(Connection connection, INowProvider nowProvider, ILogger logger)
+        public ConnectionManager(Connection connection, Func<DateTimeOffset> nowFunc, ILogger logger)
         {
-            NowProvider = nowProvider;
+            Now = nowFunc;
             Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
             PendingMessages = new Queue<MessageAndCallback>();
-            AttemptsInfo = new ConnectionAttemptsInfo(connection, nowProvider);
+            AttemptsInfo = new ConnectionAttemptsInfo(connection, nowFunc);
             Connection = connection;
             AckProcessor = new AcknowledgementProcessor(connection);
 

@@ -16,7 +16,7 @@ namespace IO.Ably
         internal TimeSpan HttpMaxRetryDuration { get; set; }
         public bool IsDefaultHost { get; set; } = true;
 
-        internal INowProvider NowProvider { get; set; }
+        internal Func<DateTimeOffset> NowFunc { get; set; }
 
         public ILogger Logger { get; set; }
 
@@ -32,7 +32,7 @@ namespace IO.Ably
             HttpMaxRetryCount = 3;
             HttpMaxRetryDuration = TimeSpan.FromSeconds(10);
 
-            NowProvider = Defaults.NowProvider();
+            NowFunc = Defaults.NowFunc();
             Logger = IO.Ably.DefaultLogger.LoggerInstance;
         }
 
@@ -49,7 +49,7 @@ namespace IO.Ably
             HttpMaxRetryCount = options.IsDefaultRestHost ? options.HttpMaxRetryCount : 1;
             HttpMaxRetryDuration = options.HttpMaxRetryDuration;
 
-            NowProvider = options.NowProvider;
+            NowFunc = options.NowFunc;
             Logger = options.Logger;
         }
     }

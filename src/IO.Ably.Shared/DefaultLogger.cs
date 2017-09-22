@@ -115,16 +115,16 @@ namespace IO.Ably
             public ILoggerSink LoggerSink { get; set; }
             public bool IsDebug => LogLevel == LogLevel.Debug;
 
-            internal INowProvider NowProvider { get; set; }
+            internal Func<DateTimeOffset> Now { get; set; }
 
             public InternalLogger() : this(Defaults.DefaultLogLevel, new DefaultLoggerSink()) {}
             public InternalLogger(ILoggerSink loggerSink) : this(Defaults.DefaultLogLevel, loggerSink) { }
             public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink): this(logLevel, loggerSink, null ) {} 
-            public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink, INowProvider nowProvider)
+            public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink, Func<DateTimeOffset> nowProvider)
             {
                 LogLevel = logLevel;
                 LoggerSink = loggerSink;
-                NowProvider = nowProvider ?? Defaults.NowProvider();
+                Now = nowProvider ?? Defaults.NowFunc();
             }
 
             public IDisposable SetTempDestination(ILoggerSink i)
@@ -149,7 +149,7 @@ namespace IO.Ably
 
             public string GetLogMessagePreifx()
             {
-                var timeStamp = NowProvider.Now().ToString("hh:mm:ss.fff");
+                var timeStamp = Now().ToString("hh:mm:ss.fff");
                 return $"{timeStamp}";
             }
 

@@ -20,15 +20,15 @@ namespace IO.Ably.Transport
         private bool _finished;
         private object _syncLock = new object();
         private DateTimeOffset _start = DateTimeOffset.MinValue;
-        internal INowProvider NowProvider { get; set; }
+        internal Func<DateTimeOffset> Now { get; set; }
         internal ILogger Logger { get; private set; }
 
-        public ConnectionHeartbeatRequest(ConnectionManager manager, ICountdownTimer timer, INowProvider nowProvider)
+        public ConnectionHeartbeatRequest(ConnectionManager manager, ICountdownTimer timer, Func<DateTimeOffset> nowFunc)
         {
             Logger = manager.Logger;
             _manager = manager;
             _timer = timer;
-            NowProvider = nowProvider;
+            Now = nowFunc;
         }
 
         public static bool CanHandleMessage(ProtocolMessage message)
@@ -36,13 +36,13 @@ namespace IO.Ably.Transport
             return message.Action == ProtocolMessage.MessageAction.Heartbeat;
         }
 
-        public static ConnectionHeartbeatRequest Execute(ConnectionManager manager, INowProvider nowProvider, Action<TimeSpan?, ErrorInfo> callback)
+        public static ConnectionHeartbeatRequest Execute(ConnectionManager manager, Func<DateTimeOffset> nowProvider, Action<TimeSpan?, ErrorInfo> callback)
         {
             return Execute(manager, new CountdownTimer("Connection heartbeat timer", manager.Logger), nowProvider, callback);
         }
 
         public static ConnectionHeartbeatRequest Execute(ConnectionManager manager, ICountdownTimer timer,
-            INowProvider nowProvider, Action<TimeSpan?, ErrorInfo> callback)
+            Func<DateTimeOffset> nowProvider, Action<TimeSpan?, ErrorInfo> callback)
         {
             var request = new ConnectionHeartbeatRequest(manager, timer, nowProvider);
             return request.Send(callback);
@@ -50,7 +50,7 @@ namespace IO.Ably.Transport
 
         private ConnectionHeartbeatRequest Send(Action<TimeSpan?, ErrorInfo> callback)
         {
-            _start = NowProvider.Now();
+            _start = Now();
 
             if (_manager.Connection.State != ConnectionState.Connected)
             {
@@ -82,7 +82,7 @@ namespace IO.Ably.Transport
 
         private TimeSpan? GetElapsedTime()
         {
-            return NowProvider.Now() - _start;
+            return Now() - _start;
         }  
 
         private void OnInternalStateChanged(object sender, ConnectionStateChange e)

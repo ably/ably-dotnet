@@ -10,7 +10,7 @@ namespace IO.Ably
     /// </summary>
     public sealed class TokenDetails
     {
-        internal INowProvider NowProvider { get; set; }
+        internal Func<DateTimeOffset> Now { get; set; }
 
         /// <summary>
         /// The allowed capabilities for this token. <see cref="Capability"/>
@@ -47,27 +47,27 @@ namespace IO.Ably
 
         public TokenDetails()
         {
-            NowProvider = Defaults.NowProvider();
+            Now = Defaults.NowFunc();
         }
-        public TokenDetails(INowProvider nowProvider)
+        public TokenDetails(Func<DateTimeOffset> nowFunc)
         {
-            NowProvider = nowProvider;
+            Now = nowFunc;
         }
 
         public TokenDetails(string token)
         {
             Token = token;
-            NowProvider = Defaults.NowProvider();
+            Now = Defaults.NowFunc();
         }
-        public TokenDetails(string token, INowProvider nowProvider)
+        public TokenDetails(string token, Func<DateTimeOffset> nowFunc)
         {
             Token = token;
-            NowProvider = nowProvider;
+            Now = nowFunc;
         }
 
         public void Expire()
         {
-            Expires = NowProvider.Now().AddDays(-1);
+            Expires = Now().AddDays(-1);
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace IO.Ably
             if (token == null)
                 return false;
             var exp = token.Expires;
-            return (exp == DateTimeOffset.MinValue) || (exp >= token.NowProvider.Now());
+            return (exp == DateTimeOffset.MinValue) || (exp >= token.Now());
         }
     }
 }

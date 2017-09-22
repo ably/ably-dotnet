@@ -37,20 +37,25 @@ namespace IO.Ably.Tests.Realtime
             //Move now to default ConnetionStatettl - 1 second
             NowAdd(Defaults.ConnectionStateTtl.Add(TimeSpan.FromSeconds(-1)));
             _info.ShouldSuspend().Should().BeFalse();
+            SetNowFunc(() => DateTimeOffset.UtcNow);
         }
         [Fact]
         public void ShouldSuspend_WhenFirstAttemptEqualOrGreaterThanConnectionStateTtl_ShouldReturnTrue()
         {
-            SetNowFunc(() => DateTimeOffset.UtcNow);
-            var connection = new Connection(GetRealtime(), NowProvider);
+            Func<DateTimeOffset> now = () => DateTimeOffset.UtcNow;
+            // We want access to the modified closure so we can manipulate time within ConnectionAttemptsInfo
+            // ReSharper disable once AccessToModifiedClosure
+            DateTimeOffset NowWrapperFn() => now();
+
+            var connection = new Connection(GetRealtime(), NowWrapperFn);
             var info = new ConnectionAttemptsInfo(connection);
 
             //_info.Reset();
-            info.Attempts.Add(new ConnectionAttempt(Now));
+            info.Attempts.Add(new ConnectionAttempt(NowWrapperFn()));
             //Move now to default ConnetionStatettl - 1 second
-            NowAdd(Defaults.ConnectionStateTtl);
+            now = () => DateTimeOffset.UtcNow.Add(Defaults.ConnectionStateTtl);
             info.ShouldSuspend().Should().BeTrue("When time is equal"); // =
-            NowAddSeconds(60);
+            now = () => DateTimeOffset.UtcNow.Add(Defaults.ConnectionStateTtl).AddSeconds(60);
             info.ShouldSuspend().Should().BeTrue("When time is greater than"); // >
         }
 
@@ -88,12 +93,12 @@ namespace IO.Ably.Tests.Realtime
 
         private ConnectionAttemptsInfo Create(Action<ClientOptions> optionsAction = null)
         {
-            return new ConnectionAttemptsInfo(new Connection(GetRealtime(optionsAction), TestHelpers.NowProvider()));
+            return new ConnectionAttemptsInfo(new Connection(GetRealtime(optionsAction), TestHelpers.NowFunc()));
         }
 
         public ConnectionAttemptsInfoSpecs(ITestOutputHelper output) : base(output)
         {
-            _connection = new Connection(GetRealtime(), TestHelpers.NowProvider());
+            _connection = new Connection(GetRealtime(), TestHelpers.NowFunc());
             _info = new ConnectionAttemptsInfo(_connection);
         }
 

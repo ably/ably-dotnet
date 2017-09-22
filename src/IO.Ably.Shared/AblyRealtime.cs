@@ -31,7 +31,7 @@ namespace IO.Ably
 
             RestClient = createRestFunc(options);
             Channels = new RealtimeChannels(this);
-            Connection = new Connection(this, options.NowProvider, options.Logger);
+            Connection = new Connection(this, options.NowFunc, options.Logger);
             Connection.Initialise();
 
             if (options.AutoConnect)

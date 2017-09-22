@@ -200,10 +200,16 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN17c")]
         public async Task WhenItMovesFromDisconnectedToSuspended_ShouldTryDefaultHostAgain()
         {
+            Func<DateTimeOffset> nowFunc = () => DateTimeOffset.UtcNow;
+            // We want access to the modified closure so we can manipulate time within ConnectionAttemptsInfo
+            // ReSharper disable once AccessToModifiedClosure
+            DateTimeOffset NowWrapperFn() => nowFunc();
+
             var client = GetConnectedClient(opts =>
             {
                 opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10);
                 opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(10);
+                opts.NowFunc = NowWrapperFn;
             });
 
             List<ConnectionState> states = new List<ConnectionState>();
@@ -221,7 +227,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             });
             for (int i = 0; i < 5; i++)
             {
-                SetNowFunc(() => DateTimeOffset.UtcNow.AddSeconds(60));
+                var now = nowFunc();
+                nowFunc = () => now.AddSeconds(60);
                 if (client.Connection.State == ConnectionState.Connecting)
                 {
                     retryHosts.Add(LastCreatedTransport.Parameters.Host);

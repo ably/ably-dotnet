@@ -13,13 +13,13 @@ namespace IO.Ably
     {
         internal AblyAuth(ClientOptions options, AblyRest rest)
         {
-            NowProvider = options.NowProvider;
+            Now = options.NowFunc;
             Options = options;
             _rest = rest;
             Logger = options.Logger;
             Initialise();
         }
-        internal INowProvider NowProvider { get; set; }
+        internal Func<DateTimeOffset> Now { get; set; }
         internal ILogger Logger { get; private set; }
 
         public AuthMethod AuthMethod { get; private set; }
@@ -69,7 +69,7 @@ namespace IO.Ably
             }
             else if (Options.Token.IsNotEmpty())
             {
-                CurrentToken = new TokenDetails(Options.Token, Options.NowProvider);
+                CurrentToken = new TokenDetails(Options.Token, Options.NowFunc);
             }
             LogCurrentAuthenticationMethod();
         }
@@ -188,7 +188,7 @@ namespace IO.Ably
                 var response = await CallAuthUrl(mergedOptions, @params);
 
                 if (response.Type == ResponseType.Text) //Return token string
-                    return new TokenDetails(response.TextResponse, NowProvider);
+                    return new TokenDetails(response.TextResponse, Now);
 
                 var signedData = response.TextResponse;
                 var jData = JObject.Parse(signedData);
@@ -207,7 +207,7 @@ namespace IO.Ably
                     throw new AblyException("TokenAuth is on but there is no way to generate one");
                 }
 
-                postData = new TokenRequest(NowProvider).Populate(@params, keyId, keyValue);
+                postData = new TokenRequest(Now).Populate(@params, keyId, keyValue);
             }
 
             request.PostData = postData;
@@ -313,7 +313,7 @@ namespace IO.Ably
             }
             else if (CurrentToken != null)
             {
-                if (NowProvider.Now().AddSeconds(Defaults.TokenExpireBufferInSeconds) >= CurrentToken.Expires)
+                if (Now().AddSeconds(Defaults.TokenExpireBufferInSeconds) >= CurrentToken.Expires)
                 {
                     CurrentToken = await RequestTokenAsync(authTokenParams, options);
                 }
@@ -363,7 +363,7 @@ namespace IO.Ably
                 @params.Timestamp = await _rest.TimeAsync();
 
             ApiKey key = mergedOptions.ParseKey();
-            var request = new TokenRequest(NowProvider).Populate(@params, key.KeyName, key.KeySecret);
+            var request = new TokenRequest(Now).Populate(@params, key.KeyName, key.KeySecret);
             return JsonHelper.Serialize(request);
         }
 

@@ -612,7 +612,7 @@ namespace IO.Ably.Tests
                     });
                 },
                 UseBinaryProtocol = false,
-                NowProvider = TestHelpers.NowProvider()
+                NowFunc = TestHelpers.NowFunc()
             };
             var rest = new AblyRest(options);
             rest.ExecuteHttpRequest = request => "[{}]".ToAblyResponse();
@@ -631,7 +631,7 @@ namespace IO.Ably.Tests
                 ClientId = "test",
                 Key = "best",
                 UseBinaryProtocol = false,
-                NowProvider = TestHelpers.NowProvider()
+                NowFunc = TestHelpers.NowFunc()
             };
             var rest = new AblyRest(options);
             var token = new TokenDetails("123") { Expires = DateTimeOffset.UtcNow.AddHours(1) };

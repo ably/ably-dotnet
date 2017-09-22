@@ -45,20 +45,17 @@ namespace IO.Ably
         /// <summary>The default log level you'll see in the debug output.</summary>
         internal const LogLevel DefaultLogLevel = LogLevel.Warning;
 
-        internal static INowProvider NowProvider() => new DefaultNowProvider();
+        internal static Func<DateTimeOffset> NowFunc()
+        {
+            return () => DateTimeOffset.UtcNow;
+        }
 
 
         static Defaults()
         {
             FallbackHosts = new[] { "a.ably-realtime.com", "b.ably-realtime.com", "c.ably-realtime.com", "d.ably-realtime.com", "e.ably-realtime.com" };
         }
-
-        private class DefaultNowProvider : INowProvider {
-            public DateTimeOffset Now()
-            {
-                return DateTimeOffset.UtcNow;
-            }
-        }
+        
 
     }
 }

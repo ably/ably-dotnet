@@ -15,12 +15,12 @@ namespace IO.Ably.Tests
 
         public static DateTimeOffset Now()
         {
-            return NowProvider().Now();
+            return NowFunc()();
         }
 
-        public static INowProvider NowProvider()
+        public static Func<DateTimeOffset> NowFunc()
         {
-            return Defaults.NowProvider();
+            return Defaults.NowFunc();
         }
     }
 }

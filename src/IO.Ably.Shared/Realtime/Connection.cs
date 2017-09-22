@@ -17,7 +17,7 @@ namespace IO.Ably.Realtime
         Offline
     }
 
-    public sealed class Connection : EventEmitter<ConnectionState, ConnectionStateChange>, IDisposable, INowProvider
+    public sealed class Connection : EventEmitter<ConnectionState, ConnectionStateChange>, IDisposable
     {
         private static readonly ConcurrentBag<WeakReference<Action<NetworkState>>> OsEventSubscribers = new ConcurrentBag<WeakReference<Action<NetworkState>>>();
         internal ILogger Logger { get; private set; }
@@ -49,11 +49,11 @@ namespace IO.Ably.Realtime
         internal ChannelMessageProcessor ChannelMessageProcessor { get; set; }
         private string _host;
 
-        internal INowProvider NowProvider { get; }
+        internal Func<DateTimeOffset> Now { get; set; }
 
-        internal Connection(AblyRealtime realtimeClient, INowProvider nowProvider, ILogger logger = null) : base(logger)
+        internal Connection(AblyRealtime realtimeClient, Func<DateTimeOffset> nowFunc, ILogger logger = null) : base(logger)
         {
-            NowProvider = nowProvider;
+            Now = nowFunc;
             Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
             FallbackHosts = Defaults.FallbackHosts.Shuffle().ToList();
             RealtimeClient = realtimeClient;
@@ -62,7 +62,7 @@ namespace IO.Ably.Realtime
 
         internal void Initialise()
         {
-            ConnectionManager = new ConnectionManager(this, NowProvider, Logger);
+            ConnectionManager = new ConnectionManager(this, Now, Logger);
             ChannelMessageProcessor = new ChannelMessageProcessor(ConnectionManager, RealtimeClient.Channels);
             ConnectionState = new ConnectionInitializedState(ConnectionManager, Logger);
         }
@@ -159,7 +159,7 @@ namespace IO.Ably.Realtime
 
         public void Ping(Action<TimeSpan?, ErrorInfo> callback)
         {
-            ConnectionHeartbeatRequest.Execute(ConnectionManager, NowProvider, callback);
+            ConnectionHeartbeatRequest.Execute(ConnectionManager, Now, callback);
         }
 
         /// <summary>
@@ -211,10 +211,6 @@ namespace IO.Ably.Realtime
                 Serial = message.ConnectionSerial.Value;
             }
         }
-
-        public DateTimeOffset Now()
-        {
-            return NowProvider.Now();
-        }
+        
     }
 }

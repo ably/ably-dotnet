@@ -62,7 +62,7 @@ namespace IO.Ably.Transport
 
     internal sealed class ConnectionAttemptsInfo
     {
-        internal INowProvider NowProvider { get; set; }
+        internal Func<DateTimeOffset> Now { get; set; }
         private static readonly ISet<HttpStatusCode> FallbackReasons;
 
         static ConnectionAttemptsInfo()
@@ -84,16 +84,16 @@ namespace IO.Ably.Transport
 
         private readonly object _syncLock = new object();
 
-        public ConnectionAttemptsInfo(Connection connection, INowProvider nowProvider)
+        public ConnectionAttemptsInfo(Connection connection, Func<DateTimeOffset> nowFunc)
         {
             _connection = connection ?? throw new ArgumentNullException(nameof(connection));
-            NowProvider = nowProvider;
+            Now = nowFunc;
         }
 
         public ConnectionAttemptsInfo(Connection connection)
         {
             _connection = connection ?? throw new ArgumentNullException(nameof(connection));
-            NowProvider = connection.NowProvider;
+            Now = connection.Now;
         }
 
         public async Task<bool> CanFallback(ErrorInfo error)
@@ -121,7 +121,7 @@ namespace IO.Ably.Transport
         {
             lock (_syncLock)
             {
-                var attempt = Attempts.LastOrDefault() ?? new ConnectionAttempt(NowProvider.Now());
+                var attempt = Attempts.LastOrDefault() ?? new ConnectionAttempt(Now());
                 attempt.FailedStates.Add(new AttemptFailedState(state, error));
                 if(Attempts.Count == 0)
                     Attempts.Add(attempt); 
@@ -152,7 +152,7 @@ namespace IO.Ably.Transport
             {
                 if (FirstAttempt == null)
                     return false;
-                return (NowProvider.Now() - FirstAttempt.Value) >= _connection.ConnectionStateTtl;
+                return (Now() - FirstAttempt.Value) >= _connection.ConnectionStateTtl;
             }
         }
 
@@ -192,7 +192,7 @@ namespace IO.Ably.Transport
                 switch (newState.State)
                 {
                     case ConnectionState.Connecting:
-                        Attempts.Add(new ConnectionAttempt(NowProvider.Now()));
+                        Attempts.Add(new ConnectionAttempt(Now()));
                         break;
                     case ConnectionState.Failed:
                     case ConnectionState.Closed:
