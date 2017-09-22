@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using IO.Ably;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 
@@ -18,18 +19,21 @@ namespace IO.Ably.Realtime
 
     public class Presence : IDisposable
     {
+        internal ILogger Logger { get; private set; }
+
         private readonly RealtimeChannel _channel;
         private readonly string _clientId;
         private readonly Handlers<PresenceMessage> _handlers = new Handlers<PresenceMessage>();
 
-        private readonly IConnectionManager connection;
-        private readonly List<QueuedPresenceMessage> pendingPresence;
+        private readonly IConnectionManager _connection;
+        private readonly List<QueuedPresenceMessage> _pendingPresence;
 
-        internal Presence(IConnectionManager connection, RealtimeChannel channel, string cliendId)
+        internal Presence(IConnectionManager connection, RealtimeChannel channel, string cliendId, ILogger logger)
         {
-            Map = new PresenceMap(channel.Name);
-            pendingPresence = new List<QueuedPresenceMessage>();
-            this.connection = connection;
+            Logger = logger;
+            Map = new PresenceMap(channel.Name, logger);
+            _pendingPresence = new List<QueuedPresenceMessage>();
+            _connection = connection;
             _channel = channel;
             _channel.InternalStateChanged += OnChannelStateChanged;
             _clientId = cliendId;
@@ -133,14 +137,14 @@ namespace IO.Ably.Realtime
                     _channel.Attach();
 
                 var tw = new TaskWrapper();
-                pendingPresence.Add(new QueuedPresenceMessage(msg, tw.Callback));
+                _pendingPresence.Add(new QueuedPresenceMessage(msg, tw.Callback));
                 return tw.Task;
             }
             if (_channel.State == ChannelState.Attached)
             {
                 var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name);
                 message.Presence = new[] {msg};
-                connection.Send(message, null);
+                _connection.Send(message, null);
                 //TODO: Fix this;
                 return TaskConstants.BooleanTrue;
             }
@@ -192,7 +196,7 @@ namespace IO.Ably.Realtime
             foreach (var handler in handlers)
             {
                 var loopHandler = handler;
-                _channel.RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message));
+                _channel.RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message, Logger));
             }
 
             var specificHandlers = _handlers.GetHandlers(message.Action.ToString());
@@ -200,7 +204,7 @@ namespace IO.Ably.Realtime
             foreach (var specificHandler in specificHandlers)
             {
                 var loopHandler = specificHandler;
-                _channel.RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message));
+                _channel.RealtimeClient.NotifyExternalClients(() => loopHandler.SafeHandle(message, Logger));
             }
         }
 
@@ -216,22 +220,22 @@ namespace IO.Ably.Realtime
 
         private void SendQueuedMessages()
         {
-            if (pendingPresence.Count == 0)
+            if (_pendingPresence.Count == 0)
                 return;
 
             var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name);
-            message.Presence = new PresenceMessage[pendingPresence.Count];
+            message.Presence = new PresenceMessage[_pendingPresence.Count];
             var callbacks = new List<Action<bool, ErrorInfo>>();
             var i = 0;
-            foreach (var presenceMessage in pendingPresence)
+            foreach (var presenceMessage in _pendingPresence)
             {
                 message.Presence[i++] = presenceMessage.Message;
                 if (presenceMessage.Callback != null)
                     callbacks.Add(presenceMessage.Callback);
             }
-            pendingPresence.Clear();
+            _pendingPresence.Clear();
 
-            connection.Send(message, (s, e) =>
+            _connection.Send(message, (s, e) =>
             {
                 foreach (var callback in callbacks)
                     callback(s, e);
@@ -240,9 +244,9 @@ namespace IO.Ably.Realtime
 
         private void FailQueuedMessages(ErrorInfo reason)
         {
-            foreach (var presenceMessage in pendingPresence.Where(c => c.Callback != null))
+            foreach (var presenceMessage in _pendingPresence.Where(c => c.Callback != null))
                 presenceMessage.Callback(false, reason);
-            pendingPresence.Clear();
+            _pendingPresence.Clear();
         }
 
         public Task<PaginatedResult<PresenceMessage>> HistoryAsync(bool untilAttach = false)
@@ -269,6 +273,8 @@ namespace IO.Ably.Realtime
 
         internal class PresenceMap
         {
+            internal ILogger Logger { get; private set; }
+
             private readonly string _channelName;
             private object _lock = new Object();
 
@@ -283,8 +289,9 @@ namespace IO.Ably.Realtime
             private readonly ConcurrentDictionary<string, PresenceMessage> members;
             private ICollection<string> residualMembers;
 
-            public PresenceMap(string channelName)
+            public PresenceMap(string channelName, ILogger logger)
             {
+                Logger = logger;
                 _channelName = channelName;
                 members = new ConcurrentDictionary<string, PresenceMessage>();
             }

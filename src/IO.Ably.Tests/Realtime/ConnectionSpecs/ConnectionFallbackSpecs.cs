@@ -75,7 +75,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             {
                 Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
-            await client.ConnectionManager.SetState(new ConnectionFailedState(client.ConnectionManager, ErrorInfo.ReasonFailed));
+            await client.ConnectionManager.SetState(new ConnectionFailedState(client.ConnectionManager, ErrorInfo.ReasonFailed, Logger));
             client.Connect();
             LastCreatedTransport.Parameters.Host.Should().Be(Defaults.RealtimeHost);
         }

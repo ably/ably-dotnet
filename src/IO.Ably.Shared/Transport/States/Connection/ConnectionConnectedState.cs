@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using IO.Ably.CustomSerialisers;
 using IO.Ably.Realtime;
+using IO.Ably;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
@@ -9,8 +10,8 @@ namespace IO.Ably.Transport.States.Connection
     {
         private readonly ConnectionInfo _info;
         private bool? _resumed = null;
-        public ConnectionConnectedState(IConnectionContext context, ConnectionInfo info, ErrorInfo error = null) :
-            base(context)
+        public ConnectionConnectedState(IConnectionContext context, ConnectionInfo info, ErrorInfo error = null, ILogger logger = null) :
+            base(context, logger)
         {
             _info = info;
             Error = error;
@@ -22,7 +23,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void Close()
         {
-            Context.SetState(new ConnectionClosingState(Context));
+            Context.SetState(new ConnectionClosingState(Context, Logger));
         }
 
         public override async Task<bool> OnMessageReceived(ProtocolMessage message)
@@ -30,13 +31,13 @@ namespace IO.Ably.Transport.States.Connection
             switch (message.Action)
             {
                 case ProtocolMessage.MessageAction.Close:
-                    Context.SetState(new ConnectionClosedState(Context, message.Error));
+                    Context.SetState(new ConnectionClosedState(Context, message.Error, Logger));
                     return true;
                 case ProtocolMessage.MessageAction.Disconnected:
                     var error = message.Error;
                     var result = await Context.RetryBecauseOfTokenError(error);
                     if (result == false)
-                        Context.SetState(new ConnectionDisconnectedState(Context, message.Error));
+                        Context.SetState(new ConnectionDisconnectedState(Context, message.Error, Logger));
 
                     return true;
                 case ProtocolMessage.MessageAction.Error:
@@ -45,11 +46,11 @@ namespace IO.Ably.Transport.States.Connection
                     if (await Context.CanUseFallBackUrl(message.Error))
                     {
                         Context.Connection.Key = null;
-                        Context.SetState(new ConnectionDisconnectedState(Context, message.Error) { RetryInstantly = true });
+                        Context.SetState(new ConnectionDisconnectedState(Context, message.Error, Logger) { RetryInstantly = true });
                         return true;
                     }
 
-                    Context.SetState(new ConnectionFailedState(Context, message.Error));
+                    Context.SetState(new ConnectionFailedState(Context, message.Error, Logger));
                     return true;
             }
             return false;

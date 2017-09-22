@@ -22,6 +22,7 @@ namespace IO.Ably
 
         private WebSocket _socket;
 
+        private ILogger Logger { get; set; }
         protected WebSocketTransport(TransportParams parameters)
         {
             if (parameters == null)
@@ -29,6 +30,7 @@ namespace IO.Ably
 
             BinaryProtocol = parameters.UseBinaryProtocol;
             WebSocketUri = parameters.GetUri();
+            Logger = parameters.Logger;
         }
 
         public bool BinaryProtocol { get; }

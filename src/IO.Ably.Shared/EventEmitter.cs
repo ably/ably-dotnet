@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using IO.Ably;
 
 namespace IO.Ably
 {
@@ -20,6 +21,12 @@ namespace IO.Ably
     public abstract class EventEmitter<TState, TArgs> : IEventEmitter<TState, TArgs> where TState : struct
         where TArgs : EventArgs
     {
+        internal EventEmitter(ILogger logger)
+        {
+            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
+        }
+        internal ILogger Logger { get; private set; }
+
         readonly List<Emitter<TState, TArgs>> _emitters = new List<Emitter<TState, TArgs>>();
         private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
         protected abstract Action<Action> NotifyClient { get; }
@@ -33,24 +40,14 @@ namespace IO.Ably
 
             public Emitter(Action<TArgs> action, TState? state = null, bool once = false)
             {
-                if (action == null)
-                {
-                    throw new ArgumentException("Cannot pass a null action to the EventEmitter");
-                }
-
-                Action = action;
+                Action = action ?? throw new ArgumentException("Cannot pass a null action to the EventEmitter");
                 State = state;
                 Once = once;
             }
 
             public Emitter(Func<TArgs, Task> asyncAction, TState? state = null, bool once = false)
             {
-                if (asyncAction == null)
-                {
-                    throw new ArgumentException("Cannot pass a null action to the EventEmitter");
-                }
-
-                AsyncAction = asyncAction;
+                AsyncAction = asyncAction ?? throw new ArgumentException("Cannot pass a null action to the EventEmitter");
                 State = state;
                 Once = once;
             }

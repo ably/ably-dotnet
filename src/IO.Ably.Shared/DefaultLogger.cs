@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
-using IO.Ably.Shared;
+using IO.Ably;
 
 namespace IO.Ably
 {
@@ -37,7 +37,7 @@ namespace IO.Ably
     }
 
     /// <summary>An utility class for logging various messages.</summary>
-    public static class Logger
+    public static class DefaultLogger
     {
         private static readonly Object SyncLock = new Object();
         private static InternalLogger _loggerInstance;
@@ -106,7 +106,7 @@ namespace IO.Ably
         }
 
 
-        internal class InternalLogger : NowProviderConcern
+        internal class InternalLogger : NowProviderConcern, ILogger
         {
             /// <summary>Maximum level to log.</summary>
             /// <remarks>E.g. set to LogLevel.Warning to have only errors and warnings in the log.</remarks>
@@ -116,6 +116,7 @@ namespace IO.Ably
             public bool IsDebug => LogLevel == LogLevel.Debug;
 
             public InternalLogger() : this(Defaults.DefaultLogLevel, new DefaultLoggerSink()) {}
+            public InternalLogger(ILoggerSink loggerSink) : this(Defaults.DefaultLogLevel, loggerSink) { }
             public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink): this(logLevel, loggerSink, null ) {} 
             public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink, INowProvider nowProvider)
             {

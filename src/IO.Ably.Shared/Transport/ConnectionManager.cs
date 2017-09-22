@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
-using IO.Ably.Shared;
+using IO.Ably;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 
@@ -11,6 +11,8 @@ namespace IO.Ably.Transport
 {
     internal class ConnectionManager : NowProviderConcern, IConnectionManager, ITransportListener, IConnectionContext
     {
+        internal ILogger Logger { get; private set; }
+
         public Queue<MessageAndCallback> PendingMessages { get; }
         //internal readonly AsyncContextThread AsyncContextThread = new AsyncContextThread();
 
@@ -58,9 +60,10 @@ namespace IO.Ably.Transport
             }
         }
 
-        public ConnectionManager(Connection connection, INowProvider nowProvider)
+        public ConnectionManager(Connection connection, INowProvider nowProvider, ILogger logger)
         {
             NowProvider = nowProvider;
+            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
             PendingMessages = new Queue<MessageAndCallback>();
             AttemptsInfo = new ConnectionAttemptsInfo(connection, nowProvider);
             Connection = connection;
@@ -137,7 +140,7 @@ namespace IO.Ably.Transport
 
                     if (newState.State != Realtime.ConnectionState.Failed)
                     {
-                        SetState(new ConnectionFailedState(this, ex.ErrorInfo));
+                        SetState(new ConnectionFailedState(this, ex.ErrorInfo, Logger));
                     }
                 }
                 finally
@@ -223,12 +226,12 @@ namespace IO.Ably.Transport
                 if (ShouldWeRenewToken(error))
                 {
                     ClearTokenAndRecordRetry();
-                    await SetState(new ConnectionDisconnectedState(this), skipAttach: ConnectionState == Realtime.ConnectionState.Connecting);
-                    await SetState(new ConnectionConnectingState(this));
+                    await SetState(new ConnectionDisconnectedState(this, Logger), skipAttach: ConnectionState == Realtime.ConnectionState.Connecting);
+                    await SetState(new ConnectionConnectingState(this, Logger));
                 }
                 else
                 {
-                    SetState(new ConnectionFailedState(this, error));
+                    SetState(new ConnectionFailedState(this, error, Logger));
                 }
 
                 return true;
@@ -330,13 +333,13 @@ namespace IO.Ably.Transport
                     switch (connectionState)
                     {
                         case Realtime.ConnectionState.Closing:
-                            SetState(new ConnectionClosedState(this) { Exception = ex });
+                            SetState(new ConnectionClosedState(this, Logger) { Exception = ex });
                             break;
                         case Realtime.ConnectionState.Connecting:
                             HandleConnectingFailure(null, ex);
                             break;
                         case Realtime.ConnectionState.Connected:
-                            var disconnectedState = new ConnectionDisconnectedState(this, GetErrorInfoFromTransportException(ex, ErrorInfo.ReasonDisconnected)) { Exception = ex };
+                            var disconnectedState = new ConnectionDisconnectedState(this, GetErrorInfoFromTransportException(ex, ErrorInfo.ReasonDisconnected), Logger) { Exception = ex };
                             disconnectedState.RetryInstantly = Connection.ConnectionResumable;
                             SetState(disconnectedState);
                             break;
@@ -361,11 +364,11 @@ namespace IO.Ably.Transport
             ErrorInfo resolvedError = error ?? (ex != null ? new ErrorInfo(ex.Message, 80000) : null);
             if (ShouldSuspend())
             {
-                SetState(new ConnectionSuspendedState(this, resolvedError ?? ErrorInfo.ReasonSuspended));
+                SetState(new ConnectionSuspendedState(this, resolvedError ?? ErrorInfo.ReasonSuspended, Logger));
             }
             else
             {
-                SetState(new ConnectionDisconnectedState(this, resolvedError ?? ErrorInfo.ReasonDisconnected));
+                SetState(new ConnectionDisconnectedState(this, resolvedError ?? ErrorInfo.ReasonDisconnected, Logger));
             }
         }
 
@@ -511,7 +514,8 @@ namespace IO.Ably.Transport
                     {
                         if (Logger.IsDebug) Logger.Debug("Network state is Offline. Moving to disconnected.");
                         SetState(new ConnectionDisconnectedState(this,
-                            new ErrorInfo("Connection closed due to Operating system network going offline", 80017))
+                            new ErrorInfo("Connection closed due to Operating system network going offline", 80017),
+                            Logger)
                         {
                             RetryInstantly = true
                         });

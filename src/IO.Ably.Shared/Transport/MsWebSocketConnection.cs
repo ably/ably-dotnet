@@ -5,10 +5,11 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
+using IO.Ably;
 
 namespace IO.Ably.Transport
 {
-    public class MsWebSocketConnection : IDisposable
+    internal class MsWebSocketConnection : IDisposable
     {
         public enum ConnectionState
         {
@@ -18,6 +19,8 @@ namespace IO.Ably.Transport
             Closing,
             Closed
         }
+        
+        internal ILogger Logger { get; private set; }
 
         private readonly Uri _uri;
         private Action<ConnectionState, Exception> _handler;
@@ -29,8 +32,9 @@ namespace IO.Ably.Transport
         private ClientWebSocket ClientWebSocket { get; }
         private CancellationTokenSource _tokenSource = new CancellationTokenSource();
 
-        public MsWebSocketConnection(Uri uri)
+        public MsWebSocketConnection(Uri uri, ILogger logger)
         {
+            Logger = logger;
             _uri = uri;
             ClientWebSocket = new ClientWebSocket();
         }

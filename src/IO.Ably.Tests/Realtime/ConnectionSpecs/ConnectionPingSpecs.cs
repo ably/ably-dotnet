@@ -54,14 +54,14 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = GetClientWithFakeTransport();
 
-            await ((IConnectionContext)client.ConnectionManager).SetState(new ConnectionClosedState(client.ConnectionManager, new ErrorInfo()));
+            await ((IConnectionContext)client.ConnectionManager).SetState(new ConnectionClosedState(client.ConnectionManager, new ErrorInfo(), Logger));
 
             var result = await client.Connection.PingAsync();
 
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().Be(ConnectionHeartbeatRequest.DefaultError);
 
-            await ((IConnectionContext)client.ConnectionManager).SetState(new ConnectionFailedState(client.ConnectionManager, new ErrorInfo()));
+            await ((IConnectionContext)client.ConnectionManager).SetState(new ConnectionFailedState(client.ConnectionManager, new ErrorInfo(), Logger));
 
             var resultFailed = await client.Connection.PingAsync();
 

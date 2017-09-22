@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
+using IO.Ably;
 
 namespace IO.Ably.Transport
 {
     internal class MsWebSocketTransport : ITransport
     {
+        internal ILogger Logger { get; private set; }
+
         private MsWebSocketConnection _socket;
 
         protected MsWebSocketTransport(TransportParams parameters)
@@ -15,6 +18,7 @@ namespace IO.Ably.Transport
 
             BinaryProtocol = parameters.UseBinaryProtocol;
             WebSocketUri = parameters.GetUri();
+            Logger = parameters.Logger ?? IO.Ably.DefaultLogger.LoggerInstance;
         }
 
         public bool BinaryProtocol { get; }
@@ -123,7 +127,7 @@ namespace IO.Ably.Transport
                 Logger.Debug("Connecting to web socket on url: " + uri);
             }
 
-            return new MsWebSocketConnection(uri);
+            return new MsWebSocketConnection(uri, Logger);
         }
 
         private void AttachEvents()

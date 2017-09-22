@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using IO.Ably.Shared;
+using IO.Ably;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -14,7 +14,7 @@ namespace IO.Ably.Tests
         public void WaitOne()
         {
             var result = Signal.WaitOne(2000);
-            Assert.True(result, "Result was not returned withing 2000ms");
+            Assert.True(result, "Result was not returned within 2000ms");
         }
 
         public void Done()
@@ -48,6 +48,7 @@ namespace IO.Ably.Tests
 
     public abstract class AblySpecs
     {
+        public ILogger Logger { get; set; }
         public ITestOutputHelper Output { get; }
         public const string ValidKey = "1iZPfA.BjcI_g:wpNhw5RCw6rDjisl";
 
@@ -69,6 +70,7 @@ namespace IO.Ably.Tests
         
         protected AblySpecs(ITestOutputHelper output)
         {
+            Logger = IO.Ably.DefaultLogger.LoggerInstance;
             NowProvider = new AblySpecsNowProvider();
             Output = output;
         }

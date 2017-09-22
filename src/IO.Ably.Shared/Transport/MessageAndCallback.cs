@@ -1,18 +1,22 @@
 using System;
+using IO.Ably;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport
 {
     internal class MessageAndCallback
     {
+        internal ILogger Logger { get; private set; }
+
         public long Serial => Message.MsgSerial;
         public ProtocolMessage Message { get;  }
         public Action<bool, ErrorInfo> Callback { get; }
 
-        public MessageAndCallback(ProtocolMessage message, Action<bool, ErrorInfo> callback)
+        public MessageAndCallback(ProtocolMessage message, Action<bool, ErrorInfo> callback, ILogger logger = null)
         {
             Message = message;
             Callback = callback;
+            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
         }
 
         protected bool Equals(MessageAndCallback other)
@@ -46,7 +50,7 @@ namespace IO.Ably.Transport
             {
                 var result = success ? "Success" : "Failed";
                 var errorMessage = error != null ? $"Error: {error}" : "";
-                Logger.Error($"Error executing callback for message with serial {info.Message.MsgSerial}. Result: {result}. {errorMessage}");
+                info.Logger.Error($"Error executing callback for message with serial {info.Message.MsgSerial}. Result: {result}. {errorMessage}");
             }
         }
     }

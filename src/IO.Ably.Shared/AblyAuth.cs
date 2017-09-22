@@ -5,7 +5,7 @@ using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
-using IO.Ably.Shared;
+using IO.Ably;
 
 namespace IO.Ably
 {
@@ -16,9 +16,11 @@ namespace IO.Ably
             NowProvider = options.NowProvider;
             Options = options;
             _rest = rest;
-
+            Logger = options.Logger;
             Initialise();
         }
+
+        internal ILogger Logger { get; private set; }
 
         public AuthMethod AuthMethod { get; private set; }
         internal ClientOptions Options { get; }

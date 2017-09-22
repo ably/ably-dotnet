@@ -1,13 +1,17 @@
 using IO.Ably.Encryption;
+using IO.Ably;
 
 namespace IO.Ably.MessageEncoders
 {
     internal class CipherEncoder : MessageEncoder
     {
+        internal ILogger Logger { get; set; }
         public override string EncodingName => "cipher";
 
         public override Result Decode(IMessage payload, ChannelOptions options)
         {
+            Logger = options.Logger ?? IO.Ably.DefaultLogger.LoggerInstance;
+
             if (IsEmpty(payload.Data))
                 return Result.Ok();
 

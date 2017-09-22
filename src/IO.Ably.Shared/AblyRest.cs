@@ -6,12 +6,14 @@ using System.Net.Http;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Rest;
 using System.Threading.Tasks;
+using IO.Ably;
 
 namespace IO.Ably
 {
     /// <summary>Client for the ably rest API</summary>
     public sealed class AblyRest : IRestClient
     {
+
         internal AblyHttpClient HttpClient { get; private set; }
         internal MessageHandler MessageHandler { get; private set; }
 
@@ -31,6 +33,8 @@ namespace IO.Ably
         internal Protocol Protocol => Options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
 
         internal ClientOptions Options { get; }
+
+        internal ILogger Logger { get; set; }
 
         /// <summary>Initializes the RestClient using the api key provided</summary>
         /// <param name="apiKey">Full api key</param>
@@ -75,6 +79,8 @@ namespace IO.Ably
                 Logger.Error("No options provider to Ably rest");
                 throw new AblyException("Invalid options");
             }
+
+            Logger = Options.Logger ?? IO.Ably.DefaultLogger.LoggerInstance;
 
             if (Options.LogLevel.HasValue)
             {
@@ -261,7 +267,6 @@ namespace IO.Ably
         {
             return AsyncHelper.RunSync(TimeAsync);
         }
-
         
     }
 }

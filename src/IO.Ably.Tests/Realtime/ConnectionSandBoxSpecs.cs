@@ -98,9 +98,7 @@ namespace IO.Ably.Tests.Realtime
                 await GetRealtimeClient(protocol),
                 await GetRealtimeClient(protocol)
             };
-
-            int count = 0;
-
+            
             await Task.Delay(5000);
 
             var distinctConnectionIds = clients.Select(x => x.Connection.Id).Distinct();
@@ -475,7 +473,6 @@ namespace IO.Ably.Tests.Realtime
         public async Task
             WhenOperatingSystemNetworkIsNotAvailable_ShouldTransitionToDisconnectedAndRetry(Protocol protocol,
                 ConnectionState initialState)
-
         {
             Logger.LogLevel = LogLevel.Debug;
             var client = await GetRealtimeClient(protocol, (options, _) => options.AutoConnect = false);
@@ -487,7 +484,7 @@ namespace IO.Ably.Tests.Realtime
             List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.On(stateChange => states.Add(stateChange.Current));
 
-            Connection.NotifyOperatingSystemNetworkState(NetworkState.Offline);
+            Connection.NotifyOperatingSystemNetworkState(NetworkState.Offline, Logger);
 
             await Task.Delay(TimeSpan.FromSeconds(2));
 
@@ -508,10 +505,10 @@ namespace IO.Ably.Tests.Realtime
             await WaitForState(client);
 
             await client.ConnectionManager.SetState(
-                new ConnectionDisconnectedState(client.ConnectionManager) {RetryInstantly = false});
+                new ConnectionDisconnectedState(client.ConnectionManager, this.Logger) {RetryInstantly = false});
 
             client.Connection.State.Should().Be(ConnectionState.Disconnected);
-            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online);
+            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, Logger);
 
             List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.On(stateChange => states.Add(stateChange.Current));
@@ -533,10 +530,10 @@ namespace IO.Ably.Tests.Realtime
             await WaitForState(client);
 
             await client.ConnectionManager.SetState(
-                new ConnectionSuspendedState(client.ConnectionManager));
+                new ConnectionSuspendedState(client.ConnectionManager, Logger));
 
             client.Connection.State.Should().Be(ConnectionState.Suspended);
-            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online);
+            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, Logger);
 
             List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.On(stateChange => states.Add(stateChange.Current));

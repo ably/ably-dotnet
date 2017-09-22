@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using IO.Ably.Rest;
-using IO.Ably.Shared;
+using IO.Ably;
 using IO.Ably.Transport;
 
 namespace IO.Ably
@@ -146,7 +146,7 @@ namespace IO.Ably
         /// <summary>
         /// Provides Channels Setting for all Channels created. For more information see <see cref="ChannelOptions"/> 
         /// </summary>
-        public ChannelOptions ChannelDefaults { get; set; } = new ChannelOptions();
+        public ChannelOptions ChannelDefaults { get; internal set; } = new ChannelOptions();
 
         public string Environment { get; set; }
 
@@ -161,6 +161,8 @@ namespace IO.Ably
             get => _nowProvider ?? (_nowProvider = Defaults.NowProvider());
             set => _nowProvider = value;
         }
+
+        internal ILogger Logger { get; set; } = IO.Ably.DefaultLogger.LoggerInstance;
 
         internal AuthMethod Method
         {

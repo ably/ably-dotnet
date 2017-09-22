@@ -35,7 +35,7 @@ namespace IO.Ably.Tests
 
         private void RemoveListener()
         {
-            Logger.Debug($"[{_id}] Removing Connection listener");
+            DefaultLogger.Debug($"[{_id}] Removing Connection listener");
             Connection.InternalStateChanged -= conn_StateChanged;
         }
 
@@ -43,7 +43,7 @@ namespace IO.Ably.Tests
         {
             if (_awaitedStates.Contains(e.Current))
             {
-                Logger.Debug($"[{_id}] Desired state was reached.");
+                DefaultLogger.Debug($"[{_id}] Desired state was reached.");
                 RemoveListener();
                 _taskCompletionSource.SetResult(true);
             }
@@ -59,14 +59,14 @@ namespace IO.Ably.Tests
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             
-            if (Logger.IsDebug)
+            if (DefaultLogger.IsDebug)
             {
-                Logger.Debug($"[{_id}] Waiting for state {string.Join(",", _awaitedStates)} for {timeout.TotalSeconds} seconds");
+                DefaultLogger.Debug($"[{_id}] Waiting for state {string.Join(",", _awaitedStates)} for {timeout.TotalSeconds} seconds");
             }
 
             if (_awaitedStates.Contains(Connection.State))
             {
-                Logger.Debug($"Current state is {Connection.State}. Desired state reached.");
+                DefaultLogger.Debug($"Current state is {Connection.State}. Desired state reached.");
                 return TimeSpan.Zero;
             }
 
@@ -79,7 +79,7 @@ namespace IO.Ably.Tests
                 return stopwatch.Elapsed;
             }
 
-            Logger.Debug($"[{_id} Timeout exceeded. Throwing TimeoutException");
+            DefaultLogger.Debug($"[{_id} Timeout exceeded. Throwing TimeoutException");
             RemoveListener();
             throw new TimeoutException();
         }

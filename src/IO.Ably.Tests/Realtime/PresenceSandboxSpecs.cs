@@ -144,7 +144,10 @@ namespace IO.Ably.Tests.Realtime
                     await Task.Delay(1000);
                 }
 
-                throw new Exception("Failed to receive messages for all memebers");
+                var o = presenceMessages.OrderBy(x => x.ClientId).ToList();
+
+                presenceMessages.Count.ShouldBeEquivalentTo(ExpectedEnterCount);
+               
             }
 
             [Theory]

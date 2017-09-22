@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using IO.Ably;
 
 namespace IO.Ably.Transport
 {
     public class TransportParams
     {
+        internal ILogger Logger { get; private set; }
         public string Host { get; private set; }
         public bool Tls { get; private set; }
         public string[] FallbackHosts { get; private set; }
@@ -28,7 +30,7 @@ namespace IO.Ably.Transport
 
         }
 
-        internal static async Task<TransportParams> Create(string host, AblyAuth auth, ClientOptions options, string connectionKey = null, long? connectionSerial = null)
+        internal static async Task<TransportParams> Create(string host, AblyAuth auth, ClientOptions options, string connectionKey = null, long? connectionSerial = null, ILogger logger = null)
         {
             var result = new TransportParams();
             result.Host = host;
@@ -54,7 +56,7 @@ namespace IO.Ably.Transport
             result.FallbackHosts = Defaults.FallbackHosts;
             result.UseBinaryProtocol = options.UseBinaryProtocol;
             result.RecoverValue = options.Recover;
-
+            result.Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
             return result;
         }
 

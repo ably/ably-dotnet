@@ -19,7 +19,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task CountdownTimer_Start_StartsCountdown()
         {
             // Arrange
-            var timer = new CountdownTimer("Test timer");
+            var timer = new CountdownTimer("Test timer", Logger);
             var timeout = TimeSpan.FromMilliseconds(10);
             int called = 0;
             Action callback = () => called++;
@@ -36,7 +36,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task CountdownTimer_Abort_StopsCountdown()
         {
             // Arrange
-            var timer = new CountdownTimer("Test timer");
+            var timer = new CountdownTimer("Test timer", Logger);
             var timeout = TimeSpan.FromMilliseconds(10);
             int called = 0;
             Action callback = () => called++;
@@ -81,9 +81,9 @@ namespace IO.Ably.Tests.Realtime
             called.Should().Be(1);
         }
 
-        private static CountdownTimer CreateTimer()
+        private CountdownTimer CreateTimer()
         {
-            return new CountdownTimer("Test timer");
+            return new CountdownTimer("Test timer", Logger);
         }
 
         [Fact]
@@ -107,7 +107,7 @@ namespace IO.Ably.Tests.Realtime
             // Act
             timer.Start(timeout, callback1);
             timer.Start(timeout, callback2);
-            await Task.Delay(50);
+            await Task.Delay(250);
 
             // Assert
             called2.Should().Be(1);

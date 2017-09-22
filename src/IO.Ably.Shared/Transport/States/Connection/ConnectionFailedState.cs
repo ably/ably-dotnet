@@ -1,12 +1,13 @@
 ﻿using System.Threading.Tasks;
+using IO.Ably;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionFailedState : ConnectionStateBase
     {
-        public ConnectionFailedState(IConnectionContext context, ErrorInfo error) :
-            base(context)
+        public ConnectionFailedState(IConnectionContext context, ErrorInfo error, ILogger logger) :
+            base(context, logger)
         {
             Error = error ?? ErrorInfo.ReasonFailed;
         }
@@ -15,7 +16,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void Connect()
         {
-            Context.SetState(new ConnectionConnectingState(Context));
+            Context.SetState(new ConnectionConnectingState(Context, Logger));
         }
 
         public override void BeforeTransition()

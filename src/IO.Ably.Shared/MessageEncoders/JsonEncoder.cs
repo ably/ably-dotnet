@@ -1,11 +1,14 @@
 ﻿using System;
 using IO.Ably.Rest;
+using IO.Ably;
 using Newtonsoft.Json;
 
 namespace IO.Ably.MessageEncoders
 {
     internal class JsonEncoder : MessageEncoder
     {
+
+        internal ILogger Logger { get; set; }
         public override string EncodingName
         {
             get { return "json"; }
@@ -13,6 +16,8 @@ namespace IO.Ably.MessageEncoders
 
         public override Result Decode(IMessage payload, ChannelOptions options)
         {
+            Logger = options.Logger;
+
             if (IsEmpty(payload.Data) || CurrentEncodingIs(payload, EncodingName) == false) return Result.Ok();
 
             try

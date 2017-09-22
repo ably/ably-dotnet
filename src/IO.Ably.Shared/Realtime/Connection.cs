@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using IO.Ably.Shared;
+using IO.Ably;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -20,12 +20,13 @@ namespace IO.Ably.Realtime
     public sealed class Connection : EventEmitter<ConnectionState, ConnectionStateChange>, IDisposable, INowProvider
     {
         private static readonly ConcurrentBag<WeakReference<Action<NetworkState>>> OsEventSubscribers = new ConcurrentBag<WeakReference<Action<NetworkState>>>();
+        internal ILogger Logger { get; private set; }
 
         protected override Action<Action> NotifyClient => RealtimeClient.NotifyExternalClients;
 
-        public static void NotifyOperatingSystemNetworkState(NetworkState state)
+        internal static void NotifyOperatingSystemNetworkState(NetworkState state, ILogger logger)
         {
-            if(Logger.IsDebug) Logger.Debug("OS Network connection state: " + state);
+            if(logger.IsDebug) logger.Debug("OS Network connection state: " + state);
 
             foreach (var subscriber in OsEventSubscribers.ToArray())
             {
@@ -50,9 +51,10 @@ namespace IO.Ably.Realtime
 
         internal INowProvider NowProvider { get; }
 
-        internal Connection(AblyRealtime realtimeClient, INowProvider nowProvider)
+        internal Connection(AblyRealtime realtimeClient, INowProvider nowProvider, ILogger logger = null) : base(logger)
         {
             NowProvider = nowProvider;
+            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
             FallbackHosts = Defaults.FallbackHosts.Shuffle().ToList();
             RealtimeClient = realtimeClient;
             RegisterWithOSNetworkStateEvents(HandleNetworkStateChange);
@@ -60,9 +62,9 @@ namespace IO.Ably.Realtime
 
         internal void Initialise()
         {
-            ConnectionManager = new ConnectionManager(this, NowProvider);
+            ConnectionManager = new ConnectionManager(this, NowProvider, Logger);
             ChannelMessageProcessor = new ChannelMessageProcessor(ConnectionManager, RealtimeClient.Channels);
-            ConnectionState = new ConnectionInitializedState(ConnectionManager);
+            ConnectionState = new ConnectionInitializedState(ConnectionManager, Logger);
         }
 
         /// <summary>

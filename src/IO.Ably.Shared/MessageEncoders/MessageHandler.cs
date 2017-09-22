@@ -5,12 +5,15 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
+using IO.Ably;
 using IO.Ably.Types;
 
 namespace IO.Ably.MessageEncoders
 {
     internal class MessageHandler
     {
+        internal ILogger Logger { get; private set; }
+
         private static readonly Type[] UnsupportedTypes = new[]
             {
                 typeof(short), typeof(int), typeof(double), typeof(float), typeof(decimal), typeof(DateTime), typeof(DateTimeOffset), typeof(byte), typeof(bool),
@@ -19,14 +22,13 @@ namespace IO.Ably.MessageEncoders
         private readonly Protocol _protocol;
         public readonly List<MessageEncoder> Encoders = new List<MessageEncoder>();
 
-        public MessageHandler()
-            : this(Protocol.MsgPack)
-        {
+        public MessageHandler() : this(IO.Ably.DefaultLogger.LoggerInstance, Protocol.MsgPack) {}
 
-        }
+        public MessageHandler(Protocol protocol) : this(IO.Ably.DefaultLogger.LoggerInstance, protocol) {}
 
-        public MessageHandler(Protocol protocol)
+        public MessageHandler(ILogger logger, Protocol protocol)
         {
+            Logger = logger;
             _protocol = protocol;
 
             InitializeMessageEncoders(protocol);

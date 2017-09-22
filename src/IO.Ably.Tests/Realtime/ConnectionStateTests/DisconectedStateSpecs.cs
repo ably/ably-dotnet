@@ -26,7 +26,7 @@ namespace IO.Ably.Tests
 
         private ConnectionDisconnectedState GetState(ErrorInfo error = null, ICountdownTimer timer = null)
         {
-            return new ConnectionDisconnectedState(_context, error, _timer);
+            return new ConnectionDisconnectedState(_context, error, _timer, Logger);
         }
 
         [Fact]

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using IO.Ably.Realtime;
+using IO.Ably;
 using WebSocket4Net;
 using IO.Ably.Transport;
 using SuperSocket.ClientEngine;
@@ -20,6 +21,7 @@ namespace IO.Ably
                 };
 
 
+        internal ILogger Logger { get; private set; }
         private WebSocket _socket;
 
         protected WebSocketTransport(TransportParams parameters)
@@ -29,6 +31,7 @@ namespace IO.Ably
 
             BinaryProtocol = parameters.UseBinaryProtocol;
             WebSocketUri = parameters.GetUri();
+            Logger = parameters.Logger;
         }
 
         public bool BinaryProtocol { get; }

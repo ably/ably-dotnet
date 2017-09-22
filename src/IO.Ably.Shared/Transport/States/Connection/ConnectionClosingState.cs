@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using IO.Ably;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
@@ -9,13 +10,13 @@ namespace IO.Ably.Transport.States.Connection
         private const int CloseTimeout = 1000;
         private readonly ICountdownTimer _timer;
 
-        public ConnectionClosingState(IConnectionContext context) :
-            this(context, null, new CountdownTimer("Closing state timer"))
+        public ConnectionClosingState(IConnectionContext context, ILogger logger) :
+            this(context, null, new CountdownTimer("Closing state timer", logger), logger)
         {
         }
 
-        public ConnectionClosingState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer) :
-            base(context)
+        public ConnectionClosingState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer, ILogger logger) :
+            base(context, logger)
         {
             _timer = timer;
             Error = error ?? ErrorInfo.ReasonClosed;
@@ -29,17 +30,17 @@ namespace IO.Ably.Transport.States.Connection
             {
                 case ProtocolMessage.MessageAction.Closed:
                     {
-                        TransitionState(new ConnectionClosedState(Context));
+                        TransitionState(new ConnectionClosedState(Context, Logger));
                         return TaskConstants.BooleanTrue;
                     }
                 case ProtocolMessage.MessageAction.Disconnected:
                     {
-                        TransitionState(new ConnectionDisconnectedState(Context, message.Error));
+                        TransitionState(new ConnectionDisconnectedState(Context, message.Error, Logger));
                         return TaskConstants.BooleanTrue;
                     }
                 case ProtocolMessage.MessageAction.Error:
                     {
-                        TransitionState(new ConnectionFailedState(Context, message.Error));
+                        TransitionState(new ConnectionFailedState(Context, message.Error, Logger));
                         return TaskConstants.BooleanTrue;
                     }
             }
@@ -61,7 +62,7 @@ namespace IO.Ably.Transport.States.Connection
             }
             else
             {
-                Context.SetState(new ConnectionClosedState(Context));
+                Context.SetState(new ConnectionClosedState(Context, Logger));
             }
             return TaskConstants.BooleanTrue;
         }
@@ -69,7 +70,7 @@ namespace IO.Ably.Transport.States.Connection
         private void OnTimeOut()
         {
             Context.Execute(() =>
-                Context.SetState(new ConnectionClosedState(Context)));
+                Context.SetState(new ConnectionClosedState(Context, Logger)));
         }
 
         private void TransitionState(ConnectionStateBase newState)

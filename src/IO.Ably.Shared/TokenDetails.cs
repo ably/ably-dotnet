@@ -1,5 +1,5 @@
 ﻿using System;
-using IO.Ably.Shared;
+using IO.Ably;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

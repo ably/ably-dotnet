@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using IO.Ably.Shared;
+using IO.Ably;
 using IO.Ably.Transport;
 
 namespace IO.Ably

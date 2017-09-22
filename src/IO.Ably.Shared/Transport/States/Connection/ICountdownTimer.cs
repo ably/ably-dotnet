@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using IO.Ably;
 
 namespace IO.Ably.Transport.States.Connection
 {
@@ -11,8 +12,10 @@ namespace IO.Ably.Transport.States.Connection
         void Abort(bool trigger = false);
     }
 
-    public class CountdownTimer : ICountdownTimer
+    internal class CountdownTimer : ICountdownTimer
     {
+        internal ILogger Logger { get; private set; }
+
         private readonly string _name;
         private Timer _timer;
         private Action _elapsedSync;
@@ -21,8 +24,9 @@ namespace IO.Ably.Transport.States.Connection
         private bool _aborted;
         private readonly object _lock = new object();
 
-        public CountdownTimer(string name)
+        public CountdownTimer(string name, ILogger logger)
         {
+            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
             _name = name;
         }
 

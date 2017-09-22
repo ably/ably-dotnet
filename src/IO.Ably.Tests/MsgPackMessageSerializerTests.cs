@@ -164,7 +164,7 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [MemberData("Messages")]
+        [MemberData(nameof(Messages))]
         public void SerializesMessageCorrectly_Messages(params Message[] messages)
         {
             // Arrange
@@ -199,7 +199,7 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [MemberData("Presence")]
+        [MemberData(nameof(Presence))]
         public void SerializesMessageCorrectly_Presence(params PresenceMessage[] messages)
         {
             // Arrange
@@ -286,7 +286,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(channel, target.Channel);
+            Assert.Equal(channel, target.Channel);
         }
 
         [Theory]
@@ -314,7 +314,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(serial, target.ChannelSerial);
+            Assert.Equal(serial, target.ChannelSerial);
         }
 
         [Theory]
@@ -335,7 +335,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(connectionId, target.ConnectionId);
+            Assert.Equal(connectionId, target.ConnectionId);
         }
 
         [Theory]
@@ -356,7 +356,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(connectionKey, target.ConnectionKey);
+            Assert.Equal(connectionKey, target.ConnectionKey);
         }
 
         [Theory]
@@ -377,7 +377,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.NotNull(target);
-            Assert.Equal<string>(id, target.Id);
+            Assert.Equal(id, target.Id);
         }
 
         [Theory]
@@ -459,7 +459,7 @@ namespace IO.Ably.Tests
         }
 
         [Theory]
-        [MemberData("BinMessages")]
+        [MemberData(nameof(BinMessages))]
         public void DeserializesMessageCorrectly_Messages(byte[] messageBin, params Message[] expectedMessages)
         {
             // Arrange
@@ -478,7 +478,7 @@ namespace IO.Ably.Tests
             Assert.Equal<int>(expectedMessages.Length, target.Messages.Length);
             for (int i = 0; i < expectedMessages.Length; i++)
             {
-                Assert.Equal<string>(expectedMessages[i].Name, target.Messages[i].Name);
+                Assert.Equal(expectedMessages[i].Name, target.Messages[i].Name);
                 Assert.Equal(expectedMessages[i].Data, target.Messages[i].Data);
             }
         }

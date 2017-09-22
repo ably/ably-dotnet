@@ -20,7 +20,7 @@ namespace IO.Ably.Tests
         {
             _context = new FakeConnectionContext();
             _timer = new FakeTimer();
-            _state = new ConnectionConnectingState(_context, _timer);
+            _state = new ConnectionConnectingState(_context, _timer, Logger);
         }
 
         private static FakeTransport GetConnectedTrasport()

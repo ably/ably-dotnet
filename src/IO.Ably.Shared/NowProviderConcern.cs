@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace IO.Ably.Shared
+namespace IO.Ably
 {
     /// <summary>
     /// Designed to be inherited by a class (or instanced and composed on to a class that implements INowProvider) that want to be concerned with providing a Now() implementation

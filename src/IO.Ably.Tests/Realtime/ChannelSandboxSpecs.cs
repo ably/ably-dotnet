@@ -516,7 +516,7 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Theory]
-        [MemberData("FixtureData")]
+        [MemberData(nameof(FixtureData))]
         [Trait("spec", "RTL7d")]
         public async Task ShouldPublishAndReceiveFixtureData(Protocol protocol, JObject fixtureData)
         {

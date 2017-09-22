@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using IO.Ably;
 
 namespace IO.Ably.Transport.States.Connection
 {
@@ -6,18 +7,18 @@ namespace IO.Ably.Transport.States.Connection
     {
         private readonly ICountdownTimer _timer;
 
-        public ConnectionSuspendedState(IConnectionContext context) :
-            this(context, null, new CountdownTimer("Suspended state timer"))
+        public ConnectionSuspendedState(IConnectionContext context, ILogger logger) :
+            this(context, null, new CountdownTimer("Suspended state timer", logger), logger)
         {
         }
 
-        public ConnectionSuspendedState(IConnectionContext context, ErrorInfo error) :
-            this(context, error, new CountdownTimer("Suspended state timer"))
+        public ConnectionSuspendedState(IConnectionContext context, ErrorInfo error, ILogger logger) :
+            this(context, error, new CountdownTimer("Suspended state timer", logger), logger)
         {
         }
 
-        public ConnectionSuspendedState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer) :
-            base(context)
+        public ConnectionSuspendedState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer, ILogger logger) :
+            base(context, logger)
         {
             _timer = timer;
             Error = error ?? ErrorInfo.ReasonSuspended;
@@ -28,13 +29,13 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void Connect()
         {
-            Context.SetState(new ConnectionConnectingState(Context));
+            Context.SetState(new ConnectionConnectingState(Context, Logger));
         }
 
         public override void Close()
         {
             _timer.Abort();
-            Context.SetState(new ConnectionClosedState(Context));
+            Context.SetState(new ConnectionClosedState(Context, Logger));
         }
 
         public override void AbortTimer()
@@ -51,7 +52,7 @@ namespace IO.Ably.Transport.States.Connection
 
         private void OnTimeOut()
         {
-            Context.Execute(() => Context.SetState(new ConnectionConnectingState(Context)));
+            Context.Execute(() => Context.SetState(new ConnectionConnectingState(Context, Logger)));
         }
     }
 }

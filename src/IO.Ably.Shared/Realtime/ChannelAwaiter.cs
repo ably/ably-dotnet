@@ -5,11 +5,14 @@ using System.Threading.Tasks;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using System.Linq;
+using IO.Ably;
 
 namespace IO.Ably.Realtime
 {
     internal class ChannelAwaiter : IDisposable
     {
+        internal ILogger Logger { get; private set; }
+
         private readonly RealtimeChannel _channel;
         private readonly ChannelState _awaitedState;
         private readonly List<Action<bool, ErrorInfo>> _callbacks = new List<Action<bool, ErrorInfo>>();
@@ -19,12 +22,13 @@ namespace IO.Ably.Realtime
         private object _lock = new object();
         private Action _onTimeout;
 
-        public ChannelAwaiter(IRealtimeChannel channel, ChannelState awaitedState, Action onTimeout = null)
+        public ChannelAwaiter(IRealtimeChannel channel, ChannelState awaitedState, ILogger logger = null, Action onTimeout = null)
         {
+            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
             _name = $"#{channel.Name}:{awaitedState} awaiter";
             _channel = channel as RealtimeChannel;
             _awaitedState = awaitedState;
-            _timer = new CountdownTimer(_name + " timer");
+            _timer = new CountdownTimer(_name + " timer", logger);
             _onTimeout = onTimeout;
             AttachListener();
         }

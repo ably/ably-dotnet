@@ -19,7 +19,7 @@ namespace IO.Ably.Tests
 
         private ConnectionSuspendedState GetState(ErrorInfo info = null)
         {
-            return new ConnectionSuspendedState(_context, info, _timer);
+            return new ConnectionSuspendedState(_context, info, _timer, Logger);
         }
 
         public SuspendedStateSpecs(ITestOutputHelper output) : base(output)

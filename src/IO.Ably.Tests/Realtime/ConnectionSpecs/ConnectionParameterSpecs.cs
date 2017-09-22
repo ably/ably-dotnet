@@ -113,6 +113,7 @@ namespace IO.Ably.Tests.Realtime
                 .WhichValue.Should().Be("0.8");
         }
 
+        [Fact]
         [Trait("spec", "RTN2g")]
         public void ShouldSetTransportLibVersionParamater()
         {
@@ -120,7 +121,7 @@ namespace IO.Ably.Tests.Realtime
 
             LastCreatedTransport.Parameters.GetParams()
                 .Should().ContainKey("lib")
-                .WhichValue.Should().Be("dotnet-0.8.4");
+                .WhichValue.Should().Be("dotnet-0.8.5");
         }
 
         public ConnectionParameterSpecs(ITestOutputHelper output) : base(output)

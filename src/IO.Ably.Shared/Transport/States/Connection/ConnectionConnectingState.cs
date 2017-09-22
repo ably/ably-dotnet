@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using IO.Ably;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
@@ -8,13 +9,13 @@ namespace IO.Ably.Transport.States.Connection
     {
         private readonly ICountdownTimer _timer;
 
-        public ConnectionConnectingState(IConnectionContext context) :
-            this(context, new CountdownTimer("Connecting state timer"))
+        public ConnectionConnectingState(IConnectionContext context, ILogger logger) :
+            this(context, new CountdownTimer("Connecting state timer", logger), logger)
         {
         }
 
-        public ConnectionConnectingState(IConnectionContext context, ICountdownTimer timer)
-            : base(context)
+        public ConnectionConnectingState(IConnectionContext context, ICountdownTimer timer, ILogger logger)
+            : base(context, logger)
         {
             _timer = timer;
         }
@@ -30,7 +31,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void Close()
         {
-            TransitionState(new ConnectionClosingState(Context));
+            TransitionState(new ConnectionClosingState(Context, Logger));
         }
 
         public override async Task<bool> OnMessageReceived(ProtocolMessage message)
@@ -45,7 +46,7 @@ namespace IO.Ably.Transport.States.Connection
                         if (Context.Transport.State == TransportState.Connected)
                         {
                             var info = new ConnectionInfo(message);
-                            TransitionState(new ConnectionConnectedState(Context, info, message.Error));
+                            TransitionState(new ConnectionConnectedState(Context, info, message.Error, Logger));
                         }
                         return true;
                     }
@@ -68,7 +69,7 @@ namespace IO.Ably.Transport.States.Connection
                             catch (AblyException ex)
                             {
                                 Logger.Error("Error trying to renew token.", ex);
-                                TransitionState(new ConnectionFailedState(Context, ex.ErrorInfo));
+                                TransitionState(new ConnectionFailedState(Context, ex.ErrorInfo, Logger));
                                 return true;
                             }
                         }
@@ -80,7 +81,7 @@ namespace IO.Ably.Transport.States.Connection
                             return true;
                         }
 
-                        TransitionState(new ConnectionFailedState(Context, message.Error));
+                        TransitionState(new ConnectionFailedState(Context, message.Error, Logger));
                         return true;
                     }
             }

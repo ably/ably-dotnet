@@ -1,5 +1,5 @@
 ﻿using System;
-using IO.Ably.Shared;
+using IO.Ably;
 
 namespace IO.Ably
 {
@@ -18,6 +18,8 @@ namespace IO.Ably
 
         internal INowProvider NowProvider { get; set; }
 
+        public ILogger Logger { get; set; }
+
         public AblyHttpOptions() //Used for testing
         {
             Host = Defaults.RestHost;
@@ -31,6 +33,7 @@ namespace IO.Ably
             HttpMaxRetryDuration = TimeSpan.FromSeconds(10);
 
             NowProvider = Defaults.NowProvider();
+            Logger = IO.Ably.DefaultLogger.LoggerInstance;
         }
 
         public AblyHttpOptions(ClientOptions options)
@@ -47,6 +50,7 @@ namespace IO.Ably
             HttpMaxRetryDuration = options.HttpMaxRetryDuration;
 
             NowProvider = options.NowProvider;
+            Logger = options.Logger;
         }
     }
 }

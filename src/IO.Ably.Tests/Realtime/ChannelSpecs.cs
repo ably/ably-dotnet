@@ -202,7 +202,7 @@ namespace IO.Ably.Tests.Realtime
 
                 _client.Close();
 
-                await _client.ConnectionManager.SetState(new ConnectionSuspendedState(_client.ConnectionManager));
+                await _client.ConnectionManager.SetState(new ConnectionSuspendedState(_client.ConnectionManager, Logger));
 
                 _client.Connection.State.Should().Be(ConnectionState.Suspended);
                 _channel.State.Should().Be(ChannelState.Detached);
@@ -249,7 +249,6 @@ namespace IO.Ably.Tests.Realtime
             public async Task WhenAttaching_ShouldAddMultipleAwaitingHandlers()
             {
                 await SetState(ChannelState.Attaching);
-                bool stateChanged = false;
                 ChannelState newState = ChannelState.Initialized;
                 int counter = 0;
 
@@ -268,19 +267,19 @@ namespace IO.Ably.Tests.Realtime
             public void WhenConnectionIsClosedClosingSuspendedOrFailed_ShouldThrowError()
             {
                 //Closed
-                _client.Connection.ConnectionState = new ConnectionClosedState(_client.ConnectionManager);
+                _client.Connection.ConnectionState = new ConnectionClosedState(_client.ConnectionManager, Logger);
                 Assert.Throws<AblyException>(() => _client.Channels.Get("closed").Attach());
 
                 //Closing
-                _client.Connection.ConnectionState = new ConnectionClosingState(_client.ConnectionManager);
+                _client.Connection.ConnectionState = new ConnectionClosingState(_client.ConnectionManager, Logger);
                 Assert.Throws<AblyException>(() => _client.Channels.Get("closing").Attach());
 
                 //Suspended
-                _client.Connection.ConnectionState = new ConnectionSuspendedState(_client.ConnectionManager);
+                _client.Connection.ConnectionState = new ConnectionSuspendedState(_client.ConnectionManager, Logger);
                 var error = Assert.Throws<AblyException>(() => _client.Channels.Get("suspended").Attach());
                 error.ErrorInfo.Code.Should().Be(500);
                 //Failed
-                _client.Connection.ConnectionState = new ConnectionFailedState(_client.ConnectionManager, ErrorInfo.ReasonFailed);
+                _client.Connection.ConnectionState = new ConnectionFailedState(_client.ConnectionManager, ErrorInfo.ReasonFailed, Logger);
                 Assert.Throws<AblyException>(() => _client.Channels.Get("failed").Attach());
             }
 
@@ -471,11 +470,13 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL5f")]
             public async Task ShouldReturnToPreviousStateIfDetachedMessageWasNotReceivedWithinDefaultTimeout()
             {
-                TaskCompletionSource<bool> tsc = new TaskCompletionSource<bool>();
                 SetState(ChannelState.Attached);
                 _client.Options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
                 bool detachSuccess = true;
                 ErrorInfo detachError = null;
+
+                // use a TaskCompletionSource to let us know when the Detach event has been handled
+                TaskCompletionSource<bool> tsc = new TaskCompletionSource<bool>(false);
                 _channel.Detach((success, error) =>
                 {
                     detachSuccess = success;
@@ -483,6 +484,15 @@ namespace IO.Ably.Tests.Realtime
                     tsc.SetResult(true);
                 });
 
+                // timeout the tsc incase the detached event never happens
+                async Task Timeoutfn()
+                {
+                    await Task.Delay(1000);
+                    tsc.TrySetCanceled();
+                }
+#pragma warning disable 4014
+                Timeoutfn();
+#pragma warning restore 4014
                 await tsc.Task;
 
                 _channel.State.Should().Be(ChannelState.Attached);
@@ -498,7 +508,6 @@ namespace IO.Ably.Tests.Realtime
                 SetState(ChannelState.Attached);
 
                 bool called = false;
-                var detached = false;
                 _channel.Detach((span, info) =>
                 {
                     called = true;
@@ -696,7 +705,7 @@ namespace IO.Ably.Tests.Realtime
                 public async Task WhenConnectionIsDisconnecting_MessageShouldBeQueuedUntilConnectionMovesToConnected()
                 {
                     var client = GetClientWithFakeTransport();
-                    await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager));
+                    await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager, Logger));
                     client.Connection.State.Should().Be(ConnectionState.Disconnected);
                     var channel = client.Channels.Get("connecting");
                     SetState(channel, ChannelState.Attached);

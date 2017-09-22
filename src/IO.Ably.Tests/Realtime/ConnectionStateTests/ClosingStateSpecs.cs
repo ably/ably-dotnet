@@ -176,7 +176,7 @@ namespace IO.Ably.Tests
 
         private ConnectionClosingState GetState(ErrorInfo info = null)
         {
-            return new ConnectionClosingState(_context, info, _timer);
+            return new ConnectionClosingState(_context, info, _timer, Logger);
         }
 
         public ClosingStateSpecs(ITestOutputHelper output) : base(output)
