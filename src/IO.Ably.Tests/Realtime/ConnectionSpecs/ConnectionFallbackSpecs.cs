@@ -219,7 +219,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             };
 
             List<string> retryHosts = new List<string>();
-            retryHosts.Add(LastCreatedTransport.Parameters.Host);
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
