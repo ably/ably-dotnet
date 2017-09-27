@@ -13,9 +13,9 @@ namespace IO.Ably
 
         public TokenRequest() : this(Defaults.NowFunc())
         {}
-        internal TokenRequest(Func<DateTimeOffset> nowProvider)
+        internal TokenRequest(Func<DateTimeOffset> nowFunc)
         {
-            Now = nowProvider;
+            Now = nowFunc;
             Nonce = Guid.NewGuid().ToString("N").ToLower();
         }
 

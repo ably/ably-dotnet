@@ -95,10 +95,11 @@ namespace IO.Ably.Tests
         [Fact]
         public void GetPostData_DataObjectHasCorrectTimestamp()
         {
+            DateTimeOffset NowFunc() => DateHelper.CreateDate(2012, 12, 12, 10, 10, 10);
             var tokenParams = GetTokenParams();
-            var request = Populate(tokenParams);
-
-            request.Timestamp.Should().Be(Now);
+            var request = new TokenRequest(NowFunc);
+            var request2 = request.Populate(tokenParams, GetKeyId(), GetKeyValue());
+            request2.Timestamp.Should().Be(Now);
         }
 
         [Fact]
