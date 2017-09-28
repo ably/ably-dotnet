@@ -9,7 +9,7 @@ namespace IO.Ably
     public class ClientOptions : AuthOptions
     {
         private string _clientId;
-        private INowProvider _nowProvider;
+        private Func<DateTimeOffset> _nowFunc;
 
         /// <summary>
         ///
@@ -156,10 +156,10 @@ namespace IO.Ably
 
         public SynchronizationContext CustomContext { get; set; }
 
-        internal INowProvider NowProvider
+        internal Func<DateTimeOffset> NowFunc
         {
-            get => _nowProvider ?? (_nowProvider = Defaults.NowProvider());
-            set => _nowProvider = value;
+            get => _nowFunc ?? (_nowFunc = Defaults.NowFunc());
+            set => _nowFunc = value;
         }
 
         internal ILogger Logger { get; set; } = IO.Ably.DefaultLogger.LoggerInstance;

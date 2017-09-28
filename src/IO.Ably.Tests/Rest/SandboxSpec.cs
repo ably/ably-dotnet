@@ -9,7 +9,7 @@ namespace IO.Ably.Tests
 {
     public abstract class SandboxSpecs
     {
-        protected ILogger Logger { get; set; }
+        internal ILogger Logger { get; set; }
 
         protected readonly AblySandboxFixture Fixture;
         protected readonly ITestOutputHelper Output;

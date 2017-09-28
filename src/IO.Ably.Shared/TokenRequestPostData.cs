@@ -5,15 +5,17 @@ using Newtonsoft.Json;
 
 namespace IO.Ably
 {
-    public class TokenRequest : NowProviderConcern
+    public class TokenRequest
     {
+        internal Func<DateTimeOffset> Now { get; set; }
+
         private DateTimeOffset? _timestamp;
 
-        public TokenRequest() : this(Defaults.NowProvider())
+        public TokenRequest() : this(Defaults.NowFunc())
         {}
-        internal TokenRequest(INowProvider nowProvider)
+        internal TokenRequest(Func<DateTimeOffset> nowFunc)
         {
-            NowProvider = nowProvider;
+            Now = nowFunc;
             Nonce = Guid.NewGuid().ToString("N").ToLower();
         }
 

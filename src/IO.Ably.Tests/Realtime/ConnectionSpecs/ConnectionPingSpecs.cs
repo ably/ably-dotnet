@@ -45,7 +45,9 @@ namespace IO.Ably.Tests.Realtime
 
             result.IsSuccess.Should().BeTrue();
             // Because the now object is static when executed in parallel with other tests the results are affected
-            result.Value.Value.Should().BeGreaterThan(TimeSpan.FromMilliseconds(0)); 
+            result.Value.Value.Should().BeGreaterThan(TimeSpan.FromMilliseconds(0));
+            // reset
+            SetNowFunc(() => DateTimeOffset.UtcNow);
         }
 
         [Fact]

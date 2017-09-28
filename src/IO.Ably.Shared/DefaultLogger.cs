@@ -106,7 +106,7 @@ namespace IO.Ably
         }
 
 
-        internal class InternalLogger : NowProviderConcern, ILogger
+        internal class InternalLogger : ILogger
         {
             /// <summary>Maximum level to log.</summary>
             /// <remarks>E.g. set to LogLevel.Warning to have only errors and warnings in the log.</remarks>
@@ -115,14 +115,16 @@ namespace IO.Ably
             public ILoggerSink LoggerSink { get; set; }
             public bool IsDebug => LogLevel == LogLevel.Debug;
 
+            internal Func<DateTimeOffset> Now { get; set; }
+
             public InternalLogger() : this(Defaults.DefaultLogLevel, new DefaultLoggerSink()) {}
             public InternalLogger(ILoggerSink loggerSink) : this(Defaults.DefaultLogLevel, loggerSink) { }
             public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink): this(logLevel, loggerSink, null ) {} 
-            public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink, INowProvider nowProvider)
+            public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink, Func<DateTimeOffset> nowProvider)
             {
                 LogLevel = logLevel;
                 LoggerSink = loggerSink;
-                NowProvider = nowProvider ?? Defaults.NowProvider();
+                Now = nowProvider ?? Defaults.NowFunc();
             }
 
             public IDisposable SetTempDestination(ILoggerSink i)

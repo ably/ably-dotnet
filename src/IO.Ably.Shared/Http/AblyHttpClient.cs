@@ -10,8 +10,9 @@ using IO.Ably;
 
 namespace IO.Ably
 {
-    internal class AblyHttpClient : NowProviderConcern, IAblyHttpClient
+    internal class AblyHttpClient : IAblyHttpClient
     {
+        internal Func<DateTimeOffset> Now { get; set; }
         internal ILogger Logger { get; set; }
 
         internal AblyHttpOptions Options { get; }
@@ -22,7 +23,7 @@ namespace IO.Ably
 
         internal AblyHttpClient(AblyHttpOptions options, HttpMessageHandler messageHandler = null)
         {
-            NowProvider = options.NowProvider;
+            Now = options.NowFunc;
             Logger = options.Logger ?? IO.Ably.DefaultLogger.LoggerInstance;
             Options = options;
             CreateInternalHttpClient(options.HttpRequestTimeout, messageHandler);

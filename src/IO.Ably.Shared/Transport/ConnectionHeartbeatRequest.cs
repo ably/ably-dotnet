@@ -8,7 +8,7 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport
 {
-    internal class ConnectionHeartbeatRequest : NowProviderConcern
+    internal class ConnectionHeartbeatRequest
     {
         public static readonly ErrorInfo DefaultError = new ErrorInfo("Unable to ping service; not connected", 40000,
             HttpStatusCode.BadRequest);
@@ -20,14 +20,15 @@ namespace IO.Ably.Transport
         private bool _finished;
         private object _syncLock = new object();
         private DateTimeOffset _start = DateTimeOffset.MinValue;
+        internal Func<DateTimeOffset> Now { get; set; }
         internal ILogger Logger { get; private set; }
 
-        public ConnectionHeartbeatRequest(ConnectionManager manager, ICountdownTimer timer, INowProvider nowProvider)
+        public ConnectionHeartbeatRequest(ConnectionManager manager, ICountdownTimer timer, Func<DateTimeOffset> nowFunc)
         {
             Logger = manager.Logger;
             _manager = manager;
             _timer = timer;
-            NowProvider = nowProvider;
+            Now = nowFunc;
         }
 
         public static bool CanHandleMessage(ProtocolMessage message)
@@ -35,13 +36,13 @@ namespace IO.Ably.Transport
             return message.Action == ProtocolMessage.MessageAction.Heartbeat;
         }
 
-        public static ConnectionHeartbeatRequest Execute(ConnectionManager manager, INowProvider nowProvider, Action<TimeSpan?, ErrorInfo> callback)
+        public static ConnectionHeartbeatRequest Execute(ConnectionManager manager, Func<DateTimeOffset> nowProvider, Action<TimeSpan?, ErrorInfo> callback)
         {
             return Execute(manager, new CountdownTimer("Connection heartbeat timer", manager.Logger), nowProvider, callback);
         }
 
         public static ConnectionHeartbeatRequest Execute(ConnectionManager manager, ICountdownTimer timer,
-            INowProvider nowProvider, Action<TimeSpan?, ErrorInfo> callback)
+            Func<DateTimeOffset> nowProvider, Action<TimeSpan?, ErrorInfo> callback)
         {
             var request = new ConnectionHeartbeatRequest(manager, timer, nowProvider);
             return request.Send(callback);

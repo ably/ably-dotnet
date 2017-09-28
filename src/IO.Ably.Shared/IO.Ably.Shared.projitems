@@ -25,12 +25,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)HttpUtility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IChannelCommands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ILogger.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)INowProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IoC.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IPlatform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IRealtimeClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JsonHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)NowProviderConcern.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeChannels.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\RestChannels.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncExtensions.cs" />

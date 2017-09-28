@@ -8,8 +8,10 @@ namespace IO.Ably
     /// <summary>
     /// A class providing details of a token and its associated metadata
     /// </summary>
-    public sealed class TokenDetails : NowProviderConcern
+    public sealed class TokenDetails
     {
+        internal Func<DateTimeOffset> Now { get; set; }
+
         /// <summary>
         /// The allowed capabilities for this token. <see cref="Capability"/>
         /// </summary>
@@ -45,22 +47,22 @@ namespace IO.Ably
 
         public TokenDetails()
         {
-            NowProvider = Defaults.NowProvider();
+            Now = Defaults.NowFunc();
         }
-        public TokenDetails(INowProvider nowProvider)
+        public TokenDetails(Func<DateTimeOffset> nowFunc)
         {
-            NowProvider = nowProvider;
+            Now = nowFunc;
         }
 
         public TokenDetails(string token)
         {
             Token = token;
-            NowProvider = Defaults.NowProvider();
+            Now = Defaults.NowFunc();
         }
-        public TokenDetails(string token, INowProvider nowProvider)
+        public TokenDetails(string token, Func<DateTimeOffset> nowFunc)
         {
             Token = token;
-            NowProvider = nowProvider;
+            Now = nowFunc;
         }
 
         public void Expire()

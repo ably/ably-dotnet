@@ -8,19 +8,6 @@ namespace IO.Ably.Tests
 {
     public class TokenRequestPopulateTests
     {
-        internal class NowProvider : INowProvider
-        {
-            private DateTimeOffset _now;
-            public NowProvider(DateTimeOffset now)
-            {
-                _now = now;
-            }
-            public DateTimeOffset Now()
-            {
-                return _now;
-            }
-        }
-
 
         private const string ApiKey = "123.456:789";
         public readonly DateTimeOffset Now = DateHelper.CreateDate(2012, 12, 12, 10, 10, 10);
@@ -52,7 +39,7 @@ namespace IO.Ably.Tests
         /// </summary>
         public TokenRequestPopulateTests()
         {
-            _request = new TokenRequest(new NowProvider(Now));
+            _request = new TokenRequest(TestHelpers.NowFunc());
         }
 
         [Fact]
@@ -108,10 +95,11 @@ namespace IO.Ably.Tests
         [Fact]
         public void GetPostData_DataObjectHasCorrectTimestamp()
         {
+            DateTimeOffset NowFunc() => DateHelper.CreateDate(2012, 12, 12, 10, 10, 10);
             var tokenParams = GetTokenParams();
-            var request = Populate(tokenParams);
-
-            request.Timestamp.Should().Be(Now);
+            var request = new TokenRequest(NowFunc);
+            var request2 = request.Populate(tokenParams, GetKeyId(), GetKeyValue());
+            request2.Timestamp.Should().Be(Now);
         }
 
         [Fact]

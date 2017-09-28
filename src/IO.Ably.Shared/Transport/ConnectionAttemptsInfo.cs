@@ -60,8 +60,9 @@ namespace IO.Ably.Transport
         }
     }
 
-    internal sealed class ConnectionAttemptsInfo : NowProviderConcern
+    internal sealed class ConnectionAttemptsInfo
     {
+        internal Func<DateTimeOffset> Now { get; set; }
         private static readonly ISet<HttpStatusCode> FallbackReasons;
 
         static ConnectionAttemptsInfo()
@@ -83,16 +84,16 @@ namespace IO.Ably.Transport
 
         private readonly object _syncLock = new object();
 
-        public ConnectionAttemptsInfo(Connection connection, INowProvider nowProvider)
+        public ConnectionAttemptsInfo(Connection connection, Func<DateTimeOffset> nowFunc)
         {
             _connection = connection ?? throw new ArgumentNullException(nameof(connection));
-            NowProvider = nowProvider;
+            Now = nowFunc;
         }
 
         public ConnectionAttemptsInfo(Connection connection)
         {
             _connection = connection ?? throw new ArgumentNullException(nameof(connection));
-            NowProvider = connection.NowProvider;
+            Now = connection.Now;
         }
 
         public async Task<bool> CanFallback(ErrorInfo error)
@@ -123,7 +124,7 @@ namespace IO.Ably.Transport
                 var attempt = Attempts.LastOrDefault() ?? new ConnectionAttempt(Now());
                 attempt.FailedStates.Add(new AttemptFailedState(state, error));
                 if(Attempts.Count == 0)
-                    Attempts.Add(attempt);
+                    Attempts.Add(attempt); 
             }
         }
 
