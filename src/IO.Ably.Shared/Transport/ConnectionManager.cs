@@ -451,10 +451,7 @@ namespace IO.Ably.Transport
 
         private async Task ProcessQueuedMessages()
         {
-            if(_queuedTransportMessages == null)
-                return;
-
-            while (_queuedTransportMessages.TryDequeue(out var message))
+            while (_queuedTransportMessages != null && _queuedTransportMessages.TryDequeue(out var message))
             {
                 if (Logger.IsDebug) Logger.Debug("Proccessing queued message: " + message);
                 await ProcessTransportMessage(message);
