@@ -464,7 +464,7 @@ namespace IO.Ably.Tests.Realtime
     [Trait("requires", "sandbox")]
     public class ConnectionSandboxOperatingSystemEventsForNetworkSpecs : SandboxSpecs
     {
-        [Theory]
+        [Theory(Skip= "TODO")]
         [InlineData(Protocol.MsgPack, ConnectionState.Connected)]
         [InlineData(Protocol.MsgPack, ConnectionState.Connecting)]
         [InlineData(Protocol.Json, ConnectionState.Connected)]
@@ -492,7 +492,7 @@ namespace IO.Ably.Tests.Realtime
             states.Should().Contain(ConnectionState.Connecting);
         }
 
-        [Theory]
+        [Theory(Skip = "TODO")]
         [ProtocolData]
         [Trait("spec", "RTN20b")]
         public async Task
