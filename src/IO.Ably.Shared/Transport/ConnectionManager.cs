@@ -36,7 +36,6 @@ namespace IO.Ably.Transport
         public Connection Connection { get; }
         public ConnectionState ConnectionState => Connection.State;
         private readonly object _stateSyncLock = new object();
-        private readonly object _transportQueueLock = new object();
         private readonly object _pendingQueueLock = new object();
         private volatile ConnectionStateBase _inTransitionToState;
 
@@ -132,9 +131,8 @@ namespace IO.Ably.Transport
                 catch (AblyException ex)
                 {
                     Logger.Error("Error attaching to context", ex);
-
-                    lock (_transportQueueLock)
-                        _queuedTransportMessages = new ConcurrentQueue<ProtocolMessage>();
+                    
+                    _queuedTransportMessages = new ConcurrentQueue<ProtocolMessage>();
 
                     Connection.UpdateState(newState);
 
@@ -453,11 +451,13 @@ namespace IO.Ably.Transport
 
         private async Task ProcessQueuedMessages()
         {
+            if(_queuedTransportMessages == null)
+                return;
+
             while (_queuedTransportMessages.TryDequeue(out var message))
             {
                 if (Logger.IsDebug) Logger.Debug("Proccessing queued message: " + message);
                 await ProcessTransportMessage(message);
-                message = null;
             }
         }
 
