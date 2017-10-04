@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using IO.Ably.MessageEncoders;
@@ -35,11 +36,10 @@ namespace IO.Ably.Transport
         public Connection Connection { get; }
         public ConnectionState ConnectionState => Connection.State;
         private readonly object _stateSyncLock = new object();
-        private readonly object _transportQueueLock = new object();
         private readonly object _pendingQueueLock = new object();
         private volatile ConnectionStateBase _inTransitionToState;
 
-        private List<ProtocolMessage> _queuedTransportMessages = new List<ProtocolMessage>();
+        private ConcurrentQueue<ProtocolMessage> _queuedTransportMessages = new ConcurrentQueue<ProtocolMessage>();
 
         public void ClearAckQueueAndFailMessages(ErrorInfo error) => AckProcessor.ClearQueueAndFailMessages(error);
 
@@ -131,9 +131,8 @@ namespace IO.Ably.Transport
                 catch (AblyException ex)
                 {
                     Logger.Error("Error attaching to context", ex);
-
-                    lock (_transportQueueLock)
-                        _queuedTransportMessages.Clear();
+                    
+                    _queuedTransportMessages = new ConcurrentQueue<ProtocolMessage>();
 
                     Connection.UpdateState(newState);
 
@@ -406,11 +405,8 @@ namespace IO.Ably.Transport
 
         void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)
         {
-            ExecuteOnManagerThread(() =>
-            {
-                var message = Handler.ParseRealtimeData(data);
-                return OnTransportMessageReceived(message);
-            });
+            var message = Handler.ParseRealtimeData(data);
+            OnTransportMessageReceived(message).WaitAndUnwrapException();
         }
 
         public Task Execute(Action action)
@@ -446,35 +442,18 @@ namespace IO.Ably.Transport
 
         public async Task OnTransportMessageReceived(ProtocolMessage message)
         {
-            if (_inTransitionToState != null)
-            {
-                if (Logger.IsDebug)
-                {
-                    Logger.Debug($"InState transition to '{_inTransitionToState}'. Queuing tranport message until state updates");
-                }
+            _queuedTransportMessages.Enqueue(message);
 
-                lock (_transportQueueLock)
-                    _queuedTransportMessages.Add(message);
-            }
-            else
-            {
-                await ProcessTransportMessage(message);
-            }
+            if (_inTransitionToState == null)
+                await ProcessQueuedMessages();
+            
         }
 
         private async Task ProcessQueuedMessages()
         {
-            List<ProtocolMessage> copy;
-            lock (_transportQueueLock)
-            {
-                copy = _queuedTransportMessages;
-                _queuedTransportMessages = new List<ProtocolMessage>();
-            }
-
-            foreach (var message in copy)
+            while (_queuedTransportMessages != null && _queuedTransportMessages.TryDequeue(out var message))
             {
                 if (Logger.IsDebug) Logger.Debug("Proccessing queued message: " + message);
-
                 await ProcessTransportMessage(message);
             }
         }
