@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -442,25 +443,37 @@ namespace IO.Ably.Tests
             [Trait("intermittent", "true")]
             public async Task ShouldAttemptFallbackHostsInRandomOrder()
             {
+                int interations = 20;
                 _response.StatusCode = HttpStatusCode.BadGateway;
-                var client = CreateClient(options => options.HttpMaxRetryCount = 5); //Increasing the max try to make the randomness easier to test
+                //The higher the retries the less chance the two lists will match
+                // but as per RSC15a each host will only be tried once (there are currently 6 hosts)...
 
-                await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
-                var firstAttemptHosts = _handler.Requests.Select(x => x.RequestUri.Host).ToList();
-                _handler.Requests.Clear();
-                await Task.Delay(100);
-                await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
-
-                var secondAttemptHosts = _handler.Requests.Select(x => x.RequestUri.Host).ToList();
-
-                bool sameOrder = true;
-                for (int i = 0; i < firstAttemptHosts.Count; i++)
+                List<string> firstAttemptHosts = new List<string>();
+                for (int i = 0; i < interations; i++)
                 {
-                    sameOrder = sameOrder && firstAttemptHosts[i] == secondAttemptHosts[i];
+                    var client = CreateClient(options => options.HttpMaxRetryCount = 10);
+                    await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                    firstAttemptHosts.AddRange(_handler.Requests.Select(x => x.RequestUri.Host).ToList());
+                    _handler.Requests.Clear();
+                    await Task.Delay(10);
                 }
+                
+                await Task.Delay(100);
+
+                List<string> secondAttemptHosts = new List<string>();
+                for (int i = 0; i < interations; i++)
+                {
+                    var client = CreateClient(options => options.HttpMaxRetryCount = 10);
+                    await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                    secondAttemptHosts.AddRange(_handler.Requests.Select(x => x.RequestUri.Host).ToList());
+                    _handler.Requests.Clear();
+                    await Task.Delay(10);
+                }
+
+                firstAttemptHosts.JoinStrings().Should().NotBe(secondAttemptHosts.JoinStrings());
+
                 Output.WriteLine("FirstTryHosts: " + firstAttemptHosts.JoinStrings());
                 Output.WriteLine("SecondTryHosts: " + secondAttemptHosts.JoinStrings());
-                sameOrder.Should().BeFalse();
             }
 
             [Fact]
