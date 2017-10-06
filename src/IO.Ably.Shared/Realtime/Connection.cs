@@ -20,7 +20,6 @@ namespace IO.Ably.Realtime
     public sealed class Connection : EventEmitter<ConnectionState, ConnectionStateChange>, IDisposable
     {
         private static readonly ConcurrentBag<WeakReference<Action<NetworkState>>> OsEventSubscribers = new ConcurrentBag<WeakReference<Action<NetworkState>>>();
-        internal ILogger Logger { get; private set; }
 
         protected override Action<Action> NotifyClient => RealtimeClient.NotifyExternalClients;
 

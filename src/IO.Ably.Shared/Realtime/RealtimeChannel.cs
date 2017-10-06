@@ -14,7 +14,6 @@ namespace IO.Ably.Realtime
     /// <summary>Implement realtime channel.</summary>
     internal class RealtimeChannel : EventEmitter<ChannelState, ChannelStateChange>, IRealtimeChannel, IDisposable
     {
-        internal ILogger Logger { get; private set; }
         internal AblyRealtime RealtimeClient { get; }
         private IConnectionManager ConnectionManager => RealtimeClient.ConnectionManager;
         private Connection Connection => RealtimeClient.Connection;
