@@ -218,6 +218,9 @@ namespace IO.Ably.AcceptanceTests
             [Trait("spec", "RSL4c2")]
             public void WithString_DoesNotApplyAnyEncoding()
             {
+                if (!Config.MsgPackEnabled)
+                    return;
+
                 //Act
                 _client.Channels.Get("Test").PublishAsync("test", "test");
 
@@ -231,6 +234,9 @@ namespace IO.Ably.AcceptanceTests
             [Trait("spec", "RSL4c1")]
             public void WithBinaryData_DoesNotApplyAnyEncoding()
             {
+                if (!Config.MsgPackEnabled)
+                    return;
+
                 //Act
                 var bytes = new byte[] { 10, 111, 128 };
                 _client.Channels.Get("Test").PublishAsync("test", bytes);
@@ -245,6 +251,9 @@ namespace IO.Ably.AcceptanceTests
             [Trait("spec", "RSL4c3")]
             public void WithJsonData_AppliesCorrectEncoding()
             {
+                if (!Config.MsgPackEnabled)
+                    return;
+
                 //Arrange
                 var obj = new { Test = "test", name = "name" };
 
@@ -278,6 +287,9 @@ namespace IO.Ably.AcceptanceTests
             [Fact]
             public void WithBinaryData_SetsEncodingAndDataCorrectly()
             {
+                if (!Config.MsgPackEnabled)
+                    return;
+
                 //Arrange
                 var bytes = new byte[] { 1, 2, 3 };
 
@@ -294,6 +306,8 @@ namespace IO.Ably.AcceptanceTests
             [Fact]
             public void WithStringData_SetsEncodingAndDataCorrectly()
             {
+                if (!Config.MsgPackEnabled)
+                    return;
                 //Act
                 _client.Channels.Get("test", options).PublishAsync("test", "test");
 
@@ -307,6 +321,8 @@ namespace IO.Ably.AcceptanceTests
             [Fact]
             public void WithJsonData_SetsEncodingAndDataCorrectly()
             {
+                if (!Config.MsgPackEnabled)
+                    return;
                 //Act
                 var obj = new { Test = "test", Name = "name" };
                 _client.Channels.Get("test", options).PublishAsync("test", obj);
