@@ -188,8 +188,10 @@ namespace IO.Ably
             {
                 try
                 {
+#if MSGPACK
                     var message = MsgPackHelper.DeserialiseMsgPackObject(e.Data).ToString();
                     Logger.Debug("Websocket data message received. Raw: " + message);
+#endif
                 }
                 catch (Exception)
                 {
