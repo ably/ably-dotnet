@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -65,8 +64,6 @@ namespace IO.Ably.MessageEncoders
 
         public IEnumerable<Message> ParseMessagesResponse(AblyResponse response, ChannelOptions options)
         {
-            Contract.Assert(options != null);
-
             if (response.Type == ResponseType.Json)
             {
                 var messages = JsonHelper.Deserialize<List<Message>>(response.TextResponse);
