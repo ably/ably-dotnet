@@ -53,7 +53,6 @@ namespace IO.Ably.Realtime
         internal Connection(AblyRealtime realtimeClient, Func<DateTimeOffset> nowFunc, ILogger logger = null) : base(logger)
         {
             Now = nowFunc;
-            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
             FallbackHosts = Defaults.FallbackHosts.Shuffle().ToList();
             RealtimeClient = realtimeClient;
             RegisterWithOSNetworkStateEvents(HandleNetworkStateChange);

@@ -67,10 +67,13 @@ namespace IO.Ably.Transport
             {
                 if (Logger.IsDebug)
                 {
+
                     try
                     {
+#if MSGPACK
                         var message = MsgPackHelper.DeserialiseMsgPackObject(data.Data).ToString();
                         Logger.Debug("Websocket data message received. Raw: " + message);
+#endif
                     }
                     catch (Exception)
                     {

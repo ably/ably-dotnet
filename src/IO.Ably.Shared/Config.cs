@@ -18,5 +18,11 @@ namespace IO.Ably
         public const int DisconnectTimeout = 10000;
         public const int SuspendedTimeout = 60000;
         public static int ProtocolVersion = 1;
+
+#if MSGPACK
+        internal const bool MsgPackEnabled = true;
+#else
+        internal const bool MsgPackEnabled = false;
+#endif
     }
 }
