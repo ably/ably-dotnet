@@ -40,6 +40,16 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
+        public void WhenMsgPackIsDisabled_AndUseBinaryIsTrue_ProtocolIsSetToJson()
+        {
+            if (Config.MsgPackEnabled)
+                return;
+
+            var rest = new AblyRest(new ClientOptions() { UseBinaryProtocol = true });
+            rest.Protocol.Should().Be(Protocol.Json);
+        }
+
+        [Fact]
         public void WhenProtocolIsMsgPack_ProtocolIsSetToMsgPack()
         {
             if (!Config.MsgPackEnabled)
