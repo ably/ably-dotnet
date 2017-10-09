@@ -201,12 +201,17 @@ namespace IO.Ably.AcceptanceTests
         [Trait("spec", "RSL4c")]
         public class WithBinaryProtocolWithoutEncryption : MockHttpRestSpecs
         {
+
             private AblyRest _client;
 
             private Message GetPayload()
             {
+#if MSGPACK
                 var messages = MsgPackHelper.Deserialise(LastRequest.RequestBody, typeof(List<Message>)) as List<Message>;
                 return messages.First();
+#else
+                return null;
+#endif
             }
 
             public WithBinaryProtocolWithoutEncryption(ITestOutputHelper output) : base(output)
@@ -280,8 +285,12 @@ namespace IO.Ably.AcceptanceTests
 
             private Message GetPayload()
             {
+#if MSGPACK
                 var messages = MsgPackHelper.Deserialise(LastRequest.RequestBody, typeof(List<Message>)) as List<Message>;
                 return messages.First();
+#else
+                return null;
+#endif
             }
 
             [Fact]
