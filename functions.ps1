@@ -8,14 +8,16 @@ function global:run_msbuild($msbuild, $solutionPath, $configuration, $signKeyPat
 	try {
 		switch($configuration)
 		{
-			"package" { exec { & $msbuild $solutionPath "/t:clean;build" "/p:Configuration=release;Platform=Any CPU" "/p:AssemblyOriginatorKeyFile=$signKeyPath" "/p:SignAssembly=true" "/p:DefineConstants=$constants" } }
-			"release" { exec { & $msbuild $solutionPath "/t:clean;build" "/p:Configuration=$configuration;Platform=Any CPU" "/p:DefineConstants=$constants"} }
-			default { exec { & $msbuild $solutionPath "/t:clean;build" "/p:Configuration=$configuration;Platform=Any CPU" "/p:DefineConstants=$constants" } }
+			"package" { exec { & $msbuild /nologo $solutionPath "/t:clean;build" "/p:Configuration=release;Platform=Any CPU" "/p:AssemblyOriginatorKeyFile=$signKeyPath" "/p:SignAssembly=true" /p:DefineConstants="$constants" } }
+			"release" { exec { & $msbuild /nologo $solutionPath "/t:clean;build" "/p:Configuration=$configuration;Platform=Any CPU" "/p:DefineConstants=$constants"} }
+			default   { exec { & $msbuild /nologo $solutionPath "/t:clean;build" "/p:Configuration=$configuration;Platform=Any CPU" "/p:DefineConstants=$constants" } }
 		}
 	}
 	catch {
 		Write-Output "##teamcity[buildStatus text='MSBuild Compiler Error - see build log for details' status='ERROR']"
 		Write-Host $_
+		Write-Output "Configuration: $configuration"
+		Write-Output "Constants: $constants"
 		Write-Host ("************************ BUILD FAILED ***************************")
 		exit 1
 	}

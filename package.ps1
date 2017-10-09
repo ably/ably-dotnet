@@ -6,7 +6,8 @@ import-module .\tools\psake\psake.psm1
 
 $const = "PACKAGE"
 if ($msgpack) {
-	$const = 'PACKAGE;MSGPACK'
+	# Use %3B in place of ; and PS is borking the value - https://msdn.microsoft.com/en-us/library/bb383819.aspx
+	$const = "MSGPACK%3BPACKAGE"
 } 
 
 $psake.use_exit_on_error = $true
