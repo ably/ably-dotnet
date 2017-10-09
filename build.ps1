@@ -1,3 +1,7 @@
+Param(
+    [switch]$msgpack
+ )
+
 cd tools\psake
 import-module .\psake.psm1
 cd..

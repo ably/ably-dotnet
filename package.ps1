@@ -1,8 +1,11 @@
-import-module .\tools\psake\psake.psm1
-
-param (
+Param(
     [switch]$msgpack
  )
+
+
+import-module .\tools\psake\psake.psm1
+
+
 
 $const = ''
 if ($msgpack) {
