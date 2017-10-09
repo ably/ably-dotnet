@@ -21,6 +21,7 @@
           </group>
           
           <group targetFramework="net46">
+            <!-- Some dependecies are merged using ILRepack, see csproj -->
           </group>
           
           <group targetFramework="uap">
@@ -30,6 +31,7 @@
           </group>
           
           <group targetFramework="monoandroid">
+            <!-- Some dependecies are merged using ILRepack, see csproj -->
           </group>
           
           <group targetFramework="monotouch">
@@ -37,6 +39,7 @@
           </group>
           
           <group targetFramework="Xamarin.iOS">
+            <!-- Some dependecies are merged using ILRepack, see csproj -->
           </group>
           
           <group targetFramework="netstandard1.4">
