@@ -2,14 +2,11 @@ Param(
     [switch]$msgpack
  )
 
-
 import-module .\tools\psake\psake.psm1
 
-
-
-$const = ''
+$const = "PACKAGE"
 if ($msgpack) {
-	$const = 'MSGPACK'
+	$const = 'PACKAGE;MSGPACK'
 } 
 
 $psake.use_exit_on_error = $true
