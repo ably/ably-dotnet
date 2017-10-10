@@ -57,7 +57,7 @@ namespace IO.Ably.MessageEncoders
             ProcessMessages(payloads, options);
             return payloads;
 #else
-            throw new AblyException($"Response of type '{response.Type}' is not enabled for this build. Use ResponseType.Json");
+            throw new AblyException($"Response of type '{response.Type}' is invalid because MsgPack support was not enabled for this build.");
             
 #endif
         }
@@ -76,7 +76,7 @@ namespace IO.Ably.MessageEncoders
             ProcessMessages(payloads, options);
             return payloads;
 #else
-            throw new AblyException($"Response of type '{response.Type}' is not enabled for this build. Use ResponseType.Json");
+            throw new AblyException($"Response of type '{response.Type}' is invalid because MsgPack support was not enabled for this build.");
 
 #endif
         }
