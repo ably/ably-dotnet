@@ -73,8 +73,6 @@ namespace IO.Ably
             if (Key.IsEmpty()) Key = defaults.Key;
             if (UseTokenAuth.HasValue == false) UseTokenAuth = defaults.UseTokenAuth;
             if(QueryTime.HasValue == false) QueryTime = defaults.QueryTime;
-
-
             return this;
         }
 
