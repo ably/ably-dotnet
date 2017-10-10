@@ -4,7 +4,7 @@
         <id>ably.io</id>
         <version>0.8.5</version>
         <title>ably.io</title>
-        <authors>Martin Georgiev, Yavor Ivanov</authors>
+        <authors>Martin Georgiev, Yavor Ivanov, Jack Rutherford</authors>
         <owners>Ably Real-time Ltd</owners>
         <licenseUrl>https://github.com/ably/ably-dotnet/blob/master/LICENSE</licenseUrl>
         <projectUrl>https://github.com/ably/ably-dotnet</projectUrl>
