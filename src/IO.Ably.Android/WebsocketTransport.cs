@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using IO.Ably.Realtime;
 using WebSocket4Net;
 using IO.Ably.Transport;
@@ -191,11 +192,14 @@ namespace IO.Ably
 #if MSGPACK
                     var message = MsgPackHelper.DeserialiseMsgPackObject(e.Data).ToString();
                     Logger.Debug("Websocket data message received. Raw: " + message);
+#else
+                    Logger.Debug("Websocket data message received. Raw: " + Encoding.UTF8.GetString(e.Data));
 #endif
                 }
                 catch (Exception)
                 {
-                    Logger.Debug("Error parsing message as MsgPack.");
+                    string format = Config.MsgPackEnabled ? "MsgPack" : "UTF8 string";
+                    Logger.Debug($"Error parsing message as {format}.");
                 }
             }
 
