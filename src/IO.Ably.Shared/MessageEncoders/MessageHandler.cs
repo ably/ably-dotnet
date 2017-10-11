@@ -21,7 +21,7 @@ namespace IO.Ably.MessageEncoders
         private readonly Protocol _protocol;
         public readonly List<MessageEncoder> Encoders = new List<MessageEncoder>();
 
-        public MessageHandler() : this(IO.Ably.DefaultLogger.LoggerInstance, Protocol.MsgPack) {}
+        public MessageHandler() : this(IO.Ably.DefaultLogger.LoggerInstance, Defaults.Protocol) {}
 
         public MessageHandler(Protocol protocol) : this(IO.Ably.DefaultLogger.LoggerInstance, protocol) {}
 
@@ -89,10 +89,12 @@ namespace IO.Ably.MessageEncoders
         public void SetRequestBody(AblyRequest request)
         {
             request.RequestBody = GetRequestBody(request);
+#if MSGPACK
             if (_protocol == Protocol.MsgPack && Logger.IsDebug)
             {
                 LogRequestBody(request.RequestBody);
             }
+#endif
         }
 
         private void LogRequestBody(byte[] requestBody)
@@ -312,7 +314,7 @@ namespace IO.Ably.MessageEncoders
             ProtocolMessage protocolMessage;
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if (_protocol == Protocol.MsgPack && Config.MsgPackEnabled)
+            if (IsMsgPack() && Config.MsgPackEnabled)
             {
 #if MSGPACK
                 protocolMessage = (ProtocolMessage) MsgPackHelper.Deserialise(data.Data, typeof(ProtocolMessage));
@@ -389,7 +391,7 @@ namespace IO.Ably.MessageEncoders
         {
             RealtimeTransportData data;
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if (_protocol == Protocol.MsgPack && Config.MsgPackEnabled)
+            if (IsMsgPack() && Config.MsgPackEnabled)
             {
 #if MSGPACK
                 var bytes = MsgPackHelper.Serialise(protocolMessage);
@@ -403,6 +405,15 @@ namespace IO.Ably.MessageEncoders
             }
 
             return data;
+        }
+
+        private bool IsMsgPack()
+        {
+            bool isMsgPack = false;
+#if MSGPACK
+            isMsgPack = _protocol == Protocol.MsgPack;
+#endif
+            return isMsgPack;
         }
     }
 }
