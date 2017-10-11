@@ -325,6 +325,32 @@ namespace IO.Ably.Realtime
                 return true;
             }
 
+            private bool CompareForNewness(PresenceMessage oldMsg, PresenceMessage newMsg)
+            {
+                try 
+                {
+                    if(oldMsg.Id.StartsWith(oldMsg.ConnectionId)
+                        && newMsg.Id.StartsWith(newMsg.ConnectionId))
+                    {
+                        //RTP2b1
+                        return newMsg.Timestamp < oldMsg.Timestamp;
+                    } else {
+                        //RTP2b2
+                        var oldValues = oldMsg.Id.Split(':');
+                        var newValues = newMsg.Id.Split(':');
+                        var msgSerialOld = int.Parse(oldValues[1]);
+                        var msgSerialNew = int.Parse(newValues[1]);
+                        var indexOld = int.Parse(oldValues[2]);
+                        var indexNew = int.Parse(newValues[2]);
+
+                        return (msgSerialOld == msgSerialNew && indexNew < indexOld)
+                            || msgSerialNew < msgSerialOld;
+                    }
+                } catch {
+                    return false;
+                }
+            }
+
             public bool Remove(PresenceMessage item)
             {
                 bool result = true;
