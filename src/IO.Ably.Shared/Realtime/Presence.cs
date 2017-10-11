@@ -371,12 +371,18 @@ namespace IO.Ably.Realtime
                     return false;
                 }
 
-                members.TryRemove(item.MemberKey, out PresenceMessage _);
-
                 if (existingItem?.Action == PresenceAction.Absent)
                 {
                     result = false;
                 }
+                
+                if(IsSyncInProgress){
+                    item.Action = PresenceAction.Absent;
+                    members[item.MemberKey] = item;
+                } else {
+                    members.TryRemove(item.MemberKey, out PresenceMessage _);
+                }
+                
                 return result;
             }
 
