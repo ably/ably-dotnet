@@ -315,10 +315,12 @@ namespace IO.Ably.Realtime
                     residualMembers?.Remove(item.MemberKey);
                 }
 
-                // compare the timestamp of the new item with any existing member (or ABSENT witness)
+                // Compare for newness (RTP2b)
                 PresenceMessage existingItem;
-                if (members.TryGetValue(item.MemberKey, out existingItem) && (item.Timestamp < existingItem.Timestamp))
+                if (members.TryGetValue(item.MemberKey, out existingItem) && CompareForNewness(existingItem, item))
+                {
                     return false;
+                }
 
                 members[item.MemberKey] = item;
 
@@ -356,14 +358,18 @@ namespace IO.Ably.Realtime
                 bool result = true;
 
                 PresenceMessage existingItem;
-                if (members.TryGetValue(item.MemberKey, out existingItem) &&
-                    existingItem.Action == PresenceAction.Absent)
+                if (members.TryGetValue(item.MemberKey, out existingItem) && CompareForNewness(existingItem, item))
                 {
-                    result = false;
+                    //RTP2c
+                    return false;
                 }
 
                 members.TryRemove(item.MemberKey, out PresenceMessage _);
 
+                if (existingItem?.Action == PresenceAction.Absent)
+                {
+                    result = false;
+                }
                 return result;
             }
 
