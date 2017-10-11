@@ -321,6 +321,13 @@ namespace IO.Ably.Realtime
                 {
                     return false;
                 }
+                
+                switch(item.Action){
+                    case PresenceAction.Enter:
+                    case PresenceAction.Update:
+                        item.Action = PresenceAction.Present;
+                        break;
+                }
 
                 members[item.MemberKey] = item;
 
