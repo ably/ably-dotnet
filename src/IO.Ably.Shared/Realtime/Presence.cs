@@ -366,7 +366,7 @@ namespace IO.Ably.Realtime
                     // We can now strip out the ABSENT members, as we have
                     // received all of the out-of-order sync messages
                     foreach (var member in members.ToArray())
-                        if (member.Value.Action == PresenceAction.Present)
+                        if (member.Value.Action == PresenceAction.Absent)
                             members.TryRemove(member.Key, out PresenceMessage _);
 
                     lock (_lock)
