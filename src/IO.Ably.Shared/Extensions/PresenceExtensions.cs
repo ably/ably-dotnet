@@ -7,26 +7,26 @@
             return !msg.Id.StartsWith(msg.ConnectionId);
         }
 
-        public static bool IsNewerThan(this PresenceMessage oldMessage, PresenceMessage newMessage)
+        public static bool IsNewerThan(this PresenceMessage thisMessage, PresenceMessage thatMessage)
         {
-            if (oldMessage.IsSynthesized() || newMessage.IsSynthesized())
+            if (thisMessage.IsSynthesized() || thatMessage.IsSynthesized())
             {
-                if (oldMessage.Timestamp > newMessage.Timestamp) return true;
+                return thisMessage.Timestamp > thatMessage.Timestamp;
             }
             
-            var thisValues = oldMessage.Id.Split(':');
-            var otherValues = newMessage.Id.Split(':');
+            var thisValues = thisMessage.Id.Split(':');
+            var thatValues = thatMessage.Id.Split(':');
             var msgSerialThis = int.Parse(thisValues[1]);
-            var msgSerialOther = int.Parse(otherValues[1]);
+            var msgSerialThat = int.Parse(thatValues[1]);
             var indexThis = int.Parse(thisValues[2]);
-            var indexOther = int.Parse(otherValues[2]);
+            var indexThat = int.Parse(thatValues[2]);
 
-            if (msgSerialThis == msgSerialOther)
+            if (msgSerialThis == msgSerialThat)
             {
-                if (indexThis > indexOther) return true;
+                return indexThis > indexThat;
             }
             
-            if (msgSerialThis > msgSerialOther) return true;
+            return msgSerialThis > msgSerialThat;
         }
     }
 }

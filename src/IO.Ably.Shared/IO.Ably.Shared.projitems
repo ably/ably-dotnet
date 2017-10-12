@@ -21,6 +21,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CipherParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\GeneratedSerializers\IO_Ably_TokenRequestSerializer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EventEmitter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\PresenceExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\TaskExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HttpUtility.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IChannelCommands.cs" />
