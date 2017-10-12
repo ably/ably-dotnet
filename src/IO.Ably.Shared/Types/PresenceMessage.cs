@@ -51,6 +51,5 @@ namespace IO.Ably
 
         [JsonIgnore]
         public string MemberKey => $"{ClientId}:{ConnectionId}";
-
     }
 }

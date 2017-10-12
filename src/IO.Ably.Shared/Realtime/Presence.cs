@@ -328,7 +328,8 @@ namespace IO.Ably.Realtime
                     if (Logger.IsDebug) Logger.Debug(ex.Message);
                 }
 
-                switch(item.Action){
+                switch(item.Action)
+                {
                     case PresenceAction.Enter:
                     case PresenceAction.Update:
                         item.Action = PresenceAction.Present;
