@@ -12,7 +12,7 @@ namespace IO.Ably
         Update
     }
 
-    public class PresenceMessage : IMessage, IComparable<PresenceMessage>
+    public class PresenceMessage : IMessage
     {
         public PresenceMessage()
         { }
@@ -52,29 +52,5 @@ namespace IO.Ably
         [JsonIgnore]
         public string MemberKey => $"{ClientId}:{ConnectionId}";
 
-        public int CompareTo(PresenceMessage other)
-        {
-            if (this.IsSynthesized() || other.IsSynthesized())
-            {
-                if (this.Timestamp > other.Timestamp) return -1;
-                return this.Timestamp == other.Timestamp ? 0 : 1;
-            }
-            
-            var thisValues = this.Id.Split(':');
-            var otherValues = other.Id.Split(':');
-            var msgSerialThis = int.Parse(thisValues[1]);
-            var msgSerialOther = int.Parse(otherValues[1]);
-            var indexThis = int.Parse(thisValues[2]);
-            var indexOther = int.Parse(otherValues[2]);
-
-            if (msgSerialThis == msgSerialOther)
-            {
-                if (indexThis > indexOther) return -1;
-                return indexThis == indexOther ? 0 : 1;
-            }
-            
-            if (msgSerialThis > msgSerialOther) return -1;
-            return msgSerialThis == msgSerialOther ? 0 : 1;
-        }
     }
 }
