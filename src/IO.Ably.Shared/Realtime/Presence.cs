@@ -315,13 +315,19 @@ namespace IO.Ably.Realtime
                     residualMembers?.Remove(item.MemberKey);
                 }
 
-                // Compare for newness (RTP2b)
-                PresenceMessage existingItem;
-                if (members.TryGetValue(item.MemberKey, out existingItem) && CompareForNewness(existingItem, item))
+                try
                 {
-                    return false;
+                    PresenceMessage existingItem;
+                    if (members.TryGetValue(item.MemberKey, out existingItem) && existingItem.IsNewerThan(item))
+                    {
+                        return false;
+                    }
                 }
-                
+                catch (Exception ex)
+                {
+                    if (Logger.IsDebug) Logger.Debug(ex.Message);
+                }
+
                 switch(item.Action){
                     case PresenceAction.Enter:
                     case PresenceAction.Update:
@@ -334,52 +340,34 @@ namespace IO.Ably.Realtime
                 return true;
             }
 
-            private bool CompareForNewness(PresenceMessage oldMsg, PresenceMessage newMsg)
-            {
-                try 
-                {
-                    if(oldMsg.Id.StartsWith(oldMsg.ConnectionId)
-                        && newMsg.Id.StartsWith(newMsg.ConnectionId))
-                    {
-                        //RTP2b1
-                        return newMsg.Timestamp < oldMsg.Timestamp;
-                    } else {
-                        //RTP2b2
-                        var oldValues = oldMsg.Id.Split(':');
-                        var newValues = newMsg.Id.Split(':');
-                        var msgSerialOld = int.Parse(oldValues[1]);
-                        var msgSerialNew = int.Parse(newValues[1]);
-                        var indexOld = int.Parse(oldValues[2]);
-                        var indexNew = int.Parse(newValues[2]);
-
-                        return (msgSerialOld == msgSerialNew && indexNew < indexOld)
-                            || msgSerialNew < msgSerialOld;
-                    }
-                } catch {
-                    return false;
-                }
-            }
-
             public bool Remove(PresenceMessage item)
             {
                 bool result = true;
 
-                PresenceMessage existingItem;
-                if (members.TryGetValue(item.MemberKey, out existingItem) && CompareForNewness(existingItem, item))
+                try
                 {
-                    //RTP2c
-                    return false;
+                    PresenceMessage existingItem;
+                    if (members.TryGetValue(item.MemberKey, out existingItem) && existingItem.IsNewerThan(item))
+                    {
+                        return false;
+                    }
+                    if (existingItem?.Action == PresenceAction.Absent)
+                    {
+                        result = false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (Logger.IsDebug) Logger.Debug(ex.Message);
                 }
 
-                if (existingItem?.Action == PresenceAction.Absent)
+                if(IsSyncInProgress)
                 {
-                    result = false;
-                }
-                
-                if(IsSyncInProgress){
                     item.Action = PresenceAction.Absent;
                     members[item.MemberKey] = item;
-                } else {
+                } 
+                else 
+                {
                     members.TryRemove(item.MemberKey, out PresenceMessage _);
                 }
                 
