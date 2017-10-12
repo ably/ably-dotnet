@@ -7,9 +7,9 @@ function global:run_msbuild($msbuild, $solutionPath, $configuration, $signKeyPat
 	try {
 		switch($configuration)
 		{
-			"package" { exec { & $msbuild $solutionPath "/t:clean;build" "/p:Configuration=release;Platform=Any CPU" "/p:AssemblyOriginatorKeyFile=$signKeyPath" "/p:SignAssembly=true" "/p:DefineConstants=PACKAGE" } }
-			"release" { exec { & $msbuild $solutionPath "/t:clean;build" "/p:Configuration=$configuration;Platform=Any CPU"} }
-			default { exec { & $msbuild $solutionPath "/t:clean;build" "/p:Configuration=$configuration;Platform=Any CPU"  } }
+			"package" { exec { & $msbuild $solutionPath "/t:clean;build" "/p:Configuration=release;Platform=Any CPU" "/p:AssemblyOriginatorKeyFile=$signKeyPath" "/p:SignAssembly=true" "/p:DefineConstants=PACKAGE" "/p:UseSharedCompilation=false" } }
+			"release" { exec { & $msbuild $solutionPath "/t:clean;build" "/p:Configuration=$configuration;Platform=Any CPU" "/p:UseSharedCompilation=false"} }
+			default { exec { & $msbuild $solutionPath "/t:clean;build" "/p:Configuration=$configuration;Platform=Any CPU" "/p:UseSharedCompilation=false" } }
 		}
 	}
 	catch {
