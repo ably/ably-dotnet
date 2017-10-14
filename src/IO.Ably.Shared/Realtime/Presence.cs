@@ -332,6 +332,7 @@ namespace IO.Ably.Realtime
                 {
                     case PresenceAction.Enter:
                     case PresenceAction.Update:
+                        item = item.ShallowClone();
                         item.Action = PresenceAction.Present;
                         break;
                 }

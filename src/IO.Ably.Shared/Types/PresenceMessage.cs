@@ -51,5 +51,10 @@ namespace IO.Ably
 
         [JsonIgnore]
         public string MemberKey => $"{ClientId}:{ConnectionId}";
+
+        public PresenceMessage ShallowClone()
+        {
+            return (PresenceMessage) this.MemberwiseClone();
+        }
     }
 }
