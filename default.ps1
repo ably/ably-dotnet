@@ -10,8 +10,7 @@ properties {
 	$sln_name = "IO.Ably.sln"
 	
 	$project_name = "IO.Ably"
-	$main_version = "0.8"
-	$build_number = "0.8.5"
+	
 	$solution_dir = "$build_script_dir\$sln_dir"
 	$signKeyPath = "$build_script_dir\IO.Ably.snk"
 	
@@ -33,6 +32,14 @@ task Init {
 }
 
 task Assembly_Info {
+
+    $major_version = & gitversion /output json /showvariable Major
+    $minor_version = & gitversion /output json /showvariable Minor
+    $patch_version = & gitversion /output json /showvariable Patch    
+
+    $main_version = "$major_version.$minor_version"
+	$build_number = "$major_version.$minor_version.$patch_version"
+
 	$base_dir = "$build_script_dir\$sln_dir"
 	generate_assembly_info `
 		-file  "$base_dir\CommonAssemblyInfo.cs" `
