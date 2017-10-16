@@ -65,6 +65,7 @@ task Package -depends Build {
 task Unit_Tests {
 
 	$base_dir = "$build_script_dir\$sln_dir\IO.Ably.Tests\bin\$configuration"
+	$packages_dir = "$build_script_dir\$sln_dir\packages\"
 
 	setup_folder $build_output_dir
 
@@ -81,8 +82,14 @@ task Unit_Tests {
 			Remove-Item $sandbox_test_results -Force
 		}
 
-		$xunit_console = "$tools_dir\xunit\xunit.console.exe"
-		
+		Write-Host $packages_dir
+
+		$xunit_console = Get-ChildItem -Path ".\src\packages\" -Filter xunit.console.exe -Recurse -ErrorAction SilentlyContinue -Force | Select FullName | Select-Object -First 1 | Select -ExpandProperty FullName
+		if($xunit_console -eq "") {
+			$xunit_console = "$tools_dir\xunit\xunit.console.exe"
+		}
+		Write-Host "Using xunit.console at path '$xunit_console'"
+		Write-Host "$xunit_console $testDll -noappdomain -nunit $unit_test_results -notrait requires=sandbox"
 		#Run all the unit tests first
 		& "$xunit_console" $testDll -noappdomain -nunit "$unit_test_results" -notrait "requires=sandbox"
 		#& "$xunit_console" $testDll -diagnostics -nunit "$sandbox_test_results" -trait "requires=sandbox"
