@@ -100,6 +100,6 @@ using System.Runtime.InteropServices;
 		Write-Host "Creating directory $dir"
 		[System.IO.Directory]::CreateDirectory($dir)
 	}
-	Write-Host "Generating assembly info file: $file. Version: $version"
+	Write-Host "Generating assembly info file: $file. Version: $full_version"
 	Write-Output $asmInfo > $file
 }

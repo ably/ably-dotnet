@@ -33,12 +33,17 @@ task Init {
 
 task Assembly_Info {
 
-    $major_version = & gitversion /output json /showvariable Major
-    $minor_version = & gitversion /output json /showvariable Minor
-    $patch_version = & gitversion /output json /showvariable Patch    
+	$gitversion = Get-ChildItem -Path ".\src\packages\" -Filter GitVersion.exe -Recurse -ErrorAction SilentlyContinue -Force | Select FullName | Select-Object -First 1 | Select -ExpandProperty FullName
+
+    $major_version = & "$gitversion" /output json /showvariable Major
+    $minor_version = & "$gitversion" /output json /showvariable Minor
+    $patch_version = & "$gitversion" /output json /showvariable Patch   
 
     $main_version = "$major_version.$minor_version"
 	$build_number = "$major_version.$minor_version.$patch_version"
+
+
+    Write-Host "Build Number: $build_number" 
 
 	$base_dir = "$build_script_dir\$sln_dir"
 	generate_assembly_info `
