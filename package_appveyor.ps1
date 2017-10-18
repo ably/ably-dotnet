@@ -24,7 +24,7 @@ if ($msgpack) {
 } 
 
 $psake.use_exit_on_error = $true
-invoke-psake ./default.ps1 Build -properties @{ configuration = $configuration; sln_name = "IO.Ably.sln"; msbuild = "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe"; buildserver = "appveyor"; runtests = $runtests } -framework '4.0' -verbose
+invoke-psake ./default.ps1 Build -properties @{ configuration = $configuration; sln_name = "IO.Ably.sln"; msbuild = "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe"; buildserver = "appveyor"; runtests = $runtests; constants = "$const" } -framework '4.0' -verbose
 
 remove-module psake
 
