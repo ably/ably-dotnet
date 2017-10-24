@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -118,36 +119,69 @@ namespace IO.Ably.Tests.Realtime
         {
             private const int ExpectedEnterCount = 250;
 
-            [Theory(Skip = "TODO")]
+            /*
+             * Ensure a test exists that enters 250 members using Presence#enterClient on a single connection,
+             * and checks for PRESENT events to be emitted on another connection for each member,
+             * and once sync is complete, all 250 members should be present in a Presence#get request
+             */
+
+            [Theory]
             [ProtocolData]
             [Trait("spec", "RTP4")]
             public async Task WhenAClientAttachedToPresenceChannel_ShouldEmitPresentForEachMember(Protocol protocol)
             {
                 var channelName = "presence".AddRandomSuffix();
 
-                await SetupMembers(protocol, channelName);
-                var testClient = await GetRealtimeClient(protocol);
-                var channel = testClient.Channels.Get(channelName);
+                var clientA = await GetRealtimeClient(protocol);
+                await clientA.WaitForState(ConnectionState.Connected);
+                clientA.Connection.State.ShouldBeEquivalentTo(ConnectionState.Connected);
 
-                List<PresenceMessage> presenceMessages = new List<PresenceMessage>();
-                channel.Presence.Subscribe(x => presenceMessages.Add(x));
+                var channelA = clientA.Channels.Get(channelName);
+                channelA.Attach();
+                await channelA.WaitForState(ChannelState.Attached);
+                channelA.State.ShouldBeEquivalentTo(ChannelState.Attached);
 
-                //Wait for 30s max
-                int count = 0;
-                while (count < 30)
+                for (int i = 0; i < ExpectedEnterCount; i++)
                 {
-                    count++;
-
-                    if (presenceMessages.Count == ExpectedEnterCount)
-                        return;
-
-                    await Task.Delay(1000);
+                    var clientId = GetClientId(i);
+                    await channelA.Presence.EnterClientAsync(clientId, null);
                 }
 
-                var o = presenceMessages.OrderBy(x => x.ClientId).ToList();
+                var clientB = await GetRealtimeClient(protocol);
+                await clientB.WaitForState(ConnectionState.Connected);
+                clientB.Connection.State.ShouldBeEquivalentTo(ConnectionState.Connected);
 
-                presenceMessages.Count.ShouldBeEquivalentTo(ExpectedEnterCount);
-               
+                var channelB = clientB.Channels.Get(channelName);
+                channelB.Attach();
+                await channelB.WaitForState(ChannelState.Attached);
+                channelB.State.ShouldBeEquivalentTo(ChannelState.Attached);
+
+                List<PresenceMessage> presenceMessages = new List<PresenceMessage>();
+                var awaiter = new TaskCompletionAwaiter(timeoutMs: 200000);
+                channelB.Presence.Subscribe(x =>
+                {
+                    presenceMessages.Add(x);
+                    if (presenceMessages.Count == ExpectedEnterCount)
+                    {
+                        awaiter.SetCompleted();
+                    }
+                });
+                
+                await awaiter.Task;
+
+                var messages = await channelB.Presence.GetAsync(new GetOptions{WaitForSync = false});
+                var messageList = messages as IList<PresenceMessage> ?? messages.ToList();
+
+                messageList.Count().ShouldBeEquivalentTo(ExpectedEnterCount);
+
+                foreach (var m in messageList)
+                {
+                    presenceMessages.Select(x => x.ClientId == m.ClientId).Any().Should().BeTrue();
+                }
+
+                clientA.Close();
+                clientB.Close();
+
             }
 
             [Theory(Skip = "TODO")]
@@ -233,7 +267,7 @@ namespace IO.Ably.Tests.Realtime
 
             private string GetClientId(int count)
             {
-                return "client:#" + count;
+                return "client:#" + count.ToString().PadLeft(3, '0');
             }
 
             public With250PresentMembersOnAChannel(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
@@ -255,3 +289,4 @@ namespace IO.Ably.Tests.Realtime
         }
     }
 }
+ 
