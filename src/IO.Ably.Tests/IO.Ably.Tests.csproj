@@ -201,6 +201,7 @@
     <Compile Include="DateHelper.cs" />
     <Compile Include="EncryptionSpecs.cs" />
     <Compile Include="Infrastructure\TaskCompletionAwaiter.cs" />
+    <Compile Include="Infrastructure\TaskCountAwaiter.cs" />
     <Compile Include="Infrastructure\TestTransportFactory.cs" />
     <Compile Include="Infrastructure\TestTransportWrapper.cs" />
     <Compile Include="Infrastructure\InteropabilityMessagePayloadDataAttribute.cs" />
