@@ -141,6 +141,7 @@ namespace IO.Ably.Tests.Realtime
                 await channelA.WaitForState(ChannelState.Attached);
                 channelA.State.ShouldBeEquivalentTo(ChannelState.Attached);
 
+                //  enters 250 members on a single connection A
                 for (int i = 0; i < ExpectedEnterCount; i++)
                 {
                     var clientId = GetClientId(i);
@@ -156,6 +157,7 @@ namespace IO.Ably.Tests.Realtime
                 await channelB.WaitForState(ChannelState.Attached);
                 channelB.State.ShouldBeEquivalentTo(ChannelState.Attached);
 
+                // checks for PRESENT events to be emitted on another connection for each member
                 List<PresenceMessage> presenceMessages = new List<PresenceMessage>();
                 var awaiter = new TaskCompletionAwaiter(timeoutMs: 200000);
                 channelB.Presence.Subscribe(x =>
@@ -166,14 +168,13 @@ namespace IO.Ably.Tests.Realtime
                         awaiter.SetCompleted();
                     }
                 });
-                
-                await awaiter.Task;
+                var received250MessagesBeforeTimeout = await awaiter.Task;
+                received250MessagesBeforeTimeout.ShouldBeEquivalentTo(true);
 
+                // all 250 members should be present in a Presence#get request
                 var messages = await channelB.Presence.GetAsync(new GetOptions{WaitForSync = false});
                 var messageList = messages as IList<PresenceMessage> ?? messages.ToList();
-
                 messageList.Count().ShouldBeEquivalentTo(ExpectedEnterCount);
-
                 foreach (var m in messageList)
                 {
                     presenceMessages.Select(x => x.ClientId == m.ClientId).Any().Should().BeTrue();
@@ -181,7 +182,6 @@ namespace IO.Ably.Tests.Realtime
 
                 clientA.Close();
                 clientB.Close();
-
             }
 
             [Theory(Skip = "TODO")]
