@@ -192,7 +192,6 @@ namespace IO.Ably.Realtime
         internal void OnPresence(PresenceMessage[] messages, string syncChannelSerial)
         {
             string syncCursor = null;
-            var broadcast = true;
             if (syncChannelSerial != null)
             {
                 syncCursor = syncChannelSerial.Substring(syncChannelSerial.IndexOf(':'));
@@ -202,6 +201,7 @@ namespace IO.Ably.Realtime
 
             foreach (var update in messages)
             {
+                var broadcast = true;
                 switch (update.Action)
                 {
                     case PresenceAction.Enter:
