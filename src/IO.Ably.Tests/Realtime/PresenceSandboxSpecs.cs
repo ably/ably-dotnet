@@ -172,7 +172,7 @@ namespace IO.Ably.Tests.Realtime
                 received250MessagesBeforeTimeout.ShouldBeEquivalentTo(true);
 
                 // all 250 members should be present in a Presence#get request
-                var messages = await channelB.Presence.GetAsync(new GetOptions{WaitForSync = false});
+                var messages = await channelB.Presence.GetAsync(new GetOptions{WaitForSync = true});
                 var messageList = messages as IList<PresenceMessage> ?? messages.ToList();
                 messageList.Count().ShouldBeEquivalentTo(ExpectedEnterCount);
                 foreach (var m in messageList)
