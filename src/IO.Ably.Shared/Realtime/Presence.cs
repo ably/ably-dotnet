@@ -201,6 +201,7 @@ namespace IO.Ably.Realtime
             }
 
             foreach (var update in messages)
+            {
                 switch (update.Action)
                 {
                     case PresenceAction.Enter:
@@ -212,12 +213,12 @@ namespace IO.Ably.Realtime
                         broadcast &= Map.Remove(update);
                         break;
                 }
+                if (broadcast)
+                    Publish(update);
+            }
             // if this is the last message in a sequence of sync updates, end the sync
             if ((syncChannelSerial == null) || (syncCursor.Length <= 1))
                 Map.EndSync();
-
-            if (broadcast)
-                Publish(messages);
         }
 
         private void Publish(params PresenceMessage[] messages)
