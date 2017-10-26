@@ -28,6 +28,22 @@ namespace IO.Ably.Realtime
         private readonly IConnectionManager _connection;
         private readonly List<QueuedPresenceMessage> _pendingPresence;
 
+        private bool _initialSyncCompleted = false;
+        private bool InitialSyncCompleted
+        {
+            get => Map.InitialSyncCompleted | _initialSyncCompleted;
+            set => _initialSyncCompleted = value;
+        }
+
+        /// <summary>
+        /// Called when a protocol message HasPresenceFlag == false. The presence map should be considered in sync immediately
+        /// with no members present on the channel. See [RTP1] for more detail.
+        /// </summary>
+        internal void SkipSync()
+        {
+            InitialSyncCompleted = true;
+        }
+
         internal Presence(IConnectionManager connection, RealtimeChannel channel, string cliendId, ILogger logger)
         {
             Logger = logger;
@@ -41,7 +57,7 @@ namespace IO.Ably.Realtime
 
         //TODO: Validate the logic is correct
 
-        public bool SyncComplete => (!Map.IsSyncInProgress && Map.InitialSyncCompleted);
+        public bool SyncComplete => (!Map.IsSyncInProgress && InitialSyncCompleted);
         internal PresenceMap Map { get; }
 
         public void Dispose()

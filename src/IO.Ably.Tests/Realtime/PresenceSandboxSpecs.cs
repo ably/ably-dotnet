@@ -38,6 +38,7 @@ namespace IO.Ably.Tests.Realtime
                 var channel = client.Channels.Get(GetTestChannelName());
 
                 await channel.AttachAsync();
+                await channel.WaitForState(ChannelState.Attached);
 
                 channel.Presence.SyncComplete.Should().BeTrue();
             }

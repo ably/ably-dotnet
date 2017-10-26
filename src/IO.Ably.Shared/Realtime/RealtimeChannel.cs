@@ -428,8 +428,16 @@ namespace IO.Ably.Realtime
                     {
                         if (protocolMessage.HasPresenceFlag)
                         {
-                            if (Logger.IsDebug) Logger.Debug($"Protocol message has presence flag. Starting Presence SYNC. Flag: {protocolMessage.Flags}");
+                            if (Logger.IsDebug)
+                                Logger.Debug($"Protocol message has presence flag. Starting Presence SYNC. Flag: {protocolMessage.Flags}");
                             Presence.AwaitSync();
+                        }
+                        else
+                        {
+                            /* RTP1 If [HAS_PRESENCE] flag is 0 or there is no flags field,
+                             * the presence map should be considered in sync immediately
+                             * with no members present on the channel */
+                            Presence.SkipSync();
                         }
 
                         AttachedSerial = protocolMessage.ChannelSerial;
