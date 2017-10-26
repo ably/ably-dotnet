@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -71,7 +72,7 @@ namespace IO.Ably.Tests.Realtime
                     {
                         Logger.Debug("Test: Setting inSync to - " + channel2.Presence.Map.IsSyncInProgress);
                         Interlocked.Add(ref inSync, channel2.Presence.Map.IsSyncInProgress ? 1: 0);
-                        Interlocked.Add(ref syncComplete, channel2.Presence.SyncComplete ? 1: 0);
+                        Interlocked.Add(ref syncComplete, channel2.Presence.InternalSyncComplete ? 1: 0);
                     }
                 };
 
@@ -257,7 +258,198 @@ namespace IO.Ably.Tests.Realtime
                     syncPresenceMessages[i].Action.ShouldBeEquivalentTo(presenceMessages[i].Action, "result should be the same in case of SYNC");
                 }
             }
-            
+
+            /*
+             * If a SYNC is in progress, then when a presence message with an action of LEAVE arrives,
+             * it should be stored in the presence map with the action set to ABSENT.
+             * When the SYNC completes, any ABSENT members should be deleted from the presence map.
+             * (This is because in a SYNC, we might receive a LEAVE before the corresponding ENTER)
+             */
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RTP2f")]
+            [Trait("spec", "RTP18a")]
+            [Trait("spec", "RTP18b")]
+            public async Task PresenceMap_WhenSyncingLeaveStoredAsAbsentAndDeleted(Protocol protocol)
+            {
+                Logger.LogLevel = LogLevel.Debug;
+
+                var channelName = "presence_map_tests_newness".AddRandomSuffix();
+
+                var client = await GetRealtimeClient(protocol);
+                await client.WaitForState(ConnectionState.Connected);
+                client.Connection.State.ShouldBeEquivalentTo(ConnectionState.Connected);
+
+                var channel = client.Channels.Get(channelName);
+                channel.Attach();
+                await channel.WaitForState(ChannelState.Attached);
+                channel.State.ShouldBeEquivalentTo(ChannelState.Attached);
+
+
+                #region test data
+
+                PresenceMessage[] TestPresence1()
+                {
+                    return new PresenceMessage[]
+                    {
+                        new PresenceMessage
+                        {
+                            Action = PresenceAction.Enter,
+                            ClientId = "1",
+                            ConnectionId = "1",
+                            Id = "1:0",
+                            Data = string.Empty
+                        },
+                    };
+                }
+
+                PresenceMessage[] TestPresence2()
+                {
+                    return new PresenceMessage[]
+                    {
+                        new PresenceMessage
+                        {
+                            Action = PresenceAction.Enter,
+                            ClientId = "2",
+                            ConnectionId = "2",
+                            Id = "2:1:0",
+                            Data = string.Empty
+                        },
+                        new PresenceMessage
+                        {
+                            Action = PresenceAction.Enter,
+                            ClientId = "3",
+                            ConnectionId = "3",
+                            Id = "3:1:0",
+                            Data = string.Empty
+                        },
+                    };
+                }
+
+                PresenceMessage[] TestPresence3()
+                {
+                    return new PresenceMessage[]
+                    {
+                        new PresenceMessage
+                        {
+                            Action = PresenceAction.Leave,
+                            ClientId = "3",
+                            ConnectionId = "3",
+                            Id = "3:0:0",
+                            Data = string.Empty
+                        },
+                        new PresenceMessage
+                        {
+                            Action = PresenceAction.Enter,
+                            ClientId = "4",
+                            ConnectionId = "4",
+                            Id = "4:1:1",
+                            Data = string.Empty
+                        },
+                        new PresenceMessage
+                        {
+                            Action = PresenceAction.Leave,
+                            ClientId = "4",
+                            ConnectionId = "4",
+                            Id = "4:2:2",
+                            Data = string.Empty
+                        },
+                    };
+                }
+
+                var tp1 = TestPresence1();
+                var tp2 = TestPresence2();
+                var tp3 = TestPresence3();
+
+                #endregion
+
+                bool seenLeaveMessageAsAbsentForClient4 = false;
+                List<PresenceMessage> presenceMessagesLog = new List<PresenceMessage>();
+                channel.Presence.Subscribe(message =>
+                {
+                    // keep track of the all presence messages we receive
+                    presenceMessagesLog.Add(message);
+                });
+
+                channel.Presence.Subscribe(PresenceAction.Leave, async message =>
+                {
+                    /*
+                        * Do not call it in states other than ATTACHED because of presence.get() side
+                        * effect of attaching channel
+                        */
+                    if (message.ClientId == "4" && message.Action == PresenceAction.Leave && channel.State == ChannelState.Attached)
+                    {
+                        /*
+                        * Client library won't return a presence message if it is stored as ABSENT
+                        * so the result of the presence.get() call should be empty. 
+                        */
+                        var result = await channel.Presence.GetAsync("4");
+                        seenLeaveMessageAsAbsentForClient4 = result.ToArray().Length == 0;
+                    }
+                });
+                
+                await client.Connection.ConnectionManager.OnTransportMessageReceived(new ProtocolMessage()
+                {
+                    Action = Types.ProtocolMessage.MessageAction.Sync,
+                    Channel = channelName,
+                    ChannelSerial = "1:1",
+                    Presence = TestPresence1()
+                });
+
+                await client.Connection.ConnectionManager.OnTransportMessageReceived(new ProtocolMessage()
+                {
+                    Action = Types.ProtocolMessage.MessageAction.Sync,
+                    Channel = channelName,
+                    ChannelSerial = "2:1",
+                    Presence = TestPresence2()
+                });
+
+                await client.Connection.ConnectionManager.OnTransportMessageReceived(new ProtocolMessage()
+                {
+                    Action = Types.ProtocolMessage.MessageAction.Sync,
+                    Channel = channelName,
+                    ChannelSerial = "2:",
+                    Presence = TestPresence3()
+
+                });
+
+                var presence1 = await channel.Presence.GetAsync("1");
+                var presence2 = await channel.Presence.GetAsync("2");
+                var presence3 = await channel.Presence.GetAsync("3");
+                var presenceOthers = await channel.Presence.GetAsync();
+
+                presence1.ToArray().Length.ShouldBeEquivalentTo(0, "incomplete sync should be discarded");
+                presence2.ToArray().Length.ShouldBeEquivalentTo(1, "client with id==2 should be in presence map");
+                presence3.ToArray().Length.ShouldBeEquivalentTo(1, "client with id==3 should be in presence map");
+                presenceOthers.ToArray().Length.ShouldBeEquivalentTo(2, "presence map should be empty");
+
+                seenLeaveMessageAsAbsentForClient4.ShouldBeEquivalentTo(true, "LEAVE message for client with id==4 was not stored as ABSENT");
+
+                PresenceMessage[] correctPresenceHistory = new PresenceMessage[] {
+                    /* client 1 enters (will later be discarded) */
+                    new PresenceMessage(PresenceAction.Enter, "1"),
+                    /* client 2 enters */
+                    new PresenceMessage(PresenceAction.Enter, "2"),
+                    /* client 3 enters and never leaves because of newness comparison for LEAVE fails */
+                    new PresenceMessage(PresenceAction.Enter, "3"),
+                    /* client 4 enters and leaves */
+                    new PresenceMessage(PresenceAction.Enter, "4"),
+                    new PresenceMessage(PresenceAction.Leave, "4"), /* geting dupe */
+                    /* client 1 is eliminated from the presence map because the first portion of SYNC is discarded */
+                    new PresenceMessage(PresenceAction.Leave, "1")
+                };
+
+                presenceMessagesLog.Count.ShouldBeEquivalentTo(correctPresenceHistory.Length);
+
+                for (int i = 0; i < correctPresenceHistory.Length; i++)
+                {
+                    PresenceMessage factualMsg = presenceMessagesLog[i];
+                    PresenceMessage correctMsg = correctPresenceHistory[i];
+                    factualMsg.ClientId.ShouldBeEquivalentTo(correctMsg.ClientId);
+                    factualMsg.Action.ShouldBeEquivalentTo(correctMsg.Action);
+                }
+            }
+
             [Theory]
             [ProtocolData]
             public async Task CanSend_EnterWithStringArray(Protocol protocol)
@@ -363,112 +555,7 @@ namespace IO.Ably.Tests.Realtime
                 clientA.Close();
                 clientB.Close();
             }
-
-            [Theory]
-            [ProtocolData]
-            [Trait("spec", "RTP2")]
-            public async Task WhenAMemberLeavesBeforeSYNCOperationIsComplete_ShouldEmitLeaveMessageForMember(
-                Protocol protocol)
-            {
-                Logger.LogLevel = LogLevel.Debug;
-                var channelName = "presence".AddRandomSuffix();
-
-                var clientA = await GetRealtimeClient(protocol);
-                await clientA.WaitForState(ConnectionState.Connected);
-                clientA.Connection.State.ShouldBeEquivalentTo(ConnectionState.Connected);
-
-                var channelA = clientA.Channels.Get(channelName);
-                channelA.Attach();
-                await channelA.WaitForState(ChannelState.Attached);
-                channelA.State.ShouldBeEquivalentTo(ChannelState.Attached);
-
-                //  enters 250 members on a single connection A
-                for (int i = 0; i < ExpectedEnterCount; i++)
-                {
-                    var clientId = GetClientId(i);
-                    await channelA.Presence.EnterClientAsync(clientId, null);
-                }
-
-                var clientB = await GetRealtimeClient(protocol);
-                await clientB.WaitForState(ConnectionState.Connected);
-                clientB.Connection.State.ShouldBeEquivalentTo(ConnectionState.Connected);
-
-                var channelB = clientB.Channels.Get(channelName);
-                channelB.Attach();
-                await channelB.WaitForState(ChannelState.Attached);
-                channelB.State.ShouldBeEquivalentTo(ChannelState.Attached);
-
-                ConcurrentBag<PresenceMessage> presenceMessages = new ConcurrentBag<PresenceMessage>();
-                string leaveClientId = "";
-                var awaiter = new TaskCompletionAwaiter(timeoutMs: 200000);
-                channelB.Presence.Subscribe(PresenceAction.Present, x =>
-                {
-                    Logger.Debug($"[{clientB.Connection.Id}] Adding message #" + (presenceMessages.Count + 1));
-                    presenceMessages.Add(x);
-                    if (presenceMessages.Count == ExpectedEnterCount)
-                    {
-                        awaiter.SetCompleted();
-                    }
-                });
-                channelB.Presence.Subscribe(PresenceAction.Leave, x => leaveClientId = x.ClientId);
-
-                await clientB.WaitForState(ConnectionState.Connected);
-
-                SendLeaveMessageAfterFirstSyncMessageReceived(clientB, GetClientId(0), channelName);
-
-                //Wait for 30s max
-                await WaitFor30sOrUntilTrue(() =>
-                {
-                    var count = presenceMessages.Count();
-                    Logger.Debug("Presence message count: " + count);
-                    return presenceMessages.Count() == ExpectedEnterCount;
-                });
-
-                presenceMessages.Count.Should().Be(ExpectedEnterCount);
-                channelB.Presence.SyncComplete.Should().BeTrue();
-                leaveClientId.Should().Be(GetClientId(0));
-            }
-
-            private void SendLeaveMessageAfterFirstSyncMessageReceived(AblyRealtime client, string clientId, string channelName)
-            {
-                var transport = client.GetTestTransport();
-
-                int syncMessageCount = 0;
-                transport.AfterDataReceived = message =>
-                {
-                    if (message.Action == ProtocolMessage.MessageAction.Sync)
-                    {
-                        syncMessageCount++;
-                        if (syncMessageCount == 1)
-                        {
-                            var leaveMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, channelName)
-                            {
-                                Presence = new[]
-                                {
-                                    new PresenceMessage(PresenceAction.Leave, clientId)
-                                    {
-                                        ConnectionId = $"{client.Connection.Id}",
-                                        Id = $"{client.Connection.Id}-#{clientId}:0",
-                                        Timestamp = TestHelpers.Now(),
-                                    }
-                                }
-                            };
-                            transport.FakeReceivedMessage(leaveMessage);
-                        }
-                    }
-                };
-            }
-
-            private async Task SetupMembers(Protocol protocol, string channelName)
-            {
-                var client = await GetRealtimeClient(protocol);
-                var channel = client.Channels.Get(channelName);
-                for (int i = 0; i < ExpectedEnterCount; i++)
-                {
-                    var clientId = GetClientId(i);
-                    await channel.Presence.EnterClientAsync(clientId, null);
-                }
-            }
+            
 
             private string GetClientId(int count)
             {
