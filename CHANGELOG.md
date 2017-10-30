@@ -1,5 +1,61 @@
 # Change Log
 
+## [0.8.6-beta3](https://github.com/ably/ably-dotnet/tree/0.8.6-beta3)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/0.8.4.6...HEAD)
+
+**Implemented enhancements:**
+
+- Populate message/presencemessage Id, ConnectionId, Timestamp [\#113](https://github.com/ably/ably-dotnet/issues/113)
+- Fix HttpRequest & HttpRetry timeouts [\#95](https://github.com/ably/ably-dotnet/issues/95)
+- Universal Windows Platform support [\#90](https://github.com/ably/ably-dotnet/issues/90)
+
+**Fixed bugs:**
+
+- Failure of history API call means channels no longer attach [\#116](https://github.com/ably/ably-dotnet/issues/116)
+- Crash on android [\#109](https://github.com/ably/ably-dotnet/issues/109)
+- When a Channel Fails to Resume After Disconnection, a Detached Event isn't Fired [\#108](https://github.com/ably/ably-dotnet/issues/108)
+- Xamarin Android crash [\#96](https://github.com/ably/ably-dotnet/issues/96)
+- Possible NewtonSoft incompatibility [\#91](https://github.com/ably/ably-dotnet/issues/91)
+- authCallback does not support TokenRequest or token string [\#75](https://github.com/ably/ably-dotnet/issues/75)
+
+**Closed issues:**
+
+- Xamarin Null Reference Error - 0.8.6 - beta 2 [\#126](https://github.com/ably/ably-dotnet/issues/126)
+- Concurrency issue in PresenceMap [\#124](https://github.com/ably/ably-dotnet/issues/124)
+- Beta SDK depends on "Nito.AsyncEx" version="5.0.0-pre-02" [\#121](https://github.com/ably/ably-dotnet/issues/121)
+- Failed to install Ably into a PCL project [\#120](https://github.com/ably/ably-dotnet/issues/120)
+- Realtime chat example not working; issue with Nito.AsyncEX dep? [\#119](https://github.com/ably/ably-dotnet/issues/119)
+- Request mac does not match [\#118](https://github.com/ably/ably-dotnet/issues/118)
+- NullReference on iOS Xamarin [\#112](https://github.com/ably/ably-dotnet/issues/112)
+- Token Authentication -  Unexpected error :Can not convert Object to String.; Code: 50000 [\#110](https://github.com/ably/ably-dotnet/issues/110)
+- ConnectAsyncExtension.SocketConnectCompleted [\#105](https://github.com/ably/ably-dotnet/issues/105)
+- ASP.NET Core support [\#93](https://github.com/ably/ably-dotnet/issues/93)
+- Minor Crypto spec updates [\#38](https://github.com/ably/ably-dotnet/issues/38)
+
+**Merged pull requests:**
+
+- Update to allow building and packaging with Appveyor [\#154](https://github.com/ably/ably-dotnet/pull/154) ([withakay](https://github.com/withakay))
+- Build script detects xunit runner [\#153](https://github.com/ably/ably-dotnet/pull/153) ([withakay](https://github.com/withakay))
+- Update release process [\#152](https://github.com/ably/ably-dotnet/pull/152) ([withakay](https://github.com/withakay))
+- Add Release Process [\#150](https://github.com/ably/ably-dotnet/pull/150) ([withakay](https://github.com/withakay))
+- Use MSGPACK compiler flag to add/remove Protocol.MsgPack [\#148](https://github.com/ably/ably-dotnet/pull/148) ([withakay](https://github.com/withakay))
+- Improve the XML Docs for AuthCallback [\#146](https://github.com/ably/ably-dotnet/pull/146) ([withakay](https://github.com/withakay))
+- Make MsgPack optional and disabled by default [\#145](https://github.com/ably/ably-dotnet/pull/145) ([withakay](https://github.com/withakay))
+- Test improvements & skip some tests. [\#144](https://github.com/ably/ably-dotnet/pull/144) ([withakay](https://github.com/withakay))
+- simplified the message queue logic in ConnectionManager [\#142](https://github.com/ably/ably-dotnet/pull/142) ([withakay](https://github.com/withakay))
+- Simplify now provider [\#140](https://github.com/ably/ably-dotnet/pull/140) ([withakay](https://github.com/withakay))
+- Injectable logger [\#139](https://github.com/ably/ably-dotnet/pull/139) ([withakay](https://github.com/withakay))
+- Injectable INowProvider [\#137](https://github.com/ably/ably-dotnet/pull/137) ([withakay](https://github.com/withakay))
+- Updates to some test that rely on a delays [\#136](https://github.com/ably/ably-dotnet/pull/136) ([withakay](https://github.com/withakay))
+- A fix to comply with RTL4b  [\#133](https://github.com/ably/ably-dotnet/pull/133) ([withakay](https://github.com/withakay))
+- test AttachAwaitShouldtimeoutIfStateChanges would frequently fail [\#132](https://github.com/ably/ably-dotnet/pull/132) ([withakay](https://github.com/withakay))
+- update the rest spec tests to use the InternalLogger [\#131](https://github.com/ably/ably-dotnet/pull/131) ([withakay](https://github.com/withakay))
+- Removed obsolete assembly binding redirects from the Test project [\#130](https://github.com/ably/ably-dotnet/pull/130) ([withakay](https://github.com/withakay))
+- Update README.md [\#128](https://github.com/ably/ably-dotnet/pull/128) ([withakay](https://github.com/withakay))
+- Isolated logger for reliable testing [\#127](https://github.com/ably/ably-dotnet/pull/127) ([withakay](https://github.com/withakay))
+
+
 ## [0.8.5]
 
 Upgraded Websocket transport with one that's compatible with netstandard1.3. 
