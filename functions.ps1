@@ -8,9 +8,10 @@ function global:run_msbuild($msbuild, $solutionPath, $configuration, $signKeyPat
 	try {
 		switch($configuration)
 		{
-			"package" { exec { & $msbuild /nologo $solutionPath "/t:clean;build" "/p:Configuration=release;Platform=Any CPU" "/p:AssemblyOriginatorKeyFile=$signKeyPath" "/p:SignAssembly=true" /p:DefineConstants="$constants" } }
-			"release" { exec { & $msbuild /nologo $solutionPath "/t:clean;build" "/p:Configuration=$configuration;Platform=Any CPU" "/p:DefineConstants=$constants"} }
-			default   { exec { & $msbuild /nologo $solutionPath "/t:clean;build" "/p:Configuration=$configuration;Platform=Any CPU" "/p:DefineConstants=$constants" } }
+			"package" { exec { & $msbuild $solutionPath "/t:clean;build" "/p:Configuration=package;Platform=Any CPU" "/p:AssemblyOriginatorKeyFile=$signKeyPath" "/p:SignAssembly=true" "/p:DefineConstants=PACKAGE" "/p:UseSharedCompilation=false" } }
+			"release" { exec { & $msbuild $solutionPath "/t:clean;build" "/p:Configuration=$configuration;Platform=Any CPU" "/p:UseSharedCompilation=false"} }
+			"ci_release" { exec { & $msbuild $solutionPath "/t:clean;build" "/p:Configuration=$configuration;Platform=Any CPU" "/p:UseSharedCompilation=false"} }
+			default { exec { & $msbuild $solutionPath "/t:clean;build" "/p:Configuration=$configuration;Platform=Any CPU" "/p:UseSharedCompilation=false" } }
 		}
 	}
 	catch {
@@ -103,6 +104,6 @@ using System.Runtime.InteropServices;
 		Write-Host "Creating directory $dir"
 		[System.IO.Directory]::CreateDirectory($dir)
 	}
-	Write-Host "Generating assembly info file: $file. Version: $version"
+	Write-Host "Generating assembly info file: $file. Version: $full_version"
 	Write-Output $asmInfo > $file
 }

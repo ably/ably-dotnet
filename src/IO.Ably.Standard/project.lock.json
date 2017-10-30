@@ -5550,15 +5550,15 @@
   },
   "project": {
     "restore": {
-      "projectUniqueName": "C:\\code\\ably-dotnet\\src\\IO.Ably.Standard\\IO.Ably.Standard.csproj",
+      "projectUniqueName": "C:\\code\\ably-dotnet-withakay\\src\\IO.Ably.Standard\\IO.Ably.Standard.csproj",
       "projectName": "IO.Ably.Standard",
-      "projectPath": "C:\\code\\ably-dotnet\\src\\IO.Ably.Standard\\IO.Ably.Standard.csproj",
-      "projectJsonPath": "C:\\code\\ably-dotnet\\src\\IO.Ably.Standard\\project.json",
+      "projectPath": "C:\\code\\ably-dotnet-withakay\\src\\IO.Ably.Standard\\IO.Ably.Standard.csproj",
+      "projectJsonPath": "C:\\code\\ably-dotnet-withakay\\src\\IO.Ably.Standard\\project.json",
       "packagesPath": "C:\\Users\\jack\\.nuget\\packages\\",
-      "outputPath": "C:\\code\\ably-dotnet\\src\\IO.Ably.Standard\\obj\\",
+      "outputPath": "C:\\code\\ably-dotnet-withakay\\src\\IO.Ably.Standard\\obj\\",
       "projectStyle": "ProjectJson",
       "configFilePaths": [
-        "C:\\code\\ably-dotnet\\src\\.nuget\\NuGet.Config",
+        "C:\\code\\ably-dotnet-withakay\\src\\.nuget\\NuGet.Config",
         "C:\\Users\\jack\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],

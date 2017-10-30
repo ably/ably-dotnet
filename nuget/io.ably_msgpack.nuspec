@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>ably.io</id>
-        <version>0.8.5</version>
+        <version>$version$</version>
         <title>ably.io</title>
         <authors>Martin Georgiev, Yavor Ivanov, Jack Rutherford</authors>
         <owners>Ably Real-time Ltd</owners>
@@ -62,11 +62,11 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="..\src\IO.Ably.Net45\bin\Release\Packaged\IO.Ably.*" target="lib\net46" />
-        <file src="..\src\IO.Ably.Android\bin\Release\Packaged\IO.Ably.*" target="lib\monoandroid" />
-        <file src="..\src\IO.Ably.iOS\bin\Release\Packaged\IO.Ably.*" target="lib\Xamarin.iOS" />
-        <file src="..\src\IO.Ably.iOS\bin\Release\Packaged\IO.Ably.*" target="lib\monotouch" />
-        <file src="..\src\IO.Ably.Standard\bin\Release\IO.Ably.*" target="lib\netstandard1.4" />
-        <file src="..\src\IO.Ably.UWP\bin\Release\IO.Ably.*" target="lib\uap" />
+        <file src="..\src\IO.Ably.Net45\bin\$configuration$\Packaged\IO.Ably.*" target="lib\net46" />
+        <file src="..\src\IO.Ably.Android\bin\$configuration$\Packaged\IO.Ably.*" target="lib\monoandroid" />
+        <file src="..\src\IO.Ably.iOS\bin\$configuration$\Packaged\IO.Ably.*" target="lib\Xamarin.iOS" />
+        <file src="..\src\IO.Ably.iOS\bin\$configuration$\Packaged\IO.Ably.*" target="lib\monotouch" />
+        <file src="..\src\IO.Ably.Standard\bin\$configuration$\IO.Ably.*" target="lib\netstandard1.4" />
+        <file src="..\src\IO.Ably.UWP\bin\$configuration$\IO.Ably.*" target="lib\uap" />
     </files>
 </package>

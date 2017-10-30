@@ -1,0 +1,21 @@
+install:
+  - choco install gitversion.portable -pre -y
+
+assembly_info:
+  patch: false
+
+#version: 0.8.5+{branch}-b{build}
+
+skip_branch_with_pr: false
+
+image: Visual Studio 2017
+
+build_script:
+- ps: >-
+    git submodule update --init --recursive
+
+    nuget restore src\IO.Ably.sln
+
+    #.\build_appveyor.ps1 -skiptests -buildserver 'appveyor' -configuration 'ci_package' msbuild 'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe'
+
+    .\package_appveyor.ps1 -publish -source 'https://www.myget.org/F/ably-dotnet-dev/api/v2/package' -apikey "$env:myget_apikey" -buildserver 'appveyor' -configuration 'package'
