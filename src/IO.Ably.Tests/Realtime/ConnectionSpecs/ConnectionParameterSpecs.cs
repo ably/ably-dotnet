@@ -124,7 +124,7 @@ namespace IO.Ably.Tests.Realtime
 
             LastCreatedTransport.Parameters.GetParams()
                 .Should().ContainKey("lib")
-                .WhichValue.Should().Be("dotnet-0.8.5");
+                .WhichValue.Should().Be("dotnet-0.8.6");
         }
 
         public ConnectionParameterSpecs(ITestOutputHelper output) : base(output)
