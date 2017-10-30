@@ -173,20 +173,26 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTL7f")]
         public async Task TestAttachChannel_SendingMessage_Doesnt_EchoesItBack(Protocol protocol)
         {
+            var channelName = "test_attach".AddRandomSuffix();
             // Arrange
-            var client = await GetRealtimeClient(protocol, (o, _) => o.EchoMessages = false);
-            var target = client.Channels.Get("test");
+            var client = await GetRealtimeClient(protocol, (o, _) =>
+            {
+                o.EchoMessages = false;
+                o.CaptureCurrentSynchronizationContext = true;
+            });
+            await client.WaitForState();
+            var channel = client.Channels.Get(channelName);
 
-            target.Attach();
+            channel.Attach();
 
             List<Message> messagesReceived = new List<Message>();
-            target.Subscribe(message =>
+            channel.Subscribe(message =>
             {
                 messagesReceived.Add(message);
             });
 
             // Act
-            await target.PublishAsync("test", "test data");
+            await channel.PublishAsync(channelName, "test data");
 
             // Assert
             messagesReceived.Should().BeEmpty();
