@@ -27,7 +27,7 @@ namespace IO.Ably.Tests.MessageEncodes
             _encryptedData = _crypto.Encrypt(_stringData.GetBytes());
             _encryptedBinaryData = _crypto.Encrypt(_binaryData);
 
-            encoder = new CipherEncoder(Protocol.MsgPack);
+            encoder = new CipherEncoder(Defaults.Protocol);
         }
 
         private byte[] GenerateKey(int keyLength)
@@ -42,7 +42,7 @@ namespace IO.Ably.Tests.MessageEncodes
             public void WithInvalidKeyLength_Throws()
             {
                 var options = new ChannelOptions(new CipherParams(Crypto.DefaultAlgorithm, new byte[] {1,2,3 }));
-                var encoder = new CipherEncoder(Protocol.MsgPack);
+                var encoder = new CipherEncoder(Defaults.Protocol);
                 var error = Assert.Throws<AblyException>(delegate
                 {
                     encoder.Encode(new Message() { Data = "string" }, options);
@@ -55,7 +55,7 @@ namespace IO.Ably.Tests.MessageEncodes
             public void WithInvalidKey_Throws()
             {
                 var options = new ChannelOptions(new CipherParams(Crypto.DefaultAlgorithm, new byte[] { 1, 2, 3 }));
-                var encoder = new CipherEncoder(Protocol.MsgPack);
+                var encoder = new CipherEncoder(Defaults.Protocol);
                 var error = Assert.Throws<AblyException>(delegate
                 {
                     encoder.Encode(new Message() { Data = "string" }, options);
@@ -71,7 +71,7 @@ namespace IO.Ably.Tests.MessageEncodes
                 var key = keyGen.GetBytes(Crypto.DefaultKeylength / 8);
 
                 var options = new ChannelOptions(new CipherParams("mgg", key));
-                var encoder = new CipherEncoder(Protocol.MsgPack);
+                var encoder = new CipherEncoder(Defaults.Protocol);
                 var error = Assert.Throws<AblyException>(delegate
                 {
                     encoder.Encode(new Message() { Data = "string" }, options);

@@ -2,7 +2,9 @@ namespace IO.Ably
 {
     public enum Protocol
     {
-        MsgPack,
-        Json
+#if MSGPACK
+        MsgPack = 0,
+#endif
+        Json = 1
     }
 }

@@ -227,10 +227,10 @@ namespace IO.Ably
             {
                 message.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
-
+#if MSGPACK
             if(request.Protocol == Protocol.MsgPack)
                 message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(request.Protocol)));
-
+#endif
             //Always accept JSON
             message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.Json))); 
             if (message.Method == HttpMethod.Post)

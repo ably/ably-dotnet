@@ -50,6 +50,11 @@ namespace IO.Ably
             return () => DateTimeOffset.UtcNow;
         }
 
+#if MSGPACK
+        internal const Protocol DefaultProtocol = IO.Ably.Protocol.MsgPack;
+#else
+        internal const Protocol Protocol = IO.Ably.Protocol.Json;
+#endif
 
         static Defaults()
         {

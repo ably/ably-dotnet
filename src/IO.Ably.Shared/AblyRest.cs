@@ -30,8 +30,8 @@ namespace IO.Ably
         /// Authentication methods
         /// </summary>
         public IAblyAuth Auth => AblyAuth;
-        internal Protocol Protocol => Options.UseBinaryProtocol == false ? Protocol.Json : Protocol.MsgPack;
-
+        
+        internal Protocol Protocol => Options.UseBinaryProtocol == false ? Protocol.Json : Defaults.Protocol;
         internal ClientOptions Options { get; }
 
         internal ILogger Logger { get; set; }
