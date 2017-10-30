@@ -18,7 +18,7 @@ namespace IO.Ably.Tests.MessageEncodes
             _stringData = "random-string";
             _binaryData = _stringData.GetBytes();
             _base64Data = _binaryData.ToBase64();
-            encoder = new Base64Encoder(protocol ?? Protocol.MsgPack);
+            encoder = new Base64Encoder(protocol ?? Defaults.Protocol);
         }
 
 
@@ -61,7 +61,7 @@ namespace IO.Ably.Tests.MessageEncodes
 
         public class EncodeWithBinaryProtocol : Base64EncoderTests
         {
-            public EncodeWithBinaryProtocol() : base(Protocol.MsgPack)
+            public EncodeWithBinaryProtocol() : base(Defaults.Protocol)
             {
 
             }
@@ -69,6 +69,9 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithBinaryData_LeavesDataAndEncodingIntact()
             {
+                if (!Config.MsgPackEnabled)
+                    return;
+
                 var payload = new Message() {Data = _binaryData};
 
                 encoder.Encode(payload, new ChannelOptions());

@@ -33,7 +33,7 @@ namespace IO.Ably.Tests
         {
             var settings = await Fixture.GetSettings();
             var defaultOptions = settings.CreateDefaultOptions();
-            defaultOptions.UseBinaryProtocol = protocol == Protocol.MsgPack;
+            defaultOptions.UseBinaryProtocol = protocol == Defaults.Protocol;
             optionsAction?.Invoke(defaultOptions);
             return new AblyRest(defaultOptions);
         }
@@ -43,7 +43,7 @@ namespace IO.Ably.Tests
         {
             var settings = await Fixture.GetSettings();
             var defaultOptions = settings.CreateDefaultOptions();
-            defaultOptions.UseBinaryProtocol = protocol == Protocol.MsgPack;
+            defaultOptions.UseBinaryProtocol = protocol == Defaults.Protocol;
             defaultOptions.TransportFactory = new TestTransportFactory();
             optionsAction?.Invoke(defaultOptions, settings);
             return new AblyRealtime(defaultOptions);

@@ -8,6 +8,8 @@ properties {
 	$configuration = 'debug'
 	$sln_dir = "src"
 	$sln_name = "IO.Ably.sln"
+
+	$constants = ""
 	
 	$project_name = "IO.Ably"
 	
@@ -72,7 +74,7 @@ task Build -depends Assembly_Info, Init {
 	
 	$base_dir = "$build_script_dir\$sln_dir"
 
-	run_msbuild $msbuild "$base_dir\$sln_name" $configuration $signKeyPath
+	run_msbuild $msbuild "$base_dir\$sln_name" $configuration $signKeyPath $constants
 }
 
 task Package -depends Build {

@@ -20,7 +20,6 @@ namespace IO.Ably.Realtime
     public sealed class Connection : EventEmitter<ConnectionState, ConnectionStateChange>, IDisposable
     {
         private static readonly ConcurrentBag<WeakReference<Action<NetworkState>>> OsEventSubscribers = new ConcurrentBag<WeakReference<Action<NetworkState>>>();
-        internal ILogger Logger { get; private set; }
 
         protected override Action<Action> NotifyClient => RealtimeClient.NotifyExternalClients;
 
@@ -54,7 +53,6 @@ namespace IO.Ably.Realtime
         internal Connection(AblyRealtime realtimeClient, Func<DateTimeOffset> nowFunc, ILogger logger = null) : base(logger)
         {
             Now = nowFunc;
-            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
             FallbackHosts = Defaults.FallbackHosts.Shuffle().ToList();
             RealtimeClient = realtimeClient;
             RegisterWithOSNetworkStateEvents(HandleNetworkStateChange);

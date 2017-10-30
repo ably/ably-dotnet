@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using IO.Ably.Realtime;
 using WebSocket4Net;
 using IO.Ably.Transport;
@@ -184,16 +185,21 @@ namespace IO.Ably
 
         private void socket_DataReceived(object sender, DataReceivedEventArgs e)
         {
+            if (!Config.MsgPackEnabled)
+                throw new AblyException("Binary data received but MsgPack is not enabled.");
+
             if (Logger.IsDebug)
             {
                 try
                 {
+#if MSGPACK
                     var message = MsgPackHelper.DeserialiseMsgPackObject(e.Data).ToString();
                     Logger.Debug("Websocket data message received. Raw: " + message);
+#endif
                 }
                 catch (Exception)
                 {
-                    Logger.Debug("Error parsing message as MsgPack.");
+                    Logger.Debug($"Error parsing message as MsgPack.");
                 }
             }
 

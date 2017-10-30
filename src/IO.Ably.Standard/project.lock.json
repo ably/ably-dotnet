@@ -58,7 +58,7 @@
           "ref/netstandard1.3/Microsoft.Win32.Primitives.dll": {}
         }
       },
-      "MsgPack.Cli/0.9.1": {
+      "MsgPack.Cli/0.9.2": {
         "type": "package",
         "dependencies": {
           "System.Collections": "4.0.11",
@@ -1608,10 +1608,10 @@
         "ref/xamarinwatchos10/_._"
       ]
     },
-    "MsgPack.Cli/0.9.1": {
-      "sha512": "tvKBi2yFPou8iexgAhKqWXi2Fwew94PcI0J8thWBBDtEX1wEiOqaA+2p0Vu98ACc9MyW8paA7yWk/TdY8Yyxuw==",
+    "MsgPack.Cli/0.9.2": {
+      "sha512": "qXpeRNaa0hwH4h0nmoQ8VpKCscN4aPJqK3u88PCWiUsaDrZNA+LG47s1aeBVk26POLDBt+X2M1gdKKCwGJhTYQ==",
       "type": "package",
-      "path": "msgpack.cli/0.9.1",
+      "path": "msgpack.cli/0.9.2",
       "files": [
         "lib/MonoAndroid10/MsgPack.XML",
         "lib/MonoAndroid10/MsgPack.dll",
@@ -1629,9 +1629,11 @@
         "lib/netstandard1.3/MsgPack.dll",
         "lib/sl5/MsgPack.XML",
         "lib/sl5/MsgPack.dll",
+        "lib/uap10/MsgPack.XML",
+        "lib/uap10/MsgPack.dll",
         "lib/windowsphone8/MsgPack.XML",
         "lib/windowsphone8/MsgPack.dll",
-        "msgpack.cli.0.9.1.nupkg.sha512",
+        "msgpack.cli.0.9.2.nupkg.sha512",
         "msgpack.cli.nuspec"
       ]
     },
@@ -2032,8 +2034,6 @@
       "type": "package",
       "path": "system.collections.nongeneric/4.0.1",
       "files": [
-        "System.Collections.NonGeneric.4.0.1.nupkg.sha512",
-        "System.Collections.NonGeneric.nuspec",
         "ThirdPartyNotices.txt",
         "dotnet_library_license.txt",
         "lib/MonoAndroid10/_._",
@@ -2061,7 +2061,9 @@
         "ref/xamarinios10/_._",
         "ref/xamarinmac20/_._",
         "ref/xamarintvos10/_._",
-        "ref/xamarinwatchos10/_._"
+        "ref/xamarinwatchos10/_._",
+        "system.collections.nongeneric.4.0.1.nupkg.sha512",
+        "system.collections.nongeneric.nuspec"
       ]
     },
     "System.Collections.Specialized/4.0.1": {
@@ -2336,8 +2338,6 @@
       "type": "package",
       "path": "system.diagnostics.contracts/4.0.1",
       "files": [
-        "System.Diagnostics.Contracts.4.0.1.nupkg.sha512",
-        "System.Diagnostics.Contracts.nuspec",
         "ThirdPartyNotices.txt",
         "dotnet_library_license.txt",
         "lib/MonoAndroid10/_._",
@@ -2386,7 +2386,9 @@
         "ref/xamarinmac20/_._",
         "ref/xamarintvos10/_._",
         "ref/xamarinwatchos10/_._",
-        "runtimes/aot/lib/netcore50/System.Diagnostics.Contracts.dll"
+        "runtimes/aot/lib/netcore50/System.Diagnostics.Contracts.dll",
+        "system.diagnostics.contracts.4.0.1.nupkg.sha512",
+        "system.diagnostics.contracts.nuspec"
       ]
     },
     "System.Diagnostics.Debug/4.3.0": {
@@ -5534,7 +5536,7 @@
   },
   "projectFileDependencyGroups": {
     "": [
-      "MsgPack.Cli >= 0.9.1",
+      "MsgPack.Cli >= 0.9.2",
       "NETStandard.Library >= 1.6.1",
       "Newtonsoft.Json >= 10.0.2",
       "System.Net.Http >= 4.3.2",
@@ -5566,12 +5568,15 @@
       }
     },
     "dependencies": {
-      "MsgPack.Cli": "0.9.1",
       "NETStandard.Library": "1.6.1",
       "Newtonsoft.Json": "10.0.2",
       "System.Net.Http": "4.3.2",
       "System.Net.Requests": "4.3.0",
-      "System.Net.WebSockets.Client": "4.3.1"
+      "System.Net.WebSockets.Client": "4.3.1",
+      "MsgPack.Cli": {
+        "target": "Package",
+        "version": "[0.9.2, )"
+      }
     },
     "frameworks": {
       "netstandard1.4": {}

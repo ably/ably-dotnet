@@ -1,8 +1,9 @@
-function global:run_msbuild($msbuild, $solutionPath, $configuration, $signKeyPath)
+function global:run_msbuild($msbuild, $solutionPath, $configuration, $signKeyPath, $constants)
 {
 	clear-obj-artifacts $solutionPath
 
-	Write-Host "Configuration: $configuration"
+	Write-Output "Configuration: $configuration"
+	Write-Output "Constants: $constants"
 
 	try {
 		switch($configuration)
@@ -16,6 +17,8 @@ function global:run_msbuild($msbuild, $solutionPath, $configuration, $signKeyPat
 	catch {
 		Write-Output "##teamcity[buildStatus text='MSBuild Compiler Error - see build log for details' status='ERROR']"
 		Write-Host $_
+		Write-Output "Configuration: $configuration"
+		Write-Output "Constants: $constants"
 		Write-Host ("************************ BUILD FAILED ***************************")
 		exit 1
 	}

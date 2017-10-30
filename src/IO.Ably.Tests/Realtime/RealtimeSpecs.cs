@@ -99,7 +99,10 @@ namespace IO.Ably.Tests
             ClientOptions options = new ClientOptions();
 
             // Act
-            Assert.True(options.UseBinaryProtocol);
+            if (Config.MsgPackEnabled)
+            {
+                Assert.True(options.UseBinaryProtocol);
+            }
         }
 
         [Fact]

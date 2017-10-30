@@ -249,7 +249,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 AuthUrl = new Uri(authUrl),
                 Environment = settings.Environment,
-                UseBinaryProtocol = protocol == Protocol.MsgPack
+                UseBinaryProtocol = protocol == Defaults.Protocol
             });
 
             await WaitForState(authUrlClient, waitSpan: TimeSpan.FromSeconds(5));
@@ -465,8 +465,10 @@ namespace IO.Ably.Tests.Realtime
     public class ConnectionSandboxOperatingSystemEventsForNetworkSpecs : SandboxSpecs
     {
         [Theory(Skip= "TODO")]
+#if MSGPACK
         [InlineData(Protocol.MsgPack, ConnectionState.Connected)]
         [InlineData(Protocol.MsgPack, ConnectionState.Connecting)]
+#endif
         [InlineData(Protocol.Json, ConnectionState.Connected)]
         [InlineData(Protocol.Json, ConnectionState.Connecting)]
         [Trait("spec", "RTN20a")]

@@ -8,6 +8,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.MessagePack
 {
+#if MSGPACK
     public class MessagePackSerializationTests : AblySpecs
     {
         public MessagePackSerializationTests(ITestOutputHelper output) : base(output)
@@ -174,4 +175,5 @@ namespace IO.Ably.Tests.MessagePack
             response.AccessToken.Expires.Should().Be(((long)1449163326485).FromUnixTimeInMilliseconds());
         }
     }
+#endif
 }

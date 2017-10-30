@@ -14,7 +14,6 @@ namespace IO.Ably.Realtime
     /// <summary>Implement realtime channel.</summary>
     internal class RealtimeChannel : EventEmitter<ChannelState, ChannelStateChange>, IRealtimeChannel, IDisposable
     {
-        internal ILogger Logger { get; private set; }
         internal AblyRealtime RealtimeClient { get; }
         private IConnectionManager ConnectionManager => RealtimeClient.ConnectionManager;
         private Connection Connection => RealtimeClient.Connection;
@@ -66,7 +65,6 @@ namespace IO.Ably.Realtime
 
         internal RealtimeChannel(string name, string clientId, AblyRealtime realtimeClient, ChannelOptions options = null) : base(options?.Logger)
         {
-            Logger = options == null ? IO.Ably.DefaultLogger.LoggerInstance : options.Logger;
             Name = name;
             Options = options;
             Presence = new Presence(realtimeClient.ConnectionManager, this, clientId, Logger);

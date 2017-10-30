@@ -10,6 +10,7 @@ namespace IO.Ably
     {
         private string _clientId;
         private Func<DateTimeOffset> _nowFunc;
+        private bool _useBinaryProtocol = false;
 
         /// <summary>
         ///
@@ -131,10 +132,18 @@ namespace IO.Ably
 
         ///<summary>
         /// If false, forces the library to use the JSON encoding for REST and Realtime operations,
-        /// instead of the default binary msgpack encoding.
+        /// If true, the MsgPack binary format is used (if available in the current build
         /// Default: true
         /// </summary>
-        public bool UseBinaryProtocol { get; set; } = true;
+        public bool UseBinaryProtocol
+        {
+#if MSGPACK
+            get { return _useBinaryProtocol; }
+#else
+            get { return false; }
+#endif
+            set { _useBinaryProtocol = value; }
+        }
 
         public TimeSpan DisconnectedRetryTimeout { get; set; } = Defaults.DisconnectedRetryTimeout;
         public TimeSpan SuspendedRetryTimeout { get; set; } = TimeSpan.FromSeconds(30);
