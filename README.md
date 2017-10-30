@@ -352,7 +352,7 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 * Run `package.ps1` to create the nuget package. 
 * Run `nuget push ably.io.*.nupkg -Source https://www.nuget.org/api/v2/package` (a private nuget API Key is required to complete this step, more information on publishing nuget packages can be found [here](https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package))
 
-*GitVersion is required, see the proceeding section 'Building and Packaging' for more information.
+*GitVersion is required, see the preceeding section 'Building and Packaging' for more information.
 
 ## License
 
