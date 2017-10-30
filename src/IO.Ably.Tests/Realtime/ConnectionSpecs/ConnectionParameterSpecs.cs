@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
@@ -121,11 +122,9 @@ namespace IO.Ably.Tests.Realtime
         public void ShouldSetTransportLibVersionParamater()
         {
             var client = GetClientWithFakeTransport();
-
-            LastCreatedTransport.Parameters.GetParams()
-                .Should().ContainKey("lib")
-                .WhichValue.Should().Be("dotnet-0.8.5");
-        }
+            LastCreatedTransport.Parameters.GetParams().Should().ContainKey("lib");
+            var v = LastCreatedTransport.Parameters.GetParams()["lib"];
+            Regex.Match(v, @"^dotnet-0.8.(\d)$").Success.ShouldBeEquivalentTo(true);}
 
         public ConnectionParameterSpecs(ITestOutputHelper output) : base(output)
         {
