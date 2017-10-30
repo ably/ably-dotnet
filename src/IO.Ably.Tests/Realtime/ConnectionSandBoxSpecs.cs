@@ -442,7 +442,7 @@ namespace IO.Ably.Tests.Realtime
             await client.WaitForState(ConnectionState.Connected);
 
 
-            var channel = client.Channels.Get(channelName);
+            var channel = client.Channels.Get("test-channel");
             channel.Once(ChannelState.Detaching, change => client.GetTestTransport().Close(false));
             channel.Attach();
             channel.Detach();
