@@ -374,6 +374,7 @@ namespace IO.Ably.Tests.Realtime
             }
 
             stateChanges.Count(x => x == ConnectionState.Connected).Should().BeGreaterThan(2);
+            await client.WaitForState();
             client.Connection.State.Should().Be(ConnectionState.Connected);
         }
 
@@ -440,7 +441,8 @@ namespace IO.Ably.Tests.Realtime
 
             await client.WaitForState(ConnectionState.Connected);
 
-            var channel = client.Channels.Get("test-channel");
+
+            var channel = client.Channels.Get(channelName);
             channel.Once(ChannelState.Detaching, change => client.GetTestTransport().Close(false));
             channel.Attach();
             channel.Detach();
