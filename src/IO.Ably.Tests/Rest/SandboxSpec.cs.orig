@@ -94,25 +94,6 @@ namespace IO.Ably.Tests
                 await Task.Delay(1000);
             }
         }
-    }
-
-    public static class SandboxSpecExtension
-    {
-        internal static Task WaitForState(this AblyRealtime realtime, ConnectionState awaitedState = ConnectionState.Connected, TimeSpan? waitSpan = null)
-        {
-            var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
-            if (waitSpan.HasValue)
-                return connectionAwaiter.Wait(waitSpan.Value);
-            return connectionAwaiter.Wait();
-        }
-
-        internal static Task WaitForState(this IRealtimeChannel channel, ChannelState awaitedState = ChannelState.Attached, TimeSpan? waitSpan = null)
-        {
-            var channelAwaiter = new ChannelAwaiter(channel, awaitedState);
-            if (waitSpan.HasValue)
-                return channelAwaiter.WaitAsync();
-            return channelAwaiter.WaitAsync();
-        }
 
         /// <summary>
         /// A test logger to check if a message has been logged.
@@ -170,5 +151,26 @@ namespace IO.Ably.Tests
         }
     }
 
+<<<<<<< HEAD
     
+=======
+    public static class SandboxSpecExtension
+    {
+        internal static Task WaitForState(this AblyRealtime realtime, ConnectionState awaitedState = ConnectionState.Connected, TimeSpan? waitSpan = null)
+        {
+            var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
+            if (waitSpan.HasValue)
+                return connectionAwaiter.Wait(waitSpan.Value);
+            return connectionAwaiter.Wait();
+        }
+
+        internal static Task WaitForState(this IRealtimeChannel channel, ChannelState awaitedState = ChannelState.Attached, TimeSpan? waitSpan = null)
+        {
+            var channelAwaiter = new ChannelAwaiter(channel, awaitedState);
+            if (waitSpan.HasValue)
+                return channelAwaiter.WaitAsync();
+            return channelAwaiter.WaitAsync();
+        }
+    }
+>>>>>>> c67b2281b29aab622e2c4e8c9573a45d0a1242d6
 }

@@ -1,0 +1,359 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\xunit.core.2.3.0-beta3-build3705\build\xunit.core.props" Condition="Exists('..\packages\xunit.core.2.3.0-beta3-build3705\build\xunit.core.props')" />
+  <Import Project="..\packages\xunit.runner.visualstudio.2.2.0\build\net20\xunit.runner.visualstudio.props" Condition="Exists('..\packages\xunit.runner.visualstudio.2.2.0\build\net20\xunit.runner.visualstudio.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4E136C14-03D4-4194-8DE7-3E9A26C5B028}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>IO.Ably.Tests</RootNamespace>
+    <AssemblyName>IO.Ably.Tests</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release 4.0|AnyCPU'">
+    <OutputPath>bin\Release40\</OutputPath>
+    <DefineConstants>TRACE;NET40</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug 4.0|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug40\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NET40</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>IO.Ably.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'CI_Release|AnyCPU'">
+    <OutputPath>bin\CI_Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'package|AnyCPU'">
+    <OutputPath>bin\package\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Castle.Core, Version=4.1.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
+      <HintPath>..\packages\Castle.Core.4.1.0\lib\net45\Castle.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="FluentAssertions, Version=4.19.2.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
+      <HintPath>..\packages\FluentAssertions.4.19.2\lib\net45\FluentAssertions.dll</HintPath>
+    </Reference>
+    <Reference Include="FluentAssertions.Core, Version=4.19.2.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
+      <HintPath>..\packages\FluentAssertions.4.19.2\lib\net45\FluentAssertions.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Build.Utilities.v4.0" />
+    <Reference Include="Microsoft.Threading.Tasks, Version=1.0.12.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\net40\Microsoft.Threading.Tasks.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Threading.Tasks.Extensions, Version=1.0.12.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\net40\Microsoft.Threading.Tasks.Extensions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Threading.Tasks.Extensions.Desktop, Version=1.0.168.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\net40\Microsoft.Threading.Tasks.Extensions.Desktop.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Win32.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Win32.Primitives.4.3.0\lib\net46\Microsoft.Win32.Primitives.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Moq, Version=4.7.25.0, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
+      <HintPath>..\packages\Moq.4.7.25\lib\net45\Moq.dll</HintPath>
+    </Reference>
+    <Reference Include="MsgPack, Version=0.9.0.0, Culture=neutral, PublicKeyToken=a2625990d5dc0167, processorArchitecture=MSIL">
+      <HintPath>..\packages\MsgPack.Cli.0.9.1\lib\net46\MsgPack.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.AppContext.4.3.0\lib\net46\System.AppContext.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Collections.Immutable, Version=1.2.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Immutable.1.2.0\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Console, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Console.4.3.0\lib\net46\System.Console.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="System.Globalization.Calendars, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Globalization.Calendars.4.3.0\lib\net46\System.Globalization.Calendars.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.IO.Compression.ZipFile, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Compression.ZipFile.4.3.0\lib\net46\System.IO.Compression.ZipFile.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IO.FileSystem, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.FileSystem.4.3.0\lib\net46\System.IO.FileSystem.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.FileSystem.Primitives.4.3.0\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Net.Http.4.3.2\lib\net46\System.Net.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Sockets, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Net.Sockets.4.3.0\lib\net46\System.Net.Sockets.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Algorithms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.0\lib\net46\System.Security.Cryptography.Algorithms.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Encoding, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.Encoding.4.3.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net46\System.Security.Cryptography.X509Certificates.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Threading.ThreadPool, Version=4.0.11.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.ThreadPool.4.3.0\lib\net46\System.Threading.ThreadPool.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="xunit.abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\packages\xunit.abstractions.2.0.1\lib\net35\xunit.abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="xunit.assert, Version=2.3.0.3705, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\packages\xunit.assert.2.3.0-beta3-build3705\lib\netstandard1.1\xunit.assert.dll</HintPath>
+    </Reference>
+    <Reference Include="xunit.core, Version=2.3.0.3705, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\packages\xunit.extensibility.core.2.3.0-beta3-build3705\lib\netstandard1.1\xunit.core.dll</HintPath>
+    </Reference>
+    <Reference Include="xunit.execution.desktop, Version=2.3.0.3705, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\packages\xunit.extensibility.execution.2.3.0-beta3-build3705\lib\net452\xunit.execution.desktop.dll</HintPath>
+    </Reference>
+    <Reference Include="XunitRetry, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\XunitRetry.2.0.0\lib\net451\XunitRetry.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AblyResponseTests.cs" />
+    <Compile Include="AuthTests\AuthOptionsTests.cs" />
+    <Compile Include="AuthTests\AuthorisationTests.cs" />
+    <Compile Include="AuthTests\AuthoriseTests.cs" />
+    <Compile Include="AuthTests\AuthSandboxSpecs.cs" />
+    <Compile Include="AuthTests\RequestTokenTests.cs" />
+    <Compile Include="CapabilityTests.cs" />
+    <Compile Include="DateHelper.cs" />
+    <Compile Include="EncryptionSpecs.cs" />
+    <Compile Include="Infrastructure\TaskCompletionAwaiter.cs" />
+    <Compile Include="Infrastructure\TaskCountAwaiter.cs" />
+<<<<<<< HEAD
+    <Compile Include="Infrastructure\TestExtensions.cs" />
+=======
+>>>>>>> c67b2281b29aab622e2c4e8c9573a45d0a1242d6
+    <Compile Include="Infrastructure\TestTransportFactory.cs" />
+    <Compile Include="Infrastructure\TestTransportWrapper.cs" />
+    <Compile Include="Infrastructure\InteropabilityMessagePayloadDataAttribute.cs" />
+    <Compile Include="Realtime\PresenceSandboxSpecs.cs" />
+    <Compile Include="Samples\DocumentationSamples.cs" />
+    <Compile Include="Samples\RealtimeSamples.cs" />
+    <Compile Include="Infrastructure\ConnectionAwaiter.cs" />
+    <Compile Include="Infrastructure\FakeAckProcessor.cs" />
+    <Compile Include="Infrastructure\FakeConnectionContext.cs" />
+    <Compile Include="Infrastructure\FakeTimer.cs" />
+    <Compile Include="Infrastructure\FakeTransport.cs" />
+    <Compile Include="Infrastructure\FakeAuth.cs" />
+    <Compile Include="Infrastructure\FakeTransportFactory.cs" />
+    <Compile Include="CipherParamsTests.cs" />
+    <Compile Include="DataRequestQueryParseFacts.cs" />
+    <Compile Include="DataRequestQueryTests.cs" />
+    <Compile Include="ErrorInfoTests.cs" />
+    <Compile Include="Infrastructure\FakeHttpClient.cs" />
+    <Compile Include="Infrastructure\FakeResponseHandler.cs" />
+    <Compile Include="ImplicitTokenAuthWithClientId.cs" />
+    <Compile Include="JsonDeserializationBugTests.cs" />
+    <Compile Include="LoggerTests.cs" />
+    <Compile Include="Infrastructure\MiscUtils.cs" />
+    <Compile Include="Infrastructure\ResourceHelper.cs" />
+    <Compile Include="Infrastructure\TestHelpers.cs" />
+    <Compile Include="MessageEncodes\Base64EncoderTests.cs" />
+    <Compile Include="MessageEncodes\CipherEncoderTests.cs" />
+    <Compile Include="MessageEncodes\JsonEncoderTests.cs" />
+    <Compile Include="MessageEncodes\MessageEncodersAcceptanceTests.cs" />
+    <Compile Include="MessageEncodes\SerializationSpecs.cs" />
+    <Compile Include="TestExtensions.cs" />
+    <Compile Include="TokenDetailsTests.cs" />
+    <Compile Include="MessageEncodes\Utf8EncoderTests.cs" />
+    <Compile Include="MessagePack\SerializationTests.cs" />
+    <Compile Include="Realtime\AckProtocolTests.cs" />
+    <Compile Include="Realtime\ChannelSandboxSpecs.cs" />
+    <Compile Include="Realtime\ChannelSpecs.cs" />
+    <Compile Include="Realtime\ChannelsSpecs.cs" />
+    <Compile Include="Realtime\ConnectionAttempsInfoSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSandBoxSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\AckNackSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionFailuresOnceConnectedSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionFailureSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionFallbackSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionIdSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionKeySpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionParameterSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionPingSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionRecoverySpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionSerialSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\ConnectionSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\EventEmitterSpecs.cs" />
+    <Compile Include="Realtime\ConnectionSpecs\GeneralConnectionSpecs.cs" />
+    <Compile Include="Realtime\ConnectionStateTests\ClosedStateSpecs.cs" />
+    <Compile Include="Realtime\ConnectionStateTests\ClosingStateSpecs.cs" />
+    <Compile Include="Realtime\ConnectionStateTests\ConnectedStateSpecs.cs" />
+    <Compile Include="Realtime\ConnectionStateTests\ConnectingStateSpecs.cs" />
+    <Compile Include="Realtime\ConnectionStateTests\DisconectedStateSpecs.cs" />
+    <Compile Include="Realtime\ConnectionStateTests\FailedStateSpecs.cs" />
+    <Compile Include="Realtime\ConnectionStateTests\InitializedStateSpecs.cs" />
+    <Compile Include="Realtime\ConnectionStateTests\SuspendedStateSpecs.cs" />
+    <Compile Include="Realtime\CountDownTimerSpecs.cs" />
+    <Compile Include="JsonMessageSerializerTests.cs" />
+    <Compile Include="Realtime\MockHttpRealtimeSpecs.cs" />
+    <Compile Include="MsgPackMessageSerializerTests.cs" />
+    <Compile Include="Realtime\RealtimeSpecs.cs" />
+    <Compile Include="RestProtocolTests.cs" />
+    <Compile Include="Infrastructure\AblyCollectionFixture.cs" />
+    <Compile Include="Infrastructure\AblySandboxFixture.cs" />
+    <Compile Include="Infrastructure\AblySpecs.cs" />
+    <Compile Include="Infrastructure\AsyncLazy.cs" />
+    <Compile Include="Infrastructure\ProtocolData.cs" />
+    <Compile Include="Infrastructure\FakeHttpMessageHandler.cs" />
+    <Compile Include="ApiKeyTests.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rest\AblyHttpClientSpecs.cs" />
+    <Compile Include="Rest\ChannelSandboxSpecs.cs" />
+    <Compile Include="Rest\ChannelSpecs.cs" />
+    <Compile Include="Rest\MockHttpRestSpecs.cs" />
+    <Compile Include="Rest\PresenceSandboxSpecs.cs" />
+    <Compile Include="Rest\PresenceSpecs.cs" />
+    <Compile Include="Rest\RestInitSpecs.cs" />
+    <Compile Include="Rest\RestSandBoxSpecs.cs" />
+    <Compile Include="Rest\RestSpecs.cs" />
+    <Compile Include="Rest\SandboxSpec.cs" />
+    <Compile Include="Rest\StatsSandBoxSpecs.cs" />
+    <Compile Include="Rest\StatsSpecs.cs" />
+    <Compile Include="StatsParsingTests.cs" />
+    <Compile Include="TokenParamsTests.cs" />
+    <Compile Include="TokenRequestDataTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\common\test-resources\messages-encoding.json">
+      <Link>messages-encoding.json</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\common\test-resources\test-app-setup.json">
+      <Link>test-app-setup.json</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\common\test-resources\crypto-data-128.json">
+      <Link>crypto-data-128.json</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\common\test-resources\crypto-data-256.json">
+      <Link>crypto-data-256.json</Link>
+    </EmbeddedResource>
+    <None Include="App.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </None>
+    <EmbeddedResource Include="MsgPackStatsTest.json" />
+    <EmbeddedResource Include="StatsFixture.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="StatsInterval.json" />
+    <None Include="IO.Ably.snk" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\IO.Ably.Net45\IO.Ably.Net45.csproj">
+      <Project>{2d265650-b1ec-4f8d-b043-a2e3dcc23fd8}</Project>
+      <Name>IO.Ably.Net45</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\xunit.analyzers.0.3.0\analyzers\dotnet\cs\xunit.analyzers.dll" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
+    <Error Condition="!Exists('..\packages\xunit.runner.visualstudio.2.2.0\build\net20\xunit.runner.visualstudio.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\xunit.runner.visualstudio.2.2.0\build\net20\xunit.runner.visualstudio.props'))" />
+    <Error Condition="!Exists('..\packages\xunit.core.2.3.0-beta3-build3705\build\xunit.core.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\xunit.core.2.3.0-beta3-build3705\build\xunit.core.props'))" />
+    <Error Condition="!Exists('..\packages\xunit.core.2.3.0-beta3-build3705\build\xunit.core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\xunit.core.2.3.0-beta3-build3705\build\xunit.core.targets'))" />
+  </Target>
+  <Import Project="..\packages\xunit.core.2.3.0-beta3-build3705\build\xunit.core.targets" Condition="Exists('..\packages\xunit.core.2.3.0-beta3-build3705\build\xunit.core.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
