@@ -392,9 +392,25 @@ namespace IO.Ably.Tests.Realtime
          * (RTN19b) If there are any pending channels i.e. in the ATTACHING or DETACHING state,
          * the respective ATTACH or DETACH message should be resent to Ably
          */
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN19b")]
+        public async Task
+            WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed2(
+                Protocol protocol)
+        {
+            var testLogger = new TestLogger("RealtimeChannel.SendMessage:Attach");
+            Logger = testLogger;
+            var client = await GetRealtimeClient(protocol);
+            var channel = new RealtimeChannel("RTN19b", "RTN19b", client);
+            channel.Logger = testLogger;
+            channel.State = ChannelState.Attaching;
+            channel.InternalOnInternalStateChanged(this, new ConnectionStateChange(ConnectionState.Connected, ConnectionState.Disconnected));
+            testLogger.MessageSeen.Should().Be(true);
+        }
 
-
-        [Retry(3)]
+        
+        [Theory]
         [ProtocolData]
         [Trait("spec", "RTN19b")]
         public async Task
@@ -425,7 +441,28 @@ namespace IO.Ably.Tests.Realtime
             channel.State.Should().Be(ChannelState.Attached);
         }
 
-        [Retry]
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN19b")]
+        public async Task
+            WithChannelInDetachingState_WhenTransportIsDisconnected_ShouldResendDetachMessageOnConnectionResumed2(
+                Protocol protocol)
+        {
+            var testLogger = new TestLogger("RealtimeChannel.SendMessage:Detach");
+            Logger = testLogger;
+            var client = await GetRealtimeClient(protocol);
+            var channel = new RealtimeChannel("RTN19b", "RTN19b", client);
+            channel.Logger = testLogger;
+
+            channel.State = ChannelState.Detaching;
+            channel.InternalOnInternalStateChanged(this, new ConnectionStateChange(ConnectionState.Connected, ConnectionState.Disconnected));
+
+            testLogger.MessageSeen.Should().Be(true);
+        }
+
+
+        [Theory]
         [ProtocolData]
         [Trait("spec", "RTN19b")]
         public async Task
@@ -441,7 +478,6 @@ namespace IO.Ably.Tests.Realtime
             });
 
             await client.WaitForState(ConnectionState.Connected);
-
 
             var channel = client.Channels.Get("test-channel");
             channel.Once(ChannelState.Detaching, change => client.GetTestTransport().Close(false));
