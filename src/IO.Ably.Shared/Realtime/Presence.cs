@@ -315,10 +315,27 @@ namespace IO.Ably.Realtime
                     residualMembers?.Remove(item.MemberKey);
                 }
 
-                // compare the timestamp of the new item with any existing member (or ABSENT witness)
-                PresenceMessage existingItem;
-                if (members.TryGetValue(item.MemberKey, out existingItem) && (item.Timestamp < existingItem.Timestamp))
-                    return false;
+                try
+                {
+                    PresenceMessage existingItem;
+                    if (members.TryGetValue(item.MemberKey, out existingItem) && existingItem.IsNewerThan(item))
+                    {
+                        return false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (Logger.IsDebug) Logger.Debug(ex.Message);
+                }
+
+                switch(item.Action)
+                {
+                    case PresenceAction.Enter:
+                    case PresenceAction.Update:
+                        item = item.ShallowClone();
+                        item.Action = PresenceAction.Present;
+                        break;
+                }
 
                 members[item.MemberKey] = item;
 
@@ -329,15 +346,33 @@ namespace IO.Ably.Realtime
             {
                 bool result = true;
 
-                PresenceMessage existingItem;
-                if (members.TryGetValue(item.MemberKey, out existingItem) &&
-                    existingItem.Action == PresenceAction.Absent)
+                try
                 {
-                    result = false;
+                    PresenceMessage existingItem;
+                    if (members.TryGetValue(item.MemberKey, out existingItem) && existingItem.IsNewerThan(item))
+                    {
+                        return false;
+                    }
+                    if (existingItem?.Action == PresenceAction.Absent)
+                    {
+                        result = false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (Logger.IsDebug) Logger.Debug(ex.Message);
                 }
 
-                members.TryRemove(item.MemberKey, out PresenceMessage _);
-
+                if(IsSyncInProgress)
+                {
+                    item.Action = PresenceAction.Absent;
+                    members[item.MemberKey] = item;
+                } 
+                else 
+                {
+                    members.TryRemove(item.MemberKey, out PresenceMessage _);
+                }
+                
                 return result;
             }
 
@@ -366,7 +401,7 @@ namespace IO.Ably.Realtime
                     // We can now strip out the ABSENT members, as we have
                     // received all of the out-of-order sync messages
                     foreach (var member in members.ToArray())
-                        if (member.Value.Action == PresenceAction.Present)
+                        if (member.Value.Action == PresenceAction.Absent)
                             members.TryRemove(member.Key, out PresenceMessage _);
 
                     lock (_lock)
