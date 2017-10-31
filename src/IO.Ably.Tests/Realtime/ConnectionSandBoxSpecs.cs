@@ -393,7 +393,8 @@ namespace IO.Ably.Tests.Realtime
          * the respective ATTACH or DETACH message should be resent to Ably
          */
 
-        [Theory]
+
+        [Retry(3)]
         [ProtocolData]
         [Trait("spec", "RTN19b")]
         public async Task
@@ -424,7 +425,7 @@ namespace IO.Ably.Tests.Realtime
             channel.State.Should().Be(ChannelState.Attached);
         }
 
-        [Theory]
+        [Retry]
         [ProtocolData]
         [Trait("spec", "RTN19b")]
         public async Task

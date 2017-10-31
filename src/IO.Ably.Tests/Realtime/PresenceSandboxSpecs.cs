@@ -497,7 +497,7 @@ namespace IO.Ably.Tests.Realtime
              * and once sync is complete, all 250 members should be present in a Presence#get request
              */
 
-            [Theory]
+            [Retry]
             [ProtocolData]
             [Trait("spec", "RTP4")]
             public async Task WhenAClientAttachedToPresenceChannel_ShouldEmitPresentForEachMember(Protocol protocol)
