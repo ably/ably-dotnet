@@ -96,7 +96,7 @@ namespace IO.Ably.Realtime
             return GetAsync(new GetOptions() {ClientId = clientId, WaitForSync = waitForSync});
         }
 
-        internal Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, string connectionId, bool waitForSync = false)
+        internal Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, string connectionId, bool waitForSync = true)
         {
             return GetAsync(new GetOptions() { ClientId = clientId, ConnectionId = connectionId, WaitForSync = waitForSync });
         }
