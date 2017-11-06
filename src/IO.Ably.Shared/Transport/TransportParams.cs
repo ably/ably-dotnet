@@ -56,7 +56,7 @@ namespace IO.Ably.Transport
             result.FallbackHosts = Defaults.FallbackHosts;
             result.UseBinaryProtocol = options.UseBinaryProtocol;
             result.RecoverValue = options.Recover;
-            result.Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
+            result.Logger = logger ?? options.Logger;
             return result;
         }
 

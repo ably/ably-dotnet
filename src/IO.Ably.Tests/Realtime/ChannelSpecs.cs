@@ -522,7 +522,7 @@ namespace IO.Ably.Tests.Realtime
                 Assert.True(called);
             }
 
-            [Fact]
+            [Retry] //replaces fact
             [Trait("spec", "RTL5e")]
             public async Task WithACallback_ShouldCallCallbackWithErrorIfDetachFails()
             {
@@ -838,7 +838,7 @@ namespace IO.Ably.Tests.Realtime
                 channel.State.Should().Be(ChannelState.Attaching);
             }
 
-            [Fact]
+            [Retry(3)]
             [Trait("spec", "RTL7d")]
             public async Task WithAMessageThatFailDecryption_ShouldDeliverMessageButEmmitErrorOnTheChannel()
             {

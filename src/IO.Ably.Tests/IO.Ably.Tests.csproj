@@ -189,6 +189,9 @@
     <Reference Include="xunit.execution.desktop, Version=2.3.0.3705, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
       <HintPath>..\packages\xunit.extensibility.execution.2.3.0-beta3-build3705\lib\net452\xunit.execution.desktop.dll</HintPath>
     </Reference>
+    <Reference Include="XunitRetry, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\XunitRetry.2.0.0\lib\net451\XunitRetry.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AblyResponseTests.cs" />

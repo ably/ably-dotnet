@@ -173,20 +173,33 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTL7f")]
         public async Task TestAttachChannel_SendingMessage_Doesnt_EchoesItBack(Protocol protocol)
         {
-            // Arrange
-            var client = await GetRealtimeClient(protocol, (o, _) => o.EchoMessages = false);
-            var target = client.Channels.Get("test");
+            var channelName = "echo_off_test";
 
-            target.Attach();
+            // this should be logged in MsWebSocketTrasnport.CreateSocket
+            var testLogger = new TestLogger("Connecting to web socket on url:");
+            // Arrange
+            var client = await GetRealtimeClient(protocol, (o, _) =>
+            {
+                o.EchoMessages = false;
+                o.Logger = testLogger;
+            });
+            await client.WaitForState();
+            client.Options.EchoMessages.Should().Be(false);
+            testLogger.MessageSeen.Should().Be(true);
+            testLogger.FullMessage.Contains("echo=false").Should().Be(true);
+
+            var channel = client.Channels.Get(channelName);
+
+            channel.Attach();
 
             List<Message> messagesReceived = new List<Message>();
-            target.Subscribe(message =>
+            channel.Subscribe(message =>
             {
                 messagesReceived.Add(message);
             });
 
             // Act
-            await target.PublishAsync("test", "test data");
+            await channel.PublishAsync(channelName, "test data");
 
             // Assert
             messagesReceived.Should().BeEmpty();
