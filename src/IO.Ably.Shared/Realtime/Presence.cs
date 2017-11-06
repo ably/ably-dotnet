@@ -59,9 +59,7 @@ namespace IO.Ably.Realtime
             _channel.InternalStateChanged += OnChannelStateChanged;
             _clientId = cliendId;
         }
-
-        //TODO: Validate the logic is correct
-
+        
         internal bool InternalSyncComplete => (!Map.IsSyncInProgress && SyncComplete);
         internal PresenceMap Map { get; }
         internal PresenceMap InternalMap { get; }
@@ -81,8 +79,7 @@ namespace IO.Ably.Realtime
         public Task<IEnumerable<PresenceMessage>> GetAsync(GetOptions options = null)
         {
             var getOptions = options ?? new GetOptions();
-
-            //TODO: waitForSync is not implemented yet
+            
             if (getOptions.WaitForSync)
                 WaitForSync();
 
@@ -111,30 +108,30 @@ namespace IO.Ably.Realtime
                 Task.Delay(10);
             }
 
-            // to be completed when extra states in 1.0 spec are implemented 
-            if (!syncIsComplete)
-            {
-      //          /* invalid channel state */
-      //          int errorCode;
-      //          String errorMessage;
+            // TODO: This code was added when porting from the Java lib but can't completed be until the extra states added in 1.0 spec (specifically ChannelState.Suspended) are implemented 
+            //      if (!syncIsComplete)
+            //      {
+            //          /* invalid channel state */
+            //          int errorCode;
+            //          String errorMessage;
 
-      //          if (_channel.State == ChannelState.Suspended)
-      //          {
-      //              /* (RTP11d) If the Channel is in the SUSPENDED state then the get function will by default,
-					 //* or if waitForSync is set to true, result in an error with code 91005 and a message stating
-					 //* that the presence state is out of sync due to the channel being in a SUSPENDED state */
-      //              errorCode = 91005;
-      //              errorMessage = $"Channel {_channel.Name}: presence state is out of sync due to the channel being in a SUSPENDED state";
-      //          }
-      //          else
-      //          {
-      //              errorCode = 90001;
-      //              errorMessage = $"Channel {_channel.Name}: cannot get presence state because channel is in invalid state";
-      //          }
-      //          if(Logger.IsDebug)
-      //              Logger.Debug($"{errorMessage} (Error Code: {errorCode})");
-      //          throw new AblyException(new ErrorInfo(errorMessage, errorCode));
-            }
+            //          if (_channel.State == ChannelState.Suspended)
+            //          {
+            //              /* (RTP11d) If the Channel is in the SUSPENDED state then the get function will by default,
+					        //* or if waitForSync is set to true, result in an error with code 91005 and a message stating
+					        //* that the presence state is out of sync due to the channel being in a SUSPENDED state */
+            //              errorCode = 91005;
+            //              errorMessage = $"Channel {_channel.Name}: presence state is out of sync due to the channel being in a SUSPENDED state";
+            //          }
+            //          else
+            //          {
+            //              errorCode = 90001;
+            //              errorMessage = $"Channel {_channel.Name}: cannot get presence state because channel is in invalid state";
+            //          }
+            //          if(Logger.IsDebug)
+            //              Logger.Debug($"{errorMessage} (Error Code: {errorCode})");
+            //          throw new AblyException(new ErrorInfo(errorMessage, errorCode));
+            //      }
         }
 
         public void Subscribe(Action<PresenceMessage> handler)
@@ -238,7 +235,7 @@ namespace IO.Ably.Realtime
                 /* Discard incomplete sync if serial has changed */
                 if (Map.IsSyncInProgress && _currentSyncChannelSerial != null && _currentSyncChannelSerial != serial)
                 {
-                    /* TODO: should emit leave messages here? */ 
+                    /* TODO: For v1.0 we should emit leave messages here. See https://github.com/ably/ably-java/blob/159018c30b3ef813a9d3ca3c6bc82f51aacbbc68/lib/src/main/java/io/ably/lib/realtime/Presence.java#L219 for example. */
                     EndSync();
                 }
 
@@ -294,7 +291,7 @@ namespace IO.Ably.Realtime
             }
             Publish(residualMembers);
 
-            /**
+            /*
 		     * (RTP5c2) If a SYNC is initiated as part of the attach, then once the SYNC is complete,
 		     * all members not present in the PresenceMap but present in the internal PresenceMap must
 		     * be re-entered automatically by the client using the clientId and data attributes from
@@ -353,6 +350,7 @@ namespace IO.Ably.Realtime
                 /* Start sync, if hasPresence is not set end sync immediately dropping all the current presence members */
                 Map.StartSync();
                 _syncAsResultOfAttach = true;
+                // TODO: for v1.0 RTP19a (see Java version for example https://github.com/ably/ably-java/blob/159018c30b3ef813a9d3ca3c6bc82f51aacbbc68/lib/src/main/java/io/ably/lib/realtime/Presence.java)
                 //if (!hasPresence)
                 //{
                 //    /*
@@ -562,6 +560,8 @@ namespace IO.Ably.Realtime
                 {
                     if (Logger.IsDebug)
                         Logger.Debug($"EndSync | Channel: {_channelName}, Error: {ex.Message}");
+
+                    
                 }
                 finally
                 {
