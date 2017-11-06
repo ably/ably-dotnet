@@ -16,16 +16,20 @@
             
             var thisValues = thisMessage.Id.Split(':');
             var thatValues = thatMessage.Id.Split(':');
-            var msgSerialThis = int.Parse(thisValues[1]);
-            var msgSerialThat = int.Parse(thatValues[1]);
-            var indexThis = int.Parse(thisValues[2]);
-            var indexThat = int.Parse(thatValues[2]);
+
+            // if there are not 3 elements then return false
+            if (thisValues.Length != 3 || thatValues.Length != 3) return false;
+
+            // if any part of the message serial fails to parse then exit returning false
+            if (!(int.TryParse(thisValues[1], out int msgSerialThis) |
+                  int.TryParse(thatValues[1], out int msgSerialThat) |
+                  int.TryParse(thisValues[2], out int indexThis) |
+                  int.TryParse(thatValues[2], out int indexThat))) return false;
 
             if (msgSerialThis == msgSerialThat)
             {
                 return indexThis > indexThat;
             }
-            
             return msgSerialThis > msgSerialThat;
         }
     }
