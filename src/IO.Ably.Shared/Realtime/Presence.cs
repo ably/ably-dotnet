@@ -265,13 +265,14 @@ namespace IO.Ably.Realtime
                     if (syncCursor.Length > 1)
                         Map.StartSync();
                 }
-            
+
                 if (syncChannelSerial != null)
                 {
                     int colonPos = syncChannelSerial.IndexOf(':');
                     string serial = colonPos >= 0 ? syncChannelSerial.Substring(0, colonPos) : syncChannelSerial;
                     /* Discard incomplete sync if serial has changed */
-                    if (Map.IsSyncInProgress && _currentSyncChannelSerial != null && _currentSyncChannelSerial != serial)
+                    if (Map.IsSyncInProgress && _currentSyncChannelSerial != null &&
+                        _currentSyncChannelSerial != serial)
                     {
                         /* TODO: For v1.0 we should emit leave messages here. See https://github.com/ably/ably-java/blob/159018c30b3ef813a9d3ca3c6bc82f51aacbbc68/lib/src/main/java/io/ably/lib/realtime/Presence.java#L219 for example. */
                         EndSync();
@@ -314,9 +315,12 @@ namespace IO.Ably.Realtime
             }
             catch (Exception ex)
             {
-                Logger.Error($"An error occurred processing Presence Messages for channel '{_channel.Name}'. Error: {ex.Message}");
-                throw new AblyException(
-                    new ErrorInfo($"An error occurred processing Presence Messages for channel '{_channel.Name}'. See the InnerException for more details."), ex);
+                var errInfo = new ErrorInfo(
+                    $"An error occurred processing Presence Messages for channel '{_channel.Name}'. See the InnerException for more details.");
+                _channel.SetChannelState(ChannelState.Failed, errInfo);
+                Logger.Error($"{errInfo.Message} Error: {ex.Message}");
+                errInfo.Message += " See the InnerException for more details.";
+                throw new AblyException(errInfo, ex);
             }
         }
 
