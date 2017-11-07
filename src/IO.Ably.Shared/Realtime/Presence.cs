@@ -108,29 +108,35 @@ namespace IO.Ably.Realtime
         private async Task<bool> WaitForSyncAsync()
         {
             var tsc = new TaskCompletionSource<bool>();
-
             // The InternalSync should be completed and the channels Attached or Attaching
             void CheckAndSet()
             {
                 if (InternalSyncComplete &&
                     (_channel.State == ChannelState.Attached || _channel.State == ChannelState.Attaching))
                 {
-                    tsc.SetResult(true);
+                    tsc.TrySetResult(true);
                 }
             }
-
             // if the channel state changes and is not Attached or Attaching then we should exit
-            _channel.StateChanged += (sender, args) =>
+            void OnChannelOnStateChanged(object sender, ChannelStateChange args)
             {
                 if (_channel.State != ChannelState.Attached && _channel.State != ChannelState.Attaching)
-                    tsc.SetResult(false);
-            };
+                    tsc.TrySetResult(false);
+            }
+            void OnSyncEvent(object sender, EventArgs args) => CheckAndSet();
 
-            InitialSyncCompleted += (sender, args) => CheckAndSet();
-            Map.SyncNoLongerInProgress += (sender, args) => CheckAndSet();
-            
+            _channel.StateChanged += OnChannelOnStateChanged;
+            InitialSyncCompleted += OnSyncEvent;
+            Map.SyncNoLongerInProgress += OnSyncEvent;
+            // Do a manual check in case we are already in the desired state
+            CheckAndSet();
             await tsc.Task;
+            // unsubscribe from events 
+            _channel.StateChanged -= OnChannelOnStateChanged;
+            InitialSyncCompleted -= OnSyncEvent;
+            Map.SyncNoLongerInProgress -= OnSyncEvent;
 
+            #region TODO
             // TODO: This code was added when porting from the Java lib but can't completed be until the extra states added in 1.0 spec (specifically ChannelState.Suspended) are implemented
             //bool syncIsComplete =  tsc.Task.Result;
             //      if (!syncIsComplete)
@@ -157,6 +163,9 @@ namespace IO.Ably.Realtime
             //          throw new AblyException(new ErrorInfo(errorMessage, errorCode));
             //      }
 
+
+            #endregion
+            
             return tsc.Task.Result;
         }
         
