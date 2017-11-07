@@ -485,6 +485,91 @@ namespace IO.Ably.Tests.Realtime
                 _resetEvent.WaitOne(2000);
                 time.Should().HaveValue();
             }
+
+            [Fact]
+            public void PresenceMessage_IsNewerThan_RaisesExceptionWithMalformedIdStrings()
+            {
+                // Set the first portion of the Id to match the connection id
+                // This is so the message does not appear synthesised
+                var p1 = new PresenceMessage(PresenceAction.Present, "client1");
+                p1.Id = "abcdef:1:1";
+                p1.ConnectionId = "abcdef";
+                p1.Timestamp = new DateTimeOffset(2000,1,1,1,1,1,1, TimeSpan.Zero);
+                var p2 = new PresenceMessage(PresenceAction.Present, "client2");
+                // make the timestamps the same so we can get to the parsing part of the code
+                p2.Timestamp = p1.Timestamp;
+                p2.Id = "abcdef:this_should:error";
+                p2.ConnectionId = "abcdef";
+
+                bool exHandled = false;
+                try
+                {
+                    p1.IsNewerThan(p2);
+                }
+                catch (Exception e)
+                {
+                    e.Should().BeOfType<AblyException>();
+                    e.Message.Should().Contain("this_should:error");
+                    exHandled = true;
+                }
+                exHandled.Should().BeTrue();
+                exHandled = false;
+                
+                try
+                {
+                    p2.IsNewerThan(p1);
+                }
+                catch (Exception e)
+                {
+                    e.Should().BeOfType<AblyException>();
+                    e.Message.Should().Contain("this_should:error");
+                    exHandled = true;
+                }
+                exHandled.Should().BeTrue();
+                exHandled = false;
+
+                // test not enough sections
+                p2.Id = "abcdef:2";
+                try
+                {
+                    p1.IsNewerThan(p2);
+                }
+                catch (Exception e)
+                {
+                    e.Should().BeOfType<AblyException>();
+                    e.Message.Should().Contain("abcdef:2");
+                    exHandled = true;
+                }
+                exHandled.Should().BeTrue();
+                exHandled = false;
+
+                try
+                {
+                    p2.IsNewerThan(p1);
+                }
+                catch (Exception e)
+                {
+                    e.Should().BeOfType<AblyException>();
+                    e.Message.Should().Contain("abcdef:2");
+                    exHandled = true;
+                }
+                exHandled.Should().BeTrue();
+                exHandled = false;
+
+                // correctly formatted Ids should not throw an exception
+                p2.Id = p1.Id;
+                try
+                {
+                    p2.IsNewerThan(p1);
+                }
+                catch (Exception e)
+                {
+                    exHandled = true;
+                }
+                exHandled.Should().BeFalse();
+                exHandled = false;
+            }
+
         }
 
         public class With250PresentMembersOnAChannel : PresenceSandboxSpecs
