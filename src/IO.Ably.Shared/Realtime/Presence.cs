@@ -21,6 +21,8 @@ namespace IO.Ably.Realtime
     {
         internal ILogger Logger { get; private set; }
 
+        private event EventHandler InitialSyncCompleted;
+
         private readonly RealtimeChannel _channel;
         private readonly string _clientId;
         private readonly Handlers<PresenceMessage> _handlers = new Handlers<PresenceMessage>();
@@ -35,10 +37,15 @@ namespace IO.Ably.Realtime
 
         public bool SyncComplete
         {
-            get => Map.InitialSyncCompleted | _initialSyncCompleted;
-            private set => _initialSyncCompleted = value;
+            get { return Map.InitialSyncCompleted | _initialSyncCompleted; }
+            private set
+            {
+                _initialSyncCompleted = value;
+                if(_initialSyncCompleted)
+                    OnInitialSyncCompleted();
+            }
         }
-
+        
         /// <summary>
         /// Called when a protocol message HasPresenceFlag == false. The presence map should be considered in sync immediately
         /// with no members present on the channel. See [RTP1] for more detail.
@@ -76,39 +83,56 @@ namespace IO.Ably.Realtime
         ///     Get current presence in the channel. WaitForSync is not implemented yet. Partial result may be returned
         /// </summary>
         /// <returns></returns>
-        public Task<IEnumerable<PresenceMessage>> GetAsync(GetOptions options = null)
+        public async Task<IEnumerable<PresenceMessage>> GetAsync(GetOptions options = null)
         {
             var getOptions = options ?? new GetOptions();
             
             if (getOptions.WaitForSync)
-                WaitForSync();
+                await WaitForSyncAsync();
 
             var result = Map.Values.Where( x => (getOptions.ClientId.IsEmpty() || x.ClientId == getOptions.ClientId)
                                                && (getOptions.ConnectionId.IsEmpty() || x.ConnectionId == getOptions.ConnectionId) );
-            return Task.FromResult(result);
+            return result;
         }
 
-        internal Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, bool waitForSync = false)
+        internal async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, bool waitForSync = false)
         {
-            return GetAsync(new GetOptions() {ClientId = clientId, WaitForSync = waitForSync});
+            return await GetAsync(new GetOptions() {ClientId = clientId, WaitForSync = waitForSync});
         }
 
-        internal Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, string connectionId, bool waitForSync = true)
+        internal async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, string connectionId, bool waitForSync = true)
         {
-            return GetAsync(new GetOptions() { ClientId = clientId, ConnectionId = connectionId, WaitForSync = waitForSync });
+            return await GetAsync(new GetOptions() { ClientId = clientId, ConnectionId = connectionId, WaitForSync = waitForSync });
         }
 
-        private void WaitForSync()
+        private async Task<bool> WaitForSyncAsync()
         {
-            bool syncIsComplete = false;
-            while ((_channel.State == ChannelState.Attached || _channel.State == ChannelState.Attaching) &&
-                    /* assignment (=) is intended */
-                   !(syncIsComplete = InternalSyncComplete))
+            var tsc = new TaskCompletionSource<bool>();
+
+            // The InternalSync should be completed and the channels Attached or Attaching
+            void CheckAndSet()
             {
-                Task.Delay(10);
+                if (InternalSyncComplete &&
+                    (_channel.State == ChannelState.Attached || _channel.State == ChannelState.Attaching))
+                {
+                    tsc.SetResult(true);
+                }
             }
 
-            // TODO: This code was added when porting from the Java lib but can't completed be until the extra states added in 1.0 spec (specifically ChannelState.Suspended) are implemented 
+            // if the channel state changes and is not Attached or Attaching then we should exit
+            _channel.StateChanged += (sender, args) =>
+            {
+                if (_channel.State != ChannelState.Attached && _channel.State != ChannelState.Attaching)
+                    tsc.SetResult(false);
+            };
+
+            InitialSyncCompleted += (sender, args) => CheckAndSet();
+            Map.SyncNoLongerInProgress += (sender, args) => CheckAndSet();
+            
+            await tsc.Task;
+
+            // TODO: This code was added when porting from the Java lib but can't completed be until the extra states added in 1.0 spec (specifically ChannelState.Suspended) are implemented
+            //bool syncIsComplete =  tsc.Task.Result;
             //      if (!syncIsComplete)
             //      {
             //          /* invalid channel state */
@@ -118,8 +142,8 @@ namespace IO.Ably.Realtime
             //          if (_channel.State == ChannelState.Suspended)
             //          {
             //              /* (RTP11d) If the Channel is in the SUSPENDED state then the get function will by default,
-					        //* or if waitForSync is set to true, result in an error with code 91005 and a message stating
-					        //* that the presence state is out of sync due to the channel being in a SUSPENDED state */
+            //* or if waitForSync is set to true, result in an error with code 91005 and a message stating
+            //* that the presence state is out of sync due to the channel being in a SUSPENDED state */
             //              errorCode = 91005;
             //              errorMessage = $"Channel {_channel.Name}: presence state is out of sync due to the channel being in a SUSPENDED state";
             //          }
@@ -132,7 +156,10 @@ namespace IO.Ably.Realtime
             //              Logger.Debug($"{errorMessage} (Error Code: {errorCode})");
             //          throw new AblyException(new ErrorInfo(errorMessage, errorCode));
             //      }
+
+            return tsc.Task.Result;
         }
+        
 
         public void Subscribe(Action<PresenceMessage> handler)
         {
@@ -426,6 +453,8 @@ namespace IO.Ably.Realtime
         {
             internal ILogger Logger { get; private set; }
 
+            internal event EventHandler SyncNoLongerInProgress;
+
             private readonly string _channelName;
             private readonly object _lock = new Object();
 
@@ -439,6 +468,7 @@ namespace IO.Ably.Realtime
 
             private readonly ConcurrentDictionary<string, PresenceMessage> _members;
             private ICollection<string> _residualMembers;
+            private bool _isSyncInProgress;
 
             public PresenceMap(string channelName, ILogger logger)
             {
@@ -447,7 +477,18 @@ namespace IO.Ably.Realtime
                 _members = new ConcurrentDictionary<string, PresenceMessage>();
             }
 
-            public bool IsSyncInProgress { get; private set; }
+            public bool IsSyncInProgress
+            {
+                get => _isSyncInProgress;
+                private set
+                {
+                    var previous = _isSyncInProgress;
+                    _isSyncInProgress = value;
+                    // if we have gone from true to false then fire SyncNoLongerInProgress
+                    if (previous && !_isSyncInProgress)
+                        OnSyncNoLongerInProgress();
+                }
+            }
 
             public bool InitialSyncCompleted { get; private set; }
 
@@ -578,6 +619,16 @@ namespace IO.Ably.Realtime
                     _residualMembers?.Clear();
                 }
             }
+
+            protected virtual void OnSyncNoLongerInProgress()
+            {
+                SyncNoLongerInProgress?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        protected virtual void OnInitialSyncCompleted()
+        {
+            InitialSyncCompleted?.Invoke(this, EventArgs.Empty);
         }
     }
 
