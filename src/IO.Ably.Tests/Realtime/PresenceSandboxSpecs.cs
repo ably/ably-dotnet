@@ -6,6 +6,7 @@ using System.Runtime.Remoting.Messaging;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.AcceptanceTests;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Types;
@@ -356,11 +357,7 @@ namespace IO.Ably.Tests.Realtime
                         },
                     };
                 }
-
-                var tp1 = TestPresence1();
-                var tp2 = TestPresence2();
-                var tp3 = TestPresence3();
-
+                
                 #endregion
 
                 bool seenLeaveMessageAsAbsentForClient4 = false;
@@ -448,6 +445,61 @@ namespace IO.Ably.Tests.Realtime
                     factualMsg.ClientId.ShouldBeEquivalentTo(correctMsg.ClientId);
                     factualMsg.Action.ShouldBeEquivalentTo(correctMsg.Action);
                 }
+            }
+
+            [Theory]
+            [ProtocolData]
+            public async Task WillThrowAblyException_WhenInvalidMessagesArePresent(Protocol protocol)
+            {
+                Logger.LogLevel = LogLevel.Debug;
+
+                var channelName = "presence_tests_exception".AddRandomSuffix();
+
+                var client = await GetRealtimeClient(protocol);
+                await client.WaitForState(ConnectionState.Connected);
+                client.Connection.State.ShouldBeEquivalentTo(ConnectionState.Connected);
+
+                var channel = client.Channels.Get(channelName);
+                channel.Attach();
+                await channel.WaitForState(ChannelState.Attached);
+                channel.State.ShouldBeEquivalentTo(ChannelState.Attached);
+
+
+                PresenceMessage[] TestPresence1()
+                {
+                    return new PresenceMessage[]
+                    {
+                        new PresenceMessage
+                        {
+                            Action = PresenceAction.Enter,
+                            ClientId = "2",
+                            ConnectionId = "2",
+                            Id = "2:1:0",
+                            Data = string.Empty
+                        },
+                        new PresenceMessage
+                        {
+                            Action = PresenceAction.Enter,
+                            ClientId = "2",
+                            ConnectionId = "2",
+                            Id = "2:1:SHOULD_ERROR",
+                            Data = string.Empty
+                        },
+                    };
+                }
+
+                bool caught = false;
+                try
+                {
+                    channel.Presence.OnPresence(TestPresence1(), "xyz");
+                }
+                catch (Exception ex)
+                {
+                    ex.Should().BeOfType<AblyException>();
+                    caught = true;
+                }
+                caught.Should().BeTrue();
+
             }
 
             [Theory]
