@@ -16,15 +16,19 @@
             
             var thisValues = thisMessage.Id.Split(':');
             var thatValues = thatMessage.Id.Split(':');
+            
+            // if any part of the message serial fails to parse then throw an exception
+            if (thisValues.Length != 3 ||
+                !(int.TryParse(thisValues[1], out int msgSerialThis) | int.TryParse(thisValues[2], out int indexThis)))
+            {
+                throw new AblyException($"Parsing error. The Presence Message has an invalid Id '{thisMessage.Id}'.");
+            }
 
-            // if there are not 3 elements then return false
-            if (thisValues.Length != 3 || thatValues.Length != 3) return false;
-
-            // if any part of the message serial fails to parse then exit returning false
-            if (!(int.TryParse(thisValues[1], out int msgSerialThis) |
-                  int.TryParse(thatValues[1], out int msgSerialThat) |
-                  int.TryParse(thisValues[2], out int indexThis) |
-                  int.TryParse(thatValues[2], out int indexThat))) return false;
+            if (thatValues.Length != 3 ||
+                !(int.TryParse(thatValues[1], out int msgSerialThat) | int.TryParse(thatValues[2], out int indexThat)))
+            {
+                throw new AblyException($"Parsing error. The Presence Message has an invalid Id '{thatMessage.Id}'.");
+            }
 
             if (msgSerialThis == msgSerialThat)
             {
