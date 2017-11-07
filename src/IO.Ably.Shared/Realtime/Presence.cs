@@ -256,59 +256,68 @@ namespace IO.Ably.Realtime
 
         internal void OnPresence(PresenceMessage[] messages, string syncChannelSerial)
         {
-            string syncCursor = null;
-            if (syncChannelSerial != null)
+            try
             {
-                syncCursor = syncChannelSerial.Substring(syncChannelSerial.IndexOf(':'));
-                if (syncCursor.Length > 1)
-                    Map.StartSync();
-            }
+                string syncCursor = null;
+                if (syncChannelSerial != null)
+                {
+                    syncCursor = syncChannelSerial.Substring(syncChannelSerial.IndexOf(':'));
+                    if (syncCursor.Length > 1)
+                        Map.StartSync();
+                }
             
-            if (syncChannelSerial != null)
-            {
-                int colonPos = syncChannelSerial.IndexOf(':');
-                string serial = colonPos >= 0 ? syncChannelSerial.Substring(0, colonPos) : syncChannelSerial;
-                /* Discard incomplete sync if serial has changed */
-                if (Map.IsSyncInProgress && _currentSyncChannelSerial != null && _currentSyncChannelSerial != serial)
+                if (syncChannelSerial != null)
                 {
-                    /* TODO: For v1.0 we should emit leave messages here. See https://github.com/ably/ably-java/blob/159018c30b3ef813a9d3ca3c6bc82f51aacbbc68/lib/src/main/java/io/ably/lib/realtime/Presence.java#L219 for example. */
+                    int colonPos = syncChannelSerial.IndexOf(':');
+                    string serial = colonPos >= 0 ? syncChannelSerial.Substring(0, colonPos) : syncChannelSerial;
+                    /* Discard incomplete sync if serial has changed */
+                    if (Map.IsSyncInProgress && _currentSyncChannelSerial != null && _currentSyncChannelSerial != serial)
+                    {
+                        /* TODO: For v1.0 we should emit leave messages here. See https://github.com/ably/ably-java/blob/159018c30b3ef813a9d3ca3c6bc82f51aacbbc68/lib/src/main/java/io/ably/lib/realtime/Presence.java#L219 for example. */
+                        EndSync();
+                    }
+
+                    syncCursor = syncChannelSerial.Substring(colonPos);
+                    if (syncCursor.Length > 1)
+                    {
+                        Map.StartSync();
+                        _currentSyncChannelSerial = serial;
+                    }
+                }
+
+                foreach (var message in messages)
+                {
+                    bool updateInternalPresence = message.ConnectionId == _channel.RealtimeClient.Connection.Id;
+                    var broadcast = true;
+                    switch (message.Action)
+                    {
+                        case PresenceAction.Enter:
+                        case PresenceAction.Update:
+                        case PresenceAction.Present:
+                            broadcast &= Map.Put(message);
+                            if (updateInternalPresence)
+                                InternalMap.Put(message);
+                            break;
+                        case PresenceAction.Leave:
+                            broadcast &= Map.Remove(message);
+                            if (updateInternalPresence)
+                                InternalMap.Remove(message);
+                            break;
+                    }
+                    if (broadcast)
+                        Publish(message);
+                }
+                // if this is the last message in a sequence of sync updates, end the sync
+                if ((syncChannelSerial == null) || (syncCursor.Length <= 1))
                     EndSync();
-                }
 
-                syncCursor = syncChannelSerial.Substring(colonPos);
-                if (syncCursor.Length > 1)
-                {
-                    Map.StartSync();
-                    _currentSyncChannelSerial = serial;
-                }
             }
-
-
-            foreach (var message in messages)
+            catch (Exception ex)
             {
-                bool updateInternalPresence = message.ConnectionId == _channel.RealtimeClient.Connection.Id;
-                var broadcast = true;
-                switch (message.Action)
-                {
-                    case PresenceAction.Enter:
-                    case PresenceAction.Update:
-                    case PresenceAction.Present:
-                        broadcast &= Map.Put(message);
-                        if (updateInternalPresence)
-                            InternalMap.Put(message);
-                        break;
-                    case PresenceAction.Leave:
-                        broadcast &= Map.Remove(message);
-                        if (updateInternalPresence)
-                            InternalMap.Remove(message);
-                        break;
-                }
-                if (broadcast)
-                    Publish(message);
+                Logger.Error($"An error occurred processing Presence Messages for channel '{_channel.Name}'. Error: {ex.Message}");
+                throw new AblyException(
+                    new ErrorInfo($"An error occurred processing Presence Messages for channel '{_channel.Name}'. See the InnerException for more details."), ex);
             }
-            // if this is the last message in a sequence of sync updates, end the sync
-            if ((syncChannelSerial == null) || (syncCursor.Length <= 1))
-                EndSync();
         }
 
         internal void EndSync()
@@ -527,7 +536,8 @@ namespace IO.Ably.Realtime
                 }
                 catch (Exception ex)
                 {
-                    if (Logger.IsDebug) Logger.Debug(ex.Message);
+                    Logger.Error($"PresenceMap.Put | Channel: {_channelName}, Error: {ex.Message}");
+                    throw ex;
                 }
 
                 switch (item.Action)
@@ -608,10 +618,8 @@ namespace IO.Ably.Realtime
                 }
                 catch (Exception ex)
                 {
-                    if (Logger.IsDebug)
-                        Logger.Debug($"EndSync | Channel: {_channelName}, Error: {ex.Message}");
-
-                    
+                    Logger.Error($"PresenceMap.EndSync | Channel: {_channelName}, Error: {ex.Message}");
+                    throw ex;
                 }
                 finally
                 {
