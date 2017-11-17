@@ -4,6 +4,6 @@ namespace IO.Ably
 {
     class Platform : IPlatform
     {
-        public ITransportFactory TransportFactory => new WebSocketTransport.WebSocketTransportFactory();
+        public ITransportFactory TransportFactory => new MsWebSocketTransport.TransportFactory();
     }
 }
