@@ -182,7 +182,6 @@
     <ItemGroup>
       <InputAssemblies Include="$(OutputPath)\IO.Ably.dll" />
       <InputAssemblies Include="$(OutputPath)\Newtonsoft.*.dll" />
-      <InputAssemblies Include="$(OutputPath)\SuperSocket.ClientEngine.dll" />
     </ItemGroup>
     <ILRepack KeyFile="..\..\IO.Ably.snk" Parallel="true" Internalize="true" InputAssemblies="@(InputAssemblies)" LibraryPath="@(LibraryPaths)" XmlDocumentation="true" TargetKind="DLL" OutputFile="$(OutputPath)\Packaged\$(AssemblyName).dll" />
   </Target>
