@@ -67,9 +67,6 @@
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\netstandard1.3\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="SuperSocket.ClientEngine, Version=0.8.0.13, Culture=neutral, PublicKeyToken=ee9af13f57f00acc, processorArchitecture=MSIL">
-      <HintPath>..\packages\SuperSocket.ClientEngine.Core.0.8.0.13\lib\netstandard1.3\SuperSocket.ClientEngine.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Collections.Immutable, Version=1.2.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Collections.Immutable.1.2.0\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
@@ -95,7 +92,7 @@
     </None>
   </ItemGroup>
   <Import Project="..\IO.Ably.Shared\IO.Ably.Shared.projitems" Label="Shared" />
-  <Import Project="..\IO.Ably.Shared.MsgPack\IO.Ably.Shared.MsgPack.projitems" Label="Shared" Condition="$(DefineConstants.Contains(MSGPACK))"/>
+  <Import Project="..\IO.Ably.Shared.MsgPack\IO.Ably.Shared.MsgPack.projitems" Label="Shared" Condition="$(DefineConstants.Contains(MSGPACK))" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" Condition="Exists('$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets')" />
   <Import Project="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\Xamarin\Android\Xamarin.Android.CSharp.targets" Condition="Exists('C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\Xamarin\Android\Xamarin.Android.CSharp.targets')" />
   <Import Project="..\packages\ILRepack.MSBuild.Task.1.0.9\build\ILRepack.MSBuild.Task.targets" Condition="Exists('..\packages\ILRepack.MSBuild.Task.1.0.9\build\ILRepack.MSBuild.Task.targets')" />
@@ -104,6 +101,7 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\ILRepack.MSBuild.Task.1.0.9\build\ILRepack.MSBuild.Task.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ILRepack.MSBuild.Task.1.0.9\build\ILRepack.MSBuild.Task.targets'))" />
+    <Error Condition="!Exists('..\packages\NETStandard.Library.2.0.1\build\netstandard2.0\NETStandard.Library.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NETStandard.Library.2.0.1\build\netstandard2.0\NETStandard.Library.targets'))" />
   </Target>
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
@@ -123,8 +121,8 @@
     <ItemGroup>
       <InputAssemblies Include="$(OutputPath)\IO.Ably.dll" />
       <InputAssemblies Include="$(OutputPath)\Newtonsoft.*.dll" />
-      <InputAssemblies Include="$(OutputPath)\SuperSocket.ClientEngine.dll" />
     </ItemGroup>
     <ILRepack KeyFile="..\..\IO.Ably.snk" Parallel="true" Internalize="true" InputAssemblies="@(InputAssemblies)" LibraryPath="@(LibraryPaths)" XmlDocumentation="true" TargetKind="DLL" OutputFile="$(OutputPath)\Packaged\$(AssemblyName).dll" />
   </Target>
+  <Import Project="..\packages\NETStandard.Library.2.0.1\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.1\build\netstandard2.0\NETStandard.Library.targets')" />
 </Project>
