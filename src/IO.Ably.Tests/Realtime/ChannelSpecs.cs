@@ -249,7 +249,6 @@ namespace IO.Ably.Tests.Realtime
             public async Task WhenAttaching_ShouldAddMultipleAwaitingHandlers()
             {
                 await SetState(ChannelState.Attaching);
-                ChannelState newState = ChannelState.Initialized;
                 int counter = 0;
 
                 _channel.Attach((b, info) => counter++);
