@@ -21,7 +21,7 @@ if($skiptests) {
 
 $const = "PACKAGE"
 if ($msgpack) {
-	# Use %3B in place of ; and PS is borking the value - https://msdn.microsoft.com/en-us/library/bb383819.aspx
+	# Use %3B in place of ; as PS is borking the value - https://msdn.microsoft.com/en-us/library/bb383819.aspx
 	$const = "MSGPACK%3BPACKAGE"
 } 
 
