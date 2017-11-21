@@ -12,6 +12,7 @@ using FluentAssertions.Events;
 using IO.Ably.Encryption;
 using IO.Ably.Realtime;
 using IO.Ably.Rest;
+using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Transport.States.Connection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -130,10 +131,12 @@ namespace IO.Ably.Tests.Realtime
             ;
             // Arrange
             var client = await GetRealtimeClient(protocol);
+            await client.WaitForState(ConnectionState.Connected);
 
             ManualResetEvent resetEvent = new ManualResetEvent(false);
             IRealtimeChannel target = client.Channels.Get("test" + protocol);
             target.Attach();
+            await target.WaitForState(ChannelState.Attached);
 
             ConcurrentQueue<Message> messagesReceived = new ConcurrentQueue<Message>();
             int count = 0;
@@ -188,41 +191,58 @@ namespace IO.Ably.Tests.Realtime
             // Assert
             messagesReceived.Should().BeEmpty();
         }
-
+        /*
+         * An optional callback can be provided to the #publish method that is called when the message
+         * is successfully delivered or upon failure with the appropriate ErrorInfo error.
+         * A test should exist to publish lots of messages on a few connections
+         * to ensure all message success callbacks are called for all messages published.
+         */
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTL6b")]
         public async Task With3ClientsAnd60MessagesAndCallbacks_ShouldExecuteAllCallbacks(Protocol protocol)
         {
             var channelName = "test".AddRandomSuffix();
-            List<bool> successes = new List<bool>();
+
+            List<bool> successes1 = new List<bool>();
+            List<bool> successes2 = new List<bool>();
+            List<bool> successes3 = new List<bool>();
+
             var client1 = await GetRealtimeClient(protocol);
             var client2 = await GetRealtimeClient(protocol);
             var client3 = await GetRealtimeClient(protocol);
+
             var messages = new List<Message>();
             for (int i = 0; i < 20; i++)
             {
                 messages.Add(new Message("name" + i, "data" + i));
             }
 
+            var awaiter = new TaskCountAwaiter(60);
             foreach (var message in messages)
             {
                 client1.Channels.Get(channelName).Publish(new[] { message }, (b, info) =>
                {
-                   successes.Add(b);
+                   successes1.Add(b);
+                   awaiter.Tick();
                });
                 client2.Channels.Get(channelName).Publish(new[] { message }, (b, info) =>
                 {
-                    successes.Add(b);
+                    successes2.Add(b);
+                    awaiter.Tick();
                 });
                 client3.Channels.Get(channelName).Publish(new[] { message }, (b, info) =>
                 {
-                    successes.Add(b);
+                    successes3.Add(b);
+                    awaiter.Tick();
                 });
             }
 
-            await Task.Delay(10000);
-            successes.Where(x => x).Should().HaveCount(60, "Should have 60 successful callback executed");
+            await awaiter.Task;
+
+            successes1.Should().HaveCount(20, "Should have 20 successful callback executed");
+            successes2.Should().HaveCount(20, "Should have 20 successful callback executed");
+            successes3.Should().HaveCount(20, "Should have 20 successful callback executed");
         }
 
         [Theory]
@@ -656,7 +676,9 @@ namespace IO.Ably.Tests.Realtime
             foreach (var client in clients)
             {
                 client.Connect();
+                await client.WaitForState();
                 client.Channels.Get(channelName).Attach();
+                await client.Channels.Get(channelName).WaitForState();
             }
 
             await Task.Delay(TimeSpan.FromSeconds(15));

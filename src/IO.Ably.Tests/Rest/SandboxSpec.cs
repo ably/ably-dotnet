@@ -45,6 +45,13 @@ namespace IO.Ably.Tests
             var defaultOptions = settings.CreateDefaultOptions();
             defaultOptions.UseBinaryProtocol = protocol == Defaults.Protocol;
             defaultOptions.TransportFactory = new TestTransportFactory();
+
+            // Prevent the Xunit concurrent context being caputured which is
+            // an implementation of <see cref="SynchronizationContext"/> which runs work on custom threads
+            // rather than in the thread pool, and limits the number of in-flight actions.
+            //
+            // This can create out of order responses that would not normally occur
+            defaultOptions.CaptureCurrentSynchronizationContext = false;
             optionsAction?.Invoke(defaultOptions, settings);
             return new AblyRealtime(defaultOptions);
         }
@@ -72,6 +79,8 @@ namespace IO.Ably.Tests
             return connectionAwaiter.Wait();
         }
 
+        
+
         protected static async Task WaitFor30sOrUntilTrue(Func<bool> predicate)
         {
             int count = 0;
@@ -86,4 +95,25 @@ namespace IO.Ably.Tests
             }
         }
     }
+
+    public static class SandboxSpecExtension
+    {
+        internal static Task WaitForState(this AblyRealtime realtime, ConnectionState awaitedState = ConnectionState.Connected, TimeSpan? waitSpan = null)
+        {
+            var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
+            if (waitSpan.HasValue)
+                return connectionAwaiter.Wait(waitSpan.Value);
+            return connectionAwaiter.Wait();
+        }
+
+        internal static Task WaitForState(this IRealtimeChannel channel, ChannelState awaitedState = ChannelState.Attached, TimeSpan? waitSpan = null)
+        {
+            var channelAwaiter = new ChannelAwaiter(channel, awaitedState);
+            if (waitSpan.HasValue)
+                return channelAwaiter.WaitAsync();
+            return channelAwaiter.WaitAsync();
+        }
+    }
+
+    
 }

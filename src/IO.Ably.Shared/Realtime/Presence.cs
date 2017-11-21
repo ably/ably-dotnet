@@ -21,6 +21,8 @@ namespace IO.Ably.Realtime
     {
         internal ILogger Logger { get; private set; }
 
+        private event EventHandler InitialSyncCompleted;
+
         private readonly RealtimeChannel _channel;
         private readonly string _clientId;
         private readonly Handlers<PresenceMessage> _handlers = new Handlers<PresenceMessage>();
@@ -28,21 +30,46 @@ namespace IO.Ably.Realtime
         private readonly IConnectionManager _connection;
         private readonly List<QueuedPresenceMessage> _pendingPresence;
 
+        private string _currentSyncChannelSerial;
+        private bool _syncAsResultOfAttach;
+
+        private bool _initialSyncCompleted = false;
+
+        public bool SyncComplete
+        {
+            get { return Map.InitialSyncCompleted | _initialSyncCompleted; }
+            private set
+            {
+                _initialSyncCompleted = value;
+                if(_initialSyncCompleted)
+                    OnInitialSyncCompleted();
+            }
+        }
+        
+        /// <summary>
+        /// Called when a protocol message HasPresenceFlag == false. The presence map should be considered in sync immediately
+        /// with no members present on the channel. See [RTP1] for more detail.
+        /// </summary>
+        internal void SkipSync()
+        {
+            SyncComplete = true;
+        }
+
         internal Presence(IConnectionManager connection, RealtimeChannel channel, string cliendId, ILogger logger)
         {
             Logger = logger;
             Map = new PresenceMap(channel.Name, logger);
+            InternalMap = new PresenceMap(channel.Name, logger);
             _pendingPresence = new List<QueuedPresenceMessage>();
             _connection = connection;
             _channel = channel;
             _channel.InternalStateChanged += OnChannelStateChanged;
             _clientId = cliendId;
         }
-
-        //TODO: Validate the logic is correct
-
-        public bool SyncComplete => Map.IsSyncInProgress == false;
+        
+        internal bool InternalSyncComplete => (!Map.IsSyncInProgress && SyncComplete);
         internal PresenceMap Map { get; }
+        internal PresenceMap InternalMap { get; }
 
         public void Dispose()
         {
@@ -56,17 +83,92 @@ namespace IO.Ably.Realtime
         ///     Get current presence in the channel. WaitForSync is not implemented yet. Partial result may be returned
         /// </summary>
         /// <returns></returns>
-        public Task<IEnumerable<PresenceMessage>> GetAsync(GetOptions options = null)
+        public async Task<IEnumerable<PresenceMessage>> GetAsync(GetOptions options = null)
         {
             var getOptions = options ?? new GetOptions();
+            
+            if (getOptions.WaitForSync)
+                await WaitForSyncAsync();
 
-            //TODO: waitForSync is not implemented yet
-            var result = Map.Values.Where(x => (getOptions.ClientId.IsEmpty() || (x.ClientId == getOptions.ClientId))
-                                               &&
-                                               (getOptions.ConnectionId.IsEmpty() ||
-                                                (x.ConnectionId == getOptions.ConnectionId)));
-            return Task.FromResult(result);
+            var result = Map.Values.Where( x => (getOptions.ClientId.IsEmpty() || x.ClientId == getOptions.ClientId)
+                                               && (getOptions.ConnectionId.IsEmpty() || x.ConnectionId == getOptions.ConnectionId) );
+            return result;
         }
+
+        internal async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, bool waitForSync = false)
+        {
+            return await GetAsync(new GetOptions() {ClientId = clientId, WaitForSync = waitForSync});
+        }
+
+        internal async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, string connectionId, bool waitForSync = true)
+        {
+            return await GetAsync(new GetOptions() { ClientId = clientId, ConnectionId = connectionId, WaitForSync = waitForSync });
+        }
+
+        private async Task<bool> WaitForSyncAsync()
+        {
+            var tsc = new TaskCompletionSource<bool>();
+            // The InternalSync should be completed and the channels Attached or Attaching
+            void CheckAndSet()
+            {
+                if (InternalSyncComplete &&
+                    (_channel.State == ChannelState.Attached || _channel.State == ChannelState.Attaching))
+                {
+                    tsc.TrySetResult(true);
+                }
+            }
+            // if the channel state changes and is not Attached or Attaching then we should exit
+            void OnChannelOnStateChanged(object sender, ChannelStateChange args)
+            {
+                if (_channel.State != ChannelState.Attached && _channel.State != ChannelState.Attaching)
+                    tsc.TrySetResult(false);
+            }
+            void OnSyncEvent(object sender, EventArgs args) => CheckAndSet();
+
+            _channel.StateChanged += OnChannelOnStateChanged;
+            InitialSyncCompleted += OnSyncEvent;
+            Map.SyncNoLongerInProgress += OnSyncEvent;
+            // Do a manual check in case we are already in the desired state
+            CheckAndSet();
+            await tsc.Task;
+            // unsubscribe from events 
+            _channel.StateChanged -= OnChannelOnStateChanged;
+            InitialSyncCompleted -= OnSyncEvent;
+            Map.SyncNoLongerInProgress -= OnSyncEvent;
+
+            #region TODO
+            // TODO: This code was added when porting from the Java lib but can't completed be until the extra states added in 1.0 spec (specifically ChannelState.Suspended) are implemented
+            //bool syncIsComplete =  tsc.Task.Result;
+            //      if (!syncIsComplete)
+            //      {
+            //          /* invalid channel state */
+            //          int errorCode;
+            //          String errorMessage;
+
+            //          if (_channel.State == ChannelState.Suspended)
+            //          {
+            //              /* (RTP11d) If the Channel is in the SUSPENDED state then the get function will by default,
+            //* or if waitForSync is set to true, result in an error with code 91005 and a message stating
+            //* that the presence state is out of sync due to the channel being in a SUSPENDED state */
+            //              errorCode = 91005;
+            //              errorMessage = $"Channel {_channel.Name}: presence state is out of sync due to the channel being in a SUSPENDED state";
+            //          }
+            //          else
+            //          {
+            //              errorCode = 90001;
+            //              errorMessage = $"Channel {_channel.Name}: cannot get presence state because channel is in invalid state";
+            //          }
+            //          if(Logger.IsDebug)
+            //              Logger.Debug($"{errorMessage} (Error Code: {errorCode})");
+            //          throw new AblyException(new ErrorInfo(errorMessage, errorCode));
+            //      }
+
+
+            #endregion
+            
+            return tsc.Task.Result;
+        }
+        
 
         public void Subscribe(Action<PresenceMessage> handler)
         {
@@ -154,33 +256,115 @@ namespace IO.Ably.Realtime
 
         internal void OnPresence(PresenceMessage[] messages, string syncChannelSerial)
         {
-            string syncCursor = null;
-            var broadcast = true;
-            if (syncChannelSerial != null)
+            try
             {
-                syncCursor = syncChannelSerial.Substring(syncChannelSerial.IndexOf(':'));
-                if (syncCursor.Length > 1)
-                    Map.StartSync();
-            }
-
-            foreach (var update in messages)
-                switch (update.Action)
+                string syncCursor = null;
+                if (syncChannelSerial != null)
                 {
-                    case PresenceAction.Enter:
-                    case PresenceAction.Update:
-                    case PresenceAction.Present:
-                        broadcast &= Map.Put(update);
-                        break;
-                    case PresenceAction.Leave:
-                        broadcast &= Map.Remove(update);
-                        break;
+                    syncCursor = syncChannelSerial.Substring(syncChannelSerial.IndexOf(':'));
+                    if (syncCursor.Length > 1)
+                        Map.StartSync();
                 }
-            // if this is the last message in a sequence of sync updates, end the sync
-            if ((syncChannelSerial == null) || (syncCursor.Length <= 1))
-                Map.EndSync();
 
-            if (broadcast)
-                Publish(messages);
+                if (syncChannelSerial != null)
+                {
+                    int colonPos = syncChannelSerial.IndexOf(':');
+                    string serial = colonPos >= 0 ? syncChannelSerial.Substring(0, colonPos) : syncChannelSerial;
+                    /* Discard incomplete sync if serial has changed */
+                    if (Map.IsSyncInProgress && _currentSyncChannelSerial != null &&
+                        _currentSyncChannelSerial != serial)
+                    {
+                        /* TODO: For v1.0 we should emit leave messages here. See https://github.com/ably/ably-java/blob/159018c30b3ef813a9d3ca3c6bc82f51aacbbc68/lib/src/main/java/io/ably/lib/realtime/Presence.java#L219 for example. */
+                        EndSync();
+                    }
+
+                    syncCursor = syncChannelSerial.Substring(colonPos);
+                    if (syncCursor.Length > 1)
+                    {
+                        Map.StartSync();
+                        _currentSyncChannelSerial = serial;
+                    }
+                }
+
+                foreach (var message in messages)
+                {
+                    bool updateInternalPresence = message.ConnectionId == _channel.RealtimeClient.Connection.Id;
+                    var broadcast = true;
+                    switch (message.Action)
+                    {
+                        case PresenceAction.Enter:
+                        case PresenceAction.Update:
+                        case PresenceAction.Present:
+                            broadcast &= Map.Put(message);
+                            if (updateInternalPresence)
+                                InternalMap.Put(message);
+                            break;
+                        case PresenceAction.Leave:
+                            broadcast &= Map.Remove(message);
+                            if (updateInternalPresence)
+                                InternalMap.Remove(message);
+                            break;
+                    }
+                    if (broadcast)
+                        Publish(message);
+                }
+                // if this is the last message in a sequence of sync updates, end the sync
+                if ((syncChannelSerial == null) || (syncCursor.Length <= 1))
+                    EndSync();
+
+            }
+            catch (Exception ex)
+            {
+                var errInfo = new ErrorInfo(
+                    $"An error occurred processing Presence Messages for channel '{_channel.Name}'. See the InnerException for more details.");
+                _channel.SetChannelState(ChannelState.Failed, errInfo);
+                Logger.Error($"{errInfo.Message} Error: {ex.Message}");
+                errInfo.Message += " See the InnerException for more details.";
+                throw new AblyException(errInfo, ex);
+            }
+        }
+
+        internal void EndSync()
+        {
+            var residualMembers = Map.EndSync();
+            /*
+             * RTP19: ... The PresenceMessage published should contain the original attributes of the presence
+             * member with the action set to LEAVE, PresenceMessage#id set to null, and the timestamp set
+             * to the current time ...
+             */
+            foreach (var presenceMessage in residualMembers)
+            {
+                presenceMessage.Action = PresenceAction.Leave;
+                presenceMessage.Id = null;
+                presenceMessage.Timestamp = DateTimeOffset.UtcNow;
+            }
+            Publish(residualMembers);
+
+            /*
+		     * (RTP5c2) If a SYNC is initiated as part of the attach, then once the SYNC is complete,
+		     * all members not present in the PresenceMap but present in the internal PresenceMap must
+		     * be re-entered automatically by the client using the clientId and data attributes from
+		     * each. The members re-entered automatically must be removed from the internal PresenceMap
+		     * ensuring that members present on the channel are constructed from presence events sent
+		     * from Ably since the channel became ATTACHED
+		     */
+            if (_syncAsResultOfAttach)
+            {
+                _syncAsResultOfAttach = false;
+                foreach (var item in InternalMap.Values)
+                {
+                    if (Map.Put(item))
+                    {
+                        /* Message is new to presence map, send it */
+                        string clientId = item.ClientId;
+                        var itemToSend = item.ShallowClone();
+                        itemToSend.Action = PresenceAction.Enter;
+                        UpdatePresenceAsync(itemToSend);
+
+                    }
+                }
+                InternalMap.Clear();
+            }
         }
 
         private void Publish(params PresenceMessage[] messages)
@@ -212,10 +396,26 @@ namespace IO.Ably.Realtime
         {
             if (e.Current == ChannelState.Attached)
             {
+                /* Start sync, if hasPresence is not set end sync immediately dropping all the current presence members */
+                Map.StartSync();
+                _syncAsResultOfAttach = true;
+                // TODO: for v1.0 RTP19a (see Java version for example https://github.com/ably/ably-java/blob/159018c30b3ef813a9d3ca3c6bc82f51aacbbc68/lib/src/main/java/io/ably/lib/realtime/Presence.java)
+                //if (!hasPresence)
+                //{
+                //    /*
+                //     * RTP19a  If the PresenceMap has existing members when an ATTACHED message is received without a
+                //     * HAS_PRESENCE flag, the client library should emit a LEAVE event for each existing member ...
+                //     */
+                //    endSyncAndEmitLeaves();
+                //}
                 SendQueuedMessages();
             }
             else if ((e.Current == ChannelState.Detached) || (e.Current == ChannelState.Failed))
+            {
                 FailQueuedMessages(e.Error);
+                Map.Clear();
+                InternalMap.Clear();
+            }
         }
 
         private void SendQueuedMessages()
@@ -275,8 +475,10 @@ namespace IO.Ably.Realtime
         {
             internal ILogger Logger { get; private set; }
 
+            internal event EventHandler SyncNoLongerInProgress;
+
             private readonly string _channelName;
-            private object _lock = new Object();
+            private readonly object _lock = new Object();
 
             public enum State
             {
@@ -286,23 +488,37 @@ namespace IO.Ably.Realtime
                 Failed
             }
 
-            private readonly ConcurrentDictionary<string, PresenceMessage> members;
-            private ICollection<string> residualMembers;
+            private readonly ConcurrentDictionary<string, PresenceMessage> _members;
+            private ICollection<string> _residualMembers;
+            private bool _isSyncInProgress;
 
             public PresenceMap(string channelName, ILogger logger)
             {
                 Logger = logger;
                 _channelName = channelName;
-                members = new ConcurrentDictionary<string, PresenceMessage>();
+                _members = new ConcurrentDictionary<string, PresenceMessage>();
             }
 
-            public bool IsSyncInProgress { get; private set; }
+            public bool IsSyncInProgress
+            {
+                get => _isSyncInProgress;
+                private set
+                {
+                    var previous = _isSyncInProgress;
+                    _isSyncInProgress = value;
+                    // if we have gone from true to false then fire SyncNoLongerInProgress
+                    if (previous && !_isSyncInProgress)
+                        OnSyncNoLongerInProgress();
+                }
+            }
+
+            public bool InitialSyncCompleted { get; private set; }
 
             public PresenceMessage[] Values
             {
                 get
                 {
-                    return members.Values.Where(c => c.Action != PresenceAction.Absent)
+                    return _members.Values.Where(c => c.Action != PresenceAction.Absent)
                         .ToArray();
                 }
             }
@@ -312,81 +528,128 @@ namespace IO.Ably.Realtime
                 lock (_lock)
                 {
                     // we've seen this member, so do not remove it at the end of sync
-                    residualMembers?.Remove(item.MemberKey);
+                    _residualMembers?.Remove(item.MemberKey);
                 }
 
-                // compare the timestamp of the new item with any existing member (or ABSENT witness)
-                PresenceMessage existingItem;
-                if (members.TryGetValue(item.MemberKey, out existingItem) && (item.Timestamp < existingItem.Timestamp))
-                    return false;
+                try
+                {
+                    if (_members.TryGetValue(item.MemberKey, out var existingItem) && existingItem.IsNewerThan(item))
+                    {
+                        return false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"PresenceMap.Put | Channel: {_channelName}, Error: {ex.Message}");
+                    throw ex;
+                }
 
-                members[item.MemberKey] = item;
+                switch (item.Action)
+                {
+                    case PresenceAction.Enter:
+                    case PresenceAction.Update:
+                        item = item.ShallowClone();
+                        item.Action = PresenceAction.Present;
+                        break;
+                }
+
+                _members[item.MemberKey] = item;
 
                 return true;
             }
 
             public bool Remove(PresenceMessage item)
             {
-                bool result = true;
-
                 PresenceMessage existingItem;
-                if (members.TryGetValue(item.MemberKey, out existingItem) &&
-                    existingItem.Action == PresenceAction.Absent)
-                {
-                    result = false;
-                }
+                if (_members.TryGetValue(item.MemberKey, out existingItem) && existingItem.IsNewerThan(item))
+                    return false;
 
-                members.TryRemove(item.MemberKey, out PresenceMessage _);
+                _members.TryRemove(item.MemberKey, out PresenceMessage _);
+                if (existingItem?.Action == PresenceAction.Absent)
+                    return false;
 
-                return result;
+                return true;
             }
 
             public void StartSync()
             {
-                if(Logger.IsDebug) Logger.Debug($"StartSync | Channel: {_channelName}, SyncInProgress: {IsSyncInProgress}");
+                if (Logger.IsDebug)
+                    Logger.Debug($"StartSync | Channel: {_channelName}, SyncInProgress: {IsSyncInProgress}");
                 if (!IsSyncInProgress)
                 {
                     lock (_lock)
                     {
-                        residualMembers = new HashSet<string>(members.Keys);
+                        _residualMembers = new HashSet<string>(_members.Keys);
                         IsSyncInProgress = true;
                     }
                 }
             }
 
-            public void EndSync()
+            public PresenceMessage[] EndSync()
             {
-                if (Logger.IsDebug) Logger.Debug($"EndSync | Channel: {_channelName}, SyncInProgress: {IsSyncInProgress}");
-
-                if (!IsSyncInProgress)
-                    return;
-
+                if (Logger.IsDebug)
+                    Logger.Debug($"EndSync | Channel: {_channelName}, SyncInProgress: {IsSyncInProgress}");
+                List<PresenceMessage> removed = new List<PresenceMessage>();
                 try
                 {
+                    if (!IsSyncInProgress) return removed.ToArray();
                     // We can now strip out the ABSENT members, as we have
                     // received all of the out-of-order sync messages
-                    foreach (var member in members.ToArray())
-                        if (member.Value.Action == PresenceAction.Present)
-                            members.TryRemove(member.Key, out PresenceMessage _);
+                    foreach (var member in _members.ToArray())
+                    {
+                        if (member.Value.Action == PresenceAction.Absent)
+                        {
+                            _members.TryRemove(member.Key, out PresenceMessage _);
+                        }
+                    }
 
                     lock (_lock)
                     {
-                        if (residualMembers != null)
+                        if (_residualMembers != null)
                         {
                             // Any members that were present at the start of the sync,
                             // and have not been seen in sync, can be removed
-                            foreach (var member in residualMembers)
-                                members.TryRemove(member, out PresenceMessage _);
-
-                            residualMembers = null;
+                            foreach (var member in _residualMembers)
+                            {
+                                if (_members.TryRemove(member, out PresenceMessage pm))
+                                    removed.Add(pm);
+                            }
+                            _residualMembers = null;
                         }
+                        IsSyncInProgress = false;
                     }
+                    
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"PresenceMap.EndSync | Channel: {_channelName}, Error: {ex.Message}");
+                    throw ex;
                 }
                 finally
                 {
-                    IsSyncInProgress = false;
+                    InitialSyncCompleted = true;
+                }
+                return removed.ToArray();
+            }
+
+            public void Clear()
+            {
+                lock (_lock)
+                {
+                    _members?.Clear();
+                    _residualMembers?.Clear();
                 }
             }
+
+            protected virtual void OnSyncNoLongerInProgress()
+            {
+                SyncNoLongerInProgress?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        protected virtual void OnInitialSyncCompleted()
+        {
+            InitialSyncCompleted?.Invoke(this, EventArgs.Empty);
         }
     }
 

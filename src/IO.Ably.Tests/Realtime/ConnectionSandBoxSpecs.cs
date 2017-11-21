@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
@@ -385,6 +386,12 @@ namespace IO.Ably.Tests.Realtime
     [Trait("requires", "sandbox")]
     public class ConnectionSandboxTransportSideEffectsSpecs : SandboxSpecs
     {
+
+        /*
+         * (RTN19b) If there are any pending channels i.e. in the ATTACHING or DETACHING state,
+         * the respective ATTACH or DETACH message should be resent to Ably
+         */
+
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN19b")]
@@ -399,15 +406,18 @@ namespace IO.Ably.Tests.Realtime
             {
                 wrapper.MessageSent = sentMessages.Add;
             });
+            
+            await client.WaitForState(ConnectionState.Connected);
 
-            await WaitForState(client, ConnectionState.Connected);
             var channel = client.Channels.Get("test-channel");
             channel.Once(ChannelState.Attaching, change => client.GetTestTransport().Close(false));
             channel.Attach();
+            await channel.WaitForState(ChannelState.Attaching);
+            
+            await client.WaitForState(ConnectionState.Connected);
 
-            await WaitForState(client, ConnectionState.Connected);
+            await Task.Delay(3000);
 
-            await Task.Delay(2000);
             sentMessages.Where(x => x.Channel == "test-channel" && x.Action == ProtocolMessage.MessageAction.Attach)
                 .Should().HaveCount(2);
             channel.State.Should().Be(ChannelState.Attached);
@@ -428,31 +438,21 @@ namespace IO.Ably.Tests.Realtime
                 wrapper.MessageSent = sentMessages.Add;
             });
 
-            await WaitForState(client, ConnectionState.Connected);
+            await client.WaitForState(ConnectionState.Connected);
+
             var channel = client.Channels.Get("test-channel");
             channel.Once(ChannelState.Detaching, change => client.GetTestTransport().Close(false));
-            await channel.AttachAsync();
+            channel.Attach();
             channel.Detach();
+            await channel.WaitForState(ChannelState.Detaching);
+            await client.WaitForState(ConnectionState.Connected);
 
-            await WaitForState(client, ConnectionState.Connected);
+            await Task.Delay(3000);
 
-            await Task.Delay(1000);
-            int count = 0;
-            for (var i = 0; i < 20; i++)
-            {
-                count = sentMessages.Count(x => x.Channel == "test-channel" && x.Action == ProtocolMessage.MessageAction.Detach);
-                if (count < 2)
-                    await Task.Delay(100);
-                else
-                    break;
-            }
-
-            count.ShouldBeEquivalentTo(2);
+            sentMessages.Where(x => x.Channel == "test-channel" && x.Action == ProtocolMessage.MessageAction.Detach)
+                .Should().HaveCount(2);
             channel.State.Should().Be(ChannelState.Detached);
         }
-
-        
-
 
         public ConnectionSandboxTransportSideEffectsSpecs(AblySandboxFixture fixture, ITestOutputHelper output) :
             base(fixture, output)
