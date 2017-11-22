@@ -54,6 +54,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IO.Ably.NETStandard20", "IO
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IO.Ably.NETStandard14", "IO.Ably.NETStandard14\IO.Ably.NETStandard14.csproj", "{FB81404E-94A2-43D5-9841-AEC6BC920D98}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C2F43DB7-AAA0-4687-9897-5D686EC91245}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		IO.Ably.Shared\IO.Ably.Shared.projitems*{24b6fc97-9d3d-46ae-b5cb-47458354bee1}*SharedItemsImports = 4
@@ -670,12 +672,12 @@ Global
 		{1BE6A58A-D83A-4E7C-806B-7B12C717C618}.Debug|x86.Build.0 = Debug|Any CPU
 		{1BE6A58A-D83A-4E7C-806B-7B12C717C618}.package_netstandard|Any CPU.ActiveCfg = package|Any CPU
 		{1BE6A58A-D83A-4E7C-806B-7B12C717C618}.package_netstandard|Any CPU.Build.0 = package|Any CPU
-		{1BE6A58A-D83A-4E7C-806B-7B12C717C618}.package_netstandard|ARM.ActiveCfg = package_netstandard|Any CPU
-		{1BE6A58A-D83A-4E7C-806B-7B12C717C618}.package_netstandard|ARM.Build.0 = package_netstandard|Any CPU
-		{1BE6A58A-D83A-4E7C-806B-7B12C717C618}.package_netstandard|x64.ActiveCfg = package_netstandard|Any CPU
-		{1BE6A58A-D83A-4E7C-806B-7B12C717C618}.package_netstandard|x64.Build.0 = package_netstandard|Any CPU
-		{1BE6A58A-D83A-4E7C-806B-7B12C717C618}.package_netstandard|x86.ActiveCfg = package_netstandard|Any CPU
-		{1BE6A58A-D83A-4E7C-806B-7B12C717C618}.package_netstandard|x86.Build.0 = package_netstandard|Any CPU
+		{1BE6A58A-D83A-4E7C-806B-7B12C717C618}.package_netstandard|ARM.ActiveCfg = package|Any CPU
+		{1BE6A58A-D83A-4E7C-806B-7B12C717C618}.package_netstandard|ARM.Build.0 = package|Any CPU
+		{1BE6A58A-D83A-4E7C-806B-7B12C717C618}.package_netstandard|x64.ActiveCfg = package|Any CPU
+		{1BE6A58A-D83A-4E7C-806B-7B12C717C618}.package_netstandard|x64.Build.0 = package|Any CPU
+		{1BE6A58A-D83A-4E7C-806B-7B12C717C618}.package_netstandard|x86.ActiveCfg = package|Any CPU
+		{1BE6A58A-D83A-4E7C-806B-7B12C717C618}.package_netstandard|x86.Build.0 = package|Any CPU
 		{1BE6A58A-D83A-4E7C-806B-7B12C717C618}.package|Any CPU.ActiveCfg = package|Any CPU
 		{1BE6A58A-D83A-4E7C-806B-7B12C717C618}.package|Any CPU.Build.0 = package|Any CPU
 		{1BE6A58A-D83A-4E7C-806B-7B12C717C618}.package|ARM.ActiveCfg = Debug|Any CPU
@@ -777,6 +779,7 @@ Global
 		{8BB7B13C-E9F4-4D1B-BCCC-AF890A23ECE6} = {8A0F718E-2168-4CC7-8F7B-A65508B52B0F}
 		{3180AA9D-9800-4EB2-87F0-ADA47E2FFF3D} = {8A0F718E-2168-4CC7-8F7B-A65508B52B0F}
 		{4F519937-3F75-49D7-A71E-79A6C798C5B8} = {E02CFEF3-4CE4-49F6-A778-26503A1479D5}
+		{4E136C14-03D4-4194-8DE7-3E9A26C5B028} = {C2F43DB7-AAA0-4687-9897-5D686EC91245}
 		{EEBF3249-3CA3-4078-A188-F8B916C3F4C2} = {8A0F718E-2168-4CC7-8F7B-A65508B52B0F}
 		{1BE6A58A-D83A-4E7C-806B-7B12C717C618} = {8A0F718E-2168-4CC7-8F7B-A65508B52B0F}
 		{FB81404E-94A2-43D5-9841-AEC6BC920D98} = {8A0F718E-2168-4CC7-8F7B-A65508B52B0F}
