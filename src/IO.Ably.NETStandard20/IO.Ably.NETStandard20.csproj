@@ -3,6 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Configurations>Debug;Release;package</Configurations>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AssemblyName>IO.Ably</AssemblyName>
+    <RootNamespace>IO.Ably</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='package|AnyCPU'">
@@ -14,8 +17,16 @@
   <Import Project="..\IO.Ably.Shared.MsgPack\IO.Ably.Shared.MsgPack.projitems" Label="Shared" Condition="$(DefineConstants.Contains(MSGPACK))" />
 
   <ItemGroup>
+    <Compile Include="..\CommonAssemblyInfo.cs" Link="Properties\CommonAssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MsgPack.Cli" Version="0.9.2" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 
   <Target Name="AfterBuild" Condition="$(NCrunch) != '1'">
