@@ -49,7 +49,7 @@ namespace IO.Ably.Realtime
         public ChannelState State
         {
             get => _state;
-            private set
+            internal set
             {
                 if (value != _state)
                 {
@@ -80,19 +80,20 @@ namespace IO.Ably.Realtime
             ConnectionManager.Connection.InternalStateChanged += InternalOnInternalStateChanged;
         }
 
-        private void InternalOnInternalStateChanged(object sender, ConnectionStateChange connectionStateChange)
+        internal void InternalOnInternalStateChanged(object sender, ConnectionStateChange connectionStateChange)
         {
             switch (connectionStateChange.Current)
             {
+                //case ConnectionState.Connected:
                 case ConnectionState.Disconnected:
                     if (State == ChannelState.Attaching)
                     {
-                        if (Logger.IsDebug) Logger.Debug($"#{Name} Resending Attach because connection became disconnected while the channel was attaching.");
+                        if (Logger.IsDebug) Logger.Debug($"#{Name} Resending Attach because connection became {State} while the channel was {ChannelState.Attaching}.");
                         SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name));
                     }
                     if (State == ChannelState.Detaching)
                     {
-                        if (Logger.IsDebug) Logger.Debug($"#{Name} Resending Detach because connection became disconnected while the channel was attaching.");
+                        if (Logger.IsDebug) Logger.Debug($"#{Name} Resending Detach because connection became {State} while the channel was {ChannelState.Detaching}.");
                         SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name));
                     }
                     break;
@@ -536,6 +537,7 @@ namespace IO.Ably.Realtime
 
         private void SendMessage(ProtocolMessage protocolMessage, Action<bool, ErrorInfo> callback = null)
         {
+            if(Logger.IsDebug) Logger.Debug($"RealtimeChannel.SendMessage:{protocolMessage.Action}");
             ConnectionManager.Send(protocolMessage, callback, Options);
         }
     }
