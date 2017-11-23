@@ -144,7 +144,7 @@ namespace IO.Ably.Tests
                 request.Capability.Should().Be(Capability.Empty);
                 request.ClientId.Should().Be("999");
                 request.Ttl.Should().Be(TimeSpan.FromHours(1));
-                request.Timestamp.Value.Should().BeCloseTo(Now.AddMinutes(10), 200);
+                request.Timestamp.Value.Should().BeCloseTo(Now.AddMinutes(10), 500);
                 request.Nonce.Should().Be("overrideNonce");
             }
 
