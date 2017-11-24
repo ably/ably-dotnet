@@ -151,16 +151,12 @@
       <HintPath>..\packages\System.Xml.ReaderWriter.4.3.0\lib\net46\System.Xml.ReaderWriter.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="WebSocket4Net, Version=0.15.0.9, Culture=neutral, PublicKeyToken=eb4e154b696bf72a, processorArchitecture=MSIL">
-      <HintPath>..\packages\WebSocket4Net.0.15.0\lib\net45\WebSocket4Net.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WebsocketTransport.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -186,16 +182,7 @@
     <ItemGroup>
       <InputAssemblies Include="$(OutputPath)\IO.Ably.dll" />
       <InputAssemblies Include="$(OutputPath)\Newtonsoft.*.dll" />
-      <InputAssemblies Include="$(OutputPath)\WebSocket4Net.dll" />
-      <InputAssemblies Include="$(OutputPath)\SuperSocket.ClientEngine.dll" />
     </ItemGroup>
-    <ILRepack KeyFile="..\..\IO.Ably.snk" 
-      Parallel="true" 
-      Internalize="true" 
-      InputAssemblies="@(InputAssemblies)" 
-      LibraryPath="@(LibraryPaths)" 
-      XmlDocumentation="true" 
-      TargetKind="DLL" 
-      OutputFile="$(OutputPath)\Packaged\$(AssemblyName).dll" />
+    <ILRepack KeyFile="..\..\IO.Ably.snk" Parallel="true" Internalize="true" InputAssemblies="@(InputAssemblies)" LibraryPath="@(LibraryPaths)" XmlDocumentation="true" TargetKind="DLL" OutputFile="$(OutputPath)\Packaged\$(AssemblyName).dll" />
   </Target>
 </Project>

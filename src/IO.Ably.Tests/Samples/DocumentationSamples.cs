@@ -317,14 +317,7 @@ namespace IO.Ably.Tests.Samples
             Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, DefaultLogger.LoggerInstance);
             Connection.NotifyOperatingSystemNetworkState(NetworkState.Offline, DefaultLogger.LoggerInstance);
         }
-
-        public async Task UsingWebsocket4NetTransport()
-        {
-            var options = new ClientOptions();
-            options.TransportFactory = new WebSocketTransport.WebSocketTransportFactory();
-            var client = new AblyRealtime(options);
-        }
-
+        
         public async Task RestAuthorizeSample()
         {
             var client = new AblyRest("{{API_KEY}}");
