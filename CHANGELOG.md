@@ -1,8 +1,30 @@
 # Change Log
 
+## [0.8.6-beta4](https://github.com/ably/ably-dotnet/tree/0.8.6-beta4) (2017-11-24)
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/0.8.6-beta3...0.8.6-beta4)
+
+**Implemented enhancements:**
+
+- Add Release Process section to README [\#149](https://github.com/ably/ably-dotnet/issues/149)
+- Per-instance loggers [\#33](https://github.com/ably/ably-dotnet/issues/33)
+- Add documentation to README about which platforms are supported  [\#28](https://github.com/ably/ably-dotnet/issues/28)
+
+**Fixed bugs:**
+
+- System.Net.Http conflict [\#162](https://github.com/ably/ably-dotnet/issues/162)
+- Xamarin 0.8.5+ System.NotImplementedException: The method or operation is not implemented.   at System.Net.Sockets.SocketAsyncEventArgs.FinishOperationAsyncFailur [\#161](https://github.com/ably/ably-dotnet/issues/161)
+- iOS issue with MsWebsocket transport [\#151](https://github.com/ably/ably-dotnet/issues/151)
+
+**Merged pull requests:**
+
+- Remove websockets4net and Use System.Net.WebSockets exclusively  [\#163](https://github.com/ably/ably-dotnet/pull/163) ([withakay](https://github.com/withakay))
+- Test improvements [\#160](https://github.com/ably/ably-dotnet/pull/160) ([withakay](https://github.com/withakay))
+- Added presence features covering RTP2 and others [\#157](https://github.com/ably/ably-dotnet/pull/157) ([withakay](https://github.com/withakay))
+- Use a regex to check the PATCH portion of the version string, [\#155](https://github.com/ably/ably-dotnet/pull/155) ([withakay](https://github.com/withakay))
+
 ## [0.8.6-beta3](https://github.com/ably/ably-dotnet/tree/0.8.6-beta3)
 
-[Full Changelog](https://github.com/ably/ably-dotnet/compare/0.8.4.6...HEAD)
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/0.8.4.6...0.8.6-beta3)
 
 **Implemented enhancements:**
 
