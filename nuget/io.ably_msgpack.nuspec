@@ -8,6 +8,7 @@
         <owners>Ably Real-time Ltd</owners>
         <licenseUrl>https://github.com/ably/ably-dotnet/blob/master/LICENSE</licenseUrl>
         <projectUrl>https://github.com/ably/ably-dotnet</projectUrl>
+        <releaseNotes>https://github.com/ably/ably-dotnet/releases</releaseNotes>
         <iconUrl>https://s3.amazonaws.com/files.ably.io/logo-70x70.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Ably .NET Realtime and REST client library.</description>
