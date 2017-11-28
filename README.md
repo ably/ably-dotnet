@@ -665,15 +665,21 @@ DateTimeOffset time = await client.TimeAsync();
 ## Dependencies
 
 This library has dependencies that can differ depending on the target platform.
-See [the nuget](http://nuget.org/packages/ably.io/) for specifics.
+See [the nuget page](http://nuget.org/packages/ably.io/) for specifics.
 
 ## Supported platforms
 
 * Xamarin iOS and Android 
-* .Net 4.5+
+* .Net 4.6+ *
+* .Net Standard 1.4+
 * Mono
+* UWP
 
-Currently a portable version is not available.
+NOTE: To target Windows 7 a custom ITransportFactory will need to be implemented in your project that uses an alternate Web Socket library. 
+This is because [System.Net.WebSockets]('https://msdn.microsoft.com/en-us/library/system.net.websockets(v=vs.110).aspx') is not fully implementented on Windows 7.
+See [this repository](https://github.com/withakay/ably-dotnet-alternative-transports) for a working example using the [websocket4net library](https://github.com/kerryjiang/WebSocket4Net).
+
+Currently a portable (PCL) version is not available.
 
 ## Support, feedback and troubleshooting
 
