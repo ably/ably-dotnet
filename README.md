@@ -675,9 +675,9 @@ See [the nuget page](http://nuget.org/packages/ably.io/) for specifics.
 * Mono
 * UWP
 
-NOTE: To target Windows 7 a custom ITransportFactory will need to be implemented in your project that uses an alternate Web Socket library. 
+NOTE: To target Windows 7 a custom [ITransportFactory](https://github.com/ably/ably-dotnet/blob/master/src/IO.Ably.Shared/Transport/ITransport.cs) will need to be implemented in your project that uses an alternate Web Socket library. 
 This is because [System.Net.WebSockets]('https://msdn.microsoft.com/en-us/library/system.net.websockets(v=vs.110).aspx') is not fully implementented on Windows 7.
-See [this repository](https://github.com/withakay/ably-dotnet-alternative-transports) for a working example using the [websocket4net library](https://github.com/kerryjiang/WebSocket4Net).
+See [this repository](https://github.com/ably-forks/ably-dotnet-alternative-transports) for a working example using the [websocket4net library](https://github.com/kerryjiang/WebSocket4Net).
 
 Currently a portable (PCL) version is not available.
 
