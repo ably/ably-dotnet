@@ -1,4 +1,28 @@
 # Change Log
+## [0.8.7](https://github.com/ably/ably-dotnet/tree/0.8.6) (2017-12-22)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/0.8.7...HEAD)
+
+**Implemented enhancements:**
+
+- Add reauth capability [\#63](https://github.com/ably/ably-dotnet/issues/63)
+
+**Fixed bugs:**
+
+- After upgrade to 0.8.6, System.Net.WebSockets.WebSocketException [\#166](https://github.com/ably/ably-dotnet/issues/166)
+- 0.8.5 Android connection issue [\#129](https://github.com/ably/ably-dotnet/issues/129)
+- RealtimePresence possibly broken [\#114](https://github.com/ably/ably-dotnet/issues/114)
+
+**Closed issues:**
+
+- "The WebSocket protocol is not supported on this platform." on Windows 7 [\#165](https://github.com/ably/ably-dotnet/issues/165)
+-  customer getting an exception from MessageWebSocketMessageReceivedEventArgs.GetDataReader\(\) in 0.8.6 beta 3 [\#164](https://github.com/ably/ably-dotnet/issues/164)
+
+**Merged pull requests:**
+
+- Fix duplicate Dependencies section in readme [\#170](https://github.com/ably/ably-dotnet/pull/170) ([withakay](https://github.com/withakay))
+- fix for issue 167 [\#168](https://github.com/ably/ably-dotnet/pull/168) ([withakay](https://github.com/withakay))
+
 
 ## [0.8.6](https://github.com/ably/ably-dotnet/tree/0.8.6) (2017-11-28)
 
