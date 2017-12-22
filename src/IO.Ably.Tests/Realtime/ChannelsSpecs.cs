@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -58,6 +59,7 @@ namespace IO.Ably.Tests.Realtime
             Assert.Same(options, channel.Options);
         }
 
+        
         [Fact]
         [Trait("spec", "RTS3c")]
         public void WithExistingChannelAndOptions_ShouldGetExistingChannelAndupdateOpitons()
@@ -240,5 +242,22 @@ namespace IO.Ably.Tests.Realtime
         {
             _realtime = GetConnectedClient();
         }
+        
+        [Fact]
+        [Trait("issue", "167")]
+        public async void PublishShouldNotAlterChannelOptions()
+        {
+            var key = Convert.FromBase64String("dDGE8dYl8M9+uyUTIv0+ncs1hEa++HiNDu75Dyj4kmw=");
+            var cipherParams = new CipherParams(key);
+            var options = new ChannelOptions(cipherParams); // enable encrytion
+            var channel = Channels.Get("test", options);
+
+            var channel2 = Channels.Get("test");
+
+            await channel.PublishAsync(new Message(null, "This is a test", Guid.NewGuid().ToString()));
+            Assert.Equal(options.ToJson(), channel2.Options.ToJson());
+            Assert.True(options.CipherParams.Equals(cipherParams));
+        }
+
     }
 }

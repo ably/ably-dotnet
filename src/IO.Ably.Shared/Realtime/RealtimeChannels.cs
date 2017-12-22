@@ -11,7 +11,7 @@ namespace IO.Ably.Realtime
     {
         internal ILogger Logger { get; private set; }
 
-        private ConcurrentDictionary<string, RealtimeChannel> _channels { get; } = new ConcurrentDictionary<string, RealtimeChannel>();
+        private ConcurrentDictionary<string, RealtimeChannel> Channels { get; } = new ConcurrentDictionary<string, RealtimeChannel>();
 
         private readonly AblyRealtime _realtimeClient;
 
@@ -23,20 +23,17 @@ namespace IO.Ably.Realtime
 
         public IRealtimeChannel Get(string name)
         {
-            var opts = new ChannelOptions()
-            {
-                Logger = Logger
-            };
-            return Get(name, opts);
+            return Get(name, null);
         }
 
         public IRealtimeChannel Get(string name, ChannelOptions options)
         {
-            RealtimeChannel result = null;
-            if (!_channels.TryGetValue(name, out result))
+            // if the channel cannot be found
+            if (!Channels.TryGetValue(name, out var result))
             {
+                // create a new instance using the passed in option
                 var channel = new RealtimeChannel(name, _realtimeClient.Options.GetClientId(), _realtimeClient, options);
-                result = _channels.AddOrUpdate(name, channel, (s, realtimeChannel) =>
+                result = Channels.AddOrUpdate(name, channel, (s, realtimeChannel) =>
                 {
                     if (options != null)
                     {
@@ -59,7 +56,7 @@ namespace IO.Ably.Realtime
         {
             if(Logger.IsDebug) {  Logger.Debug($"Releasing channel #{name}"); }
             RealtimeChannel channel = null;
-            if (_channels.TryGetValue(name, out channel))
+            if (Channels.TryGetValue(name, out channel))
             {
                 EventHandler<ChannelStateChange> eventHandler = null;
                 eventHandler = (s, args) =>
@@ -71,7 +68,7 @@ namespace IO.Ably.Realtime
                         detachedChannel.InternalStateChanged -= eventHandler;
 
                         RealtimeChannel removedChannel;
-                        if (_channels.TryRemove(name, out removedChannel))
+                        if (Channels.TryRemove(name, out removedChannel))
                             removedChannel.Dispose();
                     }
                     else
@@ -89,7 +86,7 @@ namespace IO.Ably.Realtime
 
         public void ReleaseAll()
         {
-            var channelList = _channels.Keys.ToArray();
+            var channelList = Channels.Keys.ToArray();
             foreach (var channelName in channelList)
             {
                 Release(channelName);
@@ -98,17 +95,17 @@ namespace IO.Ably.Realtime
 
         public bool Exists(string name)
         {
-            return _channels.ContainsKey(name);
+            return Channels.ContainsKey(name);
         }
 
         IEnumerator<IRealtimeChannel> IEnumerable<IRealtimeChannel>.GetEnumerator()
         {
-            return _channels.ToArray().Select(x => x.Value).GetEnumerator();
+            return Channels.ToArray().Select(x => x.Value).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return _channels.ToArray().Select(x => x.Value).GetEnumerator();
+            return Channels.ToArray().Select(x => x.Value).GetEnumerator();
         }
     }
 }
