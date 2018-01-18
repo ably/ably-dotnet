@@ -69,9 +69,9 @@
     <EmbeddedResource Include="TestAppSpec.json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\IO.Ably.Net45\IO.Ably.Net45.csproj">
+    <ProjectReference Include="..\IO.Ably.Net45\IO.Ably.Net46.csproj">
       <Project>{2d265650-b1ec-4f8d-b043-a2e3dcc23fd8}</Project>
-      <Name>IO.Ably.Net45</Name>
+      <Name>IO.Ably.Net46</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
