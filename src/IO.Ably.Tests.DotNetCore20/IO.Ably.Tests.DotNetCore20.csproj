@@ -29,6 +29,7 @@
     <PackageReference Include="xunit" Version="2.3.1" />
     <PackageReference Include="xunit.analyzers" Version="0.8.0" />
     <PackageReference Include="xunit.assert" Version="2.3.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
     <PackageReference Include="XunitRetry" Version="2.0.0" />
   </ItemGroup>
 
@@ -38,6 +39,12 @@
 
   <ItemGroup>  	
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="xunit.runner.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <Import Project="..\IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.projitems" Label="Shared" />
