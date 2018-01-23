@@ -10,5 +10,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 #if !PACKAGE
-[assembly: InternalsVisibleTo("IO.Ably.Tests.NetStandard20")]
+[assembly: InternalsVisibleTo("IO.Ably.Tests.DotNetCore20")]
 #endif
