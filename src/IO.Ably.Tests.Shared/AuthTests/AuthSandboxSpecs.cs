@@ -102,7 +102,7 @@ namespace IO.Ably.Tests
                 return ably.Auth.RequestTokenAsync(tokenParams, new AuthOptions() { QueryTime = false });
             });
 
-            error.ErrorInfo.Code.Should().Be(40101);
+            error.ErrorInfo.Code.Should().Be(40104);
             error.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
