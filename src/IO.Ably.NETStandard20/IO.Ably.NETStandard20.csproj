@@ -25,10 +25,6 @@
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-
   <Target Name="AfterBuild" Condition="$(NCrunch) != '1'">
     <ItemGroup>
       <InputAssemblies Include="$(OutputPath)\IO.Ably.dll" />
