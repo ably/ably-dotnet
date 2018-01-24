@@ -438,7 +438,7 @@ namespace IO.Ably.Tests.Realtime
 
             sentMessages.Where(x => x.Channel == "test-channel" && x.Action == ProtocolMessage.MessageAction.Attach)
                 .Should().HaveCount(2);
-            channel.State.Should().Be(ChannelState.Attached);
+
         }
 
 
