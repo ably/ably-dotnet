@@ -1,0 +1,14 @@
+version: 2
+jobs:
+  build:
+    working_directory: /ably-dotnet
+    docker:
+      - image: microsoft/dotnet:2-sdk
+    environment:
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+    steps:
+      - checkout
+      - run: git submodule update --init --recursive --remote
+      - run: dotnet test src/IO.Ably.Tests.DotNetCore20/IO.Ably.Tests.DotNetCore20.csproj
+
