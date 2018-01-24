@@ -417,6 +417,20 @@ namespace IO.Ably.Tests.Realtime
             WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed(
                 Protocol protocol)
         {
+            int sendCount = 0;
+            int tries = 0;
+            while (sendCount < 2 && tries < 3)
+            {
+                sendCount = await WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed_count(protocol);
+                tries++;
+            }
+            sendCount.Should().Be(2);
+
+        }
+
+        public async Task<int> WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed_count(
+                Protocol protocol)
+        {
             Logger.LogLevel = LogLevel.Debug;
             var client = await GetRealtimeClient(protocol);
             var sentMessages = new List<ProtocolMessage>();
@@ -424,20 +438,19 @@ namespace IO.Ably.Tests.Realtime
             {
                 wrapper.MessageSent = sentMessages.Add;
             });
-            
+
             await client.WaitForState(ConnectionState.Connected);
 
             var channel = client.Channels.Get("test-channel");
             channel.Once(ChannelState.Attaching, change => client.GetTestTransport().Close(false));
             channel.Attach();
             await channel.WaitForState(ChannelState.Attaching);
-            
+
             await client.WaitForState(ConnectionState.Connected);
 
             await Task.Delay(3000);
 
-            sentMessages.Where(x => x.Channel == "test-channel" && x.Action == ProtocolMessage.MessageAction.Attach)
-                .Should().HaveCount(2);
+            return sentMessages.Count(x => x.Channel == "test-channel" && x.Action == ProtocolMessage.MessageAction.Attach);
 
         }
 
@@ -471,7 +484,7 @@ namespace IO.Ably.Tests.Realtime
         {
             int sendCount = 0;
             int tries = 0;
-            if (sendCount < 2 && tries < 3)
+            while (sendCount < 2 && tries < 3)
             {
                 sendCount = await WithChannelInDetachingState_WhenTransportIsDisconnected_ShouldResendDetachMessageOnConnectionResumed_count(protocol);
                 tries++;
