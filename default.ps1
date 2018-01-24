@@ -88,7 +88,7 @@ task Unit_Tests {
 		$configuration = "ci_release"
 	}
 
-	$base_dir = "$build_script_dir\$sln_dir\IO.Ably.Tests\bin\$configuration"
+	$base_dir = "$build_script_dir\$sln_dir\IO.Ably.Tests.NETFramework\bin\$configuration"
 	$packages_dir = "$build_script_dir\$sln_dir\packages\"
 
 	setup_folder $build_output_dir
