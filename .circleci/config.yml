@@ -10,5 +10,6 @@ jobs:
     steps:
       - checkout
       - run: git submodule update --init --recursive --remote
-      - run: dotnet test src/IO.Ably.Tests.DotNetCore20/IO.Ably.Tests.DotNetCore20.csproj
+      - run: chmod +x .circleci/run_tests.sh
+      - run: cd .circleci && ./run_tests.sh
 
