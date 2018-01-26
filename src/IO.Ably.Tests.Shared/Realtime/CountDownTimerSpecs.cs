@@ -109,6 +109,14 @@ namespace IO.Ably.Tests.Realtime
             timer.Start(timeout, callback2);
             await Task.Delay(250);
 
+            for (var i = 0; i < 20; i++)
+            {
+                if (called2 == 0)
+                    await Task.Delay(50);
+                else
+                    break;
+            }
+
             // Assert
             called2.Should().Be(1);
             called1.Should().Be(0);
