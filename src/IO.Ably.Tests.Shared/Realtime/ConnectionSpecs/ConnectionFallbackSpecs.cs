@@ -7,7 +7,6 @@ using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
-using Microsoft.Build.Utilities;
 using Xunit;
 using Xunit.Abstractions;
 using Task = System.Threading.Tasks.Task;

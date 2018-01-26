@@ -221,37 +221,49 @@ namespace IO.Ably.Tests.Realtime
             List<bool> successes2 = new List<bool>();
             List<bool> successes3 = new List<bool>();
 
-            var client1 = await GetRealtimeClient(protocol);
-            var client2 = await GetRealtimeClient(protocol);
-            var client3 = await GetRealtimeClient(protocol);
-
-            var messages = new List<Message>();
-            for (int i = 0; i < 20; i++)
+            bool retry = true;
+            int tries = 3; 
+            while (retry)
             {
-                messages.Add(new Message("name" + i, "data" + i));
-            }
+               
+                var client1 = await GetRealtimeClient(protocol);
+                var client2 = await GetRealtimeClient(protocol);
+                var client3 = await GetRealtimeClient(protocol);
 
-            var awaiter = new TaskCountAwaiter(60);
-            foreach (var message in messages)
-            {
-                client1.Channels.Get(channelName).Publish(new[] { message }, (b, info) =>
-               {
-                   successes1.Add(b);
-                   awaiter.Tick();
-               });
-                client2.Channels.Get(channelName).Publish(new[] { message }, (b, info) =>
+                var messages = new List<Message>();
+                for (int i = 0; i < 20; i++)
                 {
-                    successes2.Add(b);
-                    awaiter.Tick();
-                });
-                client3.Channels.Get(channelName).Publish(new[] { message }, (b, info) =>
-                {
-                    successes3.Add(b);
-                    awaiter.Tick();
-                });
-            }
+                    messages.Add(new Message("name" + i, "data" + i));
+                }
 
-            await awaiter.Task;
+                var awaiter = new TaskCountAwaiter(60);
+                foreach (var message in messages)
+                {
+                    client1.Channels.Get(channelName).Publish(new[] { message }, (b, info) =>
+                   {
+                       successes1.Add(b);
+                       awaiter.Tick();
+                   });
+                    client2.Channels.Get(channelName).Publish(new[] { message }, (b, info) =>
+                    {
+                        successes2.Add(b);
+                        awaiter.Tick();
+                    });
+                    client3.Channels.Get(channelName).Publish(new[] { message }, (b, info) =>
+                    {
+                        successes3.Add(b);
+                        awaiter.Tick();
+                    });
+                }
+
+                await awaiter.Task;
+                if ((successes1.Count == 20 && successes2.Count == 20 && successes3.Count == 20) || tries <= 0)
+                {
+                    retry = false;
+                }
+
+                tries--;
+            }
 
             successes1.Should().HaveCount(20, "Should have 20 successful callback executed");
             successes2.Should().HaveCount(20, "Should have 20 successful callback executed");
