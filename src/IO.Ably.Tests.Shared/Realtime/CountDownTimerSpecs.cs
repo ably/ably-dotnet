@@ -20,13 +20,19 @@ namespace IO.Ably.Tests.Realtime
         {
             // Arrange
             var timer = new CountdownTimer("Test timer", Logger);
-            var timeout = TimeSpan.FromMilliseconds(10);
+            var timeout = TimeSpan.FromMilliseconds(50);
             int called = 0;
             Action callback = () => called++;
 
             // Act
             timer.Start(timeout, callback);
-            await Task.Delay(50);
+            for (var i = 0; i < 20; i++)
+            {
+                if (called == 0)
+                    await Task.Delay(50);
+                else
+                    break;
+            }
 
             // Assert
             called.Should().Be(1);
@@ -37,14 +43,20 @@ namespace IO.Ably.Tests.Realtime
         {
             // Arrange
             var timer = new CountdownTimer("Test timer", Logger);
-            var timeout = TimeSpan.FromMilliseconds(10);
+            var timeout = TimeSpan.FromMilliseconds(50);
             int called = 0;
             Action callback = () => called++;
             timer.Start(timeout, callback);
 
             // Act
             timer.Abort();
-            await Task.Delay(50);
+            for (var i = 0; i < 20; i++)
+            {
+                if (called == 0)
+                    await Task.Delay(50);
+                else
+                    break;
+            }
 
             // Assert
             called.Should().Be(0);
@@ -56,7 +68,7 @@ namespace IO.Ably.Tests.Realtime
             // Arrange
             var timer = CreateTimer();
 
-            var timeout = TimeSpan.FromMilliseconds(10);
+            var timeout = TimeSpan.FromMilliseconds(100);
             int called = 0;
             void Callback()
             {
