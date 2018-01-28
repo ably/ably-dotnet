@@ -32,6 +32,7 @@ namespace IO.Ably
                 DefaultLogger.Debug($"Assembly cannot be loaded. Defaulting Microsoft Websocket library. ({e.Message})");
             }
         }
-        public static ITransportFactory TransportFactory => Platform?.TransportFactory ?? new MsWebSocketTransport.TransportFactory(); 
+        public static ITransportFactory TransportFactory => Platform?.TransportFactory ?? new MsWebSocketTransport.TransportFactory();
+        public static string PlatformId => Platform?.PlatformId ?? string.Empty;
     }
 }
