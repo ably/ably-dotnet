@@ -38,20 +38,6 @@ namespace IO.Ably.Tests
 
         [Fact]
         [Trait("spec", "RSC7a")]
-        public async Task WhenCallingUrl_AddsDefaultAblyHeader()
-        {
-            var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
-            var handler = new FakeHttpMessageHandler(response);
-            var client = new AblyHttpClient(new AblyHttpOptions(), handler);
-
-            await client.Execute(new AblyRequest("/test", HttpMethod.Get));
-            var values = handler.LastRequest.Headers.GetValues("X-Ably-Lib");
-            var fileVersion = typeof(Defaults).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
-            values.Should().NotBeEmpty();
-            values.First().Should().Be("dotnet-" + fileVersion);
-        }
-
-        [Fact]
         public async Task WhenCallingUrl_AddsDefaultAblyLibraryVersionHeader()
         {
             var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
@@ -59,9 +45,25 @@ namespace IO.Ably.Tests
             var client = new AblyHttpClient(new AblyHttpOptions(), handler);
 
             await client.Execute(new AblyRequest("/test", HttpMethod.Get));
-            var values = handler.LastRequest.Headers.GetValues("X-Ably-Version");
+            var values = handler.LastRequest.Headers.GetValues("X-Ably-Version").ToArray();
             values.Should().NotBeEmpty();
             values.First().Should().Be(Defaults.ProtocolVersion);
+        }
+
+        [Fact]
+        [Trait("spec", "RSC7b")]
+        public async Task WhenCallingUrl_AddsDefaultAblyHeader()
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
+            var handler = new FakeHttpMessageHandler(response);
+            var client = new AblyHttpClient(new AblyHttpOptions(), handler);
+
+            await client.Execute(new AblyRequest("/test", HttpMethod.Get));
+            var values = handler.LastRequest.Headers.GetValues("X-Ably-Lib").ToArray();
+            values.Should().NotBeEmpty();
+            values.First().Should().StartWith("dotnet");
+            values.First().Should().Be(Defaults.LibraryVersion);
+            Defaults.LibraryVersion.Should().BeEquivalentTo($"dotnet.{IoC.PlatformId}-{Defaults.AssemblyVersion}");
         }
 
         [Fact]

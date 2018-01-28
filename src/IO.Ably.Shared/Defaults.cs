@@ -17,7 +17,17 @@ namespace IO.Ably
             return version.Split('.').Take(3).JoinStrings(".");
         }
 
-        public static string LibraryVersion => $"dotnet-{AssemblyVersion}";
+        public static string LibraryVersion
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(IoC.PlatformId))
+                {
+                    return $"dotnet.{IoC.PlatformId}-{AssemblyVersion}";
+                }
+                return $"dotnet-{AssemblyVersion}";
+            }
+        }
 
         public const int QueryLimit = 100;
 
