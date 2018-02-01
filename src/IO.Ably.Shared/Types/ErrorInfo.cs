@@ -65,9 +65,9 @@ namespace IO.Ably
         {
             if (StatusCode.HasValue == false)
             {
-                return string.Format("Reason: {0}; Code: {1}", Message, Code);
+                return $"Reason: {Message}; Code: {Code}";
             }
-            return string.Format("Reason: {0}; Code: {1}; HttpStatusCode: ({2}){3}", Message, Code, (int)StatusCode.Value, StatusCode);
+            return $"Reason: {Message}; Code: {Code}; HttpStatusCode: {(int) StatusCode.Value} ({StatusCode})";
         }
 
         internal static ErrorInfo Parse(AblyResponse response)
@@ -93,7 +93,7 @@ namespace IO.Ably
                     //If there is no json or there is something wrong we don't want to throw from here. The
                 }
             }
-            return new ErrorInfo(StringExtensions.IsEmpty(reason) ? "Unknown error" : reason, errorCode, response.StatusCode);
+            return new ErrorInfo(reason.IsEmpty() ? "Unknown error" : reason, errorCode, response.StatusCode);
         }
 
         public Exception AsException()
