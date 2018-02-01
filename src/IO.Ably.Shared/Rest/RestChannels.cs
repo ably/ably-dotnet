@@ -23,15 +23,14 @@ namespace IO.Ably.Rest
 
         public IRestChannel Get(string name, ChannelOptions options)
         {
-            RestChannel result = null;
-            if (!_channels.TryGetValue(name, out result))
+            if (!_channels.TryGetValue(name, out var result))
             {
                 var channel = new RestChannel(_ablyRest, name, options);
                 result = _channels.AddOrUpdate(name, channel, (s, realtimeChannel) =>
                 {
                     if (options != null)
                     {
-                        result.Options = options;
+                        if (result != null) result.Options = options;
                     }
                     return realtimeChannel;
                 });
@@ -48,10 +47,7 @@ namespace IO.Ably.Rest
 
         public bool Release(string name)
         {
-            RestChannel removedChannel = null;
-            if (_channels.TryRemove(name, out removedChannel))
-                return true;
-            return false;
+            return _channels.TryRemove(name, out _);
         }
 
         public void ReleaseAll()
