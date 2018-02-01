@@ -9,9 +9,9 @@ namespace IO.Ably
     internal static class Defaults
     {
         public const string ProtocolVersion = "0.8";
-        private static readonly string AssemblyVersion = GetVersion();
+        internal static readonly string AssemblyVersion = GetVersion();
 
-        private static string GetVersion()
+        internal static string GetVersion()
         {
             var version =  typeof(Defaults).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
             return version.Split('.').Take(3).JoinStrings(".");
