@@ -22,6 +22,7 @@ namespace IO.Ably.Tests
         public class AuthMethodInitTests
         {
             [Fact]
+            [Trait("spec", "RSA4")]
             public void WithUseTokenAuthSetToTrue_AuthMethodIsAlwaysTokenAuth()
             {
                 var client = new AblyRest(new ClientOptions { Key = ValidKey, UseTokenAuth = true });
@@ -29,6 +30,7 @@ namespace IO.Ably.Tests
             }
 
             [Fact]
+            [Trait("spec", "RSA4")]
             public void WithKeyAndClientId_ShouldUseTokenAuth()
             {
                 var client = new AblyRest(new ClientOptions { Key = ValidKey, ClientId = "123" });
