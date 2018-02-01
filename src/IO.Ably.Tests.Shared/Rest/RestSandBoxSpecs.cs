@@ -12,6 +12,8 @@ namespace IO.Ably.Tests
     {
         public RestSandBoxSpecses(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
 
+        
+
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSC6a")]
@@ -41,6 +43,44 @@ namespace IO.Ably.Tests
         public class WithTokenAuthAndInvalidToken : RestSandBoxSpecses
         {
             public WithTokenAuthAndInvalidToken(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
+
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RSA4a")]
+            public async Task WithNoMeansToRenew_WhenTokenExpired_ShouldNotRetryAndRaiseError(Protocol protocol)
+            {
+                var authClient = await GetRestClient(protocol);
+                var almostExpiredToken = await authClient.Auth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(1) }, null);
+                await Task.Delay(TimeSpan.FromSeconds(2));
+
+                //Add this to fool the client it is a valid token
+                almostExpiredToken.Expires = DateTimeOffset.UtcNow.AddHours(1);
+
+                //Trying again with the new token
+                var client = await GetRestClient(protocol, options =>
+                {
+                    options.TokenDetails = almostExpiredToken;
+                    options.ClientId = "123";
+                    options.Key = "";
+                });
+
+                await client.StatsAsync();
+                client.AblyAuth.CurrentToken.IsValidToken().Should().BeTrue();
+
+                try
+                {
+                    client.Channels.Get("random").Publish("event", "data");
+                }
+                catch (AblyException e)
+                {
+                    e.ErrorInfo.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+                    e.ErrorInfo.Code.Should().BeInRange(40140, 40150);
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+            }
 
             [Theory]
             [ProtocolData]
