@@ -3,11 +3,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    public abstract class SandboxSpecs
+    public abstract class SandboxSpecs : IClassFixture<AblySandboxFixture>
     {
         internal ILogger Logger { get; set; }
 

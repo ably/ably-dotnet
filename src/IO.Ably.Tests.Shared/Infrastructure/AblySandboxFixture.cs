@@ -8,7 +8,7 @@ namespace IO.Ably.Tests
 {
     public class AblySandboxFixture : IDisposable
     {
-        public readonly static DateTimeOffset StartInterval = DateHelper.CreateDate(DateTimeOffset.UtcNow.Year - 1, 2, 3, 15, 5);
+        public static readonly DateTimeOffset StartInterval = DateHelper.CreateDate(DateTimeOffset.UtcNow.Year - 1, 2, 3, 15, 5);
 
         private readonly AsyncLazy<TestEnvironmentSettings> _initSettings = new AsyncLazy<TestEnvironmentSettings>(async () => await Initialise());
 
