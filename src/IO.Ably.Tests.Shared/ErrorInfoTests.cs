@@ -43,7 +43,7 @@ namespace IO.Ably.Tests
             var errorInfo = new ErrorInfo("Reason", 1000, HttpStatusCode.Accepted);
 
             //Assert
-            Assert.Equal("Reason: Reason; Code: 1000; HttpStatusCode: (202)Accepted", errorInfo.ToString());
+            Assert.Equal("Reason: Reason; Code: 1000; HttpStatusCode: 202 (Accepted)", errorInfo.ToString());
         }
 
         [Fact]
