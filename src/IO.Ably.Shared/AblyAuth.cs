@@ -166,7 +166,7 @@ namespace IO.Ably
                 var callbackResult = await mergedOptions.AuthCallback(@params);
 
                 if(callbackResult == null)
-                    throw new AblyException("AuthCallback returned null");
+                    throw new AblyException("AuthCallback returned null", 80019);
 
                 if (callbackResult is TokenDetails)
                     return callbackResult as TokenDetails;
@@ -180,31 +180,38 @@ namespace IO.Ably
                 
                 else
                 {
-                    throw new AblyException($"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest");
+                    throw new AblyException($"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest", 80019);
                 }
             }
             else if (mergedOptions.AuthUrl.IsNotEmpty())
             {
-                var response = await CallAuthUrl(mergedOptions, @params);
+                try
+                {
+                    var response = await CallAuthUrl(mergedOptions, @params);
 
-                if (response.Type == ResponseType.Text) //Return token string
-                    return new TokenDetails(response.TextResponse, Now);
+                    if (response.Type == ResponseType.Text) //Return token string
+                        return new TokenDetails(response.TextResponse, Now);
 
-                var signedData = response.TextResponse;
-                var jData = JObject.Parse(signedData);
+                    var signedData = response.TextResponse;
+                    var jData = JObject.Parse(signedData);
 
-                if (TokenDetails.IsToken(jData))
-                    return JsonHelper.DeserializeObject<TokenDetails>(jData);
+                    if (TokenDetails.IsToken(jData))
+                        return JsonHelper.DeserializeObject<TokenDetails>(jData);
 
-                postData = JsonHelper.Deserialize<TokenRequest>(signedData);
+                    postData = JsonHelper.Deserialize<TokenRequest>(signedData);
 
-                request.Url = $"/keys/{postData.KeyName}/requestToken";
+                    request.Url = $"/keys/{postData.KeyName}/requestToken";
+                }
+                catch (AblyException ex)
+                {
+                    throw new AblyException(new ErrorInfo("Error calling Auth URL, token request failed. See inner exception for details.", 80019, ex.ErrorInfo.StatusCode), ex);
+                }
             }
             else
             {
                 if (keyId.IsEmpty() || keyValue.IsEmpty())
                 {
-                    throw new AblyException("TokenAuth is on but there is no way to generate one");
+                    throw new AblyException("TokenAuth is on but there is no way to generate one", 80019 );
                 }
 
                 postData = new TokenRequest(Now).Populate(@params, keyId, keyValue);
@@ -215,7 +222,7 @@ namespace IO.Ably
             TokenDetails result = await _rest.ExecuteRequest<TokenDetails>(request);
 
             if (result == null)
-                throw new AblyException(new ErrorInfo("Invalid token response returned", 500));
+                throw new AblyException("Invalid token response returned", 80019);
 
             return result;
         }
