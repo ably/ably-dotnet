@@ -132,6 +132,43 @@ namespace IO.Ably.Tests
             client.Connection.State.Should().Be(ConnectionState.Connected);
         }
 
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSA4c")]
+        [Trait("spec", "RSA4c1")]
+        [Trait("spec", "RSA4c3")]
+        public async Task AuthToken_WhenTokenIsInvalid_ShouldRaiseError(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            client.Connect();
+            // wait until connected
+            await client.WaitForState();
+            
+            // have the auth callback return an invalid token
+            client.Options.AuthCallback = async tokenParams => "invalid_token";
+
+            try
+            {
+                client.Auth.RequestToken();
+                throw new Exception("Unexpected success");
+            }
+            catch (AblyException e)
+            {
+                e.ErrorInfo.Code.Should().Be(80019);
+                e.InnerException.Message
+                    .StartsWith(
+                        "Reason: AuthCallback returned a string which can't be converted to TokenRequest. (invalid_token)")
+                    .Should().BeTrue();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
+            // RSA4c3 should still be connected
+            client.Connection.State.Should().Be(ConnectionState.Connected);
+        }
+
 
         [Theory]
         [ProtocolData]

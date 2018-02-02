@@ -185,10 +185,11 @@ namespace IO.Ably
                         throw new AblyException($"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest", 80019);
                     }
                 }
-                catch (Exception e) when (shouldCatch)
+                catch (Exception ex) when (shouldCatch)
                 {
-                    throw new AblyException(
-                        "Error calling AuthCallback, token request failed. See inner exception for details.", 80019);
+                    throw new AblyException(new ErrorInfo(
+                        "Error calling AuthCallback, token request failed. See inner exception for details.", 80019), ex);
+
                 }
                 
             }
