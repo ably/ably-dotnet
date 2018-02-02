@@ -163,25 +163,34 @@ namespace IO.Ably
             TokenRequest postData = null;
             if (mergedOptions.AuthCallback != null)
             {
-                var callbackResult = await mergedOptions.AuthCallback(@params);
-
-                if(callbackResult == null)
-                    throw new AblyException("AuthCallback returned null", 80019);
-
-                if (callbackResult is TokenDetails)
-                    return callbackResult as TokenDetails;
-
-                if (callbackResult is TokenRequest || callbackResult is string)
+                bool shouldCatch = true;
+                try
                 {
-                    postData = GetTokenRequest(callbackResult);
+                    var callbackResult = await mergedOptions.AuthCallback(@params);
 
-                    request.Url = $"/keys/{postData.KeyName}/requestToken";
+                    if (callbackResult == null)
+                        throw new AblyException("AuthCallback returned null", 80019);
+
+                    if (callbackResult is TokenDetails)
+                        return callbackResult as TokenDetails;
+
+                    if (callbackResult is TokenRequest || callbackResult is string)
+                    {
+                        postData = GetTokenRequest(callbackResult);
+                        request.Url = $"/keys/{postData.KeyName}/requestToken";
+                    }
+                    else
+                    {
+                        shouldCatch = false;
+                        throw new AblyException($"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest", 80019);
+                    }
+                }
+                catch (Exception e) when (shouldCatch)
+                {
+                    throw new AblyException(
+                        "Error calling AuthCallback, token request failed. See inner exception for details.", 80019);
                 }
                 
-                else
-                {
-                    throw new AblyException($"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest", 80019);
-                }
             }
             else if (mergedOptions.AuthUrl.IsNotEmpty())
             {

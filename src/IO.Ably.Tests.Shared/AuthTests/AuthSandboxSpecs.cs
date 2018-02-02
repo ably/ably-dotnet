@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using IO.Ably.Realtime;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -25,6 +26,112 @@ namespace IO.Ably.Tests
                 res.Ttl = ttl.Value;
             return res;
         }
+
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSA4a")]
+        public async Task AuthToken_WithNoMeansToRenew_WhenTokenExpired_ShouldNotRetryAndRaiseError(Protocol protocol)
+        {
+            Logger.LogLevel = LogLevel.Debug;
+            // Arrange
+
+            var authClient = await GetRestClient(protocol);
+            var almostExpiredToken = await authClient.Auth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(1) }, null);
+            await Task.Delay(TimeSpan.FromSeconds(2));
+
+            //Add this to fool the client it is a valid token
+            almostExpiredToken.Expires = DateTimeOffset.UtcNow.AddHours(1);
+
+            var client = await GetRealtimeClient(protocol, (options, _) =>
+            {
+                options.TokenDetails = almostExpiredToken;
+                options.ClientId = "123";
+                options.Key = "";
+                options.AutoConnect = false;
+            });
+
+            bool caught = false;
+            try
+            {
+                client.Connect();
+                var channel = client.Channels.Get("random");
+                channel.Publish("event", "data");
+            }
+            catch (AblyException e)
+            {
+                caught = true;
+                e.ErrorInfo.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+                e.ErrorInfo.Code.Should().BeInRange(40140, 40150);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            caught.Should().BeTrue();
+        }
+
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSA4c")]
+        [Trait("spec", "RSA4c1")]
+        [Trait("spec", "RSA4c3")]
+        public async Task AuthToken_WhenAuthUrlFails_ShouldRaiseError(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            client.Connect();
+            // wait until connected
+            await client.WaitForState();
+            // set a bogus AuthUrl
+            client.Options.AuthUrl = new Uri("http://localhost:8910");
+            try
+            {
+                client.Auth.RequestToken();
+                throw new Exception("Unexpected success");
+            }
+            catch (AblyException e)
+            {
+                e.ErrorInfo.Code.Should().Be(80019);
+            }
+            // RSA4c3 should still be connected
+            client.Connection.State.Should().Be(ConnectionState.Connected);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSA4c")]
+        [Trait("spec", "RSA4c1")]
+        [Trait("spec", "RSA4c3")]
+        public async Task AuthToken_WhenAuthCallbackFails_ShouldRaiseError(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            client.Connect();
+            // wait until connected
+            await client.WaitForState();
+
+            client.Options.TokenDetails = new TokenDetails();
+            client.Options.Key = "";
+            client.Options.AuthCallback = tokenParams => throw new Exception("Force error in test");
+
+            try
+            {
+                client.Auth.RequestToken();
+                throw new Exception("Unexpected success");
+            }
+            catch (AblyException e)
+            {
+                e.ErrorInfo.Code.Should().Be(80019);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
+            // RSA4c3 should still be connected
+            client.Connection.State.Should().Be(ConnectionState.Connected);
+        }
+
 
         [Theory]
         [ProtocolData]
