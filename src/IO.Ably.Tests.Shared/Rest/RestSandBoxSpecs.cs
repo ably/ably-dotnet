@@ -63,8 +63,7 @@ namespace IO.Ably.Tests
                     options.ClientId = "123";
                     options.Key = "";
                 });
-
-                await client.StatsAsync();
+                
                 client.AblyAuth.CurrentToken.IsValidToken().Should().BeTrue();
                 
                 try
