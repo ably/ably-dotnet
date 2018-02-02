@@ -47,6 +47,16 @@ namespace IO.Ably
             }
 
         /// <summary>
+        /// Creates an AblyException and populates ErrorInfo with the supplied parameters.
+        /// </summary>
+        /// <param name="reason"></param>
+        /// <param name="code"></param>
+        public AblyException(string reason, int code) : this(new ErrorInfo(reason, code))
+        {
+
+        }
+
+        /// <summary>
         /// Creates AblyException and populates ErrorInfo with the supplied parameters.
         /// </summary>
         public AblyException(string reason, int code, HttpStatusCode? statusCode = null) : this(new ErrorInfo(reason, code, statusCode))
@@ -72,6 +82,7 @@ namespace IO.Ably
             ErrorInfo = info;
         }
 
+        
         /* protected AblyException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
