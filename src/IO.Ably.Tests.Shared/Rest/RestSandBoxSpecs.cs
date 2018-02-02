@@ -46,7 +46,7 @@ namespace IO.Ably.Tests
 
             [Theory]
             [ProtocolData]
-            [Trait("spec", "RSA4a")]
+            [Trait("spec", "RSA4a")] /* only tests rest so does not cover 'in the case of the realtime library, transition the connection to the FAILED state' */
             public async Task WithNoMeansToRenew_WhenTokenExpired_ShouldNotRetryAndRaiseError(Protocol protocol)
             {
                 var authClient = await GetRestClient(protocol);
@@ -66,19 +66,16 @@ namespace IO.Ably.Tests
 
                 await client.StatsAsync();
                 client.AblyAuth.CurrentToken.IsValidToken().Should().BeTrue();
-
+                
                 try
                 {
                     client.Channels.Get("random").Publish("event", "data");
+                    throw new Exception("Unexpected success, the proceeding code should have raised and AblyException");
                 }
                 catch (AblyException e)
                 {
                     e.ErrorInfo.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
                     e.ErrorInfo.Code.Should().BeInRange(40140, 40150);
-                }
-                catch (Exception e)
-                {
-                    throw e;
                 }
             }
 
