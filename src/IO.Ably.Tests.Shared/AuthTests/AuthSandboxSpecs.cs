@@ -33,12 +33,8 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSA4a")]
         public async Task AuthToken_WithNoMeansToRenew_WhenTokenExpired_ShouldNotRetryAndRaiseError(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
-            // Arrange
-
             var authClient = await GetRestClient(protocol);
             var almostExpiredToken = await authClient.Auth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(1) }, null);
-            await Task.Delay(TimeSpan.FromSeconds(2));
 
             //Add this to fool the client it is a valid token
             almostExpiredToken.Expires = DateTimeOffset.UtcNow.AddHours(1);
@@ -49,26 +45,25 @@ namespace IO.Ably.Tests
                 options.ClientId = "123";
                 options.Key = "";
                 options.AutoConnect = false;
+                options.AuthCallback = null;
+                options.AuthUrl = null;
             });
 
-            bool caught = false;
+            client.Connect();
+            await client.WaitForState();
+            await Task.Delay(TimeSpan.FromSeconds(2));
+
             try
             {
-                client.Connect();
                 var channel = client.Channels.Get("random");
                 channel.Publish("event", "data");
+                throw new Exception("Unexpected success, preceeding code should have failed");
             }
             catch (AblyException e)
             {
-                caught = true;
                 e.ErrorInfo.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
                 e.ErrorInfo.Code.Should().BeInRange(40140, 40150);
             }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            caught.Should().BeTrue();
         }
 
 
@@ -155,14 +150,6 @@ namespace IO.Ably.Tests
             catch (AblyException e)
             {
                 e.ErrorInfo.Code.Should().Be(80019);
-                e.InnerException.Message
-                    .StartsWith(
-                        "Reason: AuthCallback returned a string which can't be converted to TokenRequest. (invalid_token)")
-                    .Should().BeTrue();
-            }
-            catch (Exception e)
-            {
-                throw e;
             }
 
             // RSA4c3 should still be connected
