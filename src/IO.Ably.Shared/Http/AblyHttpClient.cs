@@ -86,7 +86,7 @@ namespace IO.Ably
                     if (IsRetryableResponse(response) && Options.IsDefaultHost)
                     {
                         Logger.Warning("Failed response. Retrying. Returned response with status code: " +
-                                    response.StatusCode);
+                                       response.StatusCode);
 
                         if (TryGetNextRandomHost(fallbackHosts, random, out host))
                         {
@@ -95,9 +95,10 @@ namespace IO.Ably
                             continue;
                         }
                     }
+
                     throw AblyException.FromResponse(ablyResponse);
                 }
-                catch (HttpRequestException ex) when(IsRetryableError(ex) && Options.IsDefaultHost)
+                catch (HttpRequestException ex) when (IsRetryableError(ex) && Options.IsDefaultHost)
                 {
                     Logger.Warning("Error making a connection to Ably servers. Retrying", ex);
 
@@ -107,9 +108,10 @@ namespace IO.Ably
                         currentTry++;
                         continue;
                     }
+
                     throw;
                     //_host = hosts[currentTry - 1];
-                    
+
                 }
                 catch (TaskCanceledException ex) when (IsRetryableError(ex) && Options.IsDefaultHost)
                 {
@@ -120,9 +122,20 @@ namespace IO.Ably
                         currentTry++;
                         continue;
                     }
+
                     throw;
                 }
-                catch(HttpRequestException ex) { throw new AblyException(new ErrorInfo("Error executing request", 500), ex);}
+                catch (HttpRequestException ex)
+                {
+                    StringBuilder reason = new StringBuilder(ex.Message);
+                    var innerEx = ex.InnerException;
+                    while (innerEx != null)
+                    {
+                        reason.Append(" " + innerEx.Message);
+                        innerEx = innerEx.InnerException;
+                    }
+                    throw new AblyException(new ErrorInfo(reason.ToString(), 500), ex);
+                }
                 catch(TaskCanceledException ex)
                 {
                     // if the cancellation was not requested then this is timeout.
