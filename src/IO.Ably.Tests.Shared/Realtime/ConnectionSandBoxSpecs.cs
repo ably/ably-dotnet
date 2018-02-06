@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
@@ -377,6 +378,36 @@ namespace IO.Ably.Tests.Realtime
             await client.WaitForState();
             client.Connection.State.Should().Be(ConnectionState.Connected);
         }
+
+
+        [Theory]
+        [ProtocolData]
+        [Trait("issue", "177")]
+        public async Task WhenWebSocketClientIsNull_SendShouldSetDisconnectedState(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            await WaitForState(client); //wait for connection
+            client.Connection.State.Should().Be(ConnectionState.Connected);
+
+            var transportWrapper = client.ConnectionManager.Transport as TestTransportWrapper;
+            transportWrapper.Should().NotBe(null);
+            var wsTransport = transportWrapper._wrappedTransport as MsWebSocketTransport;
+            wsTransport.Should().NotBe(null);
+            wsTransport._socket.ClientWebSocket = null;
+
+            var tca = new TaskCompletionAwaiter();
+            client.Connection.On(s =>
+            {
+                if (s.Current == ConnectionState.Disconnected)
+                    tca.SetCompleted();
+            });
+
+            await client.Channels.Get("test").PublishAsync("event", "data");
+            await tca.Task;
+            // should auto connect again
+            await WaitForState(client);
+        }
+
 
         public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
         {

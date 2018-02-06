@@ -9,7 +9,7 @@ namespace IO.Ably.Transport
     {
         internal ILogger Logger { get; private set; }
 
-        private MsWebSocketConnection _socket;
+        internal MsWebSocketConnection _socket;
 
         protected MsWebSocketTransport(TransportParams parameters)
         {

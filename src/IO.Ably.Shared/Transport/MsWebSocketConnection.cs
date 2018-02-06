@@ -29,7 +29,7 @@ namespace IO.Ably.Transport
 
         public string ConnectionId { get; set; }
 
-        private ClientWebSocket ClientWebSocket { get; }
+        internal ClientWebSocket ClientWebSocket { get; set ; }
         private CancellationTokenSource _tokenSource = new CancellationTokenSource();
 
         public MsWebSocketConnection(Uri uri, ILogger logger)
@@ -80,7 +80,7 @@ namespace IO.Ably.Transport
                     Logger.Debug("Closing websocket. Close status: " +
                                  Enum.GetName(typeof(WebSocketCloseStatus), ClientWebSocket.CloseStatus) + ", Description: " + ClientWebSocket.CloseStatusDescription);
 
-                if(ClientWebSocket.State != WebSocketState.Closed)
+                if(ClientWebSocket?.State != WebSocketState.Closed)
                 {
                     await
                     ClientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None)
@@ -113,20 +113,28 @@ namespace IO.Ably.Transport
 
         private Task Send(ArraySegment<byte> data, WebSocketMessageType type, CancellationToken token)
         {
-            if (ClientWebSocket.State == WebSocketState.Open)
+            try
             {
-                var sendTask = ClientWebSocket.SendAsync(data, type, true, token);
-                sendTask.ConfigureAwait(false);
-                return sendTask;
-            }
+                if (ClientWebSocket.State == WebSocketState.Open)
+                {
+                    var sendTask = ClientWebSocket.SendAsync(data, type, true, token);
+                    sendTask.ConfigureAwait(false);
+                    return sendTask;
+                }
+                Logger.Warning($"Trying to send message of type {type} when the socket is {ClientWebSocket.State}. Ack for this message will fail shortly.");
 
-            Logger.Warning($"Trying to send message of type {type} when the socket is already closed. Ack for this message will fail shortly.");
-            return Task.FromResult(true);
+                return Task.FromResult(true);
+            }
+            catch (Exception ex)
+            {
+                _handler?.Invoke(ConnectionState.Error, ex);
+            }
+            return Task.FromResult(false);
         }
 
         public async Task Receive(Action<RealtimeTransportData> handleMessage)
         {
-            while (ClientWebSocket.State == WebSocketState.Open)
+            while (ClientWebSocket?.State == WebSocketState.Open)
             {
                 try
                 {
