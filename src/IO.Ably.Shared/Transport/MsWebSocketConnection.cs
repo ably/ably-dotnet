@@ -121,7 +121,7 @@ namespace IO.Ably.Transport
                     sendTask.ConfigureAwait(false);
                     return sendTask;
                 }
-                Logger.Warning($"Trying to send message of type {type} when the socket is already closed or null. Ack for this message will fail shortly.");
+                Logger.Warning($"Trying to send message of type {type} when the socket is {ClientWebSocket.State}. Ack for this message will fail shortly.");
 
                 return Task.FromResult(true);
             }
