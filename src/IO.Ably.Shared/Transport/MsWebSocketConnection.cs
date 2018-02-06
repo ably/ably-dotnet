@@ -113,15 +113,23 @@ namespace IO.Ably.Transport
 
         private Task Send(ArraySegment<byte> data, WebSocketMessageType type, CancellationToken token)
         {
-            if (ClientWebSocket?.State == WebSocketState.Open)
+            try
             {
-                var sendTask = ClientWebSocket.SendAsync(data, type, true, token);
-                sendTask.ConfigureAwait(false);
-                return sendTask;
-            }
+                if (ClientWebSocket.State == WebSocketState.Open)
+                {
+                    var sendTask = ClientWebSocket.SendAsync(data, type, true, token);
+                    sendTask.ConfigureAwait(false);
+                    return sendTask;
+                }
+                Logger.Warning($"Trying to send message of type {type} when the socket is already closed or null. Ack for this message will fail shortly.");
 
-            Logger.Warning($"Trying to send message of type {type} when the socket is already closed or null. Ack for this message will fail shortly.");
-            return Task.FromResult(true);
+                return Task.FromResult(true);
+            }
+            catch (Exception ex)
+            {
+                _handler?.Invoke(ConnectionState.Error, ex);
+            }
+            return Task.FromResult(false);
         }
 
         public async Task Receive(Action<RealtimeTransportData> handleMessage)
