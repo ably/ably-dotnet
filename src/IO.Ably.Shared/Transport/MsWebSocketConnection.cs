@@ -29,7 +29,7 @@ namespace IO.Ably.Transport
 
         public string ConnectionId { get; set; }
 
-        private ClientWebSocket ClientWebSocket { get; }
+        internal ClientWebSocket ClientWebSocket { get; set ; }
         private CancellationTokenSource _tokenSource = new CancellationTokenSource();
 
         public MsWebSocketConnection(Uri uri, ILogger logger)
