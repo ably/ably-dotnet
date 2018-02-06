@@ -389,6 +389,12 @@ namespace IO.Ably.Tests.Realtime
             await WaitForState(client); //wait for connection
             client.Connection.State.Should().Be(ConnectionState.Connected);
 
+            var transportWrapper = client.ConnectionManager.Transport as TestTransportWrapper;
+            transportWrapper.Should().NotBe(null);
+            var wsTransport = transportWrapper._wrappedTransport as MsWebSocketTransport;
+            wsTransport.Should().NotBe(null);
+            wsTransport._socket.ClientWebSocket = null;
+
             var tca = new TaskCompletionAwaiter();
             client.Connection.On(s =>
             {
@@ -396,13 +402,7 @@ namespace IO.Ably.Tests.Realtime
                     tca.SetCompleted();
             });
 
-            var transportWrapper = client.ConnectionManager.Transport as TestTransportWrapper;
-            transportWrapper.Should().NotBe(null);
-            var wsTransport = transportWrapper._wrappedTransport as MsWebSocketTransport;
-            wsTransport.Should().NotBe(null);
-            wsTransport._socket.ClientWebSocket = null;
             await client.Channels.Get("test").PublishAsync("event", "data");
-            
             await tca.Task;
             // should auto connect again
             await WaitForState(client);
