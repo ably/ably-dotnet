@@ -1,4 +1,21 @@
 # Change Log
+
+## [0.8.8](https://github.com/ably/ably-dotnet/tree/HEAD)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/0.8.8...HEAD)
+
+**Fixed bugs:**
+
+- Channel options consistently being overridden on realtime channels \(v0.8.6\) [\#167](https://github.com/ably/ably-dotnet/issues/167)
+- 0.8.4.8 - Unable to publish in detached or failed state [\#135](https://github.com/ably/ably-dotnet/issues/135)
+
+**Merged pull requests:**
+
+- Null check WebSocket Client [\#177](https://github.com/ably/ably-dotnet/pull/177) ([withakay](https://github.com/withakay))
+- Circleci [\#176](https://github.com/ably/ably-dotnet/pull/176) ([withakay](https://github.com/withakay))
+- Test and ci improvements [\#175](https://github.com/ably/ably-dotnet/pull/175) ([withakay](https://github.com/withakay))
+- Use a shared project for tests to facilitate cross platform testing. [\#174](https://github.com/ably/ably-dotnet/pull/174) ([withakay](https://github.com/withakay))
+
 ## [0.8.7](https://github.com/ably/ably-dotnet/tree/0.8.6) (2017-12-22)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/0.8.7...HEAD)
