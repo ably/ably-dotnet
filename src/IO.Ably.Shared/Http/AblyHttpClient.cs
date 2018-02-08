@@ -97,6 +97,7 @@ namespace IO.Ably
                     }
 
                     throw AblyException.FromResponse(ablyResponse);
+
                 }
                 catch (HttpRequestException ex) when (IsRetryableError(ex) && Options.IsDefaultHost)
                 {
@@ -219,7 +220,7 @@ namespace IO.Ably
         {
             return ErrorInfo.IsRetryableStatusCode(response.StatusCode);
         }
-
+        
         internal bool IsRetryableError(Exception ex)
         {
             if (ex is TaskCanceledException)

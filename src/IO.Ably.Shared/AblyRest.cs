@@ -126,11 +126,18 @@ namespace IO.Ably
                     && ex.ErrorInfo.IsTokenError && AblyAuth.TokenRenewable)
                 {
                     if (Logger.IsDebug)
-                        Logger.Debug("Handling UnAuthorized Error and repeating request.");
-
-                    await AblyAuth.AuthoriseAsync(null, new AuthOptions() {Force = true});
-                    await AblyAuth.AddAuthHeader(request);
-                    return await ExecuteHttpRequest(request);
+                        Logger.Debug("Handling UnAuthorized Error, attmepting to Re-authorize and repeat request.");
+                    
+                    try
+                    {
+                        var token = await AblyAuth.AuthoriseAsync(null, new AuthOptions() { Force = true });
+                        await AblyAuth.AddAuthHeader(request);
+                        return await ExecuteHttpRequest(request);
+                    }
+                    catch (AblyException ex2)
+                    {
+                        throw new AblyException(ex2.ErrorInfo, ex);
+                    }
 
                 }
                 throw;

@@ -102,6 +102,7 @@ namespace IO.Ably.Tests
         /// </summary>
         internal class TestLogger : ILogger
         {
+            public int SeenCount { get; set; }
             public string MessageToTest { get; set; }
 
             public string FullMessage { get; private set; }
@@ -114,6 +115,7 @@ namespace IO.Ably.Tests
             {
                 LogLevel = LogLevel.Debug;
                 MessageToTest = messageToTest;
+                SeenCount = 0;
             }
 
             public bool MessageSeen { get; private set; }
@@ -147,6 +149,7 @@ namespace IO.Ably.Tests
                 {
                     MessageSeen = true;
                     FullMessage = message;
+                    SeenCount++;
                 }
             }
         }
