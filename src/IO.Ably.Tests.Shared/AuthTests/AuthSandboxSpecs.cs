@@ -29,8 +29,48 @@ namespace IO.Ably.Tests
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RSA4a")]
-        public async Task AuthToken_WithNoMeansToRenew_WhenTokenExpired_ShouldNotRetryAndRaiseError(Protocol protocol)
+        [Trait("spec", "RSA4a")] /* only tests rest so does not cover 'in the case of the realtime library, transition the connection to the FAILED state' */
+        public async Task WithNoMeansToRenew_WhenTokenExpired_ShouldNotRetryAndRaiseError(Protocol protocol)
+        {
+            var authClient = await GetRestClient(protocol);
+            var almostExpiredToken = await authClient.Auth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(1) }, null);
+            await Task.Delay(TimeSpan.FromSeconds(2));
+
+            //Add this to fool the client it is a valid token
+            almostExpiredToken.Expires = DateTimeOffset.UtcNow.AddHours(1);
+
+            //Trying again with the new token
+            var client = await GetRestClient(protocol, options =>
+            {
+                options.TokenDetails = almostExpiredToken;
+                options.ClientId = "123";
+                options.Key = "";
+            });
+
+            client.AblyAuth.CurrentToken.IsValidToken().Should().BeTrue();
+
+            try
+            {
+                client.Channels.Get("random").Publish("event", "data");
+                throw new Exception("Unexpected success, the proceeding code should have raised and AblyException");
+            }
+            catch (AblyException e)
+            {
+                e.ErrorInfo.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+                e.ErrorInfo.Code.Should().BeInRange(40140, 40150);
+            }
+        }
+        /*
+         * (RSA4b) When the client does have a means to renew the token automatically,
+         * and the token has expired or the server has responded with a token error
+         * (statusCode value of 401 and error code value in the range 40140 <= code < 40150),
+         * then the client should automatically make a single attempt to reissue the token and resend the request using the new token.
+         * If the token creation failed or the subsequent request with the new token failed due to a token error, then the request should result in an error		
+         */
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSA4b")]
+        public async Task AuthToken_WithMeansToRenew_WhenTokenExpired_ShouldRetry_WhenRetryFails_RaiseError(Protocol protocol)
         {
             var authClient = await GetRestClient(protocol);
             // create a tokenDetails that is about to expire
@@ -38,6 +78,7 @@ namespace IO.Ably.Tests
             // Fool the client it is a valid token
             almostExpiredToken.Expires = DateTimeOffset.UtcNow.AddHours(1);
 
+            var testLogger = new TestLogger("Handling UnAuthorized Error, attmepting to Re-authorize and repeat request.");
             // create a realtime instance with no mean to renew the token
             var restClient = await GetRestClient(protocol, (options) =>
             {
@@ -46,7 +87,8 @@ namespace IO.Ably.Tests
                 options.Key = "";
                 options.AutoConnect = false;
                 options.AuthCallback = null;
-                options.AuthUrl = null;
+                options.AuthUrl = new Uri("http://localhost:12345/invalid-uri");
+                options.Logger = testLogger;
             });
             
             // wait for the token to expire
@@ -60,9 +102,12 @@ namespace IO.Ably.Tests
             }
             catch (AblyException e)
             {
-                e.ErrorInfo.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
-                e.ErrorInfo.Code.Should().BeInRange(40140, 40150);
+                e.ErrorInfo.Code.Should().Be(80019);
             }
+            // check the retry code was run
+            testLogger.MessageSeen.Should().BeTrue();
+            // only once
+            testLogger.SeenCount.Should().Be(1);
         }
 
 
