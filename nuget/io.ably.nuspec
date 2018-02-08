@@ -59,7 +59,7 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="..\src\IO.Ably.Net45\bin\$configuration$\Packaged\IO.Ably.*" target="lib\net46" />
+        <file src="..\src\IO.Ably.NETFramework\bin\$configuration$\Packaged\IO.Ably.*" target="lib\net46" />
         <file src="..\src\IO.Ably.Android\bin\$configuration$\Packaged\IO.Ably.*" target="lib\monoandroid" />
         <file src="..\src\IO.Ably.iOS\bin\$configuration$\Packaged\IO.Ably.*" target="lib\Xamarin.iOS" />
         <file src="..\src\IO.Ably.iOS\bin\$configuration$\Packaged\IO.Ably.*" target="lib\monotouch" />

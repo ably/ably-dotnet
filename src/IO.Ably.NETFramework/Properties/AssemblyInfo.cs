@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 #if !PACKAGE
 [assembly: InternalsVisibleTo("IO.Ably.Tests")]
-[assembly: InternalsVisibleTo("IO.Ably.Tests.Net46")]
+[assembly: InternalsVisibleTo("IO.Ably.Tests.NETFramework")]
 #endif
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
