@@ -27,19 +27,19 @@ namespace IO.Ably.Tests
             return res;
         }
 
-
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSA4a")]
         public async Task AuthToken_WithNoMeansToRenew_WhenTokenExpired_ShouldNotRetryAndRaiseError(Protocol protocol)
         {
             var authClient = await GetRestClient(protocol);
-            var almostExpiredToken = await authClient.Auth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(1) }, null);
-
-            //Add this to fool the client it is a valid token
+            // create a tokenDetails that is about to expire
+            var almostExpiredToken = await authClient.Auth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromMilliseconds(2000) }, null);
+            // Fool the client it is a valid token
             almostExpiredToken.Expires = DateTimeOffset.UtcNow.AddHours(1);
 
-            var client = await GetRealtimeClient(protocol, (options, _) =>
+            // create a realtime instance with no mean to renew the token
+            var restClient = await GetRestClient(protocol, (options) =>
             {
                 options.TokenDetails = almostExpiredToken;
                 options.ClientId = "123";
@@ -48,14 +48,13 @@ namespace IO.Ably.Tests
                 options.AuthCallback = null;
                 options.AuthUrl = null;
             });
-
-            client.Connect();
-            await client.WaitForState();
-            await Task.Delay(TimeSpan.FromSeconds(2));
-
+            
+            // wait for the token to expire
+            await Task.Delay(TimeSpan.FromMilliseconds(2100));
+            
             try
             {
-                var channel = client.Channels.Get("random");
+                var channel = restClient.Channels.Get("random");
                 channel.Publish("event", "data");
                 throw new Exception("Unexpected success, preceeding code should have failed");
             }
