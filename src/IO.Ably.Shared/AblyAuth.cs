@@ -214,7 +214,7 @@ namespace IO.Ably
                 }
                 catch (AblyException ex)
                 {
-                    throw new AblyException(new ErrorInfo("Error calling Auth URL, token request failed. See inner exception for details.", 80019, ex.ErrorInfo.StatusCode), ex);
+                    throw new AblyException(new ErrorInfo("Error calling Auth URL, token request failed. See the InnerException property for details of the underlying exception.", 80019, ex.ErrorInfo.StatusCode), ex);
                 }
             }
             else
