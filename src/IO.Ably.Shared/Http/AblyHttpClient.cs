@@ -69,13 +69,9 @@ namespace IO.Ably
                 try
                 {
                     var message = GetRequestMessage(request, host);
-
                     await LogMessage(message);
-
                     var response = await Client.SendAsync(message, HttpCompletionOption.ResponseContentRead);
-
                     var ablyResponse = await GetAblyResponse(response);
-
                     LogResponse(ablyResponse, request.Url);
 
                     if (response.IsSuccessStatusCode)
@@ -95,24 +91,18 @@ namespace IO.Ably
                             continue;
                         }
                     }
-
                     throw AblyException.FromResponse(ablyResponse);
-
                 }
                 catch (HttpRequestException ex) when (IsRetryableError(ex) && Options.IsDefaultHost)
                 {
                     Logger.Warning("Error making a connection to Ably servers. Retrying", ex);
-
                     if (TryGetNextRandomHost(fallbackHosts, random, out host))
                     {
                         Logger.Debug("Retrying using host {0}", host);
                         currentTry++;
                         continue;
                     }
-
                     throw;
-                    //_host = hosts[currentTry - 1];
-
                 }
                 catch (TaskCanceledException ex) when (IsRetryableError(ex) && Options.IsDefaultHost)
                 {
@@ -123,7 +113,6 @@ namespace IO.Ably
                         currentTry++;
                         continue;
                     }
-
                     throw;
                 }
                 catch (HttpRequestException ex)
@@ -146,7 +135,6 @@ namespace IO.Ably
                         throw new AblyException(new ErrorInfo("Error executing request", 500), ex);
                 }
             }
-
             throw new AblyException(new ErrorInfo("Error exectuting request", 500));
         }
 
@@ -316,8 +304,5 @@ namespace IO.Ably
                 return "?" + query;
             return string.Empty;
         }
-
     }
-
-
 }
