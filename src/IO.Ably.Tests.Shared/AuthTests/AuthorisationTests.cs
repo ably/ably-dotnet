@@ -28,7 +28,7 @@ namespace IO.Ably.Tests
         public async Task WithTlsFalseAndBasicAuth_Throws()
         {
             var client = GetRestClient(setOptionsAction: options => { options.Tls = false; });
-            await Assert.ThrowsAsync<InsecureRequestException>(() => client.Auth.AuthoriseAsync());
+            await Assert.ThrowsAsync<InsecureRequestException>(() => client.Auth.AuthorizeAsync());
         }
 
         [Fact]
@@ -36,7 +36,7 @@ namespace IO.Ably.Tests
         public async Task WithTlsTrueAndBasicAuth_ShouldWork()
         {
             var client = GetRestClient(setOptionsAction: options => { options.Tls = true; });
-            await client.Auth.AuthoriseAsync();
+            await client.Auth.AuthorizeAsync();
 
             //Success
         }
@@ -285,7 +285,7 @@ namespace IO.Ably.Tests
                 options.UseTokenAuth = true;
             });
 
-            var ex = await Assert.ThrowsAsync<AblyException>(() => client.Auth.AuthoriseAsync());
+            var ex = await Assert.ThrowsAsync<AblyException>(() => client.Auth.AuthorizeAsync());
             ex.ErrorInfo.Message.Should().Be("TokenAuth is on but there is no way to generate one");
         }
 
@@ -327,7 +327,7 @@ namespace IO.Ably.Tests
                     options.DefaultTokenParams = new TokenParams() { ClientId = "999" };
                 });
 
-                client.Auth.AuthoriseAsync(null, new AuthOptions() { Force = true});
+                client.Auth.AuthorizeAsync(null, new AuthOptions() { Force = true});
                 var tokenRequest = LastRequest.PostData as TokenRequest;
                 tokenRequest.ClientId.Should().Be("123");
             }
