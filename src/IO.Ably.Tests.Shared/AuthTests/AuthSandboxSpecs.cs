@@ -304,7 +304,7 @@ namespace IO.Ably.Tests
         [ProtocolData]
         [Trait("spec", "RSA7b2")]
         [Trait("spec", "RSA10a")]
-        public async Task WithoutClientId_WhenAuthorisedWithTokenParamsWithClientId_SetsClientId(Protocol protocol)
+        public async Task WithoutClientId_WhenAuthorizedWithTokenParamsWithClientId_SetsClientId(Protocol protocol)
         {
             var ably = await GetRestClient(protocol);
             await ably.Auth.AuthorizeAsync(new TokenParams() { ClientId = "123" }, new AuthOptions() { Force = true });
