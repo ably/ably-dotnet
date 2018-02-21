@@ -327,7 +327,7 @@ namespace IO.Ably.Tests
         [Fact]
         [Trait("spec", "RSC14a")]
         [Trait("spec", "RSA11")]
-        public async Task AddAuthHeader_WithBasicAuthentication_AddsCorrectAuthorisationHeader()
+        public async Task AddAuthHeader_WithBasicAuthentication_AddsCorrectAuthorizationHeader()
         {
             //Arrange
             var rest = new AblyRest(ValidKey);
@@ -346,7 +346,7 @@ namespace IO.Ably.Tests
 
         [Fact]
         [Trait("spec", "RSA3b")]
-        public async Task AddAuthHeader_WithTokenAuthentication_AddsCorrectAuthorisationHeader()
+        public async Task AddAuthHeader_WithTokenAuthentication_AddsCorrectAuthorizationHeader()
         {
             //Arrange
             var tokenValue = "TokenValue";

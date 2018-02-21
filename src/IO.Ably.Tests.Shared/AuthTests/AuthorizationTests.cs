@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    public class AuthorisationTests : MockHttpRestSpecs
+    public class AuthorizationTests : MockHttpRestSpecs
     {
         internal override AblyResponse DefaultResponse => DummyTokenResponse;
 
@@ -28,7 +28,7 @@ namespace IO.Ably.Tests
         public async Task WithTlsFalseAndBasicAuth_Throws()
         {
             var client = GetRestClient(setOptionsAction: options => { options.Tls = false; });
-            await Assert.ThrowsAsync<InsecureRequestException>(() => client.Auth.AuthoriseAsync());
+            await Assert.ThrowsAsync<InsecureRequestException>(() => client.Auth.AuthorizeAsync());
         }
 
         [Fact]
@@ -36,7 +36,7 @@ namespace IO.Ably.Tests
         public async Task WithTlsTrueAndBasicAuth_ShouldWork()
         {
             var client = GetRestClient(setOptionsAction: options => { options.Tls = true; });
-            await client.Auth.AuthoriseAsync();
+            await client.Auth.AuthorizeAsync();
 
             //Success
         }
@@ -88,7 +88,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSA9a")]
         [Trait("spec", "RSA9b")]
         [Trait("spec", "RSA9i")]
-        public class CreateTokenRequestAuthOptionSpecs : AuthorisationTests
+        public class CreateTokenRequestAuthOptionSpecs : AuthorizationTests
         {
             public CreateTokenRequestAuthOptionSpecs(ITestOutputHelper output) : base(output)
             {
@@ -164,7 +164,7 @@ namespace IO.Ably.Tests
             }
         }
 
-        public class CreateTokenRequestSpecs : AuthorisationTests
+        public class CreateTokenRequestSpecs : AuthorizationTests
         {
             [Fact]
             [Trait("spec", "RSA9h")]
@@ -277,7 +277,7 @@ namespace IO.Ably.Tests
 
         [Fact]
         [Trait("spec", "RSA14")]
-        public async Task WithNoTokenOrWayToGenerateOneAndUseTokenAuthIsTrue_AuthoriseShouldThrow()
+        public async Task WithNoTokenOrWayToGenerateOneAndUseTokenAuthIsTrue_AuthorizeShouldThrow()
         {
             var client = GetRestClient(setOptionsAction: options =>
             {
@@ -285,11 +285,11 @@ namespace IO.Ably.Tests
                 options.UseTokenAuth = true;
             });
 
-            var ex = await Assert.ThrowsAsync<AblyException>(() => client.Auth.AuthoriseAsync());
+            var ex = await Assert.ThrowsAsync<AblyException>(() => client.Auth.AuthorizeAsync());
             ex.ErrorInfo.Message.Should().Be("TokenAuth is on but there is no way to generate one");
         }
 
-        public class ClientIdSpecs : AuthorisationTests
+        public class ClientIdSpecs : AuthorizationTests
         {
             private string _clientId = "123";
 
@@ -327,7 +327,7 @@ namespace IO.Ably.Tests
                     options.DefaultTokenParams = new TokenParams() { ClientId = "999" };
                 });
 
-                client.Auth.AuthoriseAsync(null, new AuthOptions() { Force = true});
+                client.Auth.AuthorizeAsync(null, new AuthOptions() { Force = true});
                 var tokenRequest = LastRequest.PostData as TokenRequest;
                 tokenRequest.ClientId.Should().Be("123");
             }
@@ -373,7 +373,7 @@ namespace IO.Ably.Tests
 
         
 
-        public AuthorisationTests(ITestOutputHelper output) : base(output)
+        public AuthorizationTests(ITestOutputHelper output) : base(output)
         {
         }
     }

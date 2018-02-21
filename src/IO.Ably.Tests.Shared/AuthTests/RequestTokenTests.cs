@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.AuthTests
 {
-    public class RequestTokenSpecs : AuthorisationTests
+    public class RequestTokenSpecs : AuthorizationTests
     {
         [Fact]
         [Trait("spec", "RSA8e")]
