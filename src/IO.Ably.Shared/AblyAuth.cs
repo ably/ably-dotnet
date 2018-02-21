@@ -121,7 +121,7 @@ namespace IO.Ably
 
             if (TokenRenewable)
             {
-                var token = await AuthoriseAsync();
+                var token = await AuthorizeAsync();
                 if (token.IsValidToken())
                 {
                     CurrentToken = token;       
@@ -317,7 +317,7 @@ namespace IO.Ably
         /// <param name="options"><see cref="AuthOptions"/> custom options.</param>
         /// <returns>Returns a valid token</returns>
         /// <exception cref="AblyException">Throws an ably exception representing the server response</exception>
-        public async Task<TokenDetails> AuthoriseAsync(TokenParams tokenParams = null, AuthOptions options = null)
+        public async Task<TokenDetails> AuthorizeAsync(TokenParams tokenParams = null, AuthOptions options = null)
         {
             var authOptions = options ?? new AuthOptions();
             bool force = authOptions.Force; //this is needed because I share the object and reset Force later on.
@@ -346,6 +346,12 @@ namespace IO.Ably
 
             AuthMethod = AuthMethod.Token;
             return CurrentToken;
+        }
+        
+        [Obsolete("This method will be removed in the future, please replace with a call to AuthorizeAsync")]
+        public async Task<TokenDetails> AuthoriseAsync(TokenParams tokenParams = null, AuthOptions options = null)
+        {
+            return await AuthorizeAsync(tokenParams, options);
         }
 
         private void SetCurrentTokenParams(TokenParams authTokenParams)
@@ -467,10 +473,18 @@ namespace IO.Ably
             return AsyncHelper.RunSync(() => RequestTokenAsync(tokenParams, options));
         }
 
+        public TokenDetails Authorize(TokenParams tokenParams = null,
+            AuthOptions options = null)
+        {
+            return AsyncHelper.RunSync(() => AuthorizeAsync(tokenParams, options));
+        }
+
+
+        [Obsolete("This method will be removed in the future, please replace with a call to Authorize")]
         public TokenDetails Authorise(TokenParams tokenParams = null,
             AuthOptions options = null)
         {
-            return AsyncHelper.RunSync(() => AuthoriseAsync(tokenParams, options));
+            return AsyncHelper.RunSync(() => AuthorizeAsync(tokenParams, options));
         }
 
         public string CreateTokenRequest(TokenParams tokenParams = null,

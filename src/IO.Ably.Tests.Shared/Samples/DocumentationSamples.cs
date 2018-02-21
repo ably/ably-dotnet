@@ -24,7 +24,7 @@ namespace IO.Ably.Tests.Samples
             try
             {
                 TokenParams tokenParams = new TokenParams { ClientId = "bob" };
-                TokenDetails tokenDetails = await client.Auth.AuthoriseAsync(tokenParams);
+                TokenDetails tokenDetails = await client.Auth.AuthorizeAsync(tokenParams);
                 Console.WriteLine("Success; Token = " + tokenDetails.Token);
             }
             catch (AblyException e)
@@ -324,7 +324,7 @@ namespace IO.Ably.Tests.Samples
             try
             {
                 TokenParams tokenParams = new TokenParams {ClientId = "bob"};
-                TokenDetails tokenDetails = await client.Auth.AuthoriseAsync(tokenParams);
+                TokenDetails tokenDetails = await client.Auth.AuthorizeAsync(tokenParams);
                 Console.WriteLine("Success; token = " + tokenDetails.Token);
             }
             catch (AblyException e)

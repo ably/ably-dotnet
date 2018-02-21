@@ -362,7 +362,7 @@ namespace IO.Ably.Tests.Realtime
                 errors.Add(args.Reason);
             };
 
-            await client.Auth.AuthoriseAsync(new TokenParams() {Ttl = TimeSpan.FromSeconds(5)});
+            await client.Auth.AuthorizeAsync(new TokenParams() {Ttl = TimeSpan.FromSeconds(5)});
             var channel = client.Channels.Get("shortToken_test" + protocol);
             int count = 0;
             while (true)
