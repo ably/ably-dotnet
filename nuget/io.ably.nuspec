@@ -23,16 +23,19 @@
           
           <group targetFramework="net46">
             <!-- Some dependencies are merged using ILRepack, see csproj -->
+            <dependency id="System.Net.Http" version="4.3.2" />
           </group>
           
           <group targetFramework="uap">
             <dependency id="Newtonsoft.Json" version="10.0.2" />
             <dependency id="WebSocket4Net" version="0.15.0" />
             <dependency id="System.Net.WebSockets.Client" version="4.3.1" />
+            <dependency id="System.Net.Http" version="4.3.2" />
           </group>
           
           <group targetFramework="monoandroid">
             <!-- Some dependencies are merged using ILRepack, see csproj -->
+            <dependency id="System.Net.Http" version="4.3.2" />
           </group>
           
           
@@ -41,6 +44,7 @@
           
           <group targetFramework="Xamarin.iOS">
             <!-- Some dependencies are merged using ILRepack, see csproj -->
+            <dependency id="System.Net.Http" version="4.3.2" />
           </group>
           
           
@@ -54,6 +58,7 @@
 
           <group targetFramework="netstandard2.0">
             <dependency id="Newtonsoft.Json" version="10.0.2" />
+            <dependency id="System.Net.Http" version="4.3.2" />
           </group>
           
         </dependencies>

@@ -1,5 +1,5 @@
 mode: ContinuousDelivery
-next-version: 0.8.8
+next-version: 0.8.9
 branches: {}
 ignore:
   sha: []
