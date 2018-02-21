@@ -1,8 +1,8 @@
 # Change Log
 
-## [0.8.9](https://github.com/ably/ably-dotnet/tree/HEAD)
+## [0.8.9](https://github.com/ably/ably-dotnet/tree/0.8.9)
 
-[Full Changelog](https://github.com/ably/ably-dotnet/compare/0.8.8...HEAD)
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/0.8.8...0.8.9)
 
 **Closed issues:**
 
