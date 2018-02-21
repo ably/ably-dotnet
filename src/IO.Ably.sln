@@ -815,7 +815,6 @@ Global
 		{4805A9DA-3412-4BE8-8B95-5A0EFDA1AC01}.package_netstandard|x86.ActiveCfg = Debug|Any CPU
 		{4805A9DA-3412-4BE8-8B95-5A0EFDA1AC01}.package_netstandard|x86.Build.0 = Debug|Any CPU
 		{4805A9DA-3412-4BE8-8B95-5A0EFDA1AC01}.package|Any CPU.ActiveCfg = Debug|Any CPU
-		{4805A9DA-3412-4BE8-8B95-5A0EFDA1AC01}.package|Any CPU.Build.0 = Debug|Any CPU
 		{4805A9DA-3412-4BE8-8B95-5A0EFDA1AC01}.package|ARM.ActiveCfg = Debug|Any CPU
 		{4805A9DA-3412-4BE8-8B95-5A0EFDA1AC01}.package|ARM.Build.0 = Debug|Any CPU
 		{4805A9DA-3412-4BE8-8B95-5A0EFDA1AC01}.package|x64.ActiveCfg = Debug|Any CPU
