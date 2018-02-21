@@ -1,8 +1,21 @@
 # Change Log
 
-## [0.8.8](https://github.com/ably/ably-dotnet/tree/HEAD)
+## [0.8.9](https://github.com/ably/ably-dotnet/tree/HEAD)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/0.8.8...HEAD)
+
+**Closed issues:**
+
+- v.87 The current state \[Suspended\] does not allow messages to be sent.; Code: 500 [\#171](https://github.com/ably/ably-dotnet/issues/171)
+
+**Merged pull requests:**
+
+- Update package deps [\#181](https://github.com/ably/ably-dotnet/pull/181) ([withakay](https://github.com/withakay))
+
+
+## [0.8.8](https://github.com/ably/ably-dotnet/tree/0.8.8) (2018-02-06)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/0.8.7...0.8.8)
 
 **Fixed bugs:**
 
