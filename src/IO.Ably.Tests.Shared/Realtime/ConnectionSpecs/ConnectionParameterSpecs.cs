@@ -114,7 +114,7 @@ namespace IO.Ably.Tests.Realtime
 
             LastCreatedTransport.Parameters.GetParams()
                 .Should().ContainKey("v")
-                .WhichValue.Should().Be("0.8");
+                .WhichValue.Should().Be("1.0");
         }
 
         [Fact]
@@ -124,7 +124,7 @@ namespace IO.Ably.Tests.Realtime
             var client = GetClientWithFakeTransport();
             LastCreatedTransport.Parameters.GetParams().Should().ContainKey("lib");
             var p = LastCreatedTransport.Parameters.GetParams();
-            Regex.Match(p["lib"], @"^dotnet.(\w*)-0.8.(\d)$").Success.ShouldBeEquivalentTo(true);
+            Regex.Match(p["lib"], @"^dotnet.(\w*)-1.0.(\d)$").Success.ShouldBeEquivalentTo(true);
         }
 
         public ConnectionParameterSpecs(ITestOutputHelper output) : base(output)
