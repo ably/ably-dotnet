@@ -108,7 +108,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTN2f")]
-        public void ShouldSetTransportVersionParameterTov08()
+        public void ShouldSetTransportVersionParameterTov10()
         {
             var client = GetClientWithFakeTransport();
 
