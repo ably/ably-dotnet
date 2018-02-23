@@ -110,10 +110,10 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTE3")]
-        public async void WithEventEmitter_ListenerRegistersForAllEvents()
+        public async void WithEventEmitter_WhenOn_ListenerRegistersForRepeatedEvents()
         {
             var em = new TestEventEmitter(DefaultLogger.LoggerInstance);
-            var t = new TaskCompletionAwaiter(1000);
+            var t = new TaskCompletionAwaiter(100);
             string m = "";
             int counter = 0;
             // no event/state argument, catch all
@@ -129,7 +129,7 @@ namespace IO.Ably.Tests.Realtime
             m.Should().Be("on");
             // currently one listener
             counter.Should().Be(1);
-            t = new TaskCompletionAwaiter(1000);
+            t = new TaskCompletionAwaiter(100);
             var tt = new TaskCompletionAwaiter(100);
             // only catch 1 events
             em.On(1, args =>
@@ -144,8 +144,8 @@ namespace IO.Ably.Tests.Realtime
             success.Should().BeTrue();
             // now there should be 2 listeners, but only the first is catch all
             counter.Should().Be(2);
-            t = new TaskCompletionAwaiter(1000);
-            tt = new TaskCompletionAwaiter(1000);
+            t = new TaskCompletionAwaiter(100);
+            tt = new TaskCompletionAwaiter(100);
             em.DoDummyEmit(1, "on");
             success = await t.Task && await tt.Task;
             success.Should().BeTrue();
