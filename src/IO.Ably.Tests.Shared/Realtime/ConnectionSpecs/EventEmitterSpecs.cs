@@ -153,6 +153,62 @@ namespace IO.Ably.Tests.Realtime
             counter.Should().Be(4);
         }
 
+        [Fact]
+        [Trait("spec", "RTE4")]
+        public async void WithEventEmitter_WhenOnce_ListenerRegistersForOneEvent()
+        {
+            var em = new TestEventEmitter(DefaultLogger.LoggerInstance);
+            var t = new TaskCompletionAwaiter(100);
+            string m = "";
+            int counter = 0;
+            // no event/state argument, catch all
+            em.Once(args =>
+            {
+                counter++;
+                m = args.Message;
+                t.SetCompleted();
+            });
+            em.DoDummyEmit(1, "once");
+            var success = await t.Task;
+            success.Should().BeTrue();
+            m.Should().Be("once");
+            // currently one listener
+            counter.Should().Be(1);
+            t = new TaskCompletionAwaiter(100);
+            var tt = new TaskCompletionAwaiter(100);
+            // only catch 1 events
+            em.Once(1, args =>
+            {
+                counter++;
+                m = args.Message;
+                tt.SetCompleted();
+            });
+            em.DoDummyEmit(2, "on");
+            // t & tt should timeout and return false here
+            success = !await t.Task && !await tt.Task;
+            success.Should().BeTrue();
+            // there are 2 listeners and the first is catch all
+            // but the first should have already handled an event and deregistered
+            // so the count remains the same
+            counter.Should().Be(1);
+            t = new TaskCompletionAwaiter(100);
+            tt = new TaskCompletionAwaiter(100);
+            em.DoDummyEmit(1, "on");
+            // t should not complete again, tt should complete for the first time
+            success = !await t.Task && await tt.Task;
+            success.Should().BeTrue();
+            // still 2 listeners and we sent a 1 event which second should handle
+            counter.Should().Be(2);
+            t = new TaskCompletionAwaiter(100);
+            tt = new TaskCompletionAwaiter(100);
+            em.DoDummyEmit(1, "on");
+            // t & tt should both timeout
+            success = !await t.Task && !await tt.Task;
+            success.Should().BeTrue();
+            // handlers should be deregistered so the count should remain at 2
+            counter.Should().Be(2);
+        }
+
         public EventEmitterSpecs(ITestOutputHelper output) : base(output)
         {
         }
