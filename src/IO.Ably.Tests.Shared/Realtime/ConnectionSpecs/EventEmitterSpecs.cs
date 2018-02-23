@@ -112,7 +112,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTE3")]
         public async void WithEventEmitter_ListenerRegistersForAllEvents()
         {
-            var em = new DummyEventEmitter(DefaultLogger.LoggerInstance);
+            var em = new TestEventEmitter(DefaultLogger.LoggerInstance);
             var t = new TaskCompletionAwaiter(1000);
             string m = "";
             int counter = 0;
@@ -138,17 +138,14 @@ namespace IO.Ably.Tests.Realtime
                 m = args.Message;
                 tt.SetCompleted();
             });
-
             em.DoDummyEmit(2, "on");
             // tt should timeout and return false here
             success = await t.Task && ! await tt.Task;
             success.Should().BeTrue();
             // now there should be 2 listeners, but only the first is catch all
             counter.Should().Be(2);
-
             t = new TaskCompletionAwaiter(1000);
             tt = new TaskCompletionAwaiter(1000);
-
             em.DoDummyEmit(1, "on");
             success = await t.Task && await tt.Task;
             success.Should().BeTrue();
@@ -160,21 +157,18 @@ namespace IO.Ably.Tests.Realtime
         {
         }
 
-        private class DummyArgs : System.EventArgs
+        private class TestEventEmitterArgs : System.EventArgs
         {
             public string Message { get; set; }
         }
-        private class DummyEventEmitter : EventEmitter<int, DummyArgs>
+        private class TestEventEmitter : EventEmitter<int, TestEventEmitterArgs>
         {
-            public DummyEventEmitter(ILogger logger) : base(logger) {}
-
+            public TestEventEmitter(ILogger logger) : base(logger) {}
             protected override Action<Action> NotifyClient => action => action();
-
             public void DoDummyEmit(int state, string message)
             {
-                this.Emit(state, new DummyArgs() { Message = message });
+                this.Emit(state, new TestEventEmitterArgs() { Message = message });
             }
-            
         }
     }
 }
