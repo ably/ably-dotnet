@@ -20,6 +20,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Solution Items", ".Solutio
 		..\functions.ps1 = ..\functions.ps1
 		..\GitVersion.yml = ..\GitVersion.yml
 		..\nuget\io.ably.nuspec = ..\nuget\io.ably.nuspec
+		IO.Ably.ruleset = IO.Ably.ruleset
 		..\nuget\io.ably_msgpack.nuspec = ..\nuget\io.ably_msgpack.nuspec
 		..\package.ps1 = ..\package.ps1
 		..\package_appveyor.ps1 = ..\package_appveyor.ps1
