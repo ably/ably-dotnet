@@ -24,7 +24,8 @@ namespace IO.Ably.Tests.Realtime
 
         public AblyRealtime SetupConnectedClient(bool failRenewal = false, bool renewable = true)
         {
-            return GetConnectedClient(opts =>
+            return GetConnectedClient(
+                opts =>
             {
                 if (renewable == false)
                 {
@@ -133,7 +134,8 @@ namespace IO.Ably.Tests.Realtime
                     Error = _tokenErrorInfo
                 });
 
-            Assert.Equal(new[]
+            Assert.Equal(
+                new[]
             {
                 ConnectionState.Disconnected,
                 ConnectionState.Connecting,
@@ -172,7 +174,8 @@ namespace IO.Ably.Tests.Realtime
                 Error = _tokenErrorInfo
             });
 
-            Assert.Equal(new[]
+            Assert.Equal(
+                new[]
             {
                 ConnectionState.Disconnected,
                 ConnectionState.Connecting,
@@ -206,7 +209,8 @@ namespace IO.Ably.Tests.Realtime
                 Error = _tokenErrorInfo
             });
 
-            Assert.Equal(new[]
+            Assert.Equal(
+                new[]
             {
                 ConnectionState.Failed
             }, states);

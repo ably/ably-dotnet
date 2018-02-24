@@ -567,7 +567,8 @@ namespace IO.Ably.Tests.Realtime
         [InlineData(Protocol.Json, ConnectionState.Connecting)]
         [Trait("spec", "RTN20a")]
         public async Task
-            WhenOperatingSystemNetworkIsNotAvailable_ShouldTransitionToDisconnectedAndRetry(Protocol protocol,
+            WhenOperatingSystemNetworkIsNotAvailable_ShouldTransitionToDisconnectedAndRetry(
+                Protocol protocol,
                 ConnectionState initialState)
         {
             Logger.LogLevel = LogLevel.Debug;
@@ -636,7 +637,8 @@ namespace IO.Ably.Tests.Realtime
             await WaitForState(client, ConnectionState.Connecting);
         }
 
-        public ConnectionSandboxOperatingSystemEventsForNetworkSpecs(AblySandboxFixture fixture,
+        public ConnectionSandboxOperatingSystemEventsForNetworkSpecs(
+            AblySandboxFixture fixture,
             ITestOutputHelper output)
             : base(fixture, output)
         {

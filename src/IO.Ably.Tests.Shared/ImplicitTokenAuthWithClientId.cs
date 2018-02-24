@@ -19,7 +19,7 @@ namespace IO.Ably.Tests
             Client.ExecuteHttpRequest = request =>
             {
                 ExecutionCount++;
-                if(request.Url.Contains("requestToken"))
+                if (request.Url.Contains("requestToken"))
                 {
                     return string.Format(
                                 "{{ \"access_token\": {{ \"id\": \"unique-token-id\", \"expires\": \"{0}\"}}}}",

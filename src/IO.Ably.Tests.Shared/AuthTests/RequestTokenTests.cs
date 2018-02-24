@@ -16,7 +16,8 @@ namespace IO.Ably.Tests.AuthTests
         [Trait("spec", "RSA8a")]
         public void WithDefaultParamsAndNothingSpecifiedInMethod_UsesDefaultParams()
         {
-            var client = GetRestClient(null,
+            var client = GetRestClient(
+                null,
                 options =>
                     options.DefaultTokenParams = new TokenParams() { ClientId = "123", Ttl = TimeSpan.FromHours(2) });
 
@@ -43,7 +44,8 @@ namespace IO.Ably.Tests.AuthTests
         [Trait("spec", "RSA8b")]
         public async Task WithDefaultTokenParamsAndTokenParamsSpecified_ShouldUseOnlyParamsPassedIntoTheMethod()
         {
-            var client = GetRestClient(null,
+            var client = GetRestClient(
+                null,
                                 options => options.DefaultTokenParams = new TokenParams
                                 {
                                     ClientId = "123",

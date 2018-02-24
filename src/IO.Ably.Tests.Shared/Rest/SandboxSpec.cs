@@ -40,7 +40,8 @@ namespace IO.Ably.Tests
             return new AblyRest(defaultOptions);
         }
 
-        protected async Task<AblyRealtime> GetRealtimeClient(Protocol protocol,
+        protected async Task<AblyRealtime> GetRealtimeClient(
+            Protocol protocol,
             Action<ClientOptions, TestEnvironmentSettings> optionsAction = null)
         {
             var settings = await Fixture.GetSettings();

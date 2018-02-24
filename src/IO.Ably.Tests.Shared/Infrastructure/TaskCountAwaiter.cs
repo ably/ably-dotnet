@@ -15,7 +15,7 @@ namespace IO.Ably.Tests.Infrastructure
         public TaskCountAwaiter(int count, int timeoutMs = 10000)
         {
             Start = count;
-            if(Start < 1)
+            if (Start < 1)
             {
                 throw new Exception("count must be 1 or more");
             }

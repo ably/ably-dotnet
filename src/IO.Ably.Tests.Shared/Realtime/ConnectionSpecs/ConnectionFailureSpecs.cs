@@ -24,7 +24,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             // Now = DateTimeOffset.Now;
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
             bool renewTokenCalled = false;
-            var client = GetClientWithFakeTransport(opts =>
+            var client = GetClientWithFakeTransport(
+                opts =>
             {
                 opts.TokenDetails = tokenDetails;
                 opts.UseBinaryProtocol = false;
@@ -64,7 +65,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         {
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
             bool renewTokenCalled = false;
-            var client = GetClientWithFakeTransport(opts =>
+            var client = GetClientWithFakeTransport(
+                opts =>
             {
                 opts.Key = string.Empty;
                 opts.TokenDetails = tokenDetails;
@@ -93,7 +95,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         public async Task WithTokenErrorAndTokenRenewalFails_ShouldRaiseErrorAndTransitionToFailed()
         {
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
-            var client = GetClientWithFakeTransport(opts =>
+            var client = GetClientWithFakeTransport(
+                opts =>
             {
                 opts.TokenDetails = tokenDetails;
                 opts.UseBinaryProtocol = false;
@@ -120,7 +123,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         {
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
             var renewCount = 0;
-            var client = GetClientWithFakeTransport(opts =>
+            var client = GetClientWithFakeTransport(
+                opts =>
             {
                 opts.TokenDetails = tokenDetails;
                 opts.UseBinaryProtocol = false;

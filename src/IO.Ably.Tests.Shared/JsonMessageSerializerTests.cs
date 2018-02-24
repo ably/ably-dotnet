@@ -61,9 +61,7 @@ namespace IO.Ably.Tests
             return JsonHelper.Serialize(message);
         }
 
-        //
         // Serialization tests
-        //
         [Theory]
         [InlineData(ProtocolMessage.MessageAction.Attach)]
         [InlineData(ProtocolMessage.MessageAction.Detach)]
@@ -178,9 +176,7 @@ namespace IO.Ably.Tests
             Serialize(message).Should().Be(expectedMessage.ToString());
         }
 
-        //
         // Deserialization tests
-        //
         [Theory]
         [InlineData(ProtocolMessage.MessageAction.Attach)]
         [InlineData(ProtocolMessage.MessageAction.Detach)]

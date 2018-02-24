@@ -288,7 +288,8 @@ namespace IO.Ably.Tests.Rest
         [Theory]
         [InteropabilityMessagePayloadData]
         [Trait("spec", "RSL6a1")]
-        public async Task WithTestMessagePayloadsWhenDecoding_ShouldDecodeMessagesAsPerSpec(Protocol protocol,
+        public async Task WithTestMessagePayloadsWhenDecoding_ShouldDecodeMessagesAsPerSpec(
+            Protocol protocol,
             JObject messageData)
         {
             Logger.LogLevel = LogLevel.Debug;
@@ -328,7 +329,8 @@ namespace IO.Ably.Tests.Rest
         [Theory]
         [InteropabilityMessagePayloadData]
         [Trait("spec", "RSL6a1")]
-        public async Task WithTestMessagePayloadsWhenDecoding_ShouldEncodeMessagesAsPerSpec(Protocol protocol,
+        public async Task WithTestMessagePayloadsWhenDecoding_ShouldEncodeMessagesAsPerSpec(
+            Protocol protocol,
             JObject messageData)
         {
             var channelName = "channel-name-" + new Random().Next(int.MaxValue);
@@ -339,7 +341,7 @@ namespace IO.Ably.Tests.Rest
             var channel = client1.Channels.Get(channelName);
 
             // Act
-            if(expectedType == "binary")
+            if (expectedType == "binary")
             {
                 await channel.PublishAsync("event", ((string)messageData["expectedHexValue"]).ToByteArray());
             }

@@ -127,7 +127,6 @@ namespace IO.Ably.Tests.AuthTests
             client.AblyAuth.CurrentToken = initialToken;
 
             var token = await client.Auth.AuthorizeAsync();
-            ;
             Assert.Contains("requestToken", LastRequest.Url);
             token.Should().NotBeSameAs(initialToken);
         }
@@ -179,7 +178,8 @@ namespace IO.Ably.Tests.AuthTests
         [Trait("spec", "RSA10g")]
         public async Task ShouldKeepCurrentTokenParamsAndOptionsEvenIfCurrentTokenIsValidAndNoNewTokenIsRequested()
         {
-            var client = GetRestClient(null,
+            var client = GetRestClient(
+                null,
                 opts => opts.TokenDetails = new TokenDetails("boo") { Expires = Now.AddHours(10) });
 
             var testAblyAuth = new TestAblyAuth(client.Options, client);

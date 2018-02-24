@@ -417,7 +417,7 @@ namespace IO.Ably.Tests.Samples
             var channel = rest.Channels.Get("{{RANDOM_CHANNEL_NAME}}");
             PaginatedResult<PresenceMessage> membersPage = await channel.Presence.GetAsync();
             Console.WriteLine(membersPage.Items.Count + " members in first page");
-            if(membersPage.HasNext)
+            if (membersPage.HasNext)
             {
                 PaginatedResult<PresenceMessage> nextPage = await membersPage.NextAsync();
                 Console.WriteLine(nextPage.Items.Count + " members on 2nd page");

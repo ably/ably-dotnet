@@ -72,7 +72,6 @@ namespace IO.Ably.Tests.Realtime
         public async Task SendingAMessageAttachesTheChannel_BeforeReceivingTheMessages(Protocol protocol)
         {
             Logger.LogLevel = LogLevel.Debug;
-            ;
 
             // Arrange
             var client = await GetRealtimeClient(protocol);
@@ -121,7 +120,6 @@ namespace IO.Ably.Tests.Realtime
         public async Task TestAttachChannel_Sending3Messages_EchoesItBack(Protocol protocol)
         {
             Logger.LogLevel = LogLevel.Debug;
-            ;
 
             // Arrange
             var client = await GetRealtimeClient(protocol);

@@ -19,7 +19,8 @@ namespace IO.Ably.Tests.Realtime
         [Fact]
         public void WhenSendIsCalled_ShouldPassTheMessageThroughTHeAckProcessor()
         {
-            _realtime.Connection.ConnectionState = new ConnectionConnectedState(_realtime.ConnectionManager,
+            _realtime.Connection.ConnectionState = new ConnectionConnectedState(
+                _realtime.ConnectionManager,
                 new ConnectionInfo(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)));
 
             var message = new ProtocolMessage(ProtocolMessage.MessageAction.Message);

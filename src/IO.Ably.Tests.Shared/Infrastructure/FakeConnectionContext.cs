@@ -77,7 +77,7 @@ namespace IO.Ably.Tests
         public Task CreateTransport()
         {
             CreateTransportCalled = true;
-            if(AllowTransportCreating)
+            if (AllowTransportCreating)
             {
                 Transport = new FakeTransport();
             }

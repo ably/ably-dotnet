@@ -109,7 +109,8 @@ namespace IO.Ably.Tests.Realtime
 
         private AblyRealtime GetRealtime(Action<ClientOptions> optionsAction = null)
         {
-            return GetRealtimeClient(request =>
+            return GetRealtimeClient(
+                request =>
             {
                 if (request.Url == Defaults.InternetCheckUrl)
                 {

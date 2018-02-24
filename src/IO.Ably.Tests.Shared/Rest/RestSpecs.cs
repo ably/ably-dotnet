@@ -152,7 +152,8 @@ namespace IO.Ably.Tests
 
                 // Had to inline the method otherwise the tests intermittently fail.
                 bool firstAttempt = true;
-                var client = GetRestClient(request =>
+                var client = GetRestClient(
+                    request =>
                 {
                     if (request.Url.Contains("/keys"))
                     {
@@ -193,7 +194,8 @@ namespace IO.Ably.Tests
 
             private AblyRest GetConfiguredRestClient(int errorCode, TokenDetails tokenDetails, bool useApiKey = true)
             {
-                var client = GetRestClient(request =>
+                var client = GetRestClient(
+                    request =>
                 {
                     if (request.Url.Contains("/keys"))
                     {
@@ -508,7 +510,8 @@ namespace IO.Ably.Tests
                 var options = new ClientOptions(ValidKey) { HttpMaxRetryDuration = TimeSpan.FromSeconds(21) };
                 var client = new AblyRest(options);
                 _response.StatusCode =HttpStatusCode.BadGateway;
-                var handler = new FakeHttpMessageHandler(_response,
+                var handler = new FakeHttpMessageHandler(
+                    _response,
                     () =>
                     {
                         // Tweak time to pretend 10 seconds have ellapsed
