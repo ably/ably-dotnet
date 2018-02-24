@@ -15,16 +15,17 @@ namespace IO.Ably.Tests
         public ImplicitTokenAuthWithClientId()
         {
             _clientId = "123";
-            Client = new AblyRest(new ClientOptions() {Key = ApiKey, ClientId = _clientId, UseBinaryProtocol = false});
+            Client = new AblyRest(new ClientOptions() { Key = ApiKey, ClientId = _clientId, UseBinaryProtocol = false });
             Client.ExecuteHttpRequest = request =>
             {
                 ExecutionCount++;
-                if( request.Url.Contains( "requestToken" ) )
+                if(request.Url.Contains("requestToken"))
                 {
                     return string.Format(
                                 "{{ \"access_token\": {{ \"id\": \"unique-token-id\", \"expires\": \"{0}\"}}}}",
-                                DateTimeOffset.UtcNow.AddDays( 1 ).ToUnixTimeInMilliseconds() ).ToAblyResponse();
+                                DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeInMilliseconds()).ToAblyResponse();
                 }
+
                 return "{}".ToAblyResponse();
             };
         }

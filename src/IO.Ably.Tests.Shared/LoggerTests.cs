@@ -1,6 +1,5 @@
 ﻿using System;
 using FluentAssertions;
-using IO.Ably.Transport;
 using Xunit;
 
 namespace IO.Ably.AcceptanceTests
@@ -89,7 +88,6 @@ namespace IO.Ably.AcceptanceTests
             logger2.LogLevel.ShouldBeEquivalentTo(LogLevel.Error);
             logger1.LogLevel.Should().NotBe(logger2.LogLevel);
         }
-
 
         public void Dispose()
         {

@@ -58,7 +58,7 @@ namespace IO.Ably.Tests
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-            
+
             if (DefaultLogger.IsDebug)
             {
                 DefaultLogger.Debug($"[{_id}] Waiting for state {string.Join(",", _awaitedStates)} for {timeout.TotalSeconds} seconds");

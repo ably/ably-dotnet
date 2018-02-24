@@ -15,7 +15,7 @@ namespace IO.Ably.Tests
 
         internal virtual AblyRealtime GetRealtimeClient(Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null, Action<ClientOptions> setOptionsAction = null)
         {
-            var options = new ClientOptions(ValidKey) { UseBinaryProtocol = false};
+            var options = new ClientOptions(ValidKey) { UseBinaryProtocol = false };
             setOptionsAction?.Invoke(options);
 
             var client = new AblyRealtime(options);
@@ -26,12 +26,14 @@ namespace IO.Ably.Tests
                 {
                     return handleRequestFunc(request);
                 }
+
                 return (DefaultResponse ?? AblyResponse.EmptyResponse).ToTask();
             };
             return client;
         }
 
-        public MockHttpRealtimeSpecs(ITestOutputHelper output) : base(output)
+        public MockHttpRealtimeSpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

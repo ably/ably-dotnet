@@ -22,12 +22,13 @@ namespace IO.Ably.Tests
             Fixture = fixture;
             Output = output;
             Logger = IO.Ably.DefaultLogger.LoggerInstance;
-            //Reset time in case other tests have changed it
-            //Config.Now = () => DateTimeOffset.UtcNow;
+
+            // Reset time in case other tests have changed it
+            // Config.Now = () => DateTimeOffset.UtcNow;
 
             // Very useful for debugging failing tests.
-            //Logger.LoggerSink = new OutputLoggerSink(output);
-            //Logger.LogLevel = LogLevel.Debug;
+            // Logger.LoggerSink = new OutputLoggerSink(output);
+            // Logger.LogLevel = LogLevel.Debug;
         }
 
         protected async Task<AblyRest> GetRestClient(Protocol protocol, Action<ClientOptions> optionsAction = null)
@@ -76,11 +77,12 @@ namespace IO.Ably.Tests
         {
             var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
             if (waitSpan.HasValue)
+            {
                 return connectionAwaiter.Wait(waitSpan.Value);
+            }
+
             return connectionAwaiter.Wait();
         }
-
-        
 
         protected static async Task WaitFor30sOrUntilTrue(Func<bool> predicate)
         {
@@ -90,7 +92,9 @@ namespace IO.Ably.Tests
                 count++;
 
                 if (predicate())
+                {
                     break;
+                }
 
                 await Task.Delay(1000);
             }
@@ -108,7 +112,7 @@ namespace IO.Ably.Tests
             public string FullMessage { get; private set; }
 
             /// <summary>
-            /// 
+            ///
             /// </summary>
             /// <param name="messageToTest"></param>
             public TestLogger(string messageToTest)
@@ -161,7 +165,10 @@ namespace IO.Ably.Tests
         {
             var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
             if (waitSpan.HasValue)
+            {
                 return connectionAwaiter.Wait(waitSpan.Value);
+            }
+
             return connectionAwaiter.Wait();
         }
 
@@ -169,10 +176,11 @@ namespace IO.Ably.Tests
         {
             var channelAwaiter = new ChannelAwaiter(channel, awaitedState);
             if (waitSpan.HasValue)
+            {
                 return channelAwaiter.WaitAsync();
+            }
+
             return channelAwaiter.WaitAsync();
         }
     }
-
-    
 }

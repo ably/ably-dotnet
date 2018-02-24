@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
-using IO.Ably.Rest;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -79,16 +78,16 @@ namespace IO.Ably.Tests
         {
             CreateTransportCalled = true;
             if(AllowTransportCreating)
+            {
                 Transport = new FakeTransport();
+            }
+
             return TaskConstants.BooleanTrue;
         }
 
         public void DestroyTransport(bool suppressClosedEvent = true)
         {
             DestroyTransportCalled = true;
-
-            
-
         }
 
         public void AttemptConnection()
@@ -192,7 +191,7 @@ namespace IO.Ably.Tests
         public T StateShouldBe<T>() where T : ConnectionStateBase
         {
             LastSetState.Should().BeOfType<T>();
-            return (T) LastSetState;
+            return (T)LastSetState;
         }
 
         public void ShouldHaveNotChangedState()

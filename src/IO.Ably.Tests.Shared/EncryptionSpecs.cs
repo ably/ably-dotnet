@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Security.Permissions;
-using System.Text;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using IO.Ably.Encryption;
 using Xunit;
 using Xunit.Abstractions;
@@ -90,7 +83,8 @@ namespace IO.Ably.Tests
                 Assert.Throws<AblyException>(() => Crypto.GetDefaultParams(new byte[] { 193, 24, 123 }));
             }
 
-            public GetDefaultParamsSpecs(ITestOutputHelper output) : base(output)
+            public GetDefaultParamsSpecs(ITestOutputHelper output)
+                : base(output)
             {
             }
         }
@@ -124,13 +118,14 @@ namespace IO.Ably.Tests
                 Assert.Throws<AblyException>(() => Crypto.GenerateRandomKey(111));
             }
 
-            public GenerateRandomKeyTests(ITestOutputHelper output) : base(output)
+            public GenerateRandomKeyTests(ITestOutputHelper output)
+                : base(output)
             {
             }
         }
 
-
-        public EncryptionSpecs(ITestOutputHelper output) : base(output)
+        public EncryptionSpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using IO.Ably.Transport;
 using Xunit;
 
 namespace IO.Ably.Tests
@@ -26,8 +25,6 @@ namespace IO.Ably.Tests
     public class SandBoxChannelFixture : AblyCollectionFixture
     {
     }
-
-
 
     public class Key
     {
@@ -58,7 +55,7 @@ namespace IO.Ably.Tests
 
         internal AblyHttpClient GetHttpClient()
         {
-            var ablyHttpOptions = new AblyHttpOptions() { IsSecure = Tls};
+            var ablyHttpOptions = new AblyHttpOptions() { IsSecure = Tls };
             ablyHttpOptions.Host = CreateDefaultOptions().FullRestHost();
             return new AblyHttpClient(ablyHttpOptions);
         }

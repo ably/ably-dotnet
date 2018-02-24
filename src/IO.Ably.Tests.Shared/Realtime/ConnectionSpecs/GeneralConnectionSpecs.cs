@@ -90,7 +90,8 @@ namespace IO.Ably.Tests.Realtime
             client.RestClient.AblyAuth.ClientId.Should().Be("realtimeClient");
         }
 
-        public GeneralConnectionSpecs(ITestOutputHelper output) : base(output)
+        public GeneralConnectionSpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

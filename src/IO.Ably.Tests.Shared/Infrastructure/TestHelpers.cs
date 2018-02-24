@@ -1,5 +1,4 @@
 ﻿using System;
-using IO.Ably;
 using Xunit;
 
 namespace IO.Ably.Tests

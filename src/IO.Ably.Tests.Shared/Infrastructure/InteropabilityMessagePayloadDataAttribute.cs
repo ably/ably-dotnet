@@ -13,7 +13,7 @@ namespace IO.Ably.Tests.Infrastructure
 
             foreach (var jToken in (json["messages"] as JArray).Children())
             {
-                var message = (JObject) jToken;
+                var message = (JObject)jToken;
                 yield return new object[] { Protocol.Json, message };
                 yield return new object[] { Defaults.Protocol, message };
             }

@@ -2,10 +2,8 @@
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IO.Ably.Transport;
 using Xunit;
 
 namespace IO.Ably.Tests
@@ -72,7 +70,6 @@ namespace IO.Ably.Tests
             var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };
             var handler = new FakeHttpMessageHandler(response);
             var client = new AblyHttpClient(new AblyHttpOptions(), handler);
-
 
             var ablyRequest = new AblyRequest("/test", HttpMethod.Post);
             ablyRequest.PostParameters = new Dictionary<string, string>() { { "test", "test" }, { "best", "best" } };

@@ -14,7 +14,9 @@ namespace IO.Ably.Tests
         public FakeTransport(TransportState? state = null)
         {
             if (state.HasValue)
+            {
                 State = state.Value;
+            }
         }
 
         public FakeTransport(TransportParams parameters)
@@ -49,16 +51,18 @@ namespace IO.Ably.Tests
             {
                 Listener?.OnTransportEvent(TransportState.Connected);
                 State = TransportState.Connected;
-            } 
+            }
         }
 
         public void Close(bool suppressClosedEvent = true)
         {
             CloseCalled = true;
 
-            //Listener?.OnTransportDataReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
+            // Listener?.OnTransportDataReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
             if(suppressClosedEvent == false)
+            {
                 Listener?.OnTransportEvent(TransportState.Closed);
+            }
         }
 
         public void Send(RealtimeTransportData data)
@@ -66,7 +70,6 @@ namespace IO.Ably.Tests
             SendAction(data);
             SentMessages.Add(data);
         }
-
 
         public void Abort(string reason)
         {
@@ -77,7 +80,6 @@ namespace IO.Ably.Tests
         private volatile bool _connectCalled;
         public void Dispose()
         {
-            
         }
     }
 }

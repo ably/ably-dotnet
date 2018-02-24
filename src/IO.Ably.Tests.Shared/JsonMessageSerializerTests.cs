@@ -58,14 +58,12 @@ namespace IO.Ably.Tests
 
         private string Serialize(ProtocolMessage message)
         {
-            
             return JsonHelper.Serialize(message);
         }
 
         //
         // Serialization tests
         //
-
         [Theory]
         [InlineData(ProtocolMessage.MessageAction.Attach)]
         [InlineData(ProtocolMessage.MessageAction.Detach)]
@@ -76,7 +74,6 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_Action(ProtocolMessage.MessageAction messageAction)
         {
             // Arrange
-            
             ProtocolMessage message = new ProtocolMessage(messageAction);
             string expectedMessage = string.Format("{{\"action\":{0},\"msgSerial\":0}}", (int)messageAction);
 
@@ -93,7 +90,6 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_Channel(string channel)
         {
             // Arrange
-            
             ProtocolMessage message = new ProtocolMessage() { Channel = channel };
             StringBuilder expectedMessage = new StringBuilder();
             expectedMessage.Append("{\"action\":0");
@@ -101,6 +97,7 @@ namespace IO.Ably.Tests
             {
                 expectedMessage.Append(",\"channel\":").AppendFormat("\"{0}\"", channel);
             }
+
             expectedMessage.Append(",\"msgSerial\":0}");
 
             // Act & Assert
@@ -123,14 +120,12 @@ namespace IO.Ably.Tests
 
             // Act
             Serialize(message).Should().Be(expectedMessage.ToString());
-
         }
 
         [Fact]
         public void SerializesMessageCorrectly_NoMessages_DoesNotThrowException()
         {
             // Arrange
-            
             ProtocolMessage message = new ProtocolMessage() { Messages = null };
 
             // Act & Assert
@@ -142,7 +137,6 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_Messages(params Message[] messages)
         {
             // Arrange
-            
             ProtocolMessage message = new ProtocolMessage() { Messages = messages };
             StringBuilder expectedMessage = new StringBuilder("{\"action\":0,\"msgSerial\":0");
             var validMessages = messages.Where(c => !string.IsNullOrEmpty(c.Name));
@@ -153,9 +147,11 @@ namespace IO.Ably.Tests
                 {
                     expectedMessage.AppendFormat("{{\"name\":\"{0}\"}},", msg.Name);
                 }
+
                 expectedMessage.Remove(expectedMessage.Length - 1, 1) // last comma
                     .Append("]");
             }
+
             expectedMessage.Append("}");
 
             // Act & Assert
@@ -167,7 +163,6 @@ namespace IO.Ably.Tests
         public void SerializesMessageCorrectly_Presence(params PresenceMessage[] messages)
         {
             // Arrange
-            
             ProtocolMessage message = new ProtocolMessage() { Presence = messages };
             StringBuilder expectedMessage = new StringBuilder("{\"action\":0,\"msgSerial\":0");
             expectedMessage.Append(",\"presence\":[");
@@ -175,6 +170,7 @@ namespace IO.Ably.Tests
             {
                 expectedMessage.AppendFormat("{{\"action\":{0}}},", (byte)msg.Action);
             }
+
             expectedMessage.Remove(expectedMessage.Length - 1, 1) // last comma
                 .Append("]}");
 
@@ -185,7 +181,6 @@ namespace IO.Ably.Tests
         //
         // Deserialization tests
         //
-
         [Theory]
         [InlineData(ProtocolMessage.MessageAction.Attach)]
         [InlineData(ProtocolMessage.MessageAction.Detach)]
@@ -196,7 +191,6 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Action(ProtocolMessage.MessageAction action)
         {
             // Arrange
-            
             string message = string.Format("{{ \"action\": {0} }}", (int)action);
 
             // Act
@@ -216,7 +210,6 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Channel(string channel)
         {
             // Arrange
-            
             string message = string.Format("{{\"channel\":{0}}}", channel == null ? "null" : string.Format("\"{0}\"", channel));
 
             // Act
@@ -235,7 +228,6 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_ChannelSerial(string serial)
         {
             // Arrange
-            
             string message = string.Format("{{\"channelSerial\":\"{0}\"}}", serial);
 
             // Act
@@ -254,7 +246,6 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_ConnectionId(string connectionId)
         {
             // Arrange
-            
             string message = string.Format("{{\"connectionId\":\"{0}\"}}", connectionId);
 
             // Act
@@ -273,7 +264,6 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_ConnectionKey(string connectionKey)
         {
             // Arrange
-            
             string message = string.Format("{{\"connectionKey\":\"{0}\"}}", connectionKey);
 
             // Act
@@ -292,7 +282,6 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Id(string id)
         {
             // Arrange
-            
             string message = string.Format("{{\"id\":\"{0}\"}}", id);
 
             // Act
@@ -313,7 +302,6 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_ConnectionSerial(object connectionSerial)
         {
             // Arrange
-            
             string message = string.Format("{{\"connectionSerial\":{0}}}", connectionSerial);
 
             // Act
@@ -334,7 +322,6 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Count(object count)
         {
             // Arrange
-            
             string message = string.Format("{{\"count\":{0}}}", count);
 
             // Act
@@ -355,7 +342,6 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_MsgSerial(object serial)
         {
             // Arrange
-            
             string message = string.Format("{{\"msgSerial\":{0}}}", serial);
 
             // Act
@@ -376,7 +362,6 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Flags(object flags)
         {
             // Arrange
-            
             string message = string.Format("{{\"flags\":{0}}}", flags);
 
             // Act
@@ -392,7 +377,6 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Messages(string messageJson, params Message[] expectedMessages)
         {
             // Arrange
-            
             StringBuilder message = new StringBuilder("{\"messages\":")
                 .Append(messageJson).Append("}");
 
@@ -415,7 +399,6 @@ namespace IO.Ably.Tests
         public void DeserializesMessageCorrectly_Presence(string messageJson, params PresenceMessage[] expectedMessages)
         {
             // Arrange
-            
             StringBuilder message = new StringBuilder("{\"presence\":")
                 .Append(messageJson).Append("}");
 

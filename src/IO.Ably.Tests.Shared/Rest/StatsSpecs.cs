@@ -19,7 +19,6 @@ namespace IO.Ably.Tests
             Equal("/stats", LastRequest.Url);
         }
 
-
         [Fact]
         public async Task ShouldSetCorrectHeaders()
         {
@@ -44,7 +43,7 @@ namespace IO.Ably.Tests
         [Fact]
         public async Task ShouldReturnCorrectFirstAndNextLinks()
         {
-            //Arrange
+            // Arrange
             var rest = GetRestClient(request =>
             {
                 var response = new AblyResponse()
@@ -55,10 +54,10 @@ namespace IO.Ably.Tests
                 return response.ToTask();
             });
 
-            //Act
+            // Act
             var result = await rest.StatsAsync();
 
-            //Assert
+            // Assert
             NotNull(result.NextDataQuery);
             NotNull(result.FirstDataQuery);
         }
@@ -120,7 +119,9 @@ namespace IO.Ably.Tests
                 End = Now
             };
             if (direction.HasValue)
+            {
                 query.Direction = direction.Value;
+            }
 
             await ExecuteStatsQuery(query);
 
@@ -137,7 +138,9 @@ namespace IO.Ably.Tests
         {
             var query = new StatsRequestParams();
             if (limit.HasValue)
+            {
                 query.Limit = limit.Value;
+            }
 
             await ExecuteStatsQuery(query);
 
@@ -150,7 +153,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSCb3")]
         public void ShouldThrowIfLimitExceeds1000orLessThan0(int limit)
         {
-            ThrowsAsync<AblyException>(() => ExecuteStatsQuery(new StatsRequestParams() {Limit = limit}));
+            ThrowsAsync<AblyException>(() => ExecuteStatsQuery(new StatsRequestParams() { Limit = limit }));
         }
 
         [Theory]
@@ -164,14 +167,17 @@ namespace IO.Ably.Tests
         {
             var query = new StatsRequestParams();
             if (statsGranularity.HasValue)
+            {
                 query.Unit = statsGranularity.Value;
+            }
 
             await ExecuteStatsQuery(query);
 
             LastRequest.AssertContainsParameter("by", statsGranularity.GetValueOrDefault(StatsIntervalGranularity.Minute).ToString().ToLower());
         }
 
-        public StatsSpecs(ITestOutputHelper output) : base(output)
+        public StatsSpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
@@ -22,7 +21,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN14b")]
         public async Task WithTokenErrorAndRenewableToken_ShouldRenewTokenAutomaticallyWithoutEmittingError()
         {
-            //Now = DateTimeOffset.Now;
+            // Now = DateTimeOffset.Now;
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
             bool renewTokenCalled = false;
             var client = GetClientWithFakeTransport(opts =>
@@ -44,7 +43,9 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 if (args.HasError)
+                {
                     raisedErrors.Add(args.Reason);
+                }
             };
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
@@ -65,7 +66,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             bool renewTokenCalled = false;
             var client = GetClientWithFakeTransport(opts =>
             {
-                opts.Key = "";
+                opts.Key = string.Empty;
                 opts.TokenDetails = tokenDetails;
                 opts.UseBinaryProtocol = false;
             }, request =>
@@ -147,7 +148,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         public async Task WhenTransportFails_ShouldTransitionToDisconnectedAndEmitErrorWithRetry()
         {
             _fakeTransportFactory.initialiseFakeTransport =
-                transport => transport.OnConnectChangeStateToConnected = false; //this will keep it in connecting state
+                transport => transport.OnConnectChangeStateToConnected = false; // this will keep it in connecting state
 
             ClientOptions options = null;
             var client = GetClientWithFakeTransport(opts =>
@@ -180,14 +181,15 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         public async Task WhenTransportFails_ShouldGoFromConnectingToDisconectedUntilConnectionStateTtlIsReachedAndStateIsSuspended()
         {
             Func<DateTimeOffset> nowFunc = () => DateTimeOffset.UtcNow;
+
             // We want access to the modified closure so we can manipulate time within ConnectionAttemptsInfo
             // ReSharper disable once AccessToModifiedClosure
             DateTimeOffset NowWrapperFn() => nowFunc();
 
             _fakeTransportFactory.initialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false;
-            //this will keep it in connecting state
 
+            // this will keep it in connecting state
             var client = GetClientWithFakeTransport(opts =>
             {
                 opts.AutoConnect = false;
@@ -231,8 +233,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             DateTimeOffset NowWrapperFunc() => nowFunc();
             _fakeTransportFactory.initialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false;
-            //this will keep it in connecting state
 
+            // this will keep it in connecting state
             var client = GetClientWithFakeTransport(opts =>
             {
                 opts.AutoConnect = false;
@@ -245,10 +247,9 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             do
             {
                 LastCreatedTransport.Listener?.OnTransportEvent(TransportState.Closing, new Exception());
-                
+
                 await WaitForConnectingOrSuspended(client);
                 nowFunc = () => DateTimeOffset.UtcNow.AddSeconds(30);
-
             } while (client.Connection.State != ConnectionState.Suspended);
 
             var awaiter = new ConnectionAwaiter(client.Connection, ConnectionState.Connecting);
@@ -260,8 +261,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         {
             await
                 Task.WhenAll(
-                    new ConnectionAwaiter(client.Connection, ConnectionState.Connecting, ConnectionState.Suspended).Wait
-                        (),
+                    new ConnectionAwaiter(client.Connection, ConnectionState.Connecting, ConnectionState.Suspended).Wait(),
                     Task.Delay(10));
         }
 
@@ -270,14 +270,15 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         public async Task WhenInSuspendedStateAfterRetrying_ShouldGoBackToSuspendedState()
         {
             Func<DateTimeOffset> nowFunc = () => DateTimeOffset.UtcNow;
+
             // We want access to the modified closure so we can manipulate time within ConnectionAttemptsInfo
             // ReSharper disable once AccessToModifiedClosure
             DateTimeOffset NowWrapperFn() => nowFunc();
 
             _fakeTransportFactory.initialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false;
-            //this will keep it in connecting state
 
+            // this will keep it in connecting state
             var client = GetClientWithFakeTransport(opts =>
             {
                 opts.AutoConnect = false;
@@ -299,7 +300,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             await new ConnectionAwaiter(client.Connection, ConnectionState.Suspended).Wait();
         }
 
-        public ConnectingFailureSpecs(ITestOutputHelper output) : base(output)
+        public ConnectingFailureSpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

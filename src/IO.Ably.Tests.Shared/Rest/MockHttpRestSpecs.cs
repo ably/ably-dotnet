@@ -23,6 +23,7 @@ namespace IO.Ably.Tests
                 {
                     return handleRequestFunc(request);
                 }
+
                 return (DefaultResponse ?? AblyResponse.EmptyResponse).ToTask();
             };
             return client;
@@ -30,13 +31,14 @@ namespace IO.Ably.Tests
 
         internal virtual AblyRest GetRestClient(Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null, Action<ClientOptions> setOptionsAction = null)
         {
-            var options = new ClientOptions(ValidKey) { UseBinaryProtocol = false};
+            var options = new ClientOptions(ValidKey) { UseBinaryProtocol = false };
             setOptionsAction?.Invoke(options);
 
             return GetRestClient(handleRequestFunc, options);
         }
 
-        public MockHttpRestSpecs(ITestOutputHelper output) : base(output)
+        public MockHttpRestSpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

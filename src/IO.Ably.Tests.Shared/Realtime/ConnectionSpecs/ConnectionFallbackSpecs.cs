@@ -24,7 +24,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
-                Error = new ErrorInfo() {StatusCode = HttpStatusCode.GatewayTimeout }
+                Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
             client.Connection.State.Should().Be(ConnectionState.Failed);
@@ -159,7 +159,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         public async Task WhileInDisconnectedStateLoop_ShouldRetryWithMultipleHosts()
         {
             var client = GetConnectedClient(opts => opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10));
-               
+
             List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
@@ -181,7 +181,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 }
                 else
                 {
-                    await Task.Delay(50); //wait just enough for the disconnect timer to kick in
+                    await Task.Delay(50); // wait just enough for the disconnect timer to kick in
                     retryHosts.Add(LastCreatedTransport.Parameters.Host);
                 }
 
@@ -200,6 +200,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         public async Task WhenItMovesFromDisconnectedToSuspended_ShouldTryDefaultHostAgain()
         {
             Func<DateTimeOffset> nowFunc = () => DateTimeOffset.UtcNow;
+
             // We want access to the modified closure so we can manipulate time within ConnectionAttemptsInfo
             // ReSharper disable once AccessToModifiedClosure
             DateTimeOffset NowWrapperFn() => nowFunc();
@@ -233,7 +234,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 }
                 else
                 {
-                    await Task.Delay(50); //wait just enough for the disconnect timer to kick in
+                    await Task.Delay(50); // wait just enough for the disconnect timer to kick in
                     retryHosts.Add(LastCreatedTransport.Parameters.Host);
                 }
 
@@ -246,7 +247,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             retryHosts.Should().Contain("realtime.ably.io");
             retryHosts.Count(x => x == "realtime.ably.io").Should().Be(1);
         }
-
 
         [Fact]
         [Trait("spec", "RTN17c")]
@@ -270,7 +270,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.Connection.State.Should().Be(ConnectionState.Failed);
         }
 
-        public ConnectionFallbackSpecs(ITestOutputHelper output) : base(output)
+        public ConnectionFallbackSpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

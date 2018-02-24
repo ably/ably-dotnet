@@ -89,13 +89,13 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC5")]
         public void RestClientProvidesAccessToAuthObjectInstantiatedWithSameOptionsPassedToRestConstructor()
         {
-            //Arrange
+            // Arrange
             var options = new ClientOptions(ValidKey);
 
-            //Act
+            // Act
             var client = new AblyRest(options);
 
-            //Assert
+            // Assert
             var auth = client.Auth as AblyAuth;
             auth.Options.Should().BeSameAs(options);
         }
@@ -117,7 +117,9 @@ namespace IO.Ably.Tests
         public void ShouldUseBinaryProtocolByDefault()
         {
             if (!Config.MsgPackEnabled)
+            {
                 return;
+            }
 
             var client = new AblyRest(ValidKey);
             client.Options.UseBinaryProtocol.Should().BeTrue();
@@ -145,9 +147,10 @@ namespace IO.Ably.Tests
             [Trait("intermittent", "true")]
             public async Task WhenErrorCodeIsTokenSpecific_ShouldAutomaticallyTryToRenewTokenIfRequestFails(int errorCode)
             {
-                //Now = DateTimeOffset.Now;
+                // Now = DateTimeOffset.Now;
                 var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
-                //Had to inline the method otherwise the tests intermittently fail.
+
+                // Had to inline the method otherwise the tests intermittently fail.
                 bool firstAttempt = true;
                 var client = GetRestClient(request =>
                 {
@@ -159,7 +162,7 @@ namespace IO.Ably.Tests
                     if (firstAttempt)
                     {
                         firstAttempt = false;
-                        throw new AblyException(new ErrorInfo("", errorCode, HttpStatusCode.Unauthorized));
+                        throw new AblyException(new ErrorInfo(string.Empty, errorCode, HttpStatusCode.Unauthorized));
                     }
                     return AblyResponse.EmptyResponse.ToTask();
                 }, opts => opts.TokenDetails = tokenDetails);
@@ -183,7 +186,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSC14d")]
             public async Task WhenClientHasNoMeansOfRenewingToken_ShouldThrow()
             {
-                var client = GetConfiguredRestClient(Defaults.TokenErrorCodesRangeStart, null, useApiKey: false);
+                var client = GetConfiguredRestClient(Defaults.TokenErrorCodesRangeStart, null, false);
 
                 await Assert.ThrowsAsync<AblyException>(() => client.StatsAsync());
             }
@@ -200,7 +203,7 @@ namespace IO.Ably.Tests
                     if (_firstAttempt)
                     {
                         _firstAttempt = false;
-                        throw new AblyException(new ErrorInfo("", errorCode, HttpStatusCode.Unauthorized));
+                        throw new AblyException(new ErrorInfo(string.Empty, errorCode, HttpStatusCode.Unauthorized));
                     }
                     return AblyResponse.EmptyResponse.ToTask();
                 }, opts =>
@@ -208,15 +211,16 @@ namespace IO.Ably.Tests
                     opts.TokenDetails = tokenDetails;
                     if (useApiKey == false)
                     {
-                        opts.Key = "";
+                        opts.Key = string.Empty;
                     }
                 });
                 return client;
             }
 
-            public WithInvalidToken(ITestOutputHelper output) : base(output)
+            public WithInvalidToken(ITestOutputHelper output)
+                : base(output)
             {
-                _returnedDummyTokenDetails = new TokenDetails("123") {Expires = Now.AddDays(1), ClientId = "123"};
+                _returnedDummyTokenDetails = new TokenDetails("123") { Expires = Now.AddDays(1), ClientId = "123" };
             }
         }
 
@@ -224,7 +228,8 @@ namespace IO.Ably.Tests
         public class HostSpecs : AblySpecs
         {
             private FakeHttpMessageHandler _handler;
-            public HostSpecs(ITestOutputHelper output) : base(output)
+            public HostSpecs(ITestOutputHelper output)
+                : base(output)
             {
                 var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("12345678") };
                 _handler = new FakeHttpMessageHandler(response);
@@ -329,16 +334,16 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSA11")]
         public async Task AddAuthHeader_WithBasicAuthentication_AddsCorrectAuthorizationHeader()
         {
-            //Arrange
+            // Arrange
             var rest = new AblyRest(ValidKey);
             ApiKey key = ApiKey.Parse(ValidKey);
             var request = new AblyRequest("/test", HttpMethod.Get, Protocol.Json);
             var expectedValue = "Basic " + key.ToString().ToBase64();
 
-            //Act
+            // Act
             await rest.AblyAuth.AddAuthHeader(request);
 
-            //Assert
+            // Assert
             var authHeader = request.Headers.First();
             authHeader.Key.Should().Be("Authorization");
             authHeader.Value.Should().Be(expectedValue);
@@ -348,16 +353,16 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSA3b")]
         public async Task AddAuthHeader_WithTokenAuthentication_AddsCorrectAuthorizationHeader()
         {
-            //Arrange
+            // Arrange
             var tokenValue = "TokenValue";
             var rest = new AblyRest(opts => opts.Token = tokenValue);
             var request = new AblyRequest("/test", HttpMethod.Get, Protocol.Json);
             var expectedValue = "Bearer " + tokenValue.ToBase64();
 
-            //Act
+            // Act
             await rest.AblyAuth.AddAuthHeader(request);
 
-            //Assert
+            // Assert
             var authHeader = request.Headers.First();
             authHeader.Key.Should().Be("Authorization");
             authHeader.Value.Should().Be(expectedValue);
@@ -369,7 +374,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSA3a")]
         public async Task TokenAuthCanBeUsedOverHttpAndHttps(bool tls)
         {
-            //Arrange
+            // Arrange
             var tokenValue = "TokenValue";
             var rest = new AblyRest(opts =>
             {
@@ -378,9 +383,9 @@ namespace IO.Ably.Tests
             });
             var request = new AblyRequest("/test", HttpMethod.Get, Protocol.Json);
 
-            //Act
+            // Act
             await rest.AblyAuth.AddAuthHeader(request);
-            
+
             // If it throws the test will fail
         }
 
@@ -388,9 +393,10 @@ namespace IO.Ably.Tests
         {
             private FakeHttpMessageHandler _handler;
             private HttpResponseMessage _response;
-            public FallbackSpecs(ITestOutputHelper output) : base(output)
+            public FallbackSpecs(ITestOutputHelper output)
+                : base(output)
             {
-                _response = new HttpResponseMessage() { Content = new StringContent("1234")};
+                _response = new HttpResponseMessage() { Content = new StringContent("1234") };
                 _handler = new FakeHttpMessageHandler(_response);
             }
 
@@ -423,7 +429,8 @@ namespace IO.Ably.Tests
                 var client = CreateClient(null);
 
                 var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
-                //ex.ErrorInfo.statusCode.Should().Be(_response.StatusCode);
+
+                // ex.ErrorInfo.statusCode.Should().Be(_response.StatusCode);
                 _handler.NumberOfRequests.Should().Be(client.Options.HttpMaxRetryCount);
             }
 
@@ -448,9 +455,9 @@ namespace IO.Ably.Tests
             {
                 int interations = 20;
                 _response.StatusCode = HttpStatusCode.BadGateway;
-                //The higher the retries the less chance the two lists will match
-                // but as per RSC15a each host will only be tried once (there are currently 6 hosts)...
 
+                // The higher the retries the less chance the two lists will match
+                // but as per RSC15a each host will only be tried once (there are currently 6 hosts)...
                 List<string> firstAttemptHosts = new List<string>();
                 for (int i = 0; i < interations; i++)
                 {
@@ -460,7 +467,7 @@ namespace IO.Ably.Tests
                     _handler.Requests.Clear();
                     await Task.Delay(10);
                 }
-                
+
                 await Task.Delay(100);
 
                 List<string> secondAttemptHosts = new List<string>();
@@ -488,7 +495,7 @@ namespace IO.Ably.Tests
 
                 var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
 
-                _handler.Requests.Count.Should().Be(Defaults.FallbackHosts.Length + 1); //First attempt is with rest.ably.io
+                _handler.Requests.Count.Should().Be(Defaults.FallbackHosts.Length + 1); // First attempt is with rest.ably.io
             }
 
             /// <summary>
@@ -498,14 +505,13 @@ namespace IO.Ably.Tests
             [Trait("spec", "TO3l6")]
             public async Task ShouldOnlyRetryFallbackHostWhileTheTimeTakenIsLessThanHttpMaxRetryDuration()
             {
-
-                var options = new ClientOptions(ValidKey) { HttpMaxRetryDuration = TimeSpan.FromSeconds(21)};
+                var options = new ClientOptions(ValidKey) { HttpMaxRetryDuration = TimeSpan.FromSeconds(21) };
                 var client = new AblyRest(options);
                 _response.StatusCode =HttpStatusCode.BadGateway;
                 var handler = new FakeHttpMessageHandler(_response,
                     () =>
                     {
-                        //Tweak time to pretend 10 seconds have ellapsed
+                        // Tweak time to pretend 10 seconds have ellapsed
                         NowAddSeconds(10);
                     });
 
@@ -513,7 +519,7 @@ namespace IO.Ably.Tests
 
                 var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
 
-                handler.Requests.Count.Should().Be(3); //First attempt is with rest.ably.io
+                handler.Requests.Count.Should().Be(3); // First attempt is with rest.ably.io
             }
 
             private static async Task MakeAnyRequest(AblyRest client)
@@ -524,7 +530,8 @@ namespace IO.Ably.Tests
 
         public class AuthCallbackSpecs : AblySpecs
         {
-            public AuthCallbackSpecs(ITestOutputHelper output) : base(output)
+            public AuthCallbackSpecs(ITestOutputHelper output)
+                : base(output)
             {
             }
 
@@ -536,7 +543,7 @@ namespace IO.Ably.Tests
                 Func<TokenParams, Task<object>> callback = (x) =>
                 {
                     called = true;
-                    return Task.FromResult<object>(new TokenDetails() {Expires = DateTimeOffset.UtcNow.AddHours(1)});
+                    return Task.FromResult<object>(new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddHours(1) });
                 };
 
                 await GetClient(callback).StatsAsync();
@@ -556,7 +563,7 @@ namespace IO.Ably.Tests
             [Fact]
             public async Task WhenCallbackReturnsAnObjectThatIsNotTokenRequestOrTokenDetails_ThrowsAblyException()
             {
-                var objects = new object[] {new object(), String.Empty, new Uri("http://test")};
+                var objects = new object[] { new object(), String.Empty, new Uri("http://test") };
                 foreach (var obj in objects)
                 {
                     await Assert.ThrowsAsync<AblyException>(() =>
@@ -655,7 +662,7 @@ namespace IO.Ably.Tests
 
             rest.ExecuteHttpRequest = request =>
             {
-                //Assert
+                // Assert
                 request.Headers["Authorization"].Should().Contain(token.Token.ToBase64());
                 return "[{}]".ToAblyResponse();
             };
@@ -675,7 +682,8 @@ namespace IO.Ably.Tests
             Assert.Equal("Test", channel.Name);
         }
 
-        public RestSpecs(ITestOutputHelper output) : base(output)
+        public RestSpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

@@ -32,6 +32,7 @@ namespace IO.Ably.Tests.Infrastructure
                 {
                     DefaultLogger.Error("Test transport factor on receive error ", e);
                 }
+
                 try
                 {
                     _afterMessage(_handler.ParseRealtimeData(data));
@@ -46,8 +47,6 @@ namespace IO.Ably.Tests.Infrastructure
             {
                 _wrappedListener?.OnTransportEvent(state, exception);
             }
-
-
         }
 
         internal readonly ITransport _wrappedTransport;
@@ -67,7 +66,7 @@ namespace IO.Ably.Tests.Infrastructure
         public ITransportListener Listener
         {
             get { return _wrappedTransport.Listener; }
-            set { _wrappedTransport.Listener = new TransportListenerWrapper(value, x => AfterDataReceived(x), _handler); } 
+            set { _wrappedTransport.Listener = new TransportListenerWrapper(value, x => AfterDataReceived(x), _handler); }
         }
 
         public void FakeTransportState(TransportState state, Exception ex = null)
@@ -100,7 +99,6 @@ namespace IO.Ably.Tests.Infrastructure
 
         public void Dispose()
         {
-            
         }
     }
 }

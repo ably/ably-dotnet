@@ -1,11 +1,9 @@
-using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
-using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -72,6 +70,7 @@ namespace IO.Ably.Tests
         public async Task ShouldHandleInboundErrorMessageAndMoveToFailedState()
         {
             ErrorInfo targetError = new ErrorInfo("test", 123);
+
             // Act
             bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError });
 
@@ -94,12 +93,14 @@ namespace IO.Ably.Tests
 
         [Fact]
         [Trait("spec", "RTN12a")]
-        //When the closing state is initialised a Close message is sent
+
+        // When the closing state is initialised a Close message is sent
         public async Task OnAttachedToTransport_ShouldSendClosedMessage()
         {
             // Arrange
             var transport = new FakeTransport() { State = TransportState.Connected };
             _context.Transport = transport;
+
             // Act
             await _state.OnAttachToContext();
 
@@ -179,7 +180,8 @@ namespace IO.Ably.Tests
             return new ConnectionClosingState(_context, info, _timer, Logger);
         }
 
-        public ClosingStateSpecs(ITestOutputHelper output) : base(output)
+        public ClosingStateSpecs(ITestOutputHelper output)
+            : base(output)
         {
             _timer = new FakeTimer();
             _context = new FakeConnectionContext();

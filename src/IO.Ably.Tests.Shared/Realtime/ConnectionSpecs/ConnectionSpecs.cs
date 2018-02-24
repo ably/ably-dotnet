@@ -16,7 +16,7 @@ namespace IO.Ably.Tests.Realtime
         {
             return
                 client.FakeProtocolMessageReceived(
-                    new ProtocolMessage(ProtocolMessage.MessageAction.Message) {Messages = new[] {message}, Channel = channel});
+                    new ProtocolMessage(ProtocolMessage.MessageAction.Message) { Messages = new[] { message }, Channel = channel });
         }
     }
 
@@ -38,14 +38,15 @@ namespace IO.Ably.Tests.Realtime
             var client = GetClientWithFakeTransport(optionsAction, handleRequestFunc);
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
-                ConnectionDetails = new ConnectionDetails() { ConnectionKey = "connectionKey"},
+                ConnectionDetails = new ConnectionDetails() { ConnectionKey = "connectionKey" },
                 ConnectionId = "1",
                 ConnectionSerial = 100
             });
             return client;
         }
 
-        public ConnectionSpecsBase(ITestOutputHelper output) : base(output)
+        public ConnectionSpecsBase(ITestOutputHelper output)
+            : base(output)
         {
             _fakeTransportFactory = new FakeTransportFactory();
         }

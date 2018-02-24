@@ -14,7 +14,8 @@ namespace IO.Ably.AcceptanceTests
     {
         public class WithSupportedPayloads : MockHttpRestSpecs
         {
-            public WithSupportedPayloads(ITestOutputHelper output) : base(output)
+            public WithSupportedPayloads(ITestOutputHelper output)
+                : base(output)
             {
             }
 
@@ -29,7 +30,6 @@ namespace IO.Ably.AcceptanceTests
             {
                 get
                 {
-
                     yield return new object[] { new Message("string", "string"), null };
                     yield return new object[] { new Message("string", new byte[] { 1, 2, 4 }), "base64" };
                     yield return new object[] { new Message("object", new TestObject() { Age = 40, Name = "Bob", DoB = new DateTime(1976, 1, 1) }), "json" };
@@ -69,9 +69,7 @@ namespace IO.Ably.AcceptanceTests
                 var processedMessages = JsonHelper.Deserialize<List<Message>>(LastRequest.RequestBody.GetText());
                 processedMessages.First().Encoding.Should().Be(encoding);
             }
-
         }
-
 
         [Trait("spec", "RSL4d")]
         public class WithTextProtocolWithoutEncryption : MockHttpRestSpecs
@@ -84,7 +82,8 @@ namespace IO.Ably.AcceptanceTests
                 return payloads.FirstOrDefault();
             }
 
-            public WithTextProtocolWithoutEncryption(ITestOutputHelper output) : base(output)
+            public WithTextProtocolWithoutEncryption(ITestOutputHelper output)
+                : base(output)
             {
                 _client = GetRestClient();
             }
@@ -93,10 +92,10 @@ namespace IO.Ably.AcceptanceTests
             [Trait("spec", "RSL4d2")]
             public void WithStringData_DoesNotApplyAnyEncoding()
             {
-                //Act
+                // Act
                 _client.Channels.Get("Test").PublishAsync("test", "test");
 
-                //Assert
+                // Assert
                 var payload = GetPayload();
                 payload.Data.Should().Be("test");
                 payload.Encoding.Should().BeNull();
@@ -106,11 +105,11 @@ namespace IO.Ably.AcceptanceTests
             [Trait("spec", "RSL4d1")]
             public void WithBinaryData_DoesNotApplyAnyEncoding()
             {
-                //Act
+                // Act
                 var bytes = new byte[] { 10, 111, 128 };
                 _client.Channels.Get("Test").PublishAsync("test", bytes);
 
-                //Assert
+                // Assert
                 var payload = GetPayload();
                 byte[] data = (payload.Data as string).FromBase64();
                 data.ShouldBeEquivalentTo(bytes);
@@ -121,13 +120,13 @@ namespace IO.Ably.AcceptanceTests
             [Trait("spec", "RSL4d3")]
             public void WithJsonData_AppliesCorrectEncoding()
             {
-                //Arrange
+                // Arrange
                 var obj = new { Test = "test", name = "name" };
 
-                //Act
+                // Act
                 _client.Channels.Get("test").PublishAsync("test", obj);
 
-                //Assert
+                // Assert
                 var payload = GetPayload();
                 payload.Data.Should().Be(JsonHelper.Serialize(obj));
                 payload.Encoding.Should().Be("json");
@@ -139,7 +138,8 @@ namespace IO.Ably.AcceptanceTests
             private AblyRest _client;
             private ChannelOptions options;
 
-            public WithTextProtocolWithEncryption(ITestOutputHelper output) : base(output)
+            public WithTextProtocolWithEncryption(ITestOutputHelper output)
+                : base(output)
             {
                 options = new ChannelOptions(Crypto.GetDefaultParams());
                 _client = GetRestClient();
@@ -151,17 +151,16 @@ namespace IO.Ably.AcceptanceTests
                 return payloads.FirstOrDefault();
             }
 
-
             [Fact]
             public void WithBinaryData_SetsEncodingAndDataCorrectly()
             {
-                //Arrange
+                // Arrange
                 var bytes = new byte[] { 1, 2, 3 };
 
-                //Act
+                // Act
                 _client.Channels.Get("test", options).PublishAsync("test", bytes);
 
-                //Assert
+                // Assert
                 var payload = GetPayload();
                 payload.Encoding.Should().Be("cipher+aes-256-cbc/base64");
                 var encryptedBytes = (payload.Data as string).FromBase64();
@@ -172,10 +171,10 @@ namespace IO.Ably.AcceptanceTests
             [Trait("spec", "RSL4b")]
             public void WithStringData_SetsEncodingAndDataCorrectly()
             {
-                //Act
+                // Act
                 _client.Channels.Get("test", options).PublishAsync("test", "test");
 
-                //Assert
+                // Assert
                 var payload = GetPayload();
                 payload.Encoding.Should().Be("utf-8/cipher+aes-256-cbc/base64");
                 var encryptedBytes = (payload.Data as string).FromBase64();
@@ -185,11 +184,11 @@ namespace IO.Ably.AcceptanceTests
             [Fact]
             public void WithJsonData_SetsEncodingAndDataCorrectly()
             {
-                //Act
+                // Act
                 var obj = new { Test = "test", Name = "name" };
                 _client.Channels.Get("test", options).PublishAsync("test", obj);
 
-                //Assert
+                // Assert
                 var payload = GetPayload();
                 payload.Encoding.Should().Be("json/utf-8/cipher+aes-256-cbc/base64");
                 var encryptedBytes = (payload.Data as string).FromBase64();
@@ -201,7 +200,6 @@ namespace IO.Ably.AcceptanceTests
         [Trait("spec", "RSL4c")]
         public class WithBinaryProtocolWithoutEncryption : MockHttpRestSpecs
         {
-
             private AblyRest _client;
 
             private Message GetPayload()
@@ -214,7 +212,8 @@ namespace IO.Ably.AcceptanceTests
 #endif
             }
 
-            public WithBinaryProtocolWithoutEncryption(ITestOutputHelper output) : base(output)
+            public WithBinaryProtocolWithoutEncryption(ITestOutputHelper output)
+                : base(output)
             {
                 _client = GetRestClient(null, opts => opts.UseBinaryProtocol = true);
             }
@@ -224,12 +223,14 @@ namespace IO.Ably.AcceptanceTests
             public void WithString_DoesNotApplyAnyEncoding()
             {
                 if (!Config.MsgPackEnabled)
+                {
                     return;
+                }
 
-                //Act
+                // Act
                 _client.Channels.Get("Test").PublishAsync("test", "test");
 
-                //Assert
+                // Assert
                 var payload = GetPayload();
                 payload.Data.Should().Be("test");
                 payload.Encoding.Should().BeNull();
@@ -240,13 +241,15 @@ namespace IO.Ably.AcceptanceTests
             public void WithBinaryData_DoesNotApplyAnyEncoding()
             {
                 if (!Config.MsgPackEnabled)
+                {
                     return;
+                }
 
-                //Act
+                // Act
                 var bytes = new byte[] { 10, 111, 128 };
                 _client.Channels.Get("Test").PublishAsync("test", bytes);
 
-                //Assert
+                // Assert
                 var payload = GetPayload();
                 (payload.Data as byte[]).Should().BeEquivalentTo(bytes);
                 payload.Encoding.Should().BeNull();
@@ -257,15 +260,17 @@ namespace IO.Ably.AcceptanceTests
             public void WithJsonData_AppliesCorrectEncoding()
             {
                 if (!Config.MsgPackEnabled)
+                {
                     return;
+                }
 
-                //Arrange
+                // Arrange
                 var obj = new { Test = "test", name = "name" };
 
-                //Act
+                // Act
                 _client.Channels.Get("test").PublishAsync("test", obj);
 
-                //Assert
+                // Assert
                 var payload = GetPayload();
                 payload.Data.Should().Be(JsonHelper.Serialize(obj));
                 payload.Encoding.Should().Be("json");
@@ -277,7 +282,8 @@ namespace IO.Ably.AcceptanceTests
             private AblyRest _client;
             private ChannelOptions options;
 
-            public WithBinaryProtocolWithEncryption(ITestOutputHelper output) : base(output)
+            public WithBinaryProtocolWithEncryption(ITestOutputHelper output)
+                : base(output)
             {
                 options = new ChannelOptions(Crypto.GetDefaultParams());
                 _client = GetRestClient(null, opts => opts.UseBinaryProtocol = true);
@@ -297,18 +303,20 @@ namespace IO.Ably.AcceptanceTests
             public void WithBinaryData_SetsEncodingAndDataCorrectly()
             {
                 if (!Config.MsgPackEnabled)
+                {
                     return;
+                }
 
-                //Arrange
+                // Arrange
                 var bytes = new byte[] { 1, 2, 3 };
 
-                //Act
+                // Act
                 _client.Channels.Get("test", options).PublishAsync("test", bytes);
 
-                //Assert
+                // Assert
                 var payload = GetPayload();
                 payload.Encoding.Should().Be("cipher+aes-256-cbc");
-                var encryptedBytes = (payload.Data as byte[]);
+                var encryptedBytes = payload.Data as byte[];
                 Crypto.GetCipher(options.CipherParams).Decrypt(encryptedBytes).Should().BeEquivalentTo(bytes);
             }
 
@@ -316,14 +324,17 @@ namespace IO.Ably.AcceptanceTests
             public void WithStringData_SetsEncodingAndDataCorrectly()
             {
                 if (!Config.MsgPackEnabled)
+                {
                     return;
-                //Act
+                }
+
+                // Act
                 _client.Channels.Get("test", options).PublishAsync("test", "test");
 
-                //Assert
+                // Assert
                 var payload = GetPayload();
                 payload.Encoding.Should().Be("utf-8/cipher+aes-256-cbc");
-                var encryptedBytes = (payload.Data as byte[]);
+                var encryptedBytes = payload.Data as byte[];
                 Crypto.GetCipher(options.CipherParams).Decrypt(encryptedBytes).GetText().Should().BeEquivalentTo("test");
             }
 
@@ -331,21 +342,25 @@ namespace IO.Ably.AcceptanceTests
             public void WithJsonData_SetsEncodingAndDataCorrectly()
             {
                 if (!Config.MsgPackEnabled)
+                {
                     return;
-                //Act
+                }
+
+                // Act
                 var obj = new { Test = "test", Name = "name" };
                 _client.Channels.Get("test", options).PublishAsync("test", obj);
 
-                //Assert
+                // Assert
                 var payload = GetPayload();
                 payload.Encoding.Should().Be("json/utf-8/cipher+aes-256-cbc");
-                var encryptedBytes = (payload.Data as byte[]);
+                var encryptedBytes = payload.Data as byte[];
                 var decryptedString = Crypto.GetCipher(options.CipherParams).Decrypt(encryptedBytes).GetText();
                 decryptedString.Should().Be(JsonHelper.Serialize(obj));
             }
         }
 
-        public MessageEncodersAcceptanceTests(ITestOutputHelper output) : base(output)
+        public MessageEncodersAcceptanceTests(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

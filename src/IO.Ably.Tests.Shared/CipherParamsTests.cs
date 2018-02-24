@@ -9,12 +9,12 @@ namespace IO.Ably.Tests
         [Fact]
         public void Ctor_WithKeyAndNoAlgorithSpecified_DefaultsToAES()
         {
-            //Act
-            var cipherParams = new CipherParams("", new byte[] {});
+            // Act
+            var cipherParams = new CipherParams(string.Empty, new byte[] { });
 
-            //Assert
+            // Assert
             Assert.Equal(Crypto.DefaultAlgorithm, cipherParams.Algorithm);
-            Assert.Equal(new Byte[] {}, cipherParams.Key);
+            Assert.Equal(new Byte[] { }, cipherParams.Key);
         }
     }
 }

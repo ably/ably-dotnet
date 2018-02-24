@@ -1,7 +1,5 @@
-﻿using IO.Ably;
-using FluentAssertions;
+﻿using FluentAssertions;
 using IO.Ably.MessageEncoders;
-using IO.Ably.Rest;
 using Xunit;
 
 namespace IO.Ably.Tests.MessageEncodes
@@ -21,13 +19,12 @@ namespace IO.Ably.Tests.MessageEncodes
             encoder = new Base64Encoder(protocol ?? Defaults.Protocol);
         }
 
-
-        public class Decode :Base64EncoderTests
+        public class Decode : Base64EncoderTests
         {
             [Fact]
             public void WithBase64EncodedPayload_ConvertsItBackToBinaryData()
             {
-                var payload = new Message() {Data = _base64Data, Encoding = "base64"};
+                var payload = new Message() { Data = _base64Data, Encoding = "base64" };
 
                 encoder.Decode(payload, new ChannelOptions());
 
@@ -49,7 +46,7 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithMessageAnotherEncoding_LeavesDataAndEncodingIntact()
             {
-                var payload = new Message() {Data = _stringData, Encoding = "utf-8"};
+                var payload = new Message() { Data = _stringData, Encoding = "utf-8" };
 
                 encoder.Decode(payload, new ChannelOptions());
 
@@ -58,21 +55,22 @@ namespace IO.Ably.Tests.MessageEncodes
             }
         }
 
-
         public class EncodeWithBinaryProtocol : Base64EncoderTests
         {
-            public EncodeWithBinaryProtocol() : base(Defaults.Protocol)
+            public EncodeWithBinaryProtocol()
+                : base(Defaults.Protocol)
             {
-
             }
 
             [Fact]
             public void WithBinaryData_LeavesDataAndEncodingIntact()
             {
                 if (!Config.MsgPackEnabled)
+                {
                     return;
+                }
 
-                var payload = new Message() {Data = _binaryData};
+                var payload = new Message() { Data = _binaryData };
 
                 encoder.Encode(payload, new ChannelOptions());
 
@@ -83,14 +81,15 @@ namespace IO.Ably.Tests.MessageEncodes
 
         public class EncodeWithTextProtocol : Base64EncoderTests
         {
-            public EncodeWithTextProtocol() :base(Protocol.Json)
+            public EncodeWithTextProtocol()
+                : base(Protocol.Json)
             {
             }
 
             [Fact]
             public void WithBinaryPayloadWithoutPriorEncoding_ConvertsDataToBase64StringAndSetsEnconding()
             {
-                var payload = new Message() {Data = _binaryData};
+                var payload = new Message() { Data = _binaryData };
 
                 encoder.Encode(payload, new ChannelOptions());
 
@@ -101,7 +100,7 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithBinaryPayloadAndExsitingEncoding_ConvertsDataToBase64StringAndAddsBase64Encoding()
             {
-                var payload = new Message() {Data = _binaryData, Encoding = "cipher"};
+                var payload = new Message() { Data = _binaryData, Encoding = "cipher" };
 
                 encoder.Encode(payload, new ChannelOptions());
 
@@ -112,7 +111,7 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithStringPayload_LeavesDataAndEncodingIntact()
             {
-                var payload = new Message() {Data = _stringData};
+                var payload = new Message() { Data = _stringData };
 
                 encoder.Encode(payload, new ChannelOptions());
 

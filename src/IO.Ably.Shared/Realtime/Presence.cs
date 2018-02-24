@@ -541,7 +541,7 @@ namespace IO.Ably.Realtime
                 catch (Exception ex)
                 {
                     Logger.Error($"PresenceMap.Put | Channel: {_channelName}, Error: {ex.Message}");
-                    throw ex;
+                    throw;
                 }
 
                 switch (item.Action)
@@ -623,7 +623,7 @@ namespace IO.Ably.Realtime
                 catch (Exception ex)
                 {
                     Logger.Error($"PresenceMap.EndSync | Channel: {_channelName}, Error: {ex.Message}");
-                    throw ex;
+                    throw;
                 }
                 finally
                 {

@@ -1,6 +1,5 @@
 using FluentAssertions;
 using IO.Ably.MessageEncoders;
-using IO.Ably.Rest;
 using Xunit;
 
 namespace IO.Ably.Tests.MessageEncodes

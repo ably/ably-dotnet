@@ -41,7 +41,7 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithInvalidKeyLength_Throws()
             {
-                var options = new ChannelOptions(new CipherParams(Crypto.DefaultAlgorithm, new byte[] {1,2,3 }));
+                var options = new ChannelOptions(new CipherParams(Crypto.DefaultAlgorithm, new byte[] { 1, 2, 3 }));
                 var encoder = new CipherEncoder(Defaults.Protocol);
                 var error = Assert.Throws<AblyException>(delegate
                 {
@@ -84,9 +84,8 @@ namespace IO.Ably.Tests.MessageEncodes
         public class EncodeWith256CBCCipherParams : CipherEncoderTests
         {
             public EncodeWith256CBCCipherParams()
-                : base(keyLength: 256, encrypt: true)
+                : base(256, encrypt: true)
             {
-
             }
 
             [Fact]
@@ -105,14 +104,11 @@ namespace IO.Ably.Tests.MessageEncodes
             }
         }
 
-
-
         public class EncodeWithDefaultCipherParams : CipherEncoderTests
         {
             public EncodeWithDefaultCipherParams()
                 : base(encrypt: true)
             {
-
             }
 
             [Fact]
@@ -161,14 +157,13 @@ namespace IO.Ably.Tests.MessageEncodes
                 payload.Data.Should().BeSameAs(_encryptedData);
                 payload.Encoding.Should().Be("utf-8/cipher+aes-256-cbc");
             }
-
         }
 
         public class DecodeWithDefaultCipherParams : CipherEncoderTests
         {
-            public DecodeWithDefaultCipherParams() : base(encrypt: true)
+            public DecodeWithDefaultCipherParams()
+                : base(encrypt: true)
             {
-
             }
 
             [Fact]
@@ -196,7 +191,7 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithOtherTypeOfPayload_LeavesDataAndEncodingIntact()
             {
-                var payload = new Message() {Data = "test", Encoding = "utf-8"};
+                var payload = new Message() { Data = "test", Encoding = "utf-8" };
 
                 encoder.Decode(payload, _channelOptions);
 
@@ -215,15 +210,14 @@ namespace IO.Ably.Tests.MessageEncodes
 
                 payload.Encoding.Should().Be(initialEncoding);
                 payload.Data.Should().Be(encryptedValue);
-
             }
         }
 
         public class DecodeWith256KeyLength : CipherEncoderTests
         {
-            public DecodeWith256KeyLength() : base(keyLength: 256, encrypt: true)
+            public DecodeWith256KeyLength()
+                : base(256, encrypt: true)
             {
-
             }
 
             [Fact]

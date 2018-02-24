@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using IO.Ably.Encryption;
 using IO.Ably.Realtime;
-using IO.Ably.Rest;
 
 namespace IO.Ably.Tests.Samples
 {
@@ -32,7 +31,6 @@ namespace IO.Ably.Tests.Samples
                 Console.WriteLine("An error occurred; Error = " + e.Message);
             }
         }
-
 
         public async Task AuthSample3()
         {
@@ -70,8 +68,7 @@ namespace IO.Ably.Tests.Samples
             AblyRealtime realtime = new AblyRealtime("{{API_KEY}}");
             var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}");
             channel.Subscribe(message =>
-                        Console.WriteLine($"Message: {message.Name}:{message.Data} received")
-                );
+                        Console.WriteLine($"Message: {message.Name}:{message.Data} received"));
             channel.Publish("example", "message data");
 
             byte[] key = Crypto.GenerateRandomKey();
@@ -105,6 +102,7 @@ namespace IO.Ably.Tests.Samples
             channel.On(args => Console.WriteLine("channel state is " + channel.State));
 
             Action<ChannelStateChange> channelStateListener = args => Console.WriteLine("channel state is " + channel.State);
+
             // remove the listener registered for a single event
             channel.Off(ChannelState.Attached, channelStateListener);
 
@@ -129,24 +127,31 @@ namespace IO.Ably.Tests.Samples
             channel.Publish("event", "payload", (success, error) =>
             {
                 if (error != null)
+                {
                     Console.WriteLine("Unable to publish message. Reason: " + error.Message);
+                }
                 else
+                {
                     Console.WriteLine("Message published sucessfully");
+                }
             });
 
             var result = await channel.PublishAsync("event", "payload");
             if (result.IsFailure)
+            {
                 Console.WriteLine("Unable to publish message. Reason: " + result.Error.Message);
+            }
             else
+            {
                 Console.WriteLine("Message published sucessfully");
-
+            }
         }
 
         public async Task ChannelHistory()
         {
             AblyRealtime realtime = new AblyRealtime("{{API_KEY}}");
             var channel = realtime.Channels.Get("chatroom");
-            var history = await channel.HistoryAsync(untilAttach: true);
+            var history = await channel.HistoryAsync(true);
             Console.WriteLine($"{history.Items.Count} messages received in the first page");
             if (history.HasNext)
             {
@@ -193,7 +198,7 @@ namespace IO.Ably.Tests.Samples
             Console.WriteLine($"There are {presence.Count()} members on this channel");
             Console.WriteLine($"The first member has client ID: {presence.First().ClientId}");
 
-            PaginatedResult<PresenceMessage> resultPage = await channel.Presence.HistoryAsync(untilAttach: true);
+            PaginatedResult<PresenceMessage> resultPage = await channel.Presence.HistoryAsync(true);
             Console.WriteLine(resultPage.Items.Count + " presence events received in first page");
             if (resultPage.HasNext)
             {
@@ -239,12 +244,11 @@ namespace IO.Ably.Tests.Samples
             var realtime = new AblyRealtime("{{API_KEY}}");
             var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}");
             await channel.AttachAsync();
-            PaginatedResult<Message> resultPage = await channel.HistoryAsync(untilAttach: true);
+            PaginatedResult<Message> resultPage = await channel.HistoryAsync(true);
             Message lastMessage = resultPage.Items[0];
             Console.WriteLine("Last message before attach: " + lastMessage.Data);
 
-
-            //Part of the _paginated_result sample
+            // Part of the _paginated_result sample
             PaginatedResult<Message> firstPage = await channel.HistoryAsync(null);
             Message firstMessage = firstPage.Items[0];
             Console.WriteLine("Page 0 item 0: " + firstMessage.Data);
@@ -267,8 +271,6 @@ namespace IO.Ably.Tests.Samples
                     Console.WriteLine("Decrypted data: " + message.Data);
                 });
             channel.Publish("unencrypted", "encrypted secret payload");
-
-
         }
 
         public async Task EncryptionExample2()
@@ -277,14 +279,12 @@ namespace IO.Ably.Tests.Samples
             ChannelOptions options = new ChannelOptions(@params);
             var realtime = new AblyRealtime("{{API_KEY}}");
             var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}", options);
-
-
         }
 
         public async Task EncryptionExample3()
         {
             var realtime = new AblyRealtime("{{API_KEY}}");
-            byte[] key = Crypto.GenerateRandomKey(keyLength: 128);
+            byte[] key = Crypto.GenerateRandomKey(128);
             ChannelOptions options = new ChannelOptions(key);
             var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}", options);
         }
@@ -296,7 +296,6 @@ namespace IO.Ably.Tests.Samples
             Action<ConnectionStateChange> action = args => Console.WriteLine("New state is " + args.Current);
             realtime.Connection.On(action);
             realtime.Connection.Off(action);
-
         }
 
         public void RestInit()
@@ -306,8 +305,8 @@ namespace IO.Ably.Tests.Samples
 
         public async Task RestWithClientId()
         {
-            var rest = new AblyRest(new ClientOptions {Key = "{{API_KEY}}"});
-            var tokenParams = new TokenParams {ClientId = "Bob"};
+            var rest = new AblyRest(new ClientOptions { Key = "{{API_KEY}}" });
+            var tokenParams = new TokenParams { ClientId = "Bob" };
             string tokenRequest = await rest.Auth.CreateTokenRequestAsync(tokenParams);
             /* ... issue the TokenRequest to a client ... */
         }
@@ -317,13 +316,13 @@ namespace IO.Ably.Tests.Samples
             Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, DefaultLogger.LoggerInstance);
             Connection.NotifyOperatingSystemNetworkState(NetworkState.Offline, DefaultLogger.LoggerInstance);
         }
-        
+
         public async Task RestAuthorizeSample()
         {
             var client = new AblyRest("{{API_KEY}}");
             try
             {
-                TokenParams tokenParams = new TokenParams {ClientId = "bob"};
+                TokenParams tokenParams = new TokenParams { ClientId = "bob" };
                 TokenDetails tokenDetails = await client.Auth.AuthorizeAsync(tokenParams);
                 Console.WriteLine("Success; token = " + tokenDetails.Token);
             }
@@ -366,8 +365,6 @@ namespace IO.Ably.Tests.Samples
             CipherParams cipherParams = Crypto.GetDefaultParams(key);
             ChannelOptions options = new ChannelOptions(cipherParams);
             var encryptedChannel = rest.Channels.Get("channelName", options);
-
-            
         }
 
         public async Task RestChannelHistory()
@@ -426,7 +423,7 @@ namespace IO.Ably.Tests.Samples
                 Console.WriteLine(nextPage.Items.Count + " members on 2nd page");
             }
 
-            //History
+            // History
             PaginatedResult<PresenceMessage> eventsPage = await channel.Presence.HistoryAsync();
             Console.WriteLine(eventsPage.Items.Count + " presence events received in first page");
             if (eventsPage.HasNext)
@@ -443,7 +440,5 @@ namespace IO.Ably.Tests.Samples
             Stats thisHour = results.Items[0];
             Console.WriteLine("Published this hour " + thisHour.Inbound.All.All.Count);
         }
-
-        
     }
 }

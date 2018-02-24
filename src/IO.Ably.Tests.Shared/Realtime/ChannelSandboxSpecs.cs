@@ -1,20 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using FluentAssertions.Events;
 using IO.Ably.Encryption;
 using IO.Ably.Realtime;
-using IO.Ably.Rest;
 using IO.Ably.Tests.Infrastructure;
-using IO.Ably.Transport.States.Connection;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -79,6 +73,7 @@ namespace IO.Ably.Tests.Realtime
         {
             Logger.LogLevel = LogLevel.Debug;
             ;
+
             // Arrange
             var client = await GetRealtimeClient(protocol);
             IRealtimeChannel target = client.Channels.Get("test");
@@ -101,8 +96,7 @@ namespace IO.Ably.Tests.Realtime
             messagesReceived[0].Data.ShouldBeEquivalentTo("test data");
         }
 
-        //TODO: RTL1 Spec about presence and sync messages
-
+        // TODO: RTL1 Spec about presence and sync messages
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTL4e")]
@@ -122,13 +116,13 @@ namespace IO.Ably.Tests.Realtime
             result.Error.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
-
         [Theory]
         [ProtocolData]
         public async Task TestAttachChannel_Sending3Messages_EchoesItBack(Protocol protocol)
         {
             Logger.LogLevel = LogLevel.Debug;
             ;
+
             // Arrange
             var client = await GetRealtimeClient(protocol);
             await client.WaitForState(ConnectionState.Connected);
@@ -145,7 +139,9 @@ namespace IO.Ably.Tests.Realtime
                 messagesReceived.Enqueue(message);
                 count++;
                 if (count == 3)
+                {
                     resetEvent.Set();
+                }
             });
 
             // Act
@@ -177,6 +173,7 @@ namespace IO.Ably.Tests.Realtime
 
             // this should be logged in MsWebSocketTrasnport.CreateSocket
             var testLogger = new TestLogger("Connecting to web socket on url:");
+
             // Arrange
             var client = await GetRealtimeClient(protocol, (o, _) =>
             {
@@ -204,6 +201,7 @@ namespace IO.Ably.Tests.Realtime
             // Assert
             messagesReceived.Should().BeEmpty();
         }
+
         /*
          * An optional callback can be provided to the #publish method that is called when the message
          * is successfully delivered or upon failure with the appropriate ErrorInfo error.
@@ -222,10 +220,9 @@ namespace IO.Ably.Tests.Realtime
             List<bool> successes3 = new List<bool>();
 
             bool retry = true;
-            int tries = 3; 
+            int tries = 3;
             while (retry)
             {
-               
                 var client1 = await GetRealtimeClient(protocol);
                 var client2 = await GetRealtimeClient(protocol);
                 var client3 = await GetRealtimeClient(protocol);
@@ -308,7 +305,7 @@ namespace IO.Ably.Tests.Realtime
             var channelName = "test".AddRandomSuffix();
             var channel = client.Channels.Get(channelName);
             int messagesReceived = 0;
-            string receivedClienId = "";
+            string receivedClienId = string.Empty;
             channel.Subscribe(message =>
             {
                 receivedClienId = message.ClientId;
@@ -397,8 +394,8 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         [Trait("spec", "RTL6g4")]
         public async Task
-            WhenPublishingMessageWithCompatibleClientIdBeforeClientIdHasBeenConfigured_ShouldPublishTheMessageSuccessfully
-            (Protocol protocol)
+            WhenPublishingMessageWithCompatibleClientIdBeforeClientIdHasBeenConfigured_ShouldPublishTheMessageSuccessfully(
+            Protocol protocol)
         {
             var clientId = "client1";
             var rest = await GetRestClient(protocol);
@@ -423,9 +420,13 @@ namespace IO.Ably.Tests.Realtime
             for (var i = 0; i < 100; i++)
             {
                 if (!messageReceived)
+                {
                     await Task.Delay(100);
+                }
                 else
+                {
                     break;
+                }
             }
 
             messageReceived.Should().BeTrue();
@@ -435,10 +436,10 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         [Trait("spec", "RTL6g4")]
         [Trait("spec", "RTL6g3")]
-        [Trait("spec", "RTL6h")] //Look at PublishAsync
+        [Trait("spec", "RTL6h")] // Look at PublishAsync
         public async Task
-            WhenPublishingMessageWithInCompatibleClientIdBeforeClientIdHasBeenConfigured_ShouldPublishTheMessageAndReturnErrorFromTheServerAllowingFurtherMessagesToBePublished
-            (Protocol protocol)
+            WhenPublishingMessageWithInCompatibleClientIdBeforeClientIdHasBeenConfigured_ShouldPublishTheMessageAndReturnErrorFromTheServerAllowingFurtherMessagesToBePublished(
+            Protocol protocol)
         {
             var clientId = "client1";
             var rest = await GetRestClient(protocol);
@@ -462,7 +463,7 @@ namespace IO.Ably.Tests.Realtime
 
             messageReceived.Should().Be(0);
 
-            //Send a followup message
+            // Send a followup message
             var followupMessage = await channel.PublishAsync("followup", "message");
             followupMessage.IsSuccess.Should().BeTrue();
             await Task.Delay(100);
@@ -507,7 +508,9 @@ namespace IO.Ably.Tests.Realtime
             {
                 testMessages.Add(message);
                 if (testMessages.Count == 5)
+                {
                     _resetEvent.Set();
+                }
             });
             var messages = new[]
             {
@@ -538,7 +541,7 @@ namespace IO.Ably.Tests.Realtime
             var channel = client.Channels.Get("nono");
             channel.Subscribe(message =>
             {
-                //do nothing
+                // do nothing
             });
 
             var result = await new ChannelAwaiter(channel, ChannelState.Failed).WaitAsync();
@@ -555,9 +558,10 @@ namespace IO.Ably.Tests.Realtime
             {
                 if (Config.MsgPackEnabled)
                 {
-                    yield return new object[] {Defaults.Protocol, GetAES128FixtureData()};
-                    yield return new object[] {Defaults.Protocol, GetAES256FixtureData()};
+                    yield return new object[] { Defaults.Protocol, GetAES128FixtureData() };
+                    yield return new object[] { Defaults.Protocol, GetAES256FixtureData() };
                 }
+
                 yield return new object[] { Protocol.Json, GetAES128FixtureData() };
                 yield return new object[] { Protocol.Json, GetAES256FixtureData() };
             }
@@ -591,14 +595,22 @@ namespace IO.Ably.Tests.Realtime
                 var result = resetEvent.WaitOne(10000);
                 result.Should().BeTrue("Operation timed out");
                 if (lastMessage.Data is byte[])
+                {
                     (lastMessage.Data as byte[]).Should().BeEquivalentTo(decodedData as byte[], "Item number {0} data does not match decoded data", count);
+                }
                 else if (encoding == "json")
+                {
                     JToken.DeepEquals((JToken)lastMessage.Data, (JToken)decodedData).Should().BeTrue("Item number {0} data does not match decoded data", count);
+                }
                 else
+                {
                     lastMessage.Data.Should().Be(decodedData, "Item number {0} data does not match decoded data", count);
+                }
+
                 count++;
                 resetEvent.Reset();
             }
+
             client.Close();
         }
 
@@ -657,12 +669,11 @@ namespace IO.Ably.Tests.Realtime
         [Trait("issue", "117")]
         public async Task AttachAwaitShouldtimeoutIfStateChanges(Protocol protocol)
         {
-
             Logger.LogLevel = LogLevel.Debug;
             var client1 = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
-                opts.RealtimeRequestTimeout = new TimeSpan(0,0,30);
+                opts.RealtimeRequestTimeout = new TimeSpan(0, 0, 30);
             });
 
             var channelName = "test".AddRandomSuffix();
@@ -708,7 +719,9 @@ namespace IO.Ably.Tests.Realtime
 
             await Task.Delay(TimeSpan.FromSeconds(15));
             foreach (var client in clients)
+            {
                 client.Channels.Get(channelName).State.Should().Be(ChannelState.Attached);
+            }
         }
 
         [Theory]
@@ -724,12 +737,10 @@ namespace IO.Ably.Tests.Realtime
                     .HistoryAsync(new HistoryRequestParams() { Start = DateHelper.CreateDate(1969, 1, 1) });
             });
 
-
             var result = await client.Channels.Get("name").AttachAsync();
 
             result.IsSuccess.Should().BeTrue();
             result.Error.Should().BeNull();
-
         }
 
         [Theory]
@@ -739,23 +750,22 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol);
 
             var channel = client.Channels.Get("test".AddRandomSuffix());
-            channel.Subscribe(delegate(Message message) {  });
+            channel.Subscribe(message => { });
             await channel.AttachAsync();
             channel.State.Should().Be(ChannelState.Attached);
         }
 
-        //[Theory]
-        //[ProtocolData]
-        //public async Task WhenAttachAsyncCalledAfterSubscribe_ShouldWaitUntilChannelIsAttached(Protocol protocol)
-        //{
+        // [Theory]
+        // [ProtocolData]
+        // public async Task WhenAttachAsyncCalledAfterSubscribe_ShouldWaitUntilChannelIsAttached(Protocol protocol)
+        // {
         //    var client = await GetRealtimeClient(protocol);
 
-        //    var channel = client.Channels.Get("test".AddRandomSuffix());
+        // var channel = client.Channels.Get("test".AddRandomSuffix());
         //    channel.Subscribe(delegate (Message message) { });
         //    await channel.AttachAsync();
         //    channel.State.Should().Be(ChannelState.Attached);
-        //}
-
+        // }
         private static JObject GetAES128FixtureData()
         {
             return JObject.Parse(ResourceHelper.GetResource("crypto-data-128.json"));
@@ -768,8 +778,8 @@ namespace IO.Ably.Tests.Realtime
 
         private ChannelOptions GetOptions(JObject data)
         {
-            var key = ((string)data["key"]);
-            var iv = ((string)data["iv"]);
+            var key = (string)data["key"];
+            var iv = (string)data["iv"];
             var cipherParams = new CipherParams("aes", key, CipherMode.CBC, iv);
             return new ChannelOptions(cipherParams);
         }
@@ -780,13 +790,17 @@ namespace IO.Ably.Tests.Realtime
             {
                 return JsonHelper.Deserialize(data);
             }
+
             if (encoding == "base64")
+            {
                 return data.FromBase64();
+            }
 
             return data;
         }
 
-        public ChannelSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
+        public ChannelSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
+            : base(fixture, output)
         {
         }
     }

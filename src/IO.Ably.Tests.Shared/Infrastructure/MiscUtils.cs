@@ -1,17 +1,20 @@
-﻿using IO.Ably.Realtime;
-using System;
-using System.Linq;
+﻿using System;
 using System.Threading.Tasks;
 
 namespace IO.Ably.Tests
 {
-    static class MiscUtils
+    internal static class MiscUtils
     {
         public static string AddRandomSuffix(this string str)
         {
-            if (str.IsEmpty()) return str;
+            if (str.IsEmpty())
+            {
+                return str;
+            }
+
             return str + "_" + Guid.NewGuid().ToString("D").Substring(0, 8);
         }
+
         public static Task<AblyResponse> ToAblyResponse(this string txt)
         {
             return Task.FromResult(new AblyResponse() { TextResponse = txt });

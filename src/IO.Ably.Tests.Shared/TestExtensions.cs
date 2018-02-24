@@ -12,7 +12,7 @@ namespace IO.Ably.Tests
 
         internal static void SetOnTransportCreated(this IRealtimeClient client, Action<TestTransportWrapper> onCreated)
         {
-            var factory = ((AblyRealtime) client).Options.TransportFactory as TestTransportFactory;
+            var factory = ((AblyRealtime)client).Options.TransportFactory as TestTransportFactory;
             factory.OnTransportCreated = onCreated;
         }
     }

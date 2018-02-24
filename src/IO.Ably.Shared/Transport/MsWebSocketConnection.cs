@@ -183,6 +183,7 @@ namespace IO.Ably.Transport
         public void Dispose()
         {
             _tokenSource.Cancel();
+            _tokenSource.Dispose();
             _sendQueue.Dispose();
             ClientWebSocket?.Dispose();
         }

@@ -13,17 +13,21 @@ namespace IO.Ably.Tests
     [Trait("requires", "sandbox")]
     public class AuthSandboxSpecs : SandboxSpecs
     {
-        public AuthSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
+        public AuthSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
+            : base(fixture, output)
         {
         }
 
-        static TokenParams CreateTokenParams(Capability capability, TimeSpan? ttl = null)
+        private static TokenParams CreateTokenParams(Capability capability, TimeSpan? ttl = null)
         {
             var res = new TokenParams();
             res.ClientId = "John";
             res.Capability = capability;
             if (ttl.HasValue)
+            {
                 res.Ttl = ttl.Value;
+            }
+
             return res;
         }
 
@@ -36,15 +40,15 @@ namespace IO.Ably.Tests
             var almostExpiredToken = await authClient.Auth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(1) }, null);
             await Task.Delay(TimeSpan.FromSeconds(2));
 
-            //Add this to fool the client it is a valid token
+            // Add this to fool the client it is a valid token
             almostExpiredToken.Expires = DateTimeOffset.UtcNow.AddHours(1);
 
-            //Trying again with the new token
+            // Trying again with the new token
             var client = await GetRestClient(protocol, options =>
             {
                 options.TokenDetails = almostExpiredToken;
                 options.ClientId = "123";
-                options.Key = "";
+                options.Key = string.Empty;
             });
 
             client.AblyAuth.CurrentToken.IsValidToken().Should().BeTrue();
@@ -60,12 +64,13 @@ namespace IO.Ably.Tests
                 e.ErrorInfo.Code.Should().BeInRange(40140, 40150);
             }
         }
+
         /*
          * (RSA4b) When the client does have a means to renew the token automatically,
          * and the token has expired or the server has responded with a token error
          * (statusCode value of 401 and error code value in the range 40140 <= code < 40150),
          * then the client should automatically make a single attempt to reissue the token and resend the request using the new token.
-         * If the token creation failed or the subsequent request with the new token failed due to a token error, then the request should result in an error		
+         * If the token creation failed or the subsequent request with the new token failed due to a token error, then the request should result in an error
          */
         [Theory]
         [ProtocolData]
@@ -73,27 +78,30 @@ namespace IO.Ably.Tests
         public async Task AuthToken_WithMeansToRenew_WhenTokenExpired_ShouldRetry_WhenRetryFails_RaiseError(Protocol protocol)
         {
             var authClient = await GetRestClient(protocol);
+
             // create a tokenDetails that is about to expire
             var almostExpiredToken = await authClient.Auth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromMilliseconds(2000) }, null);
+
             // Fool the client it is a valid token
             almostExpiredToken.Expires = DateTimeOffset.UtcNow.AddHours(1);
 
             var testLogger = new TestLogger("Handling UnAuthorized Error, attmepting to Re-authorize and repeat request.");
+
             // create a realtime instance with no mean to renew the token
             var restClient = await GetRestClient(protocol, (options) =>
             {
                 options.TokenDetails = almostExpiredToken;
                 options.ClientId = "123";
-                options.Key = "";
+                options.Key = string.Empty;
                 options.AutoConnect = false;
                 options.AuthCallback = null;
                 options.AuthUrl = new Uri("http://localhost:12345/invalid-uri");
                 options.Logger = testLogger;
             });
-            
+
             // wait for the token to expire
             await Task.Delay(TimeSpan.FromMilliseconds(2100));
-            
+
             try
             {
                 var channel = restClient.Channels.Get("random");
@@ -104,12 +112,13 @@ namespace IO.Ably.Tests
             {
                 e.ErrorInfo.Code.Should().Be(80019);
             }
+
             // check the retry code was run
             testLogger.MessageSeen.Should().BeTrue();
+
             // only once
             testLogger.SeenCount.Should().Be(1);
         }
-
 
         [Theory]
         [ProtocolData]
@@ -120,8 +129,10 @@ namespace IO.Ably.Tests
         {
             var client = await GetRealtimeClient(protocol);
             client.Connect();
+
             // wait until connected
             await client.WaitForState();
+
             // set a bogus AuthUrl
             client.Options.AuthUrl = new Uri("http://localhost:8910");
             try
@@ -133,6 +144,7 @@ namespace IO.Ably.Tests
             {
                 e.ErrorInfo.Code.Should().Be(80019);
             }
+
             // RSA4c3 should still be connected
             client.Connection.State.Should().Be(ConnectionState.Connected);
         }
@@ -146,11 +158,12 @@ namespace IO.Ably.Tests
         {
             var client = await GetRealtimeClient(protocol);
             client.Connect();
+
             // wait until connected
             await client.WaitForState();
 
             client.Options.TokenDetails = new TokenDetails();
-            client.Options.Key = "";
+            client.Options.Key = string.Empty;
             client.Options.AuthCallback = tokenParams => throw new Exception("Force error in test");
 
             try
@@ -180,9 +193,10 @@ namespace IO.Ably.Tests
         {
             var client = await GetRealtimeClient(protocol);
             client.Connect();
+
             // wait until connected
             await client.WaitForState();
-            
+
             // have the auth callback return an invalid token
             client.Options.AuthCallback = async tokenParams => "invalid_token";
 
@@ -199,7 +213,6 @@ namespace IO.Ably.Tests
             // RSA4c3 should still be connected
             client.Connection.State.Should().Be(ConnectionState.Connected);
         }
-
 
         [Theory]
         [ProtocolData]
@@ -239,7 +252,7 @@ namespace IO.Ably.Tests
             var httpsTokenAbly =
                 new AblyRest(new ClientOptions { Token = token.Token, Environment = options.Environment, Tls = true });
 
-            //If it doesn't throw we are good :)
+            // If it doesn't throw we are good :)
             await httpTokenAbly.Channels.Get("foo").PublishAsync("test", "true");
             await httpsTokenAbly.Channels.Get("foo").PublishAsync("test", "true");
         }
@@ -357,8 +370,8 @@ namespace IO.Ably.Tests
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSA8f3")]
-        public async Task TokenAuthWithWildcardClientId_ShouldPublishMessageSuccessufflyAndClientIdShouldBeSetToWildcard
-            (Protocol protocol)
+        public async Task TokenAuthWithWildcardClientId_ShouldPublishMessageSuccessufflyAndClientIdShouldBeSetToWildcard(
+            Protocol protocol)
         {
             var client = await GetRestClient(protocol);
             var settings = await Fixture.GetSettings();

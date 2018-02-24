@@ -1,10 +1,5 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using FluentAssertions;
-using IO.Ably.Encryption;
-using IO.Ably.Rest;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -14,9 +9,9 @@ namespace IO.Ably.Tests.Rest
     [Trait("requires", "sandbox")]
     public class PresenceSandboxSpecs : SandboxSpecs
     {
-        public PresenceSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
+        public PresenceSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
+            : base(fixture, output)
         {
-            
         }
 
         [Theory]

@@ -1,8 +1,6 @@
-﻿using Moq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
-using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
@@ -20,7 +18,8 @@ namespace IO.Ably.Tests
             return new ConnectionFailedState(_context, info, Logger);
         }
 
-        public FailedStateSpecs(ITestOutputHelper output) : base(output)
+        public FailedStateSpecs(ITestOutputHelper output)
+            : base(output)
         {
             _context = new FakeConnectionContext();
             _state = GetState();

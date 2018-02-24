@@ -13,17 +13,16 @@ namespace IO.Ably.Tests.Realtime
     [Trait("spec", "RTN13")]
     public class ConnectionPingSpecs : ConnectionSpecsBase
     {
-        //[Fact]
-        //[Trait("intermittent", "true")]
-        //public async Task ShouldSendHeartbeatMessage()
-        //{
+        // [Fact]
+        // [Trait("intermittent", "true")]
+        // public async Task ShouldSendHeartbeatMessage()
+        // {
         //    var client = GetConnectedClient();
 
-        //    var result = await client.Connection.PingAsync();
+        // var result = await client.Connection.PingAsync();
 
-        //    LastCreatedTransport.LastMessageSend.action.Should().Be(ProtocolMessage.MessageAction.Heartbeat);
-        //}
-
+        // LastCreatedTransport.LastMessageSend.action.Should().Be(ProtocolMessage.MessageAction.Heartbeat);
+        // }
         [Fact]
         [Trait("spec", "RTN13a")]
         public async Task OnHeartBeatMessageReceived_ShouldReturnElapsedTime()
@@ -33,7 +32,6 @@ namespace IO.Ably.Tests.Realtime
 
             _fakeTransportFactory.LastCreatedTransport.SendAction = async message =>
             {
-
                 NowAdd(TimeSpan.FromMilliseconds(100));
                 if (message.Original.Action == ProtocolMessage.MessageAction.Heartbeat)
                 {
@@ -44,8 +42,10 @@ namespace IO.Ably.Tests.Realtime
             var result = await client.Connection.PingAsync();
 
             result.IsSuccess.Should().BeTrue();
+
             // Because the now object is static when executed in parallel with other tests the results are affected
             result.Value.Value.Should().BeGreaterThan(TimeSpan.FromMilliseconds(0));
+
             // reset
             SetNowFunc(() => DateTimeOffset.UtcNow);
         }
@@ -83,7 +83,8 @@ namespace IO.Ably.Tests.Realtime
             result.Error.StatusCode.Should().Be(HttpStatusCode.RequestTimeout);
         }
 
-        public ConnectionPingSpecs(ITestOutputHelper output) : base(output)
+        public ConnectionPingSpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

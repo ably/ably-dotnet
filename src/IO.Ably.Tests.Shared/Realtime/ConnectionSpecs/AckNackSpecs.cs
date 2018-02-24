@@ -13,9 +13,9 @@ namespace IO.Ably.Tests.Realtime
     {
         private AblyRealtime _realtime;
         private FakeAckProcessor _ackProcessor;
-        // This only contains the AckProcessor integration with the ConnectionManager. 
-        // The Actual Ack processor tests are in AckProtocolSpecs.cs
 
+        // This only contains the AckProcessor integration with the ConnectionManager.
+        // The Actual Ack processor tests are in AckProtocolSpecs.cs
         [Fact]
         public void WhenSendIsCalled_ShouldPassTheMessageThroughTHeAckProcessor()
         {
@@ -37,7 +37,8 @@ namespace IO.Ably.Tests.Realtime
             _ackProcessor.OnMessageReceivedCalled.Should().BeTrue();
         }
 
-        public AckNackSpecs(ITestOutputHelper output) : base(output)
+        public AckNackSpecs(ITestOutputHelper output)
+            : base(output)
         {
             _ackProcessor = new FakeAckProcessor();
             _realtime = GetRealtimeClient();

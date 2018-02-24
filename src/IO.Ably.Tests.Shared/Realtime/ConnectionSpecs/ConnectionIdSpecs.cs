@@ -26,7 +26,8 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.Id.Should().Be("123");
         }
 
-        public ConnectionIdSpecs(ITestOutputHelper output) : base(output)
+        public ConnectionIdSpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

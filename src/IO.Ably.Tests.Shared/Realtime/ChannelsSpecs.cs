@@ -5,8 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
-using IO.Ably.Rest;
-using IO.Ably.Tests.Realtime;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -17,7 +15,6 @@ namespace IO.Ably.Tests.Realtime
     {
         private AblyRealtime _realtime;
         private IChannels<IRealtimeChannel> Channels => _realtime.Channels;
-
 
         [Fact]
         [Trait("spec", "RTS3")]
@@ -59,7 +56,6 @@ namespace IO.Ably.Tests.Realtime
             Assert.Same(options, channel.Options);
         }
 
-        
         [Fact]
         [Trait("spec", "RTS3c")]
         public void WithExistingChannelAndOptions_ShouldGetExistingChannelAndupdateOpitons()
@@ -120,6 +116,7 @@ namespace IO.Ably.Tests.Realtime
             await _realtime.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, "test"));
 
             await Task.Delay(50);
+
             // Assert
             Channels.Should().BeEmpty();
         }
@@ -144,7 +141,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTS4a")]
         public void ReleaseAll_ShouldDetachChannel()
         {
-
             // Arrange
             var channel = Channels.Get("test");
             channel.Attach();
@@ -184,6 +180,7 @@ namespace IO.Ably.Tests.Realtime
             await _realtime.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, "test"));
 
             await new ChannelAwaiter(channel, ChannelState.Detached).WaitAsync();
+
             // Assert
             Channels.Should().BeEmpty();
         }
@@ -200,7 +197,6 @@ namespace IO.Ably.Tests.Realtime
             // Act
             await _realtime.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
 
-            
             // Assert
             Assert.False(Channels.Any());
         }
@@ -238,11 +234,12 @@ namespace IO.Ably.Tests.Realtime
             Assert.False(enumerator.MoveNext());
         }
 
-        public ChannelsSpecs(ITestOutputHelper output) : base(output)
+        public ChannelsSpecs(ITestOutputHelper output)
+            : base(output)
         {
             _realtime = GetConnectedClient();
         }
-        
+
         [Fact]
         [Trait("issue", "167")]
         public async void PublishShouldNotAlterChannelOptions()
@@ -258,6 +255,5 @@ namespace IO.Ably.Tests.Realtime
             Assert.Equal(options.ToJson(), channel2.Options.ToJson());
             Assert.True(options.CipherParams.Equals(cipherParams));
         }
-
     }
 }

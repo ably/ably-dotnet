@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
-using IO.Ably.Rest;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -72,13 +71,14 @@ namespace IO.Ably.Tests
                 }
                 catch
                 {
-                    //ignore processing errors and only care about the request
+                    // ignore processing errors and only care about the request
                 }
+
                 LastRequest.Url.Should().Contain("time");
             }
 
-
-            public RealtimeProperiesSpec(ITestOutputHelper output) : base(output)
+            public RealtimeProperiesSpec(ITestOutputHelper output)
+                : base(output)
             {
                 _client = GetRealtimeClient();
             }
@@ -90,7 +90,6 @@ namespace IO.Ably.Tests
             var client = new AblyRealtime(ValidKey);
             client.Connection.Should().NotBeNull();
         }
-
 
         [Fact]
         public void When_HostNotSetInOptions_UseBinaryProtocol_TrueByDefault()
@@ -126,7 +125,8 @@ namespace IO.Ably.Tests
             Assert.NotNull(realtime.Auth);
         }
 
-        public RealtimeSpecs(ITestOutputHelper output) : base(output)
+        public RealtimeSpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

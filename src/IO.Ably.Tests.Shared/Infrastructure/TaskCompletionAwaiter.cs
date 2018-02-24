@@ -19,7 +19,7 @@ namespace IO.Ably.Tests.Infrastructure
             _taskCompletionSource = new TaskCompletionSource<bool>();
             _cancellationTokenSource.Token.Register(() => _taskCompletionSource.TrySetResult(false));
         }
-        
+
         public void SetCompleted()
         {
             _taskCompletionSource.TrySetResult(true);

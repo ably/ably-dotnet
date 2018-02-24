@@ -44,7 +44,8 @@ namespace IO.Ably.Tests.Realtime
                 .ConnectionKey.Should().Be(targetKey);
         }
 
-        public ConnectionKeySpecs(ITestOutputHelper output) : base(output)
+        public ConnectionKeySpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

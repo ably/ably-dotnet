@@ -1,7 +1,5 @@
 using FluentAssertions;
 using IO.Ably.MessageEncoders;
-using IO.Ably.Rest;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -11,20 +9,20 @@ namespace IO.Ably.Tests.MessageEncodes
     {
         private object _objectData;
         private string _jsonData;
-        private int[] _arrayData = new []{ 1, 2, 3};
+        private int[] _arrayData = new[] { 1, 2, 3 };
         private string _jsonArrayData = "[1,2,3]";
         private JsonEncoder encoder;
 
         public JsonEncoderTests()
         {
-            _objectData = new { Test = "test", Best = "best"};
+            _objectData = new { Test = "test", Best = "best" };
             _jsonData = JsonHelper.Serialize(_objectData);
             encoder = new JsonEncoder(Defaults.Protocol);
         }
 
         private Message EncodePayload(object data, string encoding = "")
         {
-            var payload = new Message() {Data = data, Encoding = encoding};
+            var payload = new Message() { Data = data, Encoding = encoding };
             encoder.Encode(payload, new ChannelOptions());
             return payload;
         }
@@ -36,8 +34,6 @@ namespace IO.Ably.Tests.MessageEncodes
             return payload;
         }
 
-
-
         public class Decode : JsonEncoderTests
         {
             [Fact]
@@ -47,7 +43,7 @@ namespace IO.Ably.Tests.MessageEncodes
 
                 payload.Data.Should().BeOfType<JObject>();
 
-                var obj =(payload.Data as JObject).ToObject(_objectData.GetType());
+                var obj = (payload.Data as JObject).ToObject(_objectData.GetType());
                 obj.Should().Be(_objectData);
 
                 payload.Encoding.Should().BeEmpty();
@@ -127,6 +123,5 @@ namespace IO.Ably.Tests.MessageEncodes
                 payload.Encoding.Should().BeEmpty();
             }
         }
-
     }
 }

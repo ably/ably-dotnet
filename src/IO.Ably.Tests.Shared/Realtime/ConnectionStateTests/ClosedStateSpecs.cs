@@ -15,7 +15,8 @@ namespace IO.Ably.Tests
         private ConnectionClosedState _state;
         private IO.Ably.DefaultLogger.InternalLogger _logger;
 
-        public ClosedStateSpecs(ITestOutputHelper output) : base(output)
+        public ClosedStateSpecs(ITestOutputHelper output)
+            : base(output)
         {
             var sink = new TestLoggerSink();
             _logger = new IO.Ably.DefaultLogger.InternalLogger(Defaults.DefaultLogLevel, sink);

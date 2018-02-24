@@ -4,7 +4,6 @@ namespace IO.Ably.Tests
 {
     public class ApiKeyTests
     {
-
         [Theory]
         [InlineData("InvalidKey")]
         [InlineData("")]
