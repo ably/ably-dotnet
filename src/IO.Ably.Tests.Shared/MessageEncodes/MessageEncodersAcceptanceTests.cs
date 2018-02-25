@@ -76,16 +76,16 @@ namespace IO.Ably.AcceptanceTests
         {
             private AblyRest _client;
 
-            private Message GetPayload()
-            {
-                var payloads = JsonHelper.Deserialize<List<Message>>(LastRequest.RequestBody.GetText());
-                return payloads.FirstOrDefault();
-            }
-
             public WithTextProtocolWithoutEncryption(ITestOutputHelper output)
                 : base(output)
             {
                 _client = GetRestClient();
+            }
+
+            private Message GetPayload()
+            {
+                var payloads = JsonHelper.Deserialize<List<Message>>(LastRequest.RequestBody.GetText());
+                return payloads.FirstOrDefault();
             }
 
             [Fact]
