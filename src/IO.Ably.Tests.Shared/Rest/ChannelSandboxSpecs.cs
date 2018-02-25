@@ -363,9 +363,13 @@ namespace IO.Ably.Tests.Rest
             var responseData = (JObject)historyData.First;
 
             if (expectedType == "binary")
+            {
                 ((string)responseData["data"]).Should().Be((string)messageData["data"]);
+            }
             else if (expectedType == "json")
+            {
                 responseData["data"].ToJson().Should().Be(messageData["data"].ToJson());
+            }
             else
             {
                 ((string)responseData["data"]).Should().Be((string)messageData["data"]);

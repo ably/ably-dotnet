@@ -30,7 +30,9 @@ namespace IO.Ably.Tests
                 _awaitedStates.AddRange(awaitedStates);
             }
             else
+            {
                 throw new ArgumentNullException(nameof(awaitedStates), "Please add at least one awaited state");
+            }
         }
 
         private void RemoveListener()
