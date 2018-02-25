@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Tests
 {
-    public class AblySandboxFixture : IDisposable
+    public class AblySandboxFixture
     {
         public static readonly DateTimeOffset StartInterval = DateHelper.CreateDate(DateTimeOffset.UtcNow.Year - 1, 2, 3, 15, 5);
 
@@ -87,10 +87,6 @@ namespace IO.Ably.Tests
             request.RequestBody = json.GetBytes();
 
             await client.Execute(request);
-        }
-
-        public void Dispose()
-        {
         }
     }
 }
