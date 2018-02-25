@@ -114,7 +114,7 @@ namespace IO.Ably.Types
         internal bool AckRequired => Action == MessageAction.Message || Action == MessageAction.Presence;
 
         [OnSerializing]
-        internal void OnSerializing(StreamingContext context)
+        internal void onSerializing(StreamingContext context)
         {
             if (Channel == "")
                 Channel = null;
