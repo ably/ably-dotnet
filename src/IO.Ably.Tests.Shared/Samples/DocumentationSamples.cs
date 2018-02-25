@@ -227,7 +227,7 @@ namespace IO.Ably.Tests.Samples
             await channel.Presence.EnterClientAsync("Mary", null); /* => Mary entered realtime-chat */
         }
 
-        public async Task HistoryExamples()
+        public void HistoryExamples()
         {
             var realtime = new AblyRealtime("{{API_KEY}}");
             var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}");
@@ -260,7 +260,7 @@ namespace IO.Ably.Tests.Samples
             }
         }
 
-        public async Task EncryptionExample()
+        public void EncryptionExample()
         {
             var realtime = new AblyRealtime("{{API_KEY}}");
             var key = Crypto.GenerateRandomKey();
@@ -273,7 +273,7 @@ namespace IO.Ably.Tests.Samples
             channel.Publish("unencrypted", "encrypted secret payload");
         }
 
-        public async Task EncryptionExample2()
+        public void EncryptionExample2()
         {
             var @params = Crypto.GetDefaultParams();
             ChannelOptions options = new ChannelOptions(@params);
@@ -281,7 +281,7 @@ namespace IO.Ably.Tests.Samples
             var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}", options);
         }
 
-        public async Task EncryptionExample3()
+        public void EncryptionExample3()
         {
             var realtime = new AblyRealtime("{{API_KEY}}");
             byte[] key = Crypto.GenerateRandomKey(128);
@@ -289,7 +289,7 @@ namespace IO.Ably.Tests.Samples
             var channel = realtime.Channels.Get("{{RANDOM_CHANNEL_NAME}}", options);
         }
 
-        public async Task ConnectionExamples()
+        public void ConnectionExamples()
         {
             AblyRealtime realtime = new AblyRealtime("{{API_KEY}}");
             realtime.Connection.On(ConnectionState.Connected, args => Console.WriteLine("Connected, that was easy"));
