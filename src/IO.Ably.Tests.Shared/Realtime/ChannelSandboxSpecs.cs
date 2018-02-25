@@ -621,9 +621,9 @@ namespace IO.Ably.Tests.Realtime
             var client1 = await GetRealtimeClient(Protocol.Json);
             var channel = client1.Channels.Get("test");
             var task = Task.Run(() => channel.Attach());
-            task.ConfigureAwait(false);
+            await task.ConfigureAwait(false);
             var task2 = Task.Run(() => channel.Attach());
-            task2.ConfigureAwait(false);
+            await task2.ConfigureAwait(false);
 
             await Task.WhenAll(task, task2);
 
