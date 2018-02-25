@@ -214,7 +214,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 await WaitForConnectingOrSuspended(client);
                 var now = nowFunc();
                 nowFunc = () => now.AddSeconds(30);
-            } while (client.Connection.State != ConnectionState.Suspended);
+            }
+            while (client.Connection.State != ConnectionState.Suspended);
 
             client.Connection.State.Should().Be(ConnectionState.Suspended);
 
@@ -254,7 +255,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
                 await WaitForConnectingOrSuspended(client);
                 nowFunc = () => DateTimeOffset.UtcNow.AddSeconds(30);
-            } while (client.Connection.State != ConnectionState.Suspended);
+            }
+            while (client.Connection.State != ConnectionState.Suspended);
 
             var awaiter = new ConnectionAwaiter(client.Connection, ConnectionState.Connecting);
             var elapsed = await awaiter.Wait();
@@ -298,7 +300,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 LastCreatedTransport.Listener?.OnTransportEvent(TransportState.Closing, new Exception());
                 await WaitForConnectingOrSuspended(client);
                 nowFunc = () => DateTimeOffset.UtcNow.AddSeconds(30);
-            } while (client.Connection.State != ConnectionState.Suspended);
+            }
+            while (client.Connection.State != ConnectionState.Suspended);
 
             await new ConnectionAwaiter(client.Connection, ConnectionState.Connecting).Wait();
             await new ConnectionAwaiter(client.Connection, ConnectionState.Suspended).Wait();

@@ -342,7 +342,8 @@ namespace IO.Ably.Tests.Samples
                 Console.WriteLine("An error occurred; err = " + e.Message);
             }
 
-            try {
+            try
+            {
                 TokenParams tokenParams = new TokenParams { ClientId = "bob" };
                 var tokenDetails = await client.Auth.RequestTokenAsync(tokenParams);
                 Console.WriteLine("Success; token = " + tokenDetails.Token);

@@ -231,7 +231,8 @@ namespace IO.Ably.Tests.Realtime
                 channel2.State.ShouldBeEquivalentTo(ChannelState.Attached);
 
                 /* Send all the presence data in one SYNC message without channelSerial (RTP18c) */
-                ProtocolMessage syncMessage = new ProtocolMessage() {
+                ProtocolMessage syncMessage = new ProtocolMessage()
+                {
                         Channel = channel2Name,
                         Action = ProtocolMessage.MessageAction.Sync,
                         Presence = testData
@@ -418,7 +419,8 @@ namespace IO.Ably.Tests.Realtime
 
                 seenLeaveMessageAsAbsentForClient4.ShouldBeEquivalentTo(true, "LEAVE message for client with id==4 was not stored as ABSENT");
 
-                PresenceMessage[] correctPresenceHistory = new PresenceMessage[] {
+                PresenceMessage[] correctPresenceHistory = new PresenceMessage[]
+                {
                     /* client 1 enters (will later be discarded) */
                     new PresenceMessage(PresenceAction.Enter, "1"),
                     /* client 2 enters */
