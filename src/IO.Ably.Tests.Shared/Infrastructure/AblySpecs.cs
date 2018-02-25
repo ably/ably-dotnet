@@ -8,17 +8,17 @@ namespace IO.Ably.Tests
 {
     public abstract class AblyRealtimeSpecs : MockHttpRestSpecs
     {
-        private AutoResetEvent Signal = new AutoResetEvent(false);
+        private AutoResetEvent _signal = new AutoResetEvent(false);
 
         public void WaitOne()
         {
-            var result = Signal.WaitOne(2000);
+            var result = _signal.WaitOne(2000);
             Assert.True(result, "Result was not returned within 2000ms");
         }
 
         public void Done()
         {
-            Signal.Set();
+            _signal.Set();
         }
 
         internal virtual AblyRealtime GetRealtimeClient(ClientOptions options = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
@@ -71,7 +71,7 @@ namespace IO.Ably.Tests
 
         protected AblySpecs(ITestOutputHelper output)
         {
-            Logger = IO.Ably.DefaultLogger.LoggerInstance;
+            Logger = DefaultLogger.LoggerInstance;
             NowFunc = TestHelpers.Now;
             Output = output;
         }

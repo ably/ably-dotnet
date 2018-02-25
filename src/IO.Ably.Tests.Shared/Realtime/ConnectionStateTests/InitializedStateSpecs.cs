@@ -13,7 +13,6 @@ namespace IO.Ably.Tests
         private FakeConnectionContext _context;
         private ConnectionInitializedState _state;
 
-        #region Initialized
         public InitializedStateSpecs(ITestOutputHelper output)
             : base(output)
         {
@@ -71,6 +70,5 @@ namespace IO.Ably.Tests
             // Assert
             _context.State.Should().BeOfType<ConnectionConnectingState>();
         }
-        #endregion
     }
 }

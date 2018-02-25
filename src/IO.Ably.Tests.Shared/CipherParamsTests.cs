@@ -14,7 +14,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.Equal(Crypto.DefaultAlgorithm, cipherParams.Algorithm);
-            Assert.Equal(new Byte[] { }, cipherParams.Key);
+            Assert.Equal(new byte[] { }, cipherParams.Key);
         }
     }
 }

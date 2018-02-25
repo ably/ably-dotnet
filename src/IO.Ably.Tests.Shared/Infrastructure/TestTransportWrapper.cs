@@ -14,8 +14,7 @@ namespace IO.Ably.Tests.Infrastructure
             private readonly Action<ProtocolMessage> _afterMessage;
             private readonly MessageHandler _handler;
 
-            public TransportListenerWrapper(ITransportListener wrappedListener, Action<ProtocolMessage> afterMessage,
-                MessageHandler handler)
+            public TransportListenerWrapper(ITransportListener wrappedListener, Action<ProtocolMessage> afterMessage, MessageHandler handler)
             {
                 _wrappedListener = wrappedListener;
                 _afterMessage = afterMessage;

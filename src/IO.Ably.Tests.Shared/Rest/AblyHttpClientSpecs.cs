@@ -110,7 +110,6 @@ namespace IO.Ably.Tests
             [InlineData(HttpStatusCode.BadGateway, true)]
             [InlineData(HttpStatusCode.InternalServerError, true)]
             [InlineData(HttpStatusCode.NotImplemented, true)]
-            [InlineData(HttpStatusCode.BadGateway, true)]
             [InlineData(HttpStatusCode.ServiceUnavailable, true)]
             [InlineData(HttpStatusCode.GatewayTimeout, true)]
             [InlineData(HttpStatusCode.NoContent, false)]

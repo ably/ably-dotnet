@@ -38,10 +38,10 @@ namespace IO.Ably.Tests
         private void RemoveListener()
         {
             DefaultLogger.Debug($"[{_id}] Removing Connection listener");
-            Connection.InternalStateChanged -= conn_StateChanged;
+            Connection.InternalStateChanged -= Conn_StateChanged;
         }
 
-        private void conn_StateChanged(object sender, ConnectionStateChange e)
+        private void Conn_StateChanged(object sender, ConnectionStateChange e)
         {
             if (_awaitedStates.Contains(e.Current))
             {
@@ -72,7 +72,7 @@ namespace IO.Ably.Tests
                 return TimeSpan.Zero;
             }
 
-            Connection.InternalStateChanged += conn_StateChanged;
+            Connection.InternalStateChanged += Conn_StateChanged;
             var tResult = _taskCompletionSource.Task;
             var tCompleted = await Task.WhenAny(tResult, Task.Delay(timeout)).ConfigureAwait(true);
             if (tCompleted == tResult)

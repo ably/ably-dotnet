@@ -6,8 +6,8 @@ namespace IO.Ably.Tests.Realtime
 
     using FluentAssertions;
 
-    using IO.Ably.Realtime;
-    using IO.Ably.Types;
+    using Ably.Realtime;
+    using Types;
 
     using Xunit;
     using Xunit.Abstractions;
@@ -26,7 +26,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN4e")]
         public async Task ANewConnectionShouldRaiseConnectingAndConnectedEvents()
         {
-            var client = this.GetClientWithFakeTransport(opts => opts.AutoConnect = false);
+            var client = GetClientWithFakeTransport(opts => opts.AutoConnect = false);
             var states = new List<ConnectionState>();
             client.Connection.InternalStateChanged += (sender, args) =>
                 {
@@ -63,7 +63,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN4e")]
         public void WhenClosingAConnection_ItShouldRaiseClosingAndClosedEvents()
         {
-            var client = this.GetClientWithFakeTransport();
+            var client = GetClientWithFakeTransport();
 
             // Start collecting events after the connection is open
             var states = new List<ConnectionState>();
@@ -72,11 +72,11 @@ namespace IO.Ably.Tests.Realtime
                     args.Should().BeOfType<ConnectionStateChange>();
                     states.Add(args.Current);
                 };
-            this.LastCreatedTransport.SendAction = message =>
+            LastCreatedTransport.SendAction = message =>
                 {
                     if (message.Original.Action == ProtocolMessage.MessageAction.Close)
                     {
-                        this.LastCreatedTransport.Close(false);
+                        LastCreatedTransport.Close(false);
                     }
                 };
 
@@ -90,7 +90,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("sandboxTest", "needed")]
         public async Task WithAConnectionError_ShouldRaiseChangeStateEventWithError()
         {
-            var client = this.GetClientWithFakeTransport();
+            var client = GetClientWithFakeTransport();
             var hasError = false;
             ErrorInfo actualError = null;
             client.Connection.InternalStateChanged += (sender, args) =>

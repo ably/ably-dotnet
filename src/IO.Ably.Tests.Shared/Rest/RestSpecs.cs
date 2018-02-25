@@ -60,7 +60,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC2")]
         public void DefaultLoggerSinkShouldbeSetup()
         {
-            var logger = new IO.Ably.DefaultLogger.InternalLogger();
+            var logger = new DefaultLogger.InternalLogger();
             logger.LoggerSink.Should().BeOfType<DefaultLoggerSink>();
         }
 
@@ -68,7 +68,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC3")]
         public void DefaultLogLevelShouldBeWarning()
         {
-            var logger = new IO.Ably.DefaultLogger.InternalLogger();
+            var logger = new DefaultLogger.InternalLogger();
             logger.LogLevel.Should().Be(LogLevel.Warning);
         }
 
@@ -76,7 +76,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC4")]
         public void ACustomLoggerCanBeProvided()
         {
-            var logger = new IO.Ably.DefaultLogger.InternalLogger();
+            var logger = new DefaultLogger.InternalLogger();
             var sink = new TestLoggerSink();
             logger.LoggerSink = sink;
             logger.Error("Boo");
@@ -509,7 +509,7 @@ namespace IO.Ably.Tests
             {
                 var options = new ClientOptions(ValidKey) { HttpMaxRetryDuration = TimeSpan.FromSeconds(21) };
                 var client = new AblyRest(options);
-                _response.StatusCode =HttpStatusCode.BadGateway;
+                _response.StatusCode = HttpStatusCode.BadGateway;
                 var handler = new FakeHttpMessageHandler(
                     _response,
                     () =>
@@ -566,7 +566,7 @@ namespace IO.Ably.Tests
             [Fact]
             public async Task WhenCallbackReturnsAnObjectThatIsNotTokenRequestOrTokenDetails_ThrowsAblyException()
             {
-                var objects = new object[] { new object(), String.Empty, new Uri("http://test") };
+                var objects = new object[] { new object(), string.Empty, new Uri("http://test") };
                 foreach (var obj in objects)
                 {
                     await Assert.ThrowsAsync<AblyException>(() =>

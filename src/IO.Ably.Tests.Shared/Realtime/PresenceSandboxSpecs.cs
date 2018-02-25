@@ -77,9 +77,9 @@ namespace IO.Ably.Tests.Realtime
             }
 
             /*
-	        * Test presence message map behaviour (RTP2 features)
-	        * Tests RTP2a, RTP2b1, RTP2b2, RTP2c, RTP2d, RTP2g, RTP18c, RTP6a features
-	        */
+            * Test presence message map behaviour (RTP2 features)
+            * Tests RTP2a, RTP2b1, RTP2b2, RTP2c, RTP2d, RTP2g, RTP18c, RTP6a features
+            */
             [Theory]
             [ProtocolData]
             [Trait("spec", "RTP2")]
@@ -116,7 +116,8 @@ namespace IO.Ably.Tests.Realtime
                 });
 
                 /* Test message newness criteria as described in RTP2b */
-                PresenceMessage[] testData = new PresenceMessage[] {
+                PresenceMessage[] testData = new PresenceMessage[]
+                {
                     new PresenceMessage
                     {
                         Action = PresenceAction.Enter,
@@ -383,7 +384,7 @@ namespace IO.Ably.Tests.Realtime
 
                 await client.Connection.ConnectionManager.OnTransportMessageReceived(new ProtocolMessage()
                 {
-                    Action = Types.ProtocolMessage.MessageAction.Sync,
+                    Action = ProtocolMessage.MessageAction.Sync,
                     Channel = channelName,
                     ChannelSerial = "1:1",
                     Presence = TestPresence1()
@@ -391,7 +392,7 @@ namespace IO.Ably.Tests.Realtime
 
                 await client.Connection.ConnectionManager.OnTransportMessageReceived(new ProtocolMessage()
                 {
-                    Action = Types.ProtocolMessage.MessageAction.Sync,
+                    Action = ProtocolMessage.MessageAction.Sync,
                     Channel = channelName,
                     ChannelSerial = "2:1",
                     Presence = TestPresence2()
@@ -399,7 +400,7 @@ namespace IO.Ably.Tests.Realtime
 
                 await client.Connection.ConnectionManager.OnTransportMessageReceived(new ProtocolMessage()
                 {
-                    Action = Types.ProtocolMessage.MessageAction.Sync,
+                    Action = ProtocolMessage.MessageAction.Sync,
                     Channel = channelName,
                     ChannelSerial = "2:",
                     Presence = TestPresence3()

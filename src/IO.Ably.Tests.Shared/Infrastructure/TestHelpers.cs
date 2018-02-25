@@ -9,7 +9,7 @@ namespace IO.Ably.Tests
         {
             Assert.True(
                 request.QueryParameters.ContainsKey(key),
-                String.Format("Header '{0}' doesn't exist in request", key));
+                $"Header '{key}' doesn't exist in request");
             Assert.Equal(value, request.QueryParameters[key]);
         }
 

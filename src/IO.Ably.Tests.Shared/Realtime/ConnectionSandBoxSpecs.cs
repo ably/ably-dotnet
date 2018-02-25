@@ -602,7 +602,7 @@ namespace IO.Ably.Tests.Realtime
             await WaitForState(client);
 
             await client.ConnectionManager.SetState(
-                new ConnectionDisconnectedState(client.ConnectionManager, this.Logger) { RetryInstantly = false });
+                new ConnectionDisconnectedState(client.ConnectionManager, Logger) { RetryInstantly = false });
 
             client.Connection.State.Should().Be(ConnectionState.Disconnected);
             Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, Logger);

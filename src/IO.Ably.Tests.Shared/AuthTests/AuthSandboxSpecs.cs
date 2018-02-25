@@ -60,7 +60,7 @@ namespace IO.Ably.Tests
             }
             catch (AblyException e)
             {
-                e.ErrorInfo.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
+                e.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
                 e.ErrorInfo.Code.Should().BeInRange(40140, 40150);
             }
         }
