@@ -132,7 +132,7 @@ namespace IO.Ably.Tests.Realtime
                         ClientId = "2",
                         ConnectionId = "2",
                         Id = "2:1:0",
-                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 1, new TimeSpan()),
+                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 1, default(TimeSpan)),
                         Data = string.Empty
                     },
                     /* Should be newer than previous one */
@@ -142,7 +142,7 @@ namespace IO.Ably.Tests.Realtime
                         ClientId = "2",
                         ConnectionId = "2",
                         Id = "2:2:1",
-                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 2, new TimeSpan()),
+                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 2, default(TimeSpan)),
                         Data = string.Empty
                     },
                     /* Shouldn't pass newness test because of message serial, timestamp doesn't matter in this case */
@@ -152,7 +152,7 @@ namespace IO.Ably.Tests.Realtime
                         ClientId = "2",
                         ConnectionId = "2",
                         Id = "2:1:1",
-                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 3, new TimeSpan()),
+                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 3, default(TimeSpan)),
                         Data = wontPass
                     },
                     /* Shouldn't pass because of message index */
@@ -171,7 +171,7 @@ namespace IO.Ably.Tests.Realtime
                         ClientId = "2",
                         ConnectionId = "2",
                         Id = "wrong_id",
-                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 10, new TimeSpan()),
+                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 10, default(TimeSpan)),
                         Data = string.Empty
                     },
                     /* Shouldn't pass because of timestamp */
@@ -181,7 +181,7 @@ namespace IO.Ably.Tests.Realtime
                         ClientId = "2",
                         ConnectionId = "2",
                         Id = "2:3:1",
-                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 5, new TimeSpan()),
+                        Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 5, default(TimeSpan)),
                         Data = wontPass
                     }
                 };
