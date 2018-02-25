@@ -616,13 +616,12 @@ namespace IO.Ably.Tests.Realtime
                 {
                     p2.IsNewerThan(p1);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     exHandled = true;
                 }
 
                 exHandled.Should().BeFalse();
-                exHandled = false;
             }
         }
 
@@ -683,7 +682,7 @@ namespace IO.Ably.Tests.Realtime
                 received250MessagesBeforeTimeout.ShouldBeEquivalentTo(true);
 
                 // all 250 members should be present in a Presence#get request
-                var messages = await channelB.Presence.GetAsync(new GetOptions{ WaitForSync = true });
+                var messages = await channelB.Presence.GetAsync(new GetOptions { WaitForSync = true });
                 var messageList = messages as IList<PresenceMessage> ?? messages.ToList();
                 messageList.Count().ShouldBeEquivalentTo(ExpectedEnterCount);
                 foreach (var m in messageList)
