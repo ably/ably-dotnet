@@ -151,7 +151,7 @@ namespace IO.Ably.Tests
         [InlineData(-10)]
         [InlineData(1001)]
         [Trait("spec", "RSCb3")]
-        public void ShouldThrowIfLimitExceeds1000orLessThan0(int limit)
+        public void ShouldThrowIfLimitExceeds1000OrLessThan0(int limit)
         {
             ThrowsAsync<AblyException>(() => ExecuteStatsQuery(new StatsRequestParams() { Limit = limit }));
         }

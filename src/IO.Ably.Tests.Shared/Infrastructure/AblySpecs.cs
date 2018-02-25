@@ -49,7 +49,9 @@ namespace IO.Ably.Tests
     public abstract class AblySpecs
     {
         internal ILogger Logger { get; set; }
+
         public ITestOutputHelper Output { get; }
+
         public const string ValidKey = "1iZPfA.BjcI_g:wpNhw5RCw6rDjisl";
 
         public DateTimeOffset Now => NowFunc();

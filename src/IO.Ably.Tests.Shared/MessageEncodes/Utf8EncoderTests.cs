@@ -8,19 +8,19 @@ namespace IO.Ably.Tests.MessageEncodes
     {
         private string _stringData;
         private byte[] _byteData;
-        private Utf8Encoder encoder;
+        private Utf8Encoder _encoder;
 
         public Utf8EncoderTests()
         {
             _stringData = "random_string";
             _byteData = _stringData.GetBytes();
-            encoder = new Utf8Encoder(Defaults.Protocol);
+            _encoder = new Utf8Encoder(Defaults.Protocol);
         }
 
         private Message DecodePayload(object data, string encoding = "")
         {
             var payload = new Message() { Data = data, Encoding = encoding };
-            encoder.Decode(payload, new ChannelOptions());
+            _encoder.Decode(payload, new ChannelOptions());
             return payload;
         }
 

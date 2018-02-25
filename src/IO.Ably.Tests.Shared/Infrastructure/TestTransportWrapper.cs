@@ -48,24 +48,26 @@ namespace IO.Ably.Tests.Infrastructure
             }
         }
 
-        internal readonly ITransport _wrappedTransport;
+        internal ITransport WrappedTransport { get; }
+
         private readonly MessageHandler _handler;
 
         public Action<ProtocolMessage> AfterDataReceived = delegate { };
+
         public Action<ProtocolMessage> MessageSent = delegate { };
 
         public TestTransportWrapper(ITransport wrappedTransport, Protocol protocol)
         {
-            _wrappedTransport = wrappedTransport;
+            WrappedTransport = wrappedTransport;
             _handler = new MessageHandler(protocol);
         }
 
-        public TransportState State => _wrappedTransport.State;
+        public TransportState State => WrappedTransport.State;
 
         public ITransportListener Listener
         {
-            get { return _wrappedTransport.Listener; }
-            set { _wrappedTransport.Listener = new TransportListenerWrapper(value, x => AfterDataReceived(x), _handler); }
+            get { return WrappedTransport.Listener; }
+            set { WrappedTransport.Listener = new TransportListenerWrapper(value, x => AfterDataReceived(x), _handler); }
         }
 
         public void FakeTransportState(TransportState state, Exception ex = null)
@@ -81,19 +83,19 @@ namespace IO.Ably.Tests.Infrastructure
 
         public void Connect()
         {
-            _wrappedTransport.Connect();
+            WrappedTransport.Connect();
         }
 
         public void Close(bool suppressClosedEvent = true)
         {
             DefaultLogger.Debug("Closing test transport!");
-            _wrappedTransport.Close(suppressClosedEvent);
+            WrappedTransport.Close(suppressClosedEvent);
         }
 
         public void Send(RealtimeTransportData data)
         {
             MessageSent(data.Original);
-            _wrappedTransport.Send(data);
+            WrappedTransport.Send(data);
         }
 
         public void Dispose()

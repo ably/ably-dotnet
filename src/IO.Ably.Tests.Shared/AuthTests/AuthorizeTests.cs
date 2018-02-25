@@ -242,8 +242,11 @@ namespace IO.Ably.Tests.AuthTests
         private class TestAblyAuth : AblyAuth
         {
             public bool RequestTokenCalled { get; set; }
+
             public TokenParams LastRequestTokenParams { get; set; }
+
             public AuthOptions LastRequestAuthOptions { get; set; }
+
             public override Task<TokenDetails> RequestTokenAsync(TokenParams tokenParams, AuthOptions options)
             {
                 RequestTokenCalled = true;

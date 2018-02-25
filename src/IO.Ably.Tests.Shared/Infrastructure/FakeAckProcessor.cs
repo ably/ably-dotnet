@@ -10,9 +10,12 @@ namespace IO.Ably.Tests
     internal class FakeAckProcessor : IAcknowledgementProcessor
     {
         public bool QueueIfNecessaryCalled { get; set; }
+
         public bool OnMessageReceivedCalled { get; set; }
+
         public ConnectionStateBase LastState { get; set; }
-        public Queue<MessageAndCallback> _queuedMessages = new Queue<MessageAndCallback>();
+
+        private Queue<MessageAndCallback> _queuedMessages = new Queue<MessageAndCallback>();
 
         public void QueueIfNecessary(ProtocolMessage message, Action<bool, ErrorInfo> callback)
         {

@@ -311,7 +311,7 @@ namespace IO.Ably.Tests.Samples
             /* ... issue the TokenRequest to a client ... */
         }
 
-        public async Task NotifyNetworkChanges()
+        public void NotifyNetworkChanges()
         {
             Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, DefaultLogger.LoggerInstance);
             Connection.NotifyOperatingSystemNetworkState(NetworkState.Offline, DefaultLogger.LoggerInstance);
@@ -394,7 +394,7 @@ namespace IO.Ably.Tests.Samples
             rest.Channels.Get("{{RANDOM_CHANNEL_NAME}}", new ChannelOptions(cipherParams));
         }
 
-        public async Task RestGenerateRandomKey()
+        public void RestGenerateRandomKey()
         {
             AblyRest rest = new AblyRest("{{API_KEY}}");
             byte[] key = Crypto.GenerateRandomKey(128);

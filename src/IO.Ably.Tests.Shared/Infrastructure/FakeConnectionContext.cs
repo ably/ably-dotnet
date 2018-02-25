@@ -11,15 +11,15 @@ namespace IO.Ably.Tests
 {
     internal class FakeConnectionContext : IConnectionContext
     {
-        public bool AttempConnectionCalled;
+        private bool _attempConnectionCalled;
 
-        public bool CanConnectToAblyBool = true;
+        public bool CanConnectToAblyBool { get; } = true;
 
-        public bool CreateTransportCalled;
+        public bool CreateTransportCalled { get; private set; }
 
-        public bool DestroyTransportCalled;
+        public bool DestroyTransportCalled { get; private set; }
 
-        public bool ResetConnectionAttemptsCalled;
+        public bool ResetConnectionAttemptsCalled { get; private set; }
 
         public FakeConnectionContext()
         {
@@ -27,6 +27,7 @@ namespace IO.Ably.Tests
         }
 
         public ConnectionStateBase LastSetState { get; set; }
+
         public IAblyAuth Auth { get; set; }
 
         public bool RenewTokenValue { get; set; }
@@ -34,6 +35,7 @@ namespace IO.Ably.Tests
         public bool ShouldWeRenewTokenValue { get; set; }
 
         public TimeSpan DefaultTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;
+
         public TimeSpan RetryTimeout { get; set; } = Defaults.DisconnectedRetryTimeout;
 
         public void SendToTransport(ProtocolMessage message)
@@ -51,11 +53,17 @@ namespace IO.Ably.Tests
         }
 
         public ConnectionStateBase State { get; set; }
+
         public TransportState TransportState => Transport.State;
+
         public ITransport Transport { get; set; }
+
         public AblyRest RestClient { get; set; }
+
         public Queue<ProtocolMessage> QueuedMessages { get; } = new Queue<ProtocolMessage>();
+
         public Connection Connection { get; set; }
+
         public TimeSpan SuspendRetryTimeout { get; set; }
 
         public void ClearTokenAndRecordRetry()
@@ -63,7 +71,7 @@ namespace IO.Ably.Tests
             TriedToRenewToken = true;
         }
 
-        public bool TriedToRenewToken { get; set; }
+        private bool TriedToRenewToken { get; set; }
 
         public Task SetState(ConnectionStateBase state, bool skipAttach)
         {
@@ -186,7 +194,10 @@ namespace IO.Ably.Tests
         public bool CloseConnectionCalled { get; set; }
 
         public bool ShouldSuspendValue { get; set; }
+
         public bool CanUseFallBack { get; set; }
+
+        public bool AttempConnectionCalled { get => _attempConnectionCalled; set => _attempConnectionCalled = value; }
 
         public T StateShouldBe<T>() where T : ConnectionStateBase
         {

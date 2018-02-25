@@ -522,12 +522,12 @@ namespace IO.Ably.Tests.Realtime
                 {
                     Output.WriteLine($"{message.ConnectionId}:{message.Timestamp}");
                     time = message.Timestamp;
-                    _resetEvent.Set();
+                    ResetEvent.Set();
                 });
 
                 await channel.Presence.EnterAsync(new[] { "test", "best" });
 
-                _resetEvent.WaitOne(2000);
+                ResetEvent.WaitOne(2000);
                 time.Should().HaveValue();
             }
 

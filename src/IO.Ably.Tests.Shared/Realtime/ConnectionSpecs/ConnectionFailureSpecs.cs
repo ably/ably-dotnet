@@ -151,7 +151,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN14d")]
         public async Task WhenTransportFails_ShouldTransitionToDisconnectedAndEmitErrorWithRetry()
         {
-            _fakeTransportFactory.InitialiseFakeTransport =
+            FakeTransportFactory.InitialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false; // this will keep it in connecting state
 
             ClientOptions options = null;
@@ -190,7 +190,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             // ReSharper disable once AccessToModifiedClosure
             DateTimeOffset NowWrapperFn() => nowFunc();
 
-            _fakeTransportFactory.InitialiseFakeTransport =
+            FakeTransportFactory.InitialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false;
 
             // this will keep it in connecting state
@@ -236,7 +236,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         {
             Func<DateTimeOffset> nowFunc = () => DateTimeOffset.UtcNow;
             DateTimeOffset NowWrapperFunc() => nowFunc();
-            _fakeTransportFactory.InitialiseFakeTransport =
+            FakeTransportFactory.InitialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false;
 
             // this will keep it in connecting state
@@ -281,7 +281,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             // ReSharper disable once AccessToModifiedClosure
             DateTimeOffset NowWrapperFn() => nowFunc();
 
-            _fakeTransportFactory.InitialiseFakeTransport =
+            FakeTransportFactory.InitialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false;
 
             // this will keep it in connecting state

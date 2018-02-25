@@ -29,23 +29,30 @@ namespace IO.Ably.Tests
     public class Key
     {
         public string KeyName { get; set; }
+
         public string KeySecret { get; set; }
+
         public string KeyStr { get; set; }
+
         public string Capability { get; set; }
     }
 
     public class TestEnvironmentSettings
     {
         public string AppId { get; set; }
+
         public List<Key> Keys { get; set; }
 
         public const string PresenceChannelName = "persisted:presence_fixtures";
 
         public string FirstValidKey => Keys.FirstOrDefault()?.KeyStr;
+
         public string KeyWithChannelLimitations => Keys[2].KeyStr;
 
         public bool Tls { get; set; }
+
         public string Environment => "sandbox";
+
         public CipherParams CipherParams { get; set; }
 
         public TestEnvironmentSettings()

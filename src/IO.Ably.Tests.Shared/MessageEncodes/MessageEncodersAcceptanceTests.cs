@@ -22,7 +22,9 @@ namespace IO.Ably.AcceptanceTests
             public class TestObject
             {
                 public string Name { get; set; }
+
                 public int Age { get; set; }
+
                 public DateTime DoB { get; set; }
             }
 
@@ -136,12 +138,12 @@ namespace IO.Ably.AcceptanceTests
         public class WithTextProtocolWithEncryption : MockHttpRestSpecs
         {
             private AblyRest _client;
-            private ChannelOptions options;
+            private ChannelOptions _options;
 
             public WithTextProtocolWithEncryption(ITestOutputHelper output)
                 : base(output)
             {
-                options = new ChannelOptions(Crypto.GetDefaultParams());
+                _options = new ChannelOptions(Crypto.GetDefaultParams());
                 _client = GetRestClient();
             }
 
@@ -158,13 +160,13 @@ namespace IO.Ably.AcceptanceTests
                 var bytes = new byte[] { 1, 2, 3 };
 
                 // Act
-                _client.Channels.Get("test", options).PublishAsync("test", bytes);
+                _client.Channels.Get("test", _options).PublishAsync("test", bytes);
 
                 // Assert
                 var payload = GetPayload();
                 payload.Encoding.Should().Be("cipher+aes-256-cbc/base64");
                 var encryptedBytes = (payload.Data as string).FromBase64();
-                Crypto.GetCipher(options.CipherParams).Decrypt(encryptedBytes).Should().BeEquivalentTo(bytes);
+                Crypto.GetCipher(_options.CipherParams).Decrypt(encryptedBytes).Should().BeEquivalentTo(bytes);
             }
 
             [Fact]
@@ -172,13 +174,13 @@ namespace IO.Ably.AcceptanceTests
             public void WithStringData_SetsEncodingAndDataCorrectly()
             {
                 // Act
-                _client.Channels.Get("test", options).PublishAsync("test", "test");
+                _client.Channels.Get("test", _options).PublishAsync("test", "test");
 
                 // Assert
                 var payload = GetPayload();
                 payload.Encoding.Should().Be("utf-8/cipher+aes-256-cbc/base64");
                 var encryptedBytes = (payload.Data as string).FromBase64();
-                Crypto.GetCipher(options.CipherParams).Decrypt(encryptedBytes).GetText().Should().BeEquivalentTo("test");
+                Crypto.GetCipher(_options.CipherParams).Decrypt(encryptedBytes).GetText().Should().BeEquivalentTo("test");
             }
 
             [Fact]
@@ -186,13 +188,13 @@ namespace IO.Ably.AcceptanceTests
             {
                 // Act
                 var obj = new { Test = "test", Name = "name" };
-                _client.Channels.Get("test", options).PublishAsync("test", obj);
+                _client.Channels.Get("test", _options).PublishAsync("test", obj);
 
                 // Assert
                 var payload = GetPayload();
                 payload.Encoding.Should().Be("json/utf-8/cipher+aes-256-cbc/base64");
                 var encryptedBytes = (payload.Data as string).FromBase64();
-                var decryptedString = Crypto.GetCipher(options.CipherParams).Decrypt(encryptedBytes).GetText();
+                var decryptedString = Crypto.GetCipher(_options.CipherParams).Decrypt(encryptedBytes).GetText();
                 decryptedString.Should().Be(JsonHelper.Serialize(obj));
             }
         }
@@ -280,12 +282,12 @@ namespace IO.Ably.AcceptanceTests
         public class WithBinaryProtocolWithEncryption : MockHttpRestSpecs
         {
             private AblyRest _client;
-            private ChannelOptions options;
+            private ChannelOptions _options;
 
             public WithBinaryProtocolWithEncryption(ITestOutputHelper output)
                 : base(output)
             {
-                options = new ChannelOptions(Crypto.GetDefaultParams());
+                _options = new ChannelOptions(Crypto.GetDefaultParams());
                 _client = GetRestClient(null, opts => opts.UseBinaryProtocol = true);
             }
 
@@ -311,13 +313,13 @@ namespace IO.Ably.AcceptanceTests
                 var bytes = new byte[] { 1, 2, 3 };
 
                 // Act
-                _client.Channels.Get("test", options).PublishAsync("test", bytes);
+                _client.Channels.Get("test", _options).PublishAsync("test", bytes);
 
                 // Assert
                 var payload = GetPayload();
                 payload.Encoding.Should().Be("cipher+aes-256-cbc");
                 var encryptedBytes = payload.Data as byte[];
-                Crypto.GetCipher(options.CipherParams).Decrypt(encryptedBytes).Should().BeEquivalentTo(bytes);
+                Crypto.GetCipher(_options.CipherParams).Decrypt(encryptedBytes).Should().BeEquivalentTo(bytes);
             }
 
             [Fact]
@@ -329,13 +331,13 @@ namespace IO.Ably.AcceptanceTests
                 }
 
                 // Act
-                _client.Channels.Get("test", options).PublishAsync("test", "test");
+                _client.Channels.Get("test", _options).PublishAsync("test", "test");
 
                 // Assert
                 var payload = GetPayload();
                 payload.Encoding.Should().Be("utf-8/cipher+aes-256-cbc");
                 var encryptedBytes = payload.Data as byte[];
-                Crypto.GetCipher(options.CipherParams).Decrypt(encryptedBytes).GetText().Should().BeEquivalentTo("test");
+                Crypto.GetCipher(_options.CipherParams).Decrypt(encryptedBytes).GetText().Should().BeEquivalentTo("test");
             }
 
             [Fact]
@@ -348,13 +350,13 @@ namespace IO.Ably.AcceptanceTests
 
                 // Act
                 var obj = new { Test = "test", Name = "name" };
-                _client.Channels.Get("test", options).PublishAsync("test", obj);
+                _client.Channels.Get("test", _options).PublishAsync("test", obj);
 
                 // Assert
                 var payload = GetPayload();
                 payload.Encoding.Should().Be("json/utf-8/cipher+aes-256-cbc");
                 var encryptedBytes = payload.Data as byte[];
-                var decryptedString = Crypto.GetCipher(options.CipherParams).Decrypt(encryptedBytes).GetText();
+                var decryptedString = Crypto.GetCipher(_options.CipherParams).Decrypt(encryptedBytes).GetText();
                 decryptedString.Should().Be(JsonHelper.Serialize(obj));
             }
         }

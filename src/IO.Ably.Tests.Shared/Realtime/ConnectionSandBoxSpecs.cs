@@ -189,12 +189,12 @@ namespace IO.Ably.Tests.Realtime
             realtimeClient.Connection.On(ConnectionState.Connected, (args) =>
             {
                 error = args.Reason;
-                _resetEvent.Set();
+                ResetEvent.Set();
             });
 
             realtimeClient.Connect();
 
-            _resetEvent.WaitOne(10000);
+            ResetEvent.WaitOne(10000);
 
             realtimeClient.RestClient.AblyAuth.CurrentToken.Expires.Should()
                 .BeAfter(TestHelpers.Now(), "The token should be valid and expire in the future.");
@@ -332,12 +332,12 @@ namespace IO.Ably.Tests.Realtime
             {
                 if (args.Current == ConnectionState.Connected)
                 {
-                    _resetEvent.Set();
+                    ResetEvent.Set();
                 }
             };
             client.Connect();
 
-            var result = _resetEvent.WaitOne(10000);
+            var result = ResetEvent.WaitOne(10000);
             result.Should().BeTrue("Timeout");
             client.Connection.ErrorReason.Code.Should().Be(80008);
         }
@@ -392,7 +392,7 @@ namespace IO.Ably.Tests.Realtime
 
             var transportWrapper = client.ConnectionManager.Transport as TestTransportWrapper;
             transportWrapper.Should().NotBe(null);
-            var wsTransport = transportWrapper._wrappedTransport as MsWebSocketTransport;
+            var wsTransport = transportWrapper.WrappedTransport as MsWebSocketTransport;
             wsTransport.Should().NotBe(null);
             wsTransport._socket.ClientWebSocket = null;
 

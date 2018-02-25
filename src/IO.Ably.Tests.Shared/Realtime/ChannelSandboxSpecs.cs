@@ -80,13 +80,13 @@ namespace IO.Ably.Tests.Realtime
             target.Subscribe(message =>
             {
                 messagesReceived.Add(message);
-                _resetEvent.Set();
+                ResetEvent.Set();
             });
 
             // Act
             target.Publish("test", "test data");
             target.State.Should().Be(ChannelState.Attaching);
-            _resetEvent.WaitOne(6000);
+            ResetEvent.WaitOne(6000);
 
             // Assert
             target.State.Should().Be(ChannelState.Attached);
@@ -281,12 +281,12 @@ namespace IO.Ably.Tests.Realtime
             {
                 message.ClientId.Should().Be("123");
                 messageReceived = true;
-                _resetEvent.Set();
+                ResetEvent.Set();
             });
 
             await channel.PublishAsync(new Message("test", "withClientId") { ClientId = "123" });
 
-            _resetEvent.WaitOne(4000).Should().BeTrue("Operation timed out");
+            ResetEvent.WaitOne(4000).Should().BeTrue("Operation timed out");
 
             messageReceived.Should().BeTrue();
         }
@@ -356,11 +356,11 @@ namespace IO.Ably.Tests.Realtime
             {
                 message.ClientId.Should().Be("999");
                 messageReceived = true;
-                _resetEvent.Set();
+                ResetEvent.Set();
             });
 
             await channel.PublishAsync(new Message("test", "data") { ClientId = "999" });
-            _resetEvent.WaitOne(4000).Should().BeTrue("Timed out");
+            ResetEvent.WaitOne(4000).Should().BeTrue("Timed out");
 
             messageReceived.Should().BeTrue();
         }
@@ -480,12 +480,12 @@ namespace IO.Ably.Tests.Realtime
             channel.Subscribe(message =>
             {
                 testMessage = message;
-                _resetEvent.Set();
+                ResetEvent.Set();
             });
 
             await channel.PublishAsync(new Message("test", "best"));
 
-            _resetEvent.WaitOne();
+            ResetEvent.WaitOne();
             var connectionId = client.Connection.Id;
             testMessage.Should().NotBeNull();
             testMessage.ConnectionId.Should().Be(connectionId);
@@ -507,7 +507,7 @@ namespace IO.Ably.Tests.Realtime
                 testMessages.Add(message);
                 if (testMessages.Count == 5)
                 {
-                    _resetEvent.Set();
+                    ResetEvent.Set();
                 }
             });
             var messages = new[]
@@ -521,7 +521,7 @@ namespace IO.Ably.Tests.Realtime
 
             await channel.PublishAsync(messages);
 
-            _resetEvent.WaitOne();
+            ResetEvent.WaitOne();
             testMessages.Select(x => x.Id).Should().NotContainNulls();
         }
 
@@ -556,12 +556,12 @@ namespace IO.Ably.Tests.Realtime
             {
                 if (Config.MsgPackEnabled)
                 {
-                    yield return new object[] { Defaults.Protocol, GetAES128FixtureData() };
-                    yield return new object[] { Defaults.Protocol, GetAES256FixtureData() };
+                    yield return new object[] { Defaults.Protocol, GetAes128FixtureData() };
+                    yield return new object[] { Defaults.Protocol, GetAes256FixtureData() };
                 }
 
-                yield return new object[] { Protocol.Json, GetAES128FixtureData() };
-                yield return new object[] { Protocol.Json, GetAES256FixtureData() };
+                yield return new object[] { Protocol.Json, GetAes128FixtureData() };
+                yield return new object[] { Protocol.Json, GetAes256FixtureData() };
             }
         }
 
@@ -725,7 +725,7 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("issue", "116")]
-        public async Task FailureOfHistoryAPICallMeansChannelsNoLongerAttach(Protocol protocol)
+        public async Task FailureOfHistoryApiCallMeansChannelsNoLongerAttach(Protocol protocol)
         {
             Logger.LogLevel = LogLevel.Debug;
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.AutoConnect = false);
@@ -764,12 +764,12 @@ namespace IO.Ably.Tests.Realtime
         //    await channel.AttachAsync();
         //    channel.State.Should().Be(ChannelState.Attached);
         // }
-        private static JObject GetAES128FixtureData()
+        private static JObject GetAes128FixtureData()
         {
             return JObject.Parse(ResourceHelper.GetResource("crypto-data-128.json"));
         }
 
-        private static JObject GetAES256FixtureData()
+        private static JObject GetAes256FixtureData()
         {
             return JObject.Parse(ResourceHelper.GetResource("crypto-data-256.json"));
         }

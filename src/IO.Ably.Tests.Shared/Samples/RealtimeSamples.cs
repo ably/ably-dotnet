@@ -8,20 +8,20 @@ namespace IO.Ably.Tests.GithubSamples
 {
     public class RealtimeSamples
     {
-        private string placeholderKey = "key.placeholder:placeholder";
+        private string _placeholderKey = "key.placeholder:placeholder";
 
         [Fact]
         public void InitialiseClient()
         {
             // If you do not have an API key, [sign up for a free API key now](ht tps://www.ably.io/signup)
-            var realtimeBasic = new AblyRealtime(placeholderKey);
+            var realtimeBasic = new AblyRealtime(_placeholderKey);
             var realtimeToken = new AblyRealtime(new ClientOptions { Token = "token" });
         }
 
         [Fact]
         public void SuccessfulConnection()
         {
-            var realtime = new AblyRealtime(placeholderKey);
+            var realtime = new AblyRealtime(_placeholderKey);
 
             realtime.Connection.On(ConnectionState.Connected, args =>
             {
@@ -41,7 +41,7 @@ namespace IO.Ably.Tests.GithubSamples
         [Fact]
         public void AutoConnectOff()
         {
-            var realtime = new AblyRealtime(new ClientOptions(placeholderKey) { AutoConnect = false });
+            var realtime = new AblyRealtime(new ClientOptions(_placeholderKey) { AutoConnect = false });
             realtime.Connect();
 
             realtime.Connection.On(args =>
@@ -55,7 +55,7 @@ namespace IO.Ably.Tests.GithubSamples
         [Fact(Skip = "Used to make sure samples compile")]
         public async Task ChannelSubscribe()
         {
-            var realtime = new AblyRealtime(new ClientOptions(placeholderKey) { AutoConnect = false });
+            var realtime = new AblyRealtime(new ClientOptions(_placeholderKey) { AutoConnect = false });
             var channel = realtime.Channels.Get("test");
 
             // or
@@ -105,7 +105,7 @@ namespace IO.Ably.Tests.GithubSamples
         [Fact(Skip = "Just need to make sure it compiles")]
         public async Task ChannelHistory()
         {
-            var realtime = new AblyRealtime(placeholderKey);
+            var realtime = new AblyRealtime(_placeholderKey);
             var channel = realtime.Channels.Get("test");
             var history = await channel.HistoryAsync();
 
@@ -131,7 +131,7 @@ namespace IO.Ably.Tests.GithubSamples
         [Fact(Skip = "Making sure the samples compile")]
         public async Task RestApiSamples()
         {
-            var client = new AblyRest(placeholderKey);
+            var client = new AblyRest(_placeholderKey);
             var channel = client.Channels.Get("test");
 
             try

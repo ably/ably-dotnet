@@ -30,7 +30,7 @@ namespace IO.Ably.Tests.Realtime
             SetNowFunc(() => DateTimeOffset.UtcNow);
             var client = GetConnectedClient();
 
-            _fakeTransportFactory.LastCreatedTransport.SendAction = async message =>
+            FakeTransportFactory.LastCreatedTransport.SendAction = async message =>
             {
                 NowAdd(TimeSpan.FromMilliseconds(100));
                 if (message.Original.Action == ProtocolMessage.MessageAction.Heartbeat)

@@ -9,14 +9,14 @@ namespace IO.Ably.Tests.MessageEncodes
         private string _stringData;
         private byte[] _binaryData;
         private string _base64Data;
-            private Base64Encoder encoder;
+        private Base64Encoder _encoder;
 
         public Base64EncoderTests(Protocol? protocol = null)
         {
             _stringData = "random-string";
             _binaryData = _stringData.GetBytes();
             _base64Data = _binaryData.ToBase64();
-            encoder = new Base64Encoder(protocol ?? Defaults.Protocol);
+            _encoder = new Base64Encoder(protocol ?? Defaults.Protocol);
         }
 
         public class Decode : Base64EncoderTests
@@ -26,7 +26,7 @@ namespace IO.Ably.Tests.MessageEncodes
             {
                 var payload = new Message() { Data = _base64Data, Encoding = "base64" };
 
-                encoder.Decode(payload, new ChannelOptions());
+                _encoder.Decode(payload, new ChannelOptions());
 
                 ((byte[])payload.Data).Should().BeEquivalentTo(_binaryData);
                 payload.Encoding.Should().BeEmpty();
@@ -37,7 +37,7 @@ namespace IO.Ably.Tests.MessageEncodes
             {
                 var payload = new Message() { Data = _base64Data, Encoding = "utf-8/base64" };
 
-                encoder.Decode(payload, new ChannelOptions());
+                _encoder.Decode(payload, new ChannelOptions());
 
                 ((byte[])payload.Data).Should().BeEquivalentTo(_binaryData);
                 payload.Encoding.Should().Be("utf-8");
@@ -48,7 +48,7 @@ namespace IO.Ably.Tests.MessageEncodes
             {
                 var payload = new Message() { Data = _stringData, Encoding = "utf-8" };
 
-                encoder.Decode(payload, new ChannelOptions());
+                _encoder.Decode(payload, new ChannelOptions());
 
                 payload.Data.Should().Be(_stringData);
                 payload.Encoding.Should().Be("utf-8");
@@ -72,7 +72,7 @@ namespace IO.Ably.Tests.MessageEncodes
 
                 var payload = new Message() { Data = _binaryData };
 
-                encoder.Encode(payload, new ChannelOptions());
+                _encoder.Encode(payload, new ChannelOptions());
 
                 payload.Data.Should().Be(_binaryData);
                 payload.Encoding.Should().BeNull();
@@ -91,10 +91,10 @@ namespace IO.Ably.Tests.MessageEncodes
             {
                 var payload = new Message() { Data = _binaryData };
 
-                encoder.Encode(payload, new ChannelOptions());
+                _encoder.Encode(payload, new ChannelOptions());
 
                 payload.Data.Should().Be(_base64Data);
-                payload.Encoding.Should().Be(encoder.EncodingName);
+                payload.Encoding.Should().Be(_encoder.EncodingName);
             }
 
             [Fact]
@@ -102,10 +102,10 @@ namespace IO.Ably.Tests.MessageEncodes
             {
                 var payload = new Message() { Data = _binaryData, Encoding = "cipher" };
 
-                encoder.Encode(payload, new ChannelOptions());
+                _encoder.Encode(payload, new ChannelOptions());
 
                 payload.Data.Should().Be(_base64Data);
-                payload.Encoding.Should().Be("cipher/" + encoder.EncodingName);
+                payload.Encoding.Should().Be("cipher/" + _encoder.EncodingName);
             }
 
             [Fact]
@@ -113,7 +113,7 @@ namespace IO.Ably.Tests.MessageEncodes
             {
                 var payload = new Message() { Data = _stringData };
 
-                encoder.Encode(payload, new ChannelOptions());
+                _encoder.Encode(payload, new ChannelOptions());
 
                 payload.Data.Should().Be(_stringData);
                 payload.Encoding.Should().BeNull();
@@ -124,7 +124,7 @@ namespace IO.Ably.Tests.MessageEncodes
             {
                 var payload = new Message();
 
-                encoder.Encode(payload, new ChannelOptions());
+                _encoder.Encode(payload, new ChannelOptions());
 
                 payload.Data.Should().BeNull();
                 payload.Encoding.Should().BeNull();

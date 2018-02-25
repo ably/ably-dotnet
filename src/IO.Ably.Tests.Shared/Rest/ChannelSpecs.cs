@@ -48,6 +48,7 @@ namespace IO.Ably.Tests.Rest
         public class GettingAChannel : ChannelSpecs
         {
             private AblyRest _client;
+
             public GettingAChannel(ITestOutputHelper output)
                 : base(output)
             {

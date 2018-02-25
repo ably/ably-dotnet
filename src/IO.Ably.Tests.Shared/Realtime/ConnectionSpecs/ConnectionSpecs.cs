@@ -22,12 +22,13 @@ namespace IO.Ably.Tests.Realtime
 
     public class ConnectionSpecsBase : AblyRealtimeSpecs
     {
-        protected FakeTransportFactory _fakeTransportFactory;
-        protected FakeTransport LastCreatedTransport => _fakeTransportFactory.LastCreatedTransport;
+        protected FakeTransportFactory FakeTransportFactory { get; private set; }
+
+        protected FakeTransport LastCreatedTransport => FakeTransportFactory.LastCreatedTransport;
 
         internal AblyRealtime GetClientWithFakeTransport(Action<ClientOptions> optionsAction = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
         {
-            var options = new ClientOptions(ValidKey) { TransportFactory = _fakeTransportFactory };
+            var options = new ClientOptions(ValidKey) { TransportFactory = FakeTransportFactory };
             optionsAction?.Invoke(options);
             var client = GetRealtimeClient(options, handleRequestFunc);
             return client;
@@ -48,7 +49,7 @@ namespace IO.Ably.Tests.Realtime
         public ConnectionSpecsBase(ITestOutputHelper output)
             : base(output)
         {
-            _fakeTransportFactory = new FakeTransportFactory();
+            FakeTransportFactory = new FakeTransportFactory();
         }
     }
 }

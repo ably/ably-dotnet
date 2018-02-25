@@ -229,7 +229,8 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSC11")]
         public class HostSpecs : AblySpecs
         {
-            private FakeHttpMessageHandler _handler;
+            private readonly FakeHttpMessageHandler _handler;
+
             public HostSpecs(ITestOutputHelper output)
                 : base(output)
             {
@@ -393,8 +394,9 @@ namespace IO.Ably.Tests
 
         public class FallbackSpecs : AblySpecs
         {
-            private FakeHttpMessageHandler _handler;
-            private HttpResponseMessage _response;
+            private readonly FakeHttpMessageHandler _handler;
+            private readonly HttpResponseMessage _response;
+
             public FallbackSpecs(ITestOutputHelper output)
                 : base(output)
             {

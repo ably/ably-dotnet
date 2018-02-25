@@ -13,7 +13,7 @@ namespace IO.Ably.Tests.Realtime
     {
         private readonly Connection _connection;
         private readonly ConnectionAttemptsInfo _info;
-        private bool _internetCheckOK = true;
+        private bool _internetCheckOk = true;
 
         [Fact]
         public void Reset_SHouldResetFirstAttemptAndNumberOfAttempts()
@@ -90,7 +90,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task CanAttemptFallback_WhenInternetCheckFails_ShouldBeFalse()
         {
             var info = Create();
-            _internetCheckOK = false;
+            _internetCheckOk = false;
             var result = await info.CanFallback(null);
             result.Should().BeFalse();
         }
@@ -114,7 +114,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 if (request.Url == Defaults.InternetCheckUrl)
                 {
-                    return (_internetCheckOK ? Defaults.InternetCheckOkMessage : "Blah").ToAblyResponse();
+                    return (_internetCheckOk ? Defaults.InternetCheckOkMessage : "Blah").ToAblyResponse();
                 }
                 return DefaultResponse.ToTask();
             }, optionsAction);

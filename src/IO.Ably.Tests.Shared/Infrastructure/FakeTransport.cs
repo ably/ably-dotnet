@@ -35,9 +35,13 @@ namespace IO.Ably.Tests
         public bool AbortCalled { get; set; }
 
         public ProtocolMessage LastMessageSend => LastTransportData?.Original;
+
         public List<RealtimeTransportData> SentMessages { get; set; } = new List<RealtimeTransportData>();
+
         public RealtimeTransportData LastTransportData => SentMessages.LastOrDefault();
+
         public TransportState State { get; set; }
+
         public ITransportListener Listener { get; set; }
 
         public bool OnConnectChangeStateToConnected { get; set; } = true;
@@ -81,6 +85,12 @@ namespace IO.Ably.Tests
         private volatile bool _connectCalled;
 
         public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
         {
         }
     }

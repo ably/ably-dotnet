@@ -12,13 +12,15 @@ namespace IO.Ably.Tests
     {
         internal ILogger Logger { get; set; }
 
-        protected readonly AblySandboxFixture Fixture;
-        protected readonly ITestOutputHelper Output;
-        protected ManualResetEvent _resetEvent;
+        protected AblySandboxFixture Fixture { get; }
+
+        protected ITestOutputHelper Output { get; }
+
+        protected ManualResetEvent ResetEvent { get; }
 
         public SandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
         {
-            _resetEvent = new ManualResetEvent(false);
+            ResetEvent = new ManualResetEvent(false);
             Fixture = fixture;
             Output = output;
             Logger = DefaultLogger.LoggerInstance;
@@ -85,7 +87,7 @@ namespace IO.Ably.Tests
             return connectionAwaiter.Wait();
         }
 
-        protected static async Task WaitFor30sOrUntilTrue(Func<bool> predicate)
+        protected static async Task WaitFor30SOrUntilTrue(Func<bool> predicate)
         {
             int count = 0;
             while (count < 30)
@@ -108,14 +110,11 @@ namespace IO.Ably.Tests
         internal class TestLogger : ILogger
         {
             public int SeenCount { get; set; }
+
             public string MessageToTest { get; set; }
 
             public string FullMessage { get; private set; }
 
-            /// <summary>
-            ///
-            /// </summary>
-            /// <param name="messageToTest"></param>
             public TestLogger(string messageToTest)
             {
                 LogLevel = LogLevel.Debug;
@@ -126,8 +125,11 @@ namespace IO.Ably.Tests
             public bool MessageSeen { get; private set; }
 
             public LogLevel LogLevel { get; set; }
+
             public bool IsDebug => LogLevel == LogLevel.Debug;
+
             public ILoggerSink LoggerSink { get; set; }
+
             public void Error(string message, Exception ex)
             {
                 Test(message);
@@ -161,7 +163,7 @@ namespace IO.Ably.Tests
 
         public void Dispose()
         {
-            _resetEvent?.Dispose();
+            ResetEvent?.Dispose();
         }
     }
 

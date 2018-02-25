@@ -9,8 +9,11 @@ namespace IO.Ably.Tests
     public abstract class MockHttpRestSpecs : AblySpecs
     {
         internal virtual AblyResponse DefaultResponse { get; }
+
         internal AblyRequest LastRequest => Requests.LastOrDefault();
+
         internal AblyRequest FirstRequest => Requests.FirstOrDefault();
+
         internal List<AblyRequest> Requests { get; } = new List<AblyRequest>();
 
         internal virtual AblyRest GetRestClient(Func<AblyRequest, Task<AblyResponse>> handleRequestFunc, ClientOptions options)

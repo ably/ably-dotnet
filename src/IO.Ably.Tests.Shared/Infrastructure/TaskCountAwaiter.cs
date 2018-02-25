@@ -9,7 +9,9 @@ namespace IO.Ably.Tests.Infrastructure
     internal class TaskCountAwaiter
     {
         private TaskCompletionAwaiter _awaiter;
+
         public int Start { get; } = 0;
+
         public int Index { get; private set; } = 0;
 
         public TaskCountAwaiter(int count, int timeoutMs = 10000)

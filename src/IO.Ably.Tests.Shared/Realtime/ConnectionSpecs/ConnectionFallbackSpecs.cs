@@ -135,7 +135,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 UseBinaryProtocol = false,
                 UseSyncForTesting = true,
                 SkipInternetCheck = true,
-                TransportFactory = _fakeTransportFactory
+                TransportFactory = FakeTransportFactory
             });
             client.RestClient.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(10), handler);
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
