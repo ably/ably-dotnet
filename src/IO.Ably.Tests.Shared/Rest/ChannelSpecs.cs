@@ -228,7 +228,7 @@ namespace IO.Ably.Tests.Rest
 
                 var data = LastRequest.PostData as IEnumerable<Message>;
                 Assert.NotNull(data);
-                Assert.Equal(1, data.Count());
+                data.Count().Should().Be(1);
                 var payloadMessage = data.First();
                 Assert.Equal("data", payloadMessage.Data);
                 Assert.Equal("event", payloadMessage.Name);

@@ -157,7 +157,7 @@ namespace IO.Ably.Tests
             }
         }
 
-        public class CreateTokenRequestSpecs : AuthorizationTests
+        public sealed class CreateTokenRequestSpecs : AuthorizationTests
         {
             [Fact]
             [Trait("spec", "RSA9h")]

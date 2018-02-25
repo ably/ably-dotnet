@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 namespace IO.Ably.Tests.Realtime
 {
     [Trait("spec", "RTN7")]
-    public class AckNackSpecs : ConnectionSpecsBase
+    public sealed class AckNackSpecs : ConnectionSpecsBase
     {
         private AblyRealtime _realtime;
         private FakeAckProcessor _ackProcessor;

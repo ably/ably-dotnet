@@ -285,8 +285,6 @@ namespace IO.Ably.Tests.Realtime
                 await channel.WaitForState(ChannelState.Attached);
                 channel.State.ShouldBeEquivalentTo(ChannelState.Attached);
 
-                #region test data
-
                 PresenceMessage[] TestPresence1()
                 {
                     return new PresenceMessage[]
@@ -355,8 +353,6 @@ namespace IO.Ably.Tests.Realtime
                         },
                     };
                 }
-
-                #endregion
 
                 bool seenLeaveMessageAsAbsentForClient4 = false;
                 List<PresenceMessage> presenceMessagesLog = new List<PresenceMessage>();

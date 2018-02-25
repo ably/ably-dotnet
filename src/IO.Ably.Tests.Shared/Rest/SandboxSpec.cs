@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    public abstract class SandboxSpecs : IClassFixture<AblySandboxFixture>
+    public abstract class SandboxSpecs : IClassFixture<AblySandboxFixture>, IDisposable
     {
         internal ILogger Logger { get; set; }
 
@@ -157,6 +157,11 @@ namespace IO.Ably.Tests
                     SeenCount++;
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            _resetEvent?.Dispose();
         }
     }
 

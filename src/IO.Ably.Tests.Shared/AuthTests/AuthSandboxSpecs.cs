@@ -198,7 +198,9 @@ namespace IO.Ably.Tests
             await client.WaitForState();
 
             // have the auth callback return an invalid token
+#pragma warning disable 1998
             client.Options.AuthCallback = async tokenParams => "invalid_token";
+#pragma warning restore 1998
 
             try
             {

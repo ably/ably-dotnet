@@ -109,7 +109,7 @@ namespace IO.Ably.Tests.Realtime
             [InlineData(ChannelState.Failed)]
             [Trait("spec", "RTL2a")]
             [Trait("spec", "RTL2b")]
-            public async Task ShouldEmitTheFollowingStates(ChannelState state)
+            public void ShouldEmitTheFollowingStates(ChannelState state)
             {
                 ChannelState newState = ChannelState.Initialized;
                 _channel.On(x =>
@@ -128,7 +128,7 @@ namespace IO.Ably.Tests.Realtime
 
             [Fact]
             [Trait("spec", "RTL2c")]
-            public async Task ShouldEmmitErrorWithTheErrorThatHasOccuredOnTheChannel()
+            public void ShouldEmmitErrorWithTheErrorThatHasOccuredOnTheChannel()
             {
                 var error = new ErrorInfo();
                 ErrorInfo expectedError = null;
@@ -358,7 +358,7 @@ namespace IO.Ably.Tests.Realtime
 
             [Fact]
             [Trait("spec", "RTL4d")]
-            public async Task WithACallback_ShouldCallCallbackWithErrorIfAttachFails()
+            public void WithACallback_ShouldCallCallbackWithErrorIfAttachFails()
             {
                 _client.Options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
                 bool called = false;
@@ -528,7 +528,7 @@ namespace IO.Ably.Tests.Realtime
 
             [Retry] // replaces fact
             [Trait("spec", "RTL5e")]
-            public async Task WithACallback_ShouldCallCallbackWithErrorIfDetachFails()
+            public void WithACallback_ShouldCallCallbackWithErrorIfDetachFails()
             {
                 SetState(ChannelState.Attached);
 
