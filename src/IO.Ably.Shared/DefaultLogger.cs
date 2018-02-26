@@ -74,7 +74,6 @@ namespace IO.Ably
 
         public static bool IsDebug => LoggerInstance.LogLevel == LogLevel.Debug;
 
-
         internal static IDisposable SetTempDestination(ILoggerSink i)
         {
             ILoggerSink o = LoggerInstance.LoggerSink;
@@ -105,7 +104,6 @@ namespace IO.Ably
         {
             LoggerInstance.Debug(message, args);
         }
-
 
         internal class InternalLogger : ILogger
         {

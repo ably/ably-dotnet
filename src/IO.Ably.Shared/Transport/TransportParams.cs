@@ -71,7 +71,6 @@ namespace IO.Ably.Transport
             return uriBuilder.Uri;
         }
 
-
         public Dictionary<string, string> GetParams()
         {
             var result = new Dictionary<string, string>();

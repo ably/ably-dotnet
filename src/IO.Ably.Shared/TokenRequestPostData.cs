@@ -37,7 +37,6 @@ namespace IO.Ably
         [JsonProperty("ttl")]
         public TimeSpan? Ttl { get; set; }
 
-
         /// <summary>
 		/// <see cref="Capability"/> of the token. If the token request is successful,
 		/// the capability of the returned token will be the intersection of

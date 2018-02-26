@@ -523,7 +523,6 @@ namespace IO.Ably
             return Result.Ok();
         }
 
-
         public TokenDetails RequestToken(TokenParams tokenParams = null, AuthOptions options = null)
         {
             return AsyncHelper.RunSync(() => RequestTokenAsync(tokenParams, options));
@@ -533,7 +532,6 @@ namespace IO.Ably
         {
             return AsyncHelper.RunSync(() => AuthorizeAsync(tokenParams, options));
         }
-
 
         [Obsolete("This method will be removed in the future, please replace with a call to Authorize")]
         public TokenDetails Authorise(TokenParams tokenParams = null, AuthOptions options = null)

@@ -80,7 +80,6 @@ namespace IO.Ably
             ErrorInfo = info;
         }
 
-
         /* protected AblyException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

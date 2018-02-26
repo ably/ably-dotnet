@@ -50,7 +50,6 @@ namespace IO.Ably
         public const string First = "first";
     }
 
-
     /// <summary>
     /// Data request query used for querying stats and history
     /// It makes it easier to pass parameters to the ably service by encapsulating the query string parameters passed
@@ -119,7 +118,6 @@ namespace IO.Ably
         }
 
         public static readonly HistoryRequestParams Empty = new HistoryRequestParams();
-
 
         public HistoryRequestParams()
         {

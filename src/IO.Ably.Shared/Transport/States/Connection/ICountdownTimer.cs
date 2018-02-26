@@ -108,7 +108,6 @@ namespace IO.Ably.Transport.States.Connection
             }
         }
 
-
         public void StartAsync(TimeSpan delay, Func<Task> onTimeOut)
         {
             if (onTimeOut == null)

@@ -77,7 +77,6 @@ namespace IO.Ably
             return resource;
         }
 
-
         /// <summary>
         /// Adds a capability resource. The resource returned can be used to define the actions allowed for it by chaining the Allow methods
         /// Possible options are: AllowAll, AllowPublish, AllowPresence and AllowSubscribe

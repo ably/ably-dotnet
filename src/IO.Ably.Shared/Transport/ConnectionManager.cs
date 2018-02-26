@@ -70,7 +70,6 @@ namespace IO.Ably.Transport
             Connection = connection;
             AckProcessor = new AcknowledgementProcessor(connection);
 
-
             if (Logger.IsDebug)
             {
                 Execute(() => Logger.Debug("ConnectionManager thread created"));

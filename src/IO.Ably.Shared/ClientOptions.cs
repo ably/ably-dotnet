@@ -41,7 +41,6 @@ namespace IO.Ably
 
         public TokenParams DefaultTokenParams { get; set; }
 
-
         internal string GetClientId()
         {
             if (ClientId.IsNotEmpty())
