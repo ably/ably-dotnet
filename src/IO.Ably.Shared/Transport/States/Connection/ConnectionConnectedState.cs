@@ -37,12 +37,17 @@ namespace IO.Ably.Transport.States.Connection
                     var error = message.Error;
                     var result = await Context.RetryBecauseOfTokenError(error);
                     if (result == false)
+                    {
                         Context.SetState(new ConnectionDisconnectedState(Context, message.Error, Logger));
+                    }
 
                     return true;
                 case ProtocolMessage.MessageAction.Error:
                     if (await Context.RetryBecauseOfTokenError(message.Error))
+                    {
                         return true;
+                    }
+
                     if (await Context.CanUseFallBackUrl(message.Error))
                     {
                         Context.Connection.Key = null;
@@ -74,11 +79,17 @@ namespace IO.Ably.Transport.States.Connection
                 Context.Connection.Key = _info.ConnectionKey;
                 Context.Connection.Serial = _info.ConnectionSerial;
                 if (_info.ConnectionStateTtl.HasValue)
+                {
                     Context.Connection.ConnectionStateTtl = _info.ConnectionStateTtl.Value;
+                }
+
                 Context.SetConnectionClientId(_info.ClientId);
             }
 
-            if(_resumed.HasValue && _resumed.Value && Logger.IsDebug) Logger.Debug("Connection resumed!");
+            if(_resumed.HasValue && _resumed.Value && Logger.IsDebug)
+            {
+                Logger.Debug("Connection resumed!");
+            }
         }
 
         private bool WasThereAPreviousConnection()
@@ -88,7 +99,11 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Task OnAttachToContext()
         {
-            if(Logger.IsDebug) Logger.Debug("Processing Connected:OnAttached. Resumed: " + _resumed);
+            if(Logger.IsDebug)
+            {
+                Logger.Debug("Processing Connected:OnAttached. Resumed: " + _resumed);
+            }
+
             if (_resumed.HasValue && _resumed ==false)
             {
                 Context.ClearAckQueueAndFailMessages(null);

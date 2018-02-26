@@ -100,14 +100,18 @@ namespace IO.Ably.Encryption
         private static void ValidateKeyLength(int keyLength)
         {
             if (keyLength != 128 && keyLength != 256)
+            {
                 throw new AblyException($"Only 128 and 256 keys are supported. Provided key is {keyLength}", 40003,
                     HttpStatusCode.BadRequest);
+            }
         }
 
         public static IChannelCipher GetCipher(CipherParams cipherParams)
         {
             if (string.Equals(cipherParams.Algorithm, Crypto.DefaultAlgorithm, StringComparison.CurrentCultureIgnoreCase))
+            {
                 return new AesCipher(cipherParams);
+            }
 
             throw new AblyException("Currently only the AES encryption algorithm is supported", 50000, HttpStatusCode.InternalServerError);
         }
@@ -126,7 +130,9 @@ namespace IO.Ably.Encryption
         public static byte[] GenerateRandomKey(int? keyLength = null, CipherMode? mode = null)
         {
             if(keyLength.HasValue)
+            {
                 ValidateKeyLength(keyLength.Value);
+            }
 
             return AesCipher.GenerateKey(mode, keyLength);
         }

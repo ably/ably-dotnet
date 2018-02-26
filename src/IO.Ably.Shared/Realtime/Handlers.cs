@@ -90,7 +90,9 @@ namespace IO.Ably.Realtime
         public bool Remove(string eventName, MessageHandlerAction<T> handler = null)
         {
             if (eventName.IsEmpty())
+            {
                 return false;
+            }
 
             try
             {

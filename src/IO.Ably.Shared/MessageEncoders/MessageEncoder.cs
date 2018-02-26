@@ -26,7 +26,9 @@ namespace IO.Ably.MessageEncoders
         {
             var encodingToAdd = encoding ?? EncodingName;
             if (payload.Encoding.IsEmpty())
+            {
                 payload.Encoding = encodingToAdd;
+            }
             else
             {
                 payload.Encoding += "/" + encodingToAdd;
@@ -41,7 +43,9 @@ namespace IO.Ably.MessageEncoders
         public string GetCurrentEncoding(IMessage payload)
         {
             if (payload.Encoding.IsEmpty())
+            {
                 return "";
+            }
 
             return payload.Encoding.Split(new[] {'/'}, StringSplitOptions.RemoveEmptyEntries).Last();
         }
@@ -49,7 +53,9 @@ namespace IO.Ably.MessageEncoders
         protected void RemoveCurrentEncodingPart(IMessage payload)
         {
             if (payload.Encoding.IsEmpty())
+            {
                 return;
+            }
 
             var encodings = payload.Encoding.Split(new[] { '/' });
             payload.Encoding = string.Join("/", encodings.Take(encodings.Length - 1));

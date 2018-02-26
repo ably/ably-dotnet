@@ -38,7 +38,9 @@ namespace IO.Ably
         public static string Serialize(object obj)
         {
             if(obj == null)
+            {
                 throw new ArgumentNullException(nameof(obj), "Cannot serialize null object");
+            }
 
             return SerializeObject(obj, obj.GetType());
         }
@@ -76,7 +78,9 @@ namespace IO.Ably
             jsonSerializer.CheckAdditionalContent = true;
 
             using (JsonTextReader jsonTextReader = new JsonTextReader(new StringReader(value)))
+            {
                 return jsonSerializer.Deserialize(jsonTextReader, type);
+            }
         }
     }
 }

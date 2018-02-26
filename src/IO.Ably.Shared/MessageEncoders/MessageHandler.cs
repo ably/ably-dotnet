@@ -117,11 +117,15 @@ namespace IO.Ably.MessageEncoders
         public byte[] GetRequestBody(AblyRequest request)
         {
             if (request.PostData == null)
+            {
                 return new byte[] { };
+            }
 
             if (request.PostData is IEnumerable<Message>)
+            {
                 return GetMessagesRequestBody(request.PostData as IEnumerable<Message>,
                     request.ChannelOptions);
+            }
 
             byte[] result;
             if (_protocol == Protocol.Json || !Config.MsgPackEnabled)
@@ -135,7 +139,10 @@ namespace IO.Ably.MessageEncoders
 #endif
             }
 
-            if (Logger.IsDebug) Logger.Debug("Request body: " + result.GetText());
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Request body: " + result.GetText());
+            }
 
             return result;
         }
@@ -156,7 +163,9 @@ namespace IO.Ably.MessageEncoders
         {
             var result = Result.Ok();
             foreach (var payload in payloads)
+            {
                 result = Result.Combine(result, EncodePayload(payload, options));
+            }
 
             return result;
         }
@@ -165,7 +174,9 @@ namespace IO.Ably.MessageEncoders
         {
             var result = Result.Ok();
             foreach (var payload in payloads)
+            {
                 result = Result.Combine(result, DecodePayload(payload, options));
+            }
 
             return result;
         }
@@ -184,7 +195,9 @@ namespace IO.Ably.MessageEncoders
         private void ValidatePayloadDataType(IMessage payload)
         {
             if (payload.Data == null)
+            {
                 return;
+            }
 
             var dataType = payload.Data.GetType();
             var testType = GetNullableType(dataType) ?? dataType;
@@ -196,7 +209,11 @@ namespace IO.Ably.MessageEncoders
 
         static Type GetNullableType(Type type)
         {
-            if (type.GetTypeInfo().IsValueType == false) return null; // ref-type
+            if (type.GetTypeInfo().IsValueType == false)
+            {
+                return null; // ref-type
+            }
+
             return Nullable.GetUnderlyingType(type);
         }
 
@@ -304,7 +321,9 @@ namespace IO.Ably.MessageEncoders
             {
                 var limitQuery = request.QueryParameters["limit"];
                 if (limitQuery.IsNotEmpty())
+                {
                     return int.Parse(limitQuery);
+                }
             }
             return Defaults.QueryLimit;
         }
@@ -328,11 +347,14 @@ namespace IO.Ably.MessageEncoders
             if (protocolMessage != null)
             {
                 foreach (var presenceMessage in protocolMessage.Presence)
+                {
                     presenceMessage.Timestamp = protocolMessage.Timestamp;
+                }
 
                 foreach (var message in protocolMessage.Messages)
+                {
                     message.Timestamp = protocolMessage.Timestamp;
-
+                }
             }
 
             return protocolMessage;
@@ -380,11 +402,19 @@ namespace IO.Ably.MessageEncoders
         private static void SetMessageIdConnectionIdAndTimestamp(ProtocolMessage protocolMessage, IMessage message, int i)
         {
             if (message.Id.IsEmpty())
+            {
                 message.Id = $"{protocolMessage.Id}:{i}";
+            }
+
             if (message.ConnectionId.IsEmpty())
+            {
                 message.ConnectionId = protocolMessage.ConnectionId;
+            }
+
             if (message.Timestamp.HasValue == false)
+            {
                 message.Timestamp = protocolMessage.Timestamp;
+            }
         }
 
         public RealtimeTransportData GetTransportData(ProtocolMessage protocolMessage)

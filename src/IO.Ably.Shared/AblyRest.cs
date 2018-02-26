@@ -120,13 +120,17 @@ namespace IO.Ably
             catch (AblyException ex)
             {
                 if (Logger.IsDebug)
+                {
                     Logger.Debug("Error Executing request. Message: " + ex.Message);
+                }
 
                 if (ex.ErrorInfo.IsUnAuthorizedError
                     && ex.ErrorInfo.IsTokenError && AblyAuth.TokenRenewable)
                 {
                     if (Logger.IsDebug)
+                    {
                         Logger.Debug("Handling UnAuthorized Error, attmepting to Re-authorize and repeat request.");
+                    }
 
                     try
                     {
@@ -145,7 +149,9 @@ namespace IO.Ably
             catch (Exception ex)
             {
                 if(Logger.IsDebug)
+                {
                     Logger.Debug("Error Executing request. Message: " + ex.Message);
+                }
 
                 throw new AblyException(ex);
             }
@@ -160,7 +166,9 @@ namespace IO.Ably
                 Logger.Debug("Content type: " + response.ContentType);
                 Logger.Debug("Encoding: " + response.Encoding);
                 if (response.Body != null)
+                {
                     Logger.Debug("Raw response (base64):" + response.Body.ToBase64());
+                }
             }
 
             return MessageHandler.ParseResponse<T>(request, response);
@@ -175,7 +183,9 @@ namespace IO.Ably
                 Logger.Debug("Content type: " + response.ContentType);
                 Logger.Debug("Encoding: " + response.Encoding);
                 if (response.Body != null)
+                {
                     Logger.Debug("Raw response (base64):" + response.Body.ToBase64());
+                }
             }
 
             return MessageHandler.ParsePaginatedResponse<T>(request, response, executeDataQueryRequest);
@@ -245,7 +255,9 @@ namespace IO.Ably
         public async Task<bool> CanConnectToAbly()
         {
             if (Options.SkipInternetCheck)
+            {
                 return true;
+            }
 
             try
             {

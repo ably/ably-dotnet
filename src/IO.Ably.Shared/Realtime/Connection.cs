@@ -25,13 +25,18 @@ namespace IO.Ably.Realtime
 
         internal static void NotifyOperatingSystemNetworkState(NetworkState state, ILogger logger)
         {
-            if(logger.IsDebug) logger.Debug("OS Network connection state: " + state);
+            if(logger.IsDebug)
+            {
+                logger.Debug("OS Network connection state: " + state);
+            }
 
             foreach (var subscriber in OsEventSubscribers.ToArray())
             {
                 Action<Realtime.NetworkState> stateAction = null;
                 if (subscriber.TryGetTarget(out stateAction))
+                {
                     stateAction?.Invoke(state);
+                }
             }
         }
 
@@ -129,10 +134,14 @@ namespace IO.Ably.Realtime
         private void ClearAllDelegatesOfStateChangeEventHandler()
         {
             foreach (var d in InternalStateChanged.GetInvocationList())
+            {
                 InternalStateChanged -= (EventHandler<ConnectionStateChange>) d;
+            }
 
             foreach (var handler in ConnectionStateChanged.GetInvocationList())
+            {
                 ConnectionStateChanged -= (EventHandler<ConnectionStateChange>) handler;
+            }
         }
 
         /// <summary>
@@ -173,9 +182,14 @@ namespace IO.Ably.Realtime
         internal void UpdateState(ConnectionStateBase state)
         {
             if (state.State == State)
+            {
                 return;
+            }
 
-            if (Logger.IsDebug) Logger.Debug($"Connection notifying subscribers for state change `{state.State}`");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"Connection notifying subscribers for state change `{state.State}`");
+            }
 
             var oldState = ConnectionState.State;
             var newState = state.State;

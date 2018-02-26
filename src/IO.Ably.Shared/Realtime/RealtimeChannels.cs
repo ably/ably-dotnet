@@ -45,7 +45,9 @@ namespace IO.Ably.Realtime
             else
             {
                 if (options != null)
+                {
                     result.Options = options;
+                }
             }
             return result;
         }
@@ -69,7 +71,9 @@ namespace IO.Ably.Realtime
 
                         RealtimeChannel removedChannel;
                         if (Channels.TryRemove(name, out removedChannel))
+                        {
                             removedChannel.Dispose();
+                        }
                     }
                     else
                     {

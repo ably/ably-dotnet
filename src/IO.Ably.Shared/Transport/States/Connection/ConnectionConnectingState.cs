@@ -37,7 +37,9 @@ namespace IO.Ably.Transport.States.Connection
         public override async Task<bool> OnMessageReceived(ProtocolMessage message)
         {
             if (message == null)
+            {
                 throw new ArgumentNullException(nameof(message), "Null message passed to Connection Connecting State");
+            }
 
             switch (message.Action)
             {

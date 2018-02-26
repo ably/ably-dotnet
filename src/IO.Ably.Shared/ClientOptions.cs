@@ -30,7 +30,10 @@ namespace IO.Ably
             set
             {
                 if(value == "*")
+                {
                     throw new InvalidOperationException("Wildcard clientIds are not support in ClientOptions");
+                }
+
                 _clientId = value;
             }
         }
@@ -41,7 +44,9 @@ namespace IO.Ably
         internal string GetClientId()
         {
             if (ClientId.IsNotEmpty())
+            {
                 return ClientId;
+            }
 
             return DefaultTokenParams?.ClientId;
         }
@@ -95,7 +100,10 @@ namespace IO.Ably
             if (RealtimeHost.IsEmpty())
             {
                 if(IsLiveEnvironment)
+                {
                     return Defaults.RealtimeHost;
+                }
+
                 return Environment.ToString().ToLower() + "-" + Defaults.RealtimeHost;
             }
 

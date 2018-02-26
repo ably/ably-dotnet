@@ -35,7 +35,10 @@ namespace IO.Ably
         {
             var result = new List<KeyValuePair<string, string>>(base.GetParameters());
             if (Unit.HasValue)
+            {
                 result.Add(new KeyValuePair<string, string>("by", Unit.ToString().ToLower()));
+            }
+
             return result;
         }
     }
@@ -125,37 +128,57 @@ namespace IO.Ably
         internal void Validate()
         {
             if (Limit.HasValue && (Limit < 0 || Limit > 1000))
+            {
                 throw new AblyException("History query limit must be between 0 and 1000");
+            }
 
             if (Start.HasValue)
             {
                 if (Start.Value < DateExtensions.Epoch)
+                {
                     throw new AblyException("Start only supports dates after 1 January 1970");
+                }
             }
 
             if (End.HasValue)
+            {
                 if (End.Value < DateExtensions.Epoch)
+                {
                     throw new AblyException("End only supports dates after 1 January 1970");
+                }
+            }
 
             if (Start.HasValue && End.HasValue)
+            {
                 if (End.Value < Start.Value)
+                {
                     throw new AblyException("End date should be after Start date");
+                }
+            }
         }
 
         internal virtual IEnumerable<KeyValuePair<string, string>> GetParameters()
         {
             var result = new List<KeyValuePair<string, string>>();
             if (Start.HasValue)
+            {
                 result.Add(new KeyValuePair<string, string>("start", Start.Value.ToUnixTimeInMilliseconds().ToString()));
+            }
 
             if (End.HasValue)
+            {
                 result.Add(new KeyValuePair<string, string>("end", End.Value.ToUnixTimeInMilliseconds().ToString()));
+            }
 
             result.Add(new KeyValuePair<string, string>("direction", Direction.ToString().ToLower()));
             if (Limit.HasValue)
+            {
                 result.Add(new KeyValuePair<string, string>("limit", Limit.Value.ToString()));
+            }
             else
+            {
                 result.Add(new KeyValuePair<string, string>("limit","100"));
+            }
 
             result.AddRange(ExtraParameters);
             return result;
@@ -163,9 +186,21 @@ namespace IO.Ably
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != this.GetType())
+            {
+                return false;
+            }
+
             return Equals((HistoryRequestParams)obj);
         }
 
@@ -187,12 +222,18 @@ namespace IO.Ably
                     case "direction":
                         var direction = QueryDirection.Forwards;
                         if (Enum.TryParse(queryParameters[key], true, out direction))
+                        {
                             query.Direction = direction;
+                        }
+
                         break;
                     case "limit":
                         int limit = 0;
                         if (int.TryParse(queryParameters[key], out limit))
+                        {
                             query.Limit = limit;
+                        }
+
                         break;
                     default:
                         query.ExtraParameters.Add(key, queryParameters[key]);
@@ -225,7 +266,9 @@ namespace IO.Ably
         private static DateTimeOffset? ToDateTime(object value)
         {
             if (value == null)
+            {
                 return null;
+            }
 
             try
             {

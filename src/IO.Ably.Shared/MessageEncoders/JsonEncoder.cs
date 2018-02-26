@@ -18,7 +18,10 @@ namespace IO.Ably.MessageEncoders
         {
             Logger = options.Logger;
 
-            if (IsEmpty(payload.Data) || CurrentEncodingIs(payload, EncodingName) == false) return Result.Ok();
+            if (IsEmpty(payload.Data) || CurrentEncodingIs(payload, EncodingName) == false)
+            {
+                return Result.Ok();
+            }
 
             try
             {
@@ -35,7 +38,10 @@ namespace IO.Ably.MessageEncoders
 
         public override Result Encode(IMessage payload, ChannelOptions options)
         {
-            if (IsEmpty(payload.Data)) return Result.Ok();
+            if (IsEmpty(payload.Data))
+            {
+                return Result.Ok();
+            }
 
             if (NeedsJsonEncoding(payload))
             {

@@ -33,7 +33,9 @@ namespace IO.Ably.Transport.States.Connection
         public void Start(TimeSpan delay, Action elapsedSync)
         {
             if (elapsedSync == null)
+            {
                 throw new ArgumentNullException(nameof(elapsedSync));
+            }
 
             if (Logger.IsDebug)
             {
@@ -53,7 +55,9 @@ namespace IO.Ably.Transport.States.Connection
         private Timer StartTimer(TimeSpan delay)
         {
             lock (_lock)
+            {
                 _aborted = false;
+            }
 
             _delay = delay;
             var timer = new Timer(state => OnTimerOnElapsed(), null, (int)delay.TotalMilliseconds, Timeout.Infinite);
@@ -105,7 +109,9 @@ namespace IO.Ably.Transport.States.Connection
         public void StartAsync(TimeSpan delay, Func<Task> onTimeOut)
         {
             if (onTimeOut == null)
+            {
                 throw new ArgumentNullException(nameof(onTimeOut));
+            }
 
             if (Logger.IsDebug)
             {
@@ -125,12 +131,20 @@ namespace IO.Ably.Transport.States.Connection
         public void Abort(bool trigger = false)
         {
             if (trigger)
+            {
                 OnTimerOnElapsed();
+            }
 
             lock (_lock)
+            {
                 _aborted = true;
+            }
 
-            if (Logger.IsDebug) Logger.Debug($"Aborting timer '{_name}'");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"Aborting timer '{_name}'");
+            }
+
             if (_timer != null)
             {
                 _timer.Dispose();

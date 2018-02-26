@@ -22,7 +22,9 @@ namespace IO.Ably
             this.Name = name;
             this.Data = data;
             if (clientId.IsNotEmpty())
+            {
                 this.ClientId = clientId;
+            }
         }
 
         /// <summary>A globally unique message id</summary>
@@ -63,7 +65,10 @@ namespace IO.Ably
             var result = string.Format("Name: {0}, Data: {1}, Encoding: {2}, Timestamp: {3}", Name, Data, Encoding,
                 Timestamp);
             if (Id.IsNotEmpty())
+            {
                 return "Id: " + Id + ", " + result;
+            }
+
             return result;
         }
 
@@ -77,9 +82,21 @@ namespace IO.Ably
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != this.GetType())
+            {
+                return false;
+            }
+
             return Equals((Message) obj);
         }
 

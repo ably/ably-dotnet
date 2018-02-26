@@ -35,13 +35,17 @@ namespace IO.Ably
             Connection.Initialise();
 
             if (options.AutoConnect)
+            {
                 Connect();
+            }
         }
 
         private void CaptureSynchronizationContext(ClientOptions options)
         {
             if (options.CustomContext != null)
+            {
                 _synchronizationContext = options.CustomContext;
+            }
             else if (options.CaptureCurrentSynchronizationContext)
             {
                 _synchronizationContext = SynchronizationContext.Current;

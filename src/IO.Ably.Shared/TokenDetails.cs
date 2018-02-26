@@ -87,8 +87,16 @@ namespace IO.Ably
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
             return obj is TokenDetails && Equals((TokenDetails) obj);
         }
 
@@ -117,7 +125,10 @@ namespace IO.Ably
         public static bool IsValidToken(this TokenDetails token)
         {
             if (token == null)
+            {
                 return false;
+            }
+
             var exp = token.Expires;
             return (exp == DateTimeOffset.MinValue) || (exp >= token.Now());
         }

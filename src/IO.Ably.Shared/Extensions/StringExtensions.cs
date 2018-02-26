@@ -20,7 +20,9 @@ namespace IO.Ably
         public static bool IsJson(this string input)
         {
             if (IsEmpty(input))
+            {
                 return false;
+            }
 
             input = input.Trim();
             return input.StartsWith("{") && input.EndsWith("}")
@@ -29,7 +31,10 @@ namespace IO.Ably
 
         public static string JoinStrings(this IEnumerable<string> input, string delimiter = ", ")
         {
-            if (input == null) return "";
+            if (input == null)
+            {
+                return "";
+            }
 
             return String.Join(delimiter, input.Where(IsNotEmpty));
         }
@@ -37,7 +42,9 @@ namespace IO.Ably
         public static string Join<T>(this IEnumerable<T> listOfTs, Func<T, string> selector, string delimiter = ",") where T : class
         {
             if (listOfTs != null)
+            {
                 return string.Join(delimiter, listOfTs.Select(selector));
+            }
 
             return Empty;
         }
@@ -53,7 +60,10 @@ namespace IO.Ably
             int numberChars = hex.Length;
             byte[] bytes = new byte[numberChars / 2];
             for (int i = 0; i < numberChars; i += 2)
+            {
                 bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            }
+
             return bytes;
         }
     }

@@ -66,8 +66,13 @@ namespace IO.Ably
             var resource = new CapabilityResource(child.Name);
             var allowedOperations = child.Value as JArray;
             if (allowedOperations != null)
+            {
                 foreach (JToken token in allowedOperations)
+                {
                     resource.AllowedOperations.Add((string)token);
+                }
+            }
+
             return resource;
         }
 
@@ -105,7 +110,10 @@ namespace IO.Ably
                 result[resource.Name] = GetResourceValue(resource);
             }
             if(result.Children().Any())
+            {
                 return CleanUpWhiteSpace(result.ToString());
+            }
+
             return "";
         }
 
@@ -117,9 +125,15 @@ namespace IO.Ably
         private static JArray GetResourceValue(CapabilityResource resource)
         {
             if (resource.AllowsAll)
+            {
                 return new JArray(CapabilityResource.AllowedOps.All);
+            }
+
             if (resource.AllowedOperations.Count == 1)
+            {
                 return new JArray(resource.AllowedOperations.First());
+            }
+
             return new JArray(resource.AllowedOperations.ToArray());
         }
 
@@ -135,9 +149,21 @@ namespace IO.Ably
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != this.GetType())
+            {
+                return false;
+            }
+
             return Equals((Capability) obj);
         }
 

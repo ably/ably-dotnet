@@ -21,7 +21,9 @@ namespace IO.Ably.MessageEncoders
         {
             var data = payload.Data;
             if (IsEmpty(data))
+            {
                 return Result.Ok();
+            }
 
             var bytes = data as byte[];
             if (bytes != null && Protocol == Protocol.Json)

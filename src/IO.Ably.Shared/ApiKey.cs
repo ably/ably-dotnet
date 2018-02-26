@@ -22,7 +22,9 @@ namespace IO.Ably
         public static ApiKey Parse(string key)
         {
             if (string.IsNullOrWhiteSpace(key))
+            {
                 throw new AblyException("Ably key was empty. Ably key must be in the following format [AppId].[keyId]:[keyValue]", 40101, HttpStatusCode.Unauthorized);
+            }
 
             var parts = key.Trim().Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
 

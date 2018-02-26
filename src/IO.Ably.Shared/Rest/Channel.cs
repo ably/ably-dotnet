@@ -76,7 +76,9 @@ namespace IO.Ably.Rest
         Task<PaginatedResult<PresenceMessage>> IPresence.GetAsync(int? limit, string clientId, string connectionId)
         {
             if (limit.HasValue && (limit < 0 || limit > 1000))
+            {
                 throw new ArgumentException("Limit must be between 0 and 1000", nameof(limit));
+            }
 
             var presenceLimit = limit ?? Defaults.QueryLimit;
 
@@ -84,9 +86,14 @@ namespace IO.Ably.Rest
 
             request.QueryParameters.Add("limit", presenceLimit.ToString());
             if (clientId.IsNotEmpty())
+            {
                 request.QueryParameters.Add("clientId", clientId);
+            }
+
             if (connectionId.IsNotEmpty())
+            {
                 request.QueryParameters.Add("connectionId", connectionId);
+            }
 
             return _ablyRest.ExecutePaginatedRequest(request, Presence.GetAsync);
         }

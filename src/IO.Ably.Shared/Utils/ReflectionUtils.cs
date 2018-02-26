@@ -10,12 +10,20 @@ namespace IO.Ably.Utils
             foreach (PropertyInfo pi in typeof(T).GetRuntimeProperties())
             {
                 if (pi.IsSpecialName)
+                {
                     continue;
+                }
+
                 if (!pi.CanRead)
+                {
                     continue;
+                }
+
                 object x = pi.GetValue(a), y = pi.GetValue(b);
                 if (x != y)
+                {
                     return false;
+                }
             }
             return true;
         }

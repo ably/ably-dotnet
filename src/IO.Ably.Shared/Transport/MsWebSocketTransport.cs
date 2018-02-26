@@ -14,7 +14,9 @@ namespace IO.Ably.Transport
         protected MsWebSocketTransport(TransportParams parameters)
         {
             if (parameters == null)
+            {
                 throw new ArgumentNullException(nameof(parameters), "Null parameters are not allowed");
+            }
 
             BinaryProtocol = parameters.UseBinaryProtocol;
             WebSocketUri = parameters.GetUri();
@@ -50,13 +52,20 @@ namespace IO.Ably.Transport
 
                 await _socket.StartConnectionAsync();
 
-                if (Logger.IsDebug) Logger.Debug("Socket connected");
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug("Socket connected");
+                }
 
                 await _socket.Receive(HandleMessageReceived);
             }
             catch (Exception ex)
             {
-                if (Logger.IsDebug) Logger.Debug("Socket couldn't connect. Error: " + ex.Message);
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug("Socket couldn't connect. Error: " + ex.Message);
+                }
+
                 Listener?.OnTransportEvent(TransportState.Closed, ex);
             }
         }
@@ -105,7 +114,9 @@ namespace IO.Ably.Transport
             if (_socket != null)
             {
                 if (suppressClosedEvent)
+                {
                     DetachEvents();
+                }
 
                 Task.Run(_socket.StopConnectionAsync).ConfigureAwait(false);
             }
@@ -140,7 +151,11 @@ namespace IO.Ably.Transport
 
         private void HandleStateChange(MsWebSocketConnection.ConnectionState state, Exception error)
         {
-            if (Logger.IsDebug) Logger.Debug($"Transport State: {state}. Error is {error?.Message ?? "empty"}. {error?.StackTrace}");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"Transport State: {state}. Error is {error?.Message ?? "empty"}. {error?.StackTrace}");
+            }
+
             switch (state)
             {
                 case MsWebSocketConnection.ConnectionState.Connecting:

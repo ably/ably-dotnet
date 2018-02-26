@@ -54,7 +54,9 @@ namespace IO.Ably
             CurrentAuthOptions = Options;
             CurrentTokenParams = Options.DefaultTokenParams;
             if(CurrentTokenParams != null)
+            {
                 CurrentTokenParams.ClientId = Options.GetClientId(); //Ensure the correct ClientId is set in AblyAuth
+            }
 
             if (AuthMethod == AuthMethod.Basic)
             {
@@ -92,7 +94,9 @@ namespace IO.Ably
             EnsureSecureConnection();
 
             if (request.Headers.ContainsKey("Authorization"))
+            {
                 request.Headers.Remove("Authorization");
+            }
 
             if (AuthMethod == AuthMethod.Basic)
             {
@@ -114,10 +118,14 @@ namespace IO.Ably
         public async Task<TokenDetails> GetCurrentValidTokenAndRenewIfNecessaryAsync()
         {
             if(AuthMethod == AuthMethod.Basic)
+            {
                 throw new AblyException("AuthMethod is set to Auth so there is no current valid token.");
+            }
 
             if (CurrentToken.IsValidToken())
+            {
                 return CurrentToken;
+            }
 
             if (TokenRenewable)
             {
@@ -154,7 +162,9 @@ namespace IO.Ably
             var @params = MergeTokenParamsWithDefaults(tokenParams);
 
             if (mergedOptions.QueryTime.GetValueOrDefault(false))
+            {
                 @params.Timestamp = await _rest.TimeAsync();
+            }
 
             EnsureSecureConnection();
 
@@ -169,10 +179,14 @@ namespace IO.Ably
                     var callbackResult = await mergedOptions.AuthCallback(@params);
 
                     if (callbackResult == null)
+                    {
                         throw new AblyException("AuthCallback returned null", 80019);
+                    }
 
                     if (callbackResult is TokenDetails)
+                    {
                         return callbackResult as TokenDetails;
+                    }
 
                     if (callbackResult is TokenRequest || callbackResult is string)
                     {
@@ -200,13 +214,17 @@ namespace IO.Ably
                     var response = await CallAuthUrl(mergedOptions, @params);
 
                     if (response.Type == ResponseType.Text) //Return token string
+                    {
                         return new TokenDetails(response.TextResponse, Now);
+                    }
 
                     var signedData = response.TextResponse;
                     var jData = JObject.Parse(signedData);
 
                     if (TokenDetails.IsToken(jData))
+                    {
                         return JsonHelper.DeserializeObject<TokenDetails>(jData);
+                    }
 
                     postData = JsonHelper.Deserialize<TokenRequest>(signedData);
 
@@ -232,7 +250,9 @@ namespace IO.Ably
             TokenDetails result = await _rest.ExecuteRequest<TokenDetails>(request);
 
             if (result == null)
+            {
                 throw new AblyException("Invalid token response returned", 80019);
+            }
 
             return result;
         }
@@ -240,13 +260,17 @@ namespace IO.Ably
         private static TokenRequest GetTokenRequest(object callbackResult)
         {
             if(callbackResult is TokenRequest)
+            {
                 return callbackResult as TokenRequest;
+            }
 
             try
             {
                 var result = JsonHelper.Deserialize<TokenRequest>((string)callbackResult);
                 if(result == null)
+                {
                     throw new AblyException(new ErrorInfo($"AuthCallback returned a string which can't be converted to TokenRequest. ({callbackResult})."));
+                }
 
                 return result;
             }
@@ -292,10 +316,12 @@ namespace IO.Ably
             authRequest.SkipAuthentication = true;
             AblyResponse response = await _rest.ExecuteRequest(authRequest);
             if (response.Type == ResponseType.Binary)
+            {
                 throw new AblyException(
                     new ErrorInfo(
                         string.Format("Content Type {0} is not supported by this client library",
                             response.ContentType), 500));
+            }
 
             return response;
         }
@@ -303,7 +329,9 @@ namespace IO.Ably
         private void EnsureSecureConnection()
         {
             if (AuthMethod == AuthMethod.Basic && Options.Tls == false)
+            {
                 throw new InsecureRequestException();
+            }
         }
 
         /// <summary>
@@ -382,12 +410,16 @@ namespace IO.Ably
             var mergedOptions = authOptions != null ? authOptions.Merge(Options) : Options;
 
             if (string.IsNullOrEmpty(mergedOptions.Key))
+            {
                 throw new AblyException("No key specified", 40101, HttpStatusCode.Unauthorized);
+            }
 
             var @params = MergeTokenParamsWithDefaults(tokenParams);
 
             if (mergedOptions.QueryTime.GetValueOrDefault(false))
+            {
                 @params.Timestamp = await _rest.TimeAsync();
+            }
 
             ApiKey key = mergedOptions.ParseKey();
             var request = new TokenRequest(Now).Populate(@params, key.KeyName, key.KeySecret);
@@ -397,13 +429,25 @@ namespace IO.Ably
         internal TokenAuthMethod GetTokenAuthMethod()
         {
             if (null != Options.AuthCallback)
+            {
                 return TokenAuthMethod.Callback;
+            }
+
             if (Options.AuthUrl.IsNotEmpty())
+            {
                 return TokenAuthMethod.Url;
+            }
+
             if (Options.Key.IsNotEmpty())
+            {
                 return TokenAuthMethod.Signing;
+            }
+
             if (Options.Token.IsNotEmpty())
+            {
                 return TokenAuthMethod.JustToken;
+            }
+
             return TokenAuthMethod.None;
         }
 
@@ -441,7 +485,9 @@ namespace IO.Ably
         {
             var libClientId = ClientId;
             if (libClientId.IsEmpty() || libClientId == "*")
+            {
                 return Result.Ok();
+            }
 
             foreach (var message in messages)
             {

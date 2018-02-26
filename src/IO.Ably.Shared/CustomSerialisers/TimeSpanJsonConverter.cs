@@ -10,7 +10,9 @@ namespace IO.Ably.CustomSerialisers
         {
             var timeSpan = (TimeSpan?)value;
             if (timeSpan.HasValue)
+            {
                 writer.WriteValue((long)timeSpan.Value.TotalMilliseconds);
+            }
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)

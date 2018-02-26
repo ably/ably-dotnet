@@ -34,7 +34,9 @@ namespace IO.Ably
         public Task<PaginatedResult<T>> NextAsync()
         {
             if (HasNext && ExecuteDataQueryFunc != null)
+            {
                 return ExecuteDataQueryFunc(NextDataQuery);
+            }
 
             return Task.FromResult(new PaginatedResult<T>());
         }
@@ -42,7 +44,9 @@ namespace IO.Ably
         public Task<PaginatedResult<T>> FirstAsync()
         {
             if (FirstDataQuery != null && FirstDataQuery.IsEmpty == false && ExecuteDataQueryFunc != null)
+            {
                 return ExecuteDataQueryFunc(FirstDataQuery);
+            }
 
             return Task.FromResult(new PaginatedResult<T>());
         }

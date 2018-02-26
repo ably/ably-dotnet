@@ -13,11 +13,15 @@ namespace IO.Ably.MessageEncoders
             Logger = options.Logger ?? IO.Ably.DefaultLogger.LoggerInstance;
 
             if (IsEmpty(payload.Data))
+            {
                 return Result.Ok();
+            }
 
             var currentEncoding = GetCurrentEncoding(payload);
             if (currentEncoding.Contains(EncodingName) == false)
+            {
                 return Result.Ok();
+            }
 
             var cipherType = GetCipherType(currentEncoding);
             if (cipherType.ToLower() != options.CipherParams.CipherType.ToLower())
@@ -45,17 +49,24 @@ namespace IO.Ably.MessageEncoders
         {
             var parts = currentEncoding.Split('+');
             if (parts.Length == 2)
+            {
                 return parts[1];
+            }
+
             return "";
         }
 
         public override Result Encode(IMessage payload, ChannelOptions options)
         {
             if (IsEmpty(payload.Data) || IsEncrypted(payload))
+            {
                 return Result.Ok();
+            }
 
             if (options.Encrypted == false)
+            {
                 return Result.Ok();
+            }
 
             if (payload.Data is string)
             {

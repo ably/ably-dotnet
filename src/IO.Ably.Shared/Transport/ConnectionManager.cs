@@ -91,7 +91,9 @@ namespace IO.Ably.Transport
         public Task SetState(ConnectionStateBase newState, bool skipAttach = false)
         {
             if (Logger.IsDebug)
+            {
                 Logger.Debug($"xx Changing state from {ConnectionState} => {newState.State}. SkipAttach = {skipAttach}.");
+            }
 
             _inTransitionToState = newState;
 
@@ -104,15 +106,25 @@ namespace IO.Ably.Transport
                         if (State.State == newState.State)
                         {
                             if (Logger.IsDebug)
+                            {
                                 Logger.Debug($"xx State is already {State.State}. Skipping SetState action.");
+                            }
+
                             return;
                         }
 
                         //Abort any timers on the old state
                         State.AbortTimer();
-                        if (Logger.IsDebug) Logger.Debug($"xx {newState.State}: BeforeTransition");
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug($"xx {newState.State}: BeforeTransition");
+                        }
+
                         newState.BeforeTransition();
-                        if (Logger.IsDebug) Logger.Debug($"xx {newState.State}: BeforeTransition end");
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug($"xx {newState.State}: BeforeTransition end");
+                        }
 
                         AttemptsInfo.UpdateAttemptState(newState);
                         Connection.UpdateState(newState);
@@ -120,11 +132,17 @@ namespace IO.Ably.Transport
 
                     if (skipAttach == false)
                     {
-                        if (Logger.IsDebug) Logger.Debug($"xx {newState.State}: Attaching state ");
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug($"xx {newState.State}: Attaching state ");
+                        }
 
                         await newState.OnAttachToContext();
                     }
-                    else if (Logger.IsDebug) Logger.Debug($"xx {newState.State}: Skipping attaching.");
+                    else if (Logger.IsDebug)
+                    {
+                        Logger.Debug($"xx {newState.State}: Skipping attaching.");
+                    }
 
                     await ProcessQueuedMessages();
                 }
@@ -157,10 +175,15 @@ namespace IO.Ably.Transport
 
         public async Task CreateTransport()
         {
-            if (Logger.IsDebug) Logger.Debug("Creating transport");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Creating transport");
+            }
 
             if (Transport != null)
+            {
                 (this as IConnectionContext).DestroyTransport();
+            }
 
             try
             {
@@ -173,7 +196,9 @@ namespace IO.Ably.Transport
             {
                 Logger.Error("Error while creating transport!.", ex.Message);
                 if (ex is AblyException)
+                {
                     throw;
+                }
 
                 throw new AblyException(ex);
             }
@@ -181,10 +206,15 @@ namespace IO.Ably.Transport
 
         public void DestroyTransport(bool suppressClosedEvent)
         {
-            if (Logger.IsDebug) Logger.Debug("Destroying transport");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Destroying transport");
+            }
 
             if (Transport == null)
+            {
                 return;
+            }
 
             try
             {
@@ -204,12 +234,17 @@ namespace IO.Ably.Transport
         public void SetConnectionClientId(string clientId)
         {
             if (clientId.IsNotEmpty())
+            {
                 RestClient.AblyAuth.ConnectionClientId = clientId;
+            }
         }
 
         public bool ShouldWeRenewToken(ErrorInfo error)
         {
-            if (error == null) return false;
+            if (error == null)
+            {
+                return false;
+            }
 
             return error.IsTokenError && AttemptsInfo.TriedToRenewToken == false && RestClient.AblyAuth.TokenRenewable;
         }
@@ -304,7 +339,11 @@ namespace IO.Ably.Transport
 
         public void SendToTransport(ProtocolMessage message)
         {
-            if (Logger.IsDebug) Logger.Debug($"Sending message ({message.Action}) to transport");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"Sending message ({message.Action}) to transport");
+            }
+
             var data = Handler.GetTransportData(message);
             try
             {
@@ -353,14 +392,20 @@ namespace IO.Ably.Transport
         private static ErrorInfo GetErrorInfoFromTransportException(Exception ex, ErrorInfo @default)
         {
             if (ex?.Message == "HTTP/1.1 401 Unauthorized")
+            {
                 return ErrorInfo.ReasonRefused;
+            }
 
             return @default;
         }
 
         public void HandleConnectingFailure(ErrorInfo error, Exception ex)
         {
-            if (Logger.IsDebug) Logger.Debug("Handling Connecting failure.");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Handling Connecting failure.");
+            }
+
             ErrorInfo resolvedError = error ?? (ex != null ? new ErrorInfo(ex.Message, 80000) : null);
             if (ShouldSuspend())
             {
@@ -385,7 +430,10 @@ namespace IO.Ably.Transport
 
             lock (_pendingQueueLock)
             {
-                if (Logger.IsDebug) Logger.Debug("Sending pending message: Count: " + PendingMessages.Count);
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug("Sending pending message: Count: " + PendingMessages.Count);
+                }
 
                 while (PendingMessages.Count > 0)
                 {
@@ -445,15 +493,20 @@ namespace IO.Ably.Transport
             _queuedTransportMessages.Enqueue(message);
 
             if (_inTransitionToState == null)
+            {
                 await ProcessQueuedMessages();
-
+            }
         }
 
         private async Task ProcessQueuedMessages()
         {
             while (_queuedTransportMessages != null && _queuedTransportMessages.TryDequeue(out var message))
             {
-                if (Logger.IsDebug) Logger.Debug("Proccessing queued message: " + message);
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug("Proccessing queued message: " + message);
+                }
+
                 await ProcessTransportMessage(message);
             }
         }
@@ -484,7 +537,11 @@ namespace IO.Ably.Transport
                     if (ConnectionState == ConnectionState.Disconnected ||
                         ConnectionState == ConnectionState.Suspended)
                     {
-                        if (Logger.IsDebug) Logger.Debug("Network state is Online. Attempting reconnect.");
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug("Network state is Online. Attempting reconnect.");
+                        }
+
                         Connect();
                     }
                     break;
@@ -492,7 +549,11 @@ namespace IO.Ably.Transport
                     if (ConnectionState == ConnectionState.Connected ||
                         ConnectionState == ConnectionState.Connecting )
                     {
-                        if (Logger.IsDebug) Logger.Debug("Network state is Offline. Moving to disconnected.");
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug("Network state is Offline. Moving to disconnected.");
+                        }
+
                         SetState(new ConnectionDisconnectedState(this,
                             new ErrorInfo("Connection closed due to Operating system network going offline", 80017),
                             Logger)

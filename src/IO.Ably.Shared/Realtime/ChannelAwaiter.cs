@@ -37,7 +37,10 @@ namespace IO.Ably.Realtime
         {
             lock (_lock)
             {
-                if (_waiting == false) return;
+                if (_waiting == false)
+                {
+                    return;
+                }
 
                 _timer.Abort();
                 _waiting = false;
@@ -111,7 +114,9 @@ namespace IO.Ably.Realtime
         private void ElapsedSync()
         {
             lock (_lock)
+            {
                 _waiting = false;
+            }
 
             _onTimeout?.Invoke();
 
@@ -132,7 +137,10 @@ namespace IO.Ably.Realtime
         {
             lock (_lock)
             {
-                if (_waiting == false) return;
+                if (_waiting == false)
+                {
+                    return;
+                }
             }
 
             if (args.Current == _awaitedState)

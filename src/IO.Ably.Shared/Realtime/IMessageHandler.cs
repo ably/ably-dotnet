@@ -35,7 +35,10 @@ namespace IO.Ably.Realtime
         public MessageHandlerAction(Action<T> action)
         {
             if (null == action)
+            {
                 throw new ArgumentNullException();
+            }
+
             this.action = action;
         }
 
@@ -51,9 +54,21 @@ namespace IO.Ably.Realtime
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
             return Equals((MessageHandlerAction<T>) obj);
         }
 

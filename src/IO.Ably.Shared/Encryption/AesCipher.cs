@@ -32,7 +32,10 @@ namespace AblyPlatform.Cryptography
         public static System.Security.Cryptography.CipherMode MapAblyMode(CipherMode? mode)
         {
             if(mode == null)
+            {
                 return System.Security.Cryptography.CipherMode.CBC;
+            }
+
             return ModesMap[mode.Value];
         }
 
@@ -55,7 +58,9 @@ namespace AblyPlatform.Cryptography
             using (var aesEncryption = Aes.Create())
             {
                 if (iv == null)
+                {
                     aesEncryption.GenerateIV();
+                }
                 else
                 {
                     aesEncryption.IV = iv;

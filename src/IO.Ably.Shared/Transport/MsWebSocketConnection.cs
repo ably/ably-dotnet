@@ -77,10 +77,12 @@ namespace IO.Ably.Transport
             try
             {
                 if (ClientWebSocket.CloseStatus.HasValue)
+                {
                     Logger.Debug("Closing websocket. Close status: " +
                                  Enum.GetName(typeof(WebSocketCloseStatus), ClientWebSocket.CloseStatus) + ", Description: " + ClientWebSocket.CloseStatusDescription);
+                }
 
-                if(ClientWebSocket?.State != WebSocketState.Closed)
+                if (ClientWebSocket?.State != WebSocketState.Closed)
                 {
                     await
                     ClientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None)
@@ -97,7 +99,10 @@ namespace IO.Ably.Transport
 
         public void SendText(string message)
         {
-            if(Logger.IsDebug) Logger.Debug("Sending text");
+            if(Logger.IsDebug)
+            {
+                Logger.Debug("Sending text");
+            }
 
             var bytes = new ArraySegment<byte>(message.GetBytes());
             _sendQueue.TryAdd(Tuple.Create(bytes, WebSocketMessageType.Text), 1000, _tokenSource.Token);
@@ -105,7 +110,10 @@ namespace IO.Ably.Transport
 
         public void SendData(byte[] data)
         {
-            if (Logger.IsDebug) Logger.Debug("Sending binary data");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Sending binary data");
+            }
 
             var bytes = new ArraySegment<byte>(data);
             _sendQueue.TryAdd(Tuple.Create(bytes, WebSocketMessageType.Binary), 1000, _tokenSource.Token);
@@ -146,14 +154,21 @@ namespace IO.Ably.Transport
                         {
                             result = await ClientWebSocket.ReceiveAsync(buffer, _tokenSource.Token);
                             if (result.MessageType == WebSocketMessageType.Close)
+                            {
                                 break;
+                            }
+
                             ms.Write(buffer.Array, buffer.Offset, result.Count);
                         }
                         while (!result.EndOfMessage);
 
                         ms.Seek(0, SeekOrigin.Begin);
 
-                        if(Logger.IsDebug) Logger.Debug("Recieving message with type: " + result.MessageType);
+                        if(Logger.IsDebug)
+                        {
+                            Logger.Debug("Recieving message with type: " + result.MessageType);
+                        }
+
                         switch (result.MessageType)
                         {
                             case WebSocketMessageType.Text:

@@ -130,9 +130,13 @@ namespace IO.Ably
                 {
                     // if the cancellation was not requested then this is timeout.
                     if(ex.CancellationToken.IsCancellationRequested == false)
+                    {
                         throw new AblyException(new ErrorInfo("Error executing request. Request timed out.", 500), ex);
+                    }
                     else
+                    {
                         throw new AblyException(new ErrorInfo("Error executing request", 500), ex);
+                    }
                 }
             }
             throw new AblyException(new ErrorInfo("Error exectuting request", 500));
@@ -140,7 +144,10 @@ namespace IO.Ably
 
         private void LogResponse(AblyResponse ablyResponse, string url)
         {
-            if (Logger.IsDebug == false) return;
+            if (Logger.IsDebug == false)
+            {
+                return;
+            }
 
             StringBuilder logMessage = new StringBuilder($"Response from: {url}");
             logMessage.AppendLine($"Status code: {(int)ablyResponse.StatusCode} {ablyResponse.StatusCode}");
@@ -169,7 +176,10 @@ namespace IO.Ably
 
         private async Task LogMessage(HttpRequestMessage message)
         {
-            if (Logger.IsDebug == false) return;
+            if (Logger.IsDebug == false)
+            {
+                return;
+            }
 
             StringBuilder logMessage = new StringBuilder();
             if (message.Headers.Any())
@@ -212,7 +222,10 @@ namespace IO.Ably
         internal bool IsRetryableError(Exception ex)
         {
             if (ex is TaskCanceledException)
+            {
                 return true;
+            }
+
             var httpEx = ex as HttpRequestException;
             if (httpEx?.InnerException is WebException)
             {
@@ -284,11 +297,16 @@ namespace IO.Ably
         public Uri GetRequestUrl(AblyRequest request, string host = null)
         {
             if (host == null)
+            {
                 host = Options.Host;
+            }
 
             string protocol = Options.IsSecure ? "https://" : "http://";
             if (request.Url.StartsWith("http"))
+            {
                 return new Uri(request.Url);
+            }
+
             return new Uri(string.Format("{0}{1}{2}{3}{4}",
                                protocol,
                                host,
@@ -301,7 +319,10 @@ namespace IO.Ably
         {
             var query = request.QueryParameters.ToQueryString();
             if (query.IsNotEmpty())
+            {
                 return "?" + query;
+            }
+
             return string.Empty;
         }
     }

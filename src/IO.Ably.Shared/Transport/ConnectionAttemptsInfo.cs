@@ -124,7 +124,9 @@ namespace IO.Ably.Transport
                 var attempt = Attempts.LastOrDefault() ?? new ConnectionAttempt(Now());
                 attempt.FailedStates.Add(new AttemptFailedState(state, error));
                 if(Attempts.Count == 0)
+                {
                     Attempts.Add(attempt);
+                }
             }
         }
 
@@ -143,7 +145,9 @@ namespace IO.Ably.Transport
         public void RecordTokenRetry()
         {
             lock (_syncLock)
+            {
                 TriedToRenewToken = true;
+            }
         }
 
         public bool ShouldSuspend()
@@ -151,7 +155,10 @@ namespace IO.Ably.Transport
             lock (_syncLock)
             {
                 if (FirstAttempt == null)
+                {
                     return false;
+                }
+
                 return (Now() - FirstAttempt.Value) >= _connection.ConnectionStateTtl;
             }
         }
@@ -189,6 +196,7 @@ namespace IO.Ably.Transport
         public void UpdateAttemptState(ConnectionStateBase newState)
         {
             lock (_syncLock)
+            {
                 switch (newState.State)
                 {
                     case ConnectionState.Connecting:
@@ -211,6 +219,7 @@ namespace IO.Ably.Transport
                         }
                         break;
                 }
+            }
         }
     }
 }

@@ -30,7 +30,10 @@ namespace IO.Ably.Rest
                 {
                     if (options != null)
                     {
-                        if (result != null) result.Options = options;
+                        if (result != null)
+                        {
+                            result.Options = options;
+                        }
                     }
                     return realtimeChannel;
                 });
@@ -38,7 +41,9 @@ namespace IO.Ably.Rest
             else
             {
                 if (options != null)
+                {
                     result.Options = options;
+                }
             }
             return result;
         }

@@ -22,7 +22,9 @@ namespace IO.Ably.Transport
         public ConnectionInfo(ProtocolMessage message)
         {
             if(message == null)
+            {
                 throw new ArgumentNullException(nameof(message), "Null message");
+            }
 
             if (message.Action != ProtocolMessage.MessageAction.Connected)
             {

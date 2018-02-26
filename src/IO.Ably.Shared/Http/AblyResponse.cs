@@ -52,7 +52,9 @@ namespace IO.Ably
         private static ResponseType GetResponseType(string contentType)
         {
             if (contentType == null)
+            {
                 return ResponseType.Binary;
+            }
 
             switch (contentType.ToLower())
             {

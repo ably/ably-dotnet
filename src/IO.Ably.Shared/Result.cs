@@ -13,9 +13,14 @@ namespace IO.Ably
         protected Result(bool isSuccess, ErrorInfo error)
         {
             if (isSuccess && error != null)
+            {
                 throw new InvalidOperationException();
+            }
+
             if (!isSuccess && error == null)
+            {
                 throw new InvalidOperationException();
+            }
 
             IsSuccess = isSuccess;
             Error = error;
@@ -51,7 +56,9 @@ namespace IO.Ably
             foreach (Result result in results)
             {
                 if (result.IsFailure)
+                {
                     return result;
+                }
             }
 
             return Ok();
@@ -68,7 +75,9 @@ namespace IO.Ably
             get
             {
                 if (!IsSuccess)
+                {
                     throw new InvalidOperationException();
+                }
 
                 return _value;
             }
@@ -86,7 +95,9 @@ namespace IO.Ably
         public static Result<K> OnSuccess<T, K>(this Result<T> result, Func<T, K> func)
         {
             if (result.IsFailure)
+            {
                 return Result.Fail<K>(result.Error);
+            }
 
             return Result.Ok(func(result.Value));
         }
@@ -94,7 +105,9 @@ namespace IO.Ably
         public static Result OnSuccess<T>(this Result<T> result, Func<T, Result> func)
         {
             if (result.IsFailure)
+            {
                 return result;
+            }
 
             return func(result.Value);
         }
@@ -102,10 +115,14 @@ namespace IO.Ably
         public static Result<T> Ensure<T>(this Result<T> result, Func<T, bool> predicate, ErrorInfo error)
         {
             if (result.IsFailure)
+            {
                 return result;
+            }
 
             if (!predicate(result.Value))
+            {
                 return Result.Fail<T>(error);
+            }
 
             return result;
         }
@@ -113,7 +130,9 @@ namespace IO.Ably
         public static Result<K> Map<T, K>(this Result<T> result, Func<T, K> func)
         {
             if (result.IsFailure)
+            {
                 return Result.Fail<K>(result.Error);
+            }
 
             return Result.Ok(func(result.Value));
         }

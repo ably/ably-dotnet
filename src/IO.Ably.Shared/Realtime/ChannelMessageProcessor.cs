@@ -26,7 +26,9 @@ namespace IO.Ably.Realtime
         private void MessageReceived(ProtocolMessage protocolMessage)
         {
             if (protocolMessage.Channel.IsEmpty())
+            {
                 return;
+            }
 
             var channel = _channels.Exists(protocolMessage.Channel) ? GetChannel(protocolMessage.Channel) : null;
             if (channel == null)
@@ -46,17 +48,24 @@ namespace IO.Ably.Realtime
                 case ProtocolMessage.MessageAction.Attach:
                 case ProtocolMessage.MessageAction.Attached:
                     if (channel.State != ChannelState.Attached)
+                    {
                         channel.SetChannelState(ChannelState.Attached, protocolMessage);
+                    }
                     else
                     {
                         if(protocolMessage.Error != null)
+                        {
                             channel.OnError(protocolMessage.Error);
+                        }
                     }
                     break;
                 case ProtocolMessage.MessageAction.Detach:
                 case ProtocolMessage.MessageAction.Detached:
                     if (channel.State != ChannelState.Detached)
+                    {
                         channel.SetChannelState(ChannelState.Detached, protocolMessage);
+                    }
+
                     break;
                 case ProtocolMessage.MessageAction.Message:
                     var result = _connectionManager.Handler.DecodeProtocolMessage(protocolMessage, channel.Options);

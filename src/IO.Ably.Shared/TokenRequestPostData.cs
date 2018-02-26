@@ -61,7 +61,9 @@ namespace IO.Ably
             set
             {
                 if(value != DateTimeOffset.MinValue)
+                {
                     _timestamp = value;
+                }
             }
         }
 
@@ -85,7 +87,9 @@ namespace IO.Ably
             var now = Now();
 
             if (tokenParams.Nonce.IsNotEmpty())
+            {
                 Nonce = tokenParams.Nonce;
+            }
 
             Ttl = tokenParams.Ttl ?? Defaults.DefaultTokenTtl;
 

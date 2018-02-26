@@ -23,7 +23,10 @@ namespace IO.Ably
         internal static string ToBase64(this string text)
         {
             if (text.IsEmpty())
+            {
                 return string.Empty;
+            }
+
             return text.GetBytes().ToBase64();
         }
 
@@ -32,7 +35,9 @@ namespace IO.Ably
         internal static byte[] FromBase64(this string base64String)
         {
             if (base64String.IsEmpty())
+            {
                 return new byte[0];
+            }
 
             string s = base64String;
             s = s.Replace('-', '+'); // 62nd char of encoding

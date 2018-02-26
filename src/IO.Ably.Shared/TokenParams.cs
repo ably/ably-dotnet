@@ -42,7 +42,9 @@ namespace IO.Ably
         public TokenParams Merge(TokenParams otherParams)
         {
             if (otherParams == null)
+            {
                 return this;
+            }
 
             var result = new TokenParams();
             result.ClientId = ClientId.IsNotEmpty() ? ClientId : otherParams.ClientId;
@@ -58,7 +60,10 @@ namespace IO.Ably
             var result = new TokenParams();
             result.ClientId = ClientId;
             if(Capability != null)
+            {
                 result.Capability = new Capability(Capability.ToJson());
+            }
+
             result.Nonce = Nonce;
             result.Ttl = Ttl;
             result.Timestamp = Timestamp;
@@ -79,18 +84,34 @@ namespace IO.Ably
         {
             var dictionary = new Dictionary<string,string>();
             if(Ttl.HasValue)
+            {
                 dictionary.Add("ttl", Ttl.Value.TotalMilliseconds.ToString());
-            if(ClientId.IsNotEmpty())
+            }
+
+            if (ClientId.IsNotEmpty())
+            {
                 dictionary.Add("clientId", ClientId);
-            if(Nonce.IsNotEmpty())
+            }
+
+            if (Nonce.IsNotEmpty())
+            {
                 dictionary.Add("nonce", Nonce);
+            }
+
             if (Capability != null)
+            {
                 dictionary.Add("capability", Capability.ToJson());
+            }
+
             if (Timestamp.HasValue)
+            {
                 dictionary.Add("timestamp", Timestamp.Value.ToUnixTimeInMilliseconds().ToString());
+            }
 
             if (mergeWith != null)
+            {
                 return dictionary.Merge(mergeWith);
+            }
 
             return dictionary;
         }

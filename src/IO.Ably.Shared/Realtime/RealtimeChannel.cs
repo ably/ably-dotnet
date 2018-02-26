@@ -88,12 +88,20 @@ namespace IO.Ably.Realtime
                 case ConnectionState.Disconnected:
                     if (State == ChannelState.Attaching)
                     {
-                        if (Logger.IsDebug) Logger.Debug($"#{Name} Resending Attach because connection became {State} while the channel was {ChannelState.Attaching}.");
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug($"#{Name} Resending Attach because connection became {State} while the channel was {ChannelState.Attaching}.");
+                        }
+
                         SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name));
                     }
                     if (State == ChannelState.Detaching)
                     {
-                        if (Logger.IsDebug) Logger.Debug($"#{Name} Resending Detach because connection became {State} while the channel was {ChannelState.Detaching}.");
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug($"#{Name} Resending Detach because connection became {State} while the channel was {ChannelState.Detaching}.");
+                        }
+
                         SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name));
                     }
                     break;
@@ -101,7 +109,10 @@ namespace IO.Ably.Realtime
                     AttachedAwaiter.Fail(new ErrorInfo("Connection is closed"));
                     DetachedAwaiter.Fail(new ErrorInfo("Connection is closed"));
                     if (State == ChannelState.Attached || State == ChannelState.Attaching)
+                    {
                         SetChannelState(ChannelState.Detaching);
+                    }
+
                     break;
                 case ConnectionState.Suspended:
                     AttachedAwaiter.Fail(new ErrorInfo("Connection is suspended"));
@@ -159,14 +170,20 @@ namespace IO.Ably.Realtime
 
         private void OnAttachTimeout()
         {
-            if (Logger.IsDebug) Logger.Debug($"#{Name} didn't Attach within {ConnectionManager.Options.RealtimeRequestTimeout}. Setting state back to {PreviousState}");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"#{Name} didn't Attach within {ConnectionManager.Options.RealtimeRequestTimeout}. Setting state back to {PreviousState}");
+            }
 
             SetChannelState(PreviousState, new ErrorInfo("Channel didn't attach within the default timeout", 50000));
         }
 
         private void OnDetachTimeout()
         {
-            if (Logger.IsDebug) Logger.Debug($"#{Name} didn't Detach within {ConnectionManager.Options.RealtimeRequestTimeout}. Setting state back to {PreviousState}");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"#{Name} didn't Detach within {ConnectionManager.Options.RealtimeRequestTimeout}. Setting state back to {PreviousState}");
+            }
 
             SetChannelState(PreviousState, new ErrorInfo("Channel didn't detach within the default timeout", 50000));
         }
@@ -197,7 +214,9 @@ namespace IO.Ably.Realtime
             }
 
             if (DetachedAwaiter.StartWait(callback, ConnectionManager.Options.RealtimeRequestTimeout))
+            {
                 SetChannelState(ChannelState.Detaching);
+            }
         }
 
         public Task<Result> DetachAsync()
@@ -208,7 +227,9 @@ namespace IO.Ably.Realtime
         public void Subscribe(Action<Message> handler)
         {
             if (State != ChannelState.Attached && State != ChannelState.Attaching)
+            {
                 Attach();
+            }
 
             _handlers.Add(new MessageHandlerAction<Message>(handler));
         }
@@ -216,7 +237,9 @@ namespace IO.Ably.Realtime
         public void Subscribe(string eventName, Action<Message> handler)
         {
             if (State != ChannelState.Attached && State != ChannelState.Attaching)
+            {
                 Attach();
+            }
 
             _handlers.Add(eventName, handler.ToHandlerAction());
         }
@@ -342,12 +365,18 @@ namespace IO.Ably.Realtime
             if (State == ChannelState.Initialized || State == ChannelState.Attaching)
             {
                 if (State == ChannelState.Initialized)
+                {
                     Attach();
+                }
 
                 // Not connected, queue the message
                 lock (_lockQueue)
                 {
-                    if (Logger.IsDebug) Logger.Debug($"#{Name}:{State} queuing message");
+                    if (Logger.IsDebug)
+                    {
+                        Logger.Debug($"#{Name}:{State} queuing message");
+                    }
+
                     QueuedMessages.Add(new MessageAndCallback(msg, callback));
                     return;
                 }
@@ -416,9 +445,13 @@ namespace IO.Ably.Realtime
                     }
 
                     if (IsTerminalConnectionState)
+                    {
                         Logger.Warning($"#{Name}. Cannot send Attach messages when connection is in {ConnectionState} State");
+                    }
                     else
+                    {
                         SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name));
+                    }
 
                     break;
                 case ChannelState.Attached:
@@ -428,7 +461,10 @@ namespace IO.Ably.Realtime
                         if (protocolMessage.HasPresenceFlag)
                         {
                             if (Logger.IsDebug)
+                            {
                                 Logger.Debug($"Protocol message has presence flag. Starting Presence SYNC. Flag: {protocolMessage.Flags}");
+                            }
+
                             Presence.AwaitSync();
                         }
                         else
@@ -443,7 +479,9 @@ namespace IO.Ably.Realtime
                     }
 
                     if(IsTerminalConnectionState == false)
+                    {
                         SendQueuedMessages();
+                    }
 
                     break;
                 case ChannelState.Detaching:
@@ -459,7 +497,9 @@ namespace IO.Ably.Realtime
                         SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name));
                     }
                     else
+                    {
                         Logger.Warning($"#{Name}. Cannot send Detach messages when connection is in Failed State");
+                    }
 
                     break;
                 case ChannelState.Detached:
@@ -477,7 +517,10 @@ namespace IO.Ably.Realtime
 
         private void ClearAndFailChannelQueuedMessages(ErrorInfo error)
         {
-            if (Logger.IsDebug) Logger.Debug($"Clearing channel #{Name} queued messages. Count: " + QueuedMessages.Count);
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"Clearing channel #{Name} queued messages. Count: " + QueuedMessages.Count);
+            }
 
             lock (_lockQueue)
             {
@@ -492,7 +535,10 @@ namespace IO.Ably.Realtime
         internal void OnMessage(Message message)
         {
             var channelHandlers = _handlers.GetHandlers().ToList();
-            if (Logger.IsDebug) Logger.Debug($"Notifying {channelHandlers.Count} handlers in #{Name} channel");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"Notifying {channelHandlers.Count} handlers in #{Name} channel");
+            }
 
             foreach (var handler in channelHandlers)
             {
@@ -503,7 +549,10 @@ namespace IO.Ably.Realtime
             if (message.Name.IsNotEmpty())
             {
                 var namedHandlers = _handlers.GetHandlers(message.Name).ToList();
-                if (Logger.IsDebug) Logger.Debug($"Notifying {namedHandlers.Count} handlers for messages {message.Name} in #{Name} channel");
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug($"Notifying {namedHandlers.Count} handlers for messages {message.Name} in #{Name} channel");
+                }
 
                 foreach (var specificHandler in namedHandlers)
                 {
@@ -523,7 +572,9 @@ namespace IO.Ably.Realtime
             lock (_lockQueue)
             {
                 if (QueuedMessages.Count <= 0)
+                {
                     return 0;
+                }
 
                 // Swap the list.
                 list = new List<MessageAndCallback>(QueuedMessages);
@@ -531,13 +582,20 @@ namespace IO.Ably.Realtime
             }
 
             foreach (var qpm in list)
+            {
                 SendMessage(qpm.Message, qpm.Callback);
+            }
+
             return list.Count;
         }
 
         private void SendMessage(ProtocolMessage protocolMessage, Action<bool, ErrorInfo> callback = null)
         {
-            if(Logger.IsDebug) Logger.Debug($"RealtimeChannel.SendMessage:{protocolMessage.Action}");
+            if(Logger.IsDebug)
+            {
+                Logger.Debug($"RealtimeChannel.SendMessage:{protocolMessage.Action}");
+            }
+
             ConnectionManager.Send(protocolMessage, callback, Options);
         }
     }

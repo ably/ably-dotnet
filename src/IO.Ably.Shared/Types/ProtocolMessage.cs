@@ -38,7 +38,10 @@ namespace IO.Ably.Types
 
             public static bool HasFlag(int? value, int flag)
             {
-                if (value == null) return false;
+                if (value == null)
+                {
+                    return false;
+                }
 
                 return (value.Value & flag) != 0;
             }
@@ -90,7 +93,10 @@ namespace IO.Ably.Types
             get
             {
                 if(ConnectionDetails != null && ConnectionDetails.ConnectionKey.IsNotEmpty())
+                {
                     return ConnectionDetails.ConnectionKey;
+                }
+
                 return _connectionKey;
             }
             set { _connectionKey = value; }
@@ -117,18 +123,24 @@ namespace IO.Ably.Types
         internal void onSerializing(StreamingContext context)
         {
             if (Channel == "")
+            {
                 Channel = null;
+            }
 
             // Filter out empty messages
             if (Messages != null)
             {
                 Messages = Messages.Where(m => !m.IsEmpty).ToArray();
                 if (Messages.Length == 0)
+                {
                     Messages = null;
+                }
             }
 
             if (Presence != null && Presence.Length == 0)
+            {
                 Presence = null;
+            }
         }
 
         public override string ToString()

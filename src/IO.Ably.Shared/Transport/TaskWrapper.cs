@@ -14,11 +14,17 @@ namespace IO.Ably.Transport
         public void Callback(bool res, ErrorInfo ei)
         {
             if (res)
+            {
                 _completionSource.TrySetResult(Result.Ok());
+            }
             else if (ei != null)
+            {
                 _completionSource.TrySetResult(Result.Fail(ei));
+            }
             else
+            {
                 _completionSource.TrySetException(new Exception("Unexpected exception thrown by the TaskWrapper."));
+            }
         }
 
         public void SetException(Exception ex)
@@ -81,13 +87,21 @@ namespace IO.Ably.Transport
         public void Callback(T res, ErrorInfo ei)
         {
             if (ei != null)
+            {
                 _completionSource.TrySetResult(Result.Fail<T>(ei));
+            }
             else if (typeof(T).GetTypeInfo().IsValueType && IsNotDefaultValue(res))
+            {
                 _completionSource.TrySetResult(Result.Ok(res));
+            }
             else if (typeof(T).GetTypeInfo().IsValueType == false && res != null)
+            {
                 _completionSource.TrySetResult(Result.Ok(res));
+            }
             else
+            {
                 _completionSource.TrySetException(new Exception("Unexpected Exception from the TaskWrapper")); //Something bad happened
+            }
         }
 
         private static bool IsNotDefaultValue(object res)

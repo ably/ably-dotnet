@@ -56,7 +56,9 @@ namespace IO.Ably
         public static object Deserialise(byte[] byteArray, Type objectType)
         {
             if (byteArray == null || byteArray.Length == 0)
+            {
                 return null;
+            }
 
             using (var ms = new MemoryStream(byteArray))
             {

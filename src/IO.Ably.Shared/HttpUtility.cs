@@ -39,7 +39,10 @@ namespace IO.Ably
             {
                 string[] items = GetValues(name);
                 if( null == items )
+                {
                     return null;
+                }
+
                 return String.Join( ",", items );
             }
             set
@@ -54,7 +57,10 @@ namespace IO.Ably
         {
             string[] res = m_data.Where( i => i.Key==name ).Select( i => i.Value ).ToArray();
             if( res.Length <= 0 )
+            {
                 return null;
+            }
+
             return res;
         }
 
