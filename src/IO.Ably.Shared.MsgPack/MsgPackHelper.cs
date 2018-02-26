@@ -39,7 +39,7 @@ namespace IO.Ably
             context.Serializers.Register(new IO_Ably_Types_ProtocolMessageSerializer(context));
             context.Serializers.Register(new IO_Ably_Types_ProtocolMessage_MessageActionSerializer(context));
             context.Serializers.Register(new System_Net_HttpStatusCodeSerializer(context));
-            
+
             return context;
         }
 

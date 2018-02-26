@@ -70,7 +70,7 @@ namespace IO.Ably
         {
             FallbackHosts = new[] { "a.ably-realtime.com", "b.ably-realtime.com", "c.ably-realtime.com", "d.ably-realtime.com", "e.ably-realtime.com" };
         }
-        
+
 
     }
 }

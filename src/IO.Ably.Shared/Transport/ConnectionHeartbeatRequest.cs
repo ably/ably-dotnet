@@ -58,7 +58,7 @@ namespace IO.Ably.Transport
 
                 return this;
             }
-            
+
             if (callback != null)
             {
                 _callback = callback;
@@ -83,7 +83,7 @@ namespace IO.Ably.Transport
         private TimeSpan? GetElapsedTime()
         {
             return Now() - _start;
-        }  
+        }
 
         private void OnInternalStateChanged(object sender, ConnectionStateChange e)
         {
@@ -115,7 +115,7 @@ namespace IO.Ably.Transport
                     }
                 }
             }
-            
+
         }
     }
 }

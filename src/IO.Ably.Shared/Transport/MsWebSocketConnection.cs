@@ -19,12 +19,12 @@ namespace IO.Ably.Transport
             Closing,
             Closed
         }
-        
+
         internal ILogger Logger { get; private set; }
 
         private readonly Uri _uri;
         private Action<ConnectionState, Exception> _handler;
-        private readonly BlockingCollection<Tuple<ArraySegment<byte>, WebSocketMessageType>> _sendQueue 
+        private readonly BlockingCollection<Tuple<ArraySegment<byte>, WebSocketMessageType>> _sendQueue
             = new BlockingCollection<Tuple<ArraySegment<byte>, WebSocketMessageType>>();
 
         public string ConnectionId { get; set; }
@@ -172,7 +172,7 @@ namespace IO.Ably.Transport
                         break;
                     }
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
                     _handler?.Invoke(ConnectionState.Error, ex);
                     break;

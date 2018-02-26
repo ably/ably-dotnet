@@ -29,7 +29,7 @@ namespace IO.Ably
         internal ILogger Logger { get; set; }
         public bool Encrypted { get; private set; }
         public CipherParams CipherParams { get; private set; }
-        
+
         public ChannelOptions(CipherParams @params) : this(IO.Ably.DefaultLogger.LoggerInstance, true, @params) {}
         public ChannelOptions(bool encrypted = false, CipherParams @params = null) : this(null, encrypted, @params) { }
         internal ChannelOptions(ILogger logger, bool encrypted = false, CipherParams @params = null)
@@ -38,7 +38,7 @@ namespace IO.Ably
             Encrypted = encrypted;
             CipherParams = @params ?? Crypto.GetDefaultParams();
         }
-        
+
         public ChannelOptions(byte[] key)
         {
             Logger = IO.Ably.DefaultLogger.LoggerInstance;

@@ -15,7 +15,7 @@ namespace IO.Ably
         public List<string> AllowedOperations { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public CapabilityResource()
         {

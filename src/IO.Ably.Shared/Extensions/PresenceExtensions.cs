@@ -13,10 +13,10 @@
             {
                 return thisMessage.Timestamp > thatMessage.Timestamp;
             }
-            
+
             var thisValues = thisMessage.Id.Split(':');
             var thatValues = thatMessage.Id.Split(':');
-            
+
             // if any part of the message serial fails to parse then throw an exception
             if (thisValues.Length != 3 ||
                 !(int.TryParse(thisValues[1], out int msgSerialThis) | int.TryParse(thisValues[2], out int indexThis)))

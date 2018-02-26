@@ -18,7 +18,7 @@ namespace IO.Ably.Realtime
         void Attach(Action<bool, ErrorInfo> callback = null);
 
         Task<Result> AttachAsync();
-            
+
         void Detach(Action<bool, ErrorInfo> callback = null);
 
         Task<Result> DetachAsync();
@@ -36,7 +36,7 @@ namespace IO.Ably.Realtime
         void Unsubscribe();
 
         void Publish(string name, object data, Action<bool, ErrorInfo> callback = null, string clientId = null);
-        Task<Result> PublishAsync(string eventName, object data, string clientId = null); 
+        Task<Result> PublishAsync(string eventName, object data, string clientId = null);
         void Publish(Message message, Action<bool, ErrorInfo> callback = null);
         Task<Result> PublishAsync(Message message);
         void Publish(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback = null);
@@ -44,6 +44,6 @@ namespace IO.Ably.Realtime
 
         Task<PaginatedResult<Message>> HistoryAsync(bool untilAttach = false);
         Task<PaginatedResult<Message>> HistoryAsync(HistoryRequestParams query, bool untilAttach = false);
-        
+
     }
 }

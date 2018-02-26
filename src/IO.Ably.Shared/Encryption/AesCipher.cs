@@ -38,7 +38,7 @@ namespace AblyPlatform.Cryptography
 
         public static byte[] GenerateKey(CipherMode? mode, int? keyLength)
         {
-           
+
             using (var aes = Aes.Create())
             {
                 aes.KeySize = keyLength ?? Crypto.DefaultKeylength;

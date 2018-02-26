@@ -32,7 +32,7 @@ namespace IO.Ably
         T this[string name] { get; }
 
         /// <summary>
-        /// Removes a specified channel from the Channels collection. 
+        /// Removes a specified channel from the Channels collection.
         /// </summary>
         /// <param name="name">name of the channel</param>
         /// <returns></returns>

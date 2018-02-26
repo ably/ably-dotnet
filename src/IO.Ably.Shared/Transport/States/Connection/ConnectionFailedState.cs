@@ -30,7 +30,7 @@ namespace IO.Ably.Transport.States.Connection
         {
             // This is a terminal state. Clear the transport.
             Context.ClearAckQueueAndFailMessages(ErrorInfo.ReasonFailed);
-            
+
             return TaskConstants.BooleanTrue;
         }
     }

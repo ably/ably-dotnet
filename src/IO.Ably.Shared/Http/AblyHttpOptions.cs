@@ -23,7 +23,7 @@ namespace IO.Ably
         public AblyHttpOptions() //Used for testing
         {
             Host = Defaults.RestHost;
-            
+
             //Setting up some defaults
             DisconnectedRetryTimeout = TimeSpan.FromSeconds(15);
             SuspendedRetryTimeout = TimeSpan.FromSeconds(30);

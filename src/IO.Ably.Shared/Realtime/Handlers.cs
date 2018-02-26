@@ -81,7 +81,7 @@ namespace IO.Ably.Realtime
                 _lock.EnterWriteLock();
                 return _handlers.RemoveAll(x => x.Equals(handler)) > 0;
             }
-            finally 
+            finally
             {
                 _lock.ExitWriteLock();
             }

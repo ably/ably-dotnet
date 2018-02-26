@@ -124,7 +124,7 @@ namespace IO.Ably.Transport
                 var attempt = Attempts.LastOrDefault() ?? new ConnectionAttempt(Now());
                 attempt.FailedStates.Add(new AttemptFailedState(state, error));
                 if(Attempts.Count == 0)
-                    Attempts.Add(attempt); 
+                    Attempts.Add(attempt);
             }
         }
 

@@ -58,7 +58,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void AbortTimer()
         {
-            
+
         }
 
         public override void BeforeTransition()
@@ -69,7 +69,7 @@ namespace IO.Ably.Transport.States.Connection
                 {
                     _resumed = Context.Connection.Id == _info.ConnectionId;
                 }
-                
+
                 Context.Connection.Id = _info.ConnectionId;
                 Context.Connection.Key = _info.ConnectionKey;
                 Context.Connection.Serial = _info.ConnectionSerial;

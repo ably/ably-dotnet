@@ -58,7 +58,7 @@ namespace IO.Ably.MessageEncoders
             return payloads;
 #else
             throw new AblyException($"Response of type '{response.Type}' is invalid because MsgPack support was not enabled for this build.");
-            
+
 #endif
         }
 

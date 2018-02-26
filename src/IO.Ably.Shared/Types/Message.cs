@@ -14,7 +14,7 @@ namespace IO.Ably
 
         public Message()
         {
-            
+
         }
 
         public Message(string name = null, object data = null, string clientId = null)
@@ -30,7 +30,7 @@ namespace IO.Ably
         public string Id { get; set; }
 
         /// <summary>The id of the publisher of this message</summary>
-        /// 
+        ///
         [JsonProperty("clientId")]
         public string ClientId { get; set; }
 

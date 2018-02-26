@@ -153,7 +153,7 @@ namespace IO.Ably
         public TimeSpan HttpMaxRetryDuration { get; set; } = TimeSpan.FromSeconds(15);
 
         /// <summary>
-        /// Provides Channels Setting for all Channels created. For more information see <see cref="ChannelOptions"/> 
+        /// Provides Channels Setting for all Channels created. For more information see <see cref="ChannelOptions"/>
         /// </summary>
         public ChannelOptions ChannelDefaults { get; internal set; } = new ChannelOptions();
 
@@ -203,7 +203,7 @@ namespace IO.Ably
         /// </summary>
         public ClientOptions()
         {
-        
+
         }
 
         /// <summary>

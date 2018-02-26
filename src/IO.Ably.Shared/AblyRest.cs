@@ -30,7 +30,7 @@ namespace IO.Ably
         /// Authentication methods
         /// </summary>
         public IAblyAuth Auth => AblyAuth;
-        
+
         internal Protocol Protocol => Options.UseBinaryProtocol == false ? Protocol.Json : Defaults.Protocol;
         internal ClientOptions Options { get; }
 
@@ -127,7 +127,7 @@ namespace IO.Ably
                 {
                     if (Logger.IsDebug)
                         Logger.Debug("Handling UnAuthorized Error, attmepting to Re-authorize and repeat request.");
-                    
+
                     try
                     {
                         var token = await AblyAuth.AuthorizeAsync(null, new AuthOptions() { Force = true });
@@ -274,6 +274,6 @@ namespace IO.Ably
         {
             return AsyncHelper.RunSync(TimeAsync);
         }
-        
+
     }
 }

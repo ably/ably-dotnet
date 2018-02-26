@@ -131,7 +131,7 @@ namespace IO.Ably.Transport
                 catch (AblyException ex)
                 {
                     Logger.Error("Error attaching to context", ex);
-                    
+
                     _queuedTransportMessages = new ConcurrentQueue<ProtocolMessage>();
 
                     Connection.UpdateState(newState);
@@ -446,7 +446,7 @@ namespace IO.Ably.Transport
 
             if (_inTransitionToState == null)
                 await ProcessQueuedMessages();
-            
+
         }
 
         private async Task ProcessQueuedMessages()

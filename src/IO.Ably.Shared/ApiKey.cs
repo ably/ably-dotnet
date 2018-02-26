@@ -4,7 +4,7 @@ using System.Net;
 namespace IO.Ably
 {
     /// <summary>
-    /// Internal class used to parse ApiKeys. The api key has the following parts {keyName}:{KeySecret} 
+    /// Internal class used to parse ApiKeys. The api key has the following parts {keyName}:{KeySecret}
     /// The app and key parts form the KeyId
     /// </summary>
     public class ApiKey

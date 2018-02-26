@@ -56,7 +56,7 @@ namespace IO.Ably.Transport
         ClientOptions Options { get; }
 
         bool IsActive { get; }
-        
+
         void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null, ChannelOptions channelOptions = null);
         void FailMessageWaitingForAckAndClearOutgoingQueue(RealtimeChannel realtimeChannel, ErrorInfo error);
     }

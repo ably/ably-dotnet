@@ -80,7 +80,7 @@ namespace IO.Ably.Transport.States.Connection
                 {
                     if (Logger.IsDebug)
                     {
-                        Logger.Debug($"Timer '{_name}' interval {_delay.TotalSeconds} seconds elapsed and calling action.");    
+                        Logger.Debug($"Timer '{_name}' interval {_delay.TotalSeconds} seconds elapsed and calling action.");
                     }
 
                     _elapsedSync();
@@ -100,7 +100,7 @@ namespace IO.Ably.Transport.States.Connection
                 //throw; //TODO: BAD ME!
             }
         }
-        
+
 
         public void StartAsync(TimeSpan delay, Func<Task> onTimeOut)
         {

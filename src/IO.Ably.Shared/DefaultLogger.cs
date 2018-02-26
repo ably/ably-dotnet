@@ -13,7 +13,7 @@ namespace IO.Ably
         Warning,
         Error,
         None = 99
-        
+
     }
 
     /// <summary>An interface that actually logs that messages somewhere.</summary>
@@ -72,7 +72,7 @@ namespace IO.Ably
         }
 
         public static bool IsDebug => LoggerInstance.LogLevel == LogLevel.Debug;
-        
+
 
         internal static IDisposable SetTempDestination(ILoggerSink i)
         {
@@ -80,7 +80,7 @@ namespace IO.Ably
             LoggerInstance.LoggerSink = i;
             return new ActionOnDispose(() => LoggerInstance.LoggerSink = o);
         }
-        
+
         /// <summary>Log an error message.</summary>
         internal static void Error(string message, Exception ex)
         {
@@ -119,7 +119,7 @@ namespace IO.Ably
 
             public InternalLogger() : this(Defaults.DefaultLogLevel, new DefaultLoggerSink()) {}
             public InternalLogger(ILoggerSink loggerSink) : this(Defaults.DefaultLogLevel, loggerSink) { }
-            public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink): this(logLevel, loggerSink, null ) {} 
+            public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink): this(logLevel, loggerSink, null ) {}
             public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink, Func<DateTimeOffset> nowProvider)
             {
                 LogLevel = logLevel;
@@ -202,5 +202,5 @@ namespace IO.Ably
 
     }
 
-   
+
 }

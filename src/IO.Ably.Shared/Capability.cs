@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 namespace IO.Ably
 {
     /// <summary>
-    /// Capability class that wraps the Ably capability string and provides a fluent interface in defining 
+    /// Capability class that wraps the Ably capability string and provides a fluent interface in defining
     /// capability objects
     /// <code>
     /// var capability = new Capability();
@@ -18,8 +18,8 @@ namespace IO.Ably
     /// Assert.Equal("{ \"first\": [ \"*\" ], \"second\": [ \"publish\" ] }", capability.ToJson());
     /// </code>
     /// </summary>
-    /// 
-    
+    ///
+
     public class Capability
     {
         /// <summary>
@@ -32,7 +32,7 @@ namespace IO.Ably
 
         public Capability()
         {
-            Resources = new List<CapabilityResource>();            
+            Resources = new List<CapabilityResource>();
         }
 
         /// <summary>

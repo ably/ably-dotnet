@@ -20,7 +20,7 @@ namespace IO.Ably.Transport.States.Connection
         protected readonly IConnectionContext Context;
         public abstract Realtime.ConnectionState State { get; }
         public ErrorInfo Error { get; protected set; }
-        
+
         public Exception Exception { get; set; }
         public TimeSpan? RetryIn { get; protected set; }
         public virtual bool CanQueue => false;

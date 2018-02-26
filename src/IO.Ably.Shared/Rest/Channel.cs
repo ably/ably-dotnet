@@ -104,7 +104,7 @@ namespace IO.Ably.Rest
             request.AddQueryParameters(query.GetParameters());
             return _ablyRest.ExecutePaginatedRequest(request, Presence.GetAsync);
         }
-        
+
         /// <summary>
             /// Get the presence messages history for the channel
             /// </summary>

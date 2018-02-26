@@ -51,12 +51,12 @@ namespace IO.Ably.Transport.States.Connection
         public override Task OnAttachToContext()
         {
             Context.DestroyTransport();
-            
+
             if(Logger.IsDebug) Logger.Debug("RetryInstantly set to '" + RetryInstantly + "'");
             if (RetryInstantly)
             {
                 Context.SetState(new ConnectionConnectingState(Context, Logger));
-            }  
+            }
             else
             {
                 _timer.Start(Context.RetryTimeout, OnTimeOut);

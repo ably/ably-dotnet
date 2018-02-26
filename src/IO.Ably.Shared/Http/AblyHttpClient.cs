@@ -42,7 +42,7 @@ namespace IO.Ably
             var fallbackHosts = Defaults.FallbackHosts.ToList();
             if (CustomHost.IsNotEmpty())
             {
-                //The custom host is a fallback host currently in use by the Realtime client. 
+                //The custom host is a fallback host currently in use by the Realtime client.
                 //We need to remove it from the fallback hosts
                 fallbackHosts.Remove(CustomHost);
             }
@@ -141,7 +141,7 @@ namespace IO.Ably
         private void LogResponse(AblyResponse ablyResponse, string url)
         {
             if (Logger.IsDebug == false) return;
-            
+
             StringBuilder logMessage = new StringBuilder($"Response from: {url}");
             logMessage.AppendLine($"Status code: {(int)ablyResponse.StatusCode} {ablyResponse.StatusCode}");
 
@@ -208,7 +208,7 @@ namespace IO.Ably
         {
             return ErrorInfo.IsRetryableStatusCode(response.StatusCode);
         }
-        
+
         internal bool IsRetryableError(Exception ex)
         {
             if (ex is TaskCanceledException)
@@ -217,7 +217,7 @@ namespace IO.Ably
             if (httpEx?.InnerException is WebException)
             {
                 var webEx = httpEx.InnerException as WebException;
-                return webEx.Status == WebExceptionStatus.NameResolutionFailure || 
+                return webEx.Status == WebExceptionStatus.NameResolutionFailure ||
                     webEx.Status == WebExceptionStatus.Timeout ||
                     webEx.Status == WebExceptionStatus.ConnectFailure ||
                     webEx.Status == WebExceptionStatus.ReceiveFailure ||
@@ -241,7 +241,7 @@ namespace IO.Ably
                 message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(request.Protocol)));
 #endif
             //Always accept JSON
-            message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.Json))); 
+            message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.Json)));
             if (message.Method == HttpMethod.Post)
             {
                 if (request.PostParameters.Any() && request.RequestBody.Length == 0)

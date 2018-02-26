@@ -27,7 +27,7 @@ namespace IO.Ably
 
             return string.Join("&", @params.Select(x => $"{WebUtility.UrlEncode(x.Key)}={WebUtility.UrlEncode(x.Value)}"));
         }
-        
+
         public static Dictionary<string, string> Merge(this Dictionary<string, string> first, Dictionary<string, string> second)
         {
             if (second == null) return first;

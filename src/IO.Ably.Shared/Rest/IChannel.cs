@@ -12,7 +12,7 @@ namespace IO.Ably.Rest
         Task<PaginatedResult<Message>> HistoryAsync();
         Task<PaginatedResult<Message>> HistoryAsync(HistoryRequestParams query);
         string Name { get; }
-        
+
         IPresence Presence { get; }
 
         void Publish(string name, object data, string clientId = null);

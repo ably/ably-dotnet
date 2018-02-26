@@ -112,6 +112,6 @@ namespace IO.Ably.Transport
             }
         }
 
-        
+
     }
 }

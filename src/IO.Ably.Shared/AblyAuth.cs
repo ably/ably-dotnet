@@ -37,9 +37,9 @@ namespace IO.Ably
 
         internal string ConnectionClientId { get; set; }
 
-        public string ClientId => ConnectionClientId 
-            ?? CurrentToken?.ClientId 
-            ?? CurrentTokenParams?.ClientId 
+        public string ClientId => ConnectionClientId
+            ?? CurrentToken?.ClientId
+            ?? CurrentTokenParams?.ClientId
             ?? Options.GetClientId();
 
         bool HasTokenId => Options.Token.IsNotEmpty();
@@ -85,7 +85,7 @@ namespace IO.Ably
             {
                 AuthMethod = Options.Method;
             }
-        }  
+        }
 
         internal async Task AddAuthHeader(AblyRequest request)
         {
@@ -106,7 +106,7 @@ namespace IO.Ably
                 {
                     throw new AblyException("Invalid token credentials: " + CurrentToken, 40100, HttpStatusCode.Unauthorized);
                 }
-                
+
                 request.Headers["Authorization"] = "Bearer " + CurrentToken.Token.ToBase64();
             }
         }
@@ -124,7 +124,7 @@ namespace IO.Ably
                 var token = await AuthorizeAsync();
                 if (token.IsValidToken())
                 {
-                    CurrentToken = token;       
+                    CurrentToken = token;
                     return token;
                 }
             }
@@ -191,7 +191,7 @@ namespace IO.Ably
                         "Error calling AuthCallback, token request failed. See inner exception for details.", 80019), ex);
 
                 }
-                
+
             }
             else if (mergedOptions.AuthUrl.IsNotEmpty())
             {
@@ -241,7 +241,7 @@ namespace IO.Ably
         {
             if(callbackResult is TokenRequest)
                 return callbackResult as TokenRequest;
-            
+
             try
             {
                 var result = JsonHelper.Deserialize<TokenRequest>((string)callbackResult);
@@ -265,7 +265,7 @@ namespace IO.Ably
                 @params = CurrentTokenParams ?? TokenParams.WithDefaultsApplied();
                 @params.ClientId = ClientId; //Ensure the correct clientId is supplied
             }
-            
+
             return @params;
         }
 
@@ -327,7 +327,7 @@ namespace IO.Ably
 
             var authTokenParams = MergeTokenParamsWithDefaults(tokenParams);
             SetCurrentTokenParams(authTokenParams);
-                
+
             if (force)
             {
                 CurrentToken = await RequestTokenAsync(authTokenParams, options);
@@ -347,7 +347,7 @@ namespace IO.Ably
             AuthMethod = AuthMethod.Token;
             return CurrentToken;
         }
-        
+
         [Obsolete("This method will be removed in the future, please replace with a call to AuthorizeAsync")]
         public async Task<TokenDetails> AuthoriseAsync(TokenParams tokenParams = null, AuthOptions options = null)
         {

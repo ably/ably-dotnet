@@ -70,7 +70,7 @@ namespace IO.Ably
         /// uniqueness of this request. Any subsequent request using the
         /// same nonce will be rejected.
         /// </summary>
-        /// 
+        ///
         [JsonProperty("nonce")]
         public string Nonce { get; set; }
 

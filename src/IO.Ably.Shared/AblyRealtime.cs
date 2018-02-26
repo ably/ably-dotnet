@@ -23,7 +23,7 @@ namespace IO.Ably
         {
 
         }
-        
+
         internal AblyRealtime(ClientOptions options, Func<ClientOptions, AblyRest> createRestFunc)
         {
             Logger = options.Logger;

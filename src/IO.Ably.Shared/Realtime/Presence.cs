@@ -45,7 +45,7 @@ namespace IO.Ably.Realtime
                     OnInitialSyncCompleted();
             }
         }
-        
+
         /// <summary>
         /// Called when a protocol message HasPresenceFlag == false. The presence map should be considered in sync immediately
         /// with no members present on the channel. See [RTP1] for more detail.
@@ -66,7 +66,7 @@ namespace IO.Ably.Realtime
             _channel.InternalStateChanged += OnChannelStateChanged;
             _clientId = cliendId;
         }
-        
+
         internal bool InternalSyncComplete => (!Map.IsSyncInProgress && SyncComplete);
         internal PresenceMap Map { get; }
         internal PresenceMap InternalMap { get; }
@@ -86,7 +86,7 @@ namespace IO.Ably.Realtime
         public async Task<IEnumerable<PresenceMessage>> GetAsync(GetOptions options = null)
         {
             var getOptions = options ?? new GetOptions();
-            
+
             if (getOptions.WaitForSync)
                 await WaitForSyncAsync();
 
@@ -131,7 +131,7 @@ namespace IO.Ably.Realtime
             // Do a manual check in case we are already in the desired state
             CheckAndSet();
             await tsc.Task;
-            // unsubscribe from events 
+            // unsubscribe from events
             _channel.StateChanged -= OnChannelOnStateChanged;
             InitialSyncCompleted -= OnSyncEvent;
             Map.SyncNoLongerInProgress -= OnSyncEvent;
@@ -165,10 +165,10 @@ namespace IO.Ably.Realtime
 
 
             #endregion
-            
+
             return tsc.Task.Result;
         }
-        
+
 
         public void Subscribe(Action<PresenceMessage> handler)
         {
@@ -618,7 +618,7 @@ namespace IO.Ably.Realtime
                         }
                         IsSyncInProgress = false;
                     }
-                    
+
                 }
                 catch (Exception ex)
                 {

@@ -39,7 +39,7 @@ namespace IO.Ably.Realtime
         {
             OsEventSubscribers.Add(new WeakReference<Action<NetworkState>>(stateAction));
         }
-        
+
 
         internal AblyRest RestClient => RealtimeClient.RestClient;
         internal AblyRealtime RealtimeClient { get; }
@@ -209,6 +209,6 @@ namespace IO.Ably.Realtime
                 Serial = message.ConnectionSerial.Value;
             }
         }
-        
+
     }
 }
