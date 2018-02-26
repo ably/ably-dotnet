@@ -20,11 +20,12 @@ namespace IO.Ably
 
         public ILogger Logger { get; set; }
 
-        public AblyHttpOptions() //Used for testing
+        public AblyHttpOptions()
         {
+            // Used for testing
             Host = Defaults.RestHost;
 
-            //Setting up some defaults
+            // Setting up some defaults
             DisconnectedRetryTimeout = TimeSpan.FromSeconds(15);
             SuspendedRetryTimeout = TimeSpan.FromSeconds(30);
             HttpOpenTimeout = TimeSpan.FromSeconds(4);

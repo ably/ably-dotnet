@@ -1,6 +1,7 @@
 using System;
-using IO.Ably.Rest;
 using System.Threading.Tasks;
+
+using IO.Ably.Rest;
 
 namespace IO.Ably
 {

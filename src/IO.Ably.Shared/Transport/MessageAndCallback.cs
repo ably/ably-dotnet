@@ -61,7 +61,7 @@ namespace IO.Ably.Transport
             catch (Exception)
             {
                 var result = success ? "Success" : "Failed";
-                var errorMessage = error != null ? $"Error: {error}" : "";
+                var errorMessage = error != null ? $"Error: {error}" : string.Empty;
                 info.Logger.Error($"Error executing callback for message with serial {info.Message.MsgSerial}. Result: {result}. {errorMessage}");
             }
         }

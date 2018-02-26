@@ -62,6 +62,7 @@ namespace IO.Ably.Rest
             {
                 throw new AblyException(result.Error);
             }
+
             var request = _ablyRest.CreatePostRequest(_basePath + "/messages", Options);
             request.PostData = messages;
             return _ablyRest.ExecuteRequest(request);
@@ -100,8 +101,9 @@ namespace IO.Ably.Rest
 
         Task<PaginatedResult<PresenceMessage>> IPresence.GetAsync(HistoryRequestParams query)
         {
-            if (query == null) //Fall back on the default implementation
+            if (query == null)
             {
+                // Fall back on the default implementation
                 return Presence.GetAsync();
             }
 

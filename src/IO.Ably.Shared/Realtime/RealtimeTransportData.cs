@@ -26,6 +26,7 @@ namespace IO.Ably.Realtime
             {
                 return $"Binary message with length: " + Length;
             }
+
             return Text;
         }
     }

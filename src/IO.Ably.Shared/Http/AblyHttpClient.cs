@@ -42,8 +42,8 @@ namespace IO.Ably
             var fallbackHosts = Defaults.FallbackHosts.ToList();
             if (CustomHost.IsNotEmpty())
             {
-                //The custom host is a fallback host currently in use by the Realtime client.
-                //We need to remove it from the fallback hosts
+                // The custom host is a fallback host currently in use by the Realtime client.
+                // We need to remove it from the fallback hosts
                 fallbackHosts.Remove(CustomHost);
             }
 
@@ -65,7 +65,7 @@ namespace IO.Ably
                             Config.CommulativeFailedRequestTimeOutInSeconds), 500, null));
                 }
 
-                Logger.Debug("Executing request: " + request.Url + (currentTry > 0 ? $"try {currentTry}" : ""));
+                Logger.Debug("Executing request: " + request.Url + (currentTry > 0 ? $"try {currentTry}" : string.Empty));
                 try
                 {
                     var message = GetRequestMessage(request, host);
@@ -91,6 +91,7 @@ namespace IO.Ably
                             continue;
                         }
                     }
+
                     throw AblyException.FromResponse(ablyResponse);
                 }
                 catch (HttpRequestException ex) when (IsRetryableError(ex) && Options.IsDefaultHost)
@@ -102,6 +103,7 @@ namespace IO.Ably
                         currentTry++;
                         continue;
                     }
+
                     throw;
                 }
                 catch (TaskCanceledException ex) when (IsRetryableError(ex) && Options.IsDefaultHost)
@@ -113,6 +115,7 @@ namespace IO.Ably
                         currentTry++;
                         continue;
                     }
+
                     throw;
                 }
                 catch (HttpRequestException ex)
@@ -124,6 +127,7 @@ namespace IO.Ably
                         reason.Append(" " + innerEx.Message);
                         innerEx = innerEx.InnerException;
                     }
+
                     throw new AblyException(new ErrorInfo(reason.ToString(), 500), ex);
                 }
                 catch(TaskCanceledException ex)
@@ -139,6 +143,7 @@ namespace IO.Ably
                     }
                 }
             }
+
             throw new AblyException(new ErrorInfo("Error exectuting request", 500));
         }
 
@@ -157,6 +162,7 @@ namespace IO.Ably
             {
                 logMessage.AppendLine($"{header.Key}: {header.Value.JoinStrings()}");
             }
+
             logMessage.AppendLine($"Content Type: {ablyResponse.ContentType}");
             logMessage.AppendLine($"Encoding: {ablyResponse.Encoding}");
             logMessage.AppendLine($"Type: {ablyResponse.Type}");
@@ -205,7 +211,7 @@ namespace IO.Ably
         {
             if (hosts.Count == 0)
             {
-                host = "";
+                host = string.Empty;
                 return false;
             }
 
@@ -238,6 +244,7 @@ namespace IO.Ably
                     webEx.Status == WebExceptionStatus.SendFailure ||
                     webEx.Status == WebExceptionStatus.ServerProtocolViolation;
             }
+
             return false;
         }
 
@@ -249,11 +256,13 @@ namespace IO.Ably
             {
                 message.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
+
 #if MSGPACK
             if(request.Protocol == Protocol.MsgPack)
                 message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(request.Protocol)));
 #endif
-            //Always accept JSON
+
+            // Always accept JSON
             message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.Json)));
             if (message.Method == HttpMethod.Post)
             {
@@ -278,6 +287,7 @@ namespace IO.Ably
             {
                 return "application/json";
             }
+
             return "application/x-msgpack";
         }
 
@@ -310,7 +320,7 @@ namespace IO.Ably
             return new Uri(string.Format("{0}{1}{2}{3}{4}",
                                protocol,
                                host,
-                               Options.Port.HasValue ? ":" + Options.Port.Value : "",
+                               Options.Port.HasValue ? ":" + Options.Port.Value : string.Empty,
                                request.Url,
                                GetQuery(request)));
         }

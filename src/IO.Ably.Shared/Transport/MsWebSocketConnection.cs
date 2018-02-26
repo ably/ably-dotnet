@@ -4,8 +4,9 @@ using System.IO;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using IO.Ably.Realtime;
+
 using IO.Ably;
+using IO.Ably.Realtime;
 
 namespace IO.Ably.Transport
 {
@@ -85,7 +86,7 @@ namespace IO.Ably.Transport
                 if (ClientWebSocket?.State != WebSocketState.Closed)
                 {
                     await
-                    ClientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None)
+                    ClientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None)
                         .ConfigureAwait(false);
                 }
 
@@ -129,6 +130,7 @@ namespace IO.Ably.Transport
                     sendTask.ConfigureAwait(false);
                     return sendTask;
                 }
+
                 Logger.Warning($"Trying to send message of type {type} when the socket is {ClientWebSocket.State}. Ack for this message will fail shortly.");
 
                 return Task.FromResult(true);
@@ -137,6 +139,7 @@ namespace IO.Ably.Transport
             {
                 _handler?.Invoke(ConnectionState.Error, ex);
             }
+
             return Task.FromResult(false);
         }
 
@@ -146,7 +149,7 @@ namespace IO.Ably.Transport
             {
                 try
                 {
-                    var buffer = new ArraySegment<byte>(new byte[1024 * 16]); //Default receive buffer size
+                    var buffer = new ArraySegment<byte>(new byte[1024 * 16]); // Default receive buffer size
                     WebSocketReceiveResult result = null;
                     using (var ms = new MemoryStream())
                     {

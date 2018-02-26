@@ -35,6 +35,7 @@ namespace IO.Ably.Rest
                             result.Options = options;
                         }
                     }
+
                     return realtimeChannel;
                 });
             }
@@ -45,6 +46,7 @@ namespace IO.Ably.Rest
                     result.Options = options;
                 }
             }
+
             return result;
         }
 

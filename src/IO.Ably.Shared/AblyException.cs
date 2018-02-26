@@ -20,7 +20,6 @@ namespace IO.Ably
         {
             base.GetObjectData(info, context);
         } */
-
         public AblyException()
         {
 
@@ -88,7 +87,6 @@ namespace IO.Ably
         {
 
         } */
-
         public ErrorInfo ErrorInfo { get; set; }
 
         internal static AblyException FromResponse(AblyResponse response)

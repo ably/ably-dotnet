@@ -49,6 +49,7 @@ namespace IO.Ably
         {
             Now = Defaults.NowFunc();
         }
+
         public TokenDetails(Func<DateTimeOffset> nowFunc)
         {
             Now = nowFunc;
@@ -59,6 +60,7 @@ namespace IO.Ably
             Token = token;
             Now = Defaults.NowFunc();
         }
+
         public TokenDetails(string token, Func<DateTimeOffset> nowFunc)
         {
             Token = token;

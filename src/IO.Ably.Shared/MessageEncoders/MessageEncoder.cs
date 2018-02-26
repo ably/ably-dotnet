@@ -44,7 +44,7 @@ namespace IO.Ably.MessageEncoders
         {
             if (payload.Encoding.IsEmpty())
             {
-                return "";
+                return string.Empty;
             }
 
             return payload.Encoding.Split(new[] {'/' }, StringSplitOptions.RemoveEmptyEntries).Last();

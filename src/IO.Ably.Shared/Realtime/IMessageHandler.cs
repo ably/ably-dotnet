@@ -74,7 +74,7 @@ namespace IO.Ably.Realtime
 
         public override int GetHashCode()
         {
-            return (action != null ? action.GetHashCode() : 0);
+            return action != null ? action.GetHashCode() : 0;
         }
     }
 }

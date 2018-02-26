@@ -99,6 +99,7 @@ namespace IO.Ably.Types
 
                 return _connectionKey;
             }
+
             set { _connectionKey = value; }
         }
 
@@ -122,7 +123,7 @@ namespace IO.Ably.Types
         [OnSerializing]
         internal void onSerializing(StreamingContext context)
         {
-            if (Channel == "")
+            if (Channel == string.Empty)
             {
                 Channel = null;
             }
@@ -158,10 +159,13 @@ namespace IO.Ably.Types
                     {
                         text.AppendFormat(", timestamp=\"{0}\"}}", message.Timestamp);
                     }
+
                     text.AppendFormat(", data={0}}}", message.Data);
                 }
+
                 text.Append(" ]");
             }
+
             text.Append(" }");
             return text.ToString();
         }

@@ -69,6 +69,7 @@ namespace IO.Ably
                 jsonTextWriter.Formatting = jsonSerializer.Formatting;
                 jsonSerializer.Serialize(jsonTextWriter, value, type);
             }
+
             return stringWriter.ToString();
         }
 

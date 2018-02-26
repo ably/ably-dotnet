@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using IO.Ably.Realtime;
+
 using IO.Ably;
+using IO.Ably.Realtime;
 using IO.Ably.Types;
 
 namespace IO.Ably.MessageEncoders
@@ -52,6 +53,7 @@ namespace IO.Ably.MessageEncoders
                 ProcessMessages(messages, options);
                 return messages;
             }
+
 #if MSGPACK
             var payloads = MsgPackHelper.Deserialise(response.Body, typeof(List<PresenceMessage>)) as List<PresenceMessage>;
             ProcessMessages(payloads, options);
@@ -189,6 +191,7 @@ namespace IO.Ably.MessageEncoders
             {
                 result = Result.Combine(result, encoder.Encode(payload, options));
             }
+
             return result;
         }
 
@@ -325,6 +328,7 @@ namespace IO.Ably.MessageEncoders
                     return int.Parse(limitQuery);
                 }
             }
+
             return Defaults.QueryLimit;
         }
 
@@ -373,6 +377,7 @@ namespace IO.Ably.MessageEncoders
             {
                 result = Result.Combine(result, EncodePayload(presence, options));
             }
+
             return result;
         }
 
@@ -396,6 +401,7 @@ namespace IO.Ably.MessageEncoders
                 result = Result.Combine(result, DecodePayload(message, options));
                 index++;
             }
+
             return result;
         }
 
@@ -420,6 +426,7 @@ namespace IO.Ably.MessageEncoders
         public RealtimeTransportData GetTransportData(ProtocolMessage protocolMessage)
         {
             RealtimeTransportData data;
+
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (IsMsgPack() && Config.MsgPackEnabled)
             {
@@ -431,7 +438,7 @@ namespace IO.Ably.MessageEncoders
             else
             {
                 var text = JsonHelper.Serialize(protocolMessage);
-                data = new RealtimeTransportData(text) {Original = protocolMessage };
+                data = new RealtimeTransportData(text) { Original = protocolMessage };
             }
 
             return data;

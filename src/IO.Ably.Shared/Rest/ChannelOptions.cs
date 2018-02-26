@@ -1,5 +1,5 @@
-using IO.Ably.Encryption;
 using IO.Ably;
+using IO.Ably.Encryption;
 
 namespace IO.Ably
 {

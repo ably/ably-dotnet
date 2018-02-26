@@ -18,12 +18,13 @@ namespace IO.Ably.MessageEncoders
 
         public override Result Decode(IMessage payload, ChannelOptions options)
         {
-            //Assume all the other steps will always work with Utf8
+            // Assume all the other steps will always work with Utf8
             if (CurrentEncodingIs(payload, EncodingName))
             {
                 payload.Data = (payload.Data as byte[]).GetText();
                 RemoveCurrentEncodingPart(payload);
             }
+
             return Result.Ok();
         }
     }

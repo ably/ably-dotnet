@@ -39,7 +39,7 @@ namespace IO.Ably
     /// <summary>An utility class for logging various messages.</summary>
     public static class DefaultLogger
     {
-        private static readonly Object SyncLock = new Object();
+        private static readonly object SyncLock = new Object();
         private static InternalLogger _loggerInstance;
         internal static InternalLogger LoggerInstance
         {
@@ -52,8 +52,10 @@ namespace IO.Ably
                         _loggerInstance = new InternalLogger();
                     }
                 }
+
                 return _loggerInstance;
             }
+
             set => _loggerInstance = value;
         }
 
@@ -202,6 +204,7 @@ namespace IO.Ably
                     message.AppendLine("Inner exception:");
                     message.AppendLine(GetExceptionDetails(ex.InnerException));
                 }
+
                 return message.ToString();
             }
         }

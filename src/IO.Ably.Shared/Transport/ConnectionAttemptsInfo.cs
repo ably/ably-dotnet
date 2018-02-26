@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using IO.Ably.Realtime;
+
 using IO.Ably;
+using IO.Ably.Realtime;
 using IO.Ably.Transport.States.Connection;
 
 namespace IO.Ably.Transport
@@ -56,7 +57,7 @@ namespace IO.Ably.Transport
 
         private bool IsRecoverableError()
         {
-            return (Error != null && Error.IsRetryableStatusCode());
+            return Error != null && Error.IsRetryableStatusCode();
         }
     }
 
@@ -169,13 +170,14 @@ namespace IO.Ably.Transport
         public string GetHost()
         {
             var lastFailedState = Attempts.SelectMany(x => x.FailedStates).LastOrDefault(x => x.ShouldUseFallback());
-            string customHost = "";
+            string customHost = string.Empty;
             if (lastFailedState != null)
             {
                 if (lastFailedState.State == ConnectionState.Disconnected)
                 {
                     customHost = _connection.FallbackHosts[DisconnectedCount%_connection.FallbackHosts.Count];
                 }
+
                 if (lastFailedState.State == ConnectionState.Suspended && SuspendedCount > 1)
                 {
                     customHost =
@@ -217,6 +219,7 @@ namespace IO.Ably.Transport
                         {
                             RecordAttemptFailure(newState.State, newState.Error);
                         }
+
                         break;
                 }
             }

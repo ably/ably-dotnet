@@ -32,8 +32,10 @@ namespace IO.Ably
                 {
                     res.TrySetResult(t.Result);
                 }
+
                 return res.Task;
             }
+
             , TaskContinuationOptions.ExecuteSynchronously).Unwrap();
         }
     }

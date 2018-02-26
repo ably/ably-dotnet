@@ -17,6 +17,7 @@ namespace IO.Ably
         {
             return $"{KeyName}:{KeySecret}";
         }
+
         private ApiKey() { }
 
         public static ApiKey Parse(string key)

@@ -34,6 +34,7 @@
             {
                 return indexThis > indexThat;
             }
+
             return msgSerialThis > msgSerialThat;
         }
     }

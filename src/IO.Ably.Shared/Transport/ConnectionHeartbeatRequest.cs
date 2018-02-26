@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Net;
 using System.Threading;
-using IO.Ably.Realtime;
+
 using IO.Ably;
+using IO.Ably.Realtime;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 

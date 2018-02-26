@@ -74,6 +74,7 @@ namespace IO.Ably.Transport.States.Connection
                     {
                         Logger.Debug($"Timer '{_name}' aborted. Skipping OnElapsed callback.");
                     }
+
                     return;
                 }
             }
@@ -95,13 +96,15 @@ namespace IO.Ably.Transport.States.Connection
                     {
                         Logger.Debug($"Timer '{_name}' interval {_delay.TotalSeconds} seconds elapsed and calling async action.");
                     }
+
                     await _elapsedAsync();
                 }
             }
             catch (Exception ex)
             {
                 Logger.Error("Error in method called by timer.", ex);
-                //throw; //TODO: BAD ME!
+
+                // throw; //TODO: BAD ME!
             }
         }
 

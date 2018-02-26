@@ -16,6 +16,7 @@ namespace IO.Ably
         /// <param name="name">name of the channel</param>
         /// <returns>an instance of <see cref="RestChannel"/></returns>
         T Get(string name);
+
         /// <summary>
         /// Create or retrieve a channel with the specified name and options
         /// If new options are specified the existing channel's options are updated
@@ -24,6 +25,7 @@ namespace IO.Ably
         /// <param name="options"><see cref="ChannelOptions"/></param>
         /// <returns>an instance of <see cref="RestChannel"/></returns>
         T Get(string name, ChannelOptions options);
+
         /// <summary>
         /// Same as the Get(string name)/>
         /// </summary>

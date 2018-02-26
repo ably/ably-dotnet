@@ -1,6 +1,8 @@
 ﻿using System;
-using IO.Ably.Rest;
+
 using IO.Ably;
+using IO.Ably.Rest;
+
 using Newtonsoft.Json;
 
 namespace IO.Ably.MessageEncoders
@@ -32,6 +34,7 @@ namespace IO.Ably.MessageEncoders
                 Logger.Error($"Invalid Json data: '{payload.Data}'", ex);
                 return Result.Fail(new ErrorInfo($"Invalid Json data: '{payload.Data}'"));
             }
+
             RemoveCurrentEncodingPart(payload);
             return Result.Ok();
         }
@@ -48,6 +51,7 @@ namespace IO.Ably.MessageEncoders
                 payload.Data = JsonHelper.Serialize(payload.Data);
                 AddEncoding(payload, EncodingName);
             }
+
             return Result.Ok();
         }
 

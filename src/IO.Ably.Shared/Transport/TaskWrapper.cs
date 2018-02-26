@@ -100,7 +100,7 @@ namespace IO.Ably.Transport
             }
             else
             {
-                _completionSource.TrySetException(new Exception("Unexpected Exception from the TaskWrapper")); //Something bad happened
+                _completionSource.TrySetException(new Exception("Unexpected Exception from the TaskWrapper")); // Something bad happened
             }
         }
 
@@ -111,6 +111,7 @@ namespace IO.Ably.Transport
                 var span = (TimeSpan) res;
                 return span != TimeSpan.MinValue;
             }
+
             return Equals(res, default(T)) == false;
         }
 

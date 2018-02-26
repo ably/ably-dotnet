@@ -1,7 +1,8 @@
 using System;
 using System.Threading;
-using IO.Ably.Rest;
+
 using IO.Ably;
+using IO.Ably.Rest;
 using IO.Ably.Transport;
 
 namespace IO.Ably
@@ -118,6 +119,7 @@ namespace IO.Ably
                 {
                     return Defaults.RestHost;
                 }
+
                 return Environment.ToString().ToLower() + "-" + Defaults.RestHost;
             }
 
@@ -196,7 +198,7 @@ namespace IO.Ably
                     return Ably.AuthMethod.Basic;
                 }
 
-                //default
+                // default
                 return Ably.AuthMethod.Token;
             }
         }

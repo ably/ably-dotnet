@@ -104,7 +104,7 @@ namespace IO.Ably
         {
             unchecked
             {
-                var hashCode = (Id != null ? Id.GetHashCode() : 0);
+                var hashCode = Id != null ? Id.GetHashCode() : 0;
                 hashCode = (hashCode*397) ^ (ClientId != null ? ClientId.GetHashCode() : 0);
                 hashCode = (hashCode*397) ^ (ConnectionId != null ? ConnectionId.GetHashCode() : 0);
                 hashCode = (hashCode*397) ^ (Name != null ? Name.GetHashCode() : 0);

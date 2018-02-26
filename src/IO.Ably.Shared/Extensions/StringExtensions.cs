@@ -33,10 +33,10 @@ namespace IO.Ably
         {
             if (input == null)
             {
-                return "";
+                return string.Empty;
             }
 
-            return String.Join(delimiter, input.Where(IsNotEmpty));
+            return string.Join(delimiter, input.Where(IsNotEmpty));
         }
 
         public static string Join<T>(this IEnumerable<T> listOfTs, Func<T, string> selector, string delimiter = ",") where T : class

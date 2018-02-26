@@ -84,6 +84,7 @@ namespace IO.Ably
         /// Default: null
         /// </summary>
         public DateTimeOffset? Start { get; set; }
+
         /// <summary>
         /// End of the query interval as UTC Date
         /// Default: null
@@ -95,6 +96,7 @@ namespace IO.Ably
         /// Default: Uses <see cref="Config.Limit"/> which is 100.
         /// </summary>
         public int? Limit { get; set; }
+
         /// <summary>
         /// Query directions. It determines the order in which results are returned. <see cref="QueryDirection"/>
         /// </summary>
@@ -177,7 +179,7 @@ namespace IO.Ably
             }
             else
             {
-                result.Add(new KeyValuePair<string, string>("limit","100"));
+                result.Add(new KeyValuePair<string, string>("limit", "100"));
             }
 
             result.AddRange(ExtraParameters);
@@ -240,6 +242,7 @@ namespace IO.Ably
                         break;
                 }
             }
+
             return query;
         }
 
@@ -260,6 +263,7 @@ namespace IO.Ably
                     }
                 }
             }
+
             return Empty;
         }
 

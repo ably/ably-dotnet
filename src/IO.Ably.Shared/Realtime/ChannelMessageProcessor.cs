@@ -44,6 +44,7 @@ namespace IO.Ably.Realtime
                     {
                         channel.SetChannelState(ChannelState.Failed, protocolMessage);
                     }
+
                     break;
                 case ProtocolMessage.MessageAction.Attach:
                 case ProtocolMessage.MessageAction.Attached:
@@ -58,6 +59,7 @@ namespace IO.Ably.Realtime
                             channel.OnError(protocolMessage.Error);
                         }
                     }
+
                     break;
                 case ProtocolMessage.MessageAction.Detach:
                 case ProtocolMessage.MessageAction.Detached:
@@ -73,10 +75,12 @@ namespace IO.Ably.Realtime
                     {
                         channel.OnError(result.Error);
                     }
+
                     foreach (var msg in protocolMessage.Messages)
                     {
                         channel.OnMessage(msg);
                     }
+
                     break;
                 case ProtocolMessage.MessageAction.Presence:
                     _connectionManager.Handler.DecodeProtocolMessage(protocolMessage, channel.Options);

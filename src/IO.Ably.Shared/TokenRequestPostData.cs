@@ -1,6 +1,8 @@
 using System;
-using IO.Ably.Encryption;
+
 using IO.Ably;
+using IO.Ably.Encryption;
+
 using Newtonsoft.Json;
 
 namespace IO.Ably

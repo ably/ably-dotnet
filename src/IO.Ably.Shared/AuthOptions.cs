@@ -46,7 +46,7 @@ namespace IO.Ably
         /// </summary>
         public AuthOptions()
         {
-            AuthHeaders = new Dictionary<string,string>();
+            AuthHeaders = new Dictionary<string, string>();
             AuthParams = new Dictionary<string, string>();
             AuthMethod = HttpMethod.Get;
         }

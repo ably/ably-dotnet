@@ -22,6 +22,7 @@ namespace IO.Ably.Realtime
                     {
                         return new List<MessageHandlerAction<T>>(result);
                     }
+
                     return Enumerable.Empty<MessageHandlerAction<T>>();
                 }
 
@@ -63,6 +64,7 @@ namespace IO.Ably.Realtime
                         return;
                     }
                 }
+
                 _specificHandlers[key] = new List<MessageHandlerAction<T>> { handler };
             }
             finally

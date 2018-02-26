@@ -1,5 +1,5 @@
-using IO.Ably.Encryption;
 using IO.Ably;
+using IO.Ably.Encryption;
 
 namespace IO.Ably.MessageEncoders
 {
@@ -53,7 +53,7 @@ namespace IO.Ably.MessageEncoders
                 return parts[1];
             }
 
-            return "";
+            return string.Empty;
         }
 
         public override Result Encode(IMessage payload, ChannelOptions options)

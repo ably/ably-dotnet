@@ -12,7 +12,7 @@ namespace IO.Ably
         /// </summary>
         public MimeTypes()
         {
-            Add("json", "");
+            Add("json", string.Empty);
             Add("binary", "application/x-msgpack");
         }
 

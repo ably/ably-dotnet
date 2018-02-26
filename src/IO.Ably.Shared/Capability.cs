@@ -1,8 +1,9 @@
 using System;
-using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+
+using Newtonsoft.Json.Linq;
 
 namespace IO.Ably
 {
@@ -109,12 +110,13 @@ namespace IO.Ably
             {
                 result[resource.Name] = GetResourceValue(resource);
             }
+
             if(result.Children().Any())
             {
                 return CleanUpWhiteSpace(result.ToString());
             }
 
-            return "";
+            return string.Empty;
         }
 
         public override string ToString()
@@ -139,7 +141,7 @@ namespace IO.Ably
 
         private string CleanUpWhiteSpace(string jsonString)
         {
-            return Regex.Replace(jsonString, @"\s+", "", RegexOptions.Singleline);
+            return Regex.Replace(jsonString, @"\s+", string.Empty, RegexOptions.Singleline);
         }
 
         protected bool Equals(Capability other)

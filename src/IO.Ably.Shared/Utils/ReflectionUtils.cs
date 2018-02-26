@@ -25,6 +25,7 @@ namespace IO.Ably.Utils
                     return false;
                 }
             }
+
             return true;
         }
     }

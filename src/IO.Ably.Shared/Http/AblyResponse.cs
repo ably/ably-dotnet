@@ -36,6 +36,7 @@ namespace IO.Ably
         {
             Headers = new EmptyHttpHeaders();
         }
+
         internal AblyResponse(string encoding, string contentType, byte[] body)
         {
             ContentType = contentType;
@@ -46,6 +47,7 @@ namespace IO.Ably
             {
                 TextResponse = System.Text.Encoding.GetEncoding(Encoding).GetString(body, 0, body.Length);
             }
+
             Body = body;
         }
 

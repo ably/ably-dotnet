@@ -18,9 +18,9 @@ namespace IO.Ably.Transport
         public long? ConnectionSerial { get; set; }
         public bool UseBinaryProtocol { get; private set; }
 
-        //TODO: Look at inconsisten protection levels
+        // TODO: Look at inconsisten protection levels
         internal AuthMethod AuthMethod { get; private set; }
-        public string AuthValue { get; private set; } //either key or token
+        public string AuthValue { get; private set; } // either key or token
         public string RecoverValue { get; private set; }
         public string ClientId { get; private set; }
         public bool EchoMessages { get; private set; }
@@ -52,6 +52,7 @@ namespace IO.Ably.Transport
 
                 result.AuthValue = token.Token;
             }
+
             result.ConnectionKey = connectionKey;
             result.ConnectionSerial = connectionSerial;
             result.EchoMessages = options.EchoMessages;
@@ -62,7 +63,7 @@ namespace IO.Ably.Transport
             return result;
         }
 
-        //Add logic for random fallback hosts
+        // Add logic for random fallback hosts
         public Uri GetUri()
         {
             var wsScheme = Tls ? "wss://" : "ws://";
@@ -87,7 +88,8 @@ namespace IO.Ably.Transport
 
             result["v"] = Defaults.ProtocolVersion;
             result["lib"] = Defaults.LibraryVersion;
-            //Url encode all the params at the time of creating the query string
+
+            // Url encode all the params at the time of creating the query string
             result["format"] = UseBinaryProtocol ? "msgpack" : "json";
             result["echo"] = EchoMessages.ToString().ToLower();
 

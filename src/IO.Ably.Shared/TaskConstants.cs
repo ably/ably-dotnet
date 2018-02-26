@@ -2,10 +2,11 @@
 
 namespace IO.Ably
 {
-    //https://github.com/StephenCleary/AsyncEx/blob/master/Source/Nito.AsyncEx%20(NET45%2C%20Win8%2C%20WP8%2C%20WPA81)/TaskConstants.cs
+    // https://github.com/StephenCleary/AsyncEx/blob/master/Source/Nito.AsyncEx%20(NET45%2C%20Win8%2C%20WP8%2C%20WPA81)/TaskConstants.cs
     public static class TaskConstants
     {
         private static readonly Task<bool> booleanTrue = Task.FromResult(true);
+
         private static readonly Task<int> intNegativeOne = Task.FromResult(-1);
 
         /// <summary>

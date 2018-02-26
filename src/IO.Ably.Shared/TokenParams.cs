@@ -82,7 +82,7 @@ namespace IO.Ably
 
         public Dictionary<string, string> ToRequestParams(Dictionary<string, string> mergeWith = null)
         {
-            var dictionary = new Dictionary<string,string>();
+            var dictionary = new Dictionary<string, string>();
             if(Ttl.HasValue)
             {
                 dictionary.Add("ttl", Ttl.Value.TotalMilliseconds.ToString());

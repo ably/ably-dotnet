@@ -14,6 +14,7 @@ namespace IO.Ably.MessageEncoders
                 payload.Data = ((string) payload.Data).FromBase64();
                 RemoveCurrentEncodingPart(payload);
             }
+
             return Result.Ok();
         }
 
@@ -31,6 +32,7 @@ namespace IO.Ably.MessageEncoders
                 payload.Data = bytes.ToBase64();
                 AddEncoding(payload, EncodingName);
             }
+
             return Result.Ok();
         }
 

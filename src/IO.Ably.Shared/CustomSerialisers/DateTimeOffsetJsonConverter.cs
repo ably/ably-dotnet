@@ -20,6 +20,7 @@ namespace IO.Ably.CustomSerialisers
                 var value = (long)token;
                 return value.FromUnixTimeInMilliseconds();
             }
+
             return DateTimeOffset.MinValue;
         }
 

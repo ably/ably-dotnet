@@ -39,6 +39,7 @@ namespace IO.Ably.Realtime
                     {
                         realtimeChannel.Options = options;
                     }
+
                     return realtimeChannel;
                 });
             }
@@ -49,6 +50,7 @@ namespace IO.Ably.Realtime
                     result.Options = options;
                 }
             }
+
             return result;
         }
 
@@ -85,6 +87,7 @@ namespace IO.Ably.Realtime
                 channel.Detach();
                 return true;
             }
+
             return false;
         }
 

@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
 using System.Threading.Tasks;
+
 using IO.Ably;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace IO.Ably
 {
@@ -19,13 +21,19 @@ namespace IO.Ably
             Logger = options.Logger;
             Initialise();
         }
+
         internal Func<DateTimeOffset> Now { get; set; }
+
         internal ILogger Logger { get; private set; }
 
         public AuthMethod AuthMethod { get; private set; }
+
         internal ClientOptions Options { get; }
+
         internal TokenParams CurrentTokenParams { get; set; }
+
         internal AuthOptions CurrentAuthOptions { get; set; }
+
         private readonly AblyRest _rest;
 
         public TokenDetails CurrentToken { get; set; }
@@ -43,8 +51,11 @@ namespace IO.Ably
             ?? Options.GetClientId();
 
         bool HasTokenId => Options.Token.IsNotEmpty();
+
         public bool TokenRenewable => TokenCreatedExternally || (HasApiKey && HasTokenId == false);
+
         bool TokenCreatedExternally => Options.AuthUrl.IsNotEmpty() || Options.AuthCallback != null;
+
         bool HasApiKey => Options.Key.IsNotEmpty();
 
         internal void Initialise()
@@ -55,7 +66,7 @@ namespace IO.Ably
             CurrentTokenParams = Options.DefaultTokenParams;
             if (CurrentTokenParams != null)
             {
-                CurrentTokenParams.ClientId = Options.GetClientId(); //Ensure the correct ClientId is set in AblyAuth
+                CurrentTokenParams.ClientId = Options.GetClientId(); // Ensure the correct ClientId is set in AblyAuth
             }
 
             if (AuthMethod == AuthMethod.Basic)
@@ -73,6 +84,7 @@ namespace IO.Ably
             {
                 CurrentToken = new TokenDetails(Options.Token, Options.NowFunc);
             }
+
             LogCurrentAuthenticationMethod();
         }
 
@@ -80,7 +92,7 @@ namespace IO.Ably
         {
             if (Options.UseTokenAuth.HasValue)
             {
-                //ASK: Should I throw an error if a particular auth is not possible
+                // ASK: Should I throw an error if a particular auth is not possible
                 AuthMethod = Options.UseTokenAuth.Value ? AuthMethod.Token : AuthMethod.Basic;
             }
             else
@@ -151,7 +163,7 @@ namespace IO.Ably
         public virtual async Task<TokenDetails> RequestTokenAsync(TokenParams tokenParams = null, AuthOptions options = null)
         {
             var mergedOptions = options != null ? options.Merge(Options) : Options;
-            string keyId = "", keyValue = "";
+            string keyId = string.Empty, keyValue = string.Empty;
             if (mergedOptions.Key.IsNotEmpty())
             {
                 var key = mergedOptions.ParseKey();
@@ -213,8 +225,9 @@ namespace IO.Ably
                 {
                     var response = await CallAuthUrl(mergedOptions, @params);
 
-                    if (response.Type == ResponseType.Text) //Return token string
+                    if (response.Type == ResponseType.Text)
                     {
+                        // Return token string
                         return new TokenDetails(response.TextResponse, Now);
                     }
 
@@ -287,7 +300,7 @@ namespace IO.Ably
             if (@params == null)
             {
                 @params = CurrentTokenParams ?? TokenParams.WithDefaultsApplied();
-                @params.ClientId = ClientId; //Ensure the correct clientId is supplied
+                @params.ClientId = ClientId; // Ensure the correct clientId is supplied
             }
 
             return @params;
@@ -348,7 +361,7 @@ namespace IO.Ably
         public async Task<TokenDetails> AuthorizeAsync(TokenParams tokenParams = null, AuthOptions options = null)
         {
             var authOptions = options ?? new AuthOptions();
-            bool force = authOptions.Force; //this is needed because I share the object and reset Force later on.
+            bool force = authOptions.Force; // this is needed because I share the object and reset Force later on.
 
             authOptions.Merge(CurrentAuthOptions);
             SetCurrentAuthOptions(options);
@@ -493,7 +506,7 @@ namespace IO.Ably
             {
                 if (message.ClientId.IsNotEmpty() && message.ClientId != libClientId)
                 {
-                    var errorMessage = "";
+                    var errorMessage = string.Empty;
                     if (message is Message)
                     {
                         errorMessage =
