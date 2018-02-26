@@ -7,7 +7,7 @@ namespace IO.Ably
         // http://stackoverflow.com/a/21648387/126995
         public static Task IgnoreExceptions( this Task task )
         {
-            task.ContinueWith( 
+            task.ContinueWith(
                 c => { var ignored = c.Exception; },
                 TaskContinuationOptions.OnlyOnFaulted |
                 TaskContinuationOptions.ExecuteSynchronously );
