@@ -8,19 +8,19 @@ namespace IO.Ably
 
     public sealed class HttpUtility
     {
-        public static HttpValueCollection ParseQueryString( string query)
+        public static HttpValueCollection ParseQueryString(string query)
         {
-            if ( query == null)
+            if (query == null)
             {
-                throw new ArgumentNullException( "query");
+                throw new ArgumentNullException("query");
             }
 
-            if ( ( query.Length > 0) && ( query[ 0 ] == '?'))
+            if ((query.Length > 0) && (query[ 0 ] == '?'))
             {
-                query = query.Substring( 1);
+                query = query.Substring(1);
             }
 
-            return new HttpValueCollection( query, true);
+            return new HttpValueCollection(query, true);
         }
     }
 
@@ -28,7 +28,7 @@ namespace IO.Ably
     {
         public IEnumerable<string> AllKeys
         {
-            get { return m_data.Select( i => i.Key); }
+            get { return m_data.Select(i => i.Key); }
         }
 
         private readonly List<kvp> m_data = new List<kvp>();
@@ -38,26 +38,26 @@ namespace IO.Ably
             get
             {
                 string[] items = GetValues(name);
-                if ( items == null)
+                if (items == null)
                 {
                     return null;
                 }
 
-                return String.Join( ",", items);
+                return String.Join(",", items);
             }
 
             set
             {
                 // If the specified key already exists in the collection, setting this property overwrites the existing list of values with the specified value.
-                m_data.RemoveAll( i => i.Key == name);
-                m_data.Add( new kvp( name, value));
+                m_data.RemoveAll(i => i.Key == name);
+                m_data.Add(new kvp(name, value));
             }
         }
 
-        public string[] GetValues( string name)
+        public string[] GetValues(string name)
         {
-            string[] res = m_data.Where( i => i.Key==name).Select( i => i.Value).ToArray();
-            if ( res.Length <= 0)
+            string[] res = m_data.Where(i => i.Key==name).Select(i => i.Value).ToArray();
+            if (res.Length <= 0)
             {
                 return null;
             }
@@ -65,43 +65,43 @@ namespace IO.Ably
             return res;
         }
 
-        public void Add( string name, string value)
+        public void Add(string name, string value)
         {
-            m_data.Add( new kvp( name, value));
+            m_data.Add(new kvp(name, value));
         }
 
         public HttpValueCollection() { }
 
-        public HttpValueCollection( string query)
-            : this( query, true) { }
+        public HttpValueCollection(string query)
+            : this(query, true) { }
 
-        public HttpValueCollection( string query, bool urlencoded)
+        public HttpValueCollection(string query, bool urlencoded)
         {
-            if ( !string.IsNullOrEmpty( query))
+            if (!string.IsNullOrEmpty(query))
             {
-                this.FillFromString( query, urlencoded);
+                this.FillFromString(query, urlencoded);
             }
         }
 
-        private void FillFromString( string query, bool urlencoded)
+        private void FillFromString(string query, bool urlencoded)
         {
             // http://stackoverflow.com/a/20284635/126995
             int num = (query != null) ? query.Length : 0;
-            for ( int i = 0; i < num; i++)
+            for (int i = 0; i < num; i++)
             {
                 int startIndex = i;
                 int num4 = -1;
-                while ( i < num)
+                while (i < num)
                 {
                     char ch = query[i];
-                    if ( ch == '=')
+                    if (ch == '=')
                     {
-                        if ( num4 < 0)
+                        if (num4 < 0)
                         {
                             num4 = i;
                         }
                     }
-                    else if ( ch == '&')
+                    else if (ch == '&')
                     {
                         break;
                     }
@@ -111,28 +111,28 @@ namespace IO.Ably
 
                 string str = null;
                 string str2 = null;
-                if ( num4 >= 0)
+                if (num4 >= 0)
                 {
-                    str = query.Substring( startIndex, num4 - startIndex);
-                    str2 = query.Substring( num4 + 1, ( i - num4) - 1);
+                    str = query.Substring(startIndex, num4 - startIndex);
+                    str2 = query.Substring(num4 + 1, (i - num4) - 1);
                 }
                 else
                 {
-                    str2 = query.Substring( startIndex, i - startIndex);
+                    str2 = query.Substring(startIndex, i - startIndex);
                 }
 
-                if ( urlencoded)
+                if (urlencoded)
                 {
-                    this.Add( Uri.UnescapeDataString( str), Uri.UnescapeDataString( str2));
+                    this.Add(Uri.UnescapeDataString(str), Uri.UnescapeDataString(str2));
                 }
                 else
                 {
-                    this.Add( str, str2);
+                    this.Add(str, str2);
                 }
 
-                if ( ( i == ( num - 1)) && ( query[ i ] == '&'))
+                if ((i == (num - 1)) && (query[ i ] == '&'))
                 {
-                    this.Add( null, string.Empty);
+                    this.Add(null, string.Empty);
                 }
             }
         }

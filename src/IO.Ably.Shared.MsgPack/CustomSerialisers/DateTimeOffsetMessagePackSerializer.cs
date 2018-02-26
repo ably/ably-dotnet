@@ -6,8 +6,8 @@ namespace IO.Ably.CustomSerialisers
 {
     public class DateTimeOffsetMessagePackSerializer : MessagePackSerializer<DateTimeOffset>
     {
-        public DateTimeOffsetMessagePackSerializer( SerializationContext ownerContext)
-            : base( ownerContext) { }
+        public DateTimeOffsetMessagePackSerializer(SerializationContext ownerContext)
+            : base(ownerContext) { }
 
         protected override void PackToCore(Packer packer, DateTimeOffset objectTree)
         {

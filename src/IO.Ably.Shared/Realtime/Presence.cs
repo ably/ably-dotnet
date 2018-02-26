@@ -101,7 +101,7 @@ namespace IO.Ably.Realtime
                 await WaitForSyncAsync();
             }
 
-            var result = Map.Values.Where( x => (getOptions.ClientId.IsEmpty() || x.ClientId == getOptions.ClientId)
+            var result = Map.Values.Where(x => (getOptions.ClientId.IsEmpty() || x.ClientId == getOptions.ClientId)
                                                && (getOptions.ConnectionId.IsEmpty() || x.ConnectionId == getOptions.ConnectionId));
             return result;
         }

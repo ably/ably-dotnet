@@ -5,8 +5,8 @@ namespace IO.Ably.CustomSerialisers
 {
     public class CapabilityMessagePackSerializer : MessagePackSerializer<Capability>
     {
-        public CapabilityMessagePackSerializer( SerializationContext ownerContext)
-            : base( ownerContext) { }
+        public CapabilityMessagePackSerializer(SerializationContext ownerContext)
+            : base(ownerContext) { }
 
         protected override void PackToCore(Packer packer, Capability objectTree)
         {
