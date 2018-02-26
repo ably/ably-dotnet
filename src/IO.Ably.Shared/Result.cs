@@ -2,14 +2,12 @@
 
 namespace IO.Ably
 {
-    // https://github.com/vkhorikov/FuntionalPrinciplesCsharp/blob/master/New/CustomerManagement.Logic/Common/Result.cs
+    //https://github.com/vkhorikov/FuntionalPrinciplesCsharp/blob/master/New/CustomerManagement.Logic/Common/Result.cs
     // Slightly modified version of the above
     public class Result
     {
         public bool IsSuccess { get; }
-
         public ErrorInfo Error { get; }
-
         public bool IsFailure => !IsSuccess;
 
         protected Result(bool isSuccess, ErrorInfo error)
@@ -30,7 +28,7 @@ namespace IO.Ably
 
         public static Result Fail(string message)
         {
-            return new Result(false, new ErrorInfo() { Message = message });
+            return new Result(false, new ErrorInfo() {Message = message });
         }
 
         public static Result Fail(ErrorInfo error)
@@ -66,6 +64,7 @@ namespace IO.Ably
             return Ok();
         }
     }
+
 
     public class Result<T> : Result
     {
@@ -128,11 +127,11 @@ namespace IO.Ably
             return result;
         }
 
-        public static Result<K> Map<T, K>(this Result<T> result, Func<T, K> func)
+        public static Result<TResult> Map<T, TResult>(this Result<T> result, Func<T, TResult> func)
         {
             if (result.IsFailure)
             {
-                return Result.Fail<K>(result.Error);
+                return Result.Fail<TResult>(result.Error);
             }
 
             return Result.Ok(func(result.Value));
