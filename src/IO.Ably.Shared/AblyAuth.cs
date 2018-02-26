@@ -351,6 +351,7 @@ namespace IO.Ably
         [Obsolete("This method will be removed in the future, please replace with a call to AuthorizeAsync")]
         public async Task<TokenDetails> AuthoriseAsync(TokenParams tokenParams = null, AuthOptions options = null)
         {
+            Logger.Warning("AuthoriseAsync is deprecated and will be removed in the future, please replace with a call to AuthorizeAsync");
             return await AuthorizeAsync(tokenParams, options);
         }
 
@@ -484,6 +485,7 @@ namespace IO.Ably
         public TokenDetails Authorise(TokenParams tokenParams = null,
             AuthOptions options = null)
         {
+            Logger.Warning("Authorise is deprecated and will be removed in the future, please replace with a call to Authorize.");
             return AsyncHelper.RunSync(() => AuthorizeAsync(tokenParams, options));
         }
 
