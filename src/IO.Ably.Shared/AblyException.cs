@@ -27,6 +27,7 @@ namespace IO.Ably
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="AblyException"/> class.
         /// Creates AblyException
         /// </summary>
         /// <param name="reason">Reason passed to the error info class</param>
