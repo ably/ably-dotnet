@@ -21,9 +21,9 @@ namespace IO.Ably.MessageEncoders
         private readonly Protocol _protocol;
         public readonly List<MessageEncoder> Encoders = new List<MessageEncoder>();
 
-        public MessageHandler() : this(IO.Ably.DefaultLogger.LoggerInstance, Defaults.Protocol) {}
+        public MessageHandler() : this(IO.Ably.DefaultLogger.LoggerInstance, Defaults.Protocol) { }
 
-        public MessageHandler(Protocol protocol) : this(IO.Ably.DefaultLogger.LoggerInstance, protocol) {}
+        public MessageHandler(Protocol protocol) : this(IO.Ably.DefaultLogger.LoggerInstance, protocol) { }
 
         public MessageHandler(ILogger logger, Protocol protocol)
         {
@@ -431,7 +431,7 @@ namespace IO.Ably.MessageEncoders
             else
             {
                 var text = JsonHelper.Serialize(protocolMessage);
-                data = new RealtimeTransportData(text) {Original = protocolMessage};
+                data = new RealtimeTransportData(text) {Original = protocolMessage };
             }
 
             return data;

@@ -17,7 +17,7 @@ namespace IO.Ably
 
         private static SerializationContext GetContext()
         {
-            var context = new SerializationContext() { SerializationMethod = SerializationMethod.Map};
+            var context = new SerializationContext() { SerializationMethod = SerializationMethod.Map };
             context.Serializers.Register(new DateTimeOffsetMessagePackSerializer(context));
             context.Serializers.Register(new TimespanMessagePackSerializer(context));
             context.Serializers.Register(new IO_Ably_CapabilitySerializer(context));

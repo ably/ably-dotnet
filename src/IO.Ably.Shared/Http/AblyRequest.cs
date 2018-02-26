@@ -18,7 +18,7 @@ namespace IO.Ably
             Method = method;
             Protocol = protocol;
             ChannelOptions = new ChannelOptions();
-            RequestBody = new byte[] {};
+            RequestBody = new byte[] { };
             ResponseDataType = typeof (object);
         }
 

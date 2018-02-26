@@ -53,7 +53,7 @@ namespace IO.Ably
 
             CurrentAuthOptions = Options;
             CurrentTokenParams = Options.DefaultTokenParams;
-            if(CurrentTokenParams != null)
+            if (CurrentTokenParams != null)
             {
                 CurrentTokenParams.ClientId = Options.GetClientId(); //Ensure the correct ClientId is set in AblyAuth
             }
@@ -117,7 +117,7 @@ namespace IO.Ably
 
         public async Task<TokenDetails> GetCurrentValidTokenAndRenewIfNecessaryAsync()
         {
-            if(AuthMethod == AuthMethod.Basic)
+            if (AuthMethod == AuthMethod.Basic)
             {
                 throw new AblyException("AuthMethod is set to Auth so there is no current valid token.");
             }

@@ -28,7 +28,7 @@ namespace IO.Ably
 
         public static Result Fail(string message)
         {
-            return new Result(false, new ErrorInfo() {Message = message});
+            return new Result(false, new ErrorInfo() {Message = message });
         }
 
         public static Result Fail(ErrorInfo error)

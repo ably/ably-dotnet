@@ -117,9 +117,9 @@ namespace IO.Ably
 
             internal Func<DateTimeOffset> Now { get; set; }
 
-            public InternalLogger() : this(Defaults.DefaultLogLevel, new DefaultLoggerSink()) {}
+            public InternalLogger() : this(Defaults.DefaultLogLevel, new DefaultLoggerSink()) { }
             public InternalLogger(ILoggerSink loggerSink) : this(Defaults.DefaultLogLevel, loggerSink) { }
-            public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink): this(logLevel, loggerSink, null ) {}
+            public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink): this(logLevel, loggerSink, null ) { }
             public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink, Func<DateTimeOffset> nowProvider)
             {
                 LogLevel = logLevel;

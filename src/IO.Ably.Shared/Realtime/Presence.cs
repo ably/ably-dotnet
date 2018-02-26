@@ -103,7 +103,7 @@ namespace IO.Ably.Realtime
 
         internal async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, bool waitForSync = false)
         {
-            return await GetAsync(new GetOptions() {ClientId = clientId, WaitForSync = waitForSync});
+            return await GetAsync(new GetOptions() {ClientId = clientId, WaitForSync = waitForSync });
         }
 
         internal async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, string connectionId, bool waitForSync = true)
@@ -259,7 +259,7 @@ namespace IO.Ably.Realtime
             if (_channel.State == ChannelState.Attached)
             {
                 var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name);
-                message.Presence = new[] {msg};
+                message.Presence = new[] {msg };
                 _connection.Send(message, null);
                 //TODO: Fix this;
                 return TaskConstants.BooleanTrue;

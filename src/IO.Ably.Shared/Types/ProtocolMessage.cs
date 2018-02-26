@@ -49,8 +49,8 @@ namespace IO.Ably.Types
 
         public ProtocolMessage()
         {
-            Messages = new Message[] {};
-            Presence = new PresenceMessage[] {};
+            Messages = new Message[] { };
+            Presence = new PresenceMessage[] { };
         }
 
         internal ProtocolMessage(MessageAction action) : this()
