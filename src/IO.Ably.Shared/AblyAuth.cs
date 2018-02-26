@@ -216,9 +216,7 @@ namespace IO.Ably
                     throw new AblyException(
                         new ErrorInfo(
                         "Error calling AuthCallback, token request failed. See inner exception for details.", 80019), ex);
-
                 }
-
             }
             else if (mergedOptions.AuthUrl.IsNotEmpty())
             {
@@ -440,7 +438,7 @@ namespace IO.Ably
 
         internal TokenAuthMethod GetTokenAuthMethod()
         {
-            if (null != Options.AuthCallback)
+            if (Options.AuthCallback != null)
             {
                 return TokenAuthMethod.Callback;
             }

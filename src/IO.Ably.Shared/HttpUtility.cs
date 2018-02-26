@@ -38,7 +38,7 @@ namespace IO.Ably
             get
             {
                 string[] items = GetValues(name);
-                if ( null == items )
+                if ( items == null )
                 {
                     return null;
                 }

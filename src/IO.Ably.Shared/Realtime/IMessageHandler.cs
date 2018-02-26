@@ -34,7 +34,7 @@ namespace IO.Ably.Realtime
 
         public MessageHandlerAction(Action<T> action)
         {
-            if (null == action)
+            if (action == null)
             {
                 throw new ArgumentNullException();
             }
