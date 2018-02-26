@@ -331,9 +331,7 @@ namespace IO.Ably
             if (response.Type == ResponseType.Binary)
             {
                 throw new AblyException(
-                    new ErrorInfo(
-                        string.Format("Content Type {0} is not supported by this client library",
-                            response.ContentType), 500));
+                    new ErrorInfo($"Content Type {response.ContentType} is not supported by this client library", 500));
             }
 
             return response;
