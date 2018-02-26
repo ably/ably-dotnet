@@ -7,7 +7,7 @@ namespace IO.Ably.Rest
 {
     public class RestChannels : IChannels<IRestChannel>
     {
-        private ConcurrentDictionary<string, RestChannel> _channels { get; } = new ConcurrentDictionary<string, RestChannel>();
+        private readonly ConcurrentDictionary<string, RestChannel> _channels = new ConcurrentDictionary<string, RestChannel>();
 
         private readonly AblyRest _ablyRest;
 
