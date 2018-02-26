@@ -13,7 +13,6 @@ namespace IO.Ably
     /// <summary>Client for the ably rest API</summary>
     public sealed class AblyRest : IRestClient
     {
-
         internal AblyHttpClient HttpClient { get; private set; }
 
         internal MessageHandler MessageHandler { get; private set; }

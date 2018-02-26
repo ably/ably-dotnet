@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 
 namespace IO.Ably
 {
-
     public static class TaskExtensions
     {
         /// <summary>

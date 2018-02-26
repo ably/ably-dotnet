@@ -28,10 +28,10 @@ namespace IO.Ably
     {
         public IEnumerable<string> AllKeys
         {
-            get { return m_data.Select(i => i.Key); }
+            get { return _data.Select(i => i.Key); }
         }
 
-        private readonly List<kvp> m_data = new List<kvp>();
+        private readonly List<kvp> _data = new List<kvp>();
 
         public string this[string name]
         {
@@ -49,14 +49,14 @@ namespace IO.Ably
             set
             {
                 // If the specified key already exists in the collection, setting this property overwrites the existing list of values with the specified value.
-                m_data.RemoveAll(i => i.Key == name);
-                m_data.Add(new kvp(name, value));
+                _data.RemoveAll(i => i.Key == name);
+                _data.Add(new kvp(name, value));
             }
         }
 
         public string[] GetValues(string name)
         {
-            string[] res = m_data.Where(i => i.Key==name).Select(i => i.Value).ToArray();
+            string[] res = _data.Where(i => i.Key == name).Select(i => i.Value).ToArray();
             if (res.Length <= 0)
             {
                 return null;
@@ -67,7 +67,7 @@ namespace IO.Ably
 
         public void Add(string name, string value)
         {
-            m_data.Add(new kvp(name, value));
+            _data.Add(new kvp(name, value));
         }
 
         public HttpValueCollection() { }

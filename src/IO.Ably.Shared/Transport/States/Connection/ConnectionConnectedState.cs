@@ -106,7 +106,7 @@ namespace IO.Ably.Transport.States.Connection
                 Logger.Debug("Processing Connected:OnAttached. Resumed: " + _resumed);
             }
 
-            if (_resumed.HasValue && _resumed ==false)
+            if (_resumed.HasValue && _resumed == false)
             {
                 Context.ClearAckQueueAndFailMessages(null);
                 Context.DetachAttachedChannels(Error);

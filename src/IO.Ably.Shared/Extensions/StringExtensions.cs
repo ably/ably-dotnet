@@ -25,8 +25,8 @@ namespace IO.Ably
             }
 
             input = input.Trim();
-            return input.StartsWith("{") && input.EndsWith("}")
-                   || input.StartsWith("[") && input.EndsWith("]");
+            return (input.StartsWith("{") && input.EndsWith("}"))
+                   || (input.StartsWith("[") && input.EndsWith("]"));
         }
 
         public static string JoinStrings(this IEnumerable<string> input, string delimiter = ", ")
@@ -51,8 +51,7 @@ namespace IO.Ably
 
         public static bool EqualsTo(this string input, string other, bool caseSensitive = false)
         {
-            return string.Equals(input, other,
-                caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+            return string.Equals(input, other, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
         }
 
         public static byte[] ToByteArray(this string hex)

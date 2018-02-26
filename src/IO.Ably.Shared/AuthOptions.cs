@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 
 namespace IO.Ably
 {
-
     /// <summary>
     /// Authentication options
     /// </summary>

@@ -62,8 +62,7 @@ namespace IO.Ably
                 {
                     Logger.Error("Cumulative retry timeout of {0}s was exceeded", Config.CommulativeFailedRequestTimeOutInSeconds);
                     throw new AblyException(
-                        new ErrorInfo(string.Format("Commulative retry timeout of {0}s was exceeded.",
-                            Config.CommulativeFailedRequestTimeOutInSeconds), 500, null));
+                        new ErrorInfo($"Commulative retry timeout of {Config.CommulativeFailedRequestTimeOutInSeconds}s was exceeded.", 500, null));
                 }
 
                 Logger.Debug("Executing request: " + request.Url + (currentTry > 0 ? $"try {currentTry}" : string.Empty));
@@ -318,12 +317,7 @@ namespace IO.Ably
                 return new Uri(request.Url);
             }
 
-            return new Uri(string.Format("{0}{1}{2}{3}{4}",
-                               protocol,
-                               host,
-                               Options.Port.HasValue ? ":" + Options.Port.Value : string.Empty,
-                               request.Url,
-                               GetQuery(request)));
+            return new Uri($"{protocol}{host}{(Options.Port.HasValue ? ":" + Options.Port.Value : string.Empty)}{request.Url}{GetQuery(request)}");
         }
 
         private string GetQuery(AblyRequest request)

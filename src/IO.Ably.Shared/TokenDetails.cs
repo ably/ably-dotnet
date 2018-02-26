@@ -107,10 +107,10 @@ namespace IO.Ably
             unchecked
             {
                 var hashCode = Token?.GetHashCode() ?? 0;
-                hashCode = (hashCode*397) ^ Expires.GetHashCode();
-                hashCode = (hashCode*397) ^ Issued.GetHashCode();
-                hashCode = (hashCode*397) ^ (Capability?.GetHashCode() ?? 0);
-                hashCode = (hashCode*397) ^ (ClientId?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ Expires.GetHashCode();
+                hashCode = (hashCode * 397) ^ Issued.GetHashCode();
+                hashCode = (hashCode * 397) ^ (Capability?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (ClientId?.GetHashCode() ?? 0);
                 return hashCode;
             }
         }

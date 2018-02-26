@@ -34,7 +34,7 @@ namespace IO.Ably
         {
             unchecked
             {
-                return (Encrypted.GetHashCode() *397) ^ (CipherParams?.GetHashCode() ?? 0);
+                return (Encrypted.GetHashCode() * 397) ^ (CipherParams?.GetHashCode() ?? 0);
             }
         }
 

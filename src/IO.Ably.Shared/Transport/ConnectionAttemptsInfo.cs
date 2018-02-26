@@ -186,13 +186,13 @@ namespace IO.Ably.Transport
             {
                 if (lastFailedState.State == ConnectionState.Disconnected)
                 {
-                    customHost = _connection.FallbackHosts[DisconnectedCount%_connection.FallbackHosts.Count];
+                    customHost = _connection.FallbackHosts[DisconnectedCount % _connection.FallbackHosts.Count];
                 }
 
                 if (lastFailedState.State == ConnectionState.Suspended && SuspendedCount > 1)
                 {
                     customHost =
-                        _connection.FallbackHosts[(DisconnectedCount + SuspendedCount) %_connection.FallbackHosts.Count];
+                        _connection.FallbackHosts[(DisconnectedCount + SuspendedCount) % _connection.FallbackHosts.Count];
                 }
 
                 if (customHost.IsNotEmpty())

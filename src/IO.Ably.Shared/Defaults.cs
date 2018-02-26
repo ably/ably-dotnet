@@ -42,6 +42,7 @@ namespace IO.Ably
         public static readonly Capability DefaultTokenCapability = Capability.AllowAll;
         public const int Port = 80;
         public const int TlsPort = 443;
+
         // Buffer in seconds before a token is considered unusable
         public const int TokenExpireBufferInSeconds = 15;
         public static readonly TimeSpan DefaultRealtimeTimeout = TimeSpan.FromSeconds(10);

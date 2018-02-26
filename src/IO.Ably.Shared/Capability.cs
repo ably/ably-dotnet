@@ -19,8 +19,6 @@ namespace IO.Ably
     /// Assert.Equal("{ \"first\": [ \"*\" ], \"second\": [ \"publish\" ] }", capability.ToJson());
     /// </code>
     /// </summary>
-    ///
-
     public class Capability
     {
         /// <summary>
@@ -160,7 +158,7 @@ namespace IO.Ably
                 return true;
             }
 
-            if (obj.GetType() != this.GetType())
+            if (obj.GetType() != GetType())
             {
                 return false;
             }
