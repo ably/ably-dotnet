@@ -94,7 +94,7 @@ namespace IO.Ably.Transport
         {
             if (res is TimeSpan)
             {
-                var span =  (TimeSpan) res;
+                var span = (TimeSpan) res;
                 return span != TimeSpan.MinValue;
             }
             return Equals(res, default(T)) == false;
