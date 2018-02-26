@@ -43,7 +43,7 @@ namespace IO.Ably
                     return null;
                 }
 
-                return String.Join(",", items);
+                return string.Join(",", items);
             }
 
             set

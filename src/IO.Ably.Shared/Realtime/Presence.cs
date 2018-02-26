@@ -541,7 +541,7 @@ namespace IO.Ably.Realtime
             internal event EventHandler SyncNoLongerInProgress;
 
             private readonly string _channelName;
-            private readonly object _lock = new Object();
+            private readonly object _lock = new object();
 
             public enum State
             {
