@@ -45,7 +45,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Task OnAttachToContext()
         {
-            if(RetryIn.HasValue)
+            if (RetryIn.HasValue)
             {
                 _timer.Start(RetryIn.Value, OnTimeOut);
             }

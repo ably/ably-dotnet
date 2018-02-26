@@ -15,7 +15,7 @@ namespace IO.Ably.CustomSerialisers
         protected override Capability UnpackFromCore(Unpacker unpacker)
         {
             MessagePackObject obj = string.Empty;
-            if(unpacker.ReadObject(out obj))
+            if (unpacker.ReadObject(out obj))
                 return new Capability(obj.ToString());
             return new Capability();
         }

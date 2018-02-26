@@ -37,7 +37,7 @@ namespace IO.Ably
 
         public static string Serialize(object obj)
         {
-            if(obj == null)
+            if (obj == null)
             {
                 throw new ArgumentNullException(nameof(obj), "Cannot serialize null object");
             }

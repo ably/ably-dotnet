@@ -272,7 +272,7 @@ namespace IO.Ably
 
         private static TokenRequest GetTokenRequest(object callbackResult)
         {
-            if(callbackResult is TokenRequest)
+            if (callbackResult is TokenRequest)
             {
                 return callbackResult as TokenRequest;
             }
@@ -280,7 +280,7 @@ namespace IO.Ably
             try
             {
                 var result = JsonHelper.Deserialize<TokenRequest>((string)callbackResult);
-                if(result == null)
+                if (result == null)
                 {
                     throw new AblyException(new ErrorInfo($"AuthCallback returned a string which can't be converted to TokenRequest. ({callbackResult})."));
                 }

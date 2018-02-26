@@ -58,7 +58,7 @@ namespace IO.Ably.Realtime
 
         public bool Release(string name)
         {
-            if(Logger.IsDebug) { Logger.Debug($"Releasing channel #{name}"); }
+            if (Logger.IsDebug) { Logger.Debug($"Releasing channel #{name}"); }
             RealtimeChannel channel = null;
             if (Channels.TryGetValue(name, out channel))
             {

@@ -129,7 +129,7 @@ namespace IO.Ably.Encryption
 
         public static byte[] GenerateRandomKey(int? keyLength = null, CipherMode? mode = null)
         {
-            if(keyLength.HasValue)
+            if (keyLength.HasValue)
             {
                 ValidateKeyLength(keyLength.Value);
             }

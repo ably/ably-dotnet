@@ -130,10 +130,10 @@ namespace IO.Ably
 
                     throw new AblyException(new ErrorInfo(reason.ToString(), 500), ex);
                 }
-                catch(TaskCanceledException ex)
+                catch (TaskCanceledException ex)
                 {
                     // if the cancellation was not requested then this is timeout.
-                    if(ex.CancellationToken.IsCancellationRequested == false)
+                    if (ex.CancellationToken.IsCancellationRequested == false)
                     {
                         throw new AblyException(new ErrorInfo("Error executing request. Request timed out.", 500), ex);
                     }
@@ -172,7 +172,7 @@ namespace IO.Ably
             {
                 logMessage.AppendLine(ablyResponse.TextResponse);
             }
-            else if(ablyResponse.Body != null)
+            else if (ablyResponse.Body != null)
             {
                 logMessage.AppendLine(ablyResponse.Body.GetText());
             }

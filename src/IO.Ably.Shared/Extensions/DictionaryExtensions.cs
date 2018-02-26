@@ -50,7 +50,7 @@ namespace IO.Ably
             }
 
             var result = first.ToDictionary(x => x.Key, x => x.Value);
-            foreach(var item in second)
+            foreach (var item in second)
             {
                 if (result.Keys.Any(x => string.Equals(x, item.Key, StringComparison.OrdinalIgnoreCase)) ==
                     false)

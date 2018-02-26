@@ -62,7 +62,7 @@ namespace IO.Ably
             get { return _timestamp; }
             set
             {
-                if(value != DateTimeOffset.MinValue)
+                if (value != DateTimeOffset.MinValue)
                 {
                     _timestamp = value;
                 }

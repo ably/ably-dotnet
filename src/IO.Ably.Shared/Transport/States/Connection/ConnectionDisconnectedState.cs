@@ -52,7 +52,7 @@ namespace IO.Ably.Transport.States.Connection
         {
             Context.DestroyTransport();
 
-            if(Logger.IsDebug)
+            if (Logger.IsDebug)
             {
                 Logger.Debug("RetryInstantly set to '" + RetryInstantly + "'");
             }

@@ -488,7 +488,7 @@ namespace IO.Ably.Realtime
                         AttachedSerial = protocolMessage.ChannelSerial;
                     }
 
-                    if(IsTerminalConnectionState == false)
+                    if (IsTerminalConnectionState == false)
                     {
                         SendQueuedMessages();
                     }
@@ -602,7 +602,7 @@ namespace IO.Ably.Realtime
 
         private void SendMessage(ProtocolMessage protocolMessage, Action<bool, ErrorInfo> callback = null)
         {
-            if(Logger.IsDebug)
+            if (Logger.IsDebug)
             {
                 Logger.Debug($"RealtimeChannel.SendMessage:{protocolMessage.Action}");
             }

@@ -111,7 +111,7 @@ namespace IO.Ably
                 result[resource.Name] = GetResourceValue(resource);
             }
 
-            if(result.Children().Any())
+            if (result.Children().Any())
             {
                 return CleanUpWhiteSpace(result.ToString());
             }

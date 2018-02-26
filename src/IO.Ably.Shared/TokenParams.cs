@@ -59,7 +59,7 @@ namespace IO.Ably
         {
             var result = new TokenParams();
             result.ClientId = ClientId;
-            if(Capability != null)
+            if (Capability != null)
             {
                 result.Capability = new Capability(Capability.ToJson());
             }
@@ -83,7 +83,7 @@ namespace IO.Ably
         public Dictionary<string, string> ToRequestParams(Dictionary<string, string> mergeWith = null)
         {
             var dictionary = new Dictionary<string, string>();
-            if(Ttl.HasValue)
+            if (Ttl.HasValue)
             {
                 dictionary.Add("ttl", Ttl.Value.TotalMilliseconds.ToString());
             }

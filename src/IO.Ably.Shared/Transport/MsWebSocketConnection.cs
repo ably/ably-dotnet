@@ -100,7 +100,7 @@ namespace IO.Ably.Transport
 
         public void SendText(string message)
         {
-            if(Logger.IsDebug)
+            if (Logger.IsDebug)
             {
                 Logger.Debug("Sending text");
             }
@@ -167,7 +167,7 @@ namespace IO.Ably.Transport
 
                         ms.Seek(0, SeekOrigin.Begin);
 
-                        if(Logger.IsDebug)
+                        if (Logger.IsDebug)
                         {
                             Logger.Debug("Recieving message with type: " + result.MessageType);
                         }

@@ -31,7 +31,7 @@ namespace AblyPlatform.Cryptography
 
         public static System.Security.Cryptography.CipherMode MapAblyMode(CipherMode? mode)
         {
-            if(mode == null)
+            if (mode == null)
             {
                 return System.Security.Cryptography.CipherMode.CBC;
             }

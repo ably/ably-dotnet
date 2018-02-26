@@ -10,12 +10,12 @@ namespace IO.Ably
     {
         public static HttpValueCollection ParseQueryString( string query )
         {
-            if( query == null )
+            if ( query == null )
             {
                 throw new ArgumentNullException( "query" );
             }
 
-            if( ( query.Length > 0 ) && ( query[ 0 ] == '?' ) )
+            if ( ( query.Length > 0 ) && ( query[ 0 ] == '?' ) )
             {
                 query = query.Substring( 1 );
             }
@@ -38,7 +38,7 @@ namespace IO.Ably
             get
             {
                 string[] items = GetValues(name);
-                if( null == items )
+                if ( null == items )
                 {
                     return null;
                 }
@@ -56,7 +56,7 @@ namespace IO.Ably
         public string[] GetValues( string name )
         {
             string[] res = m_data.Where( i => i.Key==name ).Select( i => i.Value ).ToArray();
-            if( res.Length <= 0 )
+            if ( res.Length <= 0 )
             {
                 return null;
             }
@@ -74,7 +74,7 @@ namespace IO.Ably
         public HttpValueCollection( string query ) : this( query, true ) { }
         public HttpValueCollection( string query, bool urlencoded )
         {
-            if( !string.IsNullOrEmpty( query ) )
+            if ( !string.IsNullOrEmpty( query ) )
             {
                 this.FillFromString( query, urlencoded );
             }
@@ -84,21 +84,21 @@ namespace IO.Ably
         {
             // http://stackoverflow.com/a/20284635/126995
             int num = (query != null) ? query.Length : 0;
-            for( int i = 0; i < num; i++ )
+            for ( int i = 0; i < num; i++ )
             {
                 int startIndex = i;
                 int num4 = -1;
-                while( i < num )
+                while ( i < num )
                 {
                     char ch = query[i];
-                    if( ch == '=' )
+                    if ( ch == '=' )
                     {
-                        if( num4 < 0 )
+                        if ( num4 < 0 )
                         {
                             num4 = i;
                         }
                     }
-                    else if( ch == '&' )
+                    else if ( ch == '&' )
                     {
                         break;
                     }
@@ -106,7 +106,7 @@ namespace IO.Ably
                 }
                 string str = null;
                 string str2 = null;
-                if( num4 >= 0 )
+                if ( num4 >= 0 )
                 {
                     str = query.Substring( startIndex, num4 - startIndex );
                     str2 = query.Substring( num4 + 1, ( i - num4 ) - 1 );
@@ -116,7 +116,7 @@ namespace IO.Ably
                     str2 = query.Substring( startIndex, i - startIndex );
                 }
 
-                if( urlencoded )
+                if ( urlencoded )
                 {
                     this.Add( Uri.UnescapeDataString( str ), Uri.UnescapeDataString( str2 ) );
                 }
@@ -125,7 +125,7 @@ namespace IO.Ably
                     this.Add( str, str2 );
                 }
 
-                if( ( i == ( num - 1 ) ) && ( query[ i ] == '&' ) )
+                if ( ( i == ( num - 1 ) ) && ( query[ i ] == '&' ) )
                 {
                     this.Add( null, string.Empty );
                 }

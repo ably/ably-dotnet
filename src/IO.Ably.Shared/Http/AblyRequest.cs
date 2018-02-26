@@ -19,7 +19,7 @@ namespace IO.Ably
             Protocol = protocol;
             ChannelOptions = new ChannelOptions();
             RequestBody = new byte[] { };
-            ResponseDataType = typeof (object);
+            ResponseDataType = typeof(object);
         }
 
         public string Url { get; set; }

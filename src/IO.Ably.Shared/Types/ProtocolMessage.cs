@@ -92,7 +92,7 @@ namespace IO.Ably.Types
         {
             get
             {
-                if(ConnectionDetails != null && ConnectionDetails.ConnectionKey.IsNotEmpty())
+                if (ConnectionDetails != null && ConnectionDetails.ConnectionKey.IsNotEmpty())
                 {
                     return ConnectionDetails.ConnectionKey;
                 }

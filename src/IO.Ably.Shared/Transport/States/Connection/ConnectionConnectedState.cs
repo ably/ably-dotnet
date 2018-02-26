@@ -87,7 +87,7 @@ namespace IO.Ably.Transport.States.Connection
                 Context.SetConnectionClientId(_info.ClientId);
             }
 
-            if(_resumed.HasValue && _resumed.Value && Logger.IsDebug)
+            if (_resumed.HasValue && _resumed.Value && Logger.IsDebug)
             {
                 Logger.Debug("Connection resumed!");
             }
@@ -100,7 +100,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Task OnAttachToContext()
         {
-            if(Logger.IsDebug)
+            if (Logger.IsDebug)
             {
                 Logger.Debug("Processing Connected:OnAttached. Resumed: " + _resumed);
             }

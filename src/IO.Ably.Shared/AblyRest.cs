@@ -148,7 +148,7 @@ namespace IO.Ably
             }
             catch (Exception ex)
             {
-                if(Logger.IsDebug)
+                if (Logger.IsDebug)
                 {
                     Logger.Debug("Error Executing request. Message: " + ex.Message);
                 }

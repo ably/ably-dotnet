@@ -41,7 +41,7 @@ namespace IO.Ably.Realtime
             private set
             {
                 _initialSyncCompleted = value;
-                if(_initialSyncCompleted)
+                if (_initialSyncCompleted)
                 {
                     OnInitialSyncCompleted();
                 }
@@ -75,7 +75,7 @@ namespace IO.Ably.Realtime
 
         public void Dispose()
         {
-            if(_channel != null)
+            if (_channel != null)
             {
                 _channel.InternalStateChanged -= OnChannelStateChanged;
             }
@@ -410,7 +410,7 @@ namespace IO.Ably.Realtime
         private void NotifySubscribers(PresenceMessage message)
         {
             var handlers = _handlers.GetHandlers();
-            if(Logger.IsDebug)
+            if (Logger.IsDebug)
             {
                 Logger.Debug("Notifying Presence handlers: " + handlers.Count());
             }
@@ -422,7 +422,7 @@ namespace IO.Ably.Realtime
             }
 
             var specificHandlers = _handlers.GetHandlers(message.Action.ToString());
-            if(Logger.IsDebug)
+            if (Logger.IsDebug)
             {
                 Logger.Debug("Notifying specific handlers for Message: " + message.Action + ". Count: " + specificHandlers.Count());
             }

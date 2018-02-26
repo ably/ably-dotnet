@@ -54,7 +54,7 @@ namespace IO.Ably.Realtime
                     }
                     else
                     {
-                        if(protocolMessage.Error != null)
+                        if (protocolMessage.Error != null)
                         {
                             channel.OnError(protocolMessage.Error);
                         }

@@ -395,7 +395,7 @@ namespace IO.Ably.MessageEncoders
         {
             var result = Result.Ok();
             var index = 0;
-            foreach(var message in messages ?? Enumerable.Empty<IMessage>())
+            foreach (var message in messages ?? Enumerable.Empty<IMessage>())
             {
                 SetMessageIdConnectionIdAndTimestamp(protocolMessage, message, index);
                 result = Result.Combine(result, DecodePayload(message, options));

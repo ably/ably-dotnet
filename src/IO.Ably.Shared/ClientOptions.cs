@@ -30,7 +30,7 @@ namespace IO.Ably
             get { return _clientId; }
             set
             {
-                if(value == "*")
+                if (value == "*")
                 {
                     throw new InvalidOperationException("Wildcard clientIds are not support in ClientOptions");
                 }
@@ -100,7 +100,7 @@ namespace IO.Ably
         {
             if (RealtimeHost.IsEmpty())
             {
-                if(IsLiveEnvironment)
+                if (IsLiveEnvironment)
                 {
                     return Defaults.RealtimeHost;
                 }

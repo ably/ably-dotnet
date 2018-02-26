@@ -33,7 +33,7 @@ namespace IO.Ably.CustomSerialisers
             if (token.Type == JTokenType.String)
             {
                 TimeSpan result;
-                if(TimeSpan.TryParse((string)token, out result))
+                if (TimeSpan.TryParse((string)token, out result))
                 {
                     return result;
                 }
