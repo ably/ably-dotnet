@@ -27,14 +27,14 @@ namespace IO.Ably
                 return false;
             }
 
-            return Equals((ChannelOptions) obj);
+            return Equals((ChannelOptions)obj);
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                return (Encrypted.GetHashCode()*397) ^ (CipherParams?.GetHashCode() ?? 0);
+                return (Encrypted.GetHashCode() *397) ^ (CipherParams?.GetHashCode() ?? 0);
             }
         }
 

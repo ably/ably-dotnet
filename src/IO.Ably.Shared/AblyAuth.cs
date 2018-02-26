@@ -251,7 +251,7 @@ namespace IO.Ably
             {
                 if (keyId.IsEmpty() || keyValue.IsEmpty())
                 {
-                    throw new AblyException("TokenAuth is on but there is no way to generate one", 80019 );
+                    throw new AblyException("TokenAuth is on but there is no way to generate one", 80019);
                 }
 
                 postData = new TokenRequest(Now).Populate(@params, keyId, keyValue);

@@ -99,7 +99,7 @@ namespace IO.Ably
                 return true;
             }
 
-            return obj is TokenDetails && Equals((TokenDetails) obj);
+            return obj is TokenDetails && Equals((TokenDetails)obj);
         }
 
         public override int GetHashCode()

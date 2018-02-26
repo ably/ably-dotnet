@@ -123,7 +123,7 @@ namespace IO.Ably
             public InternalLogger(ILoggerSink loggerSink)
                 : this(Defaults.DefaultLogLevel, loggerSink) { }
             public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink)
-                : this(logLevel, loggerSink, null ) { }
+                : this(logLevel, loggerSink, null) { }
             public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink, Func<DateTimeOffset> nowProvider)
             {
                 LogLevel = logLevel;

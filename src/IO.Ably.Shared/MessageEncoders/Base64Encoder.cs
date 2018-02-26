@@ -11,7 +11,7 @@ namespace IO.Ably.MessageEncoders
         {
             if (CurrentEncodingIs(payload, EncodingName) && payload.Data is string)
             {
-                payload.Data = ((string) payload.Data).FromBase64();
+                payload.Data = ((string)payload.Data).FromBase64();
                 RemoveCurrentEncodingPart(payload);
             }
 

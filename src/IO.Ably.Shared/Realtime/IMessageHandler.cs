@@ -69,7 +69,7 @@ namespace IO.Ably.Realtime
                 return false;
             }
 
-            return Equals((MessageHandlerAction<T>) obj);
+            return Equals((MessageHandlerAction<T>)obj);
         }
 
         public override int GetHashCode()

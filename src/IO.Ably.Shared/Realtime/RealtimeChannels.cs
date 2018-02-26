@@ -65,7 +65,7 @@ namespace IO.Ably.Realtime
                 EventHandler<ChannelStateChange> eventHandler = null;
                 eventHandler = (s, args) =>
                 {
-                    var detachedChannel = (RealtimeChannel) s;
+                    var detachedChannel = (RealtimeChannel)s;
                     if (args.Current == ChannelState.Detached || args.Current == ChannelState.Failed)
                     {
                         if (Logger.IsDebug) { Logger.Debug($"Channel #{name} was removed from Channel list. State {args.Current}"); }

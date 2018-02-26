@@ -390,8 +390,7 @@ namespace IO.Ably.MessageEncoders
 
             return Result.Combine(
                 DecodeMessages(protocolMessage, protocolMessage.Messages, options),
-                DecodeMessages(protocolMessage, protocolMessage.Presence, options)
-            );
+                DecodeMessages(protocolMessage, protocolMessage.Presence, options));
         }
 
         private Result DecodeMessages(ProtocolMessage protocolMessage, IEnumerable<IMessage> messages, ChannelOptions options)

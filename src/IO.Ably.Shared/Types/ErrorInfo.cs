@@ -71,7 +71,7 @@ namespace IO.Ably
                 return $"Reason: {Message}; Code: {Code}";
             }
 
-            return $"Reason: {Message}; Code: {Code}; HttpStatusCode: {(int) StatusCode.Value} ({StatusCode})";
+            return $"Reason: {Message}; Code: {Code}; HttpStatusCode: {(int)StatusCode.Value} ({StatusCode})";
         }
 
         internal static ErrorInfo Parse(AblyResponse response)

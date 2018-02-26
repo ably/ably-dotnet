@@ -549,7 +549,7 @@ namespace IO.Ably.Transport
                     break;
                 case NetworkState.Offline:
                     if (ConnectionState == ConnectionState.Connected ||
-                        ConnectionState == ConnectionState.Connecting )
+                        ConnectionState == ConnectionState.Connecting)
                     {
                         if (Logger.IsDebug)
                         {

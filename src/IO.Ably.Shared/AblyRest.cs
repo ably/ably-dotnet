@@ -15,6 +15,7 @@ namespace IO.Ably
     {
 
         internal AblyHttpClient HttpClient { get; private set; }
+
         internal MessageHandler MessageHandler { get; private set; }
 
         internal string CustomHost

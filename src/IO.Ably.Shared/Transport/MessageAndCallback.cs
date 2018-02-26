@@ -41,7 +41,7 @@ namespace IO.Ably.Transport
                 return false;
             }
 
-            return Equals((MessageAndCallback) obj);
+            return Equals((MessageAndCallback)obj);
         }
 
         public override int GetHashCode()

@@ -96,7 +96,7 @@ namespace IO.Ably
                 return false;
             }
 
-            return Equals((Message) obj);
+            return Equals((Message)obj);
         }
 
         public override int GetHashCode()

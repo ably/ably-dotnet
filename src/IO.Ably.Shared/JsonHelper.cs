@@ -47,7 +47,7 @@ namespace IO.Ably
 
         public static T Deserialize<T>(string json)
         {
-            return (T) DeserializeObject(json, typeof(T));
+            return (T)DeserializeObject(json, typeof(T));
         }
 
         public static object Deserialize(string json)

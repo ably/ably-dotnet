@@ -97,7 +97,7 @@ namespace IO.Ably.Realtime
             }
 
             var result = Map.Values.Where( x => (getOptions.ClientId.IsEmpty() || x.ClientId == getOptions.ClientId)
-                                               && (getOptions.ConnectionId.IsEmpty() || x.ConnectionId == getOptions.ConnectionId) );
+                                               && (getOptions.ConnectionId.IsEmpty() || x.ConnectionId == getOptions.ConnectionId));
             return result;
         }
 

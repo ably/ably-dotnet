@@ -51,7 +51,7 @@ namespace IO.Ably
                     var json = JObject.Parse(capabilityString);
                     foreach (var jToken in json.Children())
                     {
-                        var child = (JProperty) jToken;
+                        var child = (JProperty)jToken;
                         Resources.Add(GetResource(child));
                     }
                 }
@@ -166,7 +166,7 @@ namespace IO.Ably
                 return false;
             }
 
-            return Equals((Capability) obj);
+            return Equals((Capability)obj);
         }
 
         public override int GetHashCode()
