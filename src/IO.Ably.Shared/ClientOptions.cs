@@ -221,7 +221,8 @@ namespace IO.Ably
         /// It automatically parses the key to ensure the correct format is used and sets the KeyId and KeyValue properties
         /// </summary>
         /// <param name="key">Ably authentication key</param>
-        public ClientOptions(string key) : base(key)
+        public ClientOptions(string key)
+            : base(key)
         {
         }
     }

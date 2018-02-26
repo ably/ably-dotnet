@@ -13,7 +13,8 @@ namespace IO.Ably
 
         private DateTimeOffset? _timestamp;
 
-        public TokenRequest() : this(Defaults.NowFunc())
+        public TokenRequest()
+            : this(Defaults.NowFunc())
         { }
         internal TokenRequest(Func<DateTimeOffset> nowFunc)
         {

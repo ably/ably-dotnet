@@ -55,7 +55,8 @@ namespace IO.Ably
             get { return $"{Algorithm}-{KeyLength}-{Mode}"; }
         }
 
-        public CipherParams(byte[] key) : this(Crypto.DefaultAlgorithm, key)
+        public CipherParams(byte[] key)
+            : this(Crypto.DefaultAlgorithm, key)
         {
 
         }

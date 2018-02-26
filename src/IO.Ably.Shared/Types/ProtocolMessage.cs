@@ -53,12 +53,14 @@ namespace IO.Ably.Types
             Presence = new PresenceMessage[] { };
         }
 
-        internal ProtocolMessage(MessageAction action) : this()
+        internal ProtocolMessage(MessageAction action)
+            : this()
         {
             Action = action;
         }
 
-        internal ProtocolMessage(MessageAction action, string channel) : this(action)
+        internal ProtocolMessage(MessageAction action, string channel)
+            : this(action)
         {
             this.Channel = channel;
         }

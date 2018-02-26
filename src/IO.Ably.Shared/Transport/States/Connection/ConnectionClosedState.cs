@@ -6,13 +6,13 @@ namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionClosedState : ConnectionStateBase
     {
-        public ConnectionClosedState(IConnectionContext context, ILogger logger) :
-            this(context, null, logger)
+        public ConnectionClosedState(IConnectionContext context, ILogger logger)
+            : this(context, null, logger)
         {
         }
 
-        public ConnectionClosedState(IConnectionContext context, ErrorInfo error, ILogger logger) :
-            base(context, logger)
+        public ConnectionClosedState(IConnectionContext context, ErrorInfo error, ILogger logger)
+            : base(context, logger)
         {
             Error = error ?? ErrorInfo.ReasonClosed;
         }

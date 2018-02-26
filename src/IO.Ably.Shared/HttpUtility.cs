@@ -71,7 +71,8 @@ namespace IO.Ably
 
         public HttpValueCollection() { }
 
-        public HttpValueCollection( string query ) : this( query, true ) { }
+        public HttpValueCollection( string query )
+            : this( query, true ) { }
         public HttpValueCollection( string query, bool urlencoded )
         {
             if ( !string.IsNullOrEmpty( query ) )

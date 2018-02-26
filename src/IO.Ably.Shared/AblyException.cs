@@ -5,7 +5,8 @@ namespace IO.Ably
 {
     public class InsecureRequestException : AblyException
     {
-        public InsecureRequestException() : base("Current action cannot be performed over http")
+        public InsecureRequestException()
+            : base("Current action cannot be performed over http")
         {
         }
     }
@@ -50,7 +51,8 @@ namespace IO.Ably
         /// </summary>
         /// <param name="reason"></param>
         /// <param name="code"></param>
-        public AblyException(string reason, int code) : this(new ErrorInfo(reason, code))
+        public AblyException(string reason, int code)
+            : this(new ErrorInfo(reason, code))
         {
 
         }
@@ -58,7 +60,8 @@ namespace IO.Ably
         /// <summary>
         /// Creates AblyException and populates ErrorInfo with the supplied parameters.
         /// </summary>
-        public AblyException(string reason, int code, HttpStatusCode? statusCode = null) : this(new ErrorInfo(reason, code, statusCode))
+        public AblyException(string reason, int code, HttpStatusCode? statusCode = null)
+            : this(new ErrorInfo(reason, code, statusCode))
         {
 
         }

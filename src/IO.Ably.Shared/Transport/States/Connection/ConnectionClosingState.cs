@@ -10,13 +10,13 @@ namespace IO.Ably.Transport.States.Connection
         private const int CloseTimeout = 1000;
         private readonly ICountdownTimer _timer;
 
-        public ConnectionClosingState(IConnectionContext context, ILogger logger) :
-            this(context, null, new CountdownTimer("Closing state timer", logger), logger)
+        public ConnectionClosingState(IConnectionContext context, ILogger logger)
+            : this(context, null, new CountdownTimer("Closing state timer", logger), logger)
         {
         }
 
-        public ConnectionClosingState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer, ILogger logger) :
-            base(context, logger)
+        public ConnectionClosingState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer, ILogger logger)
+            : base(context, logger)
         {
             _timer = timer;
             Error = error ?? ErrorInfo.ReasonClosed;

@@ -64,7 +64,8 @@ namespace IO.Ably.Realtime
 
         public Presence Presence { get; }
 
-        internal RealtimeChannel(string name, string clientId, AblyRealtime realtimeClient, ChannelOptions options = null) : base(options?.Logger)
+        internal RealtimeChannel(string name, string clientId, AblyRealtime realtimeClient, ChannelOptions options = null)
+            : base(options?.Logger)
         {
             Name = name;
             Options = options;

@@ -11,8 +11,8 @@ namespace IO.Ably.Transport.States.Connection
     {
         private readonly ConnectionInfo _info;
         private bool? _resumed = null;
-        public ConnectionConnectedState(IConnectionContext context, ConnectionInfo info, ErrorInfo error = null, ILogger logger = null) :
-            base(context, logger)
+        public ConnectionConnectedState(IConnectionContext context, ConnectionInfo info, ErrorInfo error = null, ILogger logger = null)
+            : base(context, logger)
         {
             _info = info;
             Error = error;

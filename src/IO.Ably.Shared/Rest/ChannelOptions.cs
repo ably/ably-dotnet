@@ -42,8 +42,10 @@ namespace IO.Ably
         public bool Encrypted { get; private set; }
         public CipherParams CipherParams { get; private set; }
 
-        public ChannelOptions(CipherParams @params) : this(IO.Ably.DefaultLogger.LoggerInstance, true, @params) { }
-        public ChannelOptions(bool encrypted = false, CipherParams @params = null) : this(null, encrypted, @params) { }
+        public ChannelOptions(CipherParams @params)
+            : this(IO.Ably.DefaultLogger.LoggerInstance, true, @params) { }
+        public ChannelOptions(bool encrypted = false, CipherParams @params = null)
+            : this(null, encrypted, @params) { }
         internal ChannelOptions(ILogger logger, bool encrypted = false, CipherParams @params = null)
         {
             Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;

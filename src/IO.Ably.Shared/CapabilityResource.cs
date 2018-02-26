@@ -23,7 +23,8 @@ namespace IO.Ably
             AllowedOperations = new List<string>();
         }
 
-        public CapabilityResource(string name) : this()
+        public CapabilityResource(string name)
+            : this()
         {
             Name = name;
         }

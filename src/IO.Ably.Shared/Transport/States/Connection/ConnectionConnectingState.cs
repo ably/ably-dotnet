@@ -9,8 +9,8 @@ namespace IO.Ably.Transport.States.Connection
     {
         private readonly ICountdownTimer _timer;
 
-        public ConnectionConnectingState(IConnectionContext context, ILogger logger) :
-            this(context, new CountdownTimer("Connecting state timer", logger), logger)
+        public ConnectionConnectingState(IConnectionContext context, ILogger logger)
+            : this(context, new CountdownTimer("Connecting state timer", logger), logger)
         {
         }
 
