@@ -85,7 +85,7 @@ namespace IO.Ably
 
         internal TokenRequest Populate(TokenParams tokenParams, string keyName, string keyValue)
         {
-            this.KeyName = keyName;
+            KeyName = keyName;
             Capability = tokenParams.Capability ?? Capability.AllowAll;
             ClientId = tokenParams.ClientId;
             var now = Now();

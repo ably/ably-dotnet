@@ -79,7 +79,7 @@ namespace IO.Ably
         {
             if (!string.IsNullOrEmpty(query))
             {
-                this.FillFromString(query, urlencoded);
+                FillFromString(query, urlencoded);
             }
         }
 
@@ -123,16 +123,16 @@ namespace IO.Ably
 
                 if (urlencoded)
                 {
-                    this.Add(Uri.UnescapeDataString(str), Uri.UnescapeDataString(str2));
+                    Add(Uri.UnescapeDataString(str), Uri.UnescapeDataString(str2));
                 }
                 else
                 {
-                    this.Add(str, str2);
+                    Add(str, str2);
                 }
 
                 if ((i == (num - 1)) && (query[i] == '&'))
                 {
-                    this.Add(null, string.Empty);
+                    Add(null, string.Empty);
                 }
             }
         }

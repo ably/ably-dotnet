@@ -18,11 +18,11 @@ namespace IO.Ably
 
         public Message(string name = null, object data = null, string clientId = null)
         {
-            this.Name = name;
-            this.Data = data;
+            Name = name;
+            Data = data;
             if (clientId.IsNotEmpty())
             {
-                this.ClientId = clientId;
+                ClientId = clientId;
             }
         }
 
@@ -91,7 +91,7 @@ namespace IO.Ably
                 return true;
             }
 
-            if (obj.GetType() != this.GetType())
+            if (obj.GetType() != GetType())
             {
                 return false;
             }

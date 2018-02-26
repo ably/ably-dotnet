@@ -62,7 +62,7 @@ namespace IO.Ably.Types
         internal ProtocolMessage(MessageAction action, string channel)
             : this(action)
         {
-            this.Channel = channel;
+            Channel = channel;
         }
 
         [JsonProperty("action")]
