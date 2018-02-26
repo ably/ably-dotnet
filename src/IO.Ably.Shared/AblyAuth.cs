@@ -213,7 +213,8 @@ namespace IO.Ably
                 }
                 catch (Exception ex) when (shouldCatch)
                 {
-                    throw new AblyException(new ErrorInfo(
+                    throw new AblyException(
+                        new ErrorInfo(
                         "Error calling AuthCallback, token request failed. See inner exception for details.", 80019), ex);
 
                 }
@@ -525,28 +526,24 @@ namespace IO.Ably
         }
 
 
-        public TokenDetails RequestToken(TokenParams tokenParams = null,
-            AuthOptions options = null)
+        public TokenDetails RequestToken(TokenParams tokenParams = null, AuthOptions options = null)
         {
             return AsyncHelper.RunSync(() => RequestTokenAsync(tokenParams, options));
         }
 
-        public TokenDetails Authorize(TokenParams tokenParams = null,
-            AuthOptions options = null)
+        public TokenDetails Authorize(TokenParams tokenParams = null, AuthOptions options = null)
         {
             return AsyncHelper.RunSync(() => AuthorizeAsync(tokenParams, options));
         }
 
 
         [Obsolete("This method will be removed in the future, please replace with a call to Authorize")]
-        public TokenDetails Authorise(TokenParams tokenParams = null,
-            AuthOptions options = null)
+        public TokenDetails Authorise(TokenParams tokenParams = null, AuthOptions options = null)
         {
             return AsyncHelper.RunSync(() => AuthorizeAsync(tokenParams, options));
         }
 
-        public string CreateTokenRequest(TokenParams tokenParams = null,
-            AuthOptions authOptions = null)
+        public string CreateTokenRequest(TokenParams tokenParams = null, AuthOptions authOptions = null)
         {
             return AsyncHelper.RunSync(() => CreateTokenRequestAsync(tokenParams, authOptions));
         }

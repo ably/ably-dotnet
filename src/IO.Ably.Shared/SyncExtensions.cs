@@ -7,7 +7,8 @@ namespace IO.Ably
     internal static class AsyncHelper
     {
         private static readonly TaskFactory MyTaskFactory = new
-          TaskFactory(CancellationToken.None,
+          TaskFactory(
+              CancellationToken.None,
                       TaskCreationOptions.None,
                       TaskContinuationOptions.None,
                       TaskScheduler.Default);

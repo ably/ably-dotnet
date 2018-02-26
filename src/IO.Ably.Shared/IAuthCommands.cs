@@ -18,17 +18,13 @@ namespace IO.Ably
 
         string ClientId { get; }
 
-        TokenDetails RequestToken(TokenParams tokenParams = null,
-            AuthOptions options = null);
+        TokenDetails RequestToken(TokenParams tokenParams = null, AuthOptions options = null);
 
-        TokenDetails Authorize(TokenParams tokenParams = null,
-            AuthOptions options = null);
+        TokenDetails Authorize(TokenParams tokenParams = null, AuthOptions options = null);
 
         [Obsolete("This method will be removed in the future, please replace with a call to Authorize")]
-        TokenDetails Authorise(TokenParams tokenParams = null,
-            AuthOptions options = null);
+        TokenDetails Authorise(TokenParams tokenParams = null, AuthOptions options = null);
 
-        string CreateTokenRequest(TokenParams tokenParams = null,
-            AuthOptions authOptions = null);
+        string CreateTokenRequest(TokenParams tokenParams = null, AuthOptions authOptions = null);
     }
 }

@@ -125,7 +125,8 @@ namespace IO.Ably.MessageEncoders
 
             if (request.PostData is IEnumerable<Message>)
             {
-                return GetMessagesRequestBody(request.PostData as IEnumerable<Message>,
+                return GetMessagesRequestBody(
+                    request.PostData as IEnumerable<Message>,
                     request.ChannelOptions);
             }
 

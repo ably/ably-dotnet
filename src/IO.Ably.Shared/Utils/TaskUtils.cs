@@ -7,7 +7,8 @@ namespace IO.Ably
         // http://stackoverflow.com/a/21648387/126995
         public static Task IgnoreExceptions( this Task task )
         {
-            task.ContinueWith( c => { var ignored = c.Exception; },
+            task.ContinueWith( 
+                c => { var ignored = c.Exception; },
                 TaskContinuationOptions.OnlyOnFaulted |
                 TaskContinuationOptions.ExecuteSynchronously );
             return task;
@@ -18,7 +19,8 @@ namespace IO.Ably
         {
             TaskCompletionSource<object> res = new TaskCompletionSource<object>();
 
-            return task.ContinueWith(t =>
+            return task.ContinueWith(
+                t =>
             {
                 if (t.IsCanceled)
                 {
