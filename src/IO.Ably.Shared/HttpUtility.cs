@@ -102,8 +102,10 @@ namespace IO.Ably
                     {
                         break;
                     }
+
                     i++;
                 }
+
                 string str = null;
                 string str2 = null;
                 if ( num4 >= 0 )

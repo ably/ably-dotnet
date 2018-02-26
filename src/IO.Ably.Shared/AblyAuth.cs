@@ -488,6 +488,7 @@ namespace IO.Ably
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
+
                 Logger.Debug("Authentication method: {0}", authMethodDescription);
             }
         }

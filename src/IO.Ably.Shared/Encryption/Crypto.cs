@@ -82,6 +82,7 @@ namespace IO.Ably.Encryption
             {
                 throw new ArgumentNullException(nameof(base64EncodedKey), "Base64Encoded key cannot be null");
             }
+
             return GetDefaultParams(base64EncodedKey.FromBase64(), base64Iv?.FromBase64(), mode);
         }
 

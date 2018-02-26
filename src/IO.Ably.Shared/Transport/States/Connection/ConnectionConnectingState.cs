@@ -50,13 +50,16 @@ namespace IO.Ably.Transport.States.Connection
                             var info = new ConnectionInfo(message);
                             TransitionState(new ConnectionConnectedState(Context, info, message.Error, Logger));
                         }
+
                         return true;
                     }
+
                 case ProtocolMessage.MessageAction.Disconnected:
                     {
                         Context.HandleConnectingFailure(message.Error, null);
                         return true;
                     }
+
                 case ProtocolMessage.MessageAction.Error:
                     {
                         //If the error is a token error do some magic
@@ -87,6 +90,7 @@ namespace IO.Ably.Transport.States.Connection
                         return true;
                     }
             }
+
             return false;
         }
 

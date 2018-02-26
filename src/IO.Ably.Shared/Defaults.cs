@@ -25,6 +25,7 @@ namespace IO.Ably
                 {
                     return $"dotnet.{IoC.PlatformId}-{AssemblyVersion}";
                 }
+
                 return $"dotnet-{AssemblyVersion}";
             }
         }

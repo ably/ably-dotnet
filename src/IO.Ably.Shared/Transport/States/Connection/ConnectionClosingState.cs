@@ -33,17 +33,20 @@ namespace IO.Ably.Transport.States.Connection
                         TransitionState(new ConnectionClosedState(Context, Logger));
                         return TaskConstants.BooleanTrue;
                     }
+
                 case ProtocolMessage.MessageAction.Disconnected:
                     {
                         TransitionState(new ConnectionDisconnectedState(Context, message.Error, Logger));
                         return TaskConstants.BooleanTrue;
                     }
+
                 case ProtocolMessage.MessageAction.Error:
                     {
                         TransitionState(new ConnectionFailedState(Context, message.Error, Logger));
                         return TaskConstants.BooleanTrue;
                     }
             }
+
             return TaskConstants.BooleanFalse;
         }
 
@@ -64,6 +67,7 @@ namespace IO.Ably.Transport.States.Connection
             {
                 Context.SetState(new ConnectionClosedState(Context, Logger));
             }
+
             return TaskConstants.BooleanTrue;
         }
 

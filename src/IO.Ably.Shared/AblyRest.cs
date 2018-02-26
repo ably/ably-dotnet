@@ -144,6 +144,7 @@ namespace IO.Ably
                     }
 
                 }
+
                 throw;
             }
             catch (Exception ex)

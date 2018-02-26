@@ -11,6 +11,7 @@ namespace IO.Ably
             public const string Presence = "presence";
             public const string All = "*";
         }
+
         public string Name { get; set; }
         public List<string> AllowedOperations { get; set; }
 

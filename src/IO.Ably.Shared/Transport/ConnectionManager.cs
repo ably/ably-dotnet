@@ -271,6 +271,7 @@ namespace IO.Ably.Transport
 
                 return true;
             }
+
             return false;
         }
 
@@ -316,6 +317,7 @@ namespace IO.Ably.Transport
                 {
                     throw new AblyException($"Current state is [{State.State}] which supports queuing but Options.QueueMessages is set to False.");
                 }
+
                 return;
             }
 
@@ -544,6 +546,7 @@ namespace IO.Ably.Transport
 
                         Connect();
                     }
+
                     break;
                 case NetworkState.Offline:
                     if (ConnectionState == ConnectionState.Connected ||
@@ -561,6 +564,7 @@ namespace IO.Ably.Transport
                             RetryInstantly = true
                         });
                     }
+
                     break;
 
             }

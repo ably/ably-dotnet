@@ -59,6 +59,7 @@ namespace IO.Ably.Transport.States.Connection
                     Context.SetState(new ConnectionFailedState(Context, message.Error, Logger));
                     return true;
             }
+
             return false;
         }
 
