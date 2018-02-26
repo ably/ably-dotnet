@@ -74,7 +74,7 @@ namespace IO.Ably
 
         public static T Deserialise<T>(byte[] byteArray)
         {
-            return (T) Deserialise(byteArray, typeof(T));
+            return (T)Deserialise(byteArray, typeof(T));
         }
     }
 }
