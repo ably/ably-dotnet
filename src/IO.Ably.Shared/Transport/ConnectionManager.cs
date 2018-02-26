@@ -17,7 +17,6 @@ namespace IO.Ably.Transport
         internal ILogger Logger { get; private set; }
 
         public Queue<MessageAndCallback> PendingMessages { get; }
-        //internal readonly AsyncContextThread AsyncContextThread = new AsyncContextThread();
 
         private ITransportFactory GetTransportFactory()
             => Options.TransportFactory ?? Defaults.WebSocketTransportFactory;
@@ -127,7 +126,7 @@ namespace IO.Ably.Transport
                             return;
                         }
 
-                        //Abort any timers on the old state
+                        // Abort any timers on the old state
                         State.AbortTimer();
                         if (Logger.IsDebug)
                         {
@@ -177,7 +176,7 @@ namespace IO.Ably.Transport
                 }
                 finally
                 {
-                    //Clear the state in transition only if the current state hasn't updated it
+                    // Clear the state in transition only if the current state hasn't updated it
                     if (_inTransitionToState == newState)
                     {
                         _inTransitionToState = null;
@@ -307,7 +306,7 @@ namespace IO.Ably.Transport
                 return;
             }
 
-            //Encode message/presence payloads
+            // Encode message/presence payloads
             Handler.EncodeProtocolMessage(message, channelOptions);
 
             if (State.CanSend)
@@ -377,7 +376,7 @@ namespace IO.Ably.Transport
             {
                 if (Logger.IsDebug)
                 {
-                    var errorMessage = ex != null ? $" Error: {ex.Message}" : "";
+                    var errorMessage = ex != null ? $" Error: {ex.Message}" : string.Empty;
                     Logger.Debug($"Transport state changed to: {transportState}.{errorMessage}");
                 }
 
@@ -436,7 +435,7 @@ namespace IO.Ably.Transport
         {
             if (resumed)
             {
-                //Resend any messages waiting an Ack Queue
+                // Resend any messages waiting an Ack Queue
                 foreach (var message in AckProcessor.GetQueuedMessages())
                 {
                     SendToTransport(message);
@@ -463,7 +462,7 @@ namespace IO.Ably.Transport
             error = error ?? new ErrorInfo($"Channel cannot publish messages whilst state is {channel.State}", 50000);
             AckProcessor.FailChannelMessages(channel.Name, error);
 
-            //TODO: Clear messages from the outgoing queue
+            // TODO: Clear messages from the outgoing queue
         }
 
         void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)

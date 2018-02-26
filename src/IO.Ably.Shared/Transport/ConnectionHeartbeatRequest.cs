@@ -11,8 +11,7 @@ namespace IO.Ably.Transport
 {
     internal class ConnectionHeartbeatRequest
     {
-        public static readonly ErrorInfo DefaultError = new ErrorInfo("Unable to ping service; not connected", 40000,
-            HttpStatusCode.BadRequest);
+        public static readonly ErrorInfo DefaultError = new ErrorInfo("Unable to ping service; not connected", 40000, HttpStatusCode.BadRequest);
 
         public static readonly ErrorInfo TimeOutError = new ErrorInfo("Unable to ping service; Request timed out", 40800, HttpStatusCode.RequestTimeout);
 
@@ -45,8 +44,7 @@ namespace IO.Ably.Transport
             return Execute(manager, new CountdownTimer("Connection heartbeat timer", manager.Logger), nowProvider, callback);
         }
 
-        public static ConnectionHeartbeatRequest Execute(ConnectionManager manager, ICountdownTimer timer,
-            Func<DateTimeOffset> nowProvider, Action<TimeSpan?, ErrorInfo> callback)
+        public static ConnectionHeartbeatRequest Execute(ConnectionManager manager, ICountdownTimer timer, Func<DateTimeOffset> nowProvider, Action<TimeSpan?, ErrorInfo> callback)
         {
             var request = new ConnectionHeartbeatRequest(manager, timer, nowProvider);
             return request.Send(callback);

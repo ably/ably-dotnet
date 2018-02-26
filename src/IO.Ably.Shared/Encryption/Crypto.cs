@@ -102,8 +102,7 @@ namespace IO.Ably.Encryption
         {
             if (keyLength != 128 && keyLength != 256)
             {
-                throw new AblyException($"Only 128 and 256 keys are supported. Provided key is {keyLength}", 40003,
-                    HttpStatusCode.BadRequest);
+                throw new AblyException($"Only 128 and 256 keys are supported. Provided key is {keyLength}", 40003, HttpStatusCode.BadRequest);
             }
         }
 

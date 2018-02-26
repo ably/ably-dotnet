@@ -271,8 +271,7 @@ namespace IO.Ably.Realtime
                 return TaskConstants.BooleanTrue;
             }
 
-            throw new AblyException("Unable to enter presence channel in detached or failed state", 91001,
-                HttpStatusCode.BadRequest);
+            throw new AblyException("Unable to enter presence channel in detached or failed state", 91001, HttpStatusCode.BadRequest);
         }
 
         internal void OnPresence(PresenceMessage[] messages, string syncChannelSerial)

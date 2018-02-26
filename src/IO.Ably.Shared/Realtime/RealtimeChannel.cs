@@ -414,8 +414,7 @@ namespace IO.Ably.Realtime
             }
 
             // Invalid state, throw
-            throw new AblyException(new ErrorInfo("Unable to publish in detached or failed state", 40000,
-                HttpStatusCode.BadRequest));
+            throw new AblyException(new ErrorInfo("Unable to publish in detached or failed state", 40000, HttpStatusCode.BadRequest));
         }
 
         internal void SetChannelState(ChannelState state, ProtocolMessage protocolMessage)

@@ -17,7 +17,10 @@ namespace IO.Ably.CustomSerialisers
         {
             MessagePackObject obj = string.Empty;
             if (unpacker.ReadObject(out obj))
+            {
                 return new Capability(obj.ToString());
+            }
+
             return new Capability();
         }
     }

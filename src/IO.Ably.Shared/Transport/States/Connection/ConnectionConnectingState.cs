@@ -62,7 +62,7 @@ namespace IO.Ably.Transport.States.Connection
 
                 case ProtocolMessage.MessageAction.Error:
                     {
-                        //If the error is a token error do some magic
+                        // If the error is a token error do some magic
                         if (Context.ShouldWeRenewToken(message.Error))
                         {
                             try

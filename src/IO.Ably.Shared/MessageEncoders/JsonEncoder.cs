@@ -9,7 +9,6 @@ namespace IO.Ably.MessageEncoders
 {
     internal class JsonEncoder : MessageEncoder
     {
-
         internal ILogger Logger { get; set; }
 
         public override string EncodingName
