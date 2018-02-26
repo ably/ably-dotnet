@@ -13,7 +13,6 @@ namespace IO.Ably
         Warning,
         Error,
         None = 99
-
     }
 
     /// <summary>An interface that actually logs that messages somewhere.</summary>
@@ -211,8 +210,5 @@ namespace IO.Ably
                 return message.ToString();
             }
         }
-
     }
-
-
 }

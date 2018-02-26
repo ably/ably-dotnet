@@ -51,7 +51,5 @@ namespace IO.Ably
             // https://connect.microsoft.com/VisualStudio/feedback/details/689516/exceptiondispatchinfo-api-modifications (http://www.webcitation.org/6XQ7RoJmO)
             return exception;
         }
-
-
     }
 }

@@ -14,7 +14,6 @@ namespace IO.Ably
 
         public Message()
         {
-
         }
 
         public Message(string name = null, object data = null, string clientId = null)

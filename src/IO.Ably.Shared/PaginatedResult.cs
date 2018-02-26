@@ -13,7 +13,6 @@ namespace IO.Ably
 
         private PaginatedResult()
         {
-
         }
 
         internal PaginatedResult(HttpHeaders headers, int limit, Func<HistoryRequestParams, Task<PaginatedResult<T>>> executeDataQueryFunc)

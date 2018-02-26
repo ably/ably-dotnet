@@ -21,7 +21,6 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void AbortTimer()
         {
-
         }
     }
 }

@@ -137,6 +137,5 @@ namespace IO.Ably.Encryption
 
             return AesCipher.GenerateKey(mode, keyLength);
         }
-
     }
 }

@@ -174,5 +174,4 @@ namespace IO.Ably
             throw new NotImplementedException();
         }
     }
-
 }

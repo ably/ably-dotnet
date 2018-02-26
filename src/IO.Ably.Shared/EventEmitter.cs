@@ -314,6 +314,5 @@ namespace IO.Ably
                 });
             }
         }
-
     }
 }

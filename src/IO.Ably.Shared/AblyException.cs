@@ -23,7 +23,6 @@ namespace IO.Ably
         } */
         public AblyException()
         {
-
         }
 
         /// <summary>
@@ -34,7 +33,6 @@ namespace IO.Ably
         public AblyException(string reason)
             : this(new ErrorInfo(reason, 500, null))
         {
-
         }
 
         /// <summary>
@@ -44,7 +42,6 @@ namespace IO.Ably
         public AblyException(Exception ex)
             : this(new ErrorInfo("Unexpected error :" + ex.Message, 50000), ex)
             {
-
             }
 
         /// <summary>
@@ -55,7 +52,6 @@ namespace IO.Ably
         public AblyException(string reason, int code)
             : this(new ErrorInfo(reason, code))
         {
-
         }
 
         /// <summary>
@@ -64,7 +60,6 @@ namespace IO.Ably
         public AblyException(string reason, int code, HttpStatusCode? statusCode = null)
             : this(new ErrorInfo(reason, code, statusCode))
         {
-
         }
 
         /// <summary>

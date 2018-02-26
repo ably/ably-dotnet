@@ -22,7 +22,6 @@ namespace IO.Ably
         public AblyRealtime(ClientOptions options)
             : this(options, clientOptions => new AblyRest(clientOptions))
         {
-
         }
 
         internal AblyRealtime(ClientOptions options, Func<ClientOptions, AblyRest> createRestFunc)

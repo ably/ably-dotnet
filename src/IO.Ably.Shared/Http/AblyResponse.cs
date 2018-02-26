@@ -8,7 +8,6 @@ namespace IO.Ably
 {
     internal class EmptyHttpHeaders : HttpHeaders
     {
-
     }
 
     internal enum ResponseType
@@ -68,6 +67,5 @@ namespace IO.Ably
                     return ResponseType.Binary;
             }
         }
-
     }
 }

@@ -91,8 +91,6 @@ namespace IO.Ably.Realtime
                     channel.Presence.OnPresence(protocolMessage.Presence, protocolMessage.ChannelSerial);
                     break;
             }
-
-
         }
     }
 }

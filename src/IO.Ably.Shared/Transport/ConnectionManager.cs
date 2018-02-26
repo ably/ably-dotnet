@@ -167,7 +167,6 @@ namespace IO.Ably.Transport
                     if (_inTransitionToState == newState)
                     {
                         _inTransitionToState = null;
-
                     }
                 }
             });
@@ -566,7 +565,6 @@ namespace IO.Ably.Transport
                     }
 
                     break;
-
             }
         }
     }

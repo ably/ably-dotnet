@@ -213,7 +213,6 @@ namespace IO.Ably
         /// </summary>
         public ClientOptions()
         {
-
         }
 
         /// <summary>

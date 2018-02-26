@@ -41,7 +41,6 @@ namespace IO.Ably
         public AblyRest(string apiKey)
             : this(new ClientOptions(apiKey))
         {
-
         }
 
         /// <summary>
@@ -142,7 +141,6 @@ namespace IO.Ably
                     {
                         throw new AblyException(ex2.ErrorInfo, ex);
                     }
-
                 }
 
                 throw;
@@ -287,6 +285,5 @@ namespace IO.Ably
         {
             return AsyncHelper.RunSync(TimeAsync);
         }
-
     }
 }

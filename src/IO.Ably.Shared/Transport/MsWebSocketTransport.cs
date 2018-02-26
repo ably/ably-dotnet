@@ -102,7 +102,6 @@ namespace IO.Ably.Transport
 
                 Listener?.OnTransportDataReceived(data);
             }
-
         }
 
         public void Close(bool suppressClosedEvent = true)

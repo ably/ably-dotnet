@@ -41,7 +41,6 @@ namespace IO.Ably.Transport.States.Connection
 
         public virtual void AbortTimer()
         {
-
         }
 
         public virtual void BeforeTransition()
