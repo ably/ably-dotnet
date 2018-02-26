@@ -81,7 +81,6 @@ namespace IO.Ably
 
             if (response.Type == ResponseType.Json)
             {
-
                 try
                 {
                     var json = JObject.Parse(response.TextResponse);

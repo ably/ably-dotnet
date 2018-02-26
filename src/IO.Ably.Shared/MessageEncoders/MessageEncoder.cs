@@ -49,7 +49,7 @@ namespace IO.Ably.MessageEncoders
                 return string.Empty;
             }
 
-            return payload.Encoding.Split(new[] {'/' }, StringSplitOptions.RemoveEmptyEntries).Last();
+            return payload.Encoding.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries).Last();
         }
 
         protected void RemoveCurrentEncodingPart(IMessage payload)

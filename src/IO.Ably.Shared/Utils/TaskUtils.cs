@@ -36,9 +36,8 @@ namespace IO.Ably
                 }
 
                 return res.Task;
-            }
-
-            , TaskContinuationOptions.ExecuteSynchronously).Unwrap();
+            },
+            TaskContinuationOptions.ExecuteSynchronously).Unwrap();
         }
     }
 }

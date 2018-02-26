@@ -10,8 +10,7 @@ namespace IO.Ably.Realtime
     /// </summary>
     public class ConnectionStateChange : EventArgs
     {
-        public ConnectionStateChange(ConnectionState previous, ConnectionState current, TimeSpan? retryIn = null,
-            ErrorInfo reason = null)
+        public ConnectionStateChange(ConnectionState previous, ConnectionState current, TimeSpan? retryIn = null, ErrorInfo reason = null)
         {
             Previous = previous;
             Current = current;

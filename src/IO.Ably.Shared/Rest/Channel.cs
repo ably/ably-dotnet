@@ -49,7 +49,7 @@ namespace IO.Ably.Rest
 
         public Task PublishAsync(Message message)
         {
-            return PublishAsync(new[] {message });
+            return PublishAsync(new[] { message });
         }
 
         /// <summary>

@@ -26,7 +26,7 @@ namespace AblyPlatform.Cryptography
         {
             { CipherMode.CBC, System.Security.Cryptography.CipherMode.CBC },
             { CipherMode.ECB, System.Security.Cryptography.CipherMode.ECB },
-            { CipherMode.CTS , System.Security.Cryptography.CipherMode.CTS }
+            { CipherMode.CTS, System.Security.Cryptography.CipherMode.CTS }
         };
 
         public static System.Security.Cryptography.CipherMode MapAblyMode(CipherMode? mode)
