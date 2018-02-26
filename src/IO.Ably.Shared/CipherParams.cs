@@ -47,7 +47,9 @@ namespace IO.Ably
         public byte[] Key { get; }
 
         public byte[] Iv { get; }
+
         public CipherMode Mode { get; }
+
         public int KeyLength => Key?.Length * 8 ?? 0;
 
         public string CipherType

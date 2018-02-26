@@ -31,14 +31,19 @@ namespace IO.Ably
         public HttpMethod AuthMethod { get; set; }
 
         public string Key { get; set; }
+
         public string Token { get; set; }
+
         public TokenDetails TokenDetails { get; set; }
 
         public bool Force { get; set; }
 
         public Dictionary<string, string> AuthHeaders { get; set; }
+
         public Dictionary<string, string> AuthParams { get; set; }
+
         public bool? QueryTime { get; set; }
+
         public bool? UseTokenAuth { get; set; }
 
         /// <summary>

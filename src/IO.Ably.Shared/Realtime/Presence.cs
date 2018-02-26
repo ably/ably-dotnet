@@ -13,7 +13,9 @@ namespace IO.Ably.Realtime
     public class GetOptions
     {
         public bool WaitForSync { get; set; } = true;
+
         public string ClientId { get; set; }
+
         public string ConnectionId { get; set; }
     }
 
@@ -38,6 +40,7 @@ namespace IO.Ably.Realtime
         public bool SyncComplete
         {
             get { return Map.InitialSyncCompleted | _initialSyncCompleted; }
+
             private set
             {
                 _initialSyncCompleted = value;
@@ -70,7 +73,9 @@ namespace IO.Ably.Realtime
         }
 
         internal bool InternalSyncComplete => !Map.IsSyncInProgress && SyncComplete;
+
         internal PresenceMap Map { get; }
+
         internal PresenceMap InternalMap { get; }
 
         public void Dispose()
@@ -741,6 +746,7 @@ namespace IO.Ably.Realtime
         }
 
         public PresenceMessage Message { get; }
+
         public Action<bool, ErrorInfo> Callback { get; }
     }
 }

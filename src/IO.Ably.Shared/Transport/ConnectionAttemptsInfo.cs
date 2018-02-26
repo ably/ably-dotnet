@@ -13,6 +13,7 @@ namespace IO.Ably.Transport
     internal sealed class ConnectionAttempt
     {
         public DateTimeOffset Time { get; }
+
         public List<AttemptFailedState> FailedStates { get; private set; } = new List<AttemptFailedState>();
 
         public ConnectionAttempt(DateTimeOffset time)
@@ -24,7 +25,9 @@ namespace IO.Ably.Transport
     internal sealed class AttemptFailedState
     {
         public ErrorInfo Error { get; private set; }
+
         public Exception Exception { get; private set; }
+
         public ConnectionState State { get; private set; }
 
         public AttemptFailedState(ConnectionState state, ErrorInfo error)
@@ -64,6 +67,7 @@ namespace IO.Ably.Transport
     internal sealed class ConnectionAttemptsInfo
     {
         internal Func<DateTimeOffset> Now { get; set; }
+
         private static readonly ISet<HttpStatusCode> FallbackReasons;
 
         static ConnectionAttemptsInfo()
@@ -76,11 +80,17 @@ namespace IO.Ably.Transport
         }
 
         internal List<ConnectionAttempt> Attempts { get; } = new List<ConnectionAttempt>();
+
         internal DateTimeOffset? FirstAttempt => Attempts.Any() ? Attempts.First().Time : (DateTimeOffset?)null;
+
         public AblyRest RestClient => _connection.RestClient;
+
         public ClientOptions Options => RestClient.Options;
+
         private readonly Connection _connection;
+
         internal int NumberOfAttempts => Attempts.Count;
+
         internal bool TriedToRenewToken { get; private set; }
 
         private readonly object _syncLock = new object();
@@ -165,6 +175,7 @@ namespace IO.Ably.Transport
         }
 
         public int DisconnectedCount => Attempts.SelectMany(x => x.FailedStates).Count(x => x.State == ConnectionState.Disconnected && x.ShouldUseFallback());
+
         public int SuspendedCount => Attempts.SelectMany(x => x.FailedStates).Count(x => x.State == ConnectionState.Suspended && x.ShouldUseFallback());
 
         public string GetHost()

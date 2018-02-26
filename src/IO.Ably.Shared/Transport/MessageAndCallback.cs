@@ -9,7 +9,9 @@ namespace IO.Ably.Transport
         internal ILogger Logger { get; private set; }
 
         public long Serial => Message.MsgSerial;
+
         public ProtocolMessage Message { get;  }
+
         public Action<bool, ErrorInfo> Callback { get; }
 
         public MessageAndCallback(ProtocolMessage message, Action<bool, ErrorInfo> callback, ILogger logger = null)

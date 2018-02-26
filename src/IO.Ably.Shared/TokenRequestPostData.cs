@@ -16,6 +16,7 @@ namespace IO.Ably
         public TokenRequest()
             : this(Defaults.NowFunc())
         { }
+
         internal TokenRequest(Func<DateTimeOffset> nowFunc)
         {
             Now = nowFunc;
@@ -60,6 +61,7 @@ namespace IO.Ably
         public DateTimeOffset? Timestamp
         {
             get { return _timestamp; }
+
             set
             {
                 if (value != DateTimeOffset.MinValue)

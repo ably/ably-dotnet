@@ -13,6 +13,7 @@ namespace IO.Ably
         }
 
         public string Name { get; set; }
+
         public List<string> AllowedOperations { get; set; }
 
         /// <summary>

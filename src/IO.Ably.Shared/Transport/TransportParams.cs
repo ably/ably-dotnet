@@ -10,19 +10,30 @@ namespace IO.Ably.Transport
     public class TransportParams
     {
         internal ILogger Logger { get; private set; }
+
         public string Host { get; private set; }
+
         public bool Tls { get; private set; }
+
         public string[] FallbackHosts { get; private set; }
+
         public int Port { get; private set; }
+
         public string ConnectionKey { get; private set; }
+
         public long? ConnectionSerial { get; set; }
+
         public bool UseBinaryProtocol { get; private set; }
 
         // TODO: Look at inconsisten protection levels
         internal AuthMethod AuthMethod { get; private set; }
+
         public string AuthValue { get; private set; } // either key or token
+
         public string RecoverValue { get; private set; }
+
         public string ClientId { get; private set; }
+
         public bool EchoMessages { get; private set; }
 
         private TransportParams()

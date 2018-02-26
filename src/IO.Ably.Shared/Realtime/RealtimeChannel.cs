@@ -16,24 +16,38 @@ namespace IO.Ably.Realtime
     internal class RealtimeChannel : EventEmitter<ChannelState, ChannelStateChange>, IRealtimeChannel, IDisposable
     {
         internal AblyRealtime RealtimeClient { get; }
+
         private IConnectionManager ConnectionManager => RealtimeClient.ConnectionManager;
+
         private Connection Connection => RealtimeClient.Connection;
+
         private ConnectionState ConnectionState => Connection.State;
+
         private readonly Handlers<Message> _handlers = new Handlers<Message>();
+
         internal IRestChannel RestChannel => RealtimeClient.RestClient.Channels.Get(Name);
+
         private readonly object _lockQueue = new object();
+
         internal ChannelAwaiter AttachedAwaiter { get; }
+
         internal ChannelAwaiter DetachedAwaiter { get; }
+
         private ChannelOptions _options;
         private ChannelState _state;
+
         protected override Action<Action> NotifyClient => RealtimeClient.NotifyExternalClients;
 
         public string AttachedSerial { get; set; }
+
         public List<MessageAndCallback> QueuedMessages { get; set; } = new List<MessageAndCallback>(16);
+
         public ErrorInfo ErrorReason { get; internal set; }
 
         public event EventHandler<ChannelStateChange> StateChanged = delegate { };
+
         internal event EventHandler<ChannelStateChange> InternalStateChanged = delegate { };
+
         public event EventHandler<ChannelErrorEventArgs> Error = delegate { };
 
         public ChannelOptions Options

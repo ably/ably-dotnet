@@ -20,9 +20,13 @@ namespace IO.Ably
     internal class AblyResponse
     {
         internal HttpHeaders Headers { get; set; }
+
         internal ResponseType Type { get; set; }
+
         internal HttpStatusCode StatusCode { get; set; }
+
         internal string TextResponse { get; set; }
+
         internal string ContentType { get; }
 
         internal byte[] Body { get; }

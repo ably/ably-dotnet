@@ -13,6 +13,7 @@ namespace IO.Ably
     internal class AblyHttpClient : IAblyHttpClient
     {
         internal Func<DateTimeOffset> Now { get; set; }
+
         internal ILogger Logger { get; set; }
 
         internal AblyHttpOptions Options { get; }

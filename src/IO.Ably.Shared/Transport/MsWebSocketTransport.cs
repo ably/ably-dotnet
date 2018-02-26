@@ -25,6 +25,7 @@ namespace IO.Ably.Transport
         }
 
         public bool BinaryProtocol { get; }
+
         public Uri WebSocketUri { get; }
 
         public TransportState State { get; set; } = TransportState.Initialized;

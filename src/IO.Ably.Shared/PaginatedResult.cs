@@ -8,7 +8,9 @@ namespace IO.Ably
     public class PaginatedResult<T> where T : class
     {
         private readonly int _limit;
+
         private Func<HistoryRequestParams, Task<PaginatedResult<T>>> ExecuteDataQueryFunc { get; }
+
         public List<T> Items { get; set; } = new List<T>();
 
         private PaginatedResult()
@@ -28,6 +30,7 @@ namespace IO.Ably
         }
 
         public bool HasNext => NextDataQuery != null && NextDataQuery.IsEmpty == false;
+
         public bool IsLast => HasNext == false;
 
         public Task<PaginatedResult<T>> NextAsync()
@@ -61,7 +64,9 @@ namespace IO.Ably
         }
 
         public HistoryRequestParams NextDataQuery { get; }
+
         public HistoryRequestParams FirstDataQuery { get; private set; }
+
         public HistoryRequestParams CurrentQuery { get; private set; }
     }
 }

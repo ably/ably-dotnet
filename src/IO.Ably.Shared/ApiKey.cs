@@ -10,7 +10,9 @@ namespace IO.Ably
     public class ApiKey
     {
         internal string AppId { get; private set; }
+
         public string KeyName { get; private set; }
+
         public string KeySecret { get; private set; }
 
         public override string ToString()

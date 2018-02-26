@@ -7,6 +7,7 @@ namespace IO.Ably.Realtime
     internal class ChannelMessageProcessor
     {
         internal ILogger Logger { get; private set; }
+
         private IChannels<IRealtimeChannel> _channels;
         private ConnectionManager _connectionManager;
 

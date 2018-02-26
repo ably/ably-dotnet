@@ -23,8 +23,11 @@ namespace IO.Ably
         }
 
         public string Url { get; set; }
+
         public HttpMethod Method { get; private set; }
+
         public Dictionary<string, string> Headers { get; set; }
+
         public Dictionary<string, string> QueryParameters { get; set; }
 
         public void AddQueryParameters(IEnumerable<KeyValuePair<string, string>> parameters)
@@ -36,7 +39,9 @@ namespace IO.Ably
         }
 
         public Protocol Protocol { get; set; }
+
         public object PostData { get; set; }
+
         public Type ResponseDataType { get; set; }
 
         public ChannelOptions ChannelOptions
@@ -46,7 +51,9 @@ namespace IO.Ably
         }
 
         public Dictionary<string, string> PostParameters { get; set; }
+
         public byte[] RequestBody { get; set; }
+
         public bool SkipAuthentication { get; set; }
     }
 }

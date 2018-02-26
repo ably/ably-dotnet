@@ -6,6 +6,7 @@ namespace IO.Ably
     public interface IAblyAuth
     {
         Task<TokenDetails> RequestTokenAsync(TokenParams tokenParams = null, AuthOptions options = null);
+
         Task<TokenDetails> AuthorizeAsync(TokenParams tokenParams = null, AuthOptions options = null);
 
         [Obsolete("This method will be removed in the future, please replace with a call to AuthorizeAsync")]

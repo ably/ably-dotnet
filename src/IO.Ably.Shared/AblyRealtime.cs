@@ -55,6 +55,7 @@ namespace IO.Ably
         public AblyRest RestClient { get; }
 
         public IAblyAuth Auth => RestClient.AblyAuth;
+
         public string ClientId => Auth.ClientId;
 
         internal ClientOptions Options => RestClient.Options;

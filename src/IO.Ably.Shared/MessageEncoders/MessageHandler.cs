@@ -19,6 +19,7 @@ namespace IO.Ably.MessageEncoders
                 typeof(short), typeof(int), typeof(double), typeof(float), typeof(decimal), typeof(DateTime), typeof(DateTimeOffset), typeof(byte), typeof(bool),
                 typeof(long), typeof(uint), typeof(ulong), typeof(ushort), typeof(sbyte)
             };
+
         private readonly Protocol _protocol;
         public readonly List<MessageEncoder> Encoders = new List<MessageEncoder>();
 

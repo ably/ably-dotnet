@@ -8,7 +8,9 @@ namespace IO.Ably.Transport.States.Connection
     public interface ICountdownTimer
     {
         void Start(TimeSpan delay, Action onTimeOut);
+
         void StartAsync(TimeSpan delay, Func<Task> onTimeOut);
+
         void Abort(bool trigger = false);
     }
 

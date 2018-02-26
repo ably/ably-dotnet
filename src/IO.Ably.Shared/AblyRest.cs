@@ -25,6 +25,7 @@ namespace IO.Ably
         }
 
         internal AblyAuth AblyAuth { get; private set; }
+
         public RestChannels Channels { get; private set; }
 
         /// <summary>
@@ -33,6 +34,7 @@ namespace IO.Ably
         public IAblyAuth Auth => AblyAuth;
 
         internal Protocol Protocol => Options.UseBinaryProtocol == false ? Protocol.Json : Defaults.Protocol;
+
         internal ClientOptions Options { get; }
 
         internal ILogger Logger { get; set; }

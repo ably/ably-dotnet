@@ -32,6 +32,7 @@ namespace IO.Ably
         Task<PaginatedResult<Stats>> StatsAsync(StatsRequestParams query);
 
         PaginatedResult<Stats> Stats();
+
         PaginatedResult<Stats> Stats(StatsRequestParams query);
     }
 }

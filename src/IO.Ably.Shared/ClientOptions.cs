@@ -28,6 +28,7 @@ namespace IO.Ably
         public string ClientId
         {
             get { return _clientId; }
+
             set
             {
                 if (value == "*")
@@ -155,10 +156,15 @@ namespace IO.Ably
         }
 
         public TimeSpan DisconnectedRetryTimeout { get; set; } = Defaults.DisconnectedRetryTimeout;
+
         public TimeSpan SuspendedRetryTimeout { get; set; } = TimeSpan.FromSeconds(30);
+
         public TimeSpan HttpOpenTimeout { get; set; } = TimeSpan.FromSeconds(4);
+
         public TimeSpan HttpRequestTimeout { get; set; } = TimeSpan.FromSeconds(10);
+
         public int HttpMaxRetryCount { get; set; } = 3;
+
         public TimeSpan HttpMaxRetryDuration { get; set; } = TimeSpan.FromSeconds(15);
 
         /// <summary>
@@ -203,6 +209,7 @@ namespace IO.Ably
         }
 
         internal bool SkipInternetCheck { get; set; } = false;
+
         internal bool UseSyncForTesting { get; set; } = false;
 
         internal TimeSpan RealtimeRequestTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;

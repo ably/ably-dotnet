@@ -26,6 +26,7 @@ namespace IO.Ably
     internal class DefaultLoggerSink : ILoggerSink
     {
         private readonly object _syncRoot = new object();
+
         public void LogEvent(LogLevel level, string message)
         {
             lock (_syncRoot)
@@ -40,6 +41,7 @@ namespace IO.Ably
     {
         private static readonly object SyncLock = new Object();
         private static InternalLogger _loggerInstance;
+
         internal static InternalLogger LoggerInstance
         {
             get
@@ -112,16 +114,20 @@ namespace IO.Ably
             public LogLevel LogLevel { get; set; }
 
             public ILoggerSink LoggerSink { get; set; }
+
             public bool IsDebug => LogLevel == LogLevel.Debug;
 
             internal Func<DateTimeOffset> Now { get; set; }
 
             public InternalLogger()
                 : this(Defaults.DefaultLogLevel, new DefaultLoggerSink()) { }
+
             public InternalLogger(ILoggerSink loggerSink)
                 : this(Defaults.DefaultLogLevel, loggerSink) { }
+
             public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink)
                 : this(logLevel, loggerSink, null) { }
+
             public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink, Func<DateTimeOffset> nowProvider)
             {
                 LogLevel = logLevel;

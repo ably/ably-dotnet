@@ -45,6 +45,7 @@ namespace IO.Ably
 
                 return String.Join( ",", items);
             }
+
             set
             {
                 // If the specified key already exists in the collection, setting this property overwrites the existing list of values with the specified value.
@@ -73,6 +74,7 @@ namespace IO.Ably
 
         public HttpValueCollection( string query)
             : this( query, true) { }
+
         public HttpValueCollection( string query, bool urlencoded)
         {
             if ( !string.IsNullOrEmpty( query))

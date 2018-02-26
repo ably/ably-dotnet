@@ -6,6 +6,7 @@ namespace IO.Ably.MessageEncoders
     internal class CipherEncoder : MessageEncoder
     {
         internal ILogger Logger { get; set; }
+
         public override string EncodingName => "cipher";
 
         public override Result Decode(IMessage payload, ChannelOptions options)

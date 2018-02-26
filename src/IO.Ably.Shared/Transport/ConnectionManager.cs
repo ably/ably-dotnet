@@ -13,6 +13,7 @@ namespace IO.Ably.Transport
     internal class ConnectionManager : IConnectionManager, ITransportListener, IConnectionContext
     {
         internal Func<DateTimeOffset> Now { get; set; }
+
         internal ILogger Logger { get; private set; }
 
         public Queue<MessageAndCallback> PendingMessages { get; }
@@ -22,19 +23,33 @@ namespace IO.Ably.Transport
             => Options.TransportFactory ?? Defaults.WebSocketTransportFactory;
 
         public IAcknowledgementProcessor AckProcessor { get; internal set; }
+
         internal ConnectionAttemptsInfo AttemptsInfo { get; }
+
         public TimeSpan RetryTimeout => Options.DisconnectedRetryTimeout;
+
         public AblyRest RestClient => Connection.RestClient;
+
         public MessageHandler Handler => RestClient.MessageHandler;
+
         public ConnectionStateBase State => Connection.ConnectionState;
+
         public ITransport Transport { get; private set; }
+
         public ClientOptions Options => RestClient.Options;
+
         public TimeSpan DefaultTimeout => Options.RealtimeRequestTimeout;
+
         public TimeSpan SuspendRetryTimeout => Options.SuspendedRetryTimeout;
+
         internal event MessageReceivedDelegate MessageReceived;
+
         public bool IsActive => State.CanQueue && State.CanSend;
+
         public Connection Connection { get; }
+
         public ConnectionState ConnectionState => Connection.State;
+
         private readonly object _stateSyncLock = new object();
         private readonly object _pendingQueueLock = new object();
         private volatile ConnectionStateBase _inTransitionToState;

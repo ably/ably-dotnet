@@ -33,6 +33,7 @@ namespace IO.Ably
         }
 
         private static JsonSerializerSettings _settings;
+
         internal static JsonSerializerSettings Settings => _settings ?? (_settings = GetJsonSettings());
 
         public static string Serialize(object obj)

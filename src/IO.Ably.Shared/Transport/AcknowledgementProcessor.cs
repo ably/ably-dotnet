@@ -11,9 +11,13 @@ namespace IO.Ably.Transport
     internal interface IAcknowledgementProcessor
     {
         void QueueIfNecessary(ProtocolMessage message, Action<bool, ErrorInfo> callback);
+
         bool OnMessageReceived(ProtocolMessage message);
+
         IEnumerable<ProtocolMessage> GetQueuedMessages();
+
         void ClearQueueAndFailMessages(ErrorInfo error);
+
         void FailChannelMessages(string name, ErrorInfo error);
     }
 

@@ -73,19 +73,25 @@ namespace IO.Ably.Types
 
         [JsonIgnore]
         public bool HasPresenceFlag => MessageFlags.HasFlag(Flags, MessageFlags.Presence);
+
         [JsonIgnore]
         public bool HasBacklogFlag => MessageFlags.HasFlag(Flags, MessageFlags.Backlog);
 
         [JsonProperty("count")]
         public int? Count { get; set; }
+
         [JsonProperty("error")]
         public ErrorInfo Error { get; set; }
+
         [JsonProperty("id")]
         public string Id { get; set; }
+
         [JsonProperty("channel")]
         public string Channel { get; set; }
+
         [JsonProperty("channelSerial")]
         public string ChannelSerial { get; set; }
+
         [JsonProperty("connectionId")]
         public string ConnectionId { get; set; }
 
@@ -107,15 +113,19 @@ namespace IO.Ably.Types
 
         [JsonProperty("connectionSerial")]
         public long? ConnectionSerial { get; set; }
+
         [JsonProperty("msgSerial")]
         public long MsgSerial { get; set; }
+
         [JsonProperty("timestamp")]
         public DateTimeOffset? Timestamp { get; set; }
+
         [JsonProperty("messages")]
         public Message[] Messages { get; set; }
 
         [JsonProperty("presence")]
         public PresenceMessage[] Presence { get; set; }
+
         [JsonProperty("connectionDetails")]
         public ConnectionDetails ConnectionDetails { get; set; }
 

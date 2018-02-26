@@ -13,6 +13,7 @@ namespace IO.Ably.Rest
     public class RestChannel : IRestChannel, IPresence
     {
         public string Name { get; private set; }
+
         private readonly AblyRest _ablyRest;
 
         public ChannelOptions Options

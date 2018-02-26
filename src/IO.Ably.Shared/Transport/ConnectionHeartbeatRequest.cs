@@ -13,6 +13,7 @@ namespace IO.Ably.Transport
     {
         public static readonly ErrorInfo DefaultError = new ErrorInfo("Unable to ping service; not connected", 40000,
             HttpStatusCode.BadRequest);
+
         public static readonly ErrorInfo TimeOutError = new ErrorInfo("Unable to ping service; Request timed out", 40800, HttpStatusCode.RequestTimeout);
 
         private Action<TimeSpan?, ErrorInfo> _callback;
@@ -21,7 +22,9 @@ namespace IO.Ably.Transport
         private bool _finished;
         private object _syncLock = new object();
         private DateTimeOffset _start = DateTimeOffset.MinValue;
+
         internal Func<DateTimeOffset> Now { get; set; }
+
         internal ILogger Logger { get; private set; }
 
         public ConnectionHeartbeatRequest(ConnectionManager manager, ICountdownTimer timer, Func<DateTimeOffset> nowFunc)
