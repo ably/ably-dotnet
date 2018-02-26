@@ -15,7 +15,7 @@ namespace IO.Ably
                 throw new ArgumentNullException("query");
             }
 
-            if ((query.Length > 0) && (query[ 0 ] == '?'))
+            if ((query.Length > 0) && (query[0] == '?'))
             {
                 query = query.Substring(1);
             }
@@ -33,7 +33,7 @@ namespace IO.Ably
 
         private readonly List<kvp> m_data = new List<kvp>();
 
-        public string this[ string name ]
+        public string this[string name]
         {
             get
             {
@@ -130,7 +130,7 @@ namespace IO.Ably
                     this.Add(str, str2);
                 }
 
-                if ((i == (num - 1)) && (query[ i ] == '&'))
+                if ((i == (num - 1)) && (query[i] == '&'))
                 {
                     this.Add(null, string.Empty);
                 }
