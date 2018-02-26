@@ -207,8 +207,9 @@ namespace IO.Ably.Tests.AuthTests
 
         [Fact]
         [Trait("spec", "RSA10l")]
-        public void Authorize_RestClientAuthorizeMethodsShouldBeMarkedObsolete()
+        public async Task Authorize_RestClientAuthoriseMethodsShouldBeMarkedObsoleteAndLogADeprecationWarning()
         {
+            /* Check for Obsolete Attribute  */
             MethodBase method = typeof(AblyAuth).GetMethod("Authorise");
             method.Should().NotBeNull();
             var attr = (ObsoleteAttribute)method?.GetCustomAttribute(typeof(ObsoleteAttribute));
@@ -228,6 +229,21 @@ namespace IO.Ably.Tests.AuthTests
             method.Should().NotBeNull();
             attr = (ObsoleteAttribute)method?.GetCustomAttribute(typeof(ObsoleteAttribute));
             attr.Should().BeNull();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            /* Check for logged warning */
+            var testLogger1 = new SandboxSpecs.TestLogger("AuthoriseAsync is deprecated and will be removed in the future, please replace with a call to AuthorizeAsync");
+            var client = GetRestClient(setOptionsAction: options => { options.Logger = testLogger1; });
+            var testAblyAuth = new TestAblyAuth(client.Options, client);
+            await testAblyAuth.AuthoriseAsync();
+            testLogger1.MessageSeen.Should().BeTrue();
+
+            var testLogger2 = new SandboxSpecs.TestLogger("Authorise is deprecated and will be removed in the future, please replace with a call to Authorize");
+            client = GetRestClient(setOptionsAction: options => { options.Logger = testLogger2; });
+            testAblyAuth = new TestAblyAuth(client.Options, client);
+            testAblyAuth.Authorise();
+            testLogger2.MessageSeen.Should().BeTrue();
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         class TestAblyAuth : AblyAuth
