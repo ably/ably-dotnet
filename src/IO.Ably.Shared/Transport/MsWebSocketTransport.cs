@@ -78,7 +78,6 @@ namespace IO.Ably.Transport
             {
                 if (Logger.IsDebug)
                 {
-
                     try
                     {
 #if MSGPACK

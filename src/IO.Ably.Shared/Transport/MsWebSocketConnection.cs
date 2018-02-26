@@ -30,7 +30,7 @@ namespace IO.Ably.Transport
 
         public string ConnectionId { get; set; }
 
-        internal ClientWebSocket ClientWebSocket { get; set ; }
+        internal ClientWebSocket ClientWebSocket { get; set; }
 
         private CancellationTokenSource _tokenSource = new CancellationTokenSource();
 
@@ -63,13 +63,14 @@ namespace IO.Ably.Transport
 
         private void StartSenderQueueConsumer()
         {
-            Task.Run(async () =>
-            {
-                foreach (var tuple in _sendQueue.GetConsumingEnumerable())
+            Task.Run(
+                async () =>
                 {
-                    await Send(tuple.Item1, tuple.Item2, _tokenSource.Token);
-                }
-            }, _tokenSource.Token).ConfigureAwait(false);
+                    foreach (var tuple in _sendQueue.GetConsumingEnumerable())
+                    {
+                        await Send(tuple.Item1, tuple.Item2, _tokenSource.Token);
+                    }
+                }, _tokenSource.Token).ConfigureAwait(false);
         }
 
         public async Task StopConnectionAsync()

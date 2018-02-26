@@ -569,9 +569,7 @@ namespace IO.Ably.Transport
                             Logger.Debug("Network state is Offline. Moving to disconnected.");
                         }
 
-                        SetState(new ConnectionDisconnectedState(this,
-                            new ErrorInfo("Connection closed due to Operating system network going offline", 80017),
-                            Logger)
+                        SetState(new ConnectionDisconnectedState(this, new ErrorInfo("Connection closed due to Operating system network going offline", 80017), Logger)
                         {
                             RetryInstantly = true
                         });
