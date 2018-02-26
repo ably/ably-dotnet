@@ -10,7 +10,7 @@ namespace IO.Ably
     [DebuggerDisplay("{ToString()}")]
     public class Message : IMessage
     {
-        private static readonly Message defaultInstance = new Message();
+        private static readonly Message DefaultInstance = new Message();
 
         public Message()
         {
@@ -71,7 +71,7 @@ namespace IO.Ably
         }
 
         [JsonIgnore]
-        public bool IsEmpty => Equals(this, defaultInstance);
+        public bool IsEmpty => Equals(this, DefaultInstance);
 
         protected bool Equals(Message other)
         {
