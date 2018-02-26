@@ -7,16 +7,16 @@ namespace IO.Ably
     {
         /// <summary>
         /// Requested time to live for the token. If the token request
-		/// is successful, the TTL of the returned token will be less
-		/// than or equal to this value depending on application settings
-		/// and the attributes of the issuing key
+        /// is successful, the TTL of the returned token will be less
+        /// than or equal to this value depending on application settings
+        /// and the attributes of the issuing key
         /// </summary>
         public TimeSpan? Ttl { get; set; }
 
         /// <summary>
-		/// <see cref="Capability"/> of the token. If the token request is successful,
-		/// the capability of the returned token will be the intersection of
-		/// this capability with the capability of the issuing key.
+        /// <see cref="Capability"/> of the token. If the token request is successful,
+        /// the capability of the returned token will be the intersection of
+        /// this capability with the capability of the issuing key.
         /// </summary>
         public Capability Capability { get; set; }
 
@@ -27,15 +27,15 @@ namespace IO.Ably
 
         /// <summary>
         /// The timestamp  of this request. If not supplied the timestamp is automatically set to the current UTC time
-		/// Timestamps, in conjunction with the nonce, are used to prevent
-		/// token requests from being replayed.
+        /// Timestamps, in conjunction with the nonce, are used to prevent
+        /// token requests from being replayed.
         /// </summary>
         public DateTimeOffset? Timestamp { get; set; }
 
         /// <summary>
-		/// An opaque nonce string of at least 16 characters to ensure
-		/// uniqueness of this request. Any subsequent request using the
-		/// same nonce will be rejected.
+        /// An opaque nonce string of at least 16 characters to ensure
+        /// uniqueness of this request. Any subsequent request using the
+        /// same nonce will be rejected.
         /// </summary>
         public string Nonce { get; set; }
 

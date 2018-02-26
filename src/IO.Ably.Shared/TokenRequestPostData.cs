@@ -31,17 +31,17 @@ namespace IO.Ably
 
         /// <summary>
         /// Requested time to live for the token. If the token request
-		/// is successful, the TTL of the returned token will be less
-		/// than or equal to this value depending on application settings
-		/// and the attributes of the issuing key
+        /// is successful, the TTL of the returned token will be less
+        /// than or equal to this value depending on application settings
+        /// and the attributes of the issuing key
         /// </summary>
         [JsonProperty("ttl")]
         public TimeSpan? Ttl { get; set; }
 
         /// <summary>
-		/// <see cref="Capability"/> of the token. If the token request is successful,
-		/// the capability of the returned token will be the intersection of
-		/// this capability with the capability of the issuing key.
+        /// <see cref="Capability"/> of the token. If the token request is successful,
+        /// the capability of the returned token will be the intersection of
+        /// this capability with the capability of the issuing key.
         /// </summary>
         [JsonProperty("capability", NullValueHandling = NullValueHandling.Ignore)]
         public Capability Capability { get; set; }

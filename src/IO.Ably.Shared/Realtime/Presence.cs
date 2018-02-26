@@ -378,13 +378,13 @@ namespace IO.Ably.Realtime
             Publish(residualMembers);
 
             /*
-		     * (RTP5c2) If a SYNC is initiated as part of the attach, then once the SYNC is complete,
-		     * all members not present in the PresenceMap but present in the internal PresenceMap must
-		     * be re-entered automatically by the client using the clientId and data attributes from
-		     * each. The members re-entered automatically must be removed from the internal PresenceMap
-		     * ensuring that members present on the channel are constructed from presence events sent
-		     * from Ably since the channel became ATTACHED
-		     */
+             * (RTP5c2) If a SYNC is initiated as part of the attach, then once the SYNC is complete,
+             * all members not present in the PresenceMap but present in the internal PresenceMap must
+             * be re-entered automatically by the client using the clientId and data attributes from
+             * each. The members re-entered automatically must be removed from the internal PresenceMap
+             * ensuring that members present on the channel are constructed from presence events sent
+             * from Ably since the channel became ATTACHED
+             */
             if (_syncAsResultOfAttach)
             {
                 _syncAsResultOfAttach = false;
