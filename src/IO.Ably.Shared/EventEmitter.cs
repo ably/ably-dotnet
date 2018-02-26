@@ -28,7 +28,7 @@ namespace IO.Ably
 
         internal ILogger Logger { get; set; }
 
-        readonly List<Emitter<TState, TArgs>> _emitters = new List<Emitter<TState, TArgs>>();
+        private readonly List<Emitter<TState, TArgs>> _emitters = new List<Emitter<TState, TArgs>>();
         private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
         protected abstract Action<Action> NotifyClient { get; }
 

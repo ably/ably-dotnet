@@ -210,7 +210,7 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
-        static Type GetNullableType(Type type)
+        private static Type GetNullableType(Type type)
         {
             if (type.GetTypeInfo().IsValueType == false)
             {

@@ -2,7 +2,7 @@
 
 namespace IO.Ably.Utils
 {
-    static class ReflectionUtils
+    internal static class ReflectionUtils
     {
         public static bool isPropsEqual<T>(T a, T b)
         {

@@ -50,13 +50,13 @@ namespace IO.Ably
             ?? CurrentTokenParams?.ClientId
             ?? Options.GetClientId();
 
-        bool HasTokenId => Options.Token.IsNotEmpty();
+        private bool HasTokenId => Options.Token.IsNotEmpty();
 
         public bool TokenRenewable => TokenCreatedExternally || (HasApiKey && HasTokenId == false);
 
-        bool TokenCreatedExternally => Options.AuthUrl.IsNotEmpty() || Options.AuthCallback != null;
+        private bool TokenCreatedExternally => Options.AuthUrl.IsNotEmpty() || Options.AuthCallback != null;
 
-        bool HasApiKey => Options.Key.IsNotEmpty();
+        private bool HasApiKey => Options.Key.IsNotEmpty();
 
         internal void Initialise()
         {

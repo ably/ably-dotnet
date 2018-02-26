@@ -7,7 +7,7 @@ namespace IO.Ably.Transport
     /// <summary>This trivial class wraps legacy callback-style API into a Task API.</summary>
     internal class TaskWrapper
     {
-        readonly TaskCompletionSource<Result> _completionSource = new TaskCompletionSource<Result>();
+        private readonly TaskCompletionSource<Result> _completionSource = new TaskCompletionSource<Result>();
 
         public Task<Result> Task => _completionSource.Task;
 
@@ -80,7 +80,7 @@ namespace IO.Ably.Transport
 
     internal class TaskWrapper<T>
     {
-        readonly TaskCompletionSource<Result<T>> _completionSource = new TaskCompletionSource<Result<T>>();
+        private readonly TaskCompletionSource<Result<T>> _completionSource = new TaskCompletionSource<Result<T>>();
 
         public Task<Result<T>> Task => _completionSource.Task;
 
