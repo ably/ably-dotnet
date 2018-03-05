@@ -259,18 +259,19 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTE5")]
-        public async void WithEventEmitter_WhenOff_DeRegistersForEvents()
+        public void WithEventEmitter_WhenOff_DeRegistersForEvents()
         {
             var em = new TestEventEmitter(DefaultLogger.LoggerInstance);
             var t = new TaskCompletionAwaiter(100);
-            string m = "";
+            string m = string.Empty;
             int counter = 0;
 
+            bool handled = false;
             void Handler(TestEventEmitterArgs args)
             {
                 counter++;
                 m = args.Message;
-                t.SetCompleted();
+                handled = true;
             }
 
             // if called with no arguments, it removes all registrations, for all events and listeners
@@ -278,56 +279,50 @@ namespace IO.Ably.Tests.Realtime
             em.On(2, (Action<TestEventEmitterArgs>)Handler);
             em.On(3, (Action<TestEventEmitterArgs>)Handler);
             em.DoDummyEmit(1, "off");
-            var success = await t.Task;
-            success.Should().BeTrue();
+            handled.Should().BeTrue();
             m.Should().Be("off");
-            t = new TaskCompletionAwaiter(100);
+            counter.Should().Be(1);
+            handled = false;
             em.Off();
             em.DoDummyEmit(1, "off");
             em.DoDummyEmit(2, "off");
             em.DoDummyEmit(3, "off");
-            success = await t.Task;
-            success.Should().BeFalse();
+            handled.Should().BeFalse();
             counter.Should().Be(1);
 
             // if called only with a listener, it removes all registrations matching the given listener,
             // regardless of whether they are associated with an event or not;
             em.On(1, (Action<TestEventEmitterArgs>)Handler);
-            t = new TaskCompletionAwaiter(100);
+            handled = false;
             em.DoDummyEmit(1, "off");
-            success = await t.Task;
-            success.Should().BeTrue();
+            handled.Should().BeTrue();
             counter.Should().Be(2);
-            t = new TaskCompletionAwaiter(100);
+            handled = false;
             em.Off((Action<TestEventEmitterArgs>)Handler);
             em.DoDummyEmit(1, "off");
-            success = await t.Task;
-            success.Should().BeFalse();
+            handled.Should().BeFalse();
             counter.Should().Be(2);
 
             // If called with a specific event and a listener,
             // it removes all registrations that match both the given listener and the given event
             em.On(1, (Action<TestEventEmitterArgs>)Handler);
-            t = new TaskCompletionAwaiter(100);
+            handled = false;
             em.DoDummyEmit(1, "off");
-            success = await t.Task;
-            success.Should().BeTrue();
+            handled.Should().BeTrue();
             counter.Should().Be(3);
-            t = new TaskCompletionAwaiter(100);
+
             // no handler for this event, so this should have no effect
+            handled = false;
             em.Off(2, (Action<TestEventEmitterArgs>)Handler);
             em.DoDummyEmit(1, "off");
-            success = await t.Task;
-            success.Should().BeTrue();
+            handled.Should().BeTrue();
             counter.Should().Be(4);
-            t = new TaskCompletionAwaiter(100);
             em.Off(1, (Action<TestEventEmitterArgs>)Handler);
+            handled = false;
             em.DoDummyEmit(1, "off");
-            success = await t.Task;
-            success.Should().BeFalse();
+            handled.Should().BeFalse();
             counter.Should().Be(4);
         }
-
 
         public EventEmitterSpecs(ITestOutputHelper output) : base(output)
         {
