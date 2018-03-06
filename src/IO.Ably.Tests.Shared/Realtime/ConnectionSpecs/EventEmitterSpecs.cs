@@ -155,56 +155,69 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTE4")]
-        public async void WithEventEmitter_WhenOnce_ListenerRegistersForOneEvent()
+        public void WithEventEmitter_WhenOnce_ListenerRegistersForOneEvent()
         {
             var em = new TestEventEmitter(DefaultLogger.LoggerInstance);
-            var t = new TaskCompletionAwaiter(100);
-            string m = "";
+            bool t = false;
+            bool tt = false;
+            string message = string.Empty;
             int counter = 0;
+
+            void Reset()
+            {
+                t = false;
+                tt = false;
+            }
+
             // no event/state argument, catch all
             em.Once(args =>
             {
                 counter++;
-                m = args.Message;
-                t.SetCompleted();
+                message = args.Message;
+                t = true;
             });
             em.DoDummyEmit(1, "once");
-            var success = await t.Task;
+            var success = t;
             success.Should().BeTrue();
-            m.Should().Be("once");
+            message.Should().Be("once");
+
             // currently one listener
             counter.Should().Be(1);
-            t = new TaskCompletionAwaiter(100);
-            var tt = new TaskCompletionAwaiter(100);
+            Reset();
+
             // only catch 1 events
             em.Once(1, args =>
             {
                 counter++;
-                m = args.Message;
-                tt.SetCompleted();
+                message = args.Message;
+                tt = true;
             });
             em.DoDummyEmit(2, "on");
+
             // t & tt should timeout and return false here
-            success = !await t.Task && !await tt.Task;
+            success = !t && !tt;
             success.Should().BeTrue();
+
             // there are 2 listeners and the first is catch all
             // but the first should have already handled an event and deregistered
             // so the count remains the same
             counter.Should().Be(1);
-            t = new TaskCompletionAwaiter(100);
-            tt = new TaskCompletionAwaiter(100);
+            Reset();
             em.DoDummyEmit(1, "on");
+
             // t should not complete again, tt should complete for the first time
-            success = !await t.Task && await tt.Task;
+            success = !t && !t;
             success.Should().BeTrue();
+
             // still 2 listeners and we sent a 1 event which second should handle
             counter.Should().Be(2);
-            t = new TaskCompletionAwaiter(100);
-            tt = new TaskCompletionAwaiter(100);
+            Reset();
             em.DoDummyEmit(1, "on");
+
             // t & tt should both timeout
-            success = !await t.Task && !await tt.Task;
+            success = !t && !t;
             success.Should().BeTrue();
+
             // handlers should be deregistered so the count should remain at 2
             counter.Should().Be(2);
         }
