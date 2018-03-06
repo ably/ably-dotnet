@@ -71,17 +71,14 @@ namespace IO.Ably
             _lock.EnterUpgradeableReadLock();
             try
             {
-                if (_emitters.Any(x => x.Action == listener) == false)
+                _lock.EnterWriteLock();
+                try
                 {
-                    _lock.EnterWriteLock();
-                    try
-                    {
-                        _emitters.Add(new Emitter<TState, TArgs>(listener));
-                    }
-                    finally
-                    {
-                        _lock.ExitWriteLock();
-                    }
+                    _emitters.Add(new Emitter<TState, TArgs>(listener));
+                }
+                finally
+                {
+                    _lock.ExitWriteLock();
                 }
             }
             finally
@@ -95,17 +92,14 @@ namespace IO.Ably
             _lock.EnterUpgradeableReadLock();
             try
             {
-                if (_emitters.Any(x => x.AsyncAction == listener) == false)
+                _lock.EnterWriteLock();
+                try
                 {
-                    _lock.EnterWriteLock();
-                    try
-                    {
-                        _emitters.Add(new Emitter<TState, TArgs>(listener));
-                    }
-                    finally
-                    {
-                        _lock.ExitWriteLock();
-                    }
+                    _emitters.Add(new Emitter<TState, TArgs>(listener));
+                }
+                finally
+                {
+                    _lock.ExitWriteLock();
                 }
             }
             finally
