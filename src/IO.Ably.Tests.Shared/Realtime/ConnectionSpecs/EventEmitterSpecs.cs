@@ -113,44 +113,75 @@ namespace IO.Ably.Tests.Realtime
         public async void WithEventEmitter_WhenOn_ListenerRegistersForRepeatedEvents()
         {
             var em = new TestEventEmitter(DefaultLogger.LoggerInstance);
-            var t = new TaskCompletionAwaiter(100);
-            string m = "";
+            string m = string.Empty;
             int counter = 0;
+            int handledCounter1 = 0;
+            int handledCounter2 = 0;
+            bool t = false;
+            bool tt = false;
+
             // no event/state argument, catch all
-            em.On(args =>
+            void Handler1(TestEventEmitterArgs args)
             {
                 counter++;
+                handledCounter1++;
                 m = args.Message;
-                t.SetCompleted();
-            });
+                t = true;
+            }
+
+            void Handler2(TestEventEmitterArgs args)
+            {
+                counter++;
+                handledCounter2++;
+                m = args.Message;
+                tt = true;
+            }
+
+            void Reset()
+            {
+                t = false;
+                tt = false;
+            }
+
+            em.On((Action<TestEventEmitterArgs>)Handler1);
             em.DoDummyEmit(1, "on");
-            var success = await t.Task;
-            success.Should().BeTrue();
+            t.Should().BeTrue();
             m.Should().Be("on");
+
             // currently one listener
             counter.Should().Be(1);
-            t = new TaskCompletionAwaiter(100);
-            var tt = new TaskCompletionAwaiter(100);
+            handledCounter1.Should().Be(1);
+            handledCounter2.Should().Be(0);
+            Reset();
+
             // only catch 1 events
-            em.On(1, args =>
-            {
-                counter++;
-                m = args.Message;
-                tt.SetCompleted();
-            });
+            em.On(1, (Action<TestEventEmitterArgs>)Handler2);
             em.DoDummyEmit(2, "on");
-            // tt should timeout and return false here
-            success = await t.Task && ! await tt.Task;
-            success.Should().BeTrue();
+
+            // tt should be false here
+            t.Should().BeTrue();
+            tt.Should().BeFalse();
+
             // now there should be 2 listeners, but only the first is catch all
+            handledCounter1.Should().Be(2);
+            handledCounter2.Should().Be(0);
             counter.Should().Be(2);
-            t = new TaskCompletionAwaiter(100);
-            tt = new TaskCompletionAwaiter(100);
+            Reset();
+
             em.DoDummyEmit(1, "on");
-            success = await t.Task && await tt.Task;
-            success.Should().BeTrue();
+            t.Should().BeTrue();
+            tt.Should().BeTrue();
+            handledCounter1.Should().Be(3);
+            handledCounter2.Should().Be(1);
+
             // still 2 listeners and we sent a 1 event which both should handle
             counter.Should().Be(4);
+            Reset();
+
+            // add an existing listener again
+            em.On((Action<TestEventEmitterArgs>)Handler2);
+            em.DoDummyEmit(1, "on");
+            counter.Should().Be(7);
         }
 
         public EventEmitterSpecs(ITestOutputHelper output) : base(output)
