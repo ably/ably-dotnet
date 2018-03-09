@@ -110,43 +110,44 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTE3")]
-        public async void WithEventEmitter_WhenOn_ListenerRegistersForRepeatedEvents()
+        public void WithEventEmitter_WhenOn_ListenerRegistersForRepeatedEvents()
         {
             var em = new TestEventEmitter(DefaultLogger.LoggerInstance);
-            string m = string.Empty;
+            string message = string.Empty;
             int counter = 0;
             int handledCounter1 = 0;
             int handledCounter2 = 0;
-            bool t = false;
-            bool tt = false;
+            bool handled1 = false;
+            bool handled2 = false;
 
             // no event/state argument, catch all
             void Handler1(TestEventEmitterArgs args)
             {
                 counter++;
                 handledCounter1++;
-                m = args.Message;
-                t = true;
+                message = args.Message;
+                handled1 = true;
             }
 
             void Handler2(TestEventEmitterArgs args)
             {
                 counter++;
                 handledCounter2++;
-                m = args.Message;
-                tt = true;
+                message = args.Message;
+                handled2 = true;
             }
 
             void Reset()
             {
-                t = false;
-                tt = false;
+                handled1 = false;
+                handled2 = false;
             }
 
+            // add Handler1 as a catch all
             em.On((Action<TestEventEmitterArgs>)Handler1);
             em.DoDummyEmit(1, "on");
-            t.Should().BeTrue();
-            m.Should().Be("on");
+            handled1.Should().BeTrue();
+            message.Should().Be("on");
 
             // currently one listener
             counter.Should().Be(1);
@@ -154,34 +155,37 @@ namespace IO.Ably.Tests.Realtime
             handledCounter2.Should().Be(0);
             Reset();
 
+            // add another Handler1 as a catch all
+            em.On((Action<TestEventEmitterArgs>)Handler1);
+            em.DoDummyEmit(1, "on");
+            handled1.Should().BeTrue();
+            counter.Should().Be(3);
+            handledCounter1.Should().Be(3);
+
             // only catch 1 events
             em.On(1, (Action<TestEventEmitterArgs>)Handler2);
             em.DoDummyEmit(2, "on");
 
-            // tt should be false here
-            t.Should().BeTrue();
-            tt.Should().BeFalse();
+            // handled2 should be false here
+            handled1.Should().BeTrue();
+            handled2.Should().BeFalse();
 
-            // now there should be 2 listeners, but only the first is catch all
-            handledCounter1.Should().Be(2);
+            // now there should be 3 listeners, the first is 2 are catch all
+            handledCounter1.Should().Be(5);
             handledCounter2.Should().Be(0);
-            counter.Should().Be(2);
+            counter.Should().Be(5);
             Reset();
 
             em.DoDummyEmit(1, "on");
-            t.Should().BeTrue();
-            tt.Should().BeTrue();
-            handledCounter1.Should().Be(3);
+            handled1.Should().BeTrue();
+            handled2.Should().BeTrue();
+            handledCounter1.Should().Be(7);
             handledCounter2.Should().Be(1);
 
             // still 2 listeners and we sent a 1 event which both should handle
-            counter.Should().Be(4);
+            counter.Should().Be(8);
             Reset();
 
-            // add an existing listener again
-            em.On((Action<TestEventEmitterArgs>)Handler2);
-            em.DoDummyEmit(1, "on");
-            counter.Should().Be(7);
         }
 
         [Fact]
