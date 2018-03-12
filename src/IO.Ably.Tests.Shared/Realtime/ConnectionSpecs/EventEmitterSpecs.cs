@@ -188,6 +188,77 @@ namespace IO.Ably.Tests.Realtime
 
         }
 
+        [Fact]
+        [Trait("spec", "RTE4")]
+        public void WithEventEmitter_WhenOnce_ListenerRegistersForOneEvent()
+        {
+            var em = new TestEventEmitter(DefaultLogger.LoggerInstance);
+            bool t = false;
+            bool tt = false;
+            string message = string.Empty;
+            int counter = 0;
+
+            void Reset()
+            {
+                t = false;
+                tt = false;
+            }
+
+            void Handler1(TestEventEmitterArgs args)
+            {
+                counter++;
+                message = args.Message;
+                t = true;
+            }
+
+            void Handler2(TestEventEmitterArgs args)
+            {
+                counter++;
+                message = args.Message;
+                tt = true;
+            }
+
+            // no event/state argument, catch all
+            em.Once((Action<TestEventEmitterArgs>)Handler1);
+            em.Once((Action<TestEventEmitterArgs>)Handler1);
+            em.DoDummyEmit(1, "once");
+            t.Should().BeTrue();
+            message.Should().Be("once");
+            counter.Should().Be(2);
+            Reset();
+
+            // only catch 1 events
+            em.Once(1, (Action<TestEventEmitterArgs>)Handler2);
+            em.DoDummyEmit(2, "on");
+
+            // no events should be handled, t & tt should be false here
+            t.Should().BeFalse();
+            tt.Should().BeFalse();
+
+            // there are 2 listeners and the first is catch all
+            // but the first should have already handled an event and deregistered
+            // so the count remains the same
+            counter.Should().Be(2);
+            Reset();
+            em.DoDummyEmit(1, "on");
+
+            // t should not have been set, tt should complete for the first time
+            t.Should().BeFalse();
+            tt.Should().BeTrue();
+
+            // still 2 listeners and we sent a 1 event which second should handle
+            counter.Should().Be(3);
+            Reset();
+            em.DoDummyEmit(1, "on");
+
+            // t & tt should both be false
+            t.Should().BeFalse();
+            tt.Should().BeFalse();
+
+            // handlers should be deregistered so the count should remain at 2
+            counter.Should().Be(3);
+        }
+
         public EventEmitterSpecs(ITestOutputHelper output) : base(output)
         {
         }
