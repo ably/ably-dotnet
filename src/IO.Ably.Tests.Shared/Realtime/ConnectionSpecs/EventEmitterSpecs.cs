@@ -65,7 +65,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = GetClientWithFakeTransport();
 
-            //Start collecting events after the connection is open
+            // Start collecting events after the connection is open
             var states = new List<ConnectionState>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
@@ -401,7 +401,8 @@ namespace IO.Ably.Tests.Realtime
             logger.MessageSeen.Should().BeTrue();
         }
 
-        public EventEmitterSpecs(ITestOutputHelper output) : base(output)
+        public EventEmitterSpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
 
