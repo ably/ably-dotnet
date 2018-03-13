@@ -34,7 +34,6 @@ namespace IO.Ably.Tests
             private AblyRest _client;
             private IRestChannel _channel;
 
-
             [Theory]
             [InlineData(null, "100", false)]
             [InlineData(500, "500", false)]
@@ -67,7 +66,6 @@ namespace IO.Ably.Tests
                 LastRequest.AssertContainsParameter("clientId", clientId);
                 LastRequest.AssertContainsParameter("connectionId", connectionId);
             }
-
 
             [Fact]
             [Trait("spec", "RSP4a")]
@@ -111,7 +109,7 @@ namespace IO.Ably.Tests
 
             [Fact]
             [Trait("spec", "RSP4b1")]
-            public async Task  History_WithStartBeforeEnd_Throws()
+            public async Task History_WithStartBeforeEnd_Throws()
             {
                 await Assert.ThrowsAsync<AblyException>(() =>
                         _channel.Presence.HistoryAsync(new HistoryRequestParams() { Start = Now, End = Now.AddHours(-1) }));
@@ -156,7 +154,6 @@ namespace IO.Ably.Tests
 
                     await Assert.ThrowsAsync<AblyException>(async () => await channel.HistoryAsync(query));
                 }
-                
             }
 
             private static IEnumerable<object[]> InvalidHistoryDates
@@ -172,7 +169,7 @@ namespace IO.Ably.Tests
             [Fact]
             public async Task History_WithPartialResult_ReturnsCorrectFirstCurrentAndNextLinks()
             {
-                //Arrange
+                // Arrange
                 var rest = GetRestClient(request => new AblyResponse()
                 {
                     Headers = DataRequestQueryTests.GetSampleHistoryRequestHeaders(),
@@ -181,23 +178,25 @@ namespace IO.Ably.Tests
 
                 var channel = rest.Channels.Get("test");
 
-                //Act
+                // Act
                 var result = await channel.HistoryAsync();
 
-                //Assert
+                // Assert
                 Assert.NotNull(result.NextDataQuery);
                 Assert.NotNull(result.CurrentQuery);
                 Assert.NotNull(result.FirstDataQuery);
             }
 
-            public GetSpecs(ITestOutputHelper output) : base(output)
+            public GetSpecs(ITestOutputHelper output)
+                : base(output)
             {
                 _client = GetRestClient();
                 _channel = _client.Channels.Get("test");
             }
         }
 
-        public PresenceSpecs(ITestOutputHelper output) : base(output)
+        public PresenceSpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

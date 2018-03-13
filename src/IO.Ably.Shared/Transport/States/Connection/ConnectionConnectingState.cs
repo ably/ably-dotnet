@@ -9,8 +9,8 @@ namespace IO.Ably.Transport.States.Connection
     {
         private readonly ICountdownTimer _timer;
 
-        public ConnectionConnectingState(IConnectionContext context, ILogger logger) :
-            this(context, new CountdownTimer("Connecting state timer", logger), logger)
+        public ConnectionConnectingState(IConnectionContext context, ILogger logger)
+            : this(context, new CountdownTimer("Connecting state timer", logger), logger)
         {
         }
 
@@ -37,7 +37,9 @@ namespace IO.Ably.Transport.States.Connection
         public override async Task<bool> OnMessageReceived(ProtocolMessage message)
         {
             if (message == null)
+            {
                 throw new ArgumentNullException(nameof(message), "Null message passed to Connection Connecting State");
+            }
 
             switch (message.Action)
             {
@@ -48,16 +50,19 @@ namespace IO.Ably.Transport.States.Connection
                             var info = new ConnectionInfo(message);
                             TransitionState(new ConnectionConnectedState(Context, info, message.Error, Logger));
                         }
+
                         return true;
                     }
+
                 case ProtocolMessage.MessageAction.Disconnected:
                     {
                         Context.HandleConnectingFailure(message.Error, null);
                         return true;
                     }
+
                 case ProtocolMessage.MessageAction.Error:
                     {
-                        //If the error is a token error do some magic
+                        // If the error is a token error do some magic
                         if (Context.ShouldWeRenewToken(message.Error))
                         {
                             try
@@ -85,6 +90,7 @@ namespace IO.Ably.Transport.States.Connection
                         return true;
                     }
             }
+
             return false;
         }
 

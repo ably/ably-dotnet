@@ -1,20 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
-using System;
-using System.IO;
 using Xunit;
 
 namespace IO.Ably.Tests
 {
     public class StatsParsingTests
     {
-        Stats _stats; 
+        private Stats _stats;
 
         public StatsParsingTests()
         {
-           _stats = JsonHelper.Deserialize<List<Stats>>(ResourceHelper.GetResource(@"StatsInterval.json")).First(); 
-        }        
+           _stats = JsonHelper.Deserialize<List<Stats>>(ResourceHelper.GetResource(@"StatsInterval.json")).First();
+        }
 
         [Fact]
         public void AllSectionHasCorrectValues()
@@ -36,8 +33,8 @@ namespace IO.Ably.Tests
             Assert.Equal(180, _stats.Inbound.All.Messages.Data);
             Assert.Equal(0, _stats.Inbound.All.Presence.Count);
             Assert.Equal(0, _stats.Inbound.All.Presence.Data);
-        
-            //Realtime
+
+            // Realtime
             Assert.Equal(0, _stats.Inbound.Realtime.All.Count);
             Assert.Equal(0, _stats.Inbound.Realtime.All.Data);
             Assert.Equal(0, _stats.Inbound.Realtime.Messages.Count);
@@ -45,7 +42,7 @@ namespace IO.Ably.Tests
             Assert.Equal(0, _stats.Inbound.Realtime.Presence.Count);
             Assert.Equal(0, _stats.Inbound.Realtime.Presence.Data);
 
-            //Rest
+            // Rest
             Assert.Equal(20, _stats.Inbound.Rest.All.Count);
             Assert.Equal(180, _stats.Inbound.Rest.All.Data);
             Assert.Equal(20, _stats.Inbound.Rest.Messages.Count);
@@ -64,23 +61,23 @@ namespace IO.Ably.Tests
             Assert.Equal(0, _stats.Outbound.All.Presence.Count);
             Assert.Equal(0, _stats.Outbound.All.Presence.Data);
 
-            //Realtime
+            // Realtime
             Assert.Equal(0, _stats.Outbound.Realtime.All.Count);
             Assert.Equal(0, _stats.Outbound.Realtime.All.Data);
             Assert.Equal(0, _stats.Outbound.Realtime.Messages.Count);
             Assert.Equal(0, _stats.Outbound.Realtime.Messages.Data);
             Assert.Equal(0, _stats.Outbound.Realtime.Presence.Count);
             Assert.Equal(0, _stats.Outbound.Realtime.Presence.Data);
-                                    
-            //Rest                  
+
+            // Rest
             Assert.Equal(0, _stats.Outbound.Rest.All.Count);
             Assert.Equal(0, _stats.Outbound.Rest.All.Data);
             Assert.Equal(0, _stats.Outbound.Rest.Messages.Count);
             Assert.Equal(0, _stats.Outbound.Rest.Messages.Data);
             Assert.Equal(0, _stats.Outbound.Rest.Presence.Count);
             Assert.Equal(0, _stats.Outbound.Rest.Presence.Data);
-                                    
-            //HttpStream            
+
+            // HttpStream
             Assert.Equal(0, _stats.Outbound.Webhook.All.Count);
             Assert.Equal(0, _stats.Outbound.Webhook.All.Data);
             Assert.Equal(0, _stats.Outbound.Webhook.Messages.Count);

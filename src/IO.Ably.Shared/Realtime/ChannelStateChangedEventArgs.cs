@@ -12,6 +12,7 @@ namespace IO.Ably.Realtime
         }
 
         public ChannelState Previous { get; }
+
         public ChannelState Current { get; }
 
         public ErrorInfo Error { get; }

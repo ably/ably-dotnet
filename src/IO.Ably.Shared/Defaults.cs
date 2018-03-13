@@ -13,7 +13,7 @@ namespace IO.Ably
 
         internal static string GetVersion()
         {
-            var version =  typeof(Defaults).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
+            var version = typeof(Defaults).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
             return version.Split('.').Take(3).JoinStrings(".");
         }
 
@@ -25,6 +25,7 @@ namespace IO.Ably
                 {
                     return $"dotnet.{IoC.PlatformId}-{AssemblyVersion}";
                 }
+
                 return $"dotnet-{AssemblyVersion}";
             }
         }
@@ -41,6 +42,7 @@ namespace IO.Ably
         public static readonly Capability DefaultTokenCapability = Capability.AllowAll;
         public const int Port = 80;
         public const int TlsPort = 443;
+
         // Buffer in seconds before a token is considered unusable
         public const int TokenExpireBufferInSeconds = 15;
         public static readonly TimeSpan DefaultRealtimeTimeout = TimeSpan.FromSeconds(10);
@@ -70,7 +72,5 @@ namespace IO.Ably
         {
             FallbackHosts = new[] { "a.ably-realtime.com", "b.ably-realtime.com", "c.ably-realtime.com", "d.ably-realtime.com", "e.ably-realtime.com" };
         }
-        
-
     }
 }

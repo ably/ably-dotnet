@@ -22,6 +22,7 @@ namespace IO.Ably.Realtime
                     {
                         return new List<MessageHandlerAction<T>>(result);
                     }
+
                     return Enumerable.Empty<MessageHandlerAction<T>>();
                 }
 
@@ -63,6 +64,7 @@ namespace IO.Ably.Realtime
                         return;
                     }
                 }
+
                 _specificHandlers[key] = new List<MessageHandlerAction<T>> { handler };
             }
             finally
@@ -81,7 +83,7 @@ namespace IO.Ably.Realtime
                 _lock.EnterWriteLock();
                 return _handlers.RemoveAll(x => x.Equals(handler)) > 0;
             }
-            finally 
+            finally
             {
                 _lock.ExitWriteLock();
             }
@@ -90,7 +92,9 @@ namespace IO.Ably.Realtime
         public bool Remove(string eventName, MessageHandlerAction<T> handler = null)
         {
             if (eventName.IsEmpty())
+            {
                 return false;
+            }
 
             try
             {

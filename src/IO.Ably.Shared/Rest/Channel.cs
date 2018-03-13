@@ -13,6 +13,7 @@ namespace IO.Ably.Rest
     public class RestChannel : IRestChannel, IPresence
     {
         public string Name { get; private set; }
+
         private readonly AblyRest _ablyRest;
 
         public ChannelOptions Options
@@ -48,7 +49,7 @@ namespace IO.Ably.Rest
 
         public Task PublishAsync(Message message)
         {
-            return this.PublishAsync(new[] {message});
+            return PublishAsync(new[] { message });
         }
 
         /// <summary>
@@ -62,6 +63,7 @@ namespace IO.Ably.Rest
             {
                 throw new AblyException(result.Error);
             }
+
             var request = _ablyRest.CreatePostRequest(_basePath + "/messages", Options);
             request.PostData = messages;
             return _ablyRest.ExecuteRequest(request);
@@ -76,7 +78,9 @@ namespace IO.Ably.Rest
         Task<PaginatedResult<PresenceMessage>> IPresence.GetAsync(int? limit, string clientId, string connectionId)
         {
             if (limit.HasValue && (limit < 0 || limit > 1000))
+            {
                 throw new ArgumentException("Limit must be between 0 and 1000", nameof(limit));
+            }
 
             var presenceLimit = limit ?? Defaults.QueryLimit;
 
@@ -84,17 +88,23 @@ namespace IO.Ably.Rest
 
             request.QueryParameters.Add("limit", presenceLimit.ToString());
             if (clientId.IsNotEmpty())
+            {
                 request.QueryParameters.Add("clientId", clientId);
+            }
+
             if (connectionId.IsNotEmpty())
+            {
                 request.QueryParameters.Add("connectionId", connectionId);
+            }
 
             return _ablyRest.ExecutePaginatedRequest(request, Presence.GetAsync);
         }
 
         Task<PaginatedResult<PresenceMessage>> IPresence.GetAsync(HistoryRequestParams query)
         {
-            if (query == null) //Fall back on the default implementation
+            if (query == null)
             {
+                // Fall back on the default implementation
                 return Presence.GetAsync();
             }
 
@@ -104,7 +114,7 @@ namespace IO.Ably.Rest
             request.AddQueryParameters(query.GetParameters());
             return _ablyRest.ExecutePaginatedRequest(request, Presence.GetAsync);
         }
-        
+
         /// <summary>
             /// Get the presence messages history for the channel
             /// </summary>

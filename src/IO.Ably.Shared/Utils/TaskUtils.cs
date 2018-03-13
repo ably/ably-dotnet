@@ -2,14 +2,17 @@
 
 namespace IO.Ably
 {
-    static class TaskUtils
+    internal static class TaskUtils
     {
         // http://stackoverflow.com/a/21648387/126995
-        public static Task IgnoreExceptions( this Task task )
+        public static Task IgnoreExceptions(this Task task)
         {
-            task.ContinueWith( c => { var ignored = c.Exception; },
-                TaskContinuationOptions.OnlyOnFaulted |
-                TaskContinuationOptions.ExecuteSynchronously );
+            task.ContinueWith(
+                c =>
+                    {
+                        var ignored = c.Exception;
+                    },
+                TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
             return task;
         }
 
@@ -18,23 +21,25 @@ namespace IO.Ably
         {
             TaskCompletionSource<object> res = new TaskCompletionSource<object>();
 
-            return task.ContinueWith(t =>
-            {
-                if (t.IsCanceled)
-                {
-                    res.TrySetCanceled();
-                }
-                else if (t.IsFaulted)
-                {
-                    res.TrySetException(t.Exception);
-                }
-                else
-                {
-                    res.TrySetResult(t.Result);
-                }
-                return res.Task;
-            }
-            , TaskContinuationOptions.ExecuteSynchronously).Unwrap();
+            return task.ContinueWith(
+                t =>
+                    {
+                        if (t.IsCanceled)
+                        {
+                            res.TrySetCanceled();
+                        }
+                        else if (t.IsFaulted)
+                        {
+                            res.TrySetException(t.Exception);
+                        }
+                        else
+                        {
+                            res.TrySetResult(t.Result);
+                        }
+
+                        return res.Task;
+                    },
+                TaskContinuationOptions.ExecuteSynchronously).Unwrap();
         }
     }
 }

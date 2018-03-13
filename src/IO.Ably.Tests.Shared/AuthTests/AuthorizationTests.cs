@@ -1,20 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using FluentAssertions;
-using Newtonsoft.Json;
-using Xunit;
-using System.Threading.Tasks;
-using Xunit.Abstractions;
-
 namespace IO.Ably.Tests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using FluentAssertions;
+    using Xunit;
+    using Xunit.Abstractions;
+
     public class AuthorizationTests : MockHttpRestSpecs
     {
-        internal override AblyResponse DefaultResponse => DummyTokenResponse;
-
         internal AblyResponse DummyTokenResponse = new AblyResponse() { Type = ResponseType.Json, TextResponse = "{ \"access_token\": {}}" };
+
+        internal override AblyResponse DefaultResponse => DummyTokenResponse;
 
         protected static string KeyId => ValidKey.Split(':')[0];
 
@@ -38,7 +36,7 @@ namespace IO.Ably.Tests
             var client = GetRestClient(setOptionsAction: options => { options.Tls = true; });
             await client.Auth.AuthorizeAsync();
 
-            //Success
+            // Success
         }
 
         private static TokenRequest CreateDefaultTokenRequest(AblyRest client)
@@ -63,8 +61,6 @@ namespace IO.Ably.Tests
             data.Ttl.Should().Be(Defaults.DefaultTokenTtl);
         }
 
-        
-
         [Fact]
         [Trait("spec", "RSA6")]
         public void UsesTheDefaultCapability()
@@ -84,13 +80,13 @@ namespace IO.Ably.Tests
             data.Nonce.Length.Should().BeGreaterOrEqualTo(16);
         }
 
-
         [Trait("spec", "RSA9a")]
         [Trait("spec", "RSA9b")]
         [Trait("spec", "RSA9i")]
         public class CreateTokenRequestAuthOptionSpecs : AuthorizationTests
         {
-            public CreateTokenRequestAuthOptionSpecs(ITestOutputHelper output) : base(output)
+            public CreateTokenRequestAuthOptionSpecs(ITestOutputHelper output)
+                : base(output)
             {
             }
 
@@ -108,8 +104,6 @@ namespace IO.Ably.Tests
                     };
                 });
             }
-
-           
 
             [Fact]
             public async Task WithDefaultTokenParams_ShouldSetTokenRequestValuesCorrectly()
@@ -139,7 +133,7 @@ namespace IO.Ably.Tests
                     Timestamp = Now.AddMinutes(10)
                 };
 
-                var request = await CreateTokenRequest(client,overridingTokenParams);
+                var request = await CreateTokenRequest(client, overridingTokenParams);
 
                 request.Capability.Should().Be(Capability.Empty);
                 request.ClientId.Should().Be("999");
@@ -164,7 +158,7 @@ namespace IO.Ably.Tests
             }
         }
 
-        public class CreateTokenRequestSpecs : AuthorizationTests
+        public sealed class CreateTokenRequestSpecs : AuthorizationTests
         {
             [Fact]
             [Trait("spec", "RSA9h")]
@@ -267,7 +261,8 @@ namespace IO.Ably.Tests
                 await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequestAsync(null, null));
             }
 
-            public CreateTokenRequestSpecs(ITestOutputHelper output) : base(output)
+            public CreateTokenRequestSpecs(ITestOutputHelper output)
+                : base(output)
             {
                 Client = GetRestClient();
             }
@@ -281,7 +276,7 @@ namespace IO.Ably.Tests
         {
             var client = GetRestClient(setOptionsAction: options =>
             {
-                options.Key = "";
+                options.Key = string.Empty;
                 options.UseTokenAuth = true;
             });
 
@@ -293,9 +288,9 @@ namespace IO.Ably.Tests
         {
             private string _clientId = "123";
 
-            public ClientIdSpecs(ITestOutputHelper output) : base(output)
+            public ClientIdSpecs(ITestOutputHelper output)
+                : base(output)
             {
-
             }
 
             private AblyRest GetRestClientWithClientId()
@@ -327,7 +322,7 @@ namespace IO.Ably.Tests
                     options.DefaultTokenParams = new TokenParams() { ClientId = "999" };
                 });
 
-                client.Auth.AuthorizeAsync(null, new AuthOptions() { Force = true});
+                client.Auth.AuthorizeAsync(null, new AuthOptions() { Force = true });
                 var tokenRequest = LastRequest.PostData as TokenRequest;
                 tokenRequest.ClientId.Should().Be("123");
             }
@@ -367,13 +362,8 @@ namespace IO.Ably.Tests
             }
         }
 
-        
-
-        
-
-        
-
-        public AuthorizationTests(ITestOutputHelper output) : base(output)
+        public AuthorizationTests(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

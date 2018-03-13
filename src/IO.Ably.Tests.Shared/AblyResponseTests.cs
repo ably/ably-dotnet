@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
-using Xunit.Extensions;
+﻿using Xunit;
 
 namespace IO.Ably.Tests
 {
@@ -16,13 +10,12 @@ namespace IO.Ably.Tests
         [InlineData("", ResponseType.Binary)]
         public void Ctor_WithContentType_SetsTypeCorrectly(string type, object responseType)
         {
-            //Arrange
-                        
+            // Arrange
 
-            //Act
-            var response = new AblyResponse("", type, new byte[0]);
+            // Act
+            var response = new AblyResponse(string.Empty, type, new byte[0]);
 
-            //Assert
+            // Assert
             Assert.Equal((ResponseType)responseType, response.Type);
         }
 
@@ -31,29 +24,26 @@ namespace IO.Ably.Tests
         [InlineData("", "utf-8")]
         public void Ctor_WithEncoding_SetsEncodingCorrectly(string encoding, string expected)
         {
-            //Arrange
+            // Arrange
 
+            // Act
+            var response = new AblyResponse(encoding, string.Empty, new byte[0]);
 
-            //Act
-            var response = new AblyResponse(encoding, "", new byte[0]);
-
-            //Assert
+            // Assert
             Assert.Equal(expected, response.Encoding);
         }
-
 
         [Fact]
         public void Ctor_WhenTypeIsJson_SetsTextResponse()
         {
-            //Arrange
+            // Arrange
             var text = "Test";
 
-            //Act
-            var response = new AblyResponse("", "application/json", text.GetBytes());
+            // Act
+            var response = new AblyResponse(string.Empty, "application/json", text.GetBytes());
 
-            //Assert
+            // Assert
             Assert.Equal(text, response.TextResponse);
         }
-
     }
 }

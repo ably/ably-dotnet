@@ -54,7 +54,7 @@ namespace IO.Ably
 
         public PresenceMessage ShallowClone()
         {
-            return (PresenceMessage) this.MemberwiseClone();
+            return (PresenceMessage)MemberwiseClone();
         }
     }
 }

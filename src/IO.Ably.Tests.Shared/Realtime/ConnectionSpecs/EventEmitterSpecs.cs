@@ -1,33 +1,23 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using FluentAssertions;
-using IO.Ably.Realtime;
-using IO.Ably.Types;
-using Xunit;
-using Xunit.Abstractions;
-
 namespace IO.Ably.Tests.Realtime
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+
+    using FluentAssertions;
+
+    using Ably.Realtime;
+    using Types;
+
+    using Xunit;
+    using Xunit.Abstractions;
+
     [Trait("spec", "RTN4")]
     public class EventEmitterSpecs : ConnectionSpecsBase
     {
-        [Fact]
-        [Trait("spec", "RTN4a")]
-        public void EmittedEventTypesShouldBe()
+        public EventEmitterSpecs(ITestOutputHelper output)
+            : base(output)
         {
-            var states = Enum.GetNames(typeof(ConnectionState));
-            states.ShouldBeEquivalentTo(new[]
-            {
-                "Initialized",
-                "Connecting",
-                "Connected",
-                "Disconnected",
-                "Suspended",
-                "Closing",
-                "Closed",
-                "Failed"
-            });
         }
 
         [Fact]
@@ -39,19 +29,32 @@ namespace IO.Ably.Tests.Realtime
             var client = GetClientWithFakeTransport(opts => opts.AutoConnect = false);
             var states = new List<ConnectionState>();
             client.Connection.InternalStateChanged += (sender, args) =>
-            {
-                args.Should().BeOfType<ConnectionStateChange>();
-                states.Add(args.Current);
-            };
+                {
+                    args.Should().BeOfType<ConnectionStateChange>();
+                    states.Add(args.Current);
+                };
 
             client.Connect();
 
-            //SendConnected Message
+            // SendConnected Message
             await client.ConnectionManager.OnTransportMessageReceived(
                 new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
             states.Should().BeEquivalentTo(new[] { ConnectionState.Connecting, ConnectionState.Connected });
             client.Connection.State.Should().Be(ConnectionState.Connected);
+        }
+
+        [Fact]
+        [Trait("spec", "RTN4a")]
+        public void EmittedEventTypesShouldBe()
+        {
+            var states = Enum.GetNames(typeof(ConnectionState));
+            states.ShouldBeEquivalentTo(
+                new[]
+                    {
+                        "Initialized", "Connecting", "Connected", "Disconnected", "Suspended", "Closing", "Closed",
+                        "Failed"
+                    });
         }
 
         [Fact]
@@ -62,20 +65,20 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = GetClientWithFakeTransport();
 
-            //Start collecting events after the connection is open
+            // Start collecting events after the connection is open
             var states = new List<ConnectionState>();
             client.Connection.InternalStateChanged += (sender, args) =>
-            {
-                args.Should().BeOfType<ConnectionStateChange>();
-                states.Add(args.Current);
-            };
-            LastCreatedTransport.SendAction = message =>
-            {
-                if (message.Original.Action == ProtocolMessage.MessageAction.Close)
                 {
-                    LastCreatedTransport.Close(false);
-                }
-            };
+                    args.Should().BeOfType<ConnectionStateChange>();
+                    states.Add(args.Current);
+                };
+            LastCreatedTransport.SendAction = message =>
+                {
+                    if (message.Original.Action == ProtocolMessage.MessageAction.Close)
+                    {
+                        LastCreatedTransport.Close(false);
+                    }
+                };
 
             client.Close();
             states.Should().BeEquivalentTo(new[] { ConnectionState.Closing, ConnectionState.Closed });
@@ -88,13 +91,13 @@ namespace IO.Ably.Tests.Realtime
         public async Task WithAConnectionError_ShouldRaiseChangeStateEventWithError()
         {
             var client = GetClientWithFakeTransport();
-            bool hasError = false;
+            var hasError = false;
             ErrorInfo actualError = null;
             client.Connection.InternalStateChanged += (sender, args) =>
-            {
-                hasError = args.HasError;
-                actualError = args.Reason;
-            };
+                {
+                    hasError = args.HasError;
+                    actualError = args.Reason;
+                };
             var expectedError = new ErrorInfo();
 
             await client.ConnectionManager.OnTransportMessageReceived(
@@ -102,10 +105,6 @@ namespace IO.Ably.Tests.Realtime
 
             hasError.Should().BeTrue();
             actualError.Should().Be(expectedError);
-        }
-
-        public EventEmitterSpecs(ITestOutputHelper output) : base(output)
-        {
         }
     }
 }

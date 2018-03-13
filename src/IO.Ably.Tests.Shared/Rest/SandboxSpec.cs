@@ -8,26 +8,29 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    public abstract class SandboxSpecs : IClassFixture<AblySandboxFixture>
+    public abstract class SandboxSpecs : IClassFixture<AblySandboxFixture>, IDisposable
     {
         internal ILogger Logger { get; set; }
 
-        protected readonly AblySandboxFixture Fixture;
-        protected readonly ITestOutputHelper Output;
-        protected ManualResetEvent _resetEvent;
+        protected AblySandboxFixture Fixture { get; }
+
+        protected ITestOutputHelper Output { get; }
+
+        protected ManualResetEvent ResetEvent { get; }
 
         public SandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
         {
-            _resetEvent = new ManualResetEvent(false);
+            ResetEvent = new ManualResetEvent(false);
             Fixture = fixture;
             Output = output;
-            Logger = IO.Ably.DefaultLogger.LoggerInstance;
-            //Reset time in case other tests have changed it
-            //Config.Now = () => DateTimeOffset.UtcNow;
+            Logger = DefaultLogger.LoggerInstance;
+
+            // Reset time in case other tests have changed it
+            // Config.Now = () => DateTimeOffset.UtcNow;
 
             // Very useful for debugging failing tests.
-            //Logger.LoggerSink = new OutputLoggerSink(output);
-            //Logger.LogLevel = LogLevel.Debug;
+            // Logger.LoggerSink = new OutputLoggerSink(output);
+            // Logger.LogLevel = LogLevel.Debug;
         }
 
         protected async Task<AblyRest> GetRestClient(Protocol protocol, Action<ClientOptions> optionsAction = null)
@@ -39,7 +42,8 @@ namespace IO.Ably.Tests
             return new AblyRest(defaultOptions);
         }
 
-        protected async Task<AblyRealtime> GetRealtimeClient(Protocol protocol,
+        protected async Task<AblyRealtime> GetRealtimeClient(
+            Protocol protocol,
             Action<ClientOptions, TestEnvironmentSettings> optionsAction = null)
         {
             var settings = await Fixture.GetSettings();
@@ -76,13 +80,14 @@ namespace IO.Ably.Tests
         {
             var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
             if (waitSpan.HasValue)
+            {
                 return connectionAwaiter.Wait(waitSpan.Value);
+            }
+
             return connectionAwaiter.Wait();
         }
 
-        
-
-        protected static async Task WaitFor30sOrUntilTrue(Func<bool> predicate)
+        protected static async Task WaitFor30SOrUntilTrue(Func<bool> predicate)
         {
             int count = 0;
             while (count < 30)
@@ -90,7 +95,9 @@ namespace IO.Ably.Tests
                 count++;
 
                 if (predicate())
+                {
                     break;
+                }
 
                 await Task.Delay(1000);
             }
@@ -103,14 +110,11 @@ namespace IO.Ably.Tests
         internal class TestLogger : ILogger
         {
             public int SeenCount { get; set; }
+
             public string MessageToTest { get; set; }
 
             public string FullMessage { get; private set; }
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="messageToTest"></param>
             public TestLogger(string messageToTest)
             {
                 LogLevel = LogLevel.Debug;
@@ -121,8 +125,11 @@ namespace IO.Ably.Tests
             public bool MessageSeen { get; private set; }
 
             public LogLevel LogLevel { get; set; }
+
             public bool IsDebug => LogLevel == LogLevel.Debug;
+
             public ILoggerSink LoggerSink { get; set; }
+
             public void Error(string message, Exception ex)
             {
                 Test(message);
@@ -153,6 +160,11 @@ namespace IO.Ably.Tests
                 }
             }
         }
+
+        public void Dispose()
+        {
+            ResetEvent?.Dispose();
+        }
     }
 
     public static class SandboxSpecExtension
@@ -161,7 +173,10 @@ namespace IO.Ably.Tests
         {
             var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
             if (waitSpan.HasValue)
+            {
                 return connectionAwaiter.Wait(waitSpan.Value);
+            }
+
             return connectionAwaiter.Wait();
         }
 
@@ -169,10 +184,11 @@ namespace IO.Ably.Tests
         {
             var channelAwaiter = new ChannelAwaiter(channel, awaitedState);
             if (waitSpan.HasValue)
+            {
                 return channelAwaiter.WaitAsync();
+            }
+
             return channelAwaiter.WaitAsync();
         }
     }
-
-    
 }

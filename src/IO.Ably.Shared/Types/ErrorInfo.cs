@@ -1,8 +1,9 @@
 using System;
 using System.Diagnostics;
 using System.Net;
-using Newtonsoft.Json.Linq;
+
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace IO.Ably
 {
@@ -28,9 +29,11 @@ namespace IO.Ably
         /// <summary>Ably error code (see https://github.com/ably/ably-common/blob/master/protocol/errors.json) </summary>
         [JsonProperty("code")]
         public int Code { get; set; }
+
         /// <summary>The http status code corresponding to this error</summary>
         [JsonProperty("statusCode")]
         public HttpStatusCode? StatusCode { get; set; }
+
         /// <summary>Additional reason information, where available</summary>
         [JsonProperty("message")]
         public string Message { get; set; }
@@ -67,17 +70,17 @@ namespace IO.Ably
             {
                 return $"Reason: {Message}; Code: {Code}";
             }
-            return $"Reason: {Message}; Code: {Code}; HttpStatusCode: {(int) StatusCode.Value} ({StatusCode})";
+
+            return $"Reason: {Message}; Code: {Code}; HttpStatusCode: {(int)StatusCode.Value} ({StatusCode})";
         }
 
         internal static ErrorInfo Parse(AblyResponse response)
         {
-            string reason = "";
+            string reason = string.Empty;
             int errorCode = 500;
 
             if (response.Type == ResponseType.Json)
             {
-
                 try
                 {
                     var json = JObject.Parse(response.TextResponse);
@@ -90,9 +93,11 @@ namespace IO.Ably
                 catch (Exception ex)
                 {
                     Debug.WriteLine(ex.Message);
-                    //If there is no json or there is something wrong we don't want to throw from here. The
+
+                    // If there is no json or there is something wrong we don't want to throw from here. The
                 }
             }
+
             return new ErrorInfo(reason.IsEmpty() ? "Unknown error" : reason, errorCode, response.StatusCode);
         }
 

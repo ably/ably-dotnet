@@ -16,8 +16,8 @@ namespace IO.Ably.Tests
         {
             return new AuthOptions()
             {
-                AuthHeaders = new Dictionary<string, string> { {"Test", "Test"} },
-                AuthParams = new Dictionary<string, string> { {"Test", "Test"} },
+                AuthHeaders = new Dictionary<string, string> { { "Test", "Test" } },
+                AuthParams = new Dictionary<string, string> { { "Test", "Test" } },
                 Token = "Token",
                 AuthUrl = new Uri("http://www.google.com"),
                 Key = "key",
@@ -26,7 +26,6 @@ namespace IO.Ably.Tests
                 UseTokenAuth = true
             };
         }
-
 
         [Fact]
         public void Merge_WithOptionsNotSet_OverwritesThem()
@@ -44,7 +43,6 @@ namespace IO.Ably.Tests
             Assert.Equal(blankOptions.UseTokenAuth, complete.UseTokenAuth);
         }
 
-
         [Fact]
         public void Merge_WithOptionsNotSet_DoesNotOverwriteKey()
         {
@@ -61,8 +59,8 @@ namespace IO.Ably.Tests
             AuthOptions complete = GetCompleteOptions();
             var otherComplete = new AuthOptions()
             {
-                AuthHeaders = new Dictionary<string, string> { {"Complete", "Test"} },
-                AuthParams = new Dictionary<string, string> { {"Complete", "Test"} },
+                AuthHeaders = new Dictionary<string, string> { { "Complete", "Test" } },
+                AuthParams = new Dictionary<string, string> { { "Complete", "Test" } },
                 Token = "Complete",
                 AuthUrl = new Uri("http://www.ably.io"),
                 Key = "completeKey",
@@ -77,6 +75,5 @@ namespace IO.Ably.Tests
             Assert.NotEqual(otherComplete.AuthUrl, complete.AuthUrl);
             Assert.NotEqual(otherComplete.AuthCallback, complete.AuthCallback);
         }
-
     }
 }

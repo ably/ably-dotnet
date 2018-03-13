@@ -33,19 +33,22 @@ namespace IO.Ably
         }
 
         private static JsonSerializerSettings _settings;
+
         internal static JsonSerializerSettings Settings => _settings ?? (_settings = GetJsonSettings());
 
         public static string Serialize(object obj)
         {
-            if(obj == null)
+            if (obj == null)
+            {
                 throw new ArgumentNullException(nameof(obj), "Cannot serialize null object");
+            }
 
             return SerializeObject(obj, obj.GetType());
         }
 
         public static T Deserialize<T>(string json)
         {
-            return (T) DeserializeObject(json, typeof(T));
+            return (T)DeserializeObject(json, typeof(T));
         }
 
         public static object Deserialize(string json)
@@ -67,6 +70,7 @@ namespace IO.Ably
                 jsonTextWriter.Formatting = jsonSerializer.Formatting;
                 jsonSerializer.Serialize(jsonTextWriter, value, type);
             }
+
             return stringWriter.ToString();
         }
 
@@ -76,7 +80,9 @@ namespace IO.Ably
             jsonSerializer.CheckAdditionalContent = true;
 
             using (JsonTextReader jsonTextReader = new JsonTextReader(new StringReader(value)))
+            {
                 return jsonSerializer.Deserialize(jsonTextReader, type);
+            }
         }
     }
 }

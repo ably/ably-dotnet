@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using IO.Ably.Realtime;
+
 using IO.Ably;
+using IO.Ably.Realtime;
 using IO.Ably.Transport.States.Connection;
 
 namespace IO.Ably.Transport
@@ -12,6 +13,7 @@ namespace IO.Ably.Transport
     internal sealed class ConnectionAttempt
     {
         public DateTimeOffset Time { get; }
+
         public List<AttemptFailedState> FailedStates { get; private set; } = new List<AttemptFailedState>();
 
         public ConnectionAttempt(DateTimeOffset time)
@@ -23,7 +25,9 @@ namespace IO.Ably.Transport
     internal sealed class AttemptFailedState
     {
         public ErrorInfo Error { get; private set; }
+
         public Exception Exception { get; private set; }
+
         public ConnectionState State { get; private set; }
 
         public AttemptFailedState(ConnectionState state, ErrorInfo error)
@@ -56,13 +60,14 @@ namespace IO.Ably.Transport
 
         private bool IsRecoverableError()
         {
-            return (Error != null && Error.IsRetryableStatusCode());
+            return Error != null && Error.IsRetryableStatusCode();
         }
     }
 
     internal sealed class ConnectionAttemptsInfo
     {
         internal Func<DateTimeOffset> Now { get; set; }
+
         private static readonly ISet<HttpStatusCode> FallbackReasons;
 
         static ConnectionAttemptsInfo()
@@ -75,11 +80,17 @@ namespace IO.Ably.Transport
         }
 
         internal List<ConnectionAttempt> Attempts { get; } = new List<ConnectionAttempt>();
+
         internal DateTimeOffset? FirstAttempt => Attempts.Any() ? Attempts.First().Time : (DateTimeOffset?)null;
+
         public AblyRest RestClient => _connection.RestClient;
+
         public ClientOptions Options => RestClient.Options;
+
         private readonly Connection _connection;
+
         internal int NumberOfAttempts => Attempts.Count;
+
         internal bool TriedToRenewToken { get; private set; }
 
         private readonly object _syncLock = new object();
@@ -123,8 +134,10 @@ namespace IO.Ably.Transport
             {
                 var attempt = Attempts.LastOrDefault() ?? new ConnectionAttempt(Now());
                 attempt.FailedStates.Add(new AttemptFailedState(state, error));
-                if(Attempts.Count == 0)
-                    Attempts.Add(attempt); 
+                if (Attempts.Count == 0)
+                {
+                    Attempts.Add(attempt);
+                }
             }
         }
 
@@ -143,7 +156,9 @@ namespace IO.Ably.Transport
         public void RecordTokenRetry()
         {
             lock (_syncLock)
+            {
                 TriedToRenewToken = true;
+            }
         }
 
         public bool ShouldSuspend()
@@ -151,28 +166,33 @@ namespace IO.Ably.Transport
             lock (_syncLock)
             {
                 if (FirstAttempt == null)
+                {
                     return false;
+                }
+
                 return (Now() - FirstAttempt.Value) >= _connection.ConnectionStateTtl;
             }
         }
 
         public int DisconnectedCount => Attempts.SelectMany(x => x.FailedStates).Count(x => x.State == ConnectionState.Disconnected && x.ShouldUseFallback());
+
         public int SuspendedCount => Attempts.SelectMany(x => x.FailedStates).Count(x => x.State == ConnectionState.Suspended && x.ShouldUseFallback());
 
         public string GetHost()
         {
             var lastFailedState = Attempts.SelectMany(x => x.FailedStates).LastOrDefault(x => x.ShouldUseFallback());
-            string customHost = "";
+            string customHost = string.Empty;
             if (lastFailedState != null)
             {
                 if (lastFailedState.State == ConnectionState.Disconnected)
                 {
-                    customHost = _connection.FallbackHosts[DisconnectedCount%_connection.FallbackHosts.Count];
+                    customHost = _connection.FallbackHosts[DisconnectedCount % _connection.FallbackHosts.Count];
                 }
+
                 if (lastFailedState.State == ConnectionState.Suspended && SuspendedCount > 1)
                 {
                     customHost =
-                        _connection.FallbackHosts[(DisconnectedCount + SuspendedCount)%_connection.FallbackHosts.Count];
+                        _connection.FallbackHosts[(DisconnectedCount + SuspendedCount) % _connection.FallbackHosts.Count];
                 }
 
                 if (customHost.IsNotEmpty())
@@ -189,6 +209,7 @@ namespace IO.Ably.Transport
         public void UpdateAttemptState(ConnectionStateBase newState)
         {
             lock (_syncLock)
+            {
                 switch (newState.State)
                 {
                     case ConnectionState.Connecting:
@@ -209,8 +230,10 @@ namespace IO.Ably.Transport
                         {
                             RecordAttemptFailure(newState.State, newState.Error);
                         }
+
                         break;
                 }
+            }
         }
     }
 }

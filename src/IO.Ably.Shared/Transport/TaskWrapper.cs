@@ -7,18 +7,24 @@ namespace IO.Ably.Transport
     /// <summary>This trivial class wraps legacy callback-style API into a Task API.</summary>
     internal class TaskWrapper
     {
-        readonly TaskCompletionSource<Result> _completionSource = new TaskCompletionSource<Result>();
+        private readonly TaskCompletionSource<Result> _completionSource = new TaskCompletionSource<Result>();
 
         public Task<Result> Task => _completionSource.Task;
 
         public void Callback(bool res, ErrorInfo ei)
         {
             if (res)
+            {
                 _completionSource.TrySetResult(Result.Ok());
+            }
             else if (ei != null)
+            {
                 _completionSource.TrySetResult(Result.Fail(ei));
+            }
             else
+            {
                 _completionSource.TrySetException(new Exception("Unexpected exception thrown by the TaskWrapper."));
+            }
         }
 
         public void SetException(Exception ex)
@@ -74,29 +80,38 @@ namespace IO.Ably.Transport
 
     internal class TaskWrapper<T>
     {
-        readonly TaskCompletionSource<Result<T>> _completionSource = new TaskCompletionSource<Result<T>>();
+        private readonly TaskCompletionSource<Result<T>> _completionSource = new TaskCompletionSource<Result<T>>();
 
         public Task<Result<T>> Task => _completionSource.Task;
 
         public void Callback(T res, ErrorInfo ei)
         {
             if (ei != null)
+            {
                 _completionSource.TrySetResult(Result.Fail<T>(ei));
+            }
             else if (typeof(T).GetTypeInfo().IsValueType && IsNotDefaultValue(res))
+            {
                 _completionSource.TrySetResult(Result.Ok(res));
+            }
             else if (typeof(T).GetTypeInfo().IsValueType == false && res != null)
+            {
                 _completionSource.TrySetResult(Result.Ok(res));
+            }
             else
-                _completionSource.TrySetException(new Exception("Unexpected Exception from the TaskWrapper")); //Something bad happened
+            {
+                _completionSource.TrySetException(new Exception("Unexpected Exception from the TaskWrapper")); // Something bad happened
+            }
         }
 
         private static bool IsNotDefaultValue(object res)
         {
             if (res is TimeSpan)
             {
-                var span =  (TimeSpan) res;
+                var span = (TimeSpan)res;
                 return span != TimeSpan.MinValue;
             }
+
             return Equals(res, default(T)) == false;
         }
 

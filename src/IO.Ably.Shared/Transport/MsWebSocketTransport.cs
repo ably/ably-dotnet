@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using IO.Ably.Realtime;
+
 using IO.Ably;
+using IO.Ably.Realtime;
 
 namespace IO.Ably.Transport
 {
@@ -14,7 +15,9 @@ namespace IO.Ably.Transport
         protected MsWebSocketTransport(TransportParams parameters)
         {
             if (parameters == null)
+            {
                 throw new ArgumentNullException(nameof(parameters), "Null parameters are not allowed");
+            }
 
             BinaryProtocol = parameters.UseBinaryProtocol;
             WebSocketUri = parameters.GetUri();
@@ -22,6 +25,7 @@ namespace IO.Ably.Transport
         }
 
         public bool BinaryProtocol { get; }
+
         public Uri WebSocketUri { get; }
 
         public TransportState State { get; set; } = TransportState.Initialized;
@@ -50,13 +54,20 @@ namespace IO.Ably.Transport
 
                 await _socket.StartConnectionAsync();
 
-                if (Logger.IsDebug) Logger.Debug("Socket connected");
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug("Socket connected");
+                }
 
                 await _socket.Receive(HandleMessageReceived);
             }
             catch (Exception ex)
             {
-                if (Logger.IsDebug) Logger.Debug("Socket couldn't connect. Error: " + ex.Message);
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug("Socket couldn't connect. Error: " + ex.Message);
+                }
+
                 Listener?.OnTransportEvent(TransportState.Closed, ex);
             }
         }
@@ -67,7 +78,6 @@ namespace IO.Ably.Transport
             {
                 if (Logger.IsDebug)
                 {
-
                     try
                     {
 #if MSGPACK
@@ -92,7 +102,6 @@ namespace IO.Ably.Transport
 
                 Listener?.OnTransportDataReceived(data);
             }
-
         }
 
         public void Close(bool suppressClosedEvent = true)
@@ -105,7 +114,9 @@ namespace IO.Ably.Transport
             if (_socket != null)
             {
                 if (suppressClosedEvent)
+                {
                     DetachEvents();
+                }
 
                 Task.Run(_socket.StopConnectionAsync).ConfigureAwait(false);
             }
@@ -140,7 +151,11 @@ namespace IO.Ably.Transport
 
         private void HandleStateChange(MsWebSocketConnection.ConnectionState state, Exception error)
         {
-            if (Logger.IsDebug) Logger.Debug($"Transport State: {state}. Error is {error?.Message ?? "empty"}. {error?.StackTrace}");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"Transport State: {state}. Error is {error?.Message ?? "empty"}. {error?.StackTrace}");
+            }
+
             switch (state)
             {
                 case MsWebSocketConnection.ConnectionState.Connecting:
@@ -156,6 +171,7 @@ namespace IO.Ably.Transport
                     {
                         Listener?.OnTransportEvent(TransportState.Closing, error);
                     }
+
                     DisposeSocketConnection();
                     break;
                 case MsWebSocketConnection.ConnectionState.Closing:

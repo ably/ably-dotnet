@@ -2,20 +2,27 @@
 
 namespace IO.Ably
 {
-    //https://github.com/vkhorikov/FuntionalPrinciplesCsharp/blob/master/New/CustomerManagement.Logic/Common/Result.cs
+    // https://github.com/vkhorikov/FuntionalPrinciplesCsharp/blob/master/New/CustomerManagement.Logic/Common/Result.cs
     // Slightly modified version of the above
     public class Result
     {
         public bool IsSuccess { get; }
+
         public ErrorInfo Error { get; }
+
         public bool IsFailure => !IsSuccess;
 
         protected Result(bool isSuccess, ErrorInfo error)
         {
             if (isSuccess && error != null)
+            {
                 throw new InvalidOperationException();
+            }
+
             if (!isSuccess && error == null)
+            {
                 throw new InvalidOperationException();
+            }
 
             IsSuccess = isSuccess;
             Error = error;
@@ -23,7 +30,7 @@ namespace IO.Ably
 
         public static Result Fail(string message)
         {
-            return new Result(false, new ErrorInfo() {Message = message});
+            return new Result(false, new ErrorInfo() { Message = message });
         }
 
         public static Result Fail(ErrorInfo error)
@@ -51,13 +58,14 @@ namespace IO.Ably
             foreach (Result result in results)
             {
                 if (result.IsFailure)
+                {
                     return result;
+                }
             }
 
             return Ok();
         }
     }
-
 
     public class Result<T> : Result
     {
@@ -68,7 +76,9 @@ namespace IO.Ably
             get
             {
                 if (!IsSuccess)
+                {
                     throw new InvalidOperationException();
+                }
 
                 return _value;
             }
@@ -86,7 +96,9 @@ namespace IO.Ably
         public static Result<K> OnSuccess<T, K>(this Result<T> result, Func<T, K> func)
         {
             if (result.IsFailure)
+            {
                 return Result.Fail<K>(result.Error);
+            }
 
             return Result.Ok(func(result.Value));
         }
@@ -94,7 +106,9 @@ namespace IO.Ably
         public static Result OnSuccess<T>(this Result<T> result, Func<T, Result> func)
         {
             if (result.IsFailure)
+            {
                 return result;
+            }
 
             return func(result.Value);
         }
@@ -102,18 +116,24 @@ namespace IO.Ably
         public static Result<T> Ensure<T>(this Result<T> result, Func<T, bool> predicate, ErrorInfo error)
         {
             if (result.IsFailure)
+            {
                 return result;
+            }
 
             if (!predicate(result.Value))
+            {
                 return Result.Fail<T>(error);
+            }
 
             return result;
         }
 
-        public static Result<K> Map<T, K>(this Result<T> result, Func<T, K> func)
+        public static Result<TResult> Map<T, TResult>(this Result<T> result, Func<T, TResult> func)
         {
             if (result.IsFailure)
-                return Result.Fail<K>(result.Error);
+            {
+                return Result.Fail<TResult>(result.Error);
+            }
 
             return Result.Ok(func(result.Value));
         }

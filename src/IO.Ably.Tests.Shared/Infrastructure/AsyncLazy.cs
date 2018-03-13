@@ -13,7 +13,7 @@ namespace IO.Ably.Tests
         /// <summary>
         /// The underlying lazy task.
         /// </summary>
-        private readonly Lazy<Task<T>> instance;
+        private readonly Lazy<Task<T>> _instance;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AsyncLazy&lt;T&gt;"/> class.
@@ -21,7 +21,7 @@ namespace IO.Ably.Tests
         /// <param name="factory">The delegate that is invoked on a background thread to produce the value when it is needed.</param>
         public AsyncLazy(Func<T> factory)
         {
-            instance = new Lazy<Task<T>>(() => Task.Run(factory));
+            _instance = new Lazy<Task<T>>(() => Task.Run(factory));
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace IO.Ably.Tests
         /// <param name="factory">The asynchronous delegate that is invoked on a background thread to produce the value when it is needed.</param>
         public AsyncLazy(Func<Task<T>> factory)
         {
-            instance = new Lazy<Task<T>>(() => Task.Run(factory));
+            _instance = new Lazy<Task<T>>(() => Task.Run(factory));
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace IO.Ably.Tests
         /// </summary>
         public TaskAwaiter<T> GetAwaiter()
         {
-            return instance.Value.GetAwaiter();
+            return _instance.Value.GetAwaiter();
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace IO.Ably.Tests
         /// </summary>
         public void Start()
         {
-            var unused = instance.Value;
+            var unused = _instance.Value;
         }
     }
 }

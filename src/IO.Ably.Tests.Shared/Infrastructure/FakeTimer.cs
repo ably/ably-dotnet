@@ -7,7 +7,9 @@ namespace IO.Ably.Tests
     internal class FakeTimer : ICountdownTimer
     {
         public Action OnTimeOut { get; private set; }
+
         public Func<Task> OnTimeOutFunc { get; private set; }
+
         public bool AutoRest { get; set; }
 
         public TimeSpan LastDelay { get; set; }

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace IO.Ably.Tests.Infrastructure
 {
-    public class TaskCompletionAwaiter : IDisposable
+    public sealed class TaskCompletionAwaiter : IDisposable
     {
         private CancellationTokenSource _cancellationTokenSource;
         private TaskCompletionSource<bool> _taskCompletionSource;
@@ -19,7 +19,7 @@ namespace IO.Ably.Tests.Infrastructure
             _taskCompletionSource = new TaskCompletionSource<bool>();
             _cancellationTokenSource.Token.Register(() => _taskCompletionSource.TrySetResult(false));
         }
-        
+
         public void SetCompleted()
         {
             _taskCompletionSource.TrySetResult(true);
@@ -34,7 +34,7 @@ namespace IO.Ably.Tests.Infrastructure
 
         public void Dispose()
         {
-            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource.Dispose();
             _taskCompletionSource = null;
         }
     }

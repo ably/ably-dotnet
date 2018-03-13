@@ -9,17 +9,18 @@ using Xunit.Abstractions;
 namespace IO.Ably.Tests.Realtime
 {
     [Trait("spec", "RTN7")]
-    public class AckNackSpecs : ConnectionSpecsBase
+    public sealed class AckNackSpecs : ConnectionSpecsBase
     {
         private AblyRealtime _realtime;
         private FakeAckProcessor _ackProcessor;
-        // This only contains the AckProcessor integration with the ConnectionManager. 
-        // The Actual Ack processor tests are in AckProtocolSpecs.cs
 
+        // This only contains the AckProcessor integration with the ConnectionManager.
+        // The Actual Ack processor tests are in AckProtocolSpecs.cs
         [Fact]
         public void WhenSendIsCalled_ShouldPassTheMessageThroughTHeAckProcessor()
         {
-            _realtime.Connection.ConnectionState = new ConnectionConnectedState(_realtime.ConnectionManager,
+            _realtime.Connection.ConnectionState = new ConnectionConnectedState(
+                _realtime.ConnectionManager,
                 new ConnectionInfo(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)));
 
             var message = new ProtocolMessage(ProtocolMessage.MessageAction.Message);
@@ -37,7 +38,8 @@ namespace IO.Ably.Tests.Realtime
             _ackProcessor.OnMessageReceivedCalled.Should().BeTrue();
         }
 
-        public AckNackSpecs(ITestOutputHelper output) : base(output)
+        public AckNackSpecs(ITestOutputHelper output)
+            : base(output)
         {
             _ackProcessor = new FakeAckProcessor();
             _realtime = GetRealtimeClient();

@@ -22,23 +22,25 @@ namespace AblyPlatform.Cryptography
             _params = @params;
         }
 
-        static readonly Dictionary<CipherMode, System.Security.Cryptography.CipherMode> ModesMap = new Dictionary<CipherMode, System.Security.Cryptography.CipherMode>
+        private static readonly Dictionary<CipherMode, System.Security.Cryptography.CipherMode> ModesMap = new Dictionary<CipherMode, System.Security.Cryptography.CipherMode>
         {
             { CipherMode.CBC, System.Security.Cryptography.CipherMode.CBC },
             { CipherMode.ECB, System.Security.Cryptography.CipherMode.ECB },
-            { CipherMode.CTS , System.Security.Cryptography.CipherMode.CTS }
+            { CipherMode.CTS, System.Security.Cryptography.CipherMode.CTS }
         };
 
         public static System.Security.Cryptography.CipherMode MapAblyMode(CipherMode? mode)
         {
-            if(mode == null)
+            if (mode == null)
+            {
                 return System.Security.Cryptography.CipherMode.CBC;
+            }
+
             return ModesMap[mode.Value];
         }
 
         public static byte[] GenerateKey(CipherMode? mode, int? keyLength)
         {
-           
             using (var aes = Aes.Create())
             {
                 aes.KeySize = keyLength ?? Crypto.DefaultKeylength;
@@ -55,7 +57,9 @@ namespace AblyPlatform.Cryptography
             using (var aesEncryption = Aes.Create())
             {
                 if (iv == null)
+                {
                     aesEncryption.GenerateIV();
+                }
                 else
                 {
                     aesEncryption.IV = iv;
@@ -77,7 +81,7 @@ namespace AblyPlatform.Cryptography
             }
         }
 
-        static byte[] Decrypt(byte[] input, byte[] key, int keySize, System.Security.Cryptography.CipherMode mode)
+        private static byte[] Decrypt(byte[] input, byte[] key, int keySize, System.Security.Cryptography.CipherMode mode)
         {
             byte[] iv = input.Take(Crypto.DefaultBlocklength).ToArray();
             using (var aesEncryption = Aes.Create())
