@@ -32,6 +32,7 @@ namespace IO.Ably.Tests
         public void Error(string message, Exception ex)
         {
             Test(message);
+            Test(ex.Message);
         }
 
         public void Error(string message, params object[] args)
@@ -57,6 +58,11 @@ namespace IO.Ably.Tests
                 FullMessage = message;
                 SeenCount++;
             }
+        }
+
+        public void Reset()
+        {
+            MessageSeen = false;
         }
     }
 }
