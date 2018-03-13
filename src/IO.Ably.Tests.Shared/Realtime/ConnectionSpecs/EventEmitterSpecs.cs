@@ -15,7 +15,6 @@ namespace IO.Ably.Tests.Realtime
     [Trait("spec", "RTN4")]
     public class EventEmitterSpecs : ConnectionSpecsBase
     {
-
         [Fact]
         [Trait("spec", "RTN4a")]
         public void EmittedEventTypesShouldBe()
@@ -50,7 +49,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.Connect();
 
-            //SendConnected Message
+            // SendConnected Message
             await client.ConnectionManager.OnTransportMessageReceived(
                 new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
@@ -266,13 +265,19 @@ namespace IO.Ably.Tests.Realtime
         {
             public string Message { get; set; }
         }
+
         private class TestEventEmitter : EventEmitter<int, TestEventEmitterArgs>
         {
-            public TestEventEmitter(ILogger logger) : base(logger) {}
+            public TestEventEmitter(ILogger logger)
+                : base(logger)
+            {
+            }
+
             protected override Action<Action> NotifyClient => action => action();
+
             public void DoDummyEmit(int state, string message)
             {
-                this.Emit(state, new TestEventEmitterArgs() { Message = message });
+                Emit(state, new TestEventEmitterArgs() { Message = message });
             }
         }
     }
