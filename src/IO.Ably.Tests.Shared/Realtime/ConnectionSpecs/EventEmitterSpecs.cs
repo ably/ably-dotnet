@@ -262,32 +262,31 @@ namespace IO.Ably.Tests.Realtime
         public void WithEventEmitter_WhenOff_DeRegistersForEvents()
         {
             var em = new TestEventEmitter(DefaultLogger.LoggerInstance);
-            var t = new TaskCompletionAwaiter(100);
-            string m = string.Empty;
+            string message = string.Empty;
             int counter = 0;
             bool handled = false;
 
-            void Handler1(TestEventEmitterArgs args)
+            void Listener1(TestEventEmitterArgs args)
             {
                 counter++;
-                m = args.Message;
+                message = args.Message;
                 handled = true;
             }
 
-            void Handler2(TestEventEmitterArgs args)
+            void Listener2(TestEventEmitterArgs args)
             {
                 counter++;
-                m = args.Message;
+                message = args.Message;
                 handled = true;
             }
 
             // if called with no arguments, it removes all registrations, for all events and listeners
-            em.On(1, (Action<TestEventEmitterArgs>)Handler1);
-            em.On(2, (Action<TestEventEmitterArgs>)Handler1);
-            em.On(3, (Action<TestEventEmitterArgs>)Handler1);
+            em.On(1, (Action<TestEventEmitterArgs>)Listener1);
+            em.On(2, (Action<TestEventEmitterArgs>)Listener1);
+            em.On(3, (Action<TestEventEmitterArgs>)Listener1);
             em.DoDummyEmit(1, "off");
             handled.Should().BeTrue();
-            m.Should().Be("off");
+            message.Should().Be("off");
             counter.Should().Be(1);
             handled = false;
             em.Off();
@@ -299,42 +298,65 @@ namespace IO.Ably.Tests.Realtime
 
             // if called only with a listener, it removes all registrations matching the given listener,
             // regardless of whether they are associated with an event or not;
-            em.On(1, (Action<TestEventEmitterArgs>)Handler1);
-            em.On(1, (Action<TestEventEmitterArgs>)Handler2);
+            em.On(1, (Action<TestEventEmitterArgs>)Listener1);
+            em.On(1, (Action<TestEventEmitterArgs>)Listener2);
             handled = false;
             em.DoDummyEmit(1, "off");
             handled.Should().BeTrue();
             counter.Should().Be(3);
+            em.Off((Action<TestEventEmitterArgs>)Listener2);
             handled = false;
-            em.Off((Action<TestEventEmitterArgs>)Handler2);
             em.DoDummyEmit(1, "off");
             handled.Should().BeTrue();
             counter.Should().Be(4);
+            em.Off((Action<TestEventEmitterArgs>)Listener1);
             handled = false;
-            em.Off((Action<TestEventEmitterArgs>)Handler1);
             em.DoDummyEmit(1, "off");
             handled.Should().BeFalse();
             counter.Should().Be(4);
 
             // If called with a specific event and a listener,
             // it removes all registrations that match both the given listener and the given event
-            em.On(1, (Action<TestEventEmitterArgs>)Handler1);
+            em.On(1, (Action<TestEventEmitterArgs>)Listener1);
+            em.On(1, (Action<TestEventEmitterArgs>)Listener2);
+            em.On(2, (Action<TestEventEmitterArgs>)Listener1);
             handled = false;
-            em.DoDummyEmit(1, "off");
-            handled.Should().BeTrue();
-            counter.Should().Be(5);
-
-            // no handler for this event, so this should have no effect
-            handled = false;
-            em.Off(2, (Action<TestEventEmitterArgs>)Handler1);
             em.DoDummyEmit(1, "off");
             handled.Should().BeTrue();
             counter.Should().Be(6);
-            em.Off(1, (Action<TestEventEmitterArgs>)Handler1);
+
+            handled = false;
+            em.DoDummyEmit(2, "off");
+            handled.Should().BeTrue();
+            counter.Should().Be(7);
+
+            // no handler for this event, so this should have no effect
+            em.Off(3, (Action<TestEventEmitterArgs>)Listener1);
+            handled = false;
+            em.DoDummyEmit(1, "off");
+            handled.Should().BeTrue();
+            counter.Should().Be(9);
+
+            // no handler for this listener, so this should have no effect
+            em.Off(2, (Action<TestEventEmitterArgs>)Listener2);
+            handled = false;
+            em.DoDummyEmit(1, "off");
+            handled.Should().BeTrue();
+            counter.Should().Be(11);
+
+            // remove handler 1 of 2 remaining
+            em.Off(1, (Action<TestEventEmitterArgs>)Listener1);
+            handled = false;
+            em.DoDummyEmit(1, "off");
+            handled.Should().BeTrue();
+            counter.Should().Be(12);
+
+            // remove the final handler
+            em.Off(1, (Action<TestEventEmitterArgs>)Listener2);
             handled = false;
             em.DoDummyEmit(1, "off");
             handled.Should().BeFalse();
-            counter.Should().Be(6);
+            counter.Should().Be(12);
         }
 
         public EventEmitterSpecs(ITestOutputHelper output) : base(output)
