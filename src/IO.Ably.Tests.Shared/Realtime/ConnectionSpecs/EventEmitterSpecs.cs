@@ -185,7 +185,6 @@ namespace IO.Ably.Tests.Realtime
             // still 2 listeners and we sent a 1 event which both should handle
             counter.Should().Be(8);
             Reset();
-
         }
 
         [Fact]

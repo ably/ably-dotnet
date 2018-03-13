@@ -133,7 +133,6 @@ namespace IO.Ably
                 {
                     _lock.ExitWriteLock();
                 }
-                
             }
             finally
             {
