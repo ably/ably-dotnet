@@ -121,10 +121,20 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN2g")]
         public void ShouldSetTransportLibVersionParamater()
         {
+            string pattern = @"^dotnet(.?\w*)-1.0.(\d+)$";
+
+            // validate the regex pattern
+            Regex.Match("dotnet-1.0.321", pattern).Success.ShouldBeEquivalentTo(true);
+            Regex.Match("dotnet.framework-1.0.321", pattern).Success.ShouldBeEquivalentTo(true);
+            Regex.Match("dotnet.netstandard20-1.0.0", pattern).Success.ShouldBeEquivalentTo(true);
+            Regex.Match("csharp.netstandard20-1.0.0", pattern).Success.ShouldBeEquivalentTo(false);
+
             var client = GetClientWithFakeTransport();
             LastCreatedTransport.Parameters.GetParams().Should().ContainKey("lib");
-            var p = LastCreatedTransport.Parameters.GetParams();
-            Regex.Match(p["lib"], @"^dotnet.(\w*)-1.0.(\d)$").Success.ShouldBeEquivalentTo(true);
+            var transportParams = LastCreatedTransport.Parameters.GetParams();
+
+            // validate the 'lib' param
+            Regex.Match(transportParams["lib"], pattern).Success.ShouldBeEquivalentTo(true);
         }
 
         public ConnectionParameterSpecs(ITestOutputHelper output) : base(output)
