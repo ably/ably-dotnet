@@ -1,6 +1,8 @@
 using System;
-using IO.Ably.Encryption;
+
 using IO.Ably;
+using IO.Ably.Encryption;
+
 using Newtonsoft.Json;
 
 namespace IO.Ably
@@ -11,8 +13,10 @@ namespace IO.Ably
 
         private DateTimeOffset? _timestamp;
 
-        public TokenRequest() : this(Defaults.NowFunc())
-        {}
+        public TokenRequest()
+            : this(Defaults.NowFunc())
+        { }
+
         internal TokenRequest(Func<DateTimeOffset> nowFunc)
         {
             Now = nowFunc;
@@ -27,18 +31,17 @@ namespace IO.Ably
 
         /// <summary>
         /// Requested time to live for the token. If the token request
-		/// is successful, the TTL of the returned token will be less
-		/// than or equal to this value depending on application settings
-		/// and the attributes of the issuing key
+        /// is successful, the TTL of the returned token will be less
+        /// than or equal to this value depending on application settings
+        /// and the attributes of the issuing key
         /// </summary>
         [JsonProperty("ttl")]
         public TimeSpan? Ttl { get; set; }
 
-
         /// <summary>
-		/// <see cref="Capability"/> of the token. If the token request is successful,
-		/// the capability of the returned token will be the intersection of
-		/// this capability with the capability of the issuing key.
+        /// <see cref="Capability"/> of the token. If the token request is successful,
+        /// the capability of the returned token will be the intersection of
+        /// this capability with the capability of the issuing key.
         /// </summary>
         [JsonProperty("capability", NullValueHandling = NullValueHandling.Ignore)]
         public Capability Capability { get; set; }
@@ -58,10 +61,13 @@ namespace IO.Ably
         public DateTimeOffset? Timestamp
         {
             get { return _timestamp; }
+
             set
             {
-                if(value != DateTimeOffset.MinValue)
+                if (value != DateTimeOffset.MinValue)
+                {
                     _timestamp = value;
+                }
             }
         }
 
@@ -70,7 +76,7 @@ namespace IO.Ably
         /// uniqueness of this request. Any subsequent request using the
         /// same nonce will be rejected.
         /// </summary>
-        /// 
+        ///
         [JsonProperty("nonce")]
         public string Nonce { get; set; }
 
@@ -79,13 +85,15 @@ namespace IO.Ably
 
         internal TokenRequest Populate(TokenParams tokenParams, string keyName, string keyValue)
         {
-            this.KeyName = keyName;
+            KeyName = keyName;
             Capability = tokenParams.Capability ?? Capability.AllowAll;
             ClientId = tokenParams.ClientId;
             var now = Now();
 
             if (tokenParams.Nonce.IsNotEmpty())
+            {
                 Nonce = tokenParams.Nonce;
+            }
 
             Ttl = tokenParams.Ttl ?? Defaults.DefaultTokenTtl;
 

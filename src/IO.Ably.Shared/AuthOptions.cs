@@ -5,14 +5,13 @@ using System.Threading.Tasks;
 
 namespace IO.Ably
 {
-
     /// <summary>
     /// Authentication options
     /// </summary>
     public class AuthOptions
     {
         /// <summary>
-        /// The callback used to get a new <see cref="IO.Ably.TokenDetails"/> or <see cref="IO.Ably.TokenRequest"/>. 
+        /// The callback used to get a new <see cref="IO.Ably.TokenDetails"/> or <see cref="IO.Ably.TokenRequest"/>.
         /// AuthCallback is used by internally by <see cref="IO.Ably.AblyAuth"/>.RequestTokenAsync.
         /// </summary>
         public Func<TokenParams, Task<object>> AuthCallback;
@@ -31,14 +30,19 @@ namespace IO.Ably
         public HttpMethod AuthMethod { get; set; }
 
         public string Key { get; set; }
+
         public string Token { get; set; }
+
         public TokenDetails TokenDetails { get; set; }
 
         public bool Force { get; set; }
 
         public Dictionary<string, string> AuthHeaders { get; set; }
+
         public Dictionary<string, string> AuthParams { get; set; }
+
         public bool? QueryTime { get; set; }
+
         public bool? UseTokenAuth { get; set; }
 
         /// <summary>
@@ -46,7 +50,7 @@ namespace IO.Ably
         /// </summary>
         public AuthOptions()
         {
-            AuthHeaders = new Dictionary<string,string>();
+            AuthHeaders = new Dictionary<string, string>();
             AuthParams = new Dictionary<string, string>();
             AuthMethod = HttpMethod.Get;
         }
@@ -64,15 +68,51 @@ namespace IO.Ably
 
         public AuthOptions Merge(AuthOptions defaults)
         {
-            if (AuthCallback == null) AuthCallback = defaults.AuthCallback;
-            if (AuthUrl == null) AuthUrl = defaults.AuthUrl;
-            if (Token.IsEmpty()) Token = defaults.Token;
-            if (TokenDetails == null) TokenDetails = defaults.TokenDetails;
-            if (AuthHeaders.Count == 0) AuthHeaders = defaults.AuthHeaders;
-            if (AuthParams.Count == 0) AuthParams = defaults.AuthParams;
-            if (Key.IsEmpty()) Key = defaults.Key;
-            if (UseTokenAuth.HasValue == false) UseTokenAuth = defaults.UseTokenAuth;
-            if(QueryTime.HasValue == false) QueryTime = defaults.QueryTime;
+            if (AuthCallback == null)
+            {
+                AuthCallback = defaults.AuthCallback;
+            }
+
+            if (AuthUrl == null)
+            {
+                AuthUrl = defaults.AuthUrl;
+            }
+
+            if (Token.IsEmpty())
+            {
+                Token = defaults.Token;
+            }
+
+            if (TokenDetails == null)
+            {
+                TokenDetails = defaults.TokenDetails;
+            }
+
+            if (AuthHeaders.Count == 0)
+            {
+                AuthHeaders = defaults.AuthHeaders;
+            }
+
+            if (AuthParams.Count == 0)
+            {
+                AuthParams = defaults.AuthParams;
+            }
+
+            if (Key.IsEmpty())
+            {
+                Key = defaults.Key;
+            }
+
+            if (UseTokenAuth.HasValue == false)
+            {
+                UseTokenAuth = defaults.UseTokenAuth;
+            }
+
+            if (QueryTime.HasValue == false)
+            {
+                QueryTime = defaults.QueryTime;
+            }
+
             return this;
         }
 

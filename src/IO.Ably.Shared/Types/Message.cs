@@ -10,19 +10,20 @@ namespace IO.Ably
     [DebuggerDisplay("{ToString()}")]
     public class Message : IMessage
     {
-        private static readonly Message defaultInstance = new Message();
+        private static readonly Message DefaultInstance = new Message();
 
         public Message()
         {
-            
         }
 
         public Message(string name = null, object data = null, string clientId = null)
         {
-            this.Name = name;
-            this.Data = data;
+            Name = name;
+            Data = data;
             if (clientId.IsNotEmpty())
-                this.ClientId = clientId;
+            {
+                ClientId = clientId;
+            }
         }
 
         /// <summary>A globally unique message id</summary>
@@ -30,7 +31,7 @@ namespace IO.Ably
         public string Id { get; set; }
 
         /// <summary>The id of the publisher of this message</summary>
-        /// 
+        ///
         [JsonProperty("clientId")]
         public string ClientId { get; set; }
 
@@ -60,15 +61,17 @@ namespace IO.Ably
 
         public override string ToString()
         {
-            var result = string.Format("Name: {0}, Data: {1}, Encoding: {2}, Timestamp: {3}", Name, Data, Encoding,
-                Timestamp);
+            var result = $"Name: {Name}, Data: {Data}, Encoding: {Encoding}, Timestamp: {Timestamp}";
             if (Id.IsNotEmpty())
+            {
                 return "Id: " + Id + ", " + result;
+            }
+
             return result;
         }
 
         [JsonIgnore]
-        public bool IsEmpty => Equals(this, defaultInstance);
+        public bool IsEmpty => Equals(this, DefaultInstance);
 
         protected bool Equals(Message other)
         {
@@ -77,23 +80,35 @@ namespace IO.Ably
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((Message) obj);
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return Equals((Message)obj);
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                var hashCode = (Id != null ? Id.GetHashCode() : 0);
-                hashCode = (hashCode*397) ^ (ClientId != null ? ClientId.GetHashCode() : 0);
-                hashCode = (hashCode*397) ^ (ConnectionId != null ? ConnectionId.GetHashCode() : 0);
-                hashCode = (hashCode*397) ^ (Name != null ? Name.GetHashCode() : 0);
-                hashCode = (hashCode*397) ^ Timestamp.GetHashCode();
-                hashCode = (hashCode*397) ^ (Data != null ? Data.GetHashCode() : 0);
-                hashCode = (hashCode*397) ^ (Encoding != null ? Encoding.GetHashCode() : 0);
+                var hashCode = Id != null ? Id.GetHashCode() : 0;
+                hashCode = (hashCode * 397) ^ (ClientId != null ? ClientId.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (ConnectionId != null ? ConnectionId.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Name != null ? Name.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ Timestamp.GetHashCode();
+                hashCode = (hashCode * 397) ^ (Data != null ? Data.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Encoding != null ? Encoding.GetHashCode() : 0);
                 return hashCode;
             }
         }

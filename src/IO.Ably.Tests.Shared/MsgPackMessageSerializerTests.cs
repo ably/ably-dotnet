@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using IO.Ably.Types;
-using MsgPack.Serialization;
-using Xunit;
-using Xunit.Abstractions;
-
-namespace IO.Ably.Tests
+﻿namespace IO.Ably.Tests
 {
 #if MSGPACK
     public class GenerateMsgPackSerializers

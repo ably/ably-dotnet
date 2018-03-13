@@ -1,14 +1,12 @@
 ﻿using System;
 using FluentAssertions;
 using IO.Ably.Encryption;
-using IO.Ably;
 using Xunit;
 
 namespace IO.Ably.Tests
 {
     public class TokenRequestPopulateTests
     {
-
         private const string ApiKey = "123.456:789";
         public readonly DateTimeOffset Now = DateHelper.CreateDate(2012, 12, 12, 10, 10, 10);
 
@@ -105,7 +103,7 @@ namespace IO.Ably.Tests
         [Fact]
         public void GetPostData_AlwaysHasRandomNonce()
         {
-            var currentNonce = "";
+            var currentNonce = string.Empty;
             for (int i = 0; i < 10; i++)
             {
                 var request = new TokenRequest();

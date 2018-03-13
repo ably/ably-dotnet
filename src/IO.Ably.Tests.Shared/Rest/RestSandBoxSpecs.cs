@@ -10,9 +10,8 @@ namespace IO.Ably.Tests
     [Trait("requires", "sandbox")]
     public class RestSandBoxSpecses : SandboxSpecs
     {
-        public RestSandBoxSpecses(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
-
-        
+        public RestSandBoxSpecses(AblySandboxFixture fixture, ITestOutputHelper output)
+            : base(fixture, output) { }
 
         [Theory]
         [ProtocolData]
@@ -42,7 +41,8 @@ namespace IO.Ably.Tests
         [Trait("requires", "sandbox")]
         public class WithTokenAuthAndInvalidToken : RestSandBoxSpecses
         {
-            public WithTokenAuthAndInvalidToken(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output) { }
+            public WithTokenAuthAndInvalidToken(AblySandboxFixture fixture, ITestOutputHelper output)
+                : base(fixture, output) { }
 
             [Theory]
             [ProtocolData]
@@ -50,18 +50,18 @@ namespace IO.Ably.Tests
             public async Task WhenTokenIsRenewable_ShouldRenewToken(Protocol protocol)
             {
                 var authClient = await GetRestClient(protocol);
-                var almostExpiredToken = await authClient.Auth.RequestTokenAsync(new TokenParams {ClientId = "123", Ttl = TimeSpan.FromSeconds(1)}, null);
+                var almostExpiredToken = await authClient.Auth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(1) }, null);
                 await Task.Delay(TimeSpan.FromSeconds(2));
-                
-                //Add this to fool the client it is a valid token
-                almostExpiredToken.Expires = DateTimeOffset.UtcNow.AddHours(1); 
 
-                //Trying again with the new token
+                // Add this to fool the client it is a valid token
+                almostExpiredToken.Expires = DateTimeOffset.UtcNow.AddHours(1);
+
+                // Trying again with the new token
                 var client = await GetRestClient(protocol, options =>
                 {
                     options.TokenDetails = almostExpiredToken;
                     options.ClientId = "123";
-                    options.Key = "";
+                    options.Key = string.Empty;
                     options.AuthCallback = request => authClient.AblyAuth.RequestTokenAsync(request, null).Convert();
                 });
 
@@ -69,7 +69,5 @@ namespace IO.Ably.Tests
                 client.AblyAuth.CurrentToken.IsValidToken().Should().BeTrue();
             }
         }
-
-        
     }
 }

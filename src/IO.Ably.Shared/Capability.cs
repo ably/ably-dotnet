@@ -1,13 +1,14 @@
 using System;
-using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+using Newtonsoft.Json.Linq;
+
 namespace IO.Ably
 {
     /// <summary>
-    /// Capability class that wraps the Ably capability string and provides a fluent interface in defining 
+    /// Capability class that wraps the Ably capability string and provides a fluent interface in defining
     /// capability objects
     /// <code>
     /// var capability = new Capability();
@@ -18,8 +19,6 @@ namespace IO.Ably
     /// Assert.Equal("{ \"first\": [ \"*\" ], \"second\": [ \"publish\" ] }", capability.ToJson());
     /// </code>
     /// </summary>
-    /// 
-    
     public class Capability
     {
         /// <summary>
@@ -32,7 +31,7 @@ namespace IO.Ably
 
         public Capability()
         {
-            Resources = new List<CapabilityResource>();            
+            Resources = new List<CapabilityResource>();
         }
 
         /// <summary>
@@ -50,7 +49,7 @@ namespace IO.Ably
                     var json = JObject.Parse(capabilityString);
                     foreach (var jToken in json.Children())
                     {
-                        var child = (JProperty) jToken;
+                        var child = (JProperty)jToken;
                         Resources.Add(GetResource(child));
                     }
                 }
@@ -66,11 +65,15 @@ namespace IO.Ably
             var resource = new CapabilityResource(child.Name);
             var allowedOperations = child.Value as JArray;
             if (allowedOperations != null)
+            {
                 foreach (JToken token in allowedOperations)
+                {
                     resource.AllowedOperations.Add((string)token);
+                }
+            }
+
             return resource;
         }
-
 
         /// <summary>
         /// Adds a capability resource. The resource returned can be used to define the actions allowed for it by chaining the Allow methods
@@ -104,9 +107,13 @@ namespace IO.Ably
             {
                 result[resource.Name] = GetResourceValue(resource);
             }
-            if(result.Children().Any())
+
+            if (result.Children().Any())
+            {
                 return CleanUpWhiteSpace(result.ToString());
-            return "";
+            }
+
+            return string.Empty;
         }
 
         public override string ToString()
@@ -117,15 +124,21 @@ namespace IO.Ably
         private static JArray GetResourceValue(CapabilityResource resource)
         {
             if (resource.AllowsAll)
+            {
                 return new JArray(CapabilityResource.AllowedOps.All);
+            }
+
             if (resource.AllowedOperations.Count == 1)
+            {
                 return new JArray(resource.AllowedOperations.First());
+            }
+
             return new JArray(resource.AllowedOperations.ToArray());
         }
 
         private string CleanUpWhiteSpace(string jsonString)
         {
-            return Regex.Replace(jsonString, @"\s+", "", RegexOptions.Singleline);
+            return Regex.Replace(jsonString, @"\s+", string.Empty, RegexOptions.Singleline);
         }
 
         protected bool Equals(Capability other)
@@ -135,10 +148,22 @@ namespace IO.Ably
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((Capability) obj);
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return Equals((Capability)obj);
         }
 
         public override int GetHashCode()
@@ -146,5 +171,4 @@ namespace IO.Ably
             throw new NotImplementedException();
         }
     }
-
 }

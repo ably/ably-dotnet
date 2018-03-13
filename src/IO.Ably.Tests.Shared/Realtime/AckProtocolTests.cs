@@ -141,9 +141,9 @@ namespace IO.Ably.Tests.Realtime
             List<Tuple<bool, ErrorInfo>> callbacks = new List<Tuple<bool, ErrorInfo>>();
 
             // Act
-            target.QueueIfNecessary(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 0) callbacks.Add(Tuple.Create(ack, err)); });
-            target.QueueIfNecessary(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 1) callbacks.Add(Tuple.Create(ack, err)); });
-            target.QueueIfNecessary(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 2) callbacks.Add(Tuple.Create(ack, err)); });
+            target.QueueIfNecessary(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 0) { callbacks.Add(Tuple.Create(ack, err)); } });
+            target.QueueIfNecessary(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 1) { callbacks.Add(Tuple.Create(ack, err)); } });
+            target.QueueIfNecessary(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 2) { callbacks.Add(Tuple.Create(ack, err)); } });
             target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = 0, Count = 3 });
 
             // Assert
@@ -153,16 +153,15 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Fact]
-        public void WithNackMessageReceived_CallbackIsCalledWithError
-            ()
+        public void WithNackMessageReceived_CallbackIsCalledWithError()
         {
             // Arrange
             var ackProcessor = GetAckProcessor();
             var callbacks = new List<Tuple<bool, ErrorInfo>>();
             var message = new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test");
             Action<bool, ErrorInfo> callback = (ack, err) => { callbacks.Add(Tuple.Create(ack, err)); };
-            // Act
 
+            // Act
             ackProcessor.QueueIfNecessary(message, callback);
             ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 0, Count = 1 });
             ackProcessor.QueueIfNecessary(message, callback);
@@ -196,7 +195,8 @@ namespace IO.Ably.Tests.Realtime
             Assert.True(callbacks.TrueForAll(c => ReferenceEquals(c.Item2, error))); // Error
         }
 
-        public AckProtocolTests(ITestOutputHelper output) : base(output)
+        public AckProtocolTests(ITestOutputHelper output)
+            : base(output)
         {
             GetAckProcessor();
         }

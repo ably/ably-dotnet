@@ -13,7 +13,6 @@ namespace IO.Ably
         Warning,
         Error,
         None = 99
-        
     }
 
     /// <summary>An interface that actually logs that messages somewhere.</summary>
@@ -27,6 +26,7 @@ namespace IO.Ably
     internal class DefaultLoggerSink : ILoggerSink
     {
         private readonly object _syncRoot = new object();
+
         public void LogEvent(LogLevel level, string message)
         {
             lock (_syncRoot)
@@ -39,8 +39,9 @@ namespace IO.Ably
     /// <summary>An utility class for logging various messages.</summary>
     public static class DefaultLogger
     {
-        private static readonly Object SyncLock = new Object();
+        private static readonly object SyncLock = new object();
         private static InternalLogger _loggerInstance;
+
         internal static InternalLogger LoggerInstance
         {
             get
@@ -52,8 +53,10 @@ namespace IO.Ably
                         _loggerInstance = new InternalLogger();
                     }
                 }
+
                 return _loggerInstance;
             }
+
             set => _loggerInstance = value;
         }
 
@@ -72,7 +75,6 @@ namespace IO.Ably
         }
 
         public static bool IsDebug => LoggerInstance.LogLevel == LogLevel.Debug;
-        
 
         internal static IDisposable SetTempDestination(ILoggerSink i)
         {
@@ -80,7 +82,7 @@ namespace IO.Ably
             LoggerInstance.LoggerSink = i;
             return new ActionOnDispose(() => LoggerInstance.LoggerSink = o);
         }
-        
+
         /// <summary>Log an error message.</summary>
         internal static void Error(string message, Exception ex)
         {
@@ -105,7 +107,6 @@ namespace IO.Ably
             LoggerInstance.Debug(message, args);
         }
 
-
         internal class InternalLogger : ILogger
         {
             /// <summary>Maximum level to log.</summary>
@@ -113,13 +114,20 @@ namespace IO.Ably
             public LogLevel LogLevel { get; set; }
 
             public ILoggerSink LoggerSink { get; set; }
+
             public bool IsDebug => LogLevel == LogLevel.Debug;
 
             internal Func<DateTimeOffset> Now { get; set; }
 
-            public InternalLogger() : this(Defaults.DefaultLogLevel, new DefaultLoggerSink()) {}
-            public InternalLogger(ILoggerSink loggerSink) : this(Defaults.DefaultLogLevel, loggerSink) { }
-            public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink): this(logLevel, loggerSink, null ) {} 
+            public InternalLogger()
+                : this(Defaults.DefaultLogLevel, new DefaultLoggerSink()) { }
+
+            public InternalLogger(ILoggerSink loggerSink)
+                : this(Defaults.DefaultLogLevel, loggerSink) { }
+
+            public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink)
+                : this(logLevel, loggerSink, null) { }
+
             public InternalLogger(LogLevel logLevel, ILoggerSink loggerSink, Func<DateTimeOffset> nowProvider)
             {
                 LogLevel = logLevel;
@@ -139,12 +147,18 @@ namespace IO.Ably
                 var timeStamp = GetLogMessagePreifx();
                 ILoggerSink loggerSink = LoggerSink;
                 if (LogLevel == LogLevel.None || level < LogLevel || loggerSink == null)
+                {
                     return;
+                }
 
                 if (args == null || args.Length == 0)
+                {
                     loggerSink.LogEvent(level, timeStamp + " " + message);
+                }
                 else
+                {
                     loggerSink.LogEvent(level, timeStamp + " " + string.Format(message, args));
+                }
             }
 
             public string GetLogMessagePreifx()
@@ -196,11 +210,9 @@ namespace IO.Ably
                     message.AppendLine("Inner exception:");
                     message.AppendLine(GetExceptionDetails(ex.InnerException));
                 }
+
                 return message.ToString();
             }
         }
-
     }
-
-   
 }

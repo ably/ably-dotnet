@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using IO.Ably.Realtime;
+
 using IO.Ably;
+using IO.Ably.Realtime;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport
@@ -10,9 +11,13 @@ namespace IO.Ably.Transport
     internal interface IAcknowledgementProcessor
     {
         void QueueIfNecessary(ProtocolMessage message, Action<bool, ErrorInfo> callback);
+
         bool OnMessageReceived(ProtocolMessage message);
+
         IEnumerable<ProtocolMessage> GetQueuedMessages();
+
         void ClearQueueAndFailMessages(ErrorInfo error);
+
         void FailChannelMessages(string name, ErrorInfo error);
     }
 
@@ -31,6 +36,7 @@ namespace IO.Ably.Transport
             {
                 messages = new List<ProtocolMessage>(_queue.Select(x => x.Message));
             }
+
             return messages;
         }
 
@@ -43,12 +49,17 @@ namespace IO.Ably.Transport
         public void QueueIfNecessary(ProtocolMessage message, Action<bool, ErrorInfo> callback)
         {
             if (message.AckRequired)
+            {
                 lock (_syncObject)
                 {
                     message.MsgSerial = _connection.MessageSerial++;
                     _queue.Add(new MessageAndCallback(message, callback));
-                    if(Logger.IsDebug) Logger.Debug($"Message ({message.Action}) with serial ({message.MsgSerial}) was queued to get Ack");
+                    if (Logger.IsDebug)
+                    {
+                        Logger.Debug($"Message ({message.Action}) with serial ({message.MsgSerial}) was queued to get Ack");
+                    }
                 }
+            }
         }
 
         public bool OnMessageReceived(ProtocolMessage message)
@@ -59,6 +70,7 @@ namespace IO.Ably.Transport
                 HandleMessageAcknowledgement(message);
                 return true;
             }
+
             return false;
         }
 
@@ -71,6 +83,7 @@ namespace IO.Ably.Transport
                     var messageError = error ?? ErrorInfo.ReasonUnknown;
                     item.SafeExecute(false, messageError);
                 }
+
                 _queue.Clear();
             }
         }
@@ -106,12 +119,11 @@ namespace IO.Ably.Transport
                         {
                             current.SafeExecute(false, message.Error ?? ErrorInfo.ReasonUnknown);
                         }
+
                         _queue.Remove(current);
                     }
                 }
             }
         }
-
-        
     }
 }

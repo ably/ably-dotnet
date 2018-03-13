@@ -1,7 +1,8 @@
 ﻿using System.Threading.Tasks;
+
+using IO.Ably;
 using IO.Ably.CustomSerialisers;
 using IO.Ably.Realtime;
-using IO.Ably;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
@@ -10,8 +11,9 @@ namespace IO.Ably.Transport.States.Connection
     {
         private readonly ConnectionInfo _info;
         private bool? _resumed = null;
-        public ConnectionConnectedState(IConnectionContext context, ConnectionInfo info, ErrorInfo error = null, ILogger logger = null) :
-            base(context, logger)
+
+        public ConnectionConnectedState(IConnectionContext context, ConnectionInfo info, ErrorInfo error = null, ILogger logger = null)
+            : base(context, logger)
         {
             _info = info;
             Error = error;
@@ -37,12 +39,17 @@ namespace IO.Ably.Transport.States.Connection
                     var error = message.Error;
                     var result = await Context.RetryBecauseOfTokenError(error);
                     if (result == false)
+                    {
                         Context.SetState(new ConnectionDisconnectedState(Context, message.Error, Logger));
+                    }
 
                     return true;
                 case ProtocolMessage.MessageAction.Error:
                     if (await Context.RetryBecauseOfTokenError(message.Error))
+                    {
                         return true;
+                    }
+
                     if (await Context.CanUseFallBackUrl(message.Error))
                     {
                         Context.Connection.Key = null;
@@ -53,12 +60,12 @@ namespace IO.Ably.Transport.States.Connection
                     Context.SetState(new ConnectionFailedState(Context, message.Error, Logger));
                     return true;
             }
+
             return false;
         }
 
         public override void AbortTimer()
         {
-            
         }
 
         public override void BeforeTransition()
@@ -69,16 +76,22 @@ namespace IO.Ably.Transport.States.Connection
                 {
                     _resumed = Context.Connection.Id == _info.ConnectionId;
                 }
-                
+
                 Context.Connection.Id = _info.ConnectionId;
                 Context.Connection.Key = _info.ConnectionKey;
                 Context.Connection.Serial = _info.ConnectionSerial;
                 if (_info.ConnectionStateTtl.HasValue)
+                {
                     Context.Connection.ConnectionStateTtl = _info.ConnectionStateTtl.Value;
+                }
+
                 Context.SetConnectionClientId(_info.ClientId);
             }
 
-            if(_resumed.HasValue && _resumed.Value && Logger.IsDebug) Logger.Debug("Connection resumed!");
+            if (_resumed.HasValue && _resumed.Value && Logger.IsDebug)
+            {
+                Logger.Debug("Connection resumed!");
+            }
         }
 
         private bool WasThereAPreviousConnection()
@@ -88,8 +101,12 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Task OnAttachToContext()
         {
-            if(Logger.IsDebug) Logger.Debug("Processing Connected:OnAttached. Resumed: " + _resumed);
-            if (_resumed.HasValue && _resumed ==false)
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Processing Connected:OnAttached. Resumed: " + _resumed);
+            }
+
+            if (_resumed.HasValue && _resumed == false)
             {
                 Context.ClearAckQueueAndFailMessages(null);
                 Context.DetachAttachedChannels(Error);

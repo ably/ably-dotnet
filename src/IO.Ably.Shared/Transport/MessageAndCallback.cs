@@ -9,7 +9,9 @@ namespace IO.Ably.Transport
         internal ILogger Logger { get; private set; }
 
         public long Serial => Message.MsgSerial;
+
         public ProtocolMessage Message { get;  }
+
         public Action<bool, ErrorInfo> Callback { get; }
 
         public MessageAndCallback(ProtocolMessage message, Action<bool, ErrorInfo> callback, ILogger logger = null)
@@ -26,10 +28,22 @@ namespace IO.Ably.Transport
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((MessageAndCallback) obj);
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return Equals((MessageAndCallback)obj);
         }
 
         public override int GetHashCode()
@@ -49,7 +63,7 @@ namespace IO.Ably.Transport
             catch (Exception)
             {
                 var result = success ? "Success" : "Failed";
-                var errorMessage = error != null ? $"Error: {error}" : "";
+                var errorMessage = error != null ? $"Error: {error}" : string.Empty;
                 info.Logger.Error($"Error executing callback for message with serial {info.Message.MsgSerial}. Result: {result}. {errorMessage}");
             }
         }

@@ -7,7 +7,7 @@ namespace IO.Ably.Rest
 {
     public class RestChannels : IChannels<IRestChannel>
     {
-        private ConcurrentDictionary<string, RestChannel> _channels { get; } = new ConcurrentDictionary<string, RestChannel>();
+        private readonly ConcurrentDictionary<string, RestChannel> _channels = new ConcurrentDictionary<string, RestChannel>();
 
         private readonly AblyRest _ablyRest;
 
@@ -30,16 +30,23 @@ namespace IO.Ably.Rest
                 {
                     if (options != null)
                     {
-                        if (result != null) result.Options = options;
+                        if (result != null)
+                        {
+                            result.Options = options;
+                        }
                     }
+
                     return realtimeChannel;
                 });
             }
             else
             {
                 if (options != null)
+                {
                     result.Options = options;
+                }
             }
+
             return result;
         }
 

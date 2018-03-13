@@ -1,10 +1,8 @@
-using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
-using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,7 +14,8 @@ namespace IO.Ably.Tests
         private ConnectionConnectingState _state;
         private FakeTimer _timer;
 
-        public ConnectingStateSpecs(ITestOutputHelper output) : base(output)
+        public ConnectingStateSpecs(ITestOutputHelper output)
+            : base(output)
         {
             _context = new FakeConnectionContext();
             _timer = new FakeTimer();
@@ -122,12 +121,12 @@ namespace IO.Ably.Tests
             _context.LastSetState.Should().BeOfType<ConnectionFailedState>();
         }
 
-
         [Fact]
         public async Task WithInboundErrorMessageWhenItCanUseFallBack_ShouldCallHandleConnectionFailure()
         {
             _context.Transport = new FakeTransport() { State = TransportState.Connected };
             _context.CanUseFallBack = true;
+
             // Arrange
             ErrorInfo targetError = new ErrorInfo("test", 123);
 
@@ -158,6 +157,7 @@ namespace IO.Ably.Tests
         {
             // Arrange
             _context.Transport = GetConnectedTrasport();
+
             // Act
             bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
 
@@ -197,7 +197,7 @@ namespace IO.Ably.Tests
         public async Task ConnectingState_ForceDisconnect()
         {
             // Arrange
-            _context.Transport = new FakeTransport() { State = TransportState.Initialized};
+            _context.Transport = new FakeTransport() { State = TransportState.Initialized };
 
             // Act
             await _state.OnAttachToContext();
