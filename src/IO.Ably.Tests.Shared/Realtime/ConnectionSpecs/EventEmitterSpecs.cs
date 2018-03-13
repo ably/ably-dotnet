@@ -359,6 +359,48 @@ namespace IO.Ably.Tests.Realtime
             counter.Should().Be(12);
         }
 
+        [Fact]
+        [Trait("spec", "RTE6")]
+        public void WithEventEmitter_WhenExceptionRaised_ExceptionIsCaughtAndLogged()
+        {
+            string exceptionMessage = "Listener1 exception";
+            bool handled1 = false;
+            bool handled2 = false;
+
+            // test logger, logs to memory and set the MessageSeen property if
+            // the message passed to the constructor is logged;
+            var logger = new TestLogger(messageToTest: exceptionMessage);
+            var em = new TestEventEmitter(logger);
+
+            void Listener1(TestEventEmitterArgs args)
+            {
+                handled1 = true;
+                throw new Exception(exceptionMessage);
+            }
+
+            void Listener2(TestEventEmitterArgs args)
+            {
+                handled2 = true;
+            }
+
+            em.On(1, (Action<TestEventEmitterArgs>)Listener1);
+            em.On(1, (Action<TestEventEmitterArgs>)Listener2);
+            em.DoDummyEmit(1, string.Empty);
+            handled1.Should().BeTrue();
+            handled2.Should().BeTrue();
+            logger.MessageSeen.Should().BeTrue();
+
+            handled1 = handled2 = false;
+            logger.Reset();
+
+            em.Once(1, (Action<TestEventEmitterArgs>)Listener1);
+            em.Once(1, (Action<TestEventEmitterArgs>)Listener2);
+            em.DoDummyEmit(1, string.Empty);
+            handled1.Should().BeTrue();
+            handled2.Should().BeTrue();
+            logger.MessageSeen.Should().BeTrue();
+        }
+
         public EventEmitterSpecs(ITestOutputHelper output) : base(output)
         {
         }
