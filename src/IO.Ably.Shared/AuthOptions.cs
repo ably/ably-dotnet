@@ -35,8 +35,6 @@ namespace IO.Ably
 
         public TokenDetails TokenDetails { get; set; }
 
-        public bool Force { get; set; }
-
         public Dictionary<string, string> AuthHeaders { get; set; }
 
         public Dictionary<string, string> AuthParams { get; set; }
