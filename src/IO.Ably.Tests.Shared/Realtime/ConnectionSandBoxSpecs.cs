@@ -50,7 +50,7 @@ namespace IO.Ably.Tests.Realtime
             await WaitForState(client);
             await Task.Delay(100);
 
-            states.Should().BeEquivalentTo(new[] {ConnectionState.Connecting, ConnectionState.Connected});
+            states.Should().BeEquivalentTo(new[] { ConnectionState.Connecting, ConnectionState.Connected });
             client.Connection.State.Should().Be(ConnectionState.Connected);
         }
 
@@ -60,7 +60,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetRealtimeClient(protocol);
 
-            //Start collecting events after the connection is open
+            // Start collecting events after the connection is open
             await WaitForState(client);
 
             var states = new List<ConnectionState>();
@@ -74,7 +74,7 @@ namespace IO.Ably.Tests.Realtime
 
             await WaitForState(client, ConnectionState.Closed, TimeSpan.FromSeconds(5));
 
-            states.Should().BeEquivalentTo(new[] {ConnectionState.Closing, ConnectionState.Closed});
+            states.Should().BeEquivalentTo(new[] { ConnectionState.Closing, ConnectionState.Closed });
             client.Connection.State.Should().Be(ConnectionState.Closed);
         }
 
@@ -100,7 +100,7 @@ namespace IO.Ably.Tests.Realtime
                 await GetRealtimeClient(protocol),
                 await GetRealtimeClient(protocol)
             };
-            
+
             await Task.Delay(5000);
 
             var distinctConnectionIds = clients.Select(x => x.Connection.Id).Distinct();
@@ -119,7 +119,7 @@ namespace IO.Ably.Tests.Realtime
                 await GetRealtimeClient(protocol)
             };
 
-            //Wait for the clients to connect
+            // Wait for the clients to connect
             await Task.Delay(TimeSpan.FromSeconds(6));
 
             var distinctConnectionIds = clients.Select(x => x.Connection.Key).Distinct();
@@ -175,7 +175,7 @@ namespace IO.Ably.Tests.Realtime
             var restClient = await GetRestClient(protocol);
             var invalidToken = await restClient.Auth.RequestTokenAsync();
 
-            //Use an old token which will result in 40143 Unrecognised token
+            // Use an old token which will result in 40143 Unrecognised token
             invalidToken.Token = invalidToken.Token.Split('.')[0] +
                                  ".DOcRVPgv1Wf1-YGgJFjyk2PNOGl_DFL7aCDzEPju8TYHorfxHHVoNoDGz5fKRW0UxePiVjD1EVEW0ZiknIK8u3S5p1FBq5Rtw_I7OX7fW8U4sGxJjAfMS_fTcXFdvouTQ";
 
@@ -189,12 +189,12 @@ namespace IO.Ably.Tests.Realtime
             realtimeClient.Connection.On(ConnectionState.Connected, (args) =>
             {
                 error = args.Reason;
-                _resetEvent.Set();
+                ResetEvent.Set();
             });
 
             realtimeClient.Connect();
 
-            _resetEvent.WaitOne(10000);
+            ResetEvent.WaitOne(10000);
 
             realtimeClient.RestClient.AblyAuth.CurrentToken.Expires.Should()
                 .BeAfter(TestHelpers.Now(), "The token should be valid and expire in the future.");
@@ -243,7 +243,7 @@ namespace IO.Ably.Tests.Realtime
             Logger.LogLevel = LogLevel.Debug;
 
             var client = await GetRestClient(protocol);
-            var token = await client.Auth.RequestTokenAsync(new TokenParams() {ClientId = "*"});
+            var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
             var settings = await Fixture.GetSettings();
             var authUrl = "http://echo.ably.io/?type=text&body=" + token.Token;
 
@@ -273,7 +273,7 @@ namespace IO.Ably.Tests.Realtime
                 opts.AutoConnect = false;
             });
 
-            //Kill the transport
+            // Kill the transport
             client.ConnectionManager.Transport.Close(true);
 
             recoveryClient.Connect();
@@ -306,10 +306,10 @@ namespace IO.Ably.Tests.Realtime
             await Task.Delay(2000);
 
             client.Connection.Key = "e02789NdQA86c7!inI5Ydc-ytp7UOm3-3632e02789NdQA86c7";
-            //Kill the transport
+
+            // Kill the transport
             client.ConnectionManager.Transport.Close(false);
             await Task.Delay(1000);
-
 
             await WaitForState(client, ConnectionState.Connected);
             await Task.Delay(100);
@@ -332,12 +332,12 @@ namespace IO.Ably.Tests.Realtime
             {
                 if (args.Current == ConnectionState.Connected)
                 {
-                    _resetEvent.Set();
+                    ResetEvent.Set();
                 }
             };
             client.Connect();
 
-            var result = _resetEvent.WaitOne(10000);
+            var result = ResetEvent.WaitOne(10000);
             result.Should().BeTrue("Timeout");
             client.Connection.ErrorReason.Code.Should().Be(80008);
         }
@@ -362,7 +362,7 @@ namespace IO.Ably.Tests.Realtime
                 errors.Add(args.Reason);
             };
 
-            await client.Auth.AuthorizeAsync(new TokenParams() {Ttl = TimeSpan.FromSeconds(5)});
+            await client.Auth.AuthorizeAsync(new TokenParams() { Ttl = TimeSpan.FromSeconds(5) });
             var channel = client.Channels.Get("shortToken_test" + protocol);
             int count = 0;
             while (true)
@@ -371,7 +371,9 @@ namespace IO.Ably.Tests.Realtime
                 channel.Publish("test", "test");
                 await Task.Delay(2000);
                 if (count == 10)
+                {
                     break;
+                }
             }
 
             stateChanges.Count(x => x == ConnectionState.Connected).Should().BeGreaterThan(2);
@@ -379,19 +381,18 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.State.Should().Be(ConnectionState.Connected);
         }
 
-
         [Theory]
         [ProtocolData]
         [Trait("issue", "177")]
         public async Task WhenWebSocketClientIsNull_SendShouldSetDisconnectedState(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
-            await WaitForState(client); //wait for connection
+            await WaitForState(client); // wait for connection
             client.Connection.State.Should().Be(ConnectionState.Connected);
 
             var transportWrapper = client.ConnectionManager.Transport as TestTransportWrapper;
             transportWrapper.Should().NotBe(null);
-            var wsTransport = transportWrapper._wrappedTransport as MsWebSocketTransport;
+            var wsTransport = transportWrapper.WrappedTransport as MsWebSocketTransport;
             wsTransport.Should().NotBe(null);
             wsTransport._socket.ClientWebSocket = null;
 
@@ -399,17 +400,20 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.On(s =>
             {
                 if (s.Current == ConnectionState.Disconnected)
+                {
                     tca.SetCompleted();
+                }
             });
 
             await client.Channels.Get("test").PublishAsync("event", "data");
             await tca.Task;
+
             // should auto connect again
             await WaitForState(client);
         }
 
-
-        public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output) : base(fixture, output)
+        public ConnectionSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
+            : base(fixture, output)
         {
         }
     }
@@ -418,7 +422,6 @@ namespace IO.Ably.Tests.Realtime
     [Trait("requires", "sandbox")]
     public class ConnectionSandboxTransportSideEffectsSpecs : SandboxSpecs
     {
-
         /*
          * (RTN19b) If there are any pending channels i.e. in the ATTACHING or DETACHING state,
          * the respective ATTACH or DETACH message should be resent to Ably
@@ -440,7 +443,6 @@ namespace IO.Ably.Tests.Realtime
             testLogger.MessageSeen.Should().Be(true);
         }
 
-        
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN19b")]
@@ -455,8 +457,8 @@ namespace IO.Ably.Tests.Realtime
                 sendCount = await WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed_count(protocol);
                 tries++;
             }
-            sendCount.Should().Be(2);
 
+            sendCount.Should().Be(2);
         }
 
         public async Task<int> WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed_count(
@@ -482,9 +484,7 @@ namespace IO.Ably.Tests.Realtime
             await Task.Delay(3000);
 
             return sentMessages.Count(x => x.Channel == "test-channel" && x.Action == ProtocolMessage.MessageAction.Attach);
-
         }
-
 
         [Theory]
         [ProtocolData]
@@ -505,7 +505,6 @@ namespace IO.Ably.Tests.Realtime
             testLogger.MessageSeen.Should().Be(true);
         }
 
-
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN19b")]
@@ -520,6 +519,7 @@ namespace IO.Ably.Tests.Realtime
                 sendCount = await WithChannelInDetachingState_WhenTransportIsDisconnected_ShouldResendDetachMessageOnConnectionResumed_count(protocol);
                 tries++;
             }
+
             sendCount.Should().Be(2);
         }
 
@@ -548,8 +548,8 @@ namespace IO.Ably.Tests.Realtime
             return y.Count();
         }
 
-        public ConnectionSandboxTransportSideEffectsSpecs(AblySandboxFixture fixture, ITestOutputHelper output) :
-            base(fixture, output)
+        public ConnectionSandboxTransportSideEffectsSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
+            : base(fixture, output)
         {
         }
     }
@@ -567,7 +567,8 @@ namespace IO.Ably.Tests.Realtime
         [InlineData(Protocol.Json, ConnectionState.Connecting)]
         [Trait("spec", "RTN20a")]
         public async Task
-            WhenOperatingSystemNetworkIsNotAvailable_ShouldTransitionToDisconnectedAndRetry(Protocol protocol,
+            WhenOperatingSystemNetworkIsNotAvailable_ShouldTransitionToDisconnectedAndRetry(
+                Protocol protocol,
                 ConnectionState initialState)
         {
             Logger.LogLevel = LogLevel.Debug;
@@ -601,7 +602,7 @@ namespace IO.Ably.Tests.Realtime
             await WaitForState(client);
 
             await client.ConnectionManager.SetState(
-                new ConnectionDisconnectedState(client.ConnectionManager, this.Logger) {RetryInstantly = false});
+                new ConnectionDisconnectedState(client.ConnectionManager, Logger) { RetryInstantly = false });
 
             client.Connection.State.Should().Be(ConnectionState.Disconnected);
             Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, Logger);
@@ -611,7 +612,6 @@ namespace IO.Ably.Tests.Realtime
 
             await WaitForState(client, ConnectionState.Connecting);
         }
-
 
         [Theory]
         [ProtocolData]
@@ -637,8 +637,10 @@ namespace IO.Ably.Tests.Realtime
             await WaitForState(client, ConnectionState.Connecting);
         }
 
-        public ConnectionSandboxOperatingSystemEventsForNetworkSpecs(AblySandboxFixture fixture,
-            ITestOutputHelper output) : base(fixture, output)
+        public ConnectionSandboxOperatingSystemEventsForNetworkSpecs(
+            AblySandboxFixture fixture,
+            ITestOutputHelper output)
+            : base(fixture, output)
         {
         }
     }

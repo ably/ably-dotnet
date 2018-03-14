@@ -15,7 +15,5 @@ namespace IO.Ably
         {
             return Convert.ToInt64((date - Epoch).TotalMilliseconds);
         }
-
-
     }
 }

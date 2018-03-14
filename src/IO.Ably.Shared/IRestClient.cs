@@ -1,6 +1,7 @@
 using System;
-using IO.Ably.Rest;
 using System.Threading.Tasks;
+
+using IO.Ably.Rest;
 
 namespace IO.Ably
 {
@@ -31,6 +32,7 @@ namespace IO.Ably
         Task<PaginatedResult<Stats>> StatsAsync(StatsRequestParams query);
 
         PaginatedResult<Stats> Stats();
+
         PaginatedResult<Stats> Stats(StatsRequestParams query);
     }
 }

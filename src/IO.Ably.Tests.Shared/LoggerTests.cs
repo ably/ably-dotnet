@@ -1,11 +1,10 @@
 ﻿using System;
 using FluentAssertions;
-using IO.Ably.Transport;
 using Xunit;
 
 namespace IO.Ably.AcceptanceTests
 {
-    public class TestLoggerSink : ILoggerSink
+    public sealed class TestLoggerSink : ILoggerSink
     {
         void ILoggerSink.LogEvent(LogLevel level, string message)
         {
@@ -14,6 +13,7 @@ namespace IO.Ably.AcceptanceTests
         }
 
         public LogLevel? LastLevel { get; set; }
+
         public string LastMessage { get; set; }
     }
 
@@ -89,7 +89,6 @@ namespace IO.Ably.AcceptanceTests
             logger2.LogLevel.ShouldBeEquivalentTo(LogLevel.Error);
             logger1.LogLevel.Should().NotBe(logger2.LogLevel);
         }
-
 
         public void Dispose()
         {

@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
@@ -12,7 +11,6 @@ namespace IO.Ably.Tests
 {
     public class SuspendedStateSpecs : AblySpecs
     {
-
         private FakeConnectionContext _context;
         private ConnectionSuspendedState _state;
         private FakeTimer _timer;
@@ -22,7 +20,8 @@ namespace IO.Ably.Tests
             return new ConnectionSuspendedState(_context, info, _timer, Logger);
         }
 
-        public SuspendedStateSpecs(ITestOutputHelper output) : base(output)
+        public SuspendedStateSpecs(ITestOutputHelper output)
+            : base(output)
         {
             _timer = new FakeTimer();
             _context = new FakeConnectionContext();
@@ -98,7 +97,5 @@ namespace IO.Ably.Tests
             // Assert
             _context.StateShouldBe<ConnectionConnectingState>();
         }
-
- 
     }
 }

@@ -8,7 +8,6 @@ namespace IO.Ably
 {
     internal class EmptyHttpHeaders : HttpHeaders
     {
-
     }
 
     internal enum ResponseType
@@ -21,9 +20,13 @@ namespace IO.Ably
     internal class AblyResponse
     {
         internal HttpHeaders Headers { get; set; }
+
         internal ResponseType Type { get; set; }
+
         internal HttpStatusCode StatusCode { get; set; }
+
         internal string TextResponse { get; set; }
+
         internal string ContentType { get; }
 
         internal byte[] Body { get; }
@@ -36,6 +39,7 @@ namespace IO.Ably
         {
             Headers = new EmptyHttpHeaders();
         }
+
         internal AblyResponse(string encoding, string contentType, byte[] body)
         {
             ContentType = contentType;
@@ -46,13 +50,16 @@ namespace IO.Ably
             {
                 TextResponse = System.Text.Encoding.GetEncoding(Encoding).GetString(body, 0, body.Length);
             }
+
             Body = body;
         }
 
         private static ResponseType GetResponseType(string contentType)
         {
             if (contentType == null)
+            {
                 return ResponseType.Binary;
+            }
 
             switch (contentType.ToLower())
             {
@@ -64,6 +71,5 @@ namespace IO.Ably
                     return ResponseType.Binary;
             }
         }
-
     }
 }

@@ -7,16 +7,16 @@ namespace IO.Ably
     {
         /// <summary>
         /// Requested time to live for the token. If the token request
-		/// is successful, the TTL of the returned token will be less
-		/// than or equal to this value depending on application settings
-		/// and the attributes of the issuing key
+        /// is successful, the TTL of the returned token will be less
+        /// than or equal to this value depending on application settings
+        /// and the attributes of the issuing key
         /// </summary>
         public TimeSpan? Ttl { get; set; }
 
         /// <summary>
-		/// <see cref="Capability"/> of the token. If the token request is successful,
-		/// the capability of the returned token will be the intersection of
-		/// this capability with the capability of the issuing key.
+        /// <see cref="Capability"/> of the token. If the token request is successful,
+        /// the capability of the returned token will be the intersection of
+        /// this capability with the capability of the issuing key.
         /// </summary>
         public Capability Capability { get; set; }
 
@@ -27,22 +27,24 @@ namespace IO.Ably
 
         /// <summary>
         /// The timestamp  of this request. If not supplied the timestamp is automatically set to the current UTC time
-		/// Timestamps, in conjunction with the nonce, are used to prevent
-		/// token requests from being replayed.
+        /// Timestamps, in conjunction with the nonce, are used to prevent
+        /// token requests from being replayed.
         /// </summary>
         public DateTimeOffset? Timestamp { get; set; }
 
         /// <summary>
-		/// An opaque nonce string of at least 16 characters to ensure
-		/// uniqueness of this request. Any subsequent request using the
-		/// same nonce will be rejected.
+        /// An opaque nonce string of at least 16 characters to ensure
+        /// uniqueness of this request. Any subsequent request using the
+        /// same nonce will be rejected.
         /// </summary>
         public string Nonce { get; set; }
 
         public TokenParams Merge(TokenParams otherParams)
         {
             if (otherParams == null)
+            {
                 return this;
+            }
 
             var result = new TokenParams();
             result.ClientId = ClientId.IsNotEmpty() ? ClientId : otherParams.ClientId;
@@ -57,8 +59,11 @@ namespace IO.Ably
         {
             var result = new TokenParams();
             result.ClientId = ClientId;
-            if(Capability != null)
+            if (Capability != null)
+            {
                 result.Capability = new Capability(Capability.ToJson());
+            }
+
             result.Nonce = Nonce;
             result.Ttl = Ttl;
             result.Timestamp = Timestamp;
@@ -77,20 +82,36 @@ namespace IO.Ably
 
         public Dictionary<string, string> ToRequestParams(Dictionary<string, string> mergeWith = null)
         {
-            var dictionary = new Dictionary<string,string>();
-            if(Ttl.HasValue)
+            var dictionary = new Dictionary<string, string>();
+            if (Ttl.HasValue)
+            {
                 dictionary.Add("ttl", Ttl.Value.TotalMilliseconds.ToString());
-            if(ClientId.IsNotEmpty())
+            }
+
+            if (ClientId.IsNotEmpty())
+            {
                 dictionary.Add("clientId", ClientId);
-            if(Nonce.IsNotEmpty())
+            }
+
+            if (Nonce.IsNotEmpty())
+            {
                 dictionary.Add("nonce", Nonce);
+            }
+
             if (Capability != null)
+            {
                 dictionary.Add("capability", Capability.ToJson());
+            }
+
             if (Timestamp.HasValue)
+            {
                 dictionary.Add("timestamp", Timestamp.Value.ToUnixTimeInMilliseconds().ToString());
+            }
 
             if (mergeWith != null)
+            {
                 return dictionary.Merge(mergeWith);
+            }
 
             return dictionary;
         }

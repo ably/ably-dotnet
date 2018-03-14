@@ -30,36 +30,46 @@ namespace IO.Ably.Realtime
     /// <summary>Adapter to pass a delegate as IMessageHandler.</summary>
     internal class MessageHandlerAction<T> where T : IMessage
     {
-        private readonly Action<T> action;
+        private readonly Action<T> _action;
 
         public MessageHandlerAction(Action<T> action)
         {
-            if (null == action)
-                throw new ArgumentNullException();
-            this.action = action;
+            _action = action ?? throw new ArgumentNullException();
         }
 
         public void Handle(T message)
         {
-            action(message);
+            _action(message);
         }
 
         protected bool Equals(MessageHandlerAction<T> other)
         {
-            return Equals(action, other.action);
+            return Equals(_action, other._action);
         }
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((MessageHandlerAction<T>) obj);
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return Equals((MessageHandlerAction<T>)obj);
         }
 
         public override int GetHashCode()
         {
-            return (action != null ? action.GetHashCode() : 0);
+            return _action != null ? _action.GetHashCode() : 0;
         }
     }
 }

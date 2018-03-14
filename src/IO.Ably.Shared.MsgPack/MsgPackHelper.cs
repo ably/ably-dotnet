@@ -17,7 +17,7 @@ namespace IO.Ably
 
         private static SerializationContext GetContext()
         {
-            var context = new SerializationContext() { SerializationMethod = SerializationMethod.Map};
+            var context = new SerializationContext() { SerializationMethod = SerializationMethod.Map };
             context.Serializers.Register(new DateTimeOffsetMessagePackSerializer(context));
             context.Serializers.Register(new TimespanMessagePackSerializer(context));
             context.Serializers.Register(new IO_Ably_CapabilitySerializer(context));
@@ -39,7 +39,7 @@ namespace IO.Ably
             context.Serializers.Register(new IO_Ably_Types_ProtocolMessageSerializer(context));
             context.Serializers.Register(new IO_Ably_Types_ProtocolMessage_MessageActionSerializer(context));
             context.Serializers.Register(new System_Net_HttpStatusCodeSerializer(context));
-            
+
             return context;
         }
 
@@ -56,7 +56,9 @@ namespace IO.Ably
         public static object Deserialise(byte[] byteArray, Type objectType)
         {
             if (byteArray == null || byteArray.Length == 0)
+            {
                 return null;
+            }
 
             using (var ms = new MemoryStream(byteArray))
             {
@@ -72,7 +74,7 @@ namespace IO.Ably
 
         public static T Deserialise<T>(byte[] byteArray)
         {
-            return (T) Deserialise(byteArray, typeof(T));
+            return (T)Deserialise(byteArray, typeof(T));
         }
     }
 }

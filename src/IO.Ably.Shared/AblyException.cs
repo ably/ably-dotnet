@@ -5,7 +5,8 @@ namespace IO.Ably
 {
     public class InsecureRequestException : AblyException
     {
-        public InsecureRequestException() : base("Current action cannot be performed over http")
+        public InsecureRequestException()
+            : base("Current action cannot be performed over http")
         {
         }
     }
@@ -20,20 +21,18 @@ namespace IO.Ably
         {
             base.GetObjectData(info, context);
         } */
-
         public AblyException()
         {
-
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="AblyException"/> class.
         /// Creates AblyException
         /// </summary>
         /// <param name="reason">Reason passed to the error info class</param>
         public AblyException(string reason)
             : this(new ErrorInfo(reason, 500, null))
         {
-
         }
 
         /// <summary>
@@ -43,7 +42,6 @@ namespace IO.Ably
         public AblyException(Exception ex)
             : this(new ErrorInfo("Unexpected error :" + ex.Message, 50000), ex)
             {
-
             }
 
         /// <summary>
@@ -51,17 +49,17 @@ namespace IO.Ably
         /// </summary>
         /// <param name="reason"></param>
         /// <param name="code"></param>
-        public AblyException(string reason, int code) : this(new ErrorInfo(reason, code))
+        public AblyException(string reason, int code)
+            : this(new ErrorInfo(reason, code))
         {
-
         }
 
         /// <summary>
         /// Creates AblyException and populates ErrorInfo with the supplied parameters.
         /// </summary>
-        public AblyException(string reason, int code, HttpStatusCode? statusCode = null) : this(new ErrorInfo(reason, code, statusCode))
+        public AblyException(string reason, int code, HttpStatusCode? statusCode = null)
+            : this(new ErrorInfo(reason, code, statusCode))
         {
-
         }
 
         /// <summary>
@@ -82,13 +80,11 @@ namespace IO.Ably
             ErrorInfo = info;
         }
 
-        
         /* protected AblyException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
 
         } */
-
         public ErrorInfo ErrorInfo { get; set; }
 
         internal static AblyException FromResponse(AblyResponse response)

@@ -5,7 +5,6 @@ namespace IO.Ably.Tests
 {
     public class RestProtocolTests
     {
-
 #if MSGPACK
         [Fact]
         public void WhenProtocolIsNotDefined_AndMsgPackEnabled_DefaultsToMsgPack()
@@ -41,19 +40,15 @@ namespace IO.Ably.Tests
         [Fact]
         public void WhenProtocolIsJson_RestProtocolIsSetToJson()
         {
-            var rest = new AblyRest(new ClientOptions() { UseBinaryProtocol = false});
+            var rest = new AblyRest(new ClientOptions() { UseBinaryProtocol = false });
             rest.Protocol.Should().Be(Protocol.Json);
         }
 
         [Fact]
         public void WhenUseBinaryIsFalse_ProtocolIsSetToJson()
         {
-            var rest = new AblyRest(new ClientOptions() {UseBinaryProtocol = false});
+            var rest = new AblyRest(new ClientOptions() { UseBinaryProtocol = false });
             rest.Protocol.Should().Be(Protocol.Json);
         }
-
-        
-
-        
     }
 }

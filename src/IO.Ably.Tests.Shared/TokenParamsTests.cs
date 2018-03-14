@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
@@ -57,7 +53,7 @@ namespace IO.Ably.Tests
                 Capability = Capability.AllowAll,
                 Ttl = TimeSpan.FromHours(1),
             };
-            var toMerge = new Dictionary<string, string>() { { "ttl", "123400"}, {"authKey1", "authValue1"} };
+            var toMerge = new Dictionary<string, string>() { { "ttl", "123400" }, { "authKey1", "authValue1" } };
 
             var result = @params.ToRequestParams(toMerge);
 
@@ -66,7 +62,8 @@ namespace IO.Ably.Tests
             result["authKey1"].Should().Be("authValue1");
         }
 
-        public TokenParamsTests(ITestOutputHelper output) : base(output)
+        public TokenParamsTests(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

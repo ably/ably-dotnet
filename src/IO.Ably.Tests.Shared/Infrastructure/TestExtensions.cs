@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
 
@@ -13,7 +10,10 @@ namespace IO.Ably.Tests.Infrastructure
         {
             var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
             if (waitSpan.HasValue)
+            {
                 return connectionAwaiter.Wait(waitSpan.Value);
+            }
+
             return connectionAwaiter.Wait();
         }
 
@@ -21,7 +21,10 @@ namespace IO.Ably.Tests.Infrastructure
         {
             var channelAwaiter = new ChannelAwaiter(channel, awaitedState);
             if (waitSpan.HasValue)
+            {
                 return channelAwaiter.WaitAsync();
+            }
+
             return channelAwaiter.WaitAsync();
         }
     }

@@ -19,19 +19,25 @@ namespace IO.Ably.Realtime
 
     public sealed class Connection : EventEmitter<ConnectionState, ConnectionStateChange>, IDisposable
     {
-        private static readonly ConcurrentBag<WeakReference<Action<NetworkState>>> OsEventSubscribers = new ConcurrentBag<WeakReference<Action<NetworkState>>>();
+        private static readonly ConcurrentBag<WeakReference<Action<NetworkState>>> OsEventSubscribers =
+            new ConcurrentBag<WeakReference<Action<NetworkState>>>();
 
         protected override Action<Action> NotifyClient => RealtimeClient.NotifyExternalClients;
 
         internal static void NotifyOperatingSystemNetworkState(NetworkState state, ILogger logger)
         {
-            if(logger.IsDebug) logger.Debug("OS Network connection state: " + state);
+            if (logger.IsDebug)
+            {
+                logger.Debug("OS Network connection state: " + state);
+            }
 
             foreach (var subscriber in OsEventSubscribers.ToArray())
             {
-                Action<Realtime.NetworkState> stateAction = null;
+                Action<NetworkState> stateAction = null;
                 if (subscriber.TryGetTarget(out stateAction))
+                {
                     stateAction?.Invoke(state);
+                }
             }
         }
 
@@ -39,18 +45,23 @@ namespace IO.Ably.Realtime
         {
             OsEventSubscribers.Add(new WeakReference<Action<NetworkState>>(stateAction));
         }
-        
 
         internal AblyRest RestClient => RealtimeClient.RestClient;
+
         internal AblyRealtime RealtimeClient { get; }
+
         internal ConnectionManager ConnectionManager { get; set; }
+
         internal List<string> FallbackHosts;
+
         internal ChannelMessageProcessor ChannelMessageProcessor { get; set; }
+
         private string _host;
 
         internal Func<DateTimeOffset> Now { get; set; }
 
-        internal Connection(AblyRealtime realtimeClient, Func<DateTimeOffset> nowFunc, ILogger logger = null) : base(logger)
+        internal Connection(AblyRealtime realtimeClient, Func<DateTimeOffset> nowFunc, ILogger logger = null)
+            : base(logger)
         {
             Now = nowFunc;
             FallbackHosts = Defaults.FallbackHosts.Shuffle().ToList();
@@ -93,15 +104,17 @@ namespace IO.Ably.Realtime
         public long? Serial { get; internal set; }
 
         internal long MessageSerial { get; set; } = 0;
+
         /// <summary>
         /// </summary>
         public string Key { get; internal set; }
 
         public bool ConnectionResumable => Key.IsNotEmpty() && Serial.HasValue;
 
-        public string RecoveryKey => ConnectionResumable ? $"{Key}:{Serial.Value}" : "";
+        public string RecoveryKey => ConnectionResumable ? $"{Key}:{Serial.Value}" : string.Empty;
 
         public TimeSpan ConnectionStateTtl { get; internal set; } = Defaults.ConnectionStateTtl;
+
         /// <summary>
         ///     Information relating to the transition to the current state,
         ///     as an Ably ErrorInfo object. This contains an error code and
@@ -112,11 +125,15 @@ namespace IO.Ably.Realtime
 
         public string Host
         {
-            get { return _host; }
+            get
+            {
+                return _host;
+            }
+
             internal set
             {
                 _host = value;
-                RestClient.CustomHost = FallbackHosts.Contains(_host) ? _host : "";
+                RestClient.CustomHost = FallbackHosts.Contains(_host) ? _host : string.Empty;
             }
         }
 
@@ -129,17 +146,23 @@ namespace IO.Ably.Realtime
         private void ClearAllDelegatesOfStateChangeEventHandler()
         {
             foreach (var d in InternalStateChanged.GetInvocationList())
-                InternalStateChanged -= (EventHandler<ConnectionStateChange>) d;
+            {
+                InternalStateChanged -= (EventHandler<ConnectionStateChange>)d;
+            }
 
             foreach (var handler in ConnectionStateChanged.GetInvocationList())
-                ConnectionStateChanged -= (EventHandler<ConnectionStateChange>) handler;
+            {
+                ConnectionStateChanged -= (EventHandler<ConnectionStateChange>)handler;
+            }
         }
 
         /// <summary>
         /// </summary>
         internal event EventHandler<ConnectionStateChange> InternalStateChanged = delegate { };
+
         public event EventHandler<ConnectionStateChange> ConnectionStateChanged = delegate { };
-        //TODO: Add IDisposable and clear all event hadlers when the connection is disposed
+
+        // TODO: Add IDisposable and clear all event hadlers when the connection is disposed
 
         /// <summary>
         /// </summary>
@@ -173,9 +196,14 @@ namespace IO.Ably.Realtime
         internal void UpdateState(ConnectionStateBase state)
         {
             if (state.State == State)
+            {
                 return;
+            }
 
-            if (Logger.IsDebug) Logger.Debug($"Connection notifying subscribers for state change `{state.State}`");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"Connection notifying subscribers for state change `{state.State}`");
+            }
 
             var oldState = ConnectionState.State;
             var newState = state.State;
@@ -183,23 +211,26 @@ namespace IO.Ably.Realtime
             ErrorReason = state.Error;
             var stateChange = new ConnectionStateChange(oldState, newState, state.RetryIn, ErrorReason);
 
-            var internalHandlers = Volatile.Read(ref InternalStateChanged); //Make sure we get all the subscribers on all threads
-            var externalHandlers = Volatile.Read(ref ConnectionStateChanged); //Make sure we get all the subscribers on all threads
+            var internalHandlers =
+                Volatile.Read(ref InternalStateChanged); // Make sure we get all the subscribers on all threads
+            var externalHandlers =
+                Volatile.Read(ref ConnectionStateChanged); // Make sure we get all the subscribers on all threads
             internalHandlers(this, stateChange);
 
-            RealtimeClient.NotifyExternalClients(() =>
-            {
-                try
-                {
-                    externalHandlers(this, stateChange);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error("Error notifying Connection state changed handlers", ex);
-                }
+            RealtimeClient.NotifyExternalClients(
+                () =>
+                    {
+                        try
+                        {
+                            externalHandlers(this, stateChange);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error("Error notifying Connection state changed handlers", ex);
+                        }
 
-                Emit(newState, stateChange);
-            });
+                        Emit(newState, stateChange);
+                    });
         }
 
         public void UpdateSerial(ProtocolMessage message)
@@ -209,6 +240,5 @@ namespace IO.Ably.Realtime
                 Serial = message.ConnectionSerial.Value;
             }
         }
-        
     }
 }

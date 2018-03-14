@@ -13,8 +13,8 @@ namespace IO.Ably
     /// <summary>Client for the ably rest API</summary>
     public sealed class AblyRest : IRestClient
     {
-
         internal AblyHttpClient HttpClient { get; private set; }
+
         internal MessageHandler MessageHandler { get; private set; }
 
         internal string CustomHost
@@ -24,14 +24,16 @@ namespace IO.Ably
         }
 
         internal AblyAuth AblyAuth { get; private set; }
+
         public RestChannels Channels { get; private set; }
 
         /// <summary>
         /// Authentication methods
         /// </summary>
         public IAblyAuth Auth => AblyAuth;
-        
+
         internal Protocol Protocol => Options.UseBinaryProtocol == false ? Protocol.Json : Defaults.Protocol;
+
         internal ClientOptions Options { get; }
 
         internal ILogger Logger { get; set; }
@@ -41,7 +43,6 @@ namespace IO.Ably
         public AblyRest(string apiKey)
             : this(new ClientOptions(apiKey))
         {
-
         }
 
         /// <summary>
@@ -120,14 +121,18 @@ namespace IO.Ably
             catch (AblyException ex)
             {
                 if (Logger.IsDebug)
+                {
                     Logger.Debug("Error Executing request. Message: " + ex.Message);
+                }
 
                 if (ex.ErrorInfo.IsUnAuthorizedError
                     && ex.ErrorInfo.IsTokenError && AblyAuth.TokenRenewable)
                 {
                     if (Logger.IsDebug)
+                    {
                         Logger.Debug("Handling UnAuthorized Error, attmepting to Re-authorize and repeat request.");
-                    
+                    }
+
                     try
                     {
                         var token = await AblyAuth.AuthorizeAsync(null, new AuthOptions() { Force = true });
@@ -138,14 +143,16 @@ namespace IO.Ably
                     {
                         throw new AblyException(ex2.ErrorInfo, ex);
                     }
-
                 }
+
                 throw;
             }
             catch (Exception ex)
             {
-                if(Logger.IsDebug)
+                if (Logger.IsDebug)
+                {
                     Logger.Debug("Error Executing request. Message: " + ex.Message);
+                }
 
                 throw new AblyException(ex);
             }
@@ -160,7 +167,9 @@ namespace IO.Ably
                 Logger.Debug("Content type: " + response.ContentType);
                 Logger.Debug("Encoding: " + response.Encoding);
                 if (response.Body != null)
+                {
                     Logger.Debug("Raw response (base64):" + response.Body.ToBase64());
+                }
             }
 
             return MessageHandler.ParseResponse<T>(request, response);
@@ -175,7 +184,9 @@ namespace IO.Ably
                 Logger.Debug("Content type: " + response.ContentType);
                 Logger.Debug("Encoding: " + response.Encoding);
                 if (response.Body != null)
+                {
                     Logger.Debug("Raw response (base64):" + response.Body.ToBase64());
+                }
             }
 
             return MessageHandler.ParsePaginatedResponse<T>(request, response, executeDataQueryRequest);
@@ -245,7 +256,9 @@ namespace IO.Ably
         public async Task<bool> CanConnectToAbly()
         {
             if (Options.SkipInternetCheck)
+            {
                 return true;
+            }
 
             try
             {
@@ -274,6 +287,5 @@ namespace IO.Ably
         {
             return AsyncHelper.RunSync(TimeAsync);
         }
-        
     }
 }

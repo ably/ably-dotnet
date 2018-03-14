@@ -14,7 +14,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         public async Task WhenConnectionIsClosed_ConnectionIdAndKeyShouldBeReset()
         {
             var client = GetConnectedClient();
-            
+
             client.Close();
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
@@ -32,7 +32,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.Connection.RecoveryKey.Should().Be($"{client.Connection.Key}:{client.Connection.Serial}");
         }
 
-        public ConnectionRecoverySpecs(ITestOutputHelper output) : base(output)
+        public ConnectionRecoverySpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

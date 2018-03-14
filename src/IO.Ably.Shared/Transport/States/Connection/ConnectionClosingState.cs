@@ -10,13 +10,13 @@ namespace IO.Ably.Transport.States.Connection
         private const int CloseTimeout = 1000;
         private readonly ICountdownTimer _timer;
 
-        public ConnectionClosingState(IConnectionContext context, ILogger logger) :
-            this(context, null, new CountdownTimer("Closing state timer", logger), logger)
+        public ConnectionClosingState(IConnectionContext context, ILogger logger)
+            : this(context, null, new CountdownTimer("Closing state timer", logger), logger)
         {
         }
 
-        public ConnectionClosingState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer, ILogger logger) :
-            base(context, logger)
+        public ConnectionClosingState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer, ILogger logger)
+            : base(context, logger)
         {
             _timer = timer;
             Error = error ?? ErrorInfo.ReasonClosed;
@@ -33,17 +33,20 @@ namespace IO.Ably.Transport.States.Connection
                         TransitionState(new ConnectionClosedState(Context, Logger));
                         return TaskConstants.BooleanTrue;
                     }
+
                 case ProtocolMessage.MessageAction.Disconnected:
                     {
                         TransitionState(new ConnectionDisconnectedState(Context, message.Error, Logger));
                         return TaskConstants.BooleanTrue;
                     }
+
                 case ProtocolMessage.MessageAction.Error:
                     {
                         TransitionState(new ConnectionFailedState(Context, message.Error, Logger));
                         return TaskConstants.BooleanTrue;
                     }
             }
+
             return TaskConstants.BooleanFalse;
         }
 
@@ -64,6 +67,7 @@ namespace IO.Ably.Transport.States.Connection
             {
                 Context.SetState(new ConnectionClosedState(Context, Logger));
             }
+
             return TaskConstants.BooleanTrue;
         }
 

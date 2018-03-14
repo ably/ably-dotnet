@@ -16,10 +16,11 @@ namespace IO.Ably.Tests
         private ConnectionDisconnectedState _state;
         private FakeTimer _timer;
 
-        public DisconectedStateSpecs(ITestOutputHelper output) : base(output)
+        public DisconectedStateSpecs(ITestOutputHelper output)
+            : base(output)
         {
             _context = new FakeConnectionContext();
-            _connectionInfo = new ConnectionInfo("", 0, "", "");
+            _connectionInfo = new ConnectionInfo(string.Empty, 0, string.Empty, string.Empty);
             _timer = new FakeTimer();
             _state = GetState();
         }
@@ -70,7 +71,6 @@ namespace IO.Ably.Tests
         public void WhenCloseCalled_ShouldTrasitionToClosedAndTimerAborted()
         {
             // Arrange
-            
             var state = GetState(ErrorInfo.ReasonClosed);
 
             // Act
@@ -85,7 +85,6 @@ namespace IO.Ably.Tests
         public void WhenConnectCalled_SHouldTrasitionToConnecting()
         {
             // Arrange
-            
             var state = GetState(ErrorInfo.ReasonClosed);
 
             // Act

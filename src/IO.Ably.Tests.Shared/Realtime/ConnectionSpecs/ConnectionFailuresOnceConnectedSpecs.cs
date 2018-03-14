@@ -24,9 +24,14 @@ namespace IO.Ably.Tests.Realtime
 
         public AblyRealtime SetupConnectedClient(bool failRenewal = false, bool renewable = true)
         {
-            return GetConnectedClient(opts =>
+            return GetConnectedClient(
+                opts =>
             {
-                if (renewable == false) opts.Key = ""; //clear the key to make the token non renewable
+                if (renewable == false)
+                {
+                    opts.Key = string.Empty; // clear the key to make the token non renewable
+                }
+
                 opts.TokenDetails = _validToken;
                 opts.UseBinaryProtocol = false;
             }, request =>
@@ -34,7 +39,10 @@ namespace IO.Ably.Tests.Realtime
                 if (request.Url.Contains("/keys"))
                 {
                     if (failRenewal)
+                    {
                         throw new AblyException(new ErrorInfo("Failed to renew token", _failedRenewalErorrCode));
+                    }
+
                     _renewTokenCalled = true;
                     return _returnedDummyTokenDetails.ToJson().ToAblyResponse();
                 }
@@ -51,10 +59,12 @@ namespace IO.Ably.Tests.Realtime
 
             List<ConnectionState> states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
-            client.Connection.InternalStateChanged += (sender, args) => 
+            client.Connection.InternalStateChanged += (sender, args) =>
             {
                 if (args.HasError)
+                {
                     errors.Add(args.Reason);
+                }
 
                 states.Add(args.Current);
             };
@@ -83,7 +93,9 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 if (args.HasError)
+                {
                     errors.Add(args.Reason);
+                }
 
                 states.Add(args.Current);
                 if (args.Current == ConnectionState.Connecting)
@@ -103,14 +115,16 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15h")]
         public async Task WithTokenErrorWhenTokenRenewalFails_ShouldGoToFailedStateAndEmitError()
         {
-            var client = SetupConnectedClient(failRenewal: true);
+            var client = SetupConnectedClient(true);
 
             List<ConnectionState> states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 if (args.HasError)
+                {
                     errors.Add(args.Reason);
+                }
 
                 states.Add(args.Current);
             };
@@ -120,7 +134,8 @@ namespace IO.Ably.Tests.Realtime
                     Error = _tokenErrorInfo
                 });
 
-            Assert.Equal(new[]
+            Assert.Equal(
+                new[]
             {
                 ConnectionState.Disconnected,
                 ConnectionState.Connecting,
@@ -142,7 +157,9 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 if (args.HasError)
+                {
                     errors.Add(args.Reason);
+                }
 
                 states.Add(args.Current);
             };
@@ -157,7 +174,8 @@ namespace IO.Ably.Tests.Realtime
                 Error = _tokenErrorInfo
             });
 
-            Assert.Equal(new[]
+            Assert.Equal(
+                new[]
             {
                 ConnectionState.Disconnected,
                 ConnectionState.Connecting,
@@ -179,7 +197,9 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 if (args.HasError)
+                {
                     errors.Add(args.Reason);
+                }
 
                 states.Add(args.Current);
             };
@@ -189,7 +209,8 @@ namespace IO.Ably.Tests.Realtime
                 Error = _tokenErrorInfo
             });
 
-            Assert.Equal(new[]
+            Assert.Equal(
+                new[]
             {
                 ConnectionState.Failed
             }, states);
@@ -211,7 +232,9 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 if (args.HasError)
+                {
                     errors.Add(args.Reason);
+                }
 
                 states.Add(args.Current);
                 if (args.Current == ConnectionState.Connecting)
@@ -238,7 +261,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task AckMessagesAreFailedWhenConnectionIsDroppedAndNotResumed()
         {
             var client = SetupConnectedClient();
-            
+
             List<bool> callbackResults = new List<bool>();
             Action<bool, ErrorInfo> callback = (b, info) =>
             {
@@ -285,9 +308,8 @@ namespace IO.Ably.Tests.Realtime
             client.ConnectionManager.AckProcessor.GetQueuedMessages().Should().HaveCount(2);
         }
 
-
-
-        public ConnectionFailuresOnceConnectedSpecs(ITestOutputHelper output) : base(output)
+        public ConnectionFailuresOnceConnectedSpecs(ITestOutputHelper output)
+            : base(output)
         {
             SetNowFunc(() => DateTimeOffset.UtcNow);
             _validToken = new TokenDetails("id") { Expires = Now.AddHours(1) };

@@ -8,14 +8,16 @@ namespace IO.Ably.Tests
 {
     public class FakeHttpMessageHandler : HttpMessageHandler
     {
-        private HttpResponseMessage response;
+        private HttpResponseMessage _response;
         private readonly Action _sendAsyncAction;
-        public HttpRequestMessage LastRequest;
+
+        public HttpRequestMessage LastRequest { get; set; }
+
         public List<HttpRequestMessage> Requests { get; } = new List<HttpRequestMessage>();
 
         public FakeHttpMessageHandler(HttpResponseMessage response, Action sendAsyncAction = null)
         {
-            this.response = response;
+            _response = response;
             _sendAsyncAction = sendAsyncAction;
         }
 
@@ -24,7 +26,7 @@ namespace IO.Ably.Tests
             NumberOfRequests++;
             Requests.Add(request);
             LastRequest = request;
-            var responseTask = Task.FromResult(response);
+            var responseTask = Task.FromResult(_response);
             _sendAsyncAction?.Invoke();
             return responseTask;
         }

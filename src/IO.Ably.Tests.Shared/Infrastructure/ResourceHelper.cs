@@ -13,10 +13,14 @@ namespace IO.Ably.Tests
             string resName = $"{defaultNamespace}.{localResName}";
             Stream resourceStream = ass.GetManifestResourceStream(resName);
             if (resourceStream == null)
+            {
                 throw new Exception("Resource not found: " + resName);
+            }
 
             using (var reader = new StreamReader(resourceStream))
+            {
                 return reader.ReadToEnd();
+            }
         }
     }
 }

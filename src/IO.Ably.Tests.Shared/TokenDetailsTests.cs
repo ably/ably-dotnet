@@ -27,7 +27,8 @@ namespace IO.Ably.Tests
             var token = JsonHelper.DeserializeObject<TokenDetails>((JObject)JObject.Parse(json)["access_token"]);
 
             Assert.Equal("QF_CjTvDs2kFQMKLwpccEhIkNcKpw5ovPsOnLsOgJMKow5ACXHvCgGzCtcK7", token.Token);
-            //Assert.Equal("3lJG9Q", token.ClientId
+
+            // Assert.Equal("3lJG9Q", token.ClientId
             Assert.Equal(1430784000000, token.Issued.ToUnixTimeInMilliseconds());
             Assert.Equal(1430784000000, token.Expires.ToUnixTimeInMilliseconds());
             var expectedCapability = new Capability();

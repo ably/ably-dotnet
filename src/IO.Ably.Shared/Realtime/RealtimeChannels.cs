@@ -39,14 +39,18 @@ namespace IO.Ably.Realtime
                     {
                         realtimeChannel.Options = options;
                     }
+
                     return realtimeChannel;
                 });
             }
             else
             {
                 if (options != null)
+                {
                     result.Options = options;
+                }
             }
+
             return result;
         }
 
@@ -54,14 +58,14 @@ namespace IO.Ably.Realtime
 
         public bool Release(string name)
         {
-            if(Logger.IsDebug) {  Logger.Debug($"Releasing channel #{name}"); }
+            if (Logger.IsDebug) { Logger.Debug($"Releasing channel #{name}"); }
             RealtimeChannel channel = null;
             if (Channels.TryGetValue(name, out channel))
             {
                 EventHandler<ChannelStateChange> eventHandler = null;
                 eventHandler = (s, args) =>
                 {
-                    var detachedChannel = (RealtimeChannel) s;
+                    var detachedChannel = (RealtimeChannel)s;
                     if (args.Current == ChannelState.Detached || args.Current == ChannelState.Failed)
                     {
                         if (Logger.IsDebug) { Logger.Debug($"Channel #{name} was removed from Channel list. State {args.Current}"); }
@@ -69,7 +73,9 @@ namespace IO.Ably.Realtime
 
                         RealtimeChannel removedChannel;
                         if (Channels.TryRemove(name, out removedChannel))
+                        {
                             removedChannel.Dispose();
+                        }
                     }
                     else
                     {
@@ -81,6 +87,7 @@ namespace IO.Ably.Realtime
                 channel.Detach();
                 return true;
             }
+
             return false;
         }
 

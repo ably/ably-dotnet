@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IO.Ably.Transport;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -40,7 +39,7 @@ namespace IO.Ably.Tests
             [Fact]
             public void WithKeyNoClientIdAndAuthToken_ShouldSetCurrentToken()
             {
-                ClientOptions options = new ClientOptions { Key = ValidKey, ClientId = "123", Token = "blah"};
+                ClientOptions options = new ClientOptions { Key = ValidKey, ClientId = "123", Token = "blah" };
                 var client = new AblyRest(options);
 
                 client.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
@@ -126,7 +125,7 @@ namespace IO.Ably.Tests
             [Fact]
             public void WithAuthUrl_SetsTokenRenewableToTrue()
             {
-                var rest = new AblyRest(new ClientOptions() { AuthUrl = new Uri("http://boo")});
+                var rest = new AblyRest(new ClientOptions() { AuthUrl = new Uri("http://boo") });
 
                 rest.AblyAuth.TokenRenewable.Should().BeTrue();
             }
@@ -134,7 +133,7 @@ namespace IO.Ably.Tests
             [Fact]
             public void WithAuthCallback_SetsTokenRenewableToTrue()
             {
-                var rest = new AblyRest(new ClientOptions() { AuthCallback = token => Task.FromResult<object>(new TokenDetails())});
+                var rest = new AblyRest(new ClientOptions() { AuthCallback = token => Task.FromResult<object>(new TokenDetails()) });
 
                 rest.AblyAuth.TokenRenewable.Should().BeTrue();
             }
@@ -147,8 +146,7 @@ namespace IO.Ably.Tests
             {
                 opts.Tls = true;
                 opts.TlsPort = 111;
-            }
-                );
+            });
             client.HttpClient.Options.Port.Should().Be(111);
         }
 
@@ -159,12 +157,12 @@ namespace IO.Ably.Tests
             {
                 opts.Tls = false;
                 opts.Port = 111;
-            }
-                );
+            });
             client.HttpClient.Options.Port.Should().Be(111);
         }
 
-        public RestInitSpecs(ITestOutputHelper output) : base(output)
+        public RestInitSpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

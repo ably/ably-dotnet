@@ -4,8 +4,9 @@ using System.IO;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using IO.Ably.Realtime;
+
 using IO.Ably;
+using IO.Ably.Realtime;
 
 namespace IO.Ably.Transport
 {
@@ -19,17 +20,18 @@ namespace IO.Ably.Transport
             Closing,
             Closed
         }
-        
+
         internal ILogger Logger { get; private set; }
 
         private readonly Uri _uri;
         private Action<ConnectionState, Exception> _handler;
-        private readonly BlockingCollection<Tuple<ArraySegment<byte>, WebSocketMessageType>> _sendQueue 
+        private readonly BlockingCollection<Tuple<ArraySegment<byte>, WebSocketMessageType>> _sendQueue
             = new BlockingCollection<Tuple<ArraySegment<byte>, WebSocketMessageType>>();
 
         public string ConnectionId { get; set; }
 
-        internal ClientWebSocket ClientWebSocket { get; set ; }
+        internal ClientWebSocket ClientWebSocket { get; set; }
+
         private CancellationTokenSource _tokenSource = new CancellationTokenSource();
 
         public MsWebSocketConnection(Uri uri, ILogger logger)
@@ -61,13 +63,14 @@ namespace IO.Ably.Transport
 
         private void StartSenderQueueConsumer()
         {
-            Task.Run(async () =>
-            {
-                foreach (var tuple in _sendQueue.GetConsumingEnumerable())
+            Task.Run(
+                async () =>
                 {
-                    await Send(tuple.Item1, tuple.Item2, _tokenSource.Token);
-                }
-            }, _tokenSource.Token).ConfigureAwait(false);
+                    foreach (var tuple in _sendQueue.GetConsumingEnumerable())
+                    {
+                        await Send(tuple.Item1, tuple.Item2, _tokenSource.Token);
+                    }
+                }, _tokenSource.Token).ConfigureAwait(false);
         }
 
         public async Task StopConnectionAsync()
@@ -77,13 +80,15 @@ namespace IO.Ably.Transport
             try
             {
                 if (ClientWebSocket.CloseStatus.HasValue)
+                {
                     Logger.Debug("Closing websocket. Close status: " +
                                  Enum.GetName(typeof(WebSocketCloseStatus), ClientWebSocket.CloseStatus) + ", Description: " + ClientWebSocket.CloseStatusDescription);
+                }
 
-                if(ClientWebSocket?.State != WebSocketState.Closed)
+                if (ClientWebSocket?.State != WebSocketState.Closed)
                 {
                     await
-                    ClientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None)
+                    ClientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None)
                         .ConfigureAwait(false);
                 }
 
@@ -97,7 +102,10 @@ namespace IO.Ably.Transport
 
         public void SendText(string message)
         {
-            if(Logger.IsDebug) Logger.Debug("Sending text");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Sending text");
+            }
 
             var bytes = new ArraySegment<byte>(message.GetBytes());
             _sendQueue.TryAdd(Tuple.Create(bytes, WebSocketMessageType.Text), 1000, _tokenSource.Token);
@@ -105,7 +113,10 @@ namespace IO.Ably.Transport
 
         public void SendData(byte[] data)
         {
-            if (Logger.IsDebug) Logger.Debug("Sending binary data");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Sending binary data");
+            }
 
             var bytes = new ArraySegment<byte>(data);
             _sendQueue.TryAdd(Tuple.Create(bytes, WebSocketMessageType.Binary), 1000, _tokenSource.Token);
@@ -121,6 +132,7 @@ namespace IO.Ably.Transport
                     sendTask.ConfigureAwait(false);
                     return sendTask;
                 }
+
                 Logger.Warning($"Trying to send message of type {type} when the socket is {ClientWebSocket.State}. Ack for this message will fail shortly.");
 
                 return Task.FromResult(true);
@@ -129,6 +141,7 @@ namespace IO.Ably.Transport
             {
                 _handler?.Invoke(ConnectionState.Error, ex);
             }
+
             return Task.FromResult(false);
         }
 
@@ -138,7 +151,7 @@ namespace IO.Ably.Transport
             {
                 try
                 {
-                    var buffer = new ArraySegment<byte>(new byte[1024 * 16]); //Default receive buffer size
+                    var buffer = new ArraySegment<byte>(new byte[1024 * 16]); // Default receive buffer size
                     WebSocketReceiveResult result = null;
                     using (var ms = new MemoryStream())
                     {
@@ -146,14 +159,21 @@ namespace IO.Ably.Transport
                         {
                             result = await ClientWebSocket.ReceiveAsync(buffer, _tokenSource.Token);
                             if (result.MessageType == WebSocketMessageType.Close)
+                            {
                                 break;
+                            }
+
                             ms.Write(buffer.Array, buffer.Offset, result.Count);
                         }
                         while (!result.EndOfMessage);
 
                         ms.Seek(0, SeekOrigin.Begin);
 
-                        if(Logger.IsDebug) Logger.Debug("Recieving message with type: " + result.MessageType);
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug("Recieving message with type: " + result.MessageType);
+                        }
+
                         switch (result.MessageType)
                         {
                             case WebSocketMessageType.Text:
@@ -172,7 +192,7 @@ namespace IO.Ably.Transport
                         break;
                     }
                 }
-                catch (Exception ex) 
+                catch (Exception ex)
                 {
                     _handler?.Invoke(ConnectionState.Error, ex);
                     break;

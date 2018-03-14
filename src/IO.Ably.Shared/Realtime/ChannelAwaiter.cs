@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+
+using IO.Ably;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
-using System.Linq;
-using IO.Ably;
 
 namespace IO.Ably.Realtime
 {
@@ -37,7 +38,10 @@ namespace IO.Ably.Realtime
         {
             lock (_lock)
             {
-                if (_waiting == false) return;
+                if (_waiting == false)
+                {
+                    return;
+                }
 
                 _timer.Abort();
                 _waiting = false;
@@ -87,6 +91,7 @@ namespace IO.Ably.Realtime
                 {
                     Logger.Error("Error invoking callback for - " + _name, e);
                 }
+
                 return false;
             }
 
@@ -111,7 +116,9 @@ namespace IO.Ably.Realtime
         private void ElapsedSync()
         {
             lock (_lock)
+            {
                 _waiting = false;
+            }
 
             _onTimeout?.Invoke();
 
@@ -132,7 +139,10 @@ namespace IO.Ably.Realtime
         {
             lock (_lock)
             {
-                if (_waiting == false) return;
+                if (_waiting == false)
+                {
+                    return;
+                }
             }
 
             if (args.Current == _awaitedState)

@@ -2,10 +2,8 @@
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using System.Threading.Tasks;
 using FluentAssertions;
-using IO.Ably.Transport;
 using Xunit;
 
 namespace IO.Ably.Tests
@@ -73,7 +71,6 @@ namespace IO.Ably.Tests
             var handler = new FakeHttpMessageHandler(response);
             var client = new AblyHttpClient(new AblyHttpOptions(), handler);
 
-
             var ablyRequest = new AblyRequest("/test", HttpMethod.Post);
             ablyRequest.PostParameters = new Dictionary<string, string>() { { "test", "test" }, { "best", "best" } };
 
@@ -113,14 +110,14 @@ namespace IO.Ably.Tests
             [InlineData(HttpStatusCode.BadGateway, true)]
             [InlineData(HttpStatusCode.InternalServerError, true)]
             [InlineData(HttpStatusCode.NotImplemented, true)]
-            [InlineData(HttpStatusCode.BadGateway, true)]
             [InlineData(HttpStatusCode.ServiceUnavailable, true)]
             [InlineData(HttpStatusCode.GatewayTimeout, true)]
             [InlineData(HttpStatusCode.NoContent, false)]
             [InlineData(HttpStatusCode.NotFound, false)]
             [Trait("spec", "RSC15d")]
 
-            public void IsRetryableResponse_WithErrorCode_ShouldReturnExpectedValue(HttpStatusCode statusCode,
+            public void IsRetryableResponse_WithErrorCode_ShouldReturnExpectedValue(
+                HttpStatusCode statusCode,
                 bool expected)
             {
                 var response = new HttpResponseMessage(statusCode);

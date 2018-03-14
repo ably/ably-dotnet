@@ -11,18 +11,21 @@ namespace IO.Ably
             public const string Presence = "presence";
             public const string All = "*";
         }
+
         public string Name { get; set; }
+
         public List<string> AllowedOperations { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public CapabilityResource()
         {
             AllowedOperations = new List<string>();
         }
 
-        public CapabilityResource(string name) : this()
+        public CapabilityResource(string name)
+            : this()
         {
             Name = name;
         }

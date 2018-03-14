@@ -11,9 +11,10 @@ namespace IO.Ably.MessageEncoders
         {
             if (CurrentEncodingIs(payload, EncodingName) && payload.Data is string)
             {
-                payload.Data = ((string) payload.Data).FromBase64();
+                payload.Data = ((string)payload.Data).FromBase64();
                 RemoveCurrentEncodingPart(payload);
             }
+
             return Result.Ok();
         }
 
@@ -21,7 +22,9 @@ namespace IO.Ably.MessageEncoders
         {
             var data = payload.Data;
             if (IsEmpty(data))
+            {
                 return Result.Ok();
+            }
 
             var bytes = data as byte[];
             if (bytes != null && Protocol == Protocol.Json)
@@ -29,6 +32,7 @@ namespace IO.Ably.MessageEncoders
                 payload.Data = bytes.ToBase64();
                 AddEncoding(payload, EncodingName);
             }
+
             return Result.Ok();
         }
 

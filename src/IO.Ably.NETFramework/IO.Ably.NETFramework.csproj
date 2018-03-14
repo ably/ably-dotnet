@@ -23,6 +23,8 @@
     <DefineConstants>TRACE;DEBUG;EXCLUDE_MSGPACK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>..\IO.Ably.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -163,6 +165,10 @@
     <None Include="app.config" />
     <None Include="IO.Ably.snk" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.2\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
+    <Analyzer Include="..\packages\StyleCop.Analyzers.1.0.2\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
   <Import Project="..\IO.Ably.Shared\IO.Ably.Shared.projitems" Label="Shared" />
   <Import Project="..\IO.Ably.Shared.MsgPack\IO.Ably.Shared.MsgPack.projitems" Label="Shared" Condition="$(DefineConstants.Contains(MSGPACK))" />

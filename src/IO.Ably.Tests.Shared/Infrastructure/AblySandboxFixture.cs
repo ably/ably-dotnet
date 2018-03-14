@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Tests
 {
-    public class AblySandboxFixture : IDisposable
+    public class AblySandboxFixture
     {
         public static readonly DateTimeOffset StartInterval = DateHelper.CreateDate(DateTimeOffset.UtcNow.Year - 1, 2, 3, 15, 5);
 
@@ -31,8 +31,7 @@ namespace IO.Ably.Tests
                 (string)cipher["algorithm"],
                 ((string)cipher["key"]).FromBase64(),
                 CipherMode.CBC,
-                ((string)cipher["iv"]).FromBase64()
-                );
+                ((string)cipher["iv"]).FromBase64());
 
             AblyHttpClient client = settings.GetHttpClient();
             AblyRequest request = new AblyRequest("/apps", HttpMethod.Post);
@@ -50,16 +49,15 @@ namespace IO.Ably.Tests
             {
                 var testkey = new Key
                 {
-                    KeyName = appId + "." + (string) key["keyName"],
-                    KeySecret = (string) key["keySecret"],
-                    KeyStr = (string) key["keyStr"],
-                    Capability = (string) key["capability"]
+                    KeyName = appId + "." + (string)key["keyName"],
+                    KeySecret = (string)key["keySecret"],
+                    KeyStr = (string)key["keyStr"],
+                    Capability = (string)key["capability"]
                 };
                 settings.Keys.Add(testkey);
             }
 
-            //await SetupSampleStats(settings);
-
+            // await SetupSampleStats(settings);
             return settings;
         }
 
@@ -89,11 +87,6 @@ namespace IO.Ably.Tests
             request.RequestBody = json.GetBytes();
 
             await client.Execute(request);
-        }   
-
-        public void Dispose()
-        {
-            
         }
     }
 }

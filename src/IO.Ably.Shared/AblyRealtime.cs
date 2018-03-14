@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using IO.Ably.Realtime;
+
 using IO.Ably;
+using IO.Ably.Realtime;
 using IO.Ably.Transport;
 
 namespace IO.Ably
@@ -18,12 +19,11 @@ namespace IO.Ably
         {
         }
 
-        public AblyRealtime(ClientOptions options) :
-            this(options, clientOptions => new AblyRest(clientOptions))
+        public AblyRealtime(ClientOptions options)
+            : this(options, clientOptions => new AblyRest(clientOptions))
         {
-
         }
-        
+
         internal AblyRealtime(ClientOptions options, Func<ClientOptions, AblyRest> createRestFunc)
         {
             Logger = options.Logger;
@@ -35,13 +35,17 @@ namespace IO.Ably
             Connection.Initialise();
 
             if (options.AutoConnect)
+            {
                 Connect();
+            }
         }
 
         private void CaptureSynchronizationContext(ClientOptions options)
         {
             if (options.CustomContext != null)
+            {
                 _synchronizationContext = options.CustomContext;
+            }
             else if (options.CaptureCurrentSynchronizationContext)
             {
                 _synchronizationContext = SynchronizationContext.Current;
@@ -51,6 +55,7 @@ namespace IO.Ably
         public AblyRest RestClient { get; }
 
         public IAblyAuth Auth => RestClient.AblyAuth;
+
         public string ClientId => Auth.ClientId;
 
         internal ClientOptions Options => RestClient.Options;

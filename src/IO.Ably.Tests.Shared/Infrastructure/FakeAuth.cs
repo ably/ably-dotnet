@@ -31,6 +31,7 @@ namespace IO.Ably.Tests
         }
 
         public AuthMethod AuthMethod { get; set; }
+
         public string ClientId { get; set; }
 
         public TokenDetails RequestToken(TokenParams tokenParams = null, AuthOptions options = null)
