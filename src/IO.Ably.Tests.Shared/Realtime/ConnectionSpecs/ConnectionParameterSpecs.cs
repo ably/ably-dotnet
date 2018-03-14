@@ -117,7 +117,6 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTN2g")]
-        [Trait()]
         public void ShouldSetTransportLibVersionParamater()
         {
             string pattern = @"^dotnet(.?\w*)-1.0.(\d+)$";
