@@ -119,22 +119,24 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTN2g")]
+        [Trait()]
         public void ShouldSetTransportLibVersionParamater()
         {
             string pattern = @"^dotnet(.?\w*)-1.0.(\d+)$";
 
             // validate the regex pattern
-            Regex.Match("dotnet-1.0.321", pattern).Success.ShouldBeEquivalentTo(true);
-            Regex.Match("dotnet.framework-1.0.321", pattern).Success.ShouldBeEquivalentTo(true);
-            Regex.Match("dotnet.netstandard20-1.0.0", pattern).Success.ShouldBeEquivalentTo(true);
-            Regex.Match("csharp.netstandard20-1.0.0", pattern).Success.ShouldBeEquivalentTo(false);
+            Regex.Match("dotnet-1.0.321", pattern).Success.Should().BeTrue();
+            Regex.Match("dotnet.framework-1.0.321", pattern).Success.Should().BeTrue();
+            Regex.Match("dotnet.netstandard20-1.0.0", pattern).Success.Should().BeTrue();
+            Regex.Match("xdotnet-1.0.321", pattern).Success.Should().BeFalse();
+            Regex.Match("csharp.netstandard20-1.0.0", pattern).Success.Should().BeFalse();
 
             var client = GetClientWithFakeTransport();
             LastCreatedTransport.Parameters.GetParams().Should().ContainKey("lib");
             var transportParams = LastCreatedTransport.Parameters.GetParams();
 
             // validate the 'lib' param
-            Regex.Match(transportParams["lib"], pattern).Success.ShouldBeEquivalentTo(true);
+            Regex.Match(transportParams["lib"], pattern).Success.Should().BeTrue();
         }
 
         public ConnectionParameterSpecs(ITestOutputHelper output) : base(output)
