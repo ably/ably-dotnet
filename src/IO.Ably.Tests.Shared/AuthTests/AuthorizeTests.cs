@@ -96,34 +96,7 @@ namespace IO.Ably.Tests.AuthTests
             client.AblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(tokenParams);
             data.Ttl.Should().Be(TimeSpan.FromMinutes(260));
         }
-
-        [Fact]
-        [Trait("spec", "RSA10d")]
-        public async Task Authorize_WithNotExpiredCurrentTokenAndForceTrue_RequestsNewToken()
-        {
-            var client = GetRestClient();
-            var initialToken = new TokenDetails() { Expires = TestHelpers.Now().AddHours(1) };
-            client.AblyAuth.CurrentToken = initialToken;
-
-            var token = await client.Auth.AuthorizeAsync(new TokenParams() { ClientId = "123", Capability = new Capability() }, new AuthOptions());
-
-            Assert.Contains("requestToken", LastRequest.Url);
-            token.Should().NotBeSameAs(initialToken);
-        }
-
-        [Fact]
-        [Trait("spec", "RSA10c")]
-        public async Task Authorize_WithExpiredCurrentToken_RequestsNewToken()
-        {
-            var client = GetRestClient();
-            var initialToken = new TokenDetails() { Expires = TestHelpers.Now().AddHours(-1) };
-            client.AblyAuth.CurrentToken = initialToken;
-
-            var token = await client.Auth.AuthorizeAsync();
-            Assert.Contains("requestToken", LastRequest.Url);
-            token.Should().NotBeSameAs(initialToken);
-        }
-
+        
         [Theory]
         [InlineData(Defaults.TokenExpireBufferInSeconds + 1, false)]
         [InlineData(Defaults.TokenExpireBufferInSeconds, true)]
