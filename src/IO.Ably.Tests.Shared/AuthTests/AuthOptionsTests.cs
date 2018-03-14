@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Reflection;
+using FluentAssertions;
 using Xunit;
 
 namespace IO.Ably.Tests
@@ -7,24 +11,58 @@ namespace IO.Ably.Tests
     [Trait("spec", "RSA8e")]
     public class AuthOptionsMergeTests
     {
-        public AuthOptions GetBlankOptions()
+        private AuthOptions GetBlankOptions()
         {
             return new AuthOptions();
         }
 
-        public AuthOptions GetCompleteOptions()
+        // AuthOption names defined in RSA8e (made idiomatic for .Net)
+        private readonly string[] _authOptionPropertyNames =
+        {
+            "AuthCallback",
+            "AuthHeaders",
+            "AuthMethod",
+            "AuthParams",
+            "AuthUrl",
+            "Key",
+            "QueryTime",
+            "Token",
+            "TokenDetails",
+            "UseTokenAuth"
+        };
+
+        private AuthOptions GetCompleteOptions()
         {
             return new AuthOptions()
             {
+                AuthCallback = param => null,
                 AuthHeaders = new Dictionary<string, string> { { "Test", "Test" } },
+                AuthMethod = HttpMethod.Get,
                 AuthParams = new Dictionary<string, string> { { "Test", "Test" } },
-                Token = "Token",
                 AuthUrl = new Uri("http://www.google.com"),
                 Key = "key",
                 QueryTime = true,
-                AuthCallback = param => null,
+                Token = "Token",
+                TokenDetails = new TokenDetails("Token"),
                 UseTokenAuth = true
             };
+        }
+
+        [Fact]
+        public void AuthOptions_HasAllProperties()
+        {
+            var authOptions = GetCompleteOptions();
+            _authOptionPropertyNames.Length.Should().Be(10);
+            var props = authOptions.GetType().GetProperties();
+            props.Length.Should().Be(_authOptionPropertyNames.Length);
+            foreach (var propertyInfo in props)
+            {
+                _authOptionPropertyNames.Contains(propertyInfo.Name).Should().BeTrue();
+                propertyInfo.CanRead.Should().BeTrue();
+                propertyInfo.CanWrite.Should().BeTrue();
+                propertyInfo.GetGetMethod(false).IsPublic.Should().BeTrue();
+                propertyInfo.GetSetMethod(false).IsPublic.Should().BeTrue();
+            }
         }
 
         [Fact]
