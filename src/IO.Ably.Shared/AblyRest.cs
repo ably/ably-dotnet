@@ -126,7 +126,8 @@ namespace IO.Ably
                 }
 
                 if (ex.ErrorInfo.IsUnAuthorizedError
-                    && ex.ErrorInfo.IsTokenError && AblyAuth.TokenRenewable)
+                    && ex.ErrorInfo.IsTokenError
+                    && AblyAuth.TokenRenewable)
                 {
                     if (Logger.IsDebug)
                     {
