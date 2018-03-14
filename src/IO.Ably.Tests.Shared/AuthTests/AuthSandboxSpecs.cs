@@ -322,7 +322,7 @@ namespace IO.Ably.Tests
         public async Task WithoutClientId_WhenAuthorizedWithTokenParamsWithClientId_SetsClientId(Protocol protocol)
         {
             var ably = await GetRestClient(protocol);
-            await ably.Auth.AuthorizeAsync(new TokenParams() { ClientId = "123" }, new AuthOptions() { Force = true });
+            await ably.Auth.AuthorizeAsync(new TokenParams() { ClientId = "123" }, new AuthOptions());
             ably.AblyAuth.ClientId.Should().Be("123");
             ably.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
         }

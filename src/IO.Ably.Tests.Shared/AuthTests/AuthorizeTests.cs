@@ -30,10 +30,7 @@ namespace IO.Ably.Tests.AuthTests
 
             // create new reset client using the dummyTokenDetails
             var client = GetRestClient(null, opts => { opts.TokenDetails = dummyTokenDetails; });
-
-            // check AuthOptions.Force is false (the default)
-            client.Options.Force.Should().BeFalse();
-
+            
             // get the current token
             var newTokenDetails = client.AblyAuth.CurrentToken;
 
@@ -59,11 +56,7 @@ namespace IO.Ably.Tests.AuthTests
             var client = GetRestClient(null, opts =>
             {
                 opts.TokenDetails = dummyTokenDetails;
-                opts.Force = true;
             });
-
-            // check AuthOptions.Force is true (the default)
-            client.Options.Force.Should().BeTrue();
 
             // get the current token
             var currentToken = client.AblyAuth.CurrentToken;
@@ -98,7 +91,7 @@ namespace IO.Ably.Tests.AuthTests
             var client = GetRestClient();
             var tokenParams = new TokenParams() { Ttl = TimeSpan.FromMinutes(260) };
             await client.Auth.AuthorizeAsync(tokenParams, null);
-            await client.Auth.AuthorizeAsync(null, new AuthOptions() { Force = true });
+            await client.Auth.AuthorizeAsync(null, new AuthOptions());
             var data = LastRequest.PostData as TokenRequest;
             client.AblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(tokenParams);
             data.Ttl.Should().Be(TimeSpan.FromMinutes(260));
@@ -112,7 +105,7 @@ namespace IO.Ably.Tests.AuthTests
             var initialToken = new TokenDetails() { Expires = TestHelpers.Now().AddHours(1) };
             client.AblyAuth.CurrentToken = initialToken;
 
-            var token = await client.Auth.AuthorizeAsync(new TokenParams() { ClientId = "123", Capability = new Capability() }, new AuthOptions { Force = true });
+            var token = await client.Auth.AuthorizeAsync(new TokenParams() { ClientId = "123", Capability = new Capability() }, new AuthOptions());
 
             Assert.Contains("requestToken", LastRequest.Url);
             token.Should().NotBeSameAs(initialToken);
@@ -162,7 +155,7 @@ namespace IO.Ably.Tests.AuthTests
             var client = GetRestClient();
             var testAblyAuth = new TestAblyAuth(client.Options, client);
             var customTokenParams = new TokenParams() { Ttl = TimeSpan.FromHours(2), Timestamp = Now.AddHours(1) };
-            var customAuthOptions = new AuthOptions() { UseTokenAuth = true, Force = true };
+            var customAuthOptions = new AuthOptions() { UseTokenAuth = true };
 
             await testAblyAuth.AuthorizeAsync(customTokenParams, customAuthOptions);
             var expectedTokenParams = customTokenParams.Clone();
@@ -171,7 +164,6 @@ namespace IO.Ably.Tests.AuthTests
 
             testAblyAuth.CurrentAuthOptions.Should().BeSameAs(customAuthOptions);
             testAblyAuth.CurrentTokenParams.Timestamp.Should().Be(null);
-            testAblyAuth.CurrentAuthOptions.Force.Should().BeFalse();
         }
 
         [Fact]
@@ -191,7 +183,6 @@ namespace IO.Ably.Tests.AuthTests
             expectedTokenParams.Timestamp = null;
             testAblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(expectedTokenParams);
             testAblyAuth.CurrentAuthOptions.Should().BeSameAs(customAuthOptions);
-            testAblyAuth.CurrentAuthOptions.Force.Should().BeFalse();
         }
 
         // This Test delegate all the work to RequestToken which has tests coving the following spec items

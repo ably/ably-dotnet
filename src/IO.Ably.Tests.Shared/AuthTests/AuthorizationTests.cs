@@ -322,7 +322,7 @@ namespace IO.Ably.Tests
                     options.DefaultTokenParams = new TokenParams() { ClientId = "999" };
                 });
 
-                client.Auth.AuthorizeAsync(null, new AuthOptions() { Force = true });
+                client.Auth.AuthorizeAsync(null, new AuthOptions());
                 var tokenRequest = LastRequest.PostData as TokenRequest;
                 tokenRequest.ClientId.Should().Be("123");
             }
