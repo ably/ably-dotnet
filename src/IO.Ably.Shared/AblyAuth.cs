@@ -358,7 +358,6 @@ namespace IO.Ably
         public async Task<TokenDetails> AuthorizeAsync(TokenParams tokenParams = null, AuthOptions options = null)
         {
             var authOptions = options ?? new AuthOptions();
-            bool force = authOptions.Force; // this is needed because I share the object and reset Force later on.
 
             authOptions.Merge(CurrentAuthOptions);
             SetCurrentAuthOptions(options);
@@ -366,11 +365,7 @@ namespace IO.Ably
             var authTokenParams = MergeTokenParamsWithDefaults(tokenParams);
             SetCurrentTokenParams(authTokenParams);
 
-            if (force)
-            {
-                CurrentToken = await RequestTokenAsync(authTokenParams, options);
-            }
-            else if (CurrentToken != null)
+            if (CurrentToken != null)
             {
                 if (Now().AddSeconds(Defaults.TokenExpireBufferInSeconds) >= CurrentToken.Expires)
                 {
@@ -404,7 +399,6 @@ namespace IO.Ably
             if (options != null)
             {
                 CurrentAuthOptions = options;
-                CurrentAuthOptions.Force = false;
             }
         }
 
