@@ -357,6 +357,11 @@ namespace IO.Ably
         /// <exception cref="AblyException">Throws an ably exception representing the server response</exception>
         public async Task<TokenDetails> AuthorizeAsync(TokenParams tokenParams = null, AuthOptions options = null)
         {
+            return await AuthorizeAsync(tokenParams, options, false);
+        }
+
+        internal async Task<TokenDetails> AuthorizeAsync(TokenParams tokenParams, AuthOptions options, bool force)
+        {
             var authOptions = options ?? new AuthOptions();
 
             authOptions.Merge(CurrentAuthOptions);
@@ -365,7 +370,11 @@ namespace IO.Ably
             var authTokenParams = MergeTokenParamsWithDefaults(tokenParams);
             SetCurrentTokenParams(authTokenParams);
 
-            if (CurrentToken != null)
+            if (force)
+            {
+                CurrentToken = await RequestTokenAsync(authTokenParams, options);
+            }
+            else if (CurrentToken != null)
             {
                 if (Now().AddSeconds(Defaults.TokenExpireBufferInSeconds) >= CurrentToken.Expires)
                 {
