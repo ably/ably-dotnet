@@ -482,7 +482,7 @@ namespace IO.Ably.Realtime
 
                     if (protocolMessage != null)
                     {
-                        if (protocolMessage.HasPresenceFlag)
+                        if (protocolMessage.HasFlag(ProtocolMessage.Flag.HasPresence))
                         {
                             if (Logger.IsDebug)
                             {

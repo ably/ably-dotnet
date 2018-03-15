@@ -32,13 +32,13 @@ namespace IO.Ably.Types
             Auth
         }
 
-        public enum MessageFlag
+        public enum Flag
         {
             // @ProtocolMessage@ @Flag@ enum has the following values, where a flag with value @n@ is defined to be set if the bitwise AND of the @flags@ field with @2ⁿ@ is nonzero
             HasPresence = 1 << 0,
             HasBacklog = 1 << 1,
             Resumed = 1 << 2,
-            LocalPresence = 1 << 3,
+            HasLocalPresence = 1 << 3,
             Transient = 1 << 4,
             Presence = 1 << 16,
             Publish = 1 << 17,
@@ -46,7 +46,7 @@ namespace IO.Ably.Types
             PresenceSubscribe = 1 << 19
         }
 
-        public static bool HasFlag(int? value, MessageFlag flag)
+        public static bool HasFlag(int? value, Flag flag)
         {
             if (value == null)
             {
@@ -79,15 +79,6 @@ namespace IO.Ably.Types
 
         [JsonProperty("flags")]
         public int? Flags { get; set; }
-
-        [JsonIgnore]
-        public bool HasPresenceFlag => HasFlag(Flags, MessageFlag.HasPresence);
-
-        [JsonIgnore]
-        public bool HasBacklogFlag => HasFlag(Flags, MessageFlag.HasBacklog);
-
-        [JsonIgnore]
-        public bool HasResumedFlag => HasFlag(Flags, MessageFlag.Resumed);
 
         [JsonProperty("count")]
         public int? Count { get; set; }
@@ -166,6 +157,10 @@ namespace IO.Ably.Types
             {
                 Presence = null;
             }
+        }
+        public bool HasFlag(Flag flag)
+        {
+            return ProtocolMessage.HasFlag(Flags, flag);
         }
 
         public override string ToString()
