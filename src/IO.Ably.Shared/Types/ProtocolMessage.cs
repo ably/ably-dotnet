@@ -10,7 +10,7 @@ namespace IO.Ably.Types
     {
         private string _connectionKey;
 
-        public enum MessageAction : int
+        public enum MessageAction
         {
             Heartbeat = 0,
             Ack,
@@ -32,20 +32,28 @@ namespace IO.Ably.Types
             Auth
         }
 
-        public class MessageFlags
+        public enum MessageFlag
         {
-            public const int Presence = 1;
-            public const int Backlog = 1 << 1;
+            // @ProtocolMessage@ @Flag@ enum has the following values, where a flag with value @n@ is defined to be set if the bitwise AND of the @flags@ field with @2ⁿ@ is nonzero
+            HasPresence = 1 << 0,
+            HasBacklog = 1 << 1,
+            Resumed = 1 << 2,
+            LocalPresence = 1 << 3,
+            Transient = 1 << 4,
+            Presence = 1 << 16,
+            Publish = 1 << 17,
+            Subscribe = 1 << 18,
+            PresenceSubscribe = 1 << 19
+        }
 
-            public static bool HasFlag(int? value, int flag)
+        public static bool HasFlag(int? value, MessageFlag flag)
+        {
+            if (value == null)
             {
-                if (value == null)
-                {
-                    return false;
-                }
-
-                return (value.Value & flag) != 0;
+                return false;
             }
+
+            return (value.Value & (int)flag) != 0;
         }
 
         public ProtocolMessage()
@@ -73,10 +81,13 @@ namespace IO.Ably.Types
         public int? Flags { get; set; }
 
         [JsonIgnore]
-        public bool HasPresenceFlag => MessageFlags.HasFlag(Flags, MessageFlags.Presence);
+        public bool HasPresenceFlag => HasFlag(Flags, MessageFlag.HasPresence);
 
         [JsonIgnore]
-        public bool HasBacklogFlag => MessageFlags.HasFlag(Flags, MessageFlags.Backlog);
+        public bool HasBacklogFlag => HasFlag(Flags, MessageFlag.HasBacklog);
+
+        [JsonIgnore]
+        public bool HasResumedFlag => HasFlag(Flags, MessageFlag.Resumed);
 
         [JsonProperty("count")]
         public int? Count { get; set; }
