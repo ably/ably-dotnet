@@ -34,7 +34,6 @@ namespace IO.Ably.Types
 
         public enum Flag
         {
-            // @ProtocolMessage@ @Flag@ enum has the following values, where a flag with value @n@ is defined to be set if the bitwise AND of the @flags@ field with @2ⁿ@ is nonzero
             HasPresence = 1 << 0,
             HasBacklog = 1 << 1,
             Resumed = 1 << 2,
