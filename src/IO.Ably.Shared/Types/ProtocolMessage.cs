@@ -28,7 +28,8 @@ namespace IO.Ably.Types
             Detached,
             Presence,
             Message,
-            Sync
+            Sync,
+            Auth
         }
 
         public class MessageFlags
