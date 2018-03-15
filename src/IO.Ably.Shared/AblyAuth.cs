@@ -19,8 +19,14 @@ namespace IO.Ably
             Options = options;
             _rest = rest;
             Logger = options.Logger;
+            ServerTime = () => _rest.TimeAsync();
+            ServerTimeOffset = () => null;
             Initialise();
         }
+
+        protected Func<Task<DateTimeOffset>> ServerTime { get; set; }
+
+        protected Func<DateTimeOffset?> ServerTimeOffset { get; private set; }
 
         internal Func<DateTimeOffset> Now { get; set; }
 
@@ -86,6 +92,12 @@ namespace IO.Ably
             }
 
             LogCurrentAuthenticationMethod();
+        }
+
+        private async void SetServerTimeOffset()
+        {
+            TimeSpan diff = Now() - await ServerTime();
+            ServerTimeOffset = () => Now() - diff;
         }
 
         private void SetAuthMethod()
@@ -173,9 +185,11 @@ namespace IO.Ably
 
             var @params = MergeTokenParamsWithDefaults(tokenParams);
 
-            if (mergedOptions.QueryTime.GetValueOrDefault(false))
+            if (mergedOptions.QueryTime.GetValueOrDefault(false)
+                && !ServerTimeOffset().HasValue)
             {
-                @params.Timestamp = await _rest.TimeAsync();
+                SetServerTimeOffset();
+                @params.Timestamp = ServerTimeOffset();
             }
 
             EnsureSecureConnection();
@@ -430,9 +444,11 @@ namespace IO.Ably
 
             var @params = MergeTokenParamsWithDefaults(tokenParams);
 
-            if (mergedOptions.QueryTime.GetValueOrDefault(false))
+            if (mergedOptions.QueryTime.GetValueOrDefault(false)
+                && !ServerTimeOffset().HasValue)
             {
-                @params.Timestamp = await _rest.TimeAsync();
+                SetServerTimeOffset();
+                @params.Timestamp = ServerTimeOffset();
             }
 
             ApiKey key = mergedOptions.ParseKey();

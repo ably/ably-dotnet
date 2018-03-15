@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -30,7 +31,7 @@ namespace IO.Ably.Tests.AuthTests
 
             // create new reset client using the dummyTokenDetails
             var client = GetRestClient(null, opts => { opts.TokenDetails = dummyTokenDetails; });
-            
+
             // get the current token
             var newTokenDetails = client.AblyAuth.CurrentToken;
 
@@ -96,7 +97,7 @@ namespace IO.Ably.Tests.AuthTests
             client.AblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(tokenParams);
             data.Ttl.Should().Be(TimeSpan.FromMinutes(260));
         }
-        
+
         [Theory]
         [InlineData(Defaults.TokenExpireBufferInSeconds + 1, false)]
         [InlineData(Defaults.TokenExpireBufferInSeconds, true)]
@@ -179,6 +180,55 @@ namespace IO.Ably.Tests.AuthTests
         }
 
         [Fact]
+        [Trait("spec", "RSA10k")]
+        public async Task Authorize_ObtainServerTimeAndPersistOffset()
+        {
+            var client = GetRestClient();
+            bool serverTimeCalled = false;
+
+            // configure the AblyAuth test wrapper to return UTC+30m when ServerTime() is called
+            // (By default the library uses DateTimeOffset.UtcNow whe Now() is called)
+            var testAblyAuth = new TestAblyAuth(client.Options, client, () =>
+            {
+                serverTimeCalled = true;
+                return Task.Run(() => DateTimeOffset.UtcNow.AddMinutes(30));
+            });
+
+            // RSA10k: If the AuthOption argument’s queryTime attribute is true
+            // it will obtain the server time once and persist the offset from the local clock.
+            var customAuthOptions = new AuthOptions { QueryTime = true };
+            await testAblyAuth.AuthorizeAsync(null, customAuthOptions);
+            serverTimeCalled.Should().BeTrue();
+            testAblyAuth.GetServerTimeOffset().Should().HaveValue();
+            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(await testAblyAuth.GetServerTime());
+            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(30));
+
+            // to show the values are calculated and not fixed
+            // get the current server time offset, pause for a short time,
+            // then get it again.
+            // The new value should represent a time after the first
+            var snapshot = testAblyAuth.GetServerTimeOffset();
+            await Task.Delay(500);
+            testAblyAuth.GetServerTimeOffset()?.Should().BeAfter(snapshot.Value);
+
+            // reset flag, used to show ServerTime() is not called again
+            serverTimeCalled = false;
+
+            // RSA10k: All future token requests generated directly or indirectly via a call to
+            // authorize will not obtain the server time, but instead use the local clock
+            // offset to calculate the server time.
+            await testAblyAuth.AuthorizeAsync(null, customAuthOptions);
+
+            // ServerTime() should not have been called again
+            serverTimeCalled.Should().BeFalse();
+
+            // and we should still be getting calculated offsets
+            testAblyAuth.GetServerTimeOffset().Should().HaveValue();
+            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(await testAblyAuth.GetServerTime());
+            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(30));
+        }
+
+        [Fact]
         [Trait("spec", "RSA10l")]
         public async Task Authorize_RestClientAuthoriseMethodsShouldBeMarkedObsoleteAndLogADeprecationWarning()
         {
@@ -236,9 +286,25 @@ namespace IO.Ably.Tests.AuthTests
                 return base.RequestTokenAsync(tokenParams, options);
             }
 
-            public TestAblyAuth(ClientOptions options, AblyRest rest)
+            public TestAblyAuth(ClientOptions options, AblyRest rest, Func<Task<DateTimeOffset>> serverTimeFunc = null)
                 : base(options, rest)
             {
+                if (serverTimeFunc != null)
+                {
+                    ServerTime = serverTimeFunc;
+                }
+            }
+
+            // Exposes the protected property ServerTime
+            public async Task<DateTimeOffset> GetServerTime()
+            {
+                return await ServerTime();
+            }
+
+            // Exposes the protected property ServerTimeOffset
+            public DateTimeOffset? GetServerTimeOffset()
+            {
+                return ServerTimeOffset();
             }
         }
 
