@@ -458,7 +458,7 @@ namespace IO.Ably.Tests
                 UseBinaryProtocol = protocol == Defaults.Protocol,
                 HttpRequestTimeout = new TimeSpan(0, 0, 20)
             });
-            
+
             var channel = authUrlClient.Channels["pesisted:test"];
             await channel.PublishAsync(new Message("test", "test") { ClientId = "123" });
 
