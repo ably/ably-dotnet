@@ -46,6 +46,14 @@ namespace IO.Ably.Tests
             Protocol protocol,
             Action<ClientOptions, TestEnvironmentSettings> optionsAction = null)
         {
+            return await GetRealtimeClient(protocol, optionsAction, null);
+        }
+
+        protected async Task<AblyRealtime> GetRealtimeClient(
+            Protocol protocol,
+            Action<ClientOptions, TestEnvironmentSettings> optionsAction,
+            Func<ClientOptions, AblyRest> createRestFunc)
+        {
             var settings = await Fixture.GetSettings();
             var defaultOptions = settings.CreateDefaultOptions();
             defaultOptions.UseBinaryProtocol = protocol == Defaults.Protocol;
@@ -58,7 +66,7 @@ namespace IO.Ably.Tests
             // This can create out of order responses that would not normally occur
             defaultOptions.CaptureCurrentSynchronizationContext = false;
             optionsAction?.Invoke(defaultOptions, settings);
-            return new AblyRealtime(defaultOptions);
+            return new AblyRealtime(defaultOptions, createRestFunc);
         }
 
         public class OutputLoggerSink : ILoggerSink
