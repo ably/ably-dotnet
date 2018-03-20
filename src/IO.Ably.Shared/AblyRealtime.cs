@@ -29,7 +29,7 @@ namespace IO.Ably
             Logger = options.Logger;
             CaptureSynchronizationContext(options);
 
-            RestClient = createRestFunc(options);
+            RestClient = createRestFunc != null ? createRestFunc.Invoke(options) : new AblyRest(options);
             Channels = new RealtimeChannels(this);
             Connection = new Connection(this, options.NowFunc, options.Logger);
             Connection.Initialise();
