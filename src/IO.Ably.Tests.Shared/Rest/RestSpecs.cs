@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.AcceptanceTests;
+using IO.Ably.Shared;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -545,13 +546,13 @@ namespace IO.Ably.Tests
             {
                 bool called = false;
 
-                Func<TokenParams, Task<object>> callback = (x) =>
+                Task<AuthCallbackResult> Callback(TokenParams x)
                 {
                     called = true;
-                    return Task.FromResult<object>(new TokenDetails() { Expires = DateTimeOffset.UtcNow.AddHours(1) });
-                };
+                    return Task.FromResult(new AuthCallbackResult(new TokenDetails {Expires = DateTimeOffset.UtcNow.AddHours(1)}));
+                }
 
-                await GetClient(callback).StatsAsync();
+                await GetClient(Callback).StatsAsync();
 
                 called.Should().BeTrue("Rest with Callback needs to request token using callback");
             }
@@ -561,7 +562,7 @@ namespace IO.Ably.Tests
             {
                 await Assert.ThrowsAsync<AblyException>(() =>
                  {
-                     return GetClient(_ => Task.FromResult<object>(null)).StatsAsync();
+                     return GetClient(_ => Task.FromResult(new AuthCallbackResult(null))).StatsAsync();
                  });
             }
 
@@ -573,12 +574,12 @@ namespace IO.Ably.Tests
                 {
                     await Assert.ThrowsAsync<AblyException>(() =>
                     {
-                        return GetClient(_ => Task.FromResult(obj)).StatsAsync();
+                        return GetClient(_ => Task.FromResult(new AuthCallbackResult(obj))).StatsAsync();
                     });
                 }
             }
 
-            private static AblyRest GetClient(Func<TokenParams, Task<object>> authCallback)
+            private static AblyRest GetClient(Func<TokenParams, Task<AuthCallbackResult>> authCallback)
             {
                 var options = new ClientOptions
                 {
@@ -634,10 +635,7 @@ namespace IO.Ably.Tests
                 AuthCallback = (x) =>
                 {
                     newTokenRequested = true;
-                    return Task.FromResult<object>(new TokenDetails("new.token")
-                    {
-                        Expires = DateTimeOffset.UtcNow.AddDays(1)
-                    });
+                    return Task.FromResult(new AuthCallbackResult(new TokenDetails("new.token") { Expires = DateTimeOffset.UtcNow.AddDays(1) }));
                 },
                 UseBinaryProtocol = false,
                 NowFunc = TestHelpers.NowFunc()

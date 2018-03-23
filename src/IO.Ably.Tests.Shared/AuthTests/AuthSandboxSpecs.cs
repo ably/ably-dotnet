@@ -3,8 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
+using IO.Ably.Shared;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -277,12 +279,6 @@ namespace IO.Ably.Tests
 
            (RSA4c3)If the connection is CONNECTED, then the connection should remain CONNECTED
 
-
-            (RSA4d) If a request by a realtime client to an authUrl results in an HTTP 403 response,
-            or any of an authUrl request, an authCallback, or a request to Ably to exchange a TokenRequest
-            for a TokenDetails result in an ErrorInfo with statusCode 403, then the client library
-            should transition to the FAILED state, with the connection errorReason should be set to
-            the ErrorInfo (or where there is none, as for a 403 authUrl response with no body, an ErrorInfo with code 40300 and an appropriate message)
          */
 
         [Theory]
@@ -583,7 +579,11 @@ namespace IO.Ably.Tests
             var tokenClient = await GetRestClient(protocol);
             var authCallbackClient = await GetRestClient(protocol, options =>
             {
-                options.AuthCallback = tokenParams => tokenClient.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" }).Convert();
+                options.AuthCallback = async tokenParams =>
+                {
+                    var token = await tokenClient.Auth.CreateTokenRequestAsync(new TokenParams() { ClientId = "*" });
+                    return new AuthCallbackResult(token);
+                };
                 options.Environment = settings.Environment;
                 options.UseBinaryProtocol = protocol == Defaults.Protocol;
             });
@@ -604,7 +604,11 @@ namespace IO.Ably.Tests
             var tokenClient = await GetRestClient(protocol);
             var authCallbackClient = await GetRestClient(protocol, options =>
             {
-                options.AuthCallback = async tokenParams => await tokenClient.Auth.CreateTokenRequestAsync(new TokenParams() { ClientId = "*" });
+                options.AuthCallback = async tokenParams =>
+                {
+                    var token = await tokenClient.Auth.CreateTokenRequestAsync(new TokenParams() { ClientId = "*" });
+                    return new AuthCallbackResult(token);
+                };
                 options.Environment = settings.Environment;
                 options.UseBinaryProtocol = protocol == Defaults.Protocol;
             });
@@ -717,15 +721,22 @@ namespace IO.Ably.Tests
             public Task<AblyResponse> AblyResponseWith401Status(AblyRequest request)
             {
                 Requests.Add(request);
-                var r = new AblyResponse(string.Empty, "application/json", string.Empty.GetBytes()) { StatusCode = HttpStatusCode.Unauthorized };
+                var r = new AblyResponse(string.Empty, "text/plain", string.Empty.GetBytes()) { StatusCode = HttpStatusCode.Unauthorized };
                 return Task.FromResult(r);
+            }
+
+            public Task<AblyResponse> AblyResponseWith403Status(AblyRequest request)
+            {
+                Requests.Add(request);
+                var r = new AblyResponse(string.Empty, "text/plain", string.Empty.GetBytes()) { StatusCode = HttpStatusCode.Forbidden };
+                throw AblyException.FromResponse(r);
             }
 
             public Task<AblyResponse> AblyResponseWith500Status(AblyRequest request)
             {
                 Requests.Add(request);
-                var r = new AblyResponse(string.Empty, "application/json", string.Empty.GetBytes()) { StatusCode = HttpStatusCode.InternalServerError };
-                return Task.FromResult(r);
+                var r = new AblyResponse(string.Empty, "text/plain", string.Empty.GetBytes()) { StatusCode = HttpStatusCode.InternalServerError };
+                throw AblyException.FromResponse(r);
             }
         }
     }

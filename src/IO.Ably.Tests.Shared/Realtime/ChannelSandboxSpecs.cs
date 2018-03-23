@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Encryption;
 using IO.Ably.Realtime;
+using IO.Ably.Shared;
 using IO.Ably.Tests.Infrastructure;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -400,7 +401,11 @@ namespace IO.Ably.Tests.Realtime
             var realtimeClient = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
-                opts.AuthCallback = async @params => await rest.Auth.RequestTokenAsync(new TokenParams() { ClientId = clientId });
+                opts.AuthCallback = async @params =>
+                {
+                    var tokenDetails = await rest.Auth.RequestTokenAsync(new TokenParams() { ClientId = clientId });
+                    return new AuthCallbackResult(tokenDetails, null);
+                };
             });
 
             var channelName = "test".AddRandomSuffix();
@@ -444,7 +449,11 @@ namespace IO.Ably.Tests.Realtime
             var realtimeClient = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
-                opts.AuthCallback = async @params => await rest.Auth.RequestTokenAsync(new TokenParams() { ClientId = clientId });
+                opts.AuthCallback = async @params =>
+                {
+                    var tokenDetails = await rest.Auth.RequestTokenAsync(new TokenParams() { ClientId = clientId });
+                    return new AuthCallbackResult(tokenDetails);
+                };
             });
             var channelName = "test".AddRandomSuffix();
             var channel = realtimeClient.Channels.Get(channelName);

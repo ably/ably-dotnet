@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.Shared;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -195,11 +196,11 @@ namespace IO.Ably.Tests.AuthTests
                 AuthCallback = (x) =>
                 {
                     authCallbackCalled = true;
-                    return Task.FromResult<object>(token);
+                    return Task.FromResult(new AuthCallbackResult(token));
                 }
             };
-            var result = await rest.Auth.RequestTokenAsync(tokenRequest, options);
 
+            var result = await rest.Auth.RequestTokenAsync(tokenRequest, options);
             Assert.True(authCallbackCalled);
             Assert.Same(token, result);
         }

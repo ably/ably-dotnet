@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.Shared;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -62,7 +63,11 @@ namespace IO.Ably.Tests
                     options.TokenDetails = almostExpiredToken;
                     options.ClientId = "123";
                     options.Key = string.Empty;
-                    options.AuthCallback = request => authClient.AblyAuth.RequestTokenAsync(request, null).Convert();
+                    options.AuthCallback = async request =>
+                    {
+                        var token = await authClient.AblyAuth.RequestTokenAsync(request, null);
+                        return new AuthCallbackResult(token, null);
+                    };
                 });
 
                 await client.StatsAsync();
