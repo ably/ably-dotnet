@@ -14,6 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)AblyRealtime.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AblyRest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ApiKey.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AuthCallbackResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthMethod.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Capability.cs" />
