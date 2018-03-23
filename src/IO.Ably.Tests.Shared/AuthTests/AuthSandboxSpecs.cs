@@ -718,13 +718,6 @@ namespace IO.Ably.Tests
                 return client;
             }
 
-            public Task<AblyResponse> AblyResponseWith401Status(AblyRequest request)
-            {
-                Requests.Add(request);
-                var r = new AblyResponse(string.Empty, "text/plain", string.Empty.GetBytes()) { StatusCode = HttpStatusCode.Unauthorized };
-                return Task.FromResult(r);
-            }
-
             public Task<AblyResponse> AblyResponseWith403Status(AblyRequest request)
             {
                 Requests.Add(request);
