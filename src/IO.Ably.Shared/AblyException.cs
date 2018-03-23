@@ -28,8 +28,9 @@ namespace IO.Ably
         /// Creates AblyException
         /// </summary>
         /// <param name="reason">Reason passed to the error info class</param>
-        public AblyException(string reason)
-            : this(new ErrorInfo(reason, 500, null))
+        /// <param name="ex">Optional, the original exception to be wrapped.</param>
+        public AblyException(string reason, Exception ex = null)
+            : this(new ErrorInfo(reason, 50000, null))
         {
         }
 
@@ -42,7 +43,6 @@ namespace IO.Ably
             : this(new ErrorInfo("Unexpected error :" + ex.Message, 50000), ex)
         {
         }
-
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AblyException"/> class.
