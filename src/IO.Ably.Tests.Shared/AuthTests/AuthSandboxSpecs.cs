@@ -322,6 +322,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSA4c3")]
         public async Task AuthToken_WithConnectedRealtimeClient_WhenAuthCallbackFails_ShouldRaiseError(Protocol protocol)
         {
+            throw new Exception("WIP test stub");
         }
 
         [Theory]
