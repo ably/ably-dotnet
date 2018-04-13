@@ -2,8 +2,6 @@
 
 A .Net client library for [www.ably.io](https://www.ably.io), the realtime messaging service.
 
-For complete API documentation, see the [ably documentation](https://www.ably.io/documentation).
-
 ## Supported platforms
 
 * .Net 4.6+ *
