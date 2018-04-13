@@ -10,8 +10,8 @@ For complete API documentation, see the [ably documentation](https://www.ably.io
 * .Net Standard 1.4+
 * Mono 5.4+
 * UWP
-* [Xamarin.iOS 11.4+](https://developer.xamarin.com/releases/ios/xamarin.ios_11/xamarin.ios_11.4/)
 * [Xamarin.Android 8.0+](https://developer.xamarin.com/releases/android/xamarin.android_8/xamarin.android_8.0/)
+* [Xamarin.iOS 11.4+](https://developer.xamarin.com/releases/ios/xamarin.ios_11/xamarin.ios_11.4/)
 
 Unity is not officially supported yet, but some users have had some successes. See this [issue](https://github.com/ably/ably-dotnet/issues/169) for more information.
 
