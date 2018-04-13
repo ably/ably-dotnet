@@ -214,14 +214,17 @@ namespace IO.Ably
                         return details;
                     }
 
+                    if (callbackResult.TokenCompatibleObject is string tokenString)
+                    {
+                        return new TokenDetails(tokenString, Now)
+                        {
+                            Expires = Now().AddDays(1)
+                        };
+                    }
+
                     if (callbackResult.TokenCompatibleObject is TokenRequest tokenRequest)
                     {
                         postData = tokenRequest;
-                        request.Url = RequestTokenUrl(postData.KeyName);
-                    }
-                    else if (callbackResult.TokenCompatibleObject is string tokenString)
-                    {
-                        postData = TokenRequestFromString(tokenString);
                         request.Url = RequestTokenUrl(postData.KeyName);
                     }
                     else
@@ -295,24 +298,6 @@ namespace IO.Ably
             }
 
             return result;
-        }
-
-        private static TokenRequest TokenRequestFromString(string tokenString)
-        {
-            try
-            {
-                var result = JsonHelper.Deserialize<TokenRequest>(tokenString);
-                if (result == null)
-                {
-                    throw new AblyException($"AuthCallbackResult contained a string which can't be converted to TokenRequest. ({tokenString}).");
-                }
-
-                return result;
-            }
-            catch (Exception e)
-            {
-                throw new AblyException($"AuthCallbackResult contained a string which can't be converted to TokenRequest. ({tokenString}).", e);
-            }
         }
 
         private TokenParams MergeTokenParamsWithDefaults(TokenParams tokenParams)
