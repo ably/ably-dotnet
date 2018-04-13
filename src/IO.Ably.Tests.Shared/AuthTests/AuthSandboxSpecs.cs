@@ -81,8 +81,9 @@ namespace IO.Ably.Tests
             {
                 // the server responds with a token error
                 // (401 HTTP status code and an Ably error value 40140 <= code < 40150)
+                // As the token is expired we can expect a specific code "40142": "token expired"
                 e.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-                e.ErrorInfo.Code.Should().BeInRange(40140, 40150);
+                e.ErrorInfo.Code.Should().Be(40142);
             }
 
             // did not retry the request
@@ -116,7 +117,7 @@ namespace IO.Ably.Tests
             realtimeClient.Connection.State.Should().Be(ConnectionState.Failed);
             connected.Should().BeFalse();
 
-            realtimeClient.Connection.ErrorReason.Code.Should().BeInRange(40140, 40150);
+            realtimeClient.Connection.ErrorReason.Code.Should().Be(40142);
             helper.Requests.Count.Should().Be(0);
         }
 
@@ -142,7 +143,7 @@ namespace IO.Ably.Tests
             await realtimeClient.WaitForState(ConnectionState.Failed);
             realtimeClient.Connection.State.Should().Be(ConnectionState.Failed);
 
-            realtimeClient.Connection.ErrorReason.Code.Should().BeInRange(40140, 40150);
+            realtimeClient.Connection.ErrorReason.Code.Should().Be(40142);
             helper.Requests.Count.Should().Be(0);
         }
 
