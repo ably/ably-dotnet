@@ -128,6 +128,7 @@ namespace IO.Ably.Realtime
             _channel.StateChanged += OnChannelOnStateChanged;
             InitialSyncCompleted += OnSyncEvent;
             Map.SyncNoLongerInProgress += OnSyncEvent;
+            Map.InitialSyncHasCompleted += OnSyncEvent;
             // Do a manual check in case we are already in the desired state
             CheckAndSet();
             await tsc.Task;
@@ -135,6 +136,7 @@ namespace IO.Ably.Realtime
             _channel.StateChanged -= OnChannelOnStateChanged;
             InitialSyncCompleted -= OnSyncEvent;
             Map.SyncNoLongerInProgress -= OnSyncEvent;
+            Map.InitialSyncHasCompleted -= OnSyncEvent;
 
             #region TODO
             // TODO: This code was added when porting from the Java lib but can't completed be until the extra states added in 1.0 spec (specifically ChannelState.Suspended) are implemented
@@ -476,6 +478,7 @@ namespace IO.Ably.Realtime
             internal ILogger Logger { get; private set; }
 
             internal event EventHandler SyncNoLongerInProgress;
+            internal event EventHandler InitialSyncHasCompleted;
 
             private readonly string _channelName;
             private readonly object _lock = new Object();
@@ -491,6 +494,7 @@ namespace IO.Ably.Realtime
             private readonly ConcurrentDictionary<string, PresenceMessage> _members;
             private ICollection<string> _residualMembers;
             private bool _isSyncInProgress;
+            private bool _initialSyncCompleted;
 
             public PresenceMap(string channelName, ILogger logger)
             {
@@ -512,7 +516,17 @@ namespace IO.Ably.Realtime
                 }
             }
 
-            public bool InitialSyncCompleted { get; private set; }
+            public bool InitialSyncCompleted
+            {
+                get => _initialSyncCompleted;
+                private set
+                {
+                    var previous = _initialSyncCompleted;
+                    _initialSyncCompleted = value;
+                    if (!previous && _initialSyncCompleted)
+                        OnInitialSyncHasCompleted();
+                }
+            }
 
             public PresenceMessage[] Values
             {
@@ -644,6 +658,11 @@ namespace IO.Ably.Realtime
             protected virtual void OnSyncNoLongerInProgress()
             {
                 SyncNoLongerInProgress?.Invoke(this, EventArgs.Empty);
+            }
+
+            protected virtual void OnInitialSyncHasCompleted()
+            {
+                InitialSyncHasCompleted?.Invoke(this, EventArgs.Empty);
             }
         }
 
