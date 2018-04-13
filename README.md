@@ -4,6 +4,23 @@ A .Net client library for [www.ably.io](https://www.ably.io), the realtime messa
 
 For complete API documentation, see the [ably documentation](https://www.ably.io/documentation).
 
+## Supported platforms
+
+* .Net 4.6+ *
+* .Net Standard 1.4+
+* Mono 5.4+
+* UWP
+* [Xamarin.iOS 11.4+](https://developer.xamarin.com/releases/ios/xamarin.ios_11/xamarin.ios_11.4/)
+* [Xamarin.Android 8.0+](https://developer.xamarin.com/releases/android/xamarin.android_8/xamarin.android_8.0/)
+
+Unity is not officially supported yet, but some users have had some successes. See this [issue](https://github.com/ably/ably-dotnet/issues/169) for more information.
+
+A portable (PCL) version is not available.
+
+*To target Windows 7 (with .Net 4.6) a custom [ITransportFactory](https://github.com/ably/ably-dotnet/blob/master/src/IO.Ably.Shared/Transport/ITransport.cs) will need to be implemented in your project that uses an alternate Web Socket library. 
+This is because [System.Net.WebSockets]('https://msdn.microsoft.com/en-us/library/system.net.websockets(v=vs.110).aspx') is not fully implementented on Windows 7.
+See [this repository](https://github.com/ably-forks/ably-dotnet-alternative-transports) for a working example using the [websocket4net library](https://github.com/kerryjiang/WebSocket4Net).
+
 ## Documentation
 
 Visit https://www.ably.io/documentation for a complete API reference and more examples.
@@ -307,20 +324,6 @@ DateTimeOffset time = await client.TimeAsync();
 
 This library has dependencies that can differ depending on the target platform.
 See [the nuget page](http://nuget.org/packages/ably.io/) for specifics.
-
-## Supported platforms
-
-* Xamarin iOS and Android 
-* .Net 4.6+ *
-* .Net Standard 1.4+
-* Mono
-* UWP
-
-A portable (PCL) version is not available.
-
-*To target Windows 7 (with .Net 4.6) a custom [ITransportFactory](https://github.com/ably/ably-dotnet/blob/master/src/IO.Ably.Shared/Transport/ITransport.cs) will need to be implemented in your project that uses an alternate Web Socket library. 
-This is because [System.Net.WebSockets]('https://msdn.microsoft.com/en-us/library/system.net.websockets(v=vs.110).aspx') is not fully implementented on Windows 7.
-See [this repository](https://github.com/ably-forks/ably-dotnet-alternative-transports) for a working example using the [websocket4net library](https://github.com/kerryjiang/WebSocket4Net).
 
 ## Support, feedback and troubleshooting
 
