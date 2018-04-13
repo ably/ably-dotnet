@@ -74,7 +74,7 @@ namespace IO.Ably.Tests
             restClient.AblyAuth.CurrentToken.IsValidToken().Should().BeTrue();
             try
             {
-                await restClient.Channels.Get("random").PublishAsync("event", "data");
+                await restClient.Channels.Get("RSA4a".AddRandomSuffix()).PublishAsync("event", "data");
                 throw new Exception("Unexpected success, the proceeding code should have raised an AblyException");
             }
             catch (AblyException e)
@@ -146,13 +146,6 @@ namespace IO.Ably.Tests
             helper.Requests.Count.Should().Be(0);
         }
 
-        /*
-         * (RSA4b) When the client does have a means to renew the token automatically,
-         * and the token has expired or the server has responded with a token error
-         * (statusCode value of 401 and error code value in the range 40140 <= code < 40150),
-         * then the client should automatically make a single attempt to reissue the token and resend the request using the new token.
-         * If the token creation failed or the subsequent request with the new token failed due to a token error, then the request should result in an error
-         */
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSA4b")]
@@ -174,7 +167,7 @@ namespace IO.Ably.Tests
 
             realtimeClient.RestClient.ExecuteHttpRequest = helper.AblyResponseWith500Status;
             await realtimeClient.WaitForState(ConnectionState.Connected);
-            var channel = realtimeClient.Channels.Get("random");
+            var channel = realtimeClient.Channels.Get("RSA4b_1".AddRandomSuffix());
 
             // wait for the token to expire and then publish
             await Task.Delay(TimeSpan.FromMilliseconds(2000));
@@ -212,7 +205,7 @@ namespace IO.Ably.Tests
             });
 
             await realtimeClient.WaitForState(ConnectionState.Connected);
-            var channel = realtimeClient.Channels.Get("random");
+            var channel = realtimeClient.Channels.Get("RSA4b_2".AddRandomSuffix());
 
             // wait for the token to expire and then try to publish
             await Task.Delay(TimeSpan.FromMilliseconds(2000));
@@ -248,7 +241,7 @@ namespace IO.Ably.Tests
             });
 
             await realtimeClient.WaitForState(ConnectionState.Connected);
-            var channel = realtimeClient.Channels.Get("random");
+            var channel = realtimeClient.Channels.Get("RSA4b_3".AddRandomSuffix());
 
             // wait for the token to expire and then publish
             await Task.Delay(TimeSpan.FromMilliseconds(2000));
