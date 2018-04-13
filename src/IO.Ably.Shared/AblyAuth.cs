@@ -218,7 +218,7 @@ namespace IO.Ably
                     {
                         return new TokenDetails(tokenString, Now)
                         {
-                            Expires = Now().AddDays(1)
+                            Expires = DateTimeOffset.MaxValue
                         };
                     }
 
