@@ -129,7 +129,7 @@ namespace IO.Ably.Tests
 
             // Create a token that is valid long enough for a successful connection to occur
             var authClient = await GetRestClient(protocol);
-            var almostExpiredToken = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromMilliseconds(2000) });
+            var almostExpiredToken = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromMilliseconds(8000) });
 
             // get a realtime client with no Key, AuthUrl, or authCallback
             var realtimeClient = await helper.GetRealTimeClientWithRequests(protocol, almostExpiredToken, invalidateKey: true);
