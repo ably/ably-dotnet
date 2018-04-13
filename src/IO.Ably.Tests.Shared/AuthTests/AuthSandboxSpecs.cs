@@ -75,7 +75,7 @@ namespace IO.Ably.Tests
             try
             {
                 await restClient.Channels.Get("RSA4a".AddRandomSuffix()).PublishAsync("event", "data");
-                throw new Exception("Unexpected success, the preceeding code should have raised an AblyException");
+                throw new Exception("Unexpected success, the preceding code should have raised an AblyException");
             }
             catch (AblyException e)
             {
