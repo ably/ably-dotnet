@@ -197,7 +197,8 @@ namespace IO.Ably.Tests.AuthTests
             // RSA10k: If the AuthOption argument’s queryTime attribute is true
             // it will obtain the server time once and persist the offset from the local clock.
             var customAuthOptions = new AuthOptions { QueryTime = true };
-            await testAblyAuth.AuthorizeAsync(null, customAuthOptions);
+            var tokenParams = new TokenParams();
+            await testAblyAuth.AuthorizeAsync(tokenParams, customAuthOptions);
             serverTimeCalled.Should().BeTrue();
             testAblyAuth.GetServerTimeOffset().Should().HaveValue();
             testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(await testAblyAuth.GetServerTime());
@@ -226,6 +227,37 @@ namespace IO.Ably.Tests.AuthTests
             testAblyAuth.GetServerTimeOffset().Should().HaveValue();
             testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(await testAblyAuth.GetServerTime());
             testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(30));
+
+            // reset again
+            serverTimeCalled = false;
+
+            // intercept the (mocked) HttpRequest so we can get a reference to the AblyRequest
+            TokenRequest tokenRequest = null;
+            var exFunc = client.ExecuteHttpRequest;
+            client.ExecuteHttpRequest = request =>
+            {
+                tokenRequest = request.PostData as TokenRequest;
+                return exFunc(request);
+            };
+
+            // demonstrate that we don't need Querytime set to get a server time offset
+            await testAblyAuth.AuthorizeAsync(tokenParams, new AuthOptions { QueryTime = false });
+
+            // offset should be cached
+            serverTimeCalled.Should().BeFalse();
+
+            // the TokenRequest timestamp should have been set using the offset
+            tokenRequest.Timestamp.Should().HaveValue();
+            tokenRequest.Timestamp.Should().BeCloseTo(await testAblyAuth.GetServerTime());
+
+            // reset auth object
+            testAblyAuth = new TestAblyAuth(client.Options, client);
+
+            await testAblyAuth.AuthorizeAsync(tokenParams, new AuthOptions { QueryTime = false });
+
+            // the TokenRequest should not have been set using an offset, but should have been set
+            tokenRequest.Timestamp.Should().HaveValue();
+            tokenRequest.Timestamp.Should().BeCloseTo(DateTimeOffset.UtcNow);
         }
 
         [Fact]
