@@ -372,15 +372,18 @@ namespace IO.Ably.Tests.Realtime
             var logger = new TestLogger(messageToTest: exceptionMessage);
             var em = new TestEventEmitter(logger);
 
+            List<int> callOrder = new List<int>();
             void Listener1(TestEventEmitterArgs args)
             {
                 handled1 = true;
+                callOrder.Add(1);
                 throw new Exception(exceptionMessage);
             }
 
             void Listener2(TestEventEmitterArgs args)
             {
                 handled2 = true;
+                callOrder.Add(2);
             }
 
             em.On(1, (Action<TestEventEmitterArgs>)Listener1);
@@ -389,15 +392,28 @@ namespace IO.Ably.Tests.Realtime
             handled1.Should().BeTrue();
             handled2.Should().BeTrue();
             logger.MessageSeen.Should().BeTrue();
+            callOrder.Count.Should().Be(2);
+            callOrder[0].Should().Be(1);
+            callOrder[1].Should().Be(2);
 
             handled1 = handled2 = false;
             logger.Reset();
+            callOrder = new List<int>();
 
             em.Once(1, (Action<TestEventEmitterArgs>)Listener1);
             em.Once(1, (Action<TestEventEmitterArgs>)Listener2);
             em.DoDummyEmit(1, string.Empty);
             handled1.Should().BeTrue();
             handled2.Should().BeTrue();
+            callOrder.Count.Should().Be(4);
+
+            // On is handled
+            callOrder[0].Should().Be(1);
+            callOrder[1].Should().Be(2);
+
+            // then Once
+            callOrder[2].Should().Be(1);
+            callOrder[3].Should().Be(2);
             logger.MessageSeen.Should().BeTrue();
         }
 
