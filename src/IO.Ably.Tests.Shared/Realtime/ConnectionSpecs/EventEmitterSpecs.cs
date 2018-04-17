@@ -359,6 +359,108 @@ namespace IO.Ably.Tests.Realtime
             counter.Should().Be(12);
         }
 
+        /*
+         It should test the order of listener invocation is the same as the order in which the listeners are added;
+         it should test conditions such as what happens when emitting an event if listeners are added or removed within the listener callback itself.
+         (that includes listeners removing themselves, removing other listeners, removing all listeners, adding a new listener, etc).
+         */
+        [Fact]
+        [Trait("spec", "RTE6")]
+        [Trait("spec", "RTE6a")]
+        public void WithEventEmitter_WhenEmitsEvent_CallsListenersWithEventNameAndArguments()
+        {
+            var callList = new List<int>();
+
+            var em = new TestEventEmitter(DefaultLogger.LoggerInstance);
+
+            TestEventEmitterArgs listener1args = null;
+            void Listener1(TestEventEmitterArgs args)
+            {
+                callList.Add(1);
+                em.Off(1, (Action<TestEventEmitterArgs>)Listener2);
+                em.On(1, (Action<TestEventEmitterArgs>)Listener4);
+                listener1args = args;
+            }
+
+            void Listener2(TestEventEmitterArgs args)
+            {
+                callList.Add(2);
+                em.Off(1, (Action<TestEventEmitterArgs>)Listener3);
+                throw new Exception("should not be hit");
+            }
+
+            void Listener3(TestEventEmitterArgs args)
+            {
+                callList.Add(3);
+            }
+
+            void Listener4(TestEventEmitterArgs args)
+            {
+                callList.Add(4);
+            }
+
+            void Listener5(TestEventEmitterArgs args)
+            {
+                callList.Add(5);
+                em.Off(1, (Action<TestEventEmitterArgs>)Listener5);
+            }
+
+            em.On(1, (Action<TestEventEmitterArgs>)Listener1);
+            em.On(1, (Action<TestEventEmitterArgs>)Listener2);
+            em.On(1, (Action<TestEventEmitterArgs>)Listener3);
+            em.On(1, (Action<TestEventEmitterArgs>)Listener5);
+
+            // Listener1 is called first, it subscribes Listener4
+            // Listener2 is removed by Listenter1, but should still be called
+            // Listener3 is called
+            // Listener4 is should not be called as it was added by Listener1
+            // Listener5 is called
+            em.DoDummyEmit(1, "emit1");
+            callList.Count.Should().Be(4);
+            callList[0].Should().Be(1);
+            callList[1].Should().Be(2);
+            callList[2].Should().Be(3);
+            callList[3].Should().Be(5);
+            listener1args.Message.Should().Be("emit1");
+
+            callList = new List<int>();
+
+            // Listener1 is called first, it subscribes Listener4. Listener4 now has 2 subscriptions, but only 1 should fire here
+            // Listener2 was already removed by Listenter1, so it is not called
+            // Listener3 was remvoed by Listener2, it should not be called
+            // Listener4 is called once
+            // Listener5 is not called as it removed itself previously
+            em.DoDummyEmit(1, "emit2");
+            callList.Count.Should().Be(2);
+            callList[0].Should().Be(1);
+            callList[1].Should().Be(4);
+            listener1args.Message.Should().Be("emit2");
+
+            callList = new List<int>();
+
+            void Listener6(TestEventEmitterArgs args)
+            {
+                callList.Add(6);
+                em.Off();
+            }
+
+            em.On(1, (Action<TestEventEmitterArgs>)Listener6);
+            em.DoDummyEmit(1, "emit3");
+            callList.Count.Should().Be(4);
+            callList[0].Should().Be(1);
+            callList[1].Should().Be(4);
+            callList[2].Should().Be(4);
+            callList[3].Should().Be(6);
+            listener1args.Message.Should().Be("emit3");
+
+            callList = new List<int>();
+
+            // Listener6 removed all listeners
+            em.DoDummyEmit(1, "emit4");
+            callList.Count.Should().Be(0);
+            listener1args.Message.Should().Be("emit3");
+        }
+
         [Fact]
         [Trait("spec", "RTE6")]
         public void WithEventEmitter_WhenExceptionRaised_ExceptionIsCaughtAndLogged()
