@@ -289,12 +289,26 @@ namespace IO.Ably.Tests.Realtime
             em.DoDummyEmit(1, "off");
             message.Should().Be("off");
             counter.Should().Be(1);
-
             Reset();
+
             em.Off();
             em.DoDummyEmit(1, "off");
             em.DoDummyEmit(2, "off");
             em.DoDummyEmit(3, "off");
+            counter.Should().Be(0);
+            Reset();
+
+            em.On(1, (Action<TestEventEmitterArgs>)Listener1);
+            em.On(2, (Action<TestEventEmitterArgs>)Listener2);
+            em.On(1, (Action<TestEventEmitterArgs>)Listener2);
+            em.DoDummyEmit(1, "off");
+            message.Should().Be("off");
+            counter.Should().Be(2);
+            Reset();
+
+            em.Off();
+            em.DoDummyEmit(1, "off");
+            em.DoDummyEmit(2, "off");
             counter.Should().Be(0);
             Reset();
 
