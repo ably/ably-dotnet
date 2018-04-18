@@ -261,66 +261,99 @@ namespace IO.Ably.Tests
             result.Should().BeTrue();
         }
 
-        /*
-           (RSA4c) If an attempt by the realtime client library to authenticate is made using the authUrl or authCallback,
-           and the request to authUrl fails (unless RSA4d applies), the callback authCallback results in an error
-           (unless RSA4d applies), an attempt to exchange a TokenRequest for a TokenDetails results in an error
-           (unless RSA4d applies), the provided token is in an invalid format, or the attempt times out after realtimeRequestTimeout, then:
-
-           (RSA4c1) An ErrorInfo with code 80019 and description of the underlying failure should be emitted
-           with the state change, in the errorReason and/or in the callback as appropriate
-
-           (RSA4c2) If the connection is CONNECTING, then the connection attempt should be treated as unsuccessful,
-           and as such the connection should transition to the DISCONNECTED or SUSPENDED state as defined in RTN14 and RTN15
-
-           (RSA4c3)If the connection is CONNECTED, then the connection should remain CONNECTED
-
-
-            (RSA4d) If a request by a realtime client to an authUrl results in an HTTP 403 response,
-            or any of an authUrl request, an authCallback, or a request to Ably to exchange a TokenRequest
-            for a TokenDetails result in an ErrorInfo with statusCode 403, then the client library
-            should transition to the FAILED state, with the connection errorReason should be set to
-            the ErrorInfo (or where there is none, as for a 403 authUrl response with no body, an ErrorInfo with code 40300 and an appropriate message)
-         */
-
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSA4c")]
         [Trait("spec", "RSA4c1")]
         [Trait("spec", "RSA4c2")]
-        public async Task AuthToken_WithConnectingRealtimeClient_WhenAuthUrlFails_ShouldRaiseError(Protocol protocol)
-        {
-            throw new Exception("WIP test stub");
-        }
-
-        [Theory]
-        [ProtocolData]
-        [Trait("spec", "RSA4c")]
-        [Trait("spec", "RSA4c1")]
-        [Trait("spec", "RSA4c2")]
-        public async Task AuthToken_WithConnectingRealtimeClient_WhenAuthCallbackFails_ShouldRaiseError(Protocol protocol)
-        {
-            throw new Exception("WIP test stub");
-        }
-
-        [Theory]
-        [ProtocolData]
-        [Trait("spec", "RSA4c")]
-        [Trait("spec", "RSA4c1")]
         [Trait("spec", "RSA4c3")]
-        public async Task AuthToken_WithConnectedRealtimeClient_WhenAuthUrlFails_ShouldRaiseError(Protocol protocol)
+        public async Task Auth_WithRealtimeClient_WhenAuthFails_ShouldTransitionToOrRemainInTheCorrectState(Protocol protocol)
         {
-            throw new Exception("WIP test stub");
-        }
+            async Task TestConnectingBecomesDisconnected(string context, Action<ClientOptions, TestEnvironmentSettings> optionsAction)
+            {
+                TaskCompletionAwaiter tca = new TaskCompletionAwaiter(5000);
+                var realtimeClient = await GetRealtimeClient(protocol, optionsAction);
+                realtimeClient.Connection.On(ConnectionState.Disconnected, change =>
+                {
+                    change.Previous.Should().Be(ConnectionState.Connecting);
+                    change.Reason.Code.Should().Be(80019);
+                    tca.SetCompleted();
+                });
 
-        [Theory]
-        [ProtocolData]
-        [Trait("spec", "RSA4c")]
-        [Trait("spec", "RSA4c1")]
-        [Trait("spec", "RSA4c3")]
-        public async Task AuthToken_WithConnectedRealtimeClient_WhenAuthCallbackFails_ShouldRaiseError(Protocol protocol)
-        {
-            throw new Exception("WIP test stub");
+                realtimeClient.Connection.Connect();
+                (await tca.Task).Should().BeTrue(context);
+            }
+
+            // authUrl fails
+            void AuthUrlOptions(ClientOptions options, TestEnvironmentSettings settings)
+            {
+                options.AutoConnect = false;
+                options.AuthUrl = new Uri(_invalidAuthUrl);
+                options.RealtimeRequestTimeout = TimeSpan.FromSeconds(2);
+                options.HttpRequestTimeout = TimeSpan.FromSeconds(2);
+            }
+
+            // authCallback fails
+            void AuthCallbackOptions(ClientOptions options, TestEnvironmentSettings settings)
+            {
+                options.AutoConnect = false;
+                options.AuthCallback = (tokenParams) => throw new Exception("AuthCallback force error");
+            }
+
+            // invalid token returned
+            void InvalidTokenOptions(ClientOptions options, TestEnvironmentSettings settings)
+            {
+                options.AutoConnect = false;
+                options.AuthCallback = (tokenParams) => Task.FromResult<object>("invalid:token");
+            }
+
+            await TestConnectingBecomesDisconnected("With invalid AuthUrl connection becomes Disconnected", AuthUrlOptions);
+            await TestConnectingBecomesDisconnected("With invalid AuthCallback Connection becomes Disconnected", AuthCallbackOptions);
+            await TestConnectingBecomesDisconnected("With Invalid Token Connection becomes Disconnected", InvalidTokenOptions);
+
+            /* RSA4c3 */
+
+            async Task<TokenDetails> GetToken()
+            {
+                var authRestClient = await GetRestClient(protocol);
+                var token = await authRestClient.Auth.RequestTokenAsync(new TokenParams
+                {
+                    Ttl = TimeSpan.FromMilliseconds(2000)
+                });
+                return token;
+            }
+
+            async Task TestConnectedStaysConnected(string context, Action<ClientOptions, TestEnvironmentSettings> optionsAction)
+            {
+                var token = await GetToken();
+                token.Expires = DateTimeOffset.Now.AddMinutes(30);
+                void Options(ClientOptions options, TestEnvironmentSettings settings)
+                {
+                    optionsAction(options, settings);
+                    options.TokenDetails = token;
+                }
+
+                TaskCompletionAwaiter tca = new TaskCompletionAwaiter(1000);
+                var realtimeClient = await GetRealtimeClient(protocol, Options);
+
+                realtimeClient.Connection.Connect();
+                await realtimeClient.WaitForState(ConnectionState.Connected);
+                realtimeClient.Connection.On(change =>
+                {
+                    // this callback should not be called
+                    change.Previous.Should().Be(ConnectionState.Connected);
+                    change.Reason.Code.Should().Be(80019);
+                    tca.SetCompleted();
+                });
+                await realtimeClient.Auth.AuthorizeAsync();
+                realtimeClient.Connection.State.Should().Be(ConnectionState.Connected);
+                (await tca.Task).Should().BeFalse(context);
+            }
+
+            await TestConnectedStaysConnected("With invalid AuthUrl Connection remains Connected", AuthUrlOptions);
+            await TestConnectedStaysConnected("With invalid AuthCallback connection remains Connected", AuthCallbackOptions);
+            await TestConnectedStaysConnected("With Invalid Token connection remains Connected", InvalidTokenOptions);
+
         }
 
         [Theory]
@@ -717,6 +750,13 @@ namespace IO.Ably.Tests
             {
                 Requests.Add(request);
                 var r = new AblyResponse(string.Empty, "application/json", string.Empty.GetBytes()) { StatusCode = HttpStatusCode.Unauthorized };
+                return Task.FromResult(r);
+            }
+
+            public Task<AblyResponse> AblyResponseWith403Status(AblyRequest request)
+            {
+                Requests.Add(request);
+                var r = new AblyResponse(string.Empty, "application/json", string.Empty.GetBytes()) { StatusCode = HttpStatusCode.Forbidden };
                 return Task.FromResult(r);
             }
 
