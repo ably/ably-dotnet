@@ -205,13 +205,13 @@ namespace IO.Ably.Tests.AuthTests
 
 #pragma warning disable CS0618 // Type or member is obsolete
             /* Check for logged warning */
-            var testLogger1 = new SandboxSpecs.TestLogger("AuthoriseAsync is deprecated and will be removed in the future, please replace with a call to AuthorizeAsync");
+            var testLogger1 = new TestLogger("AuthoriseAsync is deprecated and will be removed in the future, please replace with a call to AuthorizeAsync");
             var client = GetRestClient(setOptionsAction: options => { options.Logger = testLogger1; });
             var testAblyAuth = new TestAblyAuth(client.Options, client);
             await testAblyAuth.AuthoriseAsync();
             testLogger1.MessageSeen.Should().BeTrue();
 
-            var testLogger2 = new SandboxSpecs.TestLogger("Authorise is deprecated and will be removed in the future, please replace with a call to Authorize");
+            var testLogger2 = new TestLogger("Authorise is deprecated and will be removed in the future, please replace with a call to Authorize");
             client = GetRestClient(setOptionsAction: options => { options.Logger = testLogger2; });
             testAblyAuth = new TestAblyAuth(client.Options, client);
             testAblyAuth.Authorise();
