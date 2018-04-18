@@ -38,8 +38,16 @@ namespace IO.Ably
         [JsonProperty("message")]
         public string Message { get; set; }
 
+        /// <summary>
+        /// Is this Error as result of a 401 Unauthorized HTTP response
+        /// </summary>
         public bool IsUnAuthorizedError => StatusCode.HasValue &&
                                            StatusCode.Value == HttpStatusCode.Unauthorized;
+        /// <summary>
+        /// Is this Error as result of a 403 Forbidden HTTP response
+        /// </summary>
+        public bool IsForbiddenError => StatusCode.HasValue &&
+                                           StatusCode.Value == HttpStatusCode.Forbidden;
 
         public bool IsTokenError => Code >= Defaults.TokenErrorCodesRangeStart &&
                                     Code <= Defaults.TokenErrorCodesRangeEnd;
