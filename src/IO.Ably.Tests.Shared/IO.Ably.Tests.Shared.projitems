@@ -103,6 +103,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Rest\SandboxSpec.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\StatsSandBoxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\StatsSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TestLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\DocumentationSamples.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\RealtimeSamples.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StatsParsingTests.cs" />
