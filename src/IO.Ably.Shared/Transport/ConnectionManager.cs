@@ -169,8 +169,8 @@ namespace IO.Ably.Transport
 
                     newState.AbortTimer();
 
-                    // RSA4c2
-                    if (newState.State == ConnectionState.Connecting && ex.ErrorInfo.Code == 80019)
+                    // RSA4c2 & RSA4d
+                    if (newState.State == ConnectionState.Connecting && ex.ErrorInfo.Code == 80019 & !ex.ErrorInfo.IsForbiddenError)
                     {
                         await SetState(new ConnectionDisconnectedState(this, ex.ErrorInfo, Logger));
                     }
