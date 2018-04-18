@@ -169,9 +169,14 @@ namespace IO.Ably.Transport
 
                     newState.AbortTimer();
 
-                    if (newState.State != Realtime.ConnectionState.Failed)
+                    // RSA4c2
+                    if (newState.State == ConnectionState.Connecting && ex.ErrorInfo.Code == 80019)
                     {
-                        SetState(new ConnectionFailedState(this, ex.ErrorInfo, Logger));
+                        await SetState(new ConnectionDisconnectedState(this, ex.ErrorInfo, Logger));
+                    }
+                    else if (newState.State != Realtime.ConnectionState.Failed)
+                    {
+                        await SetState(new ConnectionFailedState(this, ex.ErrorInfo, Logger));
                     }
                 }
                 finally
