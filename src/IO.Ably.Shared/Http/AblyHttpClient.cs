@@ -92,6 +92,15 @@ namespace IO.Ably
                         }
                     }
 
+                    try
+                    {
+                        response.EnsureSuccessStatusCode();
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        throw new AblyException(ErrorInfo.Parse(ablyResponse), ex);
+                    }
+
                     throw AblyException.FromResponse(ablyResponse);
                 }
                 catch (HttpRequestException ex) when (IsRetryableError(ex) && Options.IsDefaultHost)
@@ -297,11 +306,12 @@ namespace IO.Ably
 
             var content = await response.Content.ReadAsByteArrayAsync();
 
-            return new AblyResponse(contentTypeHeader.CharSet, contentTypeHeader.MediaType, content)
+            var ablyResponse = new AblyResponse(contentTypeHeader?.CharSet, contentTypeHeader?.MediaType, content)
             {
                 StatusCode = response.StatusCode,
                 Headers = response.Headers
             };
+            return ablyResponse;
         }
 
         public Uri GetRequestUrl(AblyRequest request, string host = null)
