@@ -353,7 +353,39 @@ namespace IO.Ably.Tests
             await TestConnectedStaysConnected("With invalid AuthUrl Connection remains Connected", AuthUrlOptions);
             await TestConnectedStaysConnected("With invalid AuthCallback connection remains Connected", AuthCallbackOptions);
             await TestConnectedStaysConnected("With Invalid Token connection remains Connected", InvalidTokenOptions);
+        }
 
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSA4d")]
+        public async Task Auth_WithRealtimeClient_WhenAuthFailsWith403_ShouldTransitionToFailed(Protocol protocol)
+        {
+            var helper = new RSA4Helper(this);
+
+            async Task Test403BecomesFailed(string context, Action<ClientOptions, TestEnvironmentSettings> optionsAction)
+            {
+                TaskCompletionAwaiter tca = new TaskCompletionAwaiter(5000);
+                var realtimeClient = await GetRealtimeClient(protocol, optionsAction);
+                // realtimeClient.RestClient.ExecuteHttpRequest = helper.AblyResponseWith403Status;
+                realtimeClient.Connection.On(ConnectionState.Failed, change =>
+                {
+                    change.Previous.Should().Be(ConnectionState.Connecting);
+                    change.Reason.Code.Should().Be(80019);
+                    tca.SetCompleted();
+                });
+
+                realtimeClient.Connection.Connect();
+                (await tca.Task).Should().BeTrue(context);
+            }
+
+            // authUrl fails
+            void AuthUrlOptions(ClientOptions options, TestEnvironmentSettings settings)
+            {
+                options.AutoConnect = false;
+                options.AuthUrl = new Uri("https://echo.ably.io/respondwith?status=403");
+            }
+
+            await Test403BecomesFailed("With 403 response should become Failed", AuthUrlOptions);
         }
 
         [Theory]
@@ -750,6 +782,7 @@ namespace IO.Ably.Tests
             {
                 Requests.Add(request);
                 var r = new AblyResponse(string.Empty, "application/json", string.Empty.GetBytes()) { StatusCode = HttpStatusCode.Unauthorized };
+                throw AblyException.FromResponse(r);
                 return Task.FromResult(r);
             }
 
@@ -757,6 +790,7 @@ namespace IO.Ably.Tests
             {
                 Requests.Add(request);
                 var r = new AblyResponse(string.Empty, "application/json", string.Empty.GetBytes()) { StatusCode = HttpStatusCode.Forbidden };
+                throw AblyException.FromResponse(r);
                 return Task.FromResult(r);
             }
 
