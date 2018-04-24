@@ -40,27 +40,10 @@ namespace IO.Ably.Realtime
             Complete(false, error);
         }
 
-        public void Cancel(ErrorInfo error = null)
-        {
-            Complete(true, error);
-        }
-
-        public void Complete(bool success, ErrorInfo error = null)
+        private void Complete(bool success, ErrorInfo error = null)
         {
             lock (_lock)
             {
-                if (Logger.IsDebug)
-                {
-                    if (error == null)
-                    {
-                        Logger.Debug($"ChannelAwaiter completed for - {_name}.");
-                    }
-                    else
-                    {
-                        Logger.Debug($"{_name}: ChannelAwaiter completed for - {_name}; With error: {error.Message}");
-                    }
-                }
-
                 _timer?.Abort();
                 if (_waiting == false) return;
                 _waiting = false;
