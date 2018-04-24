@@ -174,7 +174,8 @@ namespace IO.Ably.Tests
             realtimeClient.RestClient.ExecuteHttpRequest = helper.AblyResponseWith500Status;
 
             var awaiter = new TaskCompletionAwaiter(5000);
-            realtimeClient.Connection.Once(ConnectionState.Failed, state =>
+
+            realtimeClient.Connection.Once(ConnectionState.Disconnected, state =>
             {
                 state.Reason.Code.Should().Be(80019);
                 awaiter.SetCompleted();
@@ -214,7 +215,7 @@ namespace IO.Ably.Tests
             });
 
             var awaiter = new TaskCompletionAwaiter(5000);
-            realtimeClient.Connection.Once(ConnectionState.Failed, state =>
+            realtimeClient.Connection.Once(ConnectionState.Disconnected, state =>
             {
                 state.Reason.Code.Should().Be(80019);
                 awaiter.SetCompleted();
@@ -245,10 +246,11 @@ namespace IO.Ably.Tests
                 options.TokenDetails = token;
                 options.LogLevel = LogLevel.Debug;
                 options.AuthUrl = new Uri(_invalidAuthUrl);
+                options.AutoConnect = false;
             });
 
             var awaiter = new TaskCompletionAwaiter(5000);
-            realtimeClient.Connection.Once(ConnectionState.Failed, state =>
+            realtimeClient.Connection.Once(ConnectionState.Disconnected, state =>
             {
                 state.Reason.Code.Should().Be(80019);
                 awaiter.SetCompleted();
