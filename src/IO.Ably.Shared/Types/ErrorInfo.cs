@@ -84,8 +84,10 @@ namespace IO.Ably
 
         internal static ErrorInfo Parse(AblyResponse response)
         {
+            // RSA4d, if we have 403 response default to code 40300, this may be overwritten
+            // if the response has a usable JSON body
+            int errorCode = response.StatusCode == HttpStatusCode.Forbidden ? 40300 : 50000;
             string reason = string.Empty;
-            int errorCode = 500;
 
             if (response.Type == ResponseType.Json)
             {
@@ -100,9 +102,8 @@ namespace IO.Ably
                 }
                 catch (Exception ex)
                 {
+                    // If there is no json or there is something wrong we don't want to throw from here.
                     Debug.WriteLine(ex.Message);
-
-                    // If there is no json or there is something wrong we don't want to throw from here. The
                 }
             }
 
