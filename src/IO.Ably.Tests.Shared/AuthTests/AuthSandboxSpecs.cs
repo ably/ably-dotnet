@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
@@ -362,15 +363,17 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSA4d")]
         public async Task Auth_WithRealtimeClient_WhenAuthFailsWith403_ShouldTransitionToFailed(Protocol protocol)
         {
-            async Task Test403BecomesFailed(string context, Action<ClientOptions, TestEnvironmentSettings> optionsAction)
+            async Task Test403BecomesFailed(string context, int expectedCode, Action<ClientOptions, TestEnvironmentSettings> optionsAction)
             {
                 TaskCompletionAwaiter tca = new TaskCompletionAwaiter(5000);
                 var realtimeClient = await GetRealtimeClient(protocol, optionsAction);
 
-                realtimeClient.Connection.On(ConnectionState.Failed, change =>
+                realtimeClient.Connection.Once(ConnectionState.Failed, change =>
                 {
                     change.Previous.Should().Be(ConnectionState.Connecting);
-                    change.Reason.Code.Should().Be(80019);
+                    change.Reason.Code.Should().Be(expectedCode);
+                    realtimeClient.Connection.ErrorReason.Code.Should().Be(expectedCode);
+                    realtimeClient.Connection.ErrorReason.StatusCode.Should().Be(HttpStatusCode.Forbidden); // 403
                     tca.SetCompleted();
                 });
 
@@ -378,14 +381,26 @@ namespace IO.Ably.Tests
                 (await tca.Task).Should().BeTrue(context);
             }
 
-            // authUrl fails
+            // authUrl fails and returns no body
             void AuthUrlOptions(ClientOptions options, TestEnvironmentSettings settings)
             {
                 options.AutoConnect = false;
                 options.AuthUrl = new Uri("https://echo.ably.io/respondwith?status=403");
             }
 
-            await Test403BecomesFailed("With 403 response should become Failed", AuthUrlOptions);
+            // Authcallback that results in an ErrorInfo with code 403
+            void AuthCallbackOptions(ClientOptions options, TestEnvironmentSettings settings)
+            {
+                options.AutoConnect = false;
+                options.AuthCallback = (tokenParams) =>
+                {
+                    var aex = new AblyException(new ErrorInfo("test", 40300, HttpStatusCode.Forbidden));
+                    throw aex;
+                };
+            }
+
+            await Test403BecomesFailed("With 403 response connection should become Failed", 40300, AuthUrlOptions);
+            await Test403BecomesFailed("With ErrorInfo with StatusCode of 403 connection should become Failed", 40300, AuthCallbackOptions);
         }
 
         [Theory]
