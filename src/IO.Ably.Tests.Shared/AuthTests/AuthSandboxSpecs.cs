@@ -180,6 +180,7 @@ namespace IO.Ably.Tests
                 awaiter.SetCompleted();
             });
 
+            await Task.Delay(2000);
             realtimeClient.Connect();
 
             var result = await awaiter.Task;
@@ -219,6 +220,7 @@ namespace IO.Ably.Tests
                 awaiter.SetCompleted();
             });
 
+            await Task.Delay(2000);
             realtimeClient.Connect();
 
             var result = await awaiter.Task;
@@ -252,6 +254,7 @@ namespace IO.Ably.Tests
                 awaiter.SetCompleted();
             });
 
+            await Task.Delay(2000);
             realtimeClient.Connect();
 
             var result = await awaiter.Task;
