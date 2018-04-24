@@ -362,8 +362,6 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSA4d")]
         public async Task Auth_WithRealtimeClient_WhenAuthFailsWith403_ShouldTransitionToFailed(Protocol protocol)
         {
-            var helper = new RSA4Helper(this);
-
             async Task Test403BecomesFailed(string context, Action<ClientOptions, TestEnvironmentSettings> optionsAction)
             {
                 TaskCompletionAwaiter tca = new TaskCompletionAwaiter(5000);
