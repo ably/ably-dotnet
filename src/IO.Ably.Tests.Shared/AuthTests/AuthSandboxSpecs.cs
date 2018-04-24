@@ -366,7 +366,7 @@ namespace IO.Ably.Tests
             {
                 TaskCompletionAwaiter tca = new TaskCompletionAwaiter(5000);
                 var realtimeClient = await GetRealtimeClient(protocol, optionsAction);
-                // realtimeClient.RestClient.ExecuteHttpRequest = helper.AblyResponseWith403Status;
+
                 realtimeClient.Connection.On(ConnectionState.Failed, change =>
                 {
                     change.Previous.Should().Be(ConnectionState.Connecting);
