@@ -16,7 +16,9 @@ namespace IO.Ably.Realtime
         private readonly RealtimeChannel _channel;
         private readonly ChannelState _awaitedState;
         private readonly List<Action<bool, ErrorInfo>> _callbacks = new List<Action<bool, ErrorInfo>>();
+
         private bool _waiting;
+
         private readonly CountdownTimer _timer;
         private readonly string _name;
         private object _lock = new object();
@@ -35,15 +37,34 @@ namespace IO.Ably.Realtime
 
         public void Fail(ErrorInfo error)
         {
+            Cancel(error);
+        }
+
+        public void Cancel(ErrorInfo error = null)
+        {
             lock (_lock)
             {
-                if (_waiting == false) return;
+                if (Logger.IsDebug)
+                {
+                    if (error == null)
+                    {
+                        Logger.Debug($"ChannelAwaiter completed for - {_name}.");
+                    }
+                    else
+                    {
+                        Logger.Debug($"{_name}: ChannelAwaiter completed for - {_name}; With error: {error.Message}");
+                    }
+                }
 
-                _timer.Abort();
+                _timer?.Abort();
+                if (_waiting == false) return;
                 _waiting = false;
             }
 
-            InvokeCallbacks(false, error);
+            if (error != null)
+            {
+                InvokeCallbacks(false, error);
+            }
         }
 
         private void InvokeCallbacks(bool success, ErrorInfo error)
