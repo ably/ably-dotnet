@@ -73,9 +73,12 @@ namespace IO.Ably.Tests
 
             // check the client thinks the token is valid
             restClient.AblyAuth.CurrentToken.IsValidToken().Should().BeTrue();
+
+            var channelName = "RSA4a".AddRandomSuffix();
+
             try
             {
-                await restClient.Channels.Get("RSA4a".AddRandomSuffix()).PublishAsync("event", "data");
+                await restClient.Channels.Get(channelName).PublishAsync("event", "data");
                 throw new Exception("Unexpected success, the preceding code should have raised an AblyException");
             }
             catch (AblyException e)
@@ -89,7 +92,7 @@ namespace IO.Ably.Tests
 
             // did not retry the request
             helper.Requests.Count.Should().Be(1, "only one request should have been attempted");
-            helper.Requests[0].Url.Should().Be("/channels/random/messages", "only the publish request should have been attempted");
+            helper.Requests[0].Url.Should().Be($"/channels/{channelName}/messages", "only the publish request should have been attempted");
         }
 
         [Theory]
