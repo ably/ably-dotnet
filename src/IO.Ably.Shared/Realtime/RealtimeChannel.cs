@@ -427,7 +427,6 @@ namespace IO.Ably.Realtime
 
                     break;
                 case ChannelState.Attached:
-                    AttachedAwaiter.Cancel();
                     if (protocolMessage != null)
                     {
                         if (protocolMessage.HasPresenceFlag)
@@ -468,7 +467,6 @@ namespace IO.Ably.Realtime
 
                     break;
                 case ChannelState.Detached:
-                    DetachedAwaiter.Cancel();
                     ConnectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
                     ClearAndFailChannelQueuedMessages(error);
                     break;

@@ -37,10 +37,15 @@ namespace IO.Ably.Realtime
 
         public void Fail(ErrorInfo error)
         {
-            Cancel(error);
+            Complete(false, error);
         }
 
         public void Cancel(ErrorInfo error = null)
+        {
+            Complete(true, error);
+        }
+
+        public void Complete(bool success, ErrorInfo error = null)
         {
             lock (_lock)
             {
@@ -63,7 +68,7 @@ namespace IO.Ably.Realtime
 
             if (error != null)
             {
-                InvokeCallbacks(false, error);
+                InvokeCallbacks(success, error);
             }
         }
 
@@ -158,11 +163,7 @@ namespace IO.Ably.Realtime
 
             if (args.Current == _awaitedState)
             {
-                lock (_lock)
-                {
-                    _waiting = false;
-                }
-
+                Complete(true);
                 InvokeCallbacks(true, null);
             }
         }
