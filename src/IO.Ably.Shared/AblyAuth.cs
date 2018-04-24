@@ -214,14 +214,16 @@ namespace IO.Ably
                 catch (Exception ex) when (shouldCatch)
                 {
                     HttpStatusCode? statusCode = null;
+                    int code = 80019;
                     if (ex is AblyException ablyException)
                     {
                         statusCode = ablyException.ErrorInfo.StatusCode;
+                        code = ablyException.ErrorInfo.Code == 40300 ? ablyException.ErrorInfo.Code : 80019;
                     }
 
                     throw new AblyException(
                         new ErrorInfo(
-                        "Error calling AuthCallback, token request failed. See inner exception for details.", 80019, statusCode), ex);
+                        "Error calling AuthCallback, token request failed. See inner exception for details.", code, statusCode), ex);
                 }
             }
             else if (mergedOptions.AuthUrl.IsNotEmpty())
@@ -250,7 +252,12 @@ namespace IO.Ably
                 }
                 catch (AblyException ex)
                 {
-                    throw new AblyException(new ErrorInfo("Error calling Auth URL, token request failed. See the InnerException property for details of the underlying exception.", 80019, ex.ErrorInfo.StatusCode), ex);
+                    throw new AblyException(
+                        new ErrorInfo(
+                            "Error calling Auth URL, token request failed. See the InnerException property for details of the underlying exception.",
+                            ex.ErrorInfo.Code == 40300 ? ex.ErrorInfo.Code : 80019,
+                            ex.ErrorInfo.StatusCode),
+                        ex);
                 }
             }
             else
