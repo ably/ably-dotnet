@@ -338,7 +338,7 @@ namespace IO.Ably.Tests
                 TaskCompletionAwaiter tca = new TaskCompletionAwaiter(1000);
                 var realtimeClient = await GetRealtimeClient(protocol, Options);
 
-                realtimeClient.Connection.Connect();
+                realtimeClient.Connect();
                 await realtimeClient.WaitForState(ConnectionState.Connected);
                 realtimeClient.Connection.On(change =>
                 {
