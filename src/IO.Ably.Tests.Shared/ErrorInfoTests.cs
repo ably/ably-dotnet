@@ -16,7 +16,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.Equal("Unknown error", errorInfo.Message);
-            Assert.Equal(500, errorInfo.Code);
+            Assert.Equal(50000, errorInfo.Code);
             Assert.Equal(response.StatusCode, errorInfo.StatusCode);
         }
 
