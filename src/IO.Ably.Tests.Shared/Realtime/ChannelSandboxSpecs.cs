@@ -678,7 +678,7 @@ namespace IO.Ably.Tests.Realtime
             var channel = client1.Channels.Get(channelName);
 
             TaskCompletionSource<bool> tsc = new TaskCompletionSource<bool>();
-            client1.Connection.On(ConnectionState.Connected, async state =>
+            client1.Connection.On(ConnectionEvent.Connected, async state =>
             {
                 tsc.SetResult(true);
                 client1.GetTestTransport().Close(false);
@@ -729,7 +729,7 @@ namespace IO.Ably.Tests.Realtime
         {
             Logger.LogLevel = LogLevel.Debug;
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.AutoConnect = false);
-            client.Connection.On(ConnectionState.Connected, async args =>
+            client.Connection.On(ConnectionEvent.Connected, async args =>
             {
                 await client.Channels.Get("test")
                     .HistoryAsync(new HistoryRequestParams() { Start = DateHelper.CreateDate(1969, 1, 1) });

@@ -23,7 +23,7 @@ namespace IO.Ably.Tests.GithubSamples
         {
             var realtime = new AblyRealtime(_placeholderKey);
 
-            realtime.Connection.On(ConnectionState.Connected, args =>
+            realtime.Connection.On(ConnectionEvent.Connected, args =>
             {
                 // Do stuff
             });

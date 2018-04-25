@@ -113,7 +113,7 @@ namespace IO.Ably.Tests
             var realtimeClient = await helper.GetRealTimeClientWithRequests(protocol, almostExpiredToken, invalidateKey: true);
 
             bool connected = false;
-            realtimeClient.Connection.Once(ConnectionState.Connected, (_) => { connected = true; });
+            realtimeClient.Connection.Once(ConnectionEvent.Connected, (_) => { connected = true; });
 
             // assert that there is no pre-existing error
             realtimeClient.Connection.ErrorReason.Should().BeNull();
@@ -176,7 +176,7 @@ namespace IO.Ably.Tests
 
             var awaiter = new TaskCompletionAwaiter(5000);
 
-            realtimeClient.Connection.Once(ConnectionState.Disconnected, state =>
+            realtimeClient.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
                 state.Reason.Code.Should().Be(80019);
                 awaiter.SetCompleted();
@@ -216,7 +216,7 @@ namespace IO.Ably.Tests
             });
 
             var awaiter = new TaskCompletionAwaiter(5000);
-            realtimeClient.Connection.Once(ConnectionState.Disconnected, state =>
+            realtimeClient.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
                 state.Reason.Code.Should().Be(80019);
                 awaiter.SetCompleted();
@@ -251,7 +251,7 @@ namespace IO.Ably.Tests
             });
 
             var awaiter = new TaskCompletionAwaiter(5000);
-            realtimeClient.Connection.Once(ConnectionState.Disconnected, state =>
+            realtimeClient.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
                 state.Reason.Code.Should().Be(80019);
                 awaiter.SetCompleted();
@@ -276,7 +276,7 @@ namespace IO.Ably.Tests
             {
                 TaskCompletionAwaiter tca = new TaskCompletionAwaiter(5000);
                 var realtimeClient = await GetRealtimeClient(protocol, optionsAction);
-                realtimeClient.Connection.On(ConnectionState.Disconnected, change =>
+                realtimeClient.Connection.On(ConnectionEvent.Disconnected, change =>
                 {
                     change.Previous.Should().Be(ConnectionState.Connecting);
                     change.Reason.Code.Should().Be(80019);
@@ -368,7 +368,7 @@ namespace IO.Ably.Tests
                 TaskCompletionAwaiter tca = new TaskCompletionAwaiter(5000);
                 var realtimeClient = await GetRealtimeClient(protocol, optionsAction);
 
-                realtimeClient.Connection.Once(ConnectionState.Failed, change =>
+                realtimeClient.Connection.Once(ConnectionEvent.Failed, change =>
                 {
                     change.Previous.Should().Be(ConnectionState.Connecting);
                     change.Reason.Code.Should().Be(expectedCode);

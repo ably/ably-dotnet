@@ -292,7 +292,7 @@ namespace IO.Ably.Tests.Samples
         public void ConnectionExamples()
         {
             AblyRealtime realtime = new AblyRealtime("{{API_KEY}}");
-            realtime.Connection.On(ConnectionState.Connected, args => Console.WriteLine("Connected, that was easy"));
+            realtime.Connection.On(ConnectionEvent.Connected, args => Console.WriteLine("Connected, that was easy"));
             Action<ConnectionStateChange> action = args => Console.WriteLine("New state is " + args.Current);
             realtime.Connection.On(action);
             realtime.Connection.Off(action);

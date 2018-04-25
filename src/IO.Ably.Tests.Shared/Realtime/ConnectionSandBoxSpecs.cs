@@ -186,7 +186,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             ErrorInfo error = null;
-            realtimeClient.Connection.On(ConnectionState.Connected, (args) =>
+            realtimeClient.Connection.On(ConnectionEvent.Connected, (args) =>
             {
                 error = args.Reason;
                 ResetEvent.Set();
@@ -439,7 +439,7 @@ namespace IO.Ably.Tests.Realtime
             var channel = new RealtimeChannel("RTN19b", "RTN19b", client);
             channel.Logger = testLogger;
             channel.State = ChannelState.Attaching;
-            channel.InternalOnInternalStateChanged(this, new ConnectionStateChange(ConnectionState.Connected, ConnectionState.Disconnected));
+            channel.InternalOnInternalStateChanged(this, new ConnectionStateChange(ConnectionEvent.Connected, ConnectionState.Connected, ConnectionState.Disconnected));
             testLogger.MessageSeen.Should().Be(true);
         }
 
@@ -500,7 +500,7 @@ namespace IO.Ably.Tests.Realtime
             channel.Logger = testLogger;
 
             channel.State = ChannelState.Detaching;
-            channel.InternalOnInternalStateChanged(this, new ConnectionStateChange(ConnectionState.Connected, ConnectionState.Disconnected));
+            channel.InternalOnInternalStateChanged(this, new ConnectionStateChange(ConnectionEvent.Connected, ConnectionState.Connected, ConnectionState.Disconnected));
 
             testLogger.MessageSeen.Should().Be(true);
         }
