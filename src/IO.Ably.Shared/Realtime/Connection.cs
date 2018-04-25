@@ -17,7 +17,7 @@ namespace IO.Ably.Realtime
         Offline
     }
 
-    public sealed class Connection : EventEmitter<ConnectionState, ConnectionStateChange>, IDisposable
+    public sealed class Connection : EventEmitter<ConnectionEvent, ConnectionStateChange>, IDisposable
     {
         private static readonly ConcurrentBag<WeakReference<Action<NetworkState>>> OsEventSubscribers =
             new ConcurrentBag<WeakReference<Action<NetworkState>>>();
@@ -209,7 +209,8 @@ namespace IO.Ably.Realtime
             var newState = state.State;
             ConnectionState = state;
             ErrorReason = state.Error;
-            var stateChange = new ConnectionStateChange(oldState, newState, state.RetryIn, ErrorReason);
+            var connectionEvent = oldState == newState ? ConnectionEvent.Update : newState.ToConnectionEvent();
+            var stateChange = new ConnectionStateChange(connectionEvent, oldState, newState, state.RetryIn, ErrorReason);
 
             var internalHandlers =
                 Volatile.Read(ref InternalStateChanged); // Make sure we get all the subscribers on all threads
@@ -229,7 +230,7 @@ namespace IO.Ably.Realtime
                             Logger.Error("Error notifying Connection state changed handlers", ex);
                         }
 
-                        Emit(newState, stateChange);
+                        Emit(connectionEvent, stateChange);
                     });
         }
 
