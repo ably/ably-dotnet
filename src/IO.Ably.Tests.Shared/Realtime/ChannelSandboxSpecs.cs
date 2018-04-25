@@ -122,6 +122,24 @@ namespace IO.Ably.Tests.Realtime
             result.Error.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
+        [Theory]
+        [ProtocolData]
+        [Trait("bug", "Issue #205")]
+        public async Task ShouldReturnToPreviousStateIfAttachMessageNotReceivedWithinDefaultTimeout2(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            bool? didAttach = null;
+            var channel = client.Channels.Get("ChannelSpecs-issue205".AddRandomSuffix());
+            channel.Attach((b, info) =>
+            {
+                didAttach = b;
+            });
+            await Task.Delay(5000);
+            didAttach.Should().BeTrue();
+            channel.State.Should().Be(ChannelState.Attached);
+            await Task.Delay(6000);
+            channel.State.Should().Be(ChannelState.Attached);
+        }
 
         [Theory]
         [ProtocolData]
@@ -222,10 +240,10 @@ namespace IO.Ably.Tests.Realtime
             List<bool> successes3 = new List<bool>();
 
             bool retry = true;
-            int tries = 3; 
+            int tries = 3;
             while (retry)
             {
-               
+
                 var client1 = await GetRealtimeClient(protocol);
                 var client2 = await GetRealtimeClient(protocol);
                 var client3 = await GetRealtimeClient(protocol);
