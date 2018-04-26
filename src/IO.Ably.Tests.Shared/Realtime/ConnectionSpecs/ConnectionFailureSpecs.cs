@@ -149,6 +149,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
         [Fact]
         [Trait("spec", "RTN14d")]
+        [Trait("spec", "TR2")]
         public async Task WhenTransportFails_ShouldTransitionToDisconnectedAndEmitErrorWithRetry()
         {
             FakeTransportFactory.InitialiseFakeTransport =
@@ -174,6 +175,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             WaitOne();
             connectionArgs.Current.Should().Be(ConnectionState.Disconnected);
+            connectionArgs.Previous.Should().Be(ConnectionState.Connecting);
+            connectionArgs.Event.Should().Be(ConnectionEvent.Disconnected);
             connectionArgs.RetryIn.Should().Be(options.DisconnectedRetryTimeout);
             connectionArgs.Reason.Should().NotBeNull();
         }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -19,7 +20,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN4a")]
         public void EmittedEventTypesShouldBe()
         {
-            var states = Enum.GetNames(typeof(ConnectionState));
+            var states = Enum.GetNames(typeof(ConnectionEvent));
             states.ShouldBeEquivalentTo(new[]
             {
                 "Initialized",
@@ -29,7 +30,8 @@ namespace IO.Ably.Tests.Realtime
                 "Suspended",
                 "Closing",
                 "Closed",
-                "Failed"
+                "Failed",
+                "Update"
             });
         }
 
@@ -37,15 +39,18 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN4b")]
         [Trait("spec", "RTN4d")]
         [Trait("spec", "RTN4e")]
+        [Trait("spec", "TA1")]
         public async Task ANewConnectionShouldRaiseConnectingAndConnectedEvents()
         {
             var client = GetClientWithFakeTransport(opts => opts.AutoConnect = false);
-            var states = new List<ConnectionState>();
-            client.Connection.InternalStateChanged += (sender, args) =>
+            var states = new List<ConnectionStateChange>();
+            client.Connection.On(args =>
             {
+                // (TA1) Whenever the connection state changes,
+                // a ConnectionStateChange object is emitted on the Connection object
                 args.Should().BeOfType<ConnectionStateChange>();
-                states.Add(args.Current);
-            };
+                states.Add(args);
+            });
 
             client.Connect();
 
@@ -53,7 +58,10 @@ namespace IO.Ably.Tests.Realtime
             await client.ConnectionManager.OnTransportMessageReceived(
                 new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
-            states.Should().BeEquivalentTo(new[] { ConnectionState.Connecting, ConnectionState.Connected });
+            (from s in states select s.Current).Should().BeEquivalentTo(new[] { ConnectionState.Connecting, ConnectionState.Connected });
+            states[1].Previous.Should().Be(ConnectionState.Connecting);
+            states[1].Current.Should().Be(ConnectionState.Connected);
+            states[1].Event.Should().Be(ConnectionEvent.Connected);
             client.Connection.State.Should().Be(ConnectionState.Connected);
         }
 
@@ -61,17 +69,19 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN4c")]
         [Trait("spec", "RTN4d")]
         [Trait("spec", "RTN4e")]
+        [Trait("spec", "TA1")]
         public void WhenClosingAConnection_ItShouldRaiseClosingAndClosedEvents()
         {
             var client = GetClientWithFakeTransport();
-
-            // Start collecting events after the connection is open
-            var states = new List<ConnectionState>();
-            client.Connection.InternalStateChanged += (sender, args) =>
+            var states = new List<ConnectionStateChange>();
+            client.Connection.On((args) =>
             {
+                // (TA1) Whenever the connection state changes,
+                // a ConnectionStateChange object is emitted on the Connection object
                 args.Should().BeOfType<ConnectionStateChange>();
-                states.Add(args.Current);
-            };
+                states.Add(args);
+            });
+
             LastCreatedTransport.SendAction = message =>
             {
                 if (message.Original.Action == ProtocolMessage.MessageAction.Close)
@@ -81,30 +91,37 @@ namespace IO.Ably.Tests.Realtime
             };
 
             client.Close();
-            states.Should().BeEquivalentTo(new[] { ConnectionState.Closing, ConnectionState.Closed });
+            states.Count.Should().Be(2);
+            (from s in states select s.Current).Should().BeEquivalentTo(new[] { ConnectionState.Closing, ConnectionState.Closed });
+            states[1].Previous.Should().Be(ConnectionState.Closing);
+            states[1].Current.Should().Be(ConnectionState.Closed);
+            states[1].Event.Should().Be(ConnectionEvent.Closed);
             client.Connection.State.Should().Be(ConnectionState.Closed);
         }
 
         [Fact]
         [Trait("spec", "RTN4f")]
+        [Trait("spec", "TA1")]
+        [Trait("spec", "TA3")]
+        [Trait("spec", "TA5")]
         [Trait("sandboxTest", "needed")]
         public async Task WithAConnectionError_ShouldRaiseChangeStateEventWithError()
         {
             var client = GetClientWithFakeTransport();
-            bool hasError = false;
-            ErrorInfo actualError = null;
-            client.Connection.InternalStateChanged += (sender, args) =>
-            {
-                hasError = args.HasError;
-                actualError = args.Reason;
-            };
-            var expectedError = new ErrorInfo();
 
+            ConnectionStateChange stateChange = null;
+            client.Connection.On(state =>
+            {
+                stateChange = state;
+            });
+
+            var expectedError = new ErrorInfo("fake error");
             await client.ConnectionManager.OnTransportMessageReceived(
                 new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = expectedError });
 
-            hasError.Should().BeTrue();
-            actualError.Should().Be(expectedError);
+            stateChange.HasError.Should().BeTrue();
+            stateChange.Reason.Should().Be(expectedError);
+            stateChange.Event.Should().Be(ConnectionEvent.Failed);
         }
 
         [Fact]
