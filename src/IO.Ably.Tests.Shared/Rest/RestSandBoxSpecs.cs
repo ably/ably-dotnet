@@ -31,10 +31,14 @@ namespace IO.Ably.Tests
         public async Task Time_ShouldReturnAValidDateTimeOffset(Protocol protocol)
         {
             var client = await GetRestClient(protocol);
+            var serverTime = await client.TimeAsync();
 
-            var now = await client.TimeAsync();
+            // server time should be similar to the system time
+            // here we allow the system clock to be 15 minutes fast or slow
+            serverTime.Should().BeCloseTo(DateTimeOffset.UtcNow, (int)TimeSpan.FromMinutes(15).TotalMilliseconds);
 
-            now.Should().BeCloseTo(DateTimeOffset.UtcNow, (int)TimeSpan.FromHours(1).TotalMilliseconds);
+            // server time is UTC so there should be no time zone offset
+            serverTime.Offset.Ticks.Should().Be(0);
         }
 
         [Collection("AblyRest SandBox Collection")]

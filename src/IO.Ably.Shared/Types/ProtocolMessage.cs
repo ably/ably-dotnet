@@ -10,7 +10,7 @@ namespace IO.Ably.Types
     {
         private string _connectionKey;
 
-        public enum MessageAction : int
+        public enum MessageAction
         {
             Heartbeat = 0,
             Ack,
@@ -28,23 +28,31 @@ namespace IO.Ably.Types
             Detached,
             Presence,
             Message,
-            Sync
+            Sync,
+            Auth
         }
 
-        public class MessageFlags
+        public enum Flag
         {
-            public const int Presence = 1;
-            public const int Backlog = 1 << 1;
+            HasPresence = 1 << 0,
+            HasBacklog = 1 << 1,
+            Resumed = 1 << 2,
+            HasLocalPresence = 1 << 3,
+            Transient = 1 << 4,
+            Presence = 1 << 16,
+            Publish = 1 << 17,
+            Subscribe = 1 << 18,
+            PresenceSubscribe = 1 << 19
+        }
 
-            public static bool HasFlag(int? value, int flag)
+        public static bool HasFlag(int? value, Flag flag)
+        {
+            if (value == null)
             {
-                if (value == null)
-                {
-                    return false;
-                }
-
-                return (value.Value & flag) != 0;
+                return false;
             }
+
+            return (value.Value & (int)flag) != 0;
         }
 
         public ProtocolMessage()
@@ -70,12 +78,6 @@ namespace IO.Ably.Types
 
         [JsonProperty("flags")]
         public int? Flags { get; set; }
-
-        [JsonIgnore]
-        public bool HasPresenceFlag => MessageFlags.HasFlag(Flags, MessageFlags.Presence);
-
-        [JsonIgnore]
-        public bool HasBacklogFlag => MessageFlags.HasFlag(Flags, MessageFlags.Backlog);
 
         [JsonProperty("count")]
         public int? Count { get; set; }
@@ -154,6 +156,10 @@ namespace IO.Ably.Types
             {
                 Presence = null;
             }
+        }
+        public bool HasFlag(Flag flag)
+        {
+            return ProtocolMessage.HasFlag(Flags, flag);
         }
 
         public override string ToString()
