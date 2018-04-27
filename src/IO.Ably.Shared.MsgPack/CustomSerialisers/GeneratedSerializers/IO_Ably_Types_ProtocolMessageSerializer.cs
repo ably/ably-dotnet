@@ -86,7 +86,6 @@ namespace IO.Ably.CustomSerialisers {
                 objectTree.ChannelSerial.IsNotEmpty(),
                 objectTree.ConnectionDetails != null,
                 objectTree.ConnectionId.IsNotEmpty(),
-                objectTree.ConnectionKey.IsNotEmpty(),
                 objectTree.ConnectionSerial != null,
                 objectTree.Count != null,
                 objectTree.Error != null,
@@ -119,11 +118,6 @@ namespace IO.Ably.CustomSerialisers {
             {
                 this._serializer0.PackTo(packer, "connectionId");
                 this._serializer0.PackTo(packer, objectTree.ConnectionId);
-            }
-            if (objectTree.ConnectionKey.IsNotEmpty())
-            {
-                this._serializer0.PackTo(packer, "connectionKey");
-                this._serializer0.PackTo(packer, objectTree.ConnectionKey);
             }
             if (objectTree.ConnectionSerial != null)
             {
@@ -427,170 +421,155 @@ namespace IO.Ably.CustomSerialisers {
                                                 }
                                                 else
                                                 {
-                                                    if ((key == "connectionKey"))
+                                                    if ((key == "connectionId"))
                                                     {
-                                                        string nullable20 = default(string);
-                                                        nullable20 =
+                                                        string nullable19 = default(string);
+                                                        nullable19 =
                                                             MsgPack.Serialization.UnpackHelpers.UnpackStringValue(
                                                                 unpacker, typeof(IO.Ably.Types.ProtocolMessage),
-                                                                "System.String connectionKey");
-                                                        if (((nullable20 == null)
-                                                             == false))
+                                                                "System.String connectionId");
+                                                        if (((nullable19 == null)
+                                                                == false))
                                                         {
-                                                            result.ConnectionKey = nullable20;
+                                                            result.ConnectionId = nullable19;
                                                         }
                                                     }
                                                     else
                                                     {
-                                                        if ((key == "connectionId"))
+                                                        if ((key == "connectionDetails"))
                                                         {
-                                                            string nullable19 = default(string);
-                                                            nullable19 =
-                                                                MsgPack.Serialization.UnpackHelpers.UnpackStringValue(
-                                                                    unpacker, typeof(IO.Ably.Types.ProtocolMessage),
-                                                                    "System.String connectionId");
-                                                            if (((nullable19 == null)
-                                                                 == false))
+                                                            IO.Ably.ConnectionDetails nullable18 =
+                                                                default(IO.Ably.ConnectionDetails);
+                                                            if ((unpacker.Read() == false))
                                                             {
-                                                                result.ConnectionId = nullable19;
+                                                                throw MsgPack.Serialization.SerializationExceptions
+                                                                    .NewMissingItem(i);
+                                                            }
+                                                            if (((unpacker.IsArrayHeader == false)
+                                                                    && (unpacker.IsMapHeader == false)))
+                                                            {
+                                                                nullable18 = this._serializer2.UnpackFrom(unpacker);
+                                                            }
+                                                            else
+                                                            {
+                                                                MsgPack.Unpacker disposable7 =
+                                                                    default(MsgPack.Unpacker);
+                                                                disposable7 = unpacker.ReadSubtree();
+                                                                try
+                                                                {
+                                                                    nullable18 =
+                                                                        this._serializer2.UnpackFrom(disposable7);
+                                                                }
+                                                                finally
+                                                                {
+                                                                    if (((disposable7 == null)
+                                                                            == false))
+                                                                    {
+                                                                        disposable7.Dispose();
+                                                                    }
+                                                                }
+                                                            }
+                                                            if (((nullable18 == null)
+                                                                    == false))
+                                                            {
+                                                                result.ConnectionDetails = nullable18;
                                                             }
                                                         }
                                                         else
                                                         {
-                                                            if ((key == "connectionDetails"))
+                                                            if ((key == "channelSerial"))
                                                             {
-                                                                IO.Ably.ConnectionDetails nullable18 =
-                                                                    default(IO.Ably.ConnectionDetails);
-                                                                if ((unpacker.Read() == false))
+                                                                string nullable17 = default(string);
+                                                                nullable17 =
+                                                                    MsgPack.Serialization.UnpackHelpers
+                                                                        .UnpackStringValue(unpacker,
+                                                                            typeof(IO.Ably.Types.ProtocolMessage),
+                                                                            "System.String channelSerial");
+                                                                if (((nullable17 == null)
+                                                                        == false))
                                                                 {
-                                                                    throw MsgPack.Serialization.SerializationExceptions
-                                                                        .NewMissingItem(i);
-                                                                }
-                                                                if (((unpacker.IsArrayHeader == false)
-                                                                     && (unpacker.IsMapHeader == false)))
-                                                                {
-                                                                    nullable18 = this._serializer2.UnpackFrom(unpacker);
-                                                                }
-                                                                else
-                                                                {
-                                                                    MsgPack.Unpacker disposable7 =
-                                                                        default(MsgPack.Unpacker);
-                                                                    disposable7 = unpacker.ReadSubtree();
-                                                                    try
-                                                                    {
-                                                                        nullable18 =
-                                                                            this._serializer2.UnpackFrom(disposable7);
-                                                                    }
-                                                                    finally
-                                                                    {
-                                                                        if (((disposable7 == null)
-                                                                             == false))
-                                                                        {
-                                                                            disposable7.Dispose();
-                                                                        }
-                                                                    }
-                                                                }
-                                                                if (((nullable18 == null)
-                                                                     == false))
-                                                                {
-                                                                    result.ConnectionDetails = nullable18;
+                                                                    result.ChannelSerial = nullable17;
                                                                 }
                                                             }
                                                             else
                                                             {
-                                                                if ((key == "channelSerial"))
+                                                                if ((key == "channel"))
                                                                 {
-                                                                    string nullable17 = default(string);
-                                                                    nullable17 =
+                                                                    string nullable16 = default(string);
+                                                                    nullable16 =
                                                                         MsgPack.Serialization.UnpackHelpers
                                                                             .UnpackStringValue(unpacker,
-                                                                                typeof(IO.Ably.Types.ProtocolMessage),
-                                                                                "System.String channelSerial");
-                                                                    if (((nullable17 == null)
-                                                                         == false))
+                                                                                typeof(IO.Ably.Types.ProtocolMessage
+                                                                                    ), "System.String channel");
+                                                                    if (((nullable16 == null)
+                                                                            == false))
                                                                     {
-                                                                        result.ChannelSerial = nullable17;
+                                                                        result.Channel = nullable16;
                                                                     }
                                                                 }
                                                                 else
                                                                 {
-                                                                    if ((key == "channel"))
+                                                                    if ((key == "action"))
                                                                     {
-                                                                        string nullable16 = default(string);
-                                                                        nullable16 =
-                                                                            MsgPack.Serialization.UnpackHelpers
-                                                                                .UnpackStringValue(unpacker,
-                                                                                    typeof(IO.Ably.Types.ProtocolMessage
-                                                                                        ), "System.String channel");
-                                                                        if (((nullable16 == null)
-                                                                             == false))
+                                                                        System.Nullable
+                                                                            <
+                                                                                IO.Ably.Types.ProtocolMessage.
+                                                                                    MessageAction> nullable15 =
+                                                                                        default(
+                                                                                            System.Nullable
+                                                                                                <
+                                                                                                    IO.Ably.Types.
+                                                                                                        ProtocolMessage
+                                                                                                        .
+                                                                                                        MessageAction
+                                                                                                    >);
+                                                                        if ((unpacker.Read() == false))
                                                                         {
-                                                                            result.Channel = nullable16;
+                                                                            throw MsgPack.Serialization
+                                                                                .SerializationExceptions
+                                                                                .NewMissingItem(i);
+                                                                        }
+                                                                        if (((unpacker.IsArrayHeader == false)
+                                                                                && (unpacker.IsMapHeader == false)))
+                                                                        {
+                                                                            nullable15 =
+                                                                                this._serializer11.UnpackFrom(
+                                                                                    unpacker);
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            MsgPack.Unpacker disposable6 =
+                                                                                default(MsgPack.Unpacker);
+                                                                            disposable6 = unpacker.ReadSubtree();
+                                                                            try
+                                                                            {
+                                                                                nullable15 =
+                                                                                    this._serializer11.UnpackFrom(
+                                                                                        disposable6);
+                                                                            }
+                                                                            finally
+                                                                            {
+                                                                                if (((disposable6 == null)
+                                                                                        == false))
+                                                                                {
+                                                                                    disposable6.Dispose();
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                        if (nullable15.HasValue)
+                                                                        {
+                                                                            result.Action = nullable15.Value;
                                                                         }
                                                                     }
                                                                     else
                                                                     {
-                                                                        if ((key == "action"))
-                                                                        {
-                                                                            System.Nullable
-                                                                                <
-                                                                                    IO.Ably.Types.ProtocolMessage.
-                                                                                        MessageAction> nullable15 =
-                                                                                            default(
-                                                                                                System.Nullable
-                                                                                                    <
-                                                                                                        IO.Ably.Types.
-                                                                                                            ProtocolMessage
-                                                                                                            .
-                                                                                                            MessageAction
-                                                                                                        >);
-                                                                            if ((unpacker.Read() == false))
-                                                                            {
-                                                                                throw MsgPack.Serialization
-                                                                                    .SerializationExceptions
-                                                                                    .NewMissingItem(i);
-                                                                            }
-                                                                            if (((unpacker.IsArrayHeader == false)
-                                                                                 && (unpacker.IsMapHeader == false)))
-                                                                            {
-                                                                                nullable15 =
-                                                                                    this._serializer11.UnpackFrom(
-                                                                                        unpacker);
-                                                                            }
-                                                                            else
-                                                                            {
-                                                                                MsgPack.Unpacker disposable6 =
-                                                                                    default(MsgPack.Unpacker);
-                                                                                disposable6 = unpacker.ReadSubtree();
-                                                                                try
-                                                                                {
-                                                                                    nullable15 =
-                                                                                        this._serializer11.UnpackFrom(
-                                                                                            disposable6);
-                                                                                }
-                                                                                finally
-                                                                                {
-                                                                                    if (((disposable6 == null)
-                                                                                         == false))
-                                                                                    {
-                                                                                        disposable6.Dispose();
-                                                                                    }
-                                                                                }
-                                                                            }
-                                                                            if (nullable15.HasValue)
-                                                                            {
-                                                                                result.Action = nullable15.Value;
-                                                                            }
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            unpacker.Skip();
-                                                                        }
+                                                                        unpacker.Skip();
                                                                     }
                                                                 }
                                                             }
                                                         }
                                                     }
+                                                    
                                                 }
                                             }
                                         }

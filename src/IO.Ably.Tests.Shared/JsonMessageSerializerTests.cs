@@ -257,24 +257,6 @@ namespace IO.Ably.Tests
         [InlineData("123.456")]
         [InlineData("123^&456")]
         [InlineData("absder#^&456")]
-        public void DeserializesMessageCorrectly_ConnectionKey(string connectionKey)
-        {
-            // Arrange
-            string message = string.Format("{{\"connectionKey\":\"{0}\"}}", connectionKey);
-
-            // Act
-            ProtocolMessage target = JsonHelper.Deserialize<ProtocolMessage>(message);
-
-            // Assert
-            Assert.NotNull(target);
-            Assert.Equal(connectionKey, target.ConnectionKey);
-        }
-
-        [Theory]
-        [InlineData("123")]
-        [InlineData("123.456")]
-        [InlineData("123^&456")]
-        [InlineData("absder#^&456")]
         public void DeserializesMessageCorrectly_Id(string id)
         {
             // Arrange

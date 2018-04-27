@@ -76,6 +76,9 @@ namespace IO.Ably.Types
         [JsonProperty("action")]
         public MessageAction Action { get; set; }
 
+        [JsonProperty("auth")]
+        public AuthDetails Auth { get; set; }
+
         [JsonProperty("flags")]
         public int? Flags { get; set; }
 
@@ -96,22 +99,6 @@ namespace IO.Ably.Types
 
         [JsonProperty("connectionId")]
         public string ConnectionId { get; set; }
-
-        [JsonProperty("connectionKey")]
-        public string ConnectionKey
-        {
-            get
-            {
-                if (ConnectionDetails != null && ConnectionDetails.ConnectionKey.IsNotEmpty())
-                {
-                    return ConnectionDetails.ConnectionKey;
-                }
-
-                return _connectionKey;
-            }
-
-            set { _connectionKey = value; }
-        }
 
         [JsonProperty("connectionSerial")]
         public long? ConnectionSerial { get; set; }
@@ -157,6 +144,7 @@ namespace IO.Ably.Types
                 Presence = null;
             }
         }
+
         public bool HasFlag(Flag flag)
         {
             return ProtocolMessage.HasFlag(Flags, flag);

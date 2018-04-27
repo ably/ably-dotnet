@@ -34,7 +34,6 @@ namespace IO.Ably.Transport
 
             ConnectionId = message.ConnectionId;
             ConnectionSerial = message.ConnectionSerial ?? -1;
-            ConnectionKey = message.ConnectionKey;
             ClientId = message.ConnectionDetails?.ClientId;
             ConnectionStateTtl = message.ConnectionDetails?.ConnectionStateTtl;
         }
