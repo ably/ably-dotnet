@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using FluentAssertions;
 using IO.Ably.Types;
@@ -9,7 +10,6 @@ namespace IO.Ably.Tests.Shared.Realtime
 {
     public class ProtocolMessageTests
     {
-
 
         [Fact]
         [Trait("spec", "TR3")]
@@ -30,9 +30,11 @@ namespace IO.Ably.Tests.Shared.Realtime
         }
 
         [Fact]
-        [Trait("spec", "TR4i")]
-        public void FlagsContainsBitFlags()
+        [Trait("spec", "TR4")]
+        [Trait("spec", "AD1")]
+        public void ShouldHaveCorrectProperties_FlagsShouldContainBitFlags()
         {
+            // TR4i
             string messageStr = $"{{\"flags\":{(int)ProtocolMessage.Flag.HasPresence + (int)ProtocolMessage.Flag.Resumed + (int)ProtocolMessage.Flag.PresenceSubscribe}}}";
 
             var pm = JsonHelper.Deserialize<ProtocolMessage>(messageStr);
@@ -46,6 +48,52 @@ namespace IO.Ably.Tests.Shared.Realtime
             pm.HasFlag(ProtocolMessage.Flag.Publish).Should().BeFalse();
             pm.HasFlag(ProtocolMessage.Flag.Subscribe).Should().BeFalse();
             pm.HasFlag(ProtocolMessage.Flag.PresenceSubscribe).Should().BeTrue();
+
+            // TR4a,TR4b,TR4c,TR4d,TR4e (show it is removed),TR4f,TR4g,TR4h,TR4i,TR4j,TR4k,TR4l,TR4m
+            var propertyNamesAndTypes = new(string, Type)[]
+            {
+                ("Action", typeof(ProtocolMessage.MessageAction)),
+                ("Id", typeof(string)),
+                ("Auth", typeof(AuthDetails)),
+                ("Channel", typeof(string)),
+                ("ChannelSerial", typeof(string)),
+                ("ConnectionId", typeof(string)),
+                ("ConnectionSerial", typeof(long?)),
+                ("ConnectionDetails", typeof(ConnectionDetails)),
+                ("Count", typeof(int?)),
+                ("Error", typeof(ErrorInfo)),
+                ("Flags", typeof(int?)),
+                ("MsgSerial", typeof(long)),
+                ("Messages", typeof(Message[])),
+                ("Presence", typeof(PresenceMessage[])),
+                ("Timestamp", typeof(DateTimeOffset?)),
+            };
+
+            var props = pm.GetType().GetProperties();
+            props.Length.Should().Be(15);
+            propertyNamesAndTypes.Length.Should().Be(15);
+
+            foreach (var propertyInfo in props)
+            {
+                var nameAndType = (from p in propertyNamesAndTypes where p.Item1 == propertyInfo.Name select p).First();
+                nameAndType.Should().NotBeNull($"Property name '{propertyInfo.Name}' not found.");
+                (propertyInfo.PropertyType == nameAndType.Item2).Should().BeTrue($"The type should match but '{propertyInfo.PropertyType}' != {nameAndType.Item2}");
+                propertyInfo.CanRead.Should().BeTrue();
+                propertyInfo.CanWrite.Should().BeTrue();
+                propertyInfo.GetGetMethod(false).IsPublic.Should().BeTrue();
+                propertyInfo.GetSetMethod(false).IsPublic.Should().BeTrue();
+            }
+
+            // AD1
+            var authDetails = new AuthDetails();
+            var adProps = authDetails.GetType().GetProperties();
+            adProps.Length.Should().Be(1);
+            adProps[0].Name.Should().Be("AccessToken");
+            adProps[0].CanRead.Should().BeTrue();
+            adProps[0].CanWrite.Should().BeTrue();
+            adProps[0].GetGetMethod(false).IsPublic.Should().BeTrue();
+            adProps[0].GetSetMethod(false).IsPublic.Should().BeTrue();
+
         }
     }
 }
