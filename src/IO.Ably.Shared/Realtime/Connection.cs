@@ -39,7 +39,7 @@ namespace IO.Ably.Realtime
         {
             OsEventSubscribers.Add(new WeakReference<Action<NetworkState>>(stateAction));
         }
-        
+
 
         internal AblyRest RestClient => RealtimeClient.RestClient;
         internal AblyRealtime RealtimeClient { get; }
@@ -53,7 +53,7 @@ namespace IO.Ably.Realtime
         internal Connection(AblyRealtime realtimeClient, Func<DateTimeOffset> nowFunc, ILogger logger = null) : base(logger)
         {
             Now = nowFunc;
-            FallbackHosts = Defaults.FallbackHosts.Shuffle().ToList();
+            FallbackHosts = realtimeClient?.Options?.FallbackHosts.Shuffle().ToList();
             RealtimeClient = realtimeClient;
             RegisterWithOSNetworkStateEvents(HandleNetworkStateChange);
         }
@@ -209,6 +209,6 @@ namespace IO.Ably.Realtime
                 Serial = message.ConnectionSerial.Value;
             }
         }
-        
+
     }
 }

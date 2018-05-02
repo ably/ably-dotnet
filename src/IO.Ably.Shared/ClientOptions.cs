@@ -11,6 +11,7 @@ namespace IO.Ably
         private string _clientId;
         private Func<DateTimeOffset> _nowFunc;
         private bool _useBinaryProtocol = false;
+        private string[] _fallbackHosts;
 
         /// <summary>
         ///
@@ -81,6 +82,29 @@ namespace IO.Ably
         /// For development environments only. Allows a non default host for the rest service
         /// </summary>
         public string RestHost { get; set; }
+
+        /// <summary>
+        /// Gets or sets an array of custom Fallback hosts to be (optionally) used in place of the defaults.
+        /// If an empty array is specified, then fallback host functionality is disabled.
+        /// </summary>
+        public string[] FallbackHosts
+        {
+            get
+            {
+                if (_fallbackHosts is null)
+                {
+                    return Defaults.FallbackHosts;
+                }
+                return _fallbackHosts;
+            }
+            set => _fallbackHosts = value;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to use default FallbackHosts even when overriding
+        /// environment or restHost/realtimeHost
+        /// </summary>
+        public bool FallbackHostsUseDefault { get; set; }
 
         internal bool IsLiveEnvironment => Environment.IsEmpty() || Environment == "live";
 
@@ -153,7 +177,7 @@ namespace IO.Ably
         public TimeSpan HttpMaxRetryDuration { get; set; } = TimeSpan.FromSeconds(15);
 
         /// <summary>
-        /// Provides Channels Setting for all Channels created. For more information see <see cref="ChannelOptions"/> 
+        /// Provides Channels Setting for all Channels created. For more information see <see cref="ChannelOptions"/>
         /// </summary>
         public ChannelOptions ChannelDefaults { get; internal set; } = new ChannelOptions();
 
@@ -203,7 +227,7 @@ namespace IO.Ably
         /// </summary>
         public ClientOptions()
         {
-        
+
         }
 
         /// <summary>

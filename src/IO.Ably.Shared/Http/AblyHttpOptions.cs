@@ -16,14 +16,18 @@ namespace IO.Ably
         internal TimeSpan HttpMaxRetryDuration { get; set; }
         public bool IsDefaultHost { get; set; } = true;
 
+        internal string[] FallbackHosts { get; set; }
+
+        internal bool FallbackHostsUseDefault { get; set; }
+
         internal Func<DateTimeOffset> NowFunc { get; set; }
 
         public ILogger Logger { get; set; }
 
-        public AblyHttpOptions() //Used for testing
+        internal AblyHttpOptions() // Used for testing
         {
             Host = Defaults.RestHost;
-            
+
             //Setting up some defaults
             DisconnectedRetryTimeout = TimeSpan.FromSeconds(15);
             SuspendedRetryTimeout = TimeSpan.FromSeconds(30);
@@ -31,9 +35,12 @@ namespace IO.Ably
             HttpRequestTimeout = TimeSpan.FromSeconds(15);
             HttpMaxRetryCount = 3;
             HttpMaxRetryDuration = TimeSpan.FromSeconds(10);
+            FallbackHosts = Defaults.FallbackHosts;
+            FallbackHostsUseDefault = false;
 
             NowFunc = Defaults.NowFunc();
             Logger = IO.Ably.DefaultLogger.LoggerInstance;
+
         }
 
         public AblyHttpOptions(ClientOptions options)
@@ -48,6 +55,8 @@ namespace IO.Ably
             HttpRequestTimeout = options.HttpRequestTimeout;
             HttpMaxRetryCount = options.IsDefaultRestHost ? options.HttpMaxRetryCount : 1;
             HttpMaxRetryDuration = options.HttpMaxRetryDuration;
+            FallbackHosts = options.FallbackHosts;
+            FallbackHostsUseDefault = options.FallbackHostsUseDefault;
 
             NowFunc = options.NowFunc;
             Logger = options.Logger;
