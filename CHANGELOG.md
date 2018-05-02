@@ -20,6 +20,7 @@
 
 **Merged pull requests:**
 
+- regex would only match single digit [\#220](https://github.com/ably/ably-dotnet/pull/220) ([withakay](https://github.com/withakay))
 - Hotfix for issue 216 [\#217](https://github.com/ably/ably-dotnet/pull/217) ([withakay](https://github.com/withakay))
 - updated Supported Platforms section in README [\#208](https://github.com/ably/ably-dotnet/pull/208) ([withakay](https://github.com/withakay))
 - namespace was not updated when the project name was updated [\#207](https://github.com/ably/ably-dotnet/pull/207) ([withakay](https://github.com/withakay))
