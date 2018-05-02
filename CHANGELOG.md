@@ -1,5 +1,32 @@
 # Change Log
 
+## [0.8.10](https://github.com/ably/ably-dotnet/tree/0.8.10)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/0.8.9...0.8.10)
+
+**Fixed bugs:**
+
+- README is duplicated [\#184](https://github.com/ably/ably-dotnet/issues/184)
+- Investigate report of System.Net.Http needing to be installed  [\#180](https://github.com/ably/ably-dotnet/issues/180)
+- Use of task.ConfigureAwait\(false\) can give rise to out of order messages [\#143](https://github.com/ably/ably-dotnet/issues/143)
+- 8.5 Android Presence+PresenceMap.EndSync\(\) [\#138](https://github.com/ably/ably-dotnet/issues/138)
+- Channel state changes twice [\#125](https://github.com/ably/ably-dotnet/issues/125)
+- App doesn't receive messages after a while [\#122](https://github.com/ably/ably-dotnet/issues/122)
+
+**Closed issues:**
+
+- Consider exposing the iOS and Android native SDKs as a NuGet package [\#202](https://github.com/ably/ably-dotnet/issues/202)
+- Java.IO.IOException with Xamarin [\#172](https://github.com/ably/ably-dotnet/issues/172)
+
+**Merged pull requests:**
+
+- regex would only match single digit [\#220](https://github.com/ably/ably-dotnet/pull/220) ([withakay](https://github.com/withakay))
+- Hotfix for issue 216 [\#217](https://github.com/ably/ably-dotnet/pull/217) ([withakay](https://github.com/withakay))
+- updated Supported Platforms section in README [\#208](https://github.com/ably/ably-dotnet/pull/208) ([withakay](https://github.com/withakay))
+- namespace was not updated when the project name was updated [\#207](https://github.com/ably/ably-dotnet/pull/207) ([withakay](https://github.com/withakay))
+- Fix delay in initial presence sync [\#206](https://github.com/ably/ably-dotnet/pull/206) ([ashikns](https://github.com/ashikns))
+- Deduplicated the README and merged edits between the two halves [\#185](https://github.com/ably/ably-dotnet/pull/185) ([withakay](https://github.com/withakay))
+
 ## [0.8.9](https://github.com/ably/ably-dotnet/tree/0.8.9)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/0.8.8...0.8.9)
