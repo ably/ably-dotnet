@@ -386,23 +386,28 @@ namespace IO.Ably.Realtime
 
             //Notify external client using the thread they subscribe on
             RealtimeClient.NotifyExternalClients(() =>
+            {
+                var args = new ChannelStateChange(state, previousState, error);
+                try
                 {
-                    var args = new ChannelStateChange(state, previousState, error);
-                    try
-                    {
-                        StateChanged.Invoke(this, args);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Error($"Error notifying event handlers for state change: {state}", ex);
-                    }
+                    StateChanged.Invoke(this, args);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"Error notifying event handlers for state change: {state}", ex);
+                }
 
-                    Emit(state, args);
-                });
+                Emit(state, args);
+            });
         }
 
         private void HandleStateChange(ChannelState state, ErrorInfo error, ProtocolMessage protocolMessage)
         {
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"HandleStateChange state change: {state}");
+            }
+
             State = state;
 
             switch (state)
@@ -422,7 +427,6 @@ namespace IO.Ably.Realtime
 
                     break;
                 case ChannelState.Attached:
-
                     if (protocolMessage != null)
                     {
                         if (protocolMessage.HasPresenceFlag)
