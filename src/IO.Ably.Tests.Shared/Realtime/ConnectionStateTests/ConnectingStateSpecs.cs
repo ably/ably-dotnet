@@ -103,11 +103,11 @@ namespace IO.Ably.Tests
             bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
 
             // Assert
-            Assert.True(result);
+            result.Should().BeTrue();
         }
 
         [Fact]
-        public async Task WithHandlesInboundErrorMessage_GoesToFailed()
+        public async Task WithHandlesInboundErrorMessage_GoesToDisconnected()
         {
             // Arrange
             _context.Transport = GetConnectedTrasport();
@@ -118,7 +118,7 @@ namespace IO.Ably.Tests
             bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError });
 
             // Assert
-            _context.LastSetState.Should().BeOfType<ConnectionFailedState>();
+            _context.LastSetState.Should().BeOfType<ConnectionDisconnectedState>();
         }
 
         [Fact]
