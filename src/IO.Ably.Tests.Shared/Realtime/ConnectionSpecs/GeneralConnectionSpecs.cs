@@ -61,17 +61,6 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Fact]
-        [Trait("spec", "RTN19")]
-        public void WhenConnectedMessageReceived_WithNoConnectionDetailsButConnectionKeyInMessage_ShouldHaveCorrectKey()
-        {
-            var client = GetClientWithFakeTransport();
-
-            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
-
-            client.Connection.Key.Should().Be("unimportant");
-        }
-
-        [Fact]
         [Trait("spec", "RSA15a")]
         [Trait("sandboxTest", "needed")]
         public void WhenConnectedMessageReceivedWithClientId_AblyAuthShouldUseConnectionClientId()
