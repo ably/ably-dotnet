@@ -62,6 +62,12 @@ namespace IO.Ably.Transport.States.Connection
 
                 case ProtocolMessage.MessageAction.Error:
                     {
+                        if (message.Error?.Code == 40400)
+                        {
+                            TransitionState(new ConnectionFailedState(Context, message.Error, Logger));
+                            return true;
+                        }
+
                         // If the error is a token error do some magic
                         if (Context.ShouldWeRenewToken(message.Error))
                         {
@@ -74,7 +80,7 @@ namespace IO.Ably.Transport.States.Connection
                             catch (AblyException ex)
                             {
                                 Logger.Error("Error trying to renew token.", ex);
-                                TransitionState(new ConnectionFailedState(Context, ex.ErrorInfo, Logger));
+                                TransitionState(new ConnectionDisconnectedState(Context, ex.ErrorInfo, Logger));
                                 return true;
                             }
                         }
@@ -83,6 +89,18 @@ namespace IO.Ably.Transport.States.Connection
                         {
                             Context.Connection.Key = null;
                             Context.HandleConnectingFailure(message.Error, null);
+                            return true;
+                        }
+
+                        if (message.Error?.IsTokenError == true && !Context.Connection.RestClient.AblyAuth.TokenRenewable)
+                        {
+                            TransitionState(new ConnectionFailedState(Context, message.Error, Logger));
+                            return true;
+                        }
+
+                        if (!Context.ShouldWeRenewToken(message.Error))
+                        {
+                            TransitionState(new ConnectionDisconnectedState(Context, message.Error, Logger));
                             return true;
                         }
 
