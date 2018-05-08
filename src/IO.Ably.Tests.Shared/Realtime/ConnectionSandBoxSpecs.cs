@@ -263,7 +263,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var awaiter = new TaskCompletionAwaiter(10000, 2);
             var authClient = await GetRestClient(protocol);
-            var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2)});
+            var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
 
             var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
@@ -294,7 +294,7 @@ namespace IO.Ably.Tests.Realtime
             stateChanges[0].Current.Should().Be(ConnectionState.Disconnected);
             stateChanges[0].Reason.Should().BeNull();
             stateChanges[1].Current.Should().Be(ConnectionState.Connected);
-            stateChanges[0].Reason.Should().BeNull();
+            stateChanges[1].Reason.Should().BeNull();
         }
 
         [Theory]
