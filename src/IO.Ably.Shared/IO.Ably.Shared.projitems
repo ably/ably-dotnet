@@ -79,7 +79,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateChangedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Handlers.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Realtime\IMessageHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\MessageHandlerAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\IRealtimeChannel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeTransportData.cs" />
