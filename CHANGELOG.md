@@ -1,5 +1,18 @@
 # Change Log
 
+## [0.8.11](https://github.com/ably/ably-dotnet/tree/0.8.11)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/0.8.10...0.8.11)
+
+**Fixed bugs:**
+
+- Channel apparently successfully attaches, but OnAttachTimeout fires anyway [\#205](https://github.com/ably/ably-dotnet/issues/205)
+
+**Merged pull requests:**
+
+- Issue 205 [\#213](https://github.com/ably/ably-dotnet/pull/213) ([withakay](https://github.com/withakay))
+
+
 ## [0.8.10](https://github.com/ably/ably-dotnet/tree/0.8.10)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/0.8.9...0.8.10)
