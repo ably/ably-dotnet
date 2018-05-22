@@ -178,37 +178,6 @@ namespace IO.Ably.Tests.Realtime
             errors.Should().NotBeEmpty();
         }
 
-
-        [Fact]
-        [Trait("spec", "RTN15i")]
-        public async Task WithConnectedClient_WhenErrorProtocolMessageReceived_ShouldBecomeFailed()
-        {
-            throw new Exception("WIP test");
-
-            /*
-            (RTN15i)
-             If an ERROR ProtocolMessage is received, this indicates a fatal error in the connection.
-             The server will close the transport immediately after.
-             The client should transition to the FAILED state triggering all attached channels to transition to the FAILED state as well.
-             Additionally the Connection#errorReason should be set with the error received from Ably
-             */
-
-            var client = SetupConnectedClient(renewable: true);
-
-            List<ConnectionState> states = new List<ConnectionState>();
-            var errors = new List<ErrorInfo>();
-            client.Connection.InternalStateChanged += (sender, args) =>
-            {
-                if (args.HasError)
-                {
-                    errors.Add(args.Reason);
-                }
-
-                states.Add(args.Current);
-            };
-        }
-
-
         [Fact]
         [Trait("spec", "RTN15a")]
         [Trait("spec", "RTN15b")]

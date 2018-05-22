@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -339,6 +340,59 @@ namespace IO.Ably.Tests.Realtime
             stateChanges[1].Current.Should().Be(ConnectionState.Failed);
             stateChanges[1].Reason.Code.Should().Be(40142);
             client.Connection.ErrorReason.ShouldBeEquivalentTo(stateChanges[1].Reason);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15i")]
+        public async Task WithConnectedClient_WhenErrorProtocolMessageReceived_ShouldBecomeFailed(Protocol protocol)
+        {
+            /*
+            (RTN15i)
+             If an ERROR ProtocolMessage is received, this indicates a fatal error in the connection.
+             The server will close the transport immediately after.
+             The client should transition to the FAILED state triggering all attached channels to transition to the FAILED state as well.
+             Additionally the Connection#errorReason should be set with the error received from Ably
+             */
+
+            var client = await GetRealtimeClient(protocol, (options, settings) => { });
+            var channel = client.Channels.Get("RTN15i".AddRandomSuffix());
+            channel.Attach();
+            await channel.WaitForState(ChannelState.Attached);
+
+            List<ConnectionState> states = new List<ConnectionState>();
+            var errors = new List<ErrorInfo>();
+
+            client.Connection.InternalStateChanged += (sender, args) =>
+            {
+                if (args.HasError)
+                {
+                    errors.Add(args.Reason);
+                }
+
+                states.Add(args.Current);
+            };
+
+            var dummyError = new ErrorInfo
+            {
+                Code = 40140,
+                StatusCode = HttpStatusCode.Unauthorized,
+                Message = "fake error"
+            };
+
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
+            {
+                Error = dummyError
+            });
+
+            states.Should().Equal(new[]
+            {
+                ConnectionState.Failed
+            });
+
+            errors.Should().HaveCount(1);
+            errors[0].Should().Be(dummyError);
+            channel.State.Should().Be(ChannelState.Failed);
         }
 
         [Theory]
