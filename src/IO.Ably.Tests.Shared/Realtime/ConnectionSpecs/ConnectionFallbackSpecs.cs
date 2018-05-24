@@ -123,6 +123,10 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             });
 
             client.Connection.State.Should().Be(ConnectionState.Disconnected);
+
+            await client.WaitForState(ConnectionState.Connecting);
+            client.Connection.State.Should().Be(ConnectionState.Connecting);
+            client.Close();
         }
 
         [Fact]
