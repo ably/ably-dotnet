@@ -756,6 +756,64 @@ namespace IO.Ably.Tests.Realtime
             await WaitForState(client, ConnectionState.Connecting);
         }
 
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN22")]
+        public async Task WhenAuthMessageReceived_ShouldAttemptTokenRenewal(Protocol protocol)
+        {
+            var awaiter = new TaskCompletionAwaiter();
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.UseTokenAuth = true;
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            var initialToken = client.RestClient.AblyAuth.CurrentToken;
+            var clientId = client.ClientId;
+            var t = client.Connection.ConnectionManager.Transport;
+
+            client.Connection.Once(ConnectionEvent.Connected, state =>
+            {
+                awaiter.SetCompleted();
+            });
+
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Auth));
+            await awaiter.Task;
+
+            client.RestClient.AblyAuth.CurrentToken.Should().NotBe(initialToken);
+            client.ClientId.Should().Be(clientId);
+
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN22a")]
+        public async Task WhenDisconnectedMessageContainsTokenError_ForcesClientToReauthenticate(Protocol protocol)
+        {
+            var awaiter = new TaskCompletionAwaiter(10000, 2);
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.UseTokenAuth = true;
+                options.AutoConnect = true;
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            var initialToken = client.RestClient.AblyAuth.CurrentToken;
+
+            client.Connection.Once(ConnectionEvent.Connected, state =>
+            {
+                awaiter.SetCompleted();
+            });
+
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Auth) { Error = new ErrorInfo("testing RTN22a", 40140) });
+            await awaiter.Task;
+
+            client.RestClient.AblyAuth.CurrentToken.Should().NotBe(initialToken);
+        }
+
         public ConnectionSandboxOperatingSystemEventsForNetworkSpecs(
             AblySandboxFixture fixture,
             ITestOutputHelper output)
