@@ -814,6 +814,58 @@ namespace IO.Ably.Tests.Realtime
             client.RestClient.AblyAuth.CurrentToken.Should().NotBe(initialToken);
         }
 
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN24")]
+        [Trait("spec", "RTN21")]
+        [Trait("spec", "RTN4h")]
+        public async Task WhenConnectedMessageReceived_ShouldEmitUpdate(Protocol protocol)
+        {
+            var updateAwaiter = new TaskCompletionAwaiter(5000);
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.UseTokenAuth = true;
+                options.AutoConnect = true;
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            client.Connection.ConnectionStateTtl.Should().NotBe(TimeSpan.MaxValue);
+
+            var key = client.Connection.Key;
+
+            client.Connection.Once(state =>
+            {
+                // RTN4h - can emit UPDATE event
+                if (state.Event == ConnectionEvent.Update)
+                {
+                    updateAwaiter.SetCompleted();
+                }
+                else
+                {
+                    throw new Exception("Only an UPDATE event should fire, see RTN4h");
+                }
+            });
+
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+            {
+                ConnectionDetails = new ConnectionDetails
+                {
+                    ConnectionKey = "key",
+                    ClientId = "RTN21",
+                    ConnectionStateTtl = TimeSpan.MaxValue
+                }
+            });
+
+            var didUpdate = await updateAwaiter.Task;
+            didUpdate.Should().BeTrue();
+
+            // RTN21 - new connection details over write old values
+            client.Connection.Key.Should().NotBe(key);
+            client.ClientId.Should().Be("RTN21");
+            client.Connection.ConnectionStateTtl.Should().Be(TimeSpan.MaxValue);
+        }
+
         public ConnectionSandboxOperatingSystemEventsForNetworkSpecs(
             AblySandboxFixture fixture,
             ITestOutputHelper output)
