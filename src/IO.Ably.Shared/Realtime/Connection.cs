@@ -195,7 +195,7 @@ namespace IO.Ably.Realtime
 
         internal void UpdateState(ConnectionStateBase state)
         {
-            if (state.State == State)
+            if (!state.IsUpdate && state.State == State)
             {
                 return;
             }
