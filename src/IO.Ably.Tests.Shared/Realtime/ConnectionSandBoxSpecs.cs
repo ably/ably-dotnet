@@ -839,11 +839,14 @@ namespace IO.Ably.Tests.Realtime
                 // RTN4h - can emit UPDATE event
                 if (state.Event == ConnectionEvent.Update)
                 {
+                    // should have both previous and current attributes set to CONNECTED
+                    state.Current.Should().Be(ConnectionState.Connected);
+                    state.Previous.Should().Be(ConnectionState.Connected);
                     updateAwaiter.SetCompleted();
                 }
                 else
                 {
-                    throw new Exception("Only an UPDATE event should fire, see RTN4h");
+                    throw new Exception($"'{state.Event}' was handled. Only an 'Update' event should have occured");
                 }
             });
 
