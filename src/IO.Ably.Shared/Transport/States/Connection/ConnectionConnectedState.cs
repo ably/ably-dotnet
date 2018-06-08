@@ -35,6 +35,9 @@ namespace IO.Ably.Transport.States.Connection
                 case ProtocolMessage.MessageAction.Auth:
                     await Context.RetryAuthentication();
                     return true;
+                case ProtocolMessage.MessageAction.Connected:
+                    await Context.SetState(new ConnectionConnectedState(Context, new ConnectionInfo(message), message.Error, Logger) { IsUpdate = true });
+                    return true;
                 case ProtocolMessage.MessageAction.Close:
                     await Context.SetState(new ConnectionClosedState(Context, message.Error, Logger));
                     return true;
