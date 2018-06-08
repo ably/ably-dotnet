@@ -116,30 +116,35 @@ namespace IO.Ably.Transport
                 {
                     lock (_stateSyncLock)
                     {
-                        if (State.State == newState.State)
+                        if (!newState.IsUpdate)
                         {
-                            if (Logger.IsDebug)
+                            if (State.State == newState.State)
                             {
-                                Logger.Debug($"xx State is already {State.State}. Skipping SetState action.");
+                                if (Logger.IsDebug)
+                                {
+                                    Logger.Debug($"xx State is already {State.State}. Skipping SetState action.");
+                                }
+
+                                return;
                             }
 
-                            return;
+                            AttemptsInfo.UpdateAttemptState(newState);
+                            // Abort any timers on the old state
+                            State.AbortTimer();
                         }
 
-                        // Abort any timers on the old state
-                        State.AbortTimer();
                         if (Logger.IsDebug)
                         {
                             Logger.Debug($"xx {newState.State}: BeforeTransition");
                         }
 
                         newState.BeforeTransition();
+
                         if (Logger.IsDebug)
                         {
                             Logger.Debug($"xx {newState.State}: BeforeTransition end");
                         }
 
-                        AttemptsInfo.UpdateAttemptState(newState);
                         Connection.UpdateState(newState);
                     }
 
