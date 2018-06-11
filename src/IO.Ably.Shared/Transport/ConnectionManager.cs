@@ -129,7 +129,6 @@ namespace IO.Ably.Transport
                             }
 
                             AttemptsInfo.UpdateAttemptState(newState);
-                            // Abort any timers on the old state
                             State.AbortTimer();
                         }
 
