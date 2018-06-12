@@ -807,7 +807,7 @@ namespace IO.Ably.Tests.Realtime
                 awaiter.SetCompleted();
             });
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Auth) { Error = new ErrorInfo("testing RTN22a", 40140) });
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = new ErrorInfo("testing RTN22a", 40140) });
             await awaiter.Task;
 
             client.RestClient.AblyAuth.CurrentToken.Should().NotBe(initialToken);
