@@ -825,7 +825,6 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
                 options.UseTokenAuth = true;
-                options.AutoConnect = true;
             });
 
             await client.WaitForState(ConnectionState.Connected);
