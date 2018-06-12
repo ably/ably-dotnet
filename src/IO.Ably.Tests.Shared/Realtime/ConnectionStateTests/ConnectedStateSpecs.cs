@@ -39,7 +39,6 @@ namespace IO.Ably.Tests
         [InlineData(ProtocolMessage.MessageAction.Attached)]
         [InlineData(ProtocolMessage.MessageAction.Closed)]
         [InlineData(ProtocolMessage.MessageAction.Connect)]
-        [InlineData(ProtocolMessage.MessageAction.Connected)]
         [InlineData(ProtocolMessage.MessageAction.Detach)]
         [InlineData(ProtocolMessage.MessageAction.Detached)]
         [InlineData(ProtocolMessage.MessageAction.Disconnect)]
