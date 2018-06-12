@@ -170,10 +170,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task WithDisconnectedConnection_WhenConnectCalled_ImmediatelyReconnect(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
-
-            // Start collecting events after the connection is open
             await client.WaitForState();
-
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
             await client.WaitForState(ConnectionState.Disconnected);
             var s = new Stopwatch();
@@ -193,10 +190,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task WithSuspendedConnection_WhenConnectCalled_ImmediatelyReconnect(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
-
-            // Start collecting events after the connection is open
             await client.WaitForState();
-
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
             await client.WaitForState(ConnectionState.Disconnected);
             await client.ConnectionManager.SetState(new ConnectionSuspendedState(client.ConnectionManager, new ErrorInfo("force suspended"), client.Logger));
@@ -208,8 +202,43 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.State.Should().Be(ConnectionState.Connecting);
             s.Stop();
 
-            // show the reconnect happened before the retry timeout could have fired
+            // show the reconnect happened before the retry timeout should fired
             s.Elapsed.Should().BeLessThan(client.Options.DisconnectedRetryTimeout);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN11d")]
+        public async Task WithFailedConnection_WhenConnectCalled_TransitionsChannelsToInitialized(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            await client.WaitForState(ConnectionState.Connected);
+
+            var chan1 = client.Channels.Get("RTN11c".AddRandomSuffix());
+            await chan1.AttachAsync();
+
+            // show that the channel is not in the initialized state already
+            chan1.State.Should().NotBe(ChannelState.Initialized);
+
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+            await client.WaitForState(ConnectionState.Disconnected);
+            await client.ConnectionManager.SetState(new ConnectionFailedState(client.ConnectionManager, new ErrorInfo("force failed"), client.Logger));
+            await client.WaitForState(ConnectionState.Failed);
+
+            // show there is a no-null error present on the connection
+            client.Connection.ErrorReason.Message.Should().Be("force failed");
+            client.Connect();
+            await client.WaitForState(ConnectionState.Connecting);
+            client.Connection.State.Should().Be(ConnectionState.Connecting);
+
+            // transitions all the channels to INITIALIZED
+            chan1.State.Should().Be(ChannelState.Initialized);
+
+            // sets their errorReason to null
+            chan1.ErrorReason.Should().BeNull();
+
+            // and sets the connection’s errorReason to null
+            client.Connection.ErrorReason.Should().BeNull();
         }
 
         [Theory]
