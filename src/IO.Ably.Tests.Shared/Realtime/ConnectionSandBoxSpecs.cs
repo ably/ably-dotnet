@@ -925,6 +925,7 @@ namespace IO.Ably.Tests.Realtime
                     // should have both previous and current attributes set to CONNECTED
                     state.Current.Should().Be(ConnectionState.Connected);
                     state.Previous.Should().Be(ConnectionState.Connected);
+                    state.Reason.Message = "fake-error";
                     updateAwaiter.SetCompleted();
                 }
                 else
@@ -940,7 +941,8 @@ namespace IO.Ably.Tests.Realtime
                     ConnectionKey = "key",
                     ClientId = "RTN21",
                     ConnectionStateTtl = TimeSpan.MaxValue
-                }
+                },
+                Error = new ErrorInfo("fake-error")
             });
 
             var didUpdate = await updateAwaiter.Task;
