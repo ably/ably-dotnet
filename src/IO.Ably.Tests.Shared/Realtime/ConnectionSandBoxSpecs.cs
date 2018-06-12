@@ -129,6 +129,42 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTN11b")]
+        public async Task WithClosingConnection_WhenConnectCalled_ShouldMakeNewConnectionAndTransport(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, (opts, _) =>
+            {
+                opts.DisconnectedRetryTimeout = TimeSpan.MaxValue;
+            });
+
+            // Start collecting events after the connection is open
+            await client.WaitForState();
+
+            // capture initial values
+            var initialConnection = client.Connection;
+            var initialTransport = client.ConnectionManager.Transport;
+
+            // The close timeout is 1000ms, so 3000ms is enough time to wait
+            var awaiter = new TaskCompletionAwaiter(3000);
+            client.Connection.On(ConnectionEvent.Closed, (state) =>
+            {
+                awaiter.SetCompleted();
+            });
+
+            client.Close();
+            await client.WaitForState(ConnectionState.Closing);
+
+            client.Connect();
+            await client.WaitForState();
+
+            client.ConnectionManager.Transport.Should().NotBe(initialTransport);
+
+            var didClose = await awaiter.Task;
+            didClose.Should().BeFalse();
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RTN13a")]
         public async Task WithConnectedClient_PingShouldReturnServiceTime(Protocol protocol)
         {
