@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -161,6 +162,54 @@ namespace IO.Ably.Tests.Realtime
 
             var didClose = await awaiter.Task;
             didClose.Should().BeFalse();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN11c")]
+        public async Task WithDisconnectedConnection_WhenConnectCalled_ImmediatelyReconnect(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+
+            // Start collecting events after the connection is open
+            await client.WaitForState();
+
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+            await client.WaitForState(ConnectionState.Disconnected);
+            var s = new Stopwatch();
+            s.Start();
+            client.Connect();
+            await client.WaitForState(ConnectionState.Connecting);
+            client.Connection.State.Should().Be(ConnectionState.Connecting);
+            s.Stop();
+
+            // show the reconnect happened before the retry timeout could have fired
+            s.Elapsed.Should().BeLessThan(client.Options.DisconnectedRetryTimeout);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN11c")]
+        public async Task WithSuspendedConnection_WhenConnectCalled_ImmediatelyReconnect(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+
+            // Start collecting events after the connection is open
+            await client.WaitForState();
+
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+            await client.WaitForState(ConnectionState.Disconnected);
+            await client.ConnectionManager.SetState(new ConnectionSuspendedState(client.ConnectionManager, new ErrorInfo("force suspended"), client.Logger));
+            await client.WaitForState(ConnectionState.Suspended);
+            var s = new Stopwatch();
+            s.Start();
+            client.Connect();
+            await client.WaitForState(ConnectionState.Connecting);
+            client.Connection.State.Should().Be(ConnectionState.Connecting);
+            s.Stop();
+
+            // show the reconnect happened before the retry timeout could have fired
+            s.Elapsed.Should().BeLessThan(client.Options.DisconnectedRetryTimeout);
         }
 
         [Theory]
