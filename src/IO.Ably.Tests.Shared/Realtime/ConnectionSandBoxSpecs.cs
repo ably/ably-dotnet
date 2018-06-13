@@ -156,7 +156,7 @@ namespace IO.Ably.Tests.Realtime
             await client.WaitForState(ConnectionState.Closing);
 
             client.Connect();
-            await client.WaitForState();
+            await client.WaitForState(ConnectionState.Connected);
 
             client.ConnectionManager.Transport.Should().NotBe(initialTransport);
 
@@ -190,9 +190,6 @@ namespace IO.Ably.Tests.Realtime
         public async Task WithSuspendedConnection_WhenConnectCalled_ImmediatelyReconnect(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
-            await client.WaitForState();
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
-            await client.WaitForState(ConnectionState.Disconnected);
             await client.ConnectionManager.SetState(new ConnectionSuspendedState(client.ConnectionManager, new ErrorInfo("force suspended"), client.Logger));
             await client.WaitForState(ConnectionState.Suspended);
             var s = new Stopwatch();
