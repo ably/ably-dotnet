@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using IO.Ably.Shared;
+using IO.Ably.Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -74,22 +75,26 @@ namespace IO.Ably.Tests
 
             // check the client thinks the token is valid
             restClient.AblyAuth.CurrentToken.IsValidToken().Should().BeTrue();
+
+            var channelName = "RSA4a".AddRandomSuffix();
+
             try
             {
-                await restClient.Channels.Get("random").PublishAsync("event", "data");
-                throw new Exception("Unexpected success, the proceeding code should have raised an AblyException");
+                await restClient.Channels.Get(channelName).PublishAsync("event", "data");
+                throw new Exception("Unexpected success, the preceding code should have raised an AblyException");
             }
             catch (AblyException e)
             {
                 // the server responds with a token error
                 // (401 HTTP status code and an Ably error value 40140 <= code < 40150)
+                // As the token is expired we can expect a specific code "40142": "token expired"
                 e.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-                e.ErrorInfo.Code.Should().BeInRange(40140, 40150);
+                e.ErrorInfo.Code.Should().Be(40142);
             }
 
             // did not retry the request
             helper.Requests.Count.Should().Be(1, "only one request should have been attempted");
-            helper.Requests[0].Url.Should().Be("/channels/random/messages", "only the publish request should have been attempted");
+            helper.Requests[0].Url.Should().Be($"/channels/{channelName}/messages", "only the publish request should have been attempted");
         }
 
         [Theory]
@@ -118,7 +123,7 @@ namespace IO.Ably.Tests
             realtimeClient.Connection.State.Should().Be(ConnectionState.Failed);
             connected.Should().BeFalse();
 
-            realtimeClient.Connection.ErrorReason.Code.Should().BeInRange(40140, 40150);
+            realtimeClient.Connection.ErrorReason.Code.Should().Be(40142);
             helper.Requests.Count.Should().Be(0);
         }
 
@@ -131,7 +136,7 @@ namespace IO.Ably.Tests
 
             // Create a token that is valid long enough for a successful connection to occur
             var authClient = await GetRestClient(protocol);
-            var almostExpiredToken = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromMilliseconds(2000) });
+            var almostExpiredToken = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromMilliseconds(8000) });
 
             // get a realtime client with no Key, AuthUrl, or authCallback
             var realtimeClient = await helper.GetRealTimeClientWithRequests(protocol, almostExpiredToken, invalidateKey: true);
@@ -144,52 +149,44 @@ namespace IO.Ably.Tests
             await realtimeClient.WaitForState(ConnectionState.Failed);
             realtimeClient.Connection.State.Should().Be(ConnectionState.Failed);
 
-            realtimeClient.Connection.ErrorReason.Code.Should().BeInRange(40140, 40150);
+            realtimeClient.Connection.ErrorReason.Code.Should().Be(40142);
             helper.Requests.Count.Should().Be(0);
         }
 
-        /*
-         * (RSA4b) When the client does have a means to renew the token automatically,
-         * and the token has expired or the server has responded with a token error
-         * (statusCode value of 401 and error code value in the range 40140 <= code < 40150),
-         * then the client should automatically make a single attempt to reissue the token and resend the request using the new token.
-         * If the token creation failed or the subsequent request with the new token failed due to a token error, then the request should result in an error
-         */
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSA4b")]
-        public async Task WithApiKey_WhenTokenExpired_ShouldRetry_WhenRetryFails_ShouldRaiseError(Protocol protocol)
+        public async Task RealtimeWithAuthError_WhenTokenExpired_ShouldRetry_WhenRetryFails_ShouldSetError(Protocol protocol)
         {
             var helper = new RSA4Helper(this);
 
             var restClient = await GetRestClient(protocol);
-            await restClient.Auth.AuthorizeAsync(new TokenParams
+            var token = await restClient.Auth.AuthorizeAsync(new TokenParams
             {
                 Ttl = TimeSpan.FromMilliseconds(1000)
             });
 
-            // when an HTTP request is made return a response with a 500 status, causing retry to fail
-            restClient.ExecuteHttpRequest = helper.AblyResponseWith500Status;
-
             // this realtime client will have a key for the sandbox, thus a means to renew
-            var realtimeClient = await GetRealtimeClient(protocol, (options, _) => { options.TokenDetails = restClient.Options.TokenDetails; }, options => restClient);
+            var realtimeClient = await GetRealtimeClient(protocol, (options, _) =>
+            {
+                options.TokenDetails = token;
+                options.AutoConnect = false;
+            });
 
             realtimeClient.RestClient.ExecuteHttpRequest = helper.AblyResponseWith500Status;
-            await realtimeClient.WaitForState(ConnectionState.Connected);
-            var channel = realtimeClient.Channels.Get("random");
 
-            // wait for the token to expire and then publish
-            await Task.Delay(TimeSpan.FromMilliseconds(2000));
-            try
+            var awaiter = new TaskCompletionAwaiter(5000);
+            realtimeClient.Connection.Once(ConnectionState.Failed, state =>
             {
-                channel.Publish("event", "data");
-                throw new Exception("Unexpected success, channel.Publish() should have thrown an AblyException");
-            }
-            catch (Exception e)
-            {
-                (e is AblyException).Should().BeTrue("should be an Ably Exception");
-            }
+                state.Reason.Code.Should().Be(80019);
+                awaiter.SetCompleted();
+            });
 
+            await Task.Delay(2000);
+            realtimeClient.Connect();
+
+            var result = await awaiter.Task;
+            result.Should().BeTrue();
             helper.Requests.Count.Should().Be(1);
             helper.Requests[0].Url.EndsWith("requestToken").Should().BeTrue();
         }
@@ -197,7 +194,7 @@ namespace IO.Ably.Tests
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSA4b")]
-        public async Task WithAuthCallback_WhenTokenExpired_ShouldRetry_WhenRetryFails_ShouldRaiseError(Protocol protocol)
+        public async Task RealTimeWithAuthCallback_WhenTokenExpired_ShouldRetry_WhenRetryFails_ShouldSetError(Protocol protocol)
         {
             // create a short lived token
             var authRestClient = await GetRestClient(protocol);
@@ -206,34 +203,37 @@ namespace IO.Ably.Tests
                 Ttl = TimeSpan.FromMilliseconds(1000)
             });
 
-            // create a realtime client with the token and provide an auth callback that will throw an exception
+            bool didRetry = false;
             var realtimeClient = await GetRealtimeClient(protocol, (options, _) =>
             {
                 options.TokenDetails = token;
-                options.AuthCallback = tokenParams => throw new Exception("AuthCallback failed");
+                options.AuthCallback = tokenParams =>
+                {
+                    didRetry = true;
+                    throw new Exception("AuthCallback failed");
+                };
+                options.AutoConnect = false;
             });
 
-            await realtimeClient.WaitForState(ConnectionState.Connected);
-            var channel = realtimeClient.Channels.Get("random");
-
-            // wait for the token to expire and then try to publish
-            await Task.Delay(TimeSpan.FromMilliseconds(2000));
-
-            try
+            var awaiter = new TaskCompletionAwaiter(5000);
+            realtimeClient.Connection.Once(ConnectionState.Failed, state =>
             {
-                channel.Publish("event", "data");
-                throw new Exception("Unexpected success, channel.Publish() should have thrown an AblyException");
-            }
-            catch (Exception e)
-            {
-                (e is AblyException).Should().BeTrue("should be an Ably Exception");
-            }
+                state.Reason.Code.Should().Be(80019);
+                awaiter.SetCompleted();
+            });
+
+            await Task.Delay(2000);
+            realtimeClient.Connect();
+
+            var result = await awaiter.Task;
+            result.Should().BeTrue();
+            didRetry.Should().BeTrue();
         }
 
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSA4b")]
-        public async Task WithAuthUrl_WhenTokenExpired_ShouldRetry_WhenRetryFails_ShouldRaiseError(Protocol protocol)
+        public async Task RealTimeWithAuthUrl_WhenTokenExpired_ShouldRetry_WhenRetryFails_ShouldSetError(Protocol protocol)
         {
             var authRestClient = await GetRestClient(protocol);
             var token = await authRestClient.Auth.RequestTokenAsync(new TokenParams
@@ -249,20 +249,18 @@ namespace IO.Ably.Tests
                 options.AuthUrl = new Uri(_invalidAuthUrl);
             });
 
-            await realtimeClient.WaitForState(ConnectionState.Connected);
-            var channel = realtimeClient.Channels.Get("random");
+            var awaiter = new TaskCompletionAwaiter(5000);
+            realtimeClient.Connection.Once(ConnectionState.Failed, state =>
+            {
+                state.Reason.Code.Should().Be(80019);
+                awaiter.SetCompleted();
+            });
 
-            // wait for the token to expire and then publish
-            await Task.Delay(TimeSpan.FromMilliseconds(2000));
-            try
-            {
-                channel.Publish("event", "data");
-                throw new Exception("Unexpected success, channel.Publish() should have thrown an AblyException");
-            }
-            catch (Exception e)
-            {
-                (e is AblyException).Should().BeTrue("should be an AblyException");
-            }
+            await Task.Delay(2000);
+            realtimeClient.Connect();
+
+            var result = await awaiter.Task;
+            result.Should().BeTrue();
         }
 
         /*
@@ -318,6 +316,7 @@ namespace IO.Ably.Tests
         [Trait("spec", "RSA4c3")]
         public async Task AuthToken_WithConnectedRealtimeClient_WhenAuthCallbackFails_ShouldRaiseError(Protocol protocol)
         {
+            throw new Exception("WIP test stub");
         }
 
         [Theory]

@@ -15,7 +15,7 @@ namespace IO.Ably
         /// The callback used to get a new token string or <see cref="IO.Ably.TokenDetails"/> or <see cref="IO.Ably.TokenRequest"/>.
         /// AuthCallback is used by internally by <see cref="IO.Ably.AblyAuth"/>.RequestTokenAsync.
         /// </summary>
-        public Func<TokenParams, Task<AuthCallbackResult>> AuthCallback;
+        public Func<TokenParams, Task<object>> AuthCallback { get; set; }
 
         /// <summary>
         /// A URL to query to obtain either a signed token request (<see cref="TokenRequest"/>) or a valid <see cref="TokenDetails"/>
