@@ -249,35 +249,37 @@ namespace IO.Ably.Tests.Realtime
             {
                 await realtime.WaitForState(state);
 
-                var reconnectAwaiter = new TaskCompletionAwaiter(3000);
+                var reconnectAwaiter = new TaskCompletionAwaiter(5000);
                 realtime.Connection.On(ConnectionEvent.Connected, args =>
                 {
                     reconnectAwaiter.SetCompleted();
                 });
-                realtime.Close();
 
+                realtime.Close();
                 await realtime.WaitForState(ConnectionState.Closed);
                 realtime.Connection.State.Should().Be(ConnectionState.Closed);
 
                 var didReconnect = await reconnectAwaiter.Task;
-                didReconnect.Should().BeFalse();
+                didReconnect.Should().BeFalse($"should not attempt a reconnect for state {state}");
             }
 
             // setup a new client and put into a DISCONNECTED state
             var client = await GetRealtimeClient(protocol, (opts, _) =>
             {
-                opts.DisconnectedRetryTimeout = TimeSpan.FromSeconds(1);
+                opts.DisconnectedRetryTimeout = TimeSpan.FromSeconds(2);
             });
 
+            await client.WaitForState();
             await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager, new ErrorInfo("force disconnect"), client.Logger));
             await AssertsClosesAndDoesNotReconnect(client, ConnectionState.Disconnected);
 
             // reinitialize the client and put into a SUSPENDED state
             client = await GetRealtimeClient(protocol, (opts, _) =>
             {
-                opts.DisconnectedRetryTimeout = TimeSpan.FromSeconds(1);
+                opts.SuspendedRetryTimeout = TimeSpan.FromSeconds(2);
             });
 
+            await client.WaitForState();
             await client.ConnectionManager.SetState(new ConnectionSuspendedState(client.ConnectionManager, new ErrorInfo("force suspend"), client.Logger));
             await AssertsClosesAndDoesNotReconnect(client, ConnectionState.Suspended);
         }
