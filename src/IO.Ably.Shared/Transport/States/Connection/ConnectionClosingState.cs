@@ -87,6 +87,7 @@ namespace IO.Ably.Transport.States.Connection
         {
             _inTransition = true;
             _timer.Abort();
+            Context.Connection.Key = string.Empty;
             Context.SetState(new ConnectionConnectingState(Context, Logger));
         }
     }
