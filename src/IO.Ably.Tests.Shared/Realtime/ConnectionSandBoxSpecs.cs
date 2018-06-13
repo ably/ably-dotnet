@@ -142,7 +142,7 @@ namespace IO.Ably.Tests.Realtime
             await client.WaitForState();
 
             // capture initial values
-            var initialConnection = client.Connection;
+            var initialConnectionId = client.Connection.Id;
             var initialTransport = client.ConnectionManager.Transport;
 
             // The close timeout is 1000ms, so 3000ms is enough time to wait
@@ -158,6 +158,8 @@ namespace IO.Ably.Tests.Realtime
             client.Connect();
             await client.WaitForState(ConnectionState.Connected);
 
+            client.Connection.Id.Should().NotBeNullOrEmpty();
+            client.Connection.Id.Should().NotBe(initialConnectionId);
             client.ConnectionManager.Transport.Should().NotBe(initialTransport);
 
             var didClose = await awaiter.Task;
