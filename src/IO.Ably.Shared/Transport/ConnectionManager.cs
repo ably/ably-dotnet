@@ -592,5 +592,40 @@ namespace IO.Ably.Transport
                     break;
             }
         }
+
+        public void OnAuthUpdated(object sender, AblyAuthUpdatedEventArgs args)
+        {
+            if (State.State == ConnectionState.Connected)
+            {
+                /* (RTC8a) If the connection is in the CONNECTED state and
+                 * auth.authorize is called or Ably requests a re-authentication
+                 * (see RTN22), the client must obtain a new token, then send an
+                 * AUTH ProtocolMessage to Ably with an auth attribute
+                 * containing an AuthDetails object with the token string. */
+                try
+                {
+                    ProtocolMessage msg = new ProtocolMessage(ProtocolMessage.MessageAction.Auth);
+                    var authDetails = new AuthDetails { AccessToken = args.Token.Token };
+                    msg.Auth = authDetails;
+                    Send(msg, null, null);
+                }
+                catch (AblyException e)
+                {
+                    Logger.Warning("OnAuthUpdated: closing transport after send failure");
+                    Logger.Debug(e.Message);
+                    Transport.Close();
+                }
+            }
+            else
+            {
+                if (State.State == ConnectionState.Connecting)
+                {
+                    Logger.Debug("OnAuthUpdated: closing connecting transport");
+                    Transport.Close();
+                }
+
+                Connect();
+            }
+        }
     }
 }
