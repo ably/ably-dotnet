@@ -378,7 +378,7 @@ namespace IO.Ably
             var authOptions = options ?? new AuthOptions();
 
             authOptions.Merge(CurrentAuthOptions);
-            SetCurrentAuthOptions(options);
+            SetCurrentAuthOptions(authOptions);
 
             var authTokenParams = MergeTokenParamsWithDefaults(tokenParams);
             SetCurrentTokenParams(authTokenParams);
