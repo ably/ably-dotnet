@@ -8,7 +8,7 @@ using IO.Ably.Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IO.Ably.Tests.Shared.Realtime
+namespace IO.Ably.Tests.Realtime
 {
     [Trait("requires", "sandbox")]
     public class RealtimeSandboxSpecs : SandboxSpecs
@@ -32,12 +32,13 @@ namespace IO.Ably.Tests.Shared.Realtime
 
             await client.WaitForState(ConnectionState.Connected);
 
-            var tokenDetails = await client.Auth.AuthorizeAsync(new TokenParams { ClientId = "RTC8" });
-            tokenDetails.ClientId.Should().Be("RTC8");
+            var tokenDetails = await client.Auth.AuthorizeAsync(new TokenParams { ClientId = "RTC8a" });
+            tokenDetails.ClientId.Should().Be("RTC8a");
 
             client.Connection.State.Should().Be(ConnectionState.Connected);
             client.RestClient.AblyAuth.CurrentToken.Should().Be(tokenDetails);
             var didUpdate = await awaiter.Task;
+            client.Connection.State.Should().Be(ConnectionState.Connected);
             didUpdate.Should().BeTrue(
                 "the AUTH message should trigger CONNECTED response from the server that causes an UPDATE to be emitted.");
         }
