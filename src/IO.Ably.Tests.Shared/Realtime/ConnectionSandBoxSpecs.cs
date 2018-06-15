@@ -250,9 +250,13 @@ namespace IO.Ably.Tests.Realtime
                 await realtime.WaitForState(state);
 
                 var reconnectAwaiter = new TaskCompletionAwaiter(5000);
-                realtime.Connection.On(ConnectionEvent.Connected, args =>
+                realtime.Connection.On(args =>
                 {
-                    reconnectAwaiter.SetCompleted();
+                    if (realtime.Connection.State == ConnectionState.Connecting
+                        || realtime.Connection.State == ConnectionState.Connected)
+                    {
+                        reconnectAwaiter.SetCompleted();
+                    }
                 });
 
                 realtime.Close();
