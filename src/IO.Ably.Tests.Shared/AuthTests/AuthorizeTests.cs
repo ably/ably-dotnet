@@ -41,30 +41,6 @@ namespace IO.Ably.Tests.AuthTests
             data.Ttl.Should().Be(TimeSpan.FromMinutes(260));
         }
 
-        [Theory]
-        [InlineData(Defaults.TokenExpireBufferInSeconds + 1, false)]
-        [InlineData(Defaults.TokenExpireBufferInSeconds, true)]
-        [InlineData(Defaults.TokenExpireBufferInSeconds - 1, true)]
-        [Trait("spec", "RSA10c")]
-        public async Task Authorize_WithTokenExpiringIn15Seconds_RenewsToken(int secondsLeftToExpire, bool shouldRenew)
-        {
-            var client = GetRestClient();
-            var initialToken = new TokenDetails() { Expires = Now.AddSeconds(secondsLeftToExpire) };
-            client.AblyAuth.CurrentToken = initialToken;
-
-            var token = await client.Auth.AuthorizeAsync();
-
-            if (shouldRenew)
-            {
-                Assert.Contains("requestToken", LastRequest.Url);
-                token.Should().NotBeSameAs(initialToken);
-            }
-            else
-            {
-                token.Should().BeSameAs(initialToken);
-            }
-        }
-
         [Fact]
         [Trait("spec", "RSA10g")]
         public async Task ShouldKeepTokenParamsAndAuthOptionsExcetpForceAndCurrentTimestamp()
