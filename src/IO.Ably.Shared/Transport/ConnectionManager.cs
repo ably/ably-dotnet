@@ -614,17 +614,11 @@ namespace IO.Ably.Transport
                 {
                     Logger.Warning("OnAuthUpdated: closing transport after send failure");
                     Logger.Debug(e.Message);
-                    Transport.Close();
+                    Transport?.Close();
                 }
             }
             else
             {
-                if (State.State == ConnectionState.Connecting)
-                {
-                    Logger.Debug("OnAuthUpdated: closing connecting transport");
-                    Transport.Close();
-                }
-
                 Connect();
             }
         }
