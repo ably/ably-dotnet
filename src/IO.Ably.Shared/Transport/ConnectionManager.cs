@@ -604,10 +604,11 @@ namespace IO.Ably.Transport
                  * containing an AuthDetails object with the token string. */
                 try
                 {
-                    ProtocolMessage msg = new ProtocolMessage(ProtocolMessage.MessageAction.Auth);
-                    var authDetails = new AuthDetails { AccessToken = args.Token.Token };
-                    msg.Auth = authDetails;
-                    Send(msg, null, null);
+                    var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Auth)
+                    {
+                        Auth = new AuthDetails { AccessToken = args.Token.Token }
+                    };
+                    Send(msg);
                 }
                 catch (AblyException e)
                 {
