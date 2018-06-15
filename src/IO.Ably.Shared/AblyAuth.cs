@@ -387,7 +387,7 @@ namespace IO.Ably
 
             CurrentToken = await RequestTokenAsync(authTokenParams, options);
             AuthMethod = AuthMethod.Token;
-            AuthUpdated?.Invoke(this, new AblyAuthUpdatedEventArgs());
+            AuthUpdated?.Invoke(this, new AblyAuthUpdatedEventArgs(CurrentToken));
             return CurrentToken;
         }
 
