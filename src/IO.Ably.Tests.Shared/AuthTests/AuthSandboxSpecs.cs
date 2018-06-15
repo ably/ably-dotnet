@@ -348,7 +348,19 @@ namespace IO.Ably.Tests
                     change.Reason.Code.Should().Be(80019);
                     tca.SetCompleted();
                 });
-                await realtimeClient.Auth.AuthorizeAsync();
+
+                bool didThrowAblyException = false;
+                try
+                {
+                    await realtimeClient.Auth.AuthorizeAsync();
+                    Assert.True(false, "An exception should be raised before this line is reached.");
+                }
+                catch (AblyException e)
+                {
+                    didThrowAblyException = true;
+                }
+
+                didThrowAblyException.Should().BeTrue();
                 realtimeClient.Connection.State.Should().Be(ConnectionState.Connected);
                 (await tca.Task).Should().BeFalse(context);
             }
