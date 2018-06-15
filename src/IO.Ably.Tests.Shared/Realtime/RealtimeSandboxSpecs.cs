@@ -4,31 +4,31 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Tests.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Shared.Realtime
 {
     [Trait("requires", "sandbox")]
-    public class RealtimeSandbox : SandboxSpecs
+    public class RealtimeSandboxSpecs : SandboxSpecs
     {
-        public RealtimeSandbox(AblySandboxFixture fixture, ITestOutputHelper output)
+        public RealtimeSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
             : base(fixture, output)
         {
         }
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RTC8")]
-        public async Task WithConnectedClient_AuthorizeObtainsNewTokenAndUpgradesConnection(Protocol protocol)
+        [Trait("spec", "RTC8a")]
+        [Trait("spec", "RTC8a1")]
+        public async Task WithConnectedClient_AuthorizeObtainsNewTokenAndUpgradesConnection_AndShouldEmitUpdate(
+            Protocol protocol)
         {
-            // For a realtime client, Auth#authorize instructs the library to obtain a token using the provided tokenParams and authOptions and upgrade the current connection to use that token; or if not currently connected, to connect with the token.
-            var client = await GetRealtimeClient(protocol, (opts, _) =>
-            {
-                opts.ClientId = "RTC8";
-            });
+            var client = await GetRealtimeClient(protocol, (opts, _) => { opts.ClientId = "RTC8a"; });
 
-            client.Connect();
+            var awaiter = new TaskCompletionAwaiter();
+            client.Connection.On(ConnectionEvent.Update, args => { awaiter.SetCompleted(); });
 
             await client.WaitForState(ConnectionState.Connected);
 
@@ -37,6 +37,9 @@ namespace IO.Ably.Tests.Shared.Realtime
 
             client.Connection.State.Should().Be(ConnectionState.Connected);
             client.RestClient.AblyAuth.CurrentToken.Should().Be(tokenDetails);
+            var didUpdate = await awaiter.Task;
+            didUpdate.Should().BeTrue(
+                "the AUTH message should trigger CONNECTED response from the server that causes an UPDATE to be emitted.");
         }
 
         [Theory]
@@ -44,7 +47,6 @@ namespace IO.Ably.Tests.Shared.Realtime
         [Trait("spec", "RTC8")]
         public async Task WithNotConnectedClient_AuthorizeObtainsNewTokenAndConnects(Protocol protocol)
         {
-            // For a realtime client, Auth#authorize instructs the library to obtain a token using the provided tokenParams and authOptions and upgrade the current connection to use that token; or if not currently connected, to connect with the token.
             var client = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
