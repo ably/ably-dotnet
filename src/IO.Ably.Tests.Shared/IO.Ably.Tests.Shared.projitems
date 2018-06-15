@@ -90,6 +90,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\MockHttpRealtimeSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\PresenceSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ProtocolMessageSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RestProtocolTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\AblyHttpClientSpecs.cs" />
