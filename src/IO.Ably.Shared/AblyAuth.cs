@@ -13,6 +13,8 @@ namespace IO.Ably
 {
     internal class AblyAuth : IAblyAuth
     {
+        public event EventHandler<AblyAuthUpdatedEventArgs> AuthUpdated;
+
         internal AblyAuth(ClientOptions options, AblyRest rest)
         {
             Now = options.NowFunc;
@@ -385,6 +387,7 @@ namespace IO.Ably
 
             CurrentToken = await RequestTokenAsync(authTokenParams, options);
             AuthMethod = AuthMethod.Token;
+            AuthUpdated?.Invoke(this, new AblyAuthUpdatedEventArgs());
             return CurrentToken;
         }
 
