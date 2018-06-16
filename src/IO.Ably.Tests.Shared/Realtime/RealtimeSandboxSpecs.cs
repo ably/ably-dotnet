@@ -20,6 +20,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTC8")]
         [Trait("spec", "RTC8a")]
         [Trait("spec", "RTC8a1")]
         public async Task WithConnectedClient_AuthorizeObtainsNewTokenAndUpgradesConnection_AndShouldEmitUpdate(
