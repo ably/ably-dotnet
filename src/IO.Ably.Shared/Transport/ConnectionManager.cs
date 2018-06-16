@@ -604,10 +604,42 @@ namespace IO.Ably.Transport
                  * containing an AuthDetails object with the token string. */
                 try
                 {
+                    /* (RTC8a3) The authorize call should be indicated as completed
+                     * with the new token or error only once realtime has responded
+                     * to the AUTH with either a CONNECTED or ERROR respectively. */
+
+                    // an ERROR protocol message will fail the connection
+                    void OnFailed(object o, ConnectionStateChange change)
+                    {
+                        if (change.Current == ConnectionState.Failed)
+                        {
+                            Connection.InternalStateChanged -= OnFailed;
+                            Connection.InternalStateChanged -= OnConnected;
+                            args.CompletedTask.TrySetResult(false);
+                        }
+                    }
+
+                    void OnConnected(object o, ConnectionStateChange change)
+                    {
+                        if (change.Current == ConnectionState.Connected)
+                        {
+                            Connection.InternalStateChanged -= OnFailed;
+                            Connection.InternalStateChanged -= OnConnected;
+                            args.CompletedTask.TrySetResult(true);
+                        }
+                    }
+
+                    Connection.InternalStateChanged += OnFailed;
+                    Connection.InternalStateChanged += OnConnected;
+
+                    // Connection.Once(ConnectionEvent.Update, state => { args.CompletedTask.TrySetResult(true); });
+                    // Connection.Once(ConnectionEvent.Failed, state => { args.CompletedTask.TrySetResult(false); });
+
                     var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Auth)
                     {
                         Auth = new AuthDetails { AccessToken = args.Token.Token }
                     };
+
                     Send(msg);
                 }
                 catch (AblyException e)
@@ -619,6 +651,7 @@ namespace IO.Ably.Transport
             }
             else
             {
+                args.CompletedTask.TrySetResult(true);
                 Connect();
             }
         }
