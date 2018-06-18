@@ -41,10 +41,7 @@ namespace IO.Ably.Realtime
             switch (protocolMessage.Action)
             {
                 case ProtocolMessage.MessageAction.Error:
-                    if (protocolMessage.Channel.IsNotEmpty())
-                    {
-                        channel.SetChannelState(ChannelState.Failed, protocolMessage);
-                    }
+                    channel.SetChannelState(ChannelState.Failed, protocolMessage);
 
                     break;
                 case ProtocolMessage.MessageAction.Attach:
