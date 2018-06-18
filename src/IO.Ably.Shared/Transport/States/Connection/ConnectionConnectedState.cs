@@ -58,13 +58,12 @@ namespace IO.Ably.Transport.States.Connection
                 case ProtocolMessage.MessageAction.Error:
                     // an error message may signify an error state in the connection or in a channel
                     // Only handle connection errors here.
-                    if (message.Channel == null)
+                    if (message.Channel.IsEmpty())
                     {
                         await Context.SetState(new ConnectionFailedState(Context, message.Error, Logger));
-                        return true;
                     }
 
-                    break;
+                    return true;
             }
 
             return false;
