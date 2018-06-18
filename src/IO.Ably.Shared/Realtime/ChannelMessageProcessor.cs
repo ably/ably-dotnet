@@ -42,7 +42,6 @@ namespace IO.Ably.Realtime
             {
                 case ProtocolMessage.MessageAction.Error:
                     channel.SetChannelState(ChannelState.Failed, protocolMessage);
-
                     break;
                 case ProtocolMessage.MessageAction.Attach:
                 case ProtocolMessage.MessageAction.Attached:
