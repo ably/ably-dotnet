@@ -12,7 +12,7 @@ namespace IO.Ably
         /// A handler should Complete this task to allow the
         /// AuthorizeAsync call to complete
         /// </summary>
-        public TaskCompletionSource<bool> CompletedTask { get; }
+        internal TaskCompletionSource<bool> CompletedTask { get; }
 
         public AblyAuthUpdatedEventArgs()
         {
@@ -22,6 +22,11 @@ namespace IO.Ably
         public AblyAuthUpdatedEventArgs(TokenDetails token) : this()
         {
             Token = token;
+        }
+
+        public void CompleteAuthorization(bool success)
+        {
+            CompletedTask.TrySetResult(success);
         }
     }
 }

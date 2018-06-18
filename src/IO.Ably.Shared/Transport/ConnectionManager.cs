@@ -615,7 +615,7 @@ namespace IO.Ably.Transport
                         {
                             Connection.InternalStateChanged -= OnFailed;
                             Connection.InternalStateChanged -= OnConnected;
-                            args.CompletedTask.TrySetResult(false);
+                            args.CompleteAuthorization(false);
                         }
                     }
 
@@ -625,15 +625,12 @@ namespace IO.Ably.Transport
                         {
                             Connection.InternalStateChanged -= OnFailed;
                             Connection.InternalStateChanged -= OnConnected;
-                            args.CompletedTask.TrySetResult(true);
+                            args.CompleteAuthorization(true);
                         }
                     }
 
                     Connection.InternalStateChanged += OnFailed;
                     Connection.InternalStateChanged += OnConnected;
-
-                    // Connection.Once(ConnectionEvent.Update, state => { args.CompletedTask.TrySetResult(true); });
-                    // Connection.Once(ConnectionEvent.Failed, state => { args.CompletedTask.TrySetResult(false); });
 
                     var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Auth)
                     {

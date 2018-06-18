@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 using IO.Ably;
@@ -391,10 +392,32 @@ namespace IO.Ably
             AuthUpdated?.Invoke(this, eventArgs);
 
             // RTC8a3
-            await eventArgs.CompletedTask.Task;
+            await AuthorizeCompleted(eventArgs);
 
             return CurrentToken;
         }
+
+        internal async Task<bool> AuthorizeCompleted(AblyAuthUpdatedEventArgs args)
+        {
+            bool? completed = null;
+
+            void OnTimerElapsed()
+            {
+                if (args?.CompletedTask != null && completed.HasValue == false)
+                {
+                    args.CompletedTask.TrySetException(
+                        new AblyException($"Timeout waiting for Authorize to complete. A CONNECTED or ERROR ProtocolMessage was expected before the timeout ({Options.RealtimeRequestTimeout.TotalMilliseconds}ms) elapsed.", 40140));
+                }
+            }
+
+            var timer = new Timer(state => OnTimerElapsed(), null, (int)Options.RealtimeRequestTimeout.TotalMilliseconds, Timeout.Infinite);
+
+            completed = await args.CompletedTask.Task;
+            timer.Dispose();
+
+            return completed.Value;
+        }
+
 
         [Obsolete("This method will be removed in the future, please replace with a call to AuthorizeAsync")]
         public async Task<TokenDetails> AuthoriseAsync(TokenParams tokenParams = null, AuthOptions options = null)
