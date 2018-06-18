@@ -1063,6 +1063,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN24")]
         [Trait("spec", "RTN21")]
         [Trait("spec", "RTN4h")]
+        [Trait("spec", "RTC8a1")]
         public async Task WhenConnectedMessageReceived_ShouldEmitUpdate(Protocol protocol)
         {
             var updateAwaiter = new TaskCompletionAwaiter(5000);
