@@ -56,8 +56,15 @@ namespace IO.Ably.Transport.States.Connection
                     await Context.SetState(new ConnectionDisconnectedState(Context, message.Error, Logger));
                     return true;
                 case ProtocolMessage.MessageAction.Error:
-                    await Context.SetState(new ConnectionFailedState(Context, message.Error, Logger));
-                    return true;
+                    // an error message may signify an error state in the connection or in a channel
+                    // Only handle connection errors here.
+                    if (message.Channel == null)
+                    {
+                        await Context.SetState(new ConnectionFailedState(Context, message.Error, Logger));
+                        return true;
+                    }
+
+                    break;
             }
 
             return false;
