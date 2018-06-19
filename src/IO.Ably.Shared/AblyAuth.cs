@@ -399,6 +399,11 @@ namespace IO.Ably
 
         internal async Task<bool> AuthorizeCompleted(AblyAuthUpdatedEventArgs args)
         {
+            if (AuthUpdated == null)
+            {
+                return true;
+            }
+
             bool? completed = null;
 
             void OnTimerElapsed()
@@ -417,7 +422,6 @@ namespace IO.Ably
 
             return completed.Value;
         }
-
 
         [Obsolete("This method will be removed in the future, please replace with a call to AuthorizeAsync")]
         public async Task<TokenDetails> AuthoriseAsync(TokenParams tokenParams = null, AuthOptions options = null)
