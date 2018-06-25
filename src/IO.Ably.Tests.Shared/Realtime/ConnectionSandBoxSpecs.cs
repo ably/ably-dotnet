@@ -242,6 +242,54 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTN12d")]
+        public async Task WithDisconnectedOrSuspendedConnection_WhenCloseCalled_AbortRetryAndCloseImmediately(Protocol protocol)
+        {
+            async Task AssertsClosesAndDoesNotReconnect(AblyRealtime realtime, ConnectionState state)
+            {
+                await realtime.WaitForState(state);
+
+                var reconnectAwaiter = new TaskCompletionAwaiter(5000);
+                realtime.Connection.On(args =>
+                {
+                    if (realtime.Connection.State == ConnectionState.Connecting
+                        || realtime.Connection.State == ConnectionState.Connected)
+                    {
+                        reconnectAwaiter.SetCompleted();
+                    }
+                });
+
+                realtime.Close();
+                await realtime.WaitForState(ConnectionState.Closed);
+                realtime.Connection.State.Should().Be(ConnectionState.Closed);
+
+                var didReconnect = await reconnectAwaiter.Task;
+                didReconnect.Should().BeFalse($"should not attempt a reconnect for state {state}");
+            }
+
+            // setup a new client and put into a DISCONNECTED state
+            var client = await GetRealtimeClient(protocol, (opts, _) =>
+            {
+                opts.DisconnectedRetryTimeout = TimeSpan.FromSeconds(2);
+            });
+
+            await client.WaitForState();
+            await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager, new ErrorInfo("force disconnect"), client.Logger));
+            await AssertsClosesAndDoesNotReconnect(client, ConnectionState.Disconnected);
+
+            // reinitialize the client and put into a SUSPENDED state
+            client = await GetRealtimeClient(protocol, (opts, _) =>
+            {
+                opts.SuspendedRetryTimeout = TimeSpan.FromSeconds(2);
+            });
+
+            await client.WaitForState();
+            await client.ConnectionManager.SetState(new ConnectionSuspendedState(client.ConnectionManager, new ErrorInfo("force suspend"), client.Logger));
+            await AssertsClosesAndDoesNotReconnect(client, ConnectionState.Suspended);
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RTN13a")]
         public async Task WithConnectedClient_PingShouldReturnServiceTime(Protocol protocol)
         {
