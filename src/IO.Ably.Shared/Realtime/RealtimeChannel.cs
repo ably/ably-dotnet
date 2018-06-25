@@ -93,7 +93,27 @@ namespace IO.Ably.Realtime
 
         private void SubscribeToConnectionEvents()
         {
+            ConnectionManager.Connection.BeginConnect += ConnectionOnBeginConnect;
             ConnectionManager.Connection.InternalStateChanged += InternalOnInternalStateChanged;
+        }
+
+        private void UnSubscribeFromConnectionEvents()
+        {
+            ConnectionManager.Connection.BeginConnect -= ConnectionOnBeginConnect;
+            ConnectionManager.Connection.InternalStateChanged -= InternalOnInternalStateChanged;
+        }
+
+        private void ConnectionOnBeginConnect(object sender, EventArgs e)
+        {
+            switch (ConnectionState)
+            {
+                case ConnectionState.Failed:
+                    /* (RTN11d)
+                     * If the [Connection] state is FAILED,
+                     * transitions all the channels to INITIALIZED */
+                    SetChannelState(ChannelState.Initialized);
+                    break;
+            }
         }
 
         internal void InternalOnInternalStateChanged(object sender, ConnectionStateChange connectionStateChange)
@@ -101,11 +121,6 @@ namespace IO.Ably.Realtime
             switch (connectionStateChange.Current)
             {
                 case ConnectionState.Connecting:
-                    if (connectionStateChange.Previous == ConnectionState.Failed)
-                    {
-                        SetChannelState(ChannelState.Initialized);
-                    }
-
                     break;
                 case ConnectionState.Disconnected:
                     if (State == ChannelState.Attaching)
@@ -375,6 +390,7 @@ namespace IO.Ably.Realtime
             DetachedAwaiter?.Dispose();
             _handlers.RemoveAll();
             Presence?.Dispose();
+            UnSubscribeFromConnectionEvents();
         }
 
         internal void AddUntilAttachParameter(HistoryRequestParams query)
@@ -502,7 +518,7 @@ namespace IO.Ably.Realtime
                             /* RTP1 If [HAS_PRESENCE] flag is 0 or there is no flags field,
                              * the presence map should be considered in sync immediately
                              * with no members present on the channel */
-                            Presence.SkipSync();
+                    Presence.SkipSync();
                         }
 
                         AttachedSerial = protocolMessage.ChannelSerial;
