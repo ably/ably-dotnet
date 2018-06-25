@@ -213,7 +213,7 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol);
             await client.WaitForState(ConnectionState.Connected);
 
-            var chan1 = client.Channels.Get("RTN11c".AddRandomSuffix());
+            var chan1 = client.Channels.Get("RTN11d".AddRandomSuffix());
             await chan1.AttachAsync();
 
             // show that the channel is not in the initialized state already
