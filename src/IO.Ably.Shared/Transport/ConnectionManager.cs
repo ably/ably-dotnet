@@ -98,6 +98,7 @@ namespace IO.Ably.Transport
 
         public void Connect()
         {
+            Connection.OnBeginConnect();
             State.Connect();
         }
 
