@@ -258,7 +258,42 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RTN15h")]
+        [Trait("spec", "RTN15h1")]
+        public async Task WhenDisconnectedMessageContainsTokenError_IfTokenIsNotRewable_ShouldBecomeFailedAndEmitError(Protocol protocol)
+        {
+            var awaiter = new TaskCompletionAwaiter(10000);
+            var authClient = await GetRestClient(protocol);
+            var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
+
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.TokenDetails = tokenDetails;
+                options.AutoConnect = false;
+            });
+
+            client.Connect();
+            await client.WaitForState(ConnectionState.Connected);
+
+            // null the key so the token is not renewable
+            client.Options.Key = null;
+
+            client.Connection.Once(ConnectionEvent.Failed, state =>
+            {
+                awaiter.Tick();
+            });
+
+            client.Connection.Once(ConnectionEvent.Disconnected, state => throw new Exception("should not become DISCONNECTED"));
+            client.Connection.Once(ConnectionEvent.Connected, state => throw new Exception("should not become CONNECTED"));
+
+            await awaiter.Task;
+
+            client.Connection.State.Should().Be(ConnectionState.Failed);
+            client.Connection.ErrorReason.Should().NotBeNull();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15h2")]
         public async Task WhenDisconnectedMessageContainsTokenError_IfTokenIsRenewable_ShouldNotEmitError(Protocol protocol)
         {
             var awaiter = new TaskCompletionAwaiter(10000, 2);
@@ -299,8 +334,8 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RTN15h")]
-        public async Task WhenDisconnectedMessageContainsTokenError_IfTokenRenewFails_ShouldBecomeFailedEmitError(Protocol protocol)
+        [Trait("spec", "RTN15h2")]
+        public async Task WhenDisconnectedMessageContainsTokenError_IfTokenRenewFails_ShouldBecomeDisconnectedEmitError(Protocol protocol)
         {
             var awaiter = new TaskCompletionAwaiter(10000, 2);
             var authClient = await GetRestClient(protocol);
