@@ -50,7 +50,7 @@ namespace IO.Ably.Transport
             result.AuthMethod = auth.AuthMethod;
             if (result.AuthMethod == AuthMethod.Basic)
             {
-                result.AuthValue = options.Key;
+                result.AuthValue = ApiKey.Parse(options.Key).ToString();
             }
             else
             {
