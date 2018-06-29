@@ -360,7 +360,7 @@ namespace IO.Ably.Tests.Realtime
             channel.Attach();
             await channel.WaitForState(ChannelState.Attached);
 
-            List<ConnectionState> states = new List<ConnectionState>();
+            var states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
 
             client.Connection.InternalStateChanged += (sender, args) =>
