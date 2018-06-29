@@ -146,12 +146,15 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN14a")]
         public async Task WithInvalidApiKey_ShouldSetToFailedStateAndAddErrorMessageToEmittedState(Protocol protocol)
         {
+            var invalidKey = "invalid-key".AddRandomSuffix();
+            ApiKey.IsValidFormat(invalidKey).Should().BeFalse();
+
             var client = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
 
                 // a string not in the valid key format aaaa.bbbb:cccc
-                opts.Key = "invalid-key".AddRandomSuffix();
+                opts.Key = invalidKey;
             });
 
             ErrorInfo error = null;
