@@ -149,7 +149,9 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
-                opts.Key = "baba.bobo:bosh";
+
+                // a string not in the valid key format aaaa.bbbb:cccc
+                opts.Key = "invalid-key".AddRandomSuffix();
             });
 
             ErrorInfo error = null;
@@ -164,6 +166,10 @@ namespace IO.Ably.Tests.Realtime
 
             error.Should().NotBeNull();
             client.Connection.ErrorReason.Should().BeSameAs(error);
+
+            // this assertion shows that we are picking up a client side validation error
+            // if this key is passed to the server we would get an error with a 40005 code
+            client.Connection.ErrorReason.Code.Should().Be(40101);
         }
 
         [Theory]
