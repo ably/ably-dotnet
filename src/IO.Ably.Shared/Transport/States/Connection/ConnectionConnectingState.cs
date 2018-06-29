@@ -63,7 +63,8 @@ namespace IO.Ably.Transport.States.Connection
                 case ProtocolMessage.MessageAction.Error:
                     {
                         // If the error is a token error do some magic
-                        if (Context.ShouldWeRenewToken(message.Error))
+                        bool shouldRenew = Context.ShouldWeRenewToken(message.Error);
+                        if (shouldRenew)
                         {
                             try
                             {
@@ -92,7 +93,7 @@ namespace IO.Ably.Transport.States.Connection
                             return true;
                         }
 
-                        if (!Context.ShouldWeRenewToken(message.Error))
+                        if (message.Error?.IsTokenError == true && !shouldRenew )
                         {
                             TransitionState(new ConnectionDisconnectedState(Context, message.Error, Logger));
                             return true;
