@@ -194,6 +194,44 @@ namespace IO.Ably
             return MessageHandler.ParsePaginatedResponse<T>(request, response, executeDataQueryRequest);
         }
 
+        internal async Task<HttpPaginatedResponse> ExecuteHttpPaginatedRequest(AblyRequest request, Func<PaginatedRequestParams, Task<HttpPaginatedResponse>> executeDataQueryRequest)
+        {
+            var response = await ExecuteRequest(request);
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Response received. Status: " + response.StatusCode);
+                Logger.Debug("Content type: " + response.ContentType);
+                Logger.Debug("Encoding: " + response.Encoding);
+                if (response.Body != null)
+                {
+                    Logger.Debug("Raw response (base64):" + response.Body.ToBase64());
+                }
+            }
+
+            return MessageHandler.ParseHttpPaginatedResponse(request, response, executeDataQueryRequest);
+        }
+
+        internal async Task<HttpPaginatedResponse> HttpPaginatedRequestInternal(PaginatedRequestParams requestParams)
+        {
+            var request = CreateRequest(requestParams.Path, requestParams.HttpMethod);
+            request.AddQueryParameters(requestParams.ExtraParameters);
+            request.Headers = requestParams.Headers;
+            request.PostData = requestParams.Body?.ToString();
+            return await ExecuteHttpPaginatedRequest(request, HttpPaginatedRequestInternal);
+        }
+
+        public async Task<HttpPaginatedResponse> Request(HttpMethod method, string path, Dictionary<string, string> requestParams = null, JObject body = null, Dictionary<string, string> headers = null)
+        {
+            var p = new PaginatedRequestParams();
+            p.Headers = headers;
+            p.ExtraParameters = requestParams;
+            p.Body = body;
+            p.HttpMethod = method;
+            p.Path = path;
+
+            return await HttpPaginatedRequestInternal(p);
+        }
+
         /// <summary>/// Retrieves the ably service time/// </summary>
         /// <returns></returns>
         public async Task<DateTimeOffset> TimeAsync()
