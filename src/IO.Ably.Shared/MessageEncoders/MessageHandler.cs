@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using IO.Ably;
 using IO.Ably.Realtime;
 using IO.Ably.Types;
+using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.MessageEncoders
 {
@@ -241,17 +242,16 @@ namespace IO.Ably.MessageEncoders
         /// <param name="response"></param>
         /// <param name="funcParse">Function to parse HTTP response into a sequence of items.</param>
         /// <returns></returns>
-        internal static PaginatedResult<T> Paginated<T>(AblyRequest request, AblyResponse response, Func<HistoryRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
+        internal static PaginatedResult<T> Paginated<T>(AblyRequest request, AblyResponse response, Func<PaginatedRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
         {
-            PaginatedResult<T> res = new PaginatedResult<T>(response.Headers, GetLimit(request), executeDataQueryRequest);
+            PaginatedResult<T> res = new PaginatedResult<T>(response, GetLimit(request), executeDataQueryRequest);
             return res;
         }
 
-        public PaginatedResult<T> ParsePaginatedResponse<T>(AblyRequest request, AblyResponse response, Func<HistoryRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
+        public PaginatedResult<T> ParsePaginatedResponse<T>(AblyRequest request, AblyResponse response, Func<PaginatedRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
         {
             LogResponse(response);
             var result = Paginated(request, response, executeDataQueryRequest);
-            var items = new List<T>();
             if (typeof(T) == typeof(Message))
             {
                 var typedResult = result as PaginatedResult<Message>;
@@ -271,6 +271,12 @@ namespace IO.Ably.MessageEncoders
             }
 
             return result;
+        }
+
+        public HttpPaginatedResponse ParseHttpPaginatedResponse(AblyRequest request, AblyResponse response, Func<PaginatedRequestParams, Task<HttpPaginatedResponse>> executeDataQueryRequest)
+        {
+            LogResponse(response);
+            return new HttpPaginatedResponse(response, GetLimit(request), executeDataQueryRequest);
         }
 
         public T ParseResponse<T>(AblyRequest request, AblyResponse response) where T : class

@@ -56,6 +56,6 @@ namespace IO.Ably.Realtime
 
         Task<PaginatedResult<Message>> HistoryAsync(bool untilAttach = false);
 
-        Task<PaginatedResult<Message>> HistoryAsync(HistoryRequestParams query, bool untilAttach = false);
+        Task<PaginatedResult<Message>> HistoryAsync(PaginatedRequestParams query, bool untilAttach = false);
     }
 }

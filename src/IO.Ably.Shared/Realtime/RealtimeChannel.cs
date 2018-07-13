@@ -336,7 +336,7 @@ namespace IO.Ably.Realtime
 
         public Task<PaginatedResult<Message>> HistoryAsync(bool untilAttach = false)
         {
-            var query = new HistoryRequestParams();
+            var query = new PaginatedRequestParams();
             if (untilAttach)
             {
                 AddUntilAttachParameter(query);
@@ -345,9 +345,9 @@ namespace IO.Ably.Realtime
             return RestChannel.HistoryAsync(query);
         }
 
-        public Task<PaginatedResult<Message>> HistoryAsync(HistoryRequestParams query, bool untilAttach = false)
+        public Task<PaginatedResult<Message>> HistoryAsync(PaginatedRequestParams query, bool untilAttach = false)
         {
-            query = query ?? new HistoryRequestParams();
+            query = query ?? new PaginatedRequestParams();
             if (untilAttach)
             {
                 AddUntilAttachParameter(query);
@@ -371,7 +371,7 @@ namespace IO.Ably.Realtime
             Presence?.Dispose();
         }
 
-        internal void AddUntilAttachParameter(HistoryRequestParams query)
+        internal void AddUntilAttachParameter(PaginatedRequestParams query)
         {
             if (State != ChannelState.Attached)
             {

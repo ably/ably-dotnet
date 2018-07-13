@@ -650,7 +650,7 @@ namespace IO.Ably.Tests.Realtime
 
             var client2 = await GetRealtimeClient(protocol);
             var historyChannel = client2.Channels.Get(channelName);
-            var history = await historyChannel.HistoryAsync(new HistoryRequestParams() { Direction = QueryDirection.Forwards });
+            var history = await historyChannel.HistoryAsync(new PaginatedRequestParams() { Direction = QueryDirection.Forwards });
 
             history.Should().BeOfType<PaginatedResult<Message>>();
             history.Items.Should().HaveCount(10);
@@ -732,7 +732,7 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.On(ConnectionEvent.Connected, async args =>
             {
                 await client.Channels.Get("test")
-                    .HistoryAsync(new HistoryRequestParams() { Start = DateHelper.CreateDate(1969, 1, 1) });
+                    .HistoryAsync(new PaginatedRequestParams() { Start = DateHelper.CreateDate(1969, 1, 1) });
             });
 
             var result = await client.Channels.Get("name").AttachAsync();
