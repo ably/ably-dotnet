@@ -1,11 +1,12 @@
 # ably-dotnet
 
-A .Net client library for [www.ably.io](https://www.ably.io), the realtime messaging service.
+A .NET client library for [www.ably.io](https://www.ably.io), the realtime messaging service.
 
 ## Supported platforms
 
-* .Net 4.6+ *
-* .Net Standard 1.4+
+* .NET 4.6+ &ast;
+* .NET Core &ast;&ast;
+* .NET Standard 1.4+
 * Mono 5.4+
 * UWP
 * [Xamarin.Android 8.0+](https://developer.xamarin.com/releases/android/xamarin.android_8/xamarin.android_8.0/)
@@ -15,9 +16,11 @@ Unity is not officially supported yet, but some users have had some successes. S
 
 A portable (PCL) version is not available.
 
-*To target Windows 7 (with .Net 4.6) a custom [ITransportFactory](https://github.com/ably/ably-dotnet/blob/master/src/IO.Ably.Shared/Transport/ITransport.cs) will need to be implemented in your project that uses an alternate Web Socket library. 
+&ast; To target Windows 7 (with .Net 4.6) a custom [ITransportFactory](https://github.com/ably/ably-dotnet/blob/master/src/IO.Ably.Shared/Transport/ITransport.cs) will need to be implemented in your project that uses an alternate Web Socket library. 
 This is because [System.Net.WebSockets]('https://msdn.microsoft.com/en-us/library/system.net.websockets(v=vs.110).aspx') is not fully implementented on Windows 7.
 See [this repository](https://github.com/ably-forks/ably-dotnet-alternative-transports) for a working example using the [websocket4net library](https://github.com/kerryjiang/WebSocket4Net).
+
+&ast;&ast; ably-dotnet targets .NET Standard 1.4 and is compatible with all versions of .NET Core and is currently tested against .NET Core 2
 
 ## Documentation
 
@@ -352,14 +355,14 @@ Running `package.ps1` will run the build script and create a nuget package.
 
 This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
 
-* Update the version number in [GitVersion.yml](./GetVersion.yml)* and commit the change.
+* Update the version number in [GitVersion.yml](./GetVersion.yml)&dagger; and commit the change.
 * Run [`github_changelog_generator`](https://github.com/skywinder/Github-Changelog-Generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). Once the `CHANGELOG` update has completed, manually change the `Unreleased` heading and link with the current version number such as `v1.0.0`. Also ensure that the `Full Changelog` link points to the new version tag instead of the `HEAD`. Commit this change.
 * Add a tag for the version and push to origin such as `git tag 1.0.0 && git push origin 1.0.0`. For beta versions the version string should be `Maj.Min.Patch-betaN`, e.g `1.0.0-beta1`
 * Visit [https://github.com/ably/ably-dotnet/tags](https://github.com/ably/ably-dotnet/tags) and `Add release notes` for the release including links to the changelog entry.
 * Run `package.ps1` to create the nuget package. 
 * Run `nuget push ably.io.*.nupkg -Source https://www.nuget.org/api/v2/package` (a private nuget API Key is required to complete this step, more information on publishing nuget packages can be found [here](https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package))
 
-*GitVersion is required, see the preceeding section 'Building and Packaging' for more information.
+&dagger; GitVersion is required, see the preceeding section 'Building and Packaging' for more information.
 
 ## License
 
