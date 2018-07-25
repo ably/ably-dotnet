@@ -30,7 +30,7 @@ namespace IO.Ably
         {
         }
 
-        internal HttpPaginatedResponse(AblyResponse response, int limit, Func<PaginatedRequestParams, Task<HttpPaginatedResponse>> executeDataQueryFunc)
+        internal HttpPaginatedResponse(AblyResponse response, int limit, PaginatedRequestParams requestParams, Func<PaginatedRequestParams, Task<HttpPaginatedResponse>> executeDataQueryFunc)
             : base(response, limit, null)
         {
             ExecuteDataQueryFunc = executeDataQueryFunc;
@@ -65,6 +65,17 @@ namespace IO.Ably
             {
                 Items.Add(data);
             }
+
+            InitializeQuery(CurrentQuery, requestParams);
+            InitializeQuery(NextDataQuery, requestParams);
+        }
+
+        private void InitializeQuery(PaginatedRequestParams queryParams, PaginatedRequestParams requestParams)
+        {
+            queryParams.Path = requestParams.Path;
+            queryParams.HttpMethod = requestParams.HttpMethod;
+            queryParams.Body = requestParams.Body;
+            queryParams.Headers = requestParams.Headers;
         }
 
         public new Task<HttpPaginatedResponse> NextAsync()
