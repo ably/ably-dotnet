@@ -84,7 +84,7 @@ namespace IO.Ably.Tests
             paginatedResponse.ErrorMessage.Should().BeNull();
             paginatedResponse.Items.Should().HaveCount(1);
             paginatedResponse.Items.First().Should().BeOfType<JObject>();
-            paginatedResponse.Response.ContentType.Should().Be("application/json");
+            paginatedResponse.Response.ContentType.Should().Be(AblyHttpClient.GetHeaderValue(protocol));
             var channelDetails = paginatedResponse.Items.First() as JObject; // cast from JToken
             channelDetails["id"].ToString().Should().BeEquivalentTo(_channelName);
         }
@@ -109,7 +109,7 @@ namespace IO.Ably.Tests
             paginatedResponse.StatusCode.Should().Be(HttpStatusCode.OK); // 200
             paginatedResponse.Success.Should().BeTrue();
             paginatedResponse.ErrorCode.Should().Be(0);
-            paginatedResponse.Response.ContentType.Should().Be("application/json");
+            paginatedResponse.Response.ContentType.Should().Be(AblyHttpClient.GetHeaderValue(protocol));
             var items = paginatedResponse.Items;
             items.Should().HaveCount(2);
             foreach (var item in items)
@@ -139,7 +139,7 @@ namespace IO.Ably.Tests
             paginatedResponse.StatusCode.Should().Be(HttpStatusCode.OK); // 200
             paginatedResponse.Success.Should().BeTrue();
             paginatedResponse.ErrorCode.Should().Be(0);
-            paginatedResponse.Response.ContentType.Should().Be("application/json");
+            paginatedResponse.Response.ContentType.Should().Be(AblyHttpClient.GetHeaderValue(protocol));
             var items = paginatedResponse.Items;
             items.Should().HaveCount(1);
             foreach (var item in items)
@@ -152,7 +152,7 @@ namespace IO.Ably.Tests
             page2.StatusCode.Should().Be(HttpStatusCode.OK); // 200
             page2.Success.Should().BeTrue();
             page2.ErrorCode.Should().Be(0);
-            page2.Response.ContentType.Should().Be("application/json");
+            page2.Response.ContentType.Should().Be(AblyHttpClient.GetHeaderValue(protocol));
         }
 
         [Trait("spec", "RSC19")]
@@ -177,7 +177,7 @@ namespace IO.Ably.Tests
             paginatedResponse.Success.Should().BeTrue();
             paginatedResponse.ErrorCode.Should().Be(0);
             paginatedResponse.ErrorMessage.Should().BeNull();
-            paginatedResponse.Response.ContentType.Should().Be("application/json");
+            paginatedResponse.Response.ContentType.Should().Be(AblyHttpClient.GetHeaderValue(protocol));
 
             await client.Request(HttpMethod.Post, _channelMessagesPath, null, body2, null);
 
