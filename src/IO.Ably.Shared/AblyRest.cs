@@ -194,7 +194,7 @@ namespace IO.Ably
             return MessageHandler.ParsePaginatedResponse<T>(request, response, executeDataQueryRequest);
         }
 
-        internal async Task<HttpPaginatedResponse> ExecuteHttpPaginatedRequest(AblyRequest request, Func<PaginatedRequestParams, Task<HttpPaginatedResponse>> executeDataQueryRequest)
+        internal async Task<HttpPaginatedResponse> ExecuteHttpPaginatedRequest(AblyRequest request, PaginatedRequestParams requestParams, Func<PaginatedRequestParams, Task<HttpPaginatedResponse>> executeDataQueryRequest)
         {
             var response = await ExecuteRequest(request);
             if (Logger.IsDebug)
@@ -208,19 +208,23 @@ namespace IO.Ably
                 }
             }
 
-            return MessageHandler.ParseHttpPaginatedResponse(request, response, executeDataQueryRequest);
+            return MessageHandler.ParseHttpPaginatedResponse(request, response, requestParams, executeDataQueryRequest);
         }
 
         internal async Task<HttpPaginatedResponse> HttpPaginatedRequestInternal(PaginatedRequestParams requestParams)
         {
             var request = CreateRequest(requestParams.Path, requestParams.HttpMethod);
             request.AddQueryParameters(requestParams.ExtraParameters);
-            request.Headers = requestParams.Headers;
-            request.PostData = requestParams.Body?.ToString();
-            return await ExecuteHttpPaginatedRequest(request, HttpPaginatedRequestInternal);
+            request.AddHeaders(requestParams.Headers);
+            if (requestParams.Body != null)
+            {
+                request.PostData = requestParams.Body;
+            }
+
+            return await ExecuteHttpPaginatedRequest(request, requestParams, HttpPaginatedRequestInternal);
         }
 
-        public async Task<HttpPaginatedResponse> Request(HttpMethod method, string path, Dictionary<string, string> requestParams = null, JObject body = null, Dictionary<string, string> headers = null)
+        public async Task<HttpPaginatedResponse> Request(HttpMethod method, string path, Dictionary<string, string> requestParams = null, JToken body = null, Dictionary<string, string> headers = null)
         {
             var p = new PaginatedRequestParams();
             p.Headers = headers;
