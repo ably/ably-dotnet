@@ -26,7 +26,7 @@ namespace IO.Ably
 
         public Dictionary<string, string> Headers { get; set; }
 
-        public JObject Body { get; set; }
+        public object Body { get; set; }
 
         public string Path { get; set; }
 
