@@ -273,10 +273,10 @@ namespace IO.Ably.MessageEncoders
             return result;
         }
 
-        public HttpPaginatedResponse ParseHttpPaginatedResponse(AblyRequest request, AblyResponse response, Func<PaginatedRequestParams, Task<HttpPaginatedResponse>> executeDataQueryRequest)
+        public HttpPaginatedResponse ParseHttpPaginatedResponse(AblyRequest request, AblyResponse response, PaginatedRequestParams requestParams, Func<PaginatedRequestParams, Task<HttpPaginatedResponse>> executeDataQueryRequest)
         {
             LogResponse(response);
-            return new HttpPaginatedResponse(response, GetLimit(request), executeDataQueryRequest);
+            return new HttpPaginatedResponse(response, GetLimit(request), requestParams, executeDataQueryRequest);
         }
 
         public T ParseResponse<T>(AblyRequest request, AblyResponse response) where T : class
