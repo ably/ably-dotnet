@@ -62,7 +62,7 @@ namespace IO.Ably
                 {
                     Logger.Error("Cumulative retry timeout of {0}s was exceeded", Config.CommulativeFailedRequestTimeOutInSeconds);
                     throw new AblyException(
-                        new ErrorInfo($"Commulative retry timeout of {Config.CommulativeFailedRequestTimeOutInSeconds}s was exceeded.", 500, null));
+                        new ErrorInfo($"Commulative retry timeout of {Config.CommulativeFailedRequestTimeOutInSeconds}s was exceeded.", 50000, null));
                 }
 
                 Logger.Debug("Executing request: " + request.Url + (currentTry > 0 ? $"try {currentTry}" : string.Empty));
@@ -137,23 +137,23 @@ namespace IO.Ably
                         innerEx = innerEx.InnerException;
                     }
 
-                    throw new AblyException(new ErrorInfo(reason.ToString(), 500), ex);
+                    throw new AblyException(new ErrorInfo(reason.ToString(), 50000), ex);
                 }
                 catch (TaskCanceledException ex)
                 {
                     // if the cancellation was not requested then this is timeout.
                     if (ex.CancellationToken.IsCancellationRequested == false)
                     {
-                        throw new AblyException(new ErrorInfo("Error executing request. Request timed out.", 500), ex);
+                        throw new AblyException(new ErrorInfo("Error executing request. Request timed out.", 50000), ex);
                     }
                     else
                     {
-                        throw new AblyException(new ErrorInfo("Error executing request", 500), ex);
+                        throw new AblyException(new ErrorInfo("Error executing request", 50000), ex);
                     }
                 }
             }
 
-            throw new AblyException(new ErrorInfo("Error exectuting request", 500));
+            throw new AblyException(new ErrorInfo("Error exectuting request", 50000));
         }
 
         private void LogResponse(AblyResponse ablyResponse, string url)
