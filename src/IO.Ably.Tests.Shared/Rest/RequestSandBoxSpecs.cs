@@ -130,9 +130,8 @@ namespace IO.Ably.Tests
             var client = TrackLastRequest(await GetRestClient(protocol));
 
             var testParams = new Dictionary<string, string> { { "prefix", _channelNamePrefix }, { "limit", "1" } };
-            var testHeader = new Dictionary<string, string> { { "X-test-header", "test-header" } };
 
-            var paginatedResponse = await client.Request(HttpMethod.Get, _channelsPath, testParams, null, testHeader);
+            var paginatedResponse = await client.Request(HttpMethod.Get, _channelsPath, testParams, null, null);
 
             _lastRequest.Headers.Should().ContainKey("Authorization");
             paginatedResponse.Should().NotBeNull();
@@ -153,6 +152,11 @@ namespace IO.Ably.Tests
             page2.Success.Should().BeTrue();
             page2.ErrorCode.Should().Be(0);
             page2.Response.ContentType.Should().Be(AblyHttpClient.GetHeaderValue(protocol));
+
+            // show that the 2 pages are different
+            var item1 = items[0] as JObject;
+            var item2 = page2.Items[0] as JObject;
+            item1["id"].ToString().Should().NotBe(item2["id"].ToString());
         }
 
         [Trait("spec", "RSC19")]
