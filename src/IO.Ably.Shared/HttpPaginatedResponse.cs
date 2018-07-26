@@ -66,8 +66,8 @@ namespace IO.Ably
                 Items.Add(data);
             }
 
-            InitializeQuery(CurrentQuery, requestParams);
-            InitializeQuery(NextDataQuery, requestParams);
+            InitializeQuery(CurrentQueryParams, requestParams);
+            InitializeQuery(NextQueryParams, requestParams);
         }
 
         private void InitializeQuery(PaginatedRequestParams queryParams, PaginatedRequestParams requestParams)
@@ -82,7 +82,7 @@ namespace IO.Ably
         {
             if (HasNext && ExecuteDataQueryFunc != null)
             {
-                return ExecuteDataQueryFunc(NextDataQuery);
+                return ExecuteDataQueryFunc(NextQueryParams);
             }
 
             return Task.FromResult(new HttpPaginatedResponse());
@@ -90,9 +90,9 @@ namespace IO.Ably
 
         public new Task<HttpPaginatedResponse> FirstAsync()
         {
-            if (FirstDataQuery != null && FirstDataQuery.IsEmpty == false && ExecuteDataQueryFunc != null)
+            if (FirstQueryParams != null && FirstQueryParams.IsEmpty == false && ExecuteDataQueryFunc != null)
             {
-                return ExecuteDataQueryFunc(FirstDataQuery);
+                return ExecuteDataQueryFunc(FirstQueryParams);
             }
 
             return Task.FromResult(new HttpPaginatedResponse());

@@ -16,11 +16,11 @@ namespace IO.Ably
 
         public List<T> Items { get; set; } = new List<T>();
 
-        public PaginatedRequestParams NextDataQuery { get; protected set; }
+        public PaginatedRequestParams NextQueryParams { get; protected set; }
 
-        public PaginatedRequestParams FirstDataQuery { get; protected set; }
+        public PaginatedRequestParams FirstQueryParams { get; protected set; }
 
-        public PaginatedRequestParams CurrentQuery { get; protected set; }
+        public PaginatedRequestParams CurrentQueryParams { get; protected set; }
 
         protected PaginatedResult()
         {
@@ -33,16 +33,16 @@ namespace IO.Ably
             ExecuteDataQueryFunc = executeDataQueryFunc;
             if (response.Headers != null)
             {
-                CurrentQuery = PaginatedRequestParams.GetLinkQuery(response.Headers, DataRequestLinkType.Current);
-                NextDataQuery = PaginatedRequestParams.GetLinkQuery(response.Headers, DataRequestLinkType.Next);
-                FirstDataQuery = PaginatedRequestParams.GetLinkQuery(response.Headers, DataRequestLinkType.First);
+                CurrentQueryParams = PaginatedRequestParams.GetLinkQuery(response.Headers, DataRequestLinkType.Current);
+                NextQueryParams = PaginatedRequestParams.GetLinkQuery(response.Headers, DataRequestLinkType.Next);
+                FirstQueryParams = PaginatedRequestParams.GetLinkQuery(response.Headers, DataRequestLinkType.First);
             }
         }
 
         /// <summary>
         /// Gets a value indicating whether there are further pages
         /// </summary>
-        public bool HasNext => NextDataQuery != null && NextDataQuery.IsEmpty == false;
+        public bool HasNext => NextQueryParams != null && NextQueryParams.IsEmpty == false;
 
         /// <summary>
         /// Gets a value indicating whether the current page is the last one available
@@ -53,7 +53,7 @@ namespace IO.Ably
         {
             if (HasNext && ExecuteDataQueryFunc != null)
             {
-                return ExecuteDataQueryFunc(NextDataQuery);
+                return ExecuteDataQueryFunc(NextQueryParams);
             }
 
             return Task.FromResult(new PaginatedResult<T>());
@@ -61,9 +61,9 @@ namespace IO.Ably
 
         public Task<PaginatedResult<T>> FirstAsync()
         {
-            if (FirstDataQuery != null && FirstDataQuery.IsEmpty == false && ExecuteDataQueryFunc != null)
+            if (FirstQueryParams != null && FirstQueryParams.IsEmpty == false && ExecuteDataQueryFunc != null)
             {
-                return ExecuteDataQueryFunc(FirstDataQuery);
+                return ExecuteDataQueryFunc(FirstQueryParams);
             }
 
             return Task.FromResult(new PaginatedResult<T>());

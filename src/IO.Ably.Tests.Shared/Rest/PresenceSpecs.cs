@@ -182,9 +182,9 @@ namespace IO.Ably.Tests
                 var result = await channel.HistoryAsync();
 
                 // Assert
-                Assert.NotNull(result.NextDataQuery);
-                Assert.NotNull(result.CurrentQuery);
-                Assert.NotNull(result.FirstDataQuery);
+                Assert.NotNull(result.NextQueryParams);
+                Assert.NotNull(result.CurrentQueryParams);
+                Assert.NotNull(result.FirstQueryParams);
             }
 
             public GetSpecs(ITestOutputHelper output)
