@@ -203,13 +203,14 @@ namespace IO.Ably.Tests
             var client = TrackLastRequest(await GetRestClient(protocol));
             try
             {
-                var paginatedResponse = await client.Request(HttpMethod.Post, "/does-not-exist");
-                paginatedResponse.ErrorMessage.Should().NotBeNullOrEmpty();
+                await client.Request(HttpMethod.Post, "/does-not-exist");
+                throw new Exception("This should not be reached, the preceeding call should throw");
             }
             catch (AblyException e)
             {
                 e.ErrorInfo.Code.Should().Be(40400);
                 e.ErrorInfo.Message.Should().NotBeNullOrEmpty();
+                e.ErrorInfo.Message.Should().Be("Could not find path: /does-not-exist");
             }
         }
 
@@ -224,13 +225,15 @@ namespace IO.Ably.Tests
             }));
             try
             {
-                var paginatedResponse = await client.Request(HttpMethod.Post, "/");
-                paginatedResponse.ErrorMessage.Should().NotBeNullOrEmpty();
+                await client.Request(HttpMethod.Post, "/");
+                throw new Exception("This should not be reached, the preceeding call should throw");
             }
             catch (AblyException e)
             {
                 e.ErrorInfo.Code.Should().Be(50000);
                 e.ErrorInfo.Message.Should().NotBeNullOrEmpty();
+                e.ErrorInfo.Message.Should()
+                    .StartWith("An error occurred while sending the request. The remote name could not be resolved");
             }
         }
 
