@@ -225,8 +225,12 @@ namespace IO.Ably.Tests
         {
             var client = TrackLastRequest(await GetRestClient(protocol, options =>
             {
-                options.Environment = "fake.environment";
+                options.HttpMaxRetryCount = 1;
+                options.HttpOpenTimeout = TimeSpan.FromSeconds(1);
+                options.HttpRequestTimeout = TimeSpan.FromSeconds(1);
             }));
+            // custom host with a port that is not in use speeds up the test
+            client.HttpClient.CustomHost = "fake.host:54321";
             try
             {
                 await client.Request(HttpMethod.Post, "/");
@@ -236,8 +240,7 @@ namespace IO.Ably.Tests
             {
                 e.ErrorInfo.Code.Should().Be(50000);
                 e.ErrorInfo.Message.Should().NotBeNullOrEmpty();
-                e.ErrorInfo.Message.Should()
-                    .StartWith("An error occurred while sending the request. The remote name could not be resolved");
+                e.ErrorInfo.Message.Should().Contain("Invalid URI: Invalid port specified.");
             }
         }
 
