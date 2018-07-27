@@ -219,8 +219,8 @@ namespace IO.Ably.Tests.Realtime
             [Theory]
             [InlineData(ChannelState.Attached)]
             [InlineData(ChannelState.Attaching)]
-            [Trait("spec", "RTL3b")]
-            public async Task WhenConnectionIsSuspended_AttachingOrAttachedChannelsShouldTrasitionToDetached(ChannelState state)
+            [Trait("spec", "RTL3c")]
+            public async Task WhenConnectionIsSuspended_AttachingOrAttachedChannelsShouldTrasitionToSuspended(ChannelState state)
             {
                 (_channel as RealtimeChannel).SetChannelState(state);
 
@@ -229,7 +229,7 @@ namespace IO.Ably.Tests.Realtime
                 await _client.ConnectionManager.SetState(new ConnectionSuspendedState(_client.ConnectionManager, Logger));
 
                 _client.Connection.State.Should().Be(ConnectionState.Suspended);
-                _channel.State.Should().Be(ChannelState.Detached);
+                _channel.State.Should().Be(ChannelState.Suspended);
             }
 
             public ConnectionStateChangeEffectSpecs(ITestOutputHelper output)

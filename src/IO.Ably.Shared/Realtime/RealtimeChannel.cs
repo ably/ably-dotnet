@@ -137,7 +137,7 @@ namespace IO.Ably.Realtime
                     DetachedAwaiter.Fail(new ErrorInfo("Connection is suspended"));
                     if (State == ChannelState.Attached || State == ChannelState.Attaching)
                     {
-                        SetChannelState(ChannelState.Detaching, ErrorInfo.ReasonSuspended);
+                        SetChannelState(ChannelState.Suspended, ErrorInfo.ReasonSuspended);
                     }
 
                     break;
