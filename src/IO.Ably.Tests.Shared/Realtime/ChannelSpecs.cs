@@ -148,8 +148,8 @@ namespace IO.Ably.Tests.Realtime
 
                 WaitOne();
 
-                _channel.State.Should().Be(channelEvent);
-                newState.Should().Be(channelEvent);
+                _channel.State.Should().Be((ChannelState)channelEvent);
+                newState.Should().Be((ChannelState)channelEvent);
             }
 
             [Fact]
