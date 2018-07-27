@@ -232,6 +232,27 @@ namespace IO.Ably.Tests.Realtime
                 _channel.State.Should().Be(ChannelState.Suspended);
             }
 
+            [Theory]
+            [InlineData(ChannelState.Attached)]
+            [InlineData(ChannelState.Attaching)]
+            [InlineData(ChannelState.Failed)]
+            [InlineData(ChannelState.Suspended)]
+            [InlineData(ChannelState.Detached)]
+            [InlineData(ChannelState.Detaching)]
+            [InlineData(ChannelState.Initialized)]
+            [Trait("spec", "RTL3e")]
+            public async Task WhenConnectionIsDisconnected_ChannelStateShouldNotChange(ChannelState state)
+            {
+                (_channel as RealtimeChannel).SetChannelState(state);
+
+                _client.Close();
+
+                await _client.ConnectionManager.SetState(new ConnectionDisconnectedState(_client.ConnectionManager, Logger));
+
+                _client.Connection.State.Should().Be(ConnectionState.Disconnected);
+                _channel.State.Should().Be(state);
+            }
+
             public ConnectionStateChangeEffectSpecs(ITestOutputHelper output)
                 : base(output)
             {
