@@ -100,29 +100,6 @@ namespace IO.Ably.Realtime
         {
             switch (connectionStateChange.Current)
             {
-                // case ConnectionState.Connected:
-                case ConnectionState.Disconnected:
-                    if (State == ChannelState.Attaching)
-                    {
-                        if (Logger.IsDebug)
-                        {
-                            Logger.Debug($"#{Name} Resending Attach because connection became {State} while the channel was {ChannelState.Attaching}.");
-                        }
-
-                        SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name));
-                    }
-
-                    if (State == ChannelState.Detaching)
-                    {
-                        if (Logger.IsDebug)
-                        {
-                            Logger.Debug($"#{Name} Resending Detach because connection became {State} while the channel was {ChannelState.Detaching}.");
-                        }
-
-                        SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name));
-                    }
-
-                    break;
                 case ConnectionState.Closed:
                     AttachedAwaiter.Fail(new ErrorInfo("Connection is closed"));
                     DetachedAwaiter.Fail(new ErrorInfo("Connection is closed"));
