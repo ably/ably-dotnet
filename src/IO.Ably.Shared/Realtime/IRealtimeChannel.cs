@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace IO.Ably.Realtime
 {
-    public interface IRealtimeChannel : IEventEmitter<ChannelState, ChannelStateChange>
+    public interface IRealtimeChannel : IEventEmitter<ChannelEvent, ChannelStateChange>
     {
         ChannelState State { get; }
 
