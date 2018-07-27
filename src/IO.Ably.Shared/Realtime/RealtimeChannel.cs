@@ -93,10 +93,10 @@ namespace IO.Ably.Realtime
 
         private void SubscribeToConnectionEvents()
         {
-            ConnectionManager.Connection.InternalStateChanged += OnInternalConnectionStateChanged;
+            ConnectionManager.Connection.InternalStateChanged += OnConnectionInternalStateChanged;
         }
 
-        internal void OnInternalConnectionStateChanged(object sender, ConnectionStateChange connectionStateChange)
+        internal void OnConnectionInternalStateChanged(object sender, ConnectionStateChange connectionStateChange)
         {
             switch (connectionStateChange.Current)
             {
