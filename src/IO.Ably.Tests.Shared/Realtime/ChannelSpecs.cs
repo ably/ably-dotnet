@@ -114,7 +114,7 @@ namespace IO.Ably.Tests.Realtime
                 ((int)ChannelEvent.Detached).Should().Be(4);
                 ((int)ChannelEvent.Suspended).Should().Be(5);
                 ((int)ChannelEvent.Failed).Should().Be(6);
-                ((int)ChannelEvent.Updated).Should().Be(7);
+                ((int)ChannelEvent.Update).Should().Be(7);
 
                 // each ChannelState should have an equivelant ChannelEvent
                 ((int)ChannelState.Failed).Should().Be((int)ChannelEvent.Failed);

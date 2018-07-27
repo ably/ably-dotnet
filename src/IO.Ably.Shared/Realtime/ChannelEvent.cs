@@ -53,6 +53,6 @@
         /// <summary>
         /// Emitted for changes to channel conditions for which the <see cref="ChannelState"/> does not change
         /// </summary>
-        Updated = 7
+        Update = 7
     }
 }
