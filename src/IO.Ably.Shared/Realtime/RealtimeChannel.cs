@@ -405,7 +405,7 @@ namespace IO.Ably.Realtime
             SetChannelState(state, protocolMessage.Error, protocolMessage);
         }
 
-        internal void SetChannelState(ChannelState state, ErrorInfo error = null, ProtocolMessage protocolMessage = null)
+        internal void SetChannelState(ChannelState state, ErrorInfo error = null, ProtocolMessage protocolMessage = null, bool emitUpdate = false)
         {
             if (Logger.IsDebug)
             {
@@ -414,27 +414,53 @@ namespace IO.Ably.Realtime
             }
 
             OnError(error);
-            var previousState = State;
 
-            HandleStateChange(state, error, protocolMessage);
+            // never emit a ChannelState ChannelEvent for a state equal to the previous state (RTL2g)
+            if (!emitUpdate && State == state)
+            {
+                Logger.Debug($"#{Name}: Duplicate state '{state}' received, not updating.");
+                return;
+            }
 
-            InternalStateChanged.Invoke(this, new ChannelStateChange(state, previousState, error));
+            ChannelEvent channelEvent;
+            ChannelStateChange channelStateChange;
+
+            if (emitUpdate)
+            {
+                channelEvent = ChannelEvent.Update;
+                channelStateChange = new ChannelStateChange(state, PreviousState, error, protocolMessage != null && protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed));
+            }
+            else
+            {
+                channelEvent = (ChannelEvent) state;
+                channelStateChange = new ChannelStateChange(state, State, error, protocolMessage != null && protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed));
+                HandleStateChange(state, error, protocolMessage);
+                InternalStateChanged.Invoke(this, channelStateChange);
+            }
 
             // Notify external client using the thread they subscribe on
             RealtimeClient.NotifyExternalClients(() =>
                 {
-                    var args = new ChannelStateChange(state, previousState, error);
                     try
                     {
-                        StateChanged.Invoke(this, args);
+                        StateChanged.Invoke(this, channelStateChange);
                     }
                     catch (Exception ex)
                     {
                         Logger.Error($"Error notifying event handlers for state change: {state}", ex);
                     }
 
-                    Emit((ChannelEvent)state, args);
+                    Emit(channelEvent, channelStateChange);
                 });
+        }
+
+        /// <summary>
+        /// Emits an <see cref="ChannelEvent.Update"/> if the current channel state is <see cref="ChannelState.Attached"/>
+        /// </summary>
+        /// <param name="protocolMessage"></param>
+        internal void EmitUpdate(ChannelState state, ProtocolMessage protocolMessage)
+        {
+            SetChannelState(State, protocolMessage.Error, protocolMessage, emitUpdate: true);
         }
 
         private void HandleStateChange(ChannelState state, ErrorInfo error, ProtocolMessage protocolMessage)

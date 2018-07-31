@@ -49,16 +49,17 @@ namespace IO.Ably.Realtime
                     break;
                 case ProtocolMessage.MessageAction.Attach:
                 case ProtocolMessage.MessageAction.Attached:
-                    if (channel.State != ChannelState.Attached)
+                    if (channel.State == ChannelState.Attached)
                     {
-                        channel.SetChannelState(ChannelState.Attached, protocolMessage);
+                        // RTL12
+                        if (!protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed))
+                        {
+                            channel.EmitUpdate(ChannelState.Attached, protocolMessage);
+                        }
                     }
                     else
                     {
-                        if (protocolMessage.Error != null)
-                        {
-                            channel.OnError(protocolMessage.Error);
-                        }
+                        channel.SetChannelState(ChannelState.Attached, protocolMessage);
                     }
 
                     break;
