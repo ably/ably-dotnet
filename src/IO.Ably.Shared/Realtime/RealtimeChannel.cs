@@ -428,14 +428,13 @@ namespace IO.Ably.Realtime
             if (emitUpdate)
             {
                 channelEvent = ChannelEvent.Update;
-                channelStateChange = new ChannelStateChange(state, PreviousState, error, protocolMessage != null && protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed));
             }
             else
             {
                 channelEvent = (ChannelEvent) state;
-                channelStateChange = new ChannelStateChange(state, State, error, protocolMessage != null && protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed));
             }
 
+            channelStateChange = new ChannelStateChange(state, State, error, protocolMessage != null && protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed));
             HandleStateChange(state, error, protocolMessage);
             InternalStateChanged.Invoke(this, channelStateChange);
 
