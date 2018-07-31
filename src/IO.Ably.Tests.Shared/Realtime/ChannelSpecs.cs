@@ -174,6 +174,97 @@ namespace IO.Ably.Tests.Realtime
                 _channel.ErrorReason.Should().BeSameAs(error);
             }
 
+            [Fact]
+            [Trait("spec", "RTL2f")]
+            [Trait("spec", "RTL2g")]
+            [Trait("spec", "RTL12")]
+            async Task WhenAttachedProtocolMessageWithResumedFlagReceived_EmittedChannelStateChangeShouldIndicateResumed()
+            {
+                var client = GetConnectedClient();
+                var channel = client.Channels.Get("test");
+                var tsc = new TaskCompletionAwaiter(2000);
+
+                channel.Once(stateChange =>
+                {
+                    stateChange.Current.Should().Be(ChannelState.Attached);
+                    stateChange.Resumed.Should().BeFalse();
+                    tsc.SetCompleted();
+                });
+
+                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
+                {
+                    Channel = "test"
+                });
+
+                var result = await tsc.Task;
+                result.Should().BeTrue("State change event should have been handled");
+                channel.State.Should().Be(ChannelState.Attached);
+
+                // reset
+                tsc = new TaskCompletionAwaiter(2000);
+
+                // RTL2g / RTL12
+                channel.Once(ChannelEvent.Update, stateChange =>
+                {
+                    stateChange.Current.Should().Be(ChannelState.Attached);
+                    stateChange.Resumed.Should().BeFalse();
+                    tsc.SetCompleted();
+                });
+
+                // Send another Attached message without the resume flag.
+                // This should cause and Update event to be emitted.
+                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
+                {
+                    Channel = "test"
+                });
+
+                result = await tsc.Task;
+                result.Should().BeTrue("Update event should have been handled");
+                channel.State.Should().Be(ChannelState.Attached);
+
+                channel.Once(stateChange => throw new Exception("This should not be reached because resumed flag was set"));
+
+                // send another Attached protocol message with the resumed flag set.
+                // This should not trigger any channel event (per RTL12).
+                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
+                {
+                    Channel = "test",
+                    Flags = 4 // resumed
+                });
+
+                await Task.Delay(2000);
+            }
+
+            [Theory]
+            [InlineData(ChannelState.Initialized)]
+            [InlineData(ChannelState.Attaching)]
+            [InlineData(ChannelState.Attached)]
+            [InlineData(ChannelState.Detaching)]
+            [InlineData(ChannelState.Detached)]
+            [InlineData(ChannelState.Failed)]
+            [InlineData(ChannelState.Suspended)]
+            [Trait("spec", "RTL2g")]
+            async Task ShouldNeverEmitAChannelEventForAStateEqualToThePreviousState(ChannelState state)
+            {
+                var client = GetConnectedClient();
+                var channel = client.Channels.Get("test") as RealtimeChannel;
+                bool stateDidChange = false;
+
+                // set initial state
+                channel.SetChannelState((ChannelState)state);
+
+                channel.Once(stateChange =>
+                {
+                    stateDidChange = true;
+                    throw new Exception("state chage event should not be emitted");
+                });
+
+                // attempt to set the same state again
+                channel.SetChannelState((ChannelState)state);
+
+                stateDidChange.Should().BeFalse();
+            }
+
             public EventEmitterSpecs(ITestOutputHelper output)
                 : base(output)
             {
@@ -219,6 +310,7 @@ namespace IO.Ably.Tests.Realtime
             }
 
             [Fact]
+            [Trait("spec", "RTL2d")]
             [Trait("spec", "RTL3d")]
             public async Task WhenChannelIsSuspended_WhenConnectionBecomeConnectedAttemptAttach()
             {
@@ -239,6 +331,7 @@ namespace IO.Ably.Tests.Realtime
                 var tsc = new TaskCompletionAwaiter();
                 channel.Once(ChannelEvent.Suspended, s =>
                 {
+                    /* RTL2d */
                     s.Error.Should().NotBeNull();
                     s.Error.Message.Should().Be("Channel didn't attach within the default timeout");
                     s.Error.Code.Should().Be(50000);
