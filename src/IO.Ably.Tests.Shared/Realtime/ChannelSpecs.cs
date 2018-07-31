@@ -52,45 +52,6 @@ namespace IO.Ably.Tests.Realtime
                 channel.Presence.Should().BeOfType<Presence>();
             }
 
-            [Fact]
-            [Trait("spec", "RTL12")]
-            [Trait("intermittent", "true")]
-            public async Task OnceAttachedWhenConsequentAttachMessageArriveWithError_ShouldEmitErrorOnChannelButNoStateChange()
-            {
-                var client = GetConnectedClient();
-                var channel = client.Channels.Get("test");
-                SetState(channel, ChannelState.Attached);
-
-                ErrorInfo expectedError = new ErrorInfo();
-                ErrorInfo error = null;
-                channel.Error += (sender, args) =>
-                {
-                    error = args.Reason;
-                };
-                bool stateChanged = false;
-
-                await Task.Delay(10); // Allow the notification thread to fire
-
-                ChannelState newState = ChannelState.Initialized;
-                channel.On((args) =>
-                {
-                    stateChanged = true;
-                    newState = args.Current;
-                });
-
-                await
-                    client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
-                    {
-                        Error = expectedError,
-                        Channel = "test"
-                    });
-
-                await Task.Delay(10); // Allow the notification thread to fire
-
-                error.Should().BeSameAs(expectedError);
-                stateChanged.Should().BeFalse("State should not have changed but is now: " + newState);
-            }
-
             public GeneralSpecs(ITestOutputHelper output)
                 : base(output)
             {
