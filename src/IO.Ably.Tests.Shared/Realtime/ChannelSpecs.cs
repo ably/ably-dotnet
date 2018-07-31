@@ -144,10 +144,13 @@ namespace IO.Ably.Tests.Realtime
                 var channel = client.Channels.Get("test");
                 var tsc = new TaskCompletionAwaiter(2000);
 
-                channel.Once(stateChange =>
+                channel.Once(ChannelEvent.Attached, stateChange =>
                 {
+                    // RTL2f
                     stateChange.Current.Should().Be(ChannelState.Attached);
+                    stateChange.Previous.Should().Be(ChannelState.Initialized);
                     stateChange.Resumed.Should().BeFalse();
+                    stateChange.Error.Should().BeNull();
                     tsc.SetCompleted();
                 });
 
@@ -166,17 +169,16 @@ namespace IO.Ably.Tests.Realtime
                 // RTL2g / RTL12
                 channel.Once(ChannelEvent.Update, stateChange =>
                 {
+                    // RTL2f
                     stateChange.Current.Should().Be(ChannelState.Attached);
+                    stateChange.Previous.Should().Be(ChannelState.Attached);
                     stateChange.Resumed.Should().BeFalse();
                     tsc.SetCompleted();
                 });
 
                 // Send another Attached message without the resume flag.
                 // This should cause and Update event to be emitted.
-                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
-                {
-                    Channel = "test"
-                });
+                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached, "test"));
 
                 result = await tsc.Task;
                 result.Should().BeTrue("Update event should have been handled");
@@ -193,6 +195,27 @@ namespace IO.Ably.Tests.Realtime
                 });
 
                 await Task.Delay(2000);
+                tsc = new TaskCompletionAwaiter(500);
+
+                // set detached so that the nexted Attached message with resume will pass
+                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, "test"));
+
+                channel.Once(ChannelEvent.Attached, stateChange =>
+                {
+                    // RTL2f
+                    stateChange.Resumed.Should().BeTrue();
+                    stateChange.Error.Message.Should().Be("test error");
+                    tsc.SetCompleted();
+                });
+
+                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached, "test")
+                {
+                    Flags = 4, // resumed
+                    Error = new ErrorInfo("test error")
+                });
+
+                result = await tsc.Task;
+                result.Should().BeTrue();
             }
 
             [Theory]
