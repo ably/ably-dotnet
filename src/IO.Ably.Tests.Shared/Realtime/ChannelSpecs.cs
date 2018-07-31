@@ -90,7 +90,6 @@ namespace IO.Ably.Tests.Realtime
             }
 
             [Theory]
-            [InlineData(ChannelEvent.Initialized)]
             [InlineData(ChannelEvent.Attaching)]
             [InlineData(ChannelEvent.Attached)]
             [InlineData(ChannelEvent.Detaching)]
