@@ -434,9 +434,10 @@ namespace IO.Ably.Realtime
             {
                 channelEvent = (ChannelEvent) state;
                 channelStateChange = new ChannelStateChange(state, State, error, protocolMessage != null && protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed));
-                HandleStateChange(state, error, protocolMessage);
-                InternalStateChanged.Invoke(this, channelStateChange);
             }
+
+            HandleStateChange(state, error, protocolMessage);
+            InternalStateChanged.Invoke(this, channelStateChange);
 
             // Notify external client using the thread they subscribe on
             RealtimeClient.NotifyExternalClients(() =>
