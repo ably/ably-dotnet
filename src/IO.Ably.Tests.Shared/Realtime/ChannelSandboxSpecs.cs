@@ -612,6 +612,44 @@ namespace IO.Ably.Tests.Realtime
             client.Close();
         }
 
+        [Theory]
+        [InlineData(ChannelState.Detached)]
+        [InlineData(ChannelState.Failed)]
+        [InlineData(ChannelState.Suspended)]
+        [Trait("spec", "RTL11")]
+        public async Task WhenChannelEntersDetachedFailedSuspendedState_ShouldDeleteQueuedMessageAndCallbackShouldIndicateError(ChannelState state)
+        {
+            var client = await GetRealtimeClient(Defaults.Protocol, (options, settings) =>
+                {
+                    // A bogus AuthUrl will cause connection to become disconnected
+                    options.AuthUrl = new Uri("http://235424c24.fake:49999");
+
+                    // speed up the AuthUrl failure
+                    options.HttpMaxRetryCount = 1;
+                    options.HttpMaxRetryDuration = TimeSpan.FromMilliseconds(100);
+                });
+
+            var channel = client.Channels.Get("test");
+
+            var tsc = new TaskCompletionAwaiter(30000);
+            client.Connection.Once(ConnectionEvent.Disconnected, change =>
+            {
+                // place a message on the queue
+                channel.Publish("wibble", "wobble", (success, info) =>
+                {
+                    // expect an error
+                    tsc.Set(!success);
+                });
+
+                // setting the state should cause the queued message to be removed
+                // and the callback to indicate an error
+                (channel as RealtimeChannel).SetChannelState(state);
+            });
+
+            var result = await tsc.Task;
+            result.Should().BeTrue("publish should have failed");
+        }
+
         [Fact]
         [Trait("bug", "102")]
         public async Task WhenAttachingToAChannelFromMultipleThreads_ItShouldNotThrowAnError()
