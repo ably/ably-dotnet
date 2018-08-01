@@ -630,7 +630,7 @@ namespace IO.Ably.Tests.Realtime
                     options.HttpMaxRetryDuration = TimeSpan.FromMilliseconds(100);
                 });
 
-            var channel = client.Channels.Get("test");
+            var channel = client.Channels.Get("test".AddRandomSuffix());
 
             var tsc = new TaskCompletionAwaiter(5000);
             client.Connection.Once(ConnectionEvent.Disconnected, change =>
@@ -659,8 +659,8 @@ namespace IO.Ably.Tests.Realtime
         public async Task WhenChannelEntersDetachedFailedSuspendedState_MessagesAwaitingAckOrNackShouldNotBeAffected(ChannelState state)
         {
             var client = await GetRealtimeClient(Defaults.Protocol);
-            var channel = client.Channels.Get("test");
-            var tsc = new TaskCompletionAwaiter(35000);
+            var channel = client.Channels.Get("test".AddRandomSuffix());
+            var tsc = new TaskCompletionAwaiter(5000);
 
             channel.Once(ChannelEvent.Attached, async x =>
             {
@@ -694,7 +694,7 @@ namespace IO.Ably.Tests.Realtime
             Logger.LogLevel = LogLevel.Debug;
 
             var client1 = await GetRealtimeClient(Protocol.Json);
-            var channel = client1.Channels.Get("test");
+            var channel = client1.Channels.Get("test".AddRandomSuffix());
             var task = Task.Run(() => channel.Attach());
             await task.ConfigureAwait(false);
             var task2 = Task.Run(() => channel.Attach());
