@@ -9,6 +9,7 @@ using FluentAssertions;
 using IO.Ably.Encryption;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Types;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -631,7 +632,7 @@ namespace IO.Ably.Tests.Realtime
 
             var channel = client.Channels.Get("test");
 
-            var tsc = new TaskCompletionAwaiter(30000);
+            var tsc = new TaskCompletionAwaiter(5000);
             client.Connection.Once(ConnectionEvent.Disconnected, change =>
             {
                 // place a message on the queue
@@ -648,6 +649,42 @@ namespace IO.Ably.Tests.Realtime
 
             var result = await tsc.Task;
             result.Should().BeTrue("publish should have failed");
+        }
+
+        [Theory]
+        [InlineData(ChannelState.Detached)]
+        [InlineData(ChannelState.Failed)]
+        [InlineData(ChannelState.Suspended)]
+        [Trait("spec", "RTL11a")]
+        public async Task WhenChannelEntersDetachedFailedSuspendedState_MessagesAwaitingAckOrNackShouldNotBeAffected(ChannelState state)
+        {
+            var client = await GetRealtimeClient(Defaults.Protocol);
+            var channel = client.Channels.Get("test");
+            var tsc = new TaskCompletionAwaiter(35000);
+
+            channel.Once(ChannelEvent.Attached, async x =>
+            {
+                channel.Publish("wibble", "wobble", (success, info) =>
+                {
+                    // message publish should succeed
+                    tsc.Set(success);
+                });
+
+                client.Connection.Once(ConnectionEvent.Disconnected, change =>
+                {
+                    (channel as RealtimeChannel).SetChannelState(state);
+                });
+
+                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
+                {
+                    Error = new ErrorInfo("test", 40140)
+                });
+            });
+
+            channel.Attach();
+
+            var result = await tsc.Task;
+            result.Should().BeTrue();
         }
 
         [Fact]
