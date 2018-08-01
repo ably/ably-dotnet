@@ -543,6 +543,10 @@ namespace IO.Ably.Realtime
                     ConnectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
                     ClearAndFailChannelQueuedMessages(error);
                     break;
+                case ChannelState.Suspended:
+                    ConnectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
+                    ClearAndFailChannelQueuedMessages(error);
+                    break;
             }
         }
 
