@@ -534,17 +534,14 @@ namespace IO.Ably.Realtime
 
                     break;
                 case ChannelState.Detached:
-                    ConnectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
                     ClearAndFailChannelQueuedMessages(error);
                     break;
                 case ChannelState.Failed:
                     AttachedAwaiter.Fail(error);
                     DetachedAwaiter.Fail(error);
-                    ConnectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
                     ClearAndFailChannelQueuedMessages(error);
                     break;
                 case ChannelState.Suspended:
-                    ConnectionManager.FailMessageWaitingForAckAndClearOutgoingQueue(this, error);
                     ClearAndFailChannelQueuedMessages(error);
                     break;
             }
