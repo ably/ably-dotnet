@@ -45,6 +45,9 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Task OnAttachToContext()
         {
+            // This is a terminal state. Clear the transport.
+            Context.ClearAckQueueAndFailMessages(ErrorInfo.ReasonSuspended);
+
             if (RetryIn.HasValue)
             {
                 _timer.Start(RetryIn.Value, OnTimeOut);

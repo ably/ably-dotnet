@@ -30,7 +30,7 @@ namespace IO.Ably.Tests.AuthTests
 
             // create new reset client using the dummyTokenDetails
             var client = GetRestClient(null, opts => { opts.TokenDetails = dummyTokenDetails; });
-            
+
             // get the current token
             var newTokenDetails = client.AblyAuth.CurrentToken;
 
@@ -96,7 +96,7 @@ namespace IO.Ably.Tests.AuthTests
             client.AblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(tokenParams);
             data.Ttl.Should().Be(TimeSpan.FromMinutes(260));
         }
-        
+
         [Theory]
         [InlineData(Defaults.TokenExpireBufferInSeconds + 1, false)]
         [InlineData(Defaults.TokenExpireBufferInSeconds, true)]

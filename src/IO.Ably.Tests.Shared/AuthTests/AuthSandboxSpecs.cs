@@ -16,7 +16,7 @@ namespace IO.Ably.Tests
     [Trait("requires", "sandbox")]
     public class AuthSandboxSpecs : SandboxSpecs
     {
-        private string _invalidAuthUrl = "http://domain-that-goes-nowhere.local:12345/";
+        private string _errorUrl = "https://echo.ably.io/respondwith?status=500";
 
         public AuthSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
             : base(fixture, output)
@@ -246,7 +246,7 @@ namespace IO.Ably.Tests
             {
                 options.TokenDetails = token;
                 options.LogLevel = LogLevel.Debug;
-                options.AuthUrl = new Uri(_invalidAuthUrl);
+                options.AuthUrl = new Uri(_errorUrl);
                 options.AutoConnect = false;
             });
 
@@ -291,7 +291,7 @@ namespace IO.Ably.Tests
             void AuthUrlOptions(ClientOptions options, TestEnvironmentSettings settings)
             {
                 options.AutoConnect = false;
-                options.AuthUrl = new Uri(_invalidAuthUrl);
+                options.AuthUrl = new Uri(_errorUrl);
                 options.RealtimeRequestTimeout = TimeSpan.FromSeconds(2);
                 options.HttpRequestTimeout = TimeSpan.FromSeconds(2);
             }

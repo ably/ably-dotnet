@@ -36,27 +36,20 @@ namespace IO.Ably.Transport.States.Connection
                     await Context.SetState(new ConnectionClosedState(Context, message.Error, Logger));
                     return true;
                 case ProtocolMessage.MessageAction.Disconnected:
-                    var error = message.Error;
-                    var result = await Context.RetryBecauseOfTokenError(error);
-                    if (result == false)
+                    if (await Context.CanUseFallBackUrl(message.Error))
                     {
-                        await Context.SetState(new ConnectionDisconnectedState(Context, message.Error, Logger));
+                        Context.Connection.Key = null;
+                        await Context.SetState(new ConnectionDisconnectedState(Context, message.Error, Logger) { RetryInstantly = true });
                     }
 
-                    return true;
-                case ProtocolMessage.MessageAction.Error:
                     if (await Context.RetryBecauseOfTokenError(message.Error))
                     {
                         return true;
                     }
 
-                    if (await Context.CanUseFallBackUrl(message.Error))
-                    {
-                        Context.Connection.Key = null;
-                        await Context.SetState(new ConnectionDisconnectedState(Context, message.Error, Logger) { RetryInstantly = true });
-                        return true;
-                    }
-
+                    await Context.SetState(new ConnectionDisconnectedState(Context, message.Error, Logger));
+                    return true;
+                case ProtocolMessage.MessageAction.Error:
                     await Context.SetState(new ConnectionFailedState(Context, message.Error, Logger));
                     return true;
             }
