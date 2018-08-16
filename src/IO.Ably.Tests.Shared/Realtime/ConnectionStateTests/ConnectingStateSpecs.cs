@@ -103,11 +103,12 @@ namespace IO.Ably.Tests
             bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
 
             // Assert
-            Assert.True(result);
+            result.Should().BeTrue();
         }
 
         [Fact]
-        public async Task WithHandlesInboundErrorMessage_GoesToFailed()
+        [Trait("spec", "RTN14g")]
+        public async Task WithInboundErrorMessage_WhenNotTokenErrorAndChannelsEmpty_GoesToFailed()
         {
             // Arrange
             _context.Transport = GetConnectedTrasport();

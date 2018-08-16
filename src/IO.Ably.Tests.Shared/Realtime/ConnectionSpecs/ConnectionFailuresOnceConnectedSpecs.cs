@@ -148,46 +148,6 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTN15h")]
-        public async Task WhenConnectionFailsConsecutivelyMoreThanOnceWithTokenError_ShouldTransitionToFailedWithError()
-        {
-            var client = SetupConnectedClient();
-
-            List<ConnectionState> states = new List<ConnectionState>();
-            var errors = new List<ErrorInfo>();
-            client.Connection.InternalStateChanged += (sender, args) =>
-            {
-                if (args.HasError)
-                {
-                    errors.Add(args.Reason);
-                }
-
-                states.Add(args.Current);
-            };
-
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
-            {
-                Error = _tokenErrorInfo
-            });
-
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
-            {
-                Error = _tokenErrorInfo
-            });
-
-            Assert.Equal(
-                new[]
-            {
-                ConnectionState.Disconnected,
-                ConnectionState.Connecting,
-                ConnectionState.Failed
-            }, states);
-
-            errors.Should().NotBeEmpty();
-            errors.First().Code.Should().Be(_tokenErrorInfo.Code);
-        }
-
-        [Fact]
-        [Trait("spec", "RTN15h")]
         public async Task WhenConnectionFailsWithTokenErrorButTokenIsNotRenewable_ShouldTransitionDirectlyToFailedWithError()
         {
             var client = SetupConnectedClient(renewable: false);

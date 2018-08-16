@@ -147,6 +147,11 @@ namespace IO.Ably
                     CurrentToken = token;
                     return token;
                 }
+
+                if (token != null && token.IsExpired())
+                {
+                    throw new AblyException("Token has expired: " + CurrentToken, 40142, HttpStatusCode.Unauthorized);
+                }
             }
 
             return null;

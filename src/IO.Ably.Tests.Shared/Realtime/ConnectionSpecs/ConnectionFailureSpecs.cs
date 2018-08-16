@@ -61,6 +61,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
         [Fact]
         [Trait("spec", "RTN14b")]
+        [Trait("spec", "RSA4a")]
         public async Task WithTokenErrorAndNonRenewableToken_ShouldRaiseErrorAndTransitionToFailed()
         {
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
@@ -92,7 +93,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
         [Fact]
         [Trait("spec", "RTN14b")]
-        public async Task WithTokenErrorAndTokenRenewalFails_ShouldRaiseErrorAndTransitionToFailed()
+        public async Task WithTokenErrorAndTokenRenewalFails_ShouldRaiseErrorAndTransitionToDisconnected()
         {
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
             var client = GetClientWithFakeTransport(
@@ -112,14 +113,14 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
-            client.Connection.State.Should().Be(ConnectionState.Failed);
+            client.Connection.State.Should().Be(ConnectionState.Disconnected);
             client.Connection.ErrorReason.Should().NotBeNull();
             client.Connection.ErrorReason.Code.Should().Be(123);
         }
 
         [Fact]
         [Trait("spec", "RTN14b")]
-        public async Task WithTokenErrorTwice_ShouldNotRenewAndRaiseErrorAndTransitionToFailed()
+        public async Task WithTokenErrorTwice_ShouldNotRenewAndRaiseErrorAndTransitionToDisconnected()
         {
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
             var renewCount = 0;
@@ -139,11 +140,17 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 return AblyResponse.EmptyResponse.ToTask();
             });
 
+            bool disconnected = false;
+            client.Connection.On(ConnectionEvent.Disconnected, (_) =>
+            {
+                disconnected = true;
+            });
+
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
             renewCount.Should().Be(1);
-            client.Connection.State.Should().Be(ConnectionState.Failed);
+            disconnected.Should().BeTrue();
             client.Connection.ErrorReason.Should().NotBeNull();
         }
 

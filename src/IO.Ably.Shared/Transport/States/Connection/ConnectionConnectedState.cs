@@ -33,14 +33,14 @@ namespace IO.Ably.Transport.States.Connection
             switch (message.Action)
             {
                 case ProtocolMessage.MessageAction.Close:
-                    Context.SetState(new ConnectionClosedState(Context, message.Error, Logger));
+                    await Context.SetState(new ConnectionClosedState(Context, message.Error, Logger));
                     return true;
                 case ProtocolMessage.MessageAction.Disconnected:
                     var error = message.Error;
                     var result = await Context.RetryBecauseOfTokenError(error);
                     if (result == false)
                     {
-                        Context.SetState(new ConnectionDisconnectedState(Context, message.Error, Logger));
+                        await Context.SetState(new ConnectionDisconnectedState(Context, message.Error, Logger));
                     }
 
                     return true;
@@ -53,11 +53,11 @@ namespace IO.Ably.Transport.States.Connection
                     if (await Context.CanUseFallBackUrl(message.Error))
                     {
                         Context.Connection.Key = null;
-                        Context.SetState(new ConnectionDisconnectedState(Context, message.Error, Logger) { RetryInstantly = true });
+                        await Context.SetState(new ConnectionDisconnectedState(Context, message.Error, Logger) { RetryInstantly = true });
                         return true;
                     }
 
-                    Context.SetState(new ConnectionFailedState(Context, message.Error, Logger));
+                    await Context.SetState(new ConnectionFailedState(Context, message.Error, Logger));
                     return true;
             }
 

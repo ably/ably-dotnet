@@ -11,13 +11,36 @@ namespace IO.Ably.Tests.Infrastructure
 
         public int TimeoutMs { get; private set; }
 
-        public TaskCompletionAwaiter(int timeoutMs = 10000)
+        public int TaskCount { get; private set; }
+
+        /// <summary>
+        /// Wait for task(s) to complete
+        /// </summary>
+        /// <param name="timeoutMs">set the timeout in MS</param>
+        /// <param name="taskCount">sets the number of tasks. Used with Tick().
+        /// Tick() will need to be called this number of times before a timeout to be considered a success.</param>
+        public TaskCompletionAwaiter(int timeoutMs = 10000, int taskCount = 1)
         {
             TimeoutMs = timeoutMs;
+
+            if (taskCount < 1)
+            {
+                throw new ArgumentException("taskCount must be greater than zero");
+            }
+            TaskCount = taskCount;
 
             _cancellationTokenSource = new CancellationTokenSource(TimeoutMs);
             _taskCompletionSource = new TaskCompletionSource<bool>();
             _cancellationTokenSource.Token.Register(() => _taskCompletionSource.TrySetResult(false));
+        }
+
+        public void Tick()
+        {
+            TaskCount--;
+            if (TaskCount < 1)
+            {
+                SetCompleted();
+            }
         }
 
         public void SetCompleted()

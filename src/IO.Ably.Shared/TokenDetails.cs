@@ -131,8 +131,17 @@ namespace IO.Ably
                 return false;
             }
 
-            var exp = token.Expires;
-            return (exp == DateTimeOffset.MinValue) || (exp >= token.Now());
+            if (token.Expires == DateTimeOffset.MinValue)
+            {
+                return true;
+            }
+
+            return !token.IsExpired();
+        }
+
+        public static bool IsExpired(this TokenDetails token)
+        {
+            return token.Expires < token.Now();
         }
     }
 }

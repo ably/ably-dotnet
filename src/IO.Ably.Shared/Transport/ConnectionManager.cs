@@ -283,7 +283,7 @@ namespace IO.Ably.Transport
                 }
                 else
                 {
-                    SetState(new ConnectionFailedState(this, error, Logger));
+                    await SetState(new ConnectionFailedState(this, error, Logger));
                 }
 
                 return true;
