@@ -6,6 +6,8 @@ using FluentAssertions;
 using FluentAssertions.Execution;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
+using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
@@ -214,6 +216,37 @@ namespace IO.Ably.Tests.Realtime
 
                 _client.Connection.State.Should().Be(ConnectionState.Closed);
                 _channel.State.Should().Be(ChannelState.Detached);
+            }
+
+            [Fact]
+            [Trait("spec", "RTL3d")]
+            public async Task WhenChannelIsSuspended_WhenConnectionBecomeConnectedAttemptAttach()
+            {
+                var client = GetConnectedClient();
+                var channel = client.Channels.Get("test".AddRandomSuffix());
+
+                await client.ConnectionManager.SetState(new ConnectionSuspendedState(client.ConnectionManager, Logger));
+                await client.WaitForState(ConnectionState.Suspended);
+
+                (channel as RealtimeChannel).SetChannelState(ChannelState.Suspended);
+
+                await client.ConnectionManager.SetState(new ConnectionConnectedState(client.ConnectionManager, new ConnectionInfo("1", 100, "connectionKey", string.Empty)));
+
+                await client.WaitForState(ConnectionState.Connected);
+                client.Connection.State.Should().Be(ConnectionState.Connected);
+                channel.State.Should().Be(ChannelState.Attaching);
+
+                var tsc = new TaskCompletionAwaiter();
+                channel.Once(ChannelEvent.Suspended, s =>
+                {
+                    s.Error.Should().NotBeNull();
+                    s.Error.Message.Should().Be("Channel didn't attach within the default timeout");
+                    s.Error.Code.Should().Be(50000);
+                    tsc.SetCompleted();
+                });
+
+                var completed = await tsc.Task;
+                completed.Should().BeTrue("channel should have become Suspended again");
             }
 
             [Theory]

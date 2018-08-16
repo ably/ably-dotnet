@@ -93,13 +93,19 @@ namespace IO.Ably.Realtime
 
         private void SubscribeToConnectionEvents()
         {
-            ConnectionManager.Connection.InternalStateChanged += InternalOnInternalStateChanged;
+            ConnectionManager.Connection.InternalStateChanged += OnConnectionInternalStateChanged;
         }
 
-        internal void InternalOnInternalStateChanged(object sender, ConnectionStateChange connectionStateChange)
+        internal void OnConnectionInternalStateChanged(object sender, ConnectionStateChange connectionStateChange)
         {
             switch (connectionStateChange.Current)
             {
+                case ConnectionState.Connected:
+                    if (State == ChannelState.Suspended)
+                    {
+                        Attach();
+                    }
+                    break;
                 case ConnectionState.Closed:
                     AttachedAwaiter.Fail(new ErrorInfo("Connection is closed"));
                     DetachedAwaiter.Fail(new ErrorInfo("Connection is closed"));
