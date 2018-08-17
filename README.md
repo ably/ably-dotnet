@@ -14,7 +14,7 @@ A .NET client library for [www.ably.io](https://www.ably.io), the realtime messa
 
 Unity is not officially supported yet, but some users have had some successes. See this [issue](https://github.com/ably/ably-dotnet/issues/169) for more information.
 
-A portable (PCL) version is not available.
+A portable class library (PCL) version is not available. See [this comment](https://github.com/ably/ably-dotnet/issues/182#issuecomment-366939087) for more information on this choice and the potential workarounds that are available. 
 
 &ast; To target Windows 7 (with .Net 4.6) a custom [ITransportFactory](https://github.com/ably/ably-dotnet/blob/master/src/IO.Ably.Shared/Transport/ITransport.cs) will need to be implemented in your project that uses an alternate Web Socket library. 
 This is because [System.Net.WebSockets]('https://msdn.microsoft.com/en-us/library/system.net.websockets(v=vs.110).aspx') is not fully implementented on Windows 7.
