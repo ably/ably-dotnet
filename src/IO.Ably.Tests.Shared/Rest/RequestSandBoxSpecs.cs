@@ -86,7 +86,7 @@ namespace IO.Ably.Tests
             paginatedResponse.Items.First().Should().BeOfType<JObject>();
             paginatedResponse.Response.ContentType.Should().Be(AblyHttpClient.GetHeaderValue(protocol));
             var channelDetails = paginatedResponse.Items.First() as JObject; // cast from JToken
-            channelDetails["id"].ToString().Should().BeEquivalentTo(_channelName);
+            channelDetails["channelId"].ToString().Should().BeEquivalentTo(_channelName);
         }
 
         [Trait("spec", "RSC19")]
@@ -114,7 +114,7 @@ namespace IO.Ably.Tests
             items.Should().HaveCount(2);
             foreach (var item in items)
             {
-                (item as JObject)["id"].ToString().Should().StartWith(_channelNamePrefix);
+                (item as JObject)["channelId"].ToString().Should().StartWith(_channelNamePrefix);
             }
         }
 
@@ -143,7 +143,7 @@ namespace IO.Ably.Tests
             items.Should().HaveCount(1);
             foreach (var item in items)
             {
-                (item as JObject)["id"].ToString().Should().StartWith(_channelNamePrefix);
+                (item as JObject)["channelId"].ToString().Should().StartWith(_channelNamePrefix);
             }
 
             var page2 = await paginatedResponse.NextAsync();
@@ -156,7 +156,7 @@ namespace IO.Ably.Tests
             // show that the 2 pages are different
             var item1 = items[0] as JObject;
             var item2 = page2.Items[0] as JObject;
-            item1["id"].ToString().Should().NotBe(item2["id"].ToString());
+            item1["channelId"].ToString().Should().NotBe(item2["channelId"].ToString());
         }
 
         [Trait("spec", "RSC19")]
@@ -205,17 +205,8 @@ namespace IO.Ably.Tests
         public async Task RequestFails_NotFound(Protocol protocol)
         {
             var client = TrackLastRequest(await GetRestClient(protocol));
-            try
-            {
-                await client.Request(HttpMethod.Post, "/does-not-exist");
-                throw new Exception("This should not be reached, the preceeding call should throw");
-            }
-            catch (AblyException e)
-            {
-                e.ErrorInfo.Code.Should().Be(40400);
-                e.ErrorInfo.Message.Should().NotBeNullOrEmpty();
-                e.ErrorInfo.Message.Should().Be("Could not find path: /does-not-exist");
-            }
+            var response = await client.Request(HttpMethod.Post, "/does-not-exist");
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
         [Trait("spec", "RSC19e")]
