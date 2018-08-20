@@ -229,12 +229,12 @@ namespace IO.Ably.Tests
                 options.HttpOpenTimeout = TimeSpan.FromSeconds(1);
                 options.HttpRequestTimeout = TimeSpan.FromSeconds(1);
             }));
+
             // custom host with a port that is not in use speeds up the test
             client.HttpClient.CustomHost = "fake.host:54321";
             try
             {
                 await client.Request(HttpMethod.Post, "/");
-                throw new Exception("This should not be reached, the preceeding call should throw");
             }
             catch (AblyException e)
             {
@@ -242,6 +242,25 @@ namespace IO.Ably.Tests
                 e.ErrorInfo.Message.Should().NotBeNullOrEmpty();
                 e.ErrorInfo.Message.Should().Contain("Invalid URI: Invalid port specified.");
             }
+        }
+
+        [Trait("spec", "RSC19e")]
+        [Theory]
+        [ProtocolData]
+        public async Task RequestFails_Non200StatusResponseShouldNotRaiseException(Protocol protocol)
+        {
+            var client = TrackLastRequest(await GetRestClient(protocol, options =>
+            {
+                options.HttpMaxRetryCount = 1;
+                options.HttpOpenTimeout = TimeSpan.FromSeconds(1);
+                options.HttpRequestTimeout = TimeSpan.FromSeconds(1);
+            }));
+
+            client.HttpClient.CustomHost = "echo.ably.io/respondwith?status=400";
+            var response = await client.Request(HttpMethod.Post, "/");
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.ErrorCode.Should().Be(0);
+            response.ErrorMessage.Should().BeNull();
         }
 
         private AblyRest TrackLastRequest(AblyRest client)
