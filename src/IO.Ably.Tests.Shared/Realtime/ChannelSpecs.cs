@@ -210,7 +210,7 @@ namespace IO.Ably.Tests.Realtime
 
                 await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached, "test")
                 {
-                    Flags = 4, // resumed
+                    Flags = ProtocolMessage.Flag.Resumed, // resumed
                     Error = new ErrorInfo("test error")
                 });
 
