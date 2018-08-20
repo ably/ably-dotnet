@@ -95,23 +95,85 @@ namespace IO.Ably.Tests.Realtime
             [InlineData(ChannelEvent.Detaching)]
             [InlineData(ChannelEvent.Detached)]
             [InlineData(ChannelEvent.Failed)]
+            [InlineData(ChannelEvent.Suspended)]
             [Trait("spec", "RTL2a")]
             [Trait("spec", "RTL2b")]
+            [Trait("spec", "RTL2d")]
             public void ShouldEmitTheFollowingStates(ChannelEvent channelEvent)
             {
+                var chanName = "test".AddRandomSuffix();
+                var client = GetConnectedClient();
+                var channel = client.Channels.Get(chanName);
+
+                ChannelState previousState = ChannelState.Failed;
                 ChannelState newState = ChannelState.Initialized;
-                _channel.On(x =>
+                channel.On(channelStateChange =>
                 {
-                    newState = x.Current;
+                    // RTL2d first argument should be an instance of ChannelStateChange
+                    channelStateChange.Should().NotBeNull();
+                    channelStateChange.Error.Should().BeNull();
+
+                    // should be the state corresponding to the
+                    // passed in ChannelEvent
+                    // (which should be anything but Initialized)
+                    newState = channelStateChange.Current;
+
+                    // should always be Initialized
+                    previousState = channelStateChange.Previous;
                     Done();
                 });
 
-                (_channel as RealtimeChannel).SetChannelState((ChannelState)channelEvent);
+                (channel as RealtimeChannel).SetChannelState((ChannelState)channelEvent);
 
                 WaitOne();
 
-                _channel.State.Should().Be((ChannelState)channelEvent);
+                channel.State.Should().Be((ChannelState)channelEvent);
                 newState.Should().Be((ChannelState)channelEvent);
+                previousState.Should().Be(ChannelState.Initialized);
+            }
+
+            [Theory]
+            [InlineData(ProtocolMessage.MessageAction.Attached)]
+            [InlineData(ProtocolMessage.MessageAction.Detached)]
+            [Trait("spec", "RTL2d")]
+            public void ShouldSetTheErrorReasonIfPresent(ProtocolMessage.MessageAction action)
+            {
+                var chanName = "test".AddRandomSuffix();
+                var client = GetConnectedClient();
+                var channel = client.Channels.Get(chanName);
+
+                ChannelState previousState = ChannelState.Failed;
+                ChannelState newState = ChannelState.Initialized;
+                channel.On(channelStateChange =>
+                {
+                    // RTL2d first argument should be an instance of ChannelStateChange
+                    channelStateChange.Should().NotBeNull();
+                    channelStateChange.Error.Should().NotBeNull();
+                    channelStateChange.Error.Message.Should().Be(action.ToString());
+                    channelStateChange.Error.Code.Should().Be((int) action);
+
+                    // should be the state corresponding to the
+                    // passed in ChannelEvent which should be
+                    // anything but Initialized
+                    newState = channelStateChange.Current;
+
+                    // should always be Initialized
+                    previousState = channelStateChange.Previous;
+                    Done();
+                });
+
+                // any state change triggered by a ProtocolMessage that contains an error member
+                // should populate the reason with that error in the corresponding state change event
+                client.FakeProtocolMessageReceived(new ProtocolMessage(action, chanName)
+                {
+                    Error = new ErrorInfo(action.ToString(), (int)action)
+                });
+
+                WaitOne();
+
+                channel.State.ToString().Should().Be(action.ToString());
+                newState.ToString().Should().Be(action.ToString());
+                previousState.Should().Be(ChannelState.Initialized);
             }
 
             [Fact]
