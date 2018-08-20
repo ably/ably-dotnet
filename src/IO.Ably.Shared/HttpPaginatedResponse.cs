@@ -53,17 +53,20 @@ namespace IO.Ably
 
             ExecuteDataQueryFunc = executeDataQueryFunc;
 
-            var data = JToken.Parse(response.TextResponse);
-            if (data is JArray arr)
+            if (response.TextResponse.IsNotEmpty())
             {
-                foreach (var token in arr)
+                var data = JToken.Parse(response.TextResponse);
+                if (data is JArray arr)
                 {
-                    Items.Add(token);
+                    foreach (var token in arr)
+                    {
+                        Items.Add(token);
+                    }
                 }
-            }
-            else
-            {
-                Items.Add(data);
+                else
+                {
+                    Items.Add(data);
+                }
             }
 
             InitializeQuery(CurrentQueryParams, requestParams);
