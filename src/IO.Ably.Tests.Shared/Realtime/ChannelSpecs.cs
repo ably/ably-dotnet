@@ -100,16 +100,42 @@ namespace IO.Ably.Tests.Realtime
         {
             private IRealtimeChannel _channel;
 
+            [Fact]
+            [Trait("spec", "RTL2")]
+            public void ValidateChannelEventAndChannelStateValues()
+            {
+                // ChannelState and ChannelEvent should have values that are aligned
+                // to allow for casting between the two (with the exception of the Update event)
+                // The assigned values are arbitary, but should be unique per event/state pair
+                ((int)ChannelEvent.Initialized).Should().Be(0);
+                ((int)ChannelEvent.Attaching).Should().Be(1);
+                ((int)ChannelEvent.Attached).Should().Be(2);
+                ((int)ChannelEvent.Detaching).Should().Be(3);
+                ((int)ChannelEvent.Detached).Should().Be(4);
+                ((int)ChannelEvent.Suspended).Should().Be(5);
+                ((int)ChannelEvent.Failed).Should().Be(6);
+                ((int)ChannelEvent.Update).Should().Be(7);
+
+                // each ChannelState should have an equivelant ChannelEvent
+                ((int)ChannelState.Failed).Should().Be((int)ChannelEvent.Failed);
+                ((int)ChannelState.Detached).Should().Be((int)ChannelEvent.Detached);
+                ((int)ChannelState.Detaching).Should().Be((int)ChannelEvent.Detaching);
+                ((int)ChannelState.Initialized).Should().Be((int)ChannelEvent.Initialized);
+                ((int)ChannelState.Attached).Should().Be((int)ChannelEvent.Attached);
+                ((int)ChannelState.Attaching).Should().Be((int)ChannelEvent.Attaching);
+                ((int)ChannelState.Suspended).Should().Be((int)ChannelEvent.Suspended);
+            }
+
             [Theory]
-            [InlineData(ChannelState.Initialized)]
-            [InlineData(ChannelState.Attaching)]
-            [InlineData(ChannelState.Attached)]
-            [InlineData(ChannelState.Detaching)]
-            [InlineData(ChannelState.Detached)]
-            [InlineData(ChannelState.Failed)]
+            [InlineData(ChannelEvent.Initialized)]
+            [InlineData(ChannelEvent.Attaching)]
+            [InlineData(ChannelEvent.Attached)]
+            [InlineData(ChannelEvent.Detaching)]
+            [InlineData(ChannelEvent.Detached)]
+            [InlineData(ChannelEvent.Failed)]
             [Trait("spec", "RTL2a")]
             [Trait("spec", "RTL2b")]
-            public void ShouldEmitTheFollowingStates(ChannelState state)
+            public void ShouldEmitTheFollowingStates(ChannelEvent channelEvent)
             {
                 ChannelState newState = ChannelState.Initialized;
                 _channel.On(x =>
@@ -118,12 +144,12 @@ namespace IO.Ably.Tests.Realtime
                     Done();
                 });
 
-                (_channel as RealtimeChannel).SetChannelState(state);
+                (_channel as RealtimeChannel).SetChannelState((ChannelState)channelEvent);
 
                 WaitOne();
 
-                _channel.State.Should().Be(state);
-                newState.Should().Be(state);
+                _channel.State.Should().Be((ChannelState)channelEvent);
+                newState.Should().Be((ChannelState)channelEvent);
             }
 
             [Fact]

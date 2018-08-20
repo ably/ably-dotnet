@@ -13,7 +13,7 @@ using IO.Ably.Types;
 namespace IO.Ably.Realtime
 {
     /// <summary>Implement realtime channel.</summary>
-    internal class RealtimeChannel : EventEmitter<ChannelState, ChannelStateChange>, IRealtimeChannel, IDisposable
+    internal class RealtimeChannel : EventEmitter<ChannelEvent, ChannelStateChange>, IRealtimeChannel, IDisposable
     {
         internal AblyRealtime RealtimeClient { get; }
 
@@ -450,7 +450,7 @@ namespace IO.Ably.Realtime
                         Logger.Error($"Error notifying event handlers for state change: {state}", ex);
                     }
 
-                    Emit(state, args);
+                    Emit((ChannelEvent)state, args);
                 });
         }
 

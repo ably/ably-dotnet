@@ -15,6 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)AblyRest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ApiKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaginatedRequestParams.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelEvent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\AuthDetails.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthMethod.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthOptions.cs" />
