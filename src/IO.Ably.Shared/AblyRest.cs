@@ -197,6 +197,7 @@ namespace IO.Ably
         internal async Task<HttpPaginatedResponse> ExecuteHttpPaginatedRequest(AblyRequest request, PaginatedRequestParams requestParams, Func<PaginatedRequestParams, Task<HttpPaginatedResponse>> executeDataQueryRequest)
         {
             var response = await ExecuteRequest(request);
+
             if (Logger.IsDebug)
             {
                 Logger.Debug("Response received. Status: " + response.StatusCode);
@@ -214,6 +215,7 @@ namespace IO.Ably
         internal async Task<HttpPaginatedResponse> HttpPaginatedRequestInternal(PaginatedRequestParams requestParams)
         {
             var request = CreateRequest(requestParams.Path, requestParams.HttpMethod);
+            request.NoExceptionOnHttpError = true;
             request.AddQueryParameters(requestParams.ExtraParameters);
             request.AddHeaders(requestParams.Headers);
             if (requestParams.Body != null)

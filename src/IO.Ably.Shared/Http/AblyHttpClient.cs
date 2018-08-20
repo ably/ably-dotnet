@@ -92,6 +92,11 @@ namespace IO.Ably
                         }
                     }
 
+                    if (request.NoExceptionOnHttpError)
+                    {
+                        return ablyResponse;
+                    }
+
                     try
                     {
                         response.EnsureSuccessStatusCode();
