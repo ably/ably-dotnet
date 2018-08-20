@@ -6,6 +6,8 @@ using FluentAssertions;
 using FluentAssertions.Execution;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
+using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
@@ -216,11 +218,42 @@ namespace IO.Ably.Tests.Realtime
                 _channel.State.Should().Be(ChannelState.Detached);
             }
 
+            [Fact]
+            [Trait("spec", "RTL3d")]
+            public async Task WhenChannelIsSuspended_WhenConnectionBecomeConnectedAttemptAttach()
+            {
+                var client = GetConnectedClient();
+                var channel = client.Channels.Get("test".AddRandomSuffix());
+
+                await client.ConnectionManager.SetState(new ConnectionSuspendedState(client.ConnectionManager, Logger));
+                await client.WaitForState(ConnectionState.Suspended);
+
+                (channel as RealtimeChannel).SetChannelState(ChannelState.Suspended);
+
+                await client.ConnectionManager.SetState(new ConnectionConnectedState(client.ConnectionManager, new ConnectionInfo("1", 100, "connectionKey", string.Empty)));
+
+                await client.WaitForState(ConnectionState.Connected);
+                client.Connection.State.Should().Be(ConnectionState.Connected);
+                channel.State.Should().Be(ChannelState.Attaching);
+
+                var tsc = new TaskCompletionAwaiter();
+                channel.Once(ChannelEvent.Suspended, s =>
+                {
+                    s.Error.Should().NotBeNull();
+                    s.Error.Message.Should().Be("Channel didn't attach within the default timeout");
+                    s.Error.Code.Should().Be(50000);
+                    tsc.SetCompleted();
+                });
+
+                var completed = await tsc.Task;
+                completed.Should().BeTrue("channel should have become Suspended again");
+            }
+
             [Theory]
             [InlineData(ChannelState.Attached)]
             [InlineData(ChannelState.Attaching)]
-            [Trait("spec", "RTL3b")]
-            public async Task WhenConnectionIsSuspended_AttachingOrAttachedChannelsShouldTrasitionToDetached(ChannelState state)
+            [Trait("spec", "RTL3c")]
+            public async Task WhenConnectionIsSuspended_AttachingOrAttachedChannelsShouldTrasitionToSuspended(ChannelState state)
             {
                 (_channel as RealtimeChannel).SetChannelState(state);
 
@@ -229,7 +262,28 @@ namespace IO.Ably.Tests.Realtime
                 await _client.ConnectionManager.SetState(new ConnectionSuspendedState(_client.ConnectionManager, Logger));
 
                 _client.Connection.State.Should().Be(ConnectionState.Suspended);
-                _channel.State.Should().Be(ChannelState.Detached);
+                _channel.State.Should().Be(ChannelState.Suspended);
+            }
+
+            [Theory]
+            [InlineData(ChannelState.Attached)]
+            [InlineData(ChannelState.Attaching)]
+            [InlineData(ChannelState.Failed)]
+            [InlineData(ChannelState.Suspended)]
+            [InlineData(ChannelState.Detached)]
+            [InlineData(ChannelState.Detaching)]
+            [InlineData(ChannelState.Initialized)]
+            [Trait("spec", "RTL3e")]
+            public async Task WhenConnectionIsDisconnected_ChannelStateShouldNotChange(ChannelState state)
+            {
+                (_channel as RealtimeChannel).SetChannelState(state);
+
+                _client.Close();
+
+                await _client.ConnectionManager.SetState(new ConnectionDisconnectedState(_client.ConnectionManager, Logger));
+
+                _client.Connection.State.Should().Be(ConnectionState.Disconnected);
+                _channel.State.Should().Be(state);
             }
 
             public ConnectionStateChangeEffectSpecs(ITestOutputHelper output)

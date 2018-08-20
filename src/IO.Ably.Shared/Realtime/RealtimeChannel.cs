@@ -93,35 +93,18 @@ namespace IO.Ably.Realtime
 
         private void SubscribeToConnectionEvents()
         {
-            ConnectionManager.Connection.InternalStateChanged += InternalOnInternalStateChanged;
+            ConnectionManager.Connection.InternalStateChanged += OnConnectionInternalStateChanged;
         }
 
-        internal void InternalOnInternalStateChanged(object sender, ConnectionStateChange connectionStateChange)
+        internal void OnConnectionInternalStateChanged(object sender, ConnectionStateChange connectionStateChange)
         {
             switch (connectionStateChange.Current)
             {
-                // case ConnectionState.Connected:
-                case ConnectionState.Disconnected:
-                    if (State == ChannelState.Attaching)
+                case ConnectionState.Connected:
+                    if (State == ChannelState.Suspended)
                     {
-                        if (Logger.IsDebug)
-                        {
-                            Logger.Debug($"#{Name} Resending Attach because connection became {State} while the channel was {ChannelState.Attaching}.");
-                        }
-
-                        SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name));
+                        Attach();
                     }
-
-                    if (State == ChannelState.Detaching)
-                    {
-                        if (Logger.IsDebug)
-                        {
-                            Logger.Debug($"#{Name} Resending Detach because connection became {State} while the channel was {ChannelState.Detaching}.");
-                        }
-
-                        SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name));
-                    }
-
                     break;
                 case ConnectionState.Closed:
                     AttachedAwaiter.Fail(new ErrorInfo("Connection is closed"));
@@ -137,7 +120,7 @@ namespace IO.Ably.Realtime
                     DetachedAwaiter.Fail(new ErrorInfo("Connection is suspended"));
                     if (State == ChannelState.Attached || State == ChannelState.Attaching)
                     {
-                        SetChannelState(ChannelState.Detaching, ErrorInfo.ReasonSuspended);
+                        SetChannelState(ChannelState.Suspended, ErrorInfo.ReasonSuspended);
                     }
 
                     break;
