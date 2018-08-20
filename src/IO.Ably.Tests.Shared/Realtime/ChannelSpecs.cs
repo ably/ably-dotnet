@@ -239,7 +239,7 @@ namespace IO.Ably.Tests.Realtime
                 channel.Once(stateChange =>
                 {
                     stateDidChange = true;
-                    throw new Exception("state chage event should not be emitted");
+                    throw new Exception("state change event should not be emitted");
                 });
 
                 // attempt to set the same state again
