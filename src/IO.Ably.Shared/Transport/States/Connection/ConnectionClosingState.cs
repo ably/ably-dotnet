@@ -10,9 +10,12 @@ namespace IO.Ably.Transport.States.Connection
         private const int CloseTimeout = 1000;
         private readonly ICountdownTimer _timer;
 
-        // used to mitigate a potential race condition where by OnAttachToContext()
-        // can be called after Connect() is called but before the new state is attached
-        private bool _inTransition = false;
+        /// <summary>
+        /// used to mitigate a potential race condition where by OnAttachToContext()
+        /// can be called after Connect() is called but before the new state is attached
+        /// </summary>
+        private bool _inConnectTransition = false;
+
 
         public ConnectionClosingState(IConnectionContext context, ILogger logger)
             : this(context, null, new CountdownTimer("Closing state timer", logger), logger)
@@ -53,7 +56,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Task OnAttachToContext()
         {
-            if (_inTransition)
+            if (_inConnectTransition)
             {
                 return TaskConstants.BooleanTrue;
             }
@@ -85,7 +88,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void Connect()
         {
-            _inTransition = true;
+            _inConnectTransition = true;
             _timer.Abort();
             Context.Connection.Key = string.Empty;
             Context.SetState(new ConnectionConnectingState(Context, Logger));

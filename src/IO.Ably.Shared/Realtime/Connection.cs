@@ -19,6 +19,8 @@ namespace IO.Ably.Realtime
 
     public sealed class Connection : EventEmitter<ConnectionEvent, ConnectionStateChange>, IDisposable
     {
+        internal event EventHandler BeginConnect;
+
         private static readonly ConcurrentBag<WeakReference<Action<NetworkState>>> OsEventSubscribers =
             new ConcurrentBag<WeakReference<Action<NetworkState>>>();
 
@@ -240,6 +242,11 @@ namespace IO.Ably.Realtime
             {
                 Serial = message.ConnectionSerial.Value;
             }
+        }
+
+        internal void OnBeginConnect()
+        {
+            BeginConnect?.Invoke(this, EventArgs.Empty);
         }
     }
 }
