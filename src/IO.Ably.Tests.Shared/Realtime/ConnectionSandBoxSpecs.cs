@@ -138,10 +138,10 @@ namespace IO.Ably.Tests.Realtime
                 opts.DisconnectedRetryTimeout = TimeSpan.MaxValue;
             });
 
-            // Start collecting events after the connection is open
             await client.WaitForState();
 
             // capture initial values
+            var initialConnection = client.Connection;
             var initialConnectionId = client.Connection.Id;
             var initialTransport = client.ConnectionManager.Transport;
 
@@ -162,6 +162,8 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.Id.Should().NotBe(initialConnectionId);
             client.ConnectionManager.Transport.Should().NotBe(initialTransport);
 
+            // because a new transport is created the CLOSED message for the
+            // old connection never arrives.
             var didClose = await awaiter.Task;
             didClose.Should().BeFalse();
         }
