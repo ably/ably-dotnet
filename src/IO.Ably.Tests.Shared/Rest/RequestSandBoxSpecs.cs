@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Newtonsoft.Json.Linq;
+using RichardSzalay.MockHttp;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -57,6 +58,32 @@ namespace IO.Ably.Tests
         }
 
         public Task DisposeAsync() => Task.CompletedTask;
+
+        [Trait("spec", "RSC19a")]
+        [Theory]
+        [ProtocolData]
+        public async Task Request_ShouldAcceptCorrectHttpVerbs(Protocol protocol)
+        {
+            var client = TrackLastRequest(await GetRestClient(protocol));
+            client.HttpClient.CustomHost = "localhost";
+            var mockHttp = new MockHttpMessageHandler();
+
+            var verbs = new[] { "GET", "POST", "PUT", "PATCH", "DELETE" };
+
+            foreach (var verb in verbs)
+            {
+                mockHttp.When(new HttpMethod(verb), "https://localhost/*").Respond(HttpStatusCode.OK, "application/json", "{ \"verb\": \"" + verb + "\" }");
+                client.HttpClient.Client = mockHttp.ToHttpClient();
+
+                var response = await client.Request(verb, "/");
+                response.Success.Should().BeTrue($"'{verb}' verb should be supported ");
+                response.StatusCode.Should().Be(HttpStatusCode.OK);
+                response.Items.First()["verb"].ToString().Should().Be(verb);
+
+                var failedResponse = await client.Request("INVALID_HTTP_VERB", "/");
+                failedResponse.Success.Should().BeFalse($"'INVALID_HTTP_VERB' should fail because '{verb}' verb is expected by mock HTTP server.");
+            }
+        }
 
         [Trait("spec", "RSC19")]
         [Trait("spec", "RSC19a")]
