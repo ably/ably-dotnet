@@ -226,6 +226,12 @@ namespace IO.Ably
             return await ExecuteHttpPaginatedRequest(request, requestParams, HttpPaginatedRequestInternal);
         }
 
+        public async Task<HttpPaginatedResponse> Request(string method, string path, Dictionary<string, string> requestParams = null, JToken body = null, Dictionary<string, string> headers = null)
+        {
+            var httpMethod = new HttpMethod(method);
+            return await Request(httpMethod, path, requestParams, body, headers);
+        }
+
         public async Task<HttpPaginatedResponse> Request(HttpMethod method, string path, Dictionary<string, string> requestParams = null, JToken body = null, Dictionary<string, string> headers = null)
         {
             var p = new PaginatedRequestParams();
