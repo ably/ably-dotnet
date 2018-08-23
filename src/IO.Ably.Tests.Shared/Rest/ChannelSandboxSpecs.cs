@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -123,7 +124,7 @@ namespace IO.Ably.Tests.Rest
 
             var msg = new Message("test", "test");
             var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true);
-            var channel = client.Channels.Get("test");
+            var channel = client.Channels.Get("test".AddRandomSuffix());
 
             await channel.PublishAsync(msg);
 
@@ -151,7 +152,7 @@ namespace IO.Ably.Tests.Rest
         public async Task IdempotentPublishing_ClientProvidedMessageIdsArePreserved(Protocol protocol)
         {
             var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true);
-            var channel = client.Channels.Get("test");
+            var channel = client.Channels.Get("test".AddRandomSuffix());
 
             var msg = new Message("test", "test") { Id = "RSL1k2" };
             await channel.PublishAsync(msg);
@@ -172,6 +173,76 @@ namespace IO.Ably.Tests.Rest
             messages[0].Id.Should().Be("RSL1k3");
             messages[1].Id.Should().BeNull();
             messages[2].Id.Should().BeNull();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSL1k4")]
+        public async Task IdempotentPublishing_SimulateErrorAndRetry(Protocol protocol)
+        {
+            var client = await GetRestClient(protocol, opts =>
+            {
+                opts.IdempotentRestPublishing = true;
+                opts.HttpMaxRetryDuration = TimeSpan.FromSeconds(30);
+            });
+
+            var suffix = string.Empty.AddRandomSuffix();
+            var channelName = $"test{suffix}";
+            var channel = client.Channels.Get(channelName);
+            client.HttpClient.Options.HttpMaxRetryCount = 2;
+
+            var messages = new[]
+            {
+                new Message($"test1{suffix}", "test1"),
+                new Message($"test2{suffix}", "test2"),
+                new Message($"test3{suffix}", "test3"),
+            };
+
+            int tryCount = 0;
+            client.HttpClient.SendAsync = async message =>
+            {
+                message.RequestUri = new Uri($"https://sandbox-rest.ably.io/channels/{channelName}/messages");
+                var result = await client.HttpClient.InternalSendAsync(message);
+                tryCount++;
+                if (tryCount < 2)
+                {
+                    client.HttpClient.Options.IsDefaultHost = true;
+                    throw new TaskCanceledException("faked exception to cause retry");
+                }
+
+                return result;
+            };
+
+            await channel.PublishAsync(messages);
+
+            // publish http request should be made twice
+            tryCount.Should().Be(2);
+
+            // restore the SendAsync method
+            client.HttpClient.SendAsync = client.HttpClient.InternalSendAsync;
+
+            var history = await channel.HistoryAsync();
+            history.Items.Should().HaveCount(3);
+            history.Items[0].Id.Should().Be($"test1{suffix}");
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSL1k5")]
+        public async Task IdempotentPublishing_SendingAMessageMultipleTimesShouldOnlyPublishOnce(Protocol protocol)
+        {
+            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true);
+            var channel = client.Channels.Get("test".AddRandomSuffix());
+
+            var msg = new Message("test", "test") { Id = "RSL1k5" };
+            await channel.PublishAsync(msg);
+            await channel.PublishAsync(msg);
+            await channel.PublishAsync(msg);
+            await channel.PublishAsync(msg);
+
+            var history = await channel.HistoryAsync();
+            history.Items.Should().HaveCount(1);
+            history.Items[0].Id.Should().Be("RSL1k5");
         }
 
         [Theory]
