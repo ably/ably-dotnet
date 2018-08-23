@@ -180,6 +180,8 @@ namespace IO.Ably
 
         public SynchronizationContext CustomContext { get; set; }
 
+        public bool IdempotentRestPublishing { get; set; }
+
         internal Func<DateTimeOffset> NowFunc
         {
             get => _nowFunc ?? (_nowFunc = Defaults.NowFunc());
@@ -219,6 +221,7 @@ namespace IO.Ably
         /// </summary>
         public ClientOptions()
         {
+            Init();
         }
 
         /// <summary>
@@ -229,6 +232,21 @@ namespace IO.Ably
         public ClientOptions(string key)
             : base(key)
         {
+            Init();
+        }
+
+        private void Init()
+        {
+            SetIdempotentRestPublishingDefault(Defaults.ProtocolMajorVersion, Defaults.ProtocolMinorVersion);
+        }
+
+        internal void SetIdempotentRestPublishingDefault(int majorVersion, int minorVersion)
+        {
+            // (TO3n) idempotentRestPublishing defaults to false for clients with version < 1.1, otherwise true.
+            if (majorVersion >= 1 && minorVersion >= 1)
+            {
+                IdempotentRestPublishing = true;
+            }
         }
     }
 }

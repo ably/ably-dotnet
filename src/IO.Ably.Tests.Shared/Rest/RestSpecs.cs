@@ -312,6 +312,31 @@ namespace IO.Ably.Tests
                 Logger.LoggerSink.Should().BeOfType<TestLogHandler>();
             }
 
+            [Fact]
+            [Trait("spec", "TO3n")]
+            public void ClientOptions_IdempotentPublishingDefaultToFalseForVersionsBelow1_1()
+            {
+                var clientOptions = new ClientOptions();
+
+                // Currently working against 1.0 so this should be false
+                clientOptions.IdempotentRestPublishing.Should().BeFalse();
+
+                // Test the internal method that is called from
+                // ClientOptions constructor with different
+                // major and minor versions
+                clientOptions.SetIdempotentRestPublishingDefault(0, 8);
+                clientOptions.IdempotentRestPublishing.Should().BeFalse();
+
+                clientOptions.SetIdempotentRestPublishingDefault(1, 0);
+                clientOptions.IdempotentRestPublishing.Should().BeFalse();
+
+                clientOptions.SetIdempotentRestPublishingDefault(1, 1);
+                clientOptions.IdempotentRestPublishing.Should().BeTrue();
+
+                clientOptions.SetIdempotentRestPublishingDefault(2, 0);
+                clientOptions.IdempotentRestPublishing.Should().BeTrue();
+            }
+
             private static async Task MakeAnyRequest(AblyRest client)
             {
                 await client.Channels.Get("boo").PublishAsync("boo", "baa");
