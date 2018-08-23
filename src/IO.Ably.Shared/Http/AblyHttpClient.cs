@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -307,15 +308,21 @@ namespace IO.Ably
 
         private static async Task<AblyResponse> GetAblyResponse(HttpResponseMessage response)
         {
-            var contentTypeHeader = response.Content.Headers.ContentType;
+            byte[] content = null;
+            MediaTypeHeaderValue contentTypeHeader = null;
 
-            var content = await response.Content.ReadAsByteArrayAsync();
+            if (response.Content != null)
+            {
+                content = await response.Content?.ReadAsByteArrayAsync();
+                contentTypeHeader = response.Content?.Headers.ContentType;
+            }
 
             var ablyResponse = new AblyResponse(contentTypeHeader?.CharSet, contentTypeHeader?.MediaType, content)
             {
                 StatusCode = response.StatusCode,
                 Headers = response.Headers
             };
+
             return ablyResponse;
         }
 
