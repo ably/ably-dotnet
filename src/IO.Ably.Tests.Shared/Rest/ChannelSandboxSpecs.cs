@@ -108,6 +108,74 @@ namespace IO.Ably.Tests.Rest
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RSL1k1")]
+        public async Task IdempotentPublishing_LibraryGeneratesIds(Protocol protocol)
+        {
+            void AssertMessage(Message message)
+            {
+                message.Id.Should().NotBeNull();
+                var idParts = message.Id.Split(':');
+                idParts.Should().HaveCount(2);
+                idParts[1].Should().Be("0");
+                byte[] b = Convert.FromBase64String(idParts[0]);
+                b.Should().HaveCount(9);
+            }
+
+            var msg = new Message("test", "test");
+            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true);
+            var channel = client.Channels.Get("test");
+
+            await channel.PublishAsync(msg);
+
+            AssertMessage(msg);
+
+            var messages = new[]
+            {
+                new Message("test1", "test1"),
+                new Message("test2", "test2"),
+                new Message("test3", "test3"),
+            };
+
+            await channel.PublishAsync(messages);
+
+            foreach (var m in messages)
+            {
+                AssertMessage(m);
+            }
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSL1k2")]
+        [Trait("spec", "RSL1k3")]
+        public async Task IdempotentPublishing_ClientProvidedMessageIdsArePreserved(Protocol protocol)
+        {
+            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true);
+            var channel = client.Channels.Get("test");
+
+            var msg = new Message("test", "test") { Id = "RSL1k2" };
+            await channel.PublishAsync(msg);
+            msg.Id.Should().Be("RSL1k2");
+
+            var messages = new[]
+            {
+                new Message("test1", "test1"),
+                new Message("test2", "test2"),
+                new Message("test3", "test3"),
+            };
+
+            messages[0].Id = "RSL1k3";
+
+            // Can publish further messages in the same channel
+            await channel.PublishAsync(messages);
+
+            messages[0].Id.Should().Be("RSL1k3");
+            messages[1].Id.Should().BeNull();
+            messages[2].Id.Should().BeNull();
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RSL4c4")]
         [Trait("spec", "RSL4d4")]
         [Trait("spec", "RSL5a")]
