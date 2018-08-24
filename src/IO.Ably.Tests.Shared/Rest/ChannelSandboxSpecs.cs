@@ -180,32 +180,33 @@ namespace IO.Ably.Tests.Rest
         [Trait("spec", "RSL1k4")]
         public async Task IdempotentPublishing_SimulateErrorAndRetry(Protocol protocol)
         {
-            var client = await GetRestClient(protocol, opts =>
-            {
-                opts.IdempotentRestPublishing = true;
-                opts.HttpMaxRetryDuration = TimeSpan.FromSeconds(30);
-            });
+            int numberOfRetries = 2;
+            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true);
 
             var suffix = string.Empty.AddRandomSuffix();
             var channelName = $"test{suffix}";
             var channel = client.Channels.Get(channelName);
-            client.HttpClient.Options.HttpMaxRetryCount = 2;
 
+            // batch publishing is not supported at the time
+            // of writing, so just send one message
             var messages = new[]
             {
-                new Message($"test1{suffix}", "test1"),
-                new Message($"test2{suffix}", "test2"),
-                new Message($"test3{suffix}", "test3"),
+                new Message($"test1{suffix}", "test1")
             };
 
+            // intercept the HTTP request overriding the RequestUri
+            // to make it appear that a retry against another host has happened
             int tryCount = 0;
+            client.HttpClient.Options.HttpMaxRetryCount = numberOfRetries;
             client.HttpClient.SendAsync = async message =>
             {
-                message.RequestUri = new Uri($"https://sandbox-rest.ably.io/channels/{channelName}/messages");
+                message.RequestUri = new Uri($"https://{client.Options.FullRestHost()}/channels/{channelName}/messages");
                 var result = await client.HttpClient.InternalSendAsync(message);
                 tryCount++;
-                if (tryCount < 2)
+                if (tryCount < numberOfRetries)
                 {
+                    // setting IsDefaultHost and raising a TaskCanceledException
+                    // will cause the request to retry
                     client.HttpClient.Options.IsDefaultHost = true;
                     throw new TaskCanceledException("faked exception to cause retry");
                 }
@@ -216,14 +217,14 @@ namespace IO.Ably.Tests.Rest
             await channel.PublishAsync(messages);
 
             // publish http request should be made twice
-            tryCount.Should().Be(2);
+            tryCount.Should().Be(numberOfRetries);
 
             // restore the SendAsync method
             client.HttpClient.SendAsync = client.HttpClient.InternalSendAsync;
 
             var history = await channel.HistoryAsync();
-            history.Items.Should().HaveCount(3);
-            history.Items[0].Id.Should().Be($"test1{suffix}");
+            history.Items.Should().HaveCount(1);
+            history.Items[0].Name.Should().Be($"test1{suffix}");
         }
 
         [Theory]
@@ -235,7 +236,6 @@ namespace IO.Ably.Tests.Rest
             var channel = client.Channels.Get("test".AddRandomSuffix());
 
             var msg = new Message("test", "test") { Id = "RSL1k5" };
-            await channel.PublishAsync(msg);
             await channel.PublishAsync(msg);
             await channel.PublishAsync(msg);
             await channel.PublishAsync(msg);
