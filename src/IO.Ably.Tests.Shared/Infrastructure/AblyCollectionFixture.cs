@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
@@ -69,7 +70,11 @@ namespace IO.Ably.Tests
 
         public ClientOptions CreateDefaultOptions(string key = null)
         {
-            return new ClientOptions() { Key = key ?? FirstValidKey, Tls = Tls, Environment = Environment };
+            var env = System.Environment.GetEnvironmentVariable("ABLY_ENV").IsNotEmpty()
+                ? System.Environment.GetEnvironmentVariable("ABLY_ENV").Trim()
+                : Environment;
+
+            return new ClientOptions() { Key = key ?? FirstValidKey, Tls = Tls, Environment = env };
         }
     }
 }
