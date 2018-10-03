@@ -79,7 +79,7 @@ namespace IO.Ably.Realtime.Presence
             catch (Exception ex)
             {
                 Logger.Error($"PresenceMap.Put | Channel: {_channelName}, Error: {ex.Message}");
-                throw ex;
+                throw;
             }
 
             switch (item.Action)
