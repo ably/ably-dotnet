@@ -6,6 +6,7 @@ using FluentAssertions;
 using FluentAssertions.Execution;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Presence;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
@@ -49,7 +50,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 var client = GetConnectedClient();
                 var channel = client.Channels.Get("Test");
-                channel.Presence.Should().BeOfType<Presence>();
+                channel.Presence.Should().BeOfType<PresenceManager>();
             }
 
             [Fact]
