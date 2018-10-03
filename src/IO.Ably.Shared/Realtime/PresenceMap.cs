@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace IO.Ably.Realtime.Presence
+namespace IO.Ably.Realtime
 {
 
     internal class PresenceMap
@@ -39,13 +39,16 @@ namespace IO.Ably.Realtime.Presence
             get => _isSyncInProgress;
             private set
             {
-                var previous = _isSyncInProgress;
-                _isSyncInProgress = value;
-
-                // if we have gone from true to false then fire SyncNoLongerInProgress
-                if (previous && !_isSyncInProgress)
+                lock (_lock)
                 {
-                    OnSyncNoLongerInProgress();
+                    var previous = _isSyncInProgress;
+                    _isSyncInProgress = value;
+
+                    // if we have gone from true to false then fire SyncNoLongerInProgress
+                    if (previous && !_isSyncInProgress)
+                    {
+                        OnSyncNoLongerInProgress();
+                    }
                 }
             }
         }

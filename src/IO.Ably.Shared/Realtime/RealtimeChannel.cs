@@ -76,14 +76,14 @@ namespace IO.Ably.Realtime
 
         internal ChannelState PreviousState { get; set; }
 
-        public Presence.PresenceManager Presence { get; }
+        public Presence Presence { get; }
 
         internal RealtimeChannel(string name, string clientId, AblyRealtime realtimeClient, ChannelOptions options = null)
             : base(options?.Logger)
         {
             Name = name;
             Options = options;
-            Presence = new Presence.PresenceManager(realtimeClient.ConnectionManager, this, clientId, Logger);
+            Presence = new Presence(realtimeClient.ConnectionManager, this, clientId, Logger);
             RealtimeClient = realtimeClient;
             State = ChannelState.Initialized;
             SubscribeToConnectionEvents();

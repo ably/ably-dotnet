@@ -10,7 +10,7 @@ namespace IO.Ably.Realtime
 
         string Name { get; }
 
-        Presence.PresenceManager Presence { get; }
+        Presence Presence { get; }
 
         ChannelOptions Options { get; }
 

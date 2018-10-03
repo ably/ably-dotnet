@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 
-namespace IO.Ably.Realtime.Presence
+namespace IO.Ably.Realtime
 {
-    public partial class PresenceManager : IDisposable
+    public partial class Presence : IDisposable
     {
         internal ILogger Logger { get; private set; }
 
@@ -49,13 +50,14 @@ namespace IO.Ably.Realtime.Presence
             SyncComplete = true;
         }
 
-        internal PresenceManager(IConnectionManager connection, RealtimeChannel channel, string cliendId, ILogger logger)
+        internal Presence(IConnectionManager connection, RealtimeChannel channel, string cliendId, ILogger logger)
         {
             Logger = logger;
             Map = new PresenceMap(channel.Name, logger);
             InternalMap = new PresenceMap(channel.Name, logger);
             _pendingPresence = new List<QueuedPresenceMessage>();
             _connection = connection;
+            _connection.Connection.ConnectionStateChanged += OnConnectionStateChanged;
             _channel = channel;
             _channel.InternalStateChanged += OnChannelStateChanged;
             _clientId = cliendId;
@@ -74,6 +76,11 @@ namespace IO.Ably.Realtime.Presence
                 _channel.InternalStateChanged -= OnChannelStateChanged;
             }
 
+            if (_connection != null)
+            {
+                _connection.Connection.ConnectionStateChanged -= OnConnectionStateChanged;
+            }
+
             _handlers.RemoveAll();
         }
 
@@ -81,9 +88,9 @@ namespace IO.Ably.Realtime.Presence
         ///     Get current presence in the channel. WaitForSync is not implemented yet. Partial result may be returned
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<PresenceMessage>> GetAsync(GetOptions options = null)
+        public async Task<IEnumerable<PresenceMessage>> GetAsync(GetParams options = null)
         {
-            var getOptions = options ?? new GetOptions();
+            var getOptions = options ?? new GetParams();
 
             if (getOptions.WaitForSync)
             {
@@ -97,12 +104,12 @@ namespace IO.Ably.Realtime.Presence
 
         internal async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, bool waitForSync = false)
         {
-            return await GetAsync(new GetOptions() { ClientId = clientId, WaitForSync = waitForSync });
+            return await GetAsync(new GetParams() { ClientId = clientId, WaitForSync = waitForSync });
         }
 
         internal async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, string connectionId, bool waitForSync = true)
         {
-            return await GetAsync(new GetOptions() { ClientId = clientId, ConnectionId = connectionId, WaitForSync = waitForSync });
+            return await GetAsync(new GetParams() { ClientId = clientId, ConnectionId = connectionId, WaitForSync = waitForSync });
         }
 
         private async Task<bool> WaitForSyncAsync()
@@ -258,6 +265,18 @@ namespace IO.Ably.Realtime.Presence
 
                 // TODO: Fix this;
                 return TaskConstants.BooleanTrue;
+            }
+
+            throw new AblyException("Unable to enter presence channel in detached or failed state", 91001, HttpStatusCode.BadRequest);
+        }
+
+        internal void ResumeSync()
+        {
+            if (_channel.State == ChannelState.Attached)
+            {
+                var message = new ProtocolMessage(ProtocolMessage.MessageAction.Sync, _channel.Name);
+                message.ChannelSerial = _currentSyncChannelSerial;
+                _connection.Send(message, null);
             }
 
             throw new AblyException("Unable to enter presence channel in detached or failed state", 91001, HttpStatusCode.BadRequest);
@@ -451,6 +470,14 @@ namespace IO.Ably.Realtime.Presence
                 FailQueuedMessages(e.Error);
                 Map.Clear();
                 InternalMap.Clear();
+            }
+        }
+
+        private void OnConnectionStateChanged(object sender, ConnectionStateChange e)
+        {
+            if (!Map.IsSyncInProgress && _connection.Connection.State == ConnectionState.Connected)
+            {
+                ResumeSync();
             }
         }
 
