@@ -174,8 +174,6 @@ namespace IO.Ably.Realtime
 
                         _residualMembers = null;
                     }
-
-                    IsSyncInProgress = false;
                 }
             }
             catch (Exception ex)
@@ -185,7 +183,11 @@ namespace IO.Ably.Realtime
             }
             finally
             {
-                InitialSyncCompleted = true;
+                lock (_lock)
+                {
+                    InitialSyncCompleted = true;
+                    IsSyncInProgress = false;
+                }
             }
 
             return removed.ToArray();
