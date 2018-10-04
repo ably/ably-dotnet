@@ -548,36 +548,52 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN19b")]
-        public async Task
-            WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed2(
-                Protocol protocol)
+        public async Task WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed(Protocol protocol)
         {
-            var testLogger = new TestLogger("RealtimeChannel.SendMessage:Attach");
-            Logger = testLogger;
-            var client = await GetRealtimeClient(protocol);
-            var channel = new RealtimeChannel("RTN19b", "RTN19b", client);
-            channel.Logger = testLogger;
-            channel.State = ChannelState.Attaching;
-            channel.OnConnectionInternalStateChanged(this, new ConnectionStateChange(ConnectionEvent.Connected, ConnectionState.Connected, ConnectionState.Disconnected));
-            testLogger.MessageSeen.Should().Be(true);
-        }
-
-        [Theory]
-        [ProtocolData]
-        [Trait("spec", "RTN19b")]
-        public async Task
-            WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed(
-                Protocol protocol)
-        {
-            int sendCount = 0;
-            int tries = 0;
-            while (sendCount < 2 && tries < 3)
+            var channelName = "test-channel".AddRandomSuffix();
+            var sentMessages = new List<ProtocolMessage>();
+            Logger.LogLevel = LogLevel.Debug;
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
-                sendCount = await WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed_count(protocol);
-                tries++;
-            }
+                options.TransportFactory = new TestTransportFactory()
+                {
+                    OnMessageSent = sentMessages.Add
+                };
+            });
 
-            sendCount.Should().Be(2);
+            await client.WaitForState(ConnectionState.Connected);
+
+            var transport = client.GetTestTransport();
+            transport.MessageSent = sentMessages.Add;
+
+            var channel = client.Channels.Get(channelName);
+            channel.Once(ChannelEvent.Attaching, change =>
+            {
+                transport.Close(false);
+            });
+            channel.Attach();
+            await channel.WaitForState(ChannelState.Attaching);
+            bool didDisconnect = false;
+            client.Connection.Once(ConnectionEvent.Disconnected, change =>
+            {
+                didDisconnect = true;
+                sentMessages.Count(x => x.Channel == channelName && x.Action == ProtocolMessage.MessageAction.Attach).Should().Be(1);
+            });
+
+            await client.WaitForState(ConnectionState.Disconnected);
+            await client.WaitForState(ConnectionState.Connecting);
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            client.Connection.State.Should().Be(ConnectionState.Connected);
+            didDisconnect.Should().BeTrue();
+
+            await channel.WaitForState(ChannelState.Attached);
+
+            var attachCount = sentMessages.Count(x => x.Channel == channelName && x.Action == ProtocolMessage.MessageAction.Attach);
+            attachCount.Should().Be(2);
+
+            client.Close();
         }
 
         public async Task<int> WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed_count(
@@ -599,6 +615,7 @@ namespace IO.Ably.Tests.Realtime
             await channel.WaitForState(ChannelState.Attaching);
 
             await client.WaitForState(ConnectionState.Connected);
+            client.Connection.State.Should().Be(ConnectionState.Connected);
 
             await Task.Delay(3000);
 
