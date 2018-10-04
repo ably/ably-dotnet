@@ -208,7 +208,7 @@ namespace IO.Ably.Tests.Realtime
                     factualMsg.Should().NotBe(null);
                     factualMsg.Id.ShouldBeEquivalentTo(testMsg.Id);
                     factualMsg.Action.ShouldBeEquivalentTo(testMsg.Action, "message was not emitted on the presence object with original action");
-                    var presentMessage = await channel.Presence.GetAsync(new GetOptions
+                    var presentMessage = await channel.Presence.GetAsync(new Presence.GetParams
                     {
                         ClientId = testMsg.ClientId, WaitForSync = false
                     });
@@ -439,6 +439,75 @@ namespace IO.Ably.Tests.Realtime
                     factualMsg.ClientId.ShouldBeEquivalentTo(correctMsg.ClientId);
                     factualMsg.Action.ShouldBeEquivalentTo(correctMsg.Action);
                 }
+            }
+
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RTP3")]
+            public async Task Presence_AfterReconnectingShouldReattachChannelAndResumeBrokenSync(Protocol protocol)
+            {
+                var channelName = "RTP3".AddRandomSuffix();
+
+                // must be greater than 100 to break up sync into multiple messages
+                var enterCount = 150;
+
+                var setupClient = await GetRealtimeClient(protocol);
+                await setupClient.WaitForState(ConnectionState.Connected);
+
+                // setup: enter clients on channel
+                var testChannel = setupClient.Channels.Get(channelName);
+                await testChannel.WaitForState(ChannelState.Attached);
+                testChannel.Presence.Subscribe(PresenceAction.Enter, message => { });
+                for (int i = 0; i < enterCount; i++)
+                {
+                    var clientId = $"fakeclient:{i}";
+                    await testChannel.Presence.EnterClientAsync(clientId, $"RTP3 test entry {i}");
+                }
+
+                var client = await GetRealtimeClient(protocol, (options, _) =>
+                {
+                    Logger.LogLevel = LogLevel.Debug;
+                });
+                await client.WaitForState();
+
+                var channel = client.Channels.Get(channelName);
+
+                var syncMessageAwaiter = new TaskCompletionAwaiter();
+                var transport = client.GetTestTransport();
+                int syncCount = 0;
+                transport.AfterDataReceived = protocolMessage =>
+                {
+                    if (protocolMessage.Action == ProtocolMessage.MessageAction.Sync)
+                    {
+                        syncCount++;
+
+                        // interupt after first page of results
+                        if (syncCount > 1)
+                        {
+                            transport.Close(false);
+                            transport.AfterDataReceived = null;
+                        }
+                    }
+                };
+
+                channel.Attach();
+                await channel.WaitForState(ChannelState.Attached);
+                channel.State.Should().Be(ChannelState.Attached);
+
+                await client.WaitForState(ConnectionState.Disconnected);
+                client.Connection.State.Should().Be(ConnectionState.Disconnected);
+
+                await client.WaitForState(ConnectionState.Connected);
+                client.Connection.State.Should().Be(ConnectionState.Connected);
+
+                await Task.Delay(500);
+
+                var messages = await channel.Presence.GetAsync();
+                var messageList = messages as IList<PresenceMessage> ?? messages.ToList();
+                messageList.Count.ShouldBeEquivalentTo(enterCount, "Message count should match enterCount");
+
+                setupClient.Close();
+                client.Close();
             }
 
             [Theory]
@@ -678,7 +747,7 @@ namespace IO.Ably.Tests.Realtime
                 received250MessagesBeforeTimeout.ShouldBeEquivalentTo(true);
 
                 // all 250 members should be present in a Presence#get request
-                var messages = await channelB.Presence.GetAsync(new GetOptions { WaitForSync = true });
+                var messages = await channelB.Presence.GetAsync(new Presence.GetParams { WaitForSync = true });
                 var messageList = messages as IList<PresenceMessage> ?? messages.ToList();
                 messageList.Count().ShouldBeEquivalentTo(ExpectedEnterCount);
                 foreach (var m in messageList)
@@ -706,9 +775,9 @@ namespace IO.Ably.Tests.Realtime
         {
         }
 
-        protected string GetTestChannelName()
+        protected string GetTestChannelName(string id = "")
         {
-            return "presence-" + Guid.NewGuid().ToString().Split('-').First();
+            return $"presence-{id}".AddRandomSuffix();
         }
     }
 }
