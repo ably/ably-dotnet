@@ -472,7 +472,7 @@ namespace IO.Ably.Realtime
                                 Logger.Debug($"Protocol message has presence flag. Starting Presence SYNC. Flag: {protocolMessage.Flags}");
                             }
 
-                            Presence.AwaitSync();
+                            Presence.StartSync();
                         }
                         else
                         {

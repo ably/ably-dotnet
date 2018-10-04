@@ -41,6 +41,8 @@ namespace IO.Ably.Realtime
             }
         }
 
+        public bool IsSyncInProgress => Map.IsSyncInProgress;
+
         /// <summary>
         /// Called when a protocol message HasPresenceFlag == false. The presence map should be considered in sync immediately
         /// with no members present on the channel. See [RTP1] for more detail.
@@ -88,7 +90,7 @@ namespace IO.Ably.Realtime
         ///     Get current presence in the channel. WaitForSync is not implemented yet. Partial result may be returned
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<PresenceMessage>> GetAsync(GetParams options = null)
+        public async Task<IEnumerable<PresenceMessage>> GetAsync(GetParams options)
         {
             var getOptions = options ?? new GetParams();
 
@@ -102,12 +104,17 @@ namespace IO.Ably.Realtime
             return result;
         }
 
-        internal async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, bool waitForSync = false)
+        public async Task<IEnumerable<PresenceMessage>> GetAsync(bool waitForSync = true)
+        {
+            return await GetAsync(new GetParams() { WaitForSync = waitForSync });
+        }
+
+        public async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, bool waitForSync = false)
         {
             return await GetAsync(new GetParams() { ClientId = clientId, WaitForSync = waitForSync });
         }
 
-        internal async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, string connectionId, bool waitForSync = true)
+        public async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, string connectionId, bool waitForSync = true)
         {
             return await GetAsync(new GetParams() { ClientId = clientId, ConnectionId = connectionId, WaitForSync = waitForSync });
         }
@@ -306,13 +313,14 @@ namespace IO.Ably.Realtime
                                              && _currentSyncChannelSerial != serial)
                     {
                         /* TODO: For v1.0 we should emit leave messages here. See https://github.com/ably/ably-java/blob/159018c30b3ef813a9d3ca3c6bc82f51aacbbc68/lib/src/main/java/io/ably/lib/realtime/Presence.java#L219 for example. */
+                        _currentSyncChannelSerial = null;
                         EndSync();
                     }
 
                     syncCursor = syncChannelSerial.Substring(colonPos);
                     if (syncCursor.Length > 1)
                     {
-                        Map.StartSync();
+                        StartSync();
                         _currentSyncChannelSerial = serial;
                     }
                 }
@@ -363,6 +371,14 @@ namespace IO.Ably.Realtime
                 Logger.Error($"{errInfo.Message} Error: {ex.Message}");
                 errInfo.Message += " See the InnerException for more details.";
                 throw new AblyException(errInfo, ex);
+            }
+        }
+
+        internal void StartSync()
+        {
+            if (!IsSyncInProgress)
+            {
+                Map.StartSync();
             }
         }
 
@@ -451,7 +467,7 @@ namespace IO.Ably.Realtime
             if (e.Current == ChannelState.Attached)
             {
                 /* Start sync, if hasPresence is not set end sync immediately dropping all the current presence members */
-                Map.StartSync();
+                StartSync();
                 _syncAsResultOfAttach = true;
 
                 // TODO: for v1.0 RTP19a (see Java version for example https://github.com/ably/ably-java/blob/159018c30b3ef813a9d3ca3c6bc82f51aacbbc68/lib/src/main/java/io/ably/lib/realtime/Presence.java)
@@ -542,11 +558,6 @@ namespace IO.Ably.Realtime
             }
 
             return _channel.RestChannel.Presence.HistoryAsync(query);
-        }
-
-        public void AwaitSync()
-        {
-            Map.StartSync();
         }
 
         protected virtual void OnInitialSyncCompleted()
