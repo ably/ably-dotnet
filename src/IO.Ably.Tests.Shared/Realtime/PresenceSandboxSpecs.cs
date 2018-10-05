@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -374,7 +376,7 @@ namespace IO.Ably.Tests.Realtime
                         * Client library won't return a presence message if it is stored as ABSENT
                         * so the result of the presence.get() call should be empty.
                         */
-                        var result = await channel.Presence.GetAsync("4", false);
+                        var result = await channel.Presence.GetAsync("4", waitForSync: false);
                         seenLeaveMessageAsAbsentForClient4 = result.ToArray().Length == 0;
                     }
                 });
@@ -508,6 +510,83 @@ namespace IO.Ably.Tests.Realtime
 
                 setupClient.Close();
                 client.Close();
+            }
+
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RTP11")]
+            [Trait("spec", "RTP11b")]
+            [Trait("spec", "RTP11c")]
+            [Trait("spec", "RTP11c1")]
+            [Trait("spec", "RTP11c2")]
+            [Trait("spec", "RTP11c3")]
+            [Trait("spec", "RTP11d")]
+            public async Task Presence_GetMethodBehaviour(Protocol protocol)
+            {
+                string channelName = "RTP11".AddRandomSuffix();
+                var client1 = await GetRealtimeClient(protocol);
+                var client2 = await GetRealtimeClient(protocol, (options, settings) => options.AutoConnect = false);
+
+                var channel1 = client1.Channels.Get(channelName);
+                await channel1.Presence.EnterClientAsync("1", "one");
+                await channel1.Presence.EnterClientAsync("2", "two");
+
+                var channel2 = client2.Channels.Get(channelName);
+                var ch2Awaiter = new PresenceAwaiter(channel2);
+
+                // with waitForSync set to false,
+                // should result in 0 members because autoConnect is set to false
+                var presenceMessages1 = await channel2.Presence.GetAsync(false);
+                presenceMessages1.Should().HaveCount(0);
+
+                client2.Connection.Connect();
+
+                // With waitForSync is true it should get all the members entered on the first connection
+                var presenceMessages2 = await channel2.Presence.GetAsync(true);
+                presenceMessages2.Should().HaveCount(2);
+
+                // enter third member from second connection
+                await channel2.Presence.EnterClientAsync("3", null);
+
+                // wait for the above to raise a subscribe event
+                await ch2Awaiter.WaitFor(1);
+
+                // filter by clientId
+                var presenceMessages3 = await channel2.Presence.GetAsync("1");
+                presenceMessages3.Should().HaveCount(1);
+                presenceMessages3.First().ClientId.Should().Be("1");
+
+                // filter by connectionId
+                var presenceMessages4 = await channel2.Presence.GetAsync(connectionId: client2.Connection.Id);
+                presenceMessages4.Should().HaveCount(1);
+                presenceMessages4.First().ClientId.Should().Be("3");
+
+                // filter by both clientId and connectionId
+                var presenceMessages5 = await channel2.Presence.GetAsync(connectionId: client1.Connection.Id, clientId: "2");
+                var presenceMessages6 = await channel2.Presence.GetAsync(connectionId: client2.Connection.Id, clientId: "2");
+                presenceMessages5.Should().HaveCount(1);
+                presenceMessages6.Should().HaveCount(0);
+                presenceMessages5.First().ClientId.Should().Be("2");
+
+                // become SUSPENDED
+                await client2.ConnectionManager.SetState(new ConnectionSuspendedState(client2.ConnectionManager, Logger));
+                await client2.WaitForState(ConnectionState.Suspended);
+
+                // with waitForSync set to false, should get all the three members
+                var presenceMessages7 = await channel2.Presence.GetAsync(false);
+                presenceMessages7.Should().HaveCount(3);
+
+                // with waitForSync set to true, should get exception
+                client2.Connection.State.Should().Be(ConnectionState.Suspended);
+                try
+                {
+                    await channel2.Presence.GetAsync(true);
+                    throw new Exception("waitForSync=true shouldn't succeed in SUSPENDED state");
+                }
+                catch (AblyException e)
+                {
+                    e.ErrorInfo.Code.Should().Be(91005);
+                }
             }
 
             [Theory]
@@ -778,6 +857,29 @@ namespace IO.Ably.Tests.Realtime
         protected string GetTestChannelName(string id = "")
         {
             return $"presence-{id}".AddRandomSuffix();
+        }
+
+        public class PresenceAwaiter
+        {
+            private IRealtimeChannel _channel;
+            private TaskCompletionAwaiter _tsc;
+            private int _count = 0;
+
+            public PresenceAwaiter(IRealtimeChannel channel)
+            {
+                _channel = channel;
+                _channel.Presence.Subscribe(message =>
+                {
+                    _tsc?.Tick();
+                });
+            }
+
+            public async Task<bool> WaitFor(int count)
+            {
+                _count = count;
+                _tsc = new TaskCompletionAwaiter(10000, count);
+                return await _tsc.Task;
+            }
         }
     }
 }

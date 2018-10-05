@@ -92,10 +92,26 @@ namespace IO.Ably.Realtime
         /// <returns></returns>
         public async Task<IEnumerable<PresenceMessage>> GetAsync(GetParams options)
         {
+            // RTP11b
+            if (_channel.State == ChannelState.Failed || _channel.State == ChannelState.Detached)
+            {
+                throw new AblyException(new ErrorInfo($"channel operation failed. Invalid channel state ({_channel.State})", 90001));
+            }
+
+            if (_channel.State == ChannelState.Initialized)
+            {
+                _channel.Attach();
+            }
+
             var getOptions = options ?? new GetParams();
 
             if (getOptions.WaitForSync)
             {
+                // RTP11d
+                if (_channel.State == ChannelState.Suspended)
+                {
+                    throw new AblyException(new ErrorInfo($"Channel {_channel.Name}: presence state is out of sync due to the channel being in a SUSPENDED state", 91005));
+                }
                 await WaitForSyncAsync();
             }
 
@@ -104,17 +120,17 @@ namespace IO.Ably.Realtime
             return result;
         }
 
-        public async Task<IEnumerable<PresenceMessage>> GetAsync(bool waitForSync = true)
+        public async Task<IEnumerable<PresenceMessage>> GetAsync(bool waitForSync)
         {
             return await GetAsync(new GetParams() { WaitForSync = waitForSync });
         }
 
-        public async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, bool waitForSync = true)
+        public async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, bool waitForSync)
         {
             return await GetAsync(new GetParams() { ClientId = clientId, WaitForSync = waitForSync });
         }
 
-        public async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, string connectionId, bool waitForSync = true)
+        public async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId = null, string connectionId = null, bool waitForSync = true)
         {
             return await GetAsync(new GetParams() { ClientId = clientId, ConnectionId = connectionId, WaitForSync = waitForSync });
         }
@@ -150,38 +166,36 @@ namespace IO.Ably.Realtime
 
             // Do a manual check in case we are already in the desired state
             CheckAndSet();
-            await tsc.Task;
+            bool syncIsComplete = await tsc.Task;
 
             // unsubscribe from events
             _channel.StateChanged -= OnChannelOnStateChanged;
             InitialSyncCompleted -= OnSyncEvent;
             Map.SyncNoLongerInProgress -= OnSyncEvent;
 
-            // TODO: This code was added when porting from the Java lib but can't completed be until the extra states added in 1.0 spec (specifically ChannelState.Suspended) are implemented
-            // bool syncIsComplete =  tsc.Task.Result;
-            // if (!syncIsComplete)
-            // {
-            // /* invalid channel state */
-            // int errorCode;
-            // String errorMessage;
+            if (!syncIsComplete)
+            {
+                /* invalid channel state */
+                int errorCode;
+                string errorMessage;
+                if (_channel.State == ChannelState.Suspended)
+                {
+                    /* (RTP11d) If the Channel is in the SUSPENDED state then the get function will by default,
+                    * or if waitForSync is set to true, result in an error with code 91005 and a message stating
+                    * that the presence state is out of sync due to the channel being in a SUSPENDED state */
+                    errorCode = 91005;
+                    errorMessage = $"Channel {_channel.Name}: presence state is out of sync due to the channel being in a SUSPENDED state";
+                }
+                else
+                {
+                    /* RTP11b */
+                    errorCode = 90001;
+                    errorMessage = $"Channel {_channel.Name}: cannot get presence state when the channel is in a {_channel.State} state.";
+                }
 
-            // if (_channel.State == ChannelState.Suspended)
-            // {
-            // /* (RTP11d) If the Channel is in the SUSPENDED state then the get function will by default,
-            // * or if waitForSync is set to true, result in an error with code 91005 and a message stating
-            // * that the presence state is out of sync due to the channel being in a SUSPENDED state */
-            // errorCode = 91005;
-            // errorMessage = $"Channel {_channel.Name}: presence state is out of sync due to the channel being in a SUSPENDED state";
-            // }
-            // else
-            // {
-            // errorCode = 90001;
-            // errorMessage = $"Channel {_channel.Name}: cannot get presence state because channel is in invalid state";
-            // }
-            // if(Logger.IsDebug)
-            // Logger.Debug($"{errorMessage} (Error Code: {errorCode})");
-            // throw new AblyException(new ErrorInfo(errorMessage, errorCode));
-            // }
+                Logger.Debug($"{errorMessage} (Error Code: {errorCode})");
+                throw new AblyException(new ErrorInfo(errorMessage, errorCode));
+            }
             return tsc.Task.Result;
         }
 
