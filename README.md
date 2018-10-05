@@ -278,15 +278,25 @@ foreach (var presenceMessage in nextPage.Items)
 }
 ```
 
-### Generate a Token
+### Using the AuthCallback
 
-Tokens are issued by Ably and are readily usable by any client to connect to Ably:
+A callback to obtain a signed `TokenRequest` string or a `TokenDetails` instance.
+
+To use `AuthCallback` create a `ClientOptions` instance and assign an appropriate delegate to the `AuthCallback` property and pass the `ClientOptions` to a new `AblyRealtime` instance.
 
 ```csharp
-var token = await client.Auth.RequestTokenAsync();
-var tokenString = token.Token; // "xVLyHw.CLchevH3hF....MDh9ZC_Q"
-var tokenClient = new AblyRest(new ClientOptions { TokenDetails = token });
+var options = new ClientOptions
+{
+    AuthCallback = async tokenParams =>
+    {
+        // Return a TokenDetails instance or a preferably a TokenRequest string.
+        // Typically this method would wrap a request to your web server.
+        return await GetTokenDetailsOrTokenRequestStringFromYourServer();        
+    }
+};
+var client = new AblyRealtime(options);
 ```
+
 ### Generate a TokenRequest
 
 Token requests are issued by your servers and signed using your private API key. This is the preferred method of authentication as no secrets are ever shared, and the token request can be issued to trusted clients without communicating with Ably.
