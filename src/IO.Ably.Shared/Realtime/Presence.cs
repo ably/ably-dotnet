@@ -109,7 +109,7 @@ namespace IO.Ably.Realtime
             return await GetAsync(new GetParams() { WaitForSync = waitForSync });
         }
 
-        public async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, bool waitForSync = false)
+        public async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, bool waitForSync = true)
         {
             return await GetAsync(new GetParams() { ClientId = clientId, WaitForSync = waitForSync });
         }

@@ -374,7 +374,7 @@ namespace IO.Ably.Tests.Realtime
                         * Client library won't return a presence message if it is stored as ABSENT
                         * so the result of the presence.get() call should be empty.
                         */
-                        var result = await channel.Presence.GetAsync("4");
+                        var result = await channel.Presence.GetAsync("4", false);
                         seenLeaveMessageAsAbsentForClient4 = result.ToArray().Length == 0;
                     }
                 });
@@ -403,9 +403,9 @@ namespace IO.Ably.Tests.Realtime
                     Presence = TestPresence3()
                 });
 
-                var presence1 = await channel.Presence.GetAsync("1");
-                var presence2 = await channel.Presence.GetAsync("2");
-                var presence3 = await channel.Presence.GetAsync("3");
+                var presence1 = await channel.Presence.GetAsync("1", false);
+                var presence2 = await channel.Presence.GetAsync("2", false);
+                var presence3 = await channel.Presence.GetAsync("3", false);
                 var presenceOthers = await channel.Presence.GetAsync();
 
                 presence1.ToArray().Length.ShouldBeEquivalentTo(0, "incomplete sync should be discarded");
