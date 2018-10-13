@@ -4,7 +4,7 @@
     {
         public static bool IsSynthesized(this PresenceMessage msg)
         {
-            return !msg.Id.StartsWith(msg.ConnectionId);
+            return msg.Id == null || !msg.Id.StartsWith(msg.ConnectionId);
         }
 
         public static bool IsNewerThan(this PresenceMessage thisMessage, PresenceMessage thatMessage)
