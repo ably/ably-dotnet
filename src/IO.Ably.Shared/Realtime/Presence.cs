@@ -234,61 +234,92 @@ namespace IO.Ably.Realtime
             return _handlers.Remove(presenceAction.ToString(), handler.ToHandlerAction());
         }
 
-        public Task EnterAsync(object data = null)
+        public void Enter(object data = null, Action<bool, ErrorInfo> callback = null)
+        {
+            EnterClient(_clientId, data, callback);
+        }
+
+        public Task<Result> EnterAsync(object data = null)
         {
             return EnterClientAsync(_clientId, data);
         }
 
-        public Task EnterClientAsync(string clientId, object data)
+        public void EnterClient(string clientId, object data, Action<bool, ErrorInfo> callback = null)
+        {
+            UpdatePresence(new PresenceMessage(PresenceAction.Enter, clientId, data), callback);
+        }
+
+        public Task<Result> EnterClientAsync(string clientId, object data)
         {
             return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Enter, clientId, data));
         }
 
-        public Task UpdateAsync(object data = null)
+        public void Update(object data = null, Action<bool, ErrorInfo> callback = null)
+        {
+            UpdateClient(_clientId, data, callback);
+        }
+
+        public Task<Result> UpdateAsync(object data = null)
         {
             return UpdateClientAsync(_clientId, data);
         }
 
-        public Task UpdateClientAsync(string clientId, object data)
+        public void UpdateClient(string clientId, object data, Action<bool, ErrorInfo> callback = null)
+        {
+            UpdatePresence(new PresenceMessage(PresenceAction.Update, clientId, data), callback);
+        }
+
+        public Task<Result> UpdateClientAsync(string clientId, object data)
         {
             return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Update, clientId, data));
         }
 
-        public Task LeaveAsync(object data = null)
+        public void Leave(object data = null, Action<bool, ErrorInfo> callback = null)
+        {
+            LeaveClient(_clientId, data);
+        }
+
+        public Task<Result> LeaveAsync(object data = null)
         {
             return LeaveClientAsync(_clientId, data);
         }
 
-        public Task LeaveClientAsync(string clientId, object data)
+        public void LeaveClient(string clientId, object data, Action<bool, ErrorInfo> callback = null)
+        {
+            UpdatePresence(new PresenceMessage(PresenceAction.Leave, clientId, data), callback);
+        }
+
+        public Task<Result> LeaveClientAsync(string clientId, object data)
         {
             return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Leave, clientId, data));
         }
 
-        internal Task UpdatePresenceAsync(PresenceMessage msg)
+        internal Task<Result> UpdatePresenceAsync(PresenceMessage msg)
         {
-            if ((_channel.State == ChannelState.Initialized) || (_channel.State == ChannelState.Attaching))
+            var tw = new TaskWrapper();
+            UpdatePresence(msg, tw.Callback);
+            return tw.Task;
+        }
+
+        internal void UpdatePresence(PresenceMessage msg, Action<bool, ErrorInfo> callback)
+        {
+            switch (_channel.State)
             {
-                if (_channel.State == ChannelState.Initialized)
-                {
+                case ChannelState.Initialized:
                     _channel.Attach();
-                }
-
-                var tw = new TaskWrapper();
-                _pendingPresence.Add(new QueuedPresenceMessage(msg, tw.Callback));
-                return tw.Task;
+                    _pendingPresence.Add(new QueuedPresenceMessage(msg, callback));
+                    break;
+                case ChannelState.Attaching:
+                    _pendingPresence.Add(new QueuedPresenceMessage(msg, callback));
+                    break;
+                case ChannelState.Attached:
+                    var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name);
+                    message.Presence = new[] { msg };
+                    _connection.Send(message, callback);
+                    break;
+                default:
+                    throw new AblyException("Unable to enter presence channel in detached or failed state", 91001, HttpStatusCode.BadRequest);
             }
-
-            if (_channel.State == ChannelState.Attached)
-            {
-                var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name);
-                message.Presence = new[] { msg };
-                _connection.Send(message, null);
-
-                // TODO: Fix this;
-                return TaskConstants.BooleanTrue;
-            }
-
-            throw new AblyException("Unable to enter presence channel in detached or failed state", 91001, HttpStatusCode.BadRequest);
         }
 
         internal void ResumeSync()
