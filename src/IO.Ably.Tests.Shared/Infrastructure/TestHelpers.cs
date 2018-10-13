@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading.Tasks;
+using IO.Ably.Tests.Infrastructure;
 using Xunit;
 
 namespace IO.Ably.Tests
@@ -21,6 +23,29 @@ namespace IO.Ably.Tests
         public static Func<DateTimeOffset> NowFunc()
         {
             return Defaults.NowFunc();
+        }
+
+        public static async Task WaitFor(int timeoutMs, int taskCount, Action<Action> action)
+        {
+            var tsc = new TaskCompletionAwaiter(timeoutMs, taskCount);
+
+            void Done()
+            {
+                tsc.Tick();
+            }
+
+            action(Done);
+            var success = await tsc.Task;
+            if (!success)
+            {
+                var msg = $"Timeout of {timeoutMs}ms exceeed.";
+                if (taskCount > 1)
+                {
+                    msg += $" Completed {taskCount - tsc.TaskCount} of {taskCount} tasks.";
+                }
+
+                throw new Exception(msg);
+            }
         }
     }
 }

@@ -69,6 +69,26 @@ namespace IO.Ably.Tests
             return new AblyRealtime(defaultOptions, createRestFunc);
         }
 
+        protected async Task WaitFor(Action<Action> done)
+        {
+            await TestHelpers.WaitFor(10000, 1, done);
+        }
+
+        protected async Task WaitFor(int timeoutMs, Action<Action> done)
+        {
+            await TestHelpers.WaitFor(timeoutMs, 1, done);
+        }
+
+        protected async Task WaitFor(int timeoutMs, int taskCount, Action<Action> done)
+        {
+            await TestHelpers.WaitFor(timeoutMs, taskCount, done);
+        }
+
+        protected async Task WaitForMultiple(int taskCount, Action<Action> done)
+        {
+            await TestHelpers.WaitFor(10000, taskCount, done);
+        }
+
         public class OutputLoggerSink : ILoggerSink
         {
             private readonly ITestOutputHelper _output;
