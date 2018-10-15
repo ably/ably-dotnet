@@ -559,11 +559,19 @@ namespace IO.Ably.Realtime
                     SendQueuedMessages();
                 }
             }
-            else if ((e.Current == ChannelState.Detached) || (e.Current == ChannelState.Failed))
+            else if (e.Current == ChannelState.Detached || e.Current == ChannelState.Failed)
             {
                 FailQueuedMessages(e.Error);
                 Map.Clear();
                 InternalMap.Clear();
+            }
+            else if (e.Current == ChannelState.Suspended)
+            {
+                /*
+                 * (RTP5f) If the channel enters the SUSPENDED state then all queued presence messages will fail
+                 * immediately, and the PresenceMap is maintained
+                 */
+                FailQueuedMessages(e.Error);
             }
         }
 
