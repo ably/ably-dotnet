@@ -432,6 +432,7 @@ namespace IO.Ably.Realtime
 
         internal void EndSync()
         {
+            _currentSyncChannelSerial = null;
             var residualMembers = Map.EndSync();
 
             /*
