@@ -196,12 +196,13 @@ namespace IO.Ably.Realtime
                 Logger.Debug($"{errorMessage} (Error Code: {errorCode})");
                 throw new AblyException(new ErrorInfo(errorMessage, errorCode));
             }
+
             return tsc.Task.Result;
         }
 
         public void Subscribe(Action<PresenceMessage> handler)
         {
-            if ((_channel.State != ChannelState.Attached) && (_channel.State != ChannelState.Attaching))
+            if (_channel.State != ChannelState.Attached && _channel.State != ChannelState.Attaching)
             {
                 _channel.Attach();
             }
@@ -234,73 +235,107 @@ namespace IO.Ably.Realtime
             return _handlers.Remove(presenceAction.ToString(), handler.ToHandlerAction());
         }
 
-        public Task EnterAsync(object data = null)
+        public void Enter(object data = null, Action<bool, ErrorInfo> callback = null)
+        {
+            EnterClient(_clientId, data, callback);
+        }
+
+        public Task<Result> EnterAsync(object data = null)
         {
             return EnterClientAsync(_clientId, data);
         }
 
-        public Task EnterClientAsync(string clientId, object data)
+        public void EnterClient(string clientId, object data, Action<bool, ErrorInfo> callback = null)
+        {
+            UpdatePresence(new PresenceMessage(PresenceAction.Enter, clientId, data), callback);
+        }
+
+        public Task<Result> EnterClientAsync(string clientId, object data)
         {
             return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Enter, clientId, data));
         }
 
-        public Task UpdateAsync(object data = null)
+        public void Update(object data = null, Action<bool, ErrorInfo> callback = null)
+        {
+            UpdateClient(_clientId, data, callback);
+        }
+
+        public Task<Result> UpdateAsync(object data = null)
         {
             return UpdateClientAsync(_clientId, data);
         }
 
-        public Task UpdateClientAsync(string clientId, object data)
+        public void UpdateClient(string clientId, object data, Action<bool, ErrorInfo> callback = null)
+        {
+            UpdatePresence(new PresenceMessage(PresenceAction.Update, clientId, data), callback);
+        }
+
+        public Task<Result> UpdateClientAsync(string clientId, object data)
         {
             return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Update, clientId, data));
         }
 
-        public Task LeaveAsync(object data = null)
+        public void Leave(object data = null, Action<bool, ErrorInfo> callback = null)
+        {
+            LeaveClient(_clientId, data);
+        }
+
+        public Task<Result> LeaveAsync(object data = null)
         {
             return LeaveClientAsync(_clientId, data);
         }
 
-        public Task LeaveClientAsync(string clientId, object data)
+        public void LeaveClient(string clientId, object data, Action<bool, ErrorInfo> callback = null)
+        {
+            UpdatePresence(new PresenceMessage(PresenceAction.Leave, clientId, data), callback);
+        }
+
+        public Task<Result> LeaveClientAsync(string clientId, object data)
         {
             return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Leave, clientId, data));
         }
 
-        internal Task UpdatePresenceAsync(PresenceMessage msg)
+        internal Task<Result> UpdatePresenceAsync(PresenceMessage msg)
         {
-            if ((_channel.State == ChannelState.Initialized) || (_channel.State == ChannelState.Attaching))
+            var tw = new TaskWrapper();
+            UpdatePresence(msg, tw.Callback);
+            return tw.Task;
+        }
+
+        internal void UpdatePresence(PresenceMessage msg, Action<bool, ErrorInfo> callback)
+        {
+            switch (_channel.State)
             {
-                if (_channel.State == ChannelState.Initialized)
-                {
+                case ChannelState.Initialized:
                     _channel.Attach();
-                }
-
-                var tw = new TaskWrapper();
-                _pendingPresence.Add(new QueuedPresenceMessage(msg, tw.Callback));
-                return tw.Task;
+                    _pendingPresence.Add(new QueuedPresenceMessage(msg, callback));
+                    break;
+                case ChannelState.Attaching:
+                    _pendingPresence.Add(new QueuedPresenceMessage(msg, callback));
+                    break;
+                case ChannelState.Attached:
+                    var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name);
+                    message.Presence = new[] { msg };
+                    _connection.Send(message, callback);
+                    break;
+                default:
+                    throw new AblyException("Unable to enter presence channel in detached or failed state", 91001, HttpStatusCode.BadRequest);
             }
-
-            if (_channel.State == ChannelState.Attached)
-            {
-                var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name);
-                message.Presence = new[] { msg };
-                _connection.Send(message, null);
-
-                // TODO: Fix this;
-                return TaskConstants.BooleanTrue;
-            }
-
-            throw new AblyException("Unable to enter presence channel in detached or failed state", 91001, HttpStatusCode.BadRequest);
         }
 
         internal void ResumeSync()
         {
-            if (_channel.State == ChannelState.Attached)
+            if (_channel.State == ChannelState.Initialized ||
+                _channel.State == ChannelState.Detached ||
+                _channel.State == ChannelState.Detaching)
             {
-                var message = new ProtocolMessage(ProtocolMessage.MessageAction.Sync, _channel.Name);
-                message.ChannelSerial = _currentSyncChannelSerial;
-                _connection.Send(message, null);
+
+                throw new AblyException("Unable to sync to channel; not attached", 40000, HttpStatusCode.BadRequest);
             }
 
-            throw new AblyException("Unable to enter presence channel in detached or failed state", 91001, HttpStatusCode.BadRequest);
+            var message = new ProtocolMessage(ProtocolMessage.MessageAction.Sync, _channel.Name);
+            message.ChannelSerial = _currentSyncChannelSerial;
+            _connection.Send(message, null);
         }
 
         internal void OnPresence(PresenceMessage[] messages, string syncChannelSerial)
@@ -328,7 +363,7 @@ namespace IO.Ably.Realtime
                     {
                         /* TODO: For v1.0 we should emit leave messages here. See https://github.com/ably/ably-java/blob/159018c30b3ef813a9d3ca3c6bc82f51aacbbc68/lib/src/main/java/io/ably/lib/realtime/Presence.java#L219 for example. */
                         _currentSyncChannelSerial = null;
-                        EndSync();
+                        Task.Run(EndSync);
                     }
 
                     syncCursor = syncChannelSerial.Substring(colonPos);
@@ -374,7 +409,7 @@ namespace IO.Ably.Realtime
                 // if this is the last message in a sequence of sync updates, end the sync
                 if ((syncChannelSerial == null) || (syncCursor.Length <= 1))
                 {
-                    EndSync();
+                    Task.Run(EndSync);
                 }
             }
             catch (Exception ex)
@@ -396,8 +431,9 @@ namespace IO.Ably.Realtime
             }
         }
 
-        internal void EndSync()
+        internal async Task EndSync()
         {
+            _currentSyncChannelSerial = null;
             var residualMembers = Map.EndSync();
 
             /*
@@ -429,11 +465,35 @@ namespace IO.Ably.Realtime
                 {
                     if (Map.Put(item))
                     {
-                        /* Message is new to presence map, send it */
-                        string clientId = item.ClientId;
-                        var itemToSend = item.ShallowClone();
-                        itemToSend.Action = PresenceAction.Enter;
-                        UpdatePresenceAsync(itemToSend);
+                        var clientId = item.ClientId;
+                        try
+                        {
+                            /* Message is new to presence map, send it */
+                            var itemToSend = item.ShallowClone();
+                            itemToSend.Action = PresenceAction.Enter;
+                            var result = await UpdatePresenceAsync(itemToSend);
+                            if (result.IsFailure)
+                            {
+                                /*
+                                 * (RTP5c3)  If any of the automatic ENTER presence messages published
+                                 * in RTP5c2 fail, then an UPDATE event should be emitted on the channel
+                                 * with resumed set to true and reason set to an ErrorInfo object with error
+                                 * code value 91004 and the error message string containing the message
+                                 * received from Ably (if applicable), the code received from Ably
+                                 * (if applicable) and the explicit or implicit client_id of the PresenceMessage
+                                 */
+                                var errorString = $"Cannot automatically re-enter {clientId} on channel {_channel.Name} ({result.Error.Message})";
+                                Logger.Error(errorString);
+                                _channel.EmitUpdate(new ErrorInfo(errorString, 91004), true);
+                            }
+                        }
+                        catch (AblyException e)
+                        {
+                            var errorString = $"Cannot automatically re-enter {clientId} on channel {_channel.Name} ({e.ErrorInfo.Message})";
+                            Logger.Error(errorString);
+                            _channel.EmitUpdate(new ErrorInfo(errorString, 91004), true);
+                        }
+
                     }
                 }
 
@@ -483,23 +543,39 @@ namespace IO.Ably.Realtime
                 /* Start sync, if hasPresence is not set end sync immediately dropping all the current presence members */
                 StartSync();
                 _syncAsResultOfAttach = true;
+                var hasPresence = e.ProtocolMessage != null && e.ProtocolMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
+                if (!hasPresence)
+                {
+                    /*
+                    * RTP19a  If the PresenceMap has existing members when an ATTACHED message is received without a
+                    * HAS_PRESENCE flag, the client library should emit a LEAVE event for each existing member ...
+                    */
+                    Task.Run(async () =>
+                    {
+                        await EndSync();
+                        SendQueuedMessages();
+                    });
+                }
+                else
+                {
+                    SendQueuedMessages();
+                }
 
-                // TODO: for v1.0 RTP19a (see Java version for example https://github.com/ably/ably-java/blob/159018c30b3ef813a9d3ca3c6bc82f51aacbbc68/lib/src/main/java/io/ably/lib/realtime/Presence.java)
-                // if (!hasPresence)
-                // {
-                // /*
-                // * RTP19a  If the PresenceMap has existing members when an ATTACHED message is received without a
-                // * HAS_PRESENCE flag, the client library should emit a LEAVE event for each existing member ...
-                // */
-                // endSyncAndEmitLeaves();
-                // }
                 SendQueuedMessages();
             }
-            else if ((e.Current == ChannelState.Detached) || (e.Current == ChannelState.Failed))
+            else if (e.Current == ChannelState.Detached || e.Current == ChannelState.Failed)
             {
                 FailQueuedMessages(e.Error);
                 Map.Clear();
                 InternalMap.Clear();
+            }
+            else if (e.Current == ChannelState.Suspended)
+            {
+                /*
+		         * (RTP5f) If the channel enters the SUSPENDED state then all queued presence messages will fail
+		         * immediately, and the PresenceMap is maintained
+		         */
+                FailQueuedMessages(e.Error);
             }
         }
 

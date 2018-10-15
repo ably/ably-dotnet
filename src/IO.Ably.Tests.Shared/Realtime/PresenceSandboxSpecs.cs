@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
@@ -587,6 +588,151 @@ namespace IO.Ably.Tests.Realtime
                 {
                     e.ErrorInfo.Code.Should().Be(91005);
                 }
+            }
+
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RTP19")]
+            public async Task PresenceMap_WithExistingMembers_WhenSync_ShouldRemoveLocalMembers_RTP19(Protocol protocol)
+            {
+                var channelName = "RTP19".AddRandomSuffix();
+                var client = await GetRealtimeClient(protocol);
+                var channel = client.Channels.Get(channelName);
+
+                // ENTER presence on a channel
+                await channel.Presence.EnterClientAsync("1", "one");
+                await channel.Presence.EnterClientAsync("2", "two");
+                channel.Presence.Map.Members.Should().HaveCount(2);
+
+                var localMessage = new PresenceMessage()
+                {
+                    Action = PresenceAction.Enter,
+                    Id = $"local:0:0",
+                    Timestamp = DateTimeOffset.UtcNow,
+                    ClientId = "local".AddRandomSuffix(),
+                    ConnectionId = "local",
+                    Data = "local data"
+                };
+
+                // inject a member directly into the local PresenceMap
+                channel.Presence.Map.Members[localMessage.MemberKey] = localMessage;
+                channel.Presence.Map.Members.Should().HaveCount(3);
+                channel.Presence.Map.Members.ContainsKey(localMessage.MemberKey).Should().BeTrue();
+
+                var members = (await channel.Presence.GetAsync()).ToArray();
+                members.Should().HaveCount(3);
+                members.Where(m => m.ClientId == "1").Should().HaveCount(1);
+
+                var leaveMessages = new List<PresenceMessage>();
+                await WaitFor(async done =>
+                 {
+                     channel.Presence.Subscribe(PresenceAction.Leave, message =>
+                     {
+                         leaveMessages.Add(message);
+                         done();
+                     });
+
+                     // trigger a server initiated SYNC
+                     var msg = new ProtocolMessage
+                     {
+                         Action = ProtocolMessage.MessageAction.Sync,
+                         Channel = channelName
+                     };
+
+                     await client.FakeProtocolMessageReceived(msg);
+                 });
+
+                // A LEAVE event should have be published for the injected member
+                leaveMessages.Should().HaveCount(1);
+                leaveMessages[0].ClientId.Should().Be(localMessage.ClientId);
+
+                // valid members entered for this connection are still present
+                members = (await channel.Presence.GetAsync()).ToArray();
+                members.Should().HaveCount(2);
+                members.Any(m => m.ClientId == localMessage.ClientId).Should().BeFalse();
+            }
+
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RTP19a")]
+            [Trait("spec", "RTP6b")]
+            public async Task PresenceMap_WithExistingMembers_WhenBecomesAttachedWithoutHasPresence_ShouldEmitLeavesForExistingMembers(Protocol protocol)
+            {
+                /* (RTP19a) If the PresenceMap has existing members when an ATTACHED message
+                 is received without a HAS_PRESENCE flag, the client library should emit a
+                 LEAVE event for each existing member, and the PresenceMessage published should
+                 contain the original attributes of the presence member with the action set to LEAVE,
+                 PresenceMessage#id set to null, and the timestamp set to the current time. Once complete,
+                 all members in the PresenceMap should be removed as there are no members present on the channel
+                 */
+
+                var channelName = "RTP19a".AddRandomSuffix();
+                var client = await GetRealtimeClient(protocol);
+                await client.WaitForState();
+                var channel = client.Channels.Get(channelName);
+
+                var localMessage1 = new PresenceMessage()
+                {
+                    Action = PresenceAction.Enter,
+                    Id = $"local:0:1",
+                    Timestamp = DateTimeOffset.UtcNow,
+                    ClientId = "local".AddRandomSuffix(),
+                    ConnectionId = "local",
+                    Data = "local data 1"
+                };
+
+                var localMessage2 = new PresenceMessage()
+                {
+                    Action = PresenceAction.Enter,
+                    Id = $"local:0:2",
+                    Timestamp = DateTimeOffset.UtcNow,
+                    ClientId = "local".AddRandomSuffix(),
+                    ConnectionId = "local",
+                    Data = "local data 2"
+                };
+
+                // inject a members directly into the local PresenceMap
+                channel.Presence.Map.Members[localMessage1.MemberKey] = localMessage1;
+                channel.Presence.Map.Members[localMessage2.MemberKey] = localMessage2;
+                channel.Presence.Map.Members.Should().HaveCount(2);
+
+                bool hasPresence = true;
+                int leaveCount = 0;
+                await WaitForMultiple(4, partialDone =>
+                {
+                    client.GetTestTransport().AfterDataReceived += message =>
+                    {
+                        if (message.Action == ProtocolMessage.MessageAction.Attached)
+                        {
+                            hasPresence = message.HasFlag(ProtocolMessage.Flag.HasPresence);
+                            partialDone();
+                        }
+                    };
+
+                    // (RTP6b) Subscribe with a single action argument
+                    channel.Presence.Subscribe(PresenceAction.Leave, leaveMsg =>
+                    {
+                        leaveMsg.ClientId.Should().StartWith("local");
+                        leaveMsg.Action.Should().Be(PresenceAction.Leave, "Action shold be leave");
+                        leaveMsg.Timestamp.Should().BeCloseTo(DateTime.UtcNow, 200, "timestamp should be current time" );
+                        leaveMsg.Id.Should().BeNull("Id should be null");
+                        leaveCount++;
+                        partialDone(); // should be called twice
+                    });
+
+                    channel.Attach((b, info) =>
+                    {
+                        b.Should().BeTrue();
+                        info.Should().BeNull();
+                        partialDone();
+                    });
+                });
+
+                hasPresence.Should().BeFalse("ATTACHED message was received without a HAS_PRESENCE flag");
+                leaveCount.Should().Be(2, "should emit a LEAVE event for each existing member");
+
+                var members = await channel.Presence.GetAsync();
+                members.Should().HaveCount(0, "should be no members");
             }
 
             [Theory]
