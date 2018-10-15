@@ -324,14 +324,17 @@ namespace IO.Ably.Realtime
 
         internal void ResumeSync()
         {
-            if (_channel.State == ChannelState.Attached)
+            if (_channel.State == ChannelState.Initialized ||
+                _channel.State == ChannelState.Detached ||
+                _channel.State == ChannelState.Detaching)
             {
-                var message = new ProtocolMessage(ProtocolMessage.MessageAction.Sync, _channel.Name);
-                message.ChannelSerial = _currentSyncChannelSerial;
-                _connection.Send(message, null);
+
+                throw new AblyException("Unable to sync to channel; not attached", 40000, HttpStatusCode.BadRequest);
             }
 
-            throw new AblyException("Unable to enter presence channel in detached or failed state", 91001, HttpStatusCode.BadRequest);
+            var message = new ProtocolMessage(ProtocolMessage.MessageAction.Sync, _channel.Name);
+            message.ChannelSerial = _currentSyncChannelSerial;
+            _connection.Send(message, null);
         }
 
         internal void OnPresence(PresenceMessage[] messages, string syncChannelSerial)
