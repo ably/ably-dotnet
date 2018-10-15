@@ -597,11 +597,11 @@ namespace IO.Ably.Tests.Realtime
             {
                 var channelName = "RTP19".AddRandomSuffix();
                 var client = await GetRealtimeClient(protocol);
-
                 var channel = client.Channels.Get(channelName);
+
+                // ENTER presence on a channel
                 await channel.Presence.EnterClientAsync("1", "one");
                 await channel.Presence.EnterClientAsync("2", "two");
-
                 channel.Presence.Map.Members.Should().HaveCount(2);
 
                 var localMessage = new PresenceMessage()
@@ -614,6 +614,7 @@ namespace IO.Ably.Tests.Realtime
                     Data = "local data"
                 };
 
+                // inject a member directly into the local PresenceMap
                 channel.Presence.Map.Members[localMessage.MemberKey] = localMessage;
                 channel.Presence.Map.Members.Should().HaveCount(3);
                 channel.Presence.Map.Members.ContainsKey(localMessage.MemberKey).Should().BeTrue();
@@ -631,6 +632,7 @@ namespace IO.Ably.Tests.Realtime
                          done();
                      });
 
+                     // trigger a server initiated SYNC
                      var msg = new ProtocolMessage
                      {
                          Action = ProtocolMessage.MessageAction.Sync,
@@ -640,9 +642,11 @@ namespace IO.Ably.Tests.Realtime
                      await client.FakeProtocolMessageReceived(msg);
                  });
 
+                // A LEAVE event should have be published for the injected member
                 leaveMessages.Should().HaveCount(1);
                 leaveMessages[0].ClientId.Should().Be(localMessage.ClientId);
 
+                // valid members entered for this connection are still present
                 members = (await channel.Presence.GetAsync()).ToArray();
                 members.Should().HaveCount(2);
                 members.Any(m => m.ClientId == localMessage.ClientId).Should().BeFalse();
@@ -654,6 +658,14 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTP6b")]
             public async Task PresenceMap_WithExistingMembers_WhenBecomesAttachedWithoutHasPresence_ShouldEmitLeavesForExistingMembers(Protocol protocol)
             {
+                /* (RTP19a) If the PresenceMap has existing members when an ATTACHED message
+                 is received without a HAS_PRESENCE flag, the client library should emit a
+                 LEAVE event for each existing member, and the PresenceMessage published should
+                 contain the original attributes of the presence member with the action set to LEAVE,
+                 PresenceMessage#id set to null, and the timestamp set to the current time. Once complete,
+                 all members in the PresenceMap should be removed as there are no members present on the channel
+                 */
+
                 var channelName = "RTP19a".AddRandomSuffix();
                 var client = await GetRealtimeClient(protocol);
                 await client.WaitForState();
@@ -679,6 +691,7 @@ namespace IO.Ably.Tests.Realtime
                     Data = "local data 2"
                 };
 
+                // inject a members directly into the local PresenceMap
                 channel.Presence.Map.Members[localMessage1.MemberKey] = localMessage1;
                 channel.Presence.Map.Members[localMessage2.MemberKey] = localMessage2;
                 channel.Presence.Map.Members.Should().HaveCount(2);
@@ -700,9 +713,9 @@ namespace IO.Ably.Tests.Realtime
                     channel.Presence.Subscribe(PresenceAction.Leave, leaveMsg =>
                     {
                         leaveMsg.ClientId.Should().StartWith("local");
-                        leaveMsg.Action.Should().Be(PresenceAction.Leave);
-                        leaveMsg.Timestamp.Should().BeCloseTo(DateTime.UtcNow, 200);
-                        leaveMsg.Id.Should().BeNull();
+                        leaveMsg.Action.Should().Be(PresenceAction.Leave, "Action shold be leave");
+                        leaveMsg.Timestamp.Should().BeCloseTo(DateTime.UtcNow, 200, "timestamp should be current time" );
+                        leaveMsg.Id.Should().BeNull("Id should be null");
                         leaveCount++;
                         partialDone(); // should be called twice
                     });
@@ -715,11 +728,11 @@ namespace IO.Ably.Tests.Realtime
                     });
                 });
 
-                hasPresence.Should().BeFalse();
-                leaveCount.Should().Be(2);
+                hasPresence.Should().BeFalse("ATTACHED message was received without a HAS_PRESENCE flag");
+                leaveCount.Should().Be(2, "should emit a LEAVE event for each existing member");
 
                 var members = await channel.Presence.GetAsync();
-                members.Should().HaveCount(0);
+                members.Should().HaveCount(0, "should be no members");
             }
 
             [Theory]
