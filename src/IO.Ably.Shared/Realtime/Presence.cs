@@ -544,17 +544,20 @@ namespace IO.Ably.Realtime
                 /* Start sync, if hasPresence is not set end sync immediately dropping all the current presence members */
                 StartSync();
                 _syncAsResultOfAttach = true;
-
-                // TODO: for v1.0 RTP19a (see Java version for example https://github.com/ably/ably-java/blob/159018c30b3ef813a9d3ca3c6bc82f51aacbbc68/lib/src/main/java/io/ably/lib/realtime/Presence.java)
-                // if (!hasPresence)
-                // {
-                // /*
-                // * RTP19a  If the PresenceMap has existing members when an ATTACHED message is received without a
-                // * HAS_PRESENCE flag, the client library should emit a LEAVE event for each existing member ...
-                // */
-                // endSyncAndEmitLeaves();
-                // }
-                SendQueuedMessages();
+                var hasPresence = e.ProtocolMessage != null && e.ProtocolMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
+                if (!hasPresence)
+                {
+                    /*
+                    * RTP19a  If the PresenceMap has existing members when an ATTACHED message is received without a
+                    * HAS_PRESENCE flag, the client library should emit a LEAVE event for each existing member ...
+                    */
+                        EndSync();
+                        SendQueuedMessages();
+                }
+                else
+                {
+                    SendQueuedMessages();
+                }
             }
             else if ((e.Current == ChannelState.Detached) || (e.Current == ChannelState.Failed))
             {
