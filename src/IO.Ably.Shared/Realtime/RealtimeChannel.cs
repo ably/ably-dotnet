@@ -622,5 +622,18 @@ namespace IO.Ably.Realtime
 
             ConnectionManager.Send(protocolMessage, callback, Options);
         }
+
+        /// <summary>
+        /// Emits an UPDATE if the channel is ATTACHED
+        /// </summary>
+        /// <param name="errorInfo"></param>
+        /// <param name="resumed"></param>
+        internal void EmitUpdate(ErrorInfo errorInfo, bool resumed)
+        {
+            if (State == ChannelState.Attached)
+            {
+                Emit(ChannelEvent.Update, new ChannelStateChange(State, State, errorInfo, resumed));
+            }
+        }
     }
 }
