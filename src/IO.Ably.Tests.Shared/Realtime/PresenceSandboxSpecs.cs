@@ -1097,6 +1097,88 @@ namespace IO.Ably.Tests.Realtime
 
                 exHandled.Should().BeFalse();
             }
+
+            [Trait("spec", "RTP5")]
+            public class ChannelStatechangeSideEffects : PresenceSandboxSpecs
+            {
+                public ChannelStatechangeSideEffects(AblySandboxFixture fixture, ITestOutputHelper output)
+                    : base(fixture, output)
+                {
+                }
+
+                [Theory]
+                [ProtocolData(ChannelState.Failed)]
+                [ProtocolData(ChannelState.Detached)]
+                [Trait("spec", "RTP5a")]
+                public async Task WhenChannelBecomesFailed_QueuedPresenceMessagesShouldFail(Protocol protocol, ChannelState channelState)
+                {
+                    var client = await GetRealtimeClient(protocol);
+                    await client.WaitForState();
+
+                    var channel = client.Channels.Get("RTP5a".AddRandomSuffix()) as RealtimeChannel;
+
+                    int initialCount = 0;
+                    bool? success = null;
+                    ErrorInfo errInfo = null;
+                    await WaitForMultiple(2, partialDone =>
+                     {
+                         // insert an error when attaching
+                         channel.Once(ChannelEvent.Attached, args =>
+                         {
+                             channel.SetChannelState(channelState, new ErrorInfo("RTP5a test"));
+                             partialDone();
+                         });
+
+                         // enter client, this should trigger attach
+                         channel.Presence.EnterClient("123", null, (b, info) =>
+                         {
+                             success = b;
+                             errInfo = info;
+                             partialDone();
+                         });
+
+                         initialCount = channel.Presence.PendingPresenceQueue.Count;
+                     });
+
+                    initialCount.Should().Be(1, "a presence message should have been queued");
+                    success.Should().HaveValue("EnterClient callback should have executed");
+                    success.Value.Should().BeFalse("queued presence message should have failed immediately");
+                    errInfo.Message.Should().Be("RTP5a test");
+                    channel.Presence.PendingPresenceQueue.Should().HaveCount(0, "presence message queue should have been cleared");
+
+                    client.Close();
+                }
+
+                [Theory]
+                [ProtocolData(ChannelState.Failed)]
+                [ProtocolData(ChannelState.Detached)]
+                [Trait("spec", "RTP5a")]
+                public async Task WhenChannelBecomesFailed_ShouldClearPresenceMapAndShouldNotEmitEvents(Protocol protocol, ChannelState channelState)
+                {
+                    var client = await GetRealtimeClient(protocol);
+                    await client.WaitForState();
+
+                    var channel = client.Channels.Get("RTP5a".AddRandomSuffix()) as RealtimeChannel;
+                    var result = await channel.Presence.EnterClientAsync("123", null);
+                    result.IsSuccess.Should().BeTrue();
+
+                    channel.Presence.Map.Members.Should().HaveCount(1);
+                    channel.Presence.InternalMap.Members.Should().HaveCount(1);
+
+                    bool didReceiveMessage = false;
+                    channel.Subscribe(msg => { didReceiveMessage = true; });
+                    didReceiveMessage.Should().BeFalse("No events should be emitted");
+
+                    channel.SetChannelState(channelState, new ErrorInfo("RTP5a test"));
+
+                    await channel.WaitForState(channelState);
+
+                    channel.Presence.Map.Members.Should().HaveCount(0);
+                    channel.Presence.InternalMap.Members.Should().HaveCount(0);
+
+                    client.Close();
+                }
+            }
         }
 
         public class With250PresentMembersOnAChannel : PresenceSandboxSpecs
