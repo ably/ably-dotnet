@@ -21,7 +21,6 @@ namespace IO.Ably.Realtime
         private readonly Handlers<PresenceMessage> _handlers = new Handlers<PresenceMessage>();
 
         private readonly IConnectionManager _connection;
-        private readonly ConcurrentQueue<QueuedPresenceMessage> _pendingPresenceQueue;
 
         private string _currentSyncChannelSerial;
         private bool _syncAsResultOfAttach;
@@ -59,12 +58,14 @@ namespace IO.Ably.Realtime
 
         internal PresenceMap InternalMap { get; }
 
+        internal ConcurrentQueue<QueuedPresenceMessage> PendingPresenceQueue { get; }
+
         internal Presence(IConnectionManager connection, RealtimeChannel channel, string cliendId, ILogger logger)
         {
             Logger = logger;
             Map = new PresenceMap(channel.Name, logger);
             InternalMap = new PresenceMap(channel.Name, logger);
-            _pendingPresenceQueue = new ConcurrentQueue<QueuedPresenceMessage>();
+            PendingPresenceQueue = new ConcurrentQueue<QueuedPresenceMessage>();
             _connection = connection;
             _connection.Connection.ConnectionStateChanged += OnConnectionStateChanged;
             _channel = channel;
@@ -308,10 +309,10 @@ namespace IO.Ably.Realtime
             {
                 case ChannelState.Initialized:
                     _channel.Attach();
-                    _pendingPresenceQueue.Enqueue(new QueuedPresenceMessage(msg, callback));
+                    PendingPresenceQueue.Enqueue(new QueuedPresenceMessage(msg, callback));
                     break;
                 case ChannelState.Attaching:
-                    _pendingPresenceQueue.Enqueue(new QueuedPresenceMessage(msg, callback));
+                    PendingPresenceQueue.Enqueue(new QueuedPresenceMessage(msg, callback));
                     break;
                 case ChannelState.Attached:
                     var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name);
@@ -586,19 +587,19 @@ namespace IO.Ably.Realtime
 
         private void SendQueuedMessages()
         {
-            if (_pendingPresenceQueue.Count == 0)
+            if (PendingPresenceQueue.Count == 0)
             {
                 return;
             }
 
             var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name);
-            message.Presence = new PresenceMessage[_pendingPresenceQueue.Count];
+            message.Presence = new PresenceMessage[PendingPresenceQueue.Count];
             var callbacks = new List<Action<bool, ErrorInfo>>();
             var i = 0;
 
-            while (!_pendingPresenceQueue.IsEmpty)
+            while (!PendingPresenceQueue.IsEmpty)
             {
-                if (_pendingPresenceQueue.TryDequeue(out var queuedPresenceMessage))
+                if (PendingPresenceQueue.TryDequeue(out var queuedPresenceMessage))
                 {
                     message.Presence[i++] = queuedPresenceMessage.Message;
                     if (queuedPresenceMessage.Callback != null)
@@ -619,9 +620,9 @@ namespace IO.Ably.Realtime
 
         private void FailQueuedMessages(ErrorInfo reason)
         {
-            while (!_pendingPresenceQueue.IsEmpty)
+            while (!PendingPresenceQueue.IsEmpty)
             {
-                if (_pendingPresenceQueue.TryDequeue(out var queuedPresenceMessage))
+                if (PendingPresenceQueue.TryDequeue(out var queuedPresenceMessage))
                 {
                     queuedPresenceMessage.Callback?.Invoke(false, reason);
                 }
