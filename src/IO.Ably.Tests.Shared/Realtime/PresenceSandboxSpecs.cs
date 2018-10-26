@@ -1110,7 +1110,7 @@ namespace IO.Ably.Tests.Realtime
                 [ProtocolData(ChannelState.Failed)]
                 [ProtocolData(ChannelState.Detached)]
                 [Trait("spec", "RTP5a")]
-                public async Task WhenChannelBecomesFailed_QueuedPresenceMessagesShouldFail(Protocol protocol, ChannelState channelState)
+                public async Task WhenChannelBecomesFailedOrDetached_QueuedPresenceMessagesShouldFail(Protocol protocol, ChannelState channelState)
                 {
                     var client = await GetRealtimeClient(protocol);
                     await client.WaitForState();
@@ -1153,7 +1153,7 @@ namespace IO.Ably.Tests.Realtime
                 [ProtocolData(ChannelState.Failed)]
                 [ProtocolData(ChannelState.Detached)]
                 [Trait("spec", "RTP5a")]
-                public async Task WhenChannelBecomesFailed_ShouldClearPresenceMapAndShouldNotEmitEvents(Protocol protocol, ChannelState channelState)
+                public async Task WhenChannelBecomesFailedOrDetached_ShouldClearPresenceMapAndShouldNotEmitEvents(Protocol protocol, ChannelState channelState)
                 {
                     var client = await GetRealtimeClient(protocol);
                     await client.WaitForState();
