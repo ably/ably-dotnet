@@ -1178,6 +1178,52 @@ namespace IO.Ably.Tests.Realtime
 
                     client.Close();
                 }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP5b")]
+                public async Task WhenChannelBecomesAttached_ShouldSendQueuedMessagesAndInitiateSYNC(Protocol protocol)
+                {
+                    var client1 = await GetRealtimeClient(protocol);
+                    var client2 = await GetRealtimeClient(protocol);
+
+                    await client1.WaitForState();
+                    await client2.WaitForState();
+
+                    var channel1 = client1.Channels.Get("RTP5b_ch1".AddRandomSuffix());
+                    var result = await channel1.Presence.EnterClientAsync("client1", null);
+                    result.IsFailure.Should().BeFalse();
+
+                    var channel2 = client2.Channels.Get(channel1.Name);
+                    var presence2 = channel2.Presence;
+
+                    await WaitForMultiple(2, partialDone =>
+                    {
+                        presence2.EnterClient("client2", null, (b, info) =>
+                        {
+                            presence2.PendingPresenceQueue.Should().HaveCount(0);
+                            partialDone();
+                        });
+
+                        presence2.Subscribe(PresenceAction.Enter, msg =>
+                        {
+                            presence2.Map.Members.Should().HaveCount(presence2.SyncComplete ? 2 : 1);
+                            presence2.Unsubscribe();
+                            partialDone();
+                        });
+
+                        presence2.PendingPresenceQueue.Should().HaveCount(1);
+                        presence2.SyncComplete.Should().BeFalse();
+                        presence2.Map.Members.Should().HaveCount(0);
+                    });
+
+                    var transport = client2.GetTestTransport();
+                    transport.ProtocolMessagesReceived.Any(m => m.Action == ProtocolMessage.MessageAction.Sync).Should().BeTrue();
+                    presence2.SyncComplete.Should().BeTrue();
+                    presence2.Map.Members.Should().HaveCount(2);
+
+                    client1.Close();
+                }
             }
         }
 
