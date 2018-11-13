@@ -101,10 +101,26 @@ namespace IO.Ably.Realtime
             switch (connectionStateChange.Current)
             {
                 case ConnectionState.Connected:
-                    if (State == ChannelState.Suspended)
+                    if (State == ChannelState.Suspended || State == ChannelState.Attaching)
                     {
-                        Attach();
+                        if (AttachedAwaiter.StartWait(null, ConnectionManager.Options.RealtimeRequestTimeout))
+                        {
+                            SetChannelState(ChannelState.Attaching);
+                        }
                     }
+
+                    if (State == ChannelState.Detaching)
+                    {
+                        if (DetachedAwaiter.StartWait(null, ConnectionManager.Options.RealtimeRequestTimeout))
+                        {
+                            SetChannelState(ChannelState.Detaching);
+                        }
+                    }
+
+                    break;
+                case ConnectionState.Disconnected:
+                    AttachedAwaiter.Fail(new ErrorInfo("Connection is Disconnected"));
+                    DetachedAwaiter.Fail(new ErrorInfo("Connection is closed"));
                     break;
                 case ConnectionState.Closed:
                     AttachedAwaiter.Fail(new ErrorInfo("Connection is closed"));
