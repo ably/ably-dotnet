@@ -551,8 +551,8 @@ namespace IO.Ably.Realtime
                     * RTP19a  If the PresenceMap has existing members when an ATTACHED message is received without a
                     * HAS_PRESENCE flag, the client library should emit a LEAVE event for each existing member ...
                     */
-                        EndSync();
-                        SendQueuedMessages();
+                    EndSync();
+                    SendQueuedMessages();
                 }
                 else
                 {
