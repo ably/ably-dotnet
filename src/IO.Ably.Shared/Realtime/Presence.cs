@@ -308,8 +308,8 @@ namespace IO.Ably.Realtime
             switch (_channel.State)
             {
                 case ChannelState.Initialized:
-                    _channel.Attach();
                     PendingPresenceQueue.Enqueue(new QueuedPresenceMessage(msg, callback));
+                    _channel.Attach();
                     break;
                 case ChannelState.Attaching:
                     PendingPresenceQueue.Enqueue(new QueuedPresenceMessage(msg, callback));
