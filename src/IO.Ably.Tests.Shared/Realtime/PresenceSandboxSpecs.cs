@@ -1121,24 +1121,24 @@ namespace IO.Ably.Tests.Realtime
                     bool? success = null;
                     ErrorInfo errInfo = null;
                     await WaitForMultiple(2, partialDone =>
-                     {
-                         // insert an error when attaching
-                         channel.Once(ChannelEvent.Attached, args =>
-                         {
+                    {
+                        // insert an error when attaching
+                        channel.Once(ChannelEvent.Attaching, args =>
+                        {
+                             // before we change the state capture proof that we have a queued message
+                             initialCount = channel.Presence.PendingPresenceQueue.Count;
                              channel.SetChannelState(channelState, new ErrorInfo("RTP5a test"));
                              partialDone();
-                         });
+                        });
 
-                         // enter client, this should trigger attach
-                         channel.Presence.EnterClient("123", null, (b, info) =>
-                         {
-                             success = b;
-                             errInfo = info;
-                             partialDone();
-                         });
-
-                         initialCount = channel.Presence.PendingPresenceQueue.Count;
-                     });
+                        // enter client, this should trigger attach
+                        channel.Presence.EnterClient("123", null, (b, info) =>
+                        {
+                            success = b;
+                            errInfo = info;
+                            partialDone();
+                        });
+                    });
 
                     initialCount.Should().Be(1, "a presence message should have been queued");
                     success.Should().HaveValue("EnterClient callback should have executed");
