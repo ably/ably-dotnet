@@ -52,6 +52,12 @@ namespace IO.Ably.Realtime
             SyncComplete = true;
         }
 
+        internal bool InternalSyncComplete => !Map.IsSyncInProgress && SyncComplete;
+
+        internal PresenceMap Map { get; }
+
+        internal PresenceMap InternalMap { get; }
+
         internal Presence(IConnectionManager connection, RealtimeChannel channel, string cliendId, ILogger logger)
         {
             Logger = logger;
@@ -64,12 +70,6 @@ namespace IO.Ably.Realtime
             _channel.InternalStateChanged += OnChannelStateChanged;
             _clientId = cliendId;
         }
-
-        internal bool InternalSyncComplete => !Map.IsSyncInProgress && SyncComplete;
-
-        internal PresenceMap Map { get; }
-
-        internal PresenceMap InternalMap { get; }
 
         public void Dispose()
         {

@@ -262,6 +262,190 @@ namespace IO.Ably.Tests.Realtime
                 }
             }
 
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RTP17")]
+            public async Task Presence_ShouldHaveInternalMapForCurrentConnectionId(Protocol protocol)
+            {
+                /*
+                 * any ENTER, PRESENT, UPDATE or LEAVE event that matches
+                 * the current connectionId should be applied to the internal map
+                 */
+
+                var channelName = "RTP17".AddRandomSuffix();
+                var clientA = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "A"; });
+                var channelA = clientA.Channels.Get(channelName);
+
+                var clientB = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "B"; });
+                var channelB = clientB.Channels.Get(channelName);
+
+                // ENTER
+                PresenceMessage msgA = null, msgB = null;
+                await WaitForMultiple(2, partialDone =>
+                {
+                    channelA.Presence.Subscribe(msg =>
+                    {
+                        msgA = msg;
+                        partialDone();
+                    });
+
+                    channelB.Presence.Subscribe(msg =>
+                    {
+                        msgB = msg;
+                        partialDone();
+                    });
+
+                    channelA.Presence.Enter("chA");
+                });
+
+                msgA.Should().NotBeNull();
+                msgA.Action.Should().Be(PresenceAction.Enter);
+                msgA.ConnectionId.Should().Be(clientA.Connection.Id);
+                channelA.Presence.Map.Members.Should().HaveCount(1);
+                channelA.Presence.InternalMap.Members.Should().HaveCount(1);
+                channelA.Presence.Unsubscribe();
+
+                msgB.Should().NotBeNull();
+                msgB.Action.Should().Be(PresenceAction.Enter);
+                msgB.ConnectionId.Should().NotBe(clientB.Connection.Id);
+                channelB.Presence.Map.Members.Should().HaveCount(1);
+                channelB.Presence.InternalMap.Members.Should().HaveCount(0);
+                channelB.Presence.Unsubscribe();
+
+                msgA = null;
+                msgB = null;
+                await WaitForMultiple(2, partialDone =>
+                {
+                    channelA.Presence.Subscribe(msg =>
+                    {
+                        msgA = msg;
+                        channelA.Presence.Unsubscribe();
+                        partialDone();
+                    });
+
+                    channelB.Presence.Subscribe(msg =>
+                    {
+                        msgB = msg;
+                        channelB.Presence.Unsubscribe();
+                        partialDone();
+                    });
+
+                    channelB.Presence.Enter("chB");
+                });
+
+                msgA.Should().NotBeNull();
+                msgA.Action.Should().Be(PresenceAction.Enter);
+                msgA.ConnectionId.Should().NotBe(clientA.Connection.Id);
+                channelA.Presence.Map.Members.Should().HaveCount(2);
+                channelA.Presence.InternalMap.Members.Should().HaveCount(1);
+
+                msgB.Should().NotBeNull();
+                msgB.Action.Should().Be(PresenceAction.Enter);
+                msgB.ConnectionId.Should().Be(clientB.Connection.Id);
+                channelB.Presence.Map.Members.Should().HaveCount(2);
+                channelB.Presence.InternalMap.Members.Should().HaveCount(1);
+
+                // UPDATE
+                msgA = null;
+                msgB = null;
+                await WaitForMultiple(2, partialDone =>
+                {
+                    channelA.Presence.Subscribe(msg =>
+                    {
+                        msgA = msg;
+                        channelA.Presence.Unsubscribe();
+                        partialDone();
+                    });
+
+                    channelB.Presence.Subscribe(msg =>
+                    {
+                        msgB = msg;
+                        channelB.Presence.Unsubscribe();
+                        partialDone();
+                    });
+
+                    channelB.Presence.Update("chB-update");
+                });
+
+                msgA.Should().NotBeNull();
+                msgA.Action.Should().Be(PresenceAction.Update);
+                msgA.ConnectionId.Should().NotBe(clientA.Connection.Id);
+                msgA.Data.ToString().Should().Be("chB-update");
+                channelA.Presence.Map.Members.Should().HaveCount(2);
+                channelA.Presence.InternalMap.Members.Should().HaveCount(1);
+
+                msgB.Should().NotBeNull();
+                msgB.Action.Should().Be(PresenceAction.Update);
+                msgB.ConnectionId.Should().Be(clientB.Connection.Id);
+                msgB.Data.ToString().Should().Be("chB-update");
+                channelB.Presence.Map.Members.Should().HaveCount(2);
+                channelB.Presence.InternalMap.Members.Should().HaveCount(1);
+
+                // LEAVE
+                msgA = null;
+                msgB = null;
+                await WaitForMultiple(2, partialDone =>
+                {
+                    channelA.Presence.Subscribe(msg =>
+                    {
+                        msgA = msg;
+                        channelA.Presence.Unsubscribe();
+                        partialDone();
+                    });
+
+                    channelB.Presence.Subscribe(msg =>
+                    {
+                        msgB = msg;
+                        channelB.Presence.Unsubscribe();
+                        partialDone();
+                    });
+
+                    channelB.Presence.Leave("chB-leave");
+                });
+
+                msgA.Should().NotBeNull();
+                msgA.Action.Should().Be(PresenceAction.Leave);
+                msgA.ConnectionId.Should().NotBe(clientA.Connection.Id);
+                msgA.Data.ToString().Should().Be("chB-leave");
+                channelA.Presence.Map.Members.Should().HaveCount(1);
+                channelA.Presence.InternalMap.Members.Should().HaveCount(1);
+
+                msgB.Should().NotBeNull();
+                msgB.Action.Should().Be(PresenceAction.Leave);
+                msgB.ConnectionId.Should().Be(clientB.Connection.Id);
+                msgB.Data.ToString().Should().Be("chB-leave");
+                channelB.Presence.Map.Members.Should().HaveCount(1);
+                channelB.Presence.InternalMap.Members.Should().HaveCount(0);
+
+                // clean up
+                clientA.Close();
+                clientB.Close();
+            }
+
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RTP17a")]
+            public async Task Presence_ShouldPublishAllMembersForTheCurrentConnection(Protocol protocol)
+            {
+                var channelName = "RTP17a".AddRandomSuffix();
+                var clientId = "RTP17a-client".AddRandomSuffix();
+                var capability = new Capability();
+                capability.AddResource(channelName).AllowPresence().AllowPublish();
+                var client = await GetRealtimeClient(protocol, (options, settings) =>
+                {
+                    options.DefaultTokenParams = new TokenParams { Capability = capability, ClientId = clientId };
+                });
+
+                var channel = client.Channels.Get(channelName);
+                var result = await channel.Presence.EnterClientAsync(clientId, null);
+                result.IsSuccess.Should().BeTrue();
+
+                var members = await channel.Presence.GetAsync();
+                members.Should().HaveCount(1);
+                channel.Presence.Map.Members.Should().HaveCount(1);
+                channel.Presence.InternalMap.Members.Should().HaveCount(1);
+            }
+
             /*
              * If a SYNC is in progress, then when a presence message with an action of LEAVE arrives,
              * it should be stored in the presence map with the action set to ABSENT.
