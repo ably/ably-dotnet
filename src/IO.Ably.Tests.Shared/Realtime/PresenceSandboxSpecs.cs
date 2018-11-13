@@ -472,7 +472,6 @@ namespace IO.Ably.Tests.Realtime
 
                 var channel = client.Channels.Get(channelName);
 
-                var syncMessageAwaiter = new TaskCompletionAwaiter();
                 var transport = client.GetTestTransport();
                 int syncCount = 0;
                 transport.AfterDataReceived = protocolMessage =>
@@ -482,10 +481,9 @@ namespace IO.Ably.Tests.Realtime
                         syncCount++;
 
                         // interrupt after first page of results
-                        if (syncCount > 1)
+                        if (syncCount == 2)
                         {
                             transport.Close(false);
-                            transport.AfterDataReceived = null;
                         }
                     }
                 };
@@ -506,6 +504,9 @@ namespace IO.Ably.Tests.Realtime
                 var messageList = messages as IList<PresenceMessage> ?? messages.ToList();
                 messageList.Count.ShouldBeEquivalentTo(enterCount, "Message count should match enterCount");
 
+                syncCount.Should().Be(2);
+
+                transport.AfterDataReceived = null;
                 setupClient.Close();
                 client.Close();
             }
