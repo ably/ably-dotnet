@@ -1,14 +1,16 @@
 ﻿using System;
+using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
 {
     public class ChannelStateChange : EventArgs
     {
-        public ChannelStateChange(ChannelState state, ChannelState previous, ErrorInfo error = null)
+        public ChannelStateChange(ChannelState state, ChannelState previous, ErrorInfo error = null, bool resumed = false)
         {
             Previous = previous;
             Current = state;
             Error = error;
+            Resumed = resumed;
         }
 
         public ChannelState Previous { get; }
@@ -16,5 +18,9 @@ namespace IO.Ably.Realtime
         public ChannelState Current { get; }
 
         public ErrorInfo Error { get; }
+
+        public bool Resumed { get;  }
+
+        internal ProtocolMessage ProtocolMessage { get; set; } = null;
     }
 }
