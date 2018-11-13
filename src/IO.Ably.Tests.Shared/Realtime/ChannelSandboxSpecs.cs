@@ -117,6 +117,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTC1a")]
         public async Task TestAttachChannel_Sending3Messages_EchoesItBack(Protocol protocol)
         {
             Logger.LogLevel = LogLevel.Debug;
@@ -125,7 +126,7 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol);
             await client.WaitForState(ConnectionState.Connected);
 
-            ManualResetEvent resetEvent = new ManualResetEvent(false);
+            var tsc = new TaskCompletionAwaiter(10000, 3);
             IRealtimeChannel target = client.Channels.Get("test" + protocol);
             target.Attach();
             await target.WaitForState(ChannelState.Attached);
@@ -135,24 +136,19 @@ namespace IO.Ably.Tests.Realtime
             target.Subscribe(message =>
             {
                 messagesReceived.Enqueue(message);
-                count++;
-                if (count == 3)
-                {
-                    resetEvent.Set();
-                }
+                tsc.Tick();
             });
 
             // Act
-            target.Publish("test1", "test 12");
-            target.Publish("test2", "test 123");
-            target.Publish("test3", "test 321");
+            await target.PublishAsync("test1", "test 12");
+            await target.PublishAsync("test2", "test 123");
+            await target.PublishAsync("test3", "test 321");
 
-            bool result = resetEvent.WaitOne(8000);
-            await Task.Delay(100);
+            bool result = await tsc.Task;
             result.Should().BeTrue();
 
             // Assert
-            messagesReceived.Count.ShouldBeEquivalentTo(3);
+            messagesReceived.Should().HaveCount(3);
             var messages = messagesReceived.ToList();
             messages[0].Name.ShouldBeEquivalentTo("test1");
             messages[0].Data.ShouldBeEquivalentTo("test 12");
@@ -165,6 +161,7 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTL7f")]
+        [Trait("spec", "RTC1a")]
         public async Task TestAttachChannel_SendingMessage_Doesnt_EchoesItBack(Protocol protocol)
         {
             var channelName = "echo_off_test";

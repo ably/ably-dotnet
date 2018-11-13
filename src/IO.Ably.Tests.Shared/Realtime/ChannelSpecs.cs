@@ -220,11 +220,11 @@ namespace IO.Ably.Tests.Realtime
 
             [Fact]
             [Trait("spec", "RTL3d")]
-            public async Task WhenChannelIsSuspended_WhenConnectionBecomeConnectedAttemptAttach()
+            public async Task WhenChannelIsSuspended_WhenConnectionBecomesConnectedAttemptAttach()
             {
                 var client = GetConnectedClient();
                 var channel = client.Channels.Get("test".AddRandomSuffix());
-
+                await client.WaitForState(ConnectionState.Connected);
                 await client.ConnectionManager.SetState(new ConnectionSuspendedState(client.ConnectionManager, Logger));
                 await client.WaitForState(ConnectionState.Suspended);
 
@@ -236,7 +236,7 @@ namespace IO.Ably.Tests.Realtime
                 client.Connection.State.Should().Be(ConnectionState.Connected);
                 channel.State.Should().Be(ChannelState.Attaching);
 
-                var tsc = new TaskCompletionAwaiter();
+                var tsc = new TaskCompletionAwaiter(15000);
                 channel.Once(ChannelEvent.Suspended, s =>
                 {
                     s.Error.Should().NotBeNull();
