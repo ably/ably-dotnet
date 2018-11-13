@@ -481,7 +481,7 @@ namespace IO.Ably.Tests.Realtime
                     {
                         syncCount++;
 
-                        // interupt after first page of results
+                        // interrupt after first page of results
                         if (syncCount > 1)
                         {
                             transport.Close(false);
