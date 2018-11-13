@@ -34,6 +34,8 @@ namespace IO.Ably
             Connection = new Connection(this, options.NowFunc, options.Logger);
             Connection.Initialise();
 
+            RestClient.AblyAuth.AuthUpdated += Connection.ConnectionManager.OnAuthUpdated;
+
             if (options.AutoConnect)
             {
                 Connect();

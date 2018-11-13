@@ -593,5 +593,65 @@ namespace IO.Ably.Transport
                     break;
             }
         }
+
+        public void OnAuthUpdated(object sender, AblyAuthUpdatedEventArgs args)
+        {
+            if (State.State == ConnectionState.Connected)
+            {
+                /* (RTC8a) If the connection is in the CONNECTED state and
+                 * auth.authorize is called or Ably requests a re-authentication
+                 * (see RTN22), the client must obtain a new token, then send an
+                 * AUTH ProtocolMessage to Ably with an auth attribute
+                 * containing an AuthDetails object with the token string. */
+                try
+                {
+                    /* (RTC8a3) The authorize call should be indicated as completed
+                     * with the new token or error only once realtime has responded
+                     * to the AUTH with either a CONNECTED or ERROR respectively. */
+
+                    // an ERROR protocol message will fail the connection
+                    void OnFailed(object o, ConnectionStateChange change)
+                    {
+                        if (change.Current == ConnectionState.Failed)
+                        {
+                            Connection.InternalStateChanged -= OnFailed;
+                            Connection.InternalStateChanged -= OnConnected;
+                            args.CompleteAuthorization(false);
+                        }
+                    }
+
+                    void OnConnected(object o, ConnectionStateChange change)
+                    {
+                        if (change.Current == ConnectionState.Connected)
+                        {
+                            Connection.InternalStateChanged -= OnFailed;
+                            Connection.InternalStateChanged -= OnConnected;
+                            args.CompleteAuthorization(true);
+                        }
+                    }
+
+                    Connection.InternalStateChanged += OnFailed;
+                    Connection.InternalStateChanged += OnConnected;
+
+                    var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Auth)
+                    {
+                        Auth = new AuthDetails { AccessToken = args.Token.Token }
+                    };
+
+                    Send(msg);
+                }
+                catch (AblyException e)
+                {
+                    Logger.Warning("OnAuthUpdated: closing transport after send failure");
+                    Logger.Debug(e.Message);
+                    Transport?.Close();
+                }
+            }
+            else
+            {
+                args.CompletedTask.TrySetResult(true);
+                Connect();
+            }
+        }
     }
 }

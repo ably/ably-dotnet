@@ -348,7 +348,19 @@ namespace IO.Ably.Tests
                     change.Reason.Code.Should().Be(80019);
                     tca.SetCompleted();
                 });
-                await realtimeClient.Auth.AuthorizeAsync();
+
+                bool didThrowAblyException = false;
+                try
+                {
+                    await realtimeClient.Auth.AuthorizeAsync();
+                    Assert.True(false, "An exception should be raised before this line is reached.");
+                }
+                catch (AblyException e)
+                {
+                    didThrowAblyException = true;
+                }
+
+                didThrowAblyException.Should().BeTrue();
                 realtimeClient.Connection.State.Should().Be(ConnectionState.Connected);
                 (await tca.Task).Should().BeFalse(context);
             }
@@ -509,9 +521,16 @@ namespace IO.Ably.Tests
         public async Task WithoutClientId_WhenAuthorizedWithTokenParamsWithClientId_SetsClientId(Protocol protocol)
         {
             var ably = await GetRestClient(protocol);
-            await ably.Auth.AuthorizeAsync(new TokenParams() { ClientId = "123" }, new AuthOptions());
+            var tokenDetails1 = await ably.Auth.AuthorizeAsync(new TokenParams() { ClientId = "123" }, new AuthOptions());
             ably.AblyAuth.ClientId.Should().Be("123");
+
+            // uses Token Auth for all future requests (RSA10a)
             ably.AblyAuth.AuthMethod.Should().Be(AuthMethod.Token);
+
+            // create a token immediately (RSA10a)
+            // regardless of whether the existing token is valid or not
+            var tokenDetails2 = await ably.Auth.AuthorizeAsync(new TokenParams() { ClientId = "123" }, new AuthOptions());
+            tokenDetails1.Token.Should().NotBe(tokenDetails2.Token);
         }
 
         [Theory]

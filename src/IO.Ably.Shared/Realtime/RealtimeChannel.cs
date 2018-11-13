@@ -121,6 +121,10 @@ namespace IO.Ably.Realtime
             switch (connectionStateChange.Current)
             {
                 case ConnectionState.Connecting:
+                    if (connectionStateChange.Previous == ConnectionState.Failed)
+                    {
+                        SetChannelState(ChannelState.Initialized);
+                    }
                     break;
                 case ConnectionState.Disconnected:
                     if (State == ChannelState.Attaching)
