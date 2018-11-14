@@ -434,7 +434,7 @@ namespace IO.Ably.Realtime
 
             HandleStateChange(state, error, protocolMessage);
 
-            InternalStateChanged.Invoke(this, new ChannelStateChange(state, previousState, error));
+            InternalStateChanged.Invoke(this, new ChannelStateChange(state, previousState, error) { ProtocolMessage = protocolMessage });
 
             // Notify external client using the thread they subscribe on
             RealtimeClient.NotifyExternalClients(() =>
@@ -621,6 +621,19 @@ namespace IO.Ably.Realtime
             }
 
             ConnectionManager.Send(protocolMessage, callback, Options);
+        }
+
+        /// <summary>
+        /// Emits an UPDATE if the channel is ATTACHED
+        /// </summary>
+        /// <param name="errorInfo"></param>
+        /// <param name="resumed"></param>
+        internal void EmitUpdate(ErrorInfo errorInfo, bool resumed)
+        {
+            if (State == ChannelState.Attached)
+            {
+                Emit(ChannelEvent.Update, new ChannelStateChange(State, State, errorInfo, resumed));
+            }
         }
     }
 }
