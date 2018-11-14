@@ -73,7 +73,7 @@ namespace IO.Ably.Tests.GithubSamples
                 var error = args.Error; // If the channel errored it will be refrected here
             });
 
-            channel.On(ChannelState.Attached, args =>
+            channel.On(ChannelEvent.Attached, args =>
             {
                 // Do stuff when channel is attached
             });

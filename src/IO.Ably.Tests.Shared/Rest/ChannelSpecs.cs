@@ -261,7 +261,7 @@ namespace IO.Ably.Tests.Rest
             [Trait("spec", "RSL2b")]
             public async Task WithOptions_AddsParametersToRequest()
             {
-                var query = new HistoryRequestParams();
+                var query = new PaginatedRequestParams();
                 var now = DateTimeOffset.Now;
                 query.Start = now.AddHours(-1);
                 query.End = now;
@@ -280,7 +280,7 @@ namespace IO.Ably.Tests.Rest
             public async Task WithStartBeforeEnd_Throws()
             {
                 var ex = await Assert.ThrowsAsync<AblyException>(() =>
-                        _channel.HistoryAsync(new HistoryRequestParams() { Start = Now, End = Now.AddHours(-1) }));
+                        _channel.HistoryAsync(new PaginatedRequestParams() { Start = Now, End = Now.AddHours(-1) }));
             }
 
             [Fact]
@@ -309,7 +309,7 @@ namespace IO.Ably.Tests.Rest
             public async Task WithLimitLessThan0andMoreThan1000_ShouldThrow(int limit)
             {
                 var ex = await
-                    Assert.ThrowsAsync<AblyException>(() => _channel.HistoryAsync(new HistoryRequestParams() { Limit = limit }));
+                    Assert.ThrowsAsync<AblyException>(() => _channel.HistoryAsync(new PaginatedRequestParams() { Limit = limit }));
             }
 
             [Fact]
@@ -319,7 +319,7 @@ namespace IO.Ably.Tests.Rest
                 var channel = rest.Channels.Get("Test");
                 foreach (object[] dates in InvalidHistoryDates())
                 {
-                    var query = new HistoryRequestParams() { Start = (DateTimeOffset?)dates.First(), End = (DateTimeOffset)dates.Last() };
+                    var query = new PaginatedRequestParams() { Start = (DateTimeOffset?)dates.First(), End = (DateTimeOffset)dates.Last() };
 
                     var ex = await Assert.ThrowsAsync<AblyException>(async () => await channel.HistoryAsync(query));
                 }
@@ -348,9 +348,9 @@ namespace IO.Ably.Tests.Rest
                 var result = await channel.HistoryAsync();
 
                 // Assert
-                Assert.NotNull(result.NextDataQuery);
-                Assert.NotNull(result.CurrentQuery);
-                Assert.NotNull(result.FirstDataQuery);
+                Assert.NotNull(result.NextQueryParams);
+                Assert.NotNull(result.CurrentQueryParams);
+                Assert.NotNull(result.FirstQueryParams);
             }
 
             [Fact]

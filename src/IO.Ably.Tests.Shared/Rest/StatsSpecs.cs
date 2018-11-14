@@ -58,8 +58,8 @@ namespace IO.Ably.Tests
             var result = await rest.StatsAsync();
 
             // Assert
-            NotNull(result.NextDataQuery);
-            NotNull(result.FirstDataQuery);
+            NotNull(result.NextQueryParams);
+            NotNull(result.FirstQueryParams);
         }
 
         private async Task ExecuteStatsQuery(StatsRequestParams query)

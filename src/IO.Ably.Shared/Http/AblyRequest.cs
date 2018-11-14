@@ -30,14 +30,6 @@ namespace IO.Ably
 
         public Dictionary<string, string> QueryParameters { get; set; }
 
-        public void AddQueryParameters(IEnumerable<KeyValuePair<string, string>> parameters)
-        {
-            foreach (var keyValuePair in parameters)
-            {
-                QueryParameters.Add(keyValuePair.Key, keyValuePair.Value);
-            }
-        }
-
         public Protocol Protocol { get; set; }
 
         public object PostData { get; set; }
@@ -55,5 +47,31 @@ namespace IO.Ably
         public byte[] RequestBody { get; set; }
 
         public bool SkipAuthentication { get; set; }
+
+        public void AddHeaders(IEnumerable<KeyValuePair<string, string>> parameters)
+        {
+            if (parameters == null)
+            {
+                return;
+            }
+
+            foreach (var keyValuePair in parameters)
+            {
+                Headers.Add(keyValuePair.Key, keyValuePair.Value);
+            }
+        }
+
+        public void AddQueryParameters(IEnumerable<KeyValuePair<string, string>> parameters)
+        {
+            if (parameters == null)
+            {
+                return;
+            }
+
+            foreach (var keyValuePair in parameters)
+            {
+                QueryParameters.Add(keyValuePair.Key, keyValuePair.Value);
+            }
+        }
     }
 }

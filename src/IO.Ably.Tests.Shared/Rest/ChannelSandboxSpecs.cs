@@ -198,7 +198,7 @@ namespace IO.Ably.Tests.Rest
             }
 
             // Assert
-            var history = await channel.HistoryAsync(new HistoryRequestParams() { Limit = 10 });
+            var history = await channel.HistoryAsync(new PaginatedRequestParams() { Limit = 10 });
             history.Items.Should().HaveCount(10);
             history.HasNext.Should().BeTrue();
             history.Items.First().Name.Should().Be("name19");
@@ -223,7 +223,7 @@ namespace IO.Ably.Tests.Rest
             }
 
             // Assert
-            var history = channel.History(new HistoryRequestParams() { Limit = 10 });
+            var history = channel.History(new PaginatedRequestParams() { Limit = 10 });
             history.Items.Should().HaveCount(10);
             history.HasNext.Should().BeTrue();
             history.Items.First().Name.Should().Be("name19");

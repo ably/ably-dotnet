@@ -36,10 +36,10 @@ namespace IO.Ably.Tests
         public void GetLinkQuery_WithHeadersAndAskingForNextLink_ReturnsCorrectRequestQuery()
         {
             // Arrange
-            var nextDataRequest = HistoryRequestParams.Parse(NextQueryString);
+            var nextDataRequest = PaginatedRequestParams.Parse(NextQueryString);
 
             // Act
-            var actual = HistoryRequestParams.GetLinkQuery(GetSampleHistoryRequestHeaders(), "next");
+            var actual = PaginatedRequestParams.GetLinkQuery(GetSampleHistoryRequestHeaders(), "next");
 
             // Assert
             Assert.Equal(nextDataRequest, actual);
@@ -50,12 +50,12 @@ namespace IO.Ably.Tests
         {
             // Arrange
             var firstDataRequest =
-                HistoryRequestParams.Parse(
+                PaginatedRequestParams.Parse(
                     FirstQueryString);
 
             // Act
             // Act
-            var actual = HistoryRequestParams.GetLinkQuery(GetSampleHistoryRequestHeaders(), "first");
+            var actual = PaginatedRequestParams.GetLinkQuery(GetSampleHistoryRequestHeaders(), "first");
 
             // Assert
             Assert.Equal(firstDataRequest, actual);

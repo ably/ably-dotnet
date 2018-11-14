@@ -5,39 +5,55 @@ using System.Threading.Tasks;
 
 namespace IO.Ably
 {
-    public class PaginatedResult<T> where T : class
+    public class PaginatedResult<T>
+        where T : class
     {
-        private readonly int _limit;
+        internal AblyResponse Response { get; set; }
 
-        private Func<HistoryRequestParams, Task<PaginatedResult<T>>> ExecuteDataQueryFunc { get; }
+        protected int Limit { get; set; }
+
+        protected Func<PaginatedRequestParams, Task<PaginatedResult<T>>> ExecuteDataQueryFunc { get; }
 
         public List<T> Items { get; set; } = new List<T>();
 
-        private PaginatedResult()
+        public PaginatedRequestParams NextQueryParams { get; protected set; }
+
+        public PaginatedRequestParams FirstQueryParams { get; protected set; }
+
+        public PaginatedRequestParams CurrentQueryParams { get; protected set; }
+
+        protected PaginatedResult()
         {
         }
 
-        internal PaginatedResult(HttpHeaders headers, int limit, Func<HistoryRequestParams, Task<PaginatedResult<T>>> executeDataQueryFunc)
+        internal PaginatedResult(AblyResponse response, int limit, Func<PaginatedRequestParams, Task<PaginatedResult<T>>> executeDataQueryFunc)
         {
-            _limit = limit;
+            Response = response;
+            Limit = limit;
             ExecuteDataQueryFunc = executeDataQueryFunc;
-            if (headers != null)
+            if (response.Headers != null)
             {
-                CurrentQuery = HistoryRequestParams.GetLinkQuery(headers, DataRequestLinkType.Current);
-                NextDataQuery = HistoryRequestParams.GetLinkQuery(headers, DataRequestLinkType.Next);
-                FirstDataQuery = HistoryRequestParams.GetLinkQuery(headers, DataRequestLinkType.First);
+                CurrentQueryParams = PaginatedRequestParams.GetLinkQuery(response.Headers, DataRequestLinkType.Current);
+                NextQueryParams = PaginatedRequestParams.GetLinkQuery(response.Headers, DataRequestLinkType.Next);
+                FirstQueryParams = PaginatedRequestParams.GetLinkQuery(response.Headers, DataRequestLinkType.First);
             }
         }
 
-        public bool HasNext => NextDataQuery != null && NextDataQuery.IsEmpty == false;
+        /// <summary>
+        /// Gets a value indicating whether there are further pages
+        /// </summary>
+        public bool HasNext => NextQueryParams != null && NextQueryParams.IsEmpty == false;
 
+        /// <summary>
+        /// Gets a value indicating whether the current page is the last one available
+        /// </summary>
         public bool IsLast => HasNext == false;
 
         public Task<PaginatedResult<T>> NextAsync()
         {
             if (HasNext && ExecuteDataQueryFunc != null)
             {
-                return ExecuteDataQueryFunc(NextDataQuery);
+                return ExecuteDataQueryFunc(NextQueryParams);
             }
 
             return Task.FromResult(new PaginatedResult<T>());
@@ -45,9 +61,9 @@ namespace IO.Ably
 
         public Task<PaginatedResult<T>> FirstAsync()
         {
-            if (FirstDataQuery != null && FirstDataQuery.IsEmpty == false && ExecuteDataQueryFunc != null)
+            if (FirstQueryParams != null && FirstQueryParams.IsEmpty == false && ExecuteDataQueryFunc != null)
             {
-                return ExecuteDataQueryFunc(FirstDataQuery);
+                return ExecuteDataQueryFunc(FirstQueryParams);
             }
 
             return Task.FromResult(new PaginatedResult<T>());
@@ -62,11 +78,5 @@ namespace IO.Ably
         {
             return AsyncHelper.RunSync(FirstAsync);
         }
-
-        public HistoryRequestParams NextDataQuery { get; }
-
-        public HistoryRequestParams FirstDataQuery { get; private set; }
-
-        public HistoryRequestParams CurrentQuery { get; private set; }
     }
 }
