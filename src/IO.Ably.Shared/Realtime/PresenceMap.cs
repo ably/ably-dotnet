@@ -23,6 +23,11 @@ namespace IO.Ably.Realtime
             Failed
         }
 
+        /// <summary>
+        /// Exposed internally to allow for testing
+        /// </summary>
+        internal ConcurrentDictionary<string, PresenceMessage> Members => _members;
+
         private readonly ConcurrentDictionary<string, PresenceMessage> _members;
         private ICollection<string> _residualMembers;
         private bool _isSyncInProgress;
