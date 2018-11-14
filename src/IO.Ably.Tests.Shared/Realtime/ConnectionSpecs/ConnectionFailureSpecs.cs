@@ -72,7 +72,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 opts.Key = string.Empty;
                 opts.TokenDetails = tokenDetails;
                 opts.UseBinaryProtocol = false;
-                opts.LogLevel = LogLevel.Debug;
             }, request =>
             {
                 if (request.Url.Contains("/keys"))

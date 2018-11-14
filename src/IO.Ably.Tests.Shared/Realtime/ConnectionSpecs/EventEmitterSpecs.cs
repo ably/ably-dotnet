@@ -122,8 +122,8 @@ namespace IO.Ably.Tests.Realtime
             stateChange.HasError.Should().BeTrue();
             stateChange.Reason.Should().Be(expectedError);
 
-            // RTN14b, expect DISCONNECTED
-            stateChange.Event.Should().Be(ConnectionEvent.Disconnected);
+            // RTN14g, expect FAILED
+            stateChange.Event.Should().Be(ConnectionEvent.Failed);
         }
 
         [Fact]

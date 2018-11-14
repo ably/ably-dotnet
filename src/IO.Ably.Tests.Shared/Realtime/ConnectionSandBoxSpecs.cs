@@ -310,10 +310,15 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN14a")]
         public async Task WithInvalidApiKey_ShouldSetToFailedStateAndAddErrorMessageToEmittedState(Protocol protocol)
         {
+            var invalidKey = "invalid-key".AddRandomSuffix();
+            ApiKey.IsValidFormat(invalidKey).Should().BeFalse();
+
             var client = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
-                opts.Key = "baba.bobo:bosh";
+
+                // a string not in the valid key format aaaa.bbbb:cccc
+                opts.Key = invalidKey;
             });
 
             ErrorInfo error = null;
@@ -328,6 +333,10 @@ namespace IO.Ably.Tests.Realtime
 
             error.Should().NotBeNull();
             client.Connection.ErrorReason.Should().BeSameAs(error);
+
+            // this assertion shows that we are picking up a client side validation error
+            // if this key is passed to the server we would get an error with a 40005 code
+            client.Connection.ErrorReason.Code.Should().Be(40101);
         }
 
         [Theory]
@@ -422,51 +431,45 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RTN15h")]
-        public async Task WhenDisconnectedMessageContainsTokenError_IfTokenIsRenewable_ShouldNotEmitError(Protocol protocol)
+        [Trait("spec", "RTN15h1")]
+        public async Task WhenDisconnectedMessageContainsTokenError_IfTokenIsNotRewable_ShouldBecomeFailedAndEmitError(Protocol protocol)
         {
-            var awaiter = new TaskCompletionAwaiter(10000, 2);
+            var awaiter = new TaskCompletionAwaiter(10000);
             var authClient = await GetRestClient(protocol);
             var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
 
             var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
                 options.TokenDetails = tokenDetails;
-                options.DisconnectedRetryTimeout = TimeSpan.FromSeconds(1);
                 options.AutoConnect = false;
             });
 
             client.Connect();
             await client.WaitForState(ConnectionState.Connected);
 
-            var stateChanges = new List<ConnectionStateChange>();
-            client.Connection.Once(ConnectionEvent.Disconnected, state =>
+            // null the key so the token is not renewable
+            client.Options.Key = null;
+
+            client.Connection.Once(ConnectionEvent.Failed, state =>
             {
-                stateChanges.Add(state);
                 awaiter.Tick();
             });
 
-            client.Connection.Once(ConnectionEvent.Connected, state =>
-            {
-                stateChanges.Add(state);
-                awaiter.Tick();
-            });
+            client.Connection.Once(ConnectionEvent.Disconnected, state => throw new Exception("should not become DISCONNECTED"));
+            client.Connection.Once(ConnectionEvent.Connected, state => throw new Exception("should not become CONNECTED"));
 
             await awaiter.Task;
 
-            stateChanges.Should().HaveCount(2);
-            stateChanges[0].Current.Should().Be(ConnectionState.Disconnected);
-            stateChanges[0].Reason.Should().BeNull();
-            stateChanges[1].Current.Should().Be(ConnectionState.Connected);
-            stateChanges[1].Reason.Should().BeNull();
+            client.Connection.State.Should().Be(ConnectionState.Failed);
+            client.Connection.ErrorReason.Should().NotBeNull();
         }
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RTN15h")]
-        public async Task WhenDisconnectedMessageContainsTokenError_IfTokenRenewFails_ShouldBecomeFailedEmitError(Protocol protocol)
+        [Trait("spec", "RTN15h2")]
+        public async Task WhenDisconnectedMessageContainsTokenError_IfTokenIsRenewable_ShouldNotEmitError(Protocol protocol)
         {
-            var awaiter = new TaskCompletionAwaiter(10000, 2);
+            var awaiter = new TaskCompletionAwaiter(10000);
             var authClient = await GetRestClient(protocol);
             var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
 
@@ -474,35 +477,116 @@ namespace IO.Ably.Tests.Realtime
             {
                 options.TokenDetails = tokenDetails;
                 options.DisconnectedRetryTimeout = TimeSpan.FromSeconds(1);
-                options.AutoConnect = false;
-
-                // to make the token renew fail return the old token
-                options.AuthCallback = tokenParams => Task.FromResult<object>(tokenDetails);
             });
 
-            client.Connect();
             await client.WaitForState(ConnectionState.Connected);
 
             var stateChanges = new List<ConnectionStateChange>();
             client.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
                 stateChanges.Add(state);
-                awaiter.Tick();
-            });
-
-            client.Connection.Once(ConnectionEvent.Failed, state =>
-            {
-                stateChanges.Add(state);
-                awaiter.Tick();
+                client.Connection.Once(ConnectionEvent.Connecting, state2 =>
+                {
+                    stateChanges.Add(state2);
+                    client.Connection.Once(ConnectionEvent.Connected, state3 =>
+                    {
+                        client.Connection.State.Should().Be(ConnectionState.Connected);
+                        client.Connection.ErrorReason.Should().BeNull();
+                        stateChanges.Add(state3);
+                        awaiter.SetCompleted();
+                    });
+                });
             });
 
             await awaiter.Task;
+            stateChanges.Should().HaveCount(3);
+        }
 
-            stateChanges.Should().HaveCount(2);
-            stateChanges[0].Current.Should().Be(ConnectionState.Disconnected);
-            stateChanges[1].Current.Should().Be(ConnectionState.Failed);
-            stateChanges[1].Reason.Code.Should().Be(40142);
-            client.Connection.ErrorReason.ShouldBeEquivalentTo(stateChanges[1].Reason);
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15h2")]
+        public async Task WhenDisconnectedMessageContainsTokenError_IfTokenRenewFails_ShouldBecomeDisconnectedAndEmitError(Protocol protocol)
+        {
+            var awaiter = new TaskCompletionAwaiter(10000);
+            var authClient = await GetRestClient(protocol);
+
+            var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
+
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.TokenDetails = tokenDetails;
+
+                // has means to renew that should fail
+                options.AuthCallback = tokenParams => throw new Exception("fail auth callback");
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            var stateChanges = new List<ConnectionState>();
+            client.Connection.Once(ConnectionEvent.Disconnected, state =>
+            {
+                stateChanges.Add(state.Current);
+                client.Connection.Once(ConnectionEvent.Connecting, state2 =>
+                {
+                    stateChanges.Add(state2.Current);
+                    client.Connection.Once(ConnectionEvent.Disconnected, state3 =>
+                    {
+                        client.Connection.State.Should().Be(ConnectionState.Disconnected);
+                        client.Connection.ErrorReason.Should().NotBeNull();
+                        stateChanges.Add(state3.Current);
+                        awaiter.SetCompleted();
+                    });
+                });
+            });
+
+            client.Connection.Once(ConnectionEvent.Failed, state => throw new Exception("should not become FAILED"));
+
+            await awaiter.Task;
+            stateChanges.Should().BeEquivalentTo(new[]
+                { ConnectionState.Disconnected, ConnectionState.Connecting, ConnectionState.Disconnected });
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15h2")]
+        public async Task WhenDisconnectedMessageContainsTokenError_IfTokenRenewFailsWithFatalError_ShouldBecomeFailedAndEmitError(Protocol protocol)
+        {
+            var awaiter = new TaskCompletionAwaiter(10000, 3);
+            var authClient = await GetRestClient(protocol);
+
+            var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
+
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.TokenDetails = tokenDetails;
+
+                // has means to renew that should result in a fatal error
+                // return a 403 to simulate a fatal error, per RSA4d.
+                options.AuthUrl = new Uri("https://echo.ably.io/respondwith?status=403");
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            var stateChanges = new List<ConnectionState>();
+            client.Connection.Once(ConnectionEvent.Disconnected, state =>
+            {
+                stateChanges.Add(state.Current);
+                client.Connection.Once(ConnectionEvent.Connecting, state2 =>
+                {
+                    stateChanges.Add(state2.Current);
+                    client.Connection.Once(ConnectionEvent.Failed, state3 =>
+                    {
+                        client.Connection.State.Should().Be(ConnectionState.Failed);
+                        client.Connection.ErrorReason.Should().NotBeNull();
+                        stateChanges.Add(state3.Current);
+                        awaiter.SetCompleted();
+                    });
+                });
+            });
+
+            await awaiter.Task;
+            stateChanges.Should().BeEquivalentTo(new[]
+                { ConnectionState.Disconnected, ConnectionState.Connecting, ConnectionState.Failed });
         }
 
         [Theory]
@@ -523,7 +607,7 @@ namespace IO.Ably.Tests.Realtime
             channel.Attach();
             await channel.WaitForState(ChannelState.Attached);
 
-            List<ConnectionState> states = new List<ConnectionState>();
+            var states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
 
             client.Connection.InternalStateChanged += (sender, args) =>
@@ -538,7 +622,7 @@ namespace IO.Ably.Tests.Realtime
 
             var dummyError = new ErrorInfo
             {
-                Code = 40140,
+                Code = 40130,
                 StatusCode = HttpStatusCode.Unauthorized,
                 Message = "fake error"
             };
