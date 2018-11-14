@@ -4,12 +4,12 @@ namespace IO.Ably.Tests
 {
     public class DataRequestQueryParseTests
     {
-        private HistoryRequestParams _query;
+        private PaginatedRequestParams _query;
         public const string HeaderValue = "?start=1380794880000&end=1380794881058&limit=100&by=minute&direction=forwards&format=json&first_start=1380794880000";
 
         public DataRequestQueryParseTests()
         {
-            _query = HistoryRequestParams.Parse(HeaderValue);
+            _query = PaginatedRequestParams.Parse(HeaderValue);
         }
 
         [Fact]

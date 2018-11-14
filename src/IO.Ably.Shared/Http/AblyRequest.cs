@@ -30,14 +30,6 @@ namespace IO.Ably
 
         public Dictionary<string, string> QueryParameters { get; set; }
 
-        public void AddQueryParameters(IEnumerable<KeyValuePair<string, string>> parameters)
-        {
-            foreach (var keyValuePair in parameters)
-            {
-                QueryParameters.Add(keyValuePair.Key, keyValuePair.Value);
-            }
-        }
-
         public Protocol Protocol { get; set; }
 
         public object PostData { get; set; }
@@ -55,5 +47,38 @@ namespace IO.Ably
         public byte[] RequestBody { get; set; }
 
         public bool SkipAuthentication { get; set; }
+
+        /// <summary>
+        /// Tell the HTTP client to not not raise an exception when a non 2XX status is returned.
+        /// Set to 'true' when 4XX or 5XX HTTP status codes should not cause an exception.
+        /// Add to support <see cref="AblyRest.Request"/>.
+        /// </summary>
+        public bool NoExceptionOnHttpError { get; set; } = false;
+
+        public void AddHeaders(IEnumerable<KeyValuePair<string, string>> parameters)
+        {
+            if (parameters == null)
+            {
+                return;
+            }
+
+            foreach (var keyValuePair in parameters)
+            {
+                Headers.Add(keyValuePair.Key, keyValuePair.Value);
+            }
+        }
+
+        public void AddQueryParameters(IEnumerable<KeyValuePair<string, string>> parameters)
+        {
+            if (parameters == null)
+            {
+                return;
+            }
+
+            foreach (var keyValuePair in parameters)
+            {
+                QueryParameters.Add(keyValuePair.Key, keyValuePair.Value);
+            }
+        }
     }
 }

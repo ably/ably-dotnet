@@ -82,7 +82,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSP4a")]
             public async Task History_WithRequestQuery_CreateGetRequestWithValidPath()
             {
-                var result = await _channel.Presence.HistoryAsync(new HistoryRequestParams());
+                var result = await _channel.Presence.HistoryAsync(new PaginatedRequestParams());
 
                 result.Should().BeOfType<PaginatedResult<PresenceMessage>>();
                 Assert.Equal(HttpMethod.Get, LastRequest.Method);
@@ -93,7 +93,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSP4")]
             public async Task History_WithRequestQuery_AddsParametersToRequest()
             {
-                var query = new HistoryRequestParams();
+                var query = new PaginatedRequestParams();
                 var now = DateTimeOffset.Now;
                 query.Start = now.AddHours(-1);
                 query.End = now;
@@ -112,7 +112,7 @@ namespace IO.Ably.Tests
             public async Task History_WithStartBeforeEnd_Throws()
             {
                 await Assert.ThrowsAsync<AblyException>(() =>
-                        _channel.Presence.HistoryAsync(new HistoryRequestParams() { Start = Now, End = Now.AddHours(-1) }));
+                        _channel.Presence.HistoryAsync(new PaginatedRequestParams() { Start = Now, End = Now.AddHours(-1) }));
             }
 
             [Fact]
@@ -140,7 +140,7 @@ namespace IO.Ably.Tests
             public async Task History_WithLimitLessThan0andMoreThan1000_ShouldThrow(int limit)
             {
                 var ex = await
-                    Assert.ThrowsAsync<AblyException>(() => _channel.Presence.HistoryAsync(new HistoryRequestParams() { Limit = limit }));
+                    Assert.ThrowsAsync<AblyException>(() => _channel.Presence.HistoryAsync(new PaginatedRequestParams() { Limit = limit }));
             }
 
             [Fact]
@@ -150,7 +150,7 @@ namespace IO.Ably.Tests
                 var channel = rest.Channels.Get("Test");
                 foreach (object[] dates in InvalidHistoryDates)
                 {
-                    var query = new HistoryRequestParams() { Start = (DateTimeOffset?)dates.First(), End = (DateTimeOffset)dates.Last() };
+                    var query = new PaginatedRequestParams() { Start = (DateTimeOffset?)dates.First(), End = (DateTimeOffset)dates.Last() };
 
                     await Assert.ThrowsAsync<AblyException>(async () => await channel.HistoryAsync(query));
                 }
@@ -182,9 +182,9 @@ namespace IO.Ably.Tests
                 var result = await channel.HistoryAsync();
 
                 // Assert
-                Assert.NotNull(result.NextDataQuery);
-                Assert.NotNull(result.CurrentQuery);
-                Assert.NotNull(result.FirstDataQuery);
+                Assert.NotNull(result.NextQueryParams);
+                Assert.NotNull(result.CurrentQueryParams);
+                Assert.NotNull(result.FirstQueryParams);
             }
 
             public GetSpecs(ITestOutputHelper output)

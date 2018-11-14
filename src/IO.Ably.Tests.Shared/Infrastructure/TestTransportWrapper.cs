@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
 using IO.Ably.Transport;
@@ -13,6 +14,8 @@ namespace IO.Ably.Tests.Infrastructure
             private readonly ITransportListener _wrappedListener;
             private readonly Action<ProtocolMessage> _afterMessage;
             private readonly MessageHandler _handler;
+
+            public List<ProtocolMessage> ProtocolMessagesReceived { get; set; } = new List<ProtocolMessage>();
 
             public TransportListenerWrapper(ITransportListener wrappedListener, Action<ProtocolMessage> afterMessage, MessageHandler handler)
             {
@@ -34,7 +37,9 @@ namespace IO.Ably.Tests.Infrastructure
 
                 try
                 {
-                    _afterMessage(_handler.ParseRealtimeData(data));
+                    var msg = _handler.ParseRealtimeData(data);
+                    ProtocolMessagesReceived.Add(msg);
+                    _afterMessage(msg);
                 }
                 catch (Exception ex)
                 {
@@ -52,6 +57,11 @@ namespace IO.Ably.Tests.Infrastructure
 
         private readonly MessageHandler _handler;
 
+        /// <summary>
+        /// A list of all protocol messages that have been received from the ably service since the transport was created
+        /// </summary>
+        public List<ProtocolMessage> ProtocolMessagesReceived => (Listener as TransportListenerWrapper)?.ProtocolMessagesReceived;
+
         public Action<ProtocolMessage> AfterDataReceived = delegate { };
 
         public Action<ProtocolMessage> MessageSent = delegate { };
@@ -66,8 +76,12 @@ namespace IO.Ably.Tests.Infrastructure
 
         public ITransportListener Listener
         {
-            get { return WrappedTransport.Listener; }
-            set { WrappedTransport.Listener = new TransportListenerWrapper(value, x => AfterDataReceived(x), _handler); }
+            get => WrappedTransport.Listener;
+            set
+            {
+                var listener = new TransportListenerWrapper(value, x => AfterDataReceived(x), _handler);
+                WrappedTransport.Listener = listener;
+            }
         }
 
         public void FakeTransportState(TransportState state, Exception ex = null)

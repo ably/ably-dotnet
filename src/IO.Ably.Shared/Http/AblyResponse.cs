@@ -46,7 +46,7 @@ namespace IO.Ably
             Type = GetResponseType(contentType);
             Encoding = encoding.IsNotEmpty() ? encoding : "utf-8";
 
-            if (Type == ResponseType.Json || Type == ResponseType.Text)
+            if (body != null && (Type == ResponseType.Json || Type == ResponseType.Text))
             {
                 TextResponse = System.Text.Encoding.GetEncoding(Encoding).GetString(body, 0, body.Length);
             }
