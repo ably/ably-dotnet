@@ -27,7 +27,8 @@ namespace IO.Ably.Transport
 
             if (message.Action != ProtocolMessage.MessageAction.Connected)
             {
-                throw new InvalidOperationException("Can only create Connection info from Connected message. Current passed: " + message.Action);
+                throw new InvalidOperationException(
+                    $"A ConnectionInfo only be created from a Connected action protocol message. A value with action '{message.Action}' was passed" );
             }
 
             ConnectionId = message.ConnectionId;

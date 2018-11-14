@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 using IO.Ably;
@@ -13,6 +14,8 @@ namespace IO.Ably
 {
     internal class AblyAuth : IAblyAuth
     {
+        public event EventHandler<AblyAuthUpdatedEventArgs> AuthUpdated;
+
         internal AblyAuth(ClientOptions options, AblyRest rest)
         {
             Now = options.NowFunc;
@@ -375,37 +378,49 @@ namespace IO.Ably
         /// <exception cref="AblyException">Throws an ably exception representing the server response</exception>
         public async Task<TokenDetails> AuthorizeAsync(TokenParams tokenParams = null, AuthOptions options = null)
         {
-            return await AuthorizeAsync(tokenParams, options, false);
-        }
-
-        internal async Task<TokenDetails> AuthorizeAsync(TokenParams tokenParams, AuthOptions options, bool force)
-        {
             var authOptions = options ?? new AuthOptions();
 
             authOptions.Merge(CurrentAuthOptions);
-            SetCurrentAuthOptions(options);
+            SetCurrentAuthOptions(authOptions);
 
             var authTokenParams = MergeTokenParamsWithDefaults(tokenParams);
             SetCurrentTokenParams(authTokenParams);
 
-            if (force)
+            CurrentToken = await RequestTokenAsync(authTokenParams, options);
+            AuthMethod = AuthMethod.Token;
+            var eventArgs = new AblyAuthUpdatedEventArgs(CurrentToken);
+            AuthUpdated?.Invoke(this, eventArgs);
+
+            // RTC8a3
+            await AuthorizeCompleted(eventArgs);
+
+            return CurrentToken;
+        }
+
+        internal async Task<bool> AuthorizeCompleted(AblyAuthUpdatedEventArgs args)
+        {
+            if (AuthUpdated == null)
             {
-                CurrentToken = await RequestTokenAsync(authTokenParams, options);
-            }
-            else if (CurrentToken != null)
-            {
-                if (Now().AddSeconds(Defaults.TokenExpireBufferInSeconds) >= CurrentToken.Expires)
-                {
-                    CurrentToken = await RequestTokenAsync(authTokenParams, options);
-                }
-            }
-            else
-            {
-                CurrentToken = await RequestTokenAsync(authTokenParams, options);
+                return true;
             }
 
-            AuthMethod = AuthMethod.Token;
-            return CurrentToken;
+            bool? completed = null;
+
+            void OnTimerElapsed()
+            {
+                if (args?.CompletedTask != null && completed.HasValue == false)
+                {
+                    args.CompletedTask.TrySetException(
+                        new AblyException($"Timeout waiting for Authorize to complete. A CONNECTED or ERROR ProtocolMessage was expected before the timeout ({Options.RealtimeRequestTimeout.TotalMilliseconds}ms) elapsed.", 40140));
+                }
+            }
+
+            var timer = new Timer(state => OnTimerElapsed(), null, (int)Options.RealtimeRequestTimeout.TotalMilliseconds, Timeout.Infinite);
+
+            completed = await args.CompletedTask.Task;
+            timer.Dispose();
+
+            return completed.Value;
         }
 
         [Obsolete("This method will be removed in the future, please replace with a call to AuthorizeAsync")]
