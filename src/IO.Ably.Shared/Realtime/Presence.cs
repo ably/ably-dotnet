@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -20,7 +21,6 @@ namespace IO.Ably.Realtime
         private readonly Handlers<PresenceMessage> _handlers = new Handlers<PresenceMessage>();
 
         private readonly IConnectionManager _connection;
-        private readonly List<QueuedPresenceMessage> _pendingPresence;
 
         private string _currentSyncChannelSerial;
         private bool _syncAsResultOfAttach;
@@ -58,12 +58,14 @@ namespace IO.Ably.Realtime
 
         internal PresenceMap InternalMap { get; }
 
+        internal ConcurrentQueue<QueuedPresenceMessage> PendingPresenceQueue { get; }
+
         internal Presence(IConnectionManager connection, RealtimeChannel channel, string cliendId, ILogger logger)
         {
             Logger = logger;
             Map = new PresenceMap(channel.Name, logger);
             InternalMap = new PresenceMap(channel.Name, logger);
-            _pendingPresence = new List<QueuedPresenceMessage>();
+            PendingPresenceQueue = new ConcurrentQueue<QueuedPresenceMessage>();
             _connection = connection;
             _connection.Connection.ConnectionStateChanged += OnConnectionStateChanged;
             _channel = channel;
@@ -306,11 +308,11 @@ namespace IO.Ably.Realtime
             switch (_channel.State)
             {
                 case ChannelState.Initialized:
+                    PendingPresenceQueue.Enqueue(new QueuedPresenceMessage(msg, callback));
                     _channel.Attach();
-                    _pendingPresence.Add(new QueuedPresenceMessage(msg, callback));
                     break;
                 case ChannelState.Attaching:
-                    _pendingPresence.Add(new QueuedPresenceMessage(msg, callback));
+                    PendingPresenceQueue.Enqueue(new QueuedPresenceMessage(msg, callback));
                     break;
                 case ChannelState.Attached:
                     var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name);
@@ -585,25 +587,27 @@ namespace IO.Ably.Realtime
 
         private void SendQueuedMessages()
         {
-            if (_pendingPresence.Count == 0)
+            if (PendingPresenceQueue.Count == 0)
             {
                 return;
             }
 
             var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, _channel.Name);
-            message.Presence = new PresenceMessage[_pendingPresence.Count];
+            message.Presence = new PresenceMessage[PendingPresenceQueue.Count];
             var callbacks = new List<Action<bool, ErrorInfo>>();
             var i = 0;
-            foreach (var presenceMessage in _pendingPresence)
+
+            while (!PendingPresenceQueue.IsEmpty)
             {
-                message.Presence[i++] = presenceMessage.Message;
-                if (presenceMessage.Callback != null)
+                if (PendingPresenceQueue.TryDequeue(out var queuedPresenceMessage))
                 {
-                    callbacks.Add(presenceMessage.Callback);
+                    message.Presence[i++] = queuedPresenceMessage.Message;
+                    if (queuedPresenceMessage.Callback != null)
+                    {
+                        callbacks.Add(queuedPresenceMessage.Callback);
+                    }
                 }
             }
-
-            _pendingPresence.Clear();
 
             _connection.Send(message, (s, e) =>
             {
@@ -616,12 +620,13 @@ namespace IO.Ably.Realtime
 
         private void FailQueuedMessages(ErrorInfo reason)
         {
-            foreach (var presenceMessage in _pendingPresence.Where(c => c.Callback != null))
+            while (!PendingPresenceQueue.IsEmpty)
             {
-                presenceMessage.Callback(false, reason);
+                if (PendingPresenceQueue.TryDequeue(out var queuedPresenceMessage))
+                {
+                    queuedPresenceMessage.Callback?.Invoke(false, reason);
+                }
             }
-
-            _pendingPresence.Clear();
         }
 
         public Task<PaginatedResult<PresenceMessage>> HistoryAsync(bool untilAttach = false)
