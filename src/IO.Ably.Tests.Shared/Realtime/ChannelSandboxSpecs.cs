@@ -9,6 +9,7 @@ using FluentAssertions;
 using IO.Ably.Encryption;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Types;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -609,6 +610,80 @@ namespace IO.Ably.Tests.Realtime
             client.Close();
         }
 
+        [Theory]
+        [InlineData(ChannelState.Detached)]
+        [InlineData(ChannelState.Failed)]
+        [InlineData(ChannelState.Suspended)]
+        [Trait("spec", "RTL11")]
+        public async Task WhenChannelEntersDetachedFailedSuspendedState_ShouldDeleteQueuedMessageAndCallbackShouldIndicateError(ChannelState state)
+        {
+            var client = await GetRealtimeClient(Defaults.Protocol, (options, settings) =>
+                {
+                    // A bogus AuthUrl will cause connection to become disconnected
+                    options.AuthUrl = new Uri("http://235424c24.fake:49999");
+
+                    // speed up the AuthUrl failure
+                    options.HttpMaxRetryCount = 1;
+                    options.HttpMaxRetryDuration = TimeSpan.FromMilliseconds(100);
+                });
+
+            var channel = client.Channels.Get("test".AddRandomSuffix());
+
+            var tsc = new TaskCompletionAwaiter(5000);
+            client.Connection.Once(ConnectionEvent.Disconnected, change =>
+            {
+                // place a message on the queue
+                channel.Publish("wibble", "wobble", (success, info) =>
+                {
+                    // expect an error
+                    tsc.Set(!success);
+                });
+
+                // setting the state should cause the queued message to be removed
+                // and the callback to indicate an error
+                (channel as RealtimeChannel).SetChannelState(state);
+            });
+
+            var result = await tsc.Task;
+            result.Should().BeTrue("publish should have failed");
+        }
+
+        [Theory]
+        [InlineData(ChannelState.Detached)]
+        [InlineData(ChannelState.Failed)]
+        [InlineData(ChannelState.Suspended)]
+        [Trait("spec", "RTL11a")]
+        public async Task WhenChannelEntersDetachedFailedSuspendedState_MessagesAwaitingAckOrNackShouldNotBeAffected(ChannelState state)
+        {
+            var client = await GetRealtimeClient(Defaults.Protocol);
+            var channel = client.Channels.Get("test".AddRandomSuffix());
+            var tsc = new TaskCompletionAwaiter(5000);
+
+            channel.Once(ChannelEvent.Attached, async x =>
+            {
+                channel.Publish("wibble", "wobble", (success, info) =>
+                {
+                    // message publish should succeed
+                    tsc.Set(success);
+                });
+
+                client.Connection.Once(ConnectionEvent.Disconnected, change =>
+                {
+                    (channel as RealtimeChannel).SetChannelState(state);
+                });
+
+                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
+                {
+                    Error = new ErrorInfo("test", 40140)
+                });
+            });
+
+            channel.Attach();
+
+            var result = await tsc.Task;
+            result.Should().BeTrue();
+        }
+
         [Fact]
         [Trait("bug", "102")]
         public async Task WhenAttachingToAChannelFromMultipleThreads_ItShouldNotThrowAnError()
@@ -616,7 +691,7 @@ namespace IO.Ably.Tests.Realtime
             Logger.LogLevel = LogLevel.Debug;
 
             var client1 = await GetRealtimeClient(Protocol.Json);
-            var channel = client1.Channels.Get("test");
+            var channel = client1.Channels.Get("test".AddRandomSuffix());
             var task = Task.Run(() => channel.Attach());
             await task.ConfigureAwait(false);
             var task2 = Task.Run(() => channel.Attach());

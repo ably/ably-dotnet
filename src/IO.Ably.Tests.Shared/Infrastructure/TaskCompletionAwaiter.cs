@@ -43,6 +43,11 @@ namespace IO.Ably.Tests.Infrastructure
             }
         }
 
+        public void Set(bool value)
+        {
+            _taskCompletionSource.TrySetResult(value);
+        }
+
         public void SetCompleted()
         {
             _taskCompletionSource.TrySetResult(true);
