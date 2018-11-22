@@ -22,8 +22,14 @@ namespace IO.Ably
             Options = options;
             _rest = rest;
             Logger = options.Logger;
+            ServerTime = () => _rest.TimeAsync();
+            ServerTimeOffset = () => null;
             Initialise();
         }
+
+        protected Func<Task<DateTimeOffset>> ServerTime { get; set; }
+
+        protected Func<DateTimeOffset?> ServerTimeOffset { get; private set; }
 
         internal Func<DateTimeOffset> Now { get; set; }
 
@@ -89,6 +95,12 @@ namespace IO.Ably
             }
 
             LogCurrentAuthenticationMethod();
+        }
+
+        private async void SetServerTimeOffset()
+        {
+            TimeSpan diff = Now() - await ServerTime();
+            ServerTimeOffset = () => Now() - diff;
         }
 
         private void SetAuthMethod()
@@ -179,12 +191,9 @@ namespace IO.Ably
                 keyValue = key.KeySecret;
             }
 
-            var @params = MergeTokenParamsWithDefaults(tokenParams);
+            var tokenParamsWithDefaults = MergeTokenParamsWithDefaults(tokenParams);
 
-            if (mergedOptions.QueryTime.GetValueOrDefault(false))
-            {
-                @params.Timestamp = await _rest.TimeAsync();
-            }
+            SetTokenParamsTimestamp(mergedOptions, tokenParamsWithDefaults);
 
             EnsureSecureConnection();
 
@@ -196,7 +205,7 @@ namespace IO.Ably
                 bool shouldCatch = true;
                 try
                 {
-                    var callbackResult = await mergedOptions.AuthCallback(@params);
+                    var callbackResult = await mergedOptions.AuthCallback(tokenParamsWithDefaults);
 
                     if (callbackResult == null)
                     {
@@ -238,7 +247,7 @@ namespace IO.Ably
             {
                 try
                 {
-                    var response = await CallAuthUrl(mergedOptions, @params);
+                    var response = await CallAuthUrl(mergedOptions, tokenParamsWithDefaults);
 
                     if (response.Type == ResponseType.Text)
                     {
@@ -275,7 +284,7 @@ namespace IO.Ably
                     throw new AblyException("TokenAuth is on but there is no way to generate one", 80019);
                 }
 
-                postData = new TokenRequest(Now).Populate(@params, keyId, keyValue);
+                postData = new TokenRequest(Now).Populate(tokenParamsWithDefaults, keyId, keyValue);
             }
 
             request.PostData = postData;
@@ -288,6 +297,20 @@ namespace IO.Ably
             }
 
             return result;
+        }
+
+        private void SetTokenParamsTimestamp(AuthOptions mergedOptions, TokenParams tokenParamsWithDefaults)
+        {
+            if (mergedOptions.QueryTime.GetValueOrDefault(false)
+                && !ServerTimeOffset().HasValue)
+            {
+                SetServerTimeOffset();
+            }
+
+            if (!tokenParamsWithDefaults.Timestamp.HasValue)
+            {
+                tokenParamsWithDefaults.Timestamp = ServerTimeOffset();
+            }
         }
 
         private static TokenRequest GetTokenRequest(object callbackResult)
@@ -461,15 +484,12 @@ namespace IO.Ably
                 throw new AblyException("No key specified", 40101, HttpStatusCode.Unauthorized);
             }
 
-            var @params = MergeTokenParamsWithDefaults(tokenParams);
+            var tokenParamsWithDefaults = MergeTokenParamsWithDefaults(tokenParams);
 
-            if (mergedOptions.QueryTime.GetValueOrDefault(false))
-            {
-                @params.Timestamp = await _rest.TimeAsync();
-            }
+            SetTokenParamsTimestamp(mergedOptions, tokenParamsWithDefaults);
 
             ApiKey key = mergedOptions.ParseKey();
-            var request = new TokenRequest(Now).Populate(@params, key.KeyName, key.KeySecret);
+            var request = new TokenRequest(Now).Populate(tokenParamsWithDefaults, key.KeyName, key.KeySecret);
             return JsonHelper.Serialize(request);
         }
 

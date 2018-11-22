@@ -240,7 +240,7 @@ namespace IO.Ably.Tests.Realtime
                     ClientId = clientId
                 });
                 newToken.Should().NotBeNull();
-                channel.Once(ChannelState.Failed, state =>
+                channel.Once(ChannelEvent.Failed, state =>
                 {
                     state.Error.Code.Should().Be(40160);
                     state.Error.Message.Should().Contain("Channel denied access");

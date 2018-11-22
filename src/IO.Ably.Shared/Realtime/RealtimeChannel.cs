@@ -139,10 +139,6 @@ namespace IO.Ably.Realtime
                     }
 
                     break;
-                case ConnectionState.Disconnected:
-                    AttachedAwaiter.Fail(new ErrorInfo("Connection is Disconnected"));
-                    DetachedAwaiter.Fail(new ErrorInfo("Connection is closed"));
-                    break;
                 case ConnectionState.Closed:
                     AttachedAwaiter.Fail(new ErrorInfo("Connection is closed"));
                     DetachedAwaiter.Fail(new ErrorInfo("Connection is closed"));

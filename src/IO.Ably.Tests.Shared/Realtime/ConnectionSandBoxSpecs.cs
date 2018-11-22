@@ -1158,62 +1158,6 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.ConnectionStateTtl.Should().Be(TimeSpan.MaxValue);
         }
 
-        [Theory]
-        [ProtocolData]
-        [Trait("spec", "RTN24")]
-        [Trait("spec", "RTN21")]
-        [Trait("spec", "RTN4h")]
-        public async Task WhenConnectedMessageReceived_ShouldEmitUpdate(Protocol protocol)
-        {
-            var updateAwaiter = new TaskCompletionAwaiter(5000);
-            var client = await GetRealtimeClient(protocol, (options, settings) =>
-            {
-                options.UseTokenAuth = true;
-            });
-
-            await client.WaitForState(ConnectionState.Connected);
-
-            client.Connection.ConnectionStateTtl.Should().NotBe(TimeSpan.MaxValue);
-
-            var key = client.Connection.Key;
-
-            client.Connection.Once(state =>
-            {
-                // RTN4h - can emit UPDATE event
-                if (state.Event == ConnectionEvent.Update)
-                {
-                    // should have both previous and current attributes set to CONNECTED
-                    state.Current.Should().Be(ConnectionState.Connected);
-                    state.Previous.Should().Be(ConnectionState.Connected);
-                    state.Reason.Message = "fake-error";
-                    updateAwaiter.SetCompleted();
-                }
-                else
-                {
-                    throw new Exception($"'{state.Event}' was handled. Only an 'Update' event should have occured");
-                }
-            });
-
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
-            {
-                ConnectionDetails = new ConnectionDetails
-                {
-                    ConnectionKey = "key",
-                    ClientId = "RTN21",
-                    ConnectionStateTtl = TimeSpan.MaxValue
-                },
-                Error = new ErrorInfo("fake-error")
-            });
-
-            var didUpdate = await updateAwaiter.Task;
-            didUpdate.Should().BeTrue();
-
-            // RTN21 - new connection details over write old values
-            client.Connection.Key.Should().NotBe(key);
-            client.ClientId.Should().Be("RTN21");
-            client.Connection.ConnectionStateTtl.Should().Be(TimeSpan.MaxValue);
-        }
-
         public ConnectionSandboxOperatingSystemEventsForNetworkSpecs(
             AblySandboxFixture fixture,
             ITestOutputHelper output)
