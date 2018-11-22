@@ -98,6 +98,7 @@ namespace IO.Ably.Transport
 
         public void Connect()
         {
+            Connection.OnBeginConnect();
             State.Connect();
         }
 
@@ -116,30 +117,34 @@ namespace IO.Ably.Transport
                 {
                     lock (_stateSyncLock)
                     {
-                        if (State.State == newState.State)
+                        if (!newState.IsUpdate)
                         {
-                            if (Logger.IsDebug)
+                            if (State.State == newState.State)
                             {
-                                Logger.Debug($"xx State is already {State.State}. Skipping SetState action.");
+                                if (Logger.IsDebug)
+                                {
+                                    Logger.Debug($"xx State is already {State.State}. Skipping SetState action.");
+                                }
+
+                                return;
                             }
 
-                            return;
+                            AttemptsInfo.UpdateAttemptState(newState);
+                            State.AbortTimer();
                         }
 
-                        // Abort any timers on the old state
-                        State.AbortTimer();
                         if (Logger.IsDebug)
                         {
                             Logger.Debug($"xx {newState.State}: BeforeTransition");
                         }
 
                         newState.BeforeTransition();
+
                         if (Logger.IsDebug)
                         {
                             Logger.Debug($"xx {newState.State}: BeforeTransition end");
                         }
 
-                        AttemptsInfo.UpdateAttemptState(newState);
                         Connection.UpdateState(newState);
                     }
 
@@ -277,9 +282,7 @@ namespace IO.Ably.Transport
             {
                 if (ShouldWeRenewToken(error))
                 {
-                    ClearTokenAndRecordRetry();
-                    await SetState(new ConnectionDisconnectedState(this, Logger), skipAttach: ConnectionState == Realtime.ConnectionState.Connecting);
-                    await SetState(new ConnectionConnectingState(this, Logger));
+                    await RetryAuthentication();
                 }
                 else
                 {
@@ -290,6 +293,13 @@ namespace IO.Ably.Transport
             }
 
             return false;
+        }
+
+        public async Task RetryAuthentication()
+        {
+            ClearTokenAndRecordRetry();
+            await SetState(new ConnectionDisconnectedState(this, Logger), skipAttach: ConnectionState == Realtime.ConnectionState.Connecting);
+            await SetState(new ConnectionConnectingState(this, Logger));
         }
 
         public void CloseConnection()
@@ -581,6 +591,66 @@ namespace IO.Ably.Transport
                     }
 
                     break;
+            }
+        }
+
+        public void OnAuthUpdated(object sender, AblyAuthUpdatedEventArgs args)
+        {
+            if (State.State == ConnectionState.Connected)
+            {
+                /* (RTC8a) If the connection is in the CONNECTED state and
+                 * auth.authorize is called or Ably requests a re-authentication
+                 * (see RTN22), the client must obtain a new token, then send an
+                 * AUTH ProtocolMessage to Ably with an auth attribute
+                 * containing an AuthDetails object with the token string. */
+                try
+                {
+                    /* (RTC8a3) The authorize call should be indicated as completed
+                     * with the new token or error only once realtime has responded
+                     * to the AUTH with either a CONNECTED or ERROR respectively. */
+
+                    // an ERROR protocol message will fail the connection
+                    void OnFailed(object o, ConnectionStateChange change)
+                    {
+                        if (change.Current == ConnectionState.Failed)
+                        {
+                            Connection.InternalStateChanged -= OnFailed;
+                            Connection.InternalStateChanged -= OnConnected;
+                            args.CompleteAuthorization(false);
+                        }
+                    }
+
+                    void OnConnected(object o, ConnectionStateChange change)
+                    {
+                        if (change.Current == ConnectionState.Connected)
+                        {
+                            Connection.InternalStateChanged -= OnFailed;
+                            Connection.InternalStateChanged -= OnConnected;
+                            args.CompleteAuthorization(true);
+                        }
+                    }
+
+                    Connection.InternalStateChanged += OnFailed;
+                    Connection.InternalStateChanged += OnConnected;
+
+                    var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Auth)
+                    {
+                        Auth = new AuthDetails { AccessToken = args.Token.Token }
+                    };
+
+                    Send(msg);
+                }
+                catch (AblyException e)
+                {
+                    Logger.Warning("OnAuthUpdated: closing transport after send failure");
+                    Logger.Debug(e.Message);
+                    Transport?.Close();
+                }
+            }
+            else
+            {
+                args.CompletedTask.TrySetResult(true);
+                Connect();
             }
         }
     }

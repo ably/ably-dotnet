@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AblyAuth.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AblyAuthUpdatedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AblyException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AblyRealtime.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AblyRest.cs" />
@@ -20,6 +21,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.GetParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.QueuedPresenceMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\PresenceMap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transport\IConnectionContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\AuthDetails.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthMethod.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthOptions.cs" />

@@ -16,62 +16,6 @@ namespace IO.Ably.Tests.AuthTests
             client.AblyAuth.CurrentToken.Should().BeNull();
         }
 
-        /*
-         * (RSA10a) Instructs the library to create a token immediately and ensures Token Auth is used for all future requests.
-         * See RTC8 for re-authentication behaviour when called for a realtime client
-         */
-
-        [Fact]
-        [Trait("spec", "RSA10a")]
-        public async Task Authorize_WithNotExpiredCurrentTokenAndForceFalse_ReturnsCurrentToken()
-        {
-            // create a fake token that has not expired
-            var dummyTokenDetails = new TokenDetails() { Expires = TestHelpers.Now().AddHours(1) };
-
-            // create new reset client using the dummyTokenDetails
-            var client = GetRestClient(null, opts => { opts.TokenDetails = dummyTokenDetails; });
-
-            // get the current token
-            var newTokenDetails = client.AblyAuth.CurrentToken;
-
-            // new token should match the dummy token
-            newTokenDetails.Should().BeSameAs(dummyTokenDetails);
-
-            // authorise again
-            var sameTokenDetails = await client.Auth.AuthorizeAsync();
-
-            // the same token should be returned
-            client.AblyAuth.CurrentToken.Should().BeSameAs(sameTokenDetails);
-            client.AblyAuth.CurrentToken.Should().Be(newTokenDetails);
-        }
-
-        [Fact]
-        [Trait("spec", "RSA10a")]
-        public async Task Authorize_WithNotExpiredCurrentTokenAndForceTrue_ReturnsNewToken()
-        {
-            // create a fake token that has not expired
-            var dummyTokenDetails = new TokenDetails() { Expires = TestHelpers.Now().AddHours(1) };
-
-            // create new reset client using the dummyTokenDetails
-            var client = GetRestClient(null, opts =>
-            {
-                opts.TokenDetails = dummyTokenDetails;
-            });
-
-            // get the current token
-            var currentToken = client.AblyAuth.CurrentToken;
-
-            // new token should match the dummy token
-            currentToken.Should().BeSameAs(dummyTokenDetails);
-
-            // authorise again, this should force a new token
-            var newToken = await client.Auth.AuthorizeAsync();
-
-            // A different token should be returned
-            client.AblyAuth.CurrentToken.Should().Be(currentToken);
-            client.AblyAuth.CurrentToken.Should().BeSameAs(newToken);
-        }
-
         [Fact]
         [Trait("spec", "RSA10a")]
         [Trait("spec", "RSA10f")]
@@ -95,30 +39,6 @@ namespace IO.Ably.Tests.AuthTests
             var data = LastRequest.PostData as TokenRequest;
             client.AblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(tokenParams);
             data.Ttl.Should().Be(TimeSpan.FromMinutes(260));
-        }
-
-        [Theory]
-        [InlineData(Defaults.TokenExpireBufferInSeconds + 1, false)]
-        [InlineData(Defaults.TokenExpireBufferInSeconds, true)]
-        [InlineData(Defaults.TokenExpireBufferInSeconds - 1, true)]
-        [Trait("spec", "RSA10c")]
-        public async Task Authorize_WithTokenExpiringIn15Seconds_RenewsToken(int secondsLeftToExpire, bool shouldRenew)
-        {
-            var client = GetRestClient();
-            var initialToken = new TokenDetails() { Expires = Now.AddSeconds(secondsLeftToExpire) };
-            client.AblyAuth.CurrentToken = initialToken;
-
-            var token = await client.Auth.AuthorizeAsync();
-
-            if (shouldRenew)
-            {
-                Assert.Contains("requestToken", LastRequest.Url);
-                token.Should().NotBeSameAs(initialToken);
-            }
-            else
-            {
-                token.Should().BeSameAs(initialToken);
-            }
         }
 
         [Fact]

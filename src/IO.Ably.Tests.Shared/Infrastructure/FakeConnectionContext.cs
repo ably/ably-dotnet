@@ -147,6 +147,11 @@ namespace IO.Ably.Tests
             return RetryFunc(error);
         }
 
+        public Task RetryAuthentication()
+        {
+            throw new NotImplementedException();
+        }
+
         public void CloseConnection()
         {
             CloseConnectionCalled = true;

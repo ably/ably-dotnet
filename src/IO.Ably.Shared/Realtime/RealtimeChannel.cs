@@ -93,15 +93,36 @@ namespace IO.Ably.Realtime
 
         private void SubscribeToConnectionEvents()
         {
-            ConnectionManager.Connection.InternalStateChanged += OnConnectionInternalStateChanged;
+            ConnectionManager.Connection.BeginConnect += ConnectionOnBeginConnect;
+            ConnectionManager.Connection.InternalStateChanged += InternalOnInternalStateChanged;
         }
 
-        internal void OnConnectionInternalStateChanged(object sender, ConnectionStateChange connectionStateChange)
+        private void UnSubscribeFromConnectionEvents()
+        {
+            ConnectionManager.Connection.BeginConnect -= ConnectionOnBeginConnect;
+            ConnectionManager.Connection.InternalStateChanged -= InternalOnInternalStateChanged;
+        }
+
+        private void ConnectionOnBeginConnect(object sender, EventArgs e)
+        {
+            switch (ConnectionState)
+            {
+                case ConnectionState.Failed:
+                    /* (RTN11d)
+                     * If the [Connection] state is FAILED,
+                     * transitions all the channels to INITIALIZED */
+                    SetChannelState(ChannelState.Initialized);
+                    break;
+            }
+        }
+
+        internal void InternalOnInternalStateChanged(object sender, ConnectionStateChange connectionStateChange)
         {
             switch (connectionStateChange.Current)
             {
-                case ConnectionState.Connected:
-                    if (State == ChannelState.Suspended || State == ChannelState.Attaching)
+                // case ConnectionState.Connected:
+                case ConnectionState.Disconnected:
+                    if (State == ChannelState.Attaching)
                     {
                         if (AttachedAwaiter.StartWait(null, ConnectionManager.Options.RealtimeRequestTimeout))
                         {
@@ -368,6 +389,7 @@ namespace IO.Ably.Realtime
             DetachedAwaiter?.Dispose();
             _handlers.RemoveAll();
             Presence?.Dispose();
+            UnSubscribeFromConnectionEvents();
         }
 
         internal void AddUntilAttachParameter(PaginatedRequestParams query)
@@ -520,7 +542,7 @@ namespace IO.Ably.Realtime
                             /* RTP1 If [HAS_PRESENCE] flag is 0 or there is no flags field,
                              * the presence map should be considered in sync immediately
                              * with no members present on the channel */
-                            Presence.SkipSync();
+                    Presence.SkipSync();
                         }
 
                         AttachedSerial = protocolMessage.ChannelSerial;

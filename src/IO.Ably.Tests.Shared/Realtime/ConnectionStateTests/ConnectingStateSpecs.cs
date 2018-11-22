@@ -107,7 +107,8 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public async Task WithHandlesInboundErrorMessage_GoesToDisconnected()
+        [Trait("spec", "RTN14g")]
+        public async Task WithInboundErrorMessage_WhenNotTokenErrorAndChannelsEmpty_GoesToFailed()
         {
             // Arrange
             _context.Transport = GetConnectedTrasport();
@@ -118,7 +119,7 @@ namespace IO.Ably.Tests
             bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError });
 
             // Assert
-            _context.LastSetState.Should().BeOfType<ConnectionDisconnectedState>();
+            _context.LastSetState.Should().BeOfType<ConnectionFailedState>();
         }
 
         [Fact]

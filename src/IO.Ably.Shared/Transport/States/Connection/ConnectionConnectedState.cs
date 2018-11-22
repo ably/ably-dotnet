@@ -32,6 +32,12 @@ namespace IO.Ably.Transport.States.Connection
         {
             switch (message.Action)
             {
+                case ProtocolMessage.MessageAction.Auth:
+                    await Context.RetryAuthentication();
+                    return true;
+                case ProtocolMessage.MessageAction.Connected:
+                    await Context.SetState(new ConnectionConnectedState(Context, new ConnectionInfo(message), message.Error, Logger) { IsUpdate = true });
+                    return true;
                 case ProtocolMessage.MessageAction.Close:
                     await Context.SetState(new ConnectionClosedState(Context, message.Error, Logger));
                     return true;
@@ -50,7 +56,13 @@ namespace IO.Ably.Transport.States.Connection
                     await Context.SetState(new ConnectionDisconnectedState(Context, message.Error, Logger));
                     return true;
                 case ProtocolMessage.MessageAction.Error:
-                    await Context.SetState(new ConnectionFailedState(Context, message.Error, Logger));
+                    // an error message may signify an error state in the connection or in a channel
+                    // Only handle connection errors here.
+                    if (message.Channel.IsEmpty())
+                    {
+                        await Context.SetState(new ConnectionFailedState(Context, message.Error, Logger));
+                    }
+
                     return true;
             }
 
