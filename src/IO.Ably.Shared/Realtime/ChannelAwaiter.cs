@@ -17,7 +17,9 @@ namespace IO.Ably.Realtime
         private readonly RealtimeChannel _channel;
         private readonly ChannelState _awaitedState;
         private readonly List<Action<bool, ErrorInfo>> _callbacks = new List<Action<bool, ErrorInfo>>();
+
         private bool _waiting;
+
         private readonly CountdownTimer _timer;
         private readonly string _name;
         private object _lock = new object();
@@ -36,18 +38,22 @@ namespace IO.Ably.Realtime
 
         public void Fail(ErrorInfo error)
         {
+            Complete(false, error);
+        }
+
+        private void Complete(bool success, ErrorInfo error = null)
+        {
             lock (_lock)
             {
-                if (_waiting == false)
-                {
-                    return;
-                }
-
-                _timer.Abort();
+                _timer?.Abort();
+                if (_waiting == false) return;
                 _waiting = false;
             }
 
-            InvokeCallbacks(false, error);
+            if (error != null)
+            {
+                InvokeCallbacks(success, error);
+            }
         }
 
         private void InvokeCallbacks(bool success, ErrorInfo error)
@@ -147,11 +153,7 @@ namespace IO.Ably.Realtime
 
             if (args.Current == _awaitedState)
             {
-                lock (_lock)
-                {
-                    _waiting = false;
-                }
-
+                Complete(true);
                 InvokeCallbacks(true, null);
             }
         }

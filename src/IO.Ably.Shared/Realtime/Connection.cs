@@ -48,6 +48,7 @@ namespace IO.Ably.Realtime
             OsEventSubscribers.Add(new WeakReference<Action<NetworkState>>(stateAction));
         }
 
+
         internal AblyRest RestClient => RealtimeClient.RestClient;
 
         internal AblyRealtime RealtimeClient { get; }
@@ -66,7 +67,7 @@ namespace IO.Ably.Realtime
             : base(logger)
         {
             Now = nowFunc;
-            FallbackHosts = Defaults.FallbackHosts.Shuffle().ToList();
+            FallbackHosts = realtimeClient?.Options?.FallbackHosts.Shuffle().ToList();
             RealtimeClient = realtimeClient;
             RegisterWithOSNetworkStateEvents(HandleNetworkStateChange);
         }

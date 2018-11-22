@@ -25,6 +25,10 @@ namespace IO.Ably
 
         public bool IsDefaultHost { get; set; } = true;
 
+        internal string[] FallbackHosts { get; set; }
+
+        internal bool FallbackHostsUseDefault { get; set; }
+
         internal Func<DateTimeOffset> NowFunc { get; set; }
 
         public ILogger Logger { get; set; }
@@ -41,6 +45,8 @@ namespace IO.Ably
             HttpRequestTimeout = TimeSpan.FromSeconds(15);
             HttpMaxRetryCount = 3;
             HttpMaxRetryDuration = TimeSpan.FromSeconds(10);
+            FallbackHosts = Defaults.FallbackHosts;
+            FallbackHostsUseDefault = false;
 
             NowFunc = Defaults.NowFunc();
             Logger = IO.Ably.DefaultLogger.LoggerInstance;
@@ -58,6 +64,8 @@ namespace IO.Ably
             HttpRequestTimeout = options.HttpRequestTimeout;
             HttpMaxRetryCount = options.IsDefaultRestHost ? options.HttpMaxRetryCount : 1;
             HttpMaxRetryDuration = options.HttpMaxRetryDuration;
+            FallbackHosts = options.FallbackHosts;
+            FallbackHostsUseDefault = options.FallbackHostsUseDefault;
 
             NowFunc = options.NowFunc;
             Logger = options.Logger;

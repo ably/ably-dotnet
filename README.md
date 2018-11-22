@@ -1,8 +1,26 @@
 # ably-dotnet
 
-A .Net client library for [www.ably.io](https://www.ably.io), the realtime messaging service.
+A .NET client library for [www.ably.io](https://www.ably.io), the realtime messaging service.
 
-For complete API documentation, see the [ably documentation](https://www.ably.io/documentation).
+## Supported platforms
+
+* .NET 4.6+ &ast;
+* .NET Core &ast;&ast;
+* .NET Standard 1.4+
+* Mono 5.4+
+* UWP
+* [Xamarin.Android 8.0+](https://developer.xamarin.com/releases/android/xamarin.android_8/xamarin.android_8.0/)
+* [Xamarin.iOS 11.4+](https://developer.xamarin.com/releases/ios/xamarin.ios_11/xamarin.ios_11.4/)
+
+Unity is not officially supported yet, but some users have had some successes. See this [issue](https://github.com/ably/ably-dotnet/issues/169) for more information.
+
+A portable class library (PCL) version is not available. See [this comment](https://github.com/ably/ably-dotnet/issues/182#issuecomment-366939087) for more information on this choice and the potential workarounds that are available. 
+
+&ast; To target Windows 7 (with .Net 4.6) a custom [ITransportFactory](https://github.com/ably/ably-dotnet/blob/master/src/IO.Ably.Shared/Transport/ITransport.cs) will need to be implemented in your project that uses an alternate Web Socket library. 
+This is because [System.Net.WebSockets]('https://msdn.microsoft.com/en-us/library/system.net.websockets(v=vs.110).aspx') is not fully implementented on Windows 7.
+See [this repository](https://github.com/ably-forks/ably-dotnet-alternative-transports) for a working example using the [websocket4net library](https://github.com/kerryjiang/WebSocket4Net).
+
+&ast;&ast; We regression-test the library against .NET Core 2 but it is designed to be compatible with all versions of .NET Core (and any other runtime implementation that is compatible with .NET Standard 1.4 or greater). If you find any compatibility issues, please do [raise an issue](https://github.com/ably/ably-dotnet/issues) in this repository or contact Ably customer support for advice. Any known runtime incompatibilities can be found [here](https://github.com/ably/ably-dotnet/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
 
 ## Documentation
 
@@ -260,15 +278,25 @@ foreach (var presenceMessage in nextPage.Items)
 }
 ```
 
-### Generate a Token
+### Using the AuthCallback
 
-Tokens are issued by Ably and are readily usable by any client to connect to Ably:
+A callback to obtain a signed `TokenRequest` string or a `TokenDetails` instance.
+
+To use `AuthCallback` create a `ClientOptions` instance and assign an appropriate delegate to the `AuthCallback` property and pass the `ClientOptions` to a new `AblyRealtime` instance.
 
 ```csharp
-var token = await client.Auth.RequestTokenAsync();
-var tokenString = token.Token; // "xVLyHw.CLchevH3hF....MDh9ZC_Q"
-var tokenClient = new AblyRest(new ClientOptions { TokenDetails = token });
+var options = new ClientOptions
+{
+    AuthCallback = async tokenParams =>
+    {
+        // Return a TokenDetails instance or a preferably a TokenRequest string.
+        // Typically this method would wrap a request to your web server.
+        return await GetTokenDetailsOrTokenRequestStringFromYourServer();        
+    }
+};
+var client = new AblyRealtime(options);
 ```
+
 ### Generate a TokenRequest
 
 Token requests are issued by your servers and signed using your private API key. This is the preferred method of authentication as no secrets are ever shared, and the token request can be issued to trusted clients without communicating with Ably.
@@ -308,20 +336,6 @@ DateTimeOffset time = await client.TimeAsync();
 This library has dependencies that can differ depending on the target platform.
 See [the nuget page](http://nuget.org/packages/ably.io/) for specifics.
 
-## Supported platforms
-
-* Xamarin iOS and Android 
-* .Net 4.6+ *
-* .Net Standard 1.4+
-* Mono
-* UWP
-
-A portable (PCL) version is not available.
-
-*To target Windows 7 (with .Net 4.6) a custom [ITransportFactory](https://github.com/ably/ably-dotnet/blob/master/src/IO.Ably.Shared/Transport/ITransport.cs) will need to be implemented in your project that uses an alternate Web Socket library. 
-This is because [System.Net.WebSockets]('https://msdn.microsoft.com/en-us/library/system.net.websockets(v=vs.110).aspx') is not fully implementented on Windows 7.
-See [this repository](https://github.com/ably-forks/ably-dotnet-alternative-transports) for a working example using the [websocket4net library](https://github.com/kerryjiang/WebSocket4Net).
-
 ## Support, feedback and troubleshooting
 
 Please visit http://support.ably.io/ for access to our knowledgebase and to ask for any assistance.
@@ -351,14 +365,14 @@ Running `package.ps1` will run the build script and create a nuget package.
 
 This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
 
-* Update the version number in [GitVersion.yml](./GetVersion.yml)* and commit the change.
+* Update the version number in [GitVersion.yml](./GetVersion.yml)&dagger; and commit the change.
 * Run [`github_changelog_generator`](https://github.com/skywinder/Github-Changelog-Generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). Once the `CHANGELOG` update has completed, manually change the `Unreleased` heading and link with the current version number such as `v1.0.0`. Also ensure that the `Full Changelog` link points to the new version tag instead of the `HEAD`. Commit this change.
 * Add a tag for the version and push to origin such as `git tag 1.0.0 && git push origin 1.0.0`. For beta versions the version string should be `Maj.Min.Patch-betaN`, e.g `1.0.0-beta1`
 * Visit [https://github.com/ably/ably-dotnet/tags](https://github.com/ably/ably-dotnet/tags) and `Add release notes` for the release including links to the changelog entry.
 * Run `package.ps1` to create the nuget package. 
 * Run `nuget push ably.io.*.nupkg -Source https://www.nuget.org/api/v2/package` (a private nuget API Key is required to complete this step, more information on publishing nuget packages can be found [here](https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package))
 
-*GitVersion is required, see the preceeding section 'Building and Packaging' for more information.
+&dagger; GitVersion is required, see the preceeding section 'Building and Packaging' for more information.
 
 ## License
 

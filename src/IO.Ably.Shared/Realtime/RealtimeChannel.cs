@@ -466,38 +466,33 @@ namespace IO.Ably.Realtime
                 channelEvent = (ChannelEvent) state;
             }
 
-
             var channelStateChange = new ChannelStateChange(state, State, error, protocolMessage != null && protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed));
             HandleStateChange(state, error, protocolMessage);
             InternalStateChanged.Invoke(this, channelStateChange);
 
             // Notify external client using the thread they subscribe on
             RealtimeClient.NotifyExternalClients(() =>
+            {
+                try
                 {
-                    try
-                    {
-                        StateChanged.Invoke(this, channelStateChange);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Error($"Error notifying event handlers for state change: {state}", ex);
-                    }
+                    StateChanged.Invoke(this, channelStateChange);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"Error notifying event handlers for state change: {state}", ex);
+                }
 
-                    Emit(channelEvent, channelStateChange);
-                });
-        }
-
-        /// <summary>
-        /// Emits an <see cref="ChannelEvent.Update"/> if the current channel state is <see cref="ChannelState.Attached"/>
-        /// </summary>
-        /// <param name="protocolMessage"></param>
-        internal void EmitUpdate(ChannelState state, ProtocolMessage protocolMessage)
-        {
-            SetChannelState(State, protocolMessage.Error, protocolMessage, emitUpdate: true);
+                Emit(channelEvent, channelStateChange);
+            });
         }
 
         private void HandleStateChange(ChannelState state, ErrorInfo error, ProtocolMessage protocolMessage)
         {
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"HandleStateChange state change: {state}");
+            }
+
             State = state;
 
             switch (state)
@@ -521,7 +516,6 @@ namespace IO.Ably.Realtime
 
                     break;
                 case ChannelState.Attached:
-
                     if (protocolMessage != null)
                     {
                         if (protocolMessage.HasFlag(ProtocolMessage.Flag.HasPresence))
@@ -678,6 +672,15 @@ namespace IO.Ably.Realtime
             {
                 Emit(ChannelEvent.Update, new ChannelStateChange(State, State, errorInfo, resumed));
             }
+        }
+
+        /// <summary>
+        /// Emits an <see cref="ChannelEvent.Update"/> if the current channel state is <see cref="ChannelState.Attached"/>
+        /// </summary>
+        /// <param name="protocolMessage"></param>
+        internal void EmitUpdate(ChannelState state, ProtocolMessage protocolMessage)
+        {
+            SetChannelState(State, protocolMessage.Error, protocolMessage, emitUpdate: true);
         }
     }
 }

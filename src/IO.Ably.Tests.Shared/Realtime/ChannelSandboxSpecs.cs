@@ -815,6 +815,31 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("issue", "205")]
+        public async Task ShouldReturnToPreviousStateIfAttachMessageNotReceivedWithinDefaultTimeout2(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            client.Options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(2000);
+            bool? didAttach = null;
+            var channel = (RealtimeChannel)client.Channels.Get("test-issue#205".AddRandomSuffix());
+            channel.Attach((b, info) =>
+            {
+                didAttach = b;
+                if (info != null)
+                {
+                    throw new Exception($"Attach returned an error: {info.Message}");
+                }
+            });
+            await Task.Delay(1000);
+            didAttach.Should().BeTrue();
+            channel.InternalStateChanged += (sender, change) => throw new AblyException(change.Error);
+            channel.State.Should().Be(ChannelState.Attached);
+            await Task.Delay(3000);
+            channel.State.Should().Be(ChannelState.Attached);
+        }
+
+        [Theory]
+        [ProtocolData]
         public async Task WhenAttachAsyncCalledAfterSubscribe_ShouldWaitUntilChannelIsAttached(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
