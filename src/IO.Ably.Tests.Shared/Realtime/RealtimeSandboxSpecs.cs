@@ -50,8 +50,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTC8a1")]
         [Trait("spec", "RTC8a2")]
         [Trait("spec", "RTC8a3")]
-        public async Task WithConnectedClient_AuthorizeObtainsNewTokenAndUpgradesConnection_AndShouldEmitUpdate(
-            Protocol protocol)
+        public async Task WithConnectedClient_AuthorizeObtainsNewTokenAndUpgradesConnection_AndShouldEmitUpdate(Protocol protocol)
         {
             var validClientId1 = "RTC8";
             var invalidClientId = "RTC8-incompatible-clientId";
@@ -65,7 +64,7 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.On(ConnectionEvent.Update, args => { awaiter.SetCompleted(); });
             await client.WaitForState(ConnectionState.Connected);
 
-            var tokenDetails = await client.Auth.AuthorizeAsync(new TokenParams {ClientId = validClientId1});
+            var tokenDetails = await client.Auth.AuthorizeAsync(new TokenParams { ClientId = validClientId1 });
             tokenDetails.ClientId.Should().Be(validClientId1);
             client.Connection.State.Should().Be(ConnectionState.Connected);
             client.RestClient.AblyAuth.CurrentToken.Should().Be(tokenDetails);
@@ -101,13 +100,13 @@ namespace IO.Ably.Tests.Realtime
 
             // internally AblyAuth.AuthorizeCompleted is used to indicate when an Authorize call is finished
             // AuthorizeCompleted should timeout if no valid response (CONNECTED or ERROR) is received from Ably
-            var auth = new AblyAuth(client.Options, client.RestClient);
+            var auth = client.RestClient.AblyAuth;
             auth.Options.RealtimeRequestTimeout = TimeSpan.FromSeconds(1);
             var authEventArgs = new AblyAuthUpdatedEventArgs();
             try
             {
                 var result = await auth.AuthorizeCompleted(authEventArgs);
-                result.Should().BeFalse();
+                result.Should().BeFalse("AuthorizeCompleted should timeout");
                 throw new Exception("AuthorizeCompleted did not raise an exception.");
             }
             catch (AblyException e)
