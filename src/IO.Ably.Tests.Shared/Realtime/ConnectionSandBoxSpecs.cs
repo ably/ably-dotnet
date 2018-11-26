@@ -795,38 +795,49 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN19b")]
-        public async Task WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed(
-                Protocol protocol)
+        public async Task WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed(Protocol protocol)
         {
-            var client = await GetRealtimeClient(protocol, (opts, _) =>
-            {
-                opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(100);
-            });
-
+            var channelName = "test-channel".AddRandomSuffix();
             var sentMessages = new List<ProtocolMessage>();
-            client.SetOnTransportCreated(wrapper =>
+            Logger.LogLevel = LogLevel.Debug;
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
-                wrapper.MessageSent = sentMessages.Add;
+                options.TransportFactory = new TestTransportFactory()
+                {
+                    OnMessageSent = sentMessages.Add
+                };
             });
 
-            var channel = client.Channels.Get("test");
-            channel.Once(ChannelEvent.Attaching, change =>
-            {
-                client.GetTestTransport().Close(true);
-            });
-            await channel.AttachAsync();
             await client.WaitForState(ConnectionState.Connected);
 
-            var tsc = new TaskCompletionAwaiter();
-            channel.On(channelStateChange =>
+            var transport = client.GetTestTransport();
+            transport.MessageSent = sentMessages.Add;
+
+            var channel = client.Channels.Get(channelName);
+            channel.Once(ChannelEvent.Attaching, change =>
             {
-                tsc.SetCompleted();
+                transport.Close(false);
+            });
+            channel.Attach();
+            await channel.WaitForState(ChannelState.Attaching);
+            bool didDisconnect = false;
+            client.Connection.Once(ConnectionEvent.Disconnected, change =>
+            {
+                didDisconnect = true;
+                sentMessages.Count(x => x.Channel == channelName && x.Action == ProtocolMessage.MessageAction.Attach).Should().Be(1);
             });
 
-            await channel.AttachAsync();
-            await tsc.Task;
+            await client.WaitForState(ConnectionState.Disconnected);
+            await client.WaitForState(ConnectionState.Connecting);
+            await client.WaitForState(ConnectionState.Connected);
 
-            sentMessages.Where(s => s.Action == ProtocolMessage.MessageAction.Attach).Should().HaveCount(2);
+            client.Connection.State.Should().Be(ConnectionState.Connected);
+            didDisconnect.Should().BeTrue();
+
+            await channel.WaitForState(ChannelState.Attached);
+
+            var attachCount = sentMessages.Count(x => x.Channel == channelName && x.Action == ProtocolMessage.MessageAction.Attach);
+            attachCount.Should().Be(2);
 
             client.Close();
         }
@@ -836,36 +847,48 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN19b")]
         public async Task WithChannelInDetachingState_WhenTransportIsDisconnected_ShouldResendDetachMessageOnConnectionResumed(Protocol protocol)
         {
-            var client = await GetRealtimeClient(protocol, (opts, _) =>
-            {
-                opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(100);
-            });
-
+            var channelName = "test-channel".AddRandomSuffix();
             var sentMessages = new List<ProtocolMessage>();
-            client.SetOnTransportCreated(wrapper =>
+            Logger.LogLevel = LogLevel.Debug;
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
-                wrapper.MessageSent = sentMessages.Add;
+                options.TransportFactory = new TestTransportFactory()
+                {
+                    OnMessageSent = sentMessages.Add
+                };
             });
 
-            var channel = client.Channels.Get("test");
-            await channel.AttachAsync();
-            channel.Once(ChannelEvent.Detaching, change =>
-            {
-                client.GetTestTransport().Close(true);
-            });
-            await channel.DetachAsync();
             await client.WaitForState(ConnectionState.Connected);
 
-            var tsc = new TaskCompletionAwaiter();
-            channel.On(channelStateChange =>
+            var transport = client.GetTestTransport();
+            transport.MessageSent = sentMessages.Add;
+
+            var channel = client.Channels.Get(channelName);
+            channel.Once(ChannelEvent.Detaching, change =>
             {
-                tsc.SetCompleted();
+                transport.Close(false);
+            });
+            channel.Attach();
+            await channel.WaitForState(ChannelState.Attached);
+            channel.Detach();
+            await channel.WaitForState(ChannelState.Detaching);
+            bool didDisconnect = false;
+            client.Connection.Once(ConnectionEvent.Disconnected, change =>
+            {
+                didDisconnect = true;
+                sentMessages.Count(x => x.Channel == channelName && x.Action == ProtocolMessage.MessageAction.Attach).Should().Be(1);
             });
 
-            await channel.DetachAsync();
-            await tsc.Task;
+            await client.WaitForState(ConnectionState.Disconnected);
+            await client.WaitForState(ConnectionState.Connected);
 
-            sentMessages.Where(s => s.Action == ProtocolMessage.MessageAction.Detach).Should().HaveCount(2);
+            client.Connection.State.Should().Be(ConnectionState.Connected);
+            didDisconnect.Should().BeTrue();
+
+            await channel.WaitForState(ChannelState.Detached);
+
+            var detatchCount = sentMessages.Count(x => x.Channel == channelName && x.Action == ProtocolMessage.MessageAction.Detach);
+            detatchCount.Should().Be(2);
 
             client.Close();
         }
