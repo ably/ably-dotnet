@@ -12,7 +12,7 @@ A .NET client library for [www.ably.io](https://www.ably.io), the realtime messa
 * [Xamarin.Android 8.0+](https://developer.xamarin.com/releases/android/xamarin.android_8/xamarin.android_8.0/)
 * [Xamarin.iOS 11.4+](https://developer.xamarin.com/releases/ios/xamarin.ios_11/xamarin.ios_11.4/)
 
-Unity support is still experimental and not fully supported yet.
+Unity support is currently in beta. See below for details on why it's considered beta.
 
 Unity Requirements:
 
