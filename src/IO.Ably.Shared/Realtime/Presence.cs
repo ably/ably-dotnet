@@ -346,15 +346,6 @@ namespace IO.Ably.Realtime
                 string syncCursor = null;
                 if (syncChannelSerial != null)
                 {
-                    syncCursor = syncChannelSerial.Substring(syncChannelSerial.IndexOf(':'));
-                    if (syncCursor.Length > 1)
-                    {
-                        Map.StartSync();
-                    }
-                }
-
-                if (syncChannelSerial != null)
-                {
                     int colonPos = syncChannelSerial.IndexOf(':');
                     string serial = colonPos >= 0 ? syncChannelSerial.Substring(0, colonPos) : syncChannelSerial;
 
@@ -362,7 +353,6 @@ namespace IO.Ably.Realtime
                     if (Map.IsSyncInProgress && _currentSyncChannelSerial != null
                                              && _currentSyncChannelSerial != serial)
                     {
-                        /* TODO: For v1.0 we should emit leave messages here. See https://github.com/ably/ably-java/blob/159018c30b3ef813a9d3ca3c6bc82f51aacbbc68/lib/src/main/java/io/ably/lib/realtime/Presence.java#L219 for example. */
                         _currentSyncChannelSerial = null;
                         EndSync();
                     }
@@ -408,7 +398,7 @@ namespace IO.Ably.Realtime
                 }
 
                 // if this is the last message in a sequence of sync updates, end the sync
-                if ((syncChannelSerial == null) || (syncCursor.Length <= 1))
+                if (syncChannelSerial == null || syncCursor.Length <= 1)
                 {
                     EndSync();
                 }
