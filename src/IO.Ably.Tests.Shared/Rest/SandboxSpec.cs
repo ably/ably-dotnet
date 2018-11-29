@@ -59,7 +59,7 @@ namespace IO.Ably.Tests
             defaultOptions.UseBinaryProtocol = protocol == Defaults.Protocol;
             defaultOptions.TransportFactory = new TestTransportFactory();
 
-            // Prevent the Xunit concurrent context being caputured which is
+            // Prevent the Xunit concurrent context being captured which is
             // an implementation of <see cref="SynchronizationContext"/> which runs work on custom threads
             // rather than in the thread pool, and limits the number of in-flight actions.
             //
