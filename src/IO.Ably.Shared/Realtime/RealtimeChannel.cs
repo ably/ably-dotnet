@@ -121,7 +121,7 @@ namespace IO.Ably.Realtime
             switch (connectionStateChange.Current)
             {
                 case ConnectionState.Connected:
-                    if (State == ChannelState.Suspended || State == ChannelState.Attaching)
+                    if (State == ChannelState.Suspended)
                     {
                         if (AttachedAwaiter.StartWait(null, ConnectionManager.Options.RealtimeRequestTimeout))
                         {
@@ -129,11 +129,19 @@ namespace IO.Ably.Realtime
                         }
                     }
 
+                    if (State == ChannelState.Attaching)
+                    {
+                        if (AttachedAwaiter.StartWait(null, ConnectionManager.Options.RealtimeRequestTimeout))
+                        {
+                            SetChannelState(ChannelState.Attaching, true);
+                        }
+                    }
+
                     if (State == ChannelState.Detaching)
                     {
                         if (DetachedAwaiter.StartWait(null, ConnectionManager.Options.RealtimeRequestTimeout))
                         {
-                            SetChannelState(ChannelState.Detaching);
+                            SetChannelState(ChannelState.Detaching, true);
                         }
                     }
 
@@ -440,6 +448,11 @@ namespace IO.Ably.Realtime
         internal void SetChannelState(ChannelState state, ProtocolMessage protocolMessage)
         {
             SetChannelState(state, protocolMessage.Error, protocolMessage);
+        }
+
+        internal void SetChannelState(ChannelState state, bool emitUpdate)
+        {
+            SetChannelState(state, null, null, emitUpdate);
         }
 
         internal void SetChannelState(ChannelState state, ErrorInfo error = null, ProtocolMessage protocolMessage = null, bool emitUpdate = false)
