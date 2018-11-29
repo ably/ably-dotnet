@@ -810,22 +810,22 @@ namespace IO.Ably.Tests.Realtime
 
                 var leaveMessages = new List<PresenceMessage>();
                 await WaitFor(async done =>
-                 {
-                     channel.Presence.Subscribe(PresenceAction.Leave, message =>
-                     {
-                         leaveMessages.Add(message);
-                         done();
-                     });
+                {
+                    channel.Presence.Subscribe(PresenceAction.Leave, message =>
+                    {
+                        leaveMessages.Add(message);
+                        done();
+                    });
 
-                     // trigger a server initiated SYNC
-                     var msg = new ProtocolMessage
-                     {
-                         Action = ProtocolMessage.MessageAction.Sync,
-                         Channel = channelName
-                     };
+                    // trigger a server initiated SYNC
+                    var msg = new ProtocolMessage
+                    {
+                        Action = ProtocolMessage.MessageAction.Sync,
+                        Channel = channelName
+                    };
 
-                     await client.FakeProtocolMessageReceived(msg);
-                 });
+                    await client.FakeProtocolMessageReceived(msg);
+                });
 
                 // A LEAVE event should have be published for the injected member
                 leaveMessages.Should().HaveCount(1);
