@@ -284,6 +284,7 @@ namespace IO.Ably.Tests
                 });
 
                 realtimeClient.Connection.Connect();
+                await Task.Delay(100);
                 (await tca.Task).Should().BeTrue(context);
             }
 
