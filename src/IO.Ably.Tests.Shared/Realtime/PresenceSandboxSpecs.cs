@@ -818,13 +818,11 @@ namespace IO.Ably.Tests.Realtime
                     });
 
                     // trigger a server initiated SYNC
-                    var msg = new ProtocolMessage
-                    {
-                        Action = ProtocolMessage.MessageAction.Sync,
-                        Channel = channelName
-                    };
+                    await client.ConnectionManager.SetState(new ConnectionSuspendedState(client.ConnectionManager, new ErrorInfo("RTP19 test"), client.Logger));
+                    await client.WaitForState(ConnectionState.Suspended);
 
-                    await client.FakeProtocolMessageReceived(msg);
+                    await client.ConnectionManager.SetState(new ConnectionConnectedState(client.ConnectionManager, null));
+                    await client.WaitForState(ConnectionState.Connected);
                 });
 
                 // A LEAVE event should have be published for the injected member
