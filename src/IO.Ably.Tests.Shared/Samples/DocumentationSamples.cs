@@ -98,13 +98,13 @@ namespace IO.Ably.Tests.Samples
         {
             AblyRealtime realtime = new AblyRealtime("{{API_KEY}}");
             var channel = realtime.Channels.Get("chatroom");
-            channel.On(ChannelState.Attached, args => Console.WriteLine("channel " + channel.Name + " is now attached"));
+            channel.On(ChannelEvent.Attached, args => Console.WriteLine("channel " + channel.Name + " is now attached"));
             channel.On(args => Console.WriteLine("channel state is " + channel.State));
 
             Action<ChannelStateChange> channelStateListener = args => Console.WriteLine("channel state is " + channel.State);
 
             // remove the listener registered for a single event
-            channel.Off(ChannelState.Attached, channelStateListener);
+            channel.Off(ChannelEvent.Attached, channelStateListener);
 
             // remove the listener registered for all events
             channel.Off(channelStateListener);

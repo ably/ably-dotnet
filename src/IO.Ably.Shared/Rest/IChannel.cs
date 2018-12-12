@@ -13,7 +13,7 @@ namespace IO.Ably.Rest
 
         Task<PaginatedResult<Message>> HistoryAsync();
 
-        Task<PaginatedResult<Message>> HistoryAsync(HistoryRequestParams query);
+        Task<PaginatedResult<Message>> HistoryAsync(PaginatedRequestParams query);
 
         string Name { get; }
 
@@ -27,7 +27,7 @@ namespace IO.Ably.Rest
 
         PaginatedResult<Message> History();
 
-        PaginatedResult<Message> History(HistoryRequestParams query);
+        PaginatedResult<Message> History(PaginatedRequestParams query);
     }
 
     public interface IPresence
@@ -36,8 +36,8 @@ namespace IO.Ably.Rest
 
         Task<PaginatedResult<PresenceMessage>> HistoryAsync();
 
-        Task<PaginatedResult<PresenceMessage>> HistoryAsync(HistoryRequestParams query);
+        Task<PaginatedResult<PresenceMessage>> HistoryAsync(PaginatedRequestParams query);
 
-        Task<PaginatedResult<PresenceMessage>> GetAsync(HistoryRequestParams query);
+        Task<PaginatedResult<PresenceMessage>> GetAsync(PaginatedRequestParams query);
     }
 }

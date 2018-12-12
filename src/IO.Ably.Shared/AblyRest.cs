@@ -7,6 +7,7 @@ using IO.Ably.MessageEncoders;
 using IO.Ably.Rest;
 using System.Threading.Tasks;
 using IO.Ably;
+using Newtonsoft.Json.Linq;
 
 namespace IO.Ably
 {
@@ -176,7 +177,7 @@ namespace IO.Ably
             return MessageHandler.ParseResponse<T>(request, response);
         }
 
-        internal async Task<PaginatedResult<T>> ExecutePaginatedRequest<T>(AblyRequest request, Func<HistoryRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
+        internal async Task<PaginatedResult<T>> ExecutePaginatedRequest<T>(AblyRequest request, Func<PaginatedRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
         {
             var response = await ExecuteRequest(request);
             if (Logger.IsDebug)
@@ -191,6 +192,48 @@ namespace IO.Ably
             }
 
             return MessageHandler.ParsePaginatedResponse<T>(request, response, executeDataQueryRequest);
+        }
+
+        internal async Task<HttpPaginatedResponse> ExecuteHttpPaginatedRequest(AblyRequest request, PaginatedRequestParams requestParams, Func<PaginatedRequestParams, Task<HttpPaginatedResponse>> executeDataQueryRequest)
+        {
+            var response = await ExecuteRequest(request);
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Response received. Status: " + response.StatusCode);
+                Logger.Debug("Content type: " + response.ContentType);
+                Logger.Debug("Encoding: " + response.Encoding);
+                if (response.Body != null)
+                {
+                    Logger.Debug("Raw response (base64):" + response.Body.ToBase64());
+                }
+            }
+
+            return MessageHandler.ParseHttpPaginatedResponse(request, response, requestParams, executeDataQueryRequest);
+        }
+
+        internal async Task<HttpPaginatedResponse> HttpPaginatedRequestInternal(PaginatedRequestParams requestParams)
+        {
+            var request = CreateRequest(requestParams.Path, requestParams.HttpMethod);
+            request.AddQueryParameters(requestParams.ExtraParameters);
+            request.AddHeaders(requestParams.Headers);
+            if (requestParams.Body != null)
+            {
+                request.PostData = requestParams.Body;
+            }
+
+            return await ExecuteHttpPaginatedRequest(request, requestParams, HttpPaginatedRequestInternal);
+        }
+
+        public async Task<HttpPaginatedResponse> Request(HttpMethod method, string path, Dictionary<string, string> requestParams = null, JToken body = null, Dictionary<string, string> headers = null)
+        {
+            var p = new PaginatedRequestParams();
+            p.Headers = headers;
+            p.ExtraParameters = requestParams;
+            p.Body = body;
+            p.HttpMethod = method;
+            p.Path = path;
+
+            return await HttpPaginatedRequestInternal(p);
         }
 
         /// <summary>/// Retrieves the ably service time/// </summary>
@@ -219,11 +262,11 @@ namespace IO.Ably
         /// <returns></returns>
         public Task<PaginatedResult<Stats>> StatsAsync(StatsRequestParams query)
         {
-            return StatsAsync(query as HistoryRequestParams);
+            return StatsAsync(query as PaginatedRequestParams);
         }
 
         /// <summary>
-        /// Retrieves the stats for the application based on a custom query. It should be used with <see cref="HistoryRequestParams"/>.
+        /// Retrieves the stats for the application based on a custom query. It should be used with <see cref="PaginatedRequestParams"/>.
         /// It is mainly because of the way a PaginatedResource defines its queries. For retrieving Stats with special parameters use <see cref="StatsAsync(StatsRequestParams)"/>
         /// </summary>
         /// <example>
@@ -231,9 +274,9 @@ namespace IO.Ably
         /// var stats = client..StatsAsync();
         /// var nextPage = cliest..StatsAsync(stats.NextQuery);
         /// </example>
-        /// <param name="query"><see cref="HistoryRequestParams"/> and <see cref="StatsRequestParams"/></param>
+        /// <param name="query"><see cref="PaginatedRequestParams"/> and <see cref="StatsRequestParams"/></param>
         /// <returns></returns>
-        public Task<PaginatedResult<Stats>> StatsAsync(HistoryRequestParams query)
+        public Task<PaginatedResult<Stats>> StatsAsync(PaginatedRequestParams query)
         {
             query.Validate();
 
@@ -242,6 +285,11 @@ namespace IO.Ably
             request.AddQueryParameters(query.GetParameters());
 
             return ExecutePaginatedRequest(request, StatsAsync);
+        }
+
+        internal AblyRequest CreateRequest(string path, HttpMethod method, ChannelOptions options = null)
+        {
+            return new AblyRequest(path, method, Protocol) { ChannelOptions = options };
         }
 
         internal AblyRequest CreateGetRequest(string path, ChannelOptions options = null)
