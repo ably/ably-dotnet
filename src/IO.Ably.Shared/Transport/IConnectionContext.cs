@@ -37,7 +37,7 @@ namespace IO.Ably.Transport
 
         Task<bool> RetryBecauseOfTokenError(ErrorInfo error);
 
-        Task RetryAuthentication();
+        Task RetryAuthentication(bool updateState = true);
 
         void HandleConnectingFailure(ErrorInfo error, Exception ex);
 
