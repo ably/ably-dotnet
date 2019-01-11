@@ -361,6 +361,21 @@ The build scripts are written in powershell using PSake and need to be run on Wi
 Running `.\build.ps1` will start the build process and run the tests. 
 Running `package.ps1` will run the build script and create a nuget package.
 
+## Working from source
+
+If you want to incorporate ably-dotnet into your project from source (perhaps to use a specific development branch) the simplest way to do so is to add references to the relevant ably-dotnet projects. The following steps are specific to Visual Studio 2017, but the pricipal should transfer to other IDEs
+
+1. Clone this repository to your local system
+2. Open the solution you want to reference ably-dotnet from
+3. In Solution Explorer right click the root note (it will be labled Solution 'YourSolutionName')
+4. Select Add > Existing Project from the context menu
+5. Browse to the ably-dotnet repository and add ably-dotnet\src\IO.Ably.Shared\IO.Ably.Shared.shproj
+6. Browse to the ably-dotnet repository and add the project that corresponds to your target platform, so if you are targetting .Net Framework (AKA Classic .Net) you would add ably-dotnet\src\IO.Ably.NETFramework\IO.Ably.NETFramework.csproj, if you are targeting .NET Core 2 then chose ably-dotnet\src\IO.Ably.NetStandard20\IO.Ably.NetStandard20.csproj and so on.
+7. In any project that you want to use ably-dotnet you need to add a project reference, to do so:
+    1. Find your project in Solution Explorer and expand the tree so that the Dependencies node is visible
+    2. Right click Dependencies and select Add Reference
+    3. In the dialogue that opens you should see a list of the projects in your solution. Check the box next to IO.Ably.NETFramework (or whatever version you are trying to use) and click OK.
+
 ## Release process
 
 This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
