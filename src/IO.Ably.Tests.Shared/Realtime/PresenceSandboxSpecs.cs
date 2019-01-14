@@ -446,12 +446,63 @@ namespace IO.Ably.Tests.Realtime
                 channel.Presence.InternalMap.Members.Should().HaveCount(1);
             }
 
-            /*
-             * If a SYNC is in progress, then when a presence message with an action of LEAVE arrives,
-             * it should be stored in the presence map with the action set to ABSENT.
-             * When the SYNC completes, any ABSENT members should be deleted from the presence map.
-             * (This is because in a SYNC, we might receive a LEAVE before the corresponding ENTER)
-             */
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RTP2e")]
+            public async Task PresenceMap_WhenNotSyncingAndLeaveActionArrivesMemberKeyShouldBeDeleted(Protocol protocol)
+            {
+                // setup 20 members on a channel
+                var channelName = "RTP2e".AddRandomSuffix();
+                var setupClient = await GetRealtimeClient(protocol);
+                await setupClient.WaitForState(ConnectionState.Connected);
+                var setupChannel = setupClient.Channels.Get(channelName);
+                setupChannel.Attach();
+                await setupChannel.WaitForState();
+                for (int i = 0; i < 20; i++)
+                {
+                    await setupChannel.Presence.EnterClientAsync($"member_{i}", null);
+                }
+
+                var client = await GetRealtimeClient(protocol);
+                await client.WaitForState(ConnectionState.Connected);
+                var channel = client.Channels.Get(channelName);
+                channel.Attach();
+                await channel.WaitForState();
+
+                // get presence messages and validate count
+                var members = await channel.Presence.GetAsync();
+                members.Should().HaveCount(20);
+
+                // sync should not be in progress and initial an sync should have completed
+                channel.Presence.IsSyncInProgress.Should().BeFalse("sync should have completed");
+                channel.Presence.SyncComplete.Should().BeTrue();
+
+                // pull a random member key from the presence map
+                var memberNumber = new Random().Next(0, 19);
+                var memberId = $"member_{memberNumber}";
+                var expectedMemberKey = $"{memberId}:{setupClient.Connection.Id}";
+                var actualMemberKey = channel.Presence.Map.Members[expectedMemberKey].MemberKey;
+
+                actualMemberKey.Should().Be(expectedMemberKey);
+
+                // wait for the member to leave
+                string leftClientId = null;
+                await WaitFor(done =>
+                {
+                    channel.Presence.Subscribe(PresenceAction.Leave, message =>
+                    {
+                        leftClientId = message.ClientId;
+                        done();
+                    });
+                    setupChannel.Presence.LeaveClient(memberId, null);
+                });
+
+                // then assert that the member has left
+                leftClientId.Should().Be(memberId);
+                channel.Presence.Map.Members.Should().HaveCount(19);
+                channel.Presence.Map.Members.ContainsKey(actualMemberKey).Should().BeFalse();
+            }
+
             [Theory]
             [ProtocolData]
             [Trait("spec", "RTP2f")]
@@ -555,7 +606,7 @@ namespace IO.Ably.Tests.Realtime
                         * Do not call it in states other than ATTACHED because of presence.get() side
                         * effect of attaching channel
                         */
-                    if (message.ClientId == "4" && message.Action == PresenceAction.Leave && channel.State == ChannelState.Attached)
+                if (message.ClientId == "4" && message.Action == PresenceAction.Leave && channel.State == ChannelState.Attached)
                     {
                         /*
                         * Client library won't return a presence message if it is stored as ABSENT
