@@ -1223,6 +1223,82 @@ namespace IO.Ably.Tests.Realtime
 
                     client1.Close();
                 }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP5c3")]
+                public async Task WhenAutomaticEnterMessageFails_ShouldEmitUpdateWithErrorInfo(Protocol protocol)
+                {
+                    // members not present in the PresenceMap but present in the internal PresenceMap must be re-entered automatically
+                    var channelName = "RTP5c3".AddRandomSuffix();
+                    var setupClient = await GetRealtimeClient(protocol);
+                    var setupChannel = setupClient.Channels.Get(channelName);
+
+                    // enter 3 client to the channel
+                    for (int i = 0; i < 3; i++)
+                    {
+                        await setupChannel.Presence.EnterClientAsync($"member_{i}", null);
+                    }
+
+                    var client = await GetRealtimeClient(protocol);
+                    await client.WaitForState();
+                    var channel = client.Channels.Get(channelName);
+                    var connectionId = client.Connection.Id;
+                    connectionId.Should().NotBeNullOrEmpty();
+                    var transport = client.GetTestTransport();
+
+                    var localMember = new PresenceMessage(PresenceAction.Enter, "local")
+                    {
+                        ConnectionId = connectionId
+                    };
+
+                    PresenceMessage enterMessage = null;
+                    ChannelStateChange updateMessage = null;
+                    await WaitForMultiple(2, partialDone =>
+                    {
+                        // when the channel becomes attached insert a local member to the presence map
+                        channel.Once(ChannelEvent.Attaching, change =>
+                        {
+                            // insert local member to automatically try to enter
+                            channel.Presence.InternalMap.Put(localMember);
+                            partialDone();
+                        });
+
+                        channel.Presence.Subscribe(PresenceAction.Enter, message =>
+                        {
+                            enterMessage = message; // should not hit
+                        });
+
+                        channel.Once(ChannelEvent.Update, message =>
+                        {
+                            updateMessage = message;
+                            partialDone();
+                        });
+
+                        void TransportMessageSent(ProtocolMessage message)
+                        {
+                            if (message.Presence.Length > 0
+                                && message.Presence[0].Action == PresenceAction.Enter
+                                && message.Presence[0].ClientId == "local")
+                            {
+                                // fail messages, causing callback to be invoked.
+                                client.ConnectionManager.AckProcessor.ClearQueueAndFailMessages(ErrorInfo.ReasonUnknown);
+                            }
+                        }
+
+                        transport.MessageSent = TransportMessageSent;
+                    });
+
+                    enterMessage.Should().BeNull();
+
+                    updateMessage.Should().NotBeNull();
+                    updateMessage.Error.Code.Should().Be(91004);
+                    updateMessage.Error.Message.Should().Contain(localMember.ClientId);
+
+                    // clean up
+                    setupClient.Close();
+                    client.Close();
+                }
             }
         }
 
