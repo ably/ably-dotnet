@@ -1223,6 +1223,52 @@ namespace IO.Ably.Tests.Realtime
 
                     client1.Close();
                 }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP16a")]
+                public async Task ConnectionStateCondition_WhenConnectionIsConnected_AllPresenceMessageArePublishedImmediately(Protocol protocol)
+                {
+                    var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16a"; });
+                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
+
+                    ErrorInfo errInfo = null;
+                    bool connecting = false;
+                    bool connected = false;
+                    List<int> queueCounts = new List<int>();
+
+                    channel.State.Should().NotBe(ChannelState.Attached);
+
+                    await WaitFor(done =>
+                    {
+                        channel.Presence.Enter("foo", (b, info) =>
+                        {
+                            errInfo = info;
+
+                            // after Enter the client should be connected and the queued message sent
+                            connected = client.Connection.State == ConnectionState.Connected;
+                            queueCounts.Add(channel.Presence.PendingPresenceQueue.Count); // expect 0
+                            done();
+                        });
+
+                        // 1 message should be queued at this point
+                        queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
+
+                        // The client should be connecting
+                        connecting = client.Connection.State == ConnectionState.Connecting;
+                    });
+
+                    channel.State.Should().Be(ChannelState.Attached);
+
+                    connecting.Should().BeTrue();
+                    connected.Should().BeTrue();
+                    errInfo.Should().BeNull();
+                    queueCounts[0].Should().Be(1);
+                    queueCounts[1].Should().Be(0);
+
+                    // clean up
+                    client.Close();
+                }
             }
         }
 
