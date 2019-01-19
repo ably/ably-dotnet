@@ -1370,6 +1370,34 @@ namespace IO.Ably.Tests.Realtime
                     // clean up
                     client.Close();
                 }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP16b")]
+                public async Task ChannelStateCondition_WhenQueueMessagesIsFalse_WhenChannelIsInitialisedOrAttaching_MessageAreNotPublished(Protocol protocol)
+                {
+                    var client = await GetRealtimeClient(protocol, (options, settings) =>
+                    {
+                        options.ClientId = "RTP16b";
+                        options.QueueMessages = false;
+                    });
+                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
+
+                    await client.WaitForState(ConnectionState.Connected);
+                    await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager, client.Logger));
+                    await client.WaitForState(ConnectionState.Disconnected);
+
+                    List<int> queueCounts = new List<int>();
+                    Presence.QueuedPresenceMessage[] presenceMessages = null;
+
+                    channel.Presence.Enter(client.Connection.State.ToString(), (b, info) =>{ });
+                    presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
+
+                    presenceMessages.Should().HaveCount(0);
+
+                    // clean up
+                    client.Close();
+                }
             }
         }
 
