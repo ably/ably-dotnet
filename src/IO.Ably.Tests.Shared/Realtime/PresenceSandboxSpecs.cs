@@ -1223,6 +1223,102 @@ namespace IO.Ably.Tests.Realtime
 
                     client1.Close();
                 }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP16b")]
+                public async Task ConnectionStateCondition_WhenConnectionIsDisconnected_MessageArePublishedWhenConnectionBecomesConnected(Protocol protocol)
+                {
+                    var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16b"; });
+                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
+
+                    List<int> queueCounts = new List<int>();
+                    Presence.QueuedPresenceMessage[] presenceMessages = null;
+
+                    // force disconnected state
+                    await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager, client.Logger));
+                    await client.WaitForState(ConnectionState.Disconnected);
+
+                    await WaitForMultiple(2, partialDone =>
+                    {
+                        client.Connection.Once(ConnectionEvent.Connecting, change =>
+                        {
+                            // Enter whilst Connecting
+                            channel.Presence.Enter(client.Connection.State.ToString(), (b, info) =>
+                            {
+                                // there should be no messages queued at this point
+                                queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
+                                partialDone();
+                            });
+
+                            // there should be 2 messages queued at this point
+                            queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
+                            presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
+                        });
+
+                        // Enter whilst Disconnected
+                        channel.Presence.Enter(client.Connection.State.ToString(), (b, info) =>
+                        {
+                            partialDone();
+                        });
+                    });
+
+                    queueCounts[0].Should().Be(2);
+                    queueCounts[1].Should().Be(0);
+                    presenceMessages[0].Message.Data.Should().Be("Disconnected");
+                    presenceMessages[1].Message.Data.Should().Be("Connecting");
+
+                    // clean up
+                    client.Close();
+                }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP16b")]
+                public async Task ConnectionStateCondition_WhenConnectionIsInitialized_MessageArePublishedWhenConnectionBecomesConnected(Protocol protocol)
+                {
+                    var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16b"; });
+                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
+
+                    List<int> queueCounts = new List<int>();
+                    Presence.QueuedPresenceMessage[] presenceMessages = null;
+
+                    // force Initialized state
+                    await client.ConnectionManager.SetState(new ConnectionInitializedState(client.ConnectionManager, client.Logger));
+                    await client.WaitForState(ConnectionState.Initialized);
+
+                    await WaitForMultiple(2, partialDone =>
+                    {
+                        client.Connection.Once(ConnectionEvent.Connecting, change =>
+                        {
+                            // Enter whilst Connecting
+                            channel.Presence.Enter(client.Connection.State.ToString(), (b, info) =>
+                            {
+                                // there should be no messages queued at this point
+                                queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
+                                partialDone();
+                            });
+
+                            // there should be 2 messages queued at this point
+                            queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
+                            presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
+                        });
+
+                        // Enter whilst Initialized
+                        channel.Presence.Enter(client.Connection.State.ToString(), (b, info) =>
+                        {
+                            partialDone();
+                        });
+                    });
+
+                    queueCounts[0].Should().Be(2);
+                    queueCounts[1].Should().Be(0);
+                    presenceMessages[0].Message.Data.Should().Be("Initialized");
+                    presenceMessages[1].Message.Data.Should().Be("Connecting");
+
+                    // clean up
+                    client.Close();
+                }
             }
         }
 
