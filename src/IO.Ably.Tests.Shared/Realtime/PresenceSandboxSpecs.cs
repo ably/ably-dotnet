@@ -1229,6 +1229,8 @@ namespace IO.Ably.Tests.Realtime
                 [Trait("spec", "RTP16b")]
                 public async Task ConnectionStateCondition_WhenConnectionIsDisconnected_MessageArePublishedWhenConnectionBecomesConnected(Protocol protocol)
                 {
+                    /* tests disconnecting and connecting states */
+
                     var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16b"; });
                     var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
 
@@ -1277,6 +1279,8 @@ namespace IO.Ably.Tests.Realtime
                 [Trait("spec", "RTP16b")]
                 public async Task ConnectionStateCondition_WhenConnectionIsInitialized_MessageArePublishedWhenConnectionBecomesConnected(Protocol protocol)
                 {
+                    /* tests initialized and connecting states */
+
                     var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16b"; });
                     var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
 
@@ -1319,6 +1323,53 @@ namespace IO.Ably.Tests.Realtime
                     // clean up
                     client.Close();
                 }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP16b")]
+                public async Task ChannelStateCondition_WhenChannelIsInitialisedOrAttaching_MessageArePublishedWhenChannelBecomesAttached(Protocol protocol)
+                {
+                    /* tests channel initialized and attaching states */
+
+                    var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16b"; });
+                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
+
+                    List<int> queueCounts = new List<int>();
+                    Presence.QueuedPresenceMessage[] presenceMessages = null;
+
+                    await WaitForMultiple(3, partialDone =>
+                    {
+                        channel.Once(ChannelEvent.Attached, change =>
+                        {
+                            queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
+                            partialDone();
+                        });
+
+                        channel.Once(ChannelEvent.Attaching, change =>
+                        {
+                            channel.Presence.Enter(channel.State.ToString(), (b, info) =>
+                            {
+                                partialDone();
+                            });
+                            queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
+                            presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
+                        });
+
+                        // Enter whilst Initialized
+                        channel.Presence.Enter(channel.State.ToString(), (b, info) =>
+                        {
+                            partialDone();
+                        });
+                    });
+
+                    queueCounts[0].Should().Be(2);
+                    queueCounts[1].Should().Be(0);
+                    presenceMessages[0].Message.Data.Should().Be("Initialized");
+                    presenceMessages[1].Message.Data.Should().Be("Attaching");
+
+                    // clean up
+                    client.Close();
+                }
             }
         }
 
@@ -1332,7 +1383,7 @@ namespace IO.Ably.Tests.Realtime
              * and once sync is complete, all 250 members should be present in a Presence#get request
              */
 
-            [Theory]
+                [Theory]
             [ProtocolData]
             [Trait("spec", "RTP4")]
             public async Task WhenAClientAttachedToPresenceChannel_ShouldEmitPresentForEachMember(Protocol protocol)
