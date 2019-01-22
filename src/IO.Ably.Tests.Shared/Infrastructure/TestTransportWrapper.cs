@@ -12,20 +12,38 @@ namespace IO.Ably.Tests.Infrastructure
         private class TransportListenerWrapper : ITransportListener
         {
             private readonly ITransportListener _wrappedListener;
+            private readonly Action<ProtocolMessage> _beforeMessage;
             private readonly Action<ProtocolMessage> _afterMessage;
             private readonly MessageHandler _handler;
 
             public List<ProtocolMessage> ProtocolMessagesReceived { get; set; } = new List<ProtocolMessage>();
 
-            public TransportListenerWrapper(ITransportListener wrappedListener, Action<ProtocolMessage> afterMessage, MessageHandler handler)
+            public TransportListenerWrapper(ITransportListener wrappedListener, Action<ProtocolMessage> beforeMessage, Action<ProtocolMessage> afterMessage, MessageHandler handler)
             {
                 _wrappedListener = wrappedListener;
+                _beforeMessage = beforeMessage;
                 _afterMessage = afterMessage;
                 _handler = handler;
             }
 
             public void OnTransportDataReceived(RealtimeTransportData data)
             {
+                ProtocolMessage msg = null;
+                try
+                {
+                    msg = _handler.ParseRealtimeData(data);
+                    ProtocolMessagesReceived.Add(msg);
+                    _beforeMessage?.Invoke(msg);
+                    if (_beforeMessage != null)
+                    {
+                        data = _handler.GetTransportData(msg);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DefaultLogger.Error("Error handling afterMessage helper.", ex);
+                }
+
                 try
                 {
                     _wrappedListener.OnTransportDataReceived(data);
@@ -37,9 +55,7 @@ namespace IO.Ably.Tests.Infrastructure
 
                 try
                 {
-                    var msg = _handler.ParseRealtimeData(data);
-                    ProtocolMessagesReceived.Add(msg);
-                    _afterMessage(msg);
+                    _afterMessage?.Invoke(msg);
                 }
                 catch (Exception ex)
                 {
@@ -62,6 +78,8 @@ namespace IO.Ably.Tests.Infrastructure
         /// </summary>
         public List<ProtocolMessage> ProtocolMessagesReceived => (Listener as TransportListenerWrapper)?.ProtocolMessagesReceived;
 
+        public Action<ProtocolMessage> BeforeDataProcessed = delegate { };
+
         public Action<ProtocolMessage> AfterDataReceived = delegate { };
 
         public Action<ProtocolMessage> MessageSent = delegate { };
@@ -79,7 +97,7 @@ namespace IO.Ably.Tests.Infrastructure
             get => WrappedTransport.Listener;
             set
             {
-                var listener = new TransportListenerWrapper(value, x => AfterDataReceived(x), _handler);
+                var listener = new TransportListenerWrapper(value, BeforeDataProcessed, AfterDataReceived, _handler);
                 WrappedTransport.Listener = listener;
             }
         }
