@@ -143,7 +143,8 @@ namespace IO.Ably.Tests.Realtime
             }, states);
 
             errors.Should().NotBeEmpty();
-            errors.First().Code.Should().Be(_failedRenewalErorrCode);
+            errors.Should().HaveCount(2);
+            errors[1].Code.Should().Be(_failedRenewalErorrCode);
         }
 
         [Fact]
