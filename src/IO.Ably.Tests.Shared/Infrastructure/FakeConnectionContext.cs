@@ -147,7 +147,7 @@ namespace IO.Ably.Tests
             return RetryFunc(error);
         }
 
-        public Task RetryAuthentication()
+        public Task RetryAuthentication(ErrorInfo error)
         {
             throw new NotImplementedException();
         }

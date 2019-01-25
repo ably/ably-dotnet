@@ -282,7 +282,7 @@ namespace IO.Ably.Transport
             {
                 if (ShouldWeRenewToken(error))
                 {
-                    await RetryAuthentication();
+                    await RetryAuthentication(error);
                 }
                 else
                 {
@@ -295,10 +295,10 @@ namespace IO.Ably.Transport
             return false;
         }
 
-        public async Task RetryAuthentication()
+        public async Task RetryAuthentication(ErrorInfo error = null)
         {
             ClearTokenAndRecordRetry();
-            await SetState(new ConnectionDisconnectedState(this, Logger), skipAttach: ConnectionState == Realtime.ConnectionState.Connecting);
+            await SetState(new ConnectionDisconnectedState(this, error, Logger), skipAttach: ConnectionState == Realtime.ConnectionState.Connecting);
             await SetState(new ConnectionConnectingState(this, Logger));
         }
 
