@@ -712,6 +712,63 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTN15c5")]
+        public async Task ResumeRequest_WithTokenAuthError_TransportWillBeClosed(Protocol protocol)
+        {
+            var authClient = await GetRestClient(protocol);
+            var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
+
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.TokenDetails = tokenDetails;
+                options.DisconnectedRetryTimeout = TimeSpan.FromSeconds(1);
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            var channel = client.Channels.Get("RTN15c5".AddRandomSuffix());
+            channel.Attach();
+
+            var initialConnectionId = client.Connection.Id;
+            var initialTransport = client.GetTestTransport();
+
+            channel.Once(ChannelEvent.Detached, change => throw new Exception("channel should not detach"));
+
+            List<ProtocolMessage> messages = new List<ProtocolMessage>();
+            client.BeforeProtocolMessageProcessed(message => messages.Add(message));
+
+            ConnectionStateChange stateChange = null;
+            await WaitFor(done =>
+            {
+                client.Connection.Once(ConnectionEvent.Disconnected, change =>
+                {
+                    stateChange = change;
+                    done();
+                });
+            });
+            stateChange.Reason.Code.Should().Be(40142);
+
+            await WaitFor(done =>
+            {
+                client.Connection.Once(ConnectionEvent.Connected, change =>
+                {
+                    stateChange = change;
+                    done();
+                });
+            });
+            stateChange.Reason.Should().BeNull();
+
+            // transport should have been closed and the client should have a new transport instanced
+            var secondTransport = client.GetTestTransport();
+            initialTransport.Should().NotBe(secondTransport);
+            initialTransport.State.Should().Be(TransportState.Closed);
+
+            // connection should be resumed, connectionId should be unchanged
+            client.Connection.Id.Should().Be(initialConnectionId);
+        }
+
+        [Theory]
+        [ProtocolData]
         public async Task WithAuthUrlShouldGetTokenFromUrl(Protocol protocol)
         {
             Logger.LogLevel = LogLevel.Debug;
