@@ -454,6 +454,88 @@ namespace IO.Ably.Tests.Realtime
             client.Close();
         }
 
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15c2")]
+        public async Task ResumeRequest_ConnectedProtocolMessageWithSameConnectionId_WithError(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            var channel = client.Channels.Get("RTN15c1".AddRandomSuffix()) as RealtimeChannel;
+            await client.WaitForState(ConnectionState.Connected);
+            var connectionId = client.Connection.Id;
+
+            // inject fake error messages into protocol messages
+            var transportFactory = client.Options.TransportFactory as TestTransportFactory;
+            transportFactory.OnTransportCreated += wrapper =>
+            {
+                wrapper.BeforeDataProcessed = message =>
+                {
+                    // inject an error before the protocol message is processed
+                    if (message.Action == ProtocolMessage.MessageAction.Connected)
+                    {
+                        message.Error = new ErrorInfo("Faked error", 0);
+                    }
+
+                    if (message.Action == ProtocolMessage.MessageAction.Attached)
+                    {
+                        message.Error = new ErrorInfo("Faked channel error", 0);
+                    }
+                };
+            };
+
+            // kill the transport so the connection becomes DISCONNECTED
+            client.ConnectionManager.Transport.Close(false);
+            await client.WaitForState(ConnectionState.Disconnected);
+
+            // publish
+            channel.Publish(null, "foo");
+
+            // tack connection state change
+            ConnectionStateChange stateChange = null;
+            var connectedAwaiter = new TaskCompletionAwaiter(15000);
+            client.Connection.Once(ConnectionEvent.Connected, change =>
+            {
+                stateChange = change;
+                connectedAwaiter.SetCompleted();
+            });
+
+            // track channel stage change
+            ChannelStateChange channelStateChange = null;
+            var attachedAwaiter = new TaskCompletionAwaiter(15000);
+            channel.Once(ChannelEvent.Attached, change =>
+            {
+                channelStateChange = change;
+                attachedAwaiter.SetCompleted();
+            });
+
+            // wait for connection
+            var didConnect = await connectedAwaiter.Task;
+            didConnect.Should().BeTrue();
+
+            // it should have the injected error
+            stateChange.HasError.Should().BeTrue();
+            stateChange.Reason.Message.Should().Be("Faked error");
+
+            // we should have received a CONNECTED Protocol message with a corresponding connectionId
+            client.GetTestTransport().ProtocolMessagesReceived.Count(x => x.Action == ProtocolMessage.MessageAction.Connected).Should().Be(1);
+            var connectedProtocolMessage = client.GetTestTransport().ProtocolMessagesReceived.First(x => x.Action == ProtocolMessage.MessageAction.Connected);
+            connectedProtocolMessage.ConnectionId.Should().Be(connectionId);
+            client.Connection.ErrorReason.Should().Be(stateChange.Reason);
+
+            // wait for the channel to attach
+            await attachedAwaiter.Task;
+
+            // it chanel state change event should have the injected error
+            channelStateChange.Error.Message.Should().Be("Faked channel error");
+
+            // queued messages should now have been sent
+            client.ConnectionManager.PendingMessages.Should().HaveCount(0);
+
+            // clean up
+            client.Close();
+        }
+
         [Theory]
         [ProtocolData]
         public async Task WithAuthUrlShouldGetTokenFromUrl(Protocol protocol)
