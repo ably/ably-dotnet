@@ -74,7 +74,8 @@ namespace IO.Ably.Tests.Realtime
 
             _renewTokenCalled.Should().BeTrue();
             Assert.Equal(new[] { ConnectionState.Disconnected, ConnectionState.Connecting, ConnectionState.Connected }, states);
-            errors.Should().BeEmpty("There should be no errors emitted by the client");
+            errors.Should().HaveCount(1);
+            errors[0].Should().Be(_tokenErrorInfo);
 
             var currentToken = client.RestClient.AblyAuth.CurrentToken;
             currentToken.Token.Should().Be(_returnedDummyTokenDetails.Token);
