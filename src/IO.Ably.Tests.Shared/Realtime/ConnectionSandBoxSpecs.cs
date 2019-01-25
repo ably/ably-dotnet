@@ -661,6 +661,57 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTN15c4")]
+        public async Task ResumeRequest_WithFatalErrorInConnection_ClientAndChannelsShouldBecomeFailed(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            var channel = client.Channels.Get("RTN15c3".AddRandomSuffix()) as RealtimeChannel;
+            channel.Attach();
+            await client.WaitForState(ConnectionState.Connected);
+
+            client.GetTestTransport().Close(false);
+            await client.WaitForState(ConnectionState.Disconnected);
+
+            var errInfo = new ErrorInfo("faked error", 0);
+            client.Connection.Once(ConnectionEvent.Connecting, change =>
+            {
+                client.BeforeProtocolMessageProcessed(message =>
+                {
+                    if (message.Action == ProtocolMessage.MessageAction.Connected)
+                    {
+                        message.Action = ProtocolMessage.MessageAction.Error;
+                        message.Error = errInfo;
+                    }
+                });
+            });
+
+            ConnectionStateChange stateChange = null;
+            await WaitFor(done =>
+            {
+                client.Connection.Once(ConnectionEvent.Failed, change =>
+                {
+                    stateChange = change;
+                    done();
+                });
+            });
+
+            stateChange.Reason.Code.Should().Be(errInfo.Code);
+            stateChange.Reason.Message.Should().Be(errInfo.Message);
+
+            await channel.WaitForState(ChannelState.Failed);
+            channel.State.Should().Be(ChannelState.Failed);
+            channel.ErrorReason.Code.Should().Be(errInfo.Code);
+            channel.ErrorReason.Message.Should().Be(errInfo.Message);
+
+            client.Connection.ErrorReason.Code.Should().Be(errInfo.Code);
+            client.Connection.ErrorReason.Message.Should().Be(errInfo.Message);
+            client.Connection.State.Should().Be(ConnectionState.Failed);
+
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
         public async Task WithAuthUrlShouldGetTokenFromUrl(Protocol protocol)
         {
             Logger.LogLevel = LogLevel.Debug;
