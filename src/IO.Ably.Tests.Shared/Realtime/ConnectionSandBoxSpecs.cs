@@ -500,6 +500,10 @@ namespace IO.Ably.Tests.Realtime
 
             await awaiter.Task;
             stateChanges.Should().HaveCount(3);
+            stateChanges[0].HasError.Should().BeTrue();
+            stateChanges[0].Reason.Code.Should().Be(40142);
+            stateChanges[1].HasError.Should().BeFalse();
+            stateChanges[2].HasError.Should().BeFalse();
         }
 
         [Theory]
@@ -522,18 +526,18 @@ namespace IO.Ably.Tests.Realtime
 
             await client.WaitForState(ConnectionState.Connected);
 
-            var stateChanges = new List<ConnectionState>();
+            var stateChanges = new List<ConnectionStateChange>();
             client.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
-                stateChanges.Add(state.Current);
+                stateChanges.Add(state);
                 client.Connection.Once(ConnectionEvent.Connecting, state2 =>
                 {
-                    stateChanges.Add(state2.Current);
+                    stateChanges.Add(state2);
                     client.Connection.Once(ConnectionEvent.Disconnected, state3 =>
                     {
                         client.Connection.State.Should().Be(ConnectionState.Disconnected);
                         client.Connection.ErrorReason.Should().NotBeNull();
-                        stateChanges.Add(state3.Current);
+                        stateChanges.Add(state3);
                         awaiter.SetCompleted();
                     });
                 });
@@ -542,8 +546,14 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.Once(ConnectionEvent.Failed, state => throw new Exception("should not become FAILED"));
 
             await awaiter.Task;
-            stateChanges.Should().BeEquivalentTo(new[]
+            stateChanges.Select(x => x.Current).Should().BeEquivalentTo(new[]
                 { ConnectionState.Disconnected, ConnectionState.Connecting, ConnectionState.Disconnected });
+
+            stateChanges[0].HasError.Should().BeTrue();
+            stateChanges[0].Reason.Code.Should().Be(40142);
+            stateChanges[1].HasError.Should().BeFalse();
+            stateChanges[2].HasError.Should().BeTrue();
+            stateChanges[2].Reason.Code.Should().Be(80019);
         }
 
         [Theory]
@@ -567,26 +577,32 @@ namespace IO.Ably.Tests.Realtime
 
             await client.WaitForState(ConnectionState.Connected);
 
-            var stateChanges = new List<ConnectionState>();
+            var stateChanges = new List<ConnectionStateChange>();
             client.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
-                stateChanges.Add(state.Current);
+                stateChanges.Add(state);
                 client.Connection.Once(ConnectionEvent.Connecting, state2 =>
                 {
-                    stateChanges.Add(state2.Current);
+                    stateChanges.Add(state2);
                     client.Connection.Once(ConnectionEvent.Failed, state3 =>
                     {
                         client.Connection.State.Should().Be(ConnectionState.Failed);
                         client.Connection.ErrorReason.Should().NotBeNull();
-                        stateChanges.Add(state3.Current);
+                        stateChanges.Add(state3);
                         awaiter.SetCompleted();
                     });
                 });
             });
 
             await awaiter.Task;
-            stateChanges.Should().BeEquivalentTo(new[]
+            stateChanges.Select(x => x.Current).Should().BeEquivalentTo(new[]
                 { ConnectionState.Disconnected, ConnectionState.Connecting, ConnectionState.Failed });
+
+            stateChanges[0].HasError.Should().BeTrue();
+            stateChanges[0].Reason.Code.Should().Be(40142);
+            stateChanges[1].HasError.Should().BeFalse();
+            stateChanges[2].HasError.Should().BeTrue();
+            stateChanges[2].Reason.Code.Should().Be(40300);
         }
 
         [Theory]
