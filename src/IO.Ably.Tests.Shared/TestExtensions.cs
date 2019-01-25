@@ -1,5 +1,6 @@
 ﻿using System;
 using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Types;
 
 namespace IO.Ably.Tests
 {
@@ -14,6 +15,33 @@ namespace IO.Ably.Tests
         {
             var factory = ((AblyRealtime)client).Options.TransportFactory as TestTransportFactory;
             factory.OnTransportCreated = onCreated;
+        }
+
+        internal static void SimulateLostConnectionAndState(this IRealtimeClient client)
+        {
+            client.Connection.Id = string.Empty;
+            client.Connection.Key = "xxxxx!xxxxxxx-xxxxxxxx-xxxxxxxx";
+            client.GetTestTransport().Close(false);
+        }
+
+        internal static void BeforeProtocolMessageProcessed(this AblyRealtime client, Action<ProtocolMessage> action)
+        {
+            var t = client.GetTestTransport();
+            if (t != null)
+            {
+                t.BeforeDataProcessed = action;
+            }
+
+            if (client.Options.TransportFactory is TestTransportFactory f)
+            {
+                f.BeforeDataProcessed = action;
+            }
+        }
+
+        internal static void AfterProtocolMessageProcessed(this AblyRealtime client, Action<ProtocolMessage> action)
+        {
+            client.GetTestTransport().AfterDataReceived = action;
+            (client.Options.TransportFactory as TestTransportFactory).AfterDataReceived = action;
         }
     }
 }
