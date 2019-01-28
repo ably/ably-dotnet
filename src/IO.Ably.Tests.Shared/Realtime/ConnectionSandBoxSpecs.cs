@@ -591,6 +591,56 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTN15g")]
+        [Trait("spec", "RTN15g1")]
+        public async Task WhenDisconnectedPastTTL_ShouldNotResume_ShouldClearConnectionStateAndAttemptNewConnection(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, (options, _) =>
+            {
+                options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(1000);
+                options.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(5000);
+            });
+
+            DateTime disconnectedAt = DateTime.MinValue;
+            DateTime reconnectedAt = DateTime.MinValue;
+            TimeSpan connectionStateTtl = TimeSpan.MinValue;
+            string initialConnectionId = string.Empty;
+            string newConnectionId = string.Empty;
+
+            await client.WaitForState(ConnectionState.Connected);
+            client.Connection.ConnectionStateTtl = TimeSpan.FromSeconds(1);
+            initialConnectionId = client.Connection.Id;
+            connectionStateTtl = client.Connection.ConnectionStateTtl;
+
+            await WaitFor(60000, async done =>
+            {
+                client.Connection.Once(ConnectionEvent.Disconnected, change2 =>
+                {
+                    disconnectedAt = DateTime.UtcNow;
+                    client.Connection.Once(ConnectionEvent.Connecting, change3 =>
+                    {
+                        reconnectedAt = DateTime.UtcNow;
+                        client.Connection.Once(ConnectionEvent.Connected, change4 =>
+                        {
+                            newConnectionId = client.Connection.Id;
+                            done();
+                        });
+                    });
+                });
+
+                client.GetTestTransport().Close(); // close event is surpressed by default
+                await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager, ErrorInfo.ReasonDisconnected, client.Logger));
+            });
+
+            var interval = reconnectedAt - disconnectedAt;
+            interval.TotalMilliseconds.Should().BeGreaterThan(5000);
+            initialConnectionId.Should().NotBeNullOrEmpty();
+            initialConnectionId.Should().NotBe(newConnectionId);
+            connectionStateTtl.Should().Be(TimeSpan.FromSeconds(1));
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RTN15i")]
         public async Task WithConnectedClient_WhenErrorProtocolMessageReceived_ShouldBecomeFailed(Protocol protocol)
         {
