@@ -593,6 +593,8 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         [Trait("spec", "RTN15g")]
         [Trait("spec", "RTN15g1")]
+        [Trait("spec", "RTN15g2")]
+        [Trait("spec", "RTN15g3")]
         public async Task WhenDisconnectedPastTTL_ShouldNotResume_ShouldClearConnectionStateAndAttemptNewConnection(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol, (options, _) =>
@@ -608,21 +610,42 @@ namespace IO.Ably.Tests.Realtime
             string newConnectionId = string.Empty;
 
             await client.WaitForState(ConnectionState.Connected);
+
             client.Connection.ConnectionStateTtl = TimeSpan.FromSeconds(1);
             initialConnectionId = client.Connection.Id;
             connectionStateTtl = client.Connection.ConnectionStateTtl;
+
+            var aliveAt1 = client.Connection.ConfirmedAliveAt;
+            var aliveAt2 = aliveAt1;
+
+            // RTN15g3 ATTACHED, ATTACHING, or SUSPENDED must be automatically reattached
+            var channels = new List<RealtimeChannel>();
+            channels.Add(client.Channels.Get("attached".AddRandomSuffix()) as RealtimeChannel);
+            channels.Add(client.Channels.Get("attaching".AddRandomSuffix()) as RealtimeChannel);
+            channels.Add(client.Channels.Get("suspended".AddRandomSuffix()) as RealtimeChannel);
+            channels[2].State = ChannelState.Suspended;
+
+            channels[0].Attach();
+            await channels[0].WaitForState();
+
+            channels[0].State.Should().Be(ChannelState.Attached);
+            channels[1].State.Should().Be(ChannelState.Initialized); // set attaching later
+            channels[2].State.Should().Be(ChannelState.Suspended);
 
             await WaitFor(60000, async done =>
             {
                 client.Connection.Once(ConnectionEvent.Disconnected, change2 =>
                 {
                     disconnectedAt = DateTime.UtcNow;
+                    channels[1].Attach(); // connection disconnected so this should become attaching
+                    channels[1].WaitForState(ChannelState.Attaching);
                     client.Connection.Once(ConnectionEvent.Connecting, change3 =>
                     {
                         reconnectedAt = DateTime.UtcNow;
                         client.Connection.Once(ConnectionEvent.Connected, change4 =>
                         {
                             newConnectionId = client.Connection.Id;
+                            aliveAt2 = client.Connection.ConfirmedAliveAt;
                             done();
                         });
                     });
@@ -637,6 +660,24 @@ namespace IO.Ably.Tests.Realtime
             initialConnectionId.Should().NotBeNullOrEmpty();
             initialConnectionId.Should().NotBe(newConnectionId);
             connectionStateTtl.Should().Be(TimeSpan.FromSeconds(1));
+            aliveAt1.Value.Should().BeBefore(aliveAt2.Value);
+
+            await channels[0].WaitForState(ChannelState.Attached);
+            await channels[1].WaitForState(ChannelState.Attached);
+            await channels[2].WaitForState(ChannelState.Attached);
+
+            channels[0].State.Should().Be(ChannelState.Attached);
+            channels[1].State.Should().Be(ChannelState.Attached);
+            channels[2].State.Should().Be(ChannelState.Attached);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15g")]
+        [Trait("spec", "RTN15g1")]
+        public async Task WhenDisconnectedIsNotPastTTL_ShouldResume_ShouldClearConnectionStateAndAttemptNewConnection(
+            Protocol protocol)
+        {
         }
 
         [Theory]
