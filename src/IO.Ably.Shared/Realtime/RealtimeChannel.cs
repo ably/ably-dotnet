@@ -506,9 +506,10 @@ namespace IO.Ably.Realtime
         {
             if (Logger.IsDebug)
             {
-                Logger.Debug($"HandleStateChange state change: {state}");
+                Logger.Debug($"HandleStateChange state change from {State} to {state}");
             }
 
+            var oldState = State;
             State = state;
 
             switch (state)
@@ -579,7 +580,33 @@ namespace IO.Ably.Realtime
 
                     break;
                 case ChannelState.Detached:
-                    ClearAndFailChannelQueuedMessages(error);
+                    /* RTL13a check for unexpected detach */
+                    switch (oldState)
+                    {
+                        /* (RTL13a) If the channel is in the @ATTACHED@ or @SUSPENDED@ states,
+                         an attempt to reattach the channel should be made immediately */
+                        case ChannelState.Attached:
+                        case ChannelState.Suspended:
+                            try
+                            {
+                                Attach();
+                            }
+                            catch (Exception e)
+                            {
+                                Logger.Error("Attempting reattach threw exception", e);
+                                SetChannelState(oldState, protocolMessage);
+                            }
+                            break;
+                        case ChannelState.Attaching:
+                            /* RTL13b says we need to be suspended, but continue to retry */
+                            Logger.Debug($"Server initiated detach for channel {Name} whilst attaching; moving to suspended");
+                            SetChannelState(oldState, protocolMessage);
+                            ReattachAfterTimeout();
+                            break;
+                        default:
+                            ClearAndFailChannelQueuedMessages(error);
+                            break;
+                    }
                     break;
                 case ChannelState.Failed:
                     AttachedAwaiter.Fail(error);
@@ -590,6 +617,22 @@ namespace IO.Ably.Realtime
                     ClearAndFailChannelQueuedMessages(error);
                     break;
             }
+        }
+
+        private void ReattachAfterTimeout()
+        {
+            Task.Run(async () =>
+            {
+                await Task.Delay(RealtimeClient.Options.SuspendedRetryTimeout);
+                try
+                {
+                    Attach();
+                }
+                catch (Exception e)
+                {
+                    Logger.Error("Reattach channel failed; channel = " + Name, e);
+                }
+            }).ConfigureAwait(false);
         }
 
         private void ClearAndFailChannelQueuedMessages(ErrorInfo error)
