@@ -269,6 +269,27 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTL6c5")]
+        public async Task PublishShouldNotImplicitlyAttachAChannel(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            var channel = client.Channels.Get("RTL6c5".AddRandomSuffix());
+
+            var awaiter = new TaskCompletionAwaiter(5000);
+            channel.Once(ChannelEvent.Attached, change =>
+            {
+                awaiter.SetCompleted();
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+            channel.Publish(null, "foo");
+
+            var result = await awaiter.Task;
+            result.Should().BeFalse("channel should not have become attached");
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RTL6e")]
         [Trait("spec", "RTL6e1")]
         public async Task WithBasicAuthAndAMessageWithClientId_ShouldReturnTheMessageWithThatClientID(Protocol protocol)
