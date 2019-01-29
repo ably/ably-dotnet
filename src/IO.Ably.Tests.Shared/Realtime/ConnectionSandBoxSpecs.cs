@@ -690,7 +690,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetRealtimeClient(protocol, (opts, _) =>
             {
-                opts.Recover = "c17a8!WeXvJum2pbuVYZtF-1b63c17a8:-1";
+                opts.Recover = "c17a8!WeXvJum2pbuVYZtF-1b63c17a8:-1:-1";
                 opts.AutoConnect = false;
             });
 
