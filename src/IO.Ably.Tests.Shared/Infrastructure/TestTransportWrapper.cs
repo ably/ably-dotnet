@@ -76,6 +76,8 @@ namespace IO.Ably.Tests.Infrastructure
         /// </summary>
         public List<ProtocolMessage> ProtocolMessagesReceived => (Listener as TransportListenerWrapper)?.ProtocolMessagesReceived;
 
+        public List<ProtocolMessage> ProtocolMessagesSent { get; set; } = new List<ProtocolMessage>();
+
         public Action<ProtocolMessage> BeforeDataProcessed;
         public Action<ProtocolMessage> AfterDataReceived;
         public Action<ProtocolMessage> MessageSent = delegate { };
@@ -118,6 +120,7 @@ namespace IO.Ably.Tests.Infrastructure
 
         public void Send(RealtimeTransportData data)
         {
+            ProtocolMessagesSent.Add(data.Original);
             MessageSent(data.Original);
             WrappedTransport.Send(data);
         }
