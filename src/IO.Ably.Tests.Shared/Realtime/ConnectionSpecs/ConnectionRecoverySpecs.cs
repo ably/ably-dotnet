@@ -26,10 +26,11 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
         [Fact]
         [Trait("spec", "RTN16b")]
-        public void RecoveryKey_ShouldBeConnectionKeyPlusConnectionSerial()
+        public void RecoveryKey_ShouldBeConnectionKeyPlusConnectionSerialPlusMsgSerial()
         {
             var client = GetConnectedClient();
-            client.Connection.RecoveryKey.Should().Be($"{client.Connection.Key}:{client.Connection.Serial}");
+            client.Connection.Serial.Should().Be()
+            client.Connection.RecoveryKey.Should().Be($"{client.Connection.Key}:{client.Connection.Serial}:{client.Connection.MessageSerial}");
         }
 
         public ConnectionRecoverySpecs(ITestOutputHelper output)

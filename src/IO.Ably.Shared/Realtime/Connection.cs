@@ -114,7 +114,10 @@ namespace IO.Ably.Realtime
 
         public bool ConnectionResumable => Key.IsNotEmpty() && Serial.HasValue;
 
-        public string RecoveryKey => ConnectionResumable ? $"{Key}:{Serial.Value}" : string.Empty;
+        /// <summary>
+        /// - (RTN16b) Connection#recoveryKey is an attribute composed of the connectionKey, and the latest connectionSerial received on the connection, and the current msgSerial
+        /// </summary>
+        public string RecoveryKey => ConnectionResumable ? $"{Key}:{Serial.Value}:{MessageSerial}" : string.Empty;
 
         public TimeSpan ConnectionStateTtl { get; internal set; } = Defaults.ConnectionStateTtl;
 
