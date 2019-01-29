@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably;
@@ -48,7 +49,6 @@ namespace IO.Ably.Realtime
             OsEventSubscribers.Add(new WeakReference<Action<NetworkState>>(stateAction));
         }
 
-
         internal AblyRest RestClient => RealtimeClient.RestClient;
 
         internal AblyRealtime RealtimeClient { get; }
@@ -70,6 +70,25 @@ namespace IO.Ably.Realtime
             FallbackHosts = realtimeClient?.Options?.FallbackHosts.Shuffle().ToList();
             RealtimeClient = realtimeClient;
             RegisterWithOSNetworkStateEvents(HandleNetworkStateChange);
+
+            var recover = realtimeClient?.Options?.Recover;
+            if (recover.IsNotEmpty())
+            {
+                ParseRecoveryKey(recover);
+            }
+        }
+
+        private void ParseRecoveryKey(string recover)
+        {
+            var match = TransportParams.RecoveryKeyRegex.Match(recover);
+            if (match.Success)
+            {
+                MessageSerial = long.Parse(match.Groups[3].Value);
+            }
+            else
+            {
+                Logger.Error($"Recovery Key '{recover}' could not be parsed.");
+            }
         }
 
         internal void Initialise()
