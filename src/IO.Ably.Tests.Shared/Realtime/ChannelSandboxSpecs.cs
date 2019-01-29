@@ -736,6 +736,80 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTL13a")]
+        public async Task ServerInitiatedDetach_WhenChannelAttached_ShouldReattachImmediately(Protocol protocol)
+        {
+            var channelName = "RTL13a".AddRandomSuffix();
+            var client = await GetRealtimeClient(protocol);
+            var channel = client.Channels.Get(channelName);
+            channel.Attach();
+            await channel.WaitForState(ChannelState.Attached);
+
+            channel.State.Should().Be(ChannelState.Attached);
+
+            var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Detached, channelName);
+
+            ChannelStateChange stateChange = null;
+            await WaitFor(done =>
+            {
+                channel.Once(ChannelEvent.Attaching, change =>
+                {
+                    stateChange = change;
+                    done();
+                });
+
+                client.GetTestTransport().FakeReceivedMessage(msg);
+            });
+
+            stateChange.Error.ShouldBeEquivalentTo(msg.Error);
+            channel.ErrorReason.Should().BeNull();
+
+            client.GetTestTransport().ProtocolMessagesSent
+                .Count(x => x.Action == ProtocolMessage.MessageAction.Attach).Should().Be(2);
+
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL13a")]
+        public async Task ServerInitiatedDetach_WhenChannelSuspended_ShouldReattachImmediately(Protocol protocol)
+        {
+            var channelName = "RTL13a".AddRandomSuffix();
+            var client = await GetRealtimeClient(protocol);
+            client.Connect();
+            await client.WaitForState();
+            var channel = client.Channels.Get(channelName) as RealtimeChannel;
+            channel.SetChannelState(ChannelState.Suspended);
+            await channel.WaitForState(ChannelState.Suspended);
+
+            channel.State.Should().Be(ChannelState.Suspended);
+
+            var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Detached, channelName);
+
+            ChannelStateChange stateChange = null;
+            await WaitFor(done =>
+            {
+                channel.Once(ChannelEvent.Attaching, change =>
+                {
+                    stateChange = change;
+                    done();
+                });
+
+                client.GetTestTransport().FakeReceivedMessage(msg);
+            });
+
+            stateChange.Error.ShouldBeEquivalentTo(msg.Error);
+            channel.ErrorReason.Should().BeNull();
+
+            client.GetTestTransport().ProtocolMessagesSent
+                .Count(x => x.Action == ProtocolMessage.MessageAction.Attach).Should().Be(2);
+
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("issue", "117")]
         public async Task AttachAwaitShouldtimeoutIfStateChanges(Protocol protocol)
         {
