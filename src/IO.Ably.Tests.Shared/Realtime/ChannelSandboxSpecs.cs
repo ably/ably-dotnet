@@ -881,6 +881,7 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTL13b")]
+        [Trait("spec", "RTL13c")]
         public async Task ServerInitiatedDetach_WhenChannelAttaching_ShouldAttemptReattachImmediately_WhenReattachFailsBecomeSuspended(Protocol protocol)
         {
             // reduce timeouts to speed up test
@@ -935,6 +936,22 @@ namespace IO.Ably.Tests.Realtime
                 channel.Attach();
             });
 
+            client.Close();
+
+            // wait for double the requestTimeout
+            var tsc = new TaskCompletionAwaiter(requestTimeout.Add(requestTimeout).Seconds * 1000);
+            await client.WaitForState(ConnectionState.Closed);
+
+            // RTL13c If the connection is no longer CONNECTED,
+            // then the automatic attempts to re-attach the channel should stop
+            channel.Once(ChannelEvent.Attaching, change3 =>
+            {
+                tsc.SetCompleted(); // should not be called
+            });
+
+            var didRetry = await tsc.Task;
+            didRetry.Should().BeFalse();
+
             // the first error should be null
             stateChange.Error.Should().BeNull();
 
@@ -944,7 +961,6 @@ namespace IO.Ably.Tests.Realtime
             // retry should happen after SuspendedRetryTimeout has elapsed
             (end - start).Should().BeCloseTo(requestTimeout, 500);
 
-            client.Close();
         }
 
         [Theory]
