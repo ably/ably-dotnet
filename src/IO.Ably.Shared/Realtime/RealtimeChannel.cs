@@ -204,9 +204,15 @@ namespace IO.Ably.Realtime
                 throw new AblyException($"Cannot attach when connection is in {ConnectionState} state");
             }
 
+            Attach(null, null, callback);
+        }
+
+        private void Attach(ErrorInfo error, ProtocolMessage msg = null, Action<bool, ErrorInfo> callback = null)
+        {
+            error = error == null && msg?.Error != null ? msg.Error : error;
             if (AttachedAwaiter.StartWait(callback, ConnectionManager.Options.RealtimeRequestTimeout))
             {
-                SetChannelState(ChannelState.Attaching);
+                SetChannelState(ChannelState.Attaching, error, msg);
             }
         }
 
@@ -447,7 +453,7 @@ namespace IO.Ably.Realtime
 
         internal void SetChannelState(ChannelState state, ProtocolMessage protocolMessage)
         {
-            SetChannelState(state, protocolMessage.Error, protocolMessage);
+            SetChannelState(state, protocolMessage?.Error, protocolMessage);
         }
 
         internal void SetChannelState(ChannelState state, bool emitUpdate)
@@ -549,7 +555,7 @@ namespace IO.Ably.Realtime
                             /* RTP1 If [HAS_PRESENCE] flag is 0 or there is no flags field,
                              * the presence map should be considered in sync immediately
                              * with no members present on the channel */
-                    Presence.SkipSync();
+                            Presence.SkipSync();
                         }
 
                         AttachedSerial = protocolMessage.ChannelSerial;
@@ -586,22 +592,15 @@ namespace IO.Ably.Realtime
                         /* (RTL13a) If the channel is in the @ATTACHED@ or @SUSPENDED@ states,
                          an attempt to reattach the channel should be made immediately */
                         case ChannelState.Attached:
-                        case ChannelState.Suspended:
-                            try
-                            {
-                                Attach();
-                            }
-                            catch (Exception e)
-                            {
-                                Logger.Error("Attempting reattach threw exception", e);
-                                SetChannelState(oldState, protocolMessage);
-                            }
+                            Reattach(error, protocolMessage);
                             break;
                         case ChannelState.Attaching:
-                            /* RTL13b says we need to be suspended, but continue to retry */
+                            /* RTL13b says we need to become suspended, but continue to retry */
                             Logger.Debug($"Server initiated detach for channel {Name} whilst attaching; moving to suspended");
-                            SetChannelState(oldState, protocolMessage);
-                            ReattachAfterTimeout();
+                            SetChannelState(ChannelState.Suspended, error, protocolMessage);
+                            ReattachAfterTimeout(error, protocolMessage);
+                            break;
+                        case ChannelState.Suspended:
                             break;
                         default:
                             ClearAndFailChannelQueuedMessages(error);
@@ -619,19 +618,35 @@ namespace IO.Ably.Realtime
             }
         }
 
-        private void ReattachAfterTimeout()
+        private void Reattach(ErrorInfo error, ProtocolMessage msg)
+        {
+            try
+            {
+                Attach(error, msg, (success, info) =>
+                {
+                    if (!success && State == ChannelState.Attaching)
+                    {
+                        info.Code = 91200;
+                        SetChannelState(ChannelState.Suspended, info, null, true);
+                        ReattachAfterTimeout(error, msg);
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Reattach channel failed; channel = " + Name, e);
+            }
+        }
+
+        /// <summary>
+        /// should only be called when the channel is SUSPENDED
+        /// </summary>
+        private void ReattachAfterTimeout(ErrorInfo error, ProtocolMessage msg)
         {
             Task.Run(async () =>
             {
                 await Task.Delay(RealtimeClient.Options.SuspendedRetryTimeout);
-                try
-                {
-                    Attach();
-                }
-                catch (Exception e)
-                {
-                    Logger.Error("Reattach channel failed; channel = " + Name, e);
-                }
+                Reattach(error, msg);
             }).ConfigureAwait(false);
         }
 
