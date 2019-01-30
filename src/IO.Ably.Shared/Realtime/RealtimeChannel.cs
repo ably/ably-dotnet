@@ -646,7 +646,12 @@ namespace IO.Ably.Realtime
             Task.Run(async () =>
             {
                 await Task.Delay(RealtimeClient.Options.SuspendedRetryTimeout);
-                Reattach(error, msg);
+
+                // only retry if the connection is connected (RTL13c)
+                if (Connection.State == ConnectionState.Connected)
+                {
+                    Reattach(error, msg);
+                }
             }).ConfigureAwait(false);
         }
 
