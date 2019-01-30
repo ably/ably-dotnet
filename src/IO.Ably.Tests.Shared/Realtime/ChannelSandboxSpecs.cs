@@ -803,7 +803,146 @@ namespace IO.Ably.Tests.Realtime
             channel.ErrorReason.Should().BeNull();
 
             client.GetTestTransport().ProtocolMessagesSent
-                .Count(x => x.Action == ProtocolMessage.MessageAction.Attach).Should().Be(2);
+                .Count(x => x.Action == ProtocolMessage.MessageAction.Attach).Should().Be(1);
+
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL13b")]
+        public async Task ServerInitiatedDetach_WhenChannelAttached_ShouldAttemptReattachImmediately_WhenReattachFailsBecomeSuspended(Protocol protocol)
+        {
+            // reduce timeouts to speed up test
+            var requestTimeout = TimeSpan.FromSeconds(2);
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.RealtimeRequestTimeout = requestTimeout;
+                options.SuspendedRetryTimeout = requestTimeout;
+            });
+
+            var channelName = "RTL13a".AddRandomSuffix();
+            var channel = client.Channels.Get(channelName);
+            channel.Attach();
+            await channel.WaitForState(ChannelState.Attached);
+            channel.State.Should().Be(ChannelState.Attached);
+
+            // block attach messages being sent causing the attach to timeout
+            client.GetTestTransport().BlockSendActions.Add(ProtocolMessage.MessageAction.Attach);
+
+            var detachedMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Detached, channelName)
+            {
+                Error = new ErrorInfo("fake error")
+            };
+
+            ChannelStateChange stateChange = null;
+            ChannelStateChange stateChange2 = null;
+            var start = DateTimeOffset.MinValue;
+            var end = DateTimeOffset.MaxValue;
+
+            await WaitFor(30000, done =>
+            {
+                // after detached message channel should become ATTACHING
+                channel.Once(ChannelEvent.Attaching, change =>
+                {
+                    stateChange = change;
+
+                    // after the ATTACH fails it should become SUSPENDED
+                    channel.Once(ChannelEvent.Suspended, change2 =>
+                    {
+                        stateChange2 = change2;
+                        start = DateTimeOffset.UtcNow;
+
+                        // it should keep trying to attach
+                        channel.Once(ChannelEvent.Attaching, change3 =>
+                        {
+                            end = DateTimeOffset.UtcNow;
+                            done();
+                        });
+                    });
+                });
+
+                // inject detached message
+                client.GetTestTransport().FakeReceivedMessage(detachedMessage);
+            });
+
+            // the first error should be from the detached message
+            stateChange.Error.ShouldBeEquivalentTo(detachedMessage.Error);
+
+            // the second should be a timeout error
+            stateChange2.Error.Message.Should().Be("Channel didn't attach within the default timeout");
+
+            // retry should happen after SuspendedRetryTimeout has elapsed
+            (end - start).Should().BeCloseTo(requestTimeout, 500);
+
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL13b")]
+        public async Task ServerInitiatedDetach_WhenChannelAttaching_ShouldAttemptReattachImmediately_WhenReattachFailsBecomeSuspended(Protocol protocol)
+        {
+            // reduce timeouts to speed up test
+            var requestTimeout = TimeSpan.FromSeconds(2);
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.RealtimeRequestTimeout = requestTimeout;
+                options.SuspendedRetryTimeout = requestTimeout;
+            });
+            await client.WaitForState(ConnectionState.Connected);
+            var channelName = "RTL13a".AddRandomSuffix();
+            var channel = client.Channels.Get(channelName);
+
+            // block attach messages being sent causing the attach to timeout
+            client.GetTestTransport().BlockSendActions.Add(ProtocolMessage.MessageAction.Attach);
+
+            var detachedMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Detached, channelName)
+            {
+                Error = new ErrorInfo("fake error")
+            };
+
+            ChannelStateChange stateChange = null;
+            ChannelStateChange stateChange2 = null;
+            var start = DateTimeOffset.MinValue;
+            var end = DateTimeOffset.MaxValue;
+
+            await WaitFor(30000, done =>
+            {
+                // after detached message channel should become ATTACHING
+                channel.Once(ChannelEvent.Attaching, change =>
+                {
+                    stateChange = change;
+
+                    // after the ATTACH fails it should become SUSPENDED
+                    channel.Once(ChannelEvent.Suspended, change2 =>
+                    {
+                        stateChange2 = change2;
+                        start = DateTimeOffset.UtcNow;
+
+                        // it should keep trying to attach
+                        channel.Once(ChannelEvent.Attaching, change3 =>
+                        {
+                            end = DateTimeOffset.UtcNow;
+                            done();
+                        });
+                    });
+
+                    // inject detached message
+                    client.GetTestTransport().FakeReceivedMessage(detachedMessage);
+                });
+
+                channel.Attach();
+            });
+
+            // the first error should be null
+            stateChange.Error.Should().BeNull();
+
+            // the second should be a timeout error
+            stateChange2.Error.Message.Should().Be(detachedMessage.Error.Message);
+
+            // retry should happen after SuspendedRetryTimeout has elapsed
+            (end - start).Should().BeCloseTo(requestTimeout, 500);
 
             client.Close();
         }
