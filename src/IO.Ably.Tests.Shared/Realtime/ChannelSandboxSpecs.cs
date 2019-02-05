@@ -870,7 +870,7 @@ namespace IO.Ably.Tests.Realtime
             stateChange.Error.ShouldBeEquivalentTo(detachedMessage.Error);
 
             // the second should be a timeout error
-            stateChange2.Error.Message.Should().Be("Channel didn't attach within the default timeout");
+            stateChange2.Error.Message.Should().StartWith("Channel didn't attach within");
 
             // retry should happen after SuspendedRetryTimeout has elapsed
             (end - start).Should().BeCloseTo(requestTimeout, 500);
