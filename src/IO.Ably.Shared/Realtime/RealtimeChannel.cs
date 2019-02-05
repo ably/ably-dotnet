@@ -225,10 +225,11 @@ namespace IO.Ably.Realtime
         {
             if (Logger.IsDebug)
             {
-                Logger.Debug($"#{Name} didn't Attach within {ConnectionManager.Options.RealtimeRequestTimeout}. Setting state back to {PreviousState}");
+                Logger.Debug($"#{Name} didn't Attach within {ConnectionManager.Options.RealtimeRequestTimeout}. Setting state to {ChannelState.Suspended}");
             }
 
-            SetChannelState(PreviousState, new ErrorInfo("Channel didn't attach within the default timeout", 50000));
+            // RTL4f
+            SetChannelState(ChannelState.Suspended, new ErrorInfo($"Channel didn't attach within  {ConnectionManager.Options.RealtimeRequestTimeout}", 90007, HttpStatusCode.RequestTimeout));
         }
 
         private void OnDetachTimeout()
@@ -592,6 +593,8 @@ namespace IO.Ably.Realtime
                         /* (RTL13a) If the channel is in the @ATTACHED@ or @SUSPENDED@ states,
                          an attempt to reattach the channel should be made immediately */
                         case ChannelState.Attached:
+                        case ChannelState.Suspended:
+                            SetChannelState(ChannelState.Detached, error, protocolMessage);
                             Reattach(error, protocolMessage);
                             break;
                         case ChannelState.Attaching:
@@ -600,12 +603,11 @@ namespace IO.Ably.Realtime
                             SetChannelState(ChannelState.Suspended, error, protocolMessage);
                             ReattachAfterTimeout(error, protocolMessage);
                             break;
-                        case ChannelState.Suspended:
-                            break;
                         default:
                             ClearAndFailChannelQueuedMessages(error);
                             break;
                     }
+
                     break;
                 case ChannelState.Failed:
                     AttachedAwaiter.Fail(error);
@@ -620,22 +622,27 @@ namespace IO.Ably.Realtime
 
         private void Reattach(ErrorInfo error, ProtocolMessage msg)
         {
-            try
+            Task.Run(async () =>
             {
-                Attach(error, msg, (success, info) =>
+                try
                 {
-                    if (!success && State == ChannelState.Attaching)
+                    Attach(error, msg, (success, info) =>
                     {
-                        info.Code = 91200;
-                        SetChannelState(ChannelState.Suspended, info, null, true);
-                        ReattachAfterTimeout(error, msg);
-                    }
-                });
-            }
-            catch (Exception e)
-            {
-                Logger.Error("Reattach channel failed; channel = " + Name, e);
-            }
+                        if (!success)
+                        {
+                            // If the attach timed out the channel will set SUSPENDED (as described by RTL4f and RTL13b)
+                            if (State == ChannelState.Suspended)
+                            {
+                                ReattachAfterTimeout(error, msg);
+                            }
+                        }
+                    });
+                }
+                catch (Exception e)
+                {
+                    Logger.Error("Reattach channel failed; channel = " + Name, e);
+                }
+            });
         }
 
         /// <summary>
