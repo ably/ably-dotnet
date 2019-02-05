@@ -378,8 +378,8 @@ namespace IO.Ably.Tests.Realtime
                 {
                     /* RTL2d */
                     s.Error.Should().NotBeNull();
-                    s.Error.Message.Should().Be("Channel didn't attach within the default timeout");
-                    s.Error.Code.Should().Be(50000);
+                    s.Error.Message.Should().StartWith("Channel didn't attach within");
+                    s.Error.Code.Should().Be(90007);
                     tsc.SetCompleted();
                 });
 
@@ -515,11 +515,11 @@ namespace IO.Ably.Tests.Realtime
 
             [Theory]
             [InlineData(ChannelState.Initialized)]
-            [InlineData(ChannelState.Detached)]
             [InlineData(ChannelState.Detaching)]
+            [InlineData(ChannelState.Detached)]
             [InlineData(ChannelState.Failed)]
             [Trait("spec", "RTL4f")]
-            public async Task ShouldReturnToPreviousStateIfAttachMessageNotReceivedWithinDefaultTimeout(ChannelState previousState)
+            public async Task ShouldBecomeSuspendedIfAttachMessageNotReceivedWithinDefaultTimeout(ChannelState previousState)
             {
                 SetState(_channel, previousState);
 
@@ -551,7 +551,7 @@ namespace IO.Ably.Tests.Realtime
                     }
                 }
 
-                _channel.State.Should().Be(previousState);
+                _channel.State.Should().Be(ChannelState.Suspended);
                 _channel.ErrorReason.Should().NotBeNull();
             }
 
