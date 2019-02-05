@@ -101,12 +101,14 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL2d")]
             [Trait("spec", "TH1")]
             [Trait("spec", "TH2")]
+            [Trait("spec", "TH5")]
             public void ShouldEmitTheFollowingStates(ChannelEvent channelEvent)
             {
                 var chanName = "test".AddRandomSuffix();
                 var client = GetConnectedClient();
                 var channel = client.Channels.Get(chanName);
 
+                ChannelEvent sourceEvent = ChannelEvent.Update;
                 ChannelState previousState = ChannelState.Failed;
                 ChannelState newState = ChannelState.Initialized;
                 channel.On(channelStateChange =>
@@ -122,6 +124,9 @@ namespace IO.Ably.Tests.Realtime
 
                     // should always be Initialized
                     previousState = channelStateChange.Previous;
+
+                    // TH5
+                    sourceEvent = channelStateChange.Event;
                     Done();
                 });
 
@@ -132,6 +137,7 @@ namespace IO.Ably.Tests.Realtime
                 channel.State.Should().Be((ChannelState)channelEvent);
                 newState.Should().Be((ChannelState)channelEvent);
                 previousState.Should().Be(ChannelState.Initialized);
+                sourceEvent.Should().Be(channelEvent);
             }
 
             [Theory]
