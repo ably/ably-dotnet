@@ -489,7 +489,7 @@ namespace IO.Ably.Realtime
                 channelEvent = (ChannelEvent) state;
             }
 
-            var channelStateChange = new ChannelStateChange(state, State, error, protocolMessage);
+            var channelStateChange = new ChannelStateChange(channelEvent, state, State, error, protocolMessage);
             HandleStateChange(state, error, protocolMessage);
             InternalStateChanged.Invoke(this, channelStateChange);
 
@@ -756,7 +756,7 @@ namespace IO.Ably.Realtime
         {
             if (State == ChannelState.Attached)
             {
-                Emit(ChannelEvent.Update, new ChannelStateChange(State, State, errorInfo, resumed));
+                Emit(ChannelEvent.Update, new ChannelStateChange(ChannelEvent.Update, State, State, errorInfo, resumed));
             }
         }
 

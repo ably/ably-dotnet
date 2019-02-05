@@ -5,15 +5,16 @@ namespace IO.Ably.Realtime
 {
     public class ChannelStateChange : EventArgs
     {
-        public ChannelStateChange(ChannelState state, ChannelState previous, ErrorInfo error = null, ProtocolMessage protocolMessage = null)
-            : this(state, previous, error, false)
+        public ChannelStateChange(ChannelEvent e, ChannelState state, ChannelState previous, ErrorInfo error = null, ProtocolMessage protocolMessage = null)
+            : this(e, state, previous, error, false)
         {
             ProtocolMessage = protocolMessage;
             Resumed = protocolMessage != null && protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed);
         }
 
-        public ChannelStateChange(ChannelState state, ChannelState previous, ErrorInfo error = null, bool resumed = false)
+        public ChannelStateChange(ChannelEvent e, ChannelState state, ChannelState previous, ErrorInfo error = null, bool resumed = false)
         {
+            Event = e;
             Previous = previous;
             Current = state;
             Error = error;
@@ -27,6 +28,8 @@ namespace IO.Ably.Realtime
         public ErrorInfo Error { get; }
 
         public bool Resumed { get;  }
+
+        public ChannelEvent Event { get; }
 
         internal ProtocolMessage ProtocolMessage { get; set; } = null;
     }
