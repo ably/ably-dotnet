@@ -99,6 +99,8 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL2a")]
             [Trait("spec", "RTL2b")]
             [Trait("spec", "RTL2d")]
+            [Trait("spec", "TH1")]
+            [Trait("spec", "TH2")]
             public void ShouldEmitTheFollowingStates(ChannelEvent channelEvent)
             {
                 var chanName = "test".AddRandomSuffix();
@@ -200,6 +202,9 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL2f")]
             [Trait("spec", "RTL2g")]
             [Trait("spec", "RTL12")]
+            [Trait("spec", "TH2")]
+            [Trait("spec", "TH3")]
+            [Trait("spec", "TH4")]
             async Task WhenAttachedProtocolMessageWithResumedFlagReceived_EmittedChannelStateChangeShouldIndicateResumed()
             {
                 var client = GetConnectedClient();
@@ -231,7 +236,7 @@ namespace IO.Ably.Tests.Realtime
                 // RTL2g / RTL12
                 channel.Once(ChannelEvent.Update, stateChange =>
                 {
-                    // RTL2f
+                    // RTL2f, TH2, TH4
                     stateChange.Current.Should().Be(ChannelState.Attached);
                     stateChange.Previous.Should().Be(ChannelState.Attached);
                     stateChange.Resumed.Should().BeFalse();
@@ -264,8 +269,10 @@ namespace IO.Ably.Tests.Realtime
 
                 channel.Once(ChannelEvent.Attached, stateChange =>
                 {
-                    // RTL2f
+                    // RTL2f, TH4
                     stateChange.Resumed.Should().BeTrue();
+
+                    // TH3
                     stateChange.Error.Message.Should().Be("test error");
                     tsc.SetCompleted();
                 });
