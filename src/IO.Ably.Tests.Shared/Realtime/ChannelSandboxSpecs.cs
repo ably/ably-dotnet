@@ -872,8 +872,8 @@ namespace IO.Ably.Tests.Realtime
             // the second should be a timeout error
             stateChange2.Error.Message.Should().StartWith("Channel didn't attach within");
 
-            // retry should happen after SuspendedRetryTimeout has elapsed
-            (end - start).Should().BeCloseTo(requestTimeout, 500);
+            // retry should happen after ChannelRetryTimeout has elapsed
+            (end - start).Should().BeCloseTo(requestTimeout, 500); // TL3l7
 
             client.Close();
         }
