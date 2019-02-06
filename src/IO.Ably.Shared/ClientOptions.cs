@@ -183,6 +183,8 @@ namespace IO.Ably
 
         public TimeSpan SuspendedRetryTimeout { get; set; } = TimeSpan.FromSeconds(30);
 
+        public TimeSpan ChannelRetryTimeout { get; set; } = TimeSpan.FromSeconds(15);
+
         public TimeSpan HttpOpenTimeout { get; set; } = TimeSpan.FromSeconds(4);
 
         public TimeSpan HttpRequestTimeout { get; set; } = TimeSpan.FromSeconds(10);

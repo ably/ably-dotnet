@@ -818,7 +818,7 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
                 options.RealtimeRequestTimeout = requestTimeout;
-                options.SuspendedRetryTimeout = requestTimeout;
+                options.ChannelRetryTimeout = requestTimeout;
             });
 
             var channelName = "RTL13a".AddRandomSuffix();
