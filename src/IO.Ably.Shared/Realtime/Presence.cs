@@ -305,6 +305,21 @@ namespace IO.Ably.Realtime
 
         internal void UpdatePresence(PresenceMessage msg, Action<bool, ErrorInfo> callback)
         {
+            switch (_connection.Connection.State)
+            {
+                case ConnectionState.Initialized:
+                case ConnectionState.Connecting:
+                case ConnectionState.Disconnected:
+                case ConnectionState.Connected:
+                    break;
+                default:
+                    throw new AblyException(
+                        new ErrorInfo(
+                            $"Unable to enter presence channel when connection is in a ${_connection.Connection.State} state",
+                            91001,
+                            HttpStatusCode.BadRequest));
+            }
+
             switch (_channel.State)
             {
                 case ChannelState.Initialized:
@@ -328,7 +343,7 @@ namespace IO.Ably.Realtime
                     _connection.Send(message, callback);
                     break;
                 default:
-                    throw new AblyException("Unable to enter presence channel in detached or failed state", 91001, HttpStatusCode.BadRequest);
+                    throw new AblyException($"Unable to enter presence channel in {_channel.State} state", 91001, HttpStatusCode.BadRequest);
             }
         }
 
