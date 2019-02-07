@@ -872,8 +872,8 @@ namespace IO.Ably.Tests.Realtime
             // the second should be a timeout error
             stateChange2.Error.Message.Should().StartWith("Channel didn't attach within");
 
-            // retry should happen after ChannelRetryTimeout has elapsed
-            (end - start).Should().BeCloseTo(requestTimeout, 500); // TL3l7
+            // retry should happen after ChannelRetryTimeout has elapsed (TL3l7)
+            (end - start).Should().BeCloseTo(requestTimeout, 500);
 
             client.Close();
         }
@@ -889,7 +889,7 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
                 options.RealtimeRequestTimeout = requestTimeout;
-                options.SuspendedRetryTimeout = requestTimeout;
+                options.ChannelRetryTimeout = requestTimeout;
             });
             await client.WaitForState(ConnectionState.Connected);
             var channelName = "RTL13a".AddRandomSuffix();
