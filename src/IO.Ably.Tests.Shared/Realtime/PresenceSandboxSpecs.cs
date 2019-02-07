@@ -446,12 +446,63 @@ namespace IO.Ably.Tests.Realtime
                 channel.Presence.InternalMap.Members.Should().HaveCount(1);
             }
 
-            /*
-             * If a SYNC is in progress, then when a presence message with an action of LEAVE arrives,
-             * it should be stored in the presence map with the action set to ABSENT.
-             * When the SYNC completes, any ABSENT members should be deleted from the presence map.
-             * (This is because in a SYNC, we might receive a LEAVE before the corresponding ENTER)
-             */
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RTP2e")]
+            public async Task PresenceMap_WhenNotSyncingAndLeaveActionArrivesMemberKeyShouldBeDeleted(Protocol protocol)
+            {
+                // setup 20 members on a channel
+                var channelName = "RTP2e".AddRandomSuffix();
+                var setupClient = await GetRealtimeClient(protocol);
+                await setupClient.WaitForState(ConnectionState.Connected);
+                var setupChannel = setupClient.Channels.Get(channelName);
+                setupChannel.Attach();
+                await setupChannel.WaitForState();
+                for (int i = 0; i < 20; i++)
+                {
+                    await setupChannel.Presence.EnterClientAsync($"member_{i}", null);
+                }
+
+                var client = await GetRealtimeClient(protocol);
+                await client.WaitForState(ConnectionState.Connected);
+                var channel = client.Channels.Get(channelName);
+                channel.Attach();
+                await channel.WaitForState();
+
+                // get presence messages and validate count
+                var members = await channel.Presence.GetAsync();
+                members.Should().HaveCount(20);
+
+                // sync should not be in progress and initial an sync should have completed
+                channel.Presence.IsSyncInProgress.Should().BeFalse("sync should have completed");
+                channel.Presence.SyncComplete.Should().BeTrue();
+
+                // pull a random member key from the presence map
+                var memberNumber = new Random().Next(0, 19);
+                var memberId = $"member_{memberNumber}";
+                var expectedMemberKey = $"{memberId}:{setupClient.Connection.Id}";
+                var actualMemberKey = channel.Presence.Map.Members[expectedMemberKey].MemberKey;
+
+                actualMemberKey.Should().Be(expectedMemberKey);
+
+                // wait for the member to leave
+                string leftClientId = null;
+                await WaitFor(done =>
+                {
+                    channel.Presence.Subscribe(PresenceAction.Leave, message =>
+                    {
+                        leftClientId = message.ClientId;
+                        done();
+                    });
+                    setupChannel.Presence.LeaveClient(memberId, null);
+                });
+
+                // then assert that the member has left
+                leftClientId.Should().Be(memberId);
+                channel.Presence.Map.Members.Should().HaveCount(19);
+                channel.Presence.Map.Members.ContainsKey(actualMemberKey).Should().BeFalse();
+            }
+
             [Theory]
             [ProtocolData]
             [Trait("spec", "RTP2f")]
@@ -555,7 +606,7 @@ namespace IO.Ably.Tests.Realtime
                         * Do not call it in states other than ATTACHED because of presence.get() side
                         * effect of attaching channel
                         */
-                    if (message.ClientId == "4" && message.Action == PresenceAction.Leave && channel.State == ChannelState.Attached)
+                if (message.ClientId == "4" && message.Action == PresenceAction.Leave && channel.State == ChannelState.Attached)
                     {
                         /*
                         * Client library won't return a presence message if it is stored as ABSENT
@@ -1226,96 +1277,45 @@ namespace IO.Ably.Tests.Realtime
 
                 [Theory]
                 [ProtocolData]
-                [Trait("spec", "RTP5c2")]
-                public async Task
-                    WhenChannelBecomesAttached_AndSyncInitiatedAsPartOfAttach_AndSyncIsNotComplete_ShouldReEnterMembersInInternalMap(
-                        Protocol protocol)
+                [Trait("spec", "RTP16a")]
+                public async Task ConnectionStateCondition_WhenConnectionIsConnected_AllPresenceMessageArePublishedImmediately(Protocol protocol)
                 {
-                    /*
-                     * If either a SYNC is initiated as part of the attach and the SYNC is complete...
-                     */
+                    var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16a"; });
+                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
 
-                    // members not present in the PresenceMap but present in the internal PresenceMap must be re-entered automatically
-                    var channelName = "RTP5c2".AddRandomSuffix();
-                    var setupClient = await GetRealtimeClient(protocol);
-                    var setupChannel = setupClient.Channels.Get(channelName);
+                    ErrorInfo errInfo = null;
+                    bool connecting = false;
+                    bool connected = false;
+                    List<int> queueCounts = new List<int>();
 
-                    // enter 3 client to the channel
-                    for (int i = 0; i < 3; i++)
+                    channel.State.Should().NotBe(ChannelState.Attached);
+
+                    await WaitFor(done =>
                     {
-                        await setupChannel.Presence.EnterClientAsync($"member_{i}", null);
-                    }
-
-                    var client = await GetRealtimeClient(protocol);
-                    await client.WaitForState();
-                    var channel = client.Channels.Get(channelName);
-                    var connectionId = client.Connection.Id;
-                    connectionId.Should().NotBeNullOrEmpty();
-                    var transport = client.GetTestTransport();
-
-                    var localMember = new PresenceMessage(PresenceAction.Enter, "local")
-                    {
-                        ConnectionId = connectionId
-                    };
-
-                    ProtocolMessage attachedMessage = null;
-                    PresenceMessage enterMessage = null;
-                    await WaitForMultiple(4, partialDone =>
-                    {
-                        // when the channel becomes attached insert a local member to the presence map
-                        channel.Once(ChannelEvent.Attaching, change =>
+                        channel.Presence.Enter("foo", (b, info) =>
                         {
-                            // put a member into the internal PresenceMap.
-                            // This member should later be re-entered automatically
-                            // and removed from the InternalMap.
-                            channel.Presence.InternalMap.Put(localMember);
-                            partialDone();
+                            errInfo = info;
+
+                            // after Enter the client should be connected and the queued message sent
+                            connected = client.Connection.State == ConnectionState.Connected;
+                            queueCounts.Add(channel.Presence.PendingPresenceQueue.Count); // expect 0
+                            done();
                         });
 
-                        // subscribe to ENTER events,
-                        // when the local member is automatically added we should get a notification here
-                        channel.Presence.Subscribe(PresenceAction.Enter, message =>
-                        {
-                            enterMessage = message;
-                            partialDone();
-                        });
+                        // 1 message should be queued at this point
+                        queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
 
-                        void TransportDataReceived(ProtocolMessage message)
-                        {
-                            if (message.Action == ProtocolMessage.MessageAction.Attached)
-                            {
-                                attachedMessage = message;
-                            }
-                            else if (message.Action == ProtocolMessage.MessageAction.Sync)
-                            {
-                                transport.AfterDataReceived = _ => { };
-                                partialDone();
-                            }
-                        }
-
-                        transport.AfterDataReceived = TransportDataReceived;
-
-                        // SYNC is initiated as part of the attach
-                        channel.Attach((b, info) => { partialDone(); });
-
+                        // The client should be connecting
+                        connecting = client.Connection.State == ConnectionState.Connecting;
                     });
 
-                    // when the attached protocol message comes in, it should indicate Presence
-                    attachedMessage.HasFlag(ProtocolMessage.Flag.Presence).Should().BeTrue();
-                    attachedMessage.HasFlag(ProtocolMessage.Flag.Resumed).Should().BeFalse();
+                    channel.State.Should().Be(ChannelState.Attached);
 
-                    // local message should be sync'ed and notifed back to the subscribed client
-                    enterMessage.ConnectionId.Should().Be(connectionId);
-                    enterMessage.ClientId.Should().Be("local");
-
-                    // The members re-entered automatically must be removed from the internal PresenceMap
-                    channel.Presence.InternalMap.Members.Should().HaveCount(0);
-
-                    var messages = (await channel.Presence.GetAsync()).ToArray();
-                    messages.Should().HaveCount(4);
-                    messages.Any(x => x.ClientId == "local").Should().BeTrue();
-
-                    channel.Presence.Map.Members.Should().HaveCount(4);
+                    connecting.Should().BeTrue();
+                    connected.Should().BeTrue();
+                    errInfo.Should().BeNull();
+                    queueCounts[0].Should().Be(1);
+                    queueCounts[1].Should().Be(0);
 
                     // clean up
                     client.Close();
