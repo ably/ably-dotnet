@@ -173,6 +173,11 @@ namespace IO.Ably.Tests.Rest
             messages[0].Id.Should().Be("RSL1k3");
             messages[1].Id.Should().BeNull();
             messages[2].Id.Should().BeNull();
+
+            var history = await channel.HistoryAsync();
+            history.Items.Should().HaveCount(4);
+            history.Items[3].Id.Should().Be("RSL1k2");
+            history.Items[2].Id.Should().Be("RSL1k3");
         }
 
         [Theory]
