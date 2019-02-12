@@ -489,7 +489,7 @@ namespace IO.Ably.Tests
             {
                 var tokenParams = CreateTokenParams(null);
                 tokenParams.Timestamp = DateTimeOffset.UtcNow.AddDays(-1);
-                return ably.Auth.RequestTokenAsync(tokenParams, new AuthOptions() { QueryTime = false });
+                return ably.Auth.RequestTokenAsync(tokenParams, AuthOptions.FromExisting(ably.Options).Merge(new AuthOptions() { QueryTime = false }));
             });
 
             error.ErrorInfo.Code.Should().Be(40104);
@@ -522,7 +522,7 @@ namespace IO.Ably.Tests
         public async Task WithoutClientId_WhenAuthorizedWithTokenParamsWithClientId_SetsClientId(Protocol protocol)
         {
             var ably = await GetRestClient(protocol);
-            var tokenDetails1 = await ably.Auth.AuthorizeAsync(new TokenParams() { ClientId = "123" }, new AuthOptions());
+            var tokenDetails1 = await ably.Auth.AuthorizeAsync(new TokenParams() { ClientId = "123" });
             ably.AblyAuth.ClientId.Should().Be("123");
 
             // uses Token Auth for all future requests (RSA10a)
@@ -530,7 +530,7 @@ namespace IO.Ably.Tests
 
             // create a token immediately (RSA10a)
             // regardless of whether the existing token is valid or not
-            var tokenDetails2 = await ably.Auth.AuthorizeAsync(new TokenParams() { ClientId = "123" }, new AuthOptions());
+            var tokenDetails2 = await ably.Auth.AuthorizeAsync(new TokenParams() { ClientId = "123" });
             tokenDetails1.Token.Should().NotBe(tokenDetails2.Token);
         }
 

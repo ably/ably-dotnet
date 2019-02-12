@@ -137,7 +137,7 @@ namespace IO.Ably
 
                     try
                     {
-                        await AblyAuth.AuthorizeAsync(null, new AuthOptions());
+                        await AblyAuth.AuthorizeAsync();
                         await AblyAuth.AddAuthHeader(request);
                         return await ExecuteHttpRequest(request);
                     }

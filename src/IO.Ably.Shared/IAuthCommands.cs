@@ -5,7 +5,7 @@ namespace IO.Ably
 {
     public interface IAblyAuth
     {
-        Task<TokenDetails> RequestTokenAsync(TokenParams tokenParams = null, AuthOptions options = null);
+        Task<TokenDetails> RequestTokenAsync(TokenParams tokenParams = null, AuthOptions authOptions = null);
 
         Task<TokenDetails> AuthorizeAsync(TokenParams tokenParams = null, AuthOptions options = null);
 

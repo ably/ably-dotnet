@@ -200,8 +200,9 @@ namespace IO.Ably.Tests
             {
                 var currentTime = TestHelpers.Now();
                 var client = GetRestClient(x => ("[" + currentTime.ToUnixTimeInMilliseconds() + "]").ToAblyJsonResponse());
-
-                var data = await CreateTokenRequest(client, null, new AuthOptions() { QueryTime = true });
+                var authOptions = client.AblyAuth.CurrentAuthOptions;
+                authOptions.QueryTime = true;
+                var data = await CreateTokenRequest(client, null, authOptions);
                 data.Timestamp.Should().BeCloseTo(currentTime);
             }
 
@@ -314,7 +315,7 @@ namespace IO.Ably.Tests
 
             [Fact]
             [Trait("spec", "RSA7a4")]
-            public void WithClientIdandDefaultOptionsParamsClientId_UsesOptionsClientIdWhenMakingTokenRequests()
+            public void WithClientIdAndDefaultOptionsParamsClientId_UsesOptionsClientIdWhenMakingTokenRequests()
             {
                 var client = GetRestClient(null, options =>
                 {
@@ -322,7 +323,7 @@ namespace IO.Ably.Tests
                     options.DefaultTokenParams = new TokenParams() { ClientId = "999" };
                 });
 
-                client.Auth.AuthorizeAsync(null, new AuthOptions());
+                client.Auth.AuthorizeAsync();
                 var tokenRequest = LastRequest.PostData as TokenRequest;
                 tokenRequest.ClientId.Should().Be("123");
             }

@@ -32,7 +32,7 @@ namespace IO.Ably.Tests.AuthTests
         public async Task WithNoTokenParamsAndNoExtraOptions_CreatesDefaultRequestWithIdClientIdAndBlankCapability()
         {
             var client = GetRestClient(null, options => options.ClientId = "Test");
-            await client.Auth.RequestTokenAsync(null, null);
+            await client.Auth.RequestTokenAsync();
 
             var data = LastRequest.PostData as TokenRequest;
             data.KeyName.Should().Be(KeyId);
@@ -156,13 +156,13 @@ namespace IO.Ably.Tests.AuthTests
 
                 // Assert
                 var data = x.PostData as TokenRequest;
-                data.Timestamp.Should().BeCloseTo(currentTime);
+                data.Timestamp.Should().BeCloseTo(currentTime, 100);
                 return DummyTokenResponse.ToTask();
             };
             var tokenParams = new TokenParams { Capability = new Capability(), ClientId = "ClientId", Ttl = TimeSpan.FromMinutes(10) };
 
             // Act
-            await rest.Auth.RequestTokenAsync(tokenParams, new AuthOptions() { QueryTime = true });
+            await rest.Auth.RequestTokenAsync(tokenParams, AuthOptions.FromExisting(rest.Options).Merge(new AuthOptions() { QueryTime = true }));
         }
 
         [Fact]
@@ -178,7 +178,7 @@ namespace IO.Ably.Tests.AuthTests
             var tokenParams = new TokenParams { Capability = new Capability(), ClientId = "ClientId", Ttl = TimeSpan.FromMinutes(10) };
 
             // Act
-            await rest.Auth.RequestTokenAsync(tokenParams, new AuthOptions() { QueryTime = false });
+            await rest.Auth.RequestTokenAsync(tokenParams, AuthOptions.FromExisting(rest.Options).Merge(new AuthOptions() { QueryTime = false }));
         }
 
         [Fact]
