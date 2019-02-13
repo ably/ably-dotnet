@@ -1440,6 +1440,7 @@ namespace IO.Ably.Tests.Realtime
 
                     // clean up
                     setupClient.Close();
+
                     client.Close();
                 }
 
@@ -1484,6 +1485,81 @@ namespace IO.Ably.Tests.Realtime
                     errInfo.Should().BeNull();
                     queueCounts[0].Should().Be(1);
                     queueCounts[1].Should().Be(0);
+
+                    // clean up
+                    client.Close();
+                }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP16b")]
+                public async Task ChannelStateCondition_WhenChannelIsInitialisedOrAttaching_MessageArePublishedWhenChannelBecomesAttached(Protocol protocol)
+                {
+                    /* tests channel initialized and attaching states */
+
+                    var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16b"; });
+                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
+
+                    List<int> queueCounts = new List<int>();
+                    Presence.QueuedPresenceMessage[] presenceMessages = null;
+
+                    await WaitForMultiple(3, partialDone =>
+                    {
+                        channel.Once(ChannelEvent.Attached, change =>
+                        {
+                            queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
+                            partialDone();
+                        });
+
+                        channel.Once(ChannelEvent.Attaching, change =>
+                        {
+                            channel.Presence.Enter(channel.State.ToString(), (b, info) =>
+                            {
+                                partialDone();
+                            });
+                            queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
+                            presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
+                        });
+
+                        // Enter whilst Initialized
+                        channel.Presence.Enter(channel.State.ToString(), (b, info) =>
+                        {
+                            partialDone();
+                        });
+                    });
+
+                    queueCounts[0].Should().Be(2);
+                    queueCounts[1].Should().Be(0);
+                    presenceMessages[0].Message.Data.Should().Be("Initialized");
+                    presenceMessages[1].Message.Data.Should().Be("Attaching");
+
+                    // clean up
+                    client.Close();
+                }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP16b")]
+                public async Task ChannelStateCondition_WhenQueueMessagesIsFalse_WhenChannelIsInitialisedOrAttaching_MessageAreNotPublished(Protocol protocol)
+                {
+                    var client = await GetRealtimeClient(protocol, (options, settings) =>
+                    {
+                        options.ClientId = "RTP16b";
+                        options.QueueMessages = false;
+                    });
+                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
+
+                    await client.WaitForState(ConnectionState.Connected);
+                    await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager, client.Logger));
+                    await client.WaitForState(ConnectionState.Disconnected);
+
+                    List<int> queueCounts = new List<int>();
+                    Presence.QueuedPresenceMessage[] presenceMessages = null;
+
+                    channel.Presence.Enter(client.Connection.State.ToString(), (b, info) =>{ });
+                    presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
+
+                    presenceMessages.Should().HaveCount(0);
 
                     // clean up
                     client.Close();
@@ -1584,54 +1660,6 @@ namespace IO.Ably.Tests.Realtime
                     queueCounts[1].Should().Be(0);
                     presenceMessages[0].Message.Data.Should().Be("Initialized");
                     presenceMessages[1].Message.Data.Should().Be("Connecting");
-
-                    // clean up
-                    client.Close();
-                }
-
-                [Theory]
-                [ProtocolData]
-                [Trait("spec", "RTP16b")]
-                public async Task ChannelStateCondition_WhenChannelIsInitializedOrAttaching_MessageArePublishedWhenChannelBecomesAttached(Protocol protocol)
-                {
-                    /* tests channel initialized and attaching states */
-
-                    var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16b"; });
-                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
-
-                    List<int> queueCounts = new List<int>();
-                    Presence.QueuedPresenceMessage[] presenceMessages = null;
-
-                    await WaitForMultiple(3, partialDone =>
-                    {
-                        channel.Once(ChannelEvent.Attached, change =>
-                        {
-                            queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
-                            partialDone();
-                        });
-
-                        channel.Once(ChannelEvent.Attaching, change =>
-                        {
-                            channel.Presence.Enter(channel.State.ToString(), (b, info) =>
-                            {
-                                partialDone();
-                            });
-                            queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
-                            presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
-                        });
-
-                        // Enter whilst Initialized
-                        channel.Presence.Enter(channel.State.ToString(), (b, info) =>
-                        {
-                            partialDone();
-                        });
-                    });
-
-                    queueCounts[0].Should().Be(2);
-                    queueCounts[1].Should().Be(0);
-                    presenceMessages[0].Message.Data.Should().Be("Initialized");
-                    presenceMessages[1].Message.Data.Should().Be("Attaching");
-
                     // clean up
                     client.Close();
                 }
