@@ -223,6 +223,10 @@ namespace IO.Ably.Tests.Realtime
                 var client2 = await GetRealtimeClient(protocol);
                 var client3 = await GetRealtimeClient(protocol);
 
+                client1.Channels.Get(channelName).Attach();
+                client2.Channels.Get(channelName).Attach();
+                client3.Channels.Get(channelName).Attach();
+
                 var messages = new List<Message>();
                 for (int i = 0; i < 20; i++)
                 {
@@ -233,10 +237,10 @@ namespace IO.Ably.Tests.Realtime
                 foreach (var message in messages)
                 {
                     client1.Channels.Get(channelName).Publish(new[] { message }, (b, info) =>
-                   {
-                       successes1.Add(b);
-                       awaiter.Tick();
-                   });
+                    {
+                        successes1.Add(b);
+                        awaiter.Tick();
+                    });
                     client2.Channels.Get(channelName).Publish(new[] { message }, (b, info) =>
                     {
                         successes2.Add(b);
@@ -261,6 +265,27 @@ namespace IO.Ably.Tests.Realtime
             successes1.Should().HaveCount(20, "Should have 20 successful callback executed");
             successes2.Should().HaveCount(20, "Should have 20 successful callback executed");
             successes3.Should().HaveCount(20, "Should have 20 successful callback executed");
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL6c5")]
+        public async Task PublishShouldNotImplicitlyAttachAChannel(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            var channel = client.Channels.Get("RTL6c5".AddRandomSuffix());
+
+            var awaiter = new TaskCompletionAwaiter(5000);
+            channel.Once(ChannelEvent.Attached, change =>
+            {
+                awaiter.SetCompleted();
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+            channel.Publish(null, "foo");
+
+            var result = await awaiter.Task;
+            result.Should().BeFalse("channel should not have become attached");
         }
 
         [Theory]

@@ -820,6 +820,7 @@ namespace IO.Ably.Tests.Realtime
             var channel1 = client.Channels.Get("test");
             channel1.On(x => stateChanges.Add(x));
 
+            channel1.Attach();
             await channel1.PublishAsync("test", "best");
             await channel1.PublishAsync("test", "best");
 

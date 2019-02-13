@@ -420,11 +420,6 @@ namespace IO.Ably.Realtime
 
             if (State == ChannelState.Initialized || State == ChannelState.Attaching)
             {
-                if (State == ChannelState.Initialized)
-                {
-                    Attach();
-                }
-
                 // Not connected, queue the message
                 lock (_lockQueue)
                 {
