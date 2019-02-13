@@ -527,6 +527,61 @@ namespace IO.Ably.Tests
                 _handler.Requests.Count.Should().Be(Defaults.FallbackHosts.Length + 1); // First attempt is with rest.ably.io
             }
 
+            [Fact]
+            [Trait("spec", "RSC15a")]
+            [Trait("spec", "TO3k6")]
+            public async Task ShouldUseCustomFallbackHostIfProvided()
+            {
+                _response.StatusCode = HttpStatusCode.BadGateway;
+                List<string> attemptedList = new List<string>();
+
+                var client = CreateClient(options => options.FallbackHosts = new[] { "www.example.com" });
+                await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                attemptedList.AddRange(_handler.Requests.Select(x => x.RequestUri.Host).ToList());
+
+                attemptedList.Count.Should().Be(2);
+                attemptedList[0].Should().Be("rest.ably.io");
+                attemptedList[1].Should().Be("www.example.com");
+            }
+
+            [Fact]
+            [Trait("spec", "RSC15a")]
+            [Trait("spec", "TO3k6")]
+            public async Task ShouldNotUseAnyFallbackHostsIfEmptyArrayProvided()
+            {
+                _response.StatusCode = HttpStatusCode.BadGateway;
+                List<string> attemptedList = new List<string>();
+
+                var client = CreateClient(options => options.FallbackHosts = new string[] { });
+                await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                attemptedList.AddRange(_handler.Requests.Select(x => x.RequestUri.Host).ToList());
+
+                attemptedList.Count.Should().Be(1);
+                attemptedList[0].Should().Be("rest.ably.io");
+            }
+
+            [Fact]
+            [Trait("spec", "RSC15a")]
+            [Trait("spec", "TO3k6")]
+            public async Task ShouldUseDefaultFallbackHostsIfNullArrayProvided()
+            {
+                _response.StatusCode = HttpStatusCode.BadGateway;
+                List<string> attemptedList = new List<string>();
+
+                var client = CreateClient(options =>
+                {
+                    options.FallbackHosts = null;
+                });
+                await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                attemptedList.AddRange(_handler.Requests.Select(x => x.RequestUri.Host).ToList());
+
+                attemptedList.Count.Should().Be(3); // HttpMaxRetryCount defaults to 3
+                attemptedList[0].Should().Be("rest.ably.io");
+                attemptedList[1].Should().EndWith("ably-realtime.com");
+                attemptedList[2].Should().EndWith("ably-realtime.com");
+                attemptedList[1].Should().NotBe(attemptedList[2]);
+            }
+
             /// <summary>
             /// (TO3l6) httpMaxRetryDuration integer – default 10,000 (10s). Max elapsed time in which fallback host retries for HTTP requests will be attempted i.e. if the first default host attempt takes 5s, and then the subsequent fallback retry attempt takes 7s, no further fallback host attempts will be made as the total elapsed time of 12s exceeds the default 10s limit
             /// </summary>

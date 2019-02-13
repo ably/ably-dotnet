@@ -8,6 +8,7 @@ namespace IO.Ably.Transport.States.Connection
     internal class ConnectionConnectingState : ConnectionStateBase
     {
         private readonly ICountdownTimer _timer;
+        private readonly ConnectionStateBase _previous;
 
         public ConnectionConnectingState(IConnectionContext context, ILogger logger)
             : this(context, new CountdownTimer("Connecting state timer", logger), logger)
@@ -62,14 +63,9 @@ namespace IO.Ably.Transport.States.Connection
 
                 case ProtocolMessage.MessageAction.Error:
                     {
-                        if (message.Error?.Code == 40400)
-                        {
-                            TransitionState(new ConnectionFailedState(Context, message.Error, Logger));
-                            return true;
-                        }
-
                         // If the error is a token error do some magic
-                        if (Context.ShouldWeRenewToken(message.Error))
+                        bool shouldRenew = Context.ShouldWeRenewToken(message.Error);
+                        if (shouldRenew)
                         {
                             try
                             {
@@ -98,7 +94,7 @@ namespace IO.Ably.Transport.States.Connection
                             return true;
                         }
 
-                        if (!Context.ShouldWeRenewToken(message.Error))
+                        if (message.Error?.IsTokenError == true && !shouldRenew )
                         {
                             TransitionState(new ConnectionDisconnectedState(Context, message.Error, Logger));
                             return true;
@@ -119,6 +115,14 @@ namespace IO.Ably.Transport.States.Connection
 
         public override async Task OnAttachToContext()
         {
+            // RTN15g - If a client has been disconnected for longer
+            // than the connectionStateTtl, it should not attempt to resume.
+            if (Context.Connection.ConfirmedAliveAt?.Add(Context.Connection.ConnectionStateTtl) < DateTimeOffset.UtcNow)
+            {
+                Context.Connection.Id = string.Empty;
+                Context.Connection.Key = string.Empty;
+            }
+
             await Context.CreateTransport();
             _timer.Start(Context.DefaultTimeout, onTimeOut: OnTimeOut);
         }

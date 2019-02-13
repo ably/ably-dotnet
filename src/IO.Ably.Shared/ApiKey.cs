@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace IO.Ably
 {
@@ -9,6 +10,8 @@ namespace IO.Ably
     /// </summary>
     public class ApiKey
     {
+        private static readonly Regex KeyRegex = new Regex(@"^[\w-]{2,}\.[\w-]{2,}:[\w-]{2,}$");
+
         internal string AppId { get; private set; }
 
         public string KeyName { get; private set; }
@@ -29,15 +32,30 @@ namespace IO.Ably
                 throw new AblyException("Ably key was empty. Ably key must be in the following format [AppId].[keyId]:[keyValue]", 40101, HttpStatusCode.Unauthorized);
             }
 
-            var parts = key.Trim().Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+            var trimmedKey = key.Trim();
 
-            if (parts.Length == 2)
+            if (IsValidFormat(trimmedKey))
             {
-                var keyParts = parts[0].Split(".".ToCharArray());
-                return new ApiKey() { AppId = keyParts[0], KeyName = keyParts[0] + "." + keyParts[1], KeySecret = parts[1] };
+                var parts = trimmedKey.Trim().Split(new[] {':'}, StringSplitOptions.RemoveEmptyEntries);
+
+                if (parts.Length == 2)
+                {
+                    var keyParts = parts[0].Split(".".ToCharArray());
+                    return new ApiKey()
+                    {
+                        AppId = keyParts[0],
+                        KeyName = keyParts[0] + "." + keyParts[1],
+                        KeySecret = parts[1]
+                    };
+                }
             }
 
-            throw new AblyException("Invalid ably key. Ably key must be in the following format [AppId].[keyId]:[keyValue]", 40101, HttpStatusCode.Unauthorized);
+            throw new AblyException("Invalid Ably key. Ably key must be in the following format [AppId].[keyId]:[keyValue]", 40101, HttpStatusCode.Unauthorized);
+        }
+
+        internal static bool IsValidFormat(string key)
+        {
+            return KeyRegex.Match(key.Trim()).Success;
         }
     }
 }

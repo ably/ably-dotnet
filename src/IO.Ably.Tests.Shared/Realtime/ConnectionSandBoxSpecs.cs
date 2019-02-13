@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -129,6 +130,168 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTN11b")]
+        public async Task WithClosingConnection_WhenConnectCalled_ShouldMakeNewConnectionAndTransport(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, (opts, _) =>
+            {
+                opts.DisconnectedRetryTimeout = TimeSpan.MaxValue;
+            });
+
+            await client.WaitForState();
+
+            // capture initial values
+            var initialConnection = client.Connection;
+            var initialConnectionId = client.Connection.Id;
+            var initialTransport = client.ConnectionManager.Transport;
+
+            // The close timeout is 1000ms, so 3000ms is enough time to wait
+            var awaiter = new TaskCompletionAwaiter(3000);
+            client.Connection.On(ConnectionEvent.Closed, (state) =>
+            {
+                awaiter.SetCompleted();
+            });
+
+            client.Close();
+            await client.WaitForState(ConnectionState.Closing);
+
+            client.Connect();
+            await client.WaitForState(ConnectionState.Connected);
+
+            client.Connection.Id.Should().NotBeNullOrEmpty();
+            client.Connection.Id.Should().NotBe(initialConnectionId);
+            client.ConnectionManager.Transport.Should().NotBe(initialTransport);
+
+            // because a new transport is created the CLOSED message for the
+            // old connection never arrives.
+            var didClose = await awaiter.Task;
+            didClose.Should().BeFalse();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN11c")]
+        public async Task WithDisconnectedConnection_WhenConnectCalled_ImmediatelyReconnect(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            await client.WaitForState();
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+            await client.WaitForState(ConnectionState.Disconnected);
+            var s = new Stopwatch();
+            s.Start();
+            client.Connect();
+            await client.WaitForState(ConnectionState.Connecting);
+            client.Connection.State.Should().Be(ConnectionState.Connecting);
+            s.Stop();
+
+            // show the reconnect happened before the retry timeout could have fired
+            s.Elapsed.Should().BeLessThan(client.Options.DisconnectedRetryTimeout);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN11c")]
+        public async Task WithSuspendedConnection_WhenConnectCalled_ImmediatelyReconnect(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            await client.ConnectionManager.SetState(new ConnectionSuspendedState(client.ConnectionManager, new ErrorInfo("force suspended"), client.Logger));
+            await client.WaitForState(ConnectionState.Suspended);
+            var s = new Stopwatch();
+            s.Start();
+            client.Connect();
+            await client.WaitForState(ConnectionState.Connecting);
+            client.Connection.State.Should().Be(ConnectionState.Connecting);
+            s.Stop();
+
+            // show the reconnect happened before the retry timeout should fired
+            s.Elapsed.Should().BeLessThan(client.Options.DisconnectedRetryTimeout);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN11d")]
+        public async Task WithFailedConnection_WhenConnectCalled_TransitionsChannelsToInitialized(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            await client.WaitForState(ConnectionState.Connected);
+
+            var chan1 = client.Channels.Get("RTN11d".AddRandomSuffix());
+            await chan1.AttachAsync();
+
+            // show that the channel is not in the initialized state already
+            chan1.State.Should().NotBe(ChannelState.Initialized);
+
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+            await client.WaitForState(ConnectionState.Disconnected);
+            await client.ConnectionManager.SetState(new ConnectionFailedState(client.ConnectionManager, new ErrorInfo("force failed"), client.Logger));
+            await client.WaitForState(ConnectionState.Failed);
+
+            // show there is a no-null error present on the connection
+            client.Connection.ErrorReason.Message.Should().Be("force failed");
+            client.Connect();
+            await client.WaitForState(ConnectionState.Connecting);
+            client.Connection.State.Should().Be(ConnectionState.Connecting);
+
+            // transitions all the channels to INITIALIZED
+            chan1.State.Should().Be(ChannelState.Initialized);
+
+            // sets their errorReason to null
+            chan1.ErrorReason.Should().BeNull();
+
+            // and sets the connections errorReason to null
+            client.Connection.ErrorReason.Should().BeNull();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN12d")]
+        public async Task WithDisconnectedOrSuspendedConnection_WhenCloseCalled_AbortRetryAndCloseImmediately(Protocol protocol)
+        {
+            async Task AssertsClosesAndDoesNotReconnect(AblyRealtime realtime, ConnectionState state)
+            {
+                await realtime.WaitForState(state);
+
+                var reconnectAwaiter = new TaskCompletionAwaiter(5000);
+                realtime.Connection.On(args =>
+                {
+                    if (realtime.Connection.State == ConnectionState.Connecting
+                        || realtime.Connection.State == ConnectionState.Connected)
+                    {
+                        reconnectAwaiter.SetCompleted();
+                    }
+                });
+
+                realtime.Close();
+                await realtime.WaitForState(ConnectionState.Closed);
+                realtime.Connection.State.Should().Be(ConnectionState.Closed);
+
+                var didReconnect = await reconnectAwaiter.Task;
+                didReconnect.Should().BeFalse($"should not attempt a reconnect for state {state}");
+            }
+
+            // setup a new client and put into a DISCONNECTED state
+            var client = await GetRealtimeClient(protocol, (opts, _) =>
+            {
+                opts.DisconnectedRetryTimeout = TimeSpan.FromSeconds(2);
+            });
+
+            await client.WaitForState();
+            await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager, new ErrorInfo("force disconnect"), client.Logger));
+            await AssertsClosesAndDoesNotReconnect(client, ConnectionState.Disconnected);
+
+            // reinitialize the client and put into a SUSPENDED state
+            client = await GetRealtimeClient(protocol, (opts, _) =>
+            {
+                opts.SuspendedRetryTimeout = TimeSpan.FromSeconds(2);
+            });
+
+            await client.WaitForState();
+            await client.ConnectionManager.SetState(new ConnectionSuspendedState(client.ConnectionManager, new ErrorInfo("force suspend"), client.Logger));
+            await AssertsClosesAndDoesNotReconnect(client, ConnectionState.Suspended);
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RTN13a")]
         public async Task WithConnectedClient_PingShouldReturnServiceTime(Protocol protocol)
         {
@@ -147,10 +310,15 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN14a")]
         public async Task WithInvalidApiKey_ShouldSetToFailedStateAndAddErrorMessageToEmittedState(Protocol protocol)
         {
+            var invalidKey = "invalid-key".AddRandomSuffix();
+            ApiKey.IsValidFormat(invalidKey).Should().BeFalse();
+
             var client = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
-                opts.Key = "baba.bobo:bosh";
+
+                // a string not in the valid key format aaaa.bbbb:cccc
+                opts.Key = invalidKey;
             });
 
             ErrorInfo error = null;
@@ -165,6 +333,10 @@ namespace IO.Ably.Tests.Realtime
 
             error.Should().NotBeNull();
             client.Connection.ErrorReason.Should().BeSameAs(error);
+
+            // this assertion shows that we are picking up a client side validation error
+            // if this key is passed to the server we would get an error with a 40005 code
+            client.Connection.ErrorReason.Code.Should().Be(40101);
         }
 
         [Theory]
@@ -238,6 +410,365 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTN15c1")]
+        public async Task ResumeRequest_ConnectedProtocolMessageWithSameConnectionId_WithNoError(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            var channel = client.Channels.Get("RTN15c1".AddRandomSuffix()) as RealtimeChannel;
+            await client.WaitForState(ConnectionState.Connected);
+            var connectionId = client.Connection.Id;
+            channel.Attach();
+            await channel.WaitForState(ChannelState.Attached);
+            channel.State.Should().Be(ChannelState.Attached);
+
+            // kill the transport so the connection becomes DISCONNECTED
+            client.ConnectionManager.Transport.Close(false);
+            await client.WaitForState(ConnectionState.Disconnected);
+
+            var awaiter = new TaskCompletionAwaiter(15000);
+            client.Connection.Once(ConnectionEvent.Connected, change =>
+            {
+                change.HasError.Should().BeFalse();
+                awaiter.SetCompleted();
+            });
+
+            channel.Publish(null, "foo");
+
+            // currently disconnected so message is queued
+            client.ConnectionManager.PendingMessages.Should().HaveCount(1);
+
+            // wait for reconnection
+            var didConnect = await awaiter.Task;
+            didConnect.Should().BeTrue();
+
+            // we should have received a CONNECTED Protocol message with a corresponding connectionId
+            client.GetTestTransport().ProtocolMessagesReceived.Count(x => x.Action == ProtocolMessage.MessageAction.Connected).Should().Be(1);
+            var connectedProtocolMessage = client.GetTestTransport().ProtocolMessagesReceived.First(x => x.Action == ProtocolMessage.MessageAction.Connected);
+            connectedProtocolMessage.ConnectionId.Should().Be(connectionId);
+
+            // channel should be attached and pending messages sent
+            channel.State.Should().Be(ChannelState.Attached);
+            client.ConnectionManager.PendingMessages.Should().HaveCount(0);
+
+            // clean up
+            client.Close();
+        }
+
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15c2")]
+        public async Task ResumeRequest_ConnectedProtocolMessageWithSameConnectionId_WithError(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            var channel = client.Channels.Get("RTN15c1".AddRandomSuffix()) as RealtimeChannel;
+            await client.WaitForState(ConnectionState.Connected);
+            var connectionId = client.Connection.Id;
+
+            // inject fake error messages into protocol messages
+            var transportFactory = client.Options.TransportFactory as TestTransportFactory;
+            transportFactory.OnTransportCreated += wrapper =>
+            {
+                wrapper.BeforeDataProcessed = message =>
+                {
+                    // inject an error before the protocol message is processed
+                    if (message.Action == ProtocolMessage.MessageAction.Connected)
+                    {
+                        message.Error = new ErrorInfo("Faked error", 0);
+                    }
+
+                    if (message.Action == ProtocolMessage.MessageAction.Attached)
+                    {
+                        message.Error = new ErrorInfo("Faked channel error", 0);
+                    }
+                };
+            };
+
+            // kill the transport so the connection becomes DISCONNECTED
+            client.ConnectionManager.Transport.Close(false);
+            await client.WaitForState(ConnectionState.Disconnected);
+
+            // publish
+            channel.Publish(null, "foo");
+
+            // tack connection state change
+            ConnectionStateChange stateChange = null;
+            var connectedAwaiter = new TaskCompletionAwaiter(15000);
+            client.Connection.Once(ConnectionEvent.Connected, change =>
+            {
+                stateChange = change;
+                connectedAwaiter.SetCompleted();
+            });
+
+            // track channel stage change
+            ChannelStateChange channelStateChange = null;
+            var attachedAwaiter = new TaskCompletionAwaiter(15000);
+            channel.Once(ChannelEvent.Attached, change =>
+            {
+                channelStateChange = change;
+                attachedAwaiter.SetCompleted();
+            });
+
+            // wait for connection
+            var didConnect = await connectedAwaiter.Task;
+            didConnect.Should().BeTrue();
+
+            // it should have the injected error
+            stateChange.HasError.Should().BeTrue();
+            stateChange.Reason.Message.Should().Be("Faked error");
+
+            // we should have received a CONNECTED Protocol message with a corresponding connectionId
+            client.GetTestTransport().ProtocolMessagesReceived.Count(x => x.Action == ProtocolMessage.MessageAction.Connected).Should().Be(1);
+            var connectedProtocolMessage = client.GetTestTransport().ProtocolMessagesReceived.First(x => x.Action == ProtocolMessage.MessageAction.Connected);
+            connectedProtocolMessage.ConnectionId.Should().Be(connectionId);
+            client.Connection.ErrorReason.Should().Be(stateChange.Reason);
+
+            // wait for the channel to attach
+            await attachedAwaiter.Task;
+
+            // it chanel state change event should have the injected error
+            channelStateChange.Error.Message.Should().Be("Faked channel error");
+
+            // queued messages should now have been sent
+            client.ConnectionManager.PendingMessages.Should().HaveCount(0);
+
+            // clean up
+            client.Close();
+        }
+
+
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15c3")]
+        public async Task ResumeRequest_ConnectedProtocolMessageWithNewConnectionId_WithErrorInError(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            var channel = client.Channels.Get("RTN15c3".AddRandomSuffix()) as RealtimeChannel;
+            await client.WaitForState(ConnectionState.Connected);
+            channel.Attach();
+            await channel.WaitForState(ChannelState.Attached);
+            channel.State.Should().Be(ChannelState.Attached);
+
+            var oldConnectionId = client.Connection.Id;
+            var oldKey = client.Connection.Key;
+
+            client.SimulateLostConnectionAndState();
+
+            ConnectionStateChange stateChange = null;
+            await WaitFor(done =>
+            {
+                client.Connection.On(ConnectionEvent.Connected, change =>
+                {
+                    stateChange = change;
+                    done();
+                });
+            });
+
+            stateChange.Should().NotBeNull();
+            stateChange.HasError.Should().BeTrue();
+            stateChange.Reason.Code.Should().Be(80008);
+            stateChange.Reason.Should().Be(client.Connection.ErrorReason);
+
+            var protocolMessage = client.GetTestTransport().ProtocolMessagesReceived
+                .Where(x => x.Action == ProtocolMessage.MessageAction.Connected).FirstOrDefault();
+
+            protocolMessage.Should().NotBeNull();
+            protocolMessage.ConnectionId.Should().NotBe(oldConnectionId);
+            client.Connection.Id.Should().NotBe(oldConnectionId);
+            client.Connection.Key.Should().NotBe(oldKey);
+            client.Connection.MessageSerial.Should().Be(0);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15c3")]
+        public async Task ResumeRequest_ConnectedProtocolMessageWithNewConnectionId_WithErrorInError_DetachesAllChannels(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            var channelName = "RTN15c3".AddRandomSuffix();
+            var channelCount = 5;
+            await client.WaitForState(ConnectionState.Connected);
+
+            List<RealtimeChannel> channels = new List<RealtimeChannel>();
+            for (var i = 0; i < channelCount; i++)
+            {
+                channels.Add(client.Channels.Get($"{channelName}_{i}") as RealtimeChannel);
+            }
+
+            List<RealtimeChannel> detachedChannels = new List<RealtimeChannel>();
+            List<ChannelStateChange> detachedStateChanges = new List<ChannelStateChange>();
+
+            var detachAwaiter = new TaskCompletionAwaiter(10000, channelCount);
+            await WaitForMultiple(channelCount, partialDone =>
+            {
+                foreach (var channel in channels)
+                {
+                    channel.Attach();
+                    channel.Once(ChannelEvent.Attached, _ =>
+                    {
+                        channel.Once(ChannelEvent.Detached, change =>
+                        {
+                            detachedChannels.Add(channel);
+                            detachedStateChanges.Add(change);
+                            detachAwaiter.Tick();
+                        });
+                        partialDone();
+                    });
+                }
+            });
+
+            client.SimulateLostConnectionAndState();
+
+            var didDetach = await detachAwaiter.Task;
+            didDetach.Should().BeTrue();
+            detachedChannels.Should().HaveCount(channelCount);
+            detachedStateChanges.Should().HaveCount(channelCount);
+            foreach (var change in detachedStateChanges)
+            {
+                change.Error.Message.Should().StartWith("Unable to recover connection");
+            }
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15c3")]
+        public async Task ResumeRequest_ConnectedProtocolMessageWithNewConnectionId_WithErrorInError_EmitsErrorOnChannel(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            var channel = client.Channels.Get("RTN15c3".AddRandomSuffix()) as RealtimeChannel;
+            await client.WaitForState(ConnectionState.Connected);
+            channel.Attach();
+            channel.Once(ChannelEvent.Attached, _ =>
+            {
+                client.SimulateLostConnectionAndState();
+            });
+
+            ChannelErrorEventArgs err = null;
+            await WaitFor(done =>
+            {
+                channel.Error += (sender, args) =>
+                {
+                    err = args;
+                    done();
+                };
+            });
+
+            err.Reason.Message.Should().StartWith("Unable to recover connection");
+            err.Reason.Code.Should().Be(80008);
+            err.Reason.Should().Be(channel.ErrorReason);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15c4")]
+        public async Task ResumeRequest_WithFatalErrorInConnection_ClientAndChannelsShouldBecomeFailed(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            var channel = client.Channels.Get("RTN15c3".AddRandomSuffix()) as RealtimeChannel;
+            channel.Attach();
+            await client.WaitForState(ConnectionState.Connected);
+
+            client.GetTestTransport().Close(false);
+            await client.WaitForState(ConnectionState.Disconnected);
+
+            var errInfo = new ErrorInfo("faked error", 0);
+            client.Connection.Once(ConnectionEvent.Connecting, change =>
+            {
+                client.BeforeProtocolMessageProcessed(message =>
+                {
+                    if (message.Action == ProtocolMessage.MessageAction.Connected)
+                    {
+                        message.Action = ProtocolMessage.MessageAction.Error;
+                        message.Error = errInfo;
+                    }
+                });
+            });
+
+            ConnectionStateChange stateChange = null;
+            await WaitFor(done =>
+            {
+                client.Connection.Once(ConnectionEvent.Failed, change =>
+                {
+                    stateChange = change;
+                    done();
+                });
+            });
+
+            stateChange.Reason.Code.Should().Be(errInfo.Code);
+            stateChange.Reason.Message.Should().Be(errInfo.Message);
+
+            await channel.WaitForState(ChannelState.Failed);
+            channel.State.Should().Be(ChannelState.Failed);
+            channel.ErrorReason.Code.Should().Be(errInfo.Code);
+            channel.ErrorReason.Message.Should().Be(errInfo.Message);
+
+            client.Connection.ErrorReason.Code.Should().Be(errInfo.Code);
+            client.Connection.ErrorReason.Message.Should().Be(errInfo.Message);
+            client.Connection.State.Should().Be(ConnectionState.Failed);
+
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15c5")]
+        public async Task ResumeRequest_WithTokenAuthError_TransportWillBeClosed(Protocol protocol)
+        {
+            var authClient = await GetRestClient(protocol);
+            var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
+
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.TokenDetails = tokenDetails;
+                options.DisconnectedRetryTimeout = TimeSpan.FromSeconds(1);
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            var channel = client.Channels.Get("RTN15c5".AddRandomSuffix());
+            channel.Attach();
+
+            var initialConnectionId = client.Connection.Id;
+            var initialTransport = client.GetTestTransport();
+
+            channel.Once(ChannelEvent.Detached, change => throw new Exception("channel should not detach"));
+
+            List<ProtocolMessage> messages = new List<ProtocolMessage>();
+            client.BeforeProtocolMessageProcessed(message => messages.Add(message));
+
+            ConnectionStateChange stateChange = null;
+            await WaitFor(done =>
+            {
+                client.Connection.Once(ConnectionEvent.Disconnected, change =>
+                {
+                    stateChange = change;
+                    done();
+                });
+            });
+            stateChange.Reason.Code.Should().Be(40142);
+
+            await WaitFor(done =>
+            {
+                client.Connection.Once(ConnectionEvent.Connected, change =>
+                {
+                    stateChange = change;
+                    done();
+                });
+            });
+            stateChange.Reason.Should().BeNull();
+
+            // transport should have been closed and the client should have a new transport instanced
+            var secondTransport = client.GetTestTransport();
+            initialTransport.Should().NotBe(secondTransport);
+            initialTransport.State.Should().Be(TransportState.Closed);
+
+            // connection should be resumed, connectionId should be unchanged
+            client.Connection.Id.Should().Be(initialConnectionId);
+        }
+
+        [Theory]
+        [ProtocolData]
         public async Task WithAuthUrlShouldGetTokenFromUrl(Protocol protocol)
         {
             Logger.LogLevel = LogLevel.Debug;
@@ -259,51 +790,45 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RTN15h")]
-        public async Task WhenDisconnectedMessageContainsTokenError_IfTokenIsRenewable_ShouldNotEmitError(Protocol protocol)
+        [Trait("spec", "RTN15h1")]
+        public async Task WhenDisconnectedMessageContainsTokenError_IfTokenIsNotRewable_ShouldBecomeFailedAndEmitError(Protocol protocol)
         {
-            var awaiter = new TaskCompletionAwaiter(10000, 2);
+            var awaiter = new TaskCompletionAwaiter(10000);
             var authClient = await GetRestClient(protocol);
             var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
 
             var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
                 options.TokenDetails = tokenDetails;
-                options.DisconnectedRetryTimeout = TimeSpan.FromSeconds(1);
                 options.AutoConnect = false;
             });
 
             client.Connect();
             await client.WaitForState(ConnectionState.Connected);
 
-            var stateChanges = new List<ConnectionStateChange>();
-            client.Connection.Once(ConnectionEvent.Disconnected, state =>
+            // null the key so the token is not renewable
+            client.Options.Key = null;
+
+            client.Connection.Once(ConnectionEvent.Failed, state =>
             {
-                stateChanges.Add(state);
                 awaiter.Tick();
             });
 
-            client.Connection.Once(ConnectionEvent.Connected, state =>
-            {
-                stateChanges.Add(state);
-                awaiter.Tick();
-            });
+            client.Connection.Once(ConnectionEvent.Disconnected, state => throw new Exception("should not become DISCONNECTED"));
+            client.Connection.Once(ConnectionEvent.Connected, state => throw new Exception("should not become CONNECTED"));
 
             await awaiter.Task;
 
-            stateChanges.Should().HaveCount(2);
-            stateChanges[0].Current.Should().Be(ConnectionState.Disconnected);
-            stateChanges[0].Reason.Should().BeNull();
-            stateChanges[1].Current.Should().Be(ConnectionState.Connected);
-            stateChanges[1].Reason.Should().BeNull();
+            client.Connection.State.Should().Be(ConnectionState.Failed);
+            client.Connection.ErrorReason.Should().NotBeNull();
         }
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RTN15h")]
-        public async Task WhenDisconnectedMessageContainsTokenError_IfTokenRenewFails_ShouldBecomeFailedEmitError(Protocol protocol)
+        [Trait("spec", "RTN15h2")]
+        public async Task WhenDisconnectedMessageContainsTokenError_IfTokenIsRenewable_ShouldNotEmitError(Protocol protocol)
         {
-            var awaiter = new TaskCompletionAwaiter(10000, 2);
+            var awaiter = new TaskCompletionAwaiter(10000);
             var authClient = await GetRestClient(protocol);
             var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
 
@@ -311,35 +836,224 @@ namespace IO.Ably.Tests.Realtime
             {
                 options.TokenDetails = tokenDetails;
                 options.DisconnectedRetryTimeout = TimeSpan.FromSeconds(1);
-                options.AutoConnect = false;
-
-                // to make the token renew fail return the old token
-                options.AuthCallback = tokenParams => Task.FromResult<object>(tokenDetails);
             });
 
-            client.Connect();
             await client.WaitForState(ConnectionState.Connected);
 
             var stateChanges = new List<ConnectionStateChange>();
             client.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
                 stateChanges.Add(state);
-                awaiter.Tick();
-            });
-
-            client.Connection.Once(ConnectionEvent.Failed, state =>
-            {
-                stateChanges.Add(state);
-                awaiter.Tick();
+                client.Connection.Once(ConnectionEvent.Connecting, state2 =>
+                {
+                    stateChanges.Add(state2);
+                    client.Connection.Once(ConnectionEvent.Connected, state3 =>
+                    {
+                        client.Connection.State.Should().Be(ConnectionState.Connected);
+                        client.Connection.ErrorReason.Should().BeNull();
+                        stateChanges.Add(state3);
+                        awaiter.SetCompleted();
+                    });
+                });
             });
 
             await awaiter.Task;
+            stateChanges.Should().HaveCount(3);
+            stateChanges[0].HasError.Should().BeTrue();
+            stateChanges[0].Reason.Code.Should().Be(40142);
+            stateChanges[1].HasError.Should().BeFalse();
+            stateChanges[2].HasError.Should().BeFalse();
+        }
 
-            stateChanges.Should().HaveCount(2);
-            stateChanges[0].Current.Should().Be(ConnectionState.Disconnected);
-            stateChanges[1].Current.Should().Be(ConnectionState.Failed);
-            stateChanges[1].Reason.Code.Should().Be(40142);
-            client.Connection.ErrorReason.ShouldBeEquivalentTo(stateChanges[1].Reason);
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15h2")]
+        public async Task WhenDisconnectedMessageContainsTokenError_IfTokenRenewFails_ShouldBecomeDisconnectedAndEmitError(Protocol protocol)
+        {
+            var awaiter = new TaskCompletionAwaiter(10000);
+            var authClient = await GetRestClient(protocol);
+
+            var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
+
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.TokenDetails = tokenDetails;
+
+                // has means to renew that should fail
+                options.AuthCallback = tokenParams => throw new Exception("fail auth callback");
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            var stateChanges = new List<ConnectionStateChange>();
+            client.Connection.Once(ConnectionEvent.Disconnected, state =>
+            {
+                stateChanges.Add(state);
+                client.Connection.Once(ConnectionEvent.Connecting, state2 =>
+                {
+                    stateChanges.Add(state2);
+                    client.Connection.Once(ConnectionEvent.Disconnected, state3 =>
+                    {
+                        client.Connection.State.Should().Be(ConnectionState.Disconnected);
+                        client.Connection.ErrorReason.Should().NotBeNull();
+                        stateChanges.Add(state3);
+                        awaiter.SetCompleted();
+                    });
+                });
+            });
+
+            client.Connection.Once(ConnectionEvent.Failed, state => throw new Exception("should not become FAILED"));
+
+            await awaiter.Task;
+            stateChanges.Select(x => x.Current).Should().BeEquivalentTo(new[]
+                { ConnectionState.Disconnected, ConnectionState.Connecting, ConnectionState.Disconnected });
+
+            stateChanges[0].HasError.Should().BeTrue();
+            stateChanges[0].Reason.Code.Should().Be(40142);
+            stateChanges[1].HasError.Should().BeFalse();
+            stateChanges[2].HasError.Should().BeTrue();
+            stateChanges[2].Reason.Code.Should().Be(80019);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15h2")]
+        public async Task WhenDisconnectedMessageContainsTokenError_IfTokenRenewFailsWithFatalError_ShouldBecomeFailedAndEmitError(Protocol protocol)
+        {
+            var awaiter = new TaskCompletionAwaiter(10000, 3);
+            var authClient = await GetRestClient(protocol);
+
+            var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
+
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.TokenDetails = tokenDetails;
+
+                // has means to renew that should result in a fatal error
+                // return a 403 to simulate a fatal error, per RSA4d.
+                options.AuthUrl = new Uri("https://echo.ably.io/respondwith?status=403");
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            var stateChanges = new List<ConnectionStateChange>();
+            client.Connection.Once(ConnectionEvent.Disconnected, state =>
+            {
+                stateChanges.Add(state);
+                client.Connection.Once(ConnectionEvent.Connecting, state2 =>
+                {
+                    stateChanges.Add(state2);
+                    client.Connection.Once(ConnectionEvent.Failed, state3 =>
+                    {
+                        client.Connection.State.Should().Be(ConnectionState.Failed);
+                        client.Connection.ErrorReason.Should().NotBeNull();
+                        stateChanges.Add(state3);
+                        awaiter.SetCompleted();
+                    });
+                });
+            });
+
+            await awaiter.Task;
+            stateChanges.Select(x => x.Current).Should().BeEquivalentTo(new[]
+                { ConnectionState.Disconnected, ConnectionState.Connecting, ConnectionState.Failed });
+
+            stateChanges[0].HasError.Should().BeTrue();
+            stateChanges[0].Reason.Code.Should().Be(40142);
+            stateChanges[1].HasError.Should().BeFalse();
+            stateChanges[2].HasError.Should().BeTrue();
+            stateChanges[2].Reason.Code.Should().Be(80019);
+            stateChanges[2].Reason.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15g")]
+        [Trait("spec", "RTN15g1")]
+        [Trait("spec", "RTN15g2")]
+        [Trait("spec", "RTN15g3")]
+        public async Task WhenDisconnectedPastTTL_ShouldNotResume_ShouldClearConnectionStateAndAttemptNewConnection(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, (options, _) =>
+            {
+                options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(1000);
+                options.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(5000);
+            });
+
+            DateTime disconnectedAt = DateTime.MinValue;
+            DateTime reconnectedAt = DateTime.MinValue;
+            TimeSpan connectionStateTtl = TimeSpan.MinValue;
+            string initialConnectionId = string.Empty;
+            string newConnectionId = string.Empty;
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            client.Connection.ConnectionStateTtl = TimeSpan.FromSeconds(1);
+            initialConnectionId = client.Connection.Id;
+            connectionStateTtl = client.Connection.ConnectionStateTtl;
+
+            var aliveAt1 = client.Connection.ConfirmedAliveAt;
+            var aliveAt2 = aliveAt1;
+
+            // RTN15g3 ATTACHED, ATTACHING, or SUSPENDED must be automatically reattached
+            var channels = new List<RealtimeChannel>();
+            channels.Add(client.Channels.Get("attached".AddRandomSuffix()) as RealtimeChannel);
+            channels.Add(client.Channels.Get("attaching".AddRandomSuffix()) as RealtimeChannel);
+            channels.Add(client.Channels.Get("suspended".AddRandomSuffix()) as RealtimeChannel);
+            channels[2].State = ChannelState.Suspended;
+
+            channels[0].Attach();
+            await channels[0].WaitForState();
+
+            channels[0].State.Should().Be(ChannelState.Attached);
+            channels[1].State.Should().Be(ChannelState.Initialized); // set attaching later
+            channels[2].State.Should().Be(ChannelState.Suspended);
+
+            await WaitFor(60000, async done =>
+            {
+                client.Connection.Once(ConnectionEvent.Disconnected, change2 =>
+                {
+                    disconnectedAt = DateTime.UtcNow;
+                    channels[1].Attach(); // connection disconnected so this should become attaching
+                    channels[1].WaitForState(ChannelState.Attaching);
+                    client.Connection.Once(ConnectionEvent.Connecting, change3 =>
+                    {
+                        reconnectedAt = DateTime.UtcNow;
+                        client.Connection.Once(ConnectionEvent.Connected, change4 =>
+                        {
+                            newConnectionId = client.Connection.Id;
+                            aliveAt2 = client.Connection.ConfirmedAliveAt;
+                            done();
+                        });
+                    });
+                });
+
+                client.GetTestTransport().Close(); // close event is surpressed by default
+                await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager, ErrorInfo.ReasonDisconnected, client.Logger));
+            });
+
+            var interval = reconnectedAt - disconnectedAt;
+            interval.TotalMilliseconds.Should().BeGreaterThan(5000);
+            initialConnectionId.Should().NotBeNullOrEmpty();
+            initialConnectionId.Should().NotBe(newConnectionId);
+            connectionStateTtl.Should().Be(TimeSpan.FromSeconds(1));
+            aliveAt1.Value.Should().BeBefore(aliveAt2.Value);
+
+            await channels[0].WaitForState(ChannelState.Attached);
+            await channels[1].WaitForState(ChannelState.Attached);
+            await channels[2].WaitForState(ChannelState.Attached);
+
+            channels[0].State.Should().Be(ChannelState.Attached);
+            channels[1].State.Should().Be(ChannelState.Attached);
+            channels[2].State.Should().Be(ChannelState.Attached);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15g")]
+        [Trait("spec", "RTN15g1")]
+        public async Task WhenDisconnectedIsNotPastTTL_ShouldResume_ShouldClearConnectionStateAndAttemptNewConnection(
+            Protocol protocol)
+        {
         }
 
         [Theory]
@@ -419,6 +1133,7 @@ namespace IO.Ably.Tests.Realtime
             var channel1 = client.Channels.Get("test");
             channel1.On(x => stateChanges.Add(x));
 
+            channel1.Attach();
             await channel1.PublishAsync("test", "best");
             await channel1.PublishAsync("test", "best");
 
@@ -443,7 +1158,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetRealtimeClient(protocol, (opts, _) =>
             {
-                opts.Recover = "c17a8!WeXvJum2pbuVYZtF-1b63c17a8:-1";
+                opts.Recover = "c17a8!WeXvJum2pbuVYZtF-1b63c17a8:-1:-1";
                 opts.AutoConnect = false;
             });
 
@@ -548,123 +1263,102 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN19b")]
-        public async Task
-            WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed2(
-                Protocol protocol)
+        public async Task WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed(Protocol protocol)
         {
-            var testLogger = new TestLogger("RealtimeChannel.SendMessage:Attach");
-            Logger = testLogger;
-            var client = await GetRealtimeClient(protocol);
-            var channel = new RealtimeChannel("RTN19b", "RTN19b", client);
-            channel.Logger = testLogger;
-            channel.State = ChannelState.Attaching;
-            channel.OnConnectionInternalStateChanged(this, new ConnectionStateChange(ConnectionEvent.Connected, ConnectionState.Connected, ConnectionState.Disconnected));
-            testLogger.MessageSeen.Should().Be(true);
-        }
-
-        [Theory]
-        [ProtocolData]
-        [Trait("spec", "RTN19b")]
-        public async Task
-            WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed(
-                Protocol protocol)
-        {
-            int sendCount = 0;
-            int tries = 0;
-            while (sendCount < 2 && tries < 3)
-            {
-                sendCount = await WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed_count(protocol);
-                tries++;
-            }
-
-            sendCount.Should().Be(2);
-        }
-
-        public async Task<int> WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed_count(
-                Protocol protocol)
-        {
-            Logger.LogLevel = LogLevel.Debug;
-            var client = await GetRealtimeClient(protocol);
+            var channelName = "test-channel".AddRandomSuffix();
             var sentMessages = new List<ProtocolMessage>();
-            client.SetOnTransportCreated(wrapper =>
+            Logger.LogLevel = LogLevel.Debug;
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
-                wrapper.MessageSent = sentMessages.Add;
+                options.TransportFactory = new TestTransportFactory()
+                {
+                    OnMessageSent = sentMessages.Add
+                };
             });
 
             await client.WaitForState(ConnectionState.Connected);
 
-            var channel = client.Channels.Get("test-channel");
-            channel.Once(ChannelEvent.Attaching, change => client.GetTestTransport().Close(false));
+            var transport = client.GetTestTransport();
+            transport.MessageSent = sentMessages.Add;
+
+            var channel = client.Channels.Get(channelName);
+            channel.Once(ChannelEvent.Attaching, change =>
+            {
+                transport.Close(false);
+            });
             channel.Attach();
             await channel.WaitForState(ChannelState.Attaching);
+            bool didDisconnect = false;
+            client.Connection.Once(ConnectionEvent.Disconnected, change =>
+            {
+                didDisconnect = true;
+                sentMessages.Count(x => x.Channel == channelName && x.Action == ProtocolMessage.MessageAction.Attach).Should().Be(1);
+            });
 
+            await client.WaitForState(ConnectionState.Disconnected);
+            await client.WaitForState(ConnectionState.Connecting);
             await client.WaitForState(ConnectionState.Connected);
 
-            await Task.Delay(3000);
+            client.Connection.State.Should().Be(ConnectionState.Connected);
+            didDisconnect.Should().BeTrue();
 
-            return sentMessages.Count(x => x.Channel == "test-channel" && x.Action == ProtocolMessage.MessageAction.Attach);
+            await channel.WaitForState(ChannelState.Attached);
+
+            var attachCount = sentMessages.Count(x => x.Channel == channelName && x.Action == ProtocolMessage.MessageAction.Attach);
+            attachCount.Should().Be(2);
+
+            client.Close();
         }
 
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN19b")]
-        public async Task
-            WithChannelInDetachingState_WhenTransportIsDisconnected_ShouldResendDetachMessageOnConnectionResumed2(
-                Protocol protocol)
+        public async Task WithChannelInDetachingState_WhenTransportIsDisconnected_ShouldResendDetachMessageOnConnectionResumed(Protocol protocol)
         {
-            var testLogger = new TestLogger("RealtimeChannel.SendMessage:Detach");
-            Logger = testLogger;
-            var client = await GetRealtimeClient(protocol);
-            var channel = new RealtimeChannel("RTN19b", "RTN19b", client);
-            channel.Logger = testLogger;
-
-            channel.State = ChannelState.Detaching;
-            channel.OnConnectionInternalStateChanged(this, new ConnectionStateChange(ConnectionEvent.Connected, ConnectionState.Connected, ConnectionState.Disconnected));
-
-            testLogger.MessageSeen.Should().Be(true);
-        }
-
-        [Theory]
-        [ProtocolData]
-        [Trait("spec", "RTN19b")]
-        public async Task
-            WithChannelInDetachingState_WhenTransportIsDisconnected_ShouldResendDetachMessageOnConnectionResumed(
-                Protocol protocol)
-        {
-            int sendCount = 0;
-            int tries = 0;
-            while (sendCount < 2 && tries < 3)
-            {
-                sendCount = await WithChannelInDetachingState_WhenTransportIsDisconnected_ShouldResendDetachMessageOnConnectionResumed_count(protocol);
-                tries++;
-            }
-
-            sendCount.Should().Be(2);
-        }
-
-        private async Task<int> WithChannelInDetachingState_WhenTransportIsDisconnected_ShouldResendDetachMessageOnConnectionResumed_count(Protocol protocol)
-        {
-            Logger.LogLevel = LogLevel.Debug;
-            var client = await GetRealtimeClient(protocol);
+            var channelName = "test-channel".AddRandomSuffix();
             var sentMessages = new List<ProtocolMessage>();
-            client.SetOnTransportCreated(wrapper =>
+            Logger.LogLevel = LogLevel.Debug;
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
-                wrapper.MessageSent = sentMessages.Add;
+                options.TransportFactory = new TestTransportFactory()
+                {
+                    OnMessageSent = sentMessages.Add
+                };
             });
 
             await client.WaitForState(ConnectionState.Connected);
 
-            var channel = client.Channels.Get("test-channel");
-            channel.Once(ChannelEvent.Detaching, change => client.GetTestTransport().Close(false));
+            var transport = client.GetTestTransport();
+            transport.MessageSent = sentMessages.Add;
+
+            var channel = client.Channels.Get(channelName);
+            channel.Once(ChannelEvent.Detaching, change =>
+            {
+                transport.Close(false);
+            });
             channel.Attach();
+            await channel.WaitForState(ChannelState.Attached);
             channel.Detach();
             await channel.WaitForState(ChannelState.Detaching);
+            bool didDisconnect = false;
+            client.Connection.Once(ConnectionEvent.Disconnected, change =>
+            {
+                didDisconnect = true;
+                sentMessages.Count(x => x.Channel == channelName && x.Action == ProtocolMessage.MessageAction.Attach).Should().Be(1);
+            });
+
+            await client.WaitForState(ConnectionState.Disconnected);
             await client.WaitForState(ConnectionState.Connected);
 
-            await Task.Delay(3000);
+            client.Connection.State.Should().Be(ConnectionState.Connected);
+            didDisconnect.Should().BeTrue();
 
-            var y = sentMessages.Where(x => x.Channel == "test-channel" && x.Action == ProtocolMessage.MessageAction.Detach);
-            return y.Count();
+            await channel.WaitForState(ChannelState.Detached);
+
+            var detatchCount = sentMessages.Count(x => x.Channel == channelName && x.Action == ProtocolMessage.MessageAction.Detach);
+            detatchCount.Should().Be(2);
+
+            client.Close();
         }
 
         public ConnectionSandboxTransportSideEffectsSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
@@ -754,6 +1448,156 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.On(stateChange => states.Add(stateChange.Current));
 
             await WaitForState(client, ConnectionState.Connecting);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN22")]
+        public async Task WhenAuthMessageReceived_ShouldAttemptTokenRenewal(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.UseTokenAuth = true;
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            var initialToken = client.RestClient.AblyAuth.CurrentToken;
+            var initialClientId = client.ClientId;
+
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Auth));
+
+            await Task.Delay(1000);
+
+            client.RestClient.AblyAuth.CurrentToken.Should().NotBe(initialToken);
+            client.ClientId.Should().Be(initialClientId);
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN22a")]
+        public async Task WhenFakeDisconnectedMessageContainsTokenError_ForcesClientToReauthenticate(Protocol protocol)
+        {
+
+            var reconnectAwaiter = new TaskCompletionAwaiter();
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.UseTokenAuth = true;
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            var initialToken = client.RestClient.AblyAuth.CurrentToken;
+
+            client.Connection.Once(ConnectionEvent.Disconnected, state2 =>
+            {
+                client.Connection.Once(ConnectionEvent.Connected, state3 =>
+                {
+                    reconnectAwaiter.SetCompleted();
+                });
+            });
+
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = new ErrorInfo("testing RTN22a", 40140) });
+            var didReconect = await reconnectAwaiter.Task;
+            didReconect.Should().BeTrue();
+            client.RestClient.AblyAuth.CurrentToken.Should().NotBe(initialToken);
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN22a")]
+        public async Task WhenDisconnectedMessageContainsTokenError_ForcesClientToReauthenticate(Protocol protocol)
+        {
+            var authClient = await GetRestClient(protocol);
+
+            var reconnectAwaiter = new TaskCompletionAwaiter(60000);
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.AuthCallback = tokenParams =>
+                {
+                    var results = authClient.AblyAuth.RequestToken(new TokenParams { ClientId = "RTN22a", Ttl = TimeSpan.FromSeconds(35) });
+                    return Task.FromResult<object>(results);
+                };
+                options.ClientId = "RTN22a";
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            var initialToken = client.RestClient.AblyAuth.CurrentToken;
+
+            client.Connection.Once(ConnectionEvent.Disconnected, state2 =>
+            {
+                client.Connection.Once(ConnectionEvent.Connected, state3 =>
+                {
+                    reconnectAwaiter.SetCompleted();
+                });
+            });
+
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = new ErrorInfo("testing RTN22a", 40140) });
+            var didReconect = await reconnectAwaiter.Task;
+            didReconect.Should().BeTrue();
+            client.RestClient.AblyAuth.CurrentToken.Should().NotBe(initialToken);
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN24")]
+        [Trait("spec", "RTN21")]
+        [Trait("spec", "RTN4h")]
+        [Trait("spec", "RTC8a1")]
+        public async Task WhenConnectedMessageReceived_ShouldEmitUpdate(Protocol protocol)
+        {
+            var updateAwaiter = new TaskCompletionAwaiter(5000);
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.UseTokenAuth = true;
+                options.AutoConnect = true;
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            client.Connection.ConnectionStateTtl.Should().NotBe(TimeSpan.MaxValue);
+
+            var key = client.Connection.Key;
+
+            client.Connection.Once(state =>
+            {
+                // RTN4h - can emit UPDATE event
+                if (state.Event == ConnectionEvent.Update)
+                {
+                    // should have both previous and current attributes set to CONNECTED
+                    state.Current.Should().Be(ConnectionState.Connected);
+                    state.Previous.Should().Be(ConnectionState.Connected);
+                    state.Reason.Message = "fake-error";
+                    updateAwaiter.SetCompleted();
+                }
+                else
+                {
+                    throw new Exception($"'{state.Event}' was handled. Only an 'Update' event should have occured");
+                }
+            });
+
+            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+            {
+                ConnectionDetails = new ConnectionDetails
+                {
+                    ConnectionKey = "key",
+                    ClientId = "RTN21",
+                    ConnectionStateTtl = TimeSpan.MaxValue
+                },
+                Error = new ErrorInfo("fake-error")
+            });
+
+            var didUpdate = await updateAwaiter.Task;
+            didUpdate.Should().BeTrue();
+
+            // RTN21 - new connection details over write old values
+            client.Connection.Key.Should().NotBe(key);
+            client.ClientId.Should().Be("RTN21");
+            client.Connection.ConnectionStateTtl.Should().Be(TimeSpan.MaxValue);
         }
 
         public ConnectionSandboxOperatingSystemEventsForNetworkSpecs(

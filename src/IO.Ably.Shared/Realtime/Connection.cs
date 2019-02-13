@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably;
@@ -19,6 +20,8 @@ namespace IO.Ably.Realtime
 
     public sealed class Connection : EventEmitter<ConnectionEvent, ConnectionStateChange>, IDisposable
     {
+        internal event EventHandler BeginConnect;
+
         private static readonly ConcurrentBag<WeakReference<Action<NetworkState>>> OsEventSubscribers =
             new ConcurrentBag<WeakReference<Action<NetworkState>>>();
 
@@ -46,6 +49,13 @@ namespace IO.Ably.Realtime
             OsEventSubscribers.Add(new WeakReference<Action<NetworkState>>(stateAction));
         }
 
+        internal void SetConfirmedAlive()
+        {
+            ConfirmedAliveAt = DateTimeOffset.UtcNow;
+        }
+
+        internal DateTimeOffset? ConfirmedAliveAt { get; set; }
+
         internal AblyRest RestClient => RealtimeClient.RestClient;
 
         internal AblyRealtime RealtimeClient { get; }
@@ -64,9 +74,28 @@ namespace IO.Ably.Realtime
             : base(logger)
         {
             Now = nowFunc;
-            FallbackHosts = Defaults.FallbackHosts.Shuffle().ToList();
+            FallbackHosts = realtimeClient?.Options?.FallbackHosts.Shuffle().ToList();
             RealtimeClient = realtimeClient;
             RegisterWithOSNetworkStateEvents(HandleNetworkStateChange);
+
+            var recover = realtimeClient?.Options?.Recover;
+            if (recover.IsNotEmpty())
+            {
+                ParseRecoveryKey(recover);
+            }
+        }
+
+        private void ParseRecoveryKey(string recover)
+        {
+            var match = TransportParams.RecoveryKeyRegex.Match(recover);
+            if (match.Success)
+            {
+                MessageSerial = long.Parse(match.Groups[3].Value);
+            }
+            else
+            {
+                Logger.Error($"Recovery Key '{recover}' could not be parsed.");
+            }
         }
 
         internal void Initialise()
@@ -111,7 +140,10 @@ namespace IO.Ably.Realtime
 
         public bool ConnectionResumable => Key.IsNotEmpty() && Serial.HasValue;
 
-        public string RecoveryKey => ConnectionResumable ? $"{Key}:{Serial.Value}" : string.Empty;
+        /// <summary>
+        /// - (RTN16b) Connection#recoveryKey is an attribute composed of the connectionKey, and the latest connectionSerial received on the connection, and the current msgSerial
+        /// </summary>
+        public string RecoveryKey => ConnectionResumable ? $"{Key}:{Serial.Value}:{MessageSerial}" : string.Empty;
 
         public TimeSpan ConnectionStateTtl { get; internal set; } = Defaults.ConnectionStateTtl;
 
@@ -195,7 +227,7 @@ namespace IO.Ably.Realtime
 
         internal void UpdateState(ConnectionStateBase state)
         {
-            if (state.State == State)
+            if (!state.IsUpdate && state.State == State)
             {
                 return;
             }
@@ -240,6 +272,11 @@ namespace IO.Ably.Realtime
             {
                 Serial = message.ConnectionSerial.Value;
             }
+        }
+
+        internal void OnBeginConnect()
+        {
+            BeginConnect?.Invoke(this, EventArgs.Empty);
         }
     }
 }

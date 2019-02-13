@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -14,62 +15,6 @@ namespace IO.Ably.Tests.AuthTests
         {
             var client = GetRestClient();
             client.AblyAuth.CurrentToken.Should().BeNull();
-        }
-
-        /*
-         * (RSA10a) Instructs the library to create a token immediately and ensures Token Auth is used for all future requests.
-         * See RTC8 for re-authentication behaviour when called for a realtime client
-         */
-
-        [Fact]
-        [Trait("spec", "RSA10a")]
-        public async Task Authorize_WithNotExpiredCurrentTokenAndForceFalse_ReturnsCurrentToken()
-        {
-            // create a fake token that has not expired
-            var dummyTokenDetails = new TokenDetails() { Expires = TestHelpers.Now().AddHours(1) };
-
-            // create new reset client using the dummyTokenDetails
-            var client = GetRestClient(null, opts => { opts.TokenDetails = dummyTokenDetails; });
-
-            // get the current token
-            var newTokenDetails = client.AblyAuth.CurrentToken;
-
-            // new token should match the dummy token
-            newTokenDetails.Should().BeSameAs(dummyTokenDetails);
-
-            // authorise again
-            var sameTokenDetails = await client.Auth.AuthorizeAsync();
-
-            // the same token should be returned
-            client.AblyAuth.CurrentToken.Should().BeSameAs(sameTokenDetails);
-            client.AblyAuth.CurrentToken.Should().Be(newTokenDetails);
-        }
-
-        [Fact]
-        [Trait("spec", "RSA10a")]
-        public async Task Authorize_WithNotExpiredCurrentTokenAndForceTrue_ReturnsNewToken()
-        {
-            // create a fake token that has not expired
-            var dummyTokenDetails = new TokenDetails() { Expires = TestHelpers.Now().AddHours(1) };
-
-            // create new reset client using the dummyTokenDetails
-            var client = GetRestClient(null, opts =>
-            {
-                opts.TokenDetails = dummyTokenDetails;
-            });
-
-            // get the current token
-            var currentToken = client.AblyAuth.CurrentToken;
-
-            // new token should match the dummy token
-            currentToken.Should().BeSameAs(dummyTokenDetails);
-
-            // authorise again, this should force a new token
-            var newToken = await client.Auth.AuthorizeAsync();
-
-            // A different token should be returned
-            client.AblyAuth.CurrentToken.Should().Be(currentToken);
-            client.AblyAuth.CurrentToken.Should().BeSameAs(newToken);
         }
 
         [Fact]
@@ -95,30 +40,6 @@ namespace IO.Ably.Tests.AuthTests
             var data = LastRequest.PostData as TokenRequest;
             client.AblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(tokenParams);
             data.Ttl.Should().Be(TimeSpan.FromMinutes(260));
-        }
-
-        [Theory]
-        [InlineData(Defaults.TokenExpireBufferInSeconds + 1, false)]
-        [InlineData(Defaults.TokenExpireBufferInSeconds, true)]
-        [InlineData(Defaults.TokenExpireBufferInSeconds - 1, true)]
-        [Trait("spec", "RSA10c")]
-        public async Task Authorize_WithTokenExpiringIn15Seconds_RenewsToken(int secondsLeftToExpire, bool shouldRenew)
-        {
-            var client = GetRestClient();
-            var initialToken = new TokenDetails() { Expires = Now.AddSeconds(secondsLeftToExpire) };
-            client.AblyAuth.CurrentToken = initialToken;
-
-            var token = await client.Auth.AuthorizeAsync();
-
-            if (shouldRenew)
-            {
-                Assert.Contains("requestToken", LastRequest.Url);
-                token.Should().NotBeSameAs(initialToken);
-            }
-            else
-            {
-                token.Should().BeSameAs(initialToken);
-            }
         }
 
         [Fact]
@@ -179,6 +100,87 @@ namespace IO.Ably.Tests.AuthTests
         }
 
         [Fact]
+        [Trait("spec", "RSA10k")]
+        public async Task Authorize_ObtainServerTimeAndPersistOffset()
+        {
+            var client = GetRestClient();
+            bool serverTimeCalled = false;
+
+            // configure the AblyAuth test wrapper to return UTC+30m when ServerTime() is called
+            // (By default the library uses DateTimeOffset.UtcNow whe Now() is called)
+            var testAblyAuth = new TestAblyAuth(client.Options, client, () =>
+            {
+                serverTimeCalled = true;
+                return Task.Run(() => DateTimeOffset.UtcNow.AddMinutes(30));
+            });
+
+            // RSA10k: If the AuthOption argument’s queryTime attribute is true
+            // it will obtain the server time once and persist the offset from the local clock.
+            var customAuthOptions = new AuthOptions { QueryTime = true };
+            var tokenParams = new TokenParams();
+            await testAblyAuth.AuthorizeAsync(tokenParams, customAuthOptions);
+            serverTimeCalled.Should().BeTrue();
+            testAblyAuth.GetServerTimeOffset().Should().HaveValue();
+            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(await testAblyAuth.GetServerTime());
+            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(30));
+
+            // to show the values are calculated and not fixed
+            // get the current server time offset, pause for a short time,
+            // then get it again.
+            // The new value should represent a time after the first
+            var snapshot = testAblyAuth.GetServerTimeOffset();
+            await Task.Delay(500);
+            testAblyAuth.GetServerTimeOffset()?.Should().BeAfter(snapshot.Value);
+
+            // reset flag, used to show ServerTime() is not called again
+            serverTimeCalled = false;
+
+            // RSA10k: All future token requests generated directly or indirectly via a call to
+            // authorize will not obtain the server time, but instead use the local clock
+            // offset to calculate the server time.
+            await testAblyAuth.AuthorizeAsync(null, customAuthOptions);
+
+            // ServerTime() should not have been called again
+            serverTimeCalled.Should().BeFalse();
+
+            // and we should still be getting calculated offsets
+            testAblyAuth.GetServerTimeOffset().Should().HaveValue();
+            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(await testAblyAuth.GetServerTime());
+            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(30));
+
+            // reset again
+            serverTimeCalled = false;
+
+            // intercept the (mocked) HttpRequest so we can get a reference to the AblyRequest
+            TokenRequest tokenRequest = null;
+            var exFunc = client.ExecuteHttpRequest;
+            client.ExecuteHttpRequest = request =>
+            {
+                tokenRequest = request.PostData as TokenRequest;
+                return exFunc(request);
+            };
+
+            // demonstrate that we don't need Querytime set to get a server time offset
+            await testAblyAuth.AuthorizeAsync(tokenParams, new AuthOptions { QueryTime = false });
+
+            // offset should be cached
+            serverTimeCalled.Should().BeFalse();
+
+            // the TokenRequest timestamp should have been set using the offset
+            tokenRequest.Timestamp.Should().HaveValue();
+            tokenRequest.Timestamp.Should().BeCloseTo(await testAblyAuth.GetServerTime());
+
+            // reset auth object
+            testAblyAuth = new TestAblyAuth(client.Options, client);
+
+            await testAblyAuth.AuthorizeAsync(tokenParams, new AuthOptions { QueryTime = false });
+
+            // the TokenRequest should not have been set using an offset, but should have been set
+            tokenRequest.Timestamp.Should().HaveValue();
+            tokenRequest.Timestamp.Should().BeCloseTo(DateTimeOffset.UtcNow);
+        }
+
+        [Fact]
         [Trait("spec", "RSA10l")]
         public async Task Authorize_RestClientAuthoriseMethodsShouldBeMarkedObsoleteAndLogADeprecationWarning()
         {
@@ -236,9 +238,25 @@ namespace IO.Ably.Tests.AuthTests
                 return base.RequestTokenAsync(tokenParams, options);
             }
 
-            public TestAblyAuth(ClientOptions options, AblyRest rest)
+            public TestAblyAuth(ClientOptions options, AblyRest rest, Func<Task<DateTimeOffset>> serverTimeFunc = null)
                 : base(options, rest)
             {
+                if (serverTimeFunc != null)
+                {
+                    ServerTime = serverTimeFunc;
+                }
+            }
+
+            // Exposes the protected property ServerTime
+            public async Task<DateTimeOffset> GetServerTime()
+            {
+                return await ServerTime();
+            }
+
+            // Exposes the protected property ServerTimeOffset
+            public DateTimeOffset? GetServerTimeOffset()
+            {
+                return ServerTimeOffset();
             }
         }
 

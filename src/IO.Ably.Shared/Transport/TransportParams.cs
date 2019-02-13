@@ -9,6 +9,7 @@ namespace IO.Ably.Transport
 {
     public class TransportParams
     {
+        internal static Regex RecoveryKeyRegex { get; set; } = new Regex(@"^([\w!-]+):(-?\d+):(-?\d+)$");
         internal ILogger Logger { get; private set; }
 
         public string Host { get; private set; }
@@ -50,7 +51,7 @@ namespace IO.Ably.Transport
             result.AuthMethod = auth.AuthMethod;
             if (result.AuthMethod == AuthMethod.Basic)
             {
-                result.AuthValue = options.Key;
+                result.AuthValue = ApiKey.Parse(options.Key).ToString();
             }
             else
             {
@@ -66,7 +67,7 @@ namespace IO.Ably.Transport
             result.ConnectionKey = connectionKey;
             result.ConnectionSerial = connectionSerial;
             result.EchoMessages = options.EchoMessages;
-            result.FallbackHosts = Defaults.FallbackHosts;
+            result.FallbackHosts = options.FallbackHosts;
             result.UseBinaryProtocol = options.UseBinaryProtocol;
             result.RecoverValue = options.Recover;
             result.Logger = logger ?? options.Logger;
@@ -112,8 +113,7 @@ namespace IO.Ably.Transport
             }
             else if (RecoverValue.IsNotEmpty())
             {
-                var pattern = new Regex(@"^([\w!-]+):(\-?\w+)$");
-                var match = pattern.Match(RecoverValue);
+                var match = RecoveryKeyRegex.Match(RecoverValue);
                 if (match.Success)
                 {
                     result["recover"] = match.Groups[1].Value;

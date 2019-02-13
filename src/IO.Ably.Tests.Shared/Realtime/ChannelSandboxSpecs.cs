@@ -9,6 +9,7 @@ using FluentAssertions;
 using IO.Ably.Encryption;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Types;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -117,6 +118,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTC1a")]
         public async Task TestAttachChannel_Sending3Messages_EchoesItBack(Protocol protocol)
         {
             Logger.LogLevel = LogLevel.Debug;
@@ -125,7 +127,7 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol);
             await client.WaitForState(ConnectionState.Connected);
 
-            ManualResetEvent resetEvent = new ManualResetEvent(false);
+            var tsc = new TaskCompletionAwaiter(10000, 3);
             IRealtimeChannel target = client.Channels.Get("test" + protocol);
             target.Attach();
             await target.WaitForState(ChannelState.Attached);
@@ -135,24 +137,19 @@ namespace IO.Ably.Tests.Realtime
             target.Subscribe(message =>
             {
                 messagesReceived.Enqueue(message);
-                count++;
-                if (count == 3)
-                {
-                    resetEvent.Set();
-                }
+                tsc.Tick();
             });
 
             // Act
-            target.Publish("test1", "test 12");
-            target.Publish("test2", "test 123");
-            target.Publish("test3", "test 321");
+            await target.PublishAsync("test1", "test 12");
+            await target.PublishAsync("test2", "test 123");
+            await target.PublishAsync("test3", "test 321");
 
-            bool result = resetEvent.WaitOne(8000);
-            await Task.Delay(100);
+            bool result = await tsc.Task;
             result.Should().BeTrue();
 
             // Assert
-            messagesReceived.Count.ShouldBeEquivalentTo(3);
+            messagesReceived.Should().HaveCount(3);
             var messages = messagesReceived.ToList();
             messages[0].Name.ShouldBeEquivalentTo("test1");
             messages[0].Data.ShouldBeEquivalentTo("test 12");
@@ -165,6 +162,7 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTL7f")]
+        [Trait("spec", "RTC1a")]
         public async Task TestAttachChannel_SendingMessage_Doesnt_EchoesItBack(Protocol protocol)
         {
             var channelName = "echo_off_test";
@@ -225,6 +223,10 @@ namespace IO.Ably.Tests.Realtime
                 var client2 = await GetRealtimeClient(protocol);
                 var client3 = await GetRealtimeClient(protocol);
 
+                client1.Channels.Get(channelName).Attach();
+                client2.Channels.Get(channelName).Attach();
+                client3.Channels.Get(channelName).Attach();
+
                 var messages = new List<Message>();
                 for (int i = 0; i < 20; i++)
                 {
@@ -235,10 +237,10 @@ namespace IO.Ably.Tests.Realtime
                 foreach (var message in messages)
                 {
                     client1.Channels.Get(channelName).Publish(new[] { message }, (b, info) =>
-                   {
-                       successes1.Add(b);
-                       awaiter.Tick();
-                   });
+                    {
+                        successes1.Add(b);
+                        awaiter.Tick();
+                    });
                     client2.Channels.Get(channelName).Publish(new[] { message }, (b, info) =>
                     {
                         successes2.Add(b);
@@ -263,6 +265,27 @@ namespace IO.Ably.Tests.Realtime
             successes1.Should().HaveCount(20, "Should have 20 successful callback executed");
             successes2.Should().HaveCount(20, "Should have 20 successful callback executed");
             successes3.Should().HaveCount(20, "Should have 20 successful callback executed");
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL6c5")]
+        public async Task PublishShouldNotImplicitlyAttachAChannel(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            var channel = client.Channels.Get("RTL6c5".AddRandomSuffix());
+
+            var awaiter = new TaskCompletionAwaiter(5000);
+            channel.Once(ChannelEvent.Attached, change =>
+            {
+                awaiter.SetCompleted();
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+            channel.Publish(null, "foo");
+
+            var result = await awaiter.Task;
+            result.Should().BeFalse("channel should not have become attached");
         }
 
         [Theory]
@@ -612,6 +635,80 @@ namespace IO.Ably.Tests.Realtime
             client.Close();
         }
 
+        [Theory]
+        [InlineData(ChannelState.Detached)]
+        [InlineData(ChannelState.Failed)]
+        [InlineData(ChannelState.Suspended)]
+        [Trait("spec", "RTL11")]
+        public async Task WhenChannelEntersDetachedFailedSuspendedState_ShouldDeleteQueuedMessageAndCallbackShouldIndicateError(ChannelState state)
+        {
+            var client = await GetRealtimeClient(Defaults.Protocol, (options, settings) =>
+                {
+                    // A bogus AuthUrl will cause connection to become disconnected
+                    options.AuthUrl = new Uri("http://235424c24.fake:49999");
+
+                    // speed up the AuthUrl failure
+                    options.HttpMaxRetryCount = 1;
+                    options.HttpMaxRetryDuration = TimeSpan.FromMilliseconds(100);
+                });
+
+            var channel = client.Channels.Get("test".AddRandomSuffix());
+
+            var tsc = new TaskCompletionAwaiter(5000);
+            client.Connection.Once(ConnectionEvent.Disconnected, change =>
+            {
+                // place a message on the queue
+                channel.Publish("wibble", "wobble", (success, info) =>
+                {
+                    // expect an error
+                    tsc.Set(!success);
+                });
+
+                // setting the state should cause the queued message to be removed
+                // and the callback to indicate an error
+                (channel as RealtimeChannel).SetChannelState(state);
+            });
+
+            var result = await tsc.Task;
+            result.Should().BeTrue("publish should have failed");
+        }
+
+        [Theory]
+        [InlineData(ChannelState.Detached)]
+        [InlineData(ChannelState.Failed)]
+        [InlineData(ChannelState.Suspended)]
+        [Trait("spec", "RTL11a")]
+        public async Task WhenChannelEntersDetachedFailedSuspendedState_MessagesAwaitingAckOrNackShouldNotBeAffected(ChannelState state)
+        {
+            var client = await GetRealtimeClient(Defaults.Protocol);
+            var channel = client.Channels.Get("test".AddRandomSuffix());
+            var tsc = new TaskCompletionAwaiter(5000);
+
+            channel.Once(ChannelEvent.Attached, async x =>
+            {
+                channel.Publish("wibble", "wobble", (success, info) =>
+                {
+                    // message publish should succeed
+                    tsc.Set(success);
+                });
+
+                client.Connection.Once(ConnectionEvent.Disconnected, change =>
+                {
+                    (channel as RealtimeChannel).SetChannelState(state);
+                });
+
+                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
+                {
+                    Error = new ErrorInfo("test", 40140)
+                });
+            });
+
+            channel.Attach();
+
+            var result = await tsc.Task;
+            result.Should().BeTrue();
+        }
+
         [Fact]
         [Trait("bug", "102")]
         public async Task WhenAttachingToAChannelFromMultipleThreads_ItShouldNotThrowAnError()
@@ -619,7 +716,7 @@ namespace IO.Ably.Tests.Realtime
             Logger.LogLevel = LogLevel.Debug;
 
             var client1 = await GetRealtimeClient(Protocol.Json);
-            var channel = client1.Channels.Get("test");
+            var channel = client1.Channels.Get("test".AddRandomSuffix());
             var task = Task.Run(() => channel.Attach());
             await task.ConfigureAwait(false);
             var task2 = Task.Run(() => channel.Attach());
@@ -660,6 +757,235 @@ namespace IO.Ably.Tests.Realtime
                 message.Name.Should().Be("name:" + (i + 1));
                 message.Data.ToString().Should().Be("value:" + (i + 1));
             }
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL13a")]
+        public async Task ServerInitiatedDetach_WhenChannelAttached_ShouldReattachImmediately(Protocol protocol)
+        {
+            var channelName = "RTL13a".AddRandomSuffix();
+            var client = await GetRealtimeClient(protocol);
+            var channel = client.Channels.Get(channelName);
+            channel.Attach();
+            await channel.WaitForState(ChannelState.Attached);
+
+            channel.State.Should().Be(ChannelState.Attached);
+
+            var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Detached, channelName);
+
+            ChannelStateChange stateChange = null;
+            await WaitFor(done =>
+            {
+                channel.Once(ChannelEvent.Attaching, change =>
+                {
+                    stateChange = change;
+                    done();
+                });
+
+                client.GetTestTransport().FakeReceivedMessage(msg);
+            });
+
+            stateChange.Error.ShouldBeEquivalentTo(msg.Error);
+            channel.ErrorReason.Should().BeNull();
+
+            client.GetTestTransport().ProtocolMessagesSent
+                .Count(x => x.Action == ProtocolMessage.MessageAction.Attach).Should().Be(2);
+
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL13a")]
+        public async Task ServerInitiatedDetach_WhenChannelSuspended_ShouldReattachImmediately(Protocol protocol)
+        {
+            var channelName = "RTL13a".AddRandomSuffix();
+            var client = await GetRealtimeClient(protocol);
+            client.Connect();
+            await client.WaitForState();
+            var channel = client.Channels.Get(channelName) as RealtimeChannel;
+            channel.SetChannelState(ChannelState.Suspended);
+            await channel.WaitForState(ChannelState.Suspended);
+
+            channel.State.Should().Be(ChannelState.Suspended);
+
+            var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Detached, channelName);
+
+            ChannelStateChange stateChange = null;
+            await WaitFor(done =>
+            {
+                channel.Once(ChannelEvent.Attaching, change =>
+                {
+                    stateChange = change;
+                    done();
+                });
+
+                client.GetTestTransport().FakeReceivedMessage(msg);
+            });
+
+            stateChange.Error.ShouldBeEquivalentTo(msg.Error);
+            channel.ErrorReason.Should().BeNull();
+
+            client.GetTestTransport().ProtocolMessagesSent
+                .Count(x => x.Action == ProtocolMessage.MessageAction.Attach).Should().Be(1);
+
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL13b")]
+        public async Task ServerInitiatedDetach_WhenChannelAttached_ShouldAttemptReattachImmediately_WhenReattachFailsBecomeSuspended(Protocol protocol)
+        {
+            // reduce timeouts to speed up test
+            var requestTimeout = TimeSpan.FromSeconds(2);
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.RealtimeRequestTimeout = requestTimeout;
+                options.ChannelRetryTimeout = requestTimeout;
+            });
+
+            var channelName = "RTL13a".AddRandomSuffix();
+            var channel = client.Channels.Get(channelName);
+            channel.Attach();
+            await channel.WaitForState(ChannelState.Attached);
+            channel.State.Should().Be(ChannelState.Attached);
+
+            // block attach messages being sent causing the attach to timeout
+            client.GetTestTransport().BlockSendActions.Add(ProtocolMessage.MessageAction.Attach);
+
+            var detachedMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Detached, channelName)
+            {
+                Error = new ErrorInfo("fake error")
+            };
+
+            ChannelStateChange stateChange = null;
+            ChannelStateChange stateChange2 = null;
+            var start = DateTimeOffset.MinValue;
+            var end = DateTimeOffset.MaxValue;
+
+            await WaitFor(30000, done =>
+            {
+                // after detached message channel should become ATTACHING
+                channel.Once(ChannelEvent.Attaching, change =>
+                {
+                    stateChange = change;
+
+                    // after the ATTACH fails it should become SUSPENDED
+                    channel.Once(ChannelEvent.Suspended, change2 =>
+                    {
+                        stateChange2 = change2;
+                        start = DateTimeOffset.UtcNow;
+
+                        // it should keep trying to attach
+                        channel.Once(ChannelEvent.Attaching, change3 =>
+                        {
+                            end = DateTimeOffset.UtcNow;
+                            done();
+                        });
+                    });
+                });
+
+                // inject detached message
+                client.GetTestTransport().FakeReceivedMessage(detachedMessage);
+            });
+
+            // the first error should be from the detached message
+            stateChange.Error.ShouldBeEquivalentTo(detachedMessage.Error);
+
+            // the second should be a timeout error
+            stateChange2.Error.Message.Should().StartWith("Channel didn't attach within");
+
+            // retry should happen after ChannelRetryTimeout has elapsed (TL3l7)
+            (end - start).Should().BeCloseTo(requestTimeout, 500);
+
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL13b")]
+        [Trait("spec", "RTL13c")]
+        public async Task ServerInitiatedDetach_WhenChannelAttaching_ShouldAttemptReattachImmediately_WhenReattachFailsBecomeSuspended(Protocol protocol)
+        {
+            // reduce timeouts to speed up test
+            var requestTimeout = TimeSpan.FromSeconds(2);
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.RealtimeRequestTimeout = requestTimeout;
+                options.ChannelRetryTimeout = requestTimeout;
+            });
+            await client.WaitForState(ConnectionState.Connected);
+            var channelName = "RTL13a".AddRandomSuffix();
+            var channel = client.Channels.Get(channelName);
+
+            // block attach messages being sent causing the attach to timeout
+            client.GetTestTransport().BlockSendActions.Add(ProtocolMessage.MessageAction.Attach);
+
+            var detachedMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Detached, channelName)
+            {
+                Error = new ErrorInfo("fake error")
+            };
+
+            ChannelStateChange stateChange = null;
+            ChannelStateChange stateChange2 = null;
+            var start = DateTimeOffset.MinValue;
+            var end = DateTimeOffset.MaxValue;
+
+            await WaitFor(30000, done =>
+            {
+                // after detached message channel should become ATTACHING
+                channel.Once(ChannelEvent.Attaching, change =>
+                {
+                    stateChange = change;
+
+                    // after the ATTACH fails it should become SUSPENDED
+                    channel.Once(ChannelEvent.Suspended, change2 =>
+                    {
+                        stateChange2 = change2;
+                        start = DateTimeOffset.UtcNow;
+
+                        // it should keep trying to attach
+                        channel.Once(ChannelEvent.Attaching, change3 =>
+                        {
+                            end = DateTimeOffset.UtcNow;
+                            done();
+                        });
+                    });
+
+                    // inject detached message
+                    client.GetTestTransport().FakeReceivedMessage(detachedMessage);
+                });
+
+                channel.Attach();
+            });
+
+            client.Close();
+
+            // wait for double the requestTimeout
+            var tsc = new TaskCompletionAwaiter(requestTimeout.Add(requestTimeout).Seconds * 1000);
+            await client.WaitForState(ConnectionState.Closed);
+
+            // RTL13c If the connection is no longer CONNECTED,
+            // then the automatic attempts to re-attach the channel should stop
+            channel.Once(ChannelEvent.Attaching, change3 =>
+            {
+                tsc.SetCompleted(); // should not be called
+            });
+
+            var didRetry = await tsc.Task;
+            didRetry.Should().BeFalse();
+
+            // the first error should be null
+            stateChange.Error.Should().BeNull();
+
+            // the second should be a timeout error
+            stateChange2.Error.Message.Should().Be(detachedMessage.Error.Message);
+
+            // retry should happen after SuspendedRetryTimeout has elapsed
+            (end - start).Should().BeCloseTo(requestTimeout, 500);
+
         }
 
         [Theory]
@@ -739,6 +1065,31 @@ namespace IO.Ably.Tests.Realtime
 
             result.IsSuccess.Should().BeTrue();
             result.Error.Should().BeNull();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("issue", "205")]
+        public async Task ShouldReturnToPreviousStateIfAttachMessageNotReceivedWithinDefaultTimeout2(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            client.Options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(2000);
+            bool? didAttach = null;
+            var channel = (RealtimeChannel)client.Channels.Get("test-issue#205".AddRandomSuffix());
+            channel.Attach((b, info) =>
+            {
+                didAttach = b;
+                if (info != null)
+                {
+                    throw new Exception($"Attach returned an error: {info.Message}");
+                }
+            });
+            await Task.Delay(1000);
+            didAttach.Should().BeTrue();
+            channel.InternalStateChanged += (sender, change) => throw new AblyException(change.Error);
+            channel.State.Should().Be(ChannelState.Attached);
+            await Task.Delay(3000);
+            channel.State.Should().Be(ChannelState.Attached);
         }
 
         [Theory]

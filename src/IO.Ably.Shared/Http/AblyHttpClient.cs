@@ -49,11 +49,11 @@ namespace IO.Ably
 
         public async Task<AblyResponse> Execute(AblyRequest request)
         {
-            var fallbackHosts = Defaults.FallbackHosts.ToList();
+            var fallbackHosts = Options.FallbackHosts.ToList();
             if (CustomHost.IsNotEmpty())
             {
-                // The custom host is a fallback host currently in use by the Realtime client.
-                // We need to remove it from the fallback hosts
+                //The custom host is a fallback host currently in use by the Realtime client.
+                //We need to remove it from the fallback hosts
                 fallbackHosts.Remove(CustomHost);
             }
 
@@ -79,7 +79,7 @@ namespace IO.Ably
                 {
                     var message = GetRequestMessage(request, host);
                     await LogMessage(message);
-                    var response = await SendAsync(message);
+                    var response = await Client.SendAsync(message, HttpCompletionOption.ResponseContentRead).ConfigureAwait(false);
                     var ablyResponse = await GetAblyResponse(response);
                     LogResponse(ablyResponse, request.Url);
 
@@ -88,7 +88,7 @@ namespace IO.Ably
                         return ablyResponse;
                     }
 
-                    if (IsRetryableResponse(response) && Options.IsDefaultHost)
+                    if (IsRetryableResponse(response) && (Options.IsDefaultHost || Options.FallbackHostsUseDefault))
                     {
                         Logger.Warning("Failed response. Retrying. Returned response with status code: " +
                                        response.StatusCode);
@@ -117,7 +117,7 @@ namespace IO.Ably
 
                     throw AblyException.FromResponse(ablyResponse);
                 }
-                catch (HttpRequestException ex) when (IsRetryableError(ex) && Options.IsDefaultHost)
+                catch (HttpRequestException ex) when(IsRetryableError(ex) && (Options.IsDefaultHost || Options.FallbackHostsUseDefault))
                 {
                     Logger.Warning("Error making a connection to Ably servers. Retrying", ex);
                     if (TryGetNextRandomHost(fallbackHosts, random, out host))
@@ -129,7 +129,7 @@ namespace IO.Ably
 
                     throw;
                 }
-                catch (TaskCanceledException ex) when (IsRetryableError(ex) && Options.IsDefaultHost)
+                catch (TaskCanceledException ex) when (IsRetryableError(ex) && (Options.IsDefaultHost || Options.FallbackHostsUseDefault))
                 {
                     Logger.Warning("Error making a connection to Ably servers. Retrying", ex);
                     if (TryGetNextRandomHost(fallbackHosts, random, out host))
@@ -284,8 +284,7 @@ namespace IO.Ably
             if(request.Protocol == Protocol.MsgPack)
                 message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(request.Protocol)));
 #endif
-
-            // Always accept JSON
+            //Always accept JSON
             message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.Json)));
             if (message.Method == HttpMethod.Post)
             {

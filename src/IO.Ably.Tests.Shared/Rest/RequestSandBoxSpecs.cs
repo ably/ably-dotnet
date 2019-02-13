@@ -234,6 +234,10 @@ namespace IO.Ably.Tests
             var client = TrackLastRequest(await GetRestClient(protocol));
             var response = await client.Request(HttpMethod.Post, "/does-not-exist");
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            response.Success.Should().BeFalse();
+            response.ErrorCode.Should().Be(40400);
+            response.ErrorMessage.Should().NotBeNullOrEmpty();
+            response.Response.ContentType.Should().Be("application/json");
         }
 
         [Trait("spec", "RSC19e")]
@@ -267,6 +271,11 @@ namespace IO.Ably.Tests
         [ProtocolData]
         public async Task RequestFails_Non200StatusResponseShouldNotRaiseException(Protocol protocol)
         {
+            /*
+             * This test is to show that non success HTTP status codes do not
+             * cause the underlying HTTP client to throw an exception
+             * (Which is the default behaviour for System.Net.HttpClient)
+             */
             var client = TrackLastRequest(await GetRestClient(protocol, options =>
             {
                 options.HttpMaxRetryCount = 1;
@@ -276,7 +285,10 @@ namespace IO.Ably.Tests
 
             client.HttpClient.CustomHost = "echo.ably.io/respondwith?status=400";
             var response = await client.Request(HttpMethod.Post, "/");
+            response.Success.Should().BeFalse();
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+            // because we are using the echo server there is no error code or message
             response.ErrorCode.Should().Be(0);
             response.ErrorMessage.Should().BeNull();
         }

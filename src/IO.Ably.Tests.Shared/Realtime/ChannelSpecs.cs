@@ -52,45 +52,6 @@ namespace IO.Ably.Tests.Realtime
                 channel.Presence.Should().BeOfType<Presence>();
             }
 
-            [Fact]
-            [Trait("spec", "RTL12")]
-            [Trait("intermittent", "true")]
-            public async Task OnceAttachedWhenConsequentAttachMessageArriveWithError_ShouldEmitErrorOnChannelButNoStateChange()
-            {
-                var client = GetConnectedClient();
-                var channel = client.Channels.Get("test");
-                SetState(channel, ChannelState.Attached);
-
-                ErrorInfo expectedError = new ErrorInfo();
-                ErrorInfo error = null;
-                channel.Error += (sender, args) =>
-                {
-                    error = args.Reason;
-                };
-                bool stateChanged = false;
-
-                await Task.Delay(10); // Allow the notification thread to fire
-
-                ChannelState newState = ChannelState.Initialized;
-                channel.On((args) =>
-                {
-                    stateChanged = true;
-                    newState = args.Current;
-                });
-
-                await
-                    client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
-                    {
-                        Error = expectedError,
-                        Channel = "test"
-                    });
-
-                await Task.Delay(10); // Allow the notification thread to fire
-
-                error.Should().BeSameAs(expectedError);
-                stateChanged.Should().BeFalse("State should not have changed but is now: " + newState);
-            }
-
             public GeneralSpecs(ITestOutputHelper output)
                 : base(output)
             {
@@ -129,29 +90,98 @@ namespace IO.Ably.Tests.Realtime
             }
 
             [Theory]
-            [InlineData(ChannelEvent.Initialized)]
             [InlineData(ChannelEvent.Attaching)]
             [InlineData(ChannelEvent.Attached)]
             [InlineData(ChannelEvent.Detaching)]
             [InlineData(ChannelEvent.Detached)]
             [InlineData(ChannelEvent.Failed)]
+            [InlineData(ChannelEvent.Suspended)]
             [Trait("spec", "RTL2a")]
             [Trait("spec", "RTL2b")]
+            [Trait("spec", "RTL2d")]
+            [Trait("spec", "TH1")]
+            [Trait("spec", "TH2")]
+            [Trait("spec", "TH5")]
             public void ShouldEmitTheFollowingStates(ChannelEvent channelEvent)
             {
+                var chanName = "test".AddRandomSuffix();
+                var client = GetConnectedClient();
+                var channel = client.Channels.Get(chanName);
+
+                ChannelEvent sourceEvent = ChannelEvent.Update;
+                ChannelState previousState = ChannelState.Failed;
                 ChannelState newState = ChannelState.Initialized;
-                _channel.On(x =>
+                channel.On(channelStateChange =>
                 {
-                    newState = x.Current;
+                    // RTL2d first argument should be an instance of ChannelStateChange
+                    channelStateChange.Should().NotBeNull();
+                    channelStateChange.Error.Should().BeNull();
+
+                    // should be the state corresponding to the
+                    // passed in ChannelEvent
+                    // (which should be anything but Initialized)
+                    newState = channelStateChange.Current;
+
+                    // should always be Initialized
+                    previousState = channelStateChange.Previous;
+
+                    // TH5
+                    sourceEvent = channelStateChange.Event;
                     Done();
                 });
 
-                (_channel as RealtimeChannel).SetChannelState((ChannelState)channelEvent);
+                (channel as RealtimeChannel).SetChannelState((ChannelState)channelEvent);
 
                 WaitOne();
 
-                _channel.State.Should().Be((ChannelState)channelEvent);
+                channel.State.Should().Be((ChannelState)channelEvent);
                 newState.Should().Be((ChannelState)channelEvent);
+                previousState.Should().Be(ChannelState.Initialized);
+                sourceEvent.Should().Be(channelEvent);
+            }
+
+            [Theory]
+            [InlineData(ProtocolMessage.MessageAction.Attached)]
+            [InlineData(ProtocolMessage.MessageAction.Detached)]
+            [Trait("spec", "RTL2d")]
+            public void ShouldSetTheErrorReasonIfPresent(ProtocolMessage.MessageAction action)
+            {
+                var chanName = "test".AddRandomSuffix();
+                var client = GetConnectedClient();
+                var channel = client.Channels.Get(chanName);
+
+                ChannelState previousState = ChannelState.Failed;
+                ChannelState newState = ChannelState.Initialized;
+                channel.On(channelStateChange =>
+                {
+                    // RTL2d first argument should be an instance of ChannelStateChange
+                    channelStateChange.Should().NotBeNull();
+                    channelStateChange.Error.Should().NotBeNull();
+                    channelStateChange.Error.Message.Should().Be(action.ToString());
+                    channelStateChange.Error.Code.Should().Be((int) action);
+
+                    // should be the state corresponding to the
+                    // passed in ChannelEvent which should be
+                    // anything but Initialized
+                    newState = channelStateChange.Current;
+
+                    // should always be Initialized
+                    previousState = channelStateChange.Previous;
+                    Done();
+                });
+
+                // any state change triggered by a ProtocolMessage that contains an error member
+                // should populate the reason with that error in the corresponding state change event
+                client.FakeProtocolMessageReceived(new ProtocolMessage(action, chanName)
+                {
+                    Error = new ErrorInfo(action.ToString(), (int)action)
+                });
+
+                WaitOne();
+
+                channel.State.ToString().Should().Be(action.ToString());
+                newState.ToString().Should().Be(action.ToString());
+                previousState.Should().Be(ChannelState.Initialized);
             }
 
             [Fact]
@@ -172,6 +202,125 @@ namespace IO.Ably.Tests.Realtime
 
                 expectedError.Should().BeSameAs(error);
                 _channel.ErrorReason.Should().BeSameAs(error);
+            }
+
+            [Fact]
+            [Trait("spec", "RTL2f")]
+            [Trait("spec", "RTL2g")]
+            [Trait("spec", "RTL12")]
+            [Trait("spec", "TH2")]
+            [Trait("spec", "TH3")]
+            [Trait("spec", "TH4")]
+            async Task WhenAttachedProtocolMessageWithResumedFlagReceived_EmittedChannelStateChangeShouldIndicateResumed()
+            {
+                var client = GetConnectedClient();
+                var channel = client.Channels.Get("test");
+                var tsc = new TaskCompletionAwaiter(2000);
+
+                channel.Once(ChannelEvent.Attached, stateChange =>
+                {
+                    // RTL2f
+                    stateChange.Current.Should().Be(ChannelState.Attached);
+                    stateChange.Previous.Should().Be(ChannelState.Initialized);
+                    stateChange.Resumed.Should().BeFalse();
+                    stateChange.Error.Should().BeNull();
+                    tsc.SetCompleted();
+                });
+
+                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
+                {
+                    Channel = "test"
+                });
+
+                var result = await tsc.Task;
+                result.Should().BeTrue("State change event should have been handled");
+                channel.State.Should().Be(ChannelState.Attached);
+
+                // reset
+                tsc = new TaskCompletionAwaiter(2000);
+
+                // RTL2g / RTL12
+                channel.Once(ChannelEvent.Update, stateChange =>
+                {
+                    // RTL2f, TH2, TH4
+                    stateChange.Current.Should().Be(ChannelState.Attached);
+                    stateChange.Previous.Should().Be(ChannelState.Attached);
+                    stateChange.Resumed.Should().BeFalse();
+                    tsc.SetCompleted();
+                });
+
+                // Send another Attached message without the resume flag.
+                // This should cause and Update event to be emitted.
+                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached, "test"));
+
+                result = await tsc.Task;
+                result.Should().BeTrue("Update event should have been handled");
+                channel.State.Should().Be(ChannelState.Attached);
+
+                channel.Once(stateChange => throw new Exception("This should not be reached because resumed flag was set"));
+
+                // send another Attached protocol message with the resumed flag set.
+                // This should not trigger any channel event (per RTL12).
+                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
+                {
+                    Channel = "test",
+                    Flags = 4 // resumed
+                });
+
+                await Task.Delay(2000);
+                tsc = new TaskCompletionAwaiter(500);
+
+                // set detached so that the nexted Attached message with resume will pass
+                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, "test"));
+
+                channel.Once(ChannelEvent.Attached, stateChange =>
+                {
+                    // RTL2f, TH4
+                    stateChange.Resumed.Should().BeTrue();
+
+                    // TH3
+                    stateChange.Error.Message.Should().Be("test error");
+                    tsc.SetCompleted();
+                });
+
+                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached, "test")
+                {
+                    Flags = (int)ProtocolMessage.Flag.Resumed, // resumed
+                    Error = new ErrorInfo("test error")
+                });
+
+                result = await tsc.Task;
+                result.Should().BeTrue();
+            }
+
+            [Theory]
+            [InlineData(ChannelState.Initialized)]
+            [InlineData(ChannelState.Attaching)]
+            [InlineData(ChannelState.Attached)]
+            [InlineData(ChannelState.Detaching)]
+            [InlineData(ChannelState.Detached)]
+            [InlineData(ChannelState.Failed)]
+            [InlineData(ChannelState.Suspended)]
+            [Trait("spec", "RTL2g")]
+            async Task ShouldNeverEmitAChannelEventForAStateEqualToThePreviousState(ChannelState state)
+            {
+                var client = GetConnectedClient();
+                var channel = client.Channels.Get("test") as RealtimeChannel;
+                bool stateDidChange = false;
+
+                // set initial state
+                channel.SetChannelState((ChannelState)state);
+
+                channel.Once(stateChange =>
+                {
+                    stateDidChange = true;
+                    throw new Exception("state change event should not be emitted");
+                });
+
+                // attempt to set the same state again
+                channel.SetChannelState((ChannelState)state);
+
+                stateDidChange.Should().BeFalse();
             }
 
             public EventEmitterSpecs(ITestOutputHelper output)
@@ -219,12 +368,13 @@ namespace IO.Ably.Tests.Realtime
             }
 
             [Fact]
+            [Trait("spec", "RTL2d")]
             [Trait("spec", "RTL3d")]
-            public async Task WhenChannelIsSuspended_WhenConnectionBecomeConnectedAttemptAttach()
+            public async Task WhenChannelIsSuspended_WhenConnectionBecomesConnectedAttemptAttach()
             {
                 var client = GetConnectedClient();
                 var channel = client.Channels.Get("test".AddRandomSuffix());
-
+                await client.WaitForState(ConnectionState.Connected);
                 await client.ConnectionManager.SetState(new ConnectionSuspendedState(client.ConnectionManager, Logger));
                 await client.WaitForState(ConnectionState.Suspended);
 
@@ -236,12 +386,13 @@ namespace IO.Ably.Tests.Realtime
                 client.Connection.State.Should().Be(ConnectionState.Connected);
                 channel.State.Should().Be(ChannelState.Attaching);
 
-                var tsc = new TaskCompletionAwaiter();
+                var tsc = new TaskCompletionAwaiter(15000);
                 channel.Once(ChannelEvent.Suspended, s =>
                 {
+                    /* RTL2d */
                     s.Error.Should().NotBeNull();
-                    s.Error.Message.Should().Be("Channel didn't attach within the default timeout");
-                    s.Error.Code.Should().Be(50000);
+                    s.Error.Message.Should().StartWith("Channel didn't attach within");
+                    s.Error.Code.Should().Be(90007);
                     tsc.SetCompleted();
                 });
 
@@ -377,11 +528,11 @@ namespace IO.Ably.Tests.Realtime
 
             [Theory]
             [InlineData(ChannelState.Initialized)]
-            [InlineData(ChannelState.Detached)]
             [InlineData(ChannelState.Detaching)]
+            [InlineData(ChannelState.Detached)]
             [InlineData(ChannelState.Failed)]
             [Trait("spec", "RTL4f")]
-            public async Task ShouldReturnToPreviousStateIfAttachMessageNotReceivedWithinDefaultTimeout(ChannelState previousState)
+            public async Task ShouldBecomeSuspendedIfAttachMessageNotReceivedWithinDefaultTimeout(ChannelState previousState)
             {
                 SetState(_channel, previousState);
 
@@ -413,7 +564,7 @@ namespace IO.Ably.Tests.Realtime
                     }
                 }
 
-                _channel.State.Should().Be(previousState);
+                _channel.State.Should().Be(ChannelState.Suspended);
                 _channel.ErrorReason.Should().NotBeNull();
             }
 

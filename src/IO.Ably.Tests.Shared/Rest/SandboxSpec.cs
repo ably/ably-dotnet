@@ -59,7 +59,7 @@ namespace IO.Ably.Tests
             defaultOptions.UseBinaryProtocol = protocol == Defaults.Protocol;
             defaultOptions.TransportFactory = new TestTransportFactory();
 
-            // Prevent the Xunit concurrent context being caputured which is
+            // Prevent the Xunit concurrent context being captured which is
             // an implementation of <see cref="SynchronizationContext"/> which runs work on custom threads
             // rather than in the thread pool, and limits the number of in-flight actions.
             //
@@ -67,6 +67,26 @@ namespace IO.Ably.Tests
             defaultOptions.CaptureCurrentSynchronizationContext = false;
             optionsAction?.Invoke(defaultOptions, settings);
             return new AblyRealtime(defaultOptions, createRestFunc);
+        }
+
+        protected async Task WaitFor(Action<Action> done)
+        {
+            await TestHelpers.WaitFor(10000, 1, done);
+        }
+
+        protected async Task WaitFor(int timeoutMs, Action<Action> done)
+        {
+            await TestHelpers.WaitFor(timeoutMs, 1, done);
+        }
+
+        protected async Task WaitFor(int timeoutMs, int taskCount, Action<Action> done)
+        {
+            await TestHelpers.WaitFor(timeoutMs, taskCount, done);
+        }
+
+        protected async Task WaitForMultiple(int taskCount, Action<Action> done)
+        {
+            await TestHelpers.WaitFor(10000, taskCount, done);
         }
 
         public class OutputLoggerSink : ILoggerSink

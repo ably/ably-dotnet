@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 using IO.Ably;
@@ -13,14 +14,22 @@ namespace IO.Ably
 {
     internal class AblyAuth : IAblyAuth
     {
+        public event EventHandler<AblyAuthUpdatedEventArgs> AuthUpdated;
+
         internal AblyAuth(ClientOptions options, AblyRest rest)
         {
             Now = options.NowFunc;
             Options = options;
             _rest = rest;
             Logger = options.Logger;
+            ServerTime = () => _rest.TimeAsync();
+            ServerTimeOffset = () => null;
             Initialise();
         }
+
+        protected Func<Task<DateTimeOffset>> ServerTime { get; set; }
+
+        protected Func<DateTimeOffset?> ServerTimeOffset { get; private set; }
 
         internal Func<DateTimeOffset> Now { get; set; }
 
@@ -86,6 +95,12 @@ namespace IO.Ably
             }
 
             LogCurrentAuthenticationMethod();
+        }
+
+        private async void SetServerTimeOffset()
+        {
+            TimeSpan diff = Now() - await ServerTime();
+            ServerTimeOffset = () => Now() - diff;
         }
 
         private void SetAuthMethod()
@@ -176,12 +191,9 @@ namespace IO.Ably
                 keyValue = key.KeySecret;
             }
 
-            var @params = MergeTokenParamsWithDefaults(tokenParams);
+            var tokenParamsWithDefaults = MergeTokenParamsWithDefaults(tokenParams);
 
-            if (mergedOptions.QueryTime.GetValueOrDefault(false))
-            {
-                @params.Timestamp = await _rest.TimeAsync();
-            }
+            SetTokenParamsTimestamp(mergedOptions, tokenParamsWithDefaults);
 
             EnsureSecureConnection();
 
@@ -193,7 +205,7 @@ namespace IO.Ably
                 bool shouldCatch = true;
                 try
                 {
-                    var callbackResult = await mergedOptions.AuthCallback(@params);
+                    var callbackResult = await mergedOptions.AuthCallback(tokenParamsWithDefaults);
 
                     if (callbackResult == null)
                     {
@@ -213,29 +225,30 @@ namespace IO.Ably
                     else
                     {
                         shouldCatch = false;
-                        throw new AblyException($"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest", 80019);
+                        throw new AblyException($"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest", 80019, HttpStatusCode.BadRequest);
                     }
                 }
                 catch (Exception ex) when (shouldCatch)
                 {
-                    HttpStatusCode? statusCode = null;
-                    int code = 80019;
-                    if (ex is AblyException ablyException)
+                    var statusCode = HttpStatusCode.Unauthorized;
+                    if (ex is AblyException aex)
                     {
-                        statusCode = ablyException.ErrorInfo.StatusCode;
-                        code = ablyException.ErrorInfo.Code == 40300 ? ablyException.ErrorInfo.Code : 80019;
+                        statusCode = aex.ErrorInfo.StatusCode == HttpStatusCode.Forbidden
+                            ? HttpStatusCode.Forbidden
+                            : HttpStatusCode.Unauthorized;
                     }
 
                     throw new AblyException(
                         new ErrorInfo(
-                        "Error calling AuthCallback, token request failed. See inner exception for details.", code, statusCode), ex);
+                        "Error calling AuthCallback, token request failed. See inner exception for details.", 80019,
+                        statusCode), ex);
                 }
             }
             else if (mergedOptions.AuthUrl.IsNotEmpty())
             {
                 try
                 {
-                    var response = await CallAuthUrl(mergedOptions, @params);
+                    var response = await CallAuthUrl(mergedOptions, tokenParamsWithDefaults);
 
                     if (response.Type == ResponseType.Text)
                     {
@@ -260,8 +273,8 @@ namespace IO.Ably
                     throw new AblyException(
                         new ErrorInfo(
                             "Error calling Auth URL, token request failed. See the InnerException property for details of the underlying exception.",
-                            ex.ErrorInfo.Code == 40300 ? ex.ErrorInfo.Code : 80019,
-                            ex.ErrorInfo.StatusCode),
+                            80019,
+                            ex.ErrorInfo.StatusCode == HttpStatusCode.Forbidden ? ex.ErrorInfo.StatusCode : HttpStatusCode.Unauthorized),
                         ex);
                 }
             }
@@ -272,7 +285,7 @@ namespace IO.Ably
                     throw new AblyException("TokenAuth is on but there is no way to generate one", 80019);
                 }
 
-                postData = new TokenRequest(Now).Populate(@params, keyId, keyValue);
+                postData = new TokenRequest(Now).Populate(tokenParamsWithDefaults, keyId, keyValue);
             }
 
             request.PostData = postData;
@@ -285,6 +298,20 @@ namespace IO.Ably
             }
 
             return result;
+        }
+
+        private void SetTokenParamsTimestamp(AuthOptions mergedOptions, TokenParams tokenParamsWithDefaults)
+        {
+            if (mergedOptions.QueryTime.GetValueOrDefault(false)
+                && !ServerTimeOffset().HasValue)
+            {
+                SetServerTimeOffset();
+            }
+
+            if (!tokenParamsWithDefaults.Timestamp.HasValue)
+            {
+                tokenParamsWithDefaults.Timestamp = ServerTimeOffset();
+            }
         }
 
         private static TokenRequest GetTokenRequest(object callbackResult)
@@ -375,37 +402,49 @@ namespace IO.Ably
         /// <exception cref="AblyException">Throws an ably exception representing the server response</exception>
         public async Task<TokenDetails> AuthorizeAsync(TokenParams tokenParams = null, AuthOptions options = null)
         {
-            return await AuthorizeAsync(tokenParams, options, false);
-        }
-
-        internal async Task<TokenDetails> AuthorizeAsync(TokenParams tokenParams, AuthOptions options, bool force)
-        {
             var authOptions = options ?? new AuthOptions();
 
             authOptions.Merge(CurrentAuthOptions);
-            SetCurrentAuthOptions(options);
+            SetCurrentAuthOptions(authOptions);
 
             var authTokenParams = MergeTokenParamsWithDefaults(tokenParams);
             SetCurrentTokenParams(authTokenParams);
 
-            if (force)
+            CurrentToken = await RequestTokenAsync(authTokenParams, options);
+            AuthMethod = AuthMethod.Token;
+            var eventArgs = new AblyAuthUpdatedEventArgs(CurrentToken);
+            AuthUpdated?.Invoke(this, eventArgs);
+
+            // RTC8a3
+            await AuthorizeCompleted(eventArgs);
+
+            return CurrentToken;
+        }
+
+        internal async Task<bool> AuthorizeCompleted(AblyAuthUpdatedEventArgs args)
+        {
+            if (AuthUpdated == null)
             {
-                CurrentToken = await RequestTokenAsync(authTokenParams, options);
-            }
-            else if (CurrentToken != null)
-            {
-                if (Now().AddSeconds(Defaults.TokenExpireBufferInSeconds) >= CurrentToken.Expires)
-                {
-                    CurrentToken = await RequestTokenAsync(authTokenParams, options);
-                }
-            }
-            else
-            {
-                CurrentToken = await RequestTokenAsync(authTokenParams, options);
+                return true;
             }
 
-            AuthMethod = AuthMethod.Token;
-            return CurrentToken;
+            bool? completed = null;
+
+            void OnTimerElapsed()
+            {
+                if (args?.CompletedTask != null && completed.HasValue == false)
+                {
+                    args.CompletedTask.TrySetException(
+                        new AblyException($"Timeout waiting for Authorize to complete. A CONNECTED or ERROR ProtocolMessage was expected before the timeout ({Options.RealtimeRequestTimeout.TotalMilliseconds}ms) elapsed.", 40140));
+                }
+            }
+
+            var timer = new Timer(state => OnTimerElapsed(), null, (int)Options.RealtimeRequestTimeout.TotalMilliseconds, Timeout.Infinite);
+
+            completed = await args.CompletedTask.Task;
+            timer.Dispose();
+
+            return completed.Value;
         }
 
         [Obsolete("This method will be removed in the future, please replace with a call to AuthorizeAsync")]
@@ -446,15 +485,12 @@ namespace IO.Ably
                 throw new AblyException("No key specified", 40101, HttpStatusCode.Unauthorized);
             }
 
-            var @params = MergeTokenParamsWithDefaults(tokenParams);
+            var tokenParamsWithDefaults = MergeTokenParamsWithDefaults(tokenParams);
 
-            if (mergedOptions.QueryTime.GetValueOrDefault(false))
-            {
-                @params.Timestamp = await _rest.TimeAsync();
-            }
+            SetTokenParamsTimestamp(mergedOptions, tokenParamsWithDefaults);
 
             ApiKey key = mergedOptions.ParseKey();
-            var request = new TokenRequest(Now).Populate(@params, key.KeyName, key.KeySecret);
+            var request = new TokenRequest(Now).Populate(tokenParamsWithDefaults, key.KeyName, key.KeySecret);
             return JsonHelper.Serialize(request);
         }
 

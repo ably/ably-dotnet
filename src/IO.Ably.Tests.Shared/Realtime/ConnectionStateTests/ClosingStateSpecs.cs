@@ -18,13 +18,6 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void OnConnectCalled_SHouldDoNothing()
-        {
-            // Act
-            _state.Connect();
-        }
-
-        [Fact]
         public void CloseCalled_ShouldDoNothing()
         {
             // Act

@@ -182,7 +182,7 @@ namespace IO.Ably.Tests
             public async Task WithNoTimeStapmInRequest_ShouldUseSystemType()
             {
                 var request = await CreateTokenRequest(Client);
-                request.Timestamp.Value.Should().BeCloseTo(Now);
+                request.Timestamp.Value.Should().BeCloseTo(Now, 500);
             }
 
             [Fact]
