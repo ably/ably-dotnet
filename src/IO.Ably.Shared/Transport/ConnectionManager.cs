@@ -106,7 +106,8 @@ namespace IO.Ably.Transport
         {
             if (Logger.IsDebug)
             {
-                Logger.Debug($"xx Changing state from {ConnectionState} => {newState.State}. SkipAttach = {skipAttach}.");
+                Logger.Debug(
+                    $"xx Changing state from {ConnectionState} => {newState.State}. SkipAttach = {skipAttach}.");
             }
 
             _inTransitionToState = newState;
@@ -175,7 +176,8 @@ namespace IO.Ably.Transport
                     newState.AbortTimer();
 
                     // RSA4c2 & RSA4d
-                    if (newState.State == ConnectionState.Connecting && ex.ErrorInfo.Code == 80019 & !ex.ErrorInfo.IsForbiddenError)
+                    if (newState.State == ConnectionState.Connecting &&
+                        ex.ErrorInfo.Code == 80019 & !ex.ErrorInfo.IsForbiddenError)
                     {
                         await SetState(new ConnectionDisconnectedState(this, ex.ErrorInfo, Logger));
                     }
@@ -245,7 +247,8 @@ namespace IO.Ably.Transport
             }
             catch (Exception e)
             {
-                Logger.Warning("Error while destroying transport. Nothing to worry about. Cleaning up. Error: " + e.Message);
+                Logger.Warning("Error while destroying transport. Nothing to worry about. Cleaning up. Error: " +
+                               e.Message);
             }
             finally
             {
