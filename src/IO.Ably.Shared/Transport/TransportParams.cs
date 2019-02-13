@@ -9,6 +9,7 @@ namespace IO.Ably.Transport
 {
     public class TransportParams
     {
+        internal static Regex RecoveryKeyRegex { get; set; } = new Regex(@"^([\w!-]+):(-?\d+):(-?\d+)$");
         internal ILogger Logger { get; private set; }
 
         public string Host { get; private set; }
@@ -112,8 +113,7 @@ namespace IO.Ably.Transport
             }
             else if (RecoverValue.IsNotEmpty())
             {
-                var pattern = new Regex(@"^([\w!-]+):(\-?\w+)$");
-                var match = pattern.Match(RecoverValue);
+                var match = RecoveryKeyRegex.Match(RecoverValue);
                 if (match.Success)
                 {
                     result["recover"] = match.Groups[1].Value;
