@@ -446,12 +446,63 @@ namespace IO.Ably.Tests.Realtime
                 channel.Presence.InternalMap.Members.Should().HaveCount(1);
             }
 
-            /*
-             * If a SYNC is in progress, then when a presence message with an action of LEAVE arrives,
-             * it should be stored in the presence map with the action set to ABSENT.
-             * When the SYNC completes, any ABSENT members should be deleted from the presence map.
-             * (This is because in a SYNC, we might receive a LEAVE before the corresponding ENTER)
-             */
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RTP2e")]
+            public async Task PresenceMap_WhenNotSyncingAndLeaveActionArrivesMemberKeyShouldBeDeleted(Protocol protocol)
+            {
+                // setup 20 members on a channel
+                var channelName = "RTP2e".AddRandomSuffix();
+                var setupClient = await GetRealtimeClient(protocol);
+                await setupClient.WaitForState(ConnectionState.Connected);
+                var setupChannel = setupClient.Channels.Get(channelName);
+                setupChannel.Attach();
+                await setupChannel.WaitForState();
+                for (int i = 0; i < 20; i++)
+                {
+                    await setupChannel.Presence.EnterClientAsync($"member_{i}", null);
+                }
+
+                var client = await GetRealtimeClient(protocol);
+                await client.WaitForState(ConnectionState.Connected);
+                var channel = client.Channels.Get(channelName);
+                channel.Attach();
+                await channel.WaitForState();
+
+                // get presence messages and validate count
+                var members = await channel.Presence.GetAsync();
+                members.Should().HaveCount(20);
+
+                // sync should not be in progress and initial an sync should have completed
+                channel.Presence.IsSyncInProgress.Should().BeFalse("sync should have completed");
+                channel.Presence.SyncComplete.Should().BeTrue();
+
+                // pull a random member key from the presence map
+                var memberNumber = new Random().Next(0, 19);
+                var memberId = $"member_{memberNumber}";
+                var expectedMemberKey = $"{memberId}:{setupClient.Connection.Id}";
+                var actualMemberKey = channel.Presence.Map.Members[expectedMemberKey].MemberKey;
+
+                actualMemberKey.Should().Be(expectedMemberKey);
+
+                // wait for the member to leave
+                string leftClientId = null;
+                await WaitFor(done =>
+                {
+                    channel.Presence.Subscribe(PresenceAction.Leave, message =>
+                    {
+                        leftClientId = message.ClientId;
+                        done();
+                    });
+                    setupChannel.Presence.LeaveClient(memberId, null);
+                });
+
+                // then assert that the member has left
+                leftClientId.Should().Be(memberId);
+                channel.Presence.Map.Members.Should().HaveCount(19);
+                channel.Presence.Map.Members.ContainsKey(actualMemberKey).Should().BeFalse();
+            }
+
             [Theory]
             [ProtocolData]
             [Trait("spec", "RTP2f")]
@@ -1222,6 +1273,532 @@ namespace IO.Ably.Tests.Realtime
                     presence2.Map.Members.Should().HaveCount(2);
 
                     client1.Close();
+                }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP5c2")]
+                public async Task WhenChannelBecomesAttached_AndSyncInitiatedAsPartOfAttach_AndResumeIsFalseAndSyncNotExpected_ShouldReEnterMembersInInternalMap(Protocol protocol)
+                {
+                    /*
+                     * If the resumed flag is false and a SYNC is not expected...
+                     */
+
+                    var channelName = "RTP5c2_2".AddRandomSuffix();
+                    var setupClient = await GetRealtimeClient(protocol);
+                    var setupChannel = setupClient.Channels.Get(channelName);
+
+                    // enter 3 client to the channel
+                    for (int i = 0; i < 3; i++)
+                    {
+                        await setupChannel.Presence.EnterClientAsync($"member_{i}", null);
+                    }
+
+                    var client = await GetRealtimeClient(protocol,(options, settings) => { options.ClientId = "local"; });
+                    await client.WaitForState();
+                    var channel = client.Channels.Get(channelName);
+                    var presence = channel.Presence;
+
+                    var p = await presence.GetAsync();
+                    p.Should().HaveCount(3);
+
+                    await presence.EnterAsync();
+
+                    presence.Map.Members.Should().HaveCount(4);
+                    presence.InternalMap.Members.Should().HaveCount(1);
+
+                    List<PresenceMessage> leaveMessages = new List<PresenceMessage>();
+                    PresenceMessage updateMessage = null;
+                    PresenceMessage enterMessage = null;
+                    bool? hasPresence = null;
+                    bool? resumed = null;
+                    await WaitForMultiple(2, partialDone =>
+                    {
+                        presence.Subscribe(PresenceAction.Leave, message =>
+                        {
+                            leaveMessages.Add(message);
+                        });
+
+                        presence.Subscribe(PresenceAction.Update, message =>
+                        {
+                            updateMessage = message;
+                            partialDone(); // 1 call
+                        });
+
+                        presence.Subscribe(PresenceAction.Enter, message =>
+                        {
+                            enterMessage = message; // not expected to hit
+                        });
+
+                        client.GetTestTransport().AfterDataReceived = message =>
+                        {
+                            if (message.Action == ProtocolMessage.MessageAction.Attached)
+                            {
+                                hasPresence = message.HasFlag(ProtocolMessage.Flag.HasPresence);
+                                resumed = message.HasFlag(ProtocolMessage.Flag.Resumed);
+                                client.GetTestTransport().AfterDataReceived = _ => { };
+                                partialDone(); // 1 call
+                            }
+                        };
+
+                        // inject attached message
+                        var protocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
+                        {
+                            Channel = channelName, Flags = 0 // no presence, no resume
+                        };
+
+                        client.GetTestTransport().FakeReceivedMessage(protocolMessage);
+                    });
+
+                    leaveMessages.Should().HaveCount(4);
+                    foreach (var msg in leaveMessages)
+                    {
+                        msg.ClientId.Should().BeOneOf("member_0", "member_1", "member_2", "local");
+                    }
+
+                    updateMessage.Should().NotBeNull();
+                    updateMessage.ClientId.Should().Be("local");
+                    enterMessage.Should().BeNull();
+
+                    presence.Unsubscribe();
+                    var remainingMembers = await presence.GetAsync();
+
+                    remainingMembers.Should().HaveCount(1);
+                    remainingMembers.First().ClientId.Should().Be("local");
+                }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP5c3")]
+                public async Task WhenAutomaticEnterMessageFails_ShouldEmitUpdateWithErrorInfo(Protocol protocol)
+                {
+                    // members not present in the PresenceMap but present in the internal PresenceMap must be re-entered automatically
+                    var channelName = "RTP5c3".AddRandomSuffix();
+                    var setupClient = await GetRealtimeClient(protocol);
+                    var setupChannel = setupClient.Channels.Get(channelName);
+
+                    // enter 3 client to the channel
+                    for (int i = 0; i < 3; i++)
+                    {
+                        await setupChannel.Presence.EnterClientAsync($"member_{i}", null);
+                    }
+
+                    var client = await GetRealtimeClient(protocol);
+                    await client.WaitForState();
+                    var channel = client.Channels.Get(channelName);
+                    var connectionId = client.Connection.Id;
+                    connectionId.Should().NotBeNullOrEmpty();
+                    var transport = client.GetTestTransport();
+
+                    var localMember = new PresenceMessage(PresenceAction.Enter, "local")
+                    {
+                        ConnectionId = connectionId
+                    };
+
+                    PresenceMessage enterMessage = null;
+                    ChannelStateChange updateMessage = null;
+                    await WaitForMultiple(2, partialDone =>
+                    {
+                        // when the channel becomes attached insert a local member to the presence map
+                        channel.Once(ChannelEvent.Attaching, change =>
+                        {
+                            // insert local member to automatically try to enter
+                            channel.Presence.InternalMap.Put(localMember);
+                            partialDone();
+                        });
+
+                        channel.Presence.Subscribe(PresenceAction.Enter, message =>
+                        {
+                            enterMessage = message; // should not hit
+                        });
+
+                        channel.Once(ChannelEvent.Update, message =>
+                        {
+                            updateMessage = message;
+                            partialDone();
+                        });
+
+                        void TransportMessageSent(ProtocolMessage message)
+                        {
+                            if (message.Presence.Length > 0
+                                && message.Presence[0].Action == PresenceAction.Enter
+                                && message.Presence[0].ClientId == "local")
+                            {
+                                // fail messages, causing callback to be invoked.
+                                client.ConnectionManager.AckProcessor.ClearQueueAndFailMessages(ErrorInfo.ReasonUnknown);
+                            }
+                        }
+
+                        transport.MessageSent = TransportMessageSent;
+                    });
+
+                    enterMessage.Should().BeNull();
+
+                    updateMessage.Should().NotBeNull();
+                    updateMessage.Error.Code.Should().Be(91004);
+                    updateMessage.Error.Message.Should().Contain(localMember.ClientId);
+
+                    // clean up
+                    setupClient.Close();
+
+                    client.Close();
+                }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP16a")]
+                public async Task ConnectionStateCondition_WhenConnectionIsConnected_AllPresenceMessageArePublishedImmediately(Protocol protocol)
+                {
+                    var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16a"; });
+                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
+
+                    ErrorInfo errInfo = null;
+                    bool connecting = false;
+                    bool connected = false;
+                    List<int> queueCounts = new List<int>();
+
+                    channel.State.Should().NotBe(ChannelState.Attached);
+
+                    await WaitFor(done =>
+                    {
+                        channel.Presence.Enter("foo", (b, info) =>
+                        {
+                            errInfo = info;
+
+                            // after Enter the client should be connected and the queued message sent
+                            connected = client.Connection.State == ConnectionState.Connected;
+                            queueCounts.Add(channel.Presence.PendingPresenceQueue.Count); // expect 0
+                            done();
+                        });
+
+                        // 1 message should be queued at this point
+                        queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
+
+                        // The client should be connecting
+                        connecting = client.Connection.State == ConnectionState.Connecting;
+                    });
+
+                    channel.State.Should().Be(ChannelState.Attached);
+
+                    connecting.Should().BeTrue();
+                    connected.Should().BeTrue();
+                    errInfo.Should().BeNull();
+                    queueCounts[0].Should().Be(1);
+                    queueCounts[1].Should().Be(0);
+
+                    // clean up
+                    client.Close();
+                }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP16b")]
+                public async Task ChannelStateCondition_WhenChannelIsInitialisedOrAttaching_MessageArePublishedWhenChannelBecomesAttached(Protocol protocol)
+                {
+                    /* tests channel initialized and attaching states */
+
+                    var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16b"; });
+                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
+
+                    List<int> queueCounts = new List<int>();
+                    Presence.QueuedPresenceMessage[] presenceMessages = null;
+
+                    await WaitForMultiple(3, partialDone =>
+                    {
+                        channel.Once(ChannelEvent.Attached, change =>
+                        {
+                            queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
+                            partialDone();
+                        });
+
+                        channel.Once(ChannelEvent.Attaching, change =>
+                        {
+                            channel.Presence.Enter(channel.State.ToString(), (b, info) =>
+                            {
+                                partialDone();
+                            });
+                            queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
+                            presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
+                        });
+
+                        // Enter whilst Initialized
+                        channel.Presence.Enter(channel.State.ToString(), (b, info) =>
+                        {
+                            partialDone();
+                        });
+                    });
+
+                    queueCounts[0].Should().Be(2);
+                    queueCounts[1].Should().Be(0);
+                    presenceMessages[0].Message.Data.Should().Be("Initialized");
+                    presenceMessages[1].Message.Data.Should().Be("Attaching");
+
+                    // clean up
+                    client.Close();
+                }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP16b")]
+                public async Task ChannelStateCondition_WhenQueueMessagesIsFalse_WhenChannelIsInitialisedOrAttaching_MessageAreNotPublished(Protocol protocol)
+                {
+                    var client = await GetRealtimeClient(protocol, (options, settings) =>
+                    {
+                        options.ClientId = "RTP16b";
+                        options.QueueMessages = false;
+                    });
+                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
+
+                    await client.WaitForState(ConnectionState.Connected);
+                    await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager, client.Logger));
+                    await client.WaitForState(ConnectionState.Disconnected);
+
+                    List<int> queueCounts = new List<int>();
+                    Presence.QueuedPresenceMessage[] presenceMessages = null;
+
+                    channel.Presence.Enter(client.Connection.State.ToString(), (b, info) =>{ });
+                    presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
+
+                    presenceMessages.Should().HaveCount(0);
+
+                    // clean up
+                    client.Close();
+                }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP16b")]
+                public async Task ConnectionStateCondition_WhenConnectionIsDisconnected_MessageArePublishedWhenConnectionBecomesConnected(Protocol protocol)
+                {
+                    /* tests disconnecting and connecting states */
+
+                    var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16b"; });
+                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
+
+                    List<int> queueCounts = new List<int>();
+                    Presence.QueuedPresenceMessage[] presenceMessages = null;
+
+                    // force disconnected state
+                    await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager, client.Logger));
+                    await client.WaitForState(ConnectionState.Disconnected);
+
+                    await WaitForMultiple(2, partialDone =>
+                    {
+                        client.Connection.Once(ConnectionEvent.Connecting, change =>
+                        {
+                            // Enter whilst Connecting
+                            channel.Presence.Enter(client.Connection.State.ToString(), (b, info) =>
+                            {
+                                // there should be no messages queued at this point
+                                queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
+                                partialDone();
+                            });
+
+                            // there should be 2 messages queued at this point
+                            queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
+                            presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
+                        });
+
+                        // Enter whilst Disconnected
+                        channel.Presence.Enter(client.Connection.State.ToString(), (b, info) =>
+                        {
+                            partialDone();
+                        });
+                    });
+
+                    queueCounts[0].Should().Be(2);
+                    queueCounts[1].Should().Be(0);
+                    presenceMessages[0].Message.Data.Should().Be("Disconnected");
+                    presenceMessages[1].Message.Data.Should().Be("Connecting");
+
+                    // clean up
+                    client.Close();
+                }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP16b")]
+                public async Task ConnectionStateCondition_WhenConnectionIsInitialized_MessageArePublishedWhenConnectionBecomesConnected(Protocol protocol)
+                {
+                    /* tests initialized and connecting states */
+
+                    var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16b"; });
+                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
+
+                    List<int> queueCounts = new List<int>();
+                    Presence.QueuedPresenceMessage[] presenceMessages = null;
+
+                    // force Initialized state
+                    await client.ConnectionManager.SetState(new ConnectionInitializedState(client.ConnectionManager, client.Logger));
+                    await client.WaitForState(ConnectionState.Initialized);
+
+                    await WaitForMultiple(2, partialDone =>
+                    {
+                        client.Connection.Once(ConnectionEvent.Connecting, change =>
+                        {
+                            // Enter whilst Connecting
+                            channel.Presence.Enter(client.Connection.State.ToString(), (b, info) =>
+                            {
+                                // there should be no messages queued at this point
+                                queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
+                                partialDone();
+                            });
+
+                            // there should be 2 messages queued at this point
+                            queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
+                            presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
+                        });
+
+                        // Enter whilst Initialized
+                        channel.Presence.Enter(client.Connection.State.ToString(), (b, info) =>
+                        {
+                            partialDone();
+                        });
+                    });
+
+                    queueCounts[0].Should().Be(2);
+                    queueCounts[1].Should().Be(0);
+                    presenceMessages[0].Message.Data.Should().Be("Initialized");
+                    presenceMessages[1].Message.Data.Should().Be("Connecting");
+                    // clean up
+                    client.Close();
+                }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP16b")]
+                public async Task ChannelStateCondition_WhenQueueMessagesIsFalse_WhenChannelIsInitializedOrAttaching_MessageAreNotPublished(Protocol protocol)
+                {
+                    var client = await GetRealtimeClient(protocol, (options, settings) =>
+                    {
+                        options.ClientId = "RTP16b";
+                        options.QueueMessages = false;
+                    });
+                    var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
+
+                    await client.WaitForState(ConnectionState.Connected);
+                    await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager, client.Logger));
+                    await client.WaitForState(ConnectionState.Disconnected);
+
+                    List<int> queueCounts = new List<int>();
+                    Presence.QueuedPresenceMessage[] presenceMessages = null;
+
+                    channel.Presence.Enter(client.Connection.State.ToString(), (b, info) =>{ });
+                    presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
+
+                    presenceMessages.Should().HaveCount(0);
+
+                    // clean up
+                    client.Close();
+                }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP16c")]
+                public async Task ChannelStateCondition_WhenConnectionStateIsInvalid_MessageAreNotPublishedAndExceptionIsThrown(Protocol protocol)
+                {
+                    /*
+                     * Test Connection States
+                     * Entering presence when a connection is Failed, Suspended, Closing and Closed
+                     * should result in an error.
+                     */
+
+                    var client = await GetRealtimeClient(protocol, (options, _) => options.ClientId = "RTP16c".AddRandomSuffix());
+                    int errCount = 0;
+                    async Task TestWithConnectionState(ConnectionStateBase state)
+                    {
+                        var channel = client.Channels.Get("RTP16c".AddRandomSuffix()) as RealtimeChannel;
+                        await client.WaitForState(ConnectionState.Connected);
+
+                        // capture all outbound protocol messages for later inspection
+                        List<ProtocolMessage> messageList = new List<ProtocolMessage>();
+                        client.GetTestTransport().MessageSent = messageList.Add;
+
+                        // force state
+                        await client.ConnectionManager.SetState(state);
+                        await client.WaitForState(state.State);
+
+                        var didError = false;
+                        try
+                        {
+                            channel.Presence.Enter(client.Connection.State.ToString());
+                        }
+                        catch (AblyException e)
+                        {
+                            didError = true;
+                            e.ErrorInfo.Code.Should().Be(91001);
+                            errCount++;
+                        }
+
+                        didError.Should().BeTrue($"should error for state {state.State}");
+
+                        // no presence messages sent
+                        messageList.Any(x => x.Presence != null).Should().BeFalse();
+
+                        client.Close();
+                        client = await GetRealtimeClient(protocol, (options, _) => options.ClientId = "RTP16c".AddRandomSuffix());
+                    }
+
+                    await TestWithConnectionState(new ConnectionFailedState(client.ConnectionManager, ErrorInfo.ReasonFailed, client.Logger));
+                    await TestWithConnectionState(new ConnectionSuspendedState(client.ConnectionManager, ErrorInfo.ReasonFailed, client.Logger));
+                    await TestWithConnectionState(new ConnectionClosingState(client.ConnectionManager, client.Logger));
+                    await TestWithConnectionState(new ConnectionClosedState(client.ConnectionManager, client.Logger));
+
+                    errCount.Should().Be(4);
+
+                    client.Close();
+
+                    /*
+                     * Test Channel States
+                     * Detached, Detaching, Failed and Suspended states should result in an error
+                     */
+
+                    errCount = 0;
+                    async Task TestWithChannelState(ChannelState state)
+                    {
+                        var channel = client.Channels.Get("RTP16c".AddRandomSuffix()) as RealtimeChannel;
+                        await client.WaitForState(ConnectionState.Connected);
+
+                        // capture all outbound protocol messages for later inspection
+                        List<ProtocolMessage> messageList = new List<ProtocolMessage>();
+                        client.GetTestTransport().MessageSent = messageList.Add;
+
+                        // force state
+                        await channel.WaitForState(ChannelState.Attached);
+                        channel.SetChannelState(state);
+                        await channel.WaitForState(state);
+
+                        var didError = false;
+                        try
+                        {
+                            channel.Presence.Enter(client.Connection.State.ToString());
+                        }
+                        catch (AblyException e)
+                        {
+                            didError = true;
+                            e.ErrorInfo.Code.Should().Be(91001);
+                            errCount++;
+                        }
+
+                        didError.Should().BeTrue($"should error for state {state}");
+
+                        // no presence messages sent
+                        messageList.Any(x => x.Presence != null).Should().BeFalse();
+
+                        client.Close();
+                        client = await GetRealtimeClient(protocol, (options, _) => options.ClientId = "RTP16c".AddRandomSuffix());
+                    }
+
+                    // Initialized, Attaching and Attached should queue and/or send
+                    // all other channel states should result in an error
+                    await TestWithChannelState(ChannelState.Detached);
+                    await TestWithChannelState(ChannelState.Detaching);
+                    await TestWithChannelState(ChannelState.Failed);
+                    await TestWithChannelState(ChannelState.Suspended);
+
+                    errCount.Should().Be(4);
+
+                    client.Close();
                 }
             }
         }

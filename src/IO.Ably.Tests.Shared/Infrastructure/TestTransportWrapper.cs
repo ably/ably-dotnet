@@ -12,34 +12,48 @@ namespace IO.Ably.Tests.Infrastructure
         private class TransportListenerWrapper : ITransportListener
         {
             private readonly ITransportListener _wrappedListener;
-            private readonly Action<ProtocolMessage> _afterMessage;
+            private readonly TestTransportWrapper _wrappedTransport;
             private readonly MessageHandler _handler;
 
             public List<ProtocolMessage> ProtocolMessagesReceived { get; set; } = new List<ProtocolMessage>();
 
-            public TransportListenerWrapper(ITransportListener wrappedListener, Action<ProtocolMessage> afterMessage, MessageHandler handler)
+            public TransportListenerWrapper(TestTransportWrapper wrappedTransport, ITransportListener wrappedListener, MessageHandler handler)
             {
+                _wrappedTransport = wrappedTransport;
                 _wrappedListener = wrappedListener;
-                _afterMessage = afterMessage;
                 _handler = handler;
             }
 
             public void OnTransportDataReceived(RealtimeTransportData data)
             {
+                ProtocolMessage msg = null;
+                try
+                {
+                    msg = _handler.ParseRealtimeData(data);
+                    ProtocolMessagesReceived.Add(msg);
+                    if (_wrappedTransport.BeforeDataProcessed != null)
+                    {
+                        _wrappedTransport.BeforeDataProcessed?.Invoke(msg);
+                        data = _handler.GetTransportData(msg);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DefaultLogger.Error("Error handling beforeMessage helper.", ex);
+                }
+
                 try
                 {
                     _wrappedListener.OnTransportDataReceived(data);
                 }
                 catch (Exception e)
                 {
-                    DefaultLogger.Error("Test transport factor on receive error ", e);
+                    DefaultLogger.Error("Test transport factory on receive error ", e);
                 }
 
                 try
                 {
-                    var msg = _handler.ParseRealtimeData(data);
-                    ProtocolMessagesReceived.Add(msg);
-                    _afterMessage(msg);
+                    _wrappedTransport.AfterDataReceived?.Invoke(msg);
                 }
                 catch (Exception ex)
                 {
@@ -62,8 +76,8 @@ namespace IO.Ably.Tests.Infrastructure
         /// </summary>
         public List<ProtocolMessage> ProtocolMessagesReceived => (Listener as TransportListenerWrapper)?.ProtocolMessagesReceived;
 
-        public Action<ProtocolMessage> AfterDataReceived = delegate { };
-
+        public Action<ProtocolMessage> BeforeDataProcessed;
+        public Action<ProtocolMessage> AfterDataReceived;
         public Action<ProtocolMessage> MessageSent = delegate { };
 
         public TestTransportWrapper(ITransport wrappedTransport, Protocol protocol)
@@ -77,11 +91,7 @@ namespace IO.Ably.Tests.Infrastructure
         public ITransportListener Listener
         {
             get => WrappedTransport.Listener;
-            set
-            {
-                var listener = new TransportListenerWrapper(value, x => AfterDataReceived(x), _handler);
-                WrappedTransport.Listener = listener;
-            }
+            set => WrappedTransport.Listener = new TransportListenerWrapper(this, value, _handler);
         }
 
         public void FakeTransportState(TransportState state, Exception ex = null)

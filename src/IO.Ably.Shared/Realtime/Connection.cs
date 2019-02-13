@@ -49,6 +49,13 @@ namespace IO.Ably.Realtime
             OsEventSubscribers.Add(new WeakReference<Action<NetworkState>>(stateAction));
         }
 
+        internal void SetConfirmedAlive()
+        {
+            ConfirmedAliveAt = DateTimeOffset.UtcNow;
+        }
+
+        internal DateTimeOffset? ConfirmedAliveAt { get; set; }
+
         internal AblyRest RestClient => RealtimeClient.RestClient;
 
         internal AblyRealtime RealtimeClient { get; }

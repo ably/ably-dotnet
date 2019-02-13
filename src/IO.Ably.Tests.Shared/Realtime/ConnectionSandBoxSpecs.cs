@@ -410,6 +410,52 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTN15c1")]
+        public async Task ResumeRequest_ConnectedProtocolMessageWithSameConnectionId_WithNoError(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            var channel = client.Channels.Get("RTN15c1".AddRandomSuffix()) as RealtimeChannel;
+            await client.WaitForState(ConnectionState.Connected);
+            var connectionId = client.Connection.Id;
+            channel.Attach();
+            await channel.WaitForState(ChannelState.Attached);
+            channel.State.Should().Be(ChannelState.Attached);
+
+            // kill the transport so the connection becomes DISCONNECTED
+            client.ConnectionManager.Transport.Close(false);
+            await client.WaitForState(ConnectionState.Disconnected);
+
+            var awaiter = new TaskCompletionAwaiter(15000);
+            client.Connection.Once(ConnectionEvent.Connected, change =>
+            {
+                change.HasError.Should().BeFalse();
+                awaiter.SetCompleted();
+            });
+
+            channel.Publish(null, "foo");
+
+            // currently disconnected so message is queued
+            client.ConnectionManager.PendingMessages.Should().HaveCount(1);
+
+            // wait for reconnection
+            var didConnect = await awaiter.Task;
+            didConnect.Should().BeTrue();
+
+            // we should have received a CONNECTED Protocol message with a corresponding connectionId
+            client.GetTestTransport().ProtocolMessagesReceived.Count(x => x.Action == ProtocolMessage.MessageAction.Connected).Should().Be(1);
+            var connectedProtocolMessage = client.GetTestTransport().ProtocolMessagesReceived.First(x => x.Action == ProtocolMessage.MessageAction.Connected);
+            connectedProtocolMessage.ConnectionId.Should().Be(connectionId);
+
+            // channel should be attached and pending messages sent
+            channel.State.Should().Be(ChannelState.Attached);
+            client.ConnectionManager.PendingMessages.Should().HaveCount(0);
+
+            // clean up
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
         public async Task WithAuthUrlShouldGetTokenFromUrl(Protocol protocol)
         {
             Logger.LogLevel = LogLevel.Debug;
@@ -500,6 +546,10 @@ namespace IO.Ably.Tests.Realtime
 
             await awaiter.Task;
             stateChanges.Should().HaveCount(3);
+            stateChanges[0].HasError.Should().BeTrue();
+            stateChanges[0].Reason.Code.Should().Be(40142);
+            stateChanges[1].HasError.Should().BeFalse();
+            stateChanges[2].HasError.Should().BeFalse();
         }
 
         [Theory]
@@ -522,18 +572,18 @@ namespace IO.Ably.Tests.Realtime
 
             await client.WaitForState(ConnectionState.Connected);
 
-            var stateChanges = new List<ConnectionState>();
+            var stateChanges = new List<ConnectionStateChange>();
             client.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
-                stateChanges.Add(state.Current);
+                stateChanges.Add(state);
                 client.Connection.Once(ConnectionEvent.Connecting, state2 =>
                 {
-                    stateChanges.Add(state2.Current);
+                    stateChanges.Add(state2);
                     client.Connection.Once(ConnectionEvent.Disconnected, state3 =>
                     {
                         client.Connection.State.Should().Be(ConnectionState.Disconnected);
                         client.Connection.ErrorReason.Should().NotBeNull();
-                        stateChanges.Add(state3.Current);
+                        stateChanges.Add(state3);
                         awaiter.SetCompleted();
                     });
                 });
@@ -542,8 +592,14 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.Once(ConnectionEvent.Failed, state => throw new Exception("should not become FAILED"));
 
             await awaiter.Task;
-            stateChanges.Should().BeEquivalentTo(new[]
+            stateChanges.Select(x => x.Current).Should().BeEquivalentTo(new[]
                 { ConnectionState.Disconnected, ConnectionState.Connecting, ConnectionState.Disconnected });
+
+            stateChanges[0].HasError.Should().BeTrue();
+            stateChanges[0].Reason.Code.Should().Be(40142);
+            stateChanges[1].HasError.Should().BeFalse();
+            stateChanges[2].HasError.Should().BeTrue();
+            stateChanges[2].Reason.Code.Should().Be(80019);
         }
 
         [Theory]
@@ -567,26 +623,124 @@ namespace IO.Ably.Tests.Realtime
 
             await client.WaitForState(ConnectionState.Connected);
 
-            var stateChanges = new List<ConnectionState>();
+            var stateChanges = new List<ConnectionStateChange>();
             client.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
-                stateChanges.Add(state.Current);
+                stateChanges.Add(state);
                 client.Connection.Once(ConnectionEvent.Connecting, state2 =>
                 {
-                    stateChanges.Add(state2.Current);
+                    stateChanges.Add(state2);
                     client.Connection.Once(ConnectionEvent.Failed, state3 =>
                     {
                         client.Connection.State.Should().Be(ConnectionState.Failed);
                         client.Connection.ErrorReason.Should().NotBeNull();
-                        stateChanges.Add(state3.Current);
+                        stateChanges.Add(state3);
                         awaiter.SetCompleted();
                     });
                 });
             });
 
             await awaiter.Task;
-            stateChanges.Should().BeEquivalentTo(new[]
+            stateChanges.Select(x => x.Current).Should().BeEquivalentTo(new[]
                 { ConnectionState.Disconnected, ConnectionState.Connecting, ConnectionState.Failed });
+
+            stateChanges[0].HasError.Should().BeTrue();
+            stateChanges[0].Reason.Code.Should().Be(40142);
+            stateChanges[1].HasError.Should().BeFalse();
+            stateChanges[2].HasError.Should().BeTrue();
+            stateChanges[2].Reason.Code.Should().Be(80019);
+            stateChanges[2].Reason.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15g")]
+        [Trait("spec", "RTN15g1")]
+        [Trait("spec", "RTN15g2")]
+        [Trait("spec", "RTN15g3")]
+        public async Task WhenDisconnectedPastTTL_ShouldNotResume_ShouldClearConnectionStateAndAttemptNewConnection(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol, (options, _) =>
+            {
+                options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(1000);
+                options.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(5000);
+            });
+
+            DateTime disconnectedAt = DateTime.MinValue;
+            DateTime reconnectedAt = DateTime.MinValue;
+            TimeSpan connectionStateTtl = TimeSpan.MinValue;
+            string initialConnectionId = string.Empty;
+            string newConnectionId = string.Empty;
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            client.Connection.ConnectionStateTtl = TimeSpan.FromSeconds(1);
+            initialConnectionId = client.Connection.Id;
+            connectionStateTtl = client.Connection.ConnectionStateTtl;
+
+            var aliveAt1 = client.Connection.ConfirmedAliveAt;
+            var aliveAt2 = aliveAt1;
+
+            // RTN15g3 ATTACHED, ATTACHING, or SUSPENDED must be automatically reattached
+            var channels = new List<RealtimeChannel>();
+            channels.Add(client.Channels.Get("attached".AddRandomSuffix()) as RealtimeChannel);
+            channels.Add(client.Channels.Get("attaching".AddRandomSuffix()) as RealtimeChannel);
+            channels.Add(client.Channels.Get("suspended".AddRandomSuffix()) as RealtimeChannel);
+            channels[2].State = ChannelState.Suspended;
+
+            channels[0].Attach();
+            await channels[0].WaitForState();
+
+            channels[0].State.Should().Be(ChannelState.Attached);
+            channels[1].State.Should().Be(ChannelState.Initialized); // set attaching later
+            channels[2].State.Should().Be(ChannelState.Suspended);
+
+            await WaitFor(60000, async done =>
+            {
+                client.Connection.Once(ConnectionEvent.Disconnected, change2 =>
+                {
+                    disconnectedAt = DateTime.UtcNow;
+                    channels[1].Attach(); // connection disconnected so this should become attaching
+                    channels[1].WaitForState(ChannelState.Attaching);
+                    client.Connection.Once(ConnectionEvent.Connecting, change3 =>
+                    {
+                        reconnectedAt = DateTime.UtcNow;
+                        client.Connection.Once(ConnectionEvent.Connected, change4 =>
+                        {
+                            newConnectionId = client.Connection.Id;
+                            aliveAt2 = client.Connection.ConfirmedAliveAt;
+                            done();
+                        });
+                    });
+                });
+
+                client.GetTestTransport().Close(); // close event is surpressed by default
+                await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager, ErrorInfo.ReasonDisconnected, client.Logger));
+            });
+
+            var interval = reconnectedAt - disconnectedAt;
+            interval.TotalMilliseconds.Should().BeGreaterThan(5000);
+            initialConnectionId.Should().NotBeNullOrEmpty();
+            initialConnectionId.Should().NotBe(newConnectionId);
+            connectionStateTtl.Should().Be(TimeSpan.FromSeconds(1));
+            aliveAt1.Value.Should().BeBefore(aliveAt2.Value);
+
+            await channels[0].WaitForState(ChannelState.Attached);
+            await channels[1].WaitForState(ChannelState.Attached);
+            await channels[2].WaitForState(ChannelState.Attached);
+
+            channels[0].State.Should().Be(ChannelState.Attached);
+            channels[1].State.Should().Be(ChannelState.Attached);
+            channels[2].State.Should().Be(ChannelState.Attached);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN15g")]
+        [Trait("spec", "RTN15g1")]
+        public async Task WhenDisconnectedIsNotPastTTL_ShouldResume_ShouldClearConnectionStateAndAttemptNewConnection(
+            Protocol protocol)
+        {
         }
 
         [Theory]
@@ -985,12 +1139,8 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN22")]
-        public async Task WhenFakeAuthMessageReceived_ShouldAttemptTokenRenewal(Protocol protocol)
+        public async Task WhenAuthMessageReceived_ShouldAttemptTokenRenewal(Protocol protocol)
         {
-            var authClient = await GetRestClient(protocol);
-            var almostExpiredToken = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromMilliseconds(35) });
-
-            var reconnectAwaiter = new TaskCompletionAwaiter();
             var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
                 options.UseTokenAuth = true;
@@ -1001,55 +1151,10 @@ namespace IO.Ably.Tests.Realtime
             var initialToken = client.RestClient.AblyAuth.CurrentToken;
             var initialClientId = client.ClientId;
 
-            client.Connection.Once(ConnectionEvent.Disconnected, state2 =>
-            {
-                client.Connection.Once(ConnectionEvent.Connected, state3 =>
-                {
-                    reconnectAwaiter.SetCompleted();
-                });
-            });
-
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Auth));
-            var didReconect = await reconnectAwaiter.Task;
-            didReconect.Should().BeTrue();
-            client.RestClient.AblyAuth.CurrentToken.Should().NotBe(initialToken);
-            client.ClientId.Should().Be(initialClientId);
-            client.Close();
-        }
 
-        [Theory]
-        [ProtocolData]
-        [Trait("spec", "RTN22")]
-        public async Task WhenAuthMessageReceived_ShouldAttemptTokenRenewal(Protocol protocol)
-        {
-            var authClient = await GetRestClient(protocol);
+            await Task.Delay(1000);
 
-            var reconnectAwaiter = new TaskCompletionAwaiter(60000);
-            var client = await GetRealtimeClient(protocol, (options, settings) =>
-            {
-                options.AuthCallback = tokenParams =>
-                {
-                    var results = authClient.AblyAuth.RequestToken(new TokenParams { ClientId = "RTN22", Ttl = TimeSpan.FromSeconds(35) });
-                    return Task.FromResult<object>(results);
-                };
-                options.ClientId = "RTN22";
-            });
-
-            await client.WaitForState(ConnectionState.Connected);
-
-            var initialToken = client.RestClient.AblyAuth.CurrentToken;
-            var initialClientId = client.ClientId;
-
-            client.Connection.Once(ConnectionEvent.Disconnected, state2 =>
-            {
-                client.Connection.Once(ConnectionEvent.Connected, state3 =>
-                {
-                    reconnectAwaiter.SetCompleted();
-                });
-            });
-
-            var didReconect = await reconnectAwaiter.Task;
-            didReconect.Should().BeTrue();
             client.RestClient.AblyAuth.CurrentToken.Should().NotBe(initialToken);
             client.ClientId.Should().Be(initialClientId);
             client.Close();
