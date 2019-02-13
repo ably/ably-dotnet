@@ -493,6 +493,7 @@ namespace IO.Ably.Transport
         void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)
         {
             var message = Handler.ParseRealtimeData(data);
+            Connection.SetConfirmedAlive();
             OnTransportMessageReceived(message).WaitAndUnwrapException();
         }
 
