@@ -152,6 +152,7 @@ namespace IO.Ably.Tests.Realtime
                 info.Should().BeNull();
                 fooSuccessAWaiter.SetCompleted();
             });
+            fooChannel.Attach();
             Assert.True(await fooSuccessAWaiter.Task);
 
             var barFailAwaiter = new TaskCompletionAwaiter(5000);
@@ -162,6 +163,7 @@ namespace IO.Ably.Tests.Realtime
                 info.Code.Should().Be(40160);
                 barFailAwaiter.SetCompleted();
             });
+            barChannel.Attach();
             Assert.True(await barFailAwaiter.Task);
 
             // upgrade bar
@@ -221,6 +223,7 @@ namespace IO.Ably.Tests.Realtime
                 info.Should().BeNull();
                 awaiter1.SetCompleted();
             });
+            channel.Attach();
             Assert.True(await awaiter1.Task);
             channel.State.Should().Be(ChannelState.Attached);
 

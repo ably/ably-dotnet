@@ -394,7 +394,10 @@ namespace IO.Ably.Realtime
         {
             ErrorReason = error; // Set or clear the error
 
-            RealtimeClient.NotifyExternalClients(() => Error.Invoke(this, new ChannelErrorEventArgs(error)));
+            if (error != null)
+            {
+                RealtimeClient.NotifyExternalClients(() => Error.Invoke(this, new ChannelErrorEventArgs(error)));
+            }
         }
 
         public void Dispose()
@@ -424,11 +427,6 @@ namespace IO.Ably.Realtime
 
             if (State == ChannelState.Initialized || State == ChannelState.Attaching)
             {
-                if (State == ChannelState.Initialized)
-                {
-                    Attach();
-                }
-
                 // Not connected, queue the message
                 lock (_lockQueue)
                 {

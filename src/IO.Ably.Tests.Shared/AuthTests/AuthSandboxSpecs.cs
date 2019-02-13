@@ -412,8 +412,8 @@ namespace IO.Ably.Tests
                 };
             }
 
-            await Test403BecomesFailed("With 403 response connection should become Failed", 40300, AuthUrlOptions);
-            await Test403BecomesFailed("With ErrorInfo with StatusCode of 403 connection should become Failed", 40300, AuthCallbackOptions);
+            await Test403BecomesFailed("With 403 response connection should become Failed", expectedCode: 80019, optionsAction: AuthUrlOptions);
+            await Test403BecomesFailed("With ErrorInfo with StatusCode of 403 connection should become Failed", expectedCode: 80019, optionsAction: AuthCallbackOptions);
         }
 
         [Theory]
