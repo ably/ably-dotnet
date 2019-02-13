@@ -761,6 +761,235 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTL13a")]
+        public async Task ServerInitiatedDetach_WhenChannelAttached_ShouldReattachImmediately(Protocol protocol)
+        {
+            var channelName = "RTL13a".AddRandomSuffix();
+            var client = await GetRealtimeClient(protocol);
+            var channel = client.Channels.Get(channelName);
+            channel.Attach();
+            await channel.WaitForState(ChannelState.Attached);
+
+            channel.State.Should().Be(ChannelState.Attached);
+
+            var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Detached, channelName);
+
+            ChannelStateChange stateChange = null;
+            await WaitFor(done =>
+            {
+                channel.Once(ChannelEvent.Attaching, change =>
+                {
+                    stateChange = change;
+                    done();
+                });
+
+                client.GetTestTransport().FakeReceivedMessage(msg);
+            });
+
+            stateChange.Error.ShouldBeEquivalentTo(msg.Error);
+            channel.ErrorReason.Should().BeNull();
+
+            client.GetTestTransport().ProtocolMessagesSent
+                .Count(x => x.Action == ProtocolMessage.MessageAction.Attach).Should().Be(2);
+
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL13a")]
+        public async Task ServerInitiatedDetach_WhenChannelSuspended_ShouldReattachImmediately(Protocol protocol)
+        {
+            var channelName = "RTL13a".AddRandomSuffix();
+            var client = await GetRealtimeClient(protocol);
+            client.Connect();
+            await client.WaitForState();
+            var channel = client.Channels.Get(channelName) as RealtimeChannel;
+            channel.SetChannelState(ChannelState.Suspended);
+            await channel.WaitForState(ChannelState.Suspended);
+
+            channel.State.Should().Be(ChannelState.Suspended);
+
+            var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Detached, channelName);
+
+            ChannelStateChange stateChange = null;
+            await WaitFor(done =>
+            {
+                channel.Once(ChannelEvent.Attaching, change =>
+                {
+                    stateChange = change;
+                    done();
+                });
+
+                client.GetTestTransport().FakeReceivedMessage(msg);
+            });
+
+            stateChange.Error.ShouldBeEquivalentTo(msg.Error);
+            channel.ErrorReason.Should().BeNull();
+
+            client.GetTestTransport().ProtocolMessagesSent
+                .Count(x => x.Action == ProtocolMessage.MessageAction.Attach).Should().Be(1);
+
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL13b")]
+        public async Task ServerInitiatedDetach_WhenChannelAttached_ShouldAttemptReattachImmediately_WhenReattachFailsBecomeSuspended(Protocol protocol)
+        {
+            // reduce timeouts to speed up test
+            var requestTimeout = TimeSpan.FromSeconds(2);
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.RealtimeRequestTimeout = requestTimeout;
+                options.ChannelRetryTimeout = requestTimeout;
+            });
+
+            var channelName = "RTL13a".AddRandomSuffix();
+            var channel = client.Channels.Get(channelName);
+            channel.Attach();
+            await channel.WaitForState(ChannelState.Attached);
+            channel.State.Should().Be(ChannelState.Attached);
+
+            // block attach messages being sent causing the attach to timeout
+            client.GetTestTransport().BlockSendActions.Add(ProtocolMessage.MessageAction.Attach);
+
+            var detachedMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Detached, channelName)
+            {
+                Error = new ErrorInfo("fake error")
+            };
+
+            ChannelStateChange stateChange = null;
+            ChannelStateChange stateChange2 = null;
+            var start = DateTimeOffset.MinValue;
+            var end = DateTimeOffset.MaxValue;
+
+            await WaitFor(30000, done =>
+            {
+                // after detached message channel should become ATTACHING
+                channel.Once(ChannelEvent.Attaching, change =>
+                {
+                    stateChange = change;
+
+                    // after the ATTACH fails it should become SUSPENDED
+                    channel.Once(ChannelEvent.Suspended, change2 =>
+                    {
+                        stateChange2 = change2;
+                        start = DateTimeOffset.UtcNow;
+
+                        // it should keep trying to attach
+                        channel.Once(ChannelEvent.Attaching, change3 =>
+                        {
+                            end = DateTimeOffset.UtcNow;
+                            done();
+                        });
+                    });
+                });
+
+                // inject detached message
+                client.GetTestTransport().FakeReceivedMessage(detachedMessage);
+            });
+
+            // the first error should be from the detached message
+            stateChange.Error.ShouldBeEquivalentTo(detachedMessage.Error);
+
+            // the second should be a timeout error
+            stateChange2.Error.Message.Should().StartWith("Channel didn't attach within");
+
+            // retry should happen after ChannelRetryTimeout has elapsed (TL3l7)
+            (end - start).Should().BeCloseTo(requestTimeout, 500);
+
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL13b")]
+        [Trait("spec", "RTL13c")]
+        public async Task ServerInitiatedDetach_WhenChannelAttaching_ShouldAttemptReattachImmediately_WhenReattachFailsBecomeSuspended(Protocol protocol)
+        {
+            // reduce timeouts to speed up test
+            var requestTimeout = TimeSpan.FromSeconds(2);
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.RealtimeRequestTimeout = requestTimeout;
+                options.ChannelRetryTimeout = requestTimeout;
+            });
+            await client.WaitForState(ConnectionState.Connected);
+            var channelName = "RTL13a".AddRandomSuffix();
+            var channel = client.Channels.Get(channelName);
+
+            // block attach messages being sent causing the attach to timeout
+            client.GetTestTransport().BlockSendActions.Add(ProtocolMessage.MessageAction.Attach);
+
+            var detachedMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Detached, channelName)
+            {
+                Error = new ErrorInfo("fake error")
+            };
+
+            ChannelStateChange stateChange = null;
+            ChannelStateChange stateChange2 = null;
+            var start = DateTimeOffset.MinValue;
+            var end = DateTimeOffset.MaxValue;
+
+            await WaitFor(30000, done =>
+            {
+                // after detached message channel should become ATTACHING
+                channel.Once(ChannelEvent.Attaching, change =>
+                {
+                    stateChange = change;
+
+                    // after the ATTACH fails it should become SUSPENDED
+                    channel.Once(ChannelEvent.Suspended, change2 =>
+                    {
+                        stateChange2 = change2;
+                        start = DateTimeOffset.UtcNow;
+
+                        // it should keep trying to attach
+                        channel.Once(ChannelEvent.Attaching, change3 =>
+                        {
+                            end = DateTimeOffset.UtcNow;
+                            done();
+                        });
+                    });
+
+                    // inject detached message
+                    client.GetTestTransport().FakeReceivedMessage(detachedMessage);
+                });
+
+                channel.Attach();
+            });
+
+            client.Close();
+
+            // wait for double the requestTimeout
+            var tsc = new TaskCompletionAwaiter(requestTimeout.Add(requestTimeout).Seconds * 1000);
+            await client.WaitForState(ConnectionState.Closed);
+
+            // RTL13c If the connection is no longer CONNECTED,
+            // then the automatic attempts to re-attach the channel should stop
+            channel.Once(ChannelEvent.Attaching, change3 =>
+            {
+                tsc.SetCompleted(); // should not be called
+            });
+
+            var didRetry = await tsc.Task;
+            didRetry.Should().BeFalse();
+
+            // the first error should be null
+            stateChange.Error.Should().BeNull();
+
+            // the second should be a timeout error
+            stateChange2.Error.Message.Should().Be(detachedMessage.Error.Message);
+
+            // retry should happen after SuspendedRetryTimeout has elapsed
+            (end - start).Should().BeCloseTo(requestTimeout, 500);
+
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("issue", "117")]
         public async Task AttachAwaitShouldtimeoutIfStateChanges(Protocol protocol)
         {
