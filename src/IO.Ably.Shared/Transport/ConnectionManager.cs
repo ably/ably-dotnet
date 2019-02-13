@@ -106,7 +106,8 @@ namespace IO.Ably.Transport
         {
             if (Logger.IsDebug)
             {
-                Logger.Debug($"xx Changing state from {ConnectionState} => {newState.State}. SkipAttach = {skipAttach}.");
+                Logger.Debug(
+                    $"xx Changing state from {ConnectionState} => {newState.State}. SkipAttach = {skipAttach}.");
             }
 
             _inTransitionToState = newState;
@@ -175,7 +176,8 @@ namespace IO.Ably.Transport
                     newState.AbortTimer();
 
                     // RSA4c2 & RSA4d
-                    if (newState.State == ConnectionState.Connecting && ex.ErrorInfo.Code == 80019 & !ex.ErrorInfo.IsForbiddenError)
+                    if (newState.State == ConnectionState.Connecting &&
+                        ex.ErrorInfo.Code == 80019 & !ex.ErrorInfo.IsForbiddenError)
                     {
                         await SetState(new ConnectionDisconnectedState(this, ex.ErrorInfo, Logger));
                     }
@@ -245,7 +247,8 @@ namespace IO.Ably.Transport
             }
             catch (Exception e)
             {
-                Logger.Warning("Error while destroying transport. Nothing to worry about. Cleaning up. Error: " + e.Message);
+                Logger.Warning("Error while destroying transport. Nothing to worry about. Cleaning up. Error: " +
+                               e.Message);
             }
             finally
             {
@@ -282,7 +285,7 @@ namespace IO.Ably.Transport
             {
                 if (ShouldWeRenewToken(error))
                 {
-                    await RetryAuthentication(updateState: true);
+                    await RetryAuthentication(error, updateState: true);
                 }
                 else
                 {
@@ -295,13 +298,12 @@ namespace IO.Ably.Transport
             return false;
         }
 
-        public async Task RetryAuthentication(bool updateState = true)
+        public async Task RetryAuthentication(ErrorInfo error = null, bool updateState = true)
         {
             ClearTokenAndRecordRetry();
             if (updateState)
             {
-                await SetState(new ConnectionDisconnectedState(this, Logger),
-                    skipAttach: ConnectionState == Realtime.ConnectionState.Connecting);
+                await SetState(new ConnectionDisconnectedState(this, error, Logger), skipAttach: ConnectionState == Realtime.ConnectionState.Connecting);
                 await SetState(new ConnectionConnectingState(this, Logger));
             }
             else

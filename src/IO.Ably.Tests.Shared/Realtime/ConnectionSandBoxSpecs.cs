@@ -410,6 +410,52 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTN15c1")]
+        public async Task ResumeRequest_ConnectedProtocolMessageWithSameConnectionId_WithNoError(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            var channel = client.Channels.Get("RTN15c1".AddRandomSuffix()) as RealtimeChannel;
+            await client.WaitForState(ConnectionState.Connected);
+            var connectionId = client.Connection.Id;
+            channel.Attach();
+            await channel.WaitForState(ChannelState.Attached);
+            channel.State.Should().Be(ChannelState.Attached);
+
+            // kill the transport so the connection becomes DISCONNECTED
+            client.ConnectionManager.Transport.Close(false);
+            await client.WaitForState(ConnectionState.Disconnected);
+
+            var awaiter = new TaskCompletionAwaiter(15000);
+            client.Connection.Once(ConnectionEvent.Connected, change =>
+            {
+                change.HasError.Should().BeFalse();
+                awaiter.SetCompleted();
+            });
+
+            channel.Publish(null, "foo");
+
+            // currently disconnected so message is queued
+            client.ConnectionManager.PendingMessages.Should().HaveCount(1);
+
+            // wait for reconnection
+            var didConnect = await awaiter.Task;
+            didConnect.Should().BeTrue();
+
+            // we should have received a CONNECTED Protocol message with a corresponding connectionId
+            client.GetTestTransport().ProtocolMessagesReceived.Count(x => x.Action == ProtocolMessage.MessageAction.Connected).Should().Be(1);
+            var connectedProtocolMessage = client.GetTestTransport().ProtocolMessagesReceived.First(x => x.Action == ProtocolMessage.MessageAction.Connected);
+            connectedProtocolMessage.ConnectionId.Should().Be(connectionId);
+
+            // channel should be attached and pending messages sent
+            channel.State.Should().Be(ChannelState.Attached);
+            client.ConnectionManager.PendingMessages.Should().HaveCount(0);
+
+            // clean up
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
         public async Task WithAuthUrlShouldGetTokenFromUrl(Protocol protocol)
         {
             Logger.LogLevel = LogLevel.Debug;
@@ -500,6 +546,10 @@ namespace IO.Ably.Tests.Realtime
 
             await awaiter.Task;
             stateChanges.Should().HaveCount(3);
+            stateChanges[0].HasError.Should().BeTrue();
+            stateChanges[0].Reason.Code.Should().Be(40142);
+            stateChanges[1].HasError.Should().BeFalse();
+            stateChanges[2].HasError.Should().BeFalse();
         }
 
         [Theory]
@@ -522,18 +572,18 @@ namespace IO.Ably.Tests.Realtime
 
             await client.WaitForState(ConnectionState.Connected);
 
-            var stateChanges = new List<ConnectionState>();
+            var stateChanges = new List<ConnectionStateChange>();
             client.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
-                stateChanges.Add(state.Current);
+                stateChanges.Add(state);
                 client.Connection.Once(ConnectionEvent.Connecting, state2 =>
                 {
-                    stateChanges.Add(state2.Current);
+                    stateChanges.Add(state2);
                     client.Connection.Once(ConnectionEvent.Disconnected, state3 =>
                     {
                         client.Connection.State.Should().Be(ConnectionState.Disconnected);
                         client.Connection.ErrorReason.Should().NotBeNull();
-                        stateChanges.Add(state3.Current);
+                        stateChanges.Add(state3);
                         awaiter.SetCompleted();
                     });
                 });
@@ -542,8 +592,14 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.Once(ConnectionEvent.Failed, state => throw new Exception("should not become FAILED"));
 
             await awaiter.Task;
-            stateChanges.Should().BeEquivalentTo(new[]
+            stateChanges.Select(x => x.Current).Should().BeEquivalentTo(new[]
                 { ConnectionState.Disconnected, ConnectionState.Connecting, ConnectionState.Disconnected });
+
+            stateChanges[0].HasError.Should().BeTrue();
+            stateChanges[0].Reason.Code.Should().Be(40142);
+            stateChanges[1].HasError.Should().BeFalse();
+            stateChanges[2].HasError.Should().BeTrue();
+            stateChanges[2].Reason.Code.Should().Be(80019);
         }
 
         [Theory]
@@ -567,26 +623,33 @@ namespace IO.Ably.Tests.Realtime
 
             await client.WaitForState(ConnectionState.Connected);
 
-            var stateChanges = new List<ConnectionState>();
+            var stateChanges = new List<ConnectionStateChange>();
             client.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
-                stateChanges.Add(state.Current);
+                stateChanges.Add(state);
                 client.Connection.Once(ConnectionEvent.Connecting, state2 =>
                 {
-                    stateChanges.Add(state2.Current);
+                    stateChanges.Add(state2);
                     client.Connection.Once(ConnectionEvent.Failed, state3 =>
                     {
                         client.Connection.State.Should().Be(ConnectionState.Failed);
                         client.Connection.ErrorReason.Should().NotBeNull();
-                        stateChanges.Add(state3.Current);
+                        stateChanges.Add(state3);
                         awaiter.SetCompleted();
                     });
                 });
             });
 
             await awaiter.Task;
-            stateChanges.Should().BeEquivalentTo(new[]
+            stateChanges.Select(x => x.Current).Should().BeEquivalentTo(new[]
                 { ConnectionState.Disconnected, ConnectionState.Connecting, ConnectionState.Failed });
+
+            stateChanges[0].HasError.Should().BeTrue();
+            stateChanges[0].Reason.Code.Should().Be(40142);
+            stateChanges[1].HasError.Should().BeFalse();
+            stateChanges[2].HasError.Should().BeTrue();
+            stateChanges[2].Reason.Code.Should().Be(80019);
+            stateChanges[2].Reason.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         }
 
         [Theory]
