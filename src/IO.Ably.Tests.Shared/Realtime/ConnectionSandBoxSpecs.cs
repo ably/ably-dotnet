@@ -648,7 +648,8 @@ namespace IO.Ably.Tests.Realtime
             stateChanges[0].Reason.Code.Should().Be(40142);
             stateChanges[1].HasError.Should().BeFalse();
             stateChanges[2].HasError.Should().BeTrue();
-            stateChanges[2].Reason.Code.Should().Be(40300);
+            stateChanges[2].Reason.Code.Should().Be(80019);
+            stateChanges[2].Reason.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         }
 
         [Theory]
