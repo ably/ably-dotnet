@@ -410,6 +410,52 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTN15c1")]
+        public async Task ResumeRequest_ConnectedProtocolMessageWithSameConnectionId_WithNoError(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            var channel = client.Channels.Get("RTN15c1".AddRandomSuffix()) as RealtimeChannel;
+            await client.WaitForState(ConnectionState.Connected);
+            var connectionId = client.Connection.Id;
+            channel.Attach();
+            await channel.WaitForState(ChannelState.Attached);
+            channel.State.Should().Be(ChannelState.Attached);
+
+            // kill the transport so the connection becomes DISCONNECTED
+            client.ConnectionManager.Transport.Close(false);
+            await client.WaitForState(ConnectionState.Disconnected);
+
+            var awaiter = new TaskCompletionAwaiter(15000);
+            client.Connection.Once(ConnectionEvent.Connected, change =>
+            {
+                change.HasError.Should().BeFalse();
+                awaiter.SetCompleted();
+            });
+
+            channel.Publish(null, "foo");
+
+            // currently disconnected so message is queued
+            client.ConnectionManager.PendingMessages.Should().HaveCount(1);
+
+            // wait for reconnection
+            var didConnect = await awaiter.Task;
+            didConnect.Should().BeTrue();
+
+            // we should have received a CONNECTED Protocol message with a corresponding connectionId
+            client.GetTestTransport().ProtocolMessagesReceived.Count(x => x.Action == ProtocolMessage.MessageAction.Connected).Should().Be(1);
+            var connectedProtocolMessage = client.GetTestTransport().ProtocolMessagesReceived.First(x => x.Action == ProtocolMessage.MessageAction.Connected);
+            connectedProtocolMessage.ConnectionId.Should().Be(connectionId);
+
+            // channel should be attached and pending messages sent
+            channel.State.Should().Be(ChannelState.Attached);
+            client.ConnectionManager.PendingMessages.Should().HaveCount(0);
+
+            // clean up
+            client.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
         public async Task WithAuthUrlShouldGetTokenFromUrl(Protocol protocol)
         {
             Logger.LogLevel = LogLevel.Debug;
