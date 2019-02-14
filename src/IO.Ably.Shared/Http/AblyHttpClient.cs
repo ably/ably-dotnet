@@ -79,7 +79,7 @@ namespace IO.Ably
                 {
                     var message = GetRequestMessage(request, host);
                     await LogMessage(message);
-                    var response = await Client.SendAsync(message, HttpCompletionOption.ResponseContentRead).ConfigureAwait(false);
+                    var response = await SendAsync(message).ConfigureAwait(false);
                     var ablyResponse = await GetAblyResponse(response);
                     LogResponse(ablyResponse, request.Url);
 
