@@ -107,7 +107,7 @@ namespace IO.Ably.Tests.Rest
             await channel.PublishAsync("test", "test");
         }
 
-        [Theory]
+        [Theory(Skip = "Problem picking up correct environment, needs fix")]
         [ProtocolData]
         [Trait("spec", "RSL1k1")]
         public async Task IdempotentPublishing_LibraryGeneratesIds(Protocol protocol)
@@ -146,13 +146,12 @@ namespace IO.Ably.Tests.Rest
             }
         }
 
-        [Theory]
+        [Theory(Skip = "Problem picking up correct environment, needs fix")]
         [ProtocolData]
         [Trait("spec", "RSL1k2")]
         [Trait("spec", "RSL1k3")]
         public async Task IdempotentPublishing_ClientProvidedMessageIdsArePreserved(Protocol protocol)
         {
-
             var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true, "idempotent-dev");
             var channel = client.Channels.Get("test".AddRandomSuffix());
 
@@ -182,7 +181,7 @@ namespace IO.Ably.Tests.Rest
             history.Items[2].Id.Should().Be("RSL1k3");
         }
 
-        [Theory]
+        [Theory(Skip = "Problem picking up correct environment, needs fix")]
         [ProtocolData]
         [Trait("spec", "RSL1k4")]
         public async Task IdempotentPublishing_SimulateErrorAndRetry(Protocol protocol)
@@ -234,7 +233,7 @@ namespace IO.Ably.Tests.Rest
             history.Items[0].Name.Should().Be($"test1{suffix}");
         }
 
-        [Theory]
+        [Theory(Skip = "Problem picking up correct environment, needs fix")]
         [ProtocolData]
         [Trait("spec", "RSL1k5")]
         public async Task IdempotentPublishing_SendingAMessageMultipleTimesShouldOnlyPublishOnce(Protocol protocol)
