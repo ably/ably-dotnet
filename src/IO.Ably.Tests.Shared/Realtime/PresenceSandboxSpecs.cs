@@ -1219,12 +1219,15 @@ namespace IO.Ably.Tests.Realtime
                     channel.Subscribe(msg => { didReceiveMessage = true; });
                     didReceiveMessage.Should().BeFalse("No events should be emitted");
 
+                    channel.Once((ChannelEvent)channelState, change =>
+                    {
+                        channel.Presence.Map.Members.Should().HaveCount(0);
+                        channel.Presence.InternalMap.Members.Should().HaveCount(0);
+                    });
+
                     channel.SetChannelState(channelState, new ErrorInfo("RTP5a test"));
 
                     await channel.WaitForState(channelState);
-
-                    channel.Presence.Map.Members.Should().HaveCount(0);
-                    channel.Presence.InternalMap.Members.Should().HaveCount(0);
 
                     client.Close();
                 }
