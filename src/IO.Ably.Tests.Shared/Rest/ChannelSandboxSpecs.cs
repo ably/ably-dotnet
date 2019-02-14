@@ -112,23 +112,23 @@ namespace IO.Ably.Tests.Rest
         [Trait("spec", "RSL1k1")]
         public async Task IdempotentPublishing_LibraryGeneratesIds(Protocol protocol)
         {
-            void AssertMessage(Message message)
+            void AssertMessage(Message message, int serial)
             {
                 message.Id.Should().NotBeNull();
                 var idParts = message.Id.Split(':');
                 idParts.Should().HaveCount(2);
-                idParts[1].Should().Be("0");
+                idParts[1].Should().Be(serial.ToString());
                 byte[] b = Convert.FromBase64String(idParts[0]);
                 b.Should().HaveCount(9);
             }
 
             var msg = new Message("test", "test");
-            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true);
+            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true, "idempotent-dev");
             var channel = client.Channels.Get("test".AddRandomSuffix());
 
             await channel.PublishAsync(msg);
 
-            AssertMessage(msg);
+            AssertMessage(msg, 0);
 
             var messages = new[]
             {
@@ -139,9 +139,10 @@ namespace IO.Ably.Tests.Rest
 
             await channel.PublishAsync(messages);
 
-            foreach (var m in messages)
+            for (var i = 0; i < messages.Length; i++)
             {
-                AssertMessage(m);
+                var m = messages[i];
+                AssertMessage(m, i);
             }
         }
 
@@ -151,7 +152,8 @@ namespace IO.Ably.Tests.Rest
         [Trait("spec", "RSL1k3")]
         public async Task IdempotentPublishing_ClientProvidedMessageIdsArePreserved(Protocol protocol)
         {
-            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true);
+
+            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true, "idempotent-dev");
             var channel = client.Channels.Get("test".AddRandomSuffix());
 
             var msg = new Message("test", "test") { Id = "RSL1k2" };
@@ -186,7 +188,7 @@ namespace IO.Ably.Tests.Rest
         public async Task IdempotentPublishing_SimulateErrorAndRetry(Protocol protocol)
         {
             int numberOfRetries = 2;
-            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true);
+            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true, "idempotent-dev");
 
             var suffix = string.Empty.AddRandomSuffix();
             var channelName = $"test{suffix}";
@@ -237,7 +239,7 @@ namespace IO.Ably.Tests.Rest
         [Trait("spec", "RSL1k5")]
         public async Task IdempotentPublishing_SendingAMessageMultipleTimesShouldOnlyPublishOnce(Protocol protocol)
         {
-            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true);
+            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true, "idempotent-dev");
             var channel = client.Channels.Get("test".AddRandomSuffix());
 
             var msg = new Message("test", "test") { Id = "RSL1k5" };

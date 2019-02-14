@@ -454,7 +454,6 @@ namespace IO.Ably.Tests.Realtime
             client.Close();
         }
 
-
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN15c2")]
@@ -535,8 +534,6 @@ namespace IO.Ably.Tests.Realtime
             // clean up
             client.Close();
         }
-
-
 
         [Theory]
         [ProtocolData]

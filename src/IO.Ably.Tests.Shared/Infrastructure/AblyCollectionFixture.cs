@@ -52,7 +52,7 @@ namespace IO.Ably.Tests
 
         public bool Tls { get; set; }
 
-        public string Environment => "sandbox";
+        public string Environment { get; set; } = "sandbox";
 
         public CipherParams CipherParams { get; set; }
 
@@ -61,18 +61,20 @@ namespace IO.Ably.Tests
             Keys = new List<Key>();
         }
 
-        internal AblyHttpClient GetHttpClient()
+        internal AblyHttpClient GetHttpClient(string environment = null)
         {
             var ablyHttpOptions = new AblyHttpOptions() { IsSecure = Tls };
-            ablyHttpOptions.Host = CreateDefaultOptions().FullRestHost();
+            ablyHttpOptions.Host = CreateDefaultOptions(null, environment).FullRestHost();
             return new AblyHttpClient(ablyHttpOptions);
         }
 
-        public ClientOptions CreateDefaultOptions(string key = null)
+        public ClientOptions CreateDefaultOptions(string key = null, string environment = null)
         {
+            environment = environment ?? Environment;
+
             var env = System.Environment.GetEnvironmentVariable("ABLY_ENV").IsNotEmpty()
                 ? System.Environment.GetEnvironmentVariable("ABLY_ENV").Trim()
-                : Environment;
+                : environment;
 
             return new ClientOptions() { Key = key ?? FirstValidKey, Tls = Tls, Environment = env };
         }
