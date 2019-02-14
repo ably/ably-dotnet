@@ -13,8 +13,9 @@ namespace IO.Ably.Tests
 
         public static Dictionary<string, TestEnvironmentSettings> _settings = new Dictionary<string, TestEnvironmentSettings>();
 
-        public async Task<TestEnvironmentSettings> GetSettings(string environment = "sandbox")
+        public async Task<TestEnvironmentSettings> GetSettings(string environment = null)
         {
+            environment = environment ?? "sandbox";
             if (_settings.ContainsKey(environment))
             {
                 return _settings[environment];
