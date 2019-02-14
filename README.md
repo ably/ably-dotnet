@@ -1,6 +1,8 @@
 # ably-dotnet
 
-A .NET client library for [www.ably.io](https://www.ably.io), the realtime messaging service.
+[![NuGet version](https://badge.fury.io/nu/ably.io.svg)](https://badge.fury.io/nu/ably.io)
+
+A .NET client library for [www.ably.io](https://www.ably.io), the realtime messaging service. This library currently targets the [Ably 1.1-beta client library specification](https://www.ably.io/documentation/client-lib-development-guide/features/). You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or or [view our client library SDKs feature support matrix](https://www.ably.io/download/sdk-feature-support-matrix) to see the list of all the available features.
 
 ## Supported platforms
 
@@ -47,7 +49,16 @@ Finally, install a compatible version of Json.NET into your Unity projects asset
 
 A portable class library (PCL) version is not available. See [this comment](https://github.com/ably/ably-dotnet/issues/182#issuecomment-366939087) for more information on this choice and the potential workarounds that are available. 
 
+## Known Limitations
 
+This client library is currently *not compatible* with some of the Ably features:
+
+| Feature | 
+|:--- |
+| [Push Notification target](https://www.ably.io/documentation/general/push/activate-subscribe#subscribing) |
+| [Push Notification admin](https://www.ably.io/documentation/general/push/admin) |
+| [Custom transportParams](https://www.ably.io/documentation/realtime/usage#client-options) |
+| [Message extras](https://www.ably.io/documentation/realtime/types#message) |
 
 ## Documentation
 
