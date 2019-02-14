@@ -462,6 +462,7 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol);
             var channel = client.Channels.Get("RTN15c1".AddRandomSuffix()) as RealtimeChannel;
             await client.WaitForState(ConnectionState.Connected);
+            await channel.WaitForState(ChannelState.Attached);
             var connectionId = client.Connection.Id;
 
             // inject fake error messages into protocol messages
@@ -487,10 +488,7 @@ namespace IO.Ably.Tests.Realtime
             client.ConnectionManager.Transport.Close(false);
             await client.WaitForState(ConnectionState.Disconnected);
 
-            // publish
-            channel.Publish(null, "foo");
-
-            // tack connection state change
+            // track connection state change
             ConnectionStateChange stateChange = null;
             var connectedAwaiter = new TaskCompletionAwaiter(15000);
             client.Connection.Once(ConnectionEvent.Connected, change =>
@@ -501,12 +499,16 @@ namespace IO.Ably.Tests.Realtime
 
             // track channel stage change
             ChannelStateChange channelStateChange = null;
-            var attachedAwaiter = new TaskCompletionAwaiter(15000);
+            var attachedAwaiter = new TaskCompletionAwaiter(30000);
             channel.Once(ChannelEvent.Attached, change =>
             {
                 channelStateChange = change;
                 attachedAwaiter.SetCompleted();
             });
+
+            // publish
+            channel.Attach();
+            channel.Publish(null, "foo");
 
             // wait for connection
             var didConnect = await connectedAwaiter.Task;
