@@ -33,9 +33,9 @@ namespace IO.Ably.Tests
             // Logger.LogLevel = LogLevel.Debug;
         }
 
-        protected async Task<AblyRest> GetRestClient(Protocol protocol, Action<ClientOptions> optionsAction = null)
+        protected async Task<AblyRest> GetRestClient(Protocol protocol, Action<ClientOptions> optionsAction = null, string environment = null)
         {
-            var settings = await Fixture.GetSettings();
+            var settings = await Fixture.GetSettings(environment);
             var defaultOptions = settings.CreateDefaultOptions();
             defaultOptions.UseBinaryProtocol = protocol == Defaults.Protocol;
             optionsAction?.Invoke(defaultOptions);

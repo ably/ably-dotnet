@@ -1,6 +1,8 @@
 # ably-dotnet
 
-A .NET client library for [www.ably.io](https://www.ably.io), the realtime messaging service.
+[![NuGet version](https://badge.fury.io/nu/ably.io.svg)](https://badge.fury.io/nu/ably.io)
+
+A .NET client library for [www.ably.io](https://www.ably.io), the realtime messaging service. This library currently targets the [Ably 1.1-beta client library specification](https://www.ably.io/documentation/client-lib-development-guide/features/). You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or or [view our client library SDKs feature support matrix](https://www.ably.io/download/sdk-feature-support-matrix) to see the list of all the available features.
 
 ## Supported platforms
 
@@ -12,15 +14,51 @@ A .NET client library for [www.ably.io](https://www.ably.io), the realtime messa
 * [Xamarin.Android 8.0+](https://developer.xamarin.com/releases/android/xamarin.android_8/xamarin.android_8.0/)
 * [Xamarin.iOS 11.4+](https://developer.xamarin.com/releases/ios/xamarin.ios_11/xamarin.ios_11.4/)
 
-Unity is not officially supported yet, but some users have had some successes. See this [issue](https://github.com/ably/ably-dotnet/issues/169) for more information.
-
-A portable class library (PCL) version is not available. See [this comment](https://github.com/ably/ably-dotnet/issues/182#issuecomment-366939087) for more information on this choice and the potential workarounds that are available. 
-
 &ast; To target Windows 7 (with .Net 4.6) a custom [ITransportFactory](https://github.com/ably/ably-dotnet/blob/master/src/IO.Ably.Shared/Transport/ITransport.cs) will need to be implemented in your project that uses an alternate Web Socket library. 
 This is because [System.Net.WebSockets]('https://msdn.microsoft.com/en-us/library/system.net.websockets(v=vs.110).aspx') is not fully implementented on Windows 7.
 See [this repository](https://github.com/ably-forks/ably-dotnet-alternative-transports) for a working example using the [websocket4net library](https://github.com/kerryjiang/WebSocket4Net).
 
 &ast;&ast; We regression-test the library against .NET Core 2 but it is designed to be compatible with all versions of .NET Core (and any other runtime implementation that is compatible with .NET Standard 1.4 or greater). If you find any compatibility issues, please do [raise an issue](https://github.com/ably/ably-dotnet/issues) in this repository or contact Ably customer support for advice. Any known runtime incompatibilities can be found [here](https://github.com/ably/ably-dotnet/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
+
+### Partial platform support
+
+The following platforms are supported, but have some shortcomings or considerations:
+
+#### Unity
+
+Unity support is currently in beta. See below for details on why it's considered beta.
+
+Shortcomings & considerations:
+
+* This library is only tested manually on Unity. We do not yet have automated tests running on the Unity platform.
+* Installation requires developers to manually set up the library
+
+Unity Requirements:
+
+- Unity 2018.2.0 or newer
+- The following Unity Player settings must be applied:
+  - Scripting Runtime Version should be '.NET 4.x Equivelant'
+  - Api Compatibility Level should be '.NET Standard 2.0'
+- Json.NET 9.0.1 or newer. If you are targetting macOS or iOS (or other platforms that require the IL2CPP scripting backend) then a version of Json.NET that has been modified to work with an AOT compiler is required, we have had success with [Json.Net.Unity3D](https://github.com/SaladLab/Json.Net.Unity3D)
+
+The .NET Standard build of ably-dotnet (IO.Ably.dll) needs to be added the asset folder of your Unity project.
+As Unity does not support Nuget out of the box we currently recommend building ably-dotnet from source, although it should be possible to [extract the required assembly from the nuget package](https://articles.runtings.co.uk/2014/09/easily-extracting-nupkg-files-with.html) or use a [3rd party Nuget extension for Unity](https://assetstore.unity.com/packages/tools/utilities/nuget-for-unity-104640), but those options are beyond the scope of this document. To build from source clone this repository and build the IO.Ably.NETStandard20 project, this can be done from Visual Studio by opening the IO.Ably.sln file or via the command line. To build via the comandline `cd` to `ably-dotnet/src/IO.Ably.NETStandard20/` and run `dotnet build`, the build output can then be found in `ably-dotnet/src/IO.Ably.NETStandard20/bin/Release/netstandard2.0`, navigate there to obtain the required `IO.Ably.dll`.
+Finally, install a compatible version of Json.NET into your Unity projects asset folder (e.g. [Json.Net.Unity3D](https://github.com/SaladLab/Json.Net.Unity3D)).
+
+### Unsupported platforms
+
+A portable class library (PCL) version is not available. See [this comment](https://github.com/ably/ably-dotnet/issues/182#issuecomment-366939087) for more information on this choice and the potential workarounds that are available. 
+
+## Known Limitations
+
+This client library is currently *not compatible* with some of the Ably features:
+
+| Feature | 
+|:--- |
+| [Push Notification target](https://www.ably.io/documentation/general/push/activate-subscribe#subscribing) |
+| [Push Notification admin](https://www.ably.io/documentation/general/push/admin) |
+| [Custom transportParams](https://www.ably.io/documentation/realtime/usage#client-options) |
+| [Message extras](https://www.ably.io/documentation/realtime/types#message) |
 
 ## Documentation
 
@@ -360,6 +398,21 @@ The build scripts are written in powershell using PSake and need to be run on Wi
 
 Running `.\build.ps1` will start the build process and run the tests. 
 Running `package.ps1` will run the build script and create a nuget package.
+
+## Working from source
+
+If you want to incorporate ably-dotnet into your project from source (perhaps to use a specific development branch) the simplest way to do so is to add references to the relevant ably-dotnet projects. The following steps are specific to Visual Studio 2017, but the pricipal should transfer to other IDEs
+
+1. Clone this repository to your local system
+2. Open the solution you want to reference ably-dotnet from
+3. In Solution Explorer right click the root note (it will be labled Solution 'YourSolutionName')
+4. Select Add > Existing Project from the context menu
+5. Browse to the ably-dotnet repository and add ably-dotnet\src\IO.Ably.Shared\IO.Ably.Shared.shproj
+6. Browse to the ably-dotnet repository and add the project that corresponds to your target platform, so if you are targetting .Net Framework (AKA Classic .Net) you would add ably-dotnet\src\IO.Ably.NETFramework\IO.Ably.NETFramework.csproj, if you are targeting .NET Core 2 then chose ably-dotnet\src\IO.Ably.NetStandard20\IO.Ably.NetStandard20.csproj and so on.
+7. In any project that you want to use ably-dotnet you need to add a project reference, to do so:
+    1. Find your project in Solution Explorer and expand the tree so that the Dependencies node is visible
+    2. Right click Dependencies and select Add Reference
+    3. In the dialogue that opens you should see a list of the projects in your solution. Check the box next to IO.Ably.NETFramework (or whatever version you are trying to use) and click OK.
 
 ## Release process
 

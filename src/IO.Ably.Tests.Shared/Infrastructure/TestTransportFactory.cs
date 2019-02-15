@@ -10,11 +10,16 @@ namespace IO.Ably.Tests.Infrastructure
 
         internal Action<ProtocolMessage> OnMessageSent = delegate { };
 
+        internal Action<ProtocolMessage> BeforeDataProcessed;
+        internal Action<ProtocolMessage> AfterDataReceived;
+
         public ITransport CreateTransport(TransportParams parameters)
         {
             var factory = IoC.TransportFactory;
             var transport
                 = new TestTransportWrapper(factory.CreateTransport(parameters), parameters.UseBinaryProtocol ? Defaults.Protocol : Protocol.Json);
+            transport.AfterDataReceived = AfterDataReceived;
+            transport.BeforeDataProcessed = BeforeDataProcessed;
             OnTransportCreated(transport);
             transport.MessageSent = OnMessageSent;
             return transport;

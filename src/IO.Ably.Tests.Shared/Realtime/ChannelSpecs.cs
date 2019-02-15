@@ -99,12 +99,16 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL2a")]
             [Trait("spec", "RTL2b")]
             [Trait("spec", "RTL2d")]
+            [Trait("spec", "TH1")]
+            [Trait("spec", "TH2")]
+            [Trait("spec", "TH5")]
             public void ShouldEmitTheFollowingStates(ChannelEvent channelEvent)
             {
                 var chanName = "test".AddRandomSuffix();
                 var client = GetConnectedClient();
                 var channel = client.Channels.Get(chanName);
 
+                ChannelEvent sourceEvent = ChannelEvent.Update;
                 ChannelState previousState = ChannelState.Failed;
                 ChannelState newState = ChannelState.Initialized;
                 channel.On(channelStateChange =>
@@ -120,6 +124,9 @@ namespace IO.Ably.Tests.Realtime
 
                     // should always be Initialized
                     previousState = channelStateChange.Previous;
+
+                    // TH5
+                    sourceEvent = channelStateChange.Event;
                     Done();
                 });
 
@@ -130,6 +137,7 @@ namespace IO.Ably.Tests.Realtime
                 channel.State.Should().Be((ChannelState)channelEvent);
                 newState.Should().Be((ChannelState)channelEvent);
                 previousState.Should().Be(ChannelState.Initialized);
+                sourceEvent.Should().Be(channelEvent);
             }
 
             [Theory]
@@ -200,6 +208,9 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL2f")]
             [Trait("spec", "RTL2g")]
             [Trait("spec", "RTL12")]
+            [Trait("spec", "TH2")]
+            [Trait("spec", "TH3")]
+            [Trait("spec", "TH4")]
             async Task WhenAttachedProtocolMessageWithResumedFlagReceived_EmittedChannelStateChangeShouldIndicateResumed()
             {
                 var client = GetConnectedClient();
@@ -231,7 +242,7 @@ namespace IO.Ably.Tests.Realtime
                 // RTL2g / RTL12
                 channel.Once(ChannelEvent.Update, stateChange =>
                 {
-                    // RTL2f
+                    // RTL2f, TH2, TH4
                     stateChange.Current.Should().Be(ChannelState.Attached);
                     stateChange.Previous.Should().Be(ChannelState.Attached);
                     stateChange.Resumed.Should().BeFalse();
@@ -264,8 +275,10 @@ namespace IO.Ably.Tests.Realtime
 
                 channel.Once(ChannelEvent.Attached, stateChange =>
                 {
-                    // RTL2f
+                    // RTL2f, TH4
                     stateChange.Resumed.Should().BeTrue();
+
+                    // TH3
                     stateChange.Error.Message.Should().Be("test error");
                     tsc.SetCompleted();
                 });
@@ -378,8 +391,8 @@ namespace IO.Ably.Tests.Realtime
                 {
                     /* RTL2d */
                     s.Error.Should().NotBeNull();
-                    s.Error.Message.Should().Be("Channel didn't attach within the default timeout");
-                    s.Error.Code.Should().Be(50000);
+                    s.Error.Message.Should().StartWith("Channel didn't attach within");
+                    s.Error.Code.Should().Be(90007);
                     tsc.SetCompleted();
                 });
 
@@ -515,11 +528,11 @@ namespace IO.Ably.Tests.Realtime
 
             [Theory]
             [InlineData(ChannelState.Initialized)]
-            [InlineData(ChannelState.Detached)]
             [InlineData(ChannelState.Detaching)]
+            [InlineData(ChannelState.Detached)]
             [InlineData(ChannelState.Failed)]
             [Trait("spec", "RTL4f")]
-            public async Task ShouldReturnToPreviousStateIfAttachMessageNotReceivedWithinDefaultTimeout(ChannelState previousState)
+            public async Task ShouldBecomeSuspendedIfAttachMessageNotReceivedWithinDefaultTimeout(ChannelState previousState)
             {
                 SetState(_channel, previousState);
 
@@ -551,7 +564,7 @@ namespace IO.Ably.Tests.Realtime
                     }
                 }
 
-                _channel.State.Should().Be(previousState);
+                _channel.State.Should().Be(ChannelState.Suspended);
                 _channel.ErrorReason.Should().NotBeNull();
             }
 

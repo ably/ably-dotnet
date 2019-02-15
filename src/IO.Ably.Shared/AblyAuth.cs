@@ -231,22 +231,23 @@ namespace IO.Ably
                     else
                     {
                         shouldCatch = false;
-                        throw new AblyException($"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest", 80019);
+                        throw new AblyException($"AuthCallback returned an unsupported type ({callbackResult.GetType()}. Expected either TokenDetails or TokenRequest", 80019, HttpStatusCode.BadRequest);
                     }
                 }
                 catch (Exception ex) when (shouldCatch)
                 {
-                    HttpStatusCode? statusCode = null;
-                    int code = 80019;
-                    if (ex is AblyException ablyException)
+                    var statusCode = HttpStatusCode.Unauthorized;
+                    if (ex is AblyException aex)
                     {
-                        statusCode = ablyException.ErrorInfo.StatusCode;
-                        code = ablyException.ErrorInfo.Code == 40300 ? ablyException.ErrorInfo.Code : 80019;
+                        statusCode = aex.ErrorInfo.StatusCode == HttpStatusCode.Forbidden
+                            ? HttpStatusCode.Forbidden
+                            : HttpStatusCode.Unauthorized;
                     }
 
                     throw new AblyException(
                         new ErrorInfo(
-                        "Error calling AuthCallback, token request failed. See inner exception for details.", code, statusCode), ex);
+                        "Error calling AuthCallback, token request failed. See inner exception for details.", 80019,
+                        statusCode), ex);
                 }
             }
             else if (authOptions.AuthUrl.IsNotEmpty())
@@ -278,8 +279,8 @@ namespace IO.Ably
                     throw new AblyException(
                         new ErrorInfo(
                             "Error calling Auth URL, token request failed. See the InnerException property for details of the underlying exception.",
-                            ex.ErrorInfo.Code == 40300 ? ex.ErrorInfo.Code : 80019,
-                            ex.ErrorInfo.StatusCode),
+                            80019,
+                            ex.ErrorInfo.StatusCode == HttpStatusCode.Forbidden ? ex.ErrorInfo.StatusCode : HttpStatusCode.Unauthorized),
                         ex);
                 }
             }

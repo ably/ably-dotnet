@@ -16,51 +16,51 @@
         <copyright>2017 Ably</copyright>
         <language />
         <dependencies>
-          
+
           <group>
-            
+
           </group>
-          
+
           <group targetFramework="net46">
             <!-- Some dependencies are merged using ILRepack, see csproj -->
             <dependency id="System.Net.Http" version="4.3.2" />
           </group>
-          
+
           <group targetFramework="uap">
-            <dependency id="Newtonsoft.Json" version="10.0.2" />
+            <dependency id="Newtonsoft.Json" version="9.0.1" />
             <dependency id="WebSocket4Net" version="0.15.0" />
             <dependency id="System.Net.WebSockets.Client" version="4.3.1" />
             <dependency id="System.Net.Http" version="4.3.2" />
           </group>
-          
+
           <group targetFramework="monoandroid">
             <!-- Some dependencies are merged using ILRepack, see csproj -->
             <dependency id="System.Net.Http" version="4.3.2" />
           </group>
-          
-          
+
+
           <group targetFramework="monotouch">
           </group>
-          
+
           <group targetFramework="Xamarin.iOS">
             <!-- Some dependencies are merged using ILRepack, see csproj -->
             <dependency id="System.Net.Http" version="4.3.2" />
           </group>
-          
-          
+
+
           <group targetFramework="netstandard1.4">
-            <dependency id="Newtonsoft.Json" version="10.0.2" />
+            <dependency id="Newtonsoft.Json" version="9.0.1" />
             <dependency id="System.Net.Http" version="4.3.2" />
             <dependency id="System.Net.Requests" version="4.3.0" />
             <dependency id="System.Net.WebSockets.Client" version="4.3.1"/>
           </group>
-          
+
 
           <group targetFramework="netstandard2.0">
-            <dependency id="Newtonsoft.Json" version="10.0.2" />
+            <dependency id="Newtonsoft.Json" version="9.0.1" />
             <dependency id="System.Net.Http" version="4.3.2" />
           </group>
-          
+
         </dependencies>
     </metadata>
     <files>

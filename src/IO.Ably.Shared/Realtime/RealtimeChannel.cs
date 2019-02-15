@@ -204,9 +204,15 @@ namespace IO.Ably.Realtime
                 throw new AblyException($"Cannot attach when connection is in {ConnectionState} state");
             }
 
+            Attach(null, null, callback);
+        }
+
+        private void Attach(ErrorInfo error, ProtocolMessage msg = null, Action<bool, ErrorInfo> callback = null)
+        {
+            error = error == null && msg?.Error != null ? msg.Error : error;
             if (AttachedAwaiter.StartWait(callback, ConnectionManager.Options.RealtimeRequestTimeout))
             {
-                SetChannelState(ChannelState.Attaching);
+                SetChannelState(ChannelState.Attaching, error, msg);
             }
         }
 
@@ -219,10 +225,11 @@ namespace IO.Ably.Realtime
         {
             if (Logger.IsDebug)
             {
-                Logger.Debug($"#{Name} didn't Attach within {ConnectionManager.Options.RealtimeRequestTimeout}. Setting state back to {PreviousState}");
+                Logger.Debug($"#{Name} didn't Attach within {ConnectionManager.Options.RealtimeRequestTimeout}. Setting state to {ChannelState.Suspended}");
             }
 
-            SetChannelState(PreviousState, new ErrorInfo("Channel didn't attach within the default timeout", 50000));
+            // RTL4f
+            SetChannelState(ChannelState.Suspended, new ErrorInfo($"Channel didn't attach within  {ConnectionManager.Options.RealtimeRequestTimeout}", 90007, HttpStatusCode.RequestTimeout));
         }
 
         private void OnDetachTimeout()
@@ -387,7 +394,10 @@ namespace IO.Ably.Realtime
         {
             ErrorReason = error; // Set or clear the error
 
-            RealtimeClient.NotifyExternalClients(() => Error.Invoke(this, new ChannelErrorEventArgs(error)));
+            if (error != null)
+            {
+                RealtimeClient.NotifyExternalClients(() => Error.Invoke(this, new ChannelErrorEventArgs(error)));
+            }
         }
 
         public void Dispose()
@@ -417,11 +427,6 @@ namespace IO.Ably.Realtime
 
             if (State == ChannelState.Initialized || State == ChannelState.Attaching)
             {
-                if (State == ChannelState.Initialized)
-                {
-                    Attach();
-                }
-
                 // Not connected, queue the message
                 lock (_lockQueue)
                 {
@@ -447,7 +452,7 @@ namespace IO.Ably.Realtime
 
         internal void SetChannelState(ChannelState state, ProtocolMessage protocolMessage)
         {
-            SetChannelState(state, protocolMessage.Error, protocolMessage);
+            SetChannelState(state, protocolMessage?.Error, protocolMessage);
         }
 
         internal void SetChannelState(ChannelState state, bool emitUpdate)
@@ -482,7 +487,7 @@ namespace IO.Ably.Realtime
                 channelEvent = (ChannelEvent) state;
             }
 
-            var channelStateChange = new ChannelStateChange(state, State, error, protocolMessage);
+            var channelStateChange = new ChannelStateChange(channelEvent, state, State, error, protocolMessage);
             HandleStateChange(state, error, protocolMessage);
             InternalStateChanged.Invoke(this, channelStateChange);
 
@@ -506,9 +511,10 @@ namespace IO.Ably.Realtime
         {
             if (Logger.IsDebug)
             {
-                Logger.Debug($"HandleStateChange state change: {state}");
+                Logger.Debug($"HandleStateChange state change from {State} to {state}");
             }
 
+            var oldState = State;
             State = state;
 
             switch (state)
@@ -548,7 +554,7 @@ namespace IO.Ably.Realtime
                             /* RTP1 If [HAS_PRESENCE] flag is 0 or there is no flags field,
                              * the presence map should be considered in sync immediately
                              * with no members present on the channel */
-                    Presence.SkipSync();
+                            Presence.SkipSync();
                         }
 
                         AttachedSerial = protocolMessage.ChannelSerial;
@@ -579,7 +585,27 @@ namespace IO.Ably.Realtime
 
                     break;
                 case ChannelState.Detached:
-                    ClearAndFailChannelQueuedMessages(error);
+                    /* RTL13a check for unexpected detach */
+                    switch (oldState)
+                    {
+                        /* (RTL13a) If the channel is in the @ATTACHED@ or @SUSPENDED@ states,
+                         an attempt to reattach the channel should be made immediately */
+                        case ChannelState.Attached:
+                        case ChannelState.Suspended:
+                            SetChannelState(ChannelState.Detached, error, protocolMessage);
+                            Reattach(error, protocolMessage);
+                            break;
+                        case ChannelState.Attaching:
+                            /* RTL13b says we need to become suspended, but continue to retry */
+                            Logger.Debug($"Server initiated detach for channel {Name} whilst attaching; moving to suspended");
+                            SetChannelState(ChannelState.Suspended, error, protocolMessage);
+                            ReattachAfterTimeout(error, protocolMessage);
+                            break;
+                        default:
+                            ClearAndFailChannelQueuedMessages(error);
+                            break;
+                    }
+
                     break;
                 case ChannelState.Failed:
                     AttachedAwaiter.Fail(error);
@@ -590,6 +616,48 @@ namespace IO.Ably.Realtime
                     ClearAndFailChannelQueuedMessages(error);
                     break;
             }
+        }
+
+        private void Reattach(ErrorInfo error, ProtocolMessage msg)
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    Attach(error, msg, (success, info) =>
+                    {
+                        if (!success)
+                        {
+                            // If the attach timed out the channel will set SUSPENDED (as described by RTL4f and RTL13b)
+                            if (State == ChannelState.Suspended)
+                            {
+                                ReattachAfterTimeout(error, msg);
+                            }
+                        }
+                    });
+                }
+                catch (Exception e)
+                {
+                    Logger.Error("Reattach channel failed; channel = " + Name, e);
+                }
+            });
+        }
+
+        /// <summary>
+        /// should only be called when the channel is SUSPENDED
+        /// </summary>
+        private void ReattachAfterTimeout(ErrorInfo error, ProtocolMessage msg)
+        {
+            Task.Run(async () =>
+            {
+                await Task.Delay(RealtimeClient.Options.ChannelRetryTimeout);
+
+                // only retry if the connection is connected (RTL13c)
+                if (Connection.State == ConnectionState.Connected)
+                {
+                    Reattach(error, msg);
+                }
+            }).ConfigureAwait(false);
         }
 
         private void ClearAndFailChannelQueuedMessages(ErrorInfo error)
@@ -686,7 +754,7 @@ namespace IO.Ably.Realtime
         {
             if (State == ChannelState.Attached)
             {
-                Emit(ChannelEvent.Update, new ChannelStateChange(State, State, errorInfo, resumed));
+                Emit(ChannelEvent.Update, new ChannelStateChange(ChannelEvent.Update, State, State, errorInfo, resumed));
             }
         }
 

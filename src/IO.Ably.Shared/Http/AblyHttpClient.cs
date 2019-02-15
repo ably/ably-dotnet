@@ -13,6 +13,8 @@ namespace IO.Ably
 {
     internal class AblyHttpClient : IAblyHttpClient
     {
+        internal Func<HttpRequestMessage, Task<HttpResponseMessage>> SendAsync { get; set; }
+
         internal Func<DateTimeOffset> Now { get; set; }
 
         internal ILogger Logger { get; set; }
@@ -29,6 +31,7 @@ namespace IO.Ably
             Logger = options.Logger ?? IO.Ably.DefaultLogger.LoggerInstance;
             Options = options;
             CreateInternalHttpClient(options.HttpRequestTimeout, messageHandler);
+            SendAsync = InternalSendAsync;
         }
 
         internal void CreateInternalHttpClient(TimeSpan timeout, HttpMessageHandler messageHandler)
@@ -37,6 +40,11 @@ namespace IO.Ably
             Client.DefaultRequestHeaders.Add("X-Ably-Version", Defaults.ProtocolVersion);
             Client.DefaultRequestHeaders.Add("X-Ably-Lib", Defaults.LibraryVersion);
             Client.Timeout = timeout;
+        }
+
+        internal async Task<HttpResponseMessage> InternalSendAsync(HttpRequestMessage message)
+        {
+            return await Client.SendAsync(message, HttpCompletionOption.ResponseContentRead);
         }
 
         public async Task<AblyResponse> Execute(AblyRequest request)
@@ -71,7 +79,7 @@ namespace IO.Ably
                 {
                     var message = GetRequestMessage(request, host);
                     await LogMessage(message);
-                    var response = await Client.SendAsync(message, HttpCompletionOption.ResponseContentRead).ConfigureAwait(false);
+                    var response = await SendAsync(message).ConfigureAwait(false);
                     var ablyResponse = await GetAblyResponse(response);
                     LogResponse(ablyResponse, request.Url);
 

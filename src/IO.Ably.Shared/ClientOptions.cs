@@ -183,6 +183,8 @@ namespace IO.Ably
 
         public TimeSpan SuspendedRetryTimeout { get; set; } = TimeSpan.FromSeconds(30);
 
+        public TimeSpan ChannelRetryTimeout { get; set; } = TimeSpan.FromSeconds(15);
+
         public TimeSpan HttpOpenTimeout { get; set; } = TimeSpan.FromSeconds(4);
 
         public TimeSpan HttpRequestTimeout { get; set; } = TimeSpan.FromSeconds(10);
@@ -203,6 +205,8 @@ namespace IO.Ably
         public bool CaptureCurrentSynchronizationContext { get; set; } = true;
 
         public SynchronizationContext CustomContext { get; set; }
+
+        public bool IdempotentRestPublishing { get; set; }
 
         internal Func<DateTimeOffset> NowFunc
         {
@@ -243,6 +247,7 @@ namespace IO.Ably
         /// </summary>
         public ClientOptions()
         {
+            Init();
         }
 
         /// <summary>
@@ -253,6 +258,21 @@ namespace IO.Ably
         public ClientOptions(string key)
             : base(key)
         {
+            Init();
+        }
+
+        private void Init()
+        {
+            SetIdempotentRestPublishingDefault(Defaults.ProtocolMajorVersion, Defaults.ProtocolMinorVersion);
+        }
+
+        internal void SetIdempotentRestPublishingDefault(int majorVersion, int minorVersion)
+        {
+            // (TO3n) idempotentRestPublishing defaults to false for clients with version < 1.1, otherwise true.
+            if (majorVersion >= 1 && minorVersion >= 1)
+            {
+                IdempotentRestPublishing = true;
+            }
         }
     }
 }

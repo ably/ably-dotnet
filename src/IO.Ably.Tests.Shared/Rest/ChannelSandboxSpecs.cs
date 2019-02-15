@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -104,6 +105,150 @@ namespace IO.Ably.Tests.Rest
 
             // Can publish further messages in the same channel
             await channel.PublishAsync("test", "test");
+        }
+
+        [Theory(Skip = "Problem picking up correct environment, needs fix")]
+        [ProtocolData]
+        [Trait("spec", "RSL1k1")]
+        public async Task IdempotentPublishing_LibraryGeneratesIds(Protocol protocol)
+        {
+            void AssertMessage(Message message, int serial)
+            {
+                message.Id.Should().NotBeNull();
+                var idParts = message.Id.Split(':');
+                idParts.Should().HaveCount(2);
+                idParts[1].Should().Be(serial.ToString());
+                byte[] b = Convert.FromBase64String(idParts[0]);
+                b.Should().HaveCount(9);
+            }
+
+            var msg = new Message("test", "test");
+            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true, "idempotent-dev");
+            var channel = client.Channels.Get("test".AddRandomSuffix());
+
+            await channel.PublishAsync(msg);
+
+            AssertMessage(msg, 0);
+
+            var messages = new[]
+            {
+                new Message("test1", "test1"),
+                new Message("test2", "test2"),
+                new Message("test3", "test3"),
+            };
+
+            await channel.PublishAsync(messages);
+
+            for (var i = 0; i < messages.Length; i++)
+            {
+                var m = messages[i];
+                AssertMessage(m, i);
+            }
+        }
+
+        [Theory(Skip = "Problem picking up correct environment, needs fix")]
+        [ProtocolData]
+        [Trait("spec", "RSL1k2")]
+        [Trait("spec", "RSL1k3")]
+        public async Task IdempotentPublishing_ClientProvidedMessageIdsArePreserved(Protocol protocol)
+        {
+            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true, "idempotent-dev");
+            var channel = client.Channels.Get("test".AddRandomSuffix());
+
+            var msg = new Message("test", "test") { Id = "RSL1k2" };
+            await channel.PublishAsync(msg);
+            msg.Id.Should().Be("RSL1k2");
+
+            var messages = new[]
+            {
+                new Message("test1", "test1"),
+                new Message("test2", "test2"),
+                new Message("test3", "test3"),
+            };
+
+            messages[0].Id = "RSL1k3";
+
+            // Can publish further messages in the same channel
+            await channel.PublishAsync(messages);
+
+            messages[0].Id.Should().Be("RSL1k3");
+            messages[1].Id.Should().BeNull();
+            messages[2].Id.Should().BeNull();
+
+            var history = await channel.HistoryAsync();
+            history.Items.Should().HaveCount(4);
+            history.Items[3].Id.Should().Be("RSL1k2");
+            history.Items[2].Id.Should().Be("RSL1k3");
+        }
+
+        [Theory(Skip = "Problem picking up correct environment, needs fix")]
+        [ProtocolData]
+        [Trait("spec", "RSL1k4")]
+        public async Task IdempotentPublishing_SimulateErrorAndRetry(Protocol protocol)
+        {
+            int numberOfRetries = 2;
+            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true, "idempotent-dev");
+
+            var suffix = string.Empty.AddRandomSuffix();
+            var channelName = $"test{suffix}";
+            var channel = client.Channels.Get(channelName);
+
+            // batch publishing is not supported at the time
+            // of writing, so just send one message
+            var messages = new[]
+            {
+                new Message($"test1{suffix}", "test1")
+            };
+
+            // intercept the HTTP request overriding the RequestUri
+            // to make it appear that a retry against another host has happened
+            int tryCount = 0;
+            client.HttpClient.Options.HttpMaxRetryCount = numberOfRetries;
+            client.HttpClient.SendAsync = async message =>
+            {
+                message.RequestUri = new Uri($"https://{client.Options.FullRestHost()}/channels/{channelName}/messages");
+                var result = await client.HttpClient.InternalSendAsync(message);
+                tryCount++;
+                if (tryCount < numberOfRetries)
+                {
+                    // setting IsDefaultHost and raising a TaskCanceledException
+                    // will cause the request to retry
+                    client.HttpClient.Options.IsDefaultHost = true;
+                    throw new TaskCanceledException("faked exception to cause retry");
+                }
+
+                return result;
+            };
+
+            await channel.PublishAsync(messages);
+
+            // publish http request should be made twice
+            tryCount.Should().Be(numberOfRetries);
+
+            // restore the SendAsync method
+            client.HttpClient.SendAsync = client.HttpClient.InternalSendAsync;
+
+            var history = await channel.HistoryAsync();
+            history.Items.Should().HaveCount(1);
+            history.Items[0].Name.Should().Be($"test1{suffix}");
+        }
+
+        [Theory(Skip = "Problem picking up correct environment, needs fix")]
+        [ProtocolData]
+        [Trait("spec", "RSL1k5")]
+        public async Task IdempotentPublishing_SendingAMessageMultipleTimesShouldOnlyPublishOnce(Protocol protocol)
+        {
+            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true, "idempotent-dev");
+            var channel = client.Channels.Get("test".AddRandomSuffix());
+
+            var msg = new Message("test", "test") { Id = "RSL1k5" };
+            await channel.PublishAsync(msg);
+            await channel.PublishAsync(msg);
+            await channel.PublishAsync(msg);
+
+            var history = await channel.HistoryAsync();
+            history.Items.Should().HaveCount(1);
+            history.Items[0].Id.Should().Be("RSL1k5");
         }
 
         [Theory]

@@ -8,7 +8,9 @@ namespace IO.Ably
 {
     internal static class Defaults
     {
-        public const string ProtocolVersion = "1.0";
+        internal const int ProtocolMajorVersion = 1;
+        internal const int ProtocolMinorVersion = 0;
+
         internal static readonly string AssemblyVersion = GetVersion();
 
         internal static string GetVersion()
@@ -29,6 +31,8 @@ namespace IO.Ably
                 return $"dotnet-{AssemblyVersion}";
             }
         }
+
+        public static string ProtocolVersion { get; } = $"{ProtocolMajorVersion}.{ProtocolMinorVersion}";
 
         public const int QueryLimit = 100;
 
