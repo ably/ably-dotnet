@@ -9,7 +9,7 @@ namespace IO.Ably
     internal static class Defaults
     {
         internal const int ProtocolMajorVersion = 1;
-        internal const int ProtocolMinorVersion = 0;
+        internal const int ProtocolMinorVersion = 1;
 
         internal static readonly string AssemblyVersion = GetVersion();
 
