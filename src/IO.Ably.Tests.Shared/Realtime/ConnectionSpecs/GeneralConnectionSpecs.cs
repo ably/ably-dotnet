@@ -53,26 +53,11 @@ namespace IO.Ably.Tests.Realtime
             };
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
-                ConnectionDetails = connectionDetailsMessage,
-                ConnectionKey = "unimportant"
+                ConnectionDetails = connectionDetailsMessage
             });
 
             client.Connection.State.Should().Be(ConnectionState.Connected);
             client.Connection.Key.Should().Be("boo");
-        }
-
-        [Fact]
-        [Trait("spec", "RTN19")]
-        public void WhenConnectedMessageReceived_WithNoConnectionDetailsButConnectionKeyInMessage_ShouldHaveCorrectKey()
-        {
-            var client = GetClientWithFakeTransport();
-
-            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
-            {
-                ConnectionKey = "unimportant"
-            });
-
-            client.Connection.Key.Should().Be("unimportant");
         }
 
         [Fact]
@@ -90,7 +75,8 @@ namespace IO.Ably.Tests.Realtime
             client.RestClient.AblyAuth.ClientId.Should().Be("realtimeClient");
         }
 
-        public GeneralConnectionSpecs(ITestOutputHelper output) : base(output)
+        public GeneralConnectionSpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

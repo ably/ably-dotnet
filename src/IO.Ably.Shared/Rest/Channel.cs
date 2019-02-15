@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Cryptography;
 
 namespace IO.Ably.Rest
 {
@@ -12,7 +14,10 @@ namespace IO.Ably.Rest
     /// </summary>
     public class RestChannel : IRestChannel, IPresence
     {
+        private const int IdempotentGeneratedIdLength = 9;
+
         public string Name { get; private set; }
+
         private readonly AblyRest _ablyRest;
 
         public ChannelOptions Options
@@ -48,7 +53,7 @@ namespace IO.Ably.Rest
 
         public Task PublishAsync(Message message)
         {
-            return this.PublishAsync(new[] {message});
+            return PublishAsync(new[] { message });
         }
 
         /// <summary>
@@ -62,7 +67,29 @@ namespace IO.Ably.Rest
             {
                 throw new AblyException(result.Error);
             }
+
             var request = _ablyRest.CreatePostRequest(_basePath + "/messages", Options);
+
+            // if idempotentRestPublishing is enabled
+            if (_ablyRest.Options.IdempotentRestPublishing)
+            {
+                // and all Messages have an empty id attribute
+                if (messages.All(m => m.Id == null))
+                {
+                    // generate a base id string by base64-encoding a sequence of at least 9 bytes
+                    var b = new byte[IdempotentGeneratedIdLength];
+                    new Random().NextBytes(b);
+                    var baseId = Convert.ToBase64String(b);
+                    int serial = 0;
+                    foreach (var message in messages)
+                    {
+                        // each message gets a unique id of the form <base id>:<serial>
+                        message.Id = $"{baseId}:{serial}";
+                        serial++;
+                    }
+                }
+            }
+
             request.PostData = messages;
             return _ablyRest.ExecuteRequest(request);
         }
@@ -76,7 +103,9 @@ namespace IO.Ably.Rest
         Task<PaginatedResult<PresenceMessage>> IPresence.GetAsync(int? limit, string clientId, string connectionId)
         {
             if (limit.HasValue && (limit < 0 || limit > 1000))
+            {
                 throw new ArgumentException("Limit must be between 0 and 1000", nameof(limit));
+            }
 
             var presenceLimit = limit ?? Defaults.QueryLimit;
 
@@ -84,17 +113,23 @@ namespace IO.Ably.Rest
 
             request.QueryParameters.Add("limit", presenceLimit.ToString());
             if (clientId.IsNotEmpty())
+            {
                 request.QueryParameters.Add("clientId", clientId);
+            }
+
             if (connectionId.IsNotEmpty())
+            {
                 request.QueryParameters.Add("connectionId", connectionId);
+            }
 
             return _ablyRest.ExecutePaginatedRequest(request, Presence.GetAsync);
         }
 
-        Task<PaginatedResult<PresenceMessage>> IPresence.GetAsync(HistoryRequestParams query)
+        Task<PaginatedResult<PresenceMessage>> IPresence.GetAsync(PaginatedRequestParams query)
         {
-            if (query == null) //Fall back on the default implementation
+            if (query == null)
             {
+                // Fall back on the default implementation
                 return Presence.GetAsync();
             }
 
@@ -104,23 +139,23 @@ namespace IO.Ably.Rest
             request.AddQueryParameters(query.GetParameters());
             return _ablyRest.ExecutePaginatedRequest(request, Presence.GetAsync);
         }
-        
+
         /// <summary>
             /// Get the presence messages history for the channel
             /// </summary>
             /// <returns><see cref="PaginatedResult{T}"/></returns>
         Task<PaginatedResult<PresenceMessage>> IPresence.HistoryAsync()
         {
-            return Presence.HistoryAsync(new HistoryRequestParams());
+            return Presence.HistoryAsync(new PaginatedRequestParams());
         }
 
         /// <summary>
         /// Get the presence messages history for the channel by specifying a query
         /// </summary>
         /// <returns><see cref="PaginatedResult{T}"/></returns>
-        Task<PaginatedResult<PresenceMessage>> IPresence.HistoryAsync(HistoryRequestParams query)
+        Task<PaginatedResult<PresenceMessage>> IPresence.HistoryAsync(PaginatedRequestParams query)
         {
-            query = query ?? new HistoryRequestParams();
+            query = query ?? new PaginatedRequestParams();
 
             query.Validate();
 
@@ -135,17 +170,17 @@ namespace IO.Ably.Rest
         /// <returns><see cref="PaginatedResult{T}"/> of Messages</returns>
         public Task<PaginatedResult<Message>> HistoryAsync()
         {
-            return HistoryAsync(new HistoryRequestParams());
+            return HistoryAsync(new PaginatedRequestParams());
         }
 
         /// <summary>
         /// Return the message history of the channel
         /// </summary>
-        /// <param name="query"><see cref="HistoryRequestParams"/></param>
+        /// <param name="query"><see cref="PaginatedRequestParams"/></param>
         /// <returns><see cref="PaginatedResult{T}"/> of Messages</returns>
-        public Task<PaginatedResult<Message>> HistoryAsync(HistoryRequestParams query)
+        public Task<PaginatedResult<Message>> HistoryAsync(PaginatedRequestParams query)
         {
-            query = query ?? new HistoryRequestParams();
+            query = query ?? new PaginatedRequestParams();
 
             query.Validate();
 
@@ -176,7 +211,7 @@ namespace IO.Ably.Rest
             return AsyncHelper.RunSync(HistoryAsync);
         }
 
-        public PaginatedResult<Message> History(HistoryRequestParams query)
+        public PaginatedResult<Message> History(PaginatedRequestParams query)
         {
             return AsyncHelper.RunSync(() => HistoryAsync(query));
         }

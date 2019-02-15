@@ -11,9 +11,21 @@ namespace IO.Ably
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
             return Equals((CipherParams)obj);
         }
 
@@ -35,7 +47,9 @@ namespace IO.Ably
         public byte[] Key { get; }
 
         public byte[] Iv { get; }
+
         public CipherMode Mode { get; }
+
         public int KeyLength => Key?.Length * 8 ?? 0;
 
         public string CipherType
@@ -43,9 +57,9 @@ namespace IO.Ably
             get { return $"{Algorithm}-{KeyLength}-{Mode}"; }
         }
 
-        public CipherParams(byte[] key) : this(Crypto.DefaultAlgorithm, key)
+        public CipherParams(byte[] key)
+            : this(Crypto.DefaultAlgorithm, key)
         {
-
         }
 
         public CipherParams(string algorithm, byte[] key, CipherMode? mode = null, byte[] iv = null)

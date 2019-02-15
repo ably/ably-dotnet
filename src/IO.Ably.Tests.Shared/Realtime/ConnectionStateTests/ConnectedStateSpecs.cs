@@ -14,7 +14,8 @@ namespace IO.Ably.Tests
         private FakeConnectionContext _context;
         private ConnectionConnectedState _state;
 
-        public ConnectedStateSpecs(ITestOutputHelper output) : base(output)
+        public ConnectedStateSpecs(ITestOutputHelper output)
+            : base(output)
         {
             _context = new FakeConnectionContext();
             _state = GetState();
@@ -22,7 +23,7 @@ namespace IO.Ably.Tests
 
         private ConnectionConnectedState GetState(ConnectionInfo info = null)
         {
-            return new ConnectionConnectedState(_context, info ?? new ConnectionInfo("", 0, "", ""));
+            return new ConnectionConnectedState(_context, info ?? new ConnectionInfo(string.Empty, 0, string.Empty, string.Empty));
         }
 
         [Fact]
@@ -38,7 +39,6 @@ namespace IO.Ably.Tests
         [InlineData(ProtocolMessage.MessageAction.Attached)]
         [InlineData(ProtocolMessage.MessageAction.Closed)]
         [InlineData(ProtocolMessage.MessageAction.Connect)]
-        [InlineData(ProtocolMessage.MessageAction.Connected)]
         [InlineData(ProtocolMessage.MessageAction.Detach)]
         [InlineData(ProtocolMessage.MessageAction.Detached)]
         [InlineData(ProtocolMessage.MessageAction.Disconnect)]
@@ -103,7 +103,6 @@ namespace IO.Ably.Tests
             // Assert
             _context.StateShouldBe<ConnectionClosingState>();
         }
-        
 
         [Fact]
         [Trait("spec", "RTN12c")]
@@ -120,7 +119,7 @@ namespace IO.Ably.Tests
         public void ConnectedState_UpdatesConnectionInformation()
         {
             // Act
-            var state = GetState(new ConnectionInfo("test", 12564, "test test", ""));
+            var state = GetState(new ConnectionInfo("test", 12564, "test test", string.Empty));
 
             state.BeforeTransition();
 
@@ -131,4 +130,4 @@ namespace IO.Ably.Tests
             connection.Key.Should().Be("test test");
         }
     }
-} 
+}

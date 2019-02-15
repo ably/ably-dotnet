@@ -7,7 +7,7 @@ namespace IO.Ably.Rest
 {
     public class RestChannels : IChannels<IRestChannel>
     {
-        private ConcurrentDictionary<string, RestChannel> _channels { get; } = new ConcurrentDictionary<string, RestChannel>();
+        private readonly ConcurrentDictionary<string, RestChannel> _channels = new ConcurrentDictionary<string, RestChannel>();
 
         private readonly AblyRest _ablyRest;
 
@@ -23,24 +23,30 @@ namespace IO.Ably.Rest
 
         public IRestChannel Get(string name, ChannelOptions options)
         {
-            RestChannel result = null;
-            if (!_channels.TryGetValue(name, out result))
+            if (!_channels.TryGetValue(name, out var result))
             {
                 var channel = new RestChannel(_ablyRest, name, options);
                 result = _channels.AddOrUpdate(name, channel, (s, realtimeChannel) =>
                 {
                     if (options != null)
                     {
-                        result.Options = options;
+                        if (result != null)
+                        {
+                            result.Options = options;
+                        }
                     }
+
                     return realtimeChannel;
                 });
             }
             else
             {
                 if (options != null)
+                {
                     result.Options = options;
+                }
             }
+
             return result;
         }
 
@@ -48,10 +54,7 @@ namespace IO.Ably.Rest
 
         public bool Release(string name)
         {
-            RestChannel removedChannel = null;
-            if (_channels.TryRemove(name, out removedChannel))
-                return true;
-            return false;
+            return _channels.TryRemove(name, out _);
         }
 
         public void ReleaseAll()

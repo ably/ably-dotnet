@@ -6,14 +6,23 @@ namespace IO.Ably
     internal class AblyHttpOptions
     {
         internal bool IsSecure { get; set; }
+
         internal string Host { get; set; }
+
         internal int? Port { get; set;  }
+
         internal TimeSpan DisconnectedRetryTimeout { get; set; }
+
         internal TimeSpan SuspendedRetryTimeout { get; set; }
+
         internal TimeSpan HttpOpenTimeout { get; set; }
+
         internal TimeSpan HttpRequestTimeout { get; set;  }
+
         internal int HttpMaxRetryCount { get; set; }
+
         internal TimeSpan HttpMaxRetryDuration { get; set; }
+
         public bool IsDefaultHost { get; set; } = true;
 
         internal string[] FallbackHosts { get; set; }
@@ -24,11 +33,12 @@ namespace IO.Ably
 
         public ILogger Logger { get; set; }
 
-        internal AblyHttpOptions() // Used for testing
+        public AblyHttpOptions()
         {
+            // Used for testing
             Host = Defaults.RestHost;
 
-            //Setting up some defaults
+            // Setting up some defaults
             DisconnectedRetryTimeout = TimeSpan.FromSeconds(15);
             SuspendedRetryTimeout = TimeSpan.FromSeconds(30);
             HttpOpenTimeout = TimeSpan.FromSeconds(4);
@@ -40,7 +50,6 @@ namespace IO.Ably
 
             NowFunc = Defaults.NowFunc();
             Logger = IO.Ably.DefaultLogger.LoggerInstance;
-
         }
 
         public AblyHttpOptions(ClientOptions options)

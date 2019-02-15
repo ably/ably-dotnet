@@ -13,28 +13,42 @@ namespace IO.Ably.Transport
     internal class ConnectionManager : IConnectionManager, ITransportListener, IConnectionContext
     {
         internal Func<DateTimeOffset> Now { get; set; }
+
         internal ILogger Logger { get; private set; }
 
         public Queue<MessageAndCallback> PendingMessages { get; }
-        //internal readonly AsyncContextThread AsyncContextThread = new AsyncContextThread();
 
         private ITransportFactory GetTransportFactory()
             => Options.TransportFactory ?? Defaults.WebSocketTransportFactory;
 
         public IAcknowledgementProcessor AckProcessor { get; internal set; }
+
         internal ConnectionAttemptsInfo AttemptsInfo { get; }
+
         public TimeSpan RetryTimeout => Options.DisconnectedRetryTimeout;
+
         public AblyRest RestClient => Connection.RestClient;
+
         public MessageHandler Handler => RestClient.MessageHandler;
+
         public ConnectionStateBase State => Connection.ConnectionState;
+
         public ITransport Transport { get; private set; }
+
         public ClientOptions Options => RestClient.Options;
+
         public TimeSpan DefaultTimeout => Options.RealtimeRequestTimeout;
+
         public TimeSpan SuspendRetryTimeout => Options.SuspendedRetryTimeout;
+
         internal event MessageReceivedDelegate MessageReceived;
+
         public bool IsActive => State.CanQueue && State.CanSend;
+
         public Connection Connection { get; }
+
         public ConnectionState ConnectionState => Connection.State;
+
         private readonly object _stateSyncLock = new object();
         private readonly object _pendingQueueLock = new object();
         private volatile ConnectionStateBase _inTransitionToState;
@@ -70,7 +84,6 @@ namespace IO.Ably.Transport
             Connection = connection;
             AckProcessor = new AcknowledgementProcessor(connection);
 
-
             if (Logger.IsDebug)
             {
                 Execute(() => Logger.Debug("ConnectionManager thread created"));
@@ -85,13 +98,17 @@ namespace IO.Ably.Transport
 
         public void Connect()
         {
+            Connection.OnBeginConnect();
             State.Connect();
         }
 
         public Task SetState(ConnectionStateBase newState, bool skipAttach = false)
         {
             if (Logger.IsDebug)
-                Logger.Debug($"xx Changing state from {ConnectionState} => {newState.State}. SkipAttach = {skipAttach}.");
+            {
+                Logger.Debug(
+                    $"xx Changing state from {ConnectionState} => {newState.State}. SkipAttach = {skipAttach}.");
+            }
 
             _inTransitionToState = newState;
 
@@ -101,55 +118,80 @@ namespace IO.Ably.Transport
                 {
                     lock (_stateSyncLock)
                     {
-                        if (State.State == newState.State)
+                        if (!newState.IsUpdate)
                         {
-                            if (Logger.IsDebug)
-                                Logger.Debug($"xx State is already {State.State}. Skipping SetState action.");
-                            return;
+                            if (State.State == newState.State)
+                            {
+                                if (Logger.IsDebug)
+                                {
+                                    Logger.Debug($"xx State is already {State.State}. Skipping SetState action.");
+                                }
+
+                                return;
+                            }
+
+                            AttemptsInfo.UpdateAttemptState(newState);
+                            State.AbortTimer();
                         }
 
-                        //Abort any timers on the old state
-                        State.AbortTimer();
-                        if (Logger.IsDebug) Logger.Debug($"xx {newState.State}: BeforeTransition");
-                        newState.BeforeTransition();
-                        if (Logger.IsDebug) Logger.Debug($"xx {newState.State}: BeforeTransition end");
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug($"xx {newState.State}: BeforeTransition");
+                        }
 
-                        AttemptsInfo.UpdateAttemptState(newState);
+                        newState.BeforeTransition();
+
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug($"xx {newState.State}: BeforeTransition end");
+                        }
+
                         Connection.UpdateState(newState);
                     }
 
                     if (skipAttach == false)
                     {
-                        if (Logger.IsDebug) Logger.Debug($"xx {newState.State}: Attaching state ");
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug($"xx {newState.State}: Attaching state ");
+                        }
 
                         await newState.OnAttachToContext();
                     }
-                    else if (Logger.IsDebug) Logger.Debug($"xx {newState.State}: Skipping attaching.");
+                    else if (Logger.IsDebug)
+                    {
+                        Logger.Debug($"xx {newState.State}: Skipping attaching.");
+                    }
 
                     await ProcessQueuedMessages();
                 }
                 catch (AblyException ex)
                 {
                     Logger.Error("Error attaching to context", ex);
-                    
+
                     _queuedTransportMessages = new ConcurrentQueue<ProtocolMessage>();
 
                     Connection.UpdateState(newState);
 
                     newState.AbortTimer();
 
-                    if (newState.State != Realtime.ConnectionState.Failed)
+                    // RSA4c2 & RSA4d
+                    if (newState.State == ConnectionState.Connecting &&
+                        ex.ErrorInfo.Code == 80019 & !ex.ErrorInfo.IsForbiddenError)
                     {
-                        SetState(new ConnectionFailedState(this, ex.ErrorInfo, Logger));
+                        await SetState(new ConnectionDisconnectedState(this, ex.ErrorInfo, Logger));
+                    }
+                    else if (newState.State != Realtime.ConnectionState.Failed)
+                    {
+                        await SetState(new ConnectionFailedState(this, ex.ErrorInfo, Logger));
                     }
                 }
                 finally
                 {
-                    //Clear the state in transition only if the current state hasn't updated it
+                    // Clear the state in transition only if the current state hasn't updated it
                     if (_inTransitionToState == newState)
                     {
                         _inTransitionToState = null;
-
                     }
                 }
             });
@@ -157,10 +199,15 @@ namespace IO.Ably.Transport
 
         public async Task CreateTransport()
         {
-            if (Logger.IsDebug) Logger.Debug("Creating transport");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Creating transport");
+            }
 
             if (Transport != null)
+            {
                 (this as IConnectionContext).DestroyTransport();
+            }
 
             try
             {
@@ -173,7 +220,9 @@ namespace IO.Ably.Transport
             {
                 Logger.Error("Error while creating transport!.", ex.Message);
                 if (ex is AblyException)
+                {
                     throw;
+                }
 
                 throw new AblyException(ex);
             }
@@ -181,10 +230,15 @@ namespace IO.Ably.Transport
 
         public void DestroyTransport(bool suppressClosedEvent)
         {
-            if (Logger.IsDebug) Logger.Debug("Destroying transport");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Destroying transport");
+            }
 
             if (Transport == null)
+            {
                 return;
+            }
 
             try
             {
@@ -193,7 +247,8 @@ namespace IO.Ably.Transport
             }
             catch (Exception e)
             {
-                Logger.Warning("Error while destroying transport. Nothing to worry about. Cleaning up. Error: " + e.Message);
+                Logger.Warning("Error while destroying transport. Nothing to worry about. Cleaning up. Error: " +
+                               e.Message);
             }
             finally
             {
@@ -204,12 +259,17 @@ namespace IO.Ably.Transport
         public void SetConnectionClientId(string clientId)
         {
             if (clientId.IsNotEmpty())
+            {
                 RestClient.AblyAuth.ConnectionClientId = clientId;
+            }
         }
 
         public bool ShouldWeRenewToken(ErrorInfo error)
         {
-            if (error == null) return false;
+            if (error == null)
+            {
+                return false;
+            }
 
             return error.IsTokenError && AttemptsInfo.TriedToRenewToken == false && RestClient.AblyAuth.TokenRenewable;
         }
@@ -225,18 +285,31 @@ namespace IO.Ably.Transport
             {
                 if (ShouldWeRenewToken(error))
                 {
-                    ClearTokenAndRecordRetry();
-                    await SetState(new ConnectionDisconnectedState(this, Logger), skipAttach: ConnectionState == Realtime.ConnectionState.Connecting);
-                    await SetState(new ConnectionConnectingState(this, Logger));
+                    await RetryAuthentication(error, updateState: true);
                 }
                 else
                 {
-                    SetState(new ConnectionFailedState(this, error, Logger));
+                    await SetState(new ConnectionFailedState(this, error, Logger));
                 }
 
                 return true;
             }
+
             return false;
+        }
+
+        public async Task RetryAuthentication(ErrorInfo error = null, bool updateState = true)
+        {
+            ClearTokenAndRecordRetry();
+            if (updateState)
+            {
+                await SetState(new ConnectionDisconnectedState(this, error, Logger), skipAttach: ConnectionState == Realtime.ConnectionState.Connecting);
+                await SetState(new ConnectionConnectingState(this, Logger));
+            }
+            else
+            {
+                await RestClient.AblyAuth.AuthorizeAsync();
+            }
         }
 
         public void CloseConnection()
@@ -258,7 +331,7 @@ namespace IO.Ably.Transport
                 return;
             }
 
-            //Encode message/presence payloads
+            // Encode message/presence payloads
             Handler.EncodeProtocolMessage(message, channelOptions);
 
             if (State.CanSend)
@@ -281,6 +354,7 @@ namespace IO.Ably.Transport
                 {
                     throw new AblyException($"Current state is [{State.State}] which supports queuing but Options.QueueMessages is set to False.");
                 }
+
                 return;
             }
 
@@ -304,7 +378,11 @@ namespace IO.Ably.Transport
 
         public void SendToTransport(ProtocolMessage message)
         {
-            if (Logger.IsDebug) Logger.Debug($"Sending message ({message.Action}) to transport");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug($"Sending message ({message.Action}) to transport");
+            }
+
             var data = Handler.GetTransportData(message);
             try
             {
@@ -323,7 +401,7 @@ namespace IO.Ably.Transport
             {
                 if (Logger.IsDebug)
                 {
-                    var errorMessage = ex != null ? $" Error: {ex.Message}" : "";
+                    var errorMessage = ex != null ? $" Error: {ex.Message}" : string.Empty;
                     Logger.Debug($"Transport state changed to: {transportState}.{errorMessage}");
                 }
 
@@ -353,14 +431,20 @@ namespace IO.Ably.Transport
         private static ErrorInfo GetErrorInfoFromTransportException(Exception ex, ErrorInfo @default)
         {
             if (ex?.Message == "HTTP/1.1 401 Unauthorized")
+            {
                 return ErrorInfo.ReasonRefused;
+            }
 
             return @default;
         }
 
         public void HandleConnectingFailure(ErrorInfo error, Exception ex)
         {
-            if (Logger.IsDebug) Logger.Debug("Handling Connecting failure.");
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Handling Connecting failure.");
+            }
+
             ErrorInfo resolvedError = error ?? (ex != null ? new ErrorInfo(ex.Message, 80000) : null);
             if (ShouldSuspend())
             {
@@ -376,7 +460,7 @@ namespace IO.Ably.Transport
         {
             if (resumed)
             {
-                //Resend any messages waiting an Ack Queue
+                // Resend any messages waiting an Ack Queue
                 foreach (var message in AckProcessor.GetQueuedMessages())
                 {
                     SendToTransport(message);
@@ -385,7 +469,10 @@ namespace IO.Ably.Transport
 
             lock (_pendingQueueLock)
             {
-                if (Logger.IsDebug) Logger.Debug("Sending pending message: Count: " + PendingMessages.Count);
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug("Sending pending message: Count: " + PendingMessages.Count);
+                }
 
                 while (PendingMessages.Count > 0)
                 {
@@ -400,12 +487,13 @@ namespace IO.Ably.Transport
             error = error ?? new ErrorInfo($"Channel cannot publish messages whilst state is {channel.State}", 50000);
             AckProcessor.FailChannelMessages(channel.Name, error);
 
-            //TODO: Clear messages from the outgoing queue
+            // TODO: Clear messages from the outgoing queue
         }
 
         void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)
         {
             var message = Handler.ParseRealtimeData(data);
+            Connection.SetConfirmedAlive();
             OnTransportMessageReceived(message).WaitAndUnwrapException();
         }
 
@@ -445,15 +533,20 @@ namespace IO.Ably.Transport
             _queuedTransportMessages.Enqueue(message);
 
             if (_inTransitionToState == null)
+            {
                 await ProcessQueuedMessages();
-            
+            }
         }
 
         private async Task ProcessQueuedMessages()
         {
             while (_queuedTransportMessages != null && _queuedTransportMessages.TryDequeue(out var message))
             {
-                if (Logger.IsDebug) Logger.Debug("Proccessing queued message: " + message);
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug("Proccessing queued message: " + message);
+                }
+
                 await ProcessTransportMessage(message);
             }
         }
@@ -484,24 +577,91 @@ namespace IO.Ably.Transport
                     if (ConnectionState == ConnectionState.Disconnected ||
                         ConnectionState == ConnectionState.Suspended)
                     {
-                        if (Logger.IsDebug) Logger.Debug("Network state is Online. Attempting reconnect.");
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug("Network state is Online. Attempting reconnect.");
+                        }
+
                         Connect();
                     }
+
                     break;
                 case NetworkState.Offline:
                     if (ConnectionState == ConnectionState.Connected ||
-                        ConnectionState == ConnectionState.Connecting )
+                        ConnectionState == ConnectionState.Connecting)
                     {
-                        if (Logger.IsDebug) Logger.Debug("Network state is Offline. Moving to disconnected.");
-                        SetState(new ConnectionDisconnectedState(this,
-                            new ErrorInfo("Connection closed due to Operating system network going offline", 80017),
-                            Logger)
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug("Network state is Offline. Moving to disconnected.");
+                        }
+
+                        SetState(new ConnectionDisconnectedState(this, new ErrorInfo("Connection closed due to Operating system network going offline", 80017), Logger)
                         {
                             RetryInstantly = true
                         });
                     }
-                    break;
 
+                    break;
+            }
+        }
+
+        public void OnAuthUpdated(object sender, AblyAuthUpdatedEventArgs args)
+        {
+            if (State.State == ConnectionState.Connected)
+            {
+                /* (RTC8a) If the connection is in the CONNECTED state and
+                 * auth.authorize is called or Ably requests a re-authentication
+                 * (see RTN22), the client must obtain a new token, then send an
+                 * AUTH ProtocolMessage to Ably with an auth attribute
+                 * containing an AuthDetails object with the token string. */
+                try
+                {
+                    /* (RTC8a3) The authorize call should be indicated as completed
+                     * with the new token or error only once realtime has responded
+                     * to the AUTH with either a CONNECTED or ERROR respectively. */
+
+                    // an ERROR protocol message will fail the connection
+                    void OnFailed(object o, ConnectionStateChange change)
+                    {
+                        if (change.Current == ConnectionState.Failed)
+                        {
+                            Connection.InternalStateChanged -= OnFailed;
+                            Connection.InternalStateChanged -= OnConnected;
+                            args.CompleteAuthorization(false);
+                        }
+                    }
+
+                    void OnConnected(object o, ConnectionStateChange change)
+                    {
+                        if (change.Current == ConnectionState.Connected)
+                        {
+                            Connection.InternalStateChanged -= OnFailed;
+                            Connection.InternalStateChanged -= OnConnected;
+                            args.CompleteAuthorization(true);
+                        }
+                    }
+
+                    Connection.InternalStateChanged += OnFailed;
+                    Connection.InternalStateChanged += OnConnected;
+
+                    var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Auth)
+                    {
+                        Auth = new AuthDetails { AccessToken = args.Token.Token }
+                    };
+
+                    Send(msg);
+                }
+                catch (AblyException e)
+                {
+                    Logger.Warning("OnAuthUpdated: closing transport after send failure");
+                    Logger.Debug(e.Message);
+                    Transport?.Close();
+                }
+            }
+            else
+            {
+                args.CompletedTask.TrySetResult(true);
+                Connect();
             }
         }
     }

@@ -12,8 +12,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)AblyResponseTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ApiKeyTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\AuthOptionsTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)AuthTests\AuthorisationTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)AuthTests\AuthoriseTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AuthTests\AuthorizationTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AuthTests\AuthorizeTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\AuthSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\RequestTokenTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CapabilityTests.cs" />
@@ -89,6 +89,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\CountDownTimerSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\MockHttpRealtimeSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\PresenceSandboxSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ProtocolMessageSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RestProtocolTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\AblyHttpClientSpecs.cs" />
@@ -101,8 +103,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Rest\RestSandBoxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\RestSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\SandboxSpec.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rest\RequestSandBoxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\StatsSandBoxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\StatsSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\TestLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\DocumentationSamples.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\RealtimeSamples.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StatsParsingTests.cs" />

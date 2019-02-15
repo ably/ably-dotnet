@@ -10,10 +10,20 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AblyAuth.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AblyAuthUpdatedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AblyException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AblyRealtime.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AblyRest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ApiKey.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PaginatedRequestParams.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelEvent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.GetParams.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.QueuedPresenceMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\PresenceMap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transport\IConnectionContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Types\AuthDetails.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthMethod.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Capability.cs" />
@@ -29,6 +39,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)IPlatform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IRealtimeClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)JsonHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionEvent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeChannels.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\RestChannels.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncExtensions.cs" />
@@ -77,9 +88,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateChangedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Handlers.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Realtime\IMessageHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\MessageHandlerAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\IRealtimeChannel.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeTransportData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\Channel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\ChannelOptions.cs" />
@@ -113,6 +123,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Transport\MsWebSocketConnection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\ConnectionDetailsMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\ErrorInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HttpPaginatedResponse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\IEncodedMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\Message.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\PresenceMessage.cs" />

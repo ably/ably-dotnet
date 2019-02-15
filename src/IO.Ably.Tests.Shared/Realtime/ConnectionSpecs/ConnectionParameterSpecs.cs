@@ -23,7 +23,9 @@ namespace IO.Ably.Tests.Realtime
         public void WithUseBinaryEncoding_ShouldSetTransportFormatProperty(bool useBinary, string format)
         {
             if (!Config.MsgPackEnabled)
+            {
                 return;
+            }
 
             var client = GetClientWithFakeTransport(opts => opts.UseBinaryProtocol = useBinary);
             LastCreatedTransport.Parameters.UseBinaryProtocol.Should().Be(useBinary);
@@ -44,8 +46,6 @@ namespace IO.Ably.Tests.Realtime
                 .WhichValue.Should().Be(echo.ToString().ToLower());
         }
 
-
-
         [Fact]
         [Trait("spec", "RTN2d")]
         public void WithClientId_ShouldSetTransportClientIdCorrectly()
@@ -55,7 +55,6 @@ namespace IO.Ably.Tests.Realtime
             {
                 opts.ClientId = clientId;
                 opts.Token = "123";
-
             });
 
             LastCreatedTransport.Parameters.ClientId.Should().Be(clientId);
@@ -94,10 +93,9 @@ namespace IO.Ably.Tests.Realtime
             var tokenString = "token";
             var client = GetClientWithFakeTransport(opts =>
             {
-                opts.Key = "";
+                opts.Key = string.Empty;
                 opts.ClientId = clientId;
                 opts.Token = tokenString;
-
             });
 
             LastCreatedTransport.Parameters.AuthValue.Should().Be(tokenString);
@@ -108,28 +106,39 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTN2f")]
-        public void ShouldSetTransportVersionParameterTov08()
+        public void ShouldSetTransportVersionParameterTov10()
         {
             var client = GetClientWithFakeTransport();
 
             LastCreatedTransport.Parameters.GetParams()
                 .Should().ContainKey("v")
-                .WhichValue.Should().Be("0.8");
+                .WhichValue.Should().Be("1.0");
         }
 
         [Fact]
         [Trait("spec", "RTN2g")]
         public void ShouldSetTransportLibVersionParamater()
         {
+            string pattern = @"^dotnet(.?\w*)-1.0.(\d+)$";
+
+            // validate the regex pattern
+            Regex.Match("dotnet-1.0.321", pattern).Success.Should().BeTrue();
+            Regex.Match("dotnet.framework-1.0.321", pattern).Success.Should().BeTrue();
+            Regex.Match("dotnet.netstandard20-1.0.0", pattern).Success.Should().BeTrue();
+            Regex.Match("xdotnet-1.0.321", pattern).Success.Should().BeFalse();
+            Regex.Match("csharp.netstandard20-1.0.0", pattern).Success.Should().BeFalse();
+
             var client = GetClientWithFakeTransport();
             LastCreatedTransport.Parameters.GetParams().Should().ContainKey("lib");
-            var v = LastCreatedTransport.Parameters.GetParams()["lib"];
-            Regex.Match(v, @"^dotnet-0.8.(\d+)$").Success.ShouldBeEquivalentTo(true);
+            var transportParams = LastCreatedTransport.Parameters.GetParams();
+
+            // validate the 'lib' param
+            Regex.Match(transportParams["lib"], pattern).Success.Should().BeTrue();
         }
 
-        public ConnectionParameterSpecs(ITestOutputHelper output) : base(output)
+        public ConnectionParameterSpecs(ITestOutputHelper output)
+            : base(output)
         {
-
         }
     }
 }

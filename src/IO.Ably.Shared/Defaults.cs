@@ -8,16 +8,31 @@ namespace IO.Ably
 {
     internal static class Defaults
     {
-        public const string ProtocolVersion = "0.8";
-        private static readonly string AssemblyVersion = GetVersion();
+        internal const int ProtocolMajorVersion = 1;
+        internal const int ProtocolMinorVersion = 0;
 
-        private static string GetVersion()
+        internal static readonly string AssemblyVersion = GetVersion();
+
+        internal static string GetVersion()
         {
-            var version =  typeof(Defaults).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
+            var version = typeof(Defaults).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
             return version.Split('.').Take(3).JoinStrings(".");
         }
 
-        public static string LibraryVersion => $"dotnet-{AssemblyVersion}";
+        public static string LibraryVersion
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(IoC.PlatformId))
+                {
+                    return $"dotnet.{IoC.PlatformId}-{AssemblyVersion}";
+                }
+
+                return $"dotnet-{AssemblyVersion}";
+            }
+        }
+
+        public static string ProtocolVersion { get; } = $"{ProtocolMajorVersion}.{ProtocolMinorVersion}";
 
         public const int QueryLimit = 100;
 
@@ -31,6 +46,7 @@ namespace IO.Ably
         public static readonly Capability DefaultTokenCapability = Capability.AllowAll;
         public const int Port = 80;
         public const int TlsPort = 443;
+
         // Buffer in seconds before a token is considered unusable
         public const int TokenExpireBufferInSeconds = 15;
         public static readonly TimeSpan DefaultRealtimeTimeout = TimeSpan.FromSeconds(10);
@@ -60,7 +76,5 @@ namespace IO.Ably
         {
             FallbackHosts = new[] { "a.ably-realtime.com", "b.ably-realtime.com", "c.ably-realtime.com", "d.ably-realtime.com", "e.ably-realtime.com" };
         }
-        
-
     }
 }

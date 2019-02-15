@@ -16,18 +16,19 @@ namespace IO.Ably.Tests.Realtime
         {
             return
                 client.FakeProtocolMessageReceived(
-                    new ProtocolMessage(ProtocolMessage.MessageAction.Message) {Messages = new[] {message}, Channel = channel});
+                    new ProtocolMessage(ProtocolMessage.MessageAction.Message) { Messages = new[] { message }, Channel = channel });
         }
     }
 
     public class ConnectionSpecsBase : AblyRealtimeSpecs
     {
-        protected FakeTransportFactory _fakeTransportFactory;
-        protected FakeTransport LastCreatedTransport => _fakeTransportFactory.LastCreatedTransport;
+        protected FakeTransportFactory FakeTransportFactory { get; private set; }
+
+        protected FakeTransport LastCreatedTransport => FakeTransportFactory.LastCreatedTransport;
 
         internal AblyRealtime GetClientWithFakeTransport(Action<ClientOptions> optionsAction = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
         {
-            var options = new ClientOptions(ValidKey) { TransportFactory = _fakeTransportFactory };
+            var options = new ClientOptions(ValidKey) { TransportFactory = FakeTransportFactory };
             optionsAction?.Invoke(options);
             var client = GetRealtimeClient(options, handleRequestFunc);
             return client;
@@ -38,16 +39,17 @@ namespace IO.Ably.Tests.Realtime
             var client = GetClientWithFakeTransport(optionsAction, handleRequestFunc);
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
-                ConnectionDetails = new ConnectionDetails() { ConnectionKey = "connectionKey"},
+                ConnectionDetails = new ConnectionDetails() { ConnectionKey = "connectionKey" },
                 ConnectionId = "1",
                 ConnectionSerial = 100
             });
             return client;
         }
 
-        public ConnectionSpecsBase(ITestOutputHelper output) : base(output)
+        public ConnectionSpecsBase(ITestOutputHelper output)
+            : base(output)
         {
-            _fakeTransportFactory = new FakeTransportFactory();
+            FakeTransportFactory = new FakeTransportFactory();
         }
     }
 }

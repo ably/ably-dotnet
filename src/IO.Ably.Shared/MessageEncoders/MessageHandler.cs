@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using IO.Ably.Realtime;
+
 using IO.Ably;
+using IO.Ably.Realtime;
 using IO.Ably.Types;
+using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.MessageEncoders
 {
@@ -18,12 +20,15 @@ namespace IO.Ably.MessageEncoders
                 typeof(short), typeof(int), typeof(double), typeof(float), typeof(decimal), typeof(DateTime), typeof(DateTimeOffset), typeof(byte), typeof(bool),
                 typeof(long), typeof(uint), typeof(ulong), typeof(ushort), typeof(sbyte)
             };
+
         private readonly Protocol _protocol;
         public readonly List<MessageEncoder> Encoders = new List<MessageEncoder>();
 
-        public MessageHandler() : this(IO.Ably.DefaultLogger.LoggerInstance, Defaults.Protocol) {}
+        public MessageHandler()
+            : this(IO.Ably.DefaultLogger.LoggerInstance, Defaults.Protocol) { }
 
-        public MessageHandler(Protocol protocol) : this(IO.Ably.DefaultLogger.LoggerInstance, protocol) {}
+        public MessageHandler(Protocol protocol)
+            : this(IO.Ably.DefaultLogger.LoggerInstance, protocol) { }
 
         public MessageHandler(ILogger logger, Protocol protocol)
         {
@@ -52,13 +57,14 @@ namespace IO.Ably.MessageEncoders
                 ProcessMessages(messages, options);
                 return messages;
             }
+
 #if MSGPACK
             var payloads = MsgPackHelper.Deserialise(response.Body, typeof(List<PresenceMessage>)) as List<PresenceMessage>;
             ProcessMessages(payloads, options);
             return payloads;
 #else
             throw new AblyException($"Response of type '{response.Type}' is invalid because MsgPack support was not enabled for this build.");
-            
+
 #endif
         }
 
@@ -117,11 +123,16 @@ namespace IO.Ably.MessageEncoders
         public byte[] GetRequestBody(AblyRequest request)
         {
             if (request.PostData == null)
+            {
                 return new byte[] { };
+            }
 
             if (request.PostData is IEnumerable<Message>)
-                return GetMessagesRequestBody(request.PostData as IEnumerable<Message>,
+            {
+                return GetMessagesRequestBody(
+                    request.PostData as IEnumerable<Message>,
                     request.ChannelOptions);
+            }
 
             byte[] result;
             if (_protocol == Protocol.Json || !Config.MsgPackEnabled)
@@ -135,7 +146,10 @@ namespace IO.Ably.MessageEncoders
 #endif
             }
 
-            if (Logger.IsDebug) Logger.Debug("Request body: " + result.GetText());
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Request body: " + result.GetText());
+            }
 
             return result;
         }
@@ -156,7 +170,9 @@ namespace IO.Ably.MessageEncoders
         {
             var result = Result.Ok();
             foreach (var payload in payloads)
+            {
                 result = Result.Combine(result, EncodePayload(payload, options));
+            }
 
             return result;
         }
@@ -165,7 +181,9 @@ namespace IO.Ably.MessageEncoders
         {
             var result = Result.Ok();
             foreach (var payload in payloads)
+            {
                 result = Result.Combine(result, DecodePayload(payload, options));
+            }
 
             return result;
         }
@@ -178,13 +196,16 @@ namespace IO.Ably.MessageEncoders
             {
                 result = Result.Combine(result, encoder.Encode(payload, options));
             }
+
             return result;
         }
 
         private void ValidatePayloadDataType(IMessage payload)
         {
             if (payload.Data == null)
+            {
                 return;
+            }
 
             var dataType = payload.Data.GetType();
             var testType = GetNullableType(dataType) ?? dataType;
@@ -194,9 +215,13 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
-        static Type GetNullableType(Type type)
+        private static Type GetNullableType(Type type)
         {
-            if (type.GetTypeInfo().IsValueType == false) return null; // ref-type
+            if (type.GetTypeInfo().IsValueType == false)
+            {
+                return null; // ref-type
+            }
+
             return Nullable.GetUnderlyingType(type);
         }
 
@@ -217,17 +242,16 @@ namespace IO.Ably.MessageEncoders
         /// <param name="response"></param>
         /// <param name="funcParse">Function to parse HTTP response into a sequence of items.</param>
         /// <returns></returns>
-        internal static PaginatedResult<T> Paginated<T>(AblyRequest request, AblyResponse response, Func<HistoryRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
+        internal static PaginatedResult<T> Paginated<T>(AblyRequest request, AblyResponse response, Func<PaginatedRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
         {
-            PaginatedResult<T> res = new PaginatedResult<T>(response.Headers, GetLimit(request), executeDataQueryRequest);
+            PaginatedResult<T> res = new PaginatedResult<T>(response, GetLimit(request), executeDataQueryRequest);
             return res;
         }
 
-        public PaginatedResult<T> ParsePaginatedResponse<T>(AblyRequest request, AblyResponse response, Func<HistoryRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
+        public PaginatedResult<T> ParsePaginatedResponse<T>(AblyRequest request, AblyResponse response, Func<PaginatedRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
         {
             LogResponse(response);
             var result = Paginated(request, response, executeDataQueryRequest);
-            var items = new List<T>();
             if (typeof(T) == typeof(Message))
             {
                 var typedResult = result as PaginatedResult<Message>;
@@ -247,6 +271,12 @@ namespace IO.Ably.MessageEncoders
             }
 
             return result;
+        }
+
+        public HttpPaginatedResponse ParseHttpPaginatedResponse(AblyRequest request, AblyResponse response, PaginatedRequestParams requestParams, Func<PaginatedRequestParams, Task<HttpPaginatedResponse>> executeDataQueryRequest)
+        {
+            LogResponse(response);
+            return new HttpPaginatedResponse(response, GetLimit(request), requestParams, executeDataQueryRequest);
         }
 
         public T ParseResponse<T>(AblyRequest request, AblyResponse response) where T : class
@@ -304,8 +334,11 @@ namespace IO.Ably.MessageEncoders
             {
                 var limitQuery = request.QueryParameters["limit"];
                 if (limitQuery.IsNotEmpty())
+                {
                     return int.Parse(limitQuery);
+                }
             }
+
             return Defaults.QueryLimit;
         }
 
@@ -328,11 +361,14 @@ namespace IO.Ably.MessageEncoders
             if (protocolMessage != null)
             {
                 foreach (var presenceMessage in protocolMessage.Presence)
+                {
                     presenceMessage.Timestamp = protocolMessage.Timestamp;
+                }
 
                 foreach (var message in protocolMessage.Messages)
+                {
                     message.Timestamp = protocolMessage.Timestamp;
-
+                }
             }
 
             return protocolMessage;
@@ -351,6 +387,7 @@ namespace IO.Ably.MessageEncoders
             {
                 result = Result.Combine(result, EncodePayload(presence, options));
             }
+
             return result;
         }
 
@@ -360,36 +397,45 @@ namespace IO.Ably.MessageEncoders
 
             return Result.Combine(
                 DecodeMessages(protocolMessage, protocolMessage.Messages, options),
-                DecodeMessages(protocolMessage, protocolMessage.Presence, options)
-            );
+                DecodeMessages(protocolMessage, protocolMessage.Presence, options));
         }
 
         private Result DecodeMessages(ProtocolMessage protocolMessage, IEnumerable<IMessage> messages, ChannelOptions options)
         {
             var result = Result.Ok();
             var index = 0;
-            foreach(var message in messages ?? Enumerable.Empty<IMessage>())
+            foreach (var message in messages ?? Enumerable.Empty<IMessage>())
             {
                 SetMessageIdConnectionIdAndTimestamp(protocolMessage, message, index);
                 result = Result.Combine(result, DecodePayload(message, options));
                 index++;
             }
+
             return result;
         }
 
         private static void SetMessageIdConnectionIdAndTimestamp(ProtocolMessage protocolMessage, IMessage message, int i)
         {
             if (message.Id.IsEmpty())
+            {
                 message.Id = $"{protocolMessage.Id}:{i}";
+            }
+
             if (message.ConnectionId.IsEmpty())
+            {
                 message.ConnectionId = protocolMessage.ConnectionId;
+            }
+
             if (message.Timestamp.HasValue == false)
+            {
                 message.Timestamp = protocolMessage.Timestamp;
+            }
         }
 
         public RealtimeTransportData GetTransportData(ProtocolMessage protocolMessage)
         {
             RealtimeTransportData data;
+
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (IsMsgPack() && Config.MsgPackEnabled)
             {
@@ -401,7 +447,7 @@ namespace IO.Ably.MessageEncoders
             else
             {
                 var text = JsonHelper.Serialize(protocolMessage);
-                data = new RealtimeTransportData(text) {Original = protocolMessage};
+                data = new RealtimeTransportData(text) { Original = protocolMessage };
             }
 
             return data;

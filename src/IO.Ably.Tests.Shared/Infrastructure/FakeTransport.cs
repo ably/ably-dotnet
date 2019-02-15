@@ -14,7 +14,9 @@ namespace IO.Ably.Tests
         public FakeTransport(TransportState? state = null)
         {
             if (state.HasValue)
+            {
                 State = state.Value;
+            }
         }
 
         public FakeTransport(TransportParams parameters)
@@ -33,9 +35,13 @@ namespace IO.Ably.Tests
         public bool AbortCalled { get; set; }
 
         public ProtocolMessage LastMessageSend => LastTransportData?.Original;
+
         public List<RealtimeTransportData> SentMessages { get; set; } = new List<RealtimeTransportData>();
+
         public RealtimeTransportData LastTransportData => SentMessages.LastOrDefault();
+
         public TransportState State { get; set; }
+
         public ITransportListener Listener { get; set; }
 
         public bool OnConnectChangeStateToConnected { get; set; } = true;
@@ -49,16 +55,16 @@ namespace IO.Ably.Tests
             {
                 Listener?.OnTransportEvent(TransportState.Connected);
                 State = TransportState.Connected;
-            } 
+            }
         }
 
         public void Close(bool suppressClosedEvent = true)
         {
             CloseCalled = true;
-
-            //Listener?.OnTransportDataReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
-            if(suppressClosedEvent == false)
+            if (suppressClosedEvent == false)
+            {
                 Listener?.OnTransportEvent(TransportState.Closed);
+            }
         }
 
         public void Send(RealtimeTransportData data)
@@ -67,17 +73,23 @@ namespace IO.Ably.Tests
             SentMessages.Add(data);
         }
 
-
         public void Abort(string reason)
         {
             AbortCalled = true;
         }
 
         public Action<RealtimeTransportData> SendAction = delegate { };
+
         private volatile bool _connectCalled;
+
         public void Dispose()
         {
-            
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
         }
     }
 }

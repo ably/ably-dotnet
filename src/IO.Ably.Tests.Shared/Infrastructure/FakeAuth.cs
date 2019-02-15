@@ -12,6 +12,11 @@ namespace IO.Ably.Tests
             return Task.FromResult(CurrentToken);
         }
 
+        public Task<TokenDetails> AuthorizeAsync(TokenParams tokenParams = null, AuthOptions options = null)
+        {
+            return Task.FromResult(CurrentToken);
+        }
+
         public Task<TokenDetails> AuthoriseAsync(TokenParams tokenParams = null, AuthOptions options = null)
         {
             return Task.FromResult(CurrentToken);
@@ -26,9 +31,15 @@ namespace IO.Ably.Tests
         }
 
         public AuthMethod AuthMethod { get; set; }
+
         public string ClientId { get; set; }
 
         public TokenDetails RequestToken(TokenParams tokenParams = null, AuthOptions options = null)
+        {
+            return CurrentToken;
+        }
+
+        public TokenDetails Authorize(TokenParams tokenParams = null, AuthOptions options = null)
         {
             return CurrentToken;
         }

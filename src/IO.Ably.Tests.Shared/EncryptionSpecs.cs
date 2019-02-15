@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Security.Permissions;
-using System.Text;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using IO.Ably.Encryption;
 using Xunit;
 using Xunit.Abstractions;
@@ -16,10 +9,10 @@ namespace IO.Ably.Tests
     {
         public class GetDefaultParamsSpecs : AblySpecs
         {
-            public const string keyBase64 = "WUP6u0K7MXI5Zeo0VppPwg==";
-            public const string keyBase64url = "WUP6u0K7MXI5Zeo0VppPwg";
-            public const string key256Base64 = "o9qXZoPGDNla50VnRwH7cGqIrpyagTxGsRgimKJbY40=";
-            public const string ivBase64 = "HO4cYSP8LybPYBPZPHQOtg==";
+            public const string KeyBase64 = "WUP6u0K7MXI5Zeo0VppPwg==";
+            public const string KeyBase64Url = "WUP6u0K7MXI5Zeo0VppPwg";
+            public const string Key256Base64 = "o9qXZoPGDNla50VnRwH7cGqIrpyagTxGsRgimKJbY40=";
+            public const string IvBase64 = "HO4cYSP8LybPYBPZPHQOtg==";
 
             [Fact]
             [Trait("spec", "RSE1a")]
@@ -36,8 +29,8 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSE1b")]
             public void WithKeyIvAndMode_ShouldReturnCipherParamsWithThoseValuesSpecified()
             {
-                var key = keyBase64.FromBase64();
-                var iv = ivBase64.FromBase64();
+                var key = KeyBase64.FromBase64();
+                var iv = IvBase64.FromBase64();
                 var mode = CipherMode.CFB;
 
                 var result = Crypto.GetDefaultParams(key, iv, mode);
@@ -50,7 +43,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSE1d")]
             public void WithBinaryKey_CreatesParamWithSpecifiedKey()
             {
-                var key = keyBase64.FromBase64();
+                var key = KeyBase64.FromBase64();
                 var result = Crypto.GetDefaultParams(key);
                 result.Key.ShouldBeEquivalentTo(key);
                 result.KeyLength.Should().Be(128);
@@ -60,8 +53,8 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSE1c")]
             public void WithStringKey_ShouldConvertItFromBase64AndReturnParamsWithThatKey()
             {
-                var result = Crypto.GetDefaultParams(keyBase64);
-                result.Key.ShouldBeEquivalentTo(keyBase64.FromBase64());
+                var result = Crypto.GetDefaultParams(KeyBase64);
+                result.Key.ShouldBeEquivalentTo(KeyBase64.FromBase64());
                 result.KeyLength.Should().Be(128);
             }
 
@@ -69,8 +62,8 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSE1c")]
             public void WithBase64UrlKey_ShouldConvertCorrectly()
             {
-                var result = Crypto.GetDefaultParams(keyBase64url);
-                result.Key.ShouldBeEquivalentTo(keyBase64url.FromBase64());
+                var result = Crypto.GetDefaultParams(KeyBase64Url);
+                result.Key.ShouldBeEquivalentTo(KeyBase64Url.FromBase64());
                 result.KeyLength.Should().Be(128);
             }
 
@@ -78,7 +71,7 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSE1d")]
             public void WithBinaryKey_CalculatesKeyLengthAutomatically()
             {
-                var key = key256Base64.FromBase64();
+                var key = Key256Base64.FromBase64();
                 var result = Crypto.GetDefaultParams(key);
                 result.KeyLength.Should().Be(256);
             }
@@ -90,7 +83,8 @@ namespace IO.Ably.Tests
                 Assert.Throws<AblyException>(() => Crypto.GetDefaultParams(new byte[] { 193, 24, 123 }));
             }
 
-            public GetDefaultParamsSpecs(ITestOutputHelper output) : base(output)
+            public GetDefaultParamsSpecs(ITestOutputHelper output)
+                : base(output)
             {
             }
         }
@@ -124,13 +118,14 @@ namespace IO.Ably.Tests
                 Assert.Throws<AblyException>(() => Crypto.GenerateRandomKey(111));
             }
 
-            public GenerateRandomKeyTests(ITestOutputHelper output) : base(output)
+            public GenerateRandomKeyTests(ITestOutputHelper output)
+                : base(output)
             {
             }
         }
 
-
-        public EncryptionSpecs(ITestOutputHelper output) : base(output)
+        public EncryptionSpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

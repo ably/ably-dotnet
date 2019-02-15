@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using FluentAssertions;
-using MsgPack;
-using Xunit;
-using Xunit.Abstractions;
-
-namespace IO.Ably.Tests.MessagePack
+﻿namespace IO.Ably.Tests.MessagePack
 {
 #if MSGPACK
     public class MessagePackSerializationTests : AblySpecs

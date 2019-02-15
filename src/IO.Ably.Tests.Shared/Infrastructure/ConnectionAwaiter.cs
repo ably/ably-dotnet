@@ -18,28 +18,30 @@ namespace IO.Ably.Tests
 
         private readonly List<ConnectionState> _awaitedStates = new List<ConnectionState>();
 
-        public readonly Connection Connection;
+        private readonly Connection _connection;
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private readonly string _id = Guid.NewGuid().ToString("D").Split('-')[0];
 
         public ConnectionAwaiter(Connection connection, params ConnectionState[] awaitedStates)
         {
-            Connection = connection;
+            _connection = connection;
             if (awaitedStates != null && awaitedStates.Length > 0)
             {
                 _awaitedStates.AddRange(awaitedStates);
             }
             else
+            {
                 throw new ArgumentNullException(nameof(awaitedStates), "Please add at least one awaited state");
+            }
         }
 
         private void RemoveListener()
         {
             DefaultLogger.Debug($"[{_id}] Removing Connection listener");
-            Connection.InternalStateChanged -= conn_StateChanged;
+            _connection.InternalStateChanged -= Conn_StateChanged;
         }
 
-        private void conn_StateChanged(object sender, ConnectionStateChange e)
+        private void Conn_StateChanged(object sender, ConnectionStateChange e)
         {
             if (_awaitedStates.Contains(e.Current))
             {
@@ -58,19 +60,19 @@ namespace IO.Ably.Tests
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-            
+
             if (DefaultLogger.IsDebug)
             {
                 DefaultLogger.Debug($"[{_id}] Waiting for state {string.Join(",", _awaitedStates)} for {timeout.TotalSeconds} seconds");
             }
 
-            if (_awaitedStates.Contains(Connection.State))
+            if (_awaitedStates.Contains(_connection.State))
             {
-                DefaultLogger.Debug($"Current state is {Connection.State}. Desired state reached.");
+                DefaultLogger.Debug($"Current state is {_connection.State}. Desired state reached.");
                 return TimeSpan.Zero;
             }
 
-            Connection.InternalStateChanged += conn_StateChanged;
+            _connection.InternalStateChanged += Conn_StateChanged;
             var tResult = _taskCompletionSource.Task;
             var tCompleted = await Task.WhenAny(tResult, Task.Delay(timeout)).ConfigureAwait(true);
             if (tCompleted == tResult)

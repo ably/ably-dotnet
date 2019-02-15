@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentAssertions;
-using IO.Ably;
-using IO.Ably.Types;
-using Xunit;
+﻿using Xunit;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
@@ -19,7 +11,9 @@ namespace IO.Ably.Tests
             public void CanSerialiseAndDeserializeProtocolMessage()
             {
                 if (!Config.MsgPackEnabled)
+                {
                     return;
+                }
 
 #if MSGPACK
                 var message = new ProtocolMessage(ProtocolMessage.MessageAction.Presence, "boo");

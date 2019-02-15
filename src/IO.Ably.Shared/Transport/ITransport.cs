@@ -33,6 +33,7 @@ namespace IO.Ably.Transport
     public interface ITransportListener
     {
         void OnTransportDataReceived(RealtimeTransportData data);
+
         void OnTransportEvent(TransportState state, Exception exception = null);
     }
 }

@@ -7,12 +7,19 @@ namespace IO.Ably
     public class Stats
     {
         public MessageTypes All { get; set; }
+
         public InboundMessageTraffic Inbound { get; set; }
+
         public OutboundMessageTraffic Outbound { get; set; }
+
         public MessageTypes Persisted { get; set; }
+
         public ConnectionTypes Connections { get; set; }
+
         public ResourceCount Channels { get; set; }
+
         public RequestCount ApiRequests { get; set; }
+
         public RequestCount TokenRequests { get; set; }
 
         [JsonProperty("intervalId")]
@@ -42,7 +49,9 @@ namespace IO.Ably
     public class ConnectionTypes
     {
         public ResourceCount All { get; set; }
+
         public ResourceCount Plain { get; set; }
+
         public ResourceCount Tls { get; set; }
 
         public ConnectionTypes()
@@ -56,6 +65,7 @@ namespace IO.Ably
     public class MessageCount
     {
         public long Count { get; set; }
+
         public long Data { get; set; }
     }
 
@@ -66,7 +76,9 @@ namespace IO.Ably
     public class MessageTypes
     {
         public MessageCount All { get; set; }
+
         public MessageCount Messages { get; set; }
+
         public MessageCount Presence { get; set; }
 
         public MessageTypes()
@@ -83,7 +95,9 @@ namespace IO.Ably
     public class InboundMessageTraffic
     {
         public MessageTypes All { get; set; }
+
         public MessageTypes Realtime { get; set; }
+
         public MessageTypes Rest { get; set; }
 
         public InboundMessageTraffic()
@@ -97,8 +111,11 @@ namespace IO.Ably
     public class OutboundMessageTraffic
     {
         public MessageTypes All { get; set; }
+
         public MessageTypes Realtime { get; set; }
+
         public MessageTypes Rest { get; set; }
+
         public MessageTypes Webhook { get; set; }
 
         public OutboundMessageTraffic()
@@ -113,7 +130,9 @@ namespace IO.Ably
     public class RequestCount
     {
         public long Succeeded { get; set; }
+
         public long Failed { get; set; }
+
         public long Refused { get; set; }
     }
 

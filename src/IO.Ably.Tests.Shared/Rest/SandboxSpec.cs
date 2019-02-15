@@ -3,57 +3,90 @@ using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    public abstract class SandboxSpecs
+    public abstract class SandboxSpecs : IClassFixture<AblySandboxFixture>, IDisposable
     {
         internal ILogger Logger { get; set; }
 
-        protected readonly AblySandboxFixture Fixture;
-        protected readonly ITestOutputHelper Output;
-        protected ManualResetEvent _resetEvent;
+        protected AblySandboxFixture Fixture { get; }
+
+        protected ITestOutputHelper Output { get; }
+
+        protected ManualResetEvent ResetEvent { get; }
 
         public SandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
         {
-            _resetEvent = new ManualResetEvent(false);
+            ResetEvent = new ManualResetEvent(false);
             Fixture = fixture;
             Output = output;
-            Logger = IO.Ably.DefaultLogger.LoggerInstance;
-            //Reset time in case other tests have changed it
-            //Config.Now = () => DateTimeOffset.UtcNow;
+            Logger = DefaultLogger.LoggerInstance;
+
+            // Reset time in case other tests have changed it
+            // Config.Now = () => DateTimeOffset.UtcNow;
 
             // Very useful for debugging failing tests.
-            //Logger.LoggerSink = new OutputLoggerSink(output);
-            //Logger.LogLevel = LogLevel.Debug;
+            // Logger.LoggerSink = new OutputLoggerSink(output);
+            // Logger.LogLevel = LogLevel.Debug;
         }
 
-        protected async Task<AblyRest> GetRestClient(Protocol protocol, Action<ClientOptions> optionsAction = null)
+        protected async Task<AblyRest> GetRestClient(Protocol protocol, Action<ClientOptions> optionsAction = null, string environment = null)
         {
-            var settings = await Fixture.GetSettings();
+            var settings = await Fixture.GetSettings(environment);
             var defaultOptions = settings.CreateDefaultOptions();
             defaultOptions.UseBinaryProtocol = protocol == Defaults.Protocol;
             optionsAction?.Invoke(defaultOptions);
             return new AblyRest(defaultOptions);
         }
 
-        protected async Task<AblyRealtime> GetRealtimeClient(Protocol protocol,
+        protected async Task<AblyRealtime> GetRealtimeClient(
+            Protocol protocol,
             Action<ClientOptions, TestEnvironmentSettings> optionsAction = null)
+        {
+            return await GetRealtimeClient(protocol, optionsAction, null);
+        }
+
+        protected async Task<AblyRealtime> GetRealtimeClient(
+            Protocol protocol,
+            Action<ClientOptions, TestEnvironmentSettings> optionsAction,
+            Func<ClientOptions, AblyRest> createRestFunc)
         {
             var settings = await Fixture.GetSettings();
             var defaultOptions = settings.CreateDefaultOptions();
             defaultOptions.UseBinaryProtocol = protocol == Defaults.Protocol;
             defaultOptions.TransportFactory = new TestTransportFactory();
 
-            // Prevent the Xunit concurrent context being caputured which is
+            // Prevent the Xunit concurrent context being captured which is
             // an implementation of <see cref="SynchronizationContext"/> which runs work on custom threads
             // rather than in the thread pool, and limits the number of in-flight actions.
             //
             // This can create out of order responses that would not normally occur
             defaultOptions.CaptureCurrentSynchronizationContext = false;
             optionsAction?.Invoke(defaultOptions, settings);
-            return new AblyRealtime(defaultOptions);
+            return new AblyRealtime(defaultOptions, createRestFunc);
+        }
+
+        protected async Task WaitFor(Action<Action> done)
+        {
+            await TestHelpers.WaitFor(10000, 1, done);
+        }
+
+        protected async Task WaitFor(int timeoutMs, Action<Action> done)
+        {
+            await TestHelpers.WaitFor(timeoutMs, 1, done);
+        }
+
+        protected async Task WaitFor(int timeoutMs, int taskCount, Action<Action> done)
+        {
+            await TestHelpers.WaitFor(timeoutMs, taskCount, done);
+        }
+
+        protected async Task WaitForMultiple(int taskCount, Action<Action> done)
+        {
+            await TestHelpers.WaitFor(10000, taskCount, done);
         }
 
         public class OutputLoggerSink : ILoggerSink
@@ -75,13 +108,14 @@ namespace IO.Ably.Tests
         {
             var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
             if (waitSpan.HasValue)
+            {
                 return connectionAwaiter.Wait(waitSpan.Value);
+            }
+
             return connectionAwaiter.Wait();
         }
 
-        
-
-        protected static async Task WaitFor30sOrUntilTrue(Func<bool> predicate)
+        protected static async Task WaitFor30SOrUntilTrue(Func<bool> predicate)
         {
             int count = 0;
             while (count < 30)
@@ -89,65 +123,17 @@ namespace IO.Ably.Tests
                 count++;
 
                 if (predicate())
+                {
                     break;
+                }
 
                 await Task.Delay(1000);
             }
         }
 
-        /// <summary>
-        /// A test logger to check if a message has been logged.
-        /// Uses string.StartsWith, so partial matches on the start of a string are valid.
-        /// </summary>
-        internal class TestLogger : ILogger
+        public void Dispose()
         {
-            public string MessageToTest { get; set; }
-
-            public string FullMessage { get; private set; }
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="messageToTest"></param>
-            public TestLogger(string messageToTest)
-            {
-                LogLevel = LogLevel.Debug;
-                MessageToTest = messageToTest;
-            }
-
-            public bool MessageSeen { get; private set; }
-
-            public LogLevel LogLevel { get; set; }
-            public bool IsDebug => LogLevel == LogLevel.Debug;
-            public ILoggerSink LoggerSink { get; set; }
-            public void Error(string message, Exception ex)
-            {
-                Test(message);
-            }
-
-            public void Error(string message, params object[] args)
-            {
-                Test(message);
-            }
-
-            public void Warning(string message, params object[] args)
-            {
-                Test(message);
-            }
-
-            public void Debug(string message, params object[] args)
-            {
-                Test(message);
-            }
-
-            private void Test(string message)
-            {
-                if (message.StartsWith(MessageToTest))
-                {
-                    MessageSeen = true;
-                    FullMessage = message;
-                }
-            }
+            ResetEvent?.Dispose();
         }
     }
 
@@ -157,7 +143,10 @@ namespace IO.Ably.Tests
         {
             var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
             if (waitSpan.HasValue)
+            {
                 return connectionAwaiter.Wait(waitSpan.Value);
+            }
+
             return connectionAwaiter.Wait();
         }
 
@@ -165,10 +154,11 @@ namespace IO.Ably.Tests
         {
             var channelAwaiter = new ChannelAwaiter(channel, awaitedState);
             if (waitSpan.HasValue)
+            {
                 return channelAwaiter.WaitAsync();
+            }
+
             return channelAwaiter.WaitAsync();
         }
     }
-
-    
 }

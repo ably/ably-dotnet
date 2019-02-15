@@ -10,11 +10,17 @@ namespace IO.Ably
     public interface IEventEmitter<TEvent, TArgs> where TEvent : struct where TArgs : EventArgs
     {
         void Off();
+
         void On(Action<TArgs> listener);
+
         void Once(Action<TArgs> listener);
+
         void Off(Action<TArgs> listener);
+
         void On(TEvent state, Action<TArgs> action);
+
         void Once(TEvent state, Action<TArgs> action);
+
         void Off(TEvent state, Action<TArgs> action);
     }
 
@@ -25,17 +31,22 @@ namespace IO.Ably
         {
             Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
         }
+
         internal ILogger Logger { get; set; }
 
-        readonly List<Emitter<TState, TArgs>> _emitters = new List<Emitter<TState, TArgs>>();
+        private readonly List<Emitter<TState, TArgs>> _emitters = new List<Emitter<TState, TArgs>>();
         private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
+
         protected abstract Action<Action> NotifyClient { get; }
 
         private class Emitter<TState, TArgs> where TState : struct
         {
             public Action<TArgs> Action { get; }
+
             public Func<TArgs, Task> AsyncAction { get; }
+
             public bool Once { get; }
+
             public TState? State { get; }
 
             public Emitter(Action<TArgs> action, TState? state = null, bool once = false)
@@ -71,17 +82,14 @@ namespace IO.Ably
             _lock.EnterUpgradeableReadLock();
             try
             {
-                if (_emitters.Any(x => x.Action == listener) == false)
+                _lock.EnterWriteLock();
+                try
                 {
-                    _lock.EnterWriteLock();
-                    try
-                    {
-                        _emitters.Add(new Emitter<TState, TArgs>(listener));
-                    }
-                    finally
-                    {
-                        _lock.ExitWriteLock();
-                    }
+                    _emitters.Add(new Emitter<TState, TArgs>(listener));
+                }
+                finally
+                {
+                    _lock.ExitWriteLock();
                 }
             }
             finally
@@ -95,17 +103,14 @@ namespace IO.Ably
             _lock.EnterUpgradeableReadLock();
             try
             {
-                if (_emitters.Any(x => x.AsyncAction == listener) == false)
+                _lock.EnterWriteLock();
+                try
                 {
-                    _lock.EnterWriteLock();
-                    try
-                    {
-                        _emitters.Add(new Emitter<TState, TArgs>(listener));
-                    }
-                    finally
-                    {
-                        _lock.ExitWriteLock();
-                    }
+                    _emitters.Add(new Emitter<TState, TArgs>(listener));
+                }
+                finally
+                {
+                    _lock.ExitWriteLock();
                 }
             }
             finally
@@ -119,17 +124,14 @@ namespace IO.Ably
             _lock.EnterUpgradeableReadLock();
             try
             {
-                if (_emitters.Any(x => x.Action == listener) == false)
+                _lock.EnterWriteLock();
+                try
                 {
-                    _lock.EnterWriteLock();
-                    try
-                    {
-                        _emitters.Add(new Emitter<TState, TArgs>(listener, once: true));
-                    }
-                    finally
-                    {
-                        _lock.ExitWriteLock();
-                    }
+                    _emitters.Add(new Emitter<TState, TArgs>(listener, once: true));
+                }
+                finally
+                {
+                    _lock.ExitWriteLock();
                 }
             }
             finally
@@ -143,17 +145,14 @@ namespace IO.Ably
             _lock.EnterUpgradeableReadLock();
             try
             {
-                if (_emitters.Any(x => x.AsyncAction == listener) == false)
+                _lock.EnterWriteLock();
+                try
                 {
-                    _lock.EnterWriteLock();
-                    try
-                    {
-                        _emitters.Add(new Emitter<TState, TArgs>(listener, once: true));
-                    }
-                    finally
-                    {
-                        _lock.ExitWriteLock();
-                    }
+                    _emitters.Add(new Emitter<TState, TArgs>(listener, once: true));
+                }
+                finally
+                {
+                    _lock.ExitWriteLock();
                 }
             }
             finally
@@ -313,6 +312,5 @@ namespace IO.Ably
                 });
             }
         }
-
     }
 }

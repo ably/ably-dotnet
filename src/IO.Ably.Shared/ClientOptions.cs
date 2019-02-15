@@ -1,7 +1,8 @@
 using System;
 using System.Threading;
-using IO.Ably.Rest;
+
 using IO.Ably;
+using IO.Ably.Rest;
 using IO.Ably.Transport;
 
 namespace IO.Ably
@@ -28,21 +29,26 @@ namespace IO.Ably
         public string ClientId
         {
             get { return _clientId; }
+
             set
             {
-                if(value == "*")
+                if (value == "*")
+                {
                     throw new InvalidOperationException("Wildcard clientIds are not support in ClientOptions");
+                }
+
                 _clientId = value;
             }
         }
 
         public TokenParams DefaultTokenParams { get; set; }
 
-
         internal string GetClientId()
         {
             if (ClientId.IsNotEmpty())
+            {
                 return ClientId;
+            }
 
             return DefaultTokenParams?.ClientId;
         }
@@ -118,8 +124,11 @@ namespace IO.Ably
         {
             if (RealtimeHost.IsEmpty())
             {
-                if(IsLiveEnvironment)
+                if (IsLiveEnvironment)
+                {
                     return Defaults.RealtimeHost;
+                }
+
                 return Environment.ToString().ToLower() + "-" + Defaults.RealtimeHost;
             }
 
@@ -134,6 +143,7 @@ namespace IO.Ably
                 {
                     return Defaults.RestHost;
                 }
+
                 return Environment.ToString().ToLower() + "-" + Defaults.RestHost;
             }
 
@@ -170,10 +180,17 @@ namespace IO.Ably
         }
 
         public TimeSpan DisconnectedRetryTimeout { get; set; } = Defaults.DisconnectedRetryTimeout;
+
         public TimeSpan SuspendedRetryTimeout { get; set; } = TimeSpan.FromSeconds(30);
+
+        public TimeSpan ChannelRetryTimeout { get; set; } = TimeSpan.FromSeconds(15);
+
         public TimeSpan HttpOpenTimeout { get; set; } = TimeSpan.FromSeconds(4);
+
         public TimeSpan HttpRequestTimeout { get; set; } = TimeSpan.FromSeconds(10);
+
         public int HttpMaxRetryCount { get; set; } = 3;
+
         public TimeSpan HttpMaxRetryDuration { get; set; } = TimeSpan.FromSeconds(15);
 
         /// <summary>
@@ -188,6 +205,8 @@ namespace IO.Ably
         public bool CaptureCurrentSynchronizationContext { get; set; } = true;
 
         public SynchronizationContext CustomContext { get; set; }
+
+        public bool IdempotentRestPublishing { get; set; }
 
         internal Func<DateTimeOffset> NowFunc
         {
@@ -212,12 +231,13 @@ namespace IO.Ably
                     return Ably.AuthMethod.Basic;
                 }
 
-                //default
+                // default
                 return Ably.AuthMethod.Token;
             }
         }
 
         internal bool SkipInternetCheck { get; set; } = false;
+
         internal bool UseSyncForTesting { get; set; } = false;
 
         internal TimeSpan RealtimeRequestTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;
@@ -227,7 +247,7 @@ namespace IO.Ably
         /// </summary>
         public ClientOptions()
         {
-
+            Init();
         }
 
         /// <summary>
@@ -235,8 +255,24 @@ namespace IO.Ably
         /// It automatically parses the key to ensure the correct format is used and sets the KeyId and KeyValue properties
         /// </summary>
         /// <param name="key">Ably authentication key</param>
-        public ClientOptions(string key) : base(key)
+        public ClientOptions(string key)
+            : base(key)
         {
+            Init();
+        }
+
+        private void Init()
+        {
+            SetIdempotentRestPublishingDefault(Defaults.ProtocolMajorVersion, Defaults.ProtocolMinorVersion);
+        }
+
+        internal void SetIdempotentRestPublishingDefault(int majorVersion, int minorVersion)
+        {
+            // (TO3n) idempotentRestPublishing defaults to false for clients with version < 1.1, otherwise true.
+            if (majorVersion >= 1 && minorVersion >= 1)
+            {
+                IdempotentRestPublishing = true;
+            }
         }
     }
 }

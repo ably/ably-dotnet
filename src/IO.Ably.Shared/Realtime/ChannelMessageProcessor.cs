@@ -7,6 +7,7 @@ namespace IO.Ably.Realtime
     internal class ChannelMessageProcessor
     {
         internal ILogger Logger { get; private set; }
+
         private IChannels<IRealtimeChannel> _channels;
         private ConnectionManager _connectionManager;
 
@@ -26,7 +27,9 @@ namespace IO.Ably.Realtime
         private void MessageReceived(ProtocolMessage protocolMessage)
         {
             if (protocolMessage.Channel.IsEmpty())
+            {
                 return;
+            }
 
             var channel = _channels.Exists(protocolMessage.Channel) ? GetChannel(protocolMessage.Channel) : null;
             if (channel == null)
@@ -38,25 +41,31 @@ namespace IO.Ably.Realtime
             switch (protocolMessage.Action)
             {
                 case ProtocolMessage.MessageAction.Error:
-                    if (protocolMessage.Channel.IsNotEmpty())
-                    {
-                        channel.SetChannelState(ChannelState.Failed, protocolMessage);
-                    }
+                    channel.SetChannelState(ChannelState.Failed, protocolMessage);
                     break;
                 case ProtocolMessage.MessageAction.Attach:
                 case ProtocolMessage.MessageAction.Attached:
-                    if (channel.State != ChannelState.Attached)
-                        channel.SetChannelState(ChannelState.Attached, protocolMessage);
+                    if (channel.State == ChannelState.Attached)
+                    {
+                        // RTL12
+                        if (!protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed))
+                        {
+                            channel.EmitUpdate(ChannelState.Attached, protocolMessage);
+                        }
+                    }
                     else
                     {
-                        if(protocolMessage.Error != null)
-                            channel.OnError(protocolMessage.Error);
+                        channel.SetChannelState(ChannelState.Attached, protocolMessage);
                     }
+
                     break;
                 case ProtocolMessage.MessageAction.Detach:
                 case ProtocolMessage.MessageAction.Detached:
                     if (channel.State != ChannelState.Detached)
+                    {
                         channel.SetChannelState(ChannelState.Detached, protocolMessage);
+                    }
+
                     break;
                 case ProtocolMessage.MessageAction.Message:
                     var result = _connectionManager.Handler.DecodeProtocolMessage(protocolMessage, channel.Options);
@@ -64,10 +73,12 @@ namespace IO.Ably.Realtime
                     {
                         channel.OnError(result.Error);
                     }
+
                     foreach (var msg in protocolMessage.Messages)
                     {
                         channel.OnMessage(msg);
                     }
+
                     break;
                 case ProtocolMessage.MessageAction.Presence:
                     _connectionManager.Handler.DecodeProtocolMessage(protocolMessage, channel.Options);
@@ -78,8 +89,6 @@ namespace IO.Ably.Realtime
                     channel.Presence.OnPresence(protocolMessage.Presence, protocolMessage.ChannelSerial);
                     break;
             }
-
-
         }
     }
 }

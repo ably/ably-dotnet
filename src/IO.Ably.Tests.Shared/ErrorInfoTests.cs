@@ -8,30 +8,30 @@ namespace IO.Ably.Tests
         [Fact]
         public void Parse_WithJsonResponseWhereJsonIsWrong_ReturnsUnknown500Error()
         {
-            //Arrange
-            var response = new AblyResponse() {TextResponse = "", Type = ResponseType.Json, StatusCode = (HttpStatusCode)500};
+            // Arrange
+            var response = new AblyResponse() { TextResponse = string.Empty, Type = ResponseType.Json, StatusCode = (HttpStatusCode)500 };
 
-            //Act
+            // Act
             var errorInfo = ErrorInfo.Parse(response);
 
-            //Assert
+            // Assert
             Assert.Equal("Unknown error", errorInfo.Message);
-            Assert.Equal(500, errorInfo.Code);
+            Assert.Equal(50000, errorInfo.Code);
             Assert.Equal(response.StatusCode, errorInfo.StatusCode);
         }
 
         [Fact]
         public void Parse_WithValidJsonResponse_RetrievesCodeAndReasonFromJson()
         {
-            //Arrange
+            // Arrange
             var reason = "test";
             var code = 40400;
-            var response = new AblyResponse() { TextResponse = string.Format("{{ \"error\": {{ \"code\":{0}, \"message\":\"{1}\" }} }}",code, reason), Type = ResponseType.Json, StatusCode = (HttpStatusCode)500 };
+            var response = new AblyResponse() { TextResponse = string.Format("{{ \"error\": {{ \"code\":{0}, \"message\":\"{1}\" }} }}", code, reason), Type = ResponseType.Json, StatusCode = (HttpStatusCode)500 };
 
-            //Act
+            // Act
             var errorInfo = ErrorInfo.Parse(response);
 
-            //Assert
+            // Assert
             Assert.Equal(reason, errorInfo.Message);
             Assert.Equal(code, errorInfo.Code);
         }
@@ -39,20 +39,20 @@ namespace IO.Ably.Tests
         [Fact]
         public void ToString_WithStatusCodeCodeAndReason_ReturnsFormattedString()
         {
-            //Arrange
+            // Arrange
             var errorInfo = new ErrorInfo("Reason", 1000, HttpStatusCode.Accepted);
 
-            //Assert
-            Assert.Equal("Reason: Reason; Code: 1000; HttpStatusCode: (202)Accepted", errorInfo.ToString());
+            // Assert
+            Assert.Equal("Reason: Reason; Code: 1000; HttpStatusCode: 202 (Accepted)", errorInfo.ToString());
         }
 
         [Fact]
         public void ToString_WithCodeAndReasonWithoutStatusCode_ReturnsFormattedString()
         {
-            //Arrange
+            // Arrange
             var errorInfo = new ErrorInfo("Reason", 1000);
 
-            //Assert
+            // Assert
             Assert.Equal("Reason: Reason; Code: 1000", errorInfo.ToString());
         }
     }

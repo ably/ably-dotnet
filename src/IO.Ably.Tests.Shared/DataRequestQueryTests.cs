@@ -1,13 +1,10 @@
-﻿using System.Collections.Specialized;
-using System.Net;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using Xunit;
 
 namespace IO.Ably.Tests
 {
     public class TestHttpHeaders : HttpHeaders
     {
-        
     }
 
     public class DataRequestQueryTests
@@ -38,30 +35,29 @@ namespace IO.Ably.Tests
         [Fact]
         public void GetLinkQuery_WithHeadersAndAskingForNextLink_ReturnsCorrectRequestQuery()
         {
-            //Arrange
+            // Arrange
+            var nextDataRequest = PaginatedRequestParams.Parse(NextQueryString);
 
-            var nextDataRequest = HistoryRequestParams.Parse(NextQueryString);
+            // Act
+            var actual = PaginatedRequestParams.GetLinkQuery(GetSampleHistoryRequestHeaders(), "next");
 
-            //Act
-            var actual = HistoryRequestParams.GetLinkQuery(GetSampleHistoryRequestHeaders(), "next");
-
-            //Assert
+            // Assert
             Assert.Equal(nextDataRequest, actual);
         }
 
         [Fact]
         public void GetLinkQuery_WithHeadersAndAskingForFirstLink_ReturnsCorrectRequestQuery()
         {
-            //Arrange
+            // Arrange
             var firstDataRequest =
-                HistoryRequestParams.Parse(
+                PaginatedRequestParams.Parse(
                     FirstQueryString);
 
-            //Act
-            //Act
-            var actual = HistoryRequestParams.GetLinkQuery(GetSampleHistoryRequestHeaders(), "first");
+            // Act
+            // Act
+            var actual = PaginatedRequestParams.GetLinkQuery(GetSampleHistoryRequestHeaders(), "first");
 
-            //Assert
+            // Assert
             Assert.Equal(firstDataRequest, actual);
         }
     }

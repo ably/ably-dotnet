@@ -49,6 +49,7 @@ namespace IO.Ably
         {
             Now = Defaults.NowFunc();
         }
+
         public TokenDetails(Func<DateTimeOffset> nowFunc)
         {
             Now = nowFunc;
@@ -59,6 +60,7 @@ namespace IO.Ably
             Token = token;
             Now = Defaults.NowFunc();
         }
+
         public TokenDetails(string token, Func<DateTimeOffset> nowFunc)
         {
             Token = token;
@@ -87,9 +89,17 @@ namespace IO.Ably
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            return obj is TokenDetails && Equals((TokenDetails) obj);
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            return obj is TokenDetails && Equals((TokenDetails)obj);
         }
 
         public override int GetHashCode()
@@ -97,10 +107,10 @@ namespace IO.Ably
             unchecked
             {
                 var hashCode = Token?.GetHashCode() ?? 0;
-                hashCode = (hashCode*397) ^ Expires.GetHashCode();
-                hashCode = (hashCode*397) ^ Issued.GetHashCode();
-                hashCode = (hashCode*397) ^ (Capability?.GetHashCode() ?? 0);
-                hashCode = (hashCode*397) ^ (ClientId?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ Expires.GetHashCode();
+                hashCode = (hashCode * 397) ^ Issued.GetHashCode();
+                hashCode = (hashCode * 397) ^ (Capability?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ (ClientId?.GetHashCode() ?? 0);
                 return hashCode;
             }
         }
@@ -117,9 +127,21 @@ namespace IO.Ably
         public static bool IsValidToken(this TokenDetails token)
         {
             if (token == null)
+            {
                 return false;
-            var exp = token.Expires;
-            return (exp == DateTimeOffset.MinValue) || (exp >= token.Now());
+            }
+
+            if (token.Expires == DateTimeOffset.MinValue)
+            {
+                return true;
+            }
+
+            return !token.IsExpired();
+        }
+
+        public static bool IsExpired(this TokenDetails token)
+        {
+            return token.Expires < token.Now();
         }
     }
 }

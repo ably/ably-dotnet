@@ -18,13 +18,20 @@ namespace IO.Ably.Transport.States.Connection
         }
 
         protected readonly IConnectionContext Context;
+
         public abstract Realtime.ConnectionState State { get; }
+
         public ErrorInfo Error { get; protected set; }
-        
+
         public Exception Exception { get; set; }
+
         public TimeSpan? RetryIn { get; protected set; }
+
         public virtual bool CanQueue => false;
+
         public virtual bool CanSend => false;
+
+        public virtual bool IsUpdate { get; protected set; }
 
         public virtual void Connect()
         {
@@ -41,7 +48,6 @@ namespace IO.Ably.Transport.States.Connection
 
         public virtual void AbortTimer()
         {
-
         }
 
         public virtual void BeforeTransition()

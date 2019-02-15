@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using IO.Ably.Realtime;
+
 using IO.Ably;
+using IO.Ably.Realtime;
 using IO.Ably.Transport;
 
 namespace IO.Ably
@@ -18,30 +19,35 @@ namespace IO.Ably
         {
         }
 
-        public AblyRealtime(ClientOptions options) :
-            this(options, clientOptions => new AblyRest(clientOptions))
+        public AblyRealtime(ClientOptions options)
+            : this(options, clientOptions => new AblyRest(clientOptions))
         {
-
         }
-        
+
         internal AblyRealtime(ClientOptions options, Func<ClientOptions, AblyRest> createRestFunc)
         {
             Logger = options.Logger;
             CaptureSynchronizationContext(options);
 
-            RestClient = createRestFunc(options);
+            RestClient = createRestFunc != null ? createRestFunc.Invoke(options) : new AblyRest(options);
             Channels = new RealtimeChannels(this);
             Connection = new Connection(this, options.NowFunc, options.Logger);
             Connection.Initialise();
 
+            RestClient.AblyAuth.AuthUpdated += Connection.ConnectionManager.OnAuthUpdated;
+
             if (options.AutoConnect)
+            {
                 Connect();
+            }
         }
 
         private void CaptureSynchronizationContext(ClientOptions options)
         {
             if (options.CustomContext != null)
+            {
                 _synchronizationContext = options.CustomContext;
+            }
             else if (options.CaptureCurrentSynchronizationContext)
             {
                 _synchronizationContext = SynchronizationContext.Current;
@@ -51,6 +57,7 @@ namespace IO.Ably
         public AblyRest RestClient { get; }
 
         public IAblyAuth Auth => RestClient.AblyAuth;
+
         public string ClientId => Auth.ClientId;
 
         internal ClientOptions Options => RestClient.Options;

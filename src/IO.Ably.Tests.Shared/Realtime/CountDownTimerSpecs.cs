@@ -10,7 +10,8 @@ namespace IO.Ably.Tests.Realtime
 {
     public class CountDownTimerSpecs : AblySpecs
     {
-        public CountDownTimerSpecs(ITestOutputHelper output) : base(output)
+        public CountDownTimerSpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
 
@@ -29,9 +30,13 @@ namespace IO.Ably.Tests.Realtime
             for (var i = 0; i < 20; i++)
             {
                 if (called == 0)
+                {
                     await Task.Delay(50);
+                }
                 else
+                {
                     break;
+                }
             }
 
             // Assert
@@ -53,9 +58,13 @@ namespace IO.Ably.Tests.Realtime
             for (var i = 0; i < 20; i++)
             {
                 if (called == 0)
+                {
                     await Task.Delay(50);
+                }
                 else
+                {
                     break;
+                }
             }
 
             // Assert
@@ -84,9 +93,13 @@ namespace IO.Ably.Tests.Realtime
             for (var i = 0; i < 20; i++)
             {
                 if (called == 0)
+                {
                     await Task.Delay(50);
+                }
                 else
+                {
                     break;
+                }
             }
 
             // Assert
@@ -124,9 +137,13 @@ namespace IO.Ably.Tests.Realtime
             for (var i = 0; i < 20; i++)
             {
                 if (called2 == 0)
+                {
                     await Task.Delay(50);
+                }
                 else
+                {
                     break;
+                }
             }
 
             // Assert

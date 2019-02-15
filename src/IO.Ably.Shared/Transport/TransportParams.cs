@@ -9,25 +9,36 @@ namespace IO.Ably.Transport
 {
     public class TransportParams
     {
+        internal static Regex RecoveryKeyRegex { get; set; } = new Regex(@"^([\w!-]+):(-?\d+):(-?\d+)$");
         internal ILogger Logger { get; private set; }
+
         public string Host { get; private set; }
+
         public bool Tls { get; private set; }
+
         public string[] FallbackHosts { get; private set; }
+
         public int Port { get; private set; }
+
         public string ConnectionKey { get; private set; }
+
         public long? ConnectionSerial { get; set; }
+
         public bool UseBinaryProtocol { get; private set; }
 
-        //TODO: Look at inconsisten protection levels
+        // TODO: Look at inconsisten protection levels
         internal AuthMethod AuthMethod { get; private set; }
-        public string AuthValue { get; private set; } //either key or token
+
+        public string AuthValue { get; private set; } // either key or token
+
         public string RecoverValue { get; private set; }
+
         public string ClientId { get; private set; }
+
         public bool EchoMessages { get; private set; }
 
         private TransportParams()
         {
-
         }
 
         internal static async Task<TransportParams> Create(string host, AblyAuth auth, ClientOptions options, string connectionKey = null, long? connectionSerial = null, ILogger logger = null)
@@ -40,16 +51,19 @@ namespace IO.Ably.Transport
             result.AuthMethod = auth.AuthMethod;
             if (result.AuthMethod == AuthMethod.Basic)
             {
-                result.AuthValue = options.Key;
+                result.AuthValue = ApiKey.Parse(options.Key).ToString();
             }
             else
             {
                 var token = await auth.GetCurrentValidTokenAndRenewIfNecessaryAsync();
                 if (token == null)
+                {
                     throw new AblyException("There is no valid token. Can't authenticate", 40100, HttpStatusCode.Unauthorized);
+                }
 
                 result.AuthValue = token.Token;
             }
+
             result.ConnectionKey = connectionKey;
             result.ConnectionSerial = connectionSerial;
             result.EchoMessages = options.EchoMessages;
@@ -60,7 +74,7 @@ namespace IO.Ably.Transport
             return result;
         }
 
-        //Add logic for random fallback hosts
+        // Add logic for random fallback hosts
         public Uri GetUri()
         {
             var wsScheme = Tls ? "wss://" : "ws://";
@@ -68,7 +82,6 @@ namespace IO.Ably.Transport
             uriBuilder.Query = GetParams().ToQueryString();
             return uriBuilder.Uri;
         }
-
 
         public Dictionary<string, string> GetParams()
         {
@@ -85,7 +98,8 @@ namespace IO.Ably.Transport
 
             result["v"] = Defaults.ProtocolVersion;
             result["lib"] = Defaults.LibraryVersion;
-            //Url encode all the params at the time of creating the query string
+
+            // Url encode all the params at the time of creating the query string
             result["format"] = UseBinaryProtocol ? "msgpack" : "json";
             result["echo"] = EchoMessages.ToString().ToLower();
 
@@ -99,8 +113,7 @@ namespace IO.Ably.Transport
             }
             else if (RecoverValue.IsNotEmpty())
             {
-                var pattern = new Regex(@"^([\w!-]+):(\-?\w+)$");
-                var match = pattern.Match(RecoverValue);
+                var match = RecoveryKeyRegex.Match(RecoverValue);
                 if (match.Success)
                 {
                     result["recover"] = match.Groups[1].Value;

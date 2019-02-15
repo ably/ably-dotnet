@@ -4,7 +4,7 @@
     {
         public static bool IsSynthesized(this PresenceMessage msg)
         {
-            return !msg.Id.StartsWith(msg.ConnectionId);
+            return msg.Id == null || !msg.Id.StartsWith(msg.ConnectionId);
         }
 
         public static bool IsNewerThan(this PresenceMessage thisMessage, PresenceMessage thatMessage)
@@ -13,10 +13,10 @@
             {
                 return thisMessage.Timestamp > thatMessage.Timestamp;
             }
-            
+
             var thisValues = thisMessage.Id.Split(':');
             var thatValues = thatMessage.Id.Split(':');
-            
+
             // if any part of the message serial fails to parse then throw an exception
             if (thisValues.Length != 3 ||
                 !(int.TryParse(thisValues[1], out int msgSerialThis) | int.TryParse(thisValues[2], out int indexThis)))
@@ -34,6 +34,7 @@
             {
                 return indexThis > indexThat;
             }
+
             return msgSerialThis > msgSerialThat;
         }
     }

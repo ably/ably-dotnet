@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using IO.Ably.Encryption;
@@ -6,23 +7,35 @@ using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Tests
 {
-    public class AblySandboxFixture : IDisposable
+    public class AblySandboxFixture
     {
-        public readonly static DateTimeOffset StartInterval = DateHelper.CreateDate(DateTimeOffset.UtcNow.Year - 1, 2, 3, 15, 5);
+        public static readonly DateTimeOffset StartInterval = DateHelper.CreateDate(DateTimeOffset.UtcNow.Year - 1, 2, 3, 15, 5);
 
-        private readonly AsyncLazy<TestEnvironmentSettings> _initSettings = new AsyncLazy<TestEnvironmentSettings>(async () => await Initialise());
+        public static Dictionary<string, TestEnvironmentSettings> _settings = new Dictionary<string, TestEnvironmentSettings>();
 
-        public async Task<TestEnvironmentSettings> GetSettings()
+        public async Task<TestEnvironmentSettings> GetSettings(string environment = null)
         {
-            return await _initSettings;
+            environment = environment ?? "sandbox";
+            if (_settings.ContainsKey(environment))
+            {
+                return _settings[environment];
+            }
+
+            _settings[environment] = await Initialise();
+            return _settings[environment];
         }
 
-        private static async Task<TestEnvironmentSettings> Initialise()
+        private static async Task<TestEnvironmentSettings> Initialise(string environment = "sandbox")
         {
             var settings = new TestEnvironmentSettings()
             {
                 Tls = true,
             };
+
+            if (environment != null)
+            {
+                settings.Environment = environment;
+            }
 
             JObject testAppSpec = JObject.Parse(ResourceHelper.GetResource("test-app-setup.json"));
 
@@ -31,10 +44,9 @@ namespace IO.Ably.Tests
                 (string)cipher["algorithm"],
                 ((string)cipher["key"]).FromBase64(),
                 CipherMode.CBC,
-                ((string)cipher["iv"]).FromBase64()
-                );
+                ((string)cipher["iv"]).FromBase64());
 
-            AblyHttpClient client = settings.GetHttpClient();
+            AblyHttpClient client = settings.GetHttpClient(environment);
             AblyRequest request = new AblyRequest("/apps", HttpMethod.Post);
             request.Headers.Add("Accept", "application/json");
             request.Headers.Add("Content-Type", "application/json");
@@ -50,16 +62,15 @@ namespace IO.Ably.Tests
             {
                 var testkey = new Key
                 {
-                    KeyName = appId + "." + (string) key["keyName"],
-                    KeySecret = (string) key["keySecret"],
-                    KeyStr = (string) key["keyStr"],
-                    Capability = (string) key["capability"]
+                    KeyName = appId + "." + (string)key["keyName"],
+                    KeySecret = (string)key["keySecret"],
+                    KeyStr = (string)key["keyStr"],
+                    Capability = (string)key["capability"]
                 };
                 settings.Keys.Add(testkey);
             }
 
-            //await SetupSampleStats(settings);
-
+            // await SetupSampleStats(settings);
             return settings;
         }
 
@@ -89,11 +100,6 @@ namespace IO.Ably.Tests
             request.RequestBody = json.GetBytes();
 
             await client.Execute(request);
-        }   
-
-        public void Dispose()
-        {
-            
         }
     }
 }

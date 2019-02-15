@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Net;
 using System.Threading;
-using IO.Ably.Realtime;
+
 using IO.Ably;
+using IO.Ably.Realtime;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 
@@ -10,8 +11,8 @@ namespace IO.Ably.Transport
 {
     internal class ConnectionHeartbeatRequest
     {
-        public static readonly ErrorInfo DefaultError = new ErrorInfo("Unable to ping service; not connected", 40000,
-            HttpStatusCode.BadRequest);
+        public static readonly ErrorInfo DefaultError = new ErrorInfo("Unable to ping service; not connected", 40000, HttpStatusCode.BadRequest);
+
         public static readonly ErrorInfo TimeOutError = new ErrorInfo("Unable to ping service; Request timed out", 40800, HttpStatusCode.RequestTimeout);
 
         private Action<TimeSpan?, ErrorInfo> _callback;
@@ -20,7 +21,9 @@ namespace IO.Ably.Transport
         private bool _finished;
         private object _syncLock = new object();
         private DateTimeOffset _start = DateTimeOffset.MinValue;
+
         internal Func<DateTimeOffset> Now { get; set; }
+
         internal ILogger Logger { get; private set; }
 
         public ConnectionHeartbeatRequest(ConnectionManager manager, ICountdownTimer timer, Func<DateTimeOffset> nowFunc)
@@ -41,8 +44,7 @@ namespace IO.Ably.Transport
             return Execute(manager, new CountdownTimer("Connection heartbeat timer", manager.Logger), nowProvider, callback);
         }
 
-        public static ConnectionHeartbeatRequest Execute(ConnectionManager manager, ICountdownTimer timer,
-            Func<DateTimeOffset> nowProvider, Action<TimeSpan?, ErrorInfo> callback)
+        public static ConnectionHeartbeatRequest Execute(ConnectionManager manager, ICountdownTimer timer, Func<DateTimeOffset> nowProvider, Action<TimeSpan?, ErrorInfo> callback)
         {
             var request = new ConnectionHeartbeatRequest(manager, timer, nowProvider);
             return request.Send(callback);
@@ -58,7 +60,7 @@ namespace IO.Ably.Transport
 
                 return this;
             }
-            
+
             if (callback != null)
             {
                 _callback = callback;
@@ -83,7 +85,7 @@ namespace IO.Ably.Transport
         private TimeSpan? GetElapsedTime()
         {
             return Now() - _start;
-        }  
+        }
 
         private void OnInternalStateChanged(object sender, ConnectionStateChange e)
         {
@@ -115,7 +117,6 @@ namespace IO.Ably.Transport
                     }
                 }
             }
-            
         }
     }
 }

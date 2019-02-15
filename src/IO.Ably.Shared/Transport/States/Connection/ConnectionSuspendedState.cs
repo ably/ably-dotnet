@@ -7,18 +7,18 @@ namespace IO.Ably.Transport.States.Connection
     {
         private readonly ICountdownTimer _timer;
 
-        public ConnectionSuspendedState(IConnectionContext context, ILogger logger) :
-            this(context, null, new CountdownTimer("Suspended state timer", logger), logger)
+        public ConnectionSuspendedState(IConnectionContext context, ILogger logger)
+            : this(context, null, new CountdownTimer("Suspended state timer", logger), logger)
         {
         }
 
-        public ConnectionSuspendedState(IConnectionContext context, ErrorInfo error, ILogger logger) :
-            this(context, error, new CountdownTimer("Suspended state timer", logger), logger)
+        public ConnectionSuspendedState(IConnectionContext context, ErrorInfo error, ILogger logger)
+            : this(context, error, new CountdownTimer("Suspended state timer", logger), logger)
         {
         }
 
-        public ConnectionSuspendedState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer, ILogger logger) :
-            base(context, logger)
+        public ConnectionSuspendedState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer, ILogger logger)
+            : base(context, logger)
         {
             _timer = timer;
             Error = error ?? ErrorInfo.ReasonSuspended;
@@ -45,8 +45,14 @@ namespace IO.Ably.Transport.States.Connection
 
         public override Task OnAttachToContext()
         {
-            if(RetryIn.HasValue)
+            // This is a terminal state. Clear the transport.
+            Context.ClearAckQueueAndFailMessages(ErrorInfo.ReasonSuspended);
+
+            if (RetryIn.HasValue)
+            {
                 _timer.Start(RetryIn.Value, OnTimeOut);
+            }
+
             return TaskConstants.BooleanTrue;
         }
 

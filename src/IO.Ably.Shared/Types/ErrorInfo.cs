@@ -1,8 +1,9 @@
 using System;
 using System.Diagnostics;
 using System.Net;
-using Newtonsoft.Json.Linq;
+
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace IO.Ably
 {
@@ -28,15 +29,25 @@ namespace IO.Ably
         /// <summary>Ably error code (see https://github.com/ably/ably-common/blob/master/protocol/errors.json) </summary>
         [JsonProperty("code")]
         public int Code { get; set; }
+
         /// <summary>The http status code corresponding to this error</summary>
         [JsonProperty("statusCode")]
         public HttpStatusCode? StatusCode { get; set; }
+
         /// <summary>Additional reason information, where available</summary>
         [JsonProperty("message")]
         public string Message { get; set; }
 
+        /// <summary>
+        /// Is this Error as result of a 401 Unauthorized HTTP response
+        /// </summary>
         public bool IsUnAuthorizedError => StatusCode.HasValue &&
                                            StatusCode.Value == HttpStatusCode.Unauthorized;
+        /// <summary>
+        /// Is this Error as result of a 403 Forbidden HTTP response
+        /// </summary>
+        public bool IsForbiddenError => StatusCode.HasValue &&
+                                           StatusCode.Value == HttpStatusCode.Forbidden;
 
         public bool IsTokenError => Code >= Defaults.TokenErrorCodesRangeStart &&
                                     Code <= Defaults.TokenErrorCodesRangeEnd;
@@ -65,19 +76,21 @@ namespace IO.Ably
         {
             if (StatusCode.HasValue == false)
             {
-                return string.Format("Reason: {0}; Code: {1}", Message, Code);
+                return $"Reason: {Message}; Code: {Code}";
             }
-            return string.Format("Reason: {0}; Code: {1}; HttpStatusCode: ({2}){3}", Message, Code, (int)StatusCode.Value, StatusCode);
+
+            return $"Reason: {Message}; Code: {Code}; HttpStatusCode: {(int)StatusCode.Value} ({StatusCode})";
         }
 
         internal static ErrorInfo Parse(AblyResponse response)
         {
-            string reason = "";
-            int errorCode = 500;
+            // RSA4d, if we have 403 response default to code 40300, this may be overwritten
+            // if the response has a usable JSON body
+            int errorCode = response.StatusCode == HttpStatusCode.Forbidden ? 40300 : 50000;
+            string reason = string.Empty;
 
             if (response.Type == ResponseType.Json)
             {
-
                 try
                 {
                     var json = JObject.Parse(response.TextResponse);
@@ -89,11 +102,12 @@ namespace IO.Ably
                 }
                 catch (Exception ex)
                 {
+                    // If there is no json or there is something wrong we don't want to throw from here.
                     Debug.WriteLine(ex.Message);
-                    //If there is no json or there is something wrong we don't want to throw from here. The
                 }
             }
-            return new ErrorInfo(StringExtensions.IsEmpty(reason) ? "Unknown error" : reason, errorCode, response.StatusCode);
+
+            return new ErrorInfo(reason.IsEmpty() ? "Unknown error" : reason, errorCode, response.StatusCode);
         }
 
         public Exception AsException()

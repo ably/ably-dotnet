@@ -1,7 +1,5 @@
 using FluentAssertions;
 using IO.Ably.MessageEncoders;
-using IO.Ably.Rest;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -11,32 +9,30 @@ namespace IO.Ably.Tests.MessageEncodes
     {
         private object _objectData;
         private string _jsonData;
-        private int[] _arrayData = new []{ 1, 2, 3};
+        private int[] _arrayData = new[] { 1, 2, 3 };
         private string _jsonArrayData = "[1,2,3]";
-        private JsonEncoder encoder;
+        private JsonEncoder _encoder;
 
         public JsonEncoderTests()
         {
-            _objectData = new { Test = "test", Best = "best"};
+            _objectData = new { Test = "test", Best = "best" };
             _jsonData = JsonHelper.Serialize(_objectData);
-            encoder = new JsonEncoder(Defaults.Protocol);
+            _encoder = new JsonEncoder(Defaults.Protocol);
         }
 
         private Message EncodePayload(object data, string encoding = "")
         {
-            var payload = new Message() {Data = data, Encoding = encoding};
-            encoder.Encode(payload, new ChannelOptions());
+            var payload = new Message() { Data = data, Encoding = encoding };
+            _encoder.Encode(payload, new ChannelOptions());
             return payload;
         }
 
         private Message DecodePayload(object data, string encoding = "")
         {
             var payload = new Message() { Data = data, Encoding = encoding };
-            encoder.Decode(payload, new ChannelOptions());
+            _encoder.Decode(payload, new ChannelOptions());
             return payload;
         }
-
-
 
         public class Decode : JsonEncoderTests
         {
@@ -47,7 +43,7 @@ namespace IO.Ably.Tests.MessageEncodes
 
                 payload.Data.Should().BeOfType<JObject>();
 
-                var obj =(payload.Data as JObject).ToObject(_objectData.GetType());
+                var obj = (payload.Data as JObject).ToObject(_objectData.GetType());
                 obj.Should().Be(_objectData);
 
                 payload.Encoding.Should().BeEmpty();
@@ -74,7 +70,7 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithInvalidJsonPayload_ShouldReturnFailedResult()
             {
-                var result = encoder.Decode(new Message() { Data = "test", Encoding = "json" }, new ChannelOptions());
+                var result = _encoder.Decode(new Message() { Data = "test", Encoding = "json" }, new ChannelOptions());
                 result.IsFailure.Should().BeTrue();
                 result.Error.Message.Should().Be("Invalid Json data: 'test'");
             }
@@ -127,6 +123,5 @@ namespace IO.Ably.Tests.MessageEncodes
                 payload.Encoding.Should().BeEmpty();
             }
         }
-
     }
 }

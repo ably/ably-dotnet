@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 
 namespace IO.Ably
@@ -5,6 +6,10 @@ namespace IO.Ably
     public interface IAblyAuth
     {
         Task<TokenDetails> RequestTokenAsync(TokenParams tokenParams = null, AuthOptions options = null);
+
+        Task<TokenDetails> AuthorizeAsync(TokenParams tokenParams = null, AuthOptions options = null);
+
+        [Obsolete("This method will be removed in the future, please replace with a call to AuthorizeAsync")]
         Task<TokenDetails> AuthoriseAsync(TokenParams tokenParams = null, AuthOptions options = null);
 
         // Async because uses server time,
@@ -14,13 +19,13 @@ namespace IO.Ably
 
         string ClientId { get; }
 
-        TokenDetails RequestToken(TokenParams tokenParams = null,
-            AuthOptions options = null);
+        TokenDetails RequestToken(TokenParams tokenParams = null, AuthOptions options = null);
 
-        TokenDetails Authorise(TokenParams tokenParams = null,
-            AuthOptions options = null);
+        TokenDetails Authorize(TokenParams tokenParams = null, AuthOptions options = null);
 
-        string CreateTokenRequest(TokenParams tokenParams = null,
-            AuthOptions authOptions = null);
+        [Obsolete("This method will be removed in the future, please replace with a call to Authorize")]
+        TokenDetails Authorise(TokenParams tokenParams = null, AuthOptions options = null);
+
+        string CreateTokenRequest(TokenParams tokenParams = null, AuthOptions authOptions = null);
     }
 }
