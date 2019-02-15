@@ -31,6 +31,30 @@ namespace IO.Ably.Tests.AuthTests
 
         [Fact]
         [Trait("spec", "RSA10j")]
+        public async Task Authorize_TokenParamsAndAuthOptionsReplaceConfiguredDefaults()
+        {
+            var rest = GetRestClient();
+
+            var capabilityString = "{\"cansubscribe:*\":[\"subscribe\"]}";
+            var fakeApiKey = "foo.bar:baz";
+            var cap = new Capability(capabilityString);
+
+            var tokenParams = new TokenParams() { Capability = cap };
+
+            var token = new TokenDetails();
+            var authOptions = new AuthOptions(fakeApiKey);
+            var result = await rest.AblyAuth.AuthorizeAsync(tokenParams, authOptions);
+
+            var tokenRequest = Requests[0].PostData as TokenRequest;
+            tokenRequest.Capability.Should().Be(cap);
+            fakeApiKey.Should().StartWith(tokenRequest.KeyName);
+
+            rest.AblyAuth.CurrentAuthOptions.ShouldBeEquivalentTo(authOptions);
+            rest.AblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(tokenParams);
+        }
+
+        [Fact]
+        [Trait("spec", "RSA10j")]
         public async Task Authorize_PreservesTokenRequestOptionsForSubsequentRequests()
         {
             var client = GetRestClient();

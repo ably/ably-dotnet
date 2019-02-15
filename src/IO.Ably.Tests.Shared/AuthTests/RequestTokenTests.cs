@@ -205,6 +205,81 @@ namespace IO.Ably.Tests.AuthTests
         }
 
         [Fact]
+        [Trait("spec", "RSA8e")]
+        public async Task RequestToken_TokenParamsAndAuthOptionsReplaceConfiguredDefaults()
+        {
+            var rest = GetRestClient();
+
+            var capabilityString = "{\"cansubscribe:*\":[\"subscribe\"]}";
+            var fakeApiKey = "foo.bar:baz";
+            var cap = new Capability(capabilityString);
+
+            var tokenParams = new TokenParams() { Capability = cap };
+
+            var token = new TokenDetails();
+            var authOptions = new AuthOptions(fakeApiKey);
+            var result = await rest.AblyAuth.RequestTokenAsync(tokenParams, authOptions);
+
+            var tokenRequest = Requests[0].PostData as TokenRequest;
+            tokenRequest.Capability.Should().Be(cap);
+            fakeApiKey.Should().StartWith(tokenRequest.KeyName);
+
+            rest.AblyAuth.CurrentAuthOptions.Should().NotBe(authOptions);
+            rest.AblyAuth.CurrentTokenParams.Should().NotBe(tokenParams);
+        }
+
+        [Fact]
+        [Trait("spec", "RSA9h")]
+        public async Task CreateTokenRequest_TokenParamsAndAuthOptionsReplaceConfiguredDefaults()
+        {
+            var rest = GetRestClient();
+
+            var capabilityString = "{\"cansubscribe:*\":[\"subscribe\"]}";
+            var fakeApiKey = "foo.bar:baz";
+            var cap = new Capability(capabilityString);
+
+            var tokenParams = new TokenParams() { Capability = cap };
+
+            var token = new TokenDetails();
+            var authOptions = new AuthOptions(fakeApiKey);
+            var result = await rest.AblyAuth.CreateTokenRequestAsync(tokenParams, authOptions);
+
+            var tokenRequest = JsonHelper.Deserialize<TokenRequest>(result);
+
+            tokenRequest.Capability.Should().Be(cap);
+            fakeApiKey.Should().StartWith(tokenRequest.KeyName);
+
+            // should not replace any previously configured TokenParams and AuthOptions on instance
+            rest.AblyAuth.CurrentAuthOptions.Should().NotBe(authOptions);
+            rest.AblyAuth.CurrentTokenParams.Should().NotBe(tokenParams);
+        }
+
+        [Fact]
+        [Trait("spec", "RSA10j")]
+        public async Task Authorize_TokenParamsAndAuthOptionsReplaceConfiguredDefaults()
+        {
+            var rest = GetRestClient();
+
+            var capabilityString = "{\"cansubscribe:*\":[\"subscribe\"]}";
+            var fakeApiKey = "foo.bar:baz";
+            var cap = new Capability(capabilityString);
+
+            var tokenParams = new TokenParams() { Capability = cap };
+
+            var token = new TokenDetails();
+            var authOptions = new AuthOptions(fakeApiKey);
+            var result = await rest.AblyAuth.AuthorizeAsync(tokenParams, authOptions);
+
+            var tokenRequest = Requests[0].PostData as TokenRequest;
+            tokenRequest.Capability.Should().Be(cap);
+            fakeApiKey.Should().StartWith(tokenRequest.KeyName);
+
+            // should not replace any previously configured TokenParams and AuthOptions on instance
+            rest.AblyAuth.CurrentAuthOptions.ShouldBeEquivalentTo(authOptions);
+            rest.AblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(tokenParams);
+        }
+
+        [Fact]
         [Trait("spec", "RSA8c")]
         [Trait("spec", "RSA8c1a")]
         [Trait("spec", "RSA8c2")]
