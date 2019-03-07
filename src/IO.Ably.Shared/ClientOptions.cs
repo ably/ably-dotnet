@@ -269,9 +269,13 @@ namespace IO.Ably
         internal void SetIdempotentRestPublishingDefault(int majorVersion, int minorVersion)
         {
             // (TO3n) idempotentRestPublishing defaults to false for clients with version < 1.1, otherwise true.
-            if (majorVersion >= 1 && minorVersion >= 1)
+            if (majorVersion == 1 && minorVersion >= 1 || majorVersion > 1)
             {
                 IdempotentRestPublishing = true;
+            }
+            else
+            {
+                IdempotentRestPublishing = false;
             }
         }
     }
