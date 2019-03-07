@@ -318,8 +318,8 @@ namespace IO.Ably.Tests
             {
                 var clientOptions = new ClientOptions();
 
-                // Currently working against 1.0 so this should be false
-                clientOptions.IdempotentRestPublishing.Should().BeFalse();
+                // Now working against 1.1+ so this should be true
+                clientOptions.IdempotentRestPublishing.Should().BeTrue();
 
                 // Test the internal method that is called from
                 // ClientOptions constructor with different
