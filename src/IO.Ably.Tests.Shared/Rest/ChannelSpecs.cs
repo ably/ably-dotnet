@@ -150,7 +150,11 @@ namespace IO.Ably.Tests.Rest
             [Trait("spec", "RSL1e")]
             public async Task WithNoData_ShouldOnlySendNameProperty()
             {
-                var client = GetRestClient();
+                var client = GetRestClient(null, options =>
+                {
+                    // Idempotent publishing will add an id to the message, so disable for this test
+                    options.IdempotentRestPublishing = false;
+                });
 
                 var messageWithNoData = new Message() { Name = "NoData" };
                 await client.Channels.Get("nodata").PublishAsync(messageWithNoData);
@@ -162,7 +166,11 @@ namespace IO.Ably.Tests.Rest
             [Trait("spec", "RSL1e")]
             public async Task WithNoName_ShouldOnlySendDataProperty()
             {
-                var client = GetRestClient();
+                var client = GetRestClient(null, options =>
+                {
+                    // Idempotent publishing will add an id to the message, so disable for this test
+                    options.IdempotentRestPublishing = false;
+                });
 
                 var messageWithNoName = new Message() { Data = "NoName" };
                 await client.Channels.Get("noname").PublishAsync(messageWithNoName);
@@ -174,7 +182,11 @@ namespace IO.Ably.Tests.Rest
             [Trait("spec", "RSL1e")]
             public async Task WithBlankMessage_ShouldSendBlankMessage()
             {
-                var client = GetRestClient();
+                var client = GetRestClient(null, options =>
+                {
+                    // Idempotent publishing will add an id to the message, so disable for this test
+                    options.IdempotentRestPublishing = false;
+                });
 
                 var messageWithNoName = new Message();
                 await client.Channels.Get("blank-message").PublishAsync(messageWithNoName);
