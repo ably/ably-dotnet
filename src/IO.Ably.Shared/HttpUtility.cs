@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace IO.Ably
 {
@@ -135,6 +137,65 @@ namespace IO.Ably
                     Add(null, string.Empty);
                 }
             }
+        }
+
+        /// <summary>
+        /// For internal testing only.
+        /// This method does not URL encode and should be considered unsafe for general use.
+        /// </summary>
+        internal string ToQueryString()
+        {
+            var n = _data.Count;
+            if (n == 0)
+            {
+                return string.Empty;
+            }
+
+            var s = new StringBuilder();
+
+            foreach (var k in AllKeys)
+            {
+                var key = k;
+                var keyPrefix = (key != null) ? (key + "=") : string.Empty;
+
+                var values = GetValues(key);
+                if (s.Length > 0)
+                {
+                    s.Append('&');
+                }
+
+                if (values == null || values.Length == 0)
+                {
+                    s.Append(keyPrefix);
+                }
+                else
+                {
+                    string item;
+                    if (values.Length == 1)
+                    {
+                        s.Append(keyPrefix);
+                        item = values[0];
+                        s.Append(item);
+                    }
+                    else
+                    {
+                        for (var j = 0; j < values.Length; j++)
+                        {
+                            if (j > 0)
+                            {
+                                s.Append('&');
+                            }
+
+                            s.Append(keyPrefix);
+                            item = values[j];
+
+                            s.Append(item);
+                        }
+                    }
+                }
+            }
+
+            return s.ToString();
         }
     }
 }
