@@ -256,9 +256,11 @@ namespace IO.Ably
                 {
                     var response = await CallAuthUrl(authOptions, tokenParams);
 
-                    if (response.Type == ResponseType.Text)
+                    if (response.Type == ResponseType.Text || response.Type == ResponseType.Jwt)
                     {
-                        // Return token string
+                        // RSC8c:
+                        // The token retrieved is assumed by the library to be a token string
+                        // if the response has Content-Type "text/plain" or "application/jwt"
                         return new TokenDetails(response.TextResponse, Now);
                     }
 
