@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -11,10 +13,9 @@ namespace IO.Ably.Tests.Rest
     [Trait("requires", "sandbox")]
     public class JwtSandboxSpec : SandboxSpecs
     {
+        private readonly string _echoServer = "https://echo.ably.io/createJWT";
 
-        private string _echoServer = "https://echo.ably.io/createJWT";
-
-        private HttpClient _httpClient = new HttpClient();
+        private readonly HttpClient _httpClient = new HttpClient();
 
         public JwtSandboxSpec(AblySandboxFixture fixture, ITestOutputHelper output)
             : base(fixture, output)
@@ -22,27 +23,165 @@ namespace IO.Ably.Tests.Rest
         }
 
         [Fact]
-        public async Task CanGetJwtTokenFromEchoServer()
+        public async Task CanGetJwtTokenStringFromEchoServer()
         {
-            var token = await GetJwtTokenAsync();
+            var token = await GetJwtStringAsync();
             token.Should().NotBeNullOrEmpty();
         }
 
         [Theory]
-        [ProtocolData()]
-        public async Task WhenJwtTokenEmbedsAblyToken_CanMakeRequest(Protocol protocol)
+        [ProtocolData]
+        [Trait("spec", "RSA8g")]
+        [Trait("spec", "RSA8c")]
+        public async Task WithJwtToken_CanMakeRequest(Protocol protocol)
         {
             var jwt = await GetJwtTokenAsync();
             var client = await GetRestClient(protocol, options =>
             {
-                options.TokenDetails = new TokenDetails(jwt);
+                options.TokenDetails = jwt;
+            });
+
+            var stats = await client.StatsAsync();
+            stats.Should().NotBeNull();
+
+            // show that the token was not renewed
+            client.AblyAuth.CurrentToken.ShouldBeEquivalentTo(jwt);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSC1")]
+        [Trait("spec", "RSC1a")]
+        [Trait("spec", "RSC1c")]
+        [Trait("spec", "RSA3d")]
+        public async Task Jwt_WithEmbeddedJwtToken_CanMakeRequest(Protocol protocol)
+        {
+            var jwt = await GetJwtTokenAsync(jwtType: "embedded");
+            var client = await GetRestClient(protocol, options =>
+            {
+                options.TokenDetails = jwt;
+            });
+
+            var stats = await client.StatsAsync();
+            stats.Should().NotBeNull();
+
+            // show that the token was not renewed
+            client.AblyAuth.CurrentToken.ShouldBeEquivalentTo(jwt);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSC1")]
+        [Trait("spec", "RSC1a")]
+        [Trait("spec", "RSC1c")]
+        [Trait("spec", "RSA3d")]
+        public async Task Jwt_WithEmbeddedAndEncryptedJwtToken_CanMakeRequest(Protocol protocol)
+        {
+            var jwt = await GetJwtTokenAsync(jwtType: "embedded", encrypted: 1);
+            var client = await GetRestClient(protocol, options =>
+            {
+                options.TokenDetails = jwt;
+            });
+
+            var stats = await client.StatsAsync();
+            stats.Should().NotBeNull();
+
+            // show that the token was not renewed
+            client.AblyAuth.CurrentToken.ShouldBeEquivalentTo(jwt);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSA8g")]
+        [Trait("spec", "RSA8c")]
+        public async Task Jwt_WithInvalidJwtToken_CanNotMakeRequest(Protocol protocol)
+        {
+            var jwt = await GetJwtTokenAsync(invalid: true);
+            var client = await GetRestClient(protocol, options =>
+            {
+                options.TokenDetails = jwt;
+                options.Key = string.Empty; // prevents auto-renew
+            });
+
+            var didError = false;
+            try
+            {
+                var stats = await client.StatsAsync();
+                throw new Exception("This should not be reached");
+            }
+            catch (AblyException e)
+            {
+                didError = true;
+                e.ErrorInfo.Code.Should().Be(40144);
+                e.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized, "StatusCode should be 401"); // 401
+                e.Message.Should().Contain("Error verifying JWT; err = invalid signature");
+            }
+
+            didError.Should().BeTrue();
+            client.AblyAuth.CurrentToken.ShouldBeEquivalentTo(jwt);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSA4f")]
+        [Trait("spec", "RSA8c")]
+        public async Task Jwt_Request_ReturnType(Protocol protocol)
+        {
+            var defaultOptions = (await Fixture.GetSettings()).CreateDefaultOptions();
+            var keyParts = defaultOptions.Key.Split(':');
+            var key = keyParts[0];
+            var secret = keyParts[1];
+
+            var authParams = new Dictionary<string, string>
+            {
+                ["environment"] = "sandbox",
+                ["keyName"] = key,
+                ["keySecret"] = secret,
+                ["returnType"] = "jwt"
+            };
+
+            var client = await GetRestClient(protocol, options =>
+            {
+                options.AuthUrl = new Uri(_echoServer);
+                options.AuthParams = authParams;
+                options.Key = string.Empty;
             });
 
             var stats = await client.StatsAsync();
             stats.Should().NotBeNull();
         }
 
-        private async Task<string> GetJwtTokenAsync(
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSA8g")]
+        public async Task Jwt_Request_AuthCallback(Protocol protocol)
+        {
+            var jwt = await GetJwtTokenAsync();
+            var client = await GetRestClient(protocol, options =>
+                {
+                    options.AuthCallback = _ => Task.FromResult<object>(jwt);
+                });
+
+            var stats = await client.StatsAsync();
+            stats.Should().NotBeNull();
+
+            client.AblyAuth.CurrentToken.ShouldBeEquivalentTo(jwt);
+        }
+
+        private async Task<TokenDetails> GetJwtTokenAsync(
+            bool invalid = false,
+            int expiresIn = 3600,
+            string clientId = "testClientIdDotNet",
+            string capability = "{\"*\":[\"*\"]}",
+            string jwtType = "",
+            int encrypted = 0)
+        {
+            var jwtStr = await GetJwtStringAsync(invalid, expiresIn, clientId, capability, jwtType, encrypted);
+            var token = new TokenDetails(jwtStr) {Expires = DateTimeOffset.UtcNow.AddSeconds(expiresIn)};
+            return token;
+        }
+
+        private async Task<string> GetJwtStringAsync(
             bool invalid = false,
             int expiresIn = 3600,
             string clientId = "testClientIdDotNet",
@@ -79,7 +218,8 @@ namespace IO.Ably.Tests.Rest
             query["environment"] = "sandbox";
             builder.Query = query.ToQueryString();
 
-            return await _httpClient.GetStringAsync(builder.Uri);
+            var jwtStr = await _httpClient.GetStringAsync(builder.Uri);
+            return jwtStr;
         }
     }
 }
