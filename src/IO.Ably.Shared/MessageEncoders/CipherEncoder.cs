@@ -69,9 +69,9 @@ namespace IO.Ably.MessageEncoders
                 return Result.Ok();
             }
 
-            if (payload.Data is string)
+            if (payload.Data is string data)
             {
-                payload.Data = ((string)payload.Data).GetBytes();
+                payload.Data = data.GetBytes();
                 AddEncoding(payload, "utf-8");
             }
 
@@ -87,8 +87,8 @@ namespace IO.Ably.MessageEncoders
             return payload.Encoding.IsNotEmpty() && payload.Encoding.Contains(EncodingName);
         }
 
-        public CipherEncoder(Protocol protocol)
-            : base(protocol)
+        public CipherEncoder()
+            : base()
         {
         }
     }

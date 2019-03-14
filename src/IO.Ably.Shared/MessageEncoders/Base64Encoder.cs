@@ -5,13 +5,15 @@ namespace IO.Ably.MessageEncoders
 {
     internal class Base64Encoder : MessageEncoder
     {
+        private readonly Protocol _protocol;
+
         public override string EncodingName => "base64";
 
         public override Result Decode(IMessage payload, ChannelOptions options)
         {
-            if (CurrentEncodingIs(payload, EncodingName) && payload.Data is string)
+            if (CurrentEncodingIs(payload, EncodingName) && payload.Data is string data)
             {
-                payload.Data = ((string)payload.Data).FromBase64();
+                payload.Data = data.FromBase64();
                 RemoveCurrentEncodingPart(payload);
             }
 
@@ -26,8 +28,7 @@ namespace IO.Ably.MessageEncoders
                 return Result.Ok();
             }
 
-            var bytes = data as byte[];
-            if (bytes != null && Protocol == Protocol.Json)
+            if (data is byte[] bytes)
             {
                 payload.Data = bytes.ToBase64();
                 AddEncoding(payload, EncodingName);
@@ -36,8 +37,8 @@ namespace IO.Ably.MessageEncoders
             return Result.Ok();
         }
 
-        public Base64Encoder(Protocol protocol)
-            : base(protocol)
+        public Base64Encoder()
+            : base()
         {
         }
     }
