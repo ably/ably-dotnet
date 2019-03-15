@@ -485,8 +485,23 @@ namespace IO.Ably.MessageEncoders
 
         internal static T FromEncoded<T>(T encoded, ChannelOptions options = null) where T : IMessage
         {
-            DecodePayload(encoded, options);
+            var result = DecodePayload(encoded, options);
+            if (result.IsFailure)
+            {
+                throw new AblyException(result.Error);
+            }
+
             return encoded;
+        }
+
+        internal static T[] FromEncodedArray<T>(T[] encodedArray, ChannelOptions options = null) where T : IMessage
+        {
+            foreach (var encoded in encodedArray)
+            {
+                DecodePayload(encoded, options);
+            }
+
+            return encodedArray;
         }
     }
 }
