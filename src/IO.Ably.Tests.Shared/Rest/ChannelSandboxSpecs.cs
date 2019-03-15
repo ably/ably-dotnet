@@ -590,7 +590,7 @@ namespace IO.Ably.Tests.Rest
                 var fromEncoded = Message.FromEncoded(msg);
 
                 fromEncoded.Name.Should().Be("name");
-                fromEncoded.Data.ShouldBeEquivalentTo(d);
+                JsonHelper.Serialize(fromEncoded.Data).Should().Be(JsonHelper.Serialize(d));
                 fromEncoded.Encoding.Should().BeNullOrEmpty();
             }
 
@@ -608,7 +608,7 @@ namespace IO.Ably.Tests.Rest
                 var fromEncoded = Message.FromEncoded(msg);
 
                 fromEncoded.Name.Should().Be("name");
-                fromEncoded.Data.ShouldBeEquivalentTo(d);
+                JsonHelper.Serialize(fromEncoded.Data).Should().Be(JsonHelper.Serialize(d));
                 fromEncoded.Encoding.Should().Be("foo");
             }
 
