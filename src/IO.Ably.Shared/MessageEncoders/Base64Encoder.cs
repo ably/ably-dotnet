@@ -5,8 +5,6 @@ namespace IO.Ably.MessageEncoders
 {
     internal class Base64Encoder : MessageEncoder
     {
-        private readonly Protocol _protocol;
-
         public override string EncodingName => "base64";
 
         public override Result Decode(IMessage payload, ChannelOptions options)

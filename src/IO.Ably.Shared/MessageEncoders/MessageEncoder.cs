@@ -6,6 +6,8 @@ namespace IO.Ably.MessageEncoders
 {
     internal abstract class MessageEncoder
     {
+        internal ILogger Logger { get; set; }
+
         public abstract string EncodingName { get; }
 
         public abstract Result Encode(IMessage payload, ChannelOptions options);
