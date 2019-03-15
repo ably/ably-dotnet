@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.Serialization;
+using IO.Ably.MessageEncoders;
 using IO.Ably.Utils;
 using Newtonsoft.Json;
 
@@ -111,6 +112,16 @@ namespace IO.Ably
                 hashCode = (hashCode * 397) ^ (Encoding != null ? Encoding.GetHashCode() : 0);
                 return hashCode;
             }
+        }
+
+        public static Message FromEncoded(Message encoded, ChannelOptions options = null)
+        {
+            return MessageHandler.FromEncoded(encoded, options);
+        }
+
+        public static Message[] FromEncodedArray(Message[] encoded, ChannelOptions options = null)
+        {
+            return MessageHandler.FromEncodedArray(encoded, options);
         }
     }
 }
