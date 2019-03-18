@@ -265,6 +265,7 @@ namespace IO.Ably.Tests.Realtime
             [Theory]
             [ProtocolData]
             [Trait("spec", "RTP17")]
+            [Trait("spec", "RTP17b")]
             public async Task Presence_ShouldHaveInternalMapForCurrentConnectionId(Protocol protocol)
             {
                 /*
