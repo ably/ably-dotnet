@@ -382,7 +382,7 @@ namespace IO.Ably.Tests.Realtime
                 channelB.Presence.Map.Members.Should().HaveCount(2);
                 channelB.Presence.InternalMap.Members.Should().HaveCount(1);
 
-                // LEAVE
+                // LEAVE with synthesized message
                 msgA = null;
                 msgB = null;
                 await WaitForMultiple(2, partialDone =>
@@ -417,6 +417,36 @@ namespace IO.Ably.Tests.Realtime
                 msgB.Data.ToString().Should().Be("chB-leave");
                 channelB.Presence.Map.Members.Should().HaveCount(1);
                 channelB.Presence.InternalMap.Members.Should().HaveCount(0);
+
+                msgA = null;
+                msgB = null;
+                await WaitForMultiple(2, partialDone =>
+                {
+                    channelA.Presence.Subscribe(msg =>
+                    {
+                        msgA = msg;
+                        channelA.Presence.Unsubscribe();
+                        partialDone();
+                    });
+
+                    var synthesizedMsg = new PresenceMessage(PresenceAction.Leave, clientB.ClientId) { ConnectionId = null };
+                    synthesizedMsg.IsSynthesized().Should().BeTrue();
+                    channelB.Presence.OnPresence(new[] { synthesizedMsg }, null);
+                    partialDone();
+                });
+
+                msgA.Should().NotBeNull();
+                msgA.Action.Should().Be(PresenceAction.Leave);
+                msgA.ConnectionId.Should().NotBe(clientA.Connection.Id);
+                msgA.Data.ToString().Should().Be("chB-leave");
+                channelA.Presence.Map.Members.Should().HaveCount(1);
+                channelA.Presence.InternalMap.Members.Should().HaveCount(1);
+
+                msgB.Should().BeNull();
+                channelB.Presence.Map.Members.Should().HaveCount(1);
+
+                // message was synthesized so should not have been removed (RTP17b)
+                channelB.Presence.InternalMap.Members.Should().HaveCount(1);
 
                 // clean up
                 clientA.Close();
