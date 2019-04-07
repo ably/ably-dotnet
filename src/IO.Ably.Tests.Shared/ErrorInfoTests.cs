@@ -37,23 +37,39 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void ToString_WithStatusCodeCodeAndReason_ReturnsFormattedString()
+        [Trait("spec", "TI4")]
+        [Trait("spec", "TI5")]
+        public void ToString_WithStatusCodeCodeAndReason_ReturnsFormattedString_WithHrefFromCode()
         {
             // Arrange
-            var errorInfo = new ErrorInfo("Reason", 1000, HttpStatusCode.Accepted);
+            var errorInfo = new ErrorInfo("Error Reason", 1000, HttpStatusCode.Accepted);
 
             // Assert
-            Assert.Equal("Reason: Reason; Code: 1000; HttpStatusCode: 202 (Accepted)", errorInfo.ToString());
+            Assert.Equal("[ErrorInfo Reason: Error Reason (See https://help.ably.io/error/1000); Code: 1000; StatusCode: 202 (Accepted); Href: https://help.ably.io/error/1000;]", errorInfo.ToString());
         }
 
         [Fact]
-        public void ToString_WithCodeAndReasonWithoutStatusCode_ReturnsFormattedString()
+        [Trait("spec", "TI4")]
+        [Trait("spec", "TI5")]
+        public void ToString_WithCodeAndReasonWithoutStatusCodeAndWithoutHref_ReturnsFormattedString_WithHrefFromCode()
         {
             // Arrange
             var errorInfo = new ErrorInfo("Reason", 1000);
 
             // Assert
-            Assert.Equal("Reason: Reason; Code: 1000", errorInfo.ToString());
+            Assert.Equal("[ErrorInfo Reason: Reason (See https://help.ably.io/error/1000); Code: 1000; Href: https://help.ably.io/error/1000;]", errorInfo.ToString());
+        }
+
+        [Fact]
+        [Trait("spec", "TI4")]
+        [Trait("spec", "TI5")]
+        public void ToString_WithCodeAndHref_ReturnsFormattedString_ThatUsesHref()
+        {
+            // Arrange
+            var errorInfo = new ErrorInfo("Reason", 1000, null, "http://example.com");
+
+            // Assert
+            Assert.Equal("[ErrorInfo Reason: Reason (See http://example.com); Code: 1000; Href: http://example.com;]", errorInfo.ToString());
         }
     }
 }
