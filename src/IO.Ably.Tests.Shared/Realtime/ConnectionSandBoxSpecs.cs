@@ -450,6 +450,10 @@ namespace IO.Ably.Tests.Realtime
             channel.State.Should().Be(ChannelState.Attached);
             client.ConnectionManager.PendingMessages.Should().HaveCount(0);
 
+            var history = await channel.HistoryAsync();
+            history.Items.Should().HaveCount(1);
+            history.Items[0].Data.Should().Be("foo");
+
             // clean up
             client.Close();
         }
@@ -532,6 +536,10 @@ namespace IO.Ably.Tests.Realtime
 
             // queued messages should now have been sent
             client.ConnectionManager.PendingMessages.Should().HaveCount(0);
+
+            var history = await channel.HistoryAsync();
+            history.Items.Should().HaveCount(1);
+            history.Items[0].Data.Should().Be("foo");
 
             // clean up
             client.Close();
