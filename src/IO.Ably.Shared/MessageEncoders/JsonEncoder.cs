@@ -9,18 +9,13 @@ namespace IO.Ably.MessageEncoders
 {
     internal class JsonEncoder : MessageEncoder
     {
-        internal ILogger Logger { get; set; }
-
-        public override string EncodingName
-        {
-            get { return "json"; }
-        }
+        public override string EncodingName => "json";
 
         public override Result Decode(IMessage payload, ChannelOptions options)
         {
-            Logger = options.Logger;
+            Logger = options?.Logger ?? IO.Ably.DefaultLogger.LoggerInstance;
 
-            if (IsEmpty(payload.Data) || CurrentEncodingIs(payload, EncodingName) == false)
+            if (IsEmpty(payload.Data) || !CurrentEncodingIs(payload, EncodingName))
             {
                 return Result.Ok();
             }
@@ -60,8 +55,8 @@ namespace IO.Ably.MessageEncoders
             return payload.Data is string == false && payload.Data is byte[] == false;
         }
 
-        public JsonEncoder(Protocol protocol)
-            : base(protocol)
+        public JsonEncoder()
+            : base()
         {
         }
     }

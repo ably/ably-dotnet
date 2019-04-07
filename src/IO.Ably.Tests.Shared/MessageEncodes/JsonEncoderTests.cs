@@ -17,7 +17,7 @@ namespace IO.Ably.Tests.MessageEncodes
         {
             _objectData = new { Test = "test", Best = "best" };
             _jsonData = JsonHelper.Serialize(_objectData);
-            _encoder = new JsonEncoder(Defaults.Protocol);
+            _encoder = new JsonEncoder();
         }
 
         private Message EncodePayload(object data, string encoding = "")

@@ -5,13 +5,11 @@ namespace IO.Ably.MessageEncoders
 {
     internal class CipherEncoder : MessageEncoder
     {
-        internal ILogger Logger { get; set; }
-
         public override string EncodingName => "cipher";
 
         public override Result Decode(IMessage payload, ChannelOptions options)
         {
-            Logger = options.Logger ?? IO.Ably.DefaultLogger.LoggerInstance;
+            Logger = options?.Logger ?? DefaultLogger.LoggerInstance;
 
             if (IsEmpty(payload.Data))
             {
@@ -69,9 +67,9 @@ namespace IO.Ably.MessageEncoders
                 return Result.Ok();
             }
 
-            if (payload.Data is string)
+            if (payload.Data is string data)
             {
-                payload.Data = ((string)payload.Data).GetBytes();
+                payload.Data = data.GetBytes();
                 AddEncoding(payload, "utf-8");
             }
 
@@ -87,8 +85,8 @@ namespace IO.Ably.MessageEncoders
             return payload.Encoding.IsNotEmpty() && payload.Encoding.Contains(EncodingName);
         }
 
-        public CipherEncoder(Protocol protocol)
-            : base(protocol)
+        public CipherEncoder()
+            : base()
         {
         }
     }

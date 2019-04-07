@@ -14,7 +14,7 @@ namespace IO.Ably.Tests.MessageEncodes
         {
             _stringData = "random_string";
             _byteData = _stringData.GetBytes();
-            _encoder = new Utf8Encoder(Defaults.Protocol);
+            _encoder = new Utf8Encoder();
         }
 
         private Message DecodePayload(object data, string encoding = "")
