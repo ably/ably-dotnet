@@ -1,4 +1,5 @@
 using IO.Ably;
+using IO.Ably.MessageEncoders;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 
@@ -68,7 +69,7 @@ namespace IO.Ably.Realtime
 
                     break;
                 case ProtocolMessage.MessageAction.Message:
-                    var result = _connectionManager.Handler.DecodeProtocolMessage(protocolMessage, channel.Options);
+                    var result = MessageHandler.DecodeProtocolMessage(protocolMessage, channel.Options);
                     if (result.IsFailure)
                     {
                         channel.OnError(result.Error);
@@ -81,11 +82,11 @@ namespace IO.Ably.Realtime
 
                     break;
                 case ProtocolMessage.MessageAction.Presence:
-                    _connectionManager.Handler.DecodeProtocolMessage(protocolMessage, channel.Options);
+                    MessageHandler.DecodeProtocolMessage(protocolMessage, channel.Options);
                     channel.Presence.OnPresence(protocolMessage.Presence, null);
                     break;
                 case ProtocolMessage.MessageAction.Sync:
-                    _connectionManager.Handler.DecodeProtocolMessage(protocolMessage, channel.Options);
+                    MessageHandler.DecodeProtocolMessage(protocolMessage, channel.Options);
                     channel.Presence.OnPresence(protocolMessage.Presence, protocolMessage.ChannelSerial);
                     break;
             }

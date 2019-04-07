@@ -6,12 +6,7 @@ namespace IO.Ably.MessageEncoders
 {
     internal abstract class MessageEncoder
     {
-        protected readonly Protocol Protocol;
-
-        protected MessageEncoder(Protocol protocol)
-        {
-            Protocol = protocol;
-        }
+        internal ILogger Logger { get; set; }
 
         public abstract string EncodingName { get; }
 
@@ -21,7 +16,7 @@ namespace IO.Ably.MessageEncoders
 
         public bool IsEmpty(object data)
         {
-            return data == null || (data is string && ((string)data).IsEmpty());
+            return data == null || (data is string s && s.IsEmpty());
         }
 
         public void AddEncoding(IMessage payload, string encoding = null)

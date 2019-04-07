@@ -16,7 +16,7 @@ namespace IO.Ably.Tests.MessageEncodes
             _stringData = "random-string";
             _binaryData = _stringData.GetBytes();
             _base64Data = _binaryData.ToBase64();
-            _encoder = new Base64Encoder(protocol ?? Defaults.Protocol);
+            _encoder = new Base64Encoder();
         }
 
         public class Decode : Base64EncoderTests

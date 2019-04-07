@@ -15,14 +15,28 @@ namespace IO.Ably.MessageEncoders
     {
         internal ILogger Logger { get; private set; }
 
+        public static List<MessageEncoder> Encoders
+        {
+            get
+            {
+                if (_encoders == null)
+                {
+                    InitializeMessageEncoders();
+                }
+
+                return _encoders;
+            }
+        }
+
         private static readonly Type[] UnsupportedTypes = new[]
             {
                 typeof(short), typeof(int), typeof(double), typeof(float), typeof(decimal), typeof(DateTime), typeof(DateTimeOffset), typeof(byte), typeof(bool),
                 typeof(long), typeof(uint), typeof(ulong), typeof(ushort), typeof(sbyte)
             };
 
+        private static object _syncLock = new object();
         private readonly Protocol _protocol;
-        public readonly List<MessageEncoder> Encoders = new List<MessageEncoder>();
+        public static List<MessageEncoder> _encoders = null;
 
         public MessageHandler()
             : this(IO.Ably.DefaultLogger.LoggerInstance, Defaults.Protocol) { }
@@ -35,35 +49,42 @@ namespace IO.Ably.MessageEncoders
             Logger = logger;
             _protocol = protocol;
 
-            InitializeMessageEncoders(protocol);
+            InitializeMessageEncoders();
         }
 
-        private void InitializeMessageEncoders(Protocol protocol)
+        private static void InitializeMessageEncoders()
         {
-            Encoders.Add(new JsonEncoder(protocol));
-            Encoders.Add(new Utf8Encoder(protocol));
-            Encoders.Add(new CipherEncoder(protocol));
-            Encoders.Add(new Base64Encoder(protocol));
+            if (_encoders != null)
+            {
+                return;
+            }
 
-            Logger.Debug(
-                $"Initializing message encodings. {string.Join(",", Encoders.Select(x => x.EncodingName))} initialized");
+            lock (_syncLock)
+            {
+                _encoders = new List<MessageEncoder>
+                {
+                    new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), new Base64Encoder()
+                };
+            }
         }
 
         public IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response, ChannelOptions options)
         {
-            if (response.Type == ResponseType.Json)
+            if (response.Type != ResponseType.Json)
             {
-                var messages = JsonHelper.Deserialize<List<PresenceMessage>>(response.TextResponse);
-                ProcessMessages(messages, options);
-                return messages;
+                throw new AblyException(
+                    $"Response of type '{response.Type}' is invalid because MsgPack support was not enabled for this build.");
             }
+
+            var messages = JsonHelper.Deserialize<List<PresenceMessage>>(response.TextResponse);
+            ProcessMessages(messages, options);
+            return messages;
 
 #if MSGPACK
             var payloads = MsgPackHelper.Deserialise(response.Body, typeof(List<PresenceMessage>)) as List<PresenceMessage>;
             ProcessMessages(payloads, options);
             return payloads;
 #else
-            throw new AblyException($"Response of type '{response.Type}' is invalid because MsgPack support was not enabled for this build.");
 
 #endif
         }
@@ -177,7 +198,7 @@ namespace IO.Ably.MessageEncoders
             return result;
         }
 
-        internal Result DecodePayloads(ChannelOptions options, IEnumerable<IMessage> payloads)
+        internal static Result DecodePayloads(ChannelOptions options, IEnumerable<IMessage> payloads)
         {
             var result = Result.Ok();
             foreach (var payload in payloads)
@@ -188,7 +209,7 @@ namespace IO.Ably.MessageEncoders
             return result;
         }
 
-        private Result EncodePayload(IMessage payload, ChannelOptions options)
+        private static Result EncodePayload(IMessage payload, ChannelOptions options)
         {
             ValidatePayloadDataType(payload);
             var result = Result.Ok();
@@ -200,7 +221,7 @@ namespace IO.Ably.MessageEncoders
             return result;
         }
 
-        private void ValidatePayloadDataType(IMessage payload)
+        private static void ValidatePayloadDataType(IMessage payload)
         {
             if (payload.Data == null)
             {
@@ -225,7 +246,7 @@ namespace IO.Ably.MessageEncoders
             return Nullable.GetUnderlyingType(type);
         }
 
-        private Result DecodePayload(IMessage payload, ChannelOptions options)
+        private static Result DecodePayload(IMessage payload, ChannelOptions options)
         {
             var result = Result.Ok();
             foreach (var encoder in (Encoders as IEnumerable<MessageEncoder>).Reverse())
@@ -391,7 +412,7 @@ namespace IO.Ably.MessageEncoders
             return result;
         }
 
-        public Result DecodeProtocolMessage(ProtocolMessage protocolMessage, ChannelOptions channelOptions)
+        public static Result DecodeProtocolMessage(ProtocolMessage protocolMessage, ChannelOptions channelOptions)
         {
             var options = channelOptions ?? new ChannelOptions();
 
@@ -400,7 +421,7 @@ namespace IO.Ably.MessageEncoders
                 DecodeMessages(protocolMessage, protocolMessage.Presence, options));
         }
 
-        private Result DecodeMessages(ProtocolMessage protocolMessage, IEnumerable<IMessage> messages, ChannelOptions options)
+        private static Result DecodeMessages(ProtocolMessage protocolMessage, IEnumerable<IMessage> messages, ChannelOptions options)
         {
             var result = Result.Ok();
             var index = 0;
@@ -460,6 +481,27 @@ namespace IO.Ably.MessageEncoders
             isMsgPack = _protocol == Protocol.MsgPack;
 #endif
             return isMsgPack;
+        }
+
+        internal static T FromEncoded<T>(T encoded, ChannelOptions options = null) where T : IMessage
+        {
+            var result = DecodePayload(encoded, options);
+            if (result.IsFailure)
+            {
+                throw new AblyException(result.Error);
+            }
+
+            return encoded;
+        }
+
+        internal static T[] FromEncodedArray<T>(T[] encodedArray, ChannelOptions options = null) where T : IMessage
+        {
+            foreach (var encoded in encodedArray)
+            {
+                DecodePayload(encoded, options);
+            }
+
+            return encodedArray;
         }
     }
 }

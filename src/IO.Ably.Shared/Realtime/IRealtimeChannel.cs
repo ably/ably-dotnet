@@ -16,6 +16,8 @@ namespace IO.Ably.Realtime
 
         ErrorInfo ErrorReason { get; }
 
+        ChannelProperties Properties { get; }
+
         event EventHandler<ChannelStateChange> StateChanged;
 
         event EventHandler<ChannelErrorEventArgs> Error;
