@@ -31,12 +31,37 @@ namespace IO.Ably.Tests.AuthTests
 
         [Fact]
         [Trait("spec", "RSA10j")]
+        public async Task Authorize_TokenParamsAndAuthOptionsReplaceConfiguredDefaults()
+        {
+            var rest = GetRestClient();
+
+            var capabilityString = "{\"cansubscribe:*\":[\"subscribe\"]}";
+            var fakeApiKey = "foo.bar:baz";
+            var cap = new Capability(capabilityString);
+
+            var tokenParams = new TokenParams() { Capability = cap };
+
+            var token = new TokenDetails();
+            var authOptions = new AuthOptions(fakeApiKey);
+            var result = await rest.AblyAuth.AuthorizeAsync(tokenParams, authOptions);
+
+            var tokenRequest = Requests[0].PostData as TokenRequest;
+            tokenRequest.Capability.Should().Be(cap);
+            fakeApiKey.Should().StartWith(tokenRequest.KeyName);
+
+            rest.AblyAuth.CurrentAuthOptions.ShouldBeEquivalentTo(authOptions);
+            rest.AblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(tokenParams);
+        }
+
+        [Fact]
+        [Trait("spec", "RSA10j")]
         public async Task Authorize_PreservesTokenRequestOptionsForSubsequentRequests()
         {
             var client = GetRestClient();
-            var tokenParams = new TokenParams() { Ttl = TimeSpan.FromMinutes(260) };
-            await client.Auth.AuthorizeAsync(tokenParams, null);
-            await client.Auth.AuthorizeAsync(null, new AuthOptions());
+            var tokenParams = TokenParams.WithDefaultsApplied();
+            tokenParams.Ttl = TimeSpan.FromMinutes(260);
+            await client.Auth.AuthorizeAsync(tokenParams);
+            await client.Auth.AuthorizeAsync();
             var data = LastRequest.PostData as TokenRequest;
             client.AblyAuth.CurrentTokenParams.ShouldBeEquivalentTo(tokenParams);
             data.Ttl.Should().Be(TimeSpan.FromMinutes(260));
@@ -48,8 +73,10 @@ namespace IO.Ably.Tests.AuthTests
         {
             var client = GetRestClient();
             var testAblyAuth = new TestAblyAuth(client.Options, client);
-            var customTokenParams = new TokenParams() { Ttl = TimeSpan.FromHours(2), Timestamp = Now.AddHours(1) };
-            var customAuthOptions = new AuthOptions() { UseTokenAuth = true };
+            var customTokenParams = TokenParams.WithDefaultsApplied();
+            customTokenParams.Merge(new TokenParams {Ttl = TimeSpan.FromHours(2), Timestamp = Now.AddHours(1)});
+            var customAuthOptions = AuthOptions.FromExisting(testAblyAuth.Options);
+            customAuthOptions.UseTokenAuth = true;
 
             await testAblyAuth.AuthorizeAsync(customTokenParams, customAuthOptions);
             var expectedTokenParams = customTokenParams.Clone();
@@ -69,8 +96,12 @@ namespace IO.Ably.Tests.AuthTests
                 opts => opts.TokenDetails = new TokenDetails("boo") { Expires = Now.AddHours(10) });
 
             var testAblyAuth = new TestAblyAuth(client.Options, client);
-            var customTokenParams = new TokenParams() { Ttl = TimeSpan.FromHours(2), Timestamp = Now.AddHours(1) };
-            var customAuthOptions = new AuthOptions() { UseTokenAuth = true };
+            var customTokenParams = TokenParams.WithDefaultsApplied();
+            customTokenParams.Ttl = TimeSpan.FromHours(2);
+            customTokenParams.Timestamp = Now.AddHours(1);
+
+            var customAuthOptions = AuthOptions.FromExisting(testAblyAuth.Options);
+            customAuthOptions.UseTokenAuth = true;
 
             await testAblyAuth.AuthorizeAsync(customTokenParams, customAuthOptions);
             var expectedTokenParams = customTokenParams.Clone();
@@ -79,7 +110,6 @@ namespace IO.Ably.Tests.AuthTests
             testAblyAuth.CurrentAuthOptions.Should().BeSameAs(customAuthOptions);
         }
 
-        // This Test delegate all the work to RequestToken which has tests coving the following spec items
         [Fact]
         [Trait("spec", "RSA10b")]
         [Trait("spec", "RSA10e")]
@@ -89,8 +119,10 @@ namespace IO.Ably.Tests.AuthTests
         {
             var client = GetRestClient();
             var testAblyAuth = new TestAblyAuth(client.Options, client);
-            var customTokenParams = new TokenParams() { Ttl = TimeSpan.FromHours(2) };
-            var customAuthOptions = new AuthOptions() { UseTokenAuth = true };
+            testAblyAuth.Options.UseTokenAuth = true;
+            var customAuthOptions = testAblyAuth.Options;
+            var customTokenParams = TokenParams.WithDefaultsApplied();
+            customTokenParams.Ttl = TimeSpan.FromHours(2);
 
             await testAblyAuth.AuthorizeAsync(customTokenParams, customAuthOptions);
 
@@ -116,9 +148,9 @@ namespace IO.Ably.Tests.AuthTests
 
             // RSA10k: If the AuthOption argument’s queryTime attribute is true
             // it will obtain the server time once and persist the offset from the local clock.
-            var customAuthOptions = new AuthOptions { QueryTime = true };
             var tokenParams = new TokenParams();
-            await testAblyAuth.AuthorizeAsync(tokenParams, customAuthOptions);
+            testAblyAuth.Options.QueryTime = true;
+            await testAblyAuth.AuthorizeAsync(tokenParams);
             serverTimeCalled.Should().BeTrue();
             testAblyAuth.GetServerTimeOffset().Should().HaveValue();
             testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(await testAblyAuth.GetServerTime());
@@ -138,7 +170,7 @@ namespace IO.Ably.Tests.AuthTests
             // RSA10k: All future token requests generated directly or indirectly via a call to
             // authorize will not obtain the server time, but instead use the local clock
             // offset to calculate the server time.
-            await testAblyAuth.AuthorizeAsync(null, customAuthOptions);
+            await testAblyAuth.AuthorizeAsync();
 
             // ServerTime() should not have been called again
             serverTimeCalled.Should().BeFalse();
@@ -161,7 +193,8 @@ namespace IO.Ably.Tests.AuthTests
             };
 
             // demonstrate that we don't need Querytime set to get a server time offset
-            await testAblyAuth.AuthorizeAsync(tokenParams, new AuthOptions { QueryTime = false });
+            testAblyAuth.Options.QueryTime = false;
+            await testAblyAuth.AuthorizeAsync(tokenParams);
 
             // offset should be cached
             serverTimeCalled.Should().BeFalse();
@@ -170,10 +203,16 @@ namespace IO.Ably.Tests.AuthTests
             tokenRequest.Timestamp.Should().HaveValue();
             tokenRequest.Timestamp.Should().BeCloseTo(await testAblyAuth.GetServerTime());
 
-            // reset auth object
-            testAblyAuth = new TestAblyAuth(client.Options, client);
+            tokenRequest = null;
 
-            await testAblyAuth.AuthorizeAsync(tokenParams, new AuthOptions { QueryTime = false });
+            // reset auth object
+            testAblyAuth = new TestAblyAuth(client.Options, client, () =>
+            {
+                serverTimeCalled = true;
+                return Task.Run(() => DateTimeOffset.UtcNow);
+            });
+            testAblyAuth.Options.QueryTime = false;
+            await testAblyAuth.AuthorizeAsync();
 
             // the TokenRequest should not have been set using an offset, but should have been set
             tokenRequest.Timestamp.Should().HaveValue();

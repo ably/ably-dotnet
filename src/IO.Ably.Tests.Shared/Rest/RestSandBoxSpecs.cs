@@ -54,7 +54,7 @@ namespace IO.Ably.Tests
             public async Task WhenTokenIsRenewable_ShouldRenewToken(Protocol protocol)
             {
                 var authClient = await GetRestClient(protocol);
-                var almostExpiredToken = await authClient.Auth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(1) }, null);
+                var almostExpiredToken = await authClient.Auth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(1) });
                 await Task.Delay(TimeSpan.FromSeconds(2));
 
                 // Add this to fool the client it is a valid token
@@ -66,7 +66,7 @@ namespace IO.Ably.Tests
                     options.TokenDetails = almostExpiredToken;
                     options.ClientId = "123";
                     options.Key = string.Empty;
-                    options.AuthCallback = request => authClient.AblyAuth.RequestTokenAsync(request, null).Convert();
+                    options.AuthCallback = request => authClient.AblyAuth.RequestTokenAsync(request).Convert();
                 });
 
                 await client.StatsAsync();

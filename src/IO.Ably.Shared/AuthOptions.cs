@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace IO.Ably
@@ -117,6 +118,18 @@ namespace IO.Ably
         internal ApiKey ParseKey()
         {
             return ApiKey.Parse(Key);
+        }
+
+        /// <summary>
+        /// Creates a new AuthOptions instance using values from an existing instance
+        /// </summary>
+        /// <param name="existing"></param>
+        /// <returns>AuthOptions</returns>
+        internal static AuthOptions FromExisting(AuthOptions existing)
+        {
+            var newOpts = new AuthOptions();
+            newOpts.Merge(existing);
+            return newOpts;
         }
     }
 }

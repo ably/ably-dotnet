@@ -177,35 +177,41 @@ namespace IO.Ably
         /// has a valid token. It would typically be used to issue tokens for use by other clients.
         /// </summary>
         /// <param name="tokenParams">The <see cref="TokenRequest"/> data used for the token</param>
-        /// <param name="options">Extra <see cref="AuthOptions"/> used for creating a token </param>
+        /// <param name="authOptions">Extra <see cref="AuthOptions"/> used for creating a token </param>
         /// <returns>A valid ably token</returns>
         /// <exception cref="AblyException"></exception>
-        public virtual async Task<TokenDetails> RequestTokenAsync(TokenParams tokenParams = null, AuthOptions options = null)
+        public virtual async Task<TokenDetails> RequestTokenAsync(TokenParams tokenParams = null, AuthOptions authOptions = null)
         {
-            var mergedOptions = options != null ? options.Merge(Options) : Options;
+            EnsureSecureConnection();
+
+            // (RSA8e)
+            authOptions = authOptions ?? CurrentAuthOptions ?? Options ?? new AuthOptions();
+            tokenParams = tokenParams ?? CurrentTokenParams ?? TokenParams.WithDefaultsApplied();
+
             string keyId = string.Empty, keyValue = string.Empty;
-            if (mergedOptions.Key.IsNotEmpty())
+            if (authOptions.Key.IsNotEmpty())
             {
-                var key = mergedOptions.ParseKey();
+                var key = authOptions.ParseKey();
                 keyId = key.KeyName;
                 keyValue = key.KeySecret;
             }
 
-            var tokenParamsWithDefaults = MergeTokenParamsWithDefaults(tokenParams);
+            if (tokenParams.ClientId.IsEmpty())
+            {
+                tokenParams.ClientId = ClientId;
+            }
 
-            SetTokenParamsTimestamp(mergedOptions, tokenParamsWithDefaults);
-
-            EnsureSecureConnection();
+            SetTokenParamsTimestamp(authOptions, tokenParams);
 
             var request = _rest.CreatePostRequest($"/keys/{keyId}/requestToken");
             request.SkipAuthentication = true;
             TokenRequest postData = null;
-            if (mergedOptions.AuthCallback != null)
+            if (authOptions.AuthCallback != null)
             {
                 bool shouldCatch = true;
                 try
                 {
-                    var callbackResult = await mergedOptions.AuthCallback(tokenParamsWithDefaults);
+                    var callbackResult = await authOptions.AuthCallback(tokenParams);
 
                     if (callbackResult == null)
                     {
@@ -244,11 +250,11 @@ namespace IO.Ably
                         statusCode), ex);
                 }
             }
-            else if (mergedOptions.AuthUrl.IsNotEmpty())
+            else if (authOptions.AuthUrl.IsNotEmpty())
             {
                 try
                 {
-                    var response = await CallAuthUrl(mergedOptions, tokenParamsWithDefaults);
+                    var response = await CallAuthUrl(authOptions, tokenParams);
 
                     if (response.Type == ResponseType.Text)
                     {
@@ -285,7 +291,7 @@ namespace IO.Ably
                     throw new AblyException("TokenAuth is on but there is no way to generate one", 80019);
                 }
 
-                postData = new TokenRequest(Now).Populate(tokenParamsWithDefaults, keyId, keyValue);
+                postData = new TokenRequest(Now).Populate(tokenParams, keyId, keyValue);
             }
 
             request.PostData = postData;
@@ -300,17 +306,17 @@ namespace IO.Ably
             return result;
         }
 
-        private void SetTokenParamsTimestamp(AuthOptions mergedOptions, TokenParams tokenParamsWithDefaults)
+        private void SetTokenParamsTimestamp(AuthOptions authOptions, TokenParams tokenParams)
         {
-            if (mergedOptions.QueryTime.GetValueOrDefault(false)
+            if (authOptions.QueryTime.GetValueOrDefault(false)
                 && !ServerTimeOffset().HasValue)
             {
                 SetServerTimeOffset();
             }
 
-            if (!tokenParamsWithDefaults.Timestamp.HasValue)
+            if (!tokenParams.Timestamp.HasValue)
             {
-                tokenParamsWithDefaults.Timestamp = ServerTimeOffset();
+                tokenParams.Timestamp = ServerTimeOffset();
             }
         }
 
@@ -397,20 +403,19 @@ namespace IO.Ably
         /// where overridden with the options supplied in the call.
         /// </summary>
         /// <param name="tokenParams"><see cref="TokenParams"/> custom parameter. Pass null and default token request options will be generated used the options passed when creating the client</param>
-        /// <param name="options"><see cref="AuthOptions"/> custom options.</param>
+        /// <param name="authOptions"><see cref="AuthOptions"/> custom options.</param>
         /// <returns>Returns a valid token</returns>
         /// <exception cref="AblyException">Throws an ably exception representing the server response</exception>
-        public async Task<TokenDetails> AuthorizeAsync(TokenParams tokenParams = null, AuthOptions options = null)
+        public async Task<TokenDetails> AuthorizeAsync(TokenParams tokenParams = null, AuthOptions authOptions = null)
         {
-            var authOptions = options ?? new AuthOptions();
-
-            authOptions.Merge(CurrentAuthOptions);
+            // RSA10j - TokenParams and AuthOptions supersede any previously client library configured TokenParams and AuthOptions
+            authOptions = authOptions ?? CurrentAuthOptions ?? Options;
             SetCurrentAuthOptions(authOptions);
 
-            var authTokenParams = MergeTokenParamsWithDefaults(tokenParams);
-            SetCurrentTokenParams(authTokenParams);
+            tokenParams = tokenParams ?? CurrentTokenParams ?? TokenParams.WithDefaultsApplied();
+            SetCurrentTokenParams(tokenParams);
 
-            CurrentToken = await RequestTokenAsync(authTokenParams, options);
+            CurrentToken = await RequestTokenAsync(tokenParams, authOptions);
             AuthMethod = AuthMethod.Token;
             var eventArgs = new AblyAuthUpdatedEventArgs(CurrentToken);
             AuthUpdated?.Invoke(this, eventArgs);
@@ -478,19 +483,22 @@ namespace IO.Ably
         /// <returns></returns>
         public async Task<string> CreateTokenRequestAsync(TokenParams tokenParams, AuthOptions authOptions)
         {
-            var mergedOptions = authOptions != null ? authOptions.Merge(Options) : Options;
+            authOptions = authOptions ?? CurrentAuthOptions ?? Options;
+            tokenParams = tokenParams ?? CurrentTokenParams ?? TokenParams.WithDefaultsApplied();
 
-            if (string.IsNullOrEmpty(mergedOptions.Key))
+            if (string.IsNullOrEmpty(authOptions.Key))
             {
                 throw new AblyException("No key specified", 40101, HttpStatusCode.Unauthorized);
             }
 
-            var tokenParamsWithDefaults = MergeTokenParamsWithDefaults(tokenParams);
+            SetTokenParamsTimestamp(authOptions, tokenParams);
+            if (authOptions.QueryTime.GetValueOrDefault(false))
+            {
+                tokenParams.Timestamp = await _rest.TimeAsync();
+            }
 
-            SetTokenParamsTimestamp(mergedOptions, tokenParamsWithDefaults);
-
-            ApiKey key = mergedOptions.ParseKey();
-            var request = new TokenRequest(Now).Populate(tokenParamsWithDefaults, key.KeyName, key.KeySecret);
+            var apiKey = authOptions.ParseKey();
+            var request = new TokenRequest(Now).Populate(tokenParams, apiKey.KeyName, apiKey.KeySecret);
             return JsonHelper.Serialize(request);
         }
 
