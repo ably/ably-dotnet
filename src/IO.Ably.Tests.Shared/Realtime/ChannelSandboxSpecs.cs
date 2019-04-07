@@ -654,7 +654,7 @@ namespace IO.Ably.Tests.Realtime
 
             var channel = client.Channels.Get("test".AddRandomSuffix());
 
-            var tsc = new TaskCompletionAwaiter(5000);
+            var tsc = new TaskCompletionAwaiter(15000);
             client.Connection.Once(ConnectionEvent.Disconnected, change =>
             {
                 // place a message on the queue
