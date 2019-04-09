@@ -284,7 +284,7 @@ namespace IO.Ably
             if(request.Protocol == Protocol.MsgPack)
                 message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(request.Protocol)));
 #endif
-            //Always accept JSON
+            // Always accept JSON
             message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.Json)));
             if (message.Method == HttpMethod.Post)
             {
@@ -343,7 +343,7 @@ namespace IO.Ably
             string protocol = Options.IsSecure ? "https://" : "http://";
             if (request.Url.StartsWith("http"))
             {
-                return new Uri(request.Url);
+                return new Uri($"{request.Url}{GetQuery(request)}");
             }
 
             return new Uri($"{protocol}{host}{(Options.Port.HasValue ? ":" + Options.Port.Value : string.Empty)}{request.Url}{GetQuery(request)}");
@@ -354,6 +354,10 @@ namespace IO.Ably
             var query = request.QueryParameters.ToQueryString();
             if (query.IsNotEmpty())
             {
+                if (request.Url.Contains('?'))
+                {
+                    return "&" + query;
+                }
                 return "?" + query;
             }
 
