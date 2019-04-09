@@ -33,6 +33,8 @@ namespace IO.Ably.Transport.States.Connection
 
         public virtual bool IsUpdate { get; protected set; }
 
+        public ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonUnknown;
+
         public virtual void Connect()
         {
         }

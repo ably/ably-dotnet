@@ -1556,13 +1556,26 @@ namespace IO.Ably.Tests.Realtime
                     await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager, client.Logger));
                     await client.WaitForState(ConnectionState.Disconnected);
 
-                    List<int> queueCounts = new List<int>();
                     Presence.QueuedPresenceMessage[] presenceMessages = null;
 
-                    channel.Presence.Enter(client.Connection.State.ToString(), (b, info) =>{ });
+                    var tsc = new TaskCompletionAwaiter();
+                    ErrorInfo err = null;
+                    bool? success = null;
+                    channel.Presence.Enter(client.Connection.State.ToString(), (b, info) =>
+                    {
+                        success = b;
+                        err = info;
+                        tsc.SetCompleted();
+                    });
                     presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
 
                     presenceMessages.Should().HaveCount(0);
+
+                    await tsc.Task;
+                    success.Should().HaveValue();
+                    success.Value.Should().BeFalse();
+                    err.Should().NotBeNull();
+                    err.Message.Should().Be("Unable enqueue message because Options.QueueMessages is set to False.");
 
                     // clean up
                     client.Close();
