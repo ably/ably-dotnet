@@ -4,8 +4,8 @@ namespace IO.Ably.MessageEncoders
 {
     internal class Utf8Encoder : MessageEncoder
     {
-        public Utf8Encoder(Protocol protocol)
-            : base(protocol)
+        public Utf8Encoder()
+            : base()
         {
         }
 

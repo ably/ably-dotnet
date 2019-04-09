@@ -121,6 +121,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Transport\TransportParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\MsWebSocketTransport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\MsWebSocketConnection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\ConnectionDetailsMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\ErrorInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HttpPaginatedResponse.cs" />

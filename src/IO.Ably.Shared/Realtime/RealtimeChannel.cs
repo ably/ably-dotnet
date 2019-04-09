@@ -38,11 +38,10 @@ namespace IO.Ably.Realtime
 
         protected override Action<Action> NotifyClient => RealtimeClient.NotifyExternalClients;
 
-        public string AttachedSerial { get; set; }
-
         public List<MessageAndCallback> QueuedMessages { get; set; } = new List<MessageAndCallback>(16);
 
         public ErrorInfo ErrorReason { get; internal set; }
+        public ChannelProperties Properties { get; } = new ChannelProperties();
 
         public event EventHandler<ChannelStateChange> StateChanged = delegate { };
 
@@ -416,7 +415,7 @@ namespace IO.Ably.Realtime
                 throw new AblyException("Channel is not attached. Cannot use untilAttach parameter");
             }
 
-            query.ExtraParameters.Add("fromSerial", AttachedSerial);
+            query.ExtraParameters.Add("fromSerial", Properties.AttachSerial);
         }
 
         private void PublishImpl(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback)
@@ -557,7 +556,7 @@ namespace IO.Ably.Realtime
                             Presence.SkipSync();
                         }
 
-                        AttachedSerial = protocolMessage.ChannelSerial;
+                        Properties.AttachSerial = protocolMessage.ChannelSerial;
                     }
 
                     if (IsTerminalConnectionState == false)

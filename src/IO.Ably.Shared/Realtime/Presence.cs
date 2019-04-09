@@ -417,7 +417,7 @@ namespace IO.Ably.Realtime
                             break;
                         case PresenceAction.Leave:
                             broadcast &= Map.Remove(message);
-                            if (updateInternalPresence)
+                            if (updateInternalPresence && !message.IsSynthesized())
                             {
                                 InternalMap.Remove(message);
                             }

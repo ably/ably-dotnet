@@ -265,6 +265,7 @@ namespace IO.Ably.Tests.Realtime
             [Theory]
             [ProtocolData]
             [Trait("spec", "RTP17")]
+            [Trait("spec", "RTP17b")]
             public async Task Presence_ShouldHaveInternalMapForCurrentConnectionId(Protocol protocol)
             {
                 /*
@@ -379,6 +380,19 @@ namespace IO.Ably.Tests.Realtime
                 msgB.ConnectionId.Should().Be(clientB.Connection.Id);
                 msgB.Data.ToString().Should().Be("chB-update");
                 channelB.Presence.Map.Members.Should().HaveCount(2);
+                channelB.Presence.InternalMap.Members.Should().HaveCount(1);
+
+                // LEAVE with synthesized message
+                msgA = null;
+                msgB = null;
+                var synthesizedMsg = new PresenceMessage(PresenceAction.Leave, clientB.ClientId) { ConnectionId = null };
+                synthesizedMsg.IsSynthesized().Should().BeTrue();
+                channelB.Presence.OnPresence(new[] { synthesizedMsg }, null);
+
+                msgB.Should().BeNull();
+                channelB.Presence.Map.Members.Should().HaveCount(2);
+
+                // message was synthesized so should not have been removed (RTP17b)
                 channelB.Presence.InternalMap.Members.Should().HaveCount(1);
 
                 // LEAVE
