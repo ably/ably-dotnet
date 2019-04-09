@@ -1,5 +1,26 @@
 # Change Log
 
+## [1.1.0](https://github.com/ably/ably-dotnet/tree/1.1.0)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.0-beta1...1.1.0)
+
+**Closed issues:**
+
+- Release nugget still shows 0.8.11 [\#304](https://github.com/ably/ably-dotnet/issues/304)
+
+**Merged pull requests:**
+
+- RTL11 test regression fix [\#315](https://github.com/ably/ably-dotnet/pull/315) ([withakay](https://github.com/withakay))
+- RTP16b fix [\#312](https://github.com/ably/ably-dotnet/pull/312) ([withakay](https://github.com/withakay))
+- Fix for issue \#299.  [\#311](https://github.com/ably/ably-dotnet/pull/311) ([withakay](https://github.com/withakay))
+- RTP17b test identification [\#310](https://github.com/ably/ably-dotnet/pull/310) ([withakay](https://github.com/withakay))
+- TM3 [\#309](https://github.com/ably/ably-dotnet/pull/309) ([withakay](https://github.com/withakay))
+- RTL15/a [\#308](https://github.com/ably/ably-dotnet/pull/308) ([withakay](https://github.com/withakay))
+- modifications to ErrorInfo to meet TI4 & TI5 spec [\#307](https://github.com/ably/ably-dotnet/pull/307) ([withakay](https://github.com/withakay))
+- JWT support [\#306](https://github.com/ably/ably-dotnet/pull/306) ([withakay](https://github.com/withakay))
+- fix test for idempotent rest publishing for version 1.1 of spec. [\#305](https://github.com/ably/ably-dotnet/pull/305) ([withakay](https://github.com/withakay))
+- RSA8e, RSA9h and RSA10j [\#301](https://github.com/ably/ably-dotnet/pull/301) ([withakay](https://github.com/withakay))
+
 ## [1.1.0-beta1](https://github.com/ably/ably-dotnet/tree/1.1.0-beta1)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/0.8.11...1.1.0-beta1)
