@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Net;
-
+using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -25,6 +25,7 @@ namespace IO.Ably
         internal const string CodePropertyName = "code";
         internal const string StatusCodePropertyName = "statusCode";
         internal const string ReasonPropertyName = "message";
+        internal const string HrefBase = "https://help.ably.io/error/";
 
         /// <summary>Ably error code (see https://github.com/ably/ably-common/blob/master/protocol/errors.json) </summary>
         [JsonProperty("code")]
@@ -39,10 +40,17 @@ namespace IO.Ably
         public string Message { get; set; }
 
         /// <summary>
+        /// Link to specification detail for this error code, where available. Spec TI4.
+        /// </summary>
+        [JsonProperty("href")]
+        public string Href { get; set; }
+
+        /// <summary>
         /// Is this Error as result of a 401 Unauthorized HTTP response
         /// </summary>
         public bool IsUnAuthorizedError => StatusCode.HasValue &&
                                            StatusCode.Value == HttpStatusCode.Unauthorized;
+
         /// <summary>
         /// Is this Error as result of a 403 Forbidden HTTP response
         /// </summary>
@@ -55,31 +63,51 @@ namespace IO.Ably
         public ErrorInfo() { }
 
         public ErrorInfo(string reason)
+            : this(reason, 0)
         {
-            Message = reason;
         }
 
         public ErrorInfo(string reason, int code)
+            : this(reason, code, null)
         {
-            Code = code;
-            Message = reason;
         }
 
-        public ErrorInfo(string reason, int code, HttpStatusCode? statusCode = null)
+        public ErrorInfo(string reason, int code, HttpStatusCode? statusCode = null, string href = null)
         {
             Code = code;
             StatusCode = statusCode;
             Message = reason;
+            if (href.IsEmpty() && code > 0)
+            {
+                Href = GetHref(code);
+            }
+            else
+            {
+                Href = href;
+            }
         }
 
         public override string ToString()
         {
-            if (StatusCode.HasValue == false)
+            StringBuilder result = new StringBuilder("[ErrorInfo ");
+            result.Append("Reason: ").Append(LogMessage()).Append("; ");
+            if (Code > 0)
             {
-                return $"Reason: {Message}; Code: {Code}";
+                result.Append("Code: ").Append(Code).Append("; ");
             }
 
-            return $"Reason: {Message}; Code: {Code}; HttpStatusCode: {(int)StatusCode.Value} ({StatusCode})";
+            if (StatusCode != null)
+            {
+                result.Append("StatusCode: ").Append((int)StatusCode).Append(" (").Append(StatusCode.ToString()).Append(")").Append("; ");
+            }
+
+            if (Href != null)
+            {
+                result.Append("Href: ").Append(Href).Append(";");
+            }
+
+            result.Append(']');
+            return result.ToString();
         }
 
         internal static ErrorInfo Parse(AblyResponse response)
@@ -118,6 +146,35 @@ namespace IO.Ably
         public bool IsRetryableStatusCode()
         {
             return StatusCode.HasValue && IsRetryableStatusCode(StatusCode.Value);
+        }
+
+        private static string GetHref(int code)
+        {
+            return $"{HrefBase}{code}";
+        }
+
+        /// <summary>
+        /// Spec: TI5
+        /// </summary>
+        private string LogMessage()
+        {
+            string errHref = null;
+            var logMessage = Message ?? string.Empty;
+            if (Href.IsNotEmpty())
+            {
+                errHref = Href;
+            }
+            else if (Code > 0)
+            {
+                errHref = GetHref(Code);
+            }
+
+            if (errHref != null && !logMessage.Contains(errHref))
+            {
+                logMessage += " (See " + errHref + ")";
+            }
+
+            return logMessage;
         }
 
         public static bool IsRetryableStatusCode(HttpStatusCode statusCode)

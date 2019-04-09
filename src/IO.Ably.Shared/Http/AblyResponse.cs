@@ -14,7 +14,8 @@ namespace IO.Ably
     {
         Json,
         Binary,
-        Text
+        Text,
+        Jwt
     }
 
     internal class AblyResponse
@@ -46,7 +47,7 @@ namespace IO.Ably
             Type = GetResponseType(contentType);
             Encoding = encoding.IsNotEmpty() ? encoding : "utf-8";
 
-            if (body != null && (Type == ResponseType.Json || Type == ResponseType.Text))
+            if (body != null && (Type == ResponseType.Json || Type == ResponseType.Text || Type == ResponseType.Jwt))
             {
                 TextResponse = System.Text.Encoding.GetEncoding(Encoding).GetString(body, 0, body.Length);
             }
@@ -65,6 +66,8 @@ namespace IO.Ably
             {
                 case "application/json":
                     return ResponseType.Json;
+                case "application/jwt":
+                    return ResponseType.Jwt;
                 case "text/plain":
                     return ResponseType.Text;
                 default:
