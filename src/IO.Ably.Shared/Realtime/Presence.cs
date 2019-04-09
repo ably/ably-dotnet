@@ -349,7 +349,7 @@ namespace IO.Ably.Realtime
             {
                 msg.Callback?.Invoke(
                     false,
-                    new ErrorInfo("Unable enqueue message because Options.QueueMessages is set to False.", 50000, HttpStatusCode.InternalServerError));
+                    new ErrorInfo("Unable enqueue message because Options.QueueMessages is set to False.", _connection.Connection.ConnectionState.DefaultErrorInfo.Code, HttpStatusCode.ServiceUnavailable));
 
                 return false;
             }

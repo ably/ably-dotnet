@@ -6,6 +6,8 @@ namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionFailedState : ConnectionStateBase
     {
+        public new ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonFailed;
+
         public ConnectionFailedState(IConnectionContext context, ErrorInfo error, ILogger logger)
             : base(context, logger)
         {
