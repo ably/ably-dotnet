@@ -323,18 +323,14 @@ namespace IO.Ably.Realtime
             switch (_channel.State)
             {
                 case ChannelState.Initialized:
-                    if (_connection.Options.QueueMessages)
+                    if (PendingPresenceEnqueue(new QueuedPresenceMessage(msg, callback)))
                     {
-                        PendingPresenceQueue.Enqueue(new QueuedPresenceMessage(msg, callback));
                         _channel.Attach();
                     }
 
                     break;
                 case ChannelState.Attaching:
-                    if (_connection.Options.QueueMessages)
-                    {
-                        PendingPresenceQueue.Enqueue(new QueuedPresenceMessage(msg, callback));
-                    }
+                    PendingPresenceEnqueue(new QueuedPresenceMessage(msg, callback));
 
                     break;
                 case ChannelState.Attached:
@@ -345,6 +341,21 @@ namespace IO.Ably.Realtime
                 default:
                     throw new AblyException($"Unable to enter presence channel in {_channel.State} state", 91001, HttpStatusCode.BadRequest);
             }
+        }
+
+        private bool PendingPresenceEnqueue(QueuedPresenceMessage msg)
+        {
+            if (!_connection.Options.QueueMessages)
+            {
+                msg.Callback?.Invoke(
+                    false,
+                    new ErrorInfo("Unable enqueue message because Options.QueueMessages is set to False.", _connection.Connection.ConnectionState.DefaultErrorInfo.Code, HttpStatusCode.ServiceUnavailable));
+
+                return false;
+            }
+
+            PendingPresenceQueue.Enqueue(msg);
+            return true;
         }
 
         internal void ResumeSync()

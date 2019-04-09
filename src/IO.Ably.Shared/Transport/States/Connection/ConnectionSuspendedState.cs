@@ -7,6 +7,8 @@ namespace IO.Ably.Transport.States.Connection
     {
         private readonly ICountdownTimer _timer;
 
+        public new ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonSuspended;
+
         public ConnectionSuspendedState(IConnectionContext context, ILogger logger)
             : this(context, null, new CountdownTimer("Suspended state timer", logger), logger)
         {

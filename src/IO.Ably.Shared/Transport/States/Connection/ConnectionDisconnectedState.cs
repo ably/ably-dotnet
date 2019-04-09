@@ -8,6 +8,8 @@ namespace IO.Ably.Transport.States.Connection
     {
         private readonly ICountdownTimer _timer;
 
+        public new ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonDisconnected;
+
         public ConnectionDisconnectedState(IConnectionContext context, ILogger logger)
             : this(context, null, new CountdownTimer("Disconnected state timer", logger), logger)
         {
