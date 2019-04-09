@@ -13,7 +13,7 @@
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Ably .NET Realtime and REST client library.</description>
         <summary>Ably is realtime data delivery platform for internet-enabled devices. See https://www.ably.io for more info</summary>
-        <copyright>2017 Ably</copyright>
+        <copyright>2019 Ably</copyright>
         <language />
         <dependencies>
 
