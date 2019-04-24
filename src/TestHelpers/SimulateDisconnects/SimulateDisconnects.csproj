@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\IO.Ably.NETStandard20\IO.Ably.NETStandard20.csproj" />
+    <ProjectReference Include="..\..\IO.Ably.NETStandard20\IO.Ably.NETStandard20.csproj" />
   </ItemGroup>
 
 </Project>
