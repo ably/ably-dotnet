@@ -21,6 +21,8 @@ namespace IO.Ably.Transport
             Closed
         }
 
+        private bool _disposed = false;
+
         internal ILogger Logger { get; private set; }
 
         private readonly Uri _uri;
@@ -63,10 +65,11 @@ namespace IO.Ably.Transport
 
         private void StartSenderQueueConsumer()
         {
+            var queueEnumerable = _sendQueue.GetConsumingEnumerable();
             Task.Run(
                 async () =>
                 {
-                    foreach (var tuple in _sendQueue.GetConsumingEnumerable())
+                    foreach (var tuple in queueEnumerable)
                     {
                         await Send(tuple.Item1, tuple.Item2, _tokenSource.Token);
                     }
@@ -200,11 +203,39 @@ namespace IO.Ably.Transport
             }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _tokenSource.Cancel();
+                _tokenSource.Dispose();
+                _sendQueue.Dispose();
+                ClientWebSocket?.Dispose();
+            }
+
+            _disposed = true;
+        }
+
         public void Dispose()
         {
-            _tokenSource.Cancel();
-            _sendQueue.Dispose();
-            ClientWebSocket?.Dispose();
+            Dispose(true);
+
+            // Typically we would call GC.SuppressFinalize(this)
+            // at this point in the Dispose pattern
+            // to suppress an expensive GC cycle
+            // But disposing of the Connection should not be frequent
+            // and based on profiling this speeds up the release of objects
+            // and reduces memory bloat considerably
+        }
+
+        ~MsWebSocketConnection()
+        {
+            Dispose(false);
         }
     }
 }
