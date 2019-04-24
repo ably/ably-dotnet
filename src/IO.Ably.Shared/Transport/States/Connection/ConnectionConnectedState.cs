@@ -33,7 +33,7 @@ namespace IO.Ably.Transport.States.Connection
             switch (message.Action)
             {
                 case ProtocolMessage.MessageAction.Auth:
-                    Context.RetryAuthentication(updateState: false);
+                    TaskUtils.RunInBackground(async () => await Context.RetryAuthentication(updateState: false), e => Logger.Warning(e.Message));
                     return true;
                 case ProtocolMessage.MessageAction.Connected:
                     await Context.SetState(new ConnectionConnectedState(Context, new ConnectionInfo(message), message.Error, Logger) { IsUpdate = true });
