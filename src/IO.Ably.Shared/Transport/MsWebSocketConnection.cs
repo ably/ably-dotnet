@@ -210,6 +210,7 @@ namespace IO.Ably.Transport
             {
                 _tokenSource.Cancel();
                 _tokenSource.Dispose();
+                _sendQueue.CompleteAdding();
                 _sendQueue.Dispose();
                 ClientWebSocket?.Dispose();
             }
