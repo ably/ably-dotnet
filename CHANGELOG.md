@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.1.1](https://github.com/ably/ably-dotnet/tree/1.1.1)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.0...1.1.1)
+
+**Merged pull requests:**
+
+- Fix for issue 313 [\#318](https://github.com/ably/ably-dotnet/pull/318) ([withakay](https://github.com/withakay))
+
 ## [1.1.0](https://github.com/ably/ably-dotnet/tree/1.1.0)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.0-beta1...1.1.0)
