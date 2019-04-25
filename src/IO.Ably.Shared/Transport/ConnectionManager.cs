@@ -207,7 +207,7 @@ namespace IO.Ably.Transport
 
             if (Transport != null)
             {
-                (this as IConnectionContext).DestroyTransport();
+                DestroyTransport(false);
             }
 
             try

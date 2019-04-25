@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 using IO.Ably;
@@ -8,6 +9,8 @@ namespace IO.Ably.Transport
 {
     internal class MsWebSocketTransport : ITransport
     {
+        private bool _disposed = false;
+
         internal ILogger Logger { get; private set; }
 
         internal MsWebSocketConnection _socket;
@@ -118,7 +121,7 @@ namespace IO.Ably.Transport
                     DetachEvents();
                 }
 
-                Task.Run(_socket.StopConnectionAsync).ConfigureAwait(false);
+                TaskUtils.RunInBackground(async () => await _socket.StopConnectionAsync(), e => Logger.Warning(e.Message));
             }
         }
 
@@ -126,11 +129,11 @@ namespace IO.Ably.Transport
         {
             if (BinaryProtocol)
             {
-                Task.Run(() => _socket.SendData(data.Data));
+                _socket?.SendData(data.Data);
             }
             else
             {
-                Task.Run(() => _socket.SendText(data.Text));
+                _socket?.SendText(data.Text);
             }
         }
 
@@ -228,9 +231,38 @@ namespace IO.Ably.Transport
             }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                DisposeSocketConnection();
+                Listener = null;
+                Logger = null;
+            }
+
+            _disposed = true;
+        }
+
         public void Dispose()
         {
-            DisposeSocketConnection();
+            Dispose(true);
+
+            // Typically we would call GC.SuppressFinalize(this)
+            // at this point in the Dispose pattern
+            // to suppress an expensive GC cycle
+            // But disposing of the Transport should not be frequent
+            // and based on profiling this speeds up the release of objects
+            // and reduces memory bloat considerably
+        }
+
+        ~MsWebSocketTransport()
+        {
+            Dispose(false);
         }
     }
 }

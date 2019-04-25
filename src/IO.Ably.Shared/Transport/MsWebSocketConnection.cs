@@ -21,12 +21,15 @@ namespace IO.Ably.Transport
             Closed
         }
 
+        private bool _disposed = false;
+
         internal ILogger Logger { get; private set; }
 
         private readonly Uri _uri;
         private Action<ConnectionState, Exception> _handler;
-        private readonly BlockingCollection<Tuple<ArraySegment<byte>, WebSocketMessageType>> _sendQueue
-            = new BlockingCollection<Tuple<ArraySegment<byte>, WebSocketMessageType>>();
+
+        private readonly BlockingCollection<Tuple<ArraySegment<byte>, WebSocketMessageType>> _sendQueue =
+            new BlockingCollection<Tuple<ArraySegment<byte>, WebSocketMessageType>>();
 
         public string ConnectionId { get; set; }
 
@@ -63,10 +66,11 @@ namespace IO.Ably.Transport
 
         private void StartSenderQueueConsumer()
         {
+            var queueEnumerable = _sendQueue.GetConsumingEnumerable();
             Task.Run(
                 async () =>
                 {
-                    foreach (var tuple in _sendQueue.GetConsumingEnumerable())
+                    foreach (var tuple in queueEnumerable)
                     {
                         await Send(tuple.Item1, tuple.Item2, _tokenSource.Token);
                     }
@@ -122,27 +126,22 @@ namespace IO.Ably.Transport
             _sendQueue.TryAdd(Tuple.Create(bytes, WebSocketMessageType.Binary), 1000, _tokenSource.Token);
         }
 
-        private Task Send(ArraySegment<byte> data, WebSocketMessageType type, CancellationToken token)
+        private async Task Send(ArraySegment<byte> data, WebSocketMessageType type, CancellationToken token)
         {
             try
             {
-                if (ClientWebSocket.State == WebSocketState.Open)
+                if (ClientWebSocket.State != WebSocketState.Open)
                 {
-                    var sendTask = ClientWebSocket.SendAsync(data, type, true, token);
-                    sendTask.ConfigureAwait(false);
-                    return sendTask;
+                    Logger.Warning($"Trying to send message of type {type} when the socket is {ClientWebSocket.State}. Ack for this message will fail shortly.");
+                    return;
                 }
 
-                Logger.Warning($"Trying to send message of type {type} when the socket is {ClientWebSocket.State}. Ack for this message will fail shortly.");
-
-                return Task.FromResult(true);
+                await ClientWebSocket.SendAsync(data, type, true, token).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 _handler?.Invoke(ConnectionState.Error, ex);
             }
-
-            return Task.FromResult(false);
         }
 
         public async Task Receive(Action<RealtimeTransportData> handleMessage)
@@ -200,11 +199,40 @@ namespace IO.Ably.Transport
             }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _tokenSource.Cancel();
+                _tokenSource.Dispose();
+                _sendQueue.CompleteAdding();
+                _sendQueue.Dispose();
+                ClientWebSocket?.Dispose();
+            }
+
+            _disposed = true;
+        }
+
         public void Dispose()
         {
-            _tokenSource.Cancel();
-            _sendQueue.Dispose();
-            ClientWebSocket?.Dispose();
+            Dispose(true);
+
+            // Typically we would call GC.SuppressFinalize(this)
+            // at this point in the Dispose pattern
+            // to suppress an expensive GC cycle
+            // But disposing of the Connection should not be frequent
+            // and based on profiling this speeds up the release of objects
+            // and reduces memory bloat considerably
+        }
+
+        ~MsWebSocketConnection()
+        {
+            Dispose(false);
         }
     }
 }
