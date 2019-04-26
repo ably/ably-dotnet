@@ -65,8 +65,7 @@ namespace IO.Ably.Tests
 
             // Assert
             result.Should().BeTrue();
-            _context.StateShouldBe<ConnectionDisconnectedState>()
-            ;
+            _context.StateShouldBe<ConnectionDisconnectedState>();
         }
 
         [Fact]
