@@ -22,7 +22,7 @@ namespace IO.Ably
         /// This enables a client to obtain token requests from
         /// another entity, so tokens can be renewed without the
         /// client requiring access to keys.
-        ///</summary>
+        /// </summary>
         public Uri AuthUrl { get; set; }
 
         /// <summary>

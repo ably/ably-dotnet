@@ -14,9 +14,6 @@ namespace IO.Ably
         private bool _useBinaryProtocol = false;
         private string[] _fallbackHosts;
 
-        /// <summary>
-        ///
-        /// </summary>
         public bool AutoConnect { get; set; } = true;
 
         /// <summary>
@@ -161,12 +158,12 @@ namespace IO.Ably
         ///Encrypted transport: if true, TLS will be used for all connections (whether REST/HTTP
         ///or Realtime WebSocket or Comet connections).
         /// Default: true
-        ///</summary>
+        /// </summary>
         public bool Tls { get; set; } = true;
 
         public int TlsPort { get; set; } = 443;
 
-        ///<summary>
+        /// <summary>
         /// If false, forces the library to use the JSON encoding for REST and Realtime operations,
         /// If true, the MsgPack binary format is used (if available in the current build
         /// Default: true
