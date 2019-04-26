@@ -158,7 +158,7 @@ namespace IO.Ably.Tests.Realtime
                     channelStateChange.Should().NotBeNull();
                     channelStateChange.Error.Should().NotBeNull();
                     channelStateChange.Error.Message.Should().Be(action.ToString());
-                    channelStateChange.Error.Code.Should().Be((int) action);
+                    channelStateChange.Error.Code.Should().Be((int)action);
 
                     // should be the state corresponding to the
                     // passed in ChannelEvent which should be
@@ -1239,7 +1239,7 @@ namespace IO.Ably.Tests.Realtime
                 receivedMessages.Last().Timestamp.Should().Be(timeStamp.AddMinutes(1));
             }
 
-            private ProtocolMessage SetupTestProtocolmessage(string connectionId = null, DateTimeOffset? timestamp = null,  Message[] messages = null)
+            private ProtocolMessage SetupTestProtocolmessage(string connectionId = null, DateTimeOffset? timestamp = null, Message[] messages = null)
             {
                 var protocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message, "test")
                 {

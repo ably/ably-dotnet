@@ -117,7 +117,7 @@ namespace IO.Ably
 
                     throw AblyException.FromResponse(ablyResponse);
                 }
-                catch (HttpRequestException ex) when(IsRetryableError(ex) && (Options.IsDefaultHost || Options.FallbackHostsUseDefault))
+                catch (HttpRequestException ex) when (IsRetryableError(ex) && (Options.IsDefaultHost || Options.FallbackHostsUseDefault))
                 {
                     Logger.Warning("Error making a connection to Ably servers. Retrying", ex);
                     if (TryGetNextRandomHost(fallbackHosts, random, out host))

@@ -27,7 +27,7 @@ namespace IO.Ably.Realtime
 
         public ErrorInfo Error { get; }
 
-        public bool Resumed { get;  }
+        public bool Resumed { get; }
 
         public ChannelEvent Event { get; }
 

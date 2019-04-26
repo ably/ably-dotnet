@@ -41,8 +41,8 @@ namespace IO.Ably
         /// <param name="ex">Original exception to be wrapped.</param>
         public AblyException(Exception ex)
             : this(new ErrorInfo("Unexpected error :" + ex.Message, 50000), ex)
-            {
-            }
+        {
+        }
 
         /// <summary>
         /// Creates an AblyException and populates ErrorInfo with the supplied parameters.

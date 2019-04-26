@@ -483,7 +483,7 @@ namespace IO.Ably.Realtime
             }
             else
             {
-                channelEvent = (ChannelEvent) state;
+                channelEvent = (ChannelEvent)state;
             }
 
             var channelStateChange = new ChannelStateChange(channelEvent, state, State, error, protocolMessage);

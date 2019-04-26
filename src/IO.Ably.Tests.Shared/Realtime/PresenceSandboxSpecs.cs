@@ -213,7 +213,8 @@ namespace IO.Ably.Tests.Realtime
                     factualMsg.Action.ShouldBeEquivalentTo(testMsg.Action, "message was not emitted on the presence object with original action");
                     var presentMessage = await channel.Presence.GetAsync(new Presence.GetParams
                     {
-                        ClientId = testMsg.ClientId, WaitForSync = false
+                        ClientId = testMsg.ClientId,
+                        WaitForSync = false
                     });
                     presentMessage.FirstOrDefault().Should().NotBe(null);
                     presentMessage.FirstOrDefault()?.Action.ShouldBeEquivalentTo(PresenceAction.Present, "message was not added to the presence map and stored with PRESENT action");
@@ -236,9 +237,9 @@ namespace IO.Ably.Tests.Realtime
                 /* Send all the presence data in one SYNC message without channelSerial (RTP18c) */
                 ProtocolMessage syncMessage = new ProtocolMessage()
                 {
-                        Channel = channel2Name,
-                        Action = ProtocolMessage.MessageAction.Sync,
-                        Presence = testData
+                    Channel = channel2Name,
+                    Action = ProtocolMessage.MessageAction.Sync,
+                    Presence = testData
                 };
 
                 var counter = new TaskCountAwaiter(presenceMessages.Count, 5000);
@@ -962,7 +963,7 @@ namespace IO.Ably.Tests.Realtime
                     {
                         leaveMsg.ClientId.Should().StartWith("local");
                         leaveMsg.Action.Should().Be(PresenceAction.Leave, "Action shold be leave");
-                        leaveMsg.Timestamp.Should().BeCloseTo(DateTime.UtcNow, 200, "timestamp should be current time" );
+                        leaveMsg.Timestamp.Should().BeCloseTo(DateTime.UtcNow, 200, "timestamp should be current time");
                         leaveMsg.Id.Should().BeNull("Id should be null");
                         leaveCount++;
                         partialDone(); // should be called twice
@@ -1189,10 +1190,10 @@ namespace IO.Ably.Tests.Realtime
                         // insert an error when attaching
                         channel.Once(ChannelEvent.Attaching, args =>
                         {
-                             // before we change the state capture proof that we have a queued message
-                             initialCount = channel.Presence.PendingPresenceQueue.Count;
-                             channel.SetChannelState(channelState, new ErrorInfo("RTP5a test"));
-                             partialDone();
+                            // before we change the state capture proof that we have a queued message
+                            initialCount = channel.Presence.PendingPresenceQueue.Count;
+                            channel.SetChannelState(channelState, new ErrorInfo("RTP5a test"));
+                            partialDone();
                         });
 
                         // enter client, this should trigger attach
@@ -1311,7 +1312,7 @@ namespace IO.Ably.Tests.Realtime
                         await setupChannel.Presence.EnterClientAsync($"member_{i}", null);
                     }
 
-                    var client = await GetRealtimeClient(protocol,(options, settings) => { options.ClientId = "local"; });
+                    var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "local"; });
                     await client.WaitForState();
                     var channel = client.Channels.Get(channelName);
                     var presence = channel.Presence;
@@ -1361,7 +1362,8 @@ namespace IO.Ably.Tests.Realtime
                         // inject attached message
                         var protocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
                         {
-                            Channel = channelName, Flags = 0 // no presence, no resume
+                            Channel = channelName,
+                            Flags = 0 // no presence, no resume
                         };
 
                         client.GetTestTransport().FakeReceivedMessage(protocolMessage);
@@ -1713,7 +1715,7 @@ namespace IO.Ably.Tests.Realtime
                     List<int> queueCounts = new List<int>();
                     Presence.QueuedPresenceMessage[] presenceMessages = null;
 
-                    channel.Presence.Enter(client.Connection.State.ToString(), (b, info) =>{ });
+                    channel.Presence.Enter(client.Connection.State.ToString(), (b, info) => { });
                     presenceMessages = channel.Presence.PendingPresenceQueue.ToArray();
 
                     presenceMessages.Should().HaveCount(0);

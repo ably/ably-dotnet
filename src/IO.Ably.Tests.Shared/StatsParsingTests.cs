@@ -10,7 +10,7 @@ namespace IO.Ably.Tests
 
         public StatsParsingTests()
         {
-           _stats = JsonHelper.Deserialize<List<Stats>>(ResourceHelper.GetResource(@"StatsInterval.json")).First();
+            _stats = JsonHelper.Deserialize<List<Stats>>(ResourceHelper.GetResource(@"StatsInterval.json")).First();
         }
 
         [Fact]

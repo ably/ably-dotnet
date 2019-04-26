@@ -1378,7 +1378,7 @@ namespace IO.Ably.Tests.Realtime
     [Trait("requires", "sandbox")]
     public class ConnectionSandboxOperatingSystemEventsForNetworkSpecs : SandboxSpecs
     {
-        [Theory(Skip= "TODO")]
+        [Theory(Skip = "TODO")]
 #if MSGPACK
         [InlineData(Protocol.MsgPack, ConnectionState.Connected)]
         [InlineData(Protocol.MsgPack, ConnectionState.Connecting)]

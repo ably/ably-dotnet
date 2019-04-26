@@ -9,7 +9,7 @@ namespace IO.Ably
 
         internal string Host { get; set; }
 
-        internal int? Port { get; set;  }
+        internal int? Port { get; set; }
 
         internal TimeSpan DisconnectedRetryTimeout { get; set; }
 
@@ -17,7 +17,7 @@ namespace IO.Ably
 
         internal TimeSpan HttpOpenTimeout { get; set; }
 
-        internal TimeSpan HttpRequestTimeout { get; set;  }
+        internal TimeSpan HttpRequestTimeout { get; set; }
 
         internal int HttpMaxRetryCount { get; set; }
 

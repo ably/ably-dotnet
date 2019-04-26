@@ -36,7 +36,7 @@ namespace IO.Ably
 
             if (IsValidFormat(trimmedKey))
             {
-                var parts = trimmedKey.Trim().Split(new[] {':'}, StringSplitOptions.RemoveEmptyEntries);
+                var parts = trimmedKey.Trim().Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
 
                 if (parts.Length == 2)
                 {

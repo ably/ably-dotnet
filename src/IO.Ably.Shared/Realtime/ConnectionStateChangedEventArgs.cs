@@ -25,7 +25,7 @@ namespace IO.Ably.Realtime
 
         public ConnectionState Current { get; }
 
-        public TimeSpan? RetryIn { get;  }
+        public TimeSpan? RetryIn { get; }
 
         public ErrorInfo Reason { get; }
 

@@ -141,9 +141,9 @@ namespace IO.Ably.Rest
         }
 
         /// <summary>
-            /// Get the presence messages history for the channel
-            /// </summary>
-            /// <returns><see cref="PaginatedResult{T}"/></returns>
+        /// Get the presence messages history for the channel
+        /// </summary>
+        /// <returns><see cref="PaginatedResult{T}"/></returns>
         Task<PaginatedResult<PresenceMessage>> IPresence.HistoryAsync()
         {
             return Presence.HistoryAsync(new PaginatedRequestParams());

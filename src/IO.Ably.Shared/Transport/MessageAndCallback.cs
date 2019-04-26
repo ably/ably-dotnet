@@ -10,7 +10,7 @@ namespace IO.Ably.Transport
 
         public long Serial => Message.MsgSerial;
 
-        public ProtocolMessage Message { get;  }
+        public ProtocolMessage Message { get; }
 
         public Action<bool, ErrorInfo> Callback { get; }
 

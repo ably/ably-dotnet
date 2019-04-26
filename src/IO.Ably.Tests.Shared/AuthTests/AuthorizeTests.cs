@@ -74,7 +74,7 @@ namespace IO.Ably.Tests.AuthTests
             var client = GetRestClient();
             var testAblyAuth = new TestAblyAuth(client.Options, client);
             var customTokenParams = TokenParams.WithDefaultsApplied();
-            customTokenParams.Merge(new TokenParams {Ttl = TimeSpan.FromHours(2), Timestamp = Now.AddHours(1)});
+            customTokenParams.Merge(new TokenParams { Ttl = TimeSpan.FromHours(2), Timestamp = Now.AddHours(1) });
             var customAuthOptions = AuthOptions.FromExisting(testAblyAuth.Options);
             customAuthOptions.UseTokenAuth = true;
 

@@ -96,7 +96,7 @@ namespace IO.Ably.Transport.States.Connection
                             return true;
                         }
 
-                        if (message.Error?.IsTokenError == true && !shouldRenew )
+                        if (message.Error?.IsTokenError == true && !shouldRenew)
                         {
                             TransitionState(new ConnectionDisconnectedState(Context, message.Error, Logger));
                             return true;
