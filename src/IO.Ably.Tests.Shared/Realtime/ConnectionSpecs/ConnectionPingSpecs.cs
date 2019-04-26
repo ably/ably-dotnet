@@ -56,7 +56,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = GetClientWithFakeTransport();
 
-            await ((IConnectionContext)client.ConnectionManager).SetState(new ConnectionClosedState(client.ConnectionManager, new ErrorInfo(), Logger));
+            await client.ConnectionManager.SetState(new ConnectionClosedState(client.ConnectionManager, new ErrorInfo(), Logger));
 
             var result = await client.Connection.PingAsync();
 
