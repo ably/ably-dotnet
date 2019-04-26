@@ -211,7 +211,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "TH2")]
             [Trait("spec", "TH3")]
             [Trait("spec", "TH4")]
-            async Task WhenAttachedProtocolMessageWithResumedFlagReceived_EmittedChannelStateChangeShouldIndicateResumed()
+            public async Task WhenAttachedProtocolMessageWithResumedFlagReceived_EmittedChannelStateChangeShouldIndicateResumed()
             {
                 var client = GetConnectedClient();
                 var channel = client.Channels.Get("test");
@@ -302,7 +302,7 @@ namespace IO.Ably.Tests.Realtime
             [InlineData(ChannelState.Failed)]
             [InlineData(ChannelState.Suspended)]
             [Trait("spec", "RTL2g")]
-            async Task ShouldNeverEmitAChannelEventForAStateEqualToThePreviousState(ChannelState state)
+            public void ShouldNeverEmitAChannelEventForAStateEqualToThePreviousState(ChannelState state)
             {
                 var client = GetConnectedClient();
                 var channel = client.Channels.Get("test") as RealtimeChannel;
@@ -1152,10 +1152,8 @@ namespace IO.Ably.Tests.Realtime
                 await _client.FakeProtocolMessageReceived(protocolMessage);
 
                 receivedMessages.Should().HaveCount(3);
-                receivedMessages.Select(x => x.Id)
-                    .Should()
-                    .BeEquivalentTo(new[]
-                        { $"{protocolMessage.Id}:0", $"{protocolMessage.Id}:1", $"{protocolMessage.Id}:2" });
+                receivedMessages.Select(x => x.Id).Should().BeEquivalentTo(
+                    new[] { $"{protocolMessage.Id}:0", $"{protocolMessage.Id}:1", $"{protocolMessage.Id}:2" });
             }
 
             [Fact]

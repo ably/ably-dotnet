@@ -116,6 +116,7 @@ namespace IO.Ably.Tests.Realtime
                 {
                     return (_internetCheckOk ? Defaults.InternetCheckOkMessage : "Blah").ToAblyResponse();
                 }
+
                 return DefaultResponse.ToTask();
             }, optionsAction);
         }

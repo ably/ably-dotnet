@@ -1692,6 +1692,7 @@ namespace IO.Ably.Tests.Realtime
                     queueCounts[1].Should().Be(0);
                     presenceMessages[0].Message.Data.Should().Be("Initialized");
                     presenceMessages[1].Message.Data.Should().Be("Connecting");
+
                     // clean up
                     client.Close();
                 }

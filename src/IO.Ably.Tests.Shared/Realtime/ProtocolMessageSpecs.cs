@@ -10,7 +10,6 @@ namespace IO.Ably.Tests.Shared.Realtime
 {
     public class ProtocolMessageTests
     {
-
         [Fact]
         [Trait("spec", "TR3")]
         public void ProtocolMessageFlagHaveCorrectValues()
@@ -93,7 +92,6 @@ namespace IO.Ably.Tests.Shared.Realtime
             adProps[0].CanWrite.Should().BeTrue();
             adProps[0].GetGetMethod(false).IsPublic.Should().BeTrue();
             adProps[0].GetSetMethod(false).IsPublic.Should().BeTrue();
-
         }
     }
 }

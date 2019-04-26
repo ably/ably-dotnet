@@ -27,6 +27,7 @@ namespace IO.Ably.Tests.Infrastructure
             {
                 throw new ArgumentException("taskCount must be greater than zero");
             }
+
             TaskCount = taskCount;
 
             _cancellationTokenSource = new CancellationTokenSource(TimeoutMs);

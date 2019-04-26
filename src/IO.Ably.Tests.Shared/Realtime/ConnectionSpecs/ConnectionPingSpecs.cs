@@ -13,16 +13,6 @@ namespace IO.Ably.Tests.Realtime
     [Trait("spec", "RTN13")]
     public class ConnectionPingSpecs : ConnectionSpecsBase
     {
-        // [Fact]
-        // [Trait("intermittent", "true")]
-        // public async Task ShouldSendHeartbeatMessage()
-        // {
-        //    var client = GetConnectedClient();
-
-        // var result = await client.Connection.PingAsync();
-
-        // LastCreatedTransport.LastMessageSend.action.Should().Be(ProtocolMessage.MessageAction.Heartbeat);
-        // }
         [Fact]
         [Trait("spec", "RTN13a")]
         public async Task OnHeartBeatMessageReceived_ShouldReturnElapsedTime()
@@ -63,7 +53,7 @@ namespace IO.Ably.Tests.Realtime
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().Be(ConnectionHeartbeatRequest.DefaultError);
 
-            await ((IConnectionContext)client.ConnectionManager).SetState(new ConnectionFailedState(client.ConnectionManager, new ErrorInfo(), Logger));
+            await client.ConnectionManager.SetState(new ConnectionFailedState(client.ConnectionManager, new ErrorInfo(), Logger));
 
             var resultFailed = await client.Connection.PingAsync();
 
