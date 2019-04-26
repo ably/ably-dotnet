@@ -22,8 +22,8 @@ namespace IO.Ably.Rest
 
         public ChannelOptions Options
         {
-            get { return _options; }
-            set { _options = value ?? new ChannelOptions(); }
+            get => _options;
+            set => _options = value ?? new ChannelOptions();
         }
 
         private readonly string _basePath;

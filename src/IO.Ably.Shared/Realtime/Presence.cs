@@ -29,7 +29,7 @@ namespace IO.Ably.Realtime
 
         public bool SyncComplete
         {
-            get { return Map.InitialSyncCompleted | _initialSyncCompleted; }
+            get => Map.InitialSyncCompleted | _initialSyncCompleted;
 
             private set
             {

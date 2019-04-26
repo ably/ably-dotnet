@@ -28,7 +28,7 @@ namespace IO.Ably
         /// </summary>
         public string ClientId
         {
-            get { return _clientId; }
+            get => _clientId;
 
             set
             {

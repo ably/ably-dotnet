@@ -26,8 +26,8 @@ namespace IO.Ably.Tests
 
         public bool ConnectCalled
         {
-            get { return _connectCalled; }
-            set { _connectCalled = value; }
+            get => _connectCalled;
+            set => _connectCalled = value;
         }
 
         public bool CloseCalled { get; set; }

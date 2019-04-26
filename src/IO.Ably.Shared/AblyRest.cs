@@ -20,8 +20,8 @@ namespace IO.Ably
 
         internal string CustomHost
         {
-            get { return HttpClient.CustomHost; }
-            set { HttpClient.CustomHost = value; }
+            get => HttpClient.CustomHost;
+            set => HttpClient.CustomHost = value;
         }
 
         internal AblyAuth AblyAuth { get; private set; }
