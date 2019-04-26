@@ -7,6 +7,7 @@ using IO.Ably.Encryption;
 using IO.Ably.Tests;
 using Xunit;
 using Xunit.Abstractions;
+#pragma warning disable 162
 
 namespace IO.Ably.AcceptanceTests
 {

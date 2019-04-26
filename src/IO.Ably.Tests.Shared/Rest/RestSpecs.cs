@@ -121,9 +121,11 @@ namespace IO.Ably.Tests
                 return;
             }
 
+#pragma warning disable 162
             var client = new AblyRest(ValidKey);
             client.Options.UseBinaryProtocol.Should().BeTrue();
             client.Protocol.Should().Be(Defaults.Protocol);
+#pragma warning restore 162
         }
 
         [Fact]
@@ -165,6 +167,7 @@ namespace IO.Ably.Tests
                         firstAttempt = false;
                         throw new AblyException(new ErrorInfo(string.Empty, errorCode, HttpStatusCode.Unauthorized));
                     }
+
                     return AblyResponse.EmptyResponse.ToTask();
                 }, opts => opts.TokenDetails = tokenDetails);
 
@@ -207,6 +210,7 @@ namespace IO.Ably.Tests
                         _firstAttempt = false;
                         throw new AblyException(new ErrorInfo(string.Empty, errorCode, HttpStatusCode.Unauthorized));
                     }
+
                     return AblyResponse.EmptyResponse.ToTask();
                 }, opts =>
                 {

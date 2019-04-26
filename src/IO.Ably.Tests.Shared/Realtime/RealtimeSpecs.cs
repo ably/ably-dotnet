@@ -99,9 +99,11 @@ namespace IO.Ably.Tests
 
             // Act
             if (Config.MsgPackEnabled)
+#pragma warning disable 162
             {
                 Assert.True(options.UseBinaryProtocol);
             }
+#pragma warning restore 162
         }
 
         [Fact]

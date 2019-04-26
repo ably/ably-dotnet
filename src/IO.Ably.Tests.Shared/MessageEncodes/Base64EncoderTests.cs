@@ -70,12 +70,14 @@ namespace IO.Ably.Tests.MessageEncodes
                     return;
                 }
 
+#pragma warning disable 162
                 var payload = new Message() { Data = _binaryData };
 
                 _encoder.Encode(payload, new ChannelOptions());
 
                 payload.Data.Should().Be(_binaryData);
                 payload.Encoding.Should().BeNull();
+#pragma warning restore 162
             }
         }
 

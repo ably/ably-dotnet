@@ -133,7 +133,7 @@ namespace IO.Ably.Tests.Realtime
             await target.WaitForState(ChannelState.Attached);
 
             ConcurrentQueue<Message> messagesReceived = new ConcurrentQueue<Message>();
-            int count = 0;
+
             target.Subscribe(message =>
             {
                 messagesReceived.Enqueue(message);
@@ -578,10 +578,12 @@ namespace IO.Ably.Tests.Realtime
             get
             {
                 if (Config.MsgPackEnabled)
+#pragma warning disable 162
                 {
                     yield return new object[] { Defaults.Protocol, GetAes128FixtureData() };
                     yield return new object[] { Defaults.Protocol, GetAes256FixtureData() };
                 }
+#pragma warning restore 162
 
                 yield return new object[] { Protocol.Json, GetAes128FixtureData() };
                 yield return new object[] { Protocol.Json, GetAes256FixtureData() };
@@ -985,7 +987,6 @@ namespace IO.Ably.Tests.Realtime
 
             // retry should happen after SuspendedRetryTimeout has elapsed
             (end - start).Should().BeCloseTo(requestTimeout, 500);
-
         }
 
         [Theory]
