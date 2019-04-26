@@ -150,13 +150,13 @@ namespace IO.Ably
         }
 
         /// <summary>
-        ///  For development environments only; allows a non-default Ably port to be specified.
+        /// For development environments only; allows a non-default Ably port to be specified.
         /// </summary>
         public int Port { get; set; } = 80;
 
         /// <summary>
-        ///Encrypted transport: if true, TLS will be used for all connections (whether REST/HTTP
-        ///or Realtime WebSocket or Comet connections).
+        /// Encrypted transport: if true, TLS will be used for all connections (whether REST/HTTP
+        /// or Realtime WebSocket or Comet connections).
         /// Default: true
         /// </summary>
         public bool Tls { get; set; } = true;
@@ -242,7 +242,7 @@ namespace IO.Ably
         internal TimeSpan RealtimeRequestTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;
 
         /// <summary>
-        /// Defaul constructor for ClientOptions
+        /// Default constructor for ClientOptions
         /// </summary>
         public ClientOptions()
         {

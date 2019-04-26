@@ -46,7 +46,11 @@ namespace IO.Ably.Realtime
             lock (_lock)
             {
                 _timer?.Abort();
-                if (_waiting == false) return;
+                if (_waiting == false)
+                {
+                    return;
+                }
+
                 _waiting = false;
             }
 

@@ -366,7 +366,6 @@ namespace IO.Ably.Realtime
                 _channel.State == ChannelState.Detached ||
                 _channel.State == ChannelState.Detaching)
             {
-
                 throw new AblyException("Unable to sync to channel; not attached", 40000, HttpStatusCode.BadRequest);
             }
 
@@ -522,7 +521,6 @@ namespace IO.Ably.Realtime
                             Logger.Error(errorString);
                             _channel.EmitUpdate(new ErrorInfo(errorString, 91004), true);
                         }
-
                     }
                 }
 

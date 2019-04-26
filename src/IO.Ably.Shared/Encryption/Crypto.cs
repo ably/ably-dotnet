@@ -72,8 +72,8 @@ namespace IO.Ably.Encryption
     public static class Crypto
     {
         public const string DefaultAlgorithm = "AES";
-        public const int DefaultKeylength = 256; ///bits
-        public const int DefaultBlocklength = 16; ///bytes
+        public const int DefaultKeylength = 256; // bits
+        public const int DefaultBlocklength = 16; // bytes
         public const CipherMode DefaultMode = CipherMode.CBC;
 
         public static CipherParams GetDefaultParams(string base64EncodedKey, string base64Iv = null, CipherMode? mode = null)

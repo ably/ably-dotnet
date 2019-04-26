@@ -354,7 +354,8 @@ namespace IO.Ably.Transport
                 }
                 else
                 {
-                    throw new AblyException($"Current state is [{State.State}] which supports queuing but Options.QueueMessages is set to False.",
+                    throw new AblyException(
+                        $"Current state is [{State.State}] which supports queuing but Options.QueueMessages is set to False.",
                         Connection.ConnectionState.DefaultErrorInfo.Code,
                         HttpStatusCode.ServiceUnavailable);
                 }

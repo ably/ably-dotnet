@@ -41,6 +41,7 @@ namespace IO.Ably.Realtime
         public List<MessageAndCallback> QueuedMessages { get; set; } = new List<MessageAndCallback>(16);
 
         public ErrorInfo ErrorReason { get; internal set; }
+
         public ChannelProperties Properties { get; } = new ChannelProperties();
 
         public event EventHandler<ChannelStateChange> StateChanged = delegate { };

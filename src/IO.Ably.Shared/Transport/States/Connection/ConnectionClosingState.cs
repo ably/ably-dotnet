@@ -18,7 +18,6 @@ namespace IO.Ably.Transport.States.Connection
         /// </summary>
         private bool _inConnectTransition = false;
 
-
         public ConnectionClosingState(IConnectionContext context, ILogger logger)
             : this(context, null, new CountdownTimer("Closing state timer", logger), logger)
         {
