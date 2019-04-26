@@ -620,7 +620,8 @@ namespace IO.Ably.Realtime
 
         private void Reattach(ErrorInfo error, ProtocolMessage msg)
         {
-            Task.Run(async () =>
+            TaskUtils.RunInBackground(
+                () =>
             {
                 try
                 {
@@ -640,7 +641,8 @@ namespace IO.Ably.Realtime
                 {
                     Logger.Error("Reattach channel failed; channel = " + Name, e);
                 }
-            });
+            },
+                e => Logger.Warning(e.Message));
         }
 
         /// <summary>

@@ -10,7 +10,6 @@ namespace IO.Ably.Transport.States.Connection
     internal class ConnectionConnectingState : ConnectionStateBase
     {
         private readonly ICountdownTimer _timer;
-        private readonly ConnectionStateBase _previous;
 
         public ConnectionConnectingState(IConnectionContext context, ILogger logger)
             : this(context, new CountdownTimer("Connecting state timer", logger), logger)

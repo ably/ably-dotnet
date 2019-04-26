@@ -8,8 +8,6 @@ namespace IO.Ably.Types
 {
     public class ProtocolMessage
     {
-        private string _connectionKey;
-
         public enum MessageAction
         {
             Heartbeat = 0,
@@ -122,7 +120,7 @@ namespace IO.Ably.Types
         internal bool AckRequired => Action == MessageAction.Message || Action == MessageAction.Presence;
 
         [OnSerializing]
-        internal void OnSerializing(StreamingContext context)
+        private void OnSerializing(StreamingContext context)
         {
             if (Channel == string.Empty)
             {

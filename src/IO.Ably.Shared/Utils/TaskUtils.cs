@@ -53,9 +53,11 @@ namespace IO.Ably
         public static void RunInBackground(Action action, Action<Exception> handler = null)
         {
             if (action == null)
+            {
                 throw new ArgumentNullException(nameof(action));
+            }
 
-            var task = Task.Run(action);  // Adapt as necessary for .NET 4.0.
+            var task = Task.Run(action);
 
             if (handler == null)
             {

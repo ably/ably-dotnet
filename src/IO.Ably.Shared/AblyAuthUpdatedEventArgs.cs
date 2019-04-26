@@ -19,7 +19,8 @@ namespace IO.Ably
             CompletedTask = new TaskCompletionSource<bool>();
         }
 
-        public AblyAuthUpdatedEventArgs(TokenDetails token) : this()
+        public AblyAuthUpdatedEventArgs(TokenDetails token)
+            : this()
         {
             Token = token;
         }

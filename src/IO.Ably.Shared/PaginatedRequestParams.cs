@@ -120,8 +120,7 @@ namespace IO.Ably
             var result = new List<KeyValuePair<string, string>>();
             if (Start.HasValue)
             {
-                result.Add(new KeyValuePair<string, string>("start",
-                    Start.Value.ToUnixTimeInMilliseconds().ToString()));
+                result.Add(new KeyValuePair<string, string>("start", Start.Value.ToUnixTimeInMilliseconds().ToString()));
             }
 
             if (End.HasValue)
