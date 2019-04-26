@@ -4,6 +4,8 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
+    using IO.Ably.Realtime;
+
     internal class ConnectionDisconnectedState : ConnectionStateBase
     {
         private readonly ICountdownTimer _timer;
@@ -30,7 +32,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public bool RetryInstantly { get; set; }
 
-        public override Realtime.ConnectionState State => Realtime.ConnectionState.Disconnected;
+        public override ConnectionState State => Realtime.ConnectionState.Disconnected;
 
         public override bool CanQueue => true;
 

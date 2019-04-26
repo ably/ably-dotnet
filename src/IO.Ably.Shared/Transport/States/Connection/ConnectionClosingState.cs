@@ -5,6 +5,8 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
+    using IO.Ably.Realtime;
+
     internal class ConnectionClosingState : ConnectionStateBase
     {
         private const int CloseTimeout = 1000;
@@ -29,7 +31,7 @@ namespace IO.Ably.Transport.States.Connection
             Error = error ?? ErrorInfo.ReasonClosed;
         }
 
-        public override Realtime.ConnectionState State => Realtime.ConnectionState.Closing;
+        public override ConnectionState State => Realtime.ConnectionState.Closing;
 
         public override Task<bool> OnMessageReceived(ProtocolMessage message)
         {

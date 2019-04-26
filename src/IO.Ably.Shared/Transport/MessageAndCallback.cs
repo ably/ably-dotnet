@@ -18,7 +18,7 @@ namespace IO.Ably.Transport
         {
             Message = message;
             Callback = callback;
-            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
+            Logger = logger ?? DefaultLogger.LoggerInstance;
         }
 
         protected bool Equals(MessageAndCallback other)

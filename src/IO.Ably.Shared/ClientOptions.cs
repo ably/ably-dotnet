@@ -101,8 +101,10 @@ namespace IO.Ably
                 {
                     return Defaults.FallbackHosts;
                 }
+
                 return _fallbackHosts;
             }
+
             set => _fallbackHosts = value;
         }
 
@@ -214,7 +216,7 @@ namespace IO.Ably
             set => _nowFunc = value;
         }
 
-        internal ILogger Logger { get; set; } = IO.Ably.DefaultLogger.LoggerInstance;
+        internal ILogger Logger { get; set; } = DefaultLogger.LoggerInstance;
 
         internal AuthMethod Method
         {

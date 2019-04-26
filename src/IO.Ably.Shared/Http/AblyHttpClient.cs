@@ -28,7 +28,7 @@ namespace IO.Ably
         internal AblyHttpClient(AblyHttpOptions options, HttpMessageHandler messageHandler = null)
         {
             Now = options.NowFunc;
-            Logger = options.Logger ?? IO.Ably.DefaultLogger.LoggerInstance;
+            Logger = options.Logger ?? DefaultLogger.LoggerInstance;
             Options = options;
             CreateInternalHttpClient(options.HttpRequestTimeout, messageHandler);
             SendAsync = InternalSendAsync;
@@ -52,8 +52,8 @@ namespace IO.Ably
             var fallbackHosts = Options.FallbackHosts.ToList();
             if (CustomHost.IsNotEmpty())
             {
-                //The custom host is a fallback host currently in use by the Realtime client.
-                //We need to remove it from the fallback hosts
+                // The custom host is a fallback host currently in use by the Realtime client.
+                // We need to remove it from the fallback hosts
                 fallbackHosts.Remove(CustomHost);
             }
 
@@ -284,6 +284,7 @@ namespace IO.Ably
             if(request.Protocol == Protocol.MsgPack)
                 message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(request.Protocol)));
 #endif
+
             // Always accept JSON
             message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(GetHeaderValue(Protocol.Json)));
             if (message.Method == HttpMethod.Post)
@@ -358,6 +359,7 @@ namespace IO.Ably
                 {
                     return "&" + query;
                 }
+
                 return "?" + query;
             }
 

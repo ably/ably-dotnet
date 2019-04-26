@@ -147,7 +147,7 @@ namespace IO.Ably.Types
 
         public bool HasFlag(Flag flag)
         {
-            return ProtocolMessage.HasFlag(Flags, flag);
+            return HasFlag(Flags, flag);
         }
 
         public override string ToString()

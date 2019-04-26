@@ -4,6 +4,8 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
+    using IO.Ably.Realtime;
+
     internal class ConnectionClosedState : ConnectionStateBase
     {
         public new ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonClosed;
@@ -19,7 +21,7 @@ namespace IO.Ably.Transport.States.Connection
             Error = error ?? ErrorInfo.ReasonClosed;
         }
 
-        public override Realtime.ConnectionState State => Realtime.ConnectionState.Closed;
+        public override ConnectionState State => Realtime.ConnectionState.Closed;
 
         public override void Connect()
         {

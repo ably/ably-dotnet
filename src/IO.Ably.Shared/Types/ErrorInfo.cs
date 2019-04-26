@@ -20,7 +20,7 @@ namespace IO.Ably
         internal static readonly ErrorInfo ReasonTooBig = new ErrorInfo("Connection closed; message too large", 40000);
         internal static readonly ErrorInfo ReasonNeverConnected = new ErrorInfo("Unable to establish connection", 80002);
         internal static readonly ErrorInfo ReasonTimeout = new ErrorInfo("Unable to establish connection", 80014);
-        internal static readonly ErrorInfo ReasonUnknown = new ErrorInfo("Unknown error", 50000, System.Net.HttpStatusCode.InternalServerError);
+        internal static readonly ErrorInfo ReasonUnknown = new ErrorInfo("Unknown error", 50000, HttpStatusCode.InternalServerError);
 
         internal const string CodePropertyName = "code";
         internal const string StatusCodePropertyName = "statusCode";

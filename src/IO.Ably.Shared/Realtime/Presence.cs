@@ -114,6 +114,7 @@ namespace IO.Ably.Realtime
                 {
                     throw new AblyException(new ErrorInfo($"Channel {_channel.Name}: presence state is out of sync due to the channel being in a SUSPENDED state", 91005));
                 }
+
                 await WaitForSyncAsync();
             }
 
@@ -198,6 +199,7 @@ namespace IO.Ably.Realtime
                 Logger.Debug($"{errorMessage} (Error Code: {errorCode})");
                 throw new AblyException(new ErrorInfo(errorMessage, errorCode));
             }
+
             return tsc.Task.Result;
         }
 

@@ -39,10 +39,10 @@ namespace IO.Ably.MessageEncoders
         public static List<MessageEncoder> _encoders = null;
 
         public MessageHandler()
-            : this(IO.Ably.DefaultLogger.LoggerInstance, Defaults.Protocol) { }
+            : this(DefaultLogger.LoggerInstance, Defaults.Protocol) { }
 
         public MessageHandler(Protocol protocol)
-            : this(IO.Ably.DefaultLogger.LoggerInstance, protocol) { }
+            : this(DefaultLogger.LoggerInstance, protocol) { }
 
         public MessageHandler(ILogger logger, Protocol protocol)
         {

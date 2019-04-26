@@ -29,7 +29,7 @@ namespace IO.Ably
     {
         internal EventEmitter(ILogger logger)
         {
-            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
+            Logger = logger ?? DefaultLogger.LoggerInstance;
         }
 
         internal ILogger Logger { get; set; }

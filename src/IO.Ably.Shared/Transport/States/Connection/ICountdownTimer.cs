@@ -28,7 +28,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public CountdownTimer(string name, ILogger logger)
         {
-            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
+            Logger = logger ?? DefaultLogger.LoggerInstance;
             _name = name;
         }
 
