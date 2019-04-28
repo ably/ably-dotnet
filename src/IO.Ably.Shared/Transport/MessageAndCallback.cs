@@ -10,7 +10,7 @@ namespace IO.Ably.Transport
 
         public long Serial => Message.MsgSerial;
 
-        public ProtocolMessage Message { get;  }
+        public ProtocolMessage Message { get; }
 
         public Action<bool, ErrorInfo> Callback { get; }
 
@@ -18,7 +18,7 @@ namespace IO.Ably.Transport
         {
             Message = message;
             Callback = callback;
-            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
+            Logger = logger ?? DefaultLogger.LoggerInstance;
         }
 
         protected bool Equals(MessageAndCallback other)

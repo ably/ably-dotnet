@@ -4,6 +4,8 @@ using IO.Ably.Transport;
 
 namespace IO.Ably
 {
+    using System.IO;
+
     /// <summary>This class initializes dynamically-injected platform dependencies.</summary>
     internal static class IoC
     {
@@ -27,7 +29,7 @@ namespace IO.Ably
                     DefaultLogger.Debug("Platform class does not exist. Defaulting Microsoft Websocket library.");
                 }
             }
-            catch (System.IO.FileNotFoundException e)
+            catch (FileNotFoundException e)
             {
                 DefaultLogger.Debug($"Assembly cannot be loaded. Defaulting Microsoft Websocket library. ({e.Message})");
             }

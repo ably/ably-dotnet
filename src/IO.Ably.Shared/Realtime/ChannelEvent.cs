@@ -1,8 +1,8 @@
 ﻿namespace IO.Ably.Realtime
 {
     /*
-     The values assigned to each enum should correspond with those assigned in ChannelState.
-    */
+         The values assigned to each enum should correspond with those assigned in ChannelState.
+        */
 
     /// <summary>
     /// Events defined for a channel. ChannelEvents are equal to <see cref="ChannelState"/> with the addition of the Update event

@@ -356,7 +356,7 @@ namespace IO.Ably.Tests
                     await realtimeClient.Auth.AuthorizeAsync();
                     Assert.True(false, "An exception should be raised before this line is reached.");
                 }
-                catch (AblyException e)
+                catch (AblyException)
                 {
                     didThrowAblyException = true;
                 }
@@ -818,7 +818,6 @@ namespace IO.Ably.Tests
                 Requests.Add(request);
                 var r = new AblyResponse(string.Empty, "application/json", string.Empty.GetBytes()) { StatusCode = HttpStatusCode.Unauthorized };
                 throw AblyException.FromResponse(r);
-                return Task.FromResult(r);
             }
 
             public Task<AblyResponse> AblyResponseWith403Status(AblyRequest request)
@@ -826,7 +825,6 @@ namespace IO.Ably.Tests
                 Requests.Add(request);
                 var r = new AblyResponse(string.Empty, "application/json", string.Empty.GetBytes()) { StatusCode = HttpStatusCode.Forbidden };
                 throw AblyException.FromResponse(r);
-                return Task.FromResult(r);
             }
 
             public Task<AblyResponse> AblyResponseWith500Status(AblyRequest request)

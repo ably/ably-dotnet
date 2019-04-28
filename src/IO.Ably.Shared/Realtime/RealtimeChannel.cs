@@ -41,6 +41,7 @@ namespace IO.Ably.Realtime
         public List<MessageAndCallback> QueuedMessages { get; set; } = new List<MessageAndCallback>(16);
 
         public ErrorInfo ErrorReason { get; internal set; }
+
         public ChannelProperties Properties { get; } = new ChannelProperties();
 
         public event EventHandler<ChannelStateChange> StateChanged = delegate { };
@@ -483,7 +484,7 @@ namespace IO.Ably.Realtime
             }
             else
             {
-                channelEvent = (ChannelEvent) state;
+                channelEvent = (ChannelEvent)state;
             }
 
             var channelStateChange = new ChannelStateChange(channelEvent, state, State, error, protocolMessage);
@@ -619,7 +620,8 @@ namespace IO.Ably.Realtime
 
         private void Reattach(ErrorInfo error, ProtocolMessage msg)
         {
-            Task.Run(async () =>
+            TaskUtils.RunInBackground(
+                () =>
             {
                 try
                 {
@@ -639,7 +641,8 @@ namespace IO.Ably.Realtime
                 {
                     Logger.Error("Reattach channel failed; channel = " + Name, e);
                 }
-            });
+            },
+                e => Logger.Warning(e.Message));
         }
 
         /// <summary>

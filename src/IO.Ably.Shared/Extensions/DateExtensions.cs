@@ -4,7 +4,7 @@ namespace IO.Ably
 {
     public static class DateExtensions
     {
-        public readonly static DateTimeOffset Epoch = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        public static readonly DateTimeOffset Epoch = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
         public static DateTimeOffset FromUnixTimeInMilliseconds(this long unixTime)
         {

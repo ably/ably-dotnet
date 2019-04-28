@@ -3,9 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+
+using IO.Ably;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
-using IO.Ably;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 
@@ -79,7 +80,7 @@ namespace IO.Ably.Transport
         public ConnectionManager(Connection connection, Func<DateTimeOffset> nowFunc, ILogger logger)
         {
             Now = nowFunc;
-            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
+            Logger = logger ?? DefaultLogger.LoggerInstance;
             PendingMessages = new Queue<MessageAndCallback>();
             AttemptsInfo = new ConnectionAttemptsInfo(connection, nowFunc);
             Connection = connection;
@@ -182,7 +183,7 @@ namespace IO.Ably.Transport
                     {
                         await SetState(new ConnectionDisconnectedState(this, ex.ErrorInfo, Logger));
                     }
-                    else if (newState.State != Realtime.ConnectionState.Failed)
+                    else if (newState.State != ConnectionState.Failed)
                     {
                         await SetState(new ConnectionFailedState(this, ex.ErrorInfo, Logger));
                     }
@@ -304,7 +305,7 @@ namespace IO.Ably.Transport
             ClearTokenAndRecordRetry();
             if (updateState)
             {
-                await SetState(new ConnectionDisconnectedState(this, error, Logger), skipAttach: ConnectionState == Realtime.ConnectionState.Connecting);
+                await SetState(new ConnectionDisconnectedState(this, error, Logger), skipAttach: ConnectionState == ConnectionState.Connecting);
                 await SetState(new ConnectionConnectingState(this, Logger));
             }
             else
@@ -353,7 +354,8 @@ namespace IO.Ably.Transport
                 }
                 else
                 {
-                    throw new AblyException($"Current state is [{State.State}] which supports queuing but Options.QueueMessages is set to False.",
+                    throw new AblyException(
+                        $"Current state is [{State.State}] which supports queuing but Options.QueueMessages is set to False.",
                         Connection.ConnectionState.DefaultErrorInfo.Code,
                         HttpStatusCode.ServiceUnavailable);
                 }
@@ -413,13 +415,13 @@ namespace IO.Ably.Transport
                     var connectionState = _inTransitionToState?.State ?? ConnectionState;
                     switch (connectionState)
                     {
-                        case Realtime.ConnectionState.Closing:
+                        case ConnectionState.Closing:
                             SetState(new ConnectionClosedState(this, Logger) { Exception = ex });
                             break;
-                        case Realtime.ConnectionState.Connecting:
+                        case ConnectionState.Connecting:
                             HandleConnectingFailure(null, ex);
                             break;
-                        case Realtime.ConnectionState.Connected:
+                        case ConnectionState.Connected:
                             var disconnectedState = new ConnectionDisconnectedState(this, GetErrorInfoFromTransportException(ex, ErrorInfo.ReasonDisconnected), Logger) { Exception = ex };
                             disconnectedState.RetryInstantly = Connection.ConnectionResumable;
                             SetState(disconnectedState);

@@ -38,7 +38,7 @@ namespace IO.Ably.Tests
         {
             Client.Channels.Get("test").PublishAsync("test", "true");
 
-           ExecutionCount.Should().Be(2);
+            ExecutionCount.Should().Be(2);
         }
 
         [Fact]

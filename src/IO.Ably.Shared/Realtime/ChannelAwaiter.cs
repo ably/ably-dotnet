@@ -27,7 +27,7 @@ namespace IO.Ably.Realtime
 
         public ChannelAwaiter(IRealtimeChannel channel, ChannelState awaitedState, ILogger logger = null, Action onTimeout = null)
         {
-            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
+            Logger = logger ?? DefaultLogger.LoggerInstance;
             _name = $"#{channel.Name}:{awaitedState} awaiter";
             _channel = channel as RealtimeChannel;
             _awaitedState = awaitedState;
@@ -46,7 +46,11 @@ namespace IO.Ably.Realtime
             lock (_lock)
             {
                 _timer?.Abort();
-                if (_waiting == false) return;
+                if (_waiting == false)
+                {
+                    return;
+                }
+
                 _waiting = false;
             }
 

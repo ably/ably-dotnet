@@ -24,7 +24,7 @@ namespace IO.Ably.Transport
 
             BinaryProtocol = parameters.UseBinaryProtocol;
             WebSocketUri = parameters.GetUri();
-            Logger = parameters.Logger ?? IO.Ably.DefaultLogger.LoggerInstance;
+            Logger = parameters.Logger ?? DefaultLogger.LoggerInstance;
         }
 
         public bool BinaryProtocol { get; }

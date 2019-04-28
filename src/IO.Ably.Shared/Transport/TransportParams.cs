@@ -10,6 +10,7 @@ namespace IO.Ably.Transport
     public class TransportParams
     {
         internal static Regex RecoveryKeyRegex { get; set; } = new Regex(@"^([\w!-]+):(-?\d+):(-?\d+)$");
+
         internal ILogger Logger { get; private set; }
 
         public string Host { get; private set; }

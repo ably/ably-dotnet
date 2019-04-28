@@ -3,10 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
+
+using IO.Ably;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Rest;
-using System.Threading.Tasks;
-using IO.Ably;
+
 using Newtonsoft.Json.Linq;
 
 namespace IO.Ably
@@ -20,8 +22,8 @@ namespace IO.Ably
 
         internal string CustomHost
         {
-            get { return HttpClient.CustomHost; }
-            set { HttpClient.CustomHost = value; }
+            get => HttpClient.CustomHost;
+            set => HttpClient.CustomHost = value;
         }
 
         internal AblyAuth AblyAuth { get; private set; }
@@ -82,7 +84,7 @@ namespace IO.Ably
                 throw new AblyException("Invalid options");
             }
 
-            Logger = Options.Logger ?? IO.Ably.DefaultLogger.LoggerInstance;
+            Logger = Options.Logger ?? DefaultLogger.LoggerInstance;
 
             if (Options.LogLevel.HasValue)
             {

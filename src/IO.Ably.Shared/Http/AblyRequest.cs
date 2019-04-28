@@ -38,8 +38,8 @@ namespace IO.Ably
 
         public ChannelOptions ChannelOptions
         {
-            get { return _channelOptions; }
-            set { _channelOptions = value ?? new ChannelOptions(); }
+            get => _channelOptions;
+            set => _channelOptions = value ?? new ChannelOptions();
         }
 
         public Dictionary<string, string> PostParameters { get; set; }

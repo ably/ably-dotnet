@@ -4,6 +4,8 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
+    using IO.Ably.Realtime;
+
     internal class ConnectionFailedState : ConnectionStateBase
     {
         public new ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonFailed;
@@ -14,7 +16,7 @@ namespace IO.Ably.Transport.States.Connection
             Error = error ?? ErrorInfo.ReasonFailed;
         }
 
-        public override Realtime.ConnectionState State => Realtime.ConnectionState.Failed;
+        public override ConnectionState State => Realtime.ConnectionState.Failed;
 
         public override void Connect()
         {

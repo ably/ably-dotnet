@@ -33,7 +33,7 @@ namespace IO.Ably
         {
             if (input == null)
             {
-                return string.Empty;
+                return Empty;
             }
 
             return string.Join(delimiter, input.Where(IsNotEmpty));

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace IO.Ably.Rest
 {
@@ -22,8 +22,8 @@ namespace IO.Ably.Rest
 
         public ChannelOptions Options
         {
-            get { return _options; }
-            set { _options = value ?? new ChannelOptions(); }
+            get => _options;
+            set => _options = value ?? new ChannelOptions();
         }
 
         private readonly string _basePath;
@@ -141,9 +141,9 @@ namespace IO.Ably.Rest
         }
 
         /// <summary>
-            /// Get the presence messages history for the channel
-            /// </summary>
-            /// <returns><see cref="PaginatedResult{T}"/></returns>
+        /// Get the presence messages history for the channel
+        /// </summary>
+        /// <returns><see cref="PaginatedResult{T}"/></returns>
         Task<PaginatedResult<PresenceMessage>> IPresence.HistoryAsync()
         {
             return Presence.HistoryAsync(new PaginatedRequestParams());

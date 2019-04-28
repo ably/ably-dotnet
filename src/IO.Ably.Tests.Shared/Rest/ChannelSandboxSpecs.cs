@@ -566,7 +566,7 @@ namespace IO.Ably.Tests.Rest
         {
             [Fact]
             [Trait("spec", "TM3")]
-            public async Task Message_FromEncoded_WithNoEncoding()
+            public void Message_FromEncoded_WithNoEncoding()
             {
                 var msg = new Message("name", "some-data");
                 var fromEncoded = Message.FromEncoded(msg);
@@ -578,7 +578,7 @@ namespace IO.Ably.Tests.Rest
 
             [Fact]
             [Trait("spec", "TM3")]
-            public async Task Message_FromEncoded_WithEncoding()
+            public void Message_FromEncoded_WithEncoding()
             {
                 var d = new Dictionary<string, string>
                 {
@@ -596,7 +596,7 @@ namespace IO.Ably.Tests.Rest
 
             [Fact]
             [Trait("spec", "TM3")]
-            public async Task Message_FromEncoded_WithCustomEncoding()
+            public void Message_FromEncoded_WithCustomEncoding()
             {
                 var d = new Dictionary<string, string>
                 {
@@ -614,7 +614,7 @@ namespace IO.Ably.Tests.Rest
 
             [Fact]
             [Trait("spec", "TM3")]
-            public async Task Message_FromEncoded_WithCipherEncoding()
+            public void Message_FromEncoded_WithCipherEncoding()
             {
                 var cipherParams = Crypto.GetDefaultParams(Crypto.GenerateRandomKey(128), null, CipherMode.CBC);
 
@@ -631,7 +631,7 @@ namespace IO.Ably.Tests.Rest
 
             [Fact]
             [Trait("spec", "TM3")]
-            public async Task Message_FromEncoded_WithInvalidCipherEncoding()
+            public void Message_FromEncoded_WithInvalidCipherEncoding()
             {
                 var cipherParams = Crypto.GetDefaultParams(Crypto.GenerateRandomKey(128), null, CipherMode.CBC);
                 var payload = "some-invalid-payload".AddRandomSuffix();
@@ -641,9 +641,9 @@ namespace IO.Ably.Tests.Rest
                 bool didThrow = false;
                 try
                 {
-                    var fromEncoded = Message.FromEncoded(msg, new ChannelOptions(cipherParams));
+                    Message.FromEncoded(msg, new ChannelOptions(cipherParams));
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     didThrow = true;
                 }
@@ -653,7 +653,7 @@ namespace IO.Ably.Tests.Rest
 
             [Fact]
             [Trait("spec", "TM3")]
-            public async Task Message_FromEncodedArray_WithNoEncoding()
+            public void Message_FromEncodedArray_WithNoEncoding()
             {
                 var msg = new[]
                 {

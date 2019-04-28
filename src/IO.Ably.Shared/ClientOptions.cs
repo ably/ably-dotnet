@@ -14,9 +14,6 @@ namespace IO.Ably
         private bool _useBinaryProtocol = false;
         private string[] _fallbackHosts;
 
-        /// <summary>
-        ///
-        /// </summary>
         public bool AutoConnect { get; set; } = true;
 
         /// <summary>
@@ -28,7 +25,7 @@ namespace IO.Ably
         /// </summary>
         public string ClientId
         {
-            get { return _clientId; }
+            get => _clientId;
 
             set
             {
@@ -101,8 +98,10 @@ namespace IO.Ably
                 {
                     return Defaults.FallbackHosts;
                 }
+
                 return _fallbackHosts;
             }
+
             set => _fallbackHosts = value;
         }
 
@@ -151,20 +150,20 @@ namespace IO.Ably
         }
 
         /// <summary>
-        ///  For development environments only; allows a non-default Ably port to be specified.
+        /// For development environments only; allows a non-default Ably port to be specified.
         /// </summary>
         public int Port { get; set; } = 80;
 
         /// <summary>
-        ///Encrypted transport: if true, TLS will be used for all connections (whether REST/HTTP
-        ///or Realtime WebSocket or Comet connections).
+        /// Encrypted transport: if true, TLS will be used for all connections (whether REST/HTTP
+        /// or Realtime WebSocket or Comet connections).
         /// Default: true
-        ///</summary>
+        /// </summary>
         public bool Tls { get; set; } = true;
 
         public int TlsPort { get; set; } = 443;
 
-        ///<summary>
+        /// <summary>
         /// If false, forces the library to use the JSON encoding for REST and Realtime operations,
         /// If true, the MsgPack binary format is used (if available in the current build
         /// Default: true
@@ -214,7 +213,7 @@ namespace IO.Ably
             set => _nowFunc = value;
         }
 
-        internal ILogger Logger { get; set; } = IO.Ably.DefaultLogger.LoggerInstance;
+        internal ILogger Logger { get; set; } = DefaultLogger.LoggerInstance;
 
         internal AuthMethod Method
         {
@@ -243,7 +242,7 @@ namespace IO.Ably
         internal TimeSpan RealtimeRequestTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;
 
         /// <summary>
-        /// Defaul constructor for ClientOptions
+        /// Default constructor for ClientOptions
         /// </summary>
         public ClientOptions()
         {
@@ -269,7 +268,7 @@ namespace IO.Ably
         internal void SetIdempotentRestPublishingDefault(int majorVersion, int minorVersion)
         {
             // (TO3n) idempotentRestPublishing defaults to false for clients with version < 1.1, otherwise true.
-            if (majorVersion == 1 && minorVersion >= 1 || majorVersion > 1)
+            if ((majorVersion == 1 && minorVersion >= 1) || majorVersion > 1)
             {
                 IdempotentRestPublishing = true;
             }

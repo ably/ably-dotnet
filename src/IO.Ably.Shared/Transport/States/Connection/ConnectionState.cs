@@ -6,6 +6,8 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
+    using IO.Ably.Realtime;
+
     [DebuggerDisplay("{State}")]
     internal abstract class ConnectionStateBase
     {
@@ -13,13 +15,13 @@ namespace IO.Ably.Transport.States.Connection
 
         protected ConnectionStateBase(IConnectionContext context, ILogger logger)
         {
-            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
+            Logger = logger ?? DefaultLogger.LoggerInstance;
             Context = context;
         }
 
         protected readonly IConnectionContext Context;
 
-        public abstract Realtime.ConnectionState State { get; }
+        public abstract ConnectionState State { get; }
 
         public ErrorInfo Error { get; protected set; }
 

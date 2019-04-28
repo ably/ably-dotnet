@@ -177,7 +177,7 @@ namespace IO.Ably.Tests.Rest
             int encrypted = 0)
         {
             var jwtStr = await GetJwtStringAsync(invalid, expiresIn, clientId, capability, jwtType, encrypted);
-            var token = new TokenDetails(jwtStr) {Expires = DateTimeOffset.UtcNow.AddSeconds(expiresIn)};
+            var token = new TokenDetails(jwtStr) { Expires = DateTimeOffset.UtcNow.AddSeconds(expiresIn) };
             return token;
         }
 

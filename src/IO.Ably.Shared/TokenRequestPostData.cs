@@ -60,7 +60,7 @@ namespace IO.Ably
         [JsonProperty("timestamp")]
         public DateTimeOffset? Timestamp
         {
-            get { return _timestamp; }
+            get => _timestamp;
 
             set
             {

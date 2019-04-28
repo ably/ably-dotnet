@@ -36,7 +36,7 @@ namespace IO.Ably.Tests
             {
                 yield return new object[] { "[]", new Message[] { } };
                 yield return new object[] { "[{\"name\":\"test\"}]", new Message[] { new Message("test", null) } };
-                yield return new object[] { "[{\"name\":\"test\"},{\"name\":\"attach\"}]", new Message[] { new Message("test", null),  new Message("attach", null) } };
+                yield return new object[] { "[{\"name\":\"test\"},{\"name\":\"attach\"}]", new Message[] { new Message("test", null), new Message("attach", null) } };
                 yield return new object[] { "[{\"data\":\"test\"}]", new Message[] { new Message(null, "test") } };
                 yield return new object[] { "[{}]", new Message[] { new Message(null, null) } };
                 yield return new object[] { "[{\"data\":[1234,4321]}]", new Message[] { new Message(null, new JArray(1234, 4321)) } };

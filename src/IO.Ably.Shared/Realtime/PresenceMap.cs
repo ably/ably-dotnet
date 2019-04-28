@@ -5,7 +5,6 @@ using System.Linq;
 
 namespace IO.Ably.Realtime
 {
-
     internal class PresenceMap
     {
         internal ILogger Logger { get; private set; }

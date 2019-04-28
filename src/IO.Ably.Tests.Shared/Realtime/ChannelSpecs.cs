@@ -158,7 +158,7 @@ namespace IO.Ably.Tests.Realtime
                     channelStateChange.Should().NotBeNull();
                     channelStateChange.Error.Should().NotBeNull();
                     channelStateChange.Error.Message.Should().Be(action.ToString());
-                    channelStateChange.Error.Code.Should().Be((int) action);
+                    channelStateChange.Error.Code.Should().Be((int)action);
 
                     // should be the state corresponding to the
                     // passed in ChannelEvent which should be
@@ -211,7 +211,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "TH2")]
             [Trait("spec", "TH3")]
             [Trait("spec", "TH4")]
-            async Task WhenAttachedProtocolMessageWithResumedFlagReceived_EmittedChannelStateChangeShouldIndicateResumed()
+            public async Task WhenAttachedProtocolMessageWithResumedFlagReceived_EmittedChannelStateChangeShouldIndicateResumed()
             {
                 var client = GetConnectedClient();
                 var channel = client.Channels.Get("test");
@@ -302,7 +302,7 @@ namespace IO.Ably.Tests.Realtime
             [InlineData(ChannelState.Failed)]
             [InlineData(ChannelState.Suspended)]
             [Trait("spec", "RTL2g")]
-            async Task ShouldNeverEmitAChannelEventForAStateEqualToThePreviousState(ChannelState state)
+            public void ShouldNeverEmitAChannelEventForAStateEqualToThePreviousState(ChannelState state)
             {
                 var client = GetConnectedClient();
                 var channel = client.Channels.Get("test") as RealtimeChannel;
@@ -1152,10 +1152,8 @@ namespace IO.Ably.Tests.Realtime
                 await _client.FakeProtocolMessageReceived(protocolMessage);
 
                 receivedMessages.Should().HaveCount(3);
-                receivedMessages.Select(x => x.Id)
-                    .Should()
-                    .BeEquivalentTo(new[]
-                        { $"{protocolMessage.Id}:0", $"{protocolMessage.Id}:1", $"{protocolMessage.Id}:2" });
+                receivedMessages.Select(x => x.Id).Should().BeEquivalentTo(
+                    new[] { $"{protocolMessage.Id}:0", $"{protocolMessage.Id}:1", $"{protocolMessage.Id}:2" });
             }
 
             [Fact]
@@ -1239,7 +1237,7 @@ namespace IO.Ably.Tests.Realtime
                 receivedMessages.Last().Timestamp.Should().Be(timeStamp.AddMinutes(1));
             }
 
-            private ProtocolMessage SetupTestProtocolmessage(string connectionId = null, DateTimeOffset? timestamp = null,  Message[] messages = null)
+            private ProtocolMessage SetupTestProtocolmessage(string connectionId = null, DateTimeOffset? timestamp = null, Message[] messages = null)
             {
                 var protocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message, "test")
                 {

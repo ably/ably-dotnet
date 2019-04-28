@@ -5,10 +5,11 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
+    using IO.Ably.Realtime;
+
     internal class ConnectionConnectingState : ConnectionStateBase
     {
         private readonly ICountdownTimer _timer;
-        private readonly ConnectionStateBase _previous;
 
         public ConnectionConnectingState(IConnectionContext context, ILogger logger)
             : this(context, new CountdownTimer("Connecting state timer", logger), logger)
@@ -21,7 +22,7 @@ namespace IO.Ably.Transport.States.Connection
             _timer = timer;
         }
 
-        public override Realtime.ConnectionState State => Realtime.ConnectionState.Connecting;
+        public override ConnectionState State => Realtime.ConnectionState.Connecting;
 
         public override bool CanQueue => true;
 
@@ -94,7 +95,7 @@ namespace IO.Ably.Transport.States.Connection
                             return true;
                         }
 
-                        if (message.Error?.IsTokenError == true && !shouldRenew )
+                        if (message.Error?.IsTokenError == true && !shouldRenew)
                         {
                             TransitionState(new ConnectionDisconnectedState(Context, message.Error, Logger));
                             return true;

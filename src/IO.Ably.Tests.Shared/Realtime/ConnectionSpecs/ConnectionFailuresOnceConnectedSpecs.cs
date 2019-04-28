@@ -131,9 +131,9 @@ namespace IO.Ably.Tests.Realtime
             };
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
-                {
-                    Error = _tokenErrorInfo
-                });
+            {
+                Error = _tokenErrorInfo
+            });
 
             Assert.Equal(
                 new[]

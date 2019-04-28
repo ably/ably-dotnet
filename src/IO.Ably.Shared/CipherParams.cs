@@ -52,10 +52,7 @@ namespace IO.Ably
 
         public int KeyLength => Key?.Length * 8 ?? 0;
 
-        public string CipherType
-        {
-            get { return $"{Algorithm}-{KeyLength}-{Mode}"; }
-        }
+        public string CipherType => $"{Algorithm}-{KeyLength}-{Mode}";
 
         public CipherParams(byte[] key)
             : this(Crypto.DefaultAlgorithm, key)

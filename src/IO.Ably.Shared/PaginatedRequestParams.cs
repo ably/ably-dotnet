@@ -86,7 +86,7 @@ namespace IO.Ably
                 var hashCode = Start.GetHashCode();
                 hashCode = (hashCode * 397) ^ End.GetHashCode();
                 hashCode = (hashCode * 397) ^ Limit.GetHashCode();
-                hashCode = (hashCode * 397) ^ (int) Direction;
+                hashCode = (hashCode * 397) ^ (int)Direction;
                 hashCode = (hashCode * 397) ^ (ExtraParameters != null ? ExtraParameters.GetHashCode() : 0);
                 return hashCode;
             }
@@ -120,8 +120,7 @@ namespace IO.Ably
             var result = new List<KeyValuePair<string, string>>();
             if (Start.HasValue)
             {
-                result.Add(new KeyValuePair<string, string>("start",
-                    Start.Value.ToUnixTimeInMilliseconds().ToString()));
+                result.Add(new KeyValuePair<string, string>("start", Start.Value.ToUnixTimeInMilliseconds().ToString()));
             }
 
             if (End.HasValue)
@@ -160,7 +159,7 @@ namespace IO.Ably
                 return false;
             }
 
-            return Equals((PaginatedRequestParams) obj);
+            return Equals((PaginatedRequestParams)obj);
         }
 
         internal static PaginatedRequestParams Parse(string querystring)
@@ -229,7 +228,7 @@ namespace IO.Ably
 
             try
             {
-                var miliseconds = (long) Convert.ChangeType(value, typeof(long));
+                var miliseconds = (long)Convert.ChangeType(value, typeof(long));
                 return miliseconds.FromUnixTimeInMilliseconds();
             }
             catch (Exception)

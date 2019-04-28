@@ -29,7 +29,7 @@ namespace IO.Ably.Realtime
 
         public bool SyncComplete
         {
-            get { return Map.InitialSyncCompleted | _initialSyncCompleted; }
+            get => Map.InitialSyncCompleted | _initialSyncCompleted;
 
             private set
             {
@@ -114,6 +114,7 @@ namespace IO.Ably.Realtime
                 {
                     throw new AblyException(new ErrorInfo($"Channel {_channel.Name}: presence state is out of sync due to the channel being in a SUSPENDED state", 91005));
                 }
+
                 await WaitForSyncAsync();
             }
 
@@ -198,6 +199,7 @@ namespace IO.Ably.Realtime
                 Logger.Debug($"{errorMessage} (Error Code: {errorCode})");
                 throw new AblyException(new ErrorInfo(errorMessage, errorCode));
             }
+
             return tsc.Task.Result;
         }
 
@@ -364,7 +366,6 @@ namespace IO.Ably.Realtime
                 _channel.State == ChannelState.Detached ||
                 _channel.State == ChannelState.Detaching)
             {
-
                 throw new AblyException("Unable to sync to channel; not attached", 40000, HttpStatusCode.BadRequest);
             }
 
@@ -520,7 +521,6 @@ namespace IO.Ably.Realtime
                             Logger.Error(errorString);
                             _channel.EmitUpdate(new ErrorInfo(errorString, 91004), true);
                         }
-
                     }
                 }
 

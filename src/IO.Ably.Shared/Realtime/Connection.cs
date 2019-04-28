@@ -157,10 +157,7 @@ namespace IO.Ably.Realtime
 
         public string Host
         {
-            get
-            {
-                return _host;
-            }
+            get => _host;
 
             internal set
             {

@@ -27,9 +27,11 @@ namespace IO.Ably.Tests.Realtime
                 return;
             }
 
+#pragma warning disable 162
             var client = GetClientWithFakeTransport(opts => opts.UseBinaryProtocol = useBinary);
             LastCreatedTransport.Parameters.UseBinaryProtocol.Should().Be(useBinary);
             LastCreatedTransport.Parameters.GetParams().Should().ContainKey("format").WhichValue.Should().Be(format);
+#pragma warning restore 162
         }
 
         [Theory]
@@ -79,9 +81,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = GetClientWithFakeTransport();
             LastCreatedTransport.Parameters.AuthValue.Should().Be(client.Options.Key);
-            LastCreatedTransport.Parameters.GetParams().
-                Should().ContainKey("key")
-                .WhichValue.Should().Be(client.Options.Key);
+            LastCreatedTransport.Parameters.GetParams().Should().ContainKey("key").WhichValue.Should().Be(client.Options.Key);
         }
 
         [Fact]

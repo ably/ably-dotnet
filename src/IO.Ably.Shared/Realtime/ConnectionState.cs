@@ -72,9 +72,9 @@ namespace IO.Ably.Realtime
     {
         public static ConnectionEvent ToConnectionEvent(this ConnectionState state)
         {
-            if (Enum.IsDefined(typeof(ConnectionEvent), (int) state))
+            if (Enum.IsDefined(typeof(ConnectionEvent), (int)state))
             {
-                return (ConnectionEvent) state;
+                return (ConnectionEvent)state;
             }
 
             throw new ArgumentOutOfRangeException($"ConnectionState '{state}' cannot be cast to a ConnectionEvent.");

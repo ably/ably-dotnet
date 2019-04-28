@@ -29,7 +29,7 @@ namespace IO.Ably
     {
         internal EventEmitter(ILogger logger)
         {
-            Logger = logger ?? IO.Ably.DefaultLogger.LoggerInstance;
+            Logger = logger ?? DefaultLogger.LoggerInstance;
         }
 
         internal ILogger Logger { get; set; }
@@ -39,24 +39,24 @@ namespace IO.Ably
 
         protected abstract Action<Action> NotifyClient { get; }
 
-        private class Emitter<TState, TArgs> where TState : struct
+        private class Emitter<TStatePrivate, TArgsPrivate> where TStatePrivate : struct
         {
-            public Action<TArgs> Action { get; }
+            public Action<TArgsPrivate> Action { get; }
 
-            public Func<TArgs, Task> AsyncAction { get; }
+            public Func<TArgsPrivate, Task> AsyncAction { get; }
 
             public bool Once { get; }
 
-            public TState? State { get; }
+            public TStatePrivate? State { get; }
 
-            public Emitter(Action<TArgs> action, TState? state = null, bool once = false)
+            public Emitter(Action<TArgsPrivate> action, TStatePrivate? state = null, bool once = false)
             {
                 Action = action ?? throw new ArgumentException("Cannot pass a null action to the EventEmitter");
                 State = state;
                 Once = once;
             }
 
-            public Emitter(Func<TArgs, Task> asyncAction, TState? state = null, bool once = false)
+            public Emitter(Func<TArgsPrivate, Task> asyncAction, TStatePrivate? state = null, bool once = false)
             {
                 AsyncAction = asyncAction ?? throw new ArgumentException("Cannot pass a null action to the EventEmitter");
                 State = state;

@@ -577,8 +577,7 @@ namespace IO.Ably.Tests.Realtime
             stateChange.Reason.Code.Should().Be(80008);
             stateChange.Reason.Should().Be(client.Connection.ErrorReason);
 
-            var protocolMessage = client.GetTestTransport().ProtocolMessagesReceived
-                .Where(x => x.Action == ProtocolMessage.MessageAction.Connected).FirstOrDefault();
+            var protocolMessage = client.GetTestTransport().ProtocolMessagesReceived.FirstOrDefault(x => x.Action == ProtocolMessage.MessageAction.Connected);
 
             protocolMessage.Should().NotBeNull();
             protocolMessage.ConnectionId.Should().NotBe(oldConnectionId);
@@ -913,7 +912,11 @@ namespace IO.Ably.Tests.Realtime
 
             await awaiter.Task;
             stateChanges.Select(x => x.Current).Should().BeEquivalentTo(new[]
-                { ConnectionState.Disconnected, ConnectionState.Connecting, ConnectionState.Disconnected });
+                                                                            {
+                                                                                ConnectionState.Disconnected,
+                                                                                ConnectionState.Connecting,
+                                                                                ConnectionState.Disconnected
+                                                                            });
 
             stateChanges[0].HasError.Should().BeTrue();
             stateChanges[0].Reason.Code.Should().Be(40142);
@@ -962,7 +965,11 @@ namespace IO.Ably.Tests.Realtime
 
             await awaiter.Task;
             stateChanges.Select(x => x.Current).Should().BeEquivalentTo(new[]
-                { ConnectionState.Disconnected, ConnectionState.Connecting, ConnectionState.Failed });
+                                                                            {
+                                                                                ConnectionState.Disconnected,
+                                                                                ConnectionState.Connecting,
+                                                                                ConnectionState.Failed
+                                                                            });
 
             stateChanges[0].HasError.Should().BeTrue();
             stateChanges[0].Reason.Code.Should().Be(40142);
@@ -1056,15 +1063,6 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RTN15g")]
-        [Trait("spec", "RTN15g1")]
-        public async Task WhenDisconnectedIsNotPastTTL_ShouldResume_ShouldClearConnectionStateAndAttemptNewConnection(
-            Protocol protocol)
-        {
-        }
-
-        [Theory]
-        [ProtocolData]
         [Trait("spec", "RTN15i")]
         public async Task WithConnectedClient_WhenErrorProtocolMessageReceived_ShouldBecomeFailed(Protocol protocol)
         {
@@ -1114,14 +1112,6 @@ namespace IO.Ably.Tests.Realtime
             errors.Should().HaveCount(1);
             errors[0].Should().Be(dummyError);
             channel.State.Should().Be(ChannelState.Failed);
-        }
-
-        [Theory]
-        [ProtocolData]
-        [Trait("spec", "RTN16d")]
-        public async Task WhenRecoveringConnection_ShouldHaveSameConnectionIdButDifferentKey(Protocol protocol)
-        {
-
         }
 
         [Theory]
@@ -1378,7 +1368,7 @@ namespace IO.Ably.Tests.Realtime
     [Trait("requires", "sandbox")]
     public class ConnectionSandboxOperatingSystemEventsForNetworkSpecs : SandboxSpecs
     {
-        [Theory(Skip= "TODO")]
+        [Theory(Skip = "TODO")]
 #if MSGPACK
         [InlineData(Protocol.MsgPack, ConnectionState.Connected)]
         [InlineData(Protocol.MsgPack, ConnectionState.Connecting)]
@@ -1486,7 +1476,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN22a")]
         public async Task WhenFakeDisconnectedMessageContainsTokenError_ForcesClientToReauthenticate(Protocol protocol)
         {
-
             var reconnectAwaiter = new TaskCompletionAwaiter();
             var client = await GetRealtimeClient(protocol, (options, settings) =>
             {

@@ -5,6 +5,8 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport
 {
+    using IO.Ably.Transport.States.Connection;
+
     internal interface IConnectionContext
     {
         TimeSpan DefaultTimeout { get; }
@@ -23,7 +25,7 @@ namespace IO.Ably.Transport
 
         void ClearTokenAndRecordRetry();
 
-        Task SetState(States.Connection.ConnectionStateBase state, bool skipAttach = false);
+        Task SetState(ConnectionStateBase state, bool skipAttach = false);
 
         Task CreateTransport();
 

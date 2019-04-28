@@ -83,7 +83,7 @@ namespace IO.Ably.Tests.Realtime
 
             // AuthorizeAsync will not return until either a CONNECTED or ERROR response
             // (or timeout) is seen from Ably, so we do not need to use WaitForState() here
-            await client.Auth.AuthorizeAsync(new TokenParams {ClientId = invalidClientId});
+            await client.Auth.AuthorizeAsync(new TokenParams { ClientId = invalidClientId });
             client.Connection.State.Should().Be(ConnectionState.Failed);
             client.Close();
 

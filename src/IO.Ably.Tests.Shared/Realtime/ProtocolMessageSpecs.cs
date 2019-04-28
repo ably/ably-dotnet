@@ -10,7 +10,6 @@ namespace IO.Ably.Tests.Shared.Realtime
 {
     public class ProtocolMessageTests
     {
-
         [Fact]
         [Trait("spec", "TR3")]
         public void ProtocolMessageFlagHaveCorrectValues()
@@ -50,7 +49,7 @@ namespace IO.Ably.Tests.Shared.Realtime
             pm.HasFlag(ProtocolMessage.Flag.PresenceSubscribe).Should().BeTrue();
 
             // TR4a,TR4b,TR4c,TR4d,TR4e (show it is removed),TR4f,TR4g,TR4h,TR4i,TR4j,TR4k,TR4l,TR4m
-            var propertyNamesAndTypes = new(string, Type)[]
+            var propertyNamesAndTypes = new (string, Type)[]
             {
                 ("Action", typeof(ProtocolMessage.MessageAction)),
                 ("Id", typeof(string)),
@@ -93,7 +92,6 @@ namespace IO.Ably.Tests.Shared.Realtime
             adProps[0].CanWrite.Should().BeTrue();
             adProps[0].GetGetMethod(false).IsPublic.Should().BeTrue();
             adProps[0].GetSetMethod(false).IsPublic.Should().BeTrue();
-
         }
     }
 }
