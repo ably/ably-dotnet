@@ -28,6 +28,7 @@ namespace IO.Ably
 
         public object Body { get; set; }
 
+
         public string Path { get; set; }
 
         /// <summary>
@@ -237,4 +238,13 @@ namespace IO.Ably
             }
         }
     }
+
+    /// <inheritdoc />
+    /// <summary>
+    ///     Data request query used for querying history.
+    ///     Functionally identical to <see cref="PaginatedRequestParams"/> and present for backwards compatibility with 0.8 release
+    /// </summary>
+    public class HistoryRequestParams
+        : PaginatedRequestParams
+    { }
 }
