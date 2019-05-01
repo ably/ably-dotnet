@@ -237,4 +237,14 @@ namespace IO.Ably
             }
         }
     }
+
+    /// <inheritdoc />
+    /// <summary>
+    ///     Data request query used for querying history.
+    ///     Functionally identical to <see cref="PaginatedRequestParams"/> and present for backwards compatibility with 0.8 release
+    /// </summary>
+    [Obsolete("HistoryRequestParams may be removed in future versions, please use PaginatedRequestParams instead.")]
+    public class HistoryRequestParams
+        : PaginatedRequestParams
+    { }
 }
