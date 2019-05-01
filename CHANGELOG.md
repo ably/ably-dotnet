@@ -1,5 +1,25 @@
 # Change Log
 
+## [1.1.2](https://github.com/ably/ably-dotnet/tree/HEAD)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.1...1.1.2)
+
+**Implemented enhancements:**
+
+- Clean up Log.Debug calls [\#229](https://github.com/ably/ably-dotnet/issues/229)
+
+**Closed issues:**
+
+- presence myMembers map implementation [\#302](https://github.com/ably/ably-dotnet/issues/302)
+- Test should verify message was processed [\#299](https://github.com/ably/ably-dotnet/issues/299)
+- Presence \(v1.1\) if QueueMessages = false should raise an error [\#298](https://github.com/ably/ably-dotnet/issues/298)
+- Unnecessary disconnect/connect cycle on token authentication [\#276](https://github.com/ably/ably-dotnet/issues/276)
+
+**Merged pull requests:**
+
+- HistoryRequestParams fix [\#323](https://github.com/ably/ably-dotnet/pull/323) ([withakay](https://github.com/withakay))
+- Code cleanup [\#322](https://github.com/ably/ably-dotnet/pull/322) ([withakay](https://github.com/withakay))
+
 ## [1.1.1](https://github.com/ably/ably-dotnet/tree/1.1.1)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.0...1.1.1)
@@ -7,6 +27,10 @@
 **Merged pull requests:**
 
 - Fix for issue 313 [\#318](https://github.com/ably/ably-dotnet/pull/318) ([withakay](https://github.com/withakay))
+
+**Fixed bugs:**
+
+- Thread leak through disconnect/resume sequence [\#313](https://github.com/ably/ably-dotnet/issues/313)
 
 ## [1.1.0](https://github.com/ably/ably-dotnet/tree/1.1.0)
 
