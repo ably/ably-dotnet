@@ -338,7 +338,7 @@ namespace IO.Ably.Tests
                 clientOptions.IdempotentRestPublishing.Should().BeFalse();
 
                 clientOptions.SetIdempotentRestPublishingDefault(1, 2);
-                clientOptions.IdempotentRestPublishing.Should().BeFalse();
+                clientOptions.IdempotentRestPublishing.Should().BeTrue();
 
                 clientOptions.SetIdempotentRestPublishingDefault(2, 0);
                 clientOptions.IdempotentRestPublishing.Should().BeTrue();
