@@ -60,6 +60,14 @@ namespace IO.Ably
         public bool IsTokenError => Code >= Defaults.TokenErrorCodesRangeStart &&
                                     Code <= Defaults.TokenErrorCodesRangeEnd;
 
+        /// <summary>
+        /// Get or Sets the InnerException
+        /// </summary>
+        public Exception InnerException { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ErrorInfo"/> class.
+        /// </summary>
         public ErrorInfo() { }
 
         public ErrorInfo(string reason)
@@ -68,11 +76,11 @@ namespace IO.Ably
         }
 
         public ErrorInfo(string reason, int code)
-            : this(reason, code, null)
+            : this(reason, code, null, null, null)
         {
         }
 
-        public ErrorInfo(string reason, int code, HttpStatusCode? statusCode = null, string href = null)
+        public ErrorInfo(string reason, int code, HttpStatusCode? statusCode = null, string href = null, Exception innerException = null)
         {
             Code = code;
             StatusCode = statusCode;
@@ -85,6 +93,8 @@ namespace IO.Ably
             {
                 Href = href;
             }
+
+            InnerException = innerException;
         }
 
         public override string ToString()
