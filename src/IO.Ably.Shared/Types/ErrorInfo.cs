@@ -10,6 +10,7 @@ namespace IO.Ably
     /// <summary>
     /// An exception type encapsulating error informaiton containing an Ably specific error code and generic status code
     /// </summary>
+    [Serializable]
     public class ErrorInfo
     {
         internal static readonly ErrorInfo ReasonClosed = new ErrorInfo("Connection closed by client", 10000);
@@ -27,15 +28,21 @@ namespace IO.Ably
         internal const string ReasonPropertyName = "message";
         internal const string HrefBase = "https://help.ably.io/error/";
 
-        /// <summary>Ably error code (see https://github.com/ably/ably-common/blob/master/protocol/errors.json) </summary>
+        /// <summary>
+        /// Ably error code (see https://github.com/ably/ably-common/blob/master/protocol/errors.json)
+        /// </summary>
         [JsonProperty("code")]
         public int Code { get; set; }
 
-        /// <summary>The http status code corresponding to this error</summary>
+        /// <summary>
+        /// The http status code corresponding to this error
+        /// </summary>
         [JsonProperty("statusCode")]
         public HttpStatusCode? StatusCode { get; set; }
 
-        /// <summary>Additional reason information, where available</summary>
+        /// <summary>
+        /// Additional reason information, where available
+        /// </summary>
         [JsonProperty("message")]
         public string Message { get; set; }
 
@@ -44,6 +51,8 @@ namespace IO.Ably
         /// </summary>
         [JsonProperty("href")]
         public string Href { get; set; }
+
+        public ErrorInfo Cause { get; set; }
 
         /// <summary>
         /// Is this Error as result of a 401 Unauthorized HTTP response
@@ -80,7 +89,12 @@ namespace IO.Ably
         {
         }
 
-        public ErrorInfo(string reason, int code, HttpStatusCode? statusCode = null, string href = null, Exception innerException = null)
+        public ErrorInfo(string reason, int code, HttpStatusCode? statusCode, Exception innerException)
+            : this(reason, code, statusCode, null, null, innerException)
+        {
+        }
+
+        public ErrorInfo(string reason, int code, HttpStatusCode? statusCode = null, string href = null, ErrorInfo cause = null, Exception innerException = null)
         {
             Code = code;
             StatusCode = statusCode;
@@ -93,7 +107,7 @@ namespace IO.Ably
             {
                 Href = href;
             }
-
+            Cause = cause;
             InnerException = innerException;
         }
 
