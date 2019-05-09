@@ -287,7 +287,6 @@ namespace IO.Ably
                             ex.ErrorInfo.StatusCode == HttpStatusCode.Forbidden
                                 ? ex.ErrorInfo.StatusCode
                                 : HttpStatusCode.Unauthorized,
-                            null,
                             ex),
                         ex);
                 }
@@ -307,7 +306,6 @@ namespace IO.Ably
                             reason,
                             80019,
                             HttpStatusCode.InternalServerError,
-                            null,
                             ex),
                         ex);
                 }
