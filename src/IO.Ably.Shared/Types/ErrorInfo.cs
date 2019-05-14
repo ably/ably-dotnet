@@ -52,6 +52,10 @@ namespace IO.Ably
         [JsonProperty("href")]
         public string Href { get; set; }
 
+        /// <summary>
+        /// Additional cause information, where available
+        /// </summary>
+        [JsonProperty("cause")]
         public ErrorInfo Cause { get; set; }
 
         /// <summary>
@@ -114,23 +118,34 @@ namespace IO.Ably
         public override string ToString()
         {
             StringBuilder result = new StringBuilder("[ErrorInfo ");
-            result.Append("Reason: ").Append(LogMessage()).Append("; ");
+            result.Append("Reason: ").Append(LogMessage());
             if (Code > 0)
             {
-                result.Append("Code: ").Append(Code).Append("; ");
+                result.Append("; Code: ").Append(Code);
             }
 
             if (StatusCode != null)
             {
-                result.Append("StatusCode: ").Append((int)StatusCode).Append(" (").Append(StatusCode.ToString()).Append(")").Append("; ");
+                result.Append("; StatusCode: ").Append((int)StatusCode).Append(" (").Append(StatusCode.ToString())
+                    .Append(")");
             }
 
             if (Href != null)
             {
-                result.Append("Href: ").Append(Href).Append(";");
+                result.Append("; Href: ").Append(Href);
             }
 
-            result.Append(']');
+            if (Cause != null)
+            {
+                result.Append("; Cause: ").Append(Cause);
+            }
+
+            if (InnerException != null)
+            {
+                result.Append("; InnerException: ").Append(InnerException);
+            }
+
+            result.Append("]");
             return result.ToString();
         }
 
