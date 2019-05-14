@@ -12,6 +12,8 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
 {
+    using System.Net.NetworkInformation;
+
     public enum NetworkState
     {
         Online,
@@ -27,8 +29,13 @@ namespace IO.Ably.Realtime
 
         protected override Action<Action> NotifyClient => RealtimeClient.NotifyExternalClients;
 
-        internal static void NotifyOperatingSystemNetworkState(NetworkState state, ILogger logger)
+        internal static void NotifyOperatingSystemNetworkState(NetworkState state, ILogger logger = null)
         {
+            if (logger == null)
+            {
+                logger = DefaultLogger.LoggerInstance;
+            }
+
             if (logger.IsDebug)
             {
                 logger.Debug("OS Network connection state: " + state);
