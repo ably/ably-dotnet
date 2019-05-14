@@ -323,7 +323,7 @@ namespace IO.Ably.Tests
                 var clientOptions = new ClientOptions();
 
                 // Now working against 1.1+ so this should be true
-                clientOptions.IdempotentRestPublishing.Should().BeTrue();
+                clientOptions.IdempotentRestPublishing.Should().BeFalse();
 
                 // Test the internal method that is called from
                 // ClientOptions constructor with different
@@ -335,7 +335,10 @@ namespace IO.Ably.Tests
                 clientOptions.IdempotentRestPublishing.Should().BeFalse();
 
                 clientOptions.SetIdempotentRestPublishingDefault(1, 1);
-                clientOptions.IdempotentRestPublishing.Should().BeTrue();
+                clientOptions.IdempotentRestPublishing.Should().BeFalse();
+
+                clientOptions.SetIdempotentRestPublishingDefault(1, 2);
+                clientOptions.IdempotentRestPublishing.Should().BeFalse();
 
                 clientOptions.SetIdempotentRestPublishingDefault(2, 0);
                 clientOptions.IdempotentRestPublishing.Should().BeTrue();
