@@ -66,20 +66,37 @@ namespace IO.Ably.Transport
 
         private void StartSenderQueueConsumer()
         {
-            var queueEnumerable = _sendQueue.GetConsumingEnumerable();
             Task.Run(
                 async () =>
-                {
-                    foreach (var tuple in queueEnumerable)
                     {
-                        await Send(tuple.Item1, tuple.Item2, _tokenSource.Token);
-                    }
-                }, _tokenSource.Token).ConfigureAwait(false);
+                        try
+                        {
+                            if (_sendQueue != null)
+                            {
+                                foreach (var tuple in _sendQueue?.GetConsumingEnumerable(_tokenSource.Token))
+                                {
+                                    await Send(tuple.Item1, tuple.Item2, _tokenSource.Token);
+                                }
+                            }
+                        }
+                        catch (OperationCanceledException e)
+                        {
+                            if (Logger.IsDebug)
+                            {
+                                Logger.Debug(
+                                    _disposed ? $"{typeof(MsWebSocketConnection)} has been Disposed, WebSocket send operation cancelled." : "WebSocket Send operation cancelled.",
+                                    e);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.Error("Error Sending to WebSocket", e);
+                        }
+                    }, _tokenSource.Token).ConfigureAwait(false);
         }
 
         public async Task StopConnectionAsync()
         {
-            _tokenSource.Cancel();
             _handler?.Invoke(ConnectionState.Closing, null);
             try
             {
@@ -96,6 +113,7 @@ namespace IO.Ably.Transport
                         .ConfigureAwait(false);
                 }
 
+                _tokenSource.Cancel();
                 _handler?.Invoke(ConnectionState.Closed, null);
             }
             catch (Exception ex)
@@ -111,8 +129,7 @@ namespace IO.Ably.Transport
                 Logger.Debug("Sending text");
             }
 
-            var bytes = new ArraySegment<byte>(message.GetBytes());
-            _sendQueue.TryAdd(Tuple.Create(bytes, WebSocketMessageType.Text), 1000, _tokenSource.Token);
+            EnqueueForSending(message.GetBytes(), WebSocketMessageType.Binary);
         }
 
         public void SendData(byte[] data)
@@ -122,8 +139,25 @@ namespace IO.Ably.Transport
                 Logger.Debug("Sending binary data");
             }
 
+            EnqueueForSending(data, WebSocketMessageType.Binary);
+        }
+
+        private void EnqueueForSending(byte[] data, WebSocketMessageType msgType)
+        {
             var bytes = new ArraySegment<byte>(data);
-            _sendQueue.TryAdd(Tuple.Create(bytes, WebSocketMessageType.Binary), 1000, _tokenSource.Token);
+            try
+            {
+                _sendQueue.TryAdd(Tuple.Create(bytes, msgType), 1000, _tokenSource.Token);
+            }
+            catch (Exception e)
+            {
+                var msg = _disposed
+                          ? $"EnqueueForSending failed. {typeof(MsWebSocketConnection)} has been Disposed."
+                          : "EnqueueForSending failed.";
+
+                Logger.Error(msg, e);
+                throw;
+            }
         }
 
         private async Task Send(ArraySegment<byte> data, WebSocketMessageType type, CancellationToken token)
@@ -170,7 +204,7 @@ namespace IO.Ably.Transport
 
                         if (Logger.IsDebug)
                         {
-                            Logger.Debug("Recieving message with type: " + result.MessageType);
+                            Logger.Debug("Receiving message with type: " + result.MessageType);
                         }
 
                         switch (result.MessageType)
@@ -211,7 +245,6 @@ namespace IO.Ably.Transport
                 _tokenSource.Cancel();
                 _tokenSource.Dispose();
                 _sendQueue.CompleteAdding();
-                _sendQueue.Dispose();
                 ClientWebSocket?.Dispose();
             }
 

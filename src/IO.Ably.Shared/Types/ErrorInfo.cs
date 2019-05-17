@@ -27,15 +27,21 @@ namespace IO.Ably
         internal const string ReasonPropertyName = "message";
         internal const string HrefBase = "https://help.ably.io/error/";
 
-        /// <summary>Ably error code (see https://github.com/ably/ably-common/blob/master/protocol/errors.json) </summary>
+        /// <summary>
+        /// Ably error code (see https://github.com/ably/ably-common/blob/master/protocol/errors.json)
+        /// </summary>
         [JsonProperty("code")]
         public int Code { get; set; }
 
-        /// <summary>The http status code corresponding to this error</summary>
+        /// <summary>
+        /// The http status code corresponding to this error
+        /// </summary>
         [JsonProperty("statusCode")]
         public HttpStatusCode? StatusCode { get; set; }
 
-        /// <summary>Additional reason information, where available</summary>
+        /// <summary>
+        /// Additional reason information, where available
+        /// </summary>
         [JsonProperty("message")]
         public string Message { get; set; }
 
@@ -44,6 +50,12 @@ namespace IO.Ably
         /// </summary>
         [JsonProperty("href")]
         public string Href { get; set; }
+
+        /// <summary>
+        /// Additional cause information, where available
+        /// </summary>
+        [JsonProperty("cause")]
+        public ErrorInfo Cause { get; set; }
 
         /// <summary>
         /// Is this Error as result of a 401 Unauthorized HTTP response
@@ -60,6 +72,14 @@ namespace IO.Ably
         public bool IsTokenError => Code >= Defaults.TokenErrorCodesRangeStart &&
                                     Code <= Defaults.TokenErrorCodesRangeEnd;
 
+        /// <summary>
+        /// Get or Sets the InnerException
+        /// </summary>
+        public Exception InnerException { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ErrorInfo"/> class.
+        /// </summary>
         public ErrorInfo() { }
 
         public ErrorInfo(string reason)
@@ -68,11 +88,16 @@ namespace IO.Ably
         }
 
         public ErrorInfo(string reason, int code)
-            : this(reason, code, null)
+            : this(reason, code, null, null, null)
         {
         }
 
-        public ErrorInfo(string reason, int code, HttpStatusCode? statusCode = null, string href = null)
+        public ErrorInfo(string reason, int code, HttpStatusCode? statusCode, Exception innerException)
+            : this(reason, code, statusCode, null, null, innerException)
+        {
+        }
+
+        public ErrorInfo(string reason, int code, HttpStatusCode? statusCode = null, string href = null, ErrorInfo cause = null, Exception innerException = null)
         {
             Code = code;
             StatusCode = statusCode;
@@ -85,28 +110,41 @@ namespace IO.Ably
             {
                 Href = href;
             }
+            Cause = cause;
+            InnerException = innerException;
         }
 
         public override string ToString()
         {
             StringBuilder result = new StringBuilder("[ErrorInfo ");
-            result.Append("Reason: ").Append(LogMessage()).Append("; ");
+            result.Append("Reason: ").Append(LogMessage());
             if (Code > 0)
             {
-                result.Append("Code: ").Append(Code).Append("; ");
+                result.Append("; Code: ").Append(Code);
             }
 
             if (StatusCode != null)
             {
-                result.Append("StatusCode: ").Append((int)StatusCode).Append(" (").Append(StatusCode.ToString()).Append(")").Append("; ");
+                result.Append("; StatusCode: ").Append((int)StatusCode).Append(" (").Append(StatusCode.ToString())
+                    .Append(")");
             }
 
             if (Href != null)
             {
-                result.Append("Href: ").Append(Href).Append(";");
+                result.Append("; Href: ").Append(Href);
             }
 
-            result.Append(']');
+            if (Cause != null)
+            {
+                result.Append("; Cause: ").Append(Cause);
+            }
+
+            if (InnerException != null)
+            {
+                result.Append("; InnerException: ").Append(InnerException);
+            }
+
+            result.Append("]");
             return result.ToString();
         }
 
