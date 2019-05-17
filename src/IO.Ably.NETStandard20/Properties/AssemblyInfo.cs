@@ -11,4 +11,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 #if !PACKAGE
 [assembly: InternalsVisibleTo("IO.Ably.Tests.DotNetCore20")]
+[assembly: InternalsVisibleTo("IO.Ably.Tests.iOS")]
 #endif
