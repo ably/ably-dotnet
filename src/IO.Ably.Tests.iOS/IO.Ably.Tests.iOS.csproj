@@ -186,6 +186,8 @@
       <EmbeddedResource Include="..\..\common\test-resources\crypto-data-256.json">
         <Link>crypto-data-256.json</Link>
       </EmbeddedResource>
+      <EmbeddedResource Include="StatsFixture.json" />
+      <EmbeddedResource Include="StatsInterval.json" />
     </ItemGroup>
     <Import Project="..\IO.Ably.Shared\IO.Ably.Shared.projitems" Label="Shared" Condition="Exists('..\IO.Ably.Shared\IO.Ably.Shared.projitems')" />
     <Import Project="..\IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.projitems" Label="Shared" Condition="Exists('..\IO.Ably.Tests.Shared\IO.Ably.Tests.Shared.projitems')" />
