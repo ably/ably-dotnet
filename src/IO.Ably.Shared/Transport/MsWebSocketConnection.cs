@@ -149,16 +149,14 @@ namespace IO.Ably.Transport
             {
                 _sendQueue.TryAdd(Tuple.Create(bytes, msgType), 1000, _tokenSource.Token);
             }
-            catch (OperationCanceledException e)
+            catch (Exception e)
             {
-                if (Logger.IsDebug)
-                {
-                    var msg = _disposed
-                              ? $"{typeof(MsWebSocketConnection)} has been Disposed, Enqueue for sending operation cancelled."
-                              : "Enqueue for sending operation cancelled.";
+                var msg = _disposed
+                          ? $"EnqueueForSending failed. {typeof(MsWebSocketConnection)} has been Disposed."
+                          : "EnqueueForSending failed.";
 
-                    Logger.Debug(msg, e);
-                }
+                Logger.Error(msg, e);
+                throw;
             }
         }
 
