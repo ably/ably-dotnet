@@ -62,7 +62,7 @@ namespace IO.Ably
         /// Creates AblyException with supplied error info.
         /// </summary>
         public AblyException(ErrorInfo info)
-            : base(info.ToString())
+            : base(info.ToString(), info.InnerException)
         {
             ErrorInfo = info;
         }
@@ -71,16 +71,11 @@ namespace IO.Ably
         /// Creates AblyException with ErrorInfo and sets the supplied exception as innerException
         /// </summary>
         public AblyException(ErrorInfo info, Exception innerException)
-            : base(info.ToString(), innerException)
+            : base(info.ToString(), innerException ?? info.InnerException)
         {
             ErrorInfo = info;
         }
 
-        /* protected AblyException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-
-        } */
         public ErrorInfo ErrorInfo { get; set; }
 
         internal static AblyException FromResponse(AblyResponse response)

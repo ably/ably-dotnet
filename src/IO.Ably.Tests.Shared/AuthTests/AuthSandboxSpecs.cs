@@ -676,6 +676,62 @@ namespace IO.Ably.Tests
 
         [Theory]
         [ProtocolData]
+        public async Task TokenAuthUrlWithJsonTokenReturned_ShouldBeAbleToConnect(Protocol protocol)
+        {
+            var ablyRest = await GetRestClient(protocol);
+            var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
+            var settings = await Fixture.GetSettings();
+            var tokenJson = token.ToJson();
+            var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeUriString(tokenJson);
+
+            var client = new AblyRealtime(new ClientOptions
+                                                 {
+                                                     AuthUrl = new Uri(authUrl),
+                                                     Environment = settings.Environment,
+                                                     UseBinaryProtocol = protocol == Defaults.Protocol,
+                                                     HttpRequestTimeout = new TimeSpan(0, 0, 20)
+                                                 });
+
+            await client.WaitForState();
+            client.Connection.State.Should().Be(ConnectionState.Connected);
+        }
+
+        [Theory]
+        [ProtocolData]
+        public async Task TokenAuthUrlWithIncorrectJsonTokenReturned_ShouldNotBeAbleToConnectAndShouldHaveError(Protocol protocol)
+        {
+            var ablyRest = await GetRestClient(protocol);
+            var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
+            var settings = await Fixture.GetSettings();
+            var tokenJson = token.ToJson();
+            var incorrectJson = $"[{token.ToJson()}]";
+            var authUrl = "http://echo.ably.io/?type=json&body=" + Uri.EscapeUriString(incorrectJson);
+
+            var client = new AblyRealtime(new ClientOptions
+                                              {
+                                                  AuthUrl = new Uri(authUrl),
+                                                  Environment = settings.Environment,
+                                                  UseBinaryProtocol = protocol == Defaults.Protocol,
+                                                  HttpRequestTimeout = new TimeSpan(0, 0, 20)
+                                              });
+
+            var tsc = new TaskCompletionAwaiter();
+            ErrorInfo err = null;
+            client.Connection.On(ConnectionEvent.Disconnected, state =>
+            {
+                err = state.Reason;
+                tsc.SetCompleted();
+            });
+
+            var b = await tsc.Task;
+            b.Should().BeTrue();
+            err.Should().NotBeNull();
+            err.Message.Should().StartWith("Error parsing JSON response");
+            err.InnerException.Should().NotBeNull();
+        }
+
+        [Theory]
+        [ProtocolData]
         public async Task TokenAuthCallbackWithTokenDetailsReturned_ShouldBeAbleToPublishWithNewToken(Protocol protocol)
         {
             var settings = await Fixture.GetSettings();

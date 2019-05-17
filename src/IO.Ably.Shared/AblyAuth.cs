@@ -253,6 +253,7 @@ namespace IO.Ably
             }
             else if (authOptions.AuthUrl.IsNotEmpty())
             {
+                var responseText = String.Empty;
                 try
                 {
                     var response = await CallAuthUrl(authOptions, tokenParams);
@@ -265,15 +266,15 @@ namespace IO.Ably
                         return new TokenDetails(response.TextResponse, Now);
                     }
 
-                    var signedData = response.TextResponse;
-                    var jData = JObject.Parse(signedData);
+                    responseText = response.TextResponse;
+                    var jData = JObject.Parse(responseText);
 
                     if (TokenDetails.IsToken(jData))
                     {
                         return JsonHelper.DeserializeObject<TokenDetails>(jData);
                     }
 
-                    postData = JsonHelper.Deserialize<TokenRequest>(signedData);
+                    postData = JsonHelper.Deserialize<TokenRequest>(responseText);
 
                     request.Url = $"/keys/{postData.KeyName}/requestToken";
                 }
@@ -283,7 +284,29 @@ namespace IO.Ably
                         new ErrorInfo(
                             "Error calling Auth URL, token request failed. See the InnerException property for details of the underlying exception.",
                             80019,
-                            ex.ErrorInfo.StatusCode == HttpStatusCode.Forbidden ? ex.ErrorInfo.StatusCode : HttpStatusCode.Unauthorized),
+                            ex.ErrorInfo.StatusCode == HttpStatusCode.Forbidden
+                                ? ex.ErrorInfo.StatusCode
+                                : HttpStatusCode.Unauthorized,
+                            ex),
+                        ex);
+                }
+                catch (Exception ex)
+                {
+                    string reason =
+                        "Error handling Auth URL, token request failed. See the InnerException property for details of the underlying exception.";
+
+                    if (ex is JsonReaderException)
+                    {
+                        reason =
+                            $"Error parsing JSON response '{responseText}' from Auth URL.See the InnerException property for details of the underlying exception.";
+                    }
+
+                    throw new AblyException(
+                        new ErrorInfo(
+                            reason,
+                            80019,
+                            HttpStatusCode.InternalServerError,
+                            ex),
                         ex);
                 }
             }
