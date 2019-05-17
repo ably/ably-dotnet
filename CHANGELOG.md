@@ -1,6 +1,26 @@
 # Change Log
 
-## [1.1.2](https://github.com/ably/ably-dotnet/tree/HEAD)
+## [1.1.3](https://github.com/ably/ably-dotnet/tree/1.1.3)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.2...1.1.3)
+
+**Implemented enhancements:**
+
+- Add test for JWT token [\#210](https://github.com/ably/ably-dotnet/issues/210)
+
+**Fixed bugs:**
+
+- Collection was modified in ConnectionManager [\#267](https://github.com/ably/ably-dotnet/issues/267)
+- Socket is null in MsWebSocketTransport [\#264](https://github.com/ably/ably-dotnet/issues/264)
+
+**Merged pull requests:**
+
+- Fix for Issue 334, incorrectly disposing of a blocking collection [\#335](https://github.com/ably/ably-dotnet/pull/335) ([withakay](https://github.com/withakay))
+- Add InnerException to ErrorInfo [\#328](https://github.com/ably/ably-dotnet/pull/328) ([withakay](https://github.com/withakay))
+- Idempotent defaults to off for version \< 1.2 [\#327](https://github.com/ably/ably-dotnet/pull/327) ([withakay](https://github.com/withakay))
+- update xunit and moq to latest versions [\#326](https://github.com/ably/ably-dotnet/pull/326) ([withakay](https://github.com/withakay))
+
+## [1.1.2](https://github.com/ably/ably-dotnet/tree/1.1.2)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.1...1.1.2)
 
