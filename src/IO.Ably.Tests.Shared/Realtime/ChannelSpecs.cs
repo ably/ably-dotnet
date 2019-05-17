@@ -701,7 +701,7 @@ namespace IO.Ably.Tests.Realtime
                 _channel.State.Should().Be(ChannelState.Detached);
             }
 
-            [Retry]
+            [Fact]
             [Trait("spec", "RTL5f")]
             public async Task ShouldReturnToPreviousStateIfDetachedMessageWasNotReceivedWithinDefaultTimeout()
             {
@@ -757,7 +757,7 @@ namespace IO.Ably.Tests.Realtime
                 Assert.True(called);
             }
 
-            [Retry] // replaces fact
+            [Fact] // replaces fact
             [Trait("spec", "RTL5e")]
             public void WithACallback_ShouldCallCallbackWithErrorIfDetachFails()
             {
@@ -1077,7 +1077,7 @@ namespace IO.Ably.Tests.Realtime
                 channel.State.Should().Be(ChannelState.Attaching);
             }
 
-            [Retry(3)]
+            [Fact]
             [Trait("spec", "RTL7d")]
             public async Task WithAMessageThatFailDecryption_ShouldDeliverMessageButEmmitErrorOnTheChannel()
             {
