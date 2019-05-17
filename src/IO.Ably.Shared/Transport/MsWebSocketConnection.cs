@@ -81,7 +81,7 @@ namespace IO.Ably.Transport
                         }
                         catch (OperationCanceledException e)
                         {
-                            if (Logger.IsDebug)
+                            if (Logger != null && Logger.IsDebug)
                             {
                                 Logger.Debug(
                                     _disposed ? $"{typeof(MsWebSocketConnection)} has been Disposed, WebSocket send operation cancelled." : "WebSocket Send operation cancelled.",
@@ -102,29 +102,48 @@ namespace IO.Ably.Transport
             {
                 if (ClientWebSocket.CloseStatus.HasValue)
                 {
-                    Logger.Debug("Closing websocket. Close status: " +
-                                 Enum.GetName(typeof(WebSocketCloseStatus), ClientWebSocket.CloseStatus) + ", Description: " + ClientWebSocket.CloseStatusDescription);
+                    if (Logger != null && Logger.IsDebug)
+                    {
+                        Logger.Debug(
+                            "Closing websocket. Close status: "
+                            + Enum.GetName(typeof(WebSocketCloseStatus), ClientWebSocket.CloseStatus)
+                            + ", Description: " + ClientWebSocket.CloseStatusDescription);
+                    }
                 }
 
                 if (ClientWebSocket?.State != WebSocketState.Closed)
                 {
-                    await
-                    ClientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None)
-                        .ConfigureAwait(false);
+                    await ClientWebSocket.CloseOutputAsync(
+                        WebSocketCloseStatus.NormalClosure,
+                        string.Empty,
+                        CancellationToken.None).ConfigureAwait(false);
                 }
 
-                _tokenSource.Cancel();
+                if (!_disposed)
+                {
+                    _tokenSource?.Cancel();
+                }
+
                 _handler?.Invoke(ConnectionState.Closed, null);
+            }
+            catch (ObjectDisposedException ex)
+            {
+                if (Logger != null && Logger.IsDebug)
+                {
+                    Logger.Debug($"Error stopping connection. {typeof(MsWebSocketConnection)} was disposed.", ex);
+                }
+                _handler?.Invoke(ConnectionState.Closed, ex);
             }
             catch (Exception ex)
             {
+                Logger?.Warning("Error stopping connection.", ex);
                 _handler?.Invoke(ConnectionState.Closed, ex);
             }
         }
 
         public void SendText(string message)
         {
-            if (Logger.IsDebug)
+            if (Logger != null && Logger.IsDebug)
             {
                 Logger.Debug("Sending text");
             }
@@ -134,7 +153,7 @@ namespace IO.Ably.Transport
 
         public void SendData(byte[] data)
         {
-            if (Logger.IsDebug)
+            if (Logger != null && Logger.IsDebug)
             {
                 Logger.Debug("Sending binary data");
             }
@@ -155,7 +174,7 @@ namespace IO.Ably.Transport
                           ? $"EnqueueForSending failed. {typeof(MsWebSocketConnection)} has been Disposed."
                           : "EnqueueForSending failed.";
 
-                Logger.Error(msg, e);
+                Logger?.Error(msg, e);
                 throw;
             }
         }
@@ -166,7 +185,7 @@ namespace IO.Ably.Transport
             {
                 if (ClientWebSocket.State != WebSocketState.Open)
                 {
-                    Logger.Warning($"Trying to send message of type {type} when the socket is {ClientWebSocket.State}. Ack for this message will fail shortly.");
+                    Logger?.Warning($"Trying to send message of type {type} when the socket is {ClientWebSocket.State}. Ack for this message will fail shortly.");
                     return;
                 }
 
@@ -196,13 +215,13 @@ namespace IO.Ably.Transport
                                 break;
                             }
 
-                            ms.Write(buffer.Array, buffer.Offset, result.Count);
+                            ms.Write(buffer.Array ?? throw new InvalidOperationException("buffer cannot be null"), buffer.Offset, result.Count);
                         }
                         while (!result.EndOfMessage);
 
                         ms.Seek(0, SeekOrigin.Begin);
 
-                        if (Logger.IsDebug)
+                        if (Logger != null && Logger.IsDebug)
                         {
                             Logger.Debug("Receiving message with type: " + result.MessageType);
                         }
