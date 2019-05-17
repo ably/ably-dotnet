@@ -242,7 +242,6 @@ namespace IO.Ably.Transport
             {
                 DisposeSocketConnection();
                 Listener = null;
-                Logger = null;
             }
 
             _disposed = true;
