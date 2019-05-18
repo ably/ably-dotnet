@@ -60,12 +60,21 @@ namespace IO.Ably.Transport
             }
             catch (Exception ex)
             {
+                if (Logger != null && Logger.IsDebug)
+                {
+                    Logger.Debug("Error starting connection", ex);
+                }
                 _handler?.Invoke(ConnectionState.Error, ex);
             }
         }
 
         private void StartSenderQueueConsumer()
         {
+            if (_disposed)
+            {
+                throw new AblyException($"Attempting to start sender queue consumer when {typeof(MsWebSocketConnection)} has been disposed is not allowed.");
+            }
+
             Task.Run(
                 async () =>
                     {
@@ -93,6 +102,7 @@ namespace IO.Ably.Transport
                             Logger?.Error("Error Sending to WebSocket", e);
                         }
                     }, _tokenSource.Token).ConfigureAwait(false);
+
         }
 
         public async Task StopConnectionAsync()
@@ -111,16 +121,16 @@ namespace IO.Ably.Transport
                     }
                 }
 
-                if (ClientWebSocket?.State != WebSocketState.Closed)
-                {
-                    await ClientWebSocket.CloseOutputAsync(
-                        WebSocketCloseStatus.NormalClosure,
-                        string.Empty,
-                        CancellationToken.None).ConfigureAwait(false);
-                }
-
                 if (!_disposed)
                 {
+                    if (ClientWebSocket?.State != WebSocketState.Closed)
+                    {
+                        await ClientWebSocket.CloseOutputAsync(
+                            WebSocketCloseStatus.NormalClosure,
+                            string.Empty,
+                            CancellationToken.None).ConfigureAwait(false);
+                    }
+
                     _tokenSource?.Cancel();
                 }
 
