@@ -1,5 +1,14 @@
 # Change Log
 
+## [1.1.4](https://github.com/ably/ably-dotnet/tree/1.1.4)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.3...1.1.4)
+
+**Merged pull requests:**
+
+- Dispose guarding [\#339](https://github.com/ably/ably-dotnet/pull/339) ([withakay](https://github.com/withakay))
+- Issue 334 follow up [\#338](https://github.com/ably/ably-dotnet/pull/338) ([withakay](https://github.com/withakay))
+
 ## [1.1.3](https://github.com/ably/ably-dotnet/tree/1.1.3)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.2...1.1.3)
