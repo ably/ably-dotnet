@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.1.5](https://github.com/ably/ably-dotnet/tree/1.1.5)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.4...1.1.5)
+
+**Merged pull requests:**
+
+- PublishAsync improvement [\#341](https://github.com/ably/ably-dotnet/pull/341) ([withakay](https://github.com/withakay))
+
 ## [1.1.4](https://github.com/ably/ably-dotnet/tree/1.1.4)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.3...1.1.4)
