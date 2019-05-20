@@ -359,7 +359,7 @@ namespace IO.Ably.Realtime
                 tw.SetException(ex);
             }
 
-            var result = await Task.WhenAny(Task.Delay(RealtimeClient.Options.RealtimeRequestTimeout), tw.Task);
+            var result = await Task.WhenAny(Task.Delay(RealtimeClient.Options.RealtimeRequestTimeout), tw.Task).ConfigureAwait(false);
             if (result == tw.Task)
             {
                 return await tw.Task.ConfigureAwait(false);
