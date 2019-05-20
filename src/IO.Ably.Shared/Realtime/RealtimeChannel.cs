@@ -359,10 +359,10 @@ namespace IO.Ably.Realtime
                 tw.SetException(ex);
             }
 
-            var result = await Task.WhenAny(Task.Delay(RealtimeClient.Options.RealtimeRequestTimeout), tw.Task);
+            var result = await Task.WhenAny(Task.Delay(RealtimeClient.Options.RealtimeRequestTimeout), tw.Task).ConfigureAwait(false);
             if (result == tw.Task)
             {
-                return tw.Task.Result;
+                return await tw.Task.ConfigureAwait(false);
             }
 
             return Result.Fail(new ErrorInfo("PublishAsync timeout expired. Message was not confirmed by the server"));
