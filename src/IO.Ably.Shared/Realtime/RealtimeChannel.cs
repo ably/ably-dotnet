@@ -428,11 +428,9 @@ namespace IO.Ably.Realtime
 
             if (!Connection.CanPublishMessages)
             {
-                // "Message cannot be published. Client is not allowed to queue messages when connection is in state #{connection.state}"
                 throw new AblyException(new ErrorInfo($"Message cannot be published. Client is not allowed to queue messages when connection is in {State} state", 40000, HttpStatusCode.BadRequest));
             }
 
-            // Create protocol message
             var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Message, Name)
             {
                 Messages = messages.ToArray()
