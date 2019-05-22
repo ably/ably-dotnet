@@ -421,33 +421,24 @@ namespace IO.Ably.Realtime
 
         private void PublishImpl(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback)
         {
+            if (State == ChannelState.Suspended || State == ChannelState.Failed)
+            {
+                throw new AblyException(new ErrorInfo($"Unable to publish in {State} state", 40000, HttpStatusCode.BadRequest));
+            }
+
+            if (!Connection.CanPublishMessages)
+            {
+                // "Message cannot be published. Client is not allowed to queue messages when connection is in state #{connection.state}"
+                throw new AblyException(new ErrorInfo($"Message cannot be published. Client is not allowed to queue messages when connection is in {State} state", 40000, HttpStatusCode.BadRequest));
+            }
+
             // Create protocol message
-            var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Message, Name);
-            msg.Messages = messages.ToArray();
-
-            if (State == ChannelState.Initialized || State == ChannelState.Attaching)
+            var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Message, Name)
             {
-                // Not connected, queue the message
-                lock (_lockQueue)
-                {
-                    if (Logger.IsDebug)
-                    {
-                        Logger.Debug($"#{Name}:{State} queuing message");
-                    }
+                Messages = messages.ToArray()
+            };
 
-                    QueuedMessages.Add(new MessageAndCallback(msg, callback));
-                    return;
-                }
-            }
-
-            if (State == ChannelState.Attached)
-            {
-                SendMessage(msg, callback);
-                return;
-            }
-
-            // Invalid state, throw
-            throw new AblyException(new ErrorInfo("Unable to publish in detached or failed state", 40000, HttpStatusCode.BadRequest));
+            SendMessage(msg, callback);
         }
 
         internal void SetChannelState(ChannelState state, ProtocolMessage protocolMessage)

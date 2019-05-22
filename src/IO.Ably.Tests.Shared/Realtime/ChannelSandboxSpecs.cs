@@ -269,6 +269,38 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTL6c1")]
+        public async Task TransientPublishing_WhenConnected_ShouldPublishWithoutAttemptingAttach(Protocol protocol)
+        {
+            var channelName = "RTL6c1".AddRandomSuffix();
+            var pubClient = await GetRealtimeClient(protocol);
+            var subClient = await GetRealtimeClient(protocol);
+            await pubClient.WaitForState(ConnectionState.Connected);
+            await subClient.WaitForState(ConnectionState.Connected);
+
+            var subCh = subClient.Channels.Get(channelName);
+            subCh.Attach();
+            var tsc = new TaskCompletionAwaiter();
+            Message msg = null;
+            subCh.Subscribe(m =>
+                {
+                    msg = m;
+                    tsc.SetCompleted();
+                });
+            await subCh.WaitForState(ChannelState.Attached);
+
+            var pubCh = pubClient.Channels.Get(channelName);
+            await pubCh.PublishAsync("foo", "bar");
+
+            pubCh.State.Should().Be(ChannelState.Initialized);
+
+            var result = await tsc.Task;
+            result.Should().BeTrue();
+            msg.Should().NotBeNull();
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RTL6c5")]
         public async Task PublishShouldNotImplicitlyAttachAChannel(Protocol protocol)
         {
