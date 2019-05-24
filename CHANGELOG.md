@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.1.7-beta1](https://github.com/ably/ably-dotnet/tree/1.1.7-beta1)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.6...1.1.7-beta1)
+
+**Merged pull requests:**
+
+- Network changed events [\#333](https://github.com/ably/ably-dotnet/pull/333) ([withakay](https://github.com/withakay))
+
 ## [1.1.6](https://github.com/ably/ably-dotnet/tree/1.1.6)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.5...1.1.6)
