@@ -301,6 +301,143 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTL6c1")]
+        public async Task TransientPublishing_WhenConnecting_ShouldPublishWithoutAttemptingAttach(Protocol protocol)
+        {
+            var channelName = "RTL6c1".AddRandomSuffix();
+            var subClient = await GetRealtimeClient(protocol);
+            await subClient.WaitForState(ConnectionState.Connected);
+
+            var subCh = subClient.Channels.Get(channelName);
+            subCh.Attach();
+
+            var tsc = new TaskCompletionAwaiter();
+            Message msg = null;
+            subCh.Subscribe(m =>
+                {
+                    msg = m;
+                    tsc.SetCompleted();
+                });
+
+            await subCh.WaitForState(ChannelState.Attached);
+
+            var pubClient = await GetRealtimeClient(protocol);
+            var pubCh = pubClient.Channels.Get(channelName);
+            await pubClient.WaitForState(ConnectionState.Connecting);
+
+            await pubCh.PublishAsync("foo", "bar");
+
+            pubCh.State.Should().Be(ChannelState.Initialized);
+
+            var result = await tsc.Task;
+            result.Should().BeTrue();
+            msg.Should().NotBeNull();
+
+            pubClient.Close();
+            subClient.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL6c2")]
+        public async Task TransientPublishing_WhenNotConnected_ShouldPublishWithoutAttemptingAttach(Protocol protocol)
+        {
+            var channelName = "RTL6c2".AddRandomSuffix();
+            var pubClient = await GetRealtimeClient(protocol,
+                                (options, settings) => { options.AutoConnect = false; });
+
+            var subClient = await GetRealtimeClient(protocol);
+            await subClient.WaitForState(ConnectionState.Connected);
+
+            var subCh = subClient.Channels.Get(channelName);
+            subCh.Attach();
+            var tsc = new TaskCompletionAwaiter();
+            Message msg = null;
+            subCh.Subscribe(m =>
+                {
+                    msg = m;
+                    tsc.SetCompleted();
+                });
+            await subCh.WaitForState(ChannelState.Attached);
+
+            var pubCh = pubClient.Channels.Get(channelName);
+            await pubCh.PublishAsync("foo", "bar");
+
+            pubCh.State.Should().Be(ChannelState.Initialized);
+
+            var result = await tsc.Task;
+            result.Should().BeTrue();
+            msg.Should().NotBeNull();
+
+            pubClient.Close();
+            subClient.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL6c4")]
+        public async Task TransientPublishing_WhenConnectionFailed_ShouldResultInError(Protocol protocol)
+        {
+            var channelName = "RTL6c4".AddRandomSuffix();
+
+            var pubClient = await GetRealtimeClient(protocol,
+                                (options, settings) =>
+                                    {
+                                        options.Key = "not:valid.key";
+                                    });
+
+            var pubChannel = pubClient.Channels.Get(channelName);
+            await pubClient.WaitForState(ConnectionState.Failed);
+            pubClient.Connection.State.Should().Be(ConnectionState.Failed);
+
+            bool expectedError = false;
+            try
+            {
+                pubChannel.Publish("foo", "bar");
+            }
+            catch (AblyException e)
+            {
+                expectedError = true;
+            }
+
+            expectedError.Should().BeTrue();
+
+            pubClient.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTL6c4")]
+        public async Task TransientPublishing_WhenChannelFailed_ShouldResultInError(Protocol protocol)
+        {
+            var channelName = "RTL6c4".AddRandomSuffix();
+
+            var pubClient = await GetRealtimeClient(protocol);
+            await pubClient.WaitForState(ConnectionState.Connected);
+
+            var pubChannel = pubClient.Channels.Get(channelName) as RealtimeChannel;
+            await pubChannel.AttachAsync();
+
+            pubChannel.SetChannelState(ChannelState.Failed);
+            pubChannel.State.Should().Be(ChannelState.Failed);
+
+            bool expectedError = false;
+            try
+            {
+                pubChannel.Publish("foo", "bar");
+            }
+            catch (AblyException e)
+            {
+                expectedError = true;
+            }
+
+            expectedError.Should().BeTrue();
+
+            pubClient.Close();
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RTL6c5")]
         public async Task PublishShouldNotImplicitlyAttachAChannel(Protocol protocol)
         {
