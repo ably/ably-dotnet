@@ -1227,6 +1227,8 @@ namespace IO.Ably.Tests.Realtime
                     var result = await channel.Presence.EnterClientAsync("123", null);
                     result.IsSuccess.Should().BeTrue();
 
+                    await Task.Delay(10);
+
                     channel.Presence.Map.Members.Should().HaveCount(1);
                     channel.Presence.InternalMap.Members.Should().HaveCount(1);
 
