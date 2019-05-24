@@ -1,5 +1,27 @@
 # Change Log
 
+## [1.1.6](https://github.com/ably/ably-dotnet/tree/1.1.6)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.5...1.1.6)
+
+**Implemented enhancements:**
+
+- Idempotent publishing is not enabled in the upcoming 1.1 release [\#275](https://github.com/ably/ably-dotnet/issues/275)
+- Unity support [\#169](https://github.com/ably/ably-dotnet/issues/169)
+
+**Fixed bugs:**
+
+- JsonReader error on Xamarin [\#325](https://github.com/ably/ably-dotnet/issues/325)
+
+**Closed issues:**
+
+- NRE when switching networks [\#200](https://github.com/ably/ably-dotnet/issues/200)
+- Prefer the American English spelling for Initialise\(d\) [\#191](https://github.com/ably/ably-dotnet/issues/191)
+
+**Merged pull requests:**
+
+- Transient Publishing [\#343](https://github.com/ably/ably-dotnet/pull/343) ([withakay](https://github.com/withakay))
+
 ## [1.1.5](https://github.com/ably/ably-dotnet/tree/1.1.5)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.4...1.1.5)
