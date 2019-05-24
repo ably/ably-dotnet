@@ -814,7 +814,7 @@ namespace IO.Ably.Tests.Realtime
         [InlineData(ChannelState.Failed)]
         [InlineData(ChannelState.Suspended)]
         [Trait("spec", "RTL11")]
-        public async Task WhenChannelEntersDetachedFailedSuspendedState_ShouldDeleteQueuedMessageAndCallbackShouldIndicateError(ChannelState state)
+        public async Task WhenChannelEntersDetachedFailedSuspendedState_ShouldDeleteQueuedPresenceMessageAndCallbackShouldIndicateError(ChannelState state)
         {
             var client = await GetRealtimeClient(Defaults.Protocol, (options, settings) =>
                 {
@@ -829,22 +829,25 @@ namespace IO.Ably.Tests.Realtime
             var channel = client.Channels.Get("test".AddRandomSuffix());
 
             var tsc = new TaskCompletionAwaiter(15000);
+            int pendingCount = 0;
             client.Connection.Once(ConnectionEvent.Disconnected, change =>
             {
                 // place a message on the queue
-                channel.Publish("wibble", "wobble", (success, info) =>
-                {
-                    // expect an error
-                    tsc.Set(!success);
-                });
+                channel.Presence.Enter();
+                pendingCount = channel.Presence.PendingPresenceQueue.Count;
 
                 // setting the state should cause the queued message to be removed
                 // and the callback to indicate an error
                 (channel as RealtimeChannel).SetChannelState(state);
+                tsc.SetCompleted();
             });
 
             var result = await tsc.Task;
-            result.Should().BeTrue("publish should have failed");
+
+            pendingCount.Should().Be(1);
+            channel.Presence.PendingPresenceQueue.Count.Should().Be(0);
+
+            result.Should().BeTrue();
         }
 
         [Theory]
