@@ -351,6 +351,7 @@ namespace IO.Ably.Tests.Realtime
 
             var subCh = subClient.Channels.Get(channelName);
             subCh.Attach();
+
             var tsc = new TaskCompletionAwaiter();
             Message msg = null;
             subCh.Subscribe(m =>
@@ -361,9 +362,11 @@ namespace IO.Ably.Tests.Realtime
             await subCh.WaitForState(ChannelState.Attached);
 
             var pubCh = pubClient.Channels.Get(channelName);
-            await pubCh.PublishAsync("foo", "bar");
+            pubCh.Publish("foo", "bar");
 
             pubCh.State.Should().Be(ChannelState.Initialized);
+
+            pubClient.Connect();
 
             var result = await tsc.Task;
             result.Should().BeTrue();
