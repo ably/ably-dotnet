@@ -421,33 +421,22 @@ namespace IO.Ably.Realtime
 
         private void PublishImpl(IEnumerable<Message> messages, Action<bool, ErrorInfo> callback)
         {
-            // Create protocol message
-            var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Message, Name);
-            msg.Messages = messages.ToArray();
-
-            if (State == ChannelState.Initialized || State == ChannelState.Attaching)
+            if (State == ChannelState.Suspended || State == ChannelState.Failed)
             {
-                // Not connected, queue the message
-                lock (_lockQueue)
-                {
-                    if (Logger.IsDebug)
-                    {
-                        Logger.Debug($"#{Name}:{State} queuing message");
-                    }
-
-                    QueuedMessages.Add(new MessageAndCallback(msg, callback));
-                    return;
-                }
+                throw new AblyException(new ErrorInfo($"Unable to publish in {State} state", 40000, HttpStatusCode.BadRequest));
             }
 
-            if (State == ChannelState.Attached)
+            if (!Connection.CanPublishMessages)
             {
-                SendMessage(msg, callback);
-                return;
+                throw new AblyException(new ErrorInfo($"Message cannot be published. Client is not allowed to queue messages when connection is in {State} state", 40000, HttpStatusCode.BadRequest));
             }
 
-            // Invalid state, throw
-            throw new AblyException(new ErrorInfo("Unable to publish in detached or failed state", 40000, HttpStatusCode.BadRequest));
+            var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Message, Name)
+            {
+                Messages = messages.ToArray()
+            };
+
+            SendMessage(msg, callback);
         }
 
         internal void SetChannelState(ChannelState state, ProtocolMessage protocolMessage)

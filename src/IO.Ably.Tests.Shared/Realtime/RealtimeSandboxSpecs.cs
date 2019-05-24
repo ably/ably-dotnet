@@ -216,6 +216,10 @@ namespace IO.Ably.Tests.Realtime
 
             realtime.Connection.Once(ConnectionEvent.Disconnected, change => throw new Exception("Should not require a disconnect"));
             var channel = realtime.Channels.Get(channelName);
+
+            channel.Attach();
+            await channel.WaitForState();
+
             var awaiter1 = new TaskCompletionAwaiter(10000);
             channel.Publish("test", "should-not-fail", (b, info) =>
             {
@@ -223,31 +227,25 @@ namespace IO.Ably.Tests.Realtime
                 info.Should().BeNull();
                 awaiter1.SetCompleted();
             });
-            channel.Attach();
+
             Assert.True(await awaiter1.Task);
             channel.State.Should().Be(ChannelState.Attached);
 
             // channel should fail fast, allow 2000ms
-            var channelFailedAwaiter = new TaskCompletionAwaiter(2000);
-            channel.Attach(async (success, info2) =>
+            var channelFailedAwaiter = new TaskCompletionAwaiter(12000);
+            capability = new Capability();
+            capability.AddResource(wrongChannelName).AllowSubscribe();
+            var newToken = await realtime.Auth.AuthorizeAsync(new TokenParams
             {
-                success.Should().BeTrue();
-
-                // downgrade
-                capability = new Capability();
-                capability.AddResource(wrongChannelName).AllowSubscribe();
-                var newToken = await realtime.Auth.AuthorizeAsync(new TokenParams
-                {
-                    Capability = capability,
-                    ClientId = clientId
-                });
-                newToken.Should().NotBeNull();
-                channel.Once(ChannelEvent.Failed, state =>
-                {
-                    state.Error.Code.Should().Be(40160);
-                    state.Error.Message.Should().Contain("Channel denied access");
-                    channelFailedAwaiter.SetCompleted();
-                });
+                Capability = capability,
+                ClientId = clientId
+            });
+            newToken.Should().NotBeNull();
+            channel.Once(ChannelEvent.Failed, state =>
+            {
+                state.Error.Code.Should().Be(40160);
+                state.Error.Message.Should().Contain("Channel denied access");
+                channelFailedAwaiter.SetCompleted();
             });
 
             var channelFailed = await channelFailedAwaiter.Task;

@@ -70,6 +70,13 @@ namespace IO.Ably.Realtime
 
         internal Func<DateTimeOffset> Now { get; set; }
 
+        internal bool CanPublishMessages =>
+            State == Realtime.ConnectionState.Connected
+            || ((State == Realtime.ConnectionState.Initialized
+                 || State == Realtime.ConnectionState.Connecting
+                 || State == Realtime.ConnectionState.Disconnected)
+                && RealtimeClient.Options.QueueMessages);
+
         internal Connection(AblyRealtime realtimeClient, Func<DateTimeOffset> nowFunc, ILogger logger = null)
             : base(logger)
         {
