@@ -30,17 +30,17 @@ namespace IO.Ably.Tests.Realtime
                 var expectedError = new ErrorInfo();
 
                 channel.Attach();
-                channel.Presence.Enter();
-
-                channel.Presence.PendingPresenceQueue.Should().HaveCount(1);
 
                 bool didSucceed = false;
                 ErrorInfo err = null;
-                channel.Publish("test", "data", (success, error) =>
-                    {
-                        didSucceed = success;
-                        err = error;
-                    });
+                channel.Presence.Enter(null,
+                    (b, info) =>
+                        {
+                            didSucceed = b;
+                            err = info;
+                        });
+
+                channel.Presence.PendingPresenceQueue.Should().HaveCount(1);
 
                 channel.SetChannelState(state, expectedError);
                 channel.Presence.PendingPresenceQueue.Should().HaveCount(0);
