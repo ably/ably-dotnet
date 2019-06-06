@@ -97,7 +97,7 @@ namespace IO.Ably
             LogCurrentAuthenticationMethod();
         }
 
-        private async void SetServerTimeOffset()
+        private async Task SetServerTimeOffset()
         {
             TimeSpan diff = Now() - await ServerTime();
             ServerTimeOffset = () => Now() - diff;
