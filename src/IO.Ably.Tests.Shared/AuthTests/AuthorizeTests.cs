@@ -201,7 +201,7 @@ namespace IO.Ably.Tests.AuthTests
 
             // the TokenRequest timestamp should have been set using the offset
             tokenRequest.Timestamp.Should().HaveValue();
-            tokenRequest.Timestamp.Should().BeCloseTo(await testAblyAuth.GetServerTime());
+            tokenRequest.Timestamp.Should().BeCloseTo(await testAblyAuth.GetServerTime(), 1000);
 
             tokenRequest = null;
 
@@ -258,6 +258,43 @@ namespace IO.Ably.Tests.AuthTests
             testAblyAuth.Authorise();
             testLogger2.MessageSeen.Should().BeTrue();
 #pragma warning restore CS0618 // Type or member is obsolete
+        }
+
+        [Fact]
+        [Trait("bug", "346")]
+        public async Task Issue336_SetServerTimeExceptionsShouldBeHandled()
+        {
+            /*
+             * This is a test to demonstrate the fix for issue
+             * https://github.com/ably/ably-dotnet/issues/346
+             * against the 1.1.6 release this test would fail
+             */
+
+            var client = GetRestClient();
+            bool serverTimeCalled = false;
+
+            // configure serverTime delegate to throw an exception
+            var testAblyAuth = new TestAblyAuth(client.Options, client, () =>
+                {
+                    serverTimeCalled = true;
+                    throw new Exception("baz");
+                });
+
+            var tokenParams = new TokenParams();
+            testAblyAuth.Options.QueryTime = true;
+
+            Exception exception = null;
+            try
+            {
+                await testAblyAuth.RequestTokenAsync(tokenParams, client.Options);
+            }
+            catch (Exception e)
+            {
+                exception = e;
+            }
+
+            serverTimeCalled.Should().BeTrue();
+            exception.Should().NotBeNull();
         }
 
         private class TestAblyAuth : AblyAuth

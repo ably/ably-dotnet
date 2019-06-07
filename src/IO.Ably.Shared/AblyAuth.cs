@@ -97,7 +97,7 @@ namespace IO.Ably
             LogCurrentAuthenticationMethod();
         }
 
-        private async void SetServerTimeOffset()
+        private async Task SetServerTimeOffset()
         {
             TimeSpan diff = Now() - await ServerTime();
             ServerTimeOffset = () => Now() - diff;
@@ -201,7 +201,7 @@ namespace IO.Ably
                 tokenParams.ClientId = ClientId;
             }
 
-            SetTokenParamsTimestamp(authOptions, tokenParams);
+            await SetTokenParamsTimestamp(authOptions, tokenParams);
 
             var request = _rest.CreatePostRequest($"/keys/{keyId}/requestToken");
             request.SkipAuthentication = true;
@@ -332,12 +332,12 @@ namespace IO.Ably
             return result;
         }
 
-        private void SetTokenParamsTimestamp(AuthOptions authOptions, TokenParams tokenParams)
+        private async Task SetTokenParamsTimestamp(AuthOptions authOptions, TokenParams tokenParams)
         {
             if (authOptions.QueryTime.GetValueOrDefault(false)
                 && !ServerTimeOffset().HasValue)
             {
-                SetServerTimeOffset();
+                await SetServerTimeOffset();
             }
 
             if (!tokenParams.Timestamp.HasValue)
@@ -517,7 +517,8 @@ namespace IO.Ably
                 throw new AblyException("No key specified", 40101, HttpStatusCode.Unauthorized);
             }
 
-            SetTokenParamsTimestamp(authOptions, tokenParams);
+            await SetTokenParamsTimestamp(authOptions, tokenParams);
+
             if (authOptions.QueryTime.GetValueOrDefault(false))
             {
                 tokenParams.Timestamp = await _rest.TimeAsync();
