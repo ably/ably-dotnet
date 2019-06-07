@@ -1,12 +1,16 @@
 # Change Log
 
-## [1.1.7-beta1](https://github.com/ably/ably-dotnet/tree/1.1.7-beta1)
+## [1.1.8](https://github.com/ably/ably-dotnet/tree/1.1.8)
 
-[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.6...1.1.7-beta1)
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.6...1.1.7)
+
+**Fixed bugs:**
+
+- NRE in IO.Ably.Transport.MsWebSocketTransport.ConnectAndStartListening and SemaphoreSlim.Wait [\#334](https://github.com/ably/ably-dotnet/issues/334)
 
 **Merged pull requests:**
 
-- Network changed events [\#333](https://github.com/ably/ably-dotnet/pull/333) ([withakay](https://github.com/withakay))
+- Fix for issue \#346  [\#347](https://github.com/ably/ably-dotnet/pull/347) ([withakay](https://github.com/withakay))
 
 ## [1.1.6](https://github.com/ably/ably-dotnet/tree/1.1.6)
 
