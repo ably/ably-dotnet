@@ -201,7 +201,7 @@ namespace IO.Ably.Tests.AuthTests
 
             // the TokenRequest timestamp should have been set using the offset
             tokenRequest.Timestamp.Should().HaveValue();
-            tokenRequest.Timestamp.Should().BeCloseTo(await testAblyAuth.GetServerTime());
+            tokenRequest.Timestamp.Should().BeCloseTo(await testAblyAuth.GetServerTime(), 1000);
 
             tokenRequest = null;
 
