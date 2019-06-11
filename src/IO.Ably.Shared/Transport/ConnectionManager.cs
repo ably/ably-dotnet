@@ -602,7 +602,7 @@ namespace IO.Ably.Transport
 
                         SetState(new ConnectionDisconnectedState(this, new ErrorInfo("Connection closed due to Operating system network going offline", 80017), Logger)
                         {
-                            RetryInstantly = true
+                            RetryInstantly = false
                         });
                     }
 
