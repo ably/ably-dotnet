@@ -825,8 +825,6 @@ namespace IO.Ably.Tests.Realtime
                     await client.ConnectionManager.SetState(new ConnectionSuspendedState(client.ConnectionManager, new ErrorInfo("RTP19 test"), client.Logger));
                     await client.WaitForState(ConnectionState.Suspended);
 
-                    //await Task.Delay(500);
-
                     Output.WriteLine("SET CONNECTED");
                     await client.ConnectionManager.SetState(new ConnectionConnectedState(client.ConnectionManager, null));
                     await client.WaitForState(ConnectionState.Connected);
@@ -1824,13 +1822,13 @@ namespace IO.Ably.Tests.Realtime
                         // simulate disconnect
                         await ably.Connection.ConnectionManager.SetState(new ConnectionDisconnectedState(
                             ably.Connection.ConnectionManager,
-                            new ErrorInfo("Connection disconnected due to Operating system network going offline", 80017), ably.Logger));
+                            new ErrorInfo("Connection disconnected due to Operating system network going offline", 80017),
+                            ably.Logger));
 
                         await Task.Delay(2000);
 
                         // simulate reconnect
                         await ably.Connection.ConnectionManager.SetState(new ConnectionConnectingState(ably.Connection.ConnectionManager, ably.Logger));
-
                     });
 
                     p1.Should().NotBeNull();
