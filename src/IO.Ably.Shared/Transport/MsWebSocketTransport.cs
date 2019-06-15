@@ -133,6 +133,11 @@ namespace IO.Ably.Transport
             }
             else
             {
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug("Sending Text: " + data.Text);
+                }
+
                 _socket?.SendText(data.Text);
             }
         }
