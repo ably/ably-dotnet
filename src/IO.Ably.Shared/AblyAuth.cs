@@ -253,7 +253,7 @@ namespace IO.Ably
             }
             else if (authOptions.AuthUrl.IsNotEmpty())
             {
-                var responseText = String.Empty;
+                var responseText = string.Empty;
                 try
                 {
                     var response = await CallAuthUrl(authOptions, tokenParams);
@@ -539,11 +539,6 @@ namespace IO.Ably
             if (Options.AuthUrl.IsNotEmpty())
             {
                 return TokenAuthMethod.Url;
-            }
-
-            if (Options.Key.IsNotEmpty())
-            {
-                return TokenAuthMethod.Signing;
             }
 
             if (Options.Token.IsNotEmpty())
