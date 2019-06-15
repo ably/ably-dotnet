@@ -67,7 +67,6 @@ namespace IO.Ably.Realtime
             InternalMap = new PresenceMap(channel.Name, logger);
             PendingPresenceQueue = new ConcurrentQueue<QueuedPresenceMessage>();
             _connection = connection;
-            _connection.Connection.ConnectionStateChanged += OnConnectionStateChanged;
             _channel = channel;
             _channel.InternalStateChanged += OnChannelStateChanged;
             _clientId = cliendId;
@@ -78,11 +77,6 @@ namespace IO.Ably.Realtime
             if (_channel != null)
             {
                 _channel.InternalStateChanged -= OnChannelStateChanged;
-            }
-
-            if (_connection != null)
-            {
-                _connection.Connection.ConnectionStateChanged -= OnConnectionStateChanged;
             }
 
             _handlers.RemoveAll();
@@ -360,20 +354,6 @@ namespace IO.Ably.Realtime
             return true;
         }
 
-        internal void ResumeSync()
-        {
-            if (_channel.State == ChannelState.Initialized ||
-                _channel.State == ChannelState.Detached ||
-                _channel.State == ChannelState.Detaching)
-            {
-                throw new AblyException("Unable to sync to channel; not attached", 40000, HttpStatusCode.BadRequest);
-            }
-
-            var message = new ProtocolMessage(ProtocolMessage.MessageAction.Sync, _channel.Name);
-            message.ChannelSerial = _currentSyncChannelSerial;
-            _connection.Send(message, null);
-        }
-
         internal void OnPresence(PresenceMessage[] messages, string syncChannelSerial)
         {
             try
@@ -388,7 +368,6 @@ namespace IO.Ably.Realtime
                     if (Map.IsSyncInProgress && _currentSyncChannelSerial != null
                                              && _currentSyncChannelSerial != serial)
                     {
-                        _currentSyncChannelSerial = null;
                         EndSync();
                     }
 
@@ -459,6 +438,11 @@ namespace IO.Ably.Realtime
 
         internal void EndSync()
         {
+            if (!IsSyncInProgress)
+            {
+                return;
+            }
+
             _currentSyncChannelSerial = null;
             var residualMembers = Map.EndSync();
 
@@ -598,14 +582,6 @@ namespace IO.Ably.Realtime
                  * immediately, and the PresenceMap is maintained
                  */
                 FailQueuedMessages(e.Error);
-            }
-        }
-
-        private void OnConnectionStateChanged(object sender, ConnectionStateChange e)
-        {
-            if (!Map.IsSyncInProgress && _connection.Connection.State == ConnectionState.Connected)
-            {
-                ResumeSync();
             }
         }
 
