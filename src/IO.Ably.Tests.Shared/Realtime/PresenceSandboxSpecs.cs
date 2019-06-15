@@ -1781,6 +1781,69 @@ namespace IO.Ably.Tests.Realtime
 
                     client.Close();
                 }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("issue", "332")]
+                public async Task PresenceShouldReenterAfterDisconnected(Protocol protocol)
+                {
+                    var channelName = "RecoverFromDisconnected".AddRandomSuffix();
+                    var ably = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "123"; });
+
+                    ably.Connect();
+                    await ably.WaitForState();
+
+                    var channel = ably.Channels.Get(channelName);
+
+                    IEnumerable<PresenceMessage> p1 = null;
+                    await WaitFor(30000, async done =>
+                    {
+                        ably.Connection.On(async change =>
+                        {
+                            if (change.Current == ConnectionState.Connected)
+                            {
+                                p1 = await channel.Presence.GetAsync();
+                                done();
+                            }
+                        });
+
+                        channel.On(async state =>
+                        {
+                            if (state.Current == ChannelState.Attached)
+                            {
+                                var p = await channel.Presence.GetAsync();
+                            }
+                        });
+
+                        var result = await channel.AttachAsync();
+                        result.IsSuccess.Should().BeTrue();
+                        await channel.Presence.EnterAsync();
+
+                        await Task.Delay(500);
+
+                        // simulate disconnect
+                        await ably.Connection.ConnectionManager.SetState(new ConnectionDisconnectedState(
+                            ably.Connection.ConnectionManager,
+                            new ErrorInfo("Connection disconnected due to Operating system network going offline", 80017), ably.Logger));
+
+                        await Task.Delay(2000);
+
+                        // simulate reconnect
+                        await ably.Connection.ConnectionManager.SetState(new ConnectionConnectingState(ably.Connection.ConnectionManager, ably.Logger));
+
+                    });
+
+                    p1.Should().NotBeNull();
+                    p1.Should().HaveCount(1);
+
+                    var restPresence = await ably.RestClient.Channels.Get(channelName).Presence.GetAsync();
+
+                    // Before the fix this would return no items as the presence had not been re-entered
+                    restPresence.Items.Should().HaveCount(1);
+                    p1.First().ShouldBeEquivalentTo(restPresence.Items[0]);
+
+                    ably.Close();
+                }
             }
         }
 
