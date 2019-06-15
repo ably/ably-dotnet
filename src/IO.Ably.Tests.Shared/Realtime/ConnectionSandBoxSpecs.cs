@@ -670,8 +670,11 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15c4")]
         public async Task ResumeRequest_WithFatalErrorInConnection_ClientAndChannelsShouldBecomeFailed(Protocol protocol)
         {
-            var client = await GetRealtimeClient(protocol);
-            var channel = client.Channels.Get("RTN15c3".AddRandomSuffix()) as RealtimeChannel;
+            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            {
+                options.DisconnectedRetryTimeout = TimeSpan.FromSeconds(2);
+            });
+            var channel = client.Channels.Get("RTN15c4".AddRandomSuffix()) as RealtimeChannel;
             channel.Attach();
             await client.WaitForState(ConnectionState.Connected);
 
