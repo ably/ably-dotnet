@@ -9,6 +9,7 @@ using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
+using Microsoft.Win32;
 
 namespace IO.Ably.Transport
 {
@@ -324,6 +325,12 @@ namespace IO.Ably.Transport
             if (Logger.IsDebug)
             {
                 Logger.Debug($"Current state: {Connection.State}. Sending message: {message}");
+            }
+
+            if (message.ConnectionId.IsNotEmpty())
+            {
+                Logger.Warning("Setting ConnectionId to null. ConnectionId should never be included in an outbound message on a realtime connection, it’s always implicit");
+                message.ConnectionId = null;
             }
 
             var result = VerifyMessageHasCompatibleClientId(message);
