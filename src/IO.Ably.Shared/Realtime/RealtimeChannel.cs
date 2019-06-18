@@ -158,7 +158,7 @@ namespace IO.Ably.Realtime
                      * Given the above, if the channel is ATTACHED and the connection is fresh
                      * then set the channel to ATTACHING to trigger an ATTACH attempt
                      */
-                    //if (State == ChannelState.Attached && connectionRefreshed)
+                    if (State == ChannelState.Attached && connectionRefreshed)
                     {
                         if (AttachedAwaiter.StartWait(null, ConnectionManager.Options.RealtimeRequestTimeout, restart: true))
                         {
