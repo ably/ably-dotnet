@@ -480,6 +480,7 @@ namespace IO.Ably.Realtime
                         {
                             /* Message is new to presence map, send it */
                             var itemToSend = item.ShallowClone();
+                            itemToSend.ConnectionId = null;
                             itemToSend.Action = PresenceAction.Enter;
                             UpdatePresence(itemToSend, (success, info) =>
                             {
