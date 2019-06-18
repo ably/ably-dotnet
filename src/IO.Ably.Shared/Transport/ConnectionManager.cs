@@ -607,7 +607,7 @@ namespace IO.Ably.Transport
                             Logger.Debug("Network state is Offline. Moving to disconnected.");
                         }
 
-                        // RTA20a
+                        // RTN20a
                         SetState(new ConnectionDisconnectedState(this, new ErrorInfo("Connection disconnected due to Operating system network going offline", 80017), Logger)
                         {
                             RetryInstantly = true
