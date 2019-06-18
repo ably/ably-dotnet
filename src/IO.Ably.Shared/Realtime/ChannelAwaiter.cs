@@ -89,9 +89,9 @@ namespace IO.Ably.Realtime
             return await TaskWrapper.Wrap(func);
         }
 
-        public bool StartWait(Action<bool, ErrorInfo> callback, TimeSpan timeout)
+        public bool StartWait(Action<bool, ErrorInfo> callback, TimeSpan timeout, bool restart = false)
         {
-            if (_channel.State == _awaitedState)
+            if (_channel.State == _awaitedState && !restart)
             {
                 try
                 {
