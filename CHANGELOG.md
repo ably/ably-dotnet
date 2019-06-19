@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.1.9-beta1](https://github.com/ably/ably-dotnet/tree/1.1.9-beta1)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.8...1.1.9-beta1)
+
+**Proposed pull requests:**
+
+https://github.com/ably/ably-dotnet/pull/350
+
 ## [1.1.8](https://github.com/ably/ably-dotnet/tree/1.1.8)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.6...1.1.7)
