@@ -1,5 +1,28 @@
 # Change Log
 
+## [1.1.10](https://github.com/ably/ably-dotnet/tree/1.1.10)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.9-beta1...1.1.10)
+
+**Fixed bugs:**
+
+- history.NextAsync\(\) throws 40000 exception [\#352](https://github.com/ably/ably-dotnet/issues/352)
+- Ably 1.1.8 - The type initializer for 'IO.Ably.Defaults' threw an exception. [\#349](https://github.com/ably/ably-dotnet/issues/349)
+- Crash in 1.1.6 on iOS & Android with Xamarin [\#346](https://github.com/ably/ably-dotnet/issues/346)
+
+**Merged pull requests:**
+
+- split link header values on comma to handle platform implementation differences [\#353](https://github.com/ably/ably-dotnet/pull/353) ([withakay](https://github.com/withakay))
+- Presence not re-entering after connect disconnect fix [\#350](https://github.com/ably/ably-dotnet/pull/350) ([withakay](https://github.com/withakay))
+
+## [1.1.9-beta1](https://github.com/ably/ably-dotnet/tree/1.1.9-beta1)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.8...1.1.9-beta1)
+
+**Proposed pull requests:**
+
+https://github.com/ably/ably-dotnet/pull/350
+
 ## [1.1.8](https://github.com/ably/ably-dotnet/tree/1.1.8)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.6...1.1.7)
