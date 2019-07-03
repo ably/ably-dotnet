@@ -696,76 +696,6 @@ namespace IO.Ably.Tests.Realtime
 
             [Theory]
             [ProtocolData]
-            [Trait("spec", "RTP3")]
-            public async Task Presence_AfterReconnectingShouldReattachChannelAndResumeBrokenSync(Protocol protocol)
-            {
-                var channelName = "RTP3".AddRandomSuffix();
-
-                // must be greater than 100 to break up sync into multiple messages
-                var enterCount = 150;
-
-                var setupClient = await GetRealtimeClient(protocol);
-                await setupClient.WaitForState(ConnectionState.Connected);
-
-                // setup: enter clients on channel
-                var testChannel = setupClient.Channels.Get(channelName);
-                await testChannel.WaitForState(ChannelState.Attached);
-                testChannel.Presence.Subscribe(PresenceAction.Enter, message => { });
-                for (int i = 0; i < enterCount; i++)
-                {
-                    var clientId = $"fakeclient:{i}";
-                    await testChannel.Presence.EnterClientAsync(clientId, $"RTP3 test entry {i}");
-                }
-
-                var client = await GetRealtimeClient(protocol, (options, _) =>
-                {
-                    Logger.LogLevel = LogLevel.Debug;
-                });
-                await client.WaitForState();
-
-                var channel = client.Channels.Get(channelName);
-
-                var transport = client.GetTestTransport();
-                int syncCount = 0;
-                transport.AfterDataReceived = protocolMessage =>
-                {
-                    if (protocolMessage.Action == ProtocolMessage.MessageAction.Sync)
-                    {
-                        syncCount++;
-
-                        // interrupt after first page of results
-                        if (syncCount == 2)
-                        {
-                            transport.Close(false);
-                        }
-                    }
-                };
-
-                channel.Attach();
-                await channel.WaitForState(ChannelState.Attached);
-                channel.State.Should().Be(ChannelState.Attached);
-
-                await client.WaitForState(ConnectionState.Disconnected);
-                client.Connection.State.Should().Be(ConnectionState.Disconnected);
-
-                await client.WaitForState(ConnectionState.Connected);
-                client.Connection.State.Should().Be(ConnectionState.Connected);
-
-                await Task.Delay(500);
-
-                var messages = await channel.Presence.GetAsync();
-                var messageList = messages as IList<PresenceMessage> ?? messages.ToList();
-                messageList.Count.ShouldBeEquivalentTo(enterCount, "Message count should match enterCount");
-
-                syncCount.Should().Be(2);
-
-                transport.AfterDataReceived = null;
-                setupClient.Close();
-                client.Close();
-            }
-
-            [Theory]
-            [ProtocolData]
             [Trait("spec", "RTP11")]
             [Trait("spec", "RTP11b")]
             [Trait("spec", "RTP11c")]
@@ -847,13 +777,19 @@ namespace IO.Ably.Tests.Realtime
             public async Task PresenceMap_WithExistingMembers_WhenSync_ShouldRemoveLocalMembers_RTP19(Protocol protocol)
             {
                 var channelName = "RTP19".AddRandomSuffix();
-                var client = await GetRealtimeClient(protocol);
+                var client = await GetRealtimeClient(protocol, (options, settings) =>
+                {
+                    options.LogHander = new OutputLoggerSink(Output);
+                    options.LogLevel = LogLevel.Debug;
+                });
                 var channel = client.Channels.Get(channelName);
 
                 // ENTER presence on a channel
                 await channel.Presence.EnterClientAsync("1", "one");
-                await channel.Presence.EnterClientAsync("2", "two");
-                channel.Presence.Map.Members.Should().HaveCount(2);
+
+                await Task.Delay(100);
+
+                channel.Presence.Map.Members.Should().HaveCount(1);
 
                 var localMessage = new PresenceMessage()
                 {
@@ -867,37 +803,45 @@ namespace IO.Ably.Tests.Realtime
 
                 // inject a member directly into the local PresenceMap
                 channel.Presence.Map.Members[localMessage.MemberKey] = localMessage;
-                channel.Presence.Map.Members.Should().HaveCount(3);
+                channel.Presence.Map.Members.Should().HaveCount(2);
                 channel.Presence.Map.Members.ContainsKey(localMessage.MemberKey).Should().BeTrue();
 
                 var members = (await channel.Presence.GetAsync()).ToArray();
-                members.Should().HaveCount(3);
+                members.Should().HaveCount(2);
                 members.Where(m => m.ClientId == "1").Should().HaveCount(1);
 
                 var leaveMessages = new List<PresenceMessage>();
-                await WaitFor(async done =>
+                await WaitFor(10000, async done =>
                 {
                     channel.Presence.Subscribe(PresenceAction.Leave, message =>
                     {
+                        Output.WriteLine($"LEAVE message: {message.ToJson()} ");
                         leaveMessages.Add(message);
                         done();
                     });
 
                     // trigger a server initiated SYNC
+                    Output.WriteLine("SET SUSPENDED");
                     await client.ConnectionManager.SetState(new ConnectionSuspendedState(client.ConnectionManager, new ErrorInfo("RTP19 test"), client.Logger));
                     await client.WaitForState(ConnectionState.Suspended);
 
+                    Output.WriteLine("SET CONNECTED");
                     await client.ConnectionManager.SetState(new ConnectionConnectedState(client.ConnectionManager, null));
                     await client.WaitForState(ConnectionState.Connected);
                 });
+
+                var serverPresence = await client.RestClient.Channels.Get(channelName).Presence.GetAsync();
+                serverPresence.Items.Count.Should().Be(1);
 
                 // A LEAVE event should have be published for the injected member
                 leaveMessages.Should().HaveCount(1);
                 leaveMessages[0].ClientId.Should().Be(localMessage.ClientId);
 
+                await Task.Delay(10000);
+
                 // valid members entered for this connection are still present
                 members = (await channel.Presence.GetAsync()).ToArray();
-                members.Should().HaveCount(2);
+                members.Should().HaveCount(1);
                 members.Any(m => m.ClientId == localMessage.ClientId).Should().BeFalse();
             }
 
@@ -1834,6 +1778,69 @@ namespace IO.Ably.Tests.Realtime
                     errCount.Should().Be(4);
 
                     client.Close();
+                }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("issue", "332")]
+                public async Task PresenceShouldReenterAfterDisconnected(Protocol protocol)
+                {
+                    var channelName = "RecoverFromDisconnected".AddRandomSuffix();
+                    var ably = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "123"; });
+
+                    ably.Connect();
+                    await ably.WaitForState();
+
+                    var channel = ably.Channels.Get(channelName);
+
+                    IEnumerable<PresenceMessage> p1 = null;
+                    await WaitFor(30000, async done =>
+                    {
+                        ably.Connection.On(async change =>
+                        {
+                            if (change.Current == ConnectionState.Connected)
+                            {
+                                p1 = await channel.Presence.GetAsync();
+                                done();
+                            }
+                        });
+
+                        channel.On(async state =>
+                        {
+                            if (state.Current == ChannelState.Attached)
+                            {
+                                var p = await channel.Presence.GetAsync();
+                            }
+                        });
+
+                        var result = await channel.AttachAsync();
+                        result.IsSuccess.Should().BeTrue();
+                        await channel.Presence.EnterAsync();
+
+                        await Task.Delay(500);
+
+                        // simulate disconnect
+                        await ably.Connection.ConnectionManager.SetState(new ConnectionDisconnectedState(
+                            ably.Connection.ConnectionManager,
+                            new ErrorInfo("Connection disconnected due to Operating system network going offline", 80017),
+                            ably.Logger));
+
+                        await Task.Delay(2000);
+
+                        // simulate reconnect
+                        await ably.Connection.ConnectionManager.SetState(new ConnectionConnectingState(ably.Connection.ConnectionManager, ably.Logger));
+                    });
+
+                    p1.Should().NotBeNull();
+                    p1.Should().HaveCount(1);
+
+                    var restPresence = await ably.RestClient.Channels.Get(channelName).Presence.GetAsync();
+
+                    // Before the fix this would return no items as the presence had not been re-entered
+                    restPresence.Items.Should().HaveCount(1);
+                    p1.First().ShouldBeEquivalentTo(restPresence.Items[0]);
+
+                    ably.Close();
                 }
             }
         }

@@ -16,8 +16,6 @@ namespace IO.Ably
         {
             NetworkChange.NetworkAvailabilityChanged += (sender, eventArgs) =>
                 Connection.NotifyOperatingSystemNetworkState(eventArgs.IsAvailable ? NetworkState.Online : NetworkState.Offline);
-
-            SystemEvents.PowerModeChanged += OnSystemEventsOnPowerModeChanged;
         }
 
         private static void OnSystemEventsOnPowerModeChanged(object sender, PowerModeChangedEventArgs eventArgs)

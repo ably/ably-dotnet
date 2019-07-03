@@ -177,7 +177,8 @@ namespace IO.Ably
                 return;
             }
 
-            StringBuilder logMessage = new StringBuilder($"Response from: {url}");
+            StringBuilder logMessage = new StringBuilder();
+            logMessage.AppendLine($"Response from: {url}");
             logMessage.AppendLine($"Status code: {(int)ablyResponse.StatusCode} {ablyResponse.StatusCode}");
 
             logMessage.AppendLine("---- Response Headers ----");

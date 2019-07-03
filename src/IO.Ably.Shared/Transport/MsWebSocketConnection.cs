@@ -155,7 +155,7 @@ namespace IO.Ably.Transport
         {
             if (Logger != null && Logger.IsDebug)
             {
-                Logger.Debug("Sending text");
+                Logger.Debug("SendText: Enqueue text for sending");
             }
 
             EnqueueForSending(message.GetBytes(), WebSocketMessageType.Binary);
@@ -165,7 +165,7 @@ namespace IO.Ably.Transport
         {
             if (Logger != null && Logger.IsDebug)
             {
-                Logger.Debug("Sending binary data");
+                Logger.Debug("SendData: Enqueue binary data for sending");
             }
 
             EnqueueForSending(data, WebSocketMessageType.Binary);

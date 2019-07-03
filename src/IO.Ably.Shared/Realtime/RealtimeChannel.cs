@@ -21,6 +21,8 @@ namespace IO.Ably.Realtime
 
         private Connection Connection => RealtimeClient.Connection;
 
+        private string PreviousConnectionId { get; set; }
+
         private ConnectionState ConnectionState => Connection.State;
 
         private readonly Handlers<Message> _handlers = new Handlers<Message>();
@@ -118,6 +120,12 @@ namespace IO.Ably.Realtime
 
         internal void InternalOnInternalStateChanged(object sender, ConnectionStateChange connectionStateChange)
         {
+            var connectionRefreshed = PreviousConnectionId != Connection.Id;
+            if (connectionRefreshed)
+            {
+                PreviousConnectionId = Connection.Id;
+            }
+
             switch (connectionStateChange.Current)
             {
                 case ConnectionState.Connected:
@@ -134,6 +142,27 @@ namespace IO.Ably.Realtime
                         if (AttachedAwaiter.StartWait(null, ConnectionManager.Options.RealtimeRequestTimeout))
                         {
                             SetChannelState(ChannelState.Attaching, true);
+                        }
+                    }
+
+                    /*
+                     * Connection state is only maintained server-side for a brief period,
+                     * given by the connectionStateTtl in the connectionDetails (2 minutes at time of writing, see CD2f).
+                     * If a client has been disconnected for longer than the connectionStateTtl
+                     * it should clear the local connection state and any connection attempts should be made as for a fresh connection
+                     *
+                     * (RTN15g3) When a connection attempt succeeds after the connection state has been cleared in this way,
+                     * channels that were previously ATTACHED, ATTACHING, or SUSPENDED must be automatically reattached,
+                     * just as if the connection was a resume attempt which failed per RTN15c3
+                     *
+                     * Given the above, if the channel is ATTACHED and the connection is fresh
+                     * then set the channel to ATTACHING to trigger an ATTACH attempt
+                     */
+                    if (State == ChannelState.Attached && connectionRefreshed)
+                    {
+                        if (AttachedAwaiter.StartWait(null, ConnectionManager.Options.RealtimeRequestTimeout, restart: true))
+                        {
+                            SetChannelState(ChannelState.Attaching, false);
                         }
                     }
 
