@@ -202,16 +202,24 @@ namespace IO.Ably
         internal static PaginatedRequestParams GetLinkQuery(HttpHeaders headers, string link)
         {
             const string linkPattern = "\\s*<(.*)>;\\s*rel=\"(.*)\"";
+
+            // There can be multiple headers for Link (first, next, current)
             if (headers.TryGetValues("Link", out var linkHeaders))
             {
-                foreach (var header in linkHeaders)
+                foreach (var linkHeaderValue in linkHeaders)
                 {
-                    var match = Regex.Match(header, linkPattern);
-                    if (match.Success && match.Groups[2].Value.Equals(link, StringComparison.OrdinalIgnoreCase))
+                    // On Xamarin/Mono the the values are concatenated to appear as one header with the values as a comma separated string.
+                    // This is valid per rfc2616 (https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2),
+                    // but is inconsistent across various .NET runtimes, hence a split is required here.
+                    foreach (var headerValue in linkHeaderValue.Split(','))
                     {
-                        var url = match.Groups[1].Value;
-                        var queryString = url.Split('?')[1];
-                        return Parse(queryString);
+                        var match = Regex.Match(headerValue, linkPattern);
+                        if (match.Success && match.Groups[2].Value.Equals(link, StringComparison.OrdinalIgnoreCase))
+                        {
+                            var url = match.Groups[1].Value;
+                            var queryString = url.Split('?')[1];
+                            return Parse(queryString);
+                        }
                     }
                 }
             }
