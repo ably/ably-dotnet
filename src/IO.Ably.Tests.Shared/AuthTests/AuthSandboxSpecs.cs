@@ -498,25 +498,6 @@ namespace IO.Ably.Tests
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RSA7a2")]
-        public async Task WithClientId_RequestsATokenOnFirstMessageWithCorrectDefaults(Protocol protocol)
-        {
-            var ably = await GetRestClient(protocol, ablyOptions => ablyOptions.ClientId = "123");
-            var channel = ably.Channels.Get("test");
-            await channel.PublishAsync("test", "true");
-
-            var token = ably.AblyAuth.CurrentToken;
-
-            token.Should().NotBeNull();
-            token.ClientId.Should().Be("123");
-            token.Expires.Should()
-                .BeWithin(TimeSpan.FromSeconds(20))
-                .Before(DateTimeOffset.UtcNow + Defaults.DefaultTokenTtl);
-            token.Capability.ToJson().Should().Be(Defaults.DefaultTokenCapability.ToJson());
-        }
-
-        [Theory]
-        [ProtocolData]
         [Trait("spec", "RSA7b2")]
         [Trait("spec", "RSA10a")]
         public async Task WithoutClientId_WhenAuthorizedWithTokenParamsWithClientId_SetsClientId(Protocol protocol)
