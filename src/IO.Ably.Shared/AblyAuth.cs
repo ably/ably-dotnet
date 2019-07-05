@@ -129,6 +129,13 @@ namespace IO.Ably
             {
                 var authInfo = Convert.ToBase64String(Options.Key.GetBytes());
                 request.Headers["Authorization"] = "Basic " + authInfo;
+
+                // (RSA7e) If clientId is provided in ClientOptions and RSA4 indicates that basic auth is to be used, then:
+                if (Options.ClientId.IsNotEmpty())
+                {
+                    // (RSA7e2) For REST clients, all requests should include an X-Ably-ClientId header with value set to the clientId, Base64 encoded
+                    request.Headers["X-Ably-ClientId"] = Options.ClientId.ToBase64();
+                }
             }
             else
             {
