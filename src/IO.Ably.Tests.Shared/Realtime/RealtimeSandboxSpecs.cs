@@ -58,7 +58,10 @@ namespace IO.Ably.Tests.Realtime
             // For a realtime client, Auth#authorize instructs the library to obtain
             // a token using the provided tokenParams and authOptions and upgrade
             // the current connection to use that token
-            var client = await GetRealtimeClient(protocol, (opts, _) => { opts.ClientId = validClientId1; });
+            var client = await GetRealtimeClient(protocol, (opts, _) => {
+                opts.ClientId = validClientId1;
+                opts.UseTokenAuth = true;
+            });
 
             var awaiter = new TaskCompletionAwaiter();
             client.Connection.On(ConnectionEvent.Update, args => { awaiter.SetCompleted(); });
@@ -125,11 +128,11 @@ namespace IO.Ably.Tests.Realtime
             var capability = new Capability();
             capability.AddResource("foo").AllowPublish();
 
-            var restClient = await GetRestClient(protocol);
+            var restClient = await GetRestClient(protocol, options => { options.UseTokenAuth = true; });
             var tokenDetails = await restClient.Auth.RequestTokenAsync(new TokenParams
             {
                 ClientId = clientId,
-                Capability = capability
+                Capability = capability,
             });
 
             var realtime = await GetRealtimeClient(protocol, (opts, _) =>
