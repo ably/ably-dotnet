@@ -68,6 +68,7 @@ namespace IO.Ably.Tests.Rest
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSL1g1b")]
+        [Trait("spec", "RSA7e2")]
         public async Task WithImplicitClientIdComingFromOptions_ReturnsMessageWithCorrectClientId(Protocol protocol)
         {
             var message = new Message("test", "test") { ClientId = null };
