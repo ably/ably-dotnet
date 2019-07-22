@@ -145,6 +145,11 @@ namespace IO.Ably.Realtime
                         }
                     }
 
+                    if (State == ChannelState.Attached)
+                    {
+                        Presence.EnsureLocalPresenceEntered();
+                    }
+
                     /*
                      * Connection state is only maintained server-side for a brief period,
                      * given by the connectionStateTtl in the connectionDetails (2 minutes at time of writing, see CD2f).
