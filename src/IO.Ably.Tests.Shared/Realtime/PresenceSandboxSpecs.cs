@@ -455,6 +455,8 @@ namespace IO.Ably.Tests.Realtime
                 var result = await channel.Presence.EnterClientAsync(clientId, null);
                 result.IsSuccess.Should().BeTrue();
 
+                await Task.Delay(250);
+
                 var members = await channel.Presence.GetAsync();
                 members.Should().HaveCount(1);
                 channel.Presence.Map.Members.Should().HaveCount(1);
@@ -1800,6 +1802,7 @@ namespace IO.Ably.Tests.Realtime
                         {
                             if (change.Current == ConnectionState.Connected)
                             {
+                                await Task.Delay(500);
                                 p1 = await channel.Presence.GetAsync();
                                 done();
                             }
@@ -1838,7 +1841,7 @@ namespace IO.Ably.Tests.Realtime
 
                     // Before the fix this would return no items as the presence had not been re-entered
                     restPresence.Items.Should().HaveCount(1);
-                    p1.First().ShouldBeEquivalentTo(restPresence.Items[0]);
+                    p1.First().MemberKey.ShouldBeEquivalentTo(restPresence.Items[0].MemberKey);
 
                     ably.Close();
                 }
