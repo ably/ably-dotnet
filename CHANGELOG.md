@@ -1,5 +1,9 @@
 # Change Log
 
+## [1.1.11](https://github.com/ably/ably-dotnet/tree/1.1.11)
+
+Rolls back protocol version to 1.0 to resolve issues with presence re-entry until a fix for 1.1 is found
+
 ## [1.1.10](https://github.com/ably/ably-dotnet/tree/1.1.10)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.9-beta1...1.1.10)
