@@ -63,8 +63,11 @@ namespace ReEnterPresenceClassic
 
             GetPresence();
 
-            Console.ReadLine();
-            ably.Close();
+            await Task.Run(() =>
+            {
+                Console.ReadLine();
+                ably.Close();
+            });
         }
 
         private static void GetPresence()
@@ -86,7 +89,7 @@ namespace ReEnterPresenceClassic
                         {
                             WriteLine(e.ToString());
                         }
-                        
+
                     });
         }
 
