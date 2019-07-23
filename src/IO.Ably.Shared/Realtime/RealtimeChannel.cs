@@ -145,11 +145,6 @@ namespace IO.Ably.Realtime
                         }
                     }
 
-                    if (State == ChannelState.Attached)
-                    {
-                        Presence.EnsureLocalPresenceEntered();
-                    }
-
                     /*
                      * Connection state is only maintained server-side for a brief period,
                      * given by the connectionStateTtl in the connectionDetails (2 minutes at time of writing, see CD2f).
@@ -563,23 +558,6 @@ namespace IO.Ably.Realtime
                 case ChannelState.Attached:
                     if (protocolMessage != null)
                     {
-                        if (protocolMessage.HasFlag(ProtocolMessage.Flag.HasPresence))
-                        {
-                            if (Logger.IsDebug)
-                            {
-                                Logger.Debug($"Protocol message has presence flag. Starting Presence SYNC. Flag: {protocolMessage.Flags}");
-                            }
-
-                            Presence.StartSync();
-                        }
-                        else
-                        {
-                            /* RTP1 If [HAS_PRESENCE] flag is 0 or there is no flags field,
-                             * the presence map should be considered in sync immediately
-                             * with no members present on the channel */
-                            Presence.SkipSync();
-                        }
-
                         Properties.AttachSerial = protocolMessage.ChannelSerial;
                     }
 
