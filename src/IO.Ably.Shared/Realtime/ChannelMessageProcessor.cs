@@ -53,6 +53,10 @@ namespace IO.Ably.Realtime
                         {
                             channel.EmitUpdate(ChannelState.Attached, protocolMessage);
                         }
+                        else
+                        {
+                            channel.Presence.ChannelAttached(new ChannelStateChange(ChannelEvent.Attached, ChannelState.Attached, ChannelState.Attached, protocolMessage.Error, protocolMessage));
+                        }
                     }
                     else
                     {
