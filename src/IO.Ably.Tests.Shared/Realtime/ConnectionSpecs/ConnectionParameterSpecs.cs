@@ -112,7 +112,7 @@ namespace IO.Ably.Tests.Realtime
 
             LastCreatedTransport.Parameters.GetParams()
                 .Should().ContainKey("v")
-                .WhichValue.Should().Be("1.1");
+                .WhichValue.Should().Be("1.0");
         }
 
         [Fact]

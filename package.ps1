@@ -23,7 +23,7 @@ $const = "PACKAGE"
 if ($msgpack) {
 	# Use %3B in place of ; as PS is borking the value - https://msdn.microsoft.com/en-us/library/bb383819.aspx
 	$const = "MSGPACK%3BPACKAGE"
-} 
+}
 
 $psake.use_exit_on_error = $true
 invoke-psake ./default.ps1 Build -properties @{ msbuild = $msbuild; configuration = $configuration; runtests = $runtests; constants = "$const"  } -framework '4.0' -verbose
