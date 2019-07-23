@@ -148,7 +148,6 @@ Global
 		{2A1CC9E0-D5D8-423F-A9F1-C75391E0D43D}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{2A1CC9E0-D5D8-423F-A9F1-C75391E0D43D}.Debug|x86.Build.0 = Debug|Any CPU
 		{2A1CC9E0-D5D8-423F-A9F1-C75391E0D43D}.package_netstandard|Any CPU.ActiveCfg = package|Any CPU
-		{2A1CC9E0-D5D8-423F-A9F1-C75391E0D43D}.package_netstandard|Any CPU.Build.0 = package|Any CPU
 		{2A1CC9E0-D5D8-423F-A9F1-C75391E0D43D}.package_netstandard|ARM.ActiveCfg = package|Any CPU
 		{2A1CC9E0-D5D8-423F-A9F1-C75391E0D43D}.package_netstandard|ARM.Build.0 = package|Any CPU
 		{2A1CC9E0-D5D8-423F-A9F1-C75391E0D43D}.package_netstandard|x64.ActiveCfg = package|Any CPU
@@ -210,7 +209,6 @@ Global
 		{D7513FBC-942B-4D2A-A590-87EE09570CC1}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{D7513FBC-942B-4D2A-A590-87EE09570CC1}.Debug|x86.Build.0 = Debug|Any CPU
 		{D7513FBC-942B-4D2A-A590-87EE09570CC1}.package_netstandard|Any CPU.ActiveCfg = package|Any CPU
-		{D7513FBC-942B-4D2A-A590-87EE09570CC1}.package_netstandard|Any CPU.Build.0 = package|Any CPU
 		{D7513FBC-942B-4D2A-A590-87EE09570CC1}.package_netstandard|ARM.ActiveCfg = package|Any CPU
 		{D7513FBC-942B-4D2A-A590-87EE09570CC1}.package_netstandard|ARM.Build.0 = package|Any CPU
 		{D7513FBC-942B-4D2A-A590-87EE09570CC1}.package_netstandard|x64.ActiveCfg = package|Any CPU
@@ -273,7 +271,6 @@ Global
 		{3180AA9D-9800-4EB2-87F0-ADA47E2FFF3D}.Debug|x86.ActiveCfg = Debug|x86
 		{3180AA9D-9800-4EB2-87F0-ADA47E2FFF3D}.Debug|x86.Build.0 = Debug|x86
 		{3180AA9D-9800-4EB2-87F0-ADA47E2FFF3D}.package_netstandard|Any CPU.ActiveCfg = package|Any CPU
-		{3180AA9D-9800-4EB2-87F0-ADA47E2FFF3D}.package_netstandard|Any CPU.Build.0 = package|Any CPU
 		{3180AA9D-9800-4EB2-87F0-ADA47E2FFF3D}.package_netstandard|ARM.ActiveCfg = package|ARM
 		{3180AA9D-9800-4EB2-87F0-ADA47E2FFF3D}.package_netstandard|ARM.Build.0 = package|ARM
 		{3180AA9D-9800-4EB2-87F0-ADA47E2FFF3D}.package_netstandard|x64.ActiveCfg = package|x64
@@ -879,7 +876,6 @@ Global
 		{31008B7D-6734-4A98-9FBC-D33222B64324}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{31008B7D-6734-4A98-9FBC-D33222B64324}.Debug|x86.Build.0 = Debug|Any CPU
 		{31008B7D-6734-4A98-9FBC-D33222B64324}.package_netstandard|Any CPU.ActiveCfg = Debug|Any CPU
-		{31008B7D-6734-4A98-9FBC-D33222B64324}.package_netstandard|Any CPU.Build.0 = Debug|Any CPU
 		{31008B7D-6734-4A98-9FBC-D33222B64324}.package_netstandard|ARM.ActiveCfg = Debug|Any CPU
 		{31008B7D-6734-4A98-9FBC-D33222B64324}.package_netstandard|ARM.Build.0 = Debug|Any CPU
 		{31008B7D-6734-4A98-9FBC-D33222B64324}.package_netstandard|x64.ActiveCfg = Debug|Any CPU
@@ -887,7 +883,6 @@ Global
 		{31008B7D-6734-4A98-9FBC-D33222B64324}.package_netstandard|x86.ActiveCfg = Debug|Any CPU
 		{31008B7D-6734-4A98-9FBC-D33222B64324}.package_netstandard|x86.Build.0 = Debug|Any CPU
 		{31008B7D-6734-4A98-9FBC-D33222B64324}.package|Any CPU.ActiveCfg = Debug|Any CPU
-		{31008B7D-6734-4A98-9FBC-D33222B64324}.package|Any CPU.Build.0 = Debug|Any CPU
 		{31008B7D-6734-4A98-9FBC-D33222B64324}.package|ARM.ActiveCfg = Debug|Any CPU
 		{31008B7D-6734-4A98-9FBC-D33222B64324}.package|ARM.Build.0 = Debug|Any CPU
 		{31008B7D-6734-4A98-9FBC-D33222B64324}.package|x64.ActiveCfg = Debug|Any CPU
@@ -943,7 +938,6 @@ Global
 		{155F7F33-466C-4825-972D-F652D29ED6ED}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{155F7F33-466C-4825-972D-F652D29ED6ED}.Debug|x86.Build.0 = Debug|Any CPU
 		{155F7F33-466C-4825-972D-F652D29ED6ED}.package_netstandard|Any CPU.ActiveCfg = Release|Any CPU
-		{155F7F33-466C-4825-972D-F652D29ED6ED}.package_netstandard|Any CPU.Build.0 = Release|Any CPU
 		{155F7F33-466C-4825-972D-F652D29ED6ED}.package_netstandard|ARM.ActiveCfg = Release|Any CPU
 		{155F7F33-466C-4825-972D-F652D29ED6ED}.package_netstandard|ARM.Build.0 = Release|Any CPU
 		{155F7F33-466C-4825-972D-F652D29ED6ED}.package_netstandard|x64.ActiveCfg = Release|Any CPU
@@ -951,7 +945,6 @@ Global
 		{155F7F33-466C-4825-972D-F652D29ED6ED}.package_netstandard|x86.ActiveCfg = Release|Any CPU
 		{155F7F33-466C-4825-972D-F652D29ED6ED}.package_netstandard|x86.Build.0 = Release|Any CPU
 		{155F7F33-466C-4825-972D-F652D29ED6ED}.package|Any CPU.ActiveCfg = Release|Any CPU
-		{155F7F33-466C-4825-972D-F652D29ED6ED}.package|Any CPU.Build.0 = Release|Any CPU
 		{155F7F33-466C-4825-972D-F652D29ED6ED}.package|ARM.ActiveCfg = Release|Any CPU
 		{155F7F33-466C-4825-972D-F652D29ED6ED}.package|ARM.Build.0 = Release|Any CPU
 		{155F7F33-466C-4825-972D-F652D29ED6ED}.package|x64.ActiveCfg = Release|Any CPU
