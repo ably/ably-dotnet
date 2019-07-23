@@ -23,7 +23,6 @@ namespace IO.Ably.Realtime
         private readonly IConnectionManager _connection;
 
         private string _currentSyncChannelSerial;
-        private bool _syncAsResultOfAttach;
 
         private bool _initialSyncCompleted = false;
 
@@ -555,24 +554,7 @@ namespace IO.Ably.Realtime
         {
             if (e.Current == ChannelState.Attached)
             {
-                /* Start sync, if hasPresence is not set end sync immediately dropping all the current presence members */
-                StartSync();
-                _syncAsResultOfAttach = true;
-                var hasPresence = e.ProtocolMessage != null &&
-                                  e.ProtocolMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
-                if (!hasPresence)
-                {
-                    /*
-                    * RTP19a  If the PresenceMap has existing members when an ATTACHED message is received without a
-                    * HAS_PRESENCE flag, the client library should emit a LEAVE event for each existing member ...
-                    */
-                    EndSync();
-                    SendQueuedMessages();
-                }
-                else
-                {
-                    SendQueuedMessages();
-                }
+                ChannelAttached(e);
             }
             else if (e.Current == ChannelState.Detached || e.Current == ChannelState.Failed)
             {
@@ -587,6 +569,41 @@ namespace IO.Ably.Realtime
                  * immediately, and the PresenceMap is maintained
                  */
                 FailQueuedMessages(e.Error);
+            }
+        }
+
+        internal void ChannelAttached(ChannelStateChange e)
+        {
+            /* Start sync, if hasPresence is not set end sync immediately dropping all the current presence members */
+            StartSync();
+            var hasPresence = e.ProtocolMessage != null &&
+                              e.ProtocolMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
+
+            if (hasPresence)
+            {
+                /* RTP1 If [HAS_PRESENCE] flag is 0 or there is no flags field,
+                     * the presence map should be considered in sync immediately
+                     * with no members present on the channel */
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug(
+                        $"Protocol message has presence flag. Starting Presence SYNC. Flag: {e.ProtocolMessage.Flags}");
+                }
+
+                StartSync();
+                SendQueuedMessages();
+            }
+            else
+            {
+                /* RTP1 If [HAS_PRESENCE] flag is 0 or there is no flags field,
+                    * the presence map should be considered in sync immediately
+                    * with no members present on the channel
+                    *
+                    * RTP19a  If the PresenceMap has existing members when an ATTACHED message is received without a
+                    * HAS_PRESENCE flag, the client library should emit a LEAVE event for each existing member ...
+                    */
+                EndSync();
+                SendQueuedMessages();
             }
         }
 
