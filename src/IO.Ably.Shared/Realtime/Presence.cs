@@ -358,22 +358,27 @@ namespace IO.Ably.Realtime
             try
             {
                 string syncCursor = null;
+
+                // if we got here from SYNC message
                 if (syncChannelSerial != null)
                 {
                     int colonPos = syncChannelSerial.IndexOf(':');
                     string serial = colonPos >= 0 ? syncChannelSerial.Substring(0, colonPos) : syncChannelSerial;
 
-                    /* Discard incomplete sync if serial has changed */
+                    /* If a new sequence identifier is sent from Ably, then the client library
+                     * must consider that to be the start of a new sync sequence
+                     * and any previous in-flight sync should be discarded. (part of RTP18)*/
                     if (Map.IsSyncInProgress && _currentSyncChannelSerial != null
                                              && _currentSyncChannelSerial != serial)
                     {
                         EndSync();
                     }
 
+                    StartSync();
+
                     syncCursor = syncChannelSerial.Substring(colonPos);
                     if (syncCursor.Length > 1)
                     {
-                        StartSync();
                         _currentSyncChannelSerial = serial;
                     }
                 }
@@ -414,6 +419,7 @@ namespace IO.Ably.Realtime
                 if (syncChannelSerial == null || syncCursor.Length <= 1)
                 {
                     EndSync();
+                    _currentSyncChannelSerial = null;
                 }
             }
             catch (Exception ex)
@@ -442,7 +448,6 @@ namespace IO.Ably.Realtime
                 return;
             }
 
-            _currentSyncChannelSerial = null;
             var residualMembers = Map.EndSync();
 
             /*
@@ -474,33 +479,33 @@ namespace IO.Ably.Realtime
         {
             foreach (var item in InternalMap.Values)
             {
-                if (Map.Put(item))
+                if (!Map.Members.ContainsKey(item.MemberKey))
                 {
                     var clientId = item.ClientId;
                     try
                     {
                         /* Message is new to presence map, send it */
-                        var itemToSend = item.ShallowClone();
-                        itemToSend.ConnectionId = null;
-                        itemToSend.Action = PresenceAction.Enter;
+                        var itemToSend = new PresenceMessage(PresenceAction.Enter, item.ClientId, item.Data);
                         UpdatePresence(itemToSend, (success, info) =>
                         {
                             if (!success)
                             {
                                 /*
-                             * (RTP5c3)  If any of the automatic ENTER presence messages published
-                             * in RTP5c2 fail, then an UPDATE event should be emitted on the channel
-                             * with resumed set to true and reason set to an ErrorInfo object with error
-                             * code value 91004 and the error message string containing the message
-                             * received from Ably (if applicable), the code received from Ably
-                             * (if applicable) and the explicit or implicit client_id of the PresenceMessage
-                             */
+                                 * (RTP5c3)  If any of the automatic ENTER presence messages published
+                                 * in RTP5c2 fail, then an UPDATE event should be emitted on the channel
+                                 * with resumed set to true and reason set to an ErrorInfo object with error
+                                 * code value 91004 and the error message string containing the message
+                                 * received from Ably (if applicable), the code received from Ably
+                                 * (if applicable) and the explicit or implicit client_id of the PresenceMessage
+                                 */
                                 var errorString =
                                     $"Cannot automatically re-enter {clientId} on channel {_channel.Name} ({info.Message})";
                                 Logger.Error(errorString);
                                 _channel.EmitUpdate(new ErrorInfo(errorString, 91004), true);
                             }
                         });
+
+                        InternalMap.Remove(item);
                     }
                     catch (AblyException e)
                     {
@@ -511,8 +516,6 @@ namespace IO.Ably.Realtime
                     }
                 }
             }
-
-            InternalMap.Clear();
         }
 
         private void Publish(params PresenceMessage[] messages)
