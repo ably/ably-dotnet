@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Transport;
@@ -12,6 +13,7 @@ using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace IO.Ably.Tests.Realtime
 {
@@ -260,6 +262,181 @@ namespace IO.Ably.Tests.Realtime
                 {
                     syncPresenceMessages[i].Id.ShouldBeEquivalentTo(presenceMessages[i].Id, "result should be the same in case of SYNC");
                     syncPresenceMessages[i].Action.ShouldBeEquivalentTo(presenceMessages[i].Action, "result should be the same in case of SYNC");
+                }
+            }
+
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RTP17e")]
+            public async Task Presence_ShouldReenterPresenceAfterAShortconnectionLoss(Protocol protocol)
+            {
+                /*
+                 * any ENTER, PRESENT, UPDATE or LEAVE event that matches
+                 * the current connectionId should be applied to the internal map
+                 */
+
+                // arrange
+                var channelName = "RTP17e".AddRandomSuffix();
+                var capability = new Capability();
+                capability.AddResource(channelName).AllowAll();
+                TestTransportWrapper transport = null;
+                var transportFactory = new TestTransportFactory();
+                transportFactory.OnTransportCreated = t => transport = t;
+                var clientA = await GetRealtimeClient(protocol, (options, settings) =>
+                {
+                    options.DefaultTokenParams = new TokenParams { Capability = capability, ClientId = "martin" };
+                    options.TransportFactory = transportFactory;
+                });
+                var realtimeChannel = clientA.Channels.Get(channelName);
+                await clientA.WaitForState(ConnectionState.Connected);
+                var clientB = clientA.RestClient;
+                var restChannel = clientB.Channels.Get(channelName);
+
+                await realtimeChannel.WaitForState(ChannelState.Attached);
+                await realtimeChannel.Presence.EnterAsync();
+                //await realtimeChannel.Presence.EnterClientAsync("martin", "one");
+                await realtimeChannel.Presence.WaitSync();
+
+                async Task<bool> HasRestPresence()
+                {
+                    var result = (await restChannel.Presence.GetAsync());
+                    return result.Items.Exists(message =>
+                        message.ClientId.EqualsTo("martin"));
+                }
+
+
+                // Check the presence of the realtime lib is there
+                try
+                {
+                    (await HasRestPresence()).Should().BeTrue();
+
+                    // Kill the transport but don't tell the library
+                    transport.Close();
+
+                    await Task.Delay(30 * 1000); // wait for 30 seconds
+                    int count = 0;
+                    while (true)
+                    {
+                        bool hasPresence = await HasRestPresence();
+                        if (count > 30 || hasPresence == false)
+                        {
+                            break;
+                        }
+
+                        await Task.Delay(2000);
+
+                        count++;
+                    }
+
+                    // let the library know the transport is really dead
+                    transport.Listener?.OnTransportEvent(TransportState.Closed);
+
+                    await clientA.WaitForState(ConnectionState.Disconnected);
+                    await clientA.WaitForState(ConnectionState.Connected);
+                    await realtimeChannel.WaitForState(ChannelState.Attached);
+
+                    await realtimeChannel.Presence.WaitSync();
+
+                    // Wait for a second because the Rest call returns [] if done straight away
+                    await Task.Delay(1000);
+
+                    (await HasRestPresence()).Should().BeTrue();
+                }
+                finally
+                {
+                    // clean up - should go in infrastructure
+                    clientA.Close();
+                }
+            }
+
+            [Theory]
+            [ProtocolData]
+            [Trait("spec", "RTP17e")]
+            public async Task Presence_ShouldReenterPresenceAfterAtLeast2MinutesOffline(Protocol protocol)
+            {
+                /*
+                 * any ENTER, PRESENT, UPDATE or LEAVE event that matches
+                 * the current connectionId should be applied to the internal map
+                 */
+
+                // arrange
+                var channelName = "RTP17e".AddRandomSuffix();
+                var capability = new Capability();
+                capability.AddResource(channelName).AllowAll();
+                TestTransportWrapper transport = null;
+                var transportFactory = new TestTransportFactory();
+                transportFactory.OnTransportCreated = t => transport = t;
+                var clientA = await GetRealtimeClient(protocol, (options, settings) =>
+                {
+                    options.DefaultTokenParams = new TokenParams { Capability = capability, ClientId = "martin" };
+                    options.TransportFactory = transportFactory;
+                });
+                var realtimeChannel = clientA.Channels.Get(channelName);
+                await clientA.WaitForState(ConnectionState.Connected);
+                var clientB = clientA.RestClient;
+                var restChannel = clientB.Channels.Get(channelName);
+
+                await realtimeChannel.WaitForState(ChannelState.Attached);
+                await realtimeChannel.Presence.EnterAsync();
+                //await realtimeChannel.Presence.EnterClientAsync("martin", "one");
+                await realtimeChannel.Presence.WaitSync();
+
+                async Task<bool> HasRestPresence()
+                {
+                    var result = (await restChannel.Presence.GetAsync());
+                    return result.Items.Exists(message =>
+                        message.ClientId.EqualsTo("martin"));
+                }
+
+
+                // Check the presence of the realtime lib is there
+                try
+                {
+                    (await HasRestPresence()).Should().BeTrue();
+
+                    // Kill the transport but don't tell the library
+                    transport.Close();
+
+                    await Task.Delay(150 * 1000); // wait for 2 minutes and 30 seconds
+
+                    // Make sure there is no presence
+                    int count = 0;
+                    while (true)
+                    {
+                        bool hasPresence = await HasRestPresence();
+                        if (count > 30)
+                        {
+                            throw new AssertionFailedException("After 1 minute of trying we still have presence. Not good.");
+                        }
+
+                        if (hasPresence == false)
+                        {
+                            break;
+                        }
+
+                        await Task.Delay(2000);
+
+                        count++;
+                    }
+
+                    // let the library know the transport is really dead
+                    transport.Listener?.OnTransportEvent(TransportState.Closed);
+
+                    await clientA.WaitForState(ConnectionState.Disconnected);
+                    await clientA.WaitForState(ConnectionState.Connected);
+                    await realtimeChannel.WaitForState(ChannelState.Attached);
+
+                    await realtimeChannel.Presence.WaitSync();
+
+                    // Wait for a second because the Rest call returns [] if done straight away
+                    await Task.Delay(1000);
+
+                    (await HasRestPresence()).Should().BeTrue();
+                }
+                finally
+                {
+                    // clean up - should go in infrastructure
+                    clientA.Close();
                 }
             }
 
