@@ -65,8 +65,7 @@ namespace ReEnterPresenceClassic
 
             await Task.Run(() => {
                 Console.ReadLine();
-                Task.FromResult(true);
-            }).ConfigureAwait(false);
+            });
 
             ably.Close();
         }
