@@ -1,5 +1,19 @@
 # Change Log
 
+## [1.1.12](https://github.com/ably/ably-dotnet/tree/1.1.12) 
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.11...1.1.12)
+
+**Fixed bugs:**
+
+- Presence re-entry requirement change for 1.1 [\#361](https://github.com/ably/ably-dotnet/issues/361)
+- Presence not entered on recovered connection [\#329](https://github.com/ably/ably-dotnet/issues/329)
+- Investigate report of PublishAsync hanging/timing out [\#314](https://github.com/ably/ably-dotnet/issues/314)
+
+**Merged pull requests:**
+
+- Reenter after short disconnect [\#358](https://github.com/ably/ably-dotnet/pull/358) ([withakay](https://github.com/withakay))
+
 ## [1.1.10](https://github.com/ably/ably-dotnet/tree/1.1.10)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.9-beta1...1.1.10)
