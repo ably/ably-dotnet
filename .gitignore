@@ -22,6 +22,8 @@ build/
 bld/
 [Bb]in/
 [Oo]bj/
+.idea
+.ionide/
 
 # Visual Studo 2015 cache/options directory
 .vs/
