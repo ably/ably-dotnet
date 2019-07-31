@@ -15,6 +15,7 @@ namespace IO.Ably.Realtime
         internal ILogger Logger { get; private set; }
 
         private event EventHandler InitialSyncCompleted;
+        internal event EventHandler SyncCompleted;
 
         private readonly RealtimeChannel _channel;
         private readonly string _clientId;
@@ -23,7 +24,6 @@ namespace IO.Ably.Realtime
         private readonly IConnectionManager _connection;
 
         private string _currentSyncChannelSerial;
-        private bool _syncAsResultOfAttach;
 
         private bool _initialSyncCompleted = false;
 
@@ -359,22 +359,27 @@ namespace IO.Ably.Realtime
             try
             {
                 string syncCursor = null;
+
+                // if we got here from SYNC message
                 if (syncChannelSerial != null)
                 {
                     int colonPos = syncChannelSerial.IndexOf(':');
                     string serial = colonPos >= 0 ? syncChannelSerial.Substring(0, colonPos) : syncChannelSerial;
 
-                    /* Discard incomplete sync if serial has changed */
+                    /* If a new sequence identifier is sent from Ably, then the client library
+                     * must consider that to be the start of a new sync sequence
+                     * and any previous in-flight sync should be discarded. (part of RTP18)*/
                     if (Map.IsSyncInProgress && _currentSyncChannelSerial != null
                                              && _currentSyncChannelSerial != serial)
                     {
                         EndSync();
                     }
 
+                    StartSync();
+
                     syncCursor = syncChannelSerial.Substring(colonPos);
                     if (syncCursor.Length > 1)
                     {
-                        StartSync();
                         _currentSyncChannelSerial = serial;
                     }
                 }
@@ -415,6 +420,7 @@ namespace IO.Ably.Realtime
                 if (syncChannelSerial == null || syncCursor.Length <= 1)
                 {
                     EndSync();
+                    _currentSyncChannelSerial = null;
                 }
             }
             catch (Exception ex)
@@ -443,7 +449,6 @@ namespace IO.Ably.Realtime
                 return;
             }
 
-            _currentSyncChannelSerial = null;
             var residualMembers = Map.EndSync();
 
             /*
@@ -468,25 +473,27 @@ namespace IO.Ably.Realtime
              * ensuring that members present on the channel are constructed from presence events sent
              * from Ably since the channel became ATTACHED
              */
-            if (_syncAsResultOfAttach)
+            EnsureLocalPresenceEntered();
+
+            OnSyncCompleted();
+        }
+
+        internal void EnsureLocalPresenceEntered()
+        {
+            foreach (var item in InternalMap.Values)
             {
-                _syncAsResultOfAttach = false;
-                foreach (var item in InternalMap.Values)
+                if (!Map.Members.ContainsKey(item.MemberKey))
                 {
-                    if (Map.Put(item))
+                    var clientId = item.ClientId;
+                    try
                     {
-                        var clientId = item.ClientId;
-                        try
+                        /* Message is new to presence map, send it */
+                        var itemToSend = new PresenceMessage(PresenceAction.Enter, item.ClientId, item.Data);
+                        UpdatePresence(itemToSend, (success, info) =>
                         {
-                            /* Message is new to presence map, send it */
-                            var itemToSend = item.ShallowClone();
-                            itemToSend.ConnectionId = null;
-                            itemToSend.Action = PresenceAction.Enter;
-                            UpdatePresence(itemToSend, (success, info) =>
+                            if (!success)
                             {
-                                if (!success)
-                                {
-                                    /*
+                                /*
                                  * (RTP5c3)  If any of the automatic ENTER presence messages published
                                  * in RTP5c2 fail, then an UPDATE event should be emitted on the channel
                                  * with resumed set to true and reason set to an ErrorInfo object with error
@@ -494,22 +501,23 @@ namespace IO.Ably.Realtime
                                  * received from Ably (if applicable), the code received from Ably
                                  * (if applicable) and the explicit or implicit client_id of the PresenceMessage
                                  */
-                                    var errorString = $"Cannot automatically re-enter {clientId} on channel {_channel.Name} ({info.Message})";
-                                    Logger.Error(errorString);
-                                    _channel.EmitUpdate(new ErrorInfo(errorString, 91004), true);
-                                }
-                            });
-                        }
-                        catch (AblyException e)
-                        {
-                            var errorString = $"Cannot automatically re-enter {clientId} on channel {_channel.Name} ({e.ErrorInfo.Message})";
-                            Logger.Error(errorString);
-                            _channel.EmitUpdate(new ErrorInfo(errorString, 91004), true);
-                        }
+                                var errorString =
+                                    $"Cannot automatically re-enter {clientId} on channel {_channel.Name} ({info.Message})";
+                                Logger.Error(errorString);
+                                _channel.EmitUpdate(new ErrorInfo(errorString, 91004), true);
+                            }
+                        });
+
+                        InternalMap.Remove(item);
+                    }
+                    catch (AblyException e)
+                    {
+                        var errorString =
+                            $"Cannot automatically re-enter {clientId} on channel {_channel.Name} ({e.ErrorInfo.Message})";
+                        Logger.Error(errorString);
+                        _channel.EmitUpdate(new ErrorInfo(errorString, 91004), true);
                     }
                 }
-
-                InternalMap.Clear();
             }
         }
 
@@ -552,23 +560,7 @@ namespace IO.Ably.Realtime
         {
             if (e.Current == ChannelState.Attached)
             {
-                /* Start sync, if hasPresence is not set end sync immediately dropping all the current presence members */
-                StartSync();
-                _syncAsResultOfAttach = true;
-                var hasPresence = e.ProtocolMessage != null && e.ProtocolMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
-                if (!hasPresence)
-                {
-                    /*
-                    * RTP19a  If the PresenceMap has existing members when an ATTACHED message is received without a
-                    * HAS_PRESENCE flag, the client library should emit a LEAVE event for each existing member ...
-                    */
-                    EndSync();
-                    SendQueuedMessages();
-                }
-                else
-                {
-                    SendQueuedMessages();
-                }
+                ChannelAttached(e);
             }
             else if (e.Current == ChannelState.Detached || e.Current == ChannelState.Failed)
             {
@@ -583,6 +575,41 @@ namespace IO.Ably.Realtime
                  * immediately, and the PresenceMap is maintained
                  */
                 FailQueuedMessages(e.Error);
+            }
+        }
+
+        internal void ChannelAttached(ChannelStateChange e)
+        {
+            /* Start sync, if hasPresence is not set end sync immediately dropping all the current presence members */
+            StartSync();
+            var hasPresence = e.ProtocolMessage != null &&
+                              e.ProtocolMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
+
+            if (hasPresence)
+            {
+                /* RTP1 If [HAS_PRESENCE] flag is 0 or there is no flags field,
+                     * the presence map should be considered in sync immediately
+                     * with no members present on the channel */
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug(
+                        $"Protocol message has presence flag. Starting Presence SYNC. Flag: {e.ProtocolMessage.Flags}");
+                }
+
+                StartSync();
+                SendQueuedMessages();
+            }
+            else
+            {
+                /* RTP1 If [HAS_PRESENCE] flag is 0 or there is no flags field,
+                    * the presence map should be considered in sync immediately
+                    * with no members present on the channel
+                    *
+                    * RTP19a  If the PresenceMap has existing members when an ATTACHED message is received without a
+                    * HAS_PRESENCE flag, the client library should emit a LEAVE event for each existing member ...
+                    */
+                EndSync();
+                SendQueuedMessages();
             }
         }
 
@@ -656,5 +683,11 @@ namespace IO.Ably.Realtime
         {
             InitialSyncCompleted?.Invoke(this, EventArgs.Empty);
         }
+
+        internal void OnSyncCompleted()
+        {
+            SyncCompleted?.Invoke(this, EventArgs.Empty);
+        }
+
     }
 }
