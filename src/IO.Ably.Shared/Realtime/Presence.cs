@@ -15,6 +15,7 @@ namespace IO.Ably.Realtime
         internal ILogger Logger { get; private set; }
 
         private event EventHandler InitialSyncCompleted;
+        internal event EventHandler SyncCompleted;
 
         private readonly RealtimeChannel _channel;
         private readonly string _clientId;
@@ -473,6 +474,8 @@ namespace IO.Ably.Realtime
              * from Ably since the channel became ATTACHED
              */
             EnsureLocalPresenceEntered();
+
+            OnSyncCompleted();
         }
 
         internal void EnsureLocalPresenceEntered()
@@ -680,5 +683,11 @@ namespace IO.Ably.Realtime
         {
             InitialSyncCompleted?.Invoke(this, EventArgs.Empty);
         }
+
+        internal void OnSyncCompleted()
+        {
+            SyncCompleted?.Invoke(this, EventArgs.Empty);
+        }
+
     }
 }

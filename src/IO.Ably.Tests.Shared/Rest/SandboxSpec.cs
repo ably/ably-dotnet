@@ -89,6 +89,7 @@ namespace IO.Ably.Tests
             await TestHelpers.WaitFor(10000, taskCount, done);
         }
 
+
         public class OutputLoggerSink : ILoggerSink
         {
             private readonly ITestOutputHelper _output;
@@ -134,31 +135,6 @@ namespace IO.Ably.Tests
         public void Dispose()
         {
             ResetEvent?.Dispose();
-        }
-    }
-
-    public static class SandboxSpecExtension
-    {
-        internal static Task WaitForState(this AblyRealtime realtime, ConnectionState awaitedState = ConnectionState.Connected, TimeSpan? waitSpan = null)
-        {
-            var connectionAwaiter = new ConnectionAwaiter(realtime.Connection, awaitedState);
-            if (waitSpan.HasValue)
-            {
-                return connectionAwaiter.Wait(waitSpan.Value);
-            }
-
-            return connectionAwaiter.Wait();
-        }
-
-        internal static Task WaitForState(this IRealtimeChannel channel, ChannelState awaitedState = ChannelState.Attached, TimeSpan? waitSpan = null)
-        {
-            var channelAwaiter = new ChannelAwaiter(channel, awaitedState);
-            if (waitSpan.HasValue)
-            {
-                return channelAwaiter.WaitAsync();
-            }
-
-            return channelAwaiter.WaitAsync();
         }
     }
 }
