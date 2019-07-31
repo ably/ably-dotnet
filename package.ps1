@@ -2,7 +2,7 @@ Param(
     [Parameter(mandatory=$false)]
     [string]$version,
     [string]$configuration = "package",
-    [string]$msbuild = "C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\MSBuild.exe",
+    [string]$msbuild = "C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\MSBuild.exe",
     [switch]$msgpack
  )
 
