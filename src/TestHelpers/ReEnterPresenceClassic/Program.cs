@@ -90,7 +90,6 @@ namespace ReEnterPresenceClassic
                         {
                             WriteLine(e.ToString());
                         }
-                        
                     });
         }
 
