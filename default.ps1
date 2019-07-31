@@ -20,7 +20,7 @@ properties {
 	$build_artifacts_dir = "$build_artifacts_dir_base\library"
 	$build_artifacts_tools_dir = "$build_artifacts_dir_base\tools"
 	$build_output_dir = "$build_script_dir\build\output"
-	$msbuild = "C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\MSBuild.exe"
+	$msbuild = "C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\MSBuild.exe"
 
 	$buildserver = ""
 
@@ -47,7 +47,7 @@ task Init {
 
 task Assembly_Info {
 
-	$gitversion = Get-ChildItem -Path ".\src\packages\" -Filter GitVersion.exe -Recurse -ErrorAction SilentlyContinue -Force | Select FullName | Select-Object -First 1 | Select -ExpandProperty FullName
+	$gitversion = 'GitVersion.exe'
 
     $major_version = & "$gitversion" /output json /showvariable Major
     $minor_version = & "$gitversion" /output json /showvariable Minor
