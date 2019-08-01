@@ -22,7 +22,7 @@ namespace IO.Ably.Tests
             var channelAwaiter = new ChannelAwaiter(channel, awaitedState);
             if (waitSpan.HasValue)
             {
-                return channelAwaiter.WaitAsync();
+                return channelAwaiter.WaitAsync(waitSpan.Value);
             }
 
             return channelAwaiter.WaitAsync();
