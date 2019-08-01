@@ -10,7 +10,7 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  solution: '**/*.sln'
+  solution: 'src/IO.Ably.NetFramework.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
