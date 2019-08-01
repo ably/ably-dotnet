@@ -154,7 +154,7 @@ namespace IO.Ably.Tests.AuthTests
             serverTimeCalled.Should().BeTrue();
             testAblyAuth.GetServerTimeOffset().Should().HaveValue();
             testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(await testAblyAuth.GetServerTime());
-            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(30));
+            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(30), precision: 200); //Allow 200 ms clock skew
 
             // to show the values are calculated and not fixed
             // get the current server time offset, pause for a short time,
