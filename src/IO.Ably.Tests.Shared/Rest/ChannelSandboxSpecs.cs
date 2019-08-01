@@ -440,8 +440,6 @@ namespace IO.Ably.Tests.Rest
             Protocol protocol,
             JObject messageData)
         {
-            Logger.LogLevel = LogLevel.Debug;
-
             var channelName = "channel-name-" + new Random().Next(int.MaxValue);
 
             var httpClient = (await Fixture.GetSettings()).GetHttpClient();

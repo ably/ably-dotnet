@@ -780,8 +780,6 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         public async Task WithAuthUrlShouldGetTokenFromUrl(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
-
             var client = await GetRestClient(protocol);
             var token = await client.Auth.RequestTokenAsync(new TokenParams() { ClientId = "*" });
             var settings = await Fixture.GetSettings();
@@ -1122,7 +1120,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN16d")]
         public async Task WhenConnectionFailsToRecover_ShouldEmmitDetachedMessageToChannels(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
             var stateChanges = new List<ChannelStateChange>();
 
             var client = await GetRealtimeClient(protocol);
@@ -1267,7 +1264,6 @@ namespace IO.Ably.Tests.Realtime
         {
             var channelName = "test-channel".AddRandomSuffix();
             var sentMessages = new List<ProtocolMessage>();
-            Logger.LogLevel = LogLevel.Debug;
             var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
                 options.TransportFactory = new TestTransportFactory()
@@ -1317,7 +1313,6 @@ namespace IO.Ably.Tests.Realtime
         {
             var channelName = "test-channel".AddRandomSuffix();
             var sentMessages = new List<ProtocolMessage>();
-            Logger.LogLevel = LogLevel.Debug;
             var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
                 options.TransportFactory = new TestTransportFactory()
@@ -1384,7 +1379,6 @@ namespace IO.Ably.Tests.Realtime
                 Protocol protocol,
                 ConnectionState initialState)
         {
-            Logger.LogLevel = LogLevel.Debug;
             var client = await GetRealtimeClient(protocol, (options, _) => options.AutoConnect = false);
 
             client.Connect();

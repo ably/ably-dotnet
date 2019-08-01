@@ -81,6 +81,24 @@ namespace IO.Ably.Tests
             await TestHelpers.WaitFor(10000, 1, done);
         }
 
+        protected async Task AssertMultipleTimes(Func<Task> testAction, int maxNumberOfTimes,
+            TimeSpan durationBetweenAttempts)
+        {
+            for (int i = 0; i < maxNumberOfTimes; i++)
+            {
+                try
+                {
+                    await testAction();
+                    break; // If there were no exceptions then we are all good and can return
+                }
+                catch (Exception e)
+                {
+                    await Task.Delay(durationBetweenAttempts);
+                }
+            }
+        }
+
+
         protected async Task WaitFor(int timeoutMs, Action<Action> done)
         {
             await TestHelpers.WaitFor(timeoutMs, 1, done);
@@ -110,11 +128,11 @@ namespace IO.Ably.Tests
             {
                 try {
                     _output.WriteLine($"{level}: {message}");
-                } catch (Exception ex) { 
+                } catch (Exception ex) {
                     //In rare events this happens and crashes the test runner
                     Console.WriteLine($"{level}: {message}");
                 }
-                
+
             }
         }
 
