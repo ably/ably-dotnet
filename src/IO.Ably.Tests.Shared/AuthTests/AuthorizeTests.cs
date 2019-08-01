@@ -153,8 +153,8 @@ namespace IO.Ably.Tests.AuthTests
             await testAblyAuth.AuthorizeAsync(tokenParams);
             serverTimeCalled.Should().BeTrue();
             testAblyAuth.GetServerTimeOffset().Should().HaveValue();
-            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(await testAblyAuth.GetServerTime());
-            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(30), precision: 200); //Allow 200 ms clock skew
+            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(await testAblyAuth.GetServerTime(), precision: 1000); // Allow 1s clock skew
+            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(30), precision: 1000); //Allow 1s clock skew
 
             // to show the values are calculated and not fixed
             // get the current server time offset, pause for a short time,
@@ -177,8 +177,8 @@ namespace IO.Ably.Tests.AuthTests
 
             // and we should still be getting calculated offsets
             testAblyAuth.GetServerTimeOffset().Should().HaveValue();
-            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(await testAblyAuth.GetServerTime());
-            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(30));
+            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(await testAblyAuth.GetServerTime(), 1000);
+            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(30), 1000);
 
             // reset again
             serverTimeCalled = false;
@@ -216,7 +216,7 @@ namespace IO.Ably.Tests.AuthTests
 
             // the TokenRequest should not have been set using an offset, but should have been set
             tokenRequest.Timestamp.Should().HaveValue();
-            tokenRequest.Timestamp.Should().BeCloseTo(DateTimeOffset.UtcNow);
+            tokenRequest.Timestamp.Should().BeCloseTo(DateTimeOffset.UtcNow, 1000);
         }
 
         [Fact]

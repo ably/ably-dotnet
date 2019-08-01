@@ -1455,7 +1455,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN22")]
         public async Task WhenAuthMessageReceived_ShouldAttemptTokenRenewal(Protocol protocol)
         {
-            var client = await GetRealtimeClient(protocol, (options, settings) =>
+            var client = await GetRealtiAuthorize_ObtainServerTimeAndPersistOffsetmeClient(protocol, (options, settings) =>
             {
                 options.UseTokenAuth = true;
             });
