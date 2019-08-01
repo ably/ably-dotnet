@@ -16,8 +16,8 @@ variables:
 
 steps:
 - checkout: self
-  submobule: true
-  
+  submodules: true
+
 - task: NuGetToolInstaller@1
 
 - task: NuGetCommand@2
