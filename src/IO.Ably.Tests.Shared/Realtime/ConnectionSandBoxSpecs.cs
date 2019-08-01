@@ -1436,7 +1436,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.Connect();
 
-            await WaitForState(client);
+            await WaitToBecomeConnected(client);
 
             await client.ConnectionManager.SetState(
                 new ConnectionSuspendedState(client.ConnectionManager, Logger));
