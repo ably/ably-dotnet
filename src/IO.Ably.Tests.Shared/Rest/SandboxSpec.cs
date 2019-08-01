@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
@@ -17,6 +18,9 @@ namespace IO.Ably.Tests
         protected ITestOutputHelper Output { get; }
 
         protected ManualResetEvent ResetEvent { get; }
+
+        private List<IRealtimeClient> RealtimeClients = new List<IRealtimeClient>();
+
 
         public SandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
         {
@@ -66,7 +70,10 @@ namespace IO.Ably.Tests
             // This can create out of order responses that would not normally occur
             defaultOptions.CaptureCurrentSynchronizationContext = false;
             optionsAction?.Invoke(defaultOptions, settings);
-            return new AblyRealtime(defaultOptions, createRestFunc);
+            var client = new AblyRealtime(defaultOptions, createRestFunc);
+
+            RealtimeClients.Add(client);
+            return client;
         }
 
         protected async Task WaitFor(Action<Action> done)
@@ -101,8 +108,19 @@ namespace IO.Ably.Tests
 
             public void LogEvent(LogLevel level, string message)
             {
-                _output.WriteLine($"{level}: {message}");
+                try {
+                    _output.WriteLine($"{level}: {message}");
+                } catch (Exception ex) { 
+                    //In rare events this happens and crashes the test runner
+                    Console.WriteLine($"{level}: {message}");
+                }
+                
             }
+        }
+
+        protected Task WaitToBecomeConnected(AblyRealtime realtime, TimeSpan? waitSpan = null)
+        {
+            return WaitForState(realtime, waitSpan: waitSpan);
         }
 
         protected Task WaitForState(AblyRealtime realtime, ConnectionState awaitedState = ConnectionState.Connected, TimeSpan? waitSpan = null)
@@ -134,6 +152,19 @@ namespace IO.Ably.Tests
 
         public void Dispose()
         {
+            Output.WriteLine("Closing connections: " + RealtimeClients.Count);
+            foreach (var client in RealtimeClients)
+            {
+                try
+                {
+
+                    client.Close();
+                }
+                catch (Exception ex)
+                {
+                    Output?.WriteLine("Error disposing Client: " + ex.Message);
+                }
+            }
             ResetEvent?.Dispose();
         }
     }
