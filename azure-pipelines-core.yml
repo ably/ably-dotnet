@@ -13,5 +13,16 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
+- checkout: self
+  submodules: true
+
+- script: dotnet restore
+
 - script: dotnet build ./src/IO.Ably.NetStandard.sln --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: test
+    projects: 'src/IO.Ably.Tests.DotNetCore20/**/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
