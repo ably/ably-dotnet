@@ -446,6 +446,7 @@ namespace IO.Ably
             var eventArgs = new AblyAuthUpdatedEventArgs(CurrentToken);
             AuthUpdated?.Invoke(this, eventArgs);
 
+            // TODO: Talk to Jack to see if there is a reason we block the return of the token
             // RTC8a3
             await AuthorizeCompleted(eventArgs);
 

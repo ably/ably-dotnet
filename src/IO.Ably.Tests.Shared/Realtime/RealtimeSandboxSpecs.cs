@@ -198,58 +198,67 @@ namespace IO.Ably.Tests.Realtime
             var clientId = "RTC8a1-downgrade".AddRandomSuffix();
             var channelName = "RTC8a1-downgrade-channel".AddRandomSuffix();
             var wrongChannelName = "wrong".AddRandomSuffix();
-            var capability = new Capability();
-            capability.AddResource(channelName).AllowAll();
 
-            var restClient = await GetRestClient(protocol);
-            var tokenDetails = await restClient.Auth.RequestTokenAsync(new TokenParams
-            {
-                ClientId = clientId,
-                Capability = capability
-            });
-
-            var realtime = await GetRealtimeClient(protocol, (opts, _) =>
-            {
-                opts.Token = tokenDetails.Token;
-            });
-            await realtime.WaitForState(ConnectionState.Connected);
-
+            var (realtime, channel) = await SetupRealtimeClient();
+            channel.On(statechange => Output.WriteLine($"Changed state: {statechange.Previous} to {statechange.Current}. Error: {statechange.Error}"));
             realtime.Connection.Once(ConnectionEvent.Disconnected, change => throw new Exception("Should not require a disconnect"));
-            var channel = realtime.Channels.Get(channelName);
 
-            channel.Attach();
-            await channel.WaitForState();
+            var result = await channel.PublishAsync("test", "should-not-fail");
+            result.IsSuccess.Should().BeTrue();
 
-            var awaiter1 = new TaskCompletionAwaiter(10000);
-            channel.Publish("test", "should-not-fail", (b, info) =>
-            {
-                b.Should().BeTrue();
-                info.Should().BeNull();
-                awaiter1.SetCompleted();
-            });
+            ChannelStateChange stateChange = null;
 
-            Assert.True(await awaiter1.Task);
-            channel.State.Should().Be(ChannelState.Attached);
-
-            // channel should fail fast, allow 2000ms
-            var channelFailedAwaiter = new TaskCompletionAwaiter(12000);
-            capability = new Capability();
-            capability.AddResource(wrongChannelName).AllowSubscribe();
-            var newToken = await realtime.Auth.AuthorizeAsync(new TokenParams
-            {
-                Capability = capability,
-                ClientId = clientId
-            });
-            newToken.Should().NotBeNull();
+            var failedAwaiter = new TaskCompletionAwaiter(2000);
             channel.Once(ChannelEvent.Failed, state =>
             {
-                state.Error.Code.Should().Be(40160);
-                state.Error.Message.Should().Contain("Channel denied access");
-                channelFailedAwaiter.SetCompleted();
+                stateChange = state;
+                failedAwaiter.SetCompleted();
             });
+            await DowngradeCapability(realtime);
 
-            var channelFailed = await channelFailedAwaiter.Task;
-            channelFailed.Should().BeTrue("channel should have failed");
+            await channel.WaitForState(ChannelState.Failed, TimeSpan.FromSeconds(6));
+            await failedAwaiter.Task;
+
+            stateChange.Should().NotBeNull("channel should have failde");
+            stateChange.Error.Code.Should().Be(40160);
+            stateChange.Error.Message.Should().Contain("Channel denied access");
+
+            async Task DowngradeCapability(AblyRealtime rt)
+            {
+                var capability = new Capability();
+                capability.AddResource(wrongChannelName).AllowSubscribe();
+
+                var newToken = await rt.Auth.AuthorizeAsync(new TokenParams
+                {
+                    Capability = capability,
+                    ClientId = clientId,
+                });
+
+                newToken.Should().NotBeNull();
+            }
+
+            async Task<(AblyRealtime, IRealtimeChannel)> SetupRealtimeClient()
+            {
+                var capability = new Capability();
+                capability.AddResource(channelName).AllowAll();
+
+                var restClient = await GetRestClient(protocol);
+                var tokenDetails = await restClient.Auth.RequestTokenAsync(new TokenParams
+                {
+                    ClientId = clientId,
+                    Capability = capability
+                });
+
+                var rt = await GetRealtimeClient(protocol, (opts, _) => { opts.Token = tokenDetails.Token; });
+
+                await rt.WaitForState(ConnectionState.Connected);
+                var ch = rt.Channels.Get(channelName);
+                ch.Attach();
+
+                await ch.WaitForState(ChannelState.Attached);
+
+                return (rt, ch);
+            }
         }
     }
 }
