@@ -143,7 +143,7 @@ namespace IO.Ably.Tests.AuthTests
             Now.Should().BeCloseTo(data.Timestamp.Value, 200);
         }
 
-        [Fact]
+        [Retry(3)]
         public async Task RequestToken_WithQueryTime_SendsTimeRequestAndUsesReturnedTimeForTheRequest()
         {
             var rest = GetRestClient();

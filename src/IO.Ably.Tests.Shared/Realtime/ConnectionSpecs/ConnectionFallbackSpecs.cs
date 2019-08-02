@@ -129,7 +129,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.Close();
         }
 
-        [Fact]
+        [Retry(3)]
         [Trait("spec", "RTN17c")]
         public async Task WhileInDisconnectedStateLoop_ShouldRetryWithMultipleHosts()
         {

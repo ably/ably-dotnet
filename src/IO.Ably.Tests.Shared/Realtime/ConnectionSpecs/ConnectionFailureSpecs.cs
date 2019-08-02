@@ -240,12 +240,13 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             return DateTimeOffset.UtcNow;
         }
 
-        [Fact]
+        [Retry(3)]
         [Trait("spec", "RTN14e")]
         public async Task WhenInSuspendedState_ShouldTryAndReconnectAfterSuspendRetryTimeoutIsReached()
         {
             Func<DateTimeOffset> nowFunc = () => DateTimeOffset.UtcNow;
             DateTimeOffset NowWrapperFunc() => nowFunc();
+
             FakeTransportFactory.InitialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false;
 
@@ -268,17 +269,13 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             }
             while (client.Connection.State != ConnectionState.Suspended);
 
-            var awaiter = new ConnectionAwaiter(client.Connection, ConnectionState.Connecting);
-            var elapsed = await awaiter.Wait();
+            var elapsed = await client.WaitForState(ConnectionState.Connecting);
             elapsed.Should().BeCloseTo(client.Options.SuspendedRetryTimeout, 100);
         }
 
-        private static async Task WaitForConnectingOrSuspended(AblyRealtime client)
+        private static Task WaitForConnectingOrSuspended(AblyRealtime client)
         {
-            await
-                Task.WhenAll(
-                    new ConnectionAwaiter(client.Connection, ConnectionState.Connecting, ConnectionState.Suspended).Wait(),
-                    Task.Delay(10));
+            return new ConnectionAwaiter(client.Connection, ConnectionState.Connecting, ConnectionState.Suspended).Wait();
         }
 
         [Fact]

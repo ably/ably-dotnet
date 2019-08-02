@@ -15,7 +15,7 @@ namespace IO.Ably.Tests.Realtime
         {
         }
 
-        [Fact]
+        [Retry(3)]
         [Trait("intermittent", "true")]
         public async Task CountdownTimer_Start_StartsCountdown()
         {
@@ -111,7 +111,7 @@ namespace IO.Ably.Tests.Realtime
             return new CountdownTimer("Test timer", Logger);
         }
 
-        [Fact]
+        [Retry(3)]
         [Trait("intermittent", "true")]
         public async Task CountdownTimer_StartTwice_AbortsOldTimer()
         {
