@@ -2,18 +2,14 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using IO.Ably;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
 {
-    using System.Net.NetworkInformation;
-
     public enum NetworkState
     {
         Online,
@@ -24,8 +20,9 @@ namespace IO.Ably.Realtime
     {
         internal event EventHandler BeginConnect;
 
-        private static readonly ConcurrentBag<WeakReference<Action<NetworkState>>> OsEventSubscribers =
-            new ConcurrentBag<WeakReference<Action<NetworkState>>>();
+        private readonly Guid ObjectId = Guid.NewGuid(); //Used to identify the connection object for OsEventSubscribers
+        private static readonly ConcurrentDictionary<Guid, Action<NetworkState>> OsEventSubscribers =
+            new ConcurrentDictionary<Guid, Action<NetworkState>>();
 
         protected override Action<Action> NotifyClient => RealtimeClient.NotifyExternalClients;
 
@@ -43,17 +40,47 @@ namespace IO.Ably.Realtime
 
             foreach (var subscriber in OsEventSubscribers.ToArray())
             {
-                Action<NetworkState> stateAction = null;
-                if (subscriber.TryGetTarget(out stateAction))
+                try
                 {
-                    stateAction?.Invoke(state);
+                    if (logger.IsDebug)
+                    {
+                        logger.Debug("Calling network state handler for connection with id: " + subscriber.Key.ToString("D"));
+                    }
+
+                    subscriber.Value?.Invoke(state);
+                }
+                catch (Exception e)
+                {
+                    logger.Error($"Error notifying connectionId {subscriber.Key:D} about network events", e);
                 }
             }
         }
 
-        private void RegisterWithOSNetworkStateEvents(Action<NetworkState> stateAction)
+        private void RegisterWithOsNetworkStateEvents(Action<NetworkState> stateAction)
         {
-            OsEventSubscribers.Add(new WeakReference<Action<NetworkState>>(stateAction));
+            if (Logger.IsDebug)
+            {
+                Logger.Debug("Registering OS network state handler for Connection with id: " + ObjectId.ToString("D"));
+            }
+
+            OsEventSubscribers.AddOrUpdate(ObjectId, stateAction, (_, __) => stateAction);
+        }
+
+        private void CleanUpNetworkStateEvents()
+        {
+            try
+            {
+                var result = OsEventSubscribers.TryRemove(ObjectId, out _);
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug("Os network listener removed result: " + result);
+                }
+
+            }
+            catch (Exception e)
+            {
+                Logger.Warning("Error cleaning up networking events hook");
+            }
         }
 
         internal void SetConfirmedAlive()
@@ -90,7 +117,8 @@ namespace IO.Ably.Realtime
             Now = nowFunc;
             FallbackHosts = realtimeClient?.Options?.FallbackHosts.Shuffle().ToList();
             RealtimeClient = realtimeClient;
-            RegisterWithOSNetworkStateEvents(HandleNetworkStateChange);
+
+            RegisterWithOsNetworkStateEvents(HandleNetworkStateChange);
 
             var recover = realtimeClient?.Options?.Recover;
             if (recover.IsNotEmpty())
@@ -184,6 +212,8 @@ namespace IO.Ably.Realtime
         {
             Close();
             ClearAllDelegatesOfStateChangeEventHandler();
+
+            CleanUpNetworkStateEvents();
         }
 
         private void ClearAllDelegatesOfStateChangeEventHandler()

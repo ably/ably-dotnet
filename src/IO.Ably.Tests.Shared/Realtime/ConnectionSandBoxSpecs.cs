@@ -1428,6 +1428,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetRealtimeClient(protocol, (options, _) => options.AutoConnect = false);
 
+            client.Connection.On(stateChange => Output.WriteLine("State Changed: " + stateChange.Current + " From: " + stateChange.Previous));
             client.Connect();
 
             await WaitToBecomeConnected(client);
@@ -1436,10 +1437,8 @@ namespace IO.Ably.Tests.Realtime
                 new ConnectionSuspendedState(client.ConnectionManager, Logger));
 
             client.Connection.State.Should().Be(ConnectionState.Suspended);
-            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, Logger);
 
-            List<ConnectionState> states = new List<ConnectionState>();
-            client.Connection.On(stateChange => states.Add(stateChange.Current));
+            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, Logger);
 
             await WaitForState(client, ConnectionState.Connecting);
         }
