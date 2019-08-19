@@ -50,7 +50,13 @@ namespace IO.Ably
                 catch { }
             };
 
-        public static void RunInBackground(Action action, Action<Exception> handler = null)
+        /// <summary>
+        /// Run a synchronous method in a fire-and-forget manner.
+        /// An optional handler can be provided to process exceptions, if they occur.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="handler"></param>
+        internal static void RunInBackground(Action action, Action<Exception> handler = null)
         {
             if (action == null)
             {
@@ -58,6 +64,35 @@ namespace IO.Ably
             }
 
             var task = Task.Run(action);
+
+            if (handler == null)
+            {
+                task.ContinueWith(
+                    DefaultErrorContinuation,
+                    TaskContinuationOptions.ExecuteSynchronously |
+                    TaskContinuationOptions.OnlyOnFaulted);
+            }
+            else
+            {
+                task.ContinueWith(
+                    t => handler(t.Exception.GetBaseException()),
+                    TaskContinuationOptions.ExecuteSynchronously |
+                    TaskContinuationOptions.OnlyOnFaulted);
+            }
+        }
+
+        /// <summary>
+        /// Run a <see cref="Task"/> in a fire-and-forget manner.
+        /// An optional handler can be provided to process exceptions, if they occur.
+        /// </summary>
+        /// <param name="task"></param>
+        /// <param name="handler"></param>
+        internal static void RunInBackground(Task task, Action<Exception> handler = null)
+        {
+            if (task == null)
+            {
+                throw new ArgumentNullException(nameof(task));
+            }
 
             if (handler == null)
             {
