@@ -33,7 +33,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public async Task FailingTaskWRappingAsyncWillNotHaveExceptionHandled()
+        public async Task FailingTaskWrappingAsyncWillNotHaveExceptionHandled()
         {
             /*
              *  This test demonstrates that wrapping a method that throws an Exception will cause the handler
