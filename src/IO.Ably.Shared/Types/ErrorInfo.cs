@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 namespace IO.Ably
 {
     /// <summary>
-    /// An exception type encapsulating error informaiton containing an Ably specific error code and generic status code
+    /// An exception type encapsulating error information containing an Ably specific error code and generic status code
     /// </summary>
     public class ErrorInfo
     {

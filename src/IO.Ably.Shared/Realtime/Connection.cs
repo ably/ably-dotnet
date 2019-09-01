@@ -253,7 +253,8 @@ namespace IO.Ably.Realtime
 
         public void Ping(Action<TimeSpan?, ErrorInfo> callback)
         {
-            ConnectionHeartbeatRequest.Execute(ConnectionManager, Now, callback);
+            
+            ConnectionHeartbeatHandler.Execute(ConnectionManager, Now, callback);
         }
 
         /// <summary>

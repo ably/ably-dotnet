@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Threading;
-
+using System.Threading.Tasks;
 using IO.Ably;
 using IO.Ably.Realtime;
 using IO.Ably.Transport.States.Connection;
@@ -9,7 +9,7 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport
 {
-    internal class ConnectionHeartbeatRequest
+    internal class ConnectionHeartbeatHandler : IProtocolMessageHandler
     {
         public static readonly ErrorInfo DefaultError = new ErrorInfo("Unable to ping service; not connected", 40000, HttpStatusCode.BadRequest);
 
@@ -26,7 +26,7 @@ namespace IO.Ably.Transport
 
         internal ILogger Logger { get; private set; }
 
-        public ConnectionHeartbeatRequest(ConnectionManager manager, ICountdownTimer timer, Func<DateTimeOffset> nowFunc)
+        public ConnectionHeartbeatHandler(ConnectionManager manager, ICountdownTimer timer, Func<DateTimeOffset> nowFunc)
         {
             Logger = manager.Logger;
             _manager = manager;
@@ -39,18 +39,18 @@ namespace IO.Ably.Transport
             return message.Action == ProtocolMessage.MessageAction.Heartbeat;
         }
 
-        public static ConnectionHeartbeatRequest Execute(ConnectionManager manager, Func<DateTimeOffset> nowProvider, Action<TimeSpan?, ErrorInfo> callback)
+        public static ConnectionHeartbeatHandler Execute(ConnectionManager manager, Func<DateTimeOffset> nowProvider, Action<TimeSpan?, ErrorInfo> callback)
         {
             return Execute(manager, new CountdownTimer("Connection heartbeat timer", manager.Logger), nowProvider, callback);
         }
 
-        public static ConnectionHeartbeatRequest Execute(ConnectionManager manager, ICountdownTimer timer, Func<DateTimeOffset> nowProvider, Action<TimeSpan?, ErrorInfo> callback)
+        public static ConnectionHeartbeatHandler Execute(ConnectionManager manager, ICountdownTimer timer, Func<DateTimeOffset> nowProvider, Action<TimeSpan?, ErrorInfo> callback)
         {
-            var request = new ConnectionHeartbeatRequest(manager, timer, nowProvider);
+            var request = new ConnectionHeartbeatHandler(manager, timer, nowProvider);
             return request.Send(callback);
         }
 
-        private ConnectionHeartbeatRequest Send(Action<TimeSpan?, ErrorInfo> callback)
+        private ConnectionHeartbeatHandler Send(Action<TimeSpan?, ErrorInfo> callback)
         {
             _start = Now();
 
@@ -64,7 +64,6 @@ namespace IO.Ably.Transport
             if (callback != null)
             {
                 _callback = callback;
-                _manager.MessageReceived += OnMessageReceived;
                 _manager.Connection.InternalStateChanged += OnInternalStateChanged;
 
                 _manager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat), null);
@@ -74,12 +73,15 @@ namespace IO.Ably.Transport
             return this;
         }
 
-        private void OnMessageReceived(ProtocolMessage message)
+        public ValueTask<bool> OnMessageReceived(ProtocolMessage message)
         {
-            if (CanHandleMessage(message))
+            var canHandle = CanHandleMessage(message);
+            if (canHandle)
             {
                 FinishRequest(GetElapsedTime(), null);
             }
+
+            return new ValueTask<bool>(canHandle);
         }
 
         private TimeSpan? GetElapsedTime()
@@ -105,7 +107,6 @@ namespace IO.Ably.Transport
                     {
                         _finished = true;
 
-                        _manager.MessageReceived -= OnMessageReceived;
                         _manager.Connection.InternalStateChanged -= OnInternalStateChanged;
                         _timer.Abort();
 

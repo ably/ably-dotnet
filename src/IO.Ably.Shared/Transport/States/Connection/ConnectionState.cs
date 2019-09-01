@@ -9,7 +9,7 @@ namespace IO.Ably.Transport.States.Connection
     using IO.Ably.Realtime;
 
     [DebuggerDisplay("{State}")]
-    internal abstract class ConnectionStateBase
+    internal abstract class ConnectionStateBase : IProtocolMessageHandler
     {
         internal ILogger Logger { get; private set; }
 
@@ -45,9 +45,9 @@ namespace IO.Ably.Transport.States.Connection
         {
         }
 
-        public virtual Task<bool> OnMessageReceived(ProtocolMessage message)
+        public virtual ValueTask<bool> OnMessageReceived(ProtocolMessage message)
         {
-            return TaskConstants.BooleanFalse;
+            return new ValueTask<bool>(false);
         }
 
         public virtual void AbortTimer()

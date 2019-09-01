@@ -4,7 +4,7 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
-    using IO.Ably.Realtime;
+    using Realtime;
 
     internal class ConnectionDisconnectedState : ConnectionStateBase
     {
@@ -38,13 +38,13 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void Connect()
         {
-            Context.SetState(new ConnectionConnectingState(Context, Logger));
+            Context.ExecuteCommand(SetConnectingStateCommand.Create());
         }
 
         public override void Close()
         {
             AbortTimer();
-            Context.SetState(new ConnectionClosedState(Context, Logger));
+            Context.ExecuteCommand(SetClosedStateCommand.Create());
         }
 
         public override void AbortTimer()
@@ -52,7 +52,7 @@ namespace IO.Ably.Transport.States.Connection
             _timer.Abort();
         }
 
-        public override Task OnAttachToContext()
+        public override async Task OnAttachToContext()
         {
             Context.DestroyTransport();
 
@@ -63,19 +63,17 @@ namespace IO.Ably.Transport.States.Connection
 
             if (RetryInstantly)
             {
-                Context.SetState(new ConnectionConnectingState(Context, Logger));
+                Context.ExecuteCommand(SetConnectingStateCommand.Create());
             }
             else
             {
                 _timer.Start(Context.RetryTimeout, OnTimeOut);
             }
-
-            return TaskConstants.BooleanTrue;
         }
 
         private void OnTimeOut()
         {
-            Context.Execute(() => Context.SetState(new ConnectionConnectingState(Context, Logger)));
+            Context.ExecuteCommand(SetConnectingStateCommand.Create());
         }
     }
 }

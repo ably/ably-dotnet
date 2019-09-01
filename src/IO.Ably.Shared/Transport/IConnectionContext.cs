@@ -15,7 +15,7 @@ namespace IO.Ably.Transport
 
         void SendToTransport(ProtocolMessage message);
 
-        Task Execute(Action action);
+        void ExecuteCommand(RealtimeCommand cmd);
 
         ITransport Transport { get; }
 
@@ -25,7 +25,7 @@ namespace IO.Ably.Transport
 
         void ClearTokenAndRecordRetry();
 
-        Task SetState(ConnectionStateBase state, bool skipAttach = false);
+        //Task SetState(ConnectionStateBase state, bool skipAttach = false);
 
         Task CreateTransport();
 
@@ -36,8 +36,6 @@ namespace IO.Ably.Transport
         bool ShouldWeRenewToken(ErrorInfo error);
 
         void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null, ChannelOptions channelOptions = null);
-
-        Task<bool> RetryBecauseOfTokenError(ErrorInfo error);
 
         Task RetryAuthentication(ErrorInfo error = null, bool updateState = true);
 

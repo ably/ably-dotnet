@@ -46,14 +46,15 @@ namespace IO.Ably.Tests
 
         public bool SendToTransportCalled { get; set; }
 
-        public Task Execute(Action action)
+        public void ExecuteCommand(RealtimeCommand cmd)
         {
-            action();
-            return TaskConstants.BooleanTrue;
+            ExecutedCommands.Add(cmd);
+            //Connection.RealtimeClient.ExecuteCommand(cmd);
         }
 
         public ConnectionStateBase State { get; set; }
 
+        public List<RealtimeCommand> ExecutedCommands = new List<RealtimeCommand>();
         public TransportState TransportState => Transport.State;
 
         public ITransport Transport { get; set; }

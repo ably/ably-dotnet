@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
@@ -27,6 +29,15 @@ namespace IO.Ably.Tests
             _context = new FakeConnectionContext();
             _state = GetState();
         }
+
+        private void LastCommandShouldBe<T>(Action<T> assert = null)
+            where T : RealtimeCommand
+        {
+            var lastCommand = _context.ExecutedCommands.Last();
+            lastCommand.Should().BeOfType<T>();
+            assert?.Invoke(lastCommand as T);
+        }
+
 
         [Fact]
         public void ShouldHaveSuspendedState()
@@ -69,7 +80,7 @@ namespace IO.Ably.Tests
             _state.Close();
 
             // Assert
-            _context.StateShouldBe<ConnectionClosedState>();
+            LastCommandShouldBe<SetClosedStateCommand>();
             _timer.Aborted.Should().BeTrue();
         }
 

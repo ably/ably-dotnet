@@ -9,18 +9,10 @@ namespace IO.Ably.Transport
 
     internal interface IConnectionManager
     {
-        Task Execute(Action action);
-
         Connection Connection { get; }
-
-        TimeSpan DefaultTimeout { get; }
 
         ClientOptions Options { get; }
 
-        bool IsActive { get; }
-
         void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null, ChannelOptions channelOptions = null);
-
-        void FailMessageWaitingForAckAndClearOutgoingQueue(RealtimeChannel realtimeChannel, ErrorInfo error);
     }
 }

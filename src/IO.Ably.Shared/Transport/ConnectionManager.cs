@@ -86,11 +86,6 @@ namespace IO.Ably.Transport
             AttemptsInfo = new ConnectionAttemptsInfo(connection, nowFunc);
             Connection = connection;
             AckProcessor = new AcknowledgementProcessor(connection);
-
-            if (Logger.IsDebug)
-            {
-                Execute(() => Logger.Debug("ConnectionManager thread created"));
-            }
         }
 
         public void ClearTokenAndRecordRetry()
@@ -105,7 +100,7 @@ namespace IO.Ably.Transport
             State.Connect();
         }
 
-        public Task SetState(ConnectionStateBase newState, bool skipAttach = false)
+        public async Task SetState(ConnectionStateBase newState, bool skipAttach = false)
         {
             if (Logger.IsDebug)
             {
@@ -115,89 +110,86 @@ namespace IO.Ably.Transport
 
             _inTransitionToState = newState;
 
-            return ExecuteOnManagerThread(async () =>
+            try
             {
-                try
+                lock (_stateSyncLock)
                 {
-                    lock (_stateSyncLock)
+                    if (!newState.IsUpdate)
                     {
-                        if (!newState.IsUpdate)
+                        if (State.State == newState.State)
                         {
-                            if (State.State == newState.State)
+                            if (Logger.IsDebug)
                             {
-                                if (Logger.IsDebug)
-                                {
-                                    Logger.Debug($"xx State is already {State.State}. Skipping SetState action.");
-                                }
-
-                                return;
+                                Logger.Debug($"xx State is already {State.State}. Skipping SetState action.");
                             }
 
-                            AttemptsInfo.UpdateAttemptState(newState);
-                            State.AbortTimer();
+                            return;
                         }
 
-                        if (Logger.IsDebug)
-                        {
-                            Logger.Debug($"xx {newState.State}: BeforeTransition");
-                        }
-
-                        newState.BeforeTransition();
-
-                        if (Logger.IsDebug)
-                        {
-                            Logger.Debug($"xx {newState.State}: BeforeTransition end");
-                        }
-
-                        Connection.UpdateState(newState);
+                        AttemptsInfo.UpdateAttemptState(newState);
+                        State.AbortTimer();
                     }
 
-                    if (skipAttach == false)
+                    if (Logger.IsDebug)
                     {
-                        if (Logger.IsDebug)
-                        {
-                            Logger.Debug($"xx {newState.State}: Attaching state ");
-                        }
-
-                        await newState.OnAttachToContext();
+                        Logger.Debug($"xx {newState.State}: BeforeTransition");
                     }
-                    else if (Logger.IsDebug)
+
+                    newState.BeforeTransition();
+
+                    if (Logger.IsDebug)
                     {
-                        Logger.Debug($"xx {newState.State}: Skipping attaching.");
+                        Logger.Debug($"xx {newState.State}: BeforeTransition end");
                     }
-
-                    await ProcessQueuedMessages();
-                }
-                catch (AblyException ex)
-                {
-                    Logger.Error("Error attaching to context", ex);
-
-                    _queuedTransportMessages = new ConcurrentQueue<ProtocolMessage>();
 
                     Connection.UpdateState(newState);
-
-                    newState.AbortTimer();
-
-                    // RSA4c2 & RSA4d
-                    if (newState.State == ConnectionState.Connecting &&
-                        ex.ErrorInfo.Code == 80019 & !ex.ErrorInfo.IsForbiddenError)
-                    {
-                        await SetState(new ConnectionDisconnectedState(this, ex.ErrorInfo, Logger));
-                    }
-                    else if (newState.State != ConnectionState.Failed)
-                    {
-                        await SetState(new ConnectionFailedState(this, ex.ErrorInfo, Logger));
-                    }
                 }
-                finally
+
+                if (skipAttach == false)
                 {
-                    // Clear the state in transition only if the current state hasn't updated it
-                    if (_inTransitionToState == newState)
+                    if (Logger.IsDebug)
                     {
-                        _inTransitionToState = null;
+                        Logger.Debug($"xx {newState.State}: Attaching state ");
                     }
+
+                    await newState.OnAttachToContext();
                 }
-            });
+                else if (Logger.IsDebug)
+                {
+                    Logger.Debug($"xx {newState.State}: Skipping attaching.");
+                }
+
+                await ProcessQueuedMessages();
+            }
+            catch (AblyException ex)
+            {
+                Logger.Error("Error attaching to context", ex);
+
+                _queuedTransportMessages = new ConcurrentQueue<ProtocolMessage>();
+
+                Connection.UpdateState(newState);
+
+                newState.AbortTimer();
+
+                // RSA4c2 & RSA4d
+                if (newState.State == ConnectionState.Connecting &&
+                    ex.ErrorInfo.Code == 80019 & !ex.ErrorInfo.IsForbiddenError)
+                {
+                    ExecuteCommand(SetDisconnectedStateCommand.Create(ex.ErrorInfo));
+                }
+                else if (newState.State != ConnectionState.Failed)
+                {
+                    ExecuteCommand(SetFailedStateCommand.Create(ex.ErrorInfo));
+                }
+            }
+            finally
+            {
+                // Clear the state in transition only if the current state hasn't updated it
+                if (_inTransitionToState == newState)
+                {
+                    _inTransitionToState = null;
+                }
+            }
         }
 
         public async Task CreateTransport()
@@ -282,32 +274,18 @@ namespace IO.Ably.Transport
             return AttemptsInfo.ShouldSuspend();
         }
 
-        public async Task<bool> RetryBecauseOfTokenError(ErrorInfo error)
-        {
-            if (error != null && error.IsTokenError)
-            {
-                if (ShouldWeRenewToken(error))
-                {
-                    await RetryAuthentication(error, updateState: true);
-                }
-                else
-                {
-                    await SetState(new ConnectionFailedState(this, error, Logger));
-                }
 
-                return true;
-            }
-
-            return false;
-        }
 
         public async Task RetryAuthentication(ErrorInfo error = null, bool updateState = true)
         {
             ClearTokenAndRecordRetry();
             if (updateState)
             {
-                await SetState(new ConnectionDisconnectedState(this, error, Logger), skipAttach: ConnectionState == ConnectionState.Connecting);
-                await SetState(new ConnectionConnectingState(this, Logger));
+                ExecuteCommand(
+                    ListCommand.Create(
+                        SetDisconnectedStateCommand.Create(error, skipAttach: ConnectionState == ConnectionState.Connecting),
+                        SetConnectingStateCommand.Create()
+                        ));
             }
             else
             {
@@ -409,35 +387,30 @@ namespace IO.Ably.Transport
 
         void ITransportListener.OnTransportEvent(TransportState transportState, Exception ex)
         {
-            ExecuteOnManagerThread(() =>
+            if (Logger.IsDebug)
             {
-                if (Logger.IsDebug)
-                {
-                    var errorMessage = ex != null ? $" Error: {ex.Message}" : string.Empty;
-                    Logger.Debug($"Transport state changed to: {transportState}.{errorMessage}");
-                }
+                var errorMessage = ex != null ? $" Error: {ex.Message}" : string.Empty;
+                Logger.Debug($"Transport state changed to: {transportState}.{errorMessage}");
+            }
 
-                if (transportState == TransportState.Closed || ex != null)
+            if (transportState == TransportState.Closed || ex != null)
+            {
+                var connectionState = _inTransitionToState?.State ?? ConnectionState;
+                switch (connectionState)
                 {
-                    var connectionState = _inTransitionToState?.State ?? ConnectionState;
-                    switch (connectionState)
-                    {
-                        case ConnectionState.Closing:
-                            SetState(new ConnectionClosedState(this, Logger) { Exception = ex });
-                            break;
-                        case ConnectionState.Connecting:
-                            HandleConnectingFailure(null, ex);
-                            break;
-                        case ConnectionState.Connected:
-                            var disconnectedState = new ConnectionDisconnectedState(this, GetErrorInfoFromTransportException(ex, ErrorInfo.ReasonDisconnected), Logger) { Exception = ex };
-                            disconnectedState.RetryInstantly = Connection.ConnectionResumable;
-                            SetState(disconnectedState);
-                            break;
-                    }
+                    case ConnectionState.Closing:
+                        ExecuteCommand(SetClosedStateCommand.Create(exception: ex));
+                        break;
+                    case ConnectionState.Connecting:
+                        HandleConnectingFailure(null, ex);
+                        break;
+                    case ConnectionState.Connected:
+                        var errorInfo = GetErrorInfoFromTransportException(ex, ErrorInfo.ReasonDisconnected);
+                        var disconnectCommand = SetDisconnectedStateCommand.Create(errorInfo, retryInstantly: Connection.ConnectionResumable, exception: ex);
+                        ExecuteCommand(disconnectCommand);
+                        break;
                 }
-
-                return TaskConstants.BooleanTrue;
-            });
+            }
         }
 
         private static ErrorInfo GetErrorInfoFromTransportException(Exception ex, ErrorInfo @default)
@@ -460,11 +433,11 @@ namespace IO.Ably.Transport
             ErrorInfo resolvedError = error ?? (ex != null ? new ErrorInfo(ex.Message, 80000) : null);
             if (ShouldSuspend())
             {
-                SetState(new ConnectionSuspendedState(this, resolvedError ?? ErrorInfo.ReasonSuspended, Logger));
+                ExecuteCommand(SetSuspendedStateCommand.Create(resolvedError ?? ErrorInfo.ReasonSuspended));
             }
             else
             {
-                SetState(new ConnectionDisconnectedState(this, resolvedError ?? ErrorInfo.ReasonDisconnected, Logger));
+                ExecuteCommand(SetDisconnectedStateCommand.Create(resolvedError ?? ErrorInfo.ReasonDisconnected));
             }
         }
 
@@ -509,30 +482,9 @@ namespace IO.Ably.Transport
             OnTransportMessageReceived(message).WaitAndUnwrapException();
         }
 
-        public Task Execute(Action action)
+        public void ExecuteCommand(RealtimeCommand cmd)
         {
-            if (Options != null && Options.UseSyncForTesting)
-            {
-                Task.Run(action).WaitAndUnwrapException();
-                return TaskConstants.BooleanTrue;
-            }
-
-            var task = Task.Run(action);
-            task.ConfigureAwait(false);
-            return task;
-        }
-
-        public Task ExecuteOnManagerThread(Func<Task> asyncOperation)
-        {
-            if (Options.UseSyncForTesting)
-            {
-                asyncOperation().WaitAndUnwrapException();
-                return TaskConstants.BooleanTrue;
-            }
-
-            var task = Task.Run(asyncOperation);
-            task.ConfigureAwait(false);
-            return task;
+            Connection.RealtimeClient.QueueCommand(cmd);
         }
 
         internal async Task<TransportParams> CreateTransportParameters()
@@ -565,20 +517,9 @@ namespace IO.Ably.Transport
 
         private async Task ProcessTransportMessage(ProtocolMessage message)
         {
-            try
-            {
-                var handled = await State.OnMessageReceived(message);
-                handled |= AckProcessor.OnMessageReceived(message);
-                handled |= ConnectionHeartbeatRequest.CanHandleMessage(message);
+            ExecuteCommand(ProcessMessageCommand.Create(message));
 
-                Connection.UpdateSerial(message);
-                MessageReceived?.Invoke(message);
-            }
-            catch (Exception e)
-            {
-                Logger.Error("Error processing message: " + message, e);
-                throw new AblyException(e);
-            }
+
         }
 
         public void HandleNetworkStateChange(NetworkState state)
@@ -608,10 +549,10 @@ namespace IO.Ably.Transport
                         }
 
                         // RTN20a
-                        SetState(new ConnectionDisconnectedState(this, new ErrorInfo("Connection disconnected due to Operating system network going offline", 80017), Logger)
-                        {
-                            RetryInstantly = true
-                        });
+                        var errorInfo =
+                            new ErrorInfo("Connection disconnected due to Operating system network going offline",
+                                80017);
+                        ExecuteCommand(SetDisconnectedStateCommand.Create(errorInfo, retryInstantly: true));
                     }
 
                     break;

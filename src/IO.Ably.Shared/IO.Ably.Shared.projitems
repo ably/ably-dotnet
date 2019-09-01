@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)AblyRest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ApiKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaginatedRequestParams.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealtimeCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelEvent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.GetParams.cs" />
@@ -102,7 +103,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TokenResponse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\AcknowledgementProcessor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionAttemptsInfo.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionHeartbeatRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionHeartbeatHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\IConnectionManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\ITransport.cs" />

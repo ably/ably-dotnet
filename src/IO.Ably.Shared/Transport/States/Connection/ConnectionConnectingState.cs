@@ -33,7 +33,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void Close()
         {
-            TransitionState(new ConnectionClosingState(Context, Logger));
+            TransitionState(SetClosingStateCommand.Create());
         }
 
         public override async Task<bool> OnMessageReceived(ProtocolMessage message)
@@ -49,8 +49,7 @@ namespace IO.Ably.Transport.States.Connection
                     {
                         if (Context.Transport.State == TransportState.Connected)
                         {
-                            var info = new ConnectionInfo(message);
-                            TransitionState(new ConnectionConnectedState(Context, info, message.Error, Logger));
+                            TransitionState(SetConnectedStateCommand.Create(message, false));
                         }
 
                         return true;
@@ -77,7 +76,7 @@ namespace IO.Ably.Transport.States.Connection
                             catch (AblyException ex)
                             {
                                 Logger.Error("Error trying to renew token.", ex);
-                                TransitionState(new ConnectionDisconnectedState(Context, ex.ErrorInfo, Logger));
+                                TransitionState(SetDisconnectedStateCommand.Create(ex.ErrorInfo));
                                 return true;
                             }
                         }
@@ -91,17 +90,17 @@ namespace IO.Ably.Transport.States.Connection
 
                         if (message.Error?.IsTokenError == true && !Context.Connection.RestClient.AblyAuth.TokenRenewable)
                         {
-                            TransitionState(new ConnectionFailedState(Context, message.Error, Logger));
+                            TransitionState(SetFailedStateCommand.Create(message.Error));
                             return true;
                         }
 
-                        if (message.Error?.IsTokenError == true && !shouldRenew)
+                        if (message.Error?.IsTokenError == true && !shouldRenew) //Always true. Cleanup!
                         {
-                            TransitionState(new ConnectionDisconnectedState(Context, message.Error, Logger));
+                            TransitionState(SetDisconnectedStateCommand.Create(message.Error));
                             return true;
                         }
 
-                        TransitionState(new ConnectionFailedState(Context, message.Error, Logger));
+                        TransitionState(SetFailedStateCommand.Create(message.Error));
                         return true;
                     }
             }
@@ -130,13 +129,13 @@ namespace IO.Ably.Transport.States.Connection
 
         private void OnTimeOut()
         {
-            Context.Execute(() => Context.HandleConnectingFailure(null, null));
+            Context.HandleConnectingFailure(null, null);
         }
 
-        private void TransitionState(ConnectionStateBase newState)
+        private void TransitionState(RealtimeCommand command)
         {
             _timer.Abort();
-            Context.SetState(newState);
+            Context.ExecuteCommand(command);
         }
     }
 }

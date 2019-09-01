@@ -3,11 +3,13 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using IO.Ably;
+using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
 {
-    public class RealtimeChannels : IChannels<IRealtimeChannel>
+    public class RealtimeChannels : IChannels<IRealtimeChannel>, IProtocolMessageHandler
     {
         internal ILogger Logger { get; private set; }
 
@@ -25,6 +27,8 @@ namespace IO.Ably.Realtime
         {
             return Get(name, null);
         }
+
+
 
         public IRealtimeChannel Get(string name, ChannelOptions options)
         {
@@ -113,6 +117,11 @@ namespace IO.Ably.Realtime
         IEnumerator IEnumerable.GetEnumerator()
         {
             return Channels.ToArray().Select(x => x.Value).GetEnumerator();
+        }
+
+        public ValueTask<bool> OnMessageReceived(ProtocolMessage message)
+        {
+            return new ValueTask<bool>(true);
         }
     }
 }

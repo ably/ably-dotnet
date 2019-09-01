@@ -25,7 +25,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void Close()
         {
-            Context.SetState(new ConnectionClosingState(Context, Logger));
+            Context.ExecuteCommand(SetClosingStateCommand.Create());
         }
 
         public override async Task<bool> OnMessageReceived(ProtocolMessage message)
@@ -33,34 +33,48 @@ namespace IO.Ably.Transport.States.Connection
             switch (message.Action)
             {
                 case ProtocolMessage.MessageAction.Auth:
-                    TaskUtils.RunInBackground(async () => await Context.RetryAuthentication(updateState: false), e => Logger.Warning(e.Message));
+                    Context.ExecuteCommand(RetryAuthCommand.Create(false));
+                    //TaskUtils.RunInBackground(Context.RetryAuthentication(updateState: false), e => Logger.Warning(e.Message));
                     return true;
                 case ProtocolMessage.MessageAction.Connected:
-                    await Context.SetState(new ConnectionConnectedState(Context, new ConnectionInfo(message), message.Error, Logger) { IsUpdate = true });
+                    Context.ExecuteCommand(SetConnectedStateCommand.Create(message, isUpdate: true));
+                    //await Context.SetState(new ConnectionConnectedState(Context, new ConnectionInfo(message), message.Error, Logger) { IsUpdate = true });
                     return true;
                 case ProtocolMessage.MessageAction.Close:
-                    await Context.SetState(new ConnectionClosedState(Context, message.Error, Logger));
+                    Context.ExecuteCommand(new SetClosedStateCommand(message.Error));
+                    //await Context.SetState(new ConnectionClosedState(Context, message.Error, Logger));
                     return true;
                 case ProtocolMessage.MessageAction.Disconnected:
                     if (await Context.CanUseFallBackUrl(message.Error))
                     {
                         Context.Connection.Key = null;
-                        await Context.SetState(new ConnectionDisconnectedState(Context, message.Error, Logger) { RetryInstantly = true });
+                        Context.ExecuteCommand(SetDisconnectedStateCommand.Create(message.Error, retryInstantly: true));
+
+                        //Question: Should we fall through here or return
                     }
 
-                    if (await Context.RetryBecauseOfTokenError(message.Error))
+                    if (message.Error?.IsTokenError ?? false)
                     {
+                        if (Context.ShouldWeRenewToken(message.Error))
+                        {
+                            Context.ExecuteCommand(RetryAuthCommand.Create(message.Error, true));
+                        }
+                        else
+                        {
+                            Context.ExecuteCommand(SetFailedStateCommand.Create(message.Error));
+                        }
+
                         return true;
                     }
 
-                    await Context.SetState(new ConnectionDisconnectedState(Context, message.Error, Logger));
+                    Context.ExecuteCommand(SetDisconnectedStateCommand.Create(message.Error));
                     return true;
                 case ProtocolMessage.MessageAction.Error:
                     // an error message may signify an error state in the connection or in a channel
                     // Only handle connection errors here.
                     if (message.Channel.IsEmpty())
                     {
-                        await Context.SetState(new ConnectionFailedState(Context, message.Error, Logger));
+                        Context.ExecuteCommand(SetFailedStateCommand.Create(message.Error));
                     }
 
                     return true;
