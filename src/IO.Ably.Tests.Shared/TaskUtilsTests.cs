@@ -32,7 +32,7 @@ namespace IO.Ably.Tests
             result.Should().BeTrue();
         }
 
-        [Fact]
+        [Fact(Skip = "Маnual test only. Otherwise it crashes the test host process on the CI server")]
         public async Task FailingTaskWrappingAsyncWillNotHaveExceptionHandled()
         {
             /*
