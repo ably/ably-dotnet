@@ -33,6 +33,9 @@ namespace IO.Ably.MessageEncoders
             var cipher = Crypto.GetCipher(options.CipherParams);
             try
             {
+                if((payload.Data is byte[]) == false)
+                    return Result.Fail("Expected data to be byte[] but received " + payload.Data.GetType());
+
                 payload.Data = cipher.Decrypt(payload.Data as byte[]);
                 RemoveCurrentEncodingPart(payload);
                 return Result.Ok();
