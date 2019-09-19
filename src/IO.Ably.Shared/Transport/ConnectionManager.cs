@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using IO.Ably;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Microsoft.Win32;
@@ -518,8 +519,6 @@ namespace IO.Ably.Transport
         private async Task ProcessTransportMessage(ProtocolMessage message)
         {
             ExecuteCommand(ProcessMessageCommand.Create(message));
-
-
         }
 
         public void HandleNetworkStateChange(NetworkState state)

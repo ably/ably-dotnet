@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
@@ -8,13 +9,27 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Realtime.Workflow
 {
+    internal class RealtimeState
+    {
+        public List<PingRequest> PingRequests { get; set; } = new List<PingRequest>();
+        public List<string> ActiveTimers { get; set; } = new List<string>();
+    }
+
+
     internal class RealtimeWorkflow : IQueueCommand
     {
+        public static class Timers
+        {
+            public const string PingTimer = "PingTimer";
+        }
+
         public Connection Connection { get; }
         public RealtimeChannels Channels { get; }
 
         public ConnectionManager ConnectionManager => Connection.ConnectionManager;
         public ILogger Logger { get; }
+        public RealtimeState State { get; }
+        private Func<DateTimeOffset> Now => Connection.Now;
         internal IAcknowledgementProcessor AckHandler { get; set; }
         internal ConnectionHeartbeatHandler HeartbeatHandler { get; set; }
 
@@ -39,6 +54,9 @@ namespace IO.Ably.Realtime.Workflow
 
                 Channels.OnMessageReceived
             };
+
+            State = new RealtimeState();
+
         }
 
         public void Start()
@@ -79,11 +97,7 @@ namespace IO.Ably.Realtime.Workflow
         }
 
         private void DelayCommand(TimeSpan delay, RealtimeCommand cmd) =>
-            Task.Run(async () =>
-            {
-                await Task.Delay(delay);
-                QueueCommand(cmd);
-            });
+            Task.Delay(delay).ContinueWith(_ => QueueCommand(cmd));
 
         private async Task ProcessCommand(RealtimeCommand command)
         {
@@ -139,6 +153,12 @@ namespace IO.Ably.Realtime.Workflow
                 case ProcessMessageCommand cmd:
                     await ProcessMessage(cmd.ProtocolMessage);
                     break;
+                case PingCommand cmd:
+                    await HandlePingCommand(cmd);
+                    break;
+                case PingTimerCommand cmd:
+                    await ProcessPingTimer();
+                    break;
                 default:
                     throw new AblyException("No handler found for - " + command.Explain());
             }
@@ -172,5 +192,80 @@ namespace IO.Ably.Realtime.Workflow
                 }
             }
         }
+
+        private async Task ProcessPingTimer()
+        {
+            List<PingRequest> requestsToFail = new List<PingRequest>();
+            foreach (var pingRequest in State.PingRequests)
+            {
+                var elapsed = Now() - pingRequest.Created;
+                if (elapsed > ConnectionManager.DefaultTimeout)
+                {
+                    requestsToFail.Add(pingRequest);
+                }
+            }
+
+            foreach (var request in requestsToFail)
+            {
+                State.PingRequests.Remove(request);
+
+                request.Callback?.Invoke(null, PingRequest.TimeOutError);
+            }
+
+            if(State.PingRequests.Any())
+                StartSingleTimer();
+        }
+
+        private async Task HandlePingCommand(PingCommand cmd)
+        {
+            if (Connection.State != ConnectionState.Connected)
+            {
+                // We don't want to wait for the execution to finish
+                NotifyExternalClient(
+                    () =>
+                    {
+                        cmd.Request.Callback?.Invoke(null, PingRequest.DefaultError);
+                    },
+                    "Notifying Ping callback because connection state is not Connected");
+            }
+            else
+            {
+                State.PingRequests.Add(cmd.Request);
+                SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
+                StartSingleTimer(Timers.PingTimer, ConnectionManager.DefaultTimeout, PingTimerCommand.Create());
+            }
+        }
+
+        private void StartSingleTimer(string timerName, TimeSpan interval, RealtimeCommand timerCommand)
+        {
+            if (State.ActiveTimers.Contains(timerName))
+            {
+                return;
+            }
+
+            DelayCommand(interval, timerCommand);
+            State.ActiveTimers.Add(timerName);
+        }
+
+        private void SendMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback = null)
+        {
+            ConnectionManager.Send(message, callback);
+        }
+
+
+        private Task NotifyExternalClient(Action action, string reason)
+        {
+            try
+            {
+                return Task.Run(action);
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error while notifying extrenal client for " + reason, e);
+            }
+
+            return Task.CompletedTask;
+        }
+
     }
 }

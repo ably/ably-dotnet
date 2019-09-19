@@ -22,5 +22,7 @@ namespace IO.Ably.Realtime.Workflow
         }
 
         protected abstract string ExplainData();
+
+        public static RealtimeCommand Batch(params RealtimeCommand[] commands) => ListCommand.Create(commands);
     }
 }

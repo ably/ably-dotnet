@@ -8,6 +8,26 @@ namespace IO.Ably.Realtime.Workflow
     internal class PingCommand : RealtimeCommand
     {
         internal PingRequest Request { get; }
+
+        public PingCommand(PingRequest request)
+        {
+            Request = request;
+        }
+
+        protected override string ExplainData()
+        {
+            return "Ping request id: " + Request.Id;
+        }
+    }
+
+    internal class PingTimerCommand : RealtimeCommand
+    {
+        protected override string ExplainData()
+        {
+            return string.Empty;
+        }
+
+        public static PingTimerCommand Create() => new PingTimerCommand();
     }
 
 
