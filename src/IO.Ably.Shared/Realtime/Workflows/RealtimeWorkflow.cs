@@ -6,7 +6,7 @@ using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 
-namespace IO.Ably.Realtime.Workflows
+namespace IO.Ably.Realtime.Workflow
 {
     internal class RealtimeWorkflow : IQueueCommand
     {

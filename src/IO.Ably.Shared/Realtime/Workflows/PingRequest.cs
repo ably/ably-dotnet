@@ -1,6 +1,6 @@
 using System;
 
-namespace IO.Ably.Realtime.Workflows
+namespace IO.Ably.Realtime.Workflow
 {
     internal class PingRequest
     {

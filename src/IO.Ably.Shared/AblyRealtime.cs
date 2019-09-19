@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
-using IO.Ably.Realtime.Workflows;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
 
 namespace IO.Ably

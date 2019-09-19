@@ -1,4 +1,4 @@
-namespace IO.Ably.Realtime.Workflows
+namespace IO.Ably.Realtime.Workflow
 {
     internal interface IQueueCommand
     {

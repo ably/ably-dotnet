@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using IO.Ably.Types;
 
-namespace IO.Ably.Realtime.Workflows
+namespace IO.Ably.Realtime.Workflow
 {
     public interface IProtocolMessageHandler
     {
