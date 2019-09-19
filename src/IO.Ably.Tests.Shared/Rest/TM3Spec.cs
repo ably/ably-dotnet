@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -76,8 +75,6 @@ namespace IO.Ably.Tests.Rest
             fromEncoded.Encoding.Should().BeNullOrEmpty();
         }
 
-
-
         [Fact]
         [Trait("spec", "TM3")]
         public void Message_FromEncoded_WithInvalidCipherEncoding()
@@ -112,7 +109,6 @@ namespace IO.Ably.Tests.Rest
             fromEncoded[1].Data.Should().Be("some-data2");
             fromEncoded[1].Encoding.Should().BeNullOrEmpty();
         }
-
 
         public class WithJsonString
         {
@@ -153,6 +149,7 @@ namespace IO.Ably.Tests.Rest
                 fromEncoded.Data.ShouldBeEquivalentTo(payload);
                 fromEncoded.Encoding.Should().BeNullOrEmpty();
             }
+
             [Fact]
             [Trait("spec", "TM3")]
             public void Message_FromEncodedArray_WithJsonArray()
@@ -178,6 +175,5 @@ namespace IO.Ably.Tests.Rest
                 fromEncoded[1].Encoding.Should().BeNullOrEmpty();
             }
         }
-
     }
 }

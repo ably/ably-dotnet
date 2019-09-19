@@ -115,7 +115,6 @@ namespace IO.Ably
             }
         }
 
-
         public static Message FromEncoded(Message encoded, ChannelOptions options = null)
         {
             return MessageHandler.FromEncoded(encoded, options);
@@ -146,7 +145,6 @@ namespace IO.Ably
             {
                 var messages = JsonHelper.Deserialize<List<Message>>(messagesJson).ToArray();
                 return FromEncodedArray(messages, options);
-
             }
             catch (Exception e)
             {

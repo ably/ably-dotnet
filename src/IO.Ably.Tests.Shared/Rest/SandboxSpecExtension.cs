@@ -57,6 +57,5 @@ namespace IO.Ably.Tests
 
             return true;
         }
-
     }
 }

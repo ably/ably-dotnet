@@ -89,7 +89,6 @@ namespace IO.Ably.Tests
             await TestHelpers.WaitFor(10000, taskCount, done);
         }
 
-
         public class OutputLoggerSink : ILoggerSink
         {
             private readonly ITestOutputHelper _output;
