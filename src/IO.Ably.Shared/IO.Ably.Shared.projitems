@@ -22,6 +22,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.GetParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.QueuedPresenceMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\PresenceMap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\IProtocolMessageHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\IQueueCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\PingRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\RealtimeWorkflow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\IConnectionContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\AuthDetails.cs" />
