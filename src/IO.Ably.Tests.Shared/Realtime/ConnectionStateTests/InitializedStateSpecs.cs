@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
@@ -48,7 +49,7 @@ namespace IO.Ably.Tests
         public async Task ShouldNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(action));
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(action), new RealtimeState());
 
             // Assert
             Assert.False(result);

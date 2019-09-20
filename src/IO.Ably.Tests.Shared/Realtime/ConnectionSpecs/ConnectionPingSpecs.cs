@@ -1,7 +1,9 @@
 using System;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -51,14 +53,14 @@ namespace IO.Ably.Tests.Realtime
             var result = await client.Connection.PingAsync();
 
             result.IsSuccess.Should().BeFalse();
-            result.Error.Should().Be(ConnectionHeartbeatHandler.DefaultError);
+            result.Error.Should().Be(PingRequest.DefaultError);
 
             await client.ConnectionManager.SetState(new ConnectionFailedState(client.ConnectionManager, new ErrorInfo(), Logger));
 
             var resultFailed = await client.Connection.PingAsync();
 
             resultFailed.IsSuccess.Should().BeFalse();
-            resultFailed.Error.Should().Be(ConnectionHeartbeatHandler.DefaultError);
+            resultFailed.Error.Should().Be(PingRequest.DefaultError);
         }
 
         [Fact]

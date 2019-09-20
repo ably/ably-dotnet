@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -23,10 +25,10 @@ namespace IO.Ably.Tests
             _queuedMessages.Enqueue(new MessageAndCallback(message, callback));
         }
 
-        public bool OnMessageReceived(ProtocolMessage message)
+        public ValueTask<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
         {
             OnMessageReceivedCalled = true;
-            return true;
+            return new ValueTask<bool>(true);
         }
 
         public IEnumerable<ProtocolMessage> GetQueuedMessages()

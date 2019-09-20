@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -15,6 +16,7 @@ namespace IO.Ably.Tests
         private ConnectionInfo _connectionInfo;
         private ConnectionDisconnectedState _state;
         private FakeTimer _timer;
+        private RealtimeState EmptyState = new RealtimeState();
 
         public DisconectedStateSpecs(ITestOutputHelper output)
             : base(output)
@@ -60,7 +62,7 @@ namespace IO.Ably.Tests
             var state = GetState(ErrorInfo.ReasonClosed);
 
             // Act
-            bool handled = await state.OnMessageReceived(new ProtocolMessage(action));
+            bool handled = await state.OnMessageReceived(new ProtocolMessage(action), EmptyState);
 
             // Assert
             handled.Should().BeFalse();

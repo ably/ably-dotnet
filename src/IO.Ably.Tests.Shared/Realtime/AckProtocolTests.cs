@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 using Xunit;
@@ -74,10 +76,10 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [InlineData(ProtocolMessage.MessageAction.Ack)]
         [InlineData(ProtocolMessage.MessageAction.Nack)]
-        public void WhenReceivingAckOrNackMessage_ShouldHandleAction(ProtocolMessage.MessageAction action)
+        public async Task WhenReceivingAckOrNackMessage_ShouldHandleAction(ProtocolMessage.MessageAction action)
         {
             // Act
-            bool result = GetAckProcessor().OnMessageReceived(new ProtocolMessage(action));
+            bool result = await GetAckProcessor().OnMessageReceived(new ProtocolMessage(action), new RealtimeState());
 
             // Assert
             Assert.True(result);
@@ -99,17 +101,17 @@ namespace IO.Ably.Tests.Realtime
         [InlineData(ProtocolMessage.MessageAction.Message)]
         [InlineData(ProtocolMessage.MessageAction.Presence)]
         [InlineData(ProtocolMessage.MessageAction.Sync)]
-        public void WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(ProtocolMessage.MessageAction action)
+        public async Task WhenReceivingNonAckOrNackMessage_ShouldNotHandleAction(ProtocolMessage.MessageAction action)
         {
             // Act
-            bool result = GetAckProcessor().OnMessageReceived(new ProtocolMessage(action));
+            bool result = await GetAckProcessor().OnMessageReceived(new ProtocolMessage(action), new RealtimeState());
 
             // Assert
             Assert.False(result);
         }
 
         [Fact]
-        public void OnAckReceivedForAMessage_AckCallbackCalled()
+        public async Task OnAckReceivedForAMessage_AckCallbackCalled()
         {
             // Arrange
             var ackProcessor = GetAckProcessor();
@@ -122,9 +124,9 @@ namespace IO.Ably.Tests.Realtime
 
             // Act
             ackProcessor.QueueIfNecessary(message, callback);
-            ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = 0, Count = 1 });
+            await ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = 0, Count = 1 }, new RealtimeState());
             ackProcessor.QueueIfNecessary(message, callback);
-            ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = 1, Count = 1 });
+            await ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = 1, Count = 1 }, new RealtimeState());
 
             // Assert
             Assert.Equal(2, callbacks.Count);
@@ -133,7 +135,7 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Fact]
-        public void WhenSendingMessage_AckCallbackCalled_ForMultipleMessages()
+        public async Task WhenSendingMessage_AckCallbackCalled_ForMultipleMessages()
         {
             // Arrange
             var ackProcessor = GetAckProcessor();
@@ -144,7 +146,7 @@ namespace IO.Ably.Tests.Realtime
             target.QueueIfNecessary(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 0) { callbacks.Add(Tuple.Create(ack, err)); } });
             target.QueueIfNecessary(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 1) { callbacks.Add(Tuple.Create(ack, err)); } });
             target.QueueIfNecessary(new ProtocolMessage(ProtocolMessage.MessageAction.Message, "Test"), (ack, err) => { if (callbacks.Count == 2) { callbacks.Add(Tuple.Create(ack, err)); } });
-            target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = 0, Count = 3 });
+            await target.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = 0, Count = 3 }, new RealtimeState());
 
             // Assert
             Assert.Equal(3, callbacks.Count);
@@ -153,7 +155,7 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Fact]
-        public void WithNackMessageReceived_CallbackIsCalledWithError()
+        public async Task WithNackMessageReceived_CallbackIsCalledWithError()
         {
             // Arrange
             var ackProcessor = GetAckProcessor();
@@ -163,9 +165,9 @@ namespace IO.Ably.Tests.Realtime
 
             // Act
             ackProcessor.QueueIfNecessary(message, callback);
-            ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 0, Count = 1 });
+            await ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 0, Count = 1 }, new RealtimeState());
             ackProcessor.QueueIfNecessary(message, callback);
-            ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 1, Count = 1 });
+            await ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 1, Count = 1 }, new RealtimeState());
 
             // Assert
             Assert.Equal(2, callbacks.Count);
@@ -174,7 +176,7 @@ namespace IO.Ably.Tests.Realtime
         }
 
         [Fact]
-        public void WhenNackReceivedForMultipleMessage_AllCallbacksAreCalledAndErrorMessagePassed()
+        public async Task WhenNackReceivedForMultipleMessage_AllCallbacksAreCalledAndErrorMessagePassed()
         {
             // Arrange
             var ackProcessor = GetAckProcessor();
@@ -187,7 +189,7 @@ namespace IO.Ably.Tests.Realtime
             ackProcessor.QueueIfNecessary(message, callback);
             ackProcessor.QueueIfNecessary(message, callback);
             ackProcessor.QueueIfNecessary(message, callback);
-            ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 0, Count = 3, Error = error });
+            await ackProcessor.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 0, Count = 3, Error = error }, new RealtimeState());
 
             // Assert
             Assert.Equal(3, callbacks.Count);

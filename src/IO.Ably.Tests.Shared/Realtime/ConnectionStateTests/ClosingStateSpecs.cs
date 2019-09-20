@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -11,6 +12,8 @@ namespace IO.Ably.Tests
 {
     public class ClosingStateSpecs : AblySpecs
     {
+        private RealtimeState EmptyState = new RealtimeState();
+
         [Fact]
         public void ShouldHaveClosingState()
         {
@@ -42,7 +45,7 @@ namespace IO.Ably.Tests
         public async Task ShouldNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(action));
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(action), EmptyState);
 
             // Assert
             result.Should().BeFalse();
@@ -52,7 +55,7 @@ namespace IO.Ably.Tests
         public async Task ShouldHandleInboundClosedMessageAndMoveToClosed()
         {
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed), EmptyState);
 
             // Assert
             result.Should().BeTrue();
@@ -65,7 +68,7 @@ namespace IO.Ably.Tests
             ErrorInfo targetError = new ErrorInfo("test", 123);
 
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError });
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError }, EmptyState);
 
             // Assert
             result.Should().BeTrue();
@@ -77,7 +80,7 @@ namespace IO.Ably.Tests
         public async Task ShouldHandleInboundDisconnectedMessageAndGoToDisconnectedState()
         {
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected), EmptyState);
 
             // Assert
             Assert.True(result);
@@ -140,7 +143,7 @@ namespace IO.Ably.Tests
 
             // Act
             await _state.OnAttachToContext();
-            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
+            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed), EmptyState);
 
             // Assert
             _timer.StartedWithAction.Should().BeTrue();
@@ -156,7 +159,7 @@ namespace IO.Ably.Tests
 
             // Act
             await _state.OnAttachToContext();
-            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
+            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error), EmptyState);
 
             // Assert
             _timer.StartedWithAction.Should().BeTrue();
