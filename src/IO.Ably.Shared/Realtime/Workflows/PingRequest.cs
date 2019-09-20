@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 
 namespace IO.Ably.Realtime.Workflow
 {
@@ -8,7 +9,7 @@ namespace IO.Ably.Realtime.Workflow
 
         public static readonly ErrorInfo TimeOutError = new ErrorInfo("Unable to ping service; Request timed out", 40800, HttpStatusCode.RequestTimeout);
 
-        public Guid Id { get; set; }
+        public string Id { get; }
 
         public Action<TimeSpan?, ErrorInfo> Callback { get; }
 
@@ -16,6 +17,7 @@ namespace IO.Ably.Realtime.Workflow
 
         public PingRequest(Action<TimeSpan?, ErrorInfo> callback, Func<DateTimeOffset> now)
         {
+            Id = "ping-" + Guid.NewGuid().ToString("D");
             Callback = callback;
             Created = now();
         }

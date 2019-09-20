@@ -3,6 +3,7 @@
 using IO.Ably;
 using IO.Ably.CustomSerialisers;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
@@ -28,7 +29,7 @@ namespace IO.Ably.Transport.States.Connection
             Context.ExecuteCommand(SetClosingStateCommand.Create());
         }
 
-        public override async Task<bool> OnMessageReceived(ProtocolMessage message)
+        public override async ValueTask<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
         {
             switch (message.Action)
             {

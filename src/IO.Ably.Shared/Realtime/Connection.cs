@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -231,7 +232,7 @@ namespace IO.Ably.Realtime
 
         /// <summary>
         /// </summary>
-        internal event EventHandler<ConnectionStateChange> InternalStateChanged = delegate { };
+        internal event EventHandler<ConnectionStateChange> InternalStateChanged = delegate { }; // TODO: try and remove the distinction
 
         public event EventHandler<ConnectionStateChange> ConnectionStateChanged = delegate { };
 
@@ -253,8 +254,13 @@ namespace IO.Ably.Realtime
 
         public void Ping(Action<TimeSpan?, ErrorInfo> callback)
         {
-            
-            ConnectionHeartbeatHandler.Execute(ConnectionManager, Now, callback);
+            ExecuteCommand(new PingCommand(new PingRequest(callback, Now)));
+        }
+
+        private void ExecuteCommand(RealtimeCommand cmd)
+        {
+            // Find a better way to reference the workflow
+            RealtimeClient.Workflow.QueueCommand(cmd);
         }
 
         /// <summary>

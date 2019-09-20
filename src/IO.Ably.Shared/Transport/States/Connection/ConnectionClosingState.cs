@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using IO.Ably;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
@@ -32,7 +33,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override ConnectionState State => Realtime.ConnectionState.Closing;
 
-        public override async Task<bool> OnMessageReceived(ProtocolMessage message)
+        public override async ValueTask<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
         {
             switch (message.Action)
             {

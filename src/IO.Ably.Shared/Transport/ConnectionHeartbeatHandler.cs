@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 
@@ -11,24 +13,15 @@ namespace IO.Ably.Transport
 {
     internal class ConnectionHeartbeatHandler : IProtocolMessageHandler
     {
+        private readonly ConnectionManager _manager;
+        private readonly ILogger _logger;
 
-        private Action<TimeSpan?, ErrorInfo> _callback;
-        private ConnectionManager _manager;
-        private ICountdownTimer _timer;
-        private bool _finished;
-        private object _syncLock = new object();
-        private DateTimeOffset _start = DateTimeOffset.MinValue;
+        private DateTimeOffset Now => _manager.Now();
 
-        internal Func<DateTimeOffset> Now { get; set; }
-
-        internal ILogger Logger { get; private set; }
-
-        public ConnectionHeartbeatHandler(ConnectionManager manager, ICountdownTimer timer, Func<DateTimeOffset> nowFunc)
+        public ConnectionHeartbeatHandler(ConnectionManager manager, ILogger logger)
         {
-            Logger = manager.Logger;
             _manager = manager;
-            _timer = timer;
-            Now = nowFunc;
+            _logger = logger;
         }
 
         public static bool CanHandleMessage(ProtocolMessage message)
@@ -36,84 +29,38 @@ namespace IO.Ably.Transport
             return message.Action == ProtocolMessage.MessageAction.Heartbeat;
         }
 
-        public static ConnectionHeartbeatHandler Execute(ConnectionManager manager, Func<DateTimeOffset> nowProvider, Action<TimeSpan?, ErrorInfo> callback)
-        {
-            return Execute(manager, new CountdownTimer("Connection heartbeat timer", manager.Logger), nowProvider, callback);
-        }
-
-        public static ConnectionHeartbeatHandler Execute(ConnectionManager manager, ICountdownTimer timer, Func<DateTimeOffset> nowProvider, Action<TimeSpan?, ErrorInfo> callback)
-        {
-            var request = new ConnectionHeartbeatHandler(manager, timer, nowProvider);
-            return request.Send(callback);
-        }
-
-        private ConnectionHeartbeatHandler Send(Action<TimeSpan?, ErrorInfo> callback)
-        {
-            _start = Now();
-
-            if (_manager.Connection.State != ConnectionState.Connected)
-            {
-                callback?.Invoke(default(TimeSpan), DefaultError);
-
-                return this;
-            }
-
-            if (callback != null)
-            {
-                _callback = callback;
-                _manager.Connection.InternalStateChanged += OnInternalStateChanged;
-
-                _timer.Start(_manager.DefaultTimeout, () => FinishRequest(null, TimeOutError));
-            }
-
-            return this;
-        }
-
-        public ValueTask<bool> OnMessageReceived(ProtocolMessage message)
+        public ValueTask<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
         {
             var canHandle = CanHandleMessage(message);
-            if (canHandle)
+            if (canHandle && message.Id.IsNotEmpty())
             {
-                FinishRequest(GetElapsedTime(), null);
+                var pingRequest = state.PingRequests.FirstOrDefault(x => x.Id.EqualsTo(message.Id));
+
+                if (pingRequest != null)
+                {
+                    state.PingRequests.Remove(pingRequest);
+                    TryCallback(pingRequest.Callback, GetElapsedTime(pingRequest), null);
+                }
             }
 
             return new ValueTask<bool>(canHandle);
         }
 
-        private TimeSpan? GetElapsedTime()
+        private void TryCallback(Action<TimeSpan?, ErrorInfo> action, TimeSpan? elapsed, ErrorInfo error)
         {
-            return Now() - _start;
-        }
-
-        private void OnInternalStateChanged(object sender, ConnectionStateChange e)
-        {
-            if (e.Current != ConnectionState.Connected)
+            try
             {
-                FinishRequest(default(TimeSpan), DefaultError);
+                action.Invoke(elapsed, error);
+            }
+            catch (Exception e)
+            {
+                _logger.Error("Error executing callback for Ping request", e);
             }
         }
 
-        private void FinishRequest(TimeSpan? result, ErrorInfo error)
+        private TimeSpan? GetElapsedTime(PingRequest pingRequest)
         {
-            if (_finished == false)
-            {
-                lock (_syncLock)
-                {
-                    if (_finished == false)
-                    {
-                        _finished = true;
-
-                        _manager.Connection.InternalStateChanged -= OnInternalStateChanged;
-                        _timer.Abort();
-
-                        _callback?.Invoke(result, error);
-
-                        _callback = null;
-                        _manager = null;
-                        _timer = null;
-                    }
-                }
-            }
+            return Now - pingRequest.Created;
         }
     }
 }

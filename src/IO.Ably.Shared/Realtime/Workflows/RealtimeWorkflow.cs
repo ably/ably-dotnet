@@ -12,7 +12,6 @@ namespace IO.Ably.Realtime.Workflow
     internal class RealtimeState
     {
         public List<PingRequest> PingRequests { get; set; } = new List<PingRequest>();
-        public List<string> ActiveTimers { get; set; } = new List<string>();
     }
 
 
@@ -28,12 +27,15 @@ namespace IO.Ably.Realtime.Workflow
 
         public ConnectionManager ConnectionManager => Connection.ConnectionManager;
         public ILogger Logger { get; }
-        public RealtimeState State { get; }
+
+        private RealtimeState State { get; }
         private Func<DateTimeOffset> Now => Connection.Now;
+
         internal IAcknowledgementProcessor AckHandler { get; set; }
+
         internal ConnectionHeartbeatHandler HeartbeatHandler { get; set; }
 
-        internal List<Func<ProtocolMessage, ValueTask<bool>>> MessageHandlers;
+        internal List<Func<ProtocolMessage, RealtimeState, ValueTask<bool>>> MessageHandlers;
 
         internal readonly Channel<RealtimeCommand> RealtimeMessageLoop = Channel.CreateUnbounded<RealtimeCommand>(new UnboundedChannelOptions()
         {
@@ -47,12 +49,13 @@ namespace IO.Ably.Realtime.Workflow
             Channels = channels;
             Logger = logger;
             AckHandler = new AcknowledgementProcessor(Connection);
-            MessageHandlers = new List<Func<ProtocolMessage, ValueTask<bool>>>
+            HeartbeatHandler = new ConnectionHeartbeatHandler(Connection.ConnectionManager, logger);
+            MessageHandlers = new List<Func<ProtocolMessage, RealtimeState, ValueTask<bool>>>
             {
                 ConnectionManager.State.OnMessageReceived,
+                HeartbeatHandler.OnMessageReceived,
                 AckHandler.OnMessageReceived,
-
-                Channels.OnMessageReceived
+                ((IProtocolMessageHandler)Channels).OnMessageReceived,
             };
 
             State = new RealtimeState();
@@ -157,7 +160,7 @@ namespace IO.Ably.Realtime.Workflow
                     await HandlePingCommand(cmd);
                     break;
                 case PingTimerCommand cmd:
-                    await ProcessPingTimer();
+                    HandlePingTimer(cmd);
                     break;
                 default:
                     throw new AblyException("No handler found for - " + command.Explain());
@@ -176,7 +179,7 @@ namespace IO.Ably.Realtime.Workflow
 
                     foreach (var handler in MessageHandlers)
                     {
-                        var handled = await handler(message);
+                        var handled = await handler(message, State);
                         if (handled)
                         {
                             break;
@@ -193,27 +196,19 @@ namespace IO.Ably.Realtime.Workflow
             }
         }
 
-        private async Task ProcessPingTimer()
+        private void HandlePingTimer(PingTimerCommand cmd)
         {
-            List<PingRequest> requestsToFail = new List<PingRequest>();
-            foreach (var pingRequest in State.PingRequests)
+
+            var relevantRequest = State.PingRequests.FirstOrDefault(x => x.Id.EqualsTo(cmd.PingRequestId));
+
+            if (relevantRequest != null)
             {
-                var elapsed = Now() - pingRequest.Created;
-                if (elapsed > ConnectionManager.DefaultTimeout)
-                {
-                    requestsToFail.Add(pingRequest);
-                }
+                // fail the request if it still exists. If it was already handled it will not be there
+
+                relevantRequest.Callback?.Invoke(null, PingRequest.TimeOutError);
+
+                State.PingRequests.Remove(relevantRequest);
             }
-
-            foreach (var request in requestsToFail)
-            {
-                State.PingRequests.Remove(request);
-
-                request.Callback?.Invoke(null, PingRequest.TimeOutError);
-            }
-
-            if(State.PingRequests.Any())
-                StartSingleTimer();
         }
 
         private async Task HandlePingCommand(PingCommand cmd)
@@ -230,21 +225,17 @@ namespace IO.Ably.Realtime.Workflow
             }
             else
             {
-                State.PingRequests.Add(cmd.Request);
                 SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
-                StartSingleTimer(Timers.PingTimer, ConnectionManager.DefaultTimeout, PingTimerCommand.Create());
-            }
-        }
+                // Only trigger the timer if there is a call back
+                // Question: Do we trigger the error if there is no callback but then we can just emmit it
 
-        private void StartSingleTimer(string timerName, TimeSpan interval, RealtimeCommand timerCommand)
-        {
-            if (State.ActiveTimers.Contains(timerName))
-            {
-                return;
-            }
 
-            DelayCommand(interval, timerCommand);
-            State.ActiveTimers.Add(timerName);
+                if (cmd.Request.Callback != null)
+                {
+                    State.PingRequests.Add(cmd.Request);
+                    DelayCommand(ConnectionManager.DefaultTimeout, PingTimerCommand.Create(cmd.Request.Id));
+                }
+            }
         }
 
         private void SendMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback = null)
@@ -261,7 +252,7 @@ namespace IO.Ably.Realtime.Workflow
             }
             catch (Exception e)
             {
-                Logger.Error("Error while notifying extrenal client for " + reason, e);
+                Logger.Error("Error while notifying external client for " + reason, e);
             }
 
             return Task.CompletedTask;

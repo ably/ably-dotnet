@@ -3,8 +3,8 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Realtime.Workflow
 {
-    public interface IProtocolMessageHandler
+    internal interface IProtocolMessageHandler
     {
-        ValueTask<bool> OnMessageReceived(ProtocolMessage message);
+        ValueTask<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state);
     }
 }

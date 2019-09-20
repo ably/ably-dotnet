@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using IO.Ably;
+using IO.Ably.Realtime.Workflow;
 
 namespace IO.Ably.Transport.States.Connection
 {

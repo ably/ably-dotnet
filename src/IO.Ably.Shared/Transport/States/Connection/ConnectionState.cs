@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using IO.Ably;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
@@ -45,7 +46,7 @@ namespace IO.Ably.Transport.States.Connection
         {
         }
 
-        public virtual ValueTask<bool> OnMessageReceived(ProtocolMessage message)
+        public virtual ValueTask<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
         {
             return new ValueTask<bool>(false);
         }

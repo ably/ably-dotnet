@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport
 {
-    using IO.Ably.Transport.States.Connection;
-
     internal interface IConnectionContext
     {
         TimeSpan DefaultTimeout { get; }

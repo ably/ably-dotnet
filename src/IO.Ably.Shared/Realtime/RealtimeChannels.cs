@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IO.Ably;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
@@ -119,7 +120,7 @@ namespace IO.Ably.Realtime
             return Channels.ToArray().Select(x => x.Value).GetEnumerator();
         }
 
-        public ValueTask<bool> OnMessageReceived(ProtocolMessage message)
+        ValueTask<bool> IProtocolMessageHandler.OnMessageReceived(ProtocolMessage message, RealtimeState state)
         {
             return new ValueTask<bool>(true);
         }

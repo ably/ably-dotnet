@@ -485,7 +485,7 @@ namespace IO.Ably.Transport
 
         public void ExecuteCommand(RealtimeCommand cmd)
         {
-            Connection.RealtimeClient.QueueCommand(cmd);
+            Connection.RealtimeClient.Workflow.QueueCommand(cmd);
         }
 
         internal async Task<TransportParams> CreateTransportParameters()

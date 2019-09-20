@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport
@@ -11,7 +12,7 @@ namespace IO.Ably.Transport
     {
         void QueueIfNecessary(ProtocolMessage message, Action<bool, ErrorInfo> callback);
 
-        ValueTask<bool> OnMessageReceived(ProtocolMessage message);
+        ValueTask<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state);
 
         IEnumerable<ProtocolMessage> GetQueuedMessages();
 
@@ -61,7 +62,7 @@ namespace IO.Ably.Transport
             }
         }
 
-        public ValueTask<bool> OnMessageReceived(ProtocolMessage message)
+        public ValueTask<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
         {
             if (message.Action == ProtocolMessage.MessageAction.Ack ||
                 message.Action == ProtocolMessage.MessageAction.Nack)

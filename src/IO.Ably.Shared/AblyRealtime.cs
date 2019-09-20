@@ -48,9 +48,6 @@ namespace IO.Ably
         }
 
 
-
-
-
         private void CaptureSynchronizationContext(ClientOptions options)
         {
             if (options.CustomContext != null)

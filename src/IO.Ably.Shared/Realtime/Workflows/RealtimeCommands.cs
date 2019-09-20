@@ -22,12 +22,19 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class PingTimerCommand : RealtimeCommand
     {
+        public string PingRequestId { get; }
+
         protected override string ExplainData()
         {
-            return string.Empty;
+            return "PingRequest id: " + PingRequestId;
         }
 
-        public static PingTimerCommand Create() => new PingTimerCommand();
+        public PingTimerCommand(string pingRequestId)
+        {
+            PingRequestId = pingRequestId;
+        }
+
+        public static PingTimerCommand Create(string pingRequestId) => new PingTimerCommand(pingRequestId);
     }
 
 
