@@ -99,8 +99,6 @@ namespace IO.Ably.Realtime
 
         internal List<string> FallbackHosts;
 
-        internal ChannelMessageProcessor ChannelMessageProcessor { get; set; }
-
         private string _host;
 
         internal Func<DateTimeOffset> Now { get; set; }
@@ -144,7 +142,6 @@ namespace IO.Ably.Realtime
         internal void Initialise()
         {
             ConnectionManager = new ConnectionManager(this, Now, Logger);
-            ChannelMessageProcessor = new ChannelMessageProcessor(ConnectionManager, RealtimeClient.Channels);
             ConnectionState = new ConnectionInitializedState(ConnectionManager, Logger);
         }
 

@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
@@ -10,9 +11,9 @@ namespace IO.Ably.Tests.Realtime
     {
         [Fact]
         [Trait("spec", "RTN2")]
-        public void ShouldUseDefaultRealtimeHost()
+        public async Task ShouldUseDefaultRealtimeHost()
         {
-            var client = GetClientWithFakeTransport();
+            var client = await GetConnectedClient();
             LastCreatedTransport.Parameters.Host.Should().Be(Defaults.RealtimeHost);
         }
 
@@ -38,9 +39,9 @@ namespace IO.Ably.Tests.Realtime
         [InlineData(true)]
         [InlineData(false)]
         [Trait("spec", "RTN2b")]
-        public void WithEchoInClientOptions_ShouldSetTransportEchoCorrectly(bool echo)
+        public async Task WithEchoInClientOptions_ShouldSetTransportEchoCorrectly(bool echo)
         {
-            var client = GetClientWithFakeTransport(opts => opts.EchoMessages = echo);
+            var client = await GetConnectedClient(opts => opts.EchoMessages = echo);
 
             LastCreatedTransport.Parameters.EchoMessages.Should().Be(echo);
             LastCreatedTransport.Parameters.GetParams()
@@ -50,10 +51,10 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTN2d")]
-        public void WithClientId_ShouldSetTransportClientIdCorrectly()
+        public async Task WithClientId_ShouldSetTransportClientIdCorrectly()
         {
             var clientId = "12345";
-            var client = GetClientWithFakeTransport(opts =>
+            var client = await GetConnectedClient(opts =>
             {
                 opts.ClientId = clientId;
                 opts.Token = "123";
@@ -67,9 +68,9 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTN2d")]
-        public void WithoutClientId_ShouldNotSetClientIdParameterOnTransport()
+        public async Task WithoutClientId_ShouldNotSetClientIdParameterOnTransport()
         {
-            var client = GetClientWithFakeTransport();
+            var client = await GetConnectedClient();
 
             LastCreatedTransport.Parameters.ClientId.Should().BeNullOrEmpty();
             LastCreatedTransport.Parameters.GetParams().Should().NotContainKey("clientId");
@@ -77,9 +78,9 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTN2e")]
-        public void WithBasicAuth_ShouldSetTransportKeyParameter()
+        public async Task WithBasicAuth_ShouldSetTransportKeyParameter()
         {
-            var client = GetClientWithFakeTransport();
+            var client = await GetConnectedClient();
             LastCreatedTransport.Parameters.AuthValue.Should().Be(client.Options.Key);
             LastCreatedTransport.Parameters.GetParams().Should().ContainKey("key").WhichValue.Should().Be(client.Options.Key);
         }
@@ -87,11 +88,11 @@ namespace IO.Ably.Tests.Realtime
         [Fact]
         [Trait("spec", "RTN2e")]
         [Trait("spec", "RSA3c")]
-        public void WithTokenAuth_ShouldSetTransportAccessTokeParameter()
+        public async Task WithTokenAuth_ShouldSetTransportAccessTokeParameter()
         {
             var clientId = "123";
             var tokenString = "token";
-            var client = GetClientWithFakeTransport(opts =>
+            var client = await GetConnectedClient(opts =>
             {
                 opts.Key = string.Empty;
                 opts.ClientId = clientId;
@@ -106,9 +107,9 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTN2f")]
-        public void ShouldSetTransportVersionParameterTov11()
+        public async Task ShouldSetTransportVersionParameterTov11()
         {
-            var client = GetClientWithFakeTransport();
+            var client = await GetConnectedClient();
 
             LastCreatedTransport.Parameters.GetParams()
                 .Should().ContainKey("v")
@@ -117,7 +118,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTN2g")]
-        public void ShouldSetTransportLibVersionParamater()
+        public async Task ShouldSetTransportLibVersionParamater()
         {
             string pattern = @"^dotnet(.?\w*)-1.1.(\d+)$";
 
@@ -128,7 +129,7 @@ namespace IO.Ably.Tests.Realtime
             Regex.Match("xdotnet-1.1.321", pattern).Success.Should().BeFalse();
             Regex.Match("csharp.netstandard20-1.1.0", pattern).Success.Should().BeFalse();
 
-            var client = GetClientWithFakeTransport();
+            var client = await GetConnectedClient();
             LastCreatedTransport.Parameters.GetParams().Should().ContainKey("lib");
             var transportParams = LastCreatedTransport.Parameters.GetParams();
 

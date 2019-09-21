@@ -10,7 +10,7 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
 {
-    public class RealtimeChannels : IChannels<IRealtimeChannel>, IProtocolMessageHandler
+    public class RealtimeChannels : IChannels<IRealtimeChannel>
     {
         internal ILogger Logger { get; private set; }
 
@@ -118,11 +118,6 @@ namespace IO.Ably.Realtime
         IEnumerator IEnumerable.GetEnumerator()
         {
             return Channels.ToArray().Select(x => x.Value).GetEnumerator();
-        }
-
-        ValueTask<bool> IProtocolMessageHandler.OnMessageReceived(ProtocolMessage message, RealtimeState state)
-        {
-            return new ValueTask<bool>(true);
         }
     }
 }

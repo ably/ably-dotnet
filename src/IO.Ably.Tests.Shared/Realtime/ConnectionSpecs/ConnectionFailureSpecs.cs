@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
@@ -17,14 +18,14 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         private TokenDetails _returnedDummyTokenDetails = new TokenDetails("123") { Expires = TestHelpers.Now().AddDays(1), ClientId = "123" };
         private int _tokenErrorCode = 40140;
 
+        //TODO: Review Test logic
         [Fact]
         [Trait("spec", "RTN14b")]
         public async Task WithTokenErrorAndRenewableToken_ShouldRenewTokenAutomaticallyWithoutEmittingError()
         {
-            // Now = DateTimeOffset.Now;
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
             bool renewTokenCalled = false;
-            var client = GetClientWithFakeTransport(
+            var client = await GetConnectedClient(
                 opts =>
             {
                 opts.TokenDetails = tokenDetails;
@@ -51,7 +52,9 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
+            await client.WaitForState(ConnectionState.Failed);
             renewTokenCalled.Should().BeTrue();
+
             var currentToken = client.RestClient.AblyAuth.CurrentToken;
             currentToken.Token.Should().Be(_returnedDummyTokenDetails.Token);
             currentToken.ClientId.Should().Be(_returnedDummyTokenDetails.ClientId);
@@ -66,7 +69,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         {
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
             bool renewTokenCalled = false;
-            var client = GetClientWithFakeTransport(
+            var client = await GetConnectedClient(
                 opts =>
             {
                 opts.Key = string.Empty;
@@ -85,8 +88,9 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
+            await client.WaitForState(ConnectionState.Failed);
+
             renewTokenCalled.Should().BeFalse();
-            client.Connection.State.Should().Be(ConnectionState.Failed);
             client.Connection.ErrorReason.Should().NotBeNull();
             client.Connection.ErrorReason.Code.Should().Be(_tokenErrorCode);
         }
@@ -113,18 +117,20 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
-            client.Connection.State.Should().Be(ConnectionState.Disconnected);
+            await client.WaitForState(ConnectionState.Disconnected);
+
             client.Connection.ErrorReason.Should().NotBeNull();
             client.Connection.ErrorReason.Code.Should().Be(123);
         }
 
+        // TODO: Revisit this test.
         [Fact]
         [Trait("spec", "RTN14b")]
         public async Task WithTokenErrorTwice_ShouldNotRenewAndRaiseErrorAndTransitionToDisconnected()
         {
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
             var renewCount = 0;
-            var client = GetClientWithFakeTransport(
+            var client = await GetConnectedClient(
                 opts =>
             {
                 opts.TokenDetails = tokenDetails;
@@ -147,8 +153,11 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             });
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+            await client.WaitForState(ConnectionState.Failed);
+
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
+            await client.WaitForState(ConnectionState.Disconnected);
             renewCount.Should().Be(1);
             disconnected.Should().BeTrue();
             client.Connection.ErrorReason.Should().NotBeNull();
@@ -171,13 +180,18 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             client.Connect();
 
-            await WaitForConnectingOrSuspended(client);
+            await client.WaitForState(ConnectionState.Connecting);
+
             ConnectionStateChange connectionArgs = null;
             client.Connection.InternalStateChanged += (sender, args) =>
             {
                 connectionArgs = args;
                 Done();
             };
+
+            await Task.Delay(1000); // Let the connecting state complete it's logic otherwise by the time we get to here
+                                    // The transport is not created yet as this is done on a separate thread
+
             LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closing, new Exception());
 
             WaitOne();

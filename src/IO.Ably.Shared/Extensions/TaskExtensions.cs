@@ -50,5 +50,12 @@ namespace IO.Ably
             // https://connect.microsoft.com/VisualStudio/feedback/details/689516/exceptiondispatchinfo-api-modifications (http://www.webcitation.org/6XQ7RoJmO)
             return exception;
         }
+
+        public static async Task<R> MapAsync<T, R>(this Task<T> start, Func<T, R> mapFunction)
+        {
+            var value = await start;
+            return mapFunction(value);
+        }
+
     }
 }

@@ -59,7 +59,7 @@ namespace IO.Ably.Tests
 
             // Assert
             result.Should().BeTrue();
-            _context.StateShouldBe<ConnectionClosedState>();
+            _context.ShouldQueueCommand<SetClosedStateCommand>();
         }
 
         [Fact]
@@ -72,8 +72,7 @@ namespace IO.Ably.Tests
 
             // Assert
             result.Should().BeTrue();
-            var targetState = _context.StateShouldBe<ConnectionFailedState>();
-            targetState.Error.ShouldBeEquivalentTo(targetError);
+            _context.ShouldQueueCommand<SetFailedStateCommand>(cmd => cmd.Error.ShouldBeEquivalentTo(targetError));
         }
 
         [Fact]
@@ -84,7 +83,7 @@ namespace IO.Ably.Tests
 
             // Assert
             Assert.True(result);
-            _context.StateShouldBe<ConnectionDisconnectedState>();
+            _context.ShouldQueueCommand<SetDisconnectedStateCommand>();
         }
 
         [Fact]
@@ -118,7 +117,7 @@ namespace IO.Ably.Tests
             await _state.OnAttachToContext();
 
             // Assert
-            _context.StateShouldBe<ConnectionClosedState>();
+            _context.ShouldQueueCommand<SetClosedStateCommand>();
         }
 
         [Fact]
@@ -131,7 +130,7 @@ namespace IO.Ably.Tests
             _timer.StartedWithAction.Should().BeTrue();
             _timer.OnTimeOut();
 
-            _context.StateShouldBe<ConnectionClosedState>();
+            _context.ShouldQueueCommand<SetClosedStateCommand>();
         }
 
         [Fact]
@@ -148,7 +147,7 @@ namespace IO.Ably.Tests
             // Assert
             _timer.StartedWithAction.Should().BeTrue();
             _timer.Aborted.Should().BeTrue();
-            _context.StateShouldBe<ConnectionClosedState>();
+            _context.ShouldQueueCommand<SetClosedStateCommand>();
         }
 
         [Fact]
@@ -164,7 +163,7 @@ namespace IO.Ably.Tests
             // Assert
             _timer.StartedWithAction.Should().BeTrue();
             _timer.Aborted.Should().BeTrue();
-            _context.StateShouldBe<ConnectionFailedState>();
+            _context.ShouldQueueCommand<SetFailedStateCommand>();
         }
 
         private FakeConnectionContext _context;

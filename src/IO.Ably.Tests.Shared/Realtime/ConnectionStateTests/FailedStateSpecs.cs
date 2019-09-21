@@ -41,7 +41,7 @@ namespace IO.Ably.Tests
             _state.Connect();
 
             // Assert
-            _context.StateShouldBe<ConnectionConnectingState>();
+            _context.ShouldQueueCommand<SetConnectingStateCommand>();
         }
 
         [Fact]

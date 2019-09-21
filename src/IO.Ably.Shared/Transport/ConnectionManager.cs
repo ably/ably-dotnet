@@ -18,7 +18,7 @@ namespace IO.Ably.Transport
     {
         internal Func<DateTimeOffset> Now { get; set; }
 
-        internal ILogger Logger { get; private set; }
+        internal ILogger Logger { get; }
 
         public Queue<MessageAndCallback> PendingMessages { get; }
 
@@ -44,10 +44,6 @@ namespace IO.Ably.Transport
         public TimeSpan DefaultTimeout => Options.RealtimeRequestTimeout;
 
         public TimeSpan SuspendRetryTimeout => Options.SuspendedRetryTimeout;
-
-        internal event MessageReceivedDelegate MessageReceived;
-
-        public bool IsActive => State.CanQueue && State.CanSend;
 
         public Connection Connection { get; }
 
@@ -113,37 +109,35 @@ namespace IO.Ably.Transport
 
             try
             {
-                lock (_stateSyncLock)
-                {
-                    if (!newState.IsUpdate)
-                    {
-                        if (State.State == newState.State)
-                        {
-                            if (Logger.IsDebug)
-                            {
-                                Logger.Debug($"xx State is already {State.State}. Skipping SetState action.");
-                            }
+                // TODO: Removed lock. Make sure SetState is only called from the workflow.
+                // Possibly move it completely there and make it private
 
-                            return;
+                if (!newState.IsUpdate)
+                {
+                    if (State.State == newState.State)
+                    {
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug($"xx State is already {State.State}. Skipping SetState action.");
                         }
 
-                        AttemptsInfo.UpdateAttemptState(newState);
-                        State.AbortTimer();
+                        return;
                     }
 
-                    if (Logger.IsDebug)
-                    {
-                        Logger.Debug($"xx {newState.State}: BeforeTransition");
-                    }
+                    AttemptsInfo.UpdateAttemptState(newState);
+                    State.AbortTimer();
+                }
 
-                    newState.BeforeTransition();
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug($"xx {newState.State}: BeforeTransition");
+                }
 
-                    if (Logger.IsDebug)
-                    {
-                        Logger.Debug($"xx {newState.State}: BeforeTransition end");
-                    }
+                newState.BeforeTransition();
 
-                    Connection.UpdateState(newState);
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug($"xx {newState.State}: BeforeTransition end");
                 }
 
                 if (skipAttach == false)
@@ -159,6 +153,8 @@ namespace IO.Ably.Transport
                 {
                     Logger.Debug($"xx {newState.State}: Skipping attaching.");
                 }
+
+                Connection.UpdateState(newState);
 
                 await ProcessQueuedMessages();
             }
@@ -277,6 +273,8 @@ namespace IO.Ably.Transport
 
 
 
+        //TODO: check whether we should return the commands rather than queue them
+        // we don't want another command in the queue to execute before this flow has completed
         public async Task RetryAuthentication(ErrorInfo error = null, bool updateState = true)
         {
             ClearTokenAndRecordRetry();

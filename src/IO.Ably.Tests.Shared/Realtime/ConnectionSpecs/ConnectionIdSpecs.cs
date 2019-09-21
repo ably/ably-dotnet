@@ -1,4 +1,6 @@
+using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.Realtime;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -19,10 +21,13 @@ namespace IO.Ably.Tests.Realtime
         [Fact]
         [Trait("spec", "RTN8b")]
         [Trait("sandboxTest", "needed")]
-        public void ConnectionIdSetBasedOnValueProvidedByAblyService()
+        public async Task ConnectionIdSetBasedOnValueProvidedByAblyService()
         {
             var client = GetClientWithFakeTransport();
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { ConnectionId = "123" });
+
+            await client.WaitForState(ConnectionState.Connected);
+
             client.Connection.Id.Should().Be("123");
         }
 

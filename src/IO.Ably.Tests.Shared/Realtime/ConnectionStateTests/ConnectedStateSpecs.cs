@@ -60,14 +60,15 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public async Task ShouldHandleInboundDisconnectedMessageAndSetStateToDisconnected()
+        public async Task ShouldHandleInboundDisconnectedMessageAndShouldQueueSetDisconnectedStateCommand()
         {
             // Act
             bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected), EmptyState);
 
             // Assert
             result.Should().BeTrue();
-            _context.StateShouldBe<ConnectionDisconnectedState>();
+            //_context.ExecutedCommands.
+            _context.ShouldQueueCommand<SetDisconnectedStateCommand>();
         }
 
         [Fact]
@@ -80,8 +81,7 @@ namespace IO.Ably.Tests
 
             // Assert
             result.Should().BeTrue();
-            var newState = _context.StateShouldBe<ConnectionFailedState>();
-            newState.Error.ShouldBeEquivalentTo(targetError);
+            _context.ShouldQueueCommand<SetFailedStateCommand>(cmd => cmd.Error.ShouldBeEquivalentTo(targetError));
         }
 
         [Fact]
@@ -102,7 +102,7 @@ namespace IO.Ably.Tests
             _state.Close();
 
             // Assert
-            _context.StateShouldBe<ConnectionClosingState>();
+            _context.ShouldQueueCommand<SetClosingStateCommand>();
         }
 
         [Fact]
@@ -112,7 +112,7 @@ namespace IO.Ably.Tests
             bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Close), EmptyState);
 
             result.Should().BeTrue();
-            _context.StateShouldBe<ConnectionClosedState>();
+            _context.ShouldQueueCommand<SetClosedStateCommand>();
         }
 
         [Fact]

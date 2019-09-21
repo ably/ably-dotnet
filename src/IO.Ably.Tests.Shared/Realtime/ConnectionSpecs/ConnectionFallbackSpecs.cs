@@ -20,49 +20,52 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN17b")]
         public async Task WithCustomHostAndError_ConnectionGoesStraightToFailedInsteadOfDisconnected()
         {
-            var client = GetConnectedClient(opts => opts.RealtimeHost = "test.com");
+            var client = await GetConnectedClient(opts => opts.RealtimeHost = "test.com");
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
                 Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
-            client.Connection.State.Should().Be(ConnectionState.Failed);
+            await client.WaitForState(ConnectionState.Failed);
         }
 
         [Fact]
         [Trait("spec", "RTN17b")]
         public async Task WithCustomPortAndError_ConnectionGoesStraightToFailedInsteadOfDisconnected()
         {
-            var client = GetConnectedClient(opts => opts.Port = 100);
+            var client = await GetConnectedClient(opts => opts.Port = 100);
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
                 Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
-            client.Connection.State.Should().Be(ConnectionState.Failed);
+            await client.WaitForState(ConnectionState.Failed);
         }
 
         [Fact]
         [Trait("spec", "RTN17b")]
         public async Task WithCustomEnvironmentAndError_ConnectionGoesStraightToFailedInsteadOfDisconnected()
         {
-            var client = GetConnectedClient(opts => opts.Environment = "sandbox");
+            Logger.LogLevel = LogLevel.Debug;
+            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
+
+            var client = await GetConnectedClient(opts => opts.Environment = "sandbox");
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
-                Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
+                Error = new ErrorInfo { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
-            client.Connection.State.Should().Be(ConnectionState.Failed);
+            await client.WaitForState(ConnectionState.Failed);
         }
 
         [Fact]
         [Trait("spec", "RTN17a")]
         public async Task WhenPreviousAttemptFailed_ShouldGoToDefaultHostFirst()
         {
-            var client = GetConnectedClient();
+            var client = await GetConnectedClient();
 
             List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.InternalStateChanged += (sender, args) =>
@@ -74,6 +77,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             {
                 Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
+
             await client.ConnectionManager.SetState(new ConnectionFailedState(client.ConnectionManager, ErrorInfo.ReasonFailed, Logger));
             client.Connect();
             LastCreatedTransport.Parameters.Host.Should().Be(Defaults.RealtimeHost);
@@ -102,10 +106,14 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 ConnectionSerial = 100
             });
 
+            await client.WaitForState(ConnectionState.Connected);
+
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
             {
                 Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
+
+            await client.WaitForState(ConnectionState.Disconnected);
 
             await client.TimeAsync();
             handler.Requests.Last().RequestUri.ToString().Should().Contain(client.Connection.Host);
@@ -115,17 +123,15 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN17c")]
         public async Task WithDefaultHostAndRecoverableError_ConnectionGoesToDisconnectedInsteadOfFailedAndRetryInstantly()
         {
-            var client = GetConnectedClient();
+            var client = await GetConnectedClient();
 
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
             {
                 Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
-            client.Connection.State.Should().Be(ConnectionState.Disconnected);
-
+            await client.WaitForState(ConnectionState.Disconnected);
             await client.WaitForState(ConnectionState.Connecting);
-            client.Connection.State.Should().Be(ConnectionState.Connecting);
             client.Close();
         }
 
@@ -133,7 +139,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN17c")]
         public async Task WhileInDisconnectedStateLoop_ShouldRetryWithMultipleHosts()
         {
-            var client = GetConnectedClient(opts => opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10));
+            var client = await GetConnectedClient(opts => opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10));
 
             List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.InternalStateChanged += (sender, args) =>
@@ -180,7 +186,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             // ReSharper disable once AccessToModifiedClosure
             DateTimeOffset NowWrapperFn() => nowFunc();
 
-            var client = GetConnectedClient(opts =>
+            var client = await GetConnectedClient(opts =>
             {
                 opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10);
                 opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(10);
@@ -228,7 +234,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN17c")]
         public async Task WithDefaultHostAndRecoverableError_WhenInternetDown_GoesStraightToFailed()
         {
-            var client = GetConnectedClient(null, request =>
+            var client = await GetConnectedClient(null, request =>
             {
                 if (request.Url == Defaults.InternetCheckUrl)
                 {

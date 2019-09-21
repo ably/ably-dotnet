@@ -20,10 +20,11 @@ namespace IO.Ably.Tests.Realtime
         [Fact]
         [Trait("spec", "RTN9b")]
         [Trait("sandboxTest", "needed")]
-        public void OnceConnected_ShouldUseKeyFromConnectedMessage()
+        public async Task OnceConnected_ShouldUseKeyFromConnectedMessage()
         {
             var client = GetClientWithFakeTransport();
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { ConnectionDetails = new ConnectionDetails() { ConnectionKey = "key" } });
+            await client.WaitForState();
             client.Connection.Key.Should().Be("key");
         }
 

@@ -92,7 +92,7 @@ namespace IO.Ably.Tests
             _state.Connect();
 
             // Assert
-            _context.StateShouldBe<ConnectionConnectingState>();
+            _context.ShouldQueueCommand<SetConnectingStateCommand>();
         }
 
         [Fact]
@@ -107,7 +107,7 @@ namespace IO.Ably.Tests
             _timer.OnTimeOut();
 
             // Assert
-            _context.StateShouldBe<ConnectionConnectingState>();
+            _context.ShouldQueueCommand<SetConnectingStateCommand>();
         }
 
         [Fact]

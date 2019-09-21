@@ -20,7 +20,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task OnHeartBeatMessageReceived_ShouldReturnElapsedTime()
         {
             SetNowFunc(() => DateTimeOffset.UtcNow);
-            var client = GetConnectedClient();
+            var client = await GetConnectedClient();
 
             FakeTransportFactory.LastCreatedTransport.SendAction = async message =>
             {
@@ -36,6 +36,7 @@ namespace IO.Ably.Tests.Realtime
             result.IsSuccess.Should().BeTrue();
 
             // Because the now object is static when executed in parallel with other tests the results are affected
+            // TODO: Verify this is fixed
             result.Value.Value.Should().BeGreaterThan(TimeSpan.FromMilliseconds(0));
 
             // reset
@@ -67,7 +68,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN13c")]
         public async Task WhenDefaultTimeoutExpiresWithoutReceivingHeartbeatMessage_ShouldFailWithTimeoutError()
         {
-            var client = GetConnectedClient(opts => opts.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100));
+            var client = await GetConnectedClient(opts => opts.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100));
 
             var result = await client.Connection.PingAsync();
 

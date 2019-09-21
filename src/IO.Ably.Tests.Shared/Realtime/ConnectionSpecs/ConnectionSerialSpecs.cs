@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.Realtime;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -11,10 +12,12 @@ namespace IO.Ably.Tests.Realtime
     {
         [Fact]
         [Trait("spec", "RTN10a")]
-        public void OnceConnected_ConnectionSerialShouldBeMinusOne()
+        public async Task OnceConnected_ConnectionSerialShouldBeMinusOne()
         {
             var client = GetClientWithFakeTransport();
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+            await client.WaitForState(ConnectionState.Connected);
+
             client.Connection.Serial.Should().Be(-1);
         }
 
@@ -35,16 +38,19 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTN10b")]
-        public void WhenProtocolMessageWithSerialReceived_SerialShouldUpdate()
+        public async Task WhenProtocolMessageWithSerialReceived_SerialShouldUpdate()
         {
             // Arrange
             var client = GetClientWithFakeTransport();
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
+            await client.WaitForState(ConnectionState.Connected);
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Message)
             {
                 ConnectionSerial = 123456
             });
+
+            await ProcessCommands(client);
 
             // Act
             client.Connection.Serial.Should().Be(123456);

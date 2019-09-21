@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
 
@@ -83,7 +84,7 @@ namespace IO.Ably.Tests
 
             DefaultLogger.Debug($"[{_id} Timeout exceeded. Throwing TimeoutException");
             RemoveListener();
-            throw new TimeoutException();
+            throw new TimeoutException($"Expected ''{_awaitedStates.Select(x => x.ToString()).JoinStrings()}' but current state was '{_connection.State}'");
         }
     }
 }

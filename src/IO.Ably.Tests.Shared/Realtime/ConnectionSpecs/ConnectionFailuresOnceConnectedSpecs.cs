@@ -22,7 +22,7 @@ namespace IO.Ably.Tests.Realtime
         private ErrorInfo _tokenErrorInfo;
         private int _failedRenewalErorrCode = 1234;
 
-        public AblyRealtime SetupConnectedClient(bool failRenewal = false, bool renewable = true)
+        public Task<AblyRealtime> SetupConnectedClient(bool failRenewal = false, bool renewable = true)
         {
             return GetConnectedClient(
                 opts =>
@@ -55,7 +55,10 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15h")]
         public async Task WithDisconnectMessageWithTokenError_ShouldRenewTokenAndReconnect()
         {
-            var client = SetupConnectedClient();
+            Logger.LogLevel = LogLevel.Debug;
+            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
+
+            var client = await SetupConnectedClient();
 
             List<ConnectionState> states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
@@ -72,6 +75,10 @@ namespace IO.Ably.Tests.Realtime
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = _tokenErrorInfo });
             await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
+            await ProcessCommands(client);
+
+            await client.WaitForState(ConnectionState.Connected);
+
             _renewTokenCalled.Should().BeTrue();
             Assert.Equal(new[] { ConnectionState.Disconnected, ConnectionState.Connecting, ConnectionState.Connected }, states);
             errors.Should().HaveCount(1);
@@ -87,7 +94,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15a")]
         public async Task WithDisconnectMessageWithTokenError_ShouldResumeConnection()
         {
-            var client = SetupConnectedClient();
+            var client = await SetupConnectedClient();
 
             List<ConnectionState> states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
@@ -116,7 +123,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15h")]
         public async Task WithTokenErrorWhenTokenRenewalFails_ShouldGoToFailedStateAndEmitError()
         {
-            var client = SetupConnectedClient(true);
+            var client = await SetupConnectedClient(true);
 
             List<ConnectionState> states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
@@ -152,7 +159,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15h")]
         public async Task WhenConnectionFailsWithTokenErrorButTokenIsNotRenewable_ShouldTransitionDirectlyToFailedWithError()
         {
-            var client = SetupConnectedClient(renewable: false);
+            var client = await SetupConnectedClient(renewable: false);
 
             List<ConnectionState> states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
@@ -185,9 +192,9 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15b")]
         [Trait("spec", "RTN15b1")]
         [Trait("spec", "RTN15b2")]
-        public void WhenTransportCloses_ShouldResumeConnection()
+        public async Task WhenTransportCloses_ShouldResumeConnection()
         {
-            var client = SetupConnectedClient();
+            var client = await SetupConnectedClient();
 
             List<ConnectionState> states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
@@ -210,6 +217,8 @@ namespace IO.Ably.Tests.Realtime
             var serial = client.Connection.Serial.Value;
             LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closed);
 
+            await client.WaitForState(ConnectionState.Connecting);
+
             var urlParams = LastCreatedTransport.Parameters.GetParams();
             urlParams.Should().ContainKey("resume")
                 .WhichValue.Should().Be(connectionKey);
@@ -222,7 +231,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15f")]
         public async Task AckMessagesAreFailedWhenConnectionIsDroppedAndNotResumed()
         {
-            var client = SetupConnectedClient();
+            var client = await SetupConnectedClient();
 
             List<bool> callbackResults = new List<bool>();
             Action<bool, ErrorInfo> callback = (b, info) =>
@@ -255,7 +264,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15f")]
         public async Task AckMessagesAreResentWhenConnectionIsDroppedAndResumed()
         {
-            var client = SetupConnectedClient();
+            var client = await SetupConnectedClient();
 
             string initialConnectionId = client.Connection.Id;
             client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message));

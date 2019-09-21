@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
@@ -29,11 +30,12 @@ namespace IO.Ably.Realtime.Workflow
         public ILogger Logger { get; }
 
         private RealtimeState State { get; }
+        private Thread ConsumerThread;
         private Func<DateTimeOffset> Now => Connection.Now;
 
-        internal IAcknowledgementProcessor AckHandler { get; set; }
+        internal ConnectionHeartbeatHandler HeartbeatHandler { get; }
 
-        internal ConnectionHeartbeatHandler HeartbeatHandler { get; set; }
+        internal ChannelMessageProcessor ChannelMessageProcessor { get;  }
 
         internal List<Func<ProtocolMessage, RealtimeState, ValueTask<bool>>> MessageHandlers;
 
@@ -48,18 +50,18 @@ namespace IO.Ably.Realtime.Workflow
             Connection = connection;
             Channels = channels;
             Logger = logger;
-            AckHandler = new AcknowledgementProcessor(Connection);
+
             HeartbeatHandler = new ConnectionHeartbeatHandler(Connection.ConnectionManager, logger);
+            ChannelMessageProcessor = new ChannelMessageProcessor(connection.RealtimeClient.Channels, logger);
             MessageHandlers = new List<Func<ProtocolMessage, RealtimeState, ValueTask<bool>>>
             {
-                ConnectionManager.State.OnMessageReceived,
+                (message, state) => ConnectionManager.State.OnMessageReceived(message, state),
                 HeartbeatHandler.OnMessageReceived,
-                AckHandler.OnMessageReceived,
-                ((IProtocolMessageHandler)Channels).OnMessageReceived,
+                (message, state) => ConnectionManager.AckProcessor.OnMessageReceived(message, state),
+                ChannelMessageProcessor.MessageReceived,
             };
 
             State = new RealtimeState();
-
         }
 
         public void Start()
@@ -114,7 +116,7 @@ namespace IO.Ably.Realtime.Workflow
                 case ConnectCommand connectCmd:
                     ConnectionManager.Connect();
                     break;
-                case DisconnetCommand _:
+                case DisconnectCommand _:
                     ConnectionManager.CloseConnection();
                     break;
                 case RetryAuthCommand retryAuth:
@@ -258,5 +260,9 @@ namespace IO.Ably.Realtime.Workflow
             return Task.CompletedTask;
         }
 
+        public void Close()
+        {
+            RealtimeMessageLoop.Writer.Complete();
+        }
     }
 }

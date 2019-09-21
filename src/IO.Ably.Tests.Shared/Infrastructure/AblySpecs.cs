@@ -21,6 +21,17 @@ namespace IO.Ably.Tests
             _signal.Set();
         }
 
+        /// <summary>
+        /// Figure out a way to yield the current thread so a command can be processed
+        /// </summary>
+        /// <returns></returns>
+        public async Task ProcessCommands(IRealtimeClient client)
+        {
+            //TODO: find a better way to do it
+            await Task.Delay(100);
+        }
+
+
         internal virtual AblyRealtime GetRealtimeClient(ClientOptions options = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
         {
             var clientOptions = options ?? new ClientOptions(ValidKey);

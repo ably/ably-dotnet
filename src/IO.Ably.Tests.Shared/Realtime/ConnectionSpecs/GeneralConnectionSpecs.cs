@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Transport;
@@ -11,9 +12,9 @@ namespace IO.Ably.Tests.Realtime
     {
         [Fact]
         [Trait("spec", "RTN1")]
-        public void ShouldUseWebSocketTransport()
+        public async Task ShouldUseWebSocketTransport()
         {
-            var client = GetRealtimeClient();
+            var client = await GetConnectedClient(); // The transport is created by the connecting state
 
             client.ConnectionManager.Transport.GetType().Should().BeAssignableTo<ITransport>();
         }
@@ -42,7 +43,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTN19")]
-        public void WhenConnectedMessageReceived_ConnectionShouldBeInConnectedStateAndConnectionDetailsAreUpdated()
+        public async Task WhenConnectedMessageReceived_ConnectionShouldBeInConnectedStateAndConnectionDetailsAreUpdated()
         {
             var client = GetClientWithFakeTransport();
 
@@ -56,7 +57,8 @@ namespace IO.Ably.Tests.Realtime
                 ConnectionDetails = connectionDetailsMessage
             });
 
-            client.Connection.State.Should().Be(ConnectionState.Connected);
+            await client.WaitForState(ConnectionState.Connected);
+
             client.Connection.Key.Should().Be("boo");
         }
 

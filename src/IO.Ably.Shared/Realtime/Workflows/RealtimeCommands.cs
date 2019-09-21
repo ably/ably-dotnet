@@ -80,9 +80,9 @@ namespace IO.Ably.Realtime.Workflow
         protected override string ExplainData() => string.Empty;
     }
 
-    internal class DisconnetCommand : RealtimeCommand
+    internal class DisconnectCommand : RealtimeCommand
     {
-        public static DisconnetCommand Create() => new DisconnetCommand();
+        public static DisconnectCommand Create() => new DisconnectCommand();
 
         protected override string ExplainData() => String.Empty;
     }

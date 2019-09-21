@@ -79,7 +79,7 @@ namespace IO.Ably.Tests
             state.Close();
 
             // Assert
-            _context.StateShouldBe<ConnectionClosedState>();
+            _context.ShouldQueueCommand<SetClosedStateCommand>();
             _timer.Aborted.Should().BeTrue();
         }
 
@@ -93,7 +93,7 @@ namespace IO.Ably.Tests
             state.Connect();
 
             // Assert
-            _context.StateShouldBe<ConnectionConnectingState>();
+            _context.ShouldQueueCommand<SetConnectingStateCommand>();
         }
 
         [Fact]
@@ -110,7 +110,7 @@ namespace IO.Ably.Tests
 
             // Assert
             _timer.StartedWithAction.Should().BeTrue();
-            _context.StateShouldBe<ConnectionConnectingState>();
+            _context.ShouldQueueCommand<SetConnectingStateCommand>();
         }
 
         [Fact]
@@ -128,7 +128,7 @@ namespace IO.Ably.Tests
 
             // Assert
             _timer.StartedWithAction.Should().BeFalse();
-            _context.StateShouldBe<ConnectionConnectingState>();
+            _context.ShouldQueueCommand<SetConnectingStateCommand>();
         }
     }
 }

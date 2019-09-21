@@ -108,6 +108,7 @@ namespace IO.Ably
         public void Close()
         {
             Connection.Close();
+            Workflow.Close();
         }
 
         /// <summary>Retrieves the ably service time</summary>

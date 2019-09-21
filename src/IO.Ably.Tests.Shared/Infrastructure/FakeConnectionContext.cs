@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
@@ -210,6 +211,16 @@ namespace IO.Ably.Tests
             LastSetState.Should().BeOfType<T>();
             return (T)LastSetState;
         }
+
+        public void ShouldQueueCommand<T>(Action<T> commandCheck = null)
+            where T : RealtimeCommand
+        {
+            var lastCommand = ExecutedCommands.LastOrDefault();
+            lastCommand.Should().NotBeNull();
+            lastCommand.Should().BeOfType<T>();
+            commandCheck?.Invoke(lastCommand as T);
+        }
+
 
         public void ShouldHaveNotChangedState()
         {

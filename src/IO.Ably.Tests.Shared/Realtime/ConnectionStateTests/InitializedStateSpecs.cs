@@ -69,7 +69,7 @@ namespace IO.Ably.Tests
             _state.Connect();
 
             // Assert
-            _context.State.Should().BeOfType<ConnectionConnectingState>();
+            _context.ShouldQueueCommand<SetConnectingStateCommand>();
         }
     }
 }

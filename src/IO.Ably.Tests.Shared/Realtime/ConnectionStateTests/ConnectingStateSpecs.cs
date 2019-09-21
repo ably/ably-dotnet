@@ -92,7 +92,7 @@ namespace IO.Ably.Tests
             await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected), EmptyState);
 
             // Assert
-            _context.LastSetState.Should().BeOfType<ConnectionConnectedState>();
+            _context.ShouldQueueCommand<SetConnectedStateCommand>();
         }
 
         [Fact]
@@ -121,7 +121,7 @@ namespace IO.Ably.Tests
             bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError }, EmptyState);
 
             // Assert
-            _context.LastSetState.Should().BeOfType<ConnectionFailedState>();
+            _context.ShouldQueueCommand<SetFailedStateCommand>();
         }
 
         [Fact]
@@ -181,7 +181,7 @@ namespace IO.Ably.Tests
             _state.Close();
 
             // Assert
-            _context.LastSetState.Should().BeOfType<ConnectionClosingState>();
+            _context.ShouldQueueCommand<SetClosingStateCommand>();
         }
 
         [Fact]

@@ -29,14 +29,6 @@ namespace IO.Ably.Tests
             _state = new ConnectionClosedState(_context, _logger);
         }
 
-        private void LastCommandShouldBe<T>(Action<T> assert = null)
-            where T : RealtimeCommand
-        {
-            var lastCommand = _context.ExecutedCommands.Last();
-            lastCommand.Should().BeOfType<T>();
-            assert?.Invoke(lastCommand as T);
-        }
-
         [Fact]
         public void ShouldHaveCorrectState()
         {
@@ -50,7 +42,7 @@ namespace IO.Ably.Tests
             _state.Connect();
 
             // Assert
-            LastCommandShouldBe<SetConnectedStateCommand>();
+            _context.ShouldQueueCommand<SetConnectingStateCommand>();
         }
 
         [Fact]
