@@ -866,7 +866,7 @@ namespace IO.Ably.Tests.Realtime
                     (channel as RealtimeChannel).SetChannelState(state);
                 });
 
-                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
+                client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
                 {
                     Error = new ErrorInfo("test", 40140)
                 });

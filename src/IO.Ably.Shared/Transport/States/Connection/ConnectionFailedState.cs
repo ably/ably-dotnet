@@ -9,19 +9,17 @@ namespace IO.Ably.Transport.States.Connection
 
     internal class ConnectionFailedState : ConnectionStateBase
     {
-        public new ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonFailed;
-
         public ConnectionFailedState(IConnectionContext context, ErrorInfo error, ILogger logger)
             : base(context, logger)
         {
             Error = error ?? ErrorInfo.ReasonFailed;
         }
 
-        public override ConnectionState State => Realtime.ConnectionState.Failed;
+        public override ConnectionState State => ConnectionState.Failed;
 
-        public override void Connect()
+        public override RealtimeCommand Connect()
         {
-            Context.ExecuteCommand(SetConnectingStateCommand.Create());
+            return SetConnectingStateCommand.Create();
         }
 
         public override void BeforeTransition()

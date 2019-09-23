@@ -96,15 +96,14 @@ namespace IO.Ably.Realtime
         private void SubscribeToConnectionEvents()
         {
             ConnectionManager.Connection.BeginConnect += ConnectionOnBeginConnect;
-            ConnectionManager.Connection.InternalStateChanged += InternalOnInternalStateChanged;
         }
 
         private void UnSubscribeFromConnectionEvents()
         {
             ConnectionManager.Connection.BeginConnect -= ConnectionOnBeginConnect;
-            ConnectionManager.Connection.InternalStateChanged -= InternalOnInternalStateChanged;
         }
 
+        // TODO: Move logic to workflow class
         private void ConnectionOnBeginConnect(object sender, EventArgs e)
         {
             switch (ConnectionState)
@@ -118,7 +117,7 @@ namespace IO.Ably.Realtime
             }
         }
 
-        internal void InternalOnInternalStateChanged(object sender, ConnectionStateChange connectionStateChange)
+        internal void ConnectionStateChanged(ConnectionStateChange connectionStateChange)
         {
             var connectionRefreshed = PreviousConnectionId != Connection.Id;
             if (connectionRefreshed)

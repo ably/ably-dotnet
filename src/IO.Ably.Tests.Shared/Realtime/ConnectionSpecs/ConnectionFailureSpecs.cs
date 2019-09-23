@@ -42,15 +42,15 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             });
 
             List<ErrorInfo> raisedErrors = new List<ErrorInfo>();
-            client.Connection.InternalStateChanged += (sender, args) =>
+            client.Connection.On((args) =>
             {
                 if (args.HasError)
                 {
                     raisedErrors.Add(args.Reason);
                 }
-            };
+            });
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
             await client.WaitForState(ConnectionState.Failed);
             renewTokenCalled.Should().BeTrue();
@@ -86,7 +86,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 return AblyResponse.EmptyResponse.ToTask();
             });
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
             await client.WaitForState(ConnectionState.Failed);
 
@@ -115,7 +115,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 return AblyResponse.EmptyResponse.ToTask();
             });
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
             await client.WaitForState(ConnectionState.Disconnected);
 
@@ -152,10 +152,10 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 disconnected = true;
             });
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
             await client.WaitForState(ConnectionState.Failed);
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
             await client.WaitForState(ConnectionState.Disconnected);
             renewCount.Should().Be(1);
@@ -183,11 +183,11 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             await client.WaitForState(ConnectionState.Connecting);
 
             ConnectionStateChange connectionArgs = null;
-            client.Connection.InternalStateChanged += (sender, args) =>
+            client.Connection.On((args) =>
             {
                 connectionArgs = args;
                 Done();
-            };
+            });
 
             await Task.Delay(1000); // Let the connecting state complete it's logic otherwise by the time we get to here
                                     // The transport is not created yet as this is done on a separate thread
@@ -227,10 +227,10 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             client.Connect();
             List<ConnectionStateChange> stateChanges = new List<ConnectionStateChange>();
-            client.Connection.InternalStateChanged += (sender, args) =>
+            client.Connection.On((args) =>
             {
                 stateChanges.Add(args);
-            };
+            });
 
             do
             {

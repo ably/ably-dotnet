@@ -34,7 +34,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task WhemMessageReceived_ShouldPassTheMessageThroughTheAckProcessor()
         {
             var message = new ProtocolMessage(ProtocolMessage.MessageAction.Ack);
-            await _realtime.ConnectionManager.OnTransportMessageReceived(message);
+            _realtime.ConnectionManager.OnTransportMessageReceived(message);
 
             // TODO: Find a better way to force the Workfrow thread to complete
             await Task.Delay(100); // Let the execution complete

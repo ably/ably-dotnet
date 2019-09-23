@@ -399,14 +399,20 @@ namespace IO.Ably.MessageEncoders
         {
             var options = channelOptions ?? new ChannelOptions();
             var result = Result.Ok();
-            foreach (var message in protocolMessage.Messages)
+            if(protocolMessage.Messages != null)
             {
-                result = Result.Combine(result, EncodePayload(message, options));
+                foreach (var message in protocolMessage.Messages)
+                {
+                    result = Result.Combine(result, EncodePayload(message, options));
+                }
             }
 
-            foreach (var presence in protocolMessage.Presence)
+            if (protocolMessage.Presence != null)
             {
-                result = Result.Combine(result, EncodePayload(presence, options));
+                foreach (var presence in protocolMessage.Presence)
+                {
+                    result = Result.Combine(result, EncodePayload(presence, options));
+                }
             }
 
             return result;

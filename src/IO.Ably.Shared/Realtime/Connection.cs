@@ -210,36 +210,24 @@ namespace IO.Ably.Realtime
         {
             Close();
             ClearAllDelegatesOfStateChangeEventHandler();
-
             CleanUpNetworkStateEvents();
         }
 
         private void ClearAllDelegatesOfStateChangeEventHandler()
         {
-            foreach (var d in InternalStateChanged.GetInvocationList())
-            {
-                InternalStateChanged -= (EventHandler<ConnectionStateChange>)d;
-            }
-
             foreach (var handler in ConnectionStateChanged.GetInvocationList())
             {
                 ConnectionStateChanged -= (EventHandler<ConnectionStateChange>)handler;
             }
         }
 
-        /// <summary>
-        /// </summary>
-        internal event EventHandler<ConnectionStateChange> InternalStateChanged = delegate { }; // TODO: try and remove the distinction
-
         public event EventHandler<ConnectionStateChange> ConnectionStateChanged = delegate { };
-
-        // TODO: Add IDisposable and clear all event hadlers when the connection is disposed
 
         /// <summary>
         /// </summary>
         public void Connect()
         {
-            ConnectionManager.Connect();
+            ExecuteCommand(ConnectCommand.Create());
         }
 
         /// <summary>
@@ -267,7 +255,7 @@ namespace IO.Ably.Realtime
         /// </summary>
         public void Close()
         {
-            ConnectionManager.CloseConnection();
+            ExecuteCommand(CloseConnectionCommand.Create());
         }
 
         internal void UpdateState(ConnectionStateBase state)
@@ -289,15 +277,12 @@ namespace IO.Ably.Realtime
             var connectionEvent = oldState == newState ? ConnectionEvent.Update : newState.ToConnectionEvent();
             var stateChange = new ConnectionStateChange(connectionEvent, oldState, newState, state.RetryIn, ErrorReason);
 
-            var internalHandlers =
-                Volatile.Read(ref InternalStateChanged); // Make sure we get all the subscribers on all threads
             var externalHandlers =
                 Volatile.Read(ref ConnectionStateChanged); // Make sure we get all the subscribers on all threads
-            internalHandlers(this, stateChange);
 
             RealtimeClient.NotifyExternalClients(
-                () =>
-                    {
+                () => {
+                        Emit(connectionEvent, stateChange);
                         try
                         {
                             externalHandlers(this, stateChange);
@@ -306,8 +291,6 @@ namespace IO.Ably.Realtime
                         {
                             Logger.Error("Error notifying Connection state changed handlers", ex);
                         }
-
-                        Emit(connectionEvent, stateChange);
                     });
         }
 

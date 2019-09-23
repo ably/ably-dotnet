@@ -55,6 +55,19 @@ namespace IO.Ably.Realtime.Workflow
         }
     }
 
+    internal class EmptyCommand : RealtimeCommand
+    {
+        public static EmptyCommand Instance = new EmptyCommand();
+        private EmptyCommand() {}
+
+
+        protected override string ExplainData()
+        {
+            return string.Empty;
+        }
+    }
+
+
     internal class ProcessMessageCommand : RealtimeCommand
     {
         public ProcessMessageCommand(ProtocolMessage protocolMessage)
@@ -80,9 +93,9 @@ namespace IO.Ably.Realtime.Workflow
         protected override string ExplainData() => string.Empty;
     }
 
-    internal class DisconnectCommand : RealtimeCommand
+    internal class CloseConnectionCommand : RealtimeCommand
     {
-        public static DisconnectCommand Create() => new DisconnectCommand();
+        public static CloseConnectionCommand Create() => new CloseConnectionCommand();
 
         protected override string ExplainData() => String.Empty;
     }
@@ -235,5 +248,44 @@ namespace IO.Ably.Realtime.Workflow
         public static RetryAuthCommand Create(bool updateState) => new RetryAuthCommand(null, updateState);
 
         protected override string ExplainData() => "UpdatedState: " + UpdateState + ((Error != null) ? " " + Error.ToString() : "");
+    }
+
+    internal class SendMessageCommand : RealtimeCommand
+    {
+        public ProtocolMessage ProtocolMessage { get; }
+        public Action<bool, ErrorInfo> Callback { get; }
+
+        public SendMessageCommand(ProtocolMessage protocolMessage, Action<bool, ErrorInfo> callback)
+        {
+            ProtocolMessage = protocolMessage;
+            Callback = callback;
+        }
+
+        public static SendMessageCommand Create(ProtocolMessage message, Action<bool, ErrorInfo> callback = null) => new SendMessageCommand(message, callback);
+
+        protected override string ExplainData()
+        {
+            return "Protocol message: " + ProtocolMessage.ToJson();
+        }
+    }
+
+    internal class DelayCommand : RealtimeCommand
+    {
+        public TimeSpan Delay { get; }
+
+        public RealtimeCommand CommandToQueue { get; }
+
+        public DelayCommand(TimeSpan delay, RealtimeCommand commandToQueue)
+        {
+            Delay = delay;
+            CommandToQueue = commandToQueue;
+        }
+
+        public static DelayCommand Create(TimeSpan delay, RealtimeCommand command) => new DelayCommand(delay, command);
+
+        protected override string ExplainData()
+        {
+            return $"Delay: {Delay.ToString()}. Command: {CommandToQueue.Name}";
+        }
     }
 }

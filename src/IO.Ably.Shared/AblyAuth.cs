@@ -443,40 +443,11 @@ namespace IO.Ably
 
             CurrentToken = await RequestTokenAsync(tokenParams, authOptions);
             AuthMethod = AuthMethod.Token;
-            var eventArgs = new AblyAuthUpdatedEventArgs(CurrentToken);
-            AuthUpdated?.Invoke(this, eventArgs);
 
-            // TODO: Talk to Jack to see if there is a reason we block the return of the token
-            // RTC8a3
-            await AuthorizeCompleted(eventArgs);
+            // Removed AuthUpdate to keep the method stateless
+            // TODO: Reimplement RTC8a3
 
             return CurrentToken;
-        }
-
-        internal async Task<bool> AuthorizeCompleted(AblyAuthUpdatedEventArgs args)
-        {
-            if (AuthUpdated == null)
-            {
-                return true;
-            }
-
-            bool? completed = null;
-
-            void OnTimerElapsed()
-            {
-                if (args?.CompletedTask != null && completed.HasValue == false)
-                {
-                    args.CompletedTask.TrySetException(
-                        new AblyException($"Timeout waiting for Authorize to complete. A CONNECTED or ERROR ProtocolMessage was expected before the timeout ({Options.RealtimeRequestTimeout.TotalMilliseconds}ms) elapsed.", 40140));
-                }
-            }
-
-            var timer = new Timer(state => OnTimerElapsed(), null, (int)Options.RealtimeRequestTimeout.TotalMilliseconds, Timeout.Infinite);
-
-            completed = await args.CompletedTask.Task;
-            timer.Dispose();
-
-            return completed.Value;
         }
 
         [Obsolete("This method will be removed in the future, please replace with a call to AuthorizeAsync")]

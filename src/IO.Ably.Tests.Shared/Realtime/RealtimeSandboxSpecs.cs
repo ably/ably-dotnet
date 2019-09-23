@@ -43,80 +43,81 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.State.Should().Be(ConnectionState.Connected);
         }
 
-        [Theory]
-        [ProtocolData]
-        [Trait("spec", "RTC8")]
-        [Trait("spec", "RTC8a")]
-        [Trait("spec", "RTC8a1")]
-        [Trait("spec", "RTC8a2")]
-        [Trait("spec", "RTC8a3")]
-        public async Task WithConnectedClient_AuthorizeObtainsNewTokenAndUpgradesConnection_AndShouldEmitUpdate(Protocol protocol)
-        {
-            Logger.LogLevel = LogLevel.Debug;
-            Logger.LoggerSink = new OutputLoggerSink(Output);
-            var validClientId1 = "RTC8";
-            var invalidClientId = "RTC8-incompatible-clientId";
-
-            // For a realtime client, Auth#authorize instructs the library to obtain
-            // a token using the provided tokenParams and authOptions and upgrade
-            // the current connection to use that token
-            var client = await GetRealtimeClient(protocol, (opts, _) => { opts.ClientId = validClientId1; });
-
-            var awaiter = new TaskCompletionAwaiter();
-            client.Connection.On(ConnectionEvent.Update, args => { awaiter.SetCompleted(); });
-            await client.WaitForState(ConnectionState.Connected);
-
-            var tokenDetails = await client.Auth.AuthorizeAsync(new TokenParams { ClientId = validClientId1 });
-            tokenDetails.ClientId.Should().Be(validClientId1);
-            client.Connection.State.Should().Be(ConnectionState.Connected);
-            client.RestClient.AblyAuth.CurrentToken.Should().Be(tokenDetails);
-            var didUpdate = await awaiter.Task;
-            client.Connection.State.Should().Be(ConnectionState.Connected);
-            didUpdate.Should().BeTrue(
-                "the AUTH message should trigger a CONNECTED response from the server that causes an UPDATE to be emitted.");
-
-            client.Connection.On(args =>
-            {
-                if (args.Current != ConnectionState.Failed)
-                {
-                    Assert.True(false, $"unexpected state '{args.Current}'");
-                }
-            });
-
-            // AuthorizeAsync will not return until either a CONNECTED or ERROR response
-            // (or timeout) is seen from Ably, so we do not need to use WaitForState() here
-            await client.Auth.AuthorizeAsync(new TokenParams { ClientId = invalidClientId });
-            client.Connection.State.Should().Be(ConnectionState.Failed);
-            client.Close();
-
-            // if not currently connected, to connects with the token.
-            var client2 = await GetRealtimeClient(protocol, (opts, _) =>
-            {
-                opts.AutoConnect = false;
-                opts.TokenDetails = tokenDetails;
-            });
-            await client2.Auth.AuthorizeAsync();
-            await client2.WaitForState(ConnectionState.Connected);
-            client2.Connection.State.Should().Be(ConnectionState.Connected);
-            client2.Close();
-
-            // internally AblyAuth.AuthorizeCompleted is used to indicate when an Authorize call is finished
-            // AuthorizeCompleted should timeout if no valid response (CONNECTED or ERROR) is received from Ably
-            var auth = client.RestClient.AblyAuth;
-            auth.Options.RealtimeRequestTimeout = TimeSpan.FromSeconds(1);
-            var authEventArgs = new AblyAuthUpdatedEventArgs();
-            try
-            {
-                var result = await auth.AuthorizeCompleted(authEventArgs);
-                result.Should().BeFalse("AuthorizeCompleted should timeout");
-                throw new Exception("AuthorizeCompleted did not raise an exception.");
-            }
-            catch (AblyException e)
-            {
-                e.Should().BeOfType<AblyException>();
-                e.ErrorInfo.Code.Should().Be(40140);
-            }
-        }
+//        [Theory]
+//        [ProtocolData]
+//        [Trait("spec", "RTC8")]
+//        [Trait("spec", "RTC8a")]
+//        [Trait("spec", "RTC8a1")]
+//        [Trait("spec", "RTC8a2")]
+//        [Trait("spec", "RTC8a3")]
+//        public async Task WithConnectedClient_AuthorizeObtainsNewTokenAndUpgradesConnection_AndShouldEmitUpdate(Protocol protocol)
+//        {
+//            Logger.LogLevel = LogLevel.Debug;
+//            Logger.LoggerSink = new OutputLoggerSink(Output);
+//            var validClientId1 = "RTC8";
+//            var invalidClientId = "RTC8-incompatible-clientId";
+//
+//            // For a realtime client, Auth#authorize instructs the library to obtain
+//            // a token using the provided tokenParams and authOptions and upgrade
+//            // the current connection to use that token
+//            var client = await GetRealtimeClient(protocol, (opts, _) => { opts.ClientId = validClientId1; });
+//
+//            var awaiter = new TaskCompletionAwaiter();
+//            client.Connection.On(ConnectionEvent.Update, args => { awaiter.SetCompleted(); });
+//            await client.WaitForState(ConnectionState.Connected);
+//
+//            var tokenDetails = await client.Auth.AuthorizeAsync(new TokenParams { ClientId = validClientId1 });
+//            tokenDetails.ClientId.Should().Be(validClientId1);
+//            client.Connection.State.Should().Be(ConnectionState.Connected);
+//            client.RestClient.AblyAuth.CurrentToken.Should().Be(tokenDetails);
+//            var didUpdate = await awaiter.Task;
+//            client.Connection.State.Should().Be(ConnectionState.Connected);
+//            didUpdate.Should().BeTrue(
+//                "the AUTH message should trigger a CONNECTED response from the server that causes an UPDATE to be emitted.");
+//
+//            client.Connection.On(args =>
+//            {
+//                if (args.Current != ConnectionState.Failed)
+//                {
+//                    Assert.True(false, $"unexpected state '{args.Current}'");
+//                }
+//            });
+//
+//            // AuthorizeAsync will not return until either a CONNECTED or ERROR response
+//            // (or timeout) is seen from Ably, so we do not need to use WaitForState() here
+//            await client.Auth.AuthorizeAsync(new TokenParams { ClientId = invalidClientId });
+//            client.Connection.State.Should().Be(ConnectionState.Failed);
+//            client.Close();
+//
+//            // if not currently connected, to connects with the token.
+//            var client2 = await GetRealtimeClient(protocol, (opts, _) =>
+//            {
+//                opts.AutoConnect = false;
+//                opts.TokenDetails = tokenDetails;
+//            });
+//            await client2.Auth.AuthorizeAsync();
+//            await client2.WaitForState(ConnectionState.Connected);
+//            client2.Connection.State.Should().Be(ConnectionState.Connected);
+//            client2.Close();
+//
+//            // internally AblyAuth.AuthorizeCompleted is used to indicate when an Authorize call is finished
+//            // AuthorizeCompleted should timeout if no valid response (CONNECTED or ERROR) is received from Ably
+//            var auth = client.RestClient.AblyAuth;
+//            auth.Options.RealtimeRequestTimeout = TimeSpan.FromSeconds(1);
+//            var authEventArgs = new AblyAuthUpdatedEventArgs();
+//            try
+//            {
+//                //TODO: Reauth tests
+//                var result = await auth.AuthorizeCompleted(authEventArgs);
+//                result.Should().BeFalse("AuthorizeCompleted should timeout");
+//                throw new Exception("AuthorizeCompleted did not raise an exception.");
+//            }
+//            catch (AblyException e)
+//            {
+//                e.Should().BeOfType<AblyException>();
+//                e.ErrorInfo.Code.Should().Be(40140);
+//            }
+//        }
 
         [Theory]
         [ProtocolData]

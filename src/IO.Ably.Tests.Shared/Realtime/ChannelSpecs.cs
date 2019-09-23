@@ -180,7 +180,7 @@ namespace IO.Ably.Tests.Realtime
 
                 // any state change triggered by a ProtocolMessage that contains an error member
                 // should populate the reason with that error in the corresponding state change event
-                await client.FakeProtocolMessageReceived(new ProtocolMessage(action, chanName)
+                client.FakeProtocolMessageReceived(new ProtocolMessage(action, chanName)
                 {
                     Error = new ErrorInfo(action.ToString(), (int)action)
                 });
@@ -236,7 +236,7 @@ namespace IO.Ably.Tests.Realtime
                     tsc.SetCompleted();
                 });
 
-                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
+                client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
                 {
                     Channel = "test"
                 });
@@ -260,7 +260,7 @@ namespace IO.Ably.Tests.Realtime
 
                 // Send another Attached message without the resume flag.
                 // This should cause and Update event to be emitted.
-                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached, "test"));
+                client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached, "test"));
 
                 result = await tsc.Task;
                 result.Should().BeTrue("Update event should have been handled");
@@ -270,7 +270,7 @@ namespace IO.Ably.Tests.Realtime
 
                 // send another Attached protocol message with the resumed flag set.
                 // This should not trigger any channel event (per RTL12).
-                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
+                client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
                 {
                     Channel = "test",
                     Flags = 4 // resumed
@@ -280,7 +280,7 @@ namespace IO.Ably.Tests.Realtime
                 tsc = new TaskCompletionAwaiter(500);
 
                 // set detached so that the nexted Attached message with resume will pass
-                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, "test"));
+                client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, "test"));
 
                 channel.Once(ChannelEvent.Attached, stateChange =>
                 {
@@ -292,7 +292,7 @@ namespace IO.Ably.Tests.Realtime
                     tsc.SetCompleted();
                 });
 
-                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached, "test")
+                client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached, "test")
                 {
                     Flags = (int)ProtocolMessage.Flag.Resumed, // resumed
                     Error = new ErrorInfo("test error")
@@ -351,7 +351,7 @@ namespace IO.Ably.Tests.Realtime
 
                 var error = new ErrorInfo();
                 (channel as RealtimeChannel).SetChannelState(state);
-                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = error });
+                client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = error });
 
                 await client.WaitForState(ConnectionState.Failed);
 
@@ -373,7 +373,7 @@ namespace IO.Ably.Tests.Realtime
 
                 await client.WaitForState(ConnectionState.Closing);
 
-                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
+                client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
 
                 await client.WaitForState(ConnectionState.Closed);
 
@@ -675,7 +675,7 @@ namespace IO.Ably.Tests.Realtime
 
             private async Task ReceiveAttachedMessage(AblyRealtime client)
             {
-                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
+                client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
                 {
                     Channel = TestChannelName
                 });
@@ -736,7 +736,7 @@ namespace IO.Ably.Tests.Realtime
                 LastCreatedTransport.LastMessageSend.Action.Should().Be(ProtocolMessage.MessageAction.Detach);
                 await ProcessCommands(client);
                 channel.State.Should().Be(ChannelState.Detaching);
-                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached) { Channel = channel.Name });
+                client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached) { Channel = channel.Name });
                 await ProcessCommands(client);
                 channel.State.Should().Be(ChannelState.Detached);
             }
@@ -857,7 +857,7 @@ namespace IO.Ably.Tests.Realtime
 
             private async Task ReceiveDetachedMessage(AblyRealtime client)
             {
-                await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached)
+                client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached)
                 {
                     Channel = TestChannelName
                 });
@@ -976,7 +976,7 @@ namespace IO.Ably.Tests.Realtime
                     client.ConnectionManager.PendingMessages.First().Message.Messages.First().Data.Should().Be("connecting");
 
                     // Not connect the client
-                    await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+                    client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
                     await client.WaitForState(ConnectionState.Connected);
 
@@ -1004,7 +1004,7 @@ namespace IO.Ably.Tests.Realtime
 
                     // Now connect
                     client.Connect();
-                    await client.FakeProtocolMessageReceived(ConnectedProtocolMessage);
+                    client.FakeProtocolMessageReceived(ConnectedProtocolMessage);
 
                     await client.WaitForState(ConnectionState.Connected);
 
@@ -1082,9 +1082,9 @@ namespace IO.Ably.Tests.Realtime
                     }
                 });
 
-                await client.FakeMessageReceived(new Message("test", "best"), TestChannelName);
-                await client.FakeMessageReceived(new Message(string.Empty, "best"), TestChannelName);
-                await client.FakeMessageReceived(new Message("blah", "best"), TestChannelName);
+                client.FakeMessageReceived(new Message("test", "best"), TestChannelName);
+                client.FakeMessageReceived(new Message(string.Empty, "best"), TestChannelName);
+                client.FakeMessageReceived(new Message("blah", "best"), TestChannelName);
 
                 WaitOne();
 
@@ -1104,9 +1104,9 @@ namespace IO.Ably.Tests.Realtime
                     Done();
                 });
 
-                await client.FakeMessageReceived(new Message("test", "best"), "test");
-                await client.FakeMessageReceived(new Message(string.Empty, "best"), "test");
-                await client.FakeMessageReceived(new Message("blah", "best"), "test");
+                client.FakeMessageReceived(new Message(string.Empty, "best"), "test");
+                client.FakeMessageReceived(new Message("blah", "best"), "test");
+                client.FakeMessageReceived(new Message("test", "best"), "test");
 
                 WaitOne();
 
@@ -1148,7 +1148,7 @@ namespace IO.Ably.Tests.Realtime
 
                 var message = new Message("name", "encrypted with otherChannelOptions");
                 new MessageHandler(Protocol.Json).EncodePayloads(otherChannelOptions, new[] { message });
-                await client.FakeMessageReceived(message, encryptedChannel.Name);
+                client.FakeMessageReceived(message, encryptedChannel.Name);
 
                 WaitOne();
 
@@ -1177,7 +1177,7 @@ namespace IO.Ably.Tests.Realtime
                 };
 
                 var message = new Message("name", "encrypted with otherChannelOptions") { Encoding = "json" };
-                await client.FakeMessageReceived(message, channel.Name);
+                client.FakeMessageReceived(message, channel.Name);
 
                 WaitOne();
 
@@ -1199,7 +1199,7 @@ namespace IO.Ably.Tests.Realtime
                 });
 
                 var protocolMessage = SetupTestProtocolmessage();
-                await client.FakeProtocolMessageReceived(protocolMessage);
+                client.FakeProtocolMessageReceived(protocolMessage);
 
                 receivedMessages.Should().HaveCount(3);
                 receivedMessages.Select(x => x.Id).Should().BeEquivalentTo(
@@ -1226,7 +1226,7 @@ namespace IO.Ably.Tests.Realtime
                     new Message("message3", "data") { Id = "3" },
                 });
 
-                await client.FakeProtocolMessageReceived(protocolMessage);
+                client.FakeProtocolMessageReceived(protocolMessage);
 
                 receivedMessages.Should().HaveCount(3);
                 receivedMessages.Select(x => x.Id)
@@ -1254,7 +1254,7 @@ namespace IO.Ably.Tests.Realtime
                     new Message("message1", "data") { Id = "1", ConnectionId = messageConId },
                 });
 
-                await client.FakeProtocolMessageReceived(protocolMessage);
+                client.FakeProtocolMessageReceived(protocolMessage);
 
                 receivedMessage.ConnectionId.Should().Be(expectedConnId);
             }
@@ -1280,7 +1280,7 @@ namespace IO.Ably.Tests.Realtime
                     new Message("message1", "data") { Timestamp = timeStamp.AddMinutes(1) },
                 });
 
-                await client.FakeProtocolMessageReceived(protocolMessage);
+                client.FakeProtocolMessageReceived(protocolMessage);
 
                 receivedMessages.First().Timestamp.Should().Be(timeStamp);
                 receivedMessages.Last().Timestamp.Should().Be(timeStamp.AddMinutes(1));
@@ -1327,7 +1327,7 @@ namespace IO.Ably.Tests.Realtime
 
                 channel.Subscribe(_handler);
                 channel.Unsubscribe(_handler);
-                await client.FakeMessageReceived(new Message("test", "best"), channel.Name);
+                client.FakeMessageReceived(new Message("test", "best"), channel.Name);
 
                 // Handler should not throw
             }
@@ -1340,7 +1340,7 @@ namespace IO.Ably.Tests.Realtime
                 SetState(channel, ChannelState.Attached);
                 channel.Subscribe("test", _handler);
                 channel.Unsubscribe("test", _handler);
-                await client.FakeMessageReceived(new Message("test", "best"), channel.Name);
+                client.FakeMessageReceived(new Message("test", "best"), channel.Name);
 
                 // Handler should not throw
             }

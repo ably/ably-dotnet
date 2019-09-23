@@ -86,12 +86,12 @@ namespace IO.Ably.Transport.States.Connection
              Context.ExecuteCommand(command);
         }
 
-        public override void Connect()
+        public override RealtimeCommand Connect()
         {
             _inConnectTransition = true;
             _timer.Abort();
             Context.Connection.Key = string.Empty;
-            Context.ExecuteCommand(SetConnectingStateCommand.Create());
+            return SetConnectingStateCommand.Create();
         }
     }
 }

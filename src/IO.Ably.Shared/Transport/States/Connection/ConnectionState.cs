@@ -38,8 +38,9 @@ namespace IO.Ably.Transport.States.Connection
 
         public ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonUnknown;
 
-        public virtual void Connect()
+        public virtual RealtimeCommand Connect()
         {
+            return EmptyCommand.Instance;
         }
 
         public virtual void Close()

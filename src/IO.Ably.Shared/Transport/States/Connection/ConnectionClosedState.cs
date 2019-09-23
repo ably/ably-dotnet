@@ -24,9 +24,9 @@ namespace IO.Ably.Transport.States.Connection
 
         public override ConnectionState State => Realtime.ConnectionState.Closed;
 
-        public override void Connect()
+        public override RealtimeCommand Connect()
         {
-            Context.ExecuteCommand(SetConnectingStateCommand.Create());
+            return SetConnectingStateCommand.Create();
         }
 
         public override void BeforeTransition()

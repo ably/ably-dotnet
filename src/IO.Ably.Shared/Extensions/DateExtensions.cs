@@ -15,5 +15,11 @@ namespace IO.Ably
         {
             return Convert.ToInt64((date - Epoch).TotalMilliseconds);
         }
+
+        public static string TimeToString(this TimeSpan timeSpan)
+        {
+            //00:03:32.8289777
+            return String.Format("{0}h:{1}m:{2}s.{3}ms", timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds, timeSpan.Milliseconds);
+        }
     }
 }

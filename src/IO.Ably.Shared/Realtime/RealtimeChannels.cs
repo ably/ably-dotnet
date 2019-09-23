@@ -3,33 +3,43 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using IO.Ably;
-using IO.Ably.Realtime.Workflow;
-using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
 {
     public class RealtimeChannels : IChannels<IRealtimeChannel>
     {
-        internal ILogger Logger { get; private set; }
+        internal ILogger Logger { get; }
 
         private ConcurrentDictionary<string, RealtimeChannel> Channels { get; } = new ConcurrentDictionary<string, RealtimeChannel>();
 
         private readonly AblyRealtime _realtimeClient;
 
-        internal RealtimeChannels(AblyRealtime realtimeClient)
+        internal RealtimeChannels(AblyRealtime realtimeClient, Connection connection)
         {
-            Logger = realtimeClient.Logger;
             _realtimeClient = realtimeClient;
+            Logger = realtimeClient.Logger;
+            connection.On(ConnectionStateChange);
+        }
+
+        private void ConnectionStateChange(ConnectionStateChange stateChange)
+        {
+            foreach (var channel in Channels.Values)
+            {
+                try
+                {
+                    channel.ConnectionStateChanged(stateChange);
+                }
+                catch (Exception e)
+                {
+                    Logger.Error($"Error notifying channel '{channel.Name}' of connection stage change", e);
+                }
+            }
         }
 
         public IRealtimeChannel Get(string name)
         {
             return Get(name, null);
         }
-
-
 
         public IRealtimeChannel Get(string name, ChannelOptions options)
         {

@@ -116,7 +116,7 @@ namespace IO.Ably.Tests.Realtime
             client.Channels.Release(TestChannelName);
 
             // Act
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, TestChannelName));
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, TestChannelName));
 
             await Task.Delay(50);
 
@@ -128,13 +128,17 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTS4a")]
         public async Task Release_RemovesChannelWhenFailed()
         {
+            Logger.LogLevel = LogLevel.Debug;
+            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
             // Arrange
             var (client, channel) = await GetClientAndChannel();
             channel.Attach();
             client.Channels.Release("test");
 
             // Act
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
+
+            await ProcessCommands(client);
 
             // Assert
             client.Channels.Should().BeEmpty();
@@ -181,7 +185,7 @@ namespace IO.Ably.Tests.Realtime
             client.Channels.ReleaseAll();
 
             // Act
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, TestChannelName));
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, TestChannelName));
 
             await new ChannelAwaiter(channel, ChannelState.Detached).WaitAsync();
 
@@ -203,7 +207,7 @@ namespace IO.Ably.Tests.Realtime
             client.Channels.ReleaseAll();
 
             // Act
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
 
             // Assert
             client.Channels.Should().BeEmpty();

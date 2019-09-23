@@ -196,7 +196,7 @@ namespace IO.Ably.Tests.Realtime
                         Channel = channelName,
                         Presence = new PresenceMessage[] { presenceMessage }
                     };
-                    await client.Connection.ConnectionManager.OnTransportMessageReceived(protocolMessage);
+                    client.Connection.ConnectionManager.OnTransportMessageReceived(protocolMessage);
                 }
 
                 int n = 0;
@@ -251,7 +251,7 @@ namespace IO.Ably.Tests.Realtime
                     counter.Tick();
                 });
 
-                await client2.Connection.ConnectionManager.OnTransportMessageReceived(syncMessage);
+                client2.Connection.ConnectionManager.OnTransportMessageReceived(syncMessage);
                 await counter.Task;
 
                 syncPresenceMessages.Count.ShouldBeEquivalentTo(presenceMessages.Count);
@@ -742,7 +742,7 @@ namespace IO.Ably.Tests.Realtime
                     }
                 });
 
-                await client.Connection.ConnectionManager.OnTransportMessageReceived(new ProtocolMessage()
+                client.Connection.ConnectionManager.OnTransportMessageReceived(new ProtocolMessage()
                 {
                     Action = ProtocolMessage.MessageAction.Sync,
                     Channel = channelName,
@@ -750,7 +750,7 @@ namespace IO.Ably.Tests.Realtime
                     Presence = TestPresence1()
                 });
 
-                await client.Connection.ConnectionManager.OnTransportMessageReceived(new ProtocolMessage()
+                client.Connection.ConnectionManager.OnTransportMessageReceived(new ProtocolMessage()
                 {
                     Action = ProtocolMessage.MessageAction.Sync,
                     Channel = channelName,
@@ -758,7 +758,7 @@ namespace IO.Ably.Tests.Realtime
                     Presence = TestPresence2()
                 });
 
-                await client.Connection.ConnectionManager.OnTransportMessageReceived(new ProtocolMessage()
+                client.Connection.ConnectionManager.OnTransportMessageReceived(new ProtocolMessage()
                 {
                     Action = ProtocolMessage.MessageAction.Sync,
                     Channel = channelName,

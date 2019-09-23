@@ -36,8 +36,6 @@ namespace IO.Ably.Transport
 
         void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null, ChannelOptions channelOptions = null);
 
-        Task RetryAuthentication(ErrorInfo error = null, bool updateState = true);
-
         void HandleConnectingFailure(ErrorInfo error, Exception ex);
 
         void SendPendingMessages(bool resumed);

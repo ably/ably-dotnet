@@ -66,11 +66,11 @@ namespace IO.Ably.Tests.Realtime
             await WaitForState(client);
 
             var states = new List<ConnectionState>();
-            client.Connection.InternalStateChanged += (sender, args) =>
+            client.Connection.On((args) =>
             {
                 args.Should().BeOfType<ConnectionStateChange>();
                 states.Add(args.Current);
-            };
+            });
 
             client.Close();
 
@@ -175,7 +175,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetRealtimeClient(protocol);
             await client.WaitForState();
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
             await client.WaitForState(ConnectionState.Disconnected);
             var s = new Stopwatch();
             s.Start();
@@ -221,7 +221,7 @@ namespace IO.Ably.Tests.Realtime
             // show that the channel is not in the initialized state already
             chan1.State.Should().NotBe(ChannelState.Initialized);
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
             await client.WaitForState(ConnectionState.Disconnected);
             await client.ConnectionManager.SetState(new ConnectionFailedState(client.ConnectionManager, new ErrorInfo("force failed"), client.Logger));
             await client.WaitForState(ConnectionState.Failed);
@@ -322,10 +322,10 @@ namespace IO.Ably.Tests.Realtime
             });
 
             ErrorInfo error = null;
-            client.Connection.InternalStateChanged += (sender, args) =>
+            client.Connection.On((args) =>
             {
                 error = args.Reason;
-            };
+            });
 
             client.Connect();
 
@@ -1083,7 +1083,7 @@ namespace IO.Ably.Tests.Realtime
             var states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
 
-            client.Connection.InternalStateChanged += (sender, args) =>
+            client.Connection.On((args) =>
             {
                 if (args.HasError)
                 {
@@ -1091,7 +1091,7 @@ namespace IO.Ably.Tests.Realtime
                 }
 
                 states.Add(args.Current);
-            };
+            });
 
             var dummyError = new ErrorInfo
             {
@@ -1100,7 +1100,7 @@ namespace IO.Ably.Tests.Realtime
                 Message = "fake error"
             };
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
             {
                 Error = dummyError
             });
@@ -1159,13 +1159,13 @@ namespace IO.Ably.Tests.Realtime
                 opts.AutoConnect = false;
             });
 
-            client.Connection.InternalStateChanged += (sender, args) =>
+            client.Connection.On((args) =>
             {
                 if (args.Current == ConnectionState.Connected)
                 {
                     ResetEvent.Set();
                 }
-            };
+            });
             client.Connect();
 
             var result = ResetEvent.WaitOne(10000);
@@ -1187,11 +1187,11 @@ namespace IO.Ably.Tests.Realtime
             var stateChanges = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
 
-            client.Connection.InternalStateChanged += (sender, args) =>
+            client.Connection.On((args) =>
             {
                 stateChanges.Add(args.Current);
                 errors.Add(args.Reason);
-            };
+            });
 
             await client.Auth.AuthorizeAsync(new TokenParams() { Ttl = TimeSpan.FromSeconds(5) });
             var channel = client.Channels.Get("shortToken_test" + protocol);
@@ -1458,7 +1458,7 @@ namespace IO.Ably.Tests.Realtime
             var initialToken = client.RestClient.AblyAuth.CurrentToken;
             var initialClientId = client.ClientId;
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Auth));
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Auth));
 
             await Task.Delay(1000);
 
@@ -1490,7 +1490,7 @@ namespace IO.Ably.Tests.Realtime
                 });
             });
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = new ErrorInfo("testing RTN22a", 40140) });
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = new ErrorInfo("testing RTN22a", 40140) });
             var didReconect = await reconnectAwaiter.Task;
             didReconect.Should().BeTrue();
             client.RestClient.AblyAuth.CurrentToken.Should().NotBe(initialToken);
@@ -1527,7 +1527,7 @@ namespace IO.Ably.Tests.Realtime
                 });
             });
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = new ErrorInfo("testing RTN22a", 40140) });
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = new ErrorInfo("testing RTN22a", 40140) });
             var didReconect = await reconnectAwaiter.Task;
             didReconect.Should().BeTrue();
             client.RestClient.AblyAuth.CurrentToken.Should().NotBe(initialToken);
@@ -1572,7 +1572,7 @@ namespace IO.Ably.Tests.Realtime
                 }
             });
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
                 ConnectionDetails = new ConnectionDetails
                 {

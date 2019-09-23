@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -6,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    public abstract class AblyRealtimeSpecs : MockHttpRestSpecs
+    public abstract class AblyRealtimeSpecs : MockHttpRestSpecs, IDisposable
     {
         private AutoResetEvent _signal = new AutoResetEvent(false);
 
@@ -38,7 +40,9 @@ namespace IO.Ably.Tests
             clientOptions.SkipInternetCheck = true; // This is for the Unit tests
             clientOptions.UseSyncForTesting = true;
             clientOptions.CaptureCurrentSynchronizationContext = false;
-            return new AblyRealtime(clientOptions, opts => GetRestClient(handleRequestFunc, clientOptions));
+            var client = new AblyRealtime(clientOptions, opts => GetRestClient(handleRequestFunc, clientOptions));
+            RealtimeClients.Add(client);
+            return client;
         }
 
         internal virtual AblyRealtime GetRealtimeClient(Action<ClientOptions> optionsAction, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
@@ -48,13 +52,35 @@ namespace IO.Ably.Tests
             options.UseSyncForTesting = true;
             options.CaptureCurrentSynchronizationContext = false;
             optionsAction?.Invoke(options);
-            return new AblyRealtime(options, clientOptions => GetRestClient(handleRequestFunc, clientOptions));
+
+            var client = new AblyRealtime(options, clientOptions => GetRestClient(handleRequestFunc, clientOptions));
+            RealtimeClients.Add(client);
+            return client;
         }
 
         public AblyRealtimeSpecs(ITestOutputHelper output)
             : base(output)
         {
         }
+
+        public void Dispose()
+        {
+            foreach (var client in RealtimeClients)
+            {
+                try
+                {
+                    client.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Output?.WriteLine("Error disposing Client: " + ex.Message);
+                }
+            }
+
+            _signal?.Dispose();
+        }
+
+        public List<AblyRealtime> RealtimeClients { get; set; } = new List<AblyRealtime>();
     }
 
     public abstract class AblySpecs

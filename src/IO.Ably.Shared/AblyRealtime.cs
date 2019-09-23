@@ -7,7 +7,7 @@ using IO.Ably.Transport;
 
 namespace IO.Ably
 {
-    public class AblyRealtime : IRealtimeClient
+    public class AblyRealtime : IRealtimeClient, IDisposable
     {
         internal ILogger Logger { get; private set; }
 
@@ -30,16 +30,15 @@ namespace IO.Ably
             Logger = options.Logger;
             CaptureSynchronizationContext(options);
             // Start Reader thread
-            RestClient = createRestFunc != null ? createRestFunc.Invoke(options) : new AblyRest(options);
-            Channels = new RealtimeChannels(this);
-            Connection = new Connection(this, options.NowFunc, options.Logger);
 
+            RestClient = createRestFunc != null ? createRestFunc.Invoke(options) : new AblyRest(options);
+            Connection = new Connection(this, options.NowFunc, options.Logger);
             Connection.Initialise();
+
+            Channels = new RealtimeChannels(this, Connection);
 
             Workflow = new RealtimeWorkflow(Connection, Channels, Logger);
             Workflow.Start();
-
-            RestClient.AblyAuth.AuthUpdated += Connection.ConnectionManager.OnAuthUpdated;
 
             if (options.AutoConnect)
             {
@@ -108,7 +107,6 @@ namespace IO.Ably
         public void Close()
         {
             Connection.Close();
-            Workflow.Close();
         }
 
         /// <summary>Retrieves the ably service time</summary>
@@ -119,6 +117,7 @@ namespace IO.Ably
 
         internal void NotifyExternalClients(Action action)
         {
+            //TODO: Only keep this as the default in .net framework
             var context = Volatile.Read(ref _synchronizationContext);
             if (context != null)
             {
@@ -128,6 +127,22 @@ namespace IO.Ably
             {
                 action();
             }
+        }
+
+        public void Dispose()
+        {
+            // TODO: throw errors if the object is used after disposing
+
+            try
+            {
+                Connection?.Dispose();
+                Workflow.Close();
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error disposing Ably Realtime", e);
+            }
+
         }
     }
 }

@@ -28,7 +28,10 @@ namespace IO.Ably.Tests.Realtime
                 if (message.Original.Action == ProtocolMessage.MessageAction.Heartbeat)
                 {
                     await Task.Delay(1);
-                    await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
+                    client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat)
+                    {
+                        Id = message.Original.Id,
+                    });
                 }
             };
             var result = await client.Connection.PingAsync();
@@ -68,7 +71,9 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN13c")]
         public async Task WhenDefaultTimeoutExpiresWithoutReceivingHeartbeatMessage_ShouldFailWithTimeoutError()
         {
-            var client = await GetConnectedClient(opts => opts.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100));
+            Logger.LogLevel = LogLevel.Debug;
+            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
+            var client = await GetConnectedClient(opts => opts.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(1000));
 
             var result = await client.Connection.PingAsync();
 

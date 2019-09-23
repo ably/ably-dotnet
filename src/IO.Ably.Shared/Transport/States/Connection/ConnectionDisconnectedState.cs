@@ -37,9 +37,9 @@ namespace IO.Ably.Transport.States.Connection
 
         public override bool CanQueue => true;
 
-        public override void Connect()
+        public override RealtimeCommand Connect()
         {
-            Context.ExecuteCommand(SetConnectingStateCommand.Create());
+           return SetConnectingStateCommand.Create();
         }
 
         public override void Close()

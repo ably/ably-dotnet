@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
@@ -19,7 +20,7 @@ namespace IO.Ably.Tests
 
         protected ManualResetEvent ResetEvent { get; }
 
-        private List<IRealtimeClient> RealtimeClients = new List<IRealtimeClient>();
+        private List<AblyRealtime> RealtimeClients = new List<AblyRealtime>();
 
 
         public SandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
@@ -127,6 +128,7 @@ namespace IO.Ably.Tests
             public void LogEvent(LogLevel level, string message)
             {
                 try {
+                    Debug.WriteLine($"{level}: {message}");
                     _output.WriteLine($"{level}: {message}");
                 } catch (Exception ex) {
                     //In rare events this happens and crashes the test runner
@@ -176,7 +178,7 @@ namespace IO.Ably.Tests
                 try
                 {
 
-                    client.Close();
+                    client.Dispose();
                 }
                 catch (Exception ex)
                 {

@@ -91,10 +91,10 @@ namespace IO.Ably.Transport
             AttemptsInfo.RecordTokenRetry();
         }
 
-        public void Connect()
+        public RealtimeCommand Connect()
         {
             Connection.OnBeginConnect();
-            State.Connect();
+            return State.Connect();
         }
 
         public async Task SetState(ConnectionStateBase newState, bool skipAttach = false)
@@ -156,7 +156,7 @@ namespace IO.Ably.Transport
 
                 Connection.UpdateState(newState);
 
-                await ProcessQueuedMessages();
+                ProcessQueuedMessages();
             }
             catch (AblyException ex)
             {
@@ -273,22 +273,21 @@ namespace IO.Ably.Transport
 
 
 
-        //TODO: check whether we should return the commands rather than queue them
-        // we don't want another command in the queue to execute before this flow has completed
-        public async Task RetryAuthentication(ErrorInfo error = null, bool updateState = true)
+        public async Task<RealtimeCommand> RetryAuthentication(ErrorInfo error = null, bool updateState = true)
         {
             ClearTokenAndRecordRetry();
+
             if (updateState)
             {
-                ExecuteCommand(
-                    ListCommand.Create(
+                return ListCommand.Create(
                         SetDisconnectedStateCommand.Create(error, skipAttach: ConnectionState == ConnectionState.Connecting),
                         SetConnectingStateCommand.Create()
-                        ));
+                        );
             }
             else
             {
                 await RestClient.AblyAuth.AuthorizeAsync();
+                return EmptyCommand.Instance;
             }
         }
 
@@ -478,7 +477,7 @@ namespace IO.Ably.Transport
         {
             var message = Handler.ParseRealtimeData(data);
             Connection.SetConfirmedAlive();
-            OnTransportMessageReceived(message).WaitAndUnwrapException();
+            OnTransportMessageReceived(message);
         }
 
         public void ExecuteCommand(RealtimeCommand cmd)
@@ -491,17 +490,17 @@ namespace IO.Ably.Transport
             return await TransportParams.Create(AttemptsInfo.GetHost(), RestClient.AblyAuth, Options, Connection.Key, Connection.Serial);
         }
 
-        public async Task OnTransportMessageReceived(ProtocolMessage message)
+        public void OnTransportMessageReceived(ProtocolMessage message)
         {
             _queuedTransportMessages.Enqueue(message);
 
             if (_inTransitionToState == null)
             {
-                await ProcessQueuedMessages();
+                ProcessQueuedMessages();
             }
         }
 
-        private async Task ProcessQueuedMessages()
+        private void ProcessQueuedMessages()
         {
             while (_queuedTransportMessages != null && _queuedTransportMessages.TryDequeue(out var message))
             {
@@ -510,11 +509,11 @@ namespace IO.Ably.Transport
                     Logger.Debug("Proccessing queued message: " + message);
                 }
 
-                await ProcessTransportMessage(message);
+                ProcessTransportMessage(message);
             }
         }
 
-        private async Task ProcessTransportMessage(ProtocolMessage message)
+        private void ProcessTransportMessage(ProtocolMessage message)
         {
             ExecuteCommand(ProcessMessageCommand.Create(message));
         }
@@ -532,7 +531,7 @@ namespace IO.Ably.Transport
                             Logger.Debug("Network state is Online. Attempting reconnect.");
                         }
 
-                        Connect();
+                        ExecuteCommand(ConnectCommand.Create());
                     }
 
                     break;
@@ -556,64 +555,6 @@ namespace IO.Ably.Transport
             }
         }
 
-        public void OnAuthUpdated(object sender, AblyAuthUpdatedEventArgs args)
-        {
-            if (State.State == ConnectionState.Connected)
-            {
-                /* (RTC8a) If the connection is in the CONNECTED state and
-                 * auth.authorize is called or Ably requests a re-authentication
-                 * (see RTN22), the client must obtain a new token, then send an
-                 * AUTH ProtocolMessage to Ably with an auth attribute
-                 * containing an AuthDetails object with the token string. */
-                try
-                {
-                    /* (RTC8a3) The authorize call should be indicated as completed
-                     * with the new token or error only once realtime has responded
-                     * to the AUTH with either a CONNECTED or ERROR respectively. */
 
-                    // an ERROR protocol message will fail the connection
-                    void OnFailed(object o, ConnectionStateChange change)
-                    {
-                        if (change.Current == ConnectionState.Failed)
-                        {
-                            Connection.InternalStateChanged -= OnFailed;
-                            Connection.InternalStateChanged -= OnConnected;
-                            args.CompleteAuthorization(false);
-                        }
-                    }
-
-                    void OnConnected(object o, ConnectionStateChange change)
-                    {
-                        if (change.Current == ConnectionState.Connected)
-                        {
-                            Connection.InternalStateChanged -= OnFailed;
-                            Connection.InternalStateChanged -= OnConnected;
-                            args.CompleteAuthorization(true);
-                        }
-                    }
-
-                    Connection.InternalStateChanged += OnFailed;
-                    Connection.InternalStateChanged += OnConnected;
-
-                    var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Auth)
-                    {
-                        Auth = new AuthDetails { AccessToken = args.Token.Token }
-                    };
-
-                    Send(msg);
-                }
-                catch (AblyException e)
-                {
-                    Logger.Warning("OnAuthUpdated: closing transport after send failure");
-                    Logger.Debug(e.Message);
-                    Transport?.Close();
-                }
-            }
-            else
-            {
-                args.CompletedTask.TrySetResult(true);
-                Connect();
-            }
-        }
     }
 }
