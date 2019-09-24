@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace IO.Ably
@@ -57,5 +58,24 @@ namespace IO.Ably
             return mapFunction(value);
         }
 
+        public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout, T timeoutResult)
+        {
+            using (var cts = new CancellationTokenSource())
+            {
+                var delayTask = Task.Delay(timeout, cts.Token);
+
+                var resultTask = await Task.WhenAny(task, delayTask);
+                if (resultTask == delayTask)
+                {
+                    // Operation cancelled
+                    return timeoutResult;
+                }
+
+                // Cancel the timer task so that it does not fire
+                cts.Cancel();
+
+                return await task;
+            }
+        }
     }
 }

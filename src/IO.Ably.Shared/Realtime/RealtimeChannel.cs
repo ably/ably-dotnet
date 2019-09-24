@@ -387,13 +387,8 @@ namespace IO.Ably.Realtime
                 tw.SetException(ex);
             }
 
-            var result = await Task.WhenAny(Task.Delay(RealtimeClient.Options.RealtimeRequestTimeout), tw.Task).ConfigureAwait(false);
-            if (result == tw.Task)
-            {
-                return await tw.Task.ConfigureAwait(false);
-            }
-
-            return Result.Fail(new ErrorInfo("PublishAsync timeout expired. Message was not confirmed by the server"));
+            var failResult = Result.Fail(new ErrorInfo("PublishAsync timeout expired. Message was not confirmed by the server"));
+            return await tw.Task.TimeoutAfter(RealtimeClient.Options.RealtimeRequestTimeout, failResult);
         }
 
         public Task<PaginatedResult<Message>> HistoryAsync(bool untilAttach = false)
@@ -766,6 +761,7 @@ namespace IO.Ably.Realtime
         /// <param name="protocolMessage"></param>
         internal void EmitUpdate(ChannelState state, ProtocolMessage protocolMessage)
         {
+            // TODO: this is not right. Find what should be in place of that logic
             SetChannelState(State, protocolMessage.Error, protocolMessage, emitUpdate: true);
         }
     }
