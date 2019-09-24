@@ -184,7 +184,9 @@ namespace IO.Ably.Realtime.Workflow
                 {
                     case ConnectCommand _:
                         var nextCommand = ConnectionManager.Connect();
-                        return new [] { nextCommand };
+                        var initFailedChannelsOnConnect =
+                            ChannelCommand.CreateForAllChannels(InitialiseFailedChannelsOnConnect.Create());
+                        return new [] { initFailedChannelsOnConnect, nextCommand };
                     case CloseConnectionCommand _:
                         ConnectionManager.CloseConnection();
                         break;
@@ -243,6 +245,10 @@ namespace IO.Ably.Realtime.Workflow
                         return listCmd.Commands;
                     case PingTimerCommand cmd:
                         HandlePingTimer(cmd);
+                        break;
+
+                    case ChannelCommand cmd:
+                        await Channels.ExecuteCommand(cmd);
                         break;
                     default:
                         throw new AblyException("No handler found for - " + command.Explain());

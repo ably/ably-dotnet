@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using IO.Ably.Realtime.Workflow;
 
 namespace IO.Ably.Realtime
 {
@@ -128,6 +130,43 @@ namespace IO.Ably.Realtime
         IEnumerator IEnumerable.GetEnumerator()
         {
             return Channels.ToArray().Select(x => x.Value).GetEnumerator();
+        }
+
+        internal async Task ExecuteCommand(ChannelCommand cmd)
+        {
+            var channelName = cmd.ChannelName;
+            var affectedChannels = Channels.Values
+                                        .ToArray()
+                                        .Where(x => cmd.ChannelName.IsEmpty() || x.Name.EqualsTo(channelName))
+                                        .ToList();
+
+            foreach (var channel in affectedChannels)
+            {
+                switch (cmd.Command)
+                {
+                    case InitialiseFailedChannelsOnConnect _:
+                        HandleInitialiseFailedChannelsCommand(channel);
+                        break;
+                    default:
+                        Logger.Debug($"Channels can't handle command: '{cmd.Name}'");
+                        break;
+                }
+            }
+        }
+
+        private void HandleInitialiseFailedChannelsCommand(RealtimeChannel channel)
+        {
+            switch (_realtimeClient.Connection.State)
+            {
+                // TODO: Check wethere it's only Failed state that's affected
+
+                case ConnectionState.Failed:
+                    /* (RTN11d)
+                     * If the [Connection] state is FAILED,
+                     * transitions all the channels to INITIALIZED */
+                    channel.SetChannelState(ChannelState.Initialized);
+                    break;
+            }
         }
     }
 }

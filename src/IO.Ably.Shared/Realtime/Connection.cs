@@ -301,10 +301,5 @@ namespace IO.Ably.Realtime
                 Serial = message.ConnectionSerial.Value;
             }
         }
-
-        internal void OnBeginConnect()
-        {
-            BeginConnect?.Invoke(this, EventArgs.Empty);
-        }
     }
 }

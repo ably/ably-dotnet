@@ -93,7 +93,6 @@ namespace IO.Ably.Transport
 
         public RealtimeCommand Connect()
         {
-            Connection.OnBeginConnect();
             return State.Connect();
         }
 

@@ -21,6 +21,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.GetParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.QueuedPresenceMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\PresenceMap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\ChannelCommands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\IProtocolMessageHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\IQueueCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\PingRequest.cs" />
@@ -136,6 +137,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Types\PresenceMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\ProtocolMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\ActionOnDispose.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\ActionUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\ReflectionUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\StringUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\TaskUtils.cs" />

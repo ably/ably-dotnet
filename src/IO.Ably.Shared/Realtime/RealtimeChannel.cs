@@ -9,6 +9,7 @@ using IO.Ably.Rest;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
+using IO.Ably.Utils;
 
 namespace IO.Ably.Realtime
 {
@@ -80,7 +81,8 @@ namespace IO.Ably.Realtime
 
         public Presence Presence { get; }
 
-        internal RealtimeChannel(string name, string clientId, AblyRealtime realtimeClient, ChannelOptions options = null)
+        internal RealtimeChannel(string name, string clientId, AblyRealtime realtimeClient,
+            ChannelOptions options = null)
             : base(options?.Logger)
         {
             Name = name;
@@ -88,33 +90,8 @@ namespace IO.Ably.Realtime
             Presence = new Presence(realtimeClient.ConnectionManager, this, clientId, Logger);
             RealtimeClient = realtimeClient;
             State = ChannelState.Initialized;
-            SubscribeToConnectionEvents();
             AttachedAwaiter = new ChannelAwaiter(this, ChannelState.Attached, Logger, OnAttachTimeout);
             DetachedAwaiter = new ChannelAwaiter(this, ChannelState.Detached, Logger, OnDetachTimeout);
-        }
-
-        private void SubscribeToConnectionEvents()
-        {
-            ConnectionManager.Connection.BeginConnect += ConnectionOnBeginConnect;
-        }
-
-        private void UnSubscribeFromConnectionEvents()
-        {
-            ConnectionManager.Connection.BeginConnect -= ConnectionOnBeginConnect;
-        }
-
-        // TODO: Move logic to workflow class
-        private void ConnectionOnBeginConnect(object sender, EventArgs e)
-        {
-            switch (ConnectionState)
-            {
-                case ConnectionState.Failed:
-                    /* (RTN11d)
-                     * If the [Connection] state is FAILED,
-                     * transitions all the channels to INITIALIZED */
-                    SetChannelState(ChannelState.Initialized);
-                    break;
-            }
         }
 
         internal void ConnectionStateChanged(ConnectionStateChange connectionStateChange)
@@ -215,14 +192,7 @@ namespace IO.Ably.Realtime
         {
             if (State == ChannelState.Attached)
             {
-                try
-                {
-                    callback?.Invoke(true, null);
-                }
-                catch (Exception e)
-                {
-                    Logger.Error("Error in attach callback", e);
-                }
+                ActionUtils.SafeExecute(() => callback?.Invoke(true, null), Logger, $"{Name}-Attach()");
 
                 return;
             }
@@ -237,16 +207,16 @@ namespace IO.Ably.Realtime
 
         private void Attach(ErrorInfo error, ProtocolMessage msg = null, Action<bool, ErrorInfo> callback = null)
         {
-            error = error == null && msg?.Error != null ? msg.Error : error;
+            var actualError = error == null && msg?.Error != null ? msg.Error : error;
             if (AttachedAwaiter.StartWait(callback, ConnectionManager.Options.RealtimeRequestTimeout))
             {
                 SetChannelState(ChannelState.Attaching, error, msg);
             }
         }
 
-        public Task<Result> AttachAsync()
+        public async Task<Result> AttachAsync()
         {
-            return TaskWrapper.Wrap(Attach);
+            return await TaskWrapper.Wrap(Attach);
         }
 
         private void OnAttachTimeout()
@@ -279,15 +249,7 @@ namespace IO.Ably.Realtime
             if (State == ChannelState.Initialized || State == ChannelState.Detaching ||
                 State == ChannelState.Detached)
             {
-                try
-                {
-                    callback?.Invoke(true, null);
-                }
-                catch (Exception e)
-                {
-                    Logger.Error("Error in detach callback", e);
-                }
-
+                ActionUtils.SafeExecute(() => callback?.Invoke(true, null), Logger, $"{Name}-Detach()");
                 return;
             }
 
@@ -300,11 +262,15 @@ namespace IO.Ably.Realtime
             {
                 SetChannelState(ChannelState.Detaching);
             }
+            else
+            {
+                Logger.Debug("Detach is already happening. Channel: " + Name);
+            }
         }
 
-        public Task<Result> DetachAsync()
+        public async Task<Result> DetachAsync()
         {
-            return TaskWrapper.Wrap(Detach);
+            return await TaskWrapper.Wrap(Detach);
         }
 
         public void Subscribe(Action<Message> handler)
@@ -429,7 +395,6 @@ namespace IO.Ably.Realtime
             DetachedAwaiter?.Dispose();
             _handlers.RemoveAll();
             Presence?.Dispose();
-            UnSubscribeFromConnectionEvents();
         }
 
         internal void AddUntilAttachParameter(PaginatedRequestParams query)
