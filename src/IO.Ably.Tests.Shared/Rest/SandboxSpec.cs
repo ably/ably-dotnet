@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Utils;
 using Xunit;
 using Xunit.Abstractions;
 

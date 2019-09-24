@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -7,6 +10,7 @@ using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Types;
+using IO.Ably.Utils;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -31,6 +35,8 @@ namespace IO.Ably.Tests.Realtime
                 {
                     opts.Key = string.Empty; // clear the key to make the token non renewable
                 }
+
+                opts.CaptureCurrentSynchronizationContext = false;
 
                 opts.TokenDetails = _validToken;
                 opts.UseBinaryProtocol = false;
@@ -61,7 +67,7 @@ namespace IO.Ably.Tests.Realtime
             var client = await SetupConnectedClient();
 
             List<ConnectionState> states = new List<ConnectionState>();
-            var errors = new List<ErrorInfo>();
+            var errors = new ConcurrentBag<ErrorInfo>();
             client.Connection.On((args) =>
             {
                 if (args.HasError)
@@ -73,16 +79,19 @@ namespace IO.Ably.Tests.Realtime
             });
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = _tokenErrorInfo });
-            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
             await ProcessCommands(client);
+
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
             await client.WaitForState(ConnectionState.Connected);
 
             _renewTokenCalled.Should().BeTrue();
+
             Assert.Equal(new[] { ConnectionState.Disconnected, ConnectionState.Connecting, ConnectionState.Connected }, states);
+
             errors.Should().HaveCount(1);
-            errors[0].Should().Be(_tokenErrorInfo);
+            errors.First().Should().Be(_tokenErrorInfo);
 
             var currentToken = client.RestClient.AblyAuth.CurrentToken;
             currentToken.Token.Should().Be(_returnedDummyTokenDetails.Token);
@@ -114,6 +123,8 @@ namespace IO.Ably.Tests.Realtime
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = _tokenErrorInfo });
 
+            await ProcessCommands(client);
+
             var urlParams = LastCreatedTransport.Parameters.GetParams();
             urlParams.Should().ContainKey("resume");
             urlParams.Should().ContainKey("connection_serial");
@@ -142,6 +153,8 @@ namespace IO.Ably.Tests.Realtime
                 Error = _tokenErrorInfo
             });
 
+            await ProcessCommands(client);
+
             Assert.Equal(
                 new[]
             {
@@ -161,7 +174,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await SetupConnectedClient(renewable: false);
 
-            List<ConnectionState> states = new List<ConnectionState>();
+            ConcurrentBag<ConnectionState> states = new ConcurrentBag<ConnectionState>();
             var errors = new List<ErrorInfo>();
             client.Connection.On((args) =>
             {
@@ -260,7 +273,7 @@ namespace IO.Ably.Tests.Realtime
             client.FakeProtocolMessageReceived(protocolMessage);
         }
 
-        [Fact]
+        [Retry]
         [Trait("spec", "RTN15f")]
         public async Task AckMessagesAreResentWhenConnectionIsDroppedAndResumed()
         {

@@ -35,15 +35,12 @@ namespace IO.Ably.Transport.States.Connection
             {
                 case ProtocolMessage.MessageAction.Auth:
                     Context.ExecuteCommand(RetryAuthCommand.Create(false));
-                    //TaskUtils.RunInBackground(Context.RetryAuthentication(updateState: false), e => Logger.Warning(e.Message));
                     return true;
                 case ProtocolMessage.MessageAction.Connected:
                     Context.ExecuteCommand(SetConnectedStateCommand.Create(message, isUpdate: true));
-                    //await Context.SetState(new ConnectionConnectedState(Context, new ConnectionInfo(message), message.Error, Logger) { IsUpdate = true });
                     return true;
                 case ProtocolMessage.MessageAction.Close:
                     Context.ExecuteCommand(new SetClosedStateCommand(message.Error));
-                    //await Context.SetState(new ConnectionClosedState(Context, message.Error, Logger));
                     return true;
                 case ProtocolMessage.MessageAction.Disconnected:
                     if (await Context.CanUseFallBackUrl(message.Error))

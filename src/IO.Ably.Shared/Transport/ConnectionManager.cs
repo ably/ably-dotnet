@@ -10,6 +10,7 @@ using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
+using IO.Ably.Utils;
 using Microsoft.Win32;
 
 namespace IO.Ably.Transport
@@ -108,9 +109,6 @@ namespace IO.Ably.Transport
 
             try
             {
-                // TODO: Removed lock. Make sure SetState is only called from the workflow.
-                // Possibly move it completely there and make it private
-
                 if (!newState.IsUpdate)
                 {
                     if (State.State == newState.State)
@@ -270,8 +268,6 @@ namespace IO.Ably.Transport
             return AttemptsInfo.ShouldSuspend();
         }
 
-
-
         public async Task<RealtimeCommand> RetryAuthentication(ErrorInfo error = null, bool updateState = true)
         {
             ClearTokenAndRecordRetry();
@@ -293,6 +289,61 @@ namespace IO.Ably.Transport
         public void CloseConnection()
         {
             State.Close();
+        }
+
+        internal async Task OnAuthUpdated(TokenDetails tokenDetails, bool wait)
+        {
+            if (Connection.State != ConnectionState.Connected)
+            {
+                Connect();
+                return;
+            }
+
+
+            try
+            {
+                var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Auth)
+                {
+                    Auth = new AuthDetails { AccessToken = tokenDetails.Token }
+                };
+
+                Send(msg);
+            }
+            catch (AblyException e)
+            {
+                Logger.Warning("OnAuthUpdated: closing transport after send failure");
+                Logger.Debug(e.Message);
+                Transport?.Close();
+            }
+
+
+            if (wait)
+            {
+                var waiter = new ConnectionAwaiter(Connection,
+                    ConnectionState.Connected, // Good
+                    ConnectionState.Suspended, // the rest are terminal states
+                    ConnectionState.Closed,
+                    ConnectionState.Failed);
+
+                try
+                {
+                    await waiter.Wait(Defaults.DefaultRealtimeTimeout);
+                    switch (Connection.State)
+                    {
+                        case ConnectionState.Connected:
+                            Logger.Debug("onAuthUpdated: Successfully connected");
+                            return;
+                        default: // if it's one of the failed states
+                            Logger.Debug("onAuthUpdated: Failed to reconnect");
+                            throw new AblyException(Connection.ErrorReason);
+                    }
+                }
+                catch (TimeoutException)
+                {
+                    Logger.Debug("Waiting for AuthUpdated failed with timeout. Connected or Failed state not reached");
+                    throw new AblyException("Timeout while waiting for AuthUpgrade to complete");
+                }
+            }
         }
 
         public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null, ChannelOptions channelOptions = null)
@@ -359,7 +410,6 @@ namespace IO.Ably.Transport
         private void SendMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
         {
             AckProcessor.QueueIfNecessary(message, callback);
-
             SendToTransport(message);
         }
 
@@ -451,7 +501,7 @@ namespace IO.Ably.Transport
 
             lock (_pendingQueueLock)
             {
-                if (Logger.IsDebug)
+                if (Logger.IsDebug && PendingMessages.Count > 0)
                 {
                     Logger.Debug("Sending pending message: Count: " + PendingMessages.Count);
                 }

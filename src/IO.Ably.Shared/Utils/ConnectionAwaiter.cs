@@ -1,22 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
 
-namespace IO.Ably.Tests
+namespace IO.Ably.Utils
 {
-    /// <summary>Utility class to wait for a specified state of the connection, with timeout.</summary>
     internal class ConnectionAwaiter
     {
-        private static readonly HashSet<ConnectionState> PermanentlyFailedStates = new HashSet<ConnectionState>
-        {
-            ConnectionState.Suspended,
-            ConnectionState.Closed,
-            ConnectionState.Failed
-        };
-
         private readonly List<ConnectionState> _awaitedStates = new List<ConnectionState>();
 
         private readonly Connection _connection;

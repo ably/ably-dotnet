@@ -223,15 +223,11 @@ namespace IO.Ably.Realtime
 
         public event EventHandler<ConnectionStateChange> ConnectionStateChanged = delegate { };
 
-        /// <summary>
-        /// </summary>
         public void Connect()
         {
             ExecuteCommand(ConnectCommand.Create());
         }
 
-        /// <summary>
-        /// </summary>
         public Task<Result<TimeSpan?>> PingAsync()
         {
             return TaskWrapper.Wrap<TimeSpan?>(Ping);
@@ -290,8 +286,7 @@ namespace IO.Ably.Realtime
                         catch (Exception ex)
                         {
                             Logger.Error("Error notifying Connection state changed handlers", ex);
-                        }
-                    });
+                        }});
         }
 
         public void UpdateSerial(ProtocolMessage message)

@@ -256,9 +256,7 @@ namespace IO.Ably.Tests.Realtime
 
                 await rt.WaitForState(ConnectionState.Connected);
                 var ch = rt.Channels.Get(channelName);
-                ch.Attach();
-
-                await ch.WaitForState(ChannelState.Attached);
+                await ch.AttachAsync();
 
                 return (rt, ch);
             }

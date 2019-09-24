@@ -31,6 +31,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void BeforeTransition()
         {
+            // TODO: Move to RealtimeWorkflow
             // This is a terminal state. Clear the transport.
             Context.Connection.Key = null;
             Context.Connection.Id = null;

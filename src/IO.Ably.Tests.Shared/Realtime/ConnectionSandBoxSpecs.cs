@@ -1182,6 +1182,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 opts.AutoConnect = false;
                 opts.LogLevel = LogLevel.Debug;
+                opts.LogHander = new OutputLoggerSink(Output);
             });
 
             var stateChanges = new List<ConnectionState>();
@@ -1194,7 +1195,10 @@ namespace IO.Ably.Tests.Realtime
             });
 
             await client.Auth.AuthorizeAsync(new TokenParams() { Ttl = TimeSpan.FromSeconds(5) });
+
             var channel = client.Channels.Get("shortToken_test" + protocol);
+            await channel.AttachAsync();
+
             int count = 0;
             while (true)
             {

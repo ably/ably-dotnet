@@ -14,7 +14,7 @@ namespace IO.Ably
 {
     internal class AblyAuth : IAblyAuth
     {
-        public event EventHandler<AblyAuthUpdatedEventArgs> AuthUpdated;
+        public Func<TokenDetails, bool, Task> OnAuthUpdated = (token, wait) => Task.CompletedTask; // By default nothing should happen
 
         internal AblyAuth(ClientOptions options, AblyRest rest)
         {
@@ -156,7 +156,10 @@ namespace IO.Ably
 
             if (TokenRenewable)
             {
-                var token = await AuthorizeAsync();
+                var token = await RequestTokenAsync();
+
+                await OnAuthUpdated(token, false);
+
                 if (token.IsValidToken())
                 {
                     CurrentToken = token;
@@ -444,8 +447,8 @@ namespace IO.Ably
             CurrentToken = await RequestTokenAsync(tokenParams, authOptions);
             AuthMethod = AuthMethod.Token;
 
-            // Removed AuthUpdate to keep the method stateless
-            // TODO: Reimplement RTC8a3
+            // RTC8a3 - wait for reconnect if it's the Realtime client
+            await OnAuthUpdated(CurrentToken, true);
 
             return CurrentToken;
         }

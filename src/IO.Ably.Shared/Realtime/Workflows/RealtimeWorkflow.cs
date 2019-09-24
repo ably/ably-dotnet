@@ -177,7 +177,7 @@ namespace IO.Ably.Realtime.Workflow
             {
                 if (Logger.IsDebug)
                 {
-                    Logger.Debug("Executing command: " + command.Explain());
+                    Logger.Debug("Begin - " + command.Explain());
                 }
 
                 switch (command)
@@ -191,8 +191,10 @@ namespace IO.Ably.Realtime.Workflow
                         ConnectionManager.CloseConnection();
                         break;
                     case RetryAuthCommand retryAuth:
-                        await ConnectionManager.RetryAuthentication(updateState: retryAuth.UpdateState);
-                        break;
+                    {
+                        var next = await ConnectionManager.RetryAuthentication(retryAuth.Error, updateState: retryAuth.UpdateState);
+                        return new[] { next };
+                    }
                     case SetConnectedStateCommand cmd:
                         var connectedState = new ConnectionConnectedState(
                             ConnectionManager,
@@ -258,7 +260,7 @@ namespace IO.Ably.Realtime.Workflow
             {
                 if (Logger.IsDebug)
                 {
-                    Logger.Debug($"Command {command.Name}|{command.Id} completed.");
+                    Logger.Debug($"End - {command.Name}|{command.Id}");
                 }
             }
 

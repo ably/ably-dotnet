@@ -90,10 +90,10 @@ namespace IO.Ably.Tests
             var state = GetState(ErrorInfo.ReasonClosed);
 
             // Act
-            state.Connect();
+            var command = state.Connect();
 
             // Assert
-            _context.ShouldQueueCommand<SetConnectingStateCommand>();
+            command.Should().BeOfType<SetConnectingStateCommand>();
         }
 
         [Fact]

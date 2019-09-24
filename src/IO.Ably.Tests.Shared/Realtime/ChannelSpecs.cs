@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -550,7 +551,7 @@ namespace IO.Ably.Tests.Realtime
 
                 await ReceiveAttachedMessage(client);
 
-                channel.State.Should().Be(ChannelState.Attached);
+                await channel.WaitForState(ChannelState.Attached);
             }
 
             [Theory]
@@ -1070,7 +1071,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 var (client, channel) = await GetClientAndChannel(SwitchBinaryOff);
                 SetState(channel, ChannelState.Attached);
-                var messages = new List<Message>();
+                var messages = new ConcurrentBag<Message>();
                 int count = 0;
                 channel.Subscribe(message =>
                 {

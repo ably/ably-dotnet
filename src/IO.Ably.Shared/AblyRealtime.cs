@@ -40,12 +40,13 @@ namespace IO.Ably
             Workflow = new RealtimeWorkflow(Connection, Channels, Logger);
             Workflow.Start();
 
+            RestClient.AblyAuth.OnAuthUpdated = ConnectionManager.OnAuthUpdated;
+
             if (options.AutoConnect)
             {
                 Connect();
             }
         }
-
 
         private void CaptureSynchronizationContext(ClientOptions options)
         {

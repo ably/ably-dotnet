@@ -138,7 +138,7 @@ namespace IO.Ably.Tests.Realtime
             // Act
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
 
-            await ProcessCommands(client);
+            await channel.WaitForState(ChannelState.Failed);
 
             // Assert
             client.Channels.Should().BeEmpty();
@@ -197,9 +197,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTS4a")]
         public async Task ReleaseAll_ShouldRemoveChannelWhenFailded()
         {
-            Logger.LogLevel = LogLevel.Debug;
-            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
-
             // Arrange
             var (client, channel) = await GetClientAndChannel();
 
@@ -209,9 +206,10 @@ namespace IO.Ably.Tests.Realtime
             // Act
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
 
+            await ProcessCommands(client);
+
             // Assert
             client.Channels.Should().BeEmpty();
-            client.Close();
         }
 
         [Fact]
@@ -264,7 +262,10 @@ namespace IO.Ably.Tests.Realtime
 
             var channel2 = client.Channels.Get("test");
 
-            await channel.PublishAsync(new Message(null, "This is a test", Guid.NewGuid().ToString()));
+            channel.Publish(new Message(null, "This is a test", Guid.NewGuid().ToString()));
+
+            await Task.Delay(100);
+
             Assert.Equal(options.ToJson(), channel2.Options.ToJson());
             Assert.True(options.CipherParams.Equals(cipherParams));
         }

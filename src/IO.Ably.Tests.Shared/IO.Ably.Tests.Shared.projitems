@@ -29,7 +29,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AblySandboxFixture.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AblySpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AsyncLazy.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\ConnectionAwaiter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeAckProcessor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeAuth.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeConnectionContext.cs" />

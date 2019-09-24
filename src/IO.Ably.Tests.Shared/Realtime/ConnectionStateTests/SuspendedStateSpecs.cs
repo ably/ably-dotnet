@@ -89,10 +89,10 @@ namespace IO.Ably.Tests
         public void Connect_ShouldChangeStateToConnecting()
         {
             // Act
-            _state.Connect();
+            var command = _state.Connect();
 
             // Assert
-            _context.ShouldQueueCommand<SetConnectingStateCommand>();
+            command.Should().BeOfType<SetConnectingStateCommand>();
         }
 
         [Fact]
