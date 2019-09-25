@@ -158,8 +158,9 @@ namespace IO.Ably.Realtime
         {
             switch (_realtimeClient.Connection.State)
             {
-                // TODO: Check wethere it's only Failed state that's affected
-
+                // TODO: Check whether it's only Failed state that's affected
+                // TODO: Add tests
+                case ConnectionState.Closed:
                 case ConnectionState.Failed:
                     /* (RTN11d)
                      * If the [Connection] state is FAILED,
