@@ -514,14 +514,6 @@ namespace IO.Ably.Transport
             }
         }
 
-        public void FailMessageWaitingForAckAndClearOutgoingQueue(RealtimeChannel channel, ErrorInfo error)
-        {
-            error = error ?? new ErrorInfo($"Channel cannot publish messages whilst state is {channel.State}", 50000);
-            AckProcessor.FailChannelMessages(channel.Name, error);
-
-            // TODO: Clear messages from the outgoing queue
-        }
-
         void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)
         {
             var message = Handler.ParseRealtimeData(data);
