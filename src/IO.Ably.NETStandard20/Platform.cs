@@ -8,6 +8,8 @@ namespace IO.Ably
     {
         public string PlatformId => "netstandard20";
 
+        public bool SyncContextDefault => false;
+
         public ITransportFactory TransportFactory => null;
 
         static Platform()

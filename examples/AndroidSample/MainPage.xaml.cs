@@ -31,7 +31,6 @@ namespace AndroidSample
 
         public void OnError(Exception error)
         {
-            throw new NotImplementedException();
         }
 
         public void OnNext(string value)

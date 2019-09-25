@@ -118,7 +118,6 @@ namespace IO.Ably
 
         internal void NotifyExternalClients(Action action)
         {
-            //TODO: Only keep this as the default in .net framework
             var context = Volatile.Read(ref _synchronizationContext);
             if (context != null)
             {

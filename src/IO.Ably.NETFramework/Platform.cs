@@ -10,6 +10,8 @@ namespace IO.Ably
     {
         public string PlatformId => "framework";
 
+        public bool SyncContextDefault => true;
+
         public ITransportFactory TransportFactory => null;
 
         static Platform()

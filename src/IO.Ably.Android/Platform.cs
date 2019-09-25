@@ -7,6 +7,7 @@ namespace IO.Ably
     internal class Platform : IPlatform
     {
         public string PlatformId => "xamarin-android";
+        public bool SyncContextDefault => true;
         public ITransportFactory TransportFactory => null;
 
         static Platform()

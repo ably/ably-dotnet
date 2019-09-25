@@ -201,7 +201,7 @@ namespace IO.Ably
 
         public ITransportFactory TransportFactory { get; set; }
 
-        public bool CaptureCurrentSynchronizationContext { get; set; } = true;
+        public bool CaptureCurrentSynchronizationContext { get; set; }
 
         public SynchronizationContext CustomContext { get; set; }
 
@@ -237,8 +237,6 @@ namespace IO.Ably
 
         internal bool SkipInternetCheck { get; set; } = false;
 
-        internal bool UseSyncForTesting { get; set; } = false;
-
         internal TimeSpan RealtimeRequestTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;
 
         /// <summary>
@@ -262,6 +260,16 @@ namespace IO.Ably
 
         private void Init()
         {
+            // We are moving away from capturing the synchronisation context as this is something
+            // users of the library should worry about and not the library itself.
+            // We are going to set the default to off in .net standard libraries as in .net core
+            // the synchronization context doesn't exist
+            var syncContextDefault = IoC.SyncContextDefault;
+            if (syncContextDefault.HasValue)
+            {
+                CaptureCurrentSynchronizationContext = syncContextDefault.Value;
+            }
+
             SetIdempotentRestPublishingDefault(Defaults.ProtocolMajorVersion, Defaults.ProtocolMinorVersion);
         }
 
