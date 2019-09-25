@@ -27,7 +27,6 @@ namespace IO.Ably.Transport
 
         public bool UseBinaryProtocol { get; private set; }
 
-        // TODO: Look at inconsisten protection levels
         internal AuthMethod AuthMethod { get; private set; }
 
         public string AuthValue { get; private set; } // either key or token

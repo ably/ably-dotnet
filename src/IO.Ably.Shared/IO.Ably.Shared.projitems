@@ -139,7 +139,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Utils\ActionOnDispose.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\ActionUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\ConnectionAwaiter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utils\ReflectionUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\StringUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\TaskUtils.cs" />
   </ItemGroup>
