@@ -1,5 +1,32 @@
 # Change Log
 
+## [Unreleased](https://github.com/ably/ably-dotnet/tree/1.1.13)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.12...1.1.13)
+
+**Implemented enhancements:**
+
+- Ensure request method accepts UPDATE, PATCH & DELETE verbs [\#246](https://github.com/ably/ably-dotnet/issues/246)
+- Disable fallback hosts option - hot fix [\#216](https://github.com/ably/ably-dotnet/issues/216)
+- Integrate a Linter/Code formatting tool into the build process [\#179](https://github.com/ably/ably-dotnet/issues/179)
+- Ably dll and iOS app size increased [\#134](https://github.com/ably/ably-dotnet/issues/134)
+- Ability to set the JsonSerializerSettings [\#92](https://github.com/ably/ably-dotnet/issues/92)
+- Realtime: Presence [\#8](https://github.com/ably/ably-dotnet/issues/8)
+
+**Fixed bugs:**
+
+- Error from authUrl should give some indication that it's from the authUrl [\#252](https://github.com/ably/ably-dotnet/issues/252)
+- AttachAsync\(\) doesn't timeout on connection state changes [\#117](https://github.com/ably/ably-dotnet/issues/117)
+
+**Closed issues:**
+
+- Channel didn't attach within the default timeout; Code: 50000, Intermittent [\#115](https://github.com/ably/ably-dotnet/issues/115)
+- Update docs about using with Xamarin [\#77](https://github.com/ably/ably-dotnet/issues/77)
+
+**Merged pull requests:**
+
+- RunInBackground bug [\#367](https://github.com/ably/ably-dotnet/pull/367) ([withakay](https://github.com/withakay))
+
 ## [1.1.12](https://github.com/ably/ably-dotnet/tree/1.1.12) 
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.11...1.1.12)
