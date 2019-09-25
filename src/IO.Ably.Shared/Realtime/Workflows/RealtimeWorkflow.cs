@@ -200,7 +200,8 @@ namespace IO.Ably.Realtime.Workflow
                             ConnectionManager,
                             new ConnectionInfo(cmd.Message),
                             cmd.Message.Error,
-                            Logger
+                            Logger,
+                            cmd.IsUpdate
                         );
                         await ConnectionManager.SetState(connectedState);
                         break;

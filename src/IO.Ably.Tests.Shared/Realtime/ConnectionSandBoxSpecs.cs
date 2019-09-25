@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO.Pipes;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
@@ -800,7 +802,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15h1")]
         public async Task WhenDisconnectedMessageContainsTokenError_IfTokenIsNotRewable_ShouldBecomeFailedAndEmitError(Protocol protocol)
         {
-            var awaiter = new TaskCompletionAwaiter(10000);
             var authClient = await GetRestClient(protocol);
             var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
 
@@ -816,17 +817,11 @@ namespace IO.Ably.Tests.Realtime
             // null the key so the token is not renewable
             client.Options.Key = null;
 
-            client.Connection.Once(ConnectionEvent.Failed, state =>
-            {
-                awaiter.Tick();
-            });
-
             client.Connection.Once(ConnectionEvent.Disconnected, state => throw new Exception("should not become DISCONNECTED"));
             client.Connection.Once(ConnectionEvent.Connected, state => throw new Exception("should not become CONNECTED"));
 
-            await awaiter.Task;
+            await client.WaitForState(ConnectionState.Failed);
 
-            client.Connection.State.Should().Be(ConnectionState.Failed);
             client.Connection.ErrorReason.Should().NotBeNull();
         }
 
@@ -865,6 +860,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             await awaiter.Task;
+
             stateChanges.Should().HaveCount(3);
             stateChanges[0].HasError.Should().BeTrue();
             stateChanges[0].Reason.Code.Should().Be(40142);
@@ -891,6 +887,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             await client.WaitForState(ConnectionState.Connected);
+
 
             var stateChanges = new List<ConnectionStateChange>();
             client.Connection.Once(ConnectionEvent.Disconnected, state =>
@@ -931,7 +928,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15h2")]
         public async Task WhenDisconnectedMessageContainsTokenError_IfTokenRenewFailsWithFatalError_ShouldBecomeFailedAndEmitError(Protocol protocol)
         {
-            var awaiter = new TaskCompletionAwaiter(10000, 3);
             var authClient = await GetRestClient(protocol);
 
             var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
@@ -959,12 +955,12 @@ namespace IO.Ably.Tests.Realtime
                         client.Connection.State.Should().Be(ConnectionState.Failed);
                         client.Connection.ErrorReason.Should().NotBeNull();
                         stateChanges.Add(state3);
-                        awaiter.SetCompleted();
                     });
                 });
             });
 
-            await awaiter.Task;
+            await client.WaitForState(ConnectionState.Failed);
+
             stateChanges.Select(x => x.Current).Should().BeEquivalentTo(new[]
                                                                             {
                                                                                 ConnectionState.Disconnected,
@@ -1437,10 +1433,9 @@ namespace IO.Ably.Tests.Realtime
 
             await WaitToBecomeConnected(client);
 
-            await client.ConnectionManager.SetState(
-                new ConnectionSuspendedState(client.ConnectionManager, Logger));
+            client.Workflow.QueueCommand(SetSuspendedStateCommand.Create(ErrorInfo.ReasonSuspended));
 
-            client.Connection.State.Should().Be(ConnectionState.Suspended);
+            await client.WaitForState(ConnectionState.Suspended);
 
             Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, Logger);
 

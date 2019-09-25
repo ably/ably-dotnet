@@ -295,7 +295,7 @@ namespace IO.Ably.Transport
         {
             if (Connection.State != ConnectionState.Connected)
             {
-                Connect();
+                ExecuteCommand(Connect());
                 return;
             }
 

@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.Realtime;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -24,7 +25,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = GetClientWithFakeTransport();
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { ConnectionDetails = new ConnectionDetails() { ConnectionKey = "key" } });
-            await client.WaitForState();
+            await client.WaitForState(ConnectionState.Connected);
             client.Connection.Key.Should().Be("key");
         }
 

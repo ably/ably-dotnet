@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipes;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Rest;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Transport;
@@ -102,11 +104,11 @@ namespace IO.Ably.Tests.Realtime
 
                 var client = await GetRealtimeClient(protocol);
                 await client.WaitForState(ConnectionState.Connected);
-                client.Connection.State.ShouldBeEquivalentTo(ConnectionState.Connected);
+
 
                 var channel = client.Channels.Get(channelName);
-                channel.Attach();
-                await channel.WaitForState(ChannelState.Attached);
+                await channel.AttachAsync();
+
                 channel.State.ShouldBeEquivalentTo(ChannelState.Attached);
 
                 const string wontPass = "Won't pass newness test";
@@ -119,7 +121,7 @@ namespace IO.Ably.Tests.Realtime
                 });
 
                 /* Test message newness criteria as described in RTP2b */
-                PresenceMessage[] testData = new PresenceMessage[]
+                PresenceMessage[] testData = new[]
                 {
                     new PresenceMessage
                     {
@@ -146,7 +148,7 @@ namespace IO.Ably.Tests.Realtime
                         ConnectionId = "2",
                         Id = "2:2:1",
                         Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 2, default(TimeSpan)),
-                        Data = string.Empty
+                        Data = string.Empty,
                     },
                     /* Shouldn't pass newness test because of message serial, timestamp doesn't matter in this case */
                     new PresenceMessage
@@ -156,7 +158,7 @@ namespace IO.Ably.Tests.Realtime
                         ConnectionId = "2",
                         Id = "2:1:1",
                         Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 3, default(TimeSpan)),
-                        Data = wontPass
+                        Data = wontPass,
                     },
                     /* Shouldn't pass because of message index */
                     new PresenceMessage
@@ -165,7 +167,7 @@ namespace IO.Ably.Tests.Realtime
                         ClientId = "2",
                         ConnectionId = "2",
                         Id = "2:2:0",
-                        Data = wontPass
+                        Data = wontPass,
                     },
                     /* Should pass because id is not in form connId:clientId:index and timestamp is greater */
                     new PresenceMessage
@@ -175,7 +177,7 @@ namespace IO.Ably.Tests.Realtime
                         ConnectionId = "2",
                         Id = "wrong_id",
                         Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 10, default(TimeSpan)),
-                        Data = string.Empty
+                        Data = string.Empty,
                     },
                     /* Shouldn't pass because of timestamp */
                     new PresenceMessage
@@ -185,8 +187,8 @@ namespace IO.Ably.Tests.Realtime
                         ConnectionId = "2",
                         Id = "2:3:1",
                         Timestamp = new DateTimeOffset(2000, 1, 1, 1, 1, 5, default(TimeSpan)),
-                        Data = wontPass
-                    }
+                        Data = wontPass,
+                    },
                 };
 
                 foreach (var presenceMessage in testData)
@@ -194,10 +196,12 @@ namespace IO.Ably.Tests.Realtime
                     var protocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Presence)
                     {
                         Channel = channelName,
-                        Presence = new PresenceMessage[] { presenceMessage }
+                        Presence = new[] { presenceMessage },
                     };
                     client.Connection.ConnectionManager.OnTransportMessageReceived(protocolMessage);
                 }
+
+                await Task.Delay(100); // We need to let go of the thread to allow time for the manager thread to process messages
 
                 int n = 0;
                 foreach (var testMsg in testData)
@@ -641,16 +645,14 @@ namespace IO.Ably.Tests.Realtime
 
                 var client = await GetRealtimeClient(protocol);
                 await client.WaitForState(ConnectionState.Connected);
-                client.Connection.State.ShouldBeEquivalentTo(ConnectionState.Connected);
 
                 var channel = client.Channels.Get(channelName);
-                channel.Attach();
-                await channel.WaitForState(ChannelState.Attached);
+                await channel.AttachAsync();
                 channel.State.ShouldBeEquivalentTo(ChannelState.Attached);
 
                 PresenceMessage[] TestPresence1()
                 {
-                    return new PresenceMessage[]
+                    return new[]
                     {
                         new PresenceMessage
                         {
@@ -658,14 +660,14 @@ namespace IO.Ably.Tests.Realtime
                             ClientId = "1",
                             ConnectionId = "1",
                             Id = "1:0",
-                            Data = string.Empty
+                            Data = string.Empty,
                         },
                     };
                 }
 
                 PresenceMessage[] TestPresence2()
                 {
-                    return new PresenceMessage[]
+                    return new[]
                     {
                         new PresenceMessage
                         {
@@ -673,7 +675,7 @@ namespace IO.Ably.Tests.Realtime
                             ClientId = "2",
                             ConnectionId = "2",
                             Id = "2:1:0",
-                            Data = string.Empty
+                            Data = string.Empty,
                         },
                         new PresenceMessage
                         {
@@ -681,14 +683,14 @@ namespace IO.Ably.Tests.Realtime
                             ClientId = "3",
                             ConnectionId = "3",
                             Id = "3:1:0",
-                            Data = string.Empty
+                            Data = string.Empty,
                         },
                     };
                 }
 
                 PresenceMessage[] TestPresence3()
                 {
-                    return new PresenceMessage[]
+                    return new[]
                     {
                         new PresenceMessage
                         {
@@ -696,7 +698,7 @@ namespace IO.Ably.Tests.Realtime
                             ClientId = "3",
                             ConnectionId = "3",
                             Id = "3:0:0",
-                            Data = string.Empty
+                            Data = string.Empty,
                         },
                         new PresenceMessage
                         {
@@ -704,7 +706,7 @@ namespace IO.Ably.Tests.Realtime
                             ClientId = "4",
                             ConnectionId = "4",
                             Id = "4:1:1",
-                            Data = string.Empty
+                            Data = string.Empty,
                         },
                         new PresenceMessage
                         {
@@ -712,7 +714,7 @@ namespace IO.Ably.Tests.Realtime
                             ClientId = "4",
                             ConnectionId = "4",
                             Id = "4:2:2",
-                            Data = string.Empty
+                            Data = string.Empty,
                         },
                     };
                 }
@@ -747,7 +749,7 @@ namespace IO.Ably.Tests.Realtime
                     Action = ProtocolMessage.MessageAction.Sync,
                     Channel = channelName,
                     ChannelSerial = "1:1",
-                    Presence = TestPresence1()
+                    Presence = TestPresence1(),
                 });
 
                 client.Connection.ConnectionManager.OnTransportMessageReceived(new ProtocolMessage()
@@ -755,7 +757,7 @@ namespace IO.Ably.Tests.Realtime
                     Action = ProtocolMessage.MessageAction.Sync,
                     Channel = channelName,
                     ChannelSerial = "2:1",
-                    Presence = TestPresence2()
+                    Presence = TestPresence2(),
                 });
 
                 client.Connection.ConnectionManager.OnTransportMessageReceived(new ProtocolMessage()
@@ -763,8 +765,10 @@ namespace IO.Ably.Tests.Realtime
                     Action = ProtocolMessage.MessageAction.Sync,
                     Channel = channelName,
                     ChannelSerial = "2:",
-                    Presence = TestPresence3()
+                    Presence = TestPresence3(),
                 });
+
+                await Task.Delay(100); // Allow time for the messages to be processed
 
                 var presence1 = await channel.Presence.GetAsync("1", false);
                 var presence2 = await channel.Presence.GetAsync("2", false);
@@ -778,7 +782,7 @@ namespace IO.Ably.Tests.Realtime
 
                 seenLeaveMessageAsAbsentForClient4.ShouldBeEquivalentTo(true, "LEAVE message for client with id==4 was not stored as ABSENT");
 
-                PresenceMessage[] correctPresenceHistory = new PresenceMessage[]
+                PresenceMessage[] correctPresenceHistory = new[]
                 {
                     /* client 1 enters (will later be discarded) */
                     new PresenceMessage(PresenceAction.Enter, "1"),
@@ -790,7 +794,7 @@ namespace IO.Ably.Tests.Realtime
                     new PresenceMessage(PresenceAction.Enter, "4"),
                     new PresenceMessage(PresenceAction.Leave, "4"), /* geting dupe */
                     /* client 1 is eliminated from the presence map because the first portion of SYNC is discarded */
-                    new PresenceMessage(PresenceAction.Leave, "1")
+                    new PresenceMessage(PresenceAction.Leave, "1"),
                 };
 
                 presenceMessagesLog.Count.ShouldBeEquivalentTo(correctPresenceHistory.Length);
@@ -1526,10 +1530,11 @@ namespace IO.Ably.Tests.Realtime
                     var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
 
                     ErrorInfo errInfo = null;
-                    bool connecting = false;
-                    bool connected = false;
-                    List<int> queueCounts = new List<int>();
 
+                    List<ConnectionState> states = new List<ConnectionState>();
+
+                    List<int> queueCounts = new List<int>();
+                    client.Connection.On(change => states.Add(change.Current));
                     channel.State.Should().NotBe(ChannelState.Attached);
 
                     await WaitFor(done =>
@@ -1539,22 +1544,16 @@ namespace IO.Ably.Tests.Realtime
                             errInfo = info;
 
                             // after Enter the client should be connected and the queued message sent
-                            connected = client.Connection.State == ConnectionState.Connected;
                             queueCounts.Add(channel.Presence.PendingPresenceQueue.Count); // expect 0
                             done();
                         });
 
                         // 1 message should be queued at this point
                         queueCounts.Add(channel.Presence.PendingPresenceQueue.Count);
-
-                        // The client should be connecting
-                        connecting = client.Connection.State == ConnectionState.Connecting;
                     });
 
                     channel.State.Should().Be(ChannelState.Attached);
-
-                    connecting.Should().BeTrue();
-                    connected.Should().BeTrue();
+                    states.Should().BeEquivalentTo(new[] {ConnectionState.Connecting, ConnectionState.Connected});
                     errInfo.Should().BeNull();
                     queueCounts[0].Should().Be(1);
                     queueCounts[1].Should().Be(0);
@@ -1792,7 +1791,8 @@ namespace IO.Ably.Tests.Realtime
 
                     var client = await GetRealtimeClient(protocol, (options, _) => options.ClientId = "RTP16c".AddRandomSuffix());
                     int errCount = 0;
-                    async Task TestWithConnectionState(ConnectionStateBase state)
+
+                    async Task TestWithConnectionState(ConnectionState state, RealtimeCommand changeStateCommand)
                     {
                         var channel = client.Channels.Get("RTP16c".AddRandomSuffix()) as RealtimeChannel;
                         await client.WaitForState(ConnectionState.Connected);
@@ -1802,8 +1802,8 @@ namespace IO.Ably.Tests.Realtime
                         client.GetTestTransport().MessageSent = messageList.Add;
 
                         // force state
-                        await client.ConnectionManager.SetState(state);
-                        await client.WaitForState(state.State);
+                        client.Workflow.QueueCommand(changeStateCommand);
+                        await client.WaitForState(state);
 
                         var didError = false;
                         try
@@ -1817,7 +1817,7 @@ namespace IO.Ably.Tests.Realtime
                             errCount++;
                         }
 
-                        didError.Should().BeTrue($"should error for state {state.State}");
+                        didError.Should().BeTrue($"should error for state {state}");
 
                         // no presence messages sent
                         messageList.Any(x => x.Presence != null).Should().BeFalse();
@@ -1826,14 +1826,24 @@ namespace IO.Ably.Tests.Realtime
                         client = await GetRealtimeClient(protocol, (options, _) => options.ClientId = "RTP16c".AddRandomSuffix());
                     }
 
-                    await TestWithConnectionState(new ConnectionFailedState(client.ConnectionManager, ErrorInfo.ReasonFailed, client.Logger));
-                    await TestWithConnectionState(new ConnectionSuspendedState(client.ConnectionManager, ErrorInfo.ReasonFailed, client.Logger));
-                    await TestWithConnectionState(new ConnectionClosingState(client.ConnectionManager, client.Logger));
-                    await TestWithConnectionState(new ConnectionClosedState(client.ConnectionManager, client.Logger));
+                    await TestWithConnectionState(ConnectionState.Failed, SetFailedStateCommand.Create(ErrorInfo.ReasonFailed));
+                    await TestWithConnectionState(ConnectionState.Suspended, SetSuspendedStateCommand.Create(ErrorInfo.ReasonFailed));
+                    await TestWithConnectionState(ConnectionState.Closing, SetClosingStateCommand.Create());
+                    await TestWithConnectionState(ConnectionState.Closed, SetClosedStateCommand.Create());
 
                     errCount.Should().Be(4);
 
                     client.Close();
+
+                }
+
+                [Theory]
+                [ProtocolData]
+                [Trait("spec", "RTP16c")]
+                public async Task ChannelStateCondition_WhenChannelStateIsInvalid_MessageAreNotPublishedAndExceptionIsThrown(Protocol protocol)
+                {
+                    var client = await GetRealtimeClient(protocol, (options, _) => options.ClientId = "RTP16c".AddRandomSuffix());
+                    int errCount = 0;
 
                     /*
                      * Test Channel States
@@ -1844,6 +1854,7 @@ namespace IO.Ably.Tests.Realtime
                     async Task TestWithChannelState(ChannelState state)
                     {
                         var channel = client.Channels.Get("RTP16c".AddRandomSuffix()) as RealtimeChannel;
+
                         await client.WaitForState(ConnectionState.Connected);
 
                         // capture all outbound protocol messages for later inspection

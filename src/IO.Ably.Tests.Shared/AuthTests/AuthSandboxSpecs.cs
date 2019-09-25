@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    [Collection("AblyRest SandBox Collection")]
+    [Collection("SandBox Collection")]
     [Trait("requires", "sandbox")]
     public class AuthSandboxSpecs : SandboxSpecs
     {

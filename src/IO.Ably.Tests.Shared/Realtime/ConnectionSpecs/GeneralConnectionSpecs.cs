@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.IO.Pipes;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
@@ -22,12 +24,13 @@ namespace IO.Ably.Tests.Realtime
         [Fact]
         [Trait("spec", "RTN3")]
         [Trait("spec", "RTN6")]
-        public void WithAutoConnect_CallsConnectOnTransport()
+        public async Task WithAutoConnect_CallsConnectOnTransport()
         {
             var client = GetClientWithFakeTransport(opts => opts.AutoConnect = true);
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
-            client.ConnectionManager.ConnectionState.Should().Be(ConnectionState.Connected);
+            await client.WaitForState(ConnectionState.Connected);
+
             LastCreatedTransport.ConnectCalled.Should().BeTrue();
         }
 
@@ -65,7 +68,7 @@ namespace IO.Ably.Tests.Realtime
         [Fact]
         [Trait("spec", "RSA15a")]
         [Trait("sandboxTest", "needed")]
-        public void WhenConnectedMessageReceivedWithClientId_AblyAuthShouldUseConnectionClientId()
+        public async Task WhenConnectedMessageReceivedWithClientId_AblyAuthShouldUseConnectionClientId()
         {
             var client = GetClientWithFakeTransport();
 
@@ -73,6 +76,8 @@ namespace IO.Ably.Tests.Realtime
             {
                 ConnectionDetails = new ConnectionDetails { ClientId = "realtimeClient" }
             });
+
+            await ProcessCommands(client);
 
             client.RestClient.AblyAuth.ClientId.Should().Be("realtimeClient");
         }

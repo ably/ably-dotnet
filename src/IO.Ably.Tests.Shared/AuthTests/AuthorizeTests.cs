@@ -9,6 +9,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.AuthTests
 {
+    [Collection("UnitTests")]
     public class ServerTimeTests : AuthorizationTests
     {
 
@@ -198,6 +199,7 @@ namespace IO.Ably.Tests.AuthTests
         }
     }
 
+    [Collection("UnitTests")]
     public class AuthorizeTests : AuthorizationTests
     {
         [Fact]

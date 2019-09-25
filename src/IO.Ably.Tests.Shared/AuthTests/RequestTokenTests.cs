@@ -11,6 +11,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.AuthTests
 {
+    [Collection("UnitTests")]
     public class RequestTokenSpecs : AuthorizationTests
     {
         [Fact]

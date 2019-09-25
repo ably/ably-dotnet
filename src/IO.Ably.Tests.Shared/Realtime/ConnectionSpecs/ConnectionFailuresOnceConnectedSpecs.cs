@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
+using System.IO.Pipes;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -182,8 +183,6 @@ namespace IO.Ably.Tests.Realtime
                 {
                     errors.Add(args.Reason);
                 }
-
-                states.Add(args.Current);
             });
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
@@ -191,11 +190,7 @@ namespace IO.Ably.Tests.Realtime
                 Error = _tokenErrorInfo
             });
 
-            Assert.Equal(
-                new[]
-            {
-                ConnectionState.Failed
-            }, states);
+            await client.WaitForState(ConnectionState.Failed);
 
             errors.Should().NotBeEmpty();
         }
