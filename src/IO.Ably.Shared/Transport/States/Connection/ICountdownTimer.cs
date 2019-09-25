@@ -66,7 +66,13 @@ namespace IO.Ably.Transport.States.Connection
             return timer;
         }
 
-        private async void OnTimerOnElapsed()
+        private void OnTimerOnElapsed()
+        {
+            // Ignore the result but don't allow the Countdown timer to take down the process if an exception is thrown
+            var _ = OnTimerOnElapsedAsync();
+        }
+
+        private async Task OnTimerOnElapsedAsync()
         {
             lock (_lock)
             {
@@ -105,8 +111,6 @@ namespace IO.Ably.Transport.States.Connection
             catch (Exception ex)
             {
                 Logger.Error("Error in method called by timer.", ex);
-
-                // throw; //TODO: BAD ME!
             }
         }
 
