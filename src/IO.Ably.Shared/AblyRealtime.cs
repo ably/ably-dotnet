@@ -15,6 +15,8 @@ namespace IO.Ably
 
         private SynchronizationContext _synchronizationContext;
 
+        internal volatile bool Disposed = false;
+
         public AblyRealtime(string key)
             : this(new ClientOptions(key))
         {
@@ -98,6 +100,11 @@ namespace IO.Ably
 
         public void Connect()
         {
+            if (Disposed)
+            {
+                throw new ObjectDisposedException("This instance has been disposed. Please create a new one.");
+            }
+
             Connection.Connect();
         }
 
@@ -107,6 +114,11 @@ namespace IO.Ably
         /// </summary>
         public void Close()
         {
+            if (Disposed)
+            {
+                throw new ObjectDisposedException("This instance has been disposed. Please create a new one.");
+            }
+
             Connection.Close();
         }
 
@@ -131,10 +143,9 @@ namespace IO.Ably
 
         public void Dispose()
         {
-            // TODO: throw errors if the object is used after disposing
-
             try
             {
+                Disposed = true;
                 Connection?.Dispose();
                 Workflow.Close();
             }
@@ -142,7 +153,6 @@ namespace IO.Ably
             {
                 Logger.Error("Error disposing Ably Realtime", e);
             }
-
         }
     }
 }

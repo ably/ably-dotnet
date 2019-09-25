@@ -240,6 +240,11 @@ namespace IO.Ably.Realtime
 
         private void ExecuteCommand(RealtimeCommand cmd)
         {
+            if (RealtimeClient.Disposed)
+            {
+                throw new ObjectDisposedException("This instance has been disposed. Please create a new one.");
+            }
+            
             // Find a better way to reference the workflow
             RealtimeClient.Workflow.QueueCommand(cmd);
         }
