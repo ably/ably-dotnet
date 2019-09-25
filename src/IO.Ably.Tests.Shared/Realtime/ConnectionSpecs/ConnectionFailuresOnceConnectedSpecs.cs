@@ -62,9 +62,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15h")]
         public async Task WithDisconnectMessageWithTokenError_ShouldRenewTokenAndReconnect()
         {
-            Logger.LogLevel = LogLevel.Debug;
-            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
-
             var client = await SetupConnectedClient();
 
             List<ConnectionState> states = new List<ConnectionState>();

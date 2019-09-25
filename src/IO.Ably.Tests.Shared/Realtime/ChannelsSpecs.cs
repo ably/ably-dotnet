@@ -128,8 +128,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTS4a")]
         public async Task Release_RemovesChannelWhenFailed()
         {
-            Logger.LogLevel = LogLevel.Debug;
-            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
             // Arrange
             var (client, channel) = await GetClientAndChannel();
             channel.Attach();

@@ -71,8 +71,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN13c")]
         public async Task WhenDefaultTimeoutExpiresWithoutReceivingHeartbeatMessage_ShouldFailWithTimeoutError()
         {
-            Logger.LogLevel = LogLevel.Debug;
-            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
             var client = await GetConnectedClient(opts => opts.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(1000));
 
             var result = await client.Connection.PingAsync();
