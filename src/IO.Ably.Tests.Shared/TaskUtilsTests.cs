@@ -32,7 +32,7 @@ namespace IO.Ably.Tests
             result.Should().BeTrue();
         }
 
-        [Fact]
+        [Fact(Skip="This kills the test runner. ONLY run manually")]
         public async Task FailingTaskWrappingAsyncWillNotHaveExceptionHandled()
         {
             /*
