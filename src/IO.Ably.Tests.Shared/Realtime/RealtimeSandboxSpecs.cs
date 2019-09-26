@@ -53,9 +53,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTC8a3")]
         public async Task WithConnectedClient_AuthorizeObtainsNewTokenAndUpgradesConnection_AndShouldEmitUpdate(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
-            Logger.LoggerSink = new OutputLoggerSink(Output);
-
             var validClientId1 = "RTC8";
             var invalidClientId = "RTC8-incompatible-clientId";
 
@@ -104,9 +101,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTC8a3")]
         public async Task WithNotConnectedClient_WhenAuthorizeCalled_ShouldConnect(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
-            Logger.LoggerSink = new OutputLoggerSink(Output);
-
             var validClientId1 = "RTC8";
 
             var client2 = await GetRealtimeClient(protocol, (opts, _) =>
