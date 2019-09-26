@@ -38,8 +38,6 @@ namespace IO.Ably.Tests.Realtime
 
             result.IsSuccess.Should().BeTrue();
 
-            // Because the now object is static when executed in parallel with other tests the results are affected
-            // TODO: Verify this is fixed
             result.Value.Value.Should().BeGreaterThan(TimeSpan.FromMilliseconds(0));
 
             // reset

@@ -173,7 +173,7 @@ namespace IO.Ably.Tests
 
         public void Dispose()
         {
-            Output.WriteLine("Closing connections: " + RealtimeClients.Count);
+            Output.WriteLine("Test end disposing connections: " + RealtimeClients.Count);
             foreach (var client in RealtimeClients)
             {
                 try

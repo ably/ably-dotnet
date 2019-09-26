@@ -89,7 +89,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             var client = new AblyRealtime(new ClientOptions(ValidKey)
             {
                 UseBinaryProtocol = false,
-                UseSyncForTesting = true,
                 SkipInternetCheck = true,
                 TransportFactory = FakeTransportFactory
             });

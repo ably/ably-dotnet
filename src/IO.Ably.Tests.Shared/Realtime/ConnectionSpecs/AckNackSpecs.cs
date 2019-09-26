@@ -36,8 +36,8 @@ namespace IO.Ably.Tests.Realtime
             var message = new ProtocolMessage(ProtocolMessage.MessageAction.Ack);
             _realtime.ConnectionManager.OnTransportMessageReceived(message);
 
-            // TODO: Find a better way to force the Workfrow thread to complete
             await Task.Delay(100); // Let the execution complete
+
             _ackProcessor.OnMessageReceivedCalled.Should().BeTrue();
         }
 

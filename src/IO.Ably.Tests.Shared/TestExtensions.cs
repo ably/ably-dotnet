@@ -17,6 +17,17 @@ namespace IO.Ably.Tests
             factory.OnTransportCreated = onCreated;
         }
 
+        internal static void BlockActionFromSending(this IRealtimeClient client, ProtocolMessage.MessageAction action)
+        {
+            var transport = ((AblyRealtime)client).ConnectionManager.Transport as TestTransportWrapper;
+            if (transport is null)
+            {
+                throw new Exception("Client is not using test transport so you can't add BlockedActions");
+            }
+
+            transport.BlockSendActions.Add(action);
+        }
+
         internal static void SimulateLostConnectionAndState(this IRealtimeClient client)
         {
             client.Connection.Id = string.Empty;

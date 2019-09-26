@@ -145,7 +145,6 @@ namespace IO.Ably
         {
             try
             {
-                Disposed = true;
                 Connection?.Dispose();
                 Workflow.Close();
             }
@@ -153,6 +152,8 @@ namespace IO.Ably
             {
                 Logger.Error("Error disposing Ably Realtime", e);
             }
+
+            Disposed = true;
         }
     }
 }

@@ -211,6 +211,7 @@ namespace IO.Ably.Realtime
             Close();
             ClearAllDelegatesOfStateChangeEventHandler();
             CleanUpNetworkStateEvents();
+            Off();
         }
 
         private void ClearAllDelegatesOfStateChangeEventHandler()
@@ -244,7 +245,7 @@ namespace IO.Ably.Realtime
             {
                 throw new ObjectDisposedException("This instance has been disposed. Please create a new one.");
             }
-            
+
             // Find a better way to reference the workflow
             RealtimeClient.Workflow.QueueCommand(cmd);
         }

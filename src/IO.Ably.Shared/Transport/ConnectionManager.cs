@@ -299,7 +299,6 @@ namespace IO.Ably.Transport
                 return;
             }
 
-
             try
             {
                 var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Auth)
@@ -319,29 +318,40 @@ namespace IO.Ably.Transport
 
             if (wait)
             {
-                var waiter = new ConnectionAwaiter(Connection,
-                    ConnectionState.Connected, // Good
-                    ConnectionState.Suspended, // the rest are terminal states
-                    ConnectionState.Closed,
-                    ConnectionState.Failed);
+                var waiter = new ConnectionChangeAwaiter(Connection);
 
                 try
                 {
-                    await waiter.Wait(Defaults.DefaultRealtimeTimeout);
-                    switch (Connection.State)
+                    while (true)
                     {
-                        case ConnectionState.Connected:
-                            Logger.Debug("onAuthUpdated: Successfully connected");
-                            return;
-                        default: // if it's one of the failed states
-                            Logger.Debug("onAuthUpdated: Failed to reconnect");
-                            throw new AblyException(Connection.ErrorReason);
+                        var (success, newState) = await waiter.Wait(Defaults.DefaultRealtimeTimeout);
+                        if (success == false)
+                            throw new AblyException(new ErrorInfo(
+                                $"Connection state didn't change after Auth updated within {Defaults.DefaultRealtimeTimeout}", 40140));
+
+                        switch (newState)
+                        {
+                            case ConnectionState.Connected:
+                                Logger.Debug("onAuthUpdated: Successfully connected");
+                                return;
+                            case ConnectionState.Connecting:
+                            case ConnectionState.Disconnected:
+                                continue;
+                            default: // if it's one of the failed states
+                                Logger.Debug("onAuthUpdated: Failed to reconnect");
+                                throw new AblyException(Connection.ErrorReason);
+                        }
                     }
+
                 }
-                catch (TimeoutException)
+                catch (AblyException)
                 {
-                    Logger.Debug("Waiting for AuthUpdated failed with timeout. Connected or Failed state not reached");
-                    throw new AblyException("Timeout while waiting for AuthUpgrade to complete");
+                    throw;
+                }
+                catch (Exception e)
+                {
+                    Logger.Error("Error in AuthUpdated handler", e);
+                    throw new AblyException(new ErrorInfo($"Error while waiting for connection to update after updating Auth"), e);
                 }
             }
         }
