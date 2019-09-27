@@ -1,23 +1,15 @@
 ﻿using System;
 using System.Threading.Tasks;
-using IO.Ably;
+using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
-    using IO.Ably.Realtime;
-
     internal class ConnectionClosingState : ConnectionStateBase
     {
         private const int CloseTimeout = 1000;
         private readonly ICountdownTimer _timer;
-
-        /// <summary>
-        /// used to mitigate a potential race condition where by OnAttachToContext()
-        /// can be called after Connect() is called but before the new state is attached
-        /// </summary>
-        private bool _inConnectTransition = false;
 
         public ConnectionClosingState(IConnectionContext context, ILogger logger)
             : this(context, null, new CountdownTimer("Closing state timer", logger), logger)
@@ -51,6 +43,12 @@ namespace IO.Ably.Transport.States.Connection
             return false;
         }
 
+        private void TransitionState(RealtimeCommand command)
+        {
+            _timer.Abort();
+            Context.ExecuteCommand(command);
+        }
+
         public override void AbortTimer()
         {
             _timer.Abort();
@@ -58,11 +56,6 @@ namespace IO.Ably.Transport.States.Connection
 
         public override async Task OnAttachToContext()
         {
-            if (_inConnectTransition)
-            {
-                return;
-            }
-
             var transport = Context.Transport;
             if (transport?.State == TransportState.Connected)
             {
@@ -80,15 +73,8 @@ namespace IO.Ably.Transport.States.Connection
             Context.ExecuteCommand(SetClosedStateCommand.Create());
         }
 
-        private void TransitionState(RealtimeCommand command)
-        {
-            _timer.Abort();
-             Context.ExecuteCommand(command);
-        }
-
         public override RealtimeCommand Connect()
         {
-            _inConnectTransition = true;
             _timer.Abort();
             Context.Connection.Key = string.Empty;
             return SetConnectingStateCommand.Create();
