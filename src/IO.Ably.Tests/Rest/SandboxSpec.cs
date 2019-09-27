@@ -67,7 +67,12 @@ namespace IO.Ably.Tests
 
             public void LogEvent(LogLevel level, string message)
             {
-                _output.WriteLine($"{level}: {message}");
+                try 
+                {
+                    _output.WriteLine($"{level}: {message}");
+                }
+                catch { } // we don't care if that fails
+                
             }
         }
 
