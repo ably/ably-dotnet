@@ -52,11 +52,6 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class RealtimeWorkflow : IQueueCommand
     {
-        public static class Timers
-        {
-            public const string PingTimer = "PingTimer";
-        }
-
         public Connection Connection { get; }
         public RealtimeChannels Channels { get; }
 

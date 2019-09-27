@@ -19,8 +19,6 @@ namespace IO.Ably.Realtime
 
     public sealed class Connection : EventEmitter<ConnectionEvent, ConnectionStateChange>, IDisposable
     {
-        internal event EventHandler BeginConnect;
-
         private readonly Guid ObjectId = Guid.NewGuid(); //Used to identify the connection object for OsEventSubscribers
         private static readonly ConcurrentDictionary<Guid, Action<NetworkState>> OsEventSubscribers =
             new ConcurrentDictionary<Guid, Action<NetworkState>>();
@@ -224,6 +222,9 @@ namespace IO.Ably.Realtime
 
         public event EventHandler<ConnectionStateChange> ConnectionStateChanged = delegate { };
 
+        // Not be used for testing. Tests should depend on functionality only available to public clients
+        internal event EventHandler<ConnectionStateChange> InternalStateChanged = delegate { };
+
         public void Connect()
         {
             ExecuteCommand(ConnectCommand.Create());
@@ -281,6 +282,10 @@ namespace IO.Ably.Realtime
 
             var externalHandlers =
                 Volatile.Read(ref ConnectionStateChanged); // Make sure we get all the subscribers on all threads
+
+            var internalHandlers = Volatile.Read(ref InternalStateChanged);
+
+            internalHandlers(this, stateChange);
 
             RealtimeClient.NotifyExternalClients(
                 () => {

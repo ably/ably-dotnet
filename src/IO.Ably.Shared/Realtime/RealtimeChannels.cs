@@ -20,10 +20,10 @@ namespace IO.Ably.Realtime
         {
             _realtimeClient = realtimeClient;
             Logger = realtimeClient.Logger;
-            connection.On(ConnectionStateChange);
+            connection.InternalStateChanged += ConnectionStateChange;
         }
 
-        private void ConnectionStateChange(ConnectionStateChange stateChange)
+        private void ConnectionStateChange(object _, ConnectionStateChange stateChange)
         {
             foreach (var channel in Channels.Values)
             {

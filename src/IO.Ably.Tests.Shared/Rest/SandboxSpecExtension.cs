@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
-using IO.Ably.Utils;
+using IO.Ably.Tests.Infrastructure;
 
 namespace IO.Ably.Tests
 {
