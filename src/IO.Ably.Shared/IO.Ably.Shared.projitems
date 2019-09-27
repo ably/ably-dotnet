@@ -27,6 +27,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\PingRequest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\RealtimeCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\RealtimeCommands.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\RealtimeState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\RealtimeWorkflow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\IConnectionContext.cs" />
