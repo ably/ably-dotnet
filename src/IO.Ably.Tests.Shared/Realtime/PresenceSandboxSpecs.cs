@@ -49,7 +49,6 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTP1")]
             public async Task WhenAttachingToAChannelWithMembers_PresenceShouldBeInProgress(Protocol protocol)
             {
-                Logger.LogLevel = LogLevel.Debug;
                 var testChannel = GetTestChannelName();
                 var client = await GetRealtimeClient(protocol);
                 var client2 = await GetRealtimeClient(protocol);
@@ -99,8 +98,6 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTP18c")]
             public async Task PresenceMapBehaviour_ShouldConformToSpec(Protocol protocol)
             {
-                Logger.LogLevel = LogLevel.Debug;
-
                 var channelName = "presence_map_tests_newness".AddRandomSuffix();
 
                 var client = await GetRealtimeClient(protocol);
@@ -640,8 +637,6 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTP18b")]
             public async Task PresenceMap_WhenSyncingLeaveStoredAsAbsentAndDeleted(Protocol protocol)
             {
-                Logger.LogLevel = LogLevel.Debug;
-
                 var channelName = "presence_map_tests_newness".AddRandomSuffix();
 
                 var client = await GetRealtimeClient(protocol);
@@ -892,11 +887,7 @@ namespace IO.Ably.Tests.Realtime
             public async Task PresenceMap_WithExistingMembers_WhenSync_ShouldRemoveLocalMembers_RTP19(Protocol protocol)
             {
                 var channelName = "RTP19".AddRandomSuffix();
-                var client = await GetRealtimeClient(protocol, (options, settings) =>
-                {
-                    options.LogHander = new OutputLoggerSink(Output);
-                    options.LogLevel = LogLevel.Debug;
-                });
+                var client = await GetRealtimeClient(protocol);
                 var channel = client.Channels.Get(channelName);
 
                 // ENTER presence on a channel
@@ -1047,8 +1038,6 @@ namespace IO.Ably.Tests.Realtime
             [ProtocolData]
             public async Task WillThrowAblyException_WhenInvalidMessagesArePresent(Protocol protocol)
             {
-                Logger.LogLevel = LogLevel.Debug;
-
                 var channelName = "presence_tests_exception".AddRandomSuffix();
 
                 var client = await GetRealtimeClient(protocol);
