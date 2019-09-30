@@ -30,8 +30,6 @@ namespace IO.Ably.Transport
 
         void DestroyTransport(bool suppressClosedEvent = true);
 
-        void SetConnectionClientId(string clientId);
-
         bool ShouldWeRenewToken(ErrorInfo error);
 
         void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null, ChannelOptions channelOptions = null);

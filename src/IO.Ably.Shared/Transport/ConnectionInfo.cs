@@ -5,18 +5,7 @@ namespace IO.Ably.Transport
 {
     public class ConnectionInfo
     {
-        public static readonly ConnectionInfo Empty = new ConnectionInfo();
-
-        private ConnectionInfo() { }
-
-        public ConnectionInfo(string connectionId, long connectionSerial, string connectionKey, string clientId, TimeSpan? connectionStateTtl = null)
-        {
-            ClientId = clientId;
-            ConnectionId = connectionId;
-            ConnectionSerial = connectionSerial;
-            ConnectionKey = connectionKey;
-            ConnectionStateTtl = connectionStateTtl;
-        }
+        public ConnectionInfo() { }
 
         public ConnectionInfo(ProtocolMessage message)
         {

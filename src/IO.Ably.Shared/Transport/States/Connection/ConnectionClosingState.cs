@@ -23,7 +23,7 @@ namespace IO.Ably.Transport.States.Connection
             Error = error ?? ErrorInfo.ReasonClosed;
         }
 
-        public override ConnectionState State => Realtime.ConnectionState.Closing;
+        public override ConnectionState State => ConnectionState.Closing;
 
         public override async ValueTask<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
         {
@@ -76,6 +76,7 @@ namespace IO.Ably.Transport.States.Connection
         public override RealtimeCommand Connect()
         {
             _timer.Abort();
+            //TODO: Clear connection key in state
             Context.Connection.Key = string.Empty;
             return SetConnectingStateCommand.Create();
         }

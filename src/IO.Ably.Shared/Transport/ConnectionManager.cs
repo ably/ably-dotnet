@@ -245,14 +245,6 @@ namespace IO.Ably.Transport
             }
         }
 
-        public void SetConnectionClientId(string clientId)
-        {
-            if (clientId.IsNotEmpty())
-            {
-                RestClient.AblyAuth.ConnectionClientId = clientId;
-            }
-        }
-
         public bool ShouldWeRenewToken(ErrorInfo error)
         {
             if (error == null)

@@ -39,7 +39,7 @@ namespace IO.Ably
 
             Channels = new RealtimeChannels(this, Connection);
 
-            Workflow = new RealtimeWorkflow(Connection, Channels, Logger);
+            Workflow = new RealtimeWorkflow(this, Logger);
             Workflow.Start();
 
             RestClient.AblyAuth.OnAuthUpdated = ConnectionManager.OnAuthUpdated;

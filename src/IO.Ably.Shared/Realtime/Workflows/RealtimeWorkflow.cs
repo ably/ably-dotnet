@@ -12,6 +12,8 @@ namespace IO.Ably.Realtime.Workflow
 {
     internal class RealtimeWorkflow : IQueueCommand
     {
+        AblyRealtime Client { get; }
+        private AblyAuth Auth => Client.RestClient.AblyAuth;
         public Connection Connection { get; }
         public RealtimeChannels Channels { get; }
 
@@ -34,14 +36,15 @@ namespace IO.Ably.Realtime.Workflow
                 SingleWriter = false
             });
 
-        public RealtimeWorkflow(Connection connection, RealtimeChannels channels, ILogger logger)
+        public RealtimeWorkflow(AblyRealtime client, ILogger logger)
         {
-            Connection = connection;
-            Channels = channels;
+            Client = client;
+            Connection = client.Connection;
+            Channels = client.Channels;
             Logger = logger;
 
             HeartbeatHandler = new ConnectionHeartbeatHandler(Connection.ConnectionManager, logger);
-            ChannelMessageProcessor = new ChannelMessageProcessor(connection.RealtimeClient.Channels, logger);
+            ChannelMessageProcessor = new ChannelMessageProcessor(Channels, logger);
             MessageHandlers = new List<(string, Func<ProtocolMessage, RealtimeState, ValueTask<bool>>)>
             {
                 ("State handler",(message, state) => ConnectionManager.State.OnMessageReceived(message, state)),
@@ -51,6 +54,7 @@ namespace IO.Ably.Realtime.Workflow
 
             State = new RealtimeState();
         }
+
 
         public void Start()
         {
@@ -152,14 +156,7 @@ namespace IO.Ably.Realtime.Workflow
                         return new[] { next };
                     }
                     case SetConnectedStateCommand cmd:
-                        var connectedState = new ConnectionConnectedState(
-                            ConnectionManager,
-                            new ConnectionInfo(cmd.Message),
-                            cmd.Message.Error,
-                            Logger,
-                            cmd.IsUpdate
-                        );
-                        await ConnectionManager.SetState(connectedState);
+                        await HandleConnectedCommand(cmd);
                         break;
                     case SetConnectingStateCommand cmd:
                         var connectingState = new ConnectionConnectingState(ConnectionManager, Logger);
@@ -183,16 +180,17 @@ namespace IO.Ably.Realtime.Workflow
                         await ConnectionManager.SetState(suspendedState);
                         break;
                     case SetClosedStateCommand cmd:
-                        
+
                         //Before Transition
                         State.Connection.Key = null;
                         State.Connection.Id = null;
+                        
                         ConnectionManager.DestroyTransport(suppressClosedEvent: true);
 
                         var closedState = new ConnectionClosedState(ConnectionManager, cmd.Error, Logger)
                             {Exception = cmd.Exception};
                         await ConnectionManager.SetState(closedState);
-                        
+
                         break;
                     case ProcessMessageCommand cmd:
                         await ProcessMessage(cmd.ProtocolMessage);
@@ -260,6 +258,28 @@ namespace IO.Ably.Realtime.Workflow
             }
 
             return Enumerable.Empty<RealtimeCommand>();
+        }
+
+        private async Task HandleConnectedCommand(SetConnectedStateCommand cmd)
+        {
+            var info = new ConnectionInfo(cmd.Message);
+            bool resumed = State.Connection.IsResumed(info);
+            State.Connection.Update(info);
+
+            if (info.ClientId.IsNotEmpty())
+            {
+                Auth.ConnectionClientId = info.ClientId;
+            }
+
+            var connectedState = new ConnectionConnectedState(
+                ConnectionManager,
+                cmd.Message.Error,
+                resumed,
+                cmd.IsUpdate,
+                Logger
+            );
+
+            await ConnectionManager.SetState(connectedState);
         }
 
         private void HandlePingTimer(PingTimerCommand cmd)

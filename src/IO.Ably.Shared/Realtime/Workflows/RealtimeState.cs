@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using IO.Ably.Transport;
 
 namespace IO.Ably.Realtime.Workflow
 {
@@ -37,10 +38,24 @@ namespace IO.Ably.Realtime.Workflow
             ///     error information.
             /// </summary>
             public ErrorInfo ErrorReason { get; set; }
+
+            public void Update(ConnectionInfo info)
+            {
+                Id = info.ConnectionId;
+                Key = info.ConnectionKey;
+                Serial = info.ConnectionSerial;
+                if (info.ConnectionStateTtl.HasValue)
+                {
+                    ConnectionStateTtl = info.ConnectionStateTtl.Value;
+                }
+            }
+
+            public bool IsResumed(ConnectionInfo info) =>
+                Key.IsNotEmpty() && Id == info.ConnectionId;
         }
 
         public List<PingRequest> PingRequests { get; set; } = new List<PingRequest>();
-        
+
         public ConnectionState Connection { get; private set; } = new ConnectionState();
     }
 }

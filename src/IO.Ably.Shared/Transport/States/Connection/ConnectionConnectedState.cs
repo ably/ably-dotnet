@@ -10,20 +10,19 @@ namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionConnectedState : ConnectionStateBase
     {
-        private readonly ConnectionInfo _info;
-        private bool? _resumed = null;
+        private bool _resumed;
 
         public ConnectionConnectedState(
                                         IConnectionContext context,
-                                        ConnectionInfo info,
                                         ErrorInfo error = null,
-                                        ILogger logger = null,
-                                        bool isUpdate = false)
+                                        bool resumed = false,
+                                        bool isUpdate = false,
+                                        ILogger logger = null)
                                         : base(context, logger)
         {
-            _info = info;
             Error = error;
             IsUpdate = isUpdate;
+            _resumed = resumed;
         }
 
         public override ConnectionState State => ConnectionState.Connected;
@@ -93,33 +92,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override void BeforeTransition()
         {
-            if (_info != null)
-            {
-                if (WasThereAPreviousConnection())
-                {
-                    _resumed = Context.Connection.Id == _info.ConnectionId;
-                }
 
-                Context.Connection.Id = _info.ConnectionId;
-                Context.Connection.Key = _info.ConnectionKey;
-                Context.Connection.Serial = _info.ConnectionSerial;
-                if (_info.ConnectionStateTtl.HasValue)
-                {
-                    Context.Connection.ConnectionStateTtl = _info.ConnectionStateTtl.Value;
-                }
-
-                Context.SetConnectionClientId(_info.ClientId);
-            }
-
-            if (_resumed.HasValue && _resumed.Value && Logger.IsDebug)
-            {
-                Logger.Debug("Connection resumed!");
-            }
-        }
-
-        private bool WasThereAPreviousConnection()
-        {
-            return Context.Connection.Key.IsNotEmpty();
         }
 
         public override Task OnAttachToContext()
@@ -135,7 +108,8 @@ namespace IO.Ably.Transport.States.Connection
                 Context.DetachAttachedChannels(Error);
             }
 
-            Context.SendPendingMessages(_resumed.GetValueOrDefault());
+            Context.SendPendingMessages(_resumed);
+
             return TaskConstants.BooleanTrue;
         }
     }
