@@ -163,6 +163,9 @@ namespace IO.Ably.Realtime.Workflow
                         await ConnectionManager.SetState(connectingState);
                         break;
                     case SetFailedStateCommand cmd:
+
+                        State.Connection.ClearKeyAndId();
+
                         var failedState = new ConnectionFailedState(ConnectionManager, cmd.Error, Logger);
                         await ConnectionManager.SetState(failedState);
                         break;
@@ -182,9 +185,8 @@ namespace IO.Ably.Realtime.Workflow
                     case SetClosedStateCommand cmd:
 
                         //Before Transition
-                        State.Connection.Key = null;
-                        State.Connection.Id = null;
-                        
+                        State.Connection.ClearKeyAndId();
+
                         ConnectionManager.DestroyTransport(suppressClosedEvent: true);
 
                         var closedState = new ConnectionClosedState(ConnectionManager, cmd.Error, Logger)

@@ -52,6 +52,12 @@ namespace IO.Ably.Realtime.Workflow
 
             public bool IsResumed(ConnectionInfo info) =>
                 Key.IsNotEmpty() && Id == info.ConnectionId;
+
+            public void ClearKeyAndId()
+            {
+                Id = null;
+                Key = null;
+            }
         }
 
         public List<PingRequest> PingRequests { get; set; } = new List<PingRequest>();
