@@ -28,15 +28,5 @@ namespace IO.Ably.Transport.States.Connection
         {
             return SetConnectingStateCommand.Create();
         }
-
-        public override void BeforeTransition()
-        {
-        }
-
-        public override Task OnAttachToContext()
-        {
-            Context.ClearAckQueueAndFailMessages(ErrorInfo.ReasonClosed);
-            return TaskConstants.BooleanTrue;
-        }
     }
 }

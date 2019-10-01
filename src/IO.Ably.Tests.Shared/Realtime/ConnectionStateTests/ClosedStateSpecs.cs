@@ -18,8 +18,6 @@ namespace IO.Ably.Tests
         private ConnectionClosedState _state;
         private DefaultLogger.InternalLogger _logger;
 
-        private RealtimeState EmptyState = new RealtimeState();
-
         public ClosedStateSpecs(ITestOutputHelper output)
             : base(output)
         {
@@ -53,13 +51,13 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void BeforeTransition_ShouldDestroyTransport()
+        public void OnAttach_ShouldDestroyTransport()
         {
             // Arrange
             _context.Transport = new FakeTransport();
 
             // Act
-            _state.BeforeTransition();
+            _state.OnAttachToContext();
 
             // Assert
             _context.DestroyTransportCalled.Should().BeTrue();
@@ -86,7 +84,7 @@ namespace IO.Ably.Tests
         public async Task ShouldNotHandleInboundMessageWithAction(ProtocolMessage.MessageAction action)
         {
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(action), EmptyState);
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(action), null);
 
             // Assert
             result.Should().Be(false);
@@ -98,24 +96,10 @@ namespace IO.Ably.Tests
         public async Task ShouldClearAckQueue()
         {
             // Arrange
-            await _state.OnAttachToContext();
+            _state.OnAttachToContext();
 
             _context.ClearAckQueueMessagesCalled.Should().BeTrue();
             _context.ClearAckMessagesError.Should().Be(ErrorInfo.ReasonClosed);
-        }
-
-        [Fact]
-        public void ShouldClearConnectionKeyAndId()
-        {
-            // Arrange
-            _context.Connection.Key = "test";
-
-            // Act
-            _state.BeforeTransition();
-
-            // Assert
-            _context.Connection.Key.Should().BeNullOrEmpty();
-            _context.Connection.Id.Should().BeNullOrEmpty();
         }
     }
 }

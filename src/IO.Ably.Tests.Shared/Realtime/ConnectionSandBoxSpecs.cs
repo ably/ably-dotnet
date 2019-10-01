@@ -196,7 +196,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task WithSuspendedConnection_WhenConnectCalled_ImmediatelyReconnect(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol);
-            await client.ConnectionManager.SetState(new ConnectionSuspendedState(client.ConnectionManager, new ErrorInfo("force suspended"), client.Logger));
+            client.Workflow.SetState(new ConnectionSuspendedState(client.ConnectionManager, new ErrorInfo("force suspended"), client.Logger));
             await client.WaitForState(ConnectionState.Suspended);
             var s = new Stopwatch();
             s.Start();
@@ -225,7 +225,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
             await client.WaitForState(ConnectionState.Disconnected);
-            await client.ConnectionManager.SetState(new ConnectionFailedState(client.ConnectionManager, new ErrorInfo("force failed"), client.Logger));
+            client.Workflow.QueueCommand(SetFailedStateCommand.Create(new ErrorInfo("force failed")));
             await client.WaitForState(ConnectionState.Failed);
 
             // show there is a no-null error present on the connection
@@ -277,8 +277,9 @@ namespace IO.Ably.Tests.Realtime
                 opts.DisconnectedRetryTimeout = TimeSpan.FromSeconds(2);
             });
 
-            await client.WaitForState();
-            await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager, new ErrorInfo("force disconnect"), client.Logger));
+            await client.WaitForState(ConnectionState.Connected);
+            client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create( new ErrorInfo("force disconnect")));
+
             await AssertsClosesAndDoesNotReconnect(client, ConnectionState.Disconnected);
 
             // reinitialize the client and put into a SUSPENDED state
@@ -288,7 +289,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             await client.WaitForState();
-            await client.ConnectionManager.SetState(new ConnectionSuspendedState(client.ConnectionManager, new ErrorInfo("force suspend"), client.Logger));
+            client.Workflow.QueueCommand(SetSuspendedStateCommand.Create(new ErrorInfo("force suspend")));
             await AssertsClosesAndDoesNotReconnect(client, ConnectionState.Suspended);
         }
 
@@ -437,7 +438,7 @@ namespace IO.Ably.Tests.Realtime
             channel.Publish(null, "foo");
 
             // currently disconnected so message is queued
-            client.ConnectionManager.PendingMessages.Should().HaveCount(1);
+            client.Workflow.State.PendingMessages.Should().HaveCount(1);
 
             // wait for reconnection
             var didConnect = await awaiter.Task;
@@ -450,7 +451,7 @@ namespace IO.Ably.Tests.Realtime
 
             // channel should be attached and pending messages sent
             channel.State.Should().Be(ChannelState.Attached);
-            client.ConnectionManager.PendingMessages.Should().HaveCount(0);
+            client.Workflow.State.PendingMessages.Should().HaveCount(0);
 
             var history = await channel.HistoryAsync();
             history.Items.Should().HaveCount(1);
@@ -537,7 +538,7 @@ namespace IO.Ably.Tests.Realtime
             channelStateChange.Error.Message.Should().Be("Faked channel error");
 
             // queued messages should now have been sent
-            client.ConnectionManager.PendingMessages.Should().HaveCount(0);
+            client.Workflow.State.PendingMessages.Should().HaveCount(0);
 
             var history = await channel.HistoryAsync();
             history.Items.Should().HaveCount(1);
@@ -998,7 +999,7 @@ namespace IO.Ably.Tests.Realtime
 
             await client.WaitForState(ConnectionState.Connected);
 
-            client.Connection.ConnectionStateTtl = TimeSpan.FromSeconds(1);
+            client.Workflow.State.Connection.ConnectionStateTtl = TimeSpan.FromSeconds(1);
             initialConnectionId = client.Connection.Id;
             connectionStateTtl = client.Connection.ConnectionStateTtl;
 
@@ -1039,7 +1040,7 @@ namespace IO.Ably.Tests.Realtime
                 });
 
                 client.GetTestTransport().Close(); // close event is surpressed by default
-                await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager, ErrorInfo.ReasonDisconnected, client.Logger));
+                client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(ErrorInfo.ReasonDisconnected));
             });
 
             var interval = reconnectedAt - disconnectedAt;
@@ -1132,7 +1133,7 @@ namespace IO.Ably.Tests.Realtime
 
             await Task.Delay(2000);
 
-            client.Connection.Key = "e02789NdQA86c7!inI5Ydc-ytp7UOm3-3632e02789NdQA86c7";
+            client.Workflow.State.Connection.Key = "e02789NdQA86c7!inI5Ydc-ytp7UOm3-3632e02789NdQA86c7";
 
             // Kill the transport
             client.ConnectionManager.Transport.Close(false);
@@ -1408,10 +1409,8 @@ namespace IO.Ably.Tests.Realtime
 
             await WaitForState(client);
 
-            await client.ConnectionManager.SetState(
-                new ConnectionDisconnectedState(client.ConnectionManager, Logger) { RetryInstantly = false });
-
-            client.Connection.State.Should().Be(ConnectionState.Disconnected);
+            client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null, retryInstantly: false));
+            await client.WaitForState(ConnectionState.Disconnected);
             Connection.NotifyOperatingSystemNetworkState(NetworkState.Online, Logger);
 
             List<ConnectionState> states = new List<ConnectionState>();

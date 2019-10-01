@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
@@ -50,14 +51,16 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = GetClientWithFakeTransport();
 
-            await client.ConnectionManager.SetState(new ConnectionClosedState(client.ConnectionManager, new ErrorInfo(), Logger));
+            client.Workflow.QueueCommand(SetClosedStateCommand.Create(new ErrorInfo()));
+            await client.WaitForState(ConnectionState.Closed);
 
             var result = await client.Connection.PingAsync();
 
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().Be(PingRequest.DefaultError);
 
-            await client.ConnectionManager.SetState(new ConnectionFailedState(client.ConnectionManager, new ErrorInfo(), Logger));
+            client.Workflow.QueueCommand(SetFailedStateCommand.Create(new ErrorInfo()));
+            await client.WaitForState(ConnectionState.Failed);
 
             var resultFailed = await client.Connection.PingAsync();
 

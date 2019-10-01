@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using IO.Ably.Transport;
 using IO.Ably.Types;
 
 namespace IO.Ably.Realtime.Workflow
@@ -93,6 +94,21 @@ namespace IO.Ably.Realtime.Workflow
         protected override string ExplainData() => string.Empty;
     }
 
+    internal class SetInitStateCommand : RealtimeCommand
+    {
+        public string Recover { get; set; }
+
+        public SetInitStateCommand(string recover)
+        {
+            Recover = recover;
+        }
+        public static SetInitStateCommand Create(string recover) => new SetInitStateCommand(recover);
+        protected override string ExplainData()
+        {
+            return string.Empty;
+        }
+    }
+
     internal class CloseConnectionCommand : RealtimeCommand
     {
         public static CloseConnectionCommand Create() => new CloseConnectionCommand();
@@ -102,7 +118,13 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class SetConnectingStateCommand : RealtimeCommand
     {
-        public static SetConnectingStateCommand Create() => new SetConnectingStateCommand();
+        public bool ClearConnectionKey { get; set; } = false;
+
+        public SetConnectingStateCommand(bool clearConnectionKey)
+        {
+            ClearConnectionKey = clearConnectionKey;
+        }
+        public static SetConnectingStateCommand Create(bool clearConnectionKey = false) => new SetConnectingStateCommand(clearConnectionKey);
 
         protected override string ExplainData()
         {
@@ -133,12 +155,13 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class SetDisconnectedStateCommand : RealtimeCommand
     {
-        public SetDisconnectedStateCommand(ErrorInfo error, bool retryInstantly, bool skipAttach, Exception exception)
+        public SetDisconnectedStateCommand(ErrorInfo error, bool retryInstantly, bool skipAttach, Exception exception, bool clearConnectionKey)
         {
             Error = error;
             RetryInstantly = retryInstantly;
             SkipAttach = skipAttach;
             Exception = exception;
+            ClearConnectionKey = clearConnectionKey;
         }
 
         public ErrorInfo Error { get; }
@@ -146,7 +169,10 @@ namespace IO.Ably.Realtime.Workflow
         public bool RetryInstantly { get; }
 
         public bool SkipAttach { get; }
+
         public Exception Exception { get; }
+
+        public bool ClearConnectionKey { get; }
 
 
         protected override string ExplainData()
@@ -154,31 +180,38 @@ namespace IO.Ably.Realtime.Workflow
             return $"RetryInstantly: {RetryInstantly}" +
                    "SkipAttach: " + SkipAttach +
                    ((Error != null) ? " Error: " + Error : string.Empty) +
-                    ((Exception != null) ? " Exception: " + Exception.Message : string.Empty);
+                    ((Exception != null) ? " Exception: " + Exception.Message : string.Empty) +
+                " ClearConnectionKey: " + ClearConnectionKey;
         }
 
         public static SetDisconnectedStateCommand Create (
             ErrorInfo error,
             bool retryInstantly = false,
             bool skipAttach = false,
-            Exception exception = null)
-            => new SetDisconnectedStateCommand(error, retryInstantly, skipAttach, exception);
+            Exception exception = null,
+            bool clearConnectionKey = false)
+            => new SetDisconnectedStateCommand(error, retryInstantly, skipAttach, exception, clearConnectionKey);
     }
 
     internal class SetSuspendedStateCommand : RealtimeCommand
     {
-        public SetSuspendedStateCommand(ErrorInfo error)
+        public SetSuspendedStateCommand(ErrorInfo error, bool clearConnectionKey)
         {
             Error = error;
+            ClearConnectionKey = clearConnectionKey;
         }
 
         public ErrorInfo Error { get; }
 
-        public static SetSuspendedStateCommand Create(ErrorInfo error) => new SetSuspendedStateCommand(error);
+        public bool ClearConnectionKey { get; }
+
+        public static SetSuspendedStateCommand Create(ErrorInfo error, bool clearConnectionKey = false) => new SetSuspendedStateCommand(error, clearConnectionKey);
 
         protected override string ExplainData()
         {
-            return (Error != null) ? " Error: " + Error : string.Empty;
+            var message = (Error != null) ? " Error: " + Error : string.Empty;
+            message += " ClearConnectionKey:" + ClearConnectionKey;
+            return message;
         }
     }
 
@@ -289,5 +322,65 @@ namespace IO.Ably.Realtime.Workflow
         }
     }
 
+    public class HandleConnectingTokenErrorCommand : RealtimeCommand
+    {
+        public ErrorInfo Error { get; }
 
+        public HandleConnectingTokenErrorCommand(ErrorInfo error)
+        {
+            Error = error;
+        }
+
+        public static HandleConnectingTokenErrorCommand Create(ErrorInfo error) => new HandleConnectingTokenErrorCommand(error);
+
+        protected override string ExplainData()
+        {
+            return "Error: " + Error.ToString();
+        }
+    }
+
+    public class HandleConnectingFailureCommand : RealtimeCommand
+    {
+        public ErrorInfo Error { get; }
+
+        public Exception Exception { get; }
+
+        public bool ClearConnectionKey { get; }
+
+        public HandleConnectingFailureCommand(ErrorInfo error, Exception ex, bool clearConnectionKey)
+        {
+            Error = error;
+            Exception = ex;
+            ClearConnectionKey = clearConnectionKey;
+        }
+
+        public static HandleConnectingFailureCommand Create(ErrorInfo error = null, Exception ex = null, bool clearConnectionKey = false) =>
+            new HandleConnectingFailureCommand(error, ex, clearConnectionKey);
+
+        protected override string ExplainData()
+        {
+            return $"Error: {Error}. Exception: {Exception?.Message}. ClearConnectionKey: {ClearConnectionKey}";
+        }
+    }
+
+    public class HandleTrasportEventCommand : RealtimeCommand
+    {
+        public TransportState TransportState { get; }
+
+        public Exception Exception { get; }
+
+        public HandleTrasportEventCommand(TransportState transportState, Exception ex)
+        {
+            TransportState = transportState;
+            Exception = ex;
+        }
+
+        public static HandleTrasportEventCommand Create(TransportState state, Exception ex) =>
+            new HandleTrasportEventCommand(state, ex);
+
+        protected override string ExplainData()
+        {
+            return $"TrasportState: {TransportState}. Exception: {Exception?.Message}";
+        }
+    }
 }

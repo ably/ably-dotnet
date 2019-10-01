@@ -11,8 +11,6 @@ namespace IO.Ably
     {
         public string PlatformId => "uwp";
 
-        public bool SyncContextDefault => true;
-
         public ITransportFactory TransportFactory => null;
 
         static Platform()

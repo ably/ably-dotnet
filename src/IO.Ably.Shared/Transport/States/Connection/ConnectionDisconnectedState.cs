@@ -53,20 +53,9 @@ namespace IO.Ably.Transport.States.Connection
             _timer.Abort();
         }
 
-        public override async Task OnAttachToContext()
+        public override void OnAttachToContext()
         {
-            Context.DestroyTransport();
-
-            if (Logger.IsDebug)
-            {
-                Logger.Debug("RetryInstantly set to '" + RetryInstantly + "'");
-            }
-
-            if (RetryInstantly)
-            {
-                Context.ExecuteCommand(SetConnectingStateCommand.Create());
-            }
-            else
+            if (RetryInstantly == false)
             {
                 _timer.Start(Context.RetryTimeout, OnTimeOut);
             }

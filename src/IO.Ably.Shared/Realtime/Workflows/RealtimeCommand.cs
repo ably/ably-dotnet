@@ -2,7 +2,7 @@ using System;
 
 namespace IO.Ably.Realtime.Workflow
 {
-    internal abstract class RealtimeCommand
+    public abstract class RealtimeCommand
     {
         public Guid Id { get; private set; } = Guid.NewGuid();
 
@@ -22,6 +22,11 @@ namespace IO.Ably.Realtime.Workflow
         }
 
         protected abstract string ExplainData();
+
+        public override string ToString()
+        {
+            return $"{Name}: {Explain()}";
+        }
 
         public static RealtimeCommand Batch(params RealtimeCommand[] commands) => ListCommand.Create(commands);
     }

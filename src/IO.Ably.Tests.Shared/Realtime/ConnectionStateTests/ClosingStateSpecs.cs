@@ -12,8 +12,6 @@ namespace IO.Ably.Tests
 {
     public class ClosingStateSpecs : AblySpecs
     {
-        private RealtimeState EmptyState = new RealtimeState();
-
         [Fact]
         public void ShouldHaveClosingState()
         {
@@ -45,7 +43,7 @@ namespace IO.Ably.Tests
         public async Task ShouldNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(action), EmptyState);
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(action), null);
 
             // Assert
             result.Should().BeFalse();
@@ -55,7 +53,7 @@ namespace IO.Ably.Tests
         public async Task ShouldHandleInboundClosedMessageAndMoveToClosed()
         {
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed), EmptyState);
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed), null);
 
             // Assert
             result.Should().BeTrue();
@@ -68,7 +66,7 @@ namespace IO.Ably.Tests
             ErrorInfo targetError = new ErrorInfo("test", 123);
 
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError }, EmptyState);
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError }, null);
 
             // Assert
             result.Should().BeTrue();
@@ -79,7 +77,7 @@ namespace IO.Ably.Tests
         public async Task ShouldHandleInboundDisconnectedMessageAndGoToDisconnectedState()
         {
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected), EmptyState);
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected), null);
 
             // Assert
             Assert.True(result);
@@ -97,7 +95,7 @@ namespace IO.Ably.Tests
             _context.Transport = transport;
 
             // Act
-            await _state.OnAttachToContext();
+            _state.OnAttachToContext();
 
             // Assert
             _context.LastMessageSent.Action.Should().Be(ProtocolMessage.MessageAction.Close);
@@ -114,7 +112,7 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport() { State = transportState };
 
             // Act
-            await _state.OnAttachToContext();
+            _state.OnAttachToContext();
 
             // Assert
             _context.ShouldQueueCommand<SetClosedStateCommand>();
@@ -126,7 +124,7 @@ namespace IO.Ably.Tests
         {
             _context.Transport = new FakeTransport() { State = TransportState.Connected };
 
-            await _state.OnAttachToContext();
+            _state.OnAttachToContext();
             _timer.StartedWithAction.Should().BeTrue();
             _timer.OnTimeOut();
 
@@ -141,8 +139,8 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport(TransportState.Connected);
 
             // Act
-            await _state.OnAttachToContext();
-            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed), EmptyState);
+            _state.OnAttachToContext();
+            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed), null);
 
             // Assert
             _timer.StartedWithAction.Should().BeTrue();
@@ -157,8 +155,8 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport(TransportState.Connected);
 
             // Act
-            await _state.OnAttachToContext();
-            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error), EmptyState);
+            _state.OnAttachToContext();
+            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error), null);
 
             // Assert
             _timer.StartedWithAction.Should().BeTrue();
@@ -172,7 +170,7 @@ namespace IO.Ably.Tests
 
         private ConnectionClosingState GetState(ErrorInfo info = null)
         {
-            return new ConnectionClosingState(_context, info, _timer, Logger);
+            return new ConnectionClosingState(_context, info, false, _timer, Logger);
         }
 
         public ClosingStateSpecs(ITestOutputHelper output)

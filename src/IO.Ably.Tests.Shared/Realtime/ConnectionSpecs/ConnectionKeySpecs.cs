@@ -36,10 +36,10 @@ namespace IO.Ably.Tests.Realtime
             // Arrange
             string targetKey = "1234567";
             var client = GetClientWithFakeTransport();
-            client.Connection.Key = targetKey;
+            client.Workflow.State.Connection.Key = targetKey;
 
             // Act
-            var transportParamsForReconnect = await client.ConnectionManager.CreateTransportParameters();
+            var transportParamsForReconnect = await client.ConnectionManager.CreateTransportParameters("https://realtime.ably.io");
 
             // Assert
             transportParamsForReconnect

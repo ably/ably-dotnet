@@ -13,16 +13,13 @@ namespace IO.Ably.Tests
     public class DisconectedStateSpecs : AblySpecs
     {
         private FakeConnectionContext _context;
-        private ConnectionInfo _connectionInfo;
         private ConnectionDisconnectedState _state;
         private FakeTimer _timer;
-        private RealtimeState EmptyState = new RealtimeState();
 
         public DisconectedStateSpecs(ITestOutputHelper output)
             : base(output)
         {
             _context = new FakeConnectionContext();
-            _connectionInfo = new ConnectionInfo(string.Empty, 0, string.Empty, string.Empty);
             _timer = new FakeTimer();
             _state = GetState();
         }
@@ -62,7 +59,7 @@ namespace IO.Ably.Tests
             var state = GetState(ErrorInfo.ReasonClosed);
 
             // Act
-            bool handled = await state.OnMessageReceived(new ProtocolMessage(action), EmptyState);
+            bool handled = await state.OnMessageReceived(new ProtocolMessage(action), null);
 
             // Assert
             handled.Should().BeFalse();
@@ -105,7 +102,7 @@ namespace IO.Ably.Tests
             var state = GetState(ErrorInfo.ReasonClosed);
 
             // Act
-            await state.OnAttachToContext();
+            state.OnAttachToContext();
             _timer.OnTimeOut();
 
             // Assert
@@ -124,7 +121,7 @@ namespace IO.Ably.Tests
             state.RetryInstantly = true;
 
             // Act
-            await state.OnAttachToContext();
+            state.OnAttachToContext();
 
             // Assert
             _timer.StartedWithAction.Should().BeFalse();

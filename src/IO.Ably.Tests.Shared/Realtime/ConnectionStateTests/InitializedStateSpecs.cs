@@ -49,7 +49,7 @@ namespace IO.Ably.Tests
         public async Task ShouldNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(action), new RealtimeState());
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(action), null);
 
             // Assert
             Assert.False(result);

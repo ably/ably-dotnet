@@ -2,11 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
-
-using IO.Ably;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -154,6 +150,16 @@ namespace IO.Ably
                 return CurrentToken;
             }
 
+            return await RenewToken();
+        }
+
+        /// <summary>
+        /// Renews the current token and calls OnAuthUpdated without blocking until the connection is reestablished
+        /// </summary>
+        /// <returns>new token if successful</returns>
+        /// <exception cref="AblyException">Throws an exception if the new token is not valid</exception>
+        internal async Task<TokenDetails> RenewToken()
+        {
             if (TokenRenewable)
             {
                 var token = await RequestTokenAsync();
@@ -170,6 +176,10 @@ namespace IO.Ably
                 {
                     throw new AblyException("Token has expired: " + CurrentToken, 40142, HttpStatusCode.Unauthorized);
                 }
+            }
+            else
+            {
+                Logger.Debug("Auth.RenewToken called but token was not Renewable");
             }
 
             return null;

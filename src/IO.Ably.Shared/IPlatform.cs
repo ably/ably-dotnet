@@ -6,8 +6,6 @@ namespace IO.Ably
     {
         string PlatformId { get; }
 
-        bool SyncContextDefault { get; }
-
         ITransportFactory TransportFactory { get; }
     }
 }

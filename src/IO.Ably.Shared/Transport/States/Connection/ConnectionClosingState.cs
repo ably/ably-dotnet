@@ -9,16 +9,18 @@ namespace IO.Ably.Transport.States.Connection
     internal class ConnectionClosingState : ConnectionStateBase
     {
         private const int CloseTimeout = 1000;
+        private readonly bool _connectedTransport;
         private readonly ICountdownTimer _timer;
 
-        public ConnectionClosingState(IConnectionContext context, ILogger logger)
-            : this(context, null, new CountdownTimer("Closing state timer", logger), logger)
+        public ConnectionClosingState(IConnectionContext context, bool connectedTransport,ILogger logger)
+            : this(context, null, connectedTransport, new CountdownTimer("Closing state timer", logger), logger)
         {
         }
 
-        public ConnectionClosingState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer, ILogger logger)
+        public ConnectionClosingState(IConnectionContext context, ErrorInfo error, bool connectedTransport, ICountdownTimer timer, ILogger logger)
             : base(context, logger)
         {
+            _connectedTransport = connectedTransport;
             _timer = timer;
             Error = error ?? ErrorInfo.ReasonClosed;
         }
@@ -54,17 +56,11 @@ namespace IO.Ably.Transport.States.Connection
             _timer.Abort();
         }
 
-        public override async Task OnAttachToContext()
+        public override void OnAttachToContext()
         {
-            var transport = Context.Transport;
-            if (transport?.State == TransportState.Connected)
+            if (_connectedTransport)
             {
-                Context.SendToTransport(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
                 _timer.Start(TimeSpan.FromMilliseconds(CloseTimeout), OnTimeOut);
-            }
-            else
-            {
-                Context.ExecuteCommand(SetClosedStateCommand.Create());
             }
         }
 
@@ -76,9 +72,7 @@ namespace IO.Ably.Transport.States.Connection
         public override RealtimeCommand Connect()
         {
             _timer.Abort();
-            //TODO: Clear connection key in state
-            Context.Connection.Key = string.Empty;
-            return SetConnectingStateCommand.Create();
+            return SetConnectingStateCommand.Create(clearConnectionKey: true);
         }
     }
 }

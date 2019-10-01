@@ -1,7 +1,4 @@
 ﻿using System.Threading.Tasks;
-
-using IO.Ably;
-using IO.Ably.CustomSerialisers;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Types;
@@ -10,19 +7,15 @@ namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionConnectedState : ConnectionStateBase
     {
-        private bool _resumed;
-
         public ConnectionConnectedState(
                                         IConnectionContext context,
                                         ErrorInfo error = null,
-                                        bool resumed = false,
                                         bool isUpdate = false,
                                         ILogger logger = null)
                                         : base(context, logger)
         {
             Error = error;
             IsUpdate = isUpdate;
-            _resumed = resumed;
         }
 
         public override ConnectionState State => ConnectionState.Connected;
@@ -50,15 +43,14 @@ namespace IO.Ably.Transport.States.Connection
                 case ProtocolMessage.MessageAction.Disconnected:
                     if (await Context.CanUseFallBackUrl(message.Error))
                     {
-                        Context.Connection.Key = null;
-                        Context.ExecuteCommand(SetDisconnectedStateCommand.Create(message.Error, retryInstantly: true));
+                        Context.ExecuteCommand(SetDisconnectedStateCommand.Create(message.Error, retryInstantly: true, clearConnectionKey: true));
 
-                        //Question: Should we fall through here or return
+                        // TODO: Should we fall through here or return
                     }
 
                     if (message.Error?.IsTokenError ?? false)
                     {
-                        if (Context.ShouldWeRenewToken(message.Error))
+                        if (Context.ShouldWeRenewToken(message.Error, state))
                         {
                             Context.ExecuteCommand(RetryAuthCommand.Create(message.Error, true));
                         }
@@ -84,33 +76,6 @@ namespace IO.Ably.Transport.States.Connection
             }
 
             return false;
-        }
-
-        public override void AbortTimer()
-        {
-        }
-
-        public override void BeforeTransition()
-        {
-
-        }
-
-        public override Task OnAttachToContext()
-        {
-            if (Logger.IsDebug)
-            {
-                Logger.Debug("Processing Connected:OnAttached. Resumed: " + _resumed);
-            }
-
-            if (_resumed == false)
-            {
-                Context.ClearAckQueueAndFailMessages(null);
-                Context.DetachAttachedChannels(Error);
-            }
-
-            Context.SendPendingMessages(_resumed);
-
-            return TaskConstants.BooleanTrue;
         }
     }
 }

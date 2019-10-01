@@ -8,21 +8,9 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport
 {
-    internal interface IAcknowledgementProcessor
+    internal class AcknowledgementProcessor
     {
-        void QueueIfNecessary(ProtocolMessage message, Action<bool, ErrorInfo> callback);
-
-        ValueTask<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state);
-
-        IEnumerable<ProtocolMessage> GetQueuedMessages();
-
-        void ClearQueueAndFailMessages(ErrorInfo error);
-
-        void FailChannelMessages(string name, ErrorInfo error);
-    }
-
-    internal class AcknowledgementProcessor : IAcknowledgementProcessor
-    {
+        public RealtimeState.ConnectionData ConnectionState { get; }
         internal ILogger Logger { get; private set; }
 
         private readonly Connection _connection;
@@ -40,19 +28,20 @@ namespace IO.Ably.Transport
             return messages;
         }
 
-        public AcknowledgementProcessor(Connection connection)
+        // TODO: Move the connectionState of of the ack processor
+        public AcknowledgementProcessor(Connection connection, RealtimeState.ConnectionData connectionState)
         {
+            ConnectionState = connectionState;
             Logger = connection.Logger;
             _connection = connection;
         }
 
-        public void QueueIfNecessary(ProtocolMessage message, Action<bool, ErrorInfo> callback)
+        public void Queue(ProtocolMessage message, Action<bool, ErrorInfo> callback)
         {
             if (message.AckRequired)
             {
                 lock (_syncObject)
                 {
-                    message.MsgSerial = _connection.MessageSerial++;
                     _queue.Add(new MessageAndCallback(message, callback));
                     if (Logger.IsDebug)
                     {

@@ -17,6 +17,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ApiKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaginatedRequestParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelEvent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\AttemptsHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.GetParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.QueuedPresenceMessage.cs" />
@@ -29,6 +30,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\RealtimeCommands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\RealtimeState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\RealtimeWorkflow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transport\AttemptFailedState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionAttempt.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\IConnectionContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\AuthDetails.cs" />

@@ -30,35 +30,20 @@ namespace IO.Ably
         internal AblyRealtime(ClientOptions options, Func<ClientOptions, AblyRest> createRestFunc)
         {
             Logger = options.Logger;
-            CaptureSynchronizationContext(options);
-            // Start Reader thread
-
             RestClient = createRestFunc != null ? createRestFunc.Invoke(options) : new AblyRest(options);
+
             Connection = new Connection(this, options.NowFunc, options.Logger);
             Connection.Initialise();
 
             Channels = new RealtimeChannels(this, Connection);
+            RestClient.AblyAuth.OnAuthUpdated = ConnectionManager.OnAuthUpdated;
 
             Workflow = new RealtimeWorkflow(this, Logger);
             Workflow.Start();
 
-            RestClient.AblyAuth.OnAuthUpdated = ConnectionManager.OnAuthUpdated;
-
             if (options.AutoConnect)
             {
                 Connect();
-            }
-        }
-
-        private void CaptureSynchronizationContext(ClientOptions options)
-        {
-            if (options.CustomContext != null)
-            {
-                _synchronizationContext = options.CustomContext;
-            }
-            else if (options.CaptureCurrentSynchronizationContext)
-            {
-                _synchronizationContext = SynchronizationContext.Current;
             }
         }
 

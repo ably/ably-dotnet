@@ -4,7 +4,7 @@ using IO.Ably.Realtime.Workflow;
 
 namespace IO.Ably.Transport.States.Connection
 {
-    using IO.Ably.Realtime;
+    using Realtime;
 
     internal class ConnectionSuspendedState : ConnectionStateBase
     {
@@ -48,17 +48,12 @@ namespace IO.Ably.Transport.States.Connection
             _timer.Abort();
         }
 
-        public override Task OnAttachToContext()
+        public override void OnAttachToContext()
         {
-            // This is a terminal state. Clear the transport.
-            Context.ClearAckQueueAndFailMessages(ErrorInfo.ReasonSuspended);
-
             if (RetryIn.HasValue)
             {
                 _timer.Start(RetryIn.Value, OnTimeOut);
             }
-
-            return TaskConstants.BooleanTrue;
         }
 
         private void OnTimeOut()

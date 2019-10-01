@@ -56,13 +56,8 @@ namespace IO.Ably.Transport.States.Connection
         {
         }
 
-        public virtual void BeforeTransition()
+        public virtual void OnAttachToContext()
         {
-        }
-
-        public virtual Task OnAttachToContext()
-        {
-            return TaskConstants.BooleanTrue;
         }
 
         public override string ToString()

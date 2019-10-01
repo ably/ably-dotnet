@@ -28,10 +28,10 @@ namespace IO.Ably.Tests.Realtime
             // Arrange
             var client = GetClientWithFakeTransport();
             long targetSerial = 1234567;
-            client.Connection.Serial = targetSerial;
+            client.Workflow.State.Connection.Serial = targetSerial;
 
             // Act
-            var transportParams = await client.ConnectionManager.CreateTransportParameters();
+            var transportParams = await client.ConnectionManager.CreateTransportParameters("https://realtime.ably.io");
 
             transportParams.ConnectionSerial.Should().Be(targetSerial);
         }

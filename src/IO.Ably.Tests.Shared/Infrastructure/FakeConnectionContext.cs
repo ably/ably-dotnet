@@ -60,8 +60,6 @@ namespace IO.Ably.Tests
 
         public ITransport Transport { get; set; }
 
-        public AblyRest RestClient { get; set; }
-
         public Queue<ProtocolMessage> QueuedMessages { get; } = new Queue<ProtocolMessage>();
 
         public Connection Connection { get; set; }
@@ -119,7 +117,7 @@ namespace IO.Ably.Tests
         {
         }
 
-        public bool ShouldWeRenewToken(ErrorInfo error)
+        public bool ShouldWeRenewToken(ErrorInfo error, RealtimeState state)
         {
             return ShouldWeRenewTokenValue;
         }
@@ -154,7 +152,7 @@ namespace IO.Ably.Tests
             CloseConnectionCalled = true;
         }
 
-        public void HandleConnectingFailure(ErrorInfo error, Exception ex)
+        public void HandleConnectingFailure(ErrorInfo error, Exception ex, bool clearConnectionKey)
         {
             HandledConnectionFailureCalled = true;
         }
@@ -169,6 +167,8 @@ namespace IO.Ably.Tests
             ClearAckQueueMessagesCalled = true;
             ClearAckMessagesError = error;
         }
+
+
 
         public Task<bool> CanUseFallBackUrl(ErrorInfo error)
         {

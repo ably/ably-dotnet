@@ -82,22 +82,11 @@ namespace IO.Ably.Realtime
             }
         }
 
-        internal void SetConfirmedAlive()
-        {
-            ConfirmedAliveAt = DateTimeOffset.UtcNow;
-        }
-
-        internal DateTimeOffset? ConfirmedAliveAt { get; set; }
-
         internal AblyRest RestClient => RealtimeClient.RestClient;
 
         internal AblyRealtime RealtimeClient { get; }
 
         internal ConnectionManager ConnectionManager { get; set; }
-
-        internal List<string> FallbackHosts;
-
-        private string _host;
 
         internal Func<DateTimeOffset> Now { get; set; }
 
@@ -112,35 +101,16 @@ namespace IO.Ably.Realtime
             : base(logger)
         {
             Now = nowFunc;
-            FallbackHosts = realtimeClient?.Options?.FallbackHosts.Shuffle().ToList();
             RealtimeClient = realtimeClient;
 
             RegisterWithOsNetworkStateEvents(HandleNetworkStateChange);
-
-            var recover = realtimeClient?.Options?.Recover;
-            if (recover.IsNotEmpty())
-            {
-                ParseRecoveryKey(recover);
-            }
         }
 
-        private void ParseRecoveryKey(string recover)
-        {
-            var match = TransportParams.RecoveryKeyRegex.Match(recover);
-            if (match.Success)
-            {
-                MessageSerial = long.Parse(match.Groups[3].Value);
-            }
-            else
-            {
-                Logger.Error($"Recovery Key '{recover}' could not be parsed.");
-            }
-        }
+        internal RealtimeState.ConnectionData InnerState => RealtimeClient.Workflow.State.Connection;
 
         internal void Initialise()
         {
             ConnectionManager = new ConnectionManager(this, Now, Logger);
-            ConnectionState = new ConnectionInitializedState(ConnectionManager, Logger);
         }
 
         /// <summary>
@@ -156,25 +126,25 @@ namespace IO.Ably.Realtime
             ConnectionManager.HandleNetworkStateChange(state);
         }
 
-        internal ConnectionStateBase ConnectionState { get; set; }
+        internal ConnectionStateBase ConnectionState => InnerState.CurrentStateObject;
 
         /// <summary>
         ///     The id of the current connection. This string may be
         ///     used when recovering connection state.
         /// </summary>
-        public string Id { get; internal set; }
+        public string Id => InnerState.Id;
 
         /// <summary>
         ///     The serial number of the last message received on this connection.
         ///     The serial number may be used when recovering connection state.
         /// </summary>
-        public long? Serial { get; internal set; }
+        public long? Serial => InnerState.Serial;
 
-        internal long MessageSerial { get; set; } = 0;
+        internal long MessageSerial => InnerState.MessageSerial;
 
         /// <summary>
         /// </summary>
-        public string Key { get; internal set; }
+        public string Key => InnerState.Key;
 
         public bool ConnectionResumable => Key.IsNotEmpty() && Serial.HasValue;
 
@@ -183,7 +153,7 @@ namespace IO.Ably.Realtime
         /// </summary>
         public string RecoveryKey => ConnectionResumable ? $"{Key}:{Serial.Value}:{MessageSerial}" : string.Empty;
 
-        public TimeSpan ConnectionStateTtl { get; internal set; } = Defaults.ConnectionStateTtl;
+        public TimeSpan ConnectionStateTtl => InnerState.ConnectionStateTtl;
 
         /// <summary>
         ///     Information relating to the transition to the current state,
@@ -191,18 +161,10 @@ namespace IO.Ably.Realtime
         ///     message and, in the failed state in particular, provides diagnostic
         ///     error information.
         /// </summary>
-        public ErrorInfo ErrorReason { get; private set; }
+        public ErrorInfo ErrorReason => InnerState.ErrorReason;
 
-        public string Host
-        {
-            get => _host;
-
-            internal set
-            {
-                _host = value;
-                RestClient.CustomHost = FallbackHosts.Contains(_host) ? _host : string.Empty;
-            }
-        }
+        public string Host => InnerState.Host;
+        public DateTimeOffset? ConfirmedAliveAt => InnerState.ConfirmedAliveAt;
 
         public void Dispose()
         {
@@ -261,25 +223,8 @@ namespace IO.Ably.Realtime
             ExecuteCommand(CloseConnectionCommand.Create());
         }
 
-        internal void UpdateState(ConnectionStateBase state)
+        internal void NotifyUpdate(ConnectionStateChange stateChange)
         {
-            if (!state.IsUpdate && state.State == State)
-            {
-                return;
-            }
-
-            if (Logger.IsDebug)
-            {
-                Logger.Debug($"Connection notifying subscribers for state change `{state.State}`");
-            }
-
-            var oldState = ConnectionState.State;
-            var newState = state.State;
-            ConnectionState = state;
-            ErrorReason = state.Error;
-            var connectionEvent = oldState == newState ? ConnectionEvent.Update : newState.ToConnectionEvent();
-            var stateChange = new ConnectionStateChange(connectionEvent, oldState, newState, state.RetryIn, ErrorReason);
-
             var externalHandlers =
                 Volatile.Read(ref ConnectionStateChanged); // Make sure we get all the subscribers on all threads
 
@@ -289,7 +234,7 @@ namespace IO.Ably.Realtime
 
             RealtimeClient.NotifyExternalClients(
                 () => {
-                        Emit(connectionEvent, stateChange);
+                        Emit(stateChange.Event, stateChange);
                         try
                         {
                             externalHandlers(this, stateChange);
@@ -298,14 +243,6 @@ namespace IO.Ably.Realtime
                         {
                             Logger.Error("Error notifying Connection state changed handlers", ex);
                         }});
-        }
-
-        public void UpdateSerial(ProtocolMessage message)
-        {
-            if (message.ConnectionSerial.HasValue)
-            {
-                Serial = message.ConnectionSerial.Value;
-            }
         }
     }
 }

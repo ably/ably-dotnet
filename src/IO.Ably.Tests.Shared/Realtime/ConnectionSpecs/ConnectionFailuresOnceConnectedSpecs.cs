@@ -38,8 +38,6 @@ namespace IO.Ably.Tests.Realtime
                     opts.Key = string.Empty; // clear the key to make the token non renewable
                 }
 
-                opts.CaptureCurrentSynchronizationContext = false;
-
                 opts.TokenDetails = _validToken;
                 opts.UseBinaryProtocol = false;
             }, request =>
@@ -247,12 +245,12 @@ namespace IO.Ably.Tests.Realtime
 
             client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message), callback);
             client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message), callback);
-            client.ConnectionManager.AckProcessor.GetQueuedMessages().Should().HaveCount(2);
+            client.Workflow.AckProcessor.GetQueuedMessages().Should().HaveCount(2);
 
             await CloseAndWaitToReconnect(client);
 
             LastCreatedTransport.SentMessages.Should().BeEmpty();
-            client.ConnectionManager.AckProcessor.GetQueuedMessages().Should().BeEmpty();
+            client.Workflow.AckProcessor.GetQueuedMessages().Should().BeEmpty();
 
             callbackResults.Should().HaveCount(2);
             callbackResults.All(x => x == false).Should().BeTrue();
@@ -282,7 +280,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             LastCreatedTransport.SentMessages.Should().HaveCount(2);
-            client.ConnectionManager.AckProcessor.GetQueuedMessages().Should().HaveCount(2);
+            client.Workflow.AckProcessor.GetQueuedMessages().Should().HaveCount(2);
         }
 
         public ConnectionFailuresOnceConnectedSpecs(ITestOutputHelper output)

@@ -74,7 +74,6 @@ namespace IO.Ably.Transport
             return result;
         }
 
-        // Add logic for random fallback hosts
         public Uri GetUri()
         {
             var wsScheme = Tls ? "wss://" : "ws://";

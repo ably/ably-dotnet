@@ -10,33 +10,12 @@ namespace IO.Ably
     {
         public string PlatformId => "framework";
 
-        public bool SyncContextDefault => true;
-
         public ITransportFactory TransportFactory => null;
 
         static Platform()
         {
             NetworkChange.NetworkAvailabilityChanged += (sender, eventArgs) =>
                 Connection.NotifyOperatingSystemNetworkState(eventArgs.IsAvailable ? NetworkState.Online : NetworkState.Offline);
-        }
-
-        private static void OnSystemEventsOnPowerModeChanged(object sender, PowerModeChangedEventArgs eventArgs)
-        {
-            switch (eventArgs.Mode)
-            {
-                case PowerModes.Suspend:
-                    Connection.NotifyOperatingSystemNetworkState(NetworkState.Offline);
-                    break;
-                case PowerModes.Resume:
-                    {
-                        if (NetworkInterface.GetIsNetworkAvailable())
-                        {
-                            Connection.NotifyOperatingSystemNetworkState(NetworkState.Online);
-                        }
-
-                        break;
-                    }
-            }
         }
     }
 }

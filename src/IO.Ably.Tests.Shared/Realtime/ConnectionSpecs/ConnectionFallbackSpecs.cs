@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
@@ -75,7 +76,9 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
-            await client.ConnectionManager.SetState(new ConnectionFailedState(client.ConnectionManager, ErrorInfo.ReasonFailed, Logger));
+            client.Workflow.QueueCommand(SetFailedStateCommand.Create(ErrorInfo.ReasonFailed));
+            await client.WaitForState(ConnectionState.Failed);
+
             client.Connect();
             LastCreatedTransport.Parameters.Host.Should().Be(Defaults.RealtimeHost);
         }

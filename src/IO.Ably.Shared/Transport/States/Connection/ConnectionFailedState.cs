@@ -21,16 +21,5 @@ namespace IO.Ably.Transport.States.Connection
         {
             return SetConnectingStateCommand.Create();
         }
-
-        public override Task OnAttachToContext()
-        {
-            // Moved to here as OnAttach will contain the main logic
-            Context.DestroyTransport();
-
-            // This is a terminal state. Clear the transport.
-            Context.ClearAckQueueAndFailMessages(ErrorInfo.ReasonFailed);
-
-            return TaskConstants.BooleanTrue;
-        }
     }
 }

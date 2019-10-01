@@ -1,13 +1,23 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using IO.Ably.Transport;
+using IO.Ably.Transport.States.Connection;
+using IO.Ably.Types;
 
 namespace IO.Ably.Realtime.Workflow
 {
     internal class RealtimeState
     {
-        public class ConnectionState
+        public class ConnectionData
         {
+            public ConnectionData(List<string> fallbackHosts)
+            {
+                FallbackHosts = fallbackHosts ?? new List<string>();
+            }
+
+            internal List<string> FallbackHosts;
+
             public Guid ConnectionId { get; } = Guid.NewGuid(); // Used to identify the connection for Os Event subscribers
             public DateTimeOffset? ConfirmedAliveAt { get; set; }
 
@@ -22,6 +32,8 @@ namespace IO.Ably.Realtime.Workflow
             ///     The serial number may be used when recovering connection state.
             /// </summary>
             public long? Serial { get; set; }
+
+            public string Host { get; set; }
 
             internal long MessageSerial { get; set; } = 0;
 
@@ -39,6 +51,36 @@ namespace IO.Ably.Realtime.Workflow
             /// </summary>
             public ErrorInfo ErrorReason { get; set; }
 
+            public ConnectionStateBase CurrentStateObject { get; set; }
+
+            public ConnectionState State => CurrentStateObject.State;
+
+            public ConnectionStateChange UpdateState(ConnectionStateBase state, ILogger logger)
+            {
+                if (!state.IsUpdate && state.State == State)
+                {
+                    return null;
+                }
+
+                if (logger.IsDebug)
+                {
+                    logger.Debug($"Updating state to `{state.State}`");
+                }
+
+                var oldState = State;
+                var newState = state.State;
+                CurrentStateObject = state;
+                ErrorReason = state.Error;
+                var connectionEvent = oldState == newState ? ConnectionEvent.Update : newState.ToConnectionEvent();
+                return new ConnectionStateChange(connectionEvent, oldState, newState, state.RetryIn, ErrorReason);
+            }
+
+
+            public bool HasConnectionStateTtlPassed(Func<DateTimeOffset> now)
+            {
+                return ConfirmedAliveAt?.Add(ConnectionStateTtl) < now();
+            }
+
             public void Update(ConnectionInfo info)
             {
                 Id = info.ConnectionId;
@@ -55,13 +97,52 @@ namespace IO.Ably.Realtime.Workflow
 
             public void ClearKeyAndId()
             {
-                Id = null;
-                Key = null;
+                Id = string.Empty;
+                Key = string.Empty;
+            }
+
+            public void SetConfirmedAlive(DateTimeOffset now)
+            {
+                ConfirmedAliveAt = now;
+            }
+
+            public void UpdateSerial(ProtocolMessage message)
+            {
+                if (message.ConnectionSerial.HasValue)
+                {
+                    Serial = message.ConnectionSerial.Value;
+                }
+            }
+
+            public void ClearKey()
+            {
+                Key = string.Empty;
+            }
+
+            public long IncrementSerial()
+            {
+                return MessageSerial++;
             }
         }
 
         public List<PingRequest> PingRequests { get; set; } = new List<PingRequest>();
 
-        public ConnectionState Connection { get; private set; } = new ConnectionState();
+        public ConnectionData Connection { get; private set; }
+
+        public ConnectionAttemptsInfo AttemptsInfo { get; }
+
+        public Queue<MessageAndCallback> PendingMessages { get; }
+
+        public RealtimeState() : this(null)
+        {
+
+        }
+
+        public RealtimeState(List<string> fallbackHosts, Func<DateTimeOffset> now = null)
+        {
+            Connection = new ConnectionData(fallbackHosts);
+            AttemptsInfo = new ConnectionAttemptsInfo(now);
+            PendingMessages = new Queue<MessageAndCallback>();
+        }
     }
 }

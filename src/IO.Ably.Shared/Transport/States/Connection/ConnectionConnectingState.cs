@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using IO.Ably;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Types;
 
@@ -59,34 +58,23 @@ namespace IO.Ably.Transport.States.Connection
 
                 case ProtocolMessage.MessageAction.Disconnected:
                     {
-                        Context.HandleConnectingFailure(message.Error, null);
+                        Context.ExecuteCommand(HandleConnectingFailureCommand.Create(message.Error));
                         return true;
                     }
 
                 case ProtocolMessage.MessageAction.Error:
                     {
                         // If the error is a token error do some magic
-                        bool shouldRenew = Context.ShouldWeRenewToken(message.Error);
+                        bool shouldRenew = Context.ShouldWeRenewToken(message.Error, state);
                         if (shouldRenew)
                         {
-                            try
-                            {
-                                Context.ClearTokenAndRecordRetry();
-                                await Context.CreateTransport();
-                                return true;
-                            }
-                            catch (AblyException ex)
-                            {
-                                Logger.Error("Error trying to renew token.", ex);
-                                TransitionState(SetDisconnectedStateCommand.Create(ex.ErrorInfo));
-                                return true;
-                            }
+                            Context.ExecuteCommand(HandleConnectingTokenErrorCommand.Create(message.Error));
+                            return true;
                         }
 
                         if (await Context.CanUseFallBackUrl(message.Error))
                         {
-                            Context.Connection.Key = null;
-                            Context.HandleConnectingFailure(message.Error, null);
+                            Context.ExecuteCommand(HandleConnectingFailureCommand.Create(message.Error, clearConnectionKey: true));
                             return true;
                         }
 
@@ -115,23 +103,14 @@ namespace IO.Ably.Transport.States.Connection
             _timer.Abort();
         }
 
-        public override async Task OnAttachToContext()
+        public override void OnAttachToContext()
         {
-            // RTN15g - If a client has been disconnected for longer
-            // than the connectionStateTtl, it should not attempt to resume.
-            if (Context.Connection.ConfirmedAliveAt?.Add(Context.Connection.ConnectionStateTtl) < DateTimeOffset.UtcNow)
-            {
-                Context.Connection.Id = string.Empty;
-                Context.Connection.Key = string.Empty;
-            }
-
-            await Context.CreateTransport();
             _timer.Start(Context.DefaultTimeout, onTimeOut: OnTimeOut);
         }
 
         private void OnTimeOut()
         {
-            Context.HandleConnectingFailure(null, null);
+            Context.ExecuteCommand(HandleConnectingFailureCommand.Create());
         }
 
         private void TransitionState(RealtimeCommand command)

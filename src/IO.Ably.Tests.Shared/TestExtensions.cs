@@ -28,10 +28,10 @@ namespace IO.Ably.Tests
             transport.BlockSendActions.Add(action);
         }
 
-        internal static void SimulateLostConnectionAndState(this IRealtimeClient client)
+        internal static void SimulateLostConnectionAndState(this AblyRealtime client)
         {
-            client.Connection.Id = string.Empty;
-            client.Connection.Key = "xxxxx!xxxxxxx-xxxxxxxx-xxxxxxxx";
+            client.Workflow.State.Connection.Id = string.Empty;
+            client.Workflow.State.Connection.Key = "xxxxx!xxxxxxx-xxxxxxxx-xxxxxxxx";
             client.GetTestTransport().Close(false);
         }
 

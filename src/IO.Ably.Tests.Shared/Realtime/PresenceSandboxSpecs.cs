@@ -198,7 +198,7 @@ namespace IO.Ably.Tests.Realtime
                         Channel = channelName,
                         Presence = new[] { presenceMessage },
                     };
-                    client.Connection.ConnectionManager.OnTransportMessageReceived(protocolMessage);
+                    client.Workflow.QueueCommand(ProcessMessageCommand.Create(protocolMessage));
                 }
 
                 await Task.Delay(100); // We need to let go of the thread to allow time for the manager thread to process messages
@@ -255,7 +255,8 @@ namespace IO.Ably.Tests.Realtime
                     counter.Tick();
                 });
 
-                client2.Connection.ConnectionManager.OnTransportMessageReceived(syncMessage);
+                client2.Workflow.QueueCommand(ProcessMessageCommand.Create(syncMessage));
+
                 await counter.Task;
 
                 syncPresenceMessages.Count.ShouldBeEquivalentTo(presenceMessages.Count);
@@ -744,29 +745,29 @@ namespace IO.Ably.Tests.Realtime
                     }
                 });
 
-                client.Connection.ConnectionManager.OnTransportMessageReceived(new ProtocolMessage()
+                client.Workflow.QueueCommand(ProcessMessageCommand.Create(new ProtocolMessage()
                 {
                     Action = ProtocolMessage.MessageAction.Sync,
                     Channel = channelName,
                     ChannelSerial = "1:1",
                     Presence = TestPresence1(),
-                });
+                }));
 
-                client.Connection.ConnectionManager.OnTransportMessageReceived(new ProtocolMessage()
+                client.Workflow.QueueCommand(ProcessMessageCommand.Create(new ProtocolMessage()
                 {
                     Action = ProtocolMessage.MessageAction.Sync,
                     Channel = channelName,
                     ChannelSerial = "2:1",
                     Presence = TestPresence2(),
-                });
+                }));
 
-                client.Connection.ConnectionManager.OnTransportMessageReceived(new ProtocolMessage()
+                client.Workflow.QueueCommand(ProcessMessageCommand.Create(new ProtocolMessage()
                 {
                     Action = ProtocolMessage.MessageAction.Sync,
                     Channel = channelName,
                     ChannelSerial = "2:",
                     Presence = TestPresence3(),
-                });
+                }));
 
                 await Task.Delay(100); // Allow time for the messages to be processed
 
@@ -865,7 +866,7 @@ namespace IO.Ably.Tests.Realtime
                 presenceMessages5.First().ClientId.Should().Be("2");
 
                 // become SUSPENDED
-                await client2.ConnectionManager.SetState(new ConnectionSuspendedState(client2.ConnectionManager, Logger));
+                client2.Workflow.QueueCommand(SetSuspendedStateCommand.Create(null));
                 await client2.WaitForState(ConnectionState.Suspended);
 
                 // with waitForSync set to false, should get all the three members
@@ -936,11 +937,18 @@ namespace IO.Ably.Tests.Realtime
 
                     // trigger a server initiated SYNC
                     Output.WriteLine("SET SUSPENDED");
-                    await client.ConnectionManager.SetState(new ConnectionSuspendedState(client.ConnectionManager, new ErrorInfo("RTP19 test"), client.Logger));
+                    client.Workflow.QueueCommand(SetSuspendedStateCommand.Create(new ErrorInfo("RTP19 test")));
                     await client.WaitForState(ConnectionState.Suspended);
 
                     Output.WriteLine("SET CONNECTED");
-                    await client.ConnectionManager.SetState(new ConnectionConnectedState(client.ConnectionManager, null));
+                    var connectedMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+                    {
+                        ConnectionDetails = new ConnectionDetails() {ConnectionKey = "connectionKey"},
+                        ConnectionId = "1",
+                        ConnectionSerial = 100
+                    };
+                    client.Workflow.QueueCommand(SetConnectedStateCommand.Create(connectedMessage, false));
+
                     await client.WaitForState(ConnectionState.Connected);
                 });
 
@@ -1502,7 +1510,7 @@ namespace IO.Ably.Tests.Realtime
                                 && message.Presence[0].ClientId == "local")
                             {
                                 // fail messages, causing callback to be invoked.
-                                client.ConnectionManager.AckProcessor.ClearQueueAndFailMessages(ErrorInfo.ReasonUnknown);
+                                client.Workflow.AckProcessor.ClearQueueAndFailMessages(ErrorInfo.ReasonUnknown);
                             }
                         }
 
@@ -1622,7 +1630,7 @@ namespace IO.Ably.Tests.Realtime
                     var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
 
                     await client.WaitForState(ConnectionState.Connected);
-                    await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager, client.Logger));
+                    client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null));
                     await client.WaitForState(ConnectionState.Disconnected);
 
                     Presence.QueuedPresenceMessage[] presenceMessages = null;
@@ -1664,7 +1672,7 @@ namespace IO.Ably.Tests.Realtime
                     Presence.QueuedPresenceMessage[] presenceMessages = null;
 
                     // force disconnected state
-                    await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager, client.Logger));
+                    client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null));
                     await client.WaitForState(ConnectionState.Disconnected);
 
                     await WaitForMultiple(2, partialDone =>
@@ -1714,7 +1722,7 @@ namespace IO.Ably.Tests.Realtime
                     Presence.QueuedPresenceMessage[] presenceMessages = null;
 
                     // force Initialized state
-                    await client.ConnectionManager.SetState(new ConnectionInitializedState(client.ConnectionManager, client.Logger));
+                    client.Workflow.QueueCommand(SetInitStateCommand.Create(null));
                     await client.WaitForState(ConnectionState.Initialized);
 
                     await WaitForMultiple(2, partialDone =>
@@ -1763,7 +1771,7 @@ namespace IO.Ably.Tests.Realtime
                     var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
 
                     await client.WaitForState(ConnectionState.Connected);
-                    await client.ConnectionManager.SetState(new ConnectionDisconnectedState(client.ConnectionManager, client.Logger));
+                    client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null));
                     await client.WaitForState(ConnectionState.Disconnected);
 
                     List<int> queueCounts = new List<int>();
@@ -1940,15 +1948,12 @@ namespace IO.Ably.Tests.Realtime
                         await Task.Delay(500);
 
                         // simulate disconnect
-                        await ably.Connection.ConnectionManager.SetState(new ConnectionDisconnectedState(
-                            ably.Connection.ConnectionManager,
-                            new ErrorInfo("Connection disconnected due to Operating system network going offline", 80017),
-                            ably.Logger));
+                        ably.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(new ErrorInfo("Connection disconnected due to Operating system network going offline", 80017)));
 
                         await Task.Delay(2000);
 
                         // simulate reconnect
-                        await ably.Connection.ConnectionManager.SetState(new ConnectionConnectingState(ably.Connection.ConnectionManager, ably.Logger));
+                        ably.Workflow.QueueCommand(SetConnectingStateCommand.Create());
                     });
 
                     p1.Should().NotBeNull();

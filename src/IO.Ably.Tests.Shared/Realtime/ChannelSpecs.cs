@@ -519,20 +519,20 @@ namespace IO.Ably.Tests.Realtime
             {
                 var client = await GetConnectedClient();
                 // Closed
-                client.Connection.ConnectionState = new ConnectionClosedState(client.ConnectionManager, Logger);
+                client.Workflow.SetState(new ConnectionClosedState(client.ConnectionManager, Logger));
                 Assert.Throws<AblyException>(() => client.Channels.Get("closed").Attach());
 
                 // Closing
-                client.Connection.ConnectionState = new ConnectionClosingState(client.ConnectionManager, Logger);
+                client.Workflow.SetState(new ConnectionClosingState(client.ConnectionManager, false, Logger));
                 Assert.Throws<AblyException>(() => client.Channels.Get("closing").Attach());
 
                 // Suspended
-                client.Connection.ConnectionState = new ConnectionSuspendedState(client.ConnectionManager, Logger);
+                client.Workflow.SetState(new ConnectionSuspendedState(client.ConnectionManager, Logger));
                 var error = Assert.Throws<AblyException>(() => client.Channels.Get("suspended").Attach());
                 error.ErrorInfo.Code.Should().Be(500);
 
                 // Failed
-                client.Connection.ConnectionState = new ConnectionFailedState(client.ConnectionManager, ErrorInfo.ReasonFailed, Logger);
+                client.Workflow.SetState(new ConnectionFailedState(client.ConnectionManager, ErrorInfo.ReasonFailed, Logger));
                 Assert.Throws<AblyException>(() => client.Channels.Get("failed").Attach());
             }
 
@@ -973,8 +973,8 @@ namespace IO.Ably.Tests.Realtime
                     channel.Publish("test", "connecting");
 
                     LastCreatedTransport.LastMessageSend.Should().BeNull();
-                    client.ConnectionManager.PendingMessages.Should().HaveCount(1);
-                    client.ConnectionManager.PendingMessages.First().Message.Messages.First().Data.Should().Be("connecting");
+                    client.Workflow.State.PendingMessages.Should().HaveCount(1);
+                    client.Workflow.State.PendingMessages.First().Message.Messages.First().Data.Should().Be("connecting");
 
                     // Not connect the client
                     client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
@@ -983,7 +983,7 @@ namespace IO.Ably.Tests.Realtime
 
                     // Messages should be sent
                     LastCreatedTransport.LastMessageSend.Should().NotBeNull();
-                    client.ConnectionManager.PendingMessages.Should().BeEmpty();
+                    client.Workflow.State.PendingMessages.Should().BeEmpty();
                 }
 
                 [Fact]
@@ -1000,8 +1000,8 @@ namespace IO.Ably.Tests.Realtime
                     channel.Publish("test", "connecting");
 
                     LastCreatedTransport.LastMessageSend.Should().BeNull();
-                    client.ConnectionManager.PendingMessages.Should().HaveCount(1);
-                    client.ConnectionManager.PendingMessages.First().Message.Messages.First().Data.Should().Be("connecting");
+                    client.Workflow.State.PendingMessages.Should().HaveCount(1);
+                    client.Workflow.State.PendingMessages.First().Message.Messages.First().Data.Should().Be("connecting");
 
                     // Now connect
                     client.Connect();
@@ -1011,7 +1011,7 @@ namespace IO.Ably.Tests.Realtime
 
                     // Pending messages are sent
                     LastCreatedTransport.LastMessageSend.Should().NotBeNull();
-                    client.ConnectionManager.PendingMessages.Should().BeEmpty();
+                    client.Workflow.State.PendingMessages.Should().BeEmpty();
                 }
 
                 public ConnectionStateConditions(ITestOutputHelper output)

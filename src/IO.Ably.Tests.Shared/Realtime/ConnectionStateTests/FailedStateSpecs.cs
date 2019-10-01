@@ -13,7 +13,6 @@ namespace IO.Ably.Tests
     {
         private FakeConnectionContext _context;
         private ConnectionFailedState _state;
-        private RealtimeState EmptyState = new RealtimeState();
 
         private ConnectionFailedState GetState(ErrorInfo info = null)
         {
@@ -52,11 +51,11 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public void BeforeTransition_DestroysTransport()
+        public void OnAttach_DestroysTransport()
         {
             // Arrange
             // Act
-            _state.BeforeTransition();
+            _state.OnAttachToContext();
 
             // Assert
             _context.DestroyTransportCalled.Should().BeTrue();
@@ -83,25 +82,10 @@ namespace IO.Ably.Tests
         public async Task ShouldNotHandleInboundMessages(ProtocolMessage.MessageAction action)
         {
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(action), EmptyState);
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(action), null);
 
             // Assert
             Assert.False(result);
-        }
-
-        [Fact]
-        public void BeforeTransition_ShouldClearConnectionKeyAndId()
-        {
-            // Arrange
-            _context.Connection.Key = "Test";
-            _context.Connection.Id = "Test";
-
-            // Act
-            _state.BeforeTransition();
-
-            // Assert
-            _context.Connection.Key.Should().BeNullOrEmpty();
-            _context.Connection.Id.Should().BeNullOrEmpty();
         }
 
         [Fact]
@@ -110,7 +94,7 @@ namespace IO.Ably.Tests
         public async Task OnAttached_ClearsAckQueue()
         {
             // Arrange
-            await _state.OnAttachToContext();
+            _state.OnAttachToContext();
 
             _context.ClearAckQueueMessagesCalled.Should().BeTrue();
             _context.ClearAckMessagesError.Should().Be(ErrorInfo.ReasonFailed);

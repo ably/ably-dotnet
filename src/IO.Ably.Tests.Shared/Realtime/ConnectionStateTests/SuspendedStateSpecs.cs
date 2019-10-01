@@ -67,7 +67,7 @@ namespace IO.Ably.Tests
         public async Task ShouldIgnoreInboundMessages(ProtocolMessage.MessageAction action)
         {
             // Act
-            var result = await _state.OnMessageReceived(new ProtocolMessage(action), new RealtimeState());
+            var result = await _state.OnMessageReceived(new ProtocolMessage(action), null);
 
             // Assert
             Assert.False(result);
@@ -102,7 +102,7 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport(TransportState.Initialized);
 
             // Act
-            await _state.OnAttachToContext();
+            _state.OnAttachToContext();
             _timer.StartedWithAction.Should().BeTrue();
             _timer.OnTimeOut();
 
@@ -116,7 +116,7 @@ namespace IO.Ably.Tests
         public async Task OnAttached_ClearsAckQueue()
         {
             // Arrange
-            await _state.OnAttachToContext();
+            _state.OnAttachToContext();
 
             _context.ClearAckQueueMessagesCalled.Should().BeTrue();
             _context.ClearAckMessagesError.Should().Be(ErrorInfo.ReasonSuspended);

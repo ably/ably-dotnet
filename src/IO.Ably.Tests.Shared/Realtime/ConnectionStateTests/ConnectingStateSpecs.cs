@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime.Workflow;
@@ -14,7 +15,6 @@ namespace IO.Ably.Tests
         private FakeConnectionContext _context;
         private ConnectionConnectingState _state;
         private FakeTimer _timer;
-        private RealtimeState EmptyState = new RealtimeState();
 
         public ConnectingStateSpecs(ITestOutputHelper output)
             : base(output)
@@ -52,7 +52,7 @@ namespace IO.Ably.Tests
         [InlineData(ProtocolMessage.MessageAction.Sync)]
         public async Task ShouldNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(action), EmptyState);
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(action), null);
 
             // Assert
             Assert.False(result);
@@ -63,7 +63,7 @@ namespace IO.Ably.Tests
         {
             _context.Transport = new FakeTransport() { State = TransportState.Connecting };
 
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected), EmptyState);
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected), null);
 
             // Assert
             Assert.True(result);
@@ -76,7 +76,7 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport() { State = TransportState.Closing };
 
             // Act
-            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected), EmptyState);
+            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected), null);
 
             // Assert
             _context.LastSetState.Should().BeNull();
@@ -89,7 +89,7 @@ namespace IO.Ably.Tests
             _context.Transport = GetConnectedTrasport();
 
             // Act
-            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected), EmptyState);
+            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected), null);
 
             // Assert
             _context.ShouldQueueCommand<SetConnectedStateCommand>();
@@ -102,7 +102,7 @@ namespace IO.Ably.Tests
             _context.Transport = GetConnectedTrasport();
 
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error), EmptyState);
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error), null);
 
             // Assert
             result.Should().BeTrue();
@@ -118,7 +118,7 @@ namespace IO.Ably.Tests
             ErrorInfo targetError = new ErrorInfo("test", 123);
 
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError }, EmptyState);
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError }, null);
 
             // Assert
             _context.ShouldQueueCommand<SetFailedStateCommand>();
@@ -134,25 +134,26 @@ namespace IO.Ably.Tests
             ErrorInfo targetError = new ErrorInfo("test", 123);
 
             // Act
-            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError }, EmptyState);
+            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError }, null);
 
             // Assert
             _context.HandledConnectionFailureCalled.Should().BeTrue();
         }
 
+        // TODO: Fix Test
         [Fact]
         public async Task WithInboundErrorMessageMessageWhenItCanUseFallBack_ShouldClearsConnectionKey()
         {
             // Arrange
             _context.Transport = GetConnectedTrasport();
             _context.CanUseFallBack = true;
-            _context.Connection.Key = "123";
 
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("test", 123, System.Net.HttpStatusCode.InternalServerError) }, EmptyState);
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("test", 123, System.Net.HttpStatusCode.InternalServerError) }, null);
 
-            // Assert
-            _context.Connection.Key.Should().BeNullOrEmpty();
+            var disconnectedCommand = _context.ExecutedCommands.Last() as SetDisconnectedStateCommand;
+            disconnectedCommand.Should().NotBeNull();
+            disconnectedCommand.ClearConnectionKey.Should().BeTrue();
         }
 
         [Fact]
@@ -162,7 +163,7 @@ namespace IO.Ably.Tests
             _context.Transport = GetConnectedTrasport();
 
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected), EmptyState);
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected), null);
 
             _context.HandledConnectionFailureCalled.Should().BeTrue();
         }
@@ -190,7 +191,7 @@ namespace IO.Ably.Tests
             _context.AllowTransportCreating = true;
 
             // Act
-            await _state.OnAttachToContext();
+            _state.OnAttachToContext();
 
             // Assert
             _context.CreateTransportCalled.Should().BeTrue();
@@ -203,7 +204,7 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport() { State = TransportState.Initialized };
 
             // Act
-            await _state.OnAttachToContext();
+            _state.OnAttachToContext();
             _timer.OnTimeOut();
 
             // Assert
@@ -221,9 +222,9 @@ namespace IO.Ably.Tests
             _context.Transport = transport;
 
             // Act
-            await _state.OnAttachToContext();
+            _state.OnAttachToContext();
             transport.State = TransportState.Connected;
-            await _state.OnMessageReceived(new ProtocolMessage(action), EmptyState);
+            await _state.OnMessageReceived(new ProtocolMessage(action), null);
 
             // Assert
             _timer.StartedWithAction.Should().BeTrue();
