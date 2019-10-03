@@ -3,11 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-
-using IO.Ably;
 using IO.Ably.Rest;
 using IO.Ably.Transport;
-using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using IO.Ably.Utils;
 using Newtonsoft.Json.Linq;
@@ -41,9 +38,6 @@ namespace IO.Ably.Realtime
         private ChannelState _state;
 
         protected override Action<Action> NotifyClient => RealtimeClient.NotifyExternalClients;
-
-        //TODO: This is never updated
-        public List<MessageAndCallback> QueuedMessages { get; set; } = new List<MessageAndCallback>(16);
 
         public ErrorInfo ErrorReason { get; internal set; }
 
@@ -522,11 +516,6 @@ namespace IO.Ably.Realtime
                         Properties.AttachSerial = protocolMessage.ChannelSerial;
                     }
 
-                    if (IsTerminalConnectionState == false)
-                    {
-                        SendQueuedMessages();
-                    }
-
                     break;
                 case ChannelState.Detaching:
                     AttachedAwaiter.Fail(new ErrorInfo("Channel transitioned to detaching", 50000));
@@ -564,7 +553,6 @@ namespace IO.Ably.Realtime
                             ReattachAfterTimeout(error, protocolMessage);
                             break;
                         default:
-                            ClearAndFailChannelQueuedMessages(error);
                             break;
                     }
 
@@ -572,10 +560,8 @@ namespace IO.Ably.Realtime
                 case ChannelState.Failed:
                     AttachedAwaiter.Fail(error);
                     DetachedAwaiter.Fail(error);
-                    ClearAndFailChannelQueuedMessages(error);
                     break;
                 case ChannelState.Suspended:
-                    ClearAndFailChannelQueuedMessages(error);
                     break;
             }
         }
@@ -624,24 +610,6 @@ namespace IO.Ably.Realtime
             }).ConfigureAwait(false);
         }
 
-        private void ClearAndFailChannelQueuedMessages(ErrorInfo error)
-        {
-            if (Logger.IsDebug)
-            {
-                Logger.Debug($"Clearing channel #{Name} queued messages. Count: " + QueuedMessages.Count);
-            }
-
-            lock (_lockQueue)
-            {
-                foreach (var messageAndCallback in QueuedMessages)
-                {
-                    messageAndCallback.SafeExecute(false, error);
-                }
-
-                QueuedMessages.Clear();
-            }
-        }
-
         internal void OnMessage(Message message)
         {
             var channelHandlers = _handlers.GetHandlers().ToList();
@@ -675,29 +643,6 @@ namespace IO.Ably.Realtime
         private bool IsTerminalConnectionState => ConnectionState == ConnectionState.Closed ||
                                                   ConnectionState == ConnectionState.Closing ||
                                                   ConnectionState == ConnectionState.Failed;
-
-        private int SendQueuedMessages()
-        {
-            List<MessageAndCallback> list;
-            lock (_lockQueue)
-            {
-                if (QueuedMessages.Count <= 0)
-                {
-                    return 0;
-                }
-
-                // Swap the list.
-                list = new List<MessageAndCallback>(QueuedMessages);
-                QueuedMessages.Clear();
-            }
-
-            foreach (var qpm in list)
-            {
-                SendMessage(qpm.Message, qpm.Callback);
-            }
-
-            return list.Count;
-        }
 
         private void SendMessage(ProtocolMessage protocolMessage, Action<bool, ErrorInfo> callback = null)
         {
