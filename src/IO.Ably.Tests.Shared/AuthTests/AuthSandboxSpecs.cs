@@ -72,8 +72,10 @@ namespace IO.Ably.Tests
             // set the Key to an empty string to override the sandbox settings
             var restClient = await helper.GetRestClientWithRequests(protocol, almostExpiredToken, invalidateKey: true);
 
+            var now = DateTimeOffset.UtcNow;
+
             // check the client thinks the token is valid
-            restClient.AblyAuth.CurrentToken.IsValidToken().Should().BeTrue();
+            restClient.AblyAuth.CurrentToken.IsValidToken(now).Should().BeTrue();
 
             var channelName = "RSA4a".AddRandomSuffix();
 
@@ -771,6 +773,26 @@ namespace IO.Ably.Tests
             message.ClientId.Should().Be("123");
             message.Data.Should().Be("test");
         }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("issue", "374")]
+        public async Task WhenClientTimeIsWrongAndQueryTimeSetToTrue_ShouldNotTreatTokenAsInvalid(Protocol protocol)
+        {
+            // Our device's clock is fast. The server returns by default a token valid for an hour
+            Func<DateTimeOffset> nowFunc = () => DateTimeOffset.UtcNow.AddHours(2);
+
+            var realtimeClient = await GetRealtimeClient(protocol, (opts, _) =>
+            {
+                opts.NowFunc = nowFunc;
+                opts.QueryTime = true;
+                opts.ClientId = "clientId";
+                opts.UseTokenAuth = true; // We force the token auth because further on it's not necessary when there is a key present
+            });
+
+            await realtimeClient.WaitForState(ConnectionState.Connected);
+        }
+
 
         /// <summary>
         /// Helper methods that return an AblyRest or AblyRealitme instance and a list of AblyRequest that

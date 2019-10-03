@@ -149,7 +149,9 @@ namespace IO.Ably
                 throw new AblyException("AuthMethod is set to Auth so there is no current valid token.");
             }
 
-            if (CurrentToken.IsValidToken())
+
+
+            if (CurrentToken.IsValidToken(ServerTimeOffset() ?? Now()))
             {
                 return CurrentToken;
             }
@@ -157,13 +159,14 @@ namespace IO.Ably
             if (TokenRenewable)
             {
                 var token = await AuthorizeAsync();
-                if (token.IsValidToken())
+                var now = ServerTimeOffset() ?? Now();
+                if (token.IsValidToken(now))
                 {
                     CurrentToken = token;
                     return token;
                 }
 
-                if (token != null && token.IsExpired())
+                if (token != null && token.IsExpired(now))
                 {
                     throw new AblyException("Token has expired: " + CurrentToken, 40142, HttpStatusCode.Unauthorized);
                 }
@@ -328,6 +331,9 @@ namespace IO.Ably
             {
                 throw new AblyException("Invalid token response returned", 80019);
             }
+
+            //TODO: Very ugly stuff
+            result.Now = Now;
 
             return result;
         }
