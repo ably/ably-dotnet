@@ -11,7 +11,7 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport
 {
-    internal class ConnectionHeartbeatHandler : IProtocolMessageHandler
+    internal class ConnectionHeartbeatHandler
     {
         private readonly ConnectionManager _manager;
         private readonly ILogger _logger;
@@ -29,7 +29,7 @@ namespace IO.Ably.Transport
             return message.Action == ProtocolMessage.MessageAction.Heartbeat;
         }
 
-        public ValueTask<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
+        public Task<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
         {
             var canHandle = CanHandleMessage(message);
             if (canHandle && message.Id.IsNotEmpty())
@@ -43,7 +43,7 @@ namespace IO.Ably.Transport
                 }
             }
 
-            return new ValueTask<bool>(canHandle);
+            return Task.FromResult(canHandle);
         }
 
         private void TryCallback(Action<TimeSpan?, ErrorInfo> action, TimeSpan? elapsed, ErrorInfo error)

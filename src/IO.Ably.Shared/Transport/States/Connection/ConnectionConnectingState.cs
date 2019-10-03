@@ -37,7 +37,7 @@ namespace IO.Ably.Transport.States.Connection
             TransitionState(SetClosingStateCommand.Create());
         }
 
-        public override async ValueTask<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
+        public override async Task<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
         {
             if (message == null)
             {

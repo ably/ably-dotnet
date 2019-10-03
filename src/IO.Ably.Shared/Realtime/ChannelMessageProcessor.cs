@@ -24,18 +24,18 @@ namespace IO.Ably.Realtime
             return _channels.Get(name) as RealtimeChannel;
         }
 
-        public ValueTask<bool> MessageReceived(ProtocolMessage protocolMessage, RealtimeState state)
+        public Task<bool> MessageReceived(ProtocolMessage protocolMessage, RealtimeState state)
         {
             if (protocolMessage.Channel.IsEmpty())
             {
-                return new ValueTask<bool>(false);
+                return Task.FromResult(false);
             }
 
             var channel = _channels.Exists(protocolMessage.Channel) ? GetChannel(protocolMessage.Channel) : null;
             if (channel == null)
             {
                 Logger.Warning($"Message received {protocolMessage} for a channel that does not exist {protocolMessage.Channel}");
-                return new ValueTask<bool>(false);
+                return Task.FromResult(false);
             }
 
             switch (protocolMessage.Action)
@@ -90,7 +90,7 @@ namespace IO.Ably.Realtime
                     break;
             }
 
-            return new ValueTask<bool>(true);
+            return Task.FromResult(true);
         }
     }
 }

@@ -2,15 +2,14 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using IO.Ably;
+using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
-    using IO.Ably.Realtime;
-
     [DebuggerDisplay("{State}")]
-    internal abstract class ConnectionStateBase : IProtocolMessageHandler
+    internal abstract class ConnectionStateBase
     {
         internal ILogger Logger { get; private set; }
 
@@ -47,9 +46,9 @@ namespace IO.Ably.Transport.States.Connection
         {
         }
 
-        public virtual ValueTask<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
+        public virtual Task<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
         {
-            return new ValueTask<bool>(false);
+            return Task.FromResult(false);
         }
 
         public virtual void AbortTimer()

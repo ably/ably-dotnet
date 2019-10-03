@@ -32,7 +32,7 @@ namespace IO.Ably.Realtime.Workflow
         internal ConnectionHeartbeatHandler HeartbeatHandler { get; }
         internal ChannelMessageProcessor ChannelMessageProcessor { get; }
 
-        internal List<(string, Func<ProtocolMessage, RealtimeState, ValueTask<bool>>)> MessageHandlers;
+        internal List<(string, Func<ProtocolMessage, RealtimeState, Task<bool>>)> MessageHandlers;
 
         internal readonly Channel<RealtimeCommand> CommandChannel = Channel.CreateUnbounded<RealtimeCommand>(
             new UnboundedChannelOptions()
@@ -52,7 +52,7 @@ namespace IO.Ably.Realtime.Workflow
 
             HeartbeatHandler = new ConnectionHeartbeatHandler(Connection.ConnectionManager, logger);
             ChannelMessageProcessor = new ChannelMessageProcessor(Channels, logger);
-            MessageHandlers = new List<(string, Func<ProtocolMessage, RealtimeState, ValueTask<bool>>)>
+            MessageHandlers = new List<(string, Func<ProtocolMessage, RealtimeState, Task<bool>>)>
             {
                 ("State handler", (message, state) => ConnectionManager.State.OnMessageReceived(message, state)),
                 ("Heartbeat handler", HeartbeatHandler.OnMessageReceived),
@@ -751,7 +751,7 @@ namespace IO.Ably.Realtime.Workflow
             }
         }
 
-        internal ValueTask<bool> HandleAckMessage(ProtocolMessage message)
+        internal Task<bool> HandleAckMessage(ProtocolMessage message)
         {
             if (message.Action == ProtocolMessage.MessageAction.Ack ||
                 message.Action == ProtocolMessage.MessageAction.Nack)
@@ -774,10 +774,10 @@ namespace IO.Ably.Realtime.Workflow
                         State.WaitingForAck.Remove(current);
                     }
                 }
-                return new ValueTask<bool>(true);
+                return Task.FromResult(true);
             }
 
-            return new ValueTask<bool>(false);
+            return Task.FromResult(false);
 
         }
 
@@ -804,7 +804,7 @@ namespace IO.Ably.Realtime.Workflow
                 }
             }
             catch { }
-            count = default;
+            count = default(int);
             return false;
             #endif
         }

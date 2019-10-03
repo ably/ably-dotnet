@@ -23,7 +23,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.QueuedPresenceMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\PresenceMap.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\ChannelCommands.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\IProtocolMessageHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\IQueueCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\PingRequest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\RealtimeCommand.cs" />
