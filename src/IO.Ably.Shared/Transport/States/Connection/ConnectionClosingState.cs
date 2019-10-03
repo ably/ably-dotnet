@@ -12,7 +12,7 @@ namespace IO.Ably.Transport.States.Connection
         private readonly bool _connectedTransport;
         private readonly ICountdownTimer _timer;
 
-        public ConnectionClosingState(IConnectionContext context, bool connectedTransport,ILogger logger)
+        public ConnectionClosingState(IConnectionContext context, bool connectedTransport, ILogger logger)
             : this(context, null, connectedTransport, new CountdownTimer("Closing state timer", logger), logger)
         {
         }

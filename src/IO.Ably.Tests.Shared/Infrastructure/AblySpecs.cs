@@ -3,6 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using IO.Ably.Realtime;
+using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Tests.Realtime;
+using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -23,14 +27,13 @@ namespace IO.Ably.Tests
             _signal.Set();
         }
 
-        /// <summary>
-        /// Figure out a way to yield the current thread so a command can be processed
-        /// </summary>
-        /// <returns></returns>
-        public async Task ProcessCommands(IRealtimeClient client)
+        public AblyRealtime GetDisconnectedClient(ClientOptions options = null)
         {
-            //TODO: find a better way to do it
-            await Task.Delay(100);
+            var clientOptions = options ?? new ClientOptions(ValidKey);
+
+            clientOptions.AutoConnect = false;
+
+            return GetRealtimeClient(clientOptions);
         }
 
 
@@ -54,9 +57,55 @@ namespace IO.Ably.Tests
             return client;
         }
 
+        public const string TestChannelName = "test";
+
+        protected FakeTransportFactory FakeTransportFactory { get; private set; }
+
+        protected FakeTransport LastCreatedTransport => FakeTransportFactory.LastCreatedTransport;
+
+        internal AblyRealtime GetClientWithFakeTransport(Action<ClientOptions> optionsAction = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
+        {
+            var options = new ClientOptions(ValidKey) { TransportFactory = FakeTransportFactory };
+            optionsAction?.Invoke(options);
+            var client = GetRealtimeClient(options, handleRequestFunc);
+            return client;
+        }
+
+        internal async Task<AblyRealtime> GetConnectedClient(Action<ClientOptions> optionsAction = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
+        {
+            var client = GetClientWithFakeTransport(optionsAction, handleRequestFunc);
+            client.FakeProtocolMessageReceived(ConnectedProtocolMessage);
+            await client.WaitForState(ConnectionState.Connected);
+            return client;
+        }
+
+        protected ProtocolMessage ConnectedProtocolMessage =>
+            new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+            {
+                ConnectionDetails = new ConnectionDetails() {ConnectionKey = "connectionKey"},
+                ConnectionId = "1",
+                ConnectionSerial = 100
+            };
+
+        protected Task<IRealtimeChannel> GetChannel(Action<ClientOptions> optionsAction = null) => GetConnectedClient(optionsAction).MapAsync(client => client.Channels.Get("test"));
+
+        protected Task<(AblyRealtime, IRealtimeChannel)> GetClientAndChannel(Action<ClientOptions> optionsAction = null) =>
+            GetConnectedClient(optionsAction).MapAsync(x => (x, x.Channels.Get("test")));
+
+        protected Task<IRealtimeChannel> GetTestChannel(IRealtimeClient client = null, Action<ClientOptions> optionsAction = null)
+        {
+            if (client == null)
+            {
+                return GetConnectedClient().MapAsync(x => x.Channels.Get(TestChannelName));
+            }
+
+            return Task.FromResult(client.Channels.Get(TestChannelName));
+        }
+
         public AblyRealtimeSpecs(ITestOutputHelper output)
             : base(output)
         {
+            FakeTransportFactory = new FakeTransportFactory();
         }
 
         public void Dispose()

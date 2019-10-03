@@ -109,23 +109,5 @@ namespace IO.Ably.Tests
             _timer.StartedWithAction.Should().BeTrue();
             _context.ShouldQueueCommand<SetConnectingStateCommand>();
         }
-
-        [Fact]
-        public async Task WhenDisconnectedWithFallback_ShouldRetryConnectionImmediately()
-        {
-            // Arrange
-            // Arrange
-            var transport = new FakeTransport() { State = TransportState.Initialized };
-            _context.Transport = transport;
-            var state = GetState(ErrorInfo.ReasonClosed);
-            state.RetryInstantly = true;
-
-            // Act
-            state.OnAttachToContext();
-
-            // Assert
-            _timer.StartedWithAction.Should().BeFalse();
-            _context.ShouldQueueCommand<SetConnectingStateCommand>();
-        }
     }
 }

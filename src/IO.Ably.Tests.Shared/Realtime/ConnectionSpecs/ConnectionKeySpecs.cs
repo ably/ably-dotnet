@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 namespace IO.Ably.Tests.Realtime
 {
     [Trait("spec", "RTN9")]
-    public class ConnectionKeySpecs : ConnectionSpecsBase
+    public class ConnectionKeySpecs : AblyRealtimeSpecs
     {
         [Fact]
         [Trait("spec", "RTN9a")]
@@ -36,7 +36,7 @@ namespace IO.Ably.Tests.Realtime
             // Arrange
             string targetKey = "1234567";
             var client = GetClientWithFakeTransport();
-            client.Workflow.State.Connection.Key = targetKey;
+            client.State.Connection.Key = targetKey;
 
             // Act
             var transportParamsForReconnect = await client.ConnectionManager.CreateTransportParameters("https://realtime.ably.io");

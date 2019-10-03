@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 namespace IO.Ably.Tests.Realtime
 {
     [Trait("spec", "RTN13")]
-    public class ConnectionPingSpecs : ConnectionSpecsBase
+    public class ConnectionPingSpecs : AblyRealtimeSpecs
     {
         [Fact]
         [Trait("spec", "RTN13a")]

@@ -10,6 +10,7 @@ using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using IO.Ably.Utils;
+using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Realtime
 {
@@ -41,6 +42,7 @@ namespace IO.Ably.Realtime
 
         protected override Action<Action> NotifyClient => RealtimeClient.NotifyExternalClients;
 
+        //TODO: This is never updated
         public List<MessageAndCallback> QueuedMessages { get; set; } = new List<MessageAndCallback>(16);
 
         public ErrorInfo ErrorReason { get; internal set; }
@@ -728,6 +730,23 @@ namespace IO.Ably.Realtime
         {
             // TODO: this is not right. Find what should be in place of that logic
             SetChannelState(State, protocolMessage.Error, protocolMessage, emitUpdate: true);
+        }
+
+        public JObject GetCurrentState()
+        {
+            var state = new JObject();
+            state["name"] = Name;
+            state["options"] = JObject.FromObject(_options);
+            state["state"] = JToken.FromObject(_state);
+            state["timers"] = JObject.FromObject(new
+            {
+                awaitTimer = AttachedAwaiter.Waiting,
+                detachTimer = DetachedAwaiter.Waiting
+            });
+            state["emitters"] = GetState();
+            state["handlers"] = _handlers.GetState();
+            state["presence"] = Presence.GetState();
+            return state;
         }
     }
 }

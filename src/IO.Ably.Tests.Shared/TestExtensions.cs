@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Types;
 
@@ -30,8 +31,8 @@ namespace IO.Ably.Tests
 
         internal static void SimulateLostConnectionAndState(this AblyRealtime client)
         {
-            client.Workflow.State.Connection.Id = string.Empty;
-            client.Workflow.State.Connection.Key = "xxxxx!xxxxxxx-xxxxxxxx-xxxxxxxx";
+            client.State.Connection.Id = string.Empty;
+            client.State.Connection.Key = "xxxxx!xxxxxxx-xxxxxxxx-xxxxxxxx";
             client.GetTestTransport().Close(false);
         }
 
@@ -53,6 +54,32 @@ namespace IO.Ably.Tests
         {
             client.GetTestTransport().AfterDataReceived = action;
             (client.Options.TransportFactory as TestTransportFactory).AfterDataReceived = action;
+        }
+
+        /// <summary>
+        /// Figure out a way to yield the current thread so a command can be processed
+        /// </summary>
+        /// <returns></returns>
+        public static async Task ProcessCommands(this IRealtimeClient client)
+        {
+            var realtime = client as AblyRealtime;
+            var taskAwaiter = new TaskCompletionAwaiter();
+
+            Task.Run(async () =>
+            {
+                while (true)
+                {
+                    await Task.Delay(50);
+
+                    if (realtime.Workflow.IsProcessingCommands() == false)
+                    {
+                        taskAwaiter.SetCompleted();
+                    }
+                }
+
+            });
+
+            await taskAwaiter.Task;
         }
     }
 }

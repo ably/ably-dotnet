@@ -85,46 +85,12 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        [Trait("spec", "RTN12a")]
-
-        // When the closing state is initialised a Close message is sent
-        public async Task OnAttachedToTransport_ShouldSendClosedMessage()
-        {
-            // Arrange
-            var transport = new FakeTransport() { State = TransportState.Connected };
-            _context.Transport = transport;
-
-            // Act
-            _state.OnAttachToContext();
-
-            // Assert
-            _context.LastMessageSent.Action.Should().Be(ProtocolMessage.MessageAction.Close);
-        }
-
-        [Theory]
-        [InlineData(TransportState.Closed)]
-        [InlineData(TransportState.Closing)]
-        [InlineData(TransportState.Connecting)]
-        [InlineData(TransportState.Initialized)]
-        public async Task WhenTransportIsNotConnected_ShouldGoStraightToClosed(TransportState transportState)
-        {
-            // Arrange
-            _context.Transport = new FakeTransport() { State = transportState };
-
-            // Act
-            _state.OnAttachToContext();
-
-            // Assert
-            _context.ShouldQueueCommand<SetClosedStateCommand>();
-        }
-
-        [Fact]
         [Trait("spec", "RTN12b")]
         public async Task AfterTimeoutExpires_ShouldForceStateToClosed()
         {
-            _context.Transport = new FakeTransport() { State = TransportState.Connected };
+            var state = GetState(connectedTransport: true);
+            state.OnAttachToContext();
 
-            _state.OnAttachToContext();
             _timer.StartedWithAction.Should().BeTrue();
             _timer.OnTimeOut();
 
@@ -168,9 +134,9 @@ namespace IO.Ably.Tests
         private ConnectionClosingState _state;
         private FakeTimer _timer;
 
-        private ConnectionClosingState GetState(ErrorInfo info = null)
+        private ConnectionClosingState GetState(ErrorInfo info = null, bool connectedTransport = true)
         {
-            return new ConnectionClosingState(_context, info, false, _timer, Logger);
+            return new ConnectionClosingState(_context, info, connectedTransport, _timer, Logger);
         }
 
         public ClosingStateSpecs(ITestOutputHelper output)

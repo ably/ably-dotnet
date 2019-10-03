@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
+using Newtonsoft.Json.Linq;
 
 namespace IO.Ably
 {
@@ -38,6 +40,8 @@ namespace IO.Ably
             Channels = new RealtimeChannels(this, Connection);
             RestClient.AblyAuth.OnAuthUpdated = ConnectionManager.OnAuthUpdated;
 
+            State = new RealtimeState(options.FallbackHosts?.Shuffle().ToList());
+
             Workflow = new RealtimeWorkflow(this, Logger);
             Workflow.Start();
 
@@ -62,6 +66,8 @@ namespace IO.Ably
 
         /// <summary>A reference to the connection object for this library instance.</summary>
         public Connection Connection { get; }
+
+        internal RealtimeState State { get; }
 
         public Task<PaginatedResult<Stats>> StatsAsync()
         {
@@ -124,6 +130,16 @@ namespace IO.Ably
             {
                 action();
             }
+        }
+
+        public string GetCurrentState()
+        {
+            var result = new JObject();
+            result["options"] = JObject.FromObject(Options);
+            result["state"] = State.WhatDoIHave();
+            result["channels"] = Channels.GetCurrentState();
+            result["isDisposed"] = Disposed;
+            return result.ToString();
         }
 
         public void Dispose()

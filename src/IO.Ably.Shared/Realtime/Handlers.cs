@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Realtime
 {
@@ -136,5 +137,18 @@ namespace IO.Ably.Realtime
                 _lock.ExitWriteLock();
             }
         }
+
+        internal JObject GetState()
+        {
+            var state= new JObject();
+            state["*"] = _handlers.Count;
+            foreach (var key in _specificHandlers.Keys)
+            {
+                state[key] = _specificHandlers[key].Count;
+            }
+
+            return state;
+        }
+
     }
 }

@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 {
-    public class ConnectionRecoverySpecs : ConnectionSpecsBase
+    public class ConnectionRecoverySpecs : AblyRealtimeSpecs
     {
         [Fact]
         [Trait("spec", "RTN16c")]

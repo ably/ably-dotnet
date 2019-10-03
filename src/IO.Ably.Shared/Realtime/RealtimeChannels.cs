@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IO.Ably.Realtime.Workflow;
+using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Realtime
 {
@@ -132,7 +133,12 @@ namespace IO.Ably.Realtime
             return Channels.ToArray().Select(x => x.Value).GetEnumerator();
         }
 
-        internal async Task ExecuteCommand(ChannelCommand cmd)
+        internal JArray GetCurrentState()
+        {
+            return new JArray(Channels.Values.Select(x => x.GetCurrentState()));
+        }
+
+        internal Task ExecuteCommand(ChannelCommand cmd)
         {
             var channelName = cmd.ChannelName;
             var affectedChannels = Channels.Values
@@ -152,6 +158,8 @@ namespace IO.Ably.Realtime
                         break;
                 }
             }
+
+            return Task.CompletedTask;
         }
 
         private void HandleInitialiseFailedChannelsCommand(RealtimeChannel channel)

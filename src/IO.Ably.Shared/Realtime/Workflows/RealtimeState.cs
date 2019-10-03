@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
+using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Realtime.Workflow
 {
@@ -133,6 +135,11 @@ namespace IO.Ably.Realtime.Workflow
 
         public Queue<MessageAndCallback> PendingMessages { get; }
 
+        public List<MessageAndCallback> WaitingForAck = new List<MessageAndCallback>();
+
+        public void AddAckMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
+        => WaitingForAck.Add(new MessageAndCallback(message, callback));
+
         public RealtimeState() : this(null)
         {
 
@@ -143,6 +150,17 @@ namespace IO.Ably.Realtime.Workflow
             Connection = new ConnectionData(fallbackHosts);
             AttemptsInfo = new ConnectionAttemptsInfo(now);
             PendingMessages = new Queue<MessageAndCallback>();
+        }
+
+        public JObject WhatDoIHave(bool writeToLog = false)
+        {
+            var stateJson = new JObject();
+            stateJson["connection"] = JObject.FromObject(Connection);
+            stateJson["pings"] = JArray.FromObject(PingRequests);
+            stateJson["attempts"] = JObject.FromObject(AttemptsInfo);
+            stateJson["pendingMessages"] = JArray.FromObject(PendingMessages);
+            stateJson["waitingForAck"] = JArray.FromObject(WaitingForAck);
+            return stateJson;
         }
     }
 }

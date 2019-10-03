@@ -11,23 +11,23 @@ namespace IO.Ably.Types
         public enum MessageAction
         {
             Heartbeat = 0,
-            Ack,
-            Nack,
-            Connect,
-            Connected,
-            Disconnect,
-            Disconnected,
-            Close,
-            Closed,
-            Error,
-            Attach,
-            Attached,
-            Detach,
-            Detached,
-            Presence,
-            Message,
-            Sync,
-            Auth
+            Ack = 1,
+            Nack = 2,
+            Connect = 3,
+            Connected = 4,
+            Disconnect = 5,
+            Disconnected = 6,
+            Close = 7,
+            Closed = 8,
+            Error = 9,
+            Attach = 10,
+            Attached = 11,
+            Detach = 12,
+            Detached = 13,
+            Presence = 14,
+            Message = 15,
+            Sync = 16,
+            Auth = 17
         }
 
         public enum Flag

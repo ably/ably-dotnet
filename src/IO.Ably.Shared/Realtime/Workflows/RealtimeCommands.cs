@@ -288,13 +288,16 @@ namespace IO.Ably.Realtime.Workflow
         public ProtocolMessage ProtocolMessage { get; }
         public Action<bool, ErrorInfo> Callback { get; }
 
-        public SendMessageCommand(ProtocolMessage protocolMessage, Action<bool, ErrorInfo> callback)
+        public bool Force { get; }
+
+        public SendMessageCommand(ProtocolMessage protocolMessage, Action<bool, ErrorInfo> callback, bool force)
         {
             ProtocolMessage = protocolMessage;
             Callback = callback;
+            Force = force;
         }
 
-        public static SendMessageCommand Create(ProtocolMessage message, Action<bool, ErrorInfo> callback = null) => new SendMessageCommand(message, callback);
+        public static SendMessageCommand Create(ProtocolMessage message, Action<bool, ErrorInfo> callback = null, bool force = false) => new SendMessageCommand(message, callback, force);
 
         protected override string ExplainData()
         {

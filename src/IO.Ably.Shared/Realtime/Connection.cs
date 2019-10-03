@@ -76,7 +76,7 @@ namespace IO.Ably.Realtime
                 }
 
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Logger.Warning("Error cleaning up networking events hook");
             }
@@ -106,7 +106,7 @@ namespace IO.Ably.Realtime
             RegisterWithOsNetworkStateEvents(HandleNetworkStateChange);
         }
 
-        internal RealtimeState.ConnectionData InnerState => RealtimeClient.Workflow.State.Connection;
+        internal RealtimeState.ConnectionData InnerState => RealtimeClient.State.Connection;
 
         internal void Initialise()
         {

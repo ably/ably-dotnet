@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably;
+using Newtonsoft.Json.Linq;
 
 namespace IO.Ably
 {
@@ -36,6 +37,11 @@ namespace IO.Ably
 
         private readonly List<Emitter<TState, TArgs>> _emitters = new List<Emitter<TState, TArgs>>();
         private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
+
+        internal JArray GetState()
+        {
+            return new JArray(_emitters.Select(x => new { state = x.State, once = x.Once }));
+        }
 
         protected abstract Action<Action> NotifyClient { get; }
 

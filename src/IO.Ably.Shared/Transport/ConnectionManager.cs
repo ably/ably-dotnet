@@ -27,7 +27,7 @@ namespace IO.Ably.Transport
 
         public ConnectionStateBase State => Connection.ConnectionState;
 
-        public ITransport Transport { get; private set; }
+        public ITransport Transport { get; internal set; }
 
         public ClientOptions Options => RestClient.Options;
 

@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 namespace IO.Ably.Tests.Realtime
 {
     [Trait("spec", "RTN10")]
-    public class ConnectionSerialSpecs : ConnectionSpecsBase
+    public class ConnectionSerialSpecs : AblyRealtimeSpecs
     {
         [Fact]
         [Trait("spec", "RTN10a")]
@@ -28,7 +28,7 @@ namespace IO.Ably.Tests.Realtime
             // Arrange
             var client = GetClientWithFakeTransport();
             long targetSerial = 1234567;
-            client.Workflow.State.Connection.Serial = targetSerial;
+            client.State.Connection.Serial = targetSerial;
 
             // Act
             var transportParams = await client.ConnectionManager.CreateTransportParameters("https://realtime.ably.io");
@@ -50,7 +50,7 @@ namespace IO.Ably.Tests.Realtime
                 ConnectionSerial = 123456
             });
 
-            await ProcessCommands(client);
+            await client.ProcessCommands();
 
             // Act
             client.Connection.Serial.Should().Be(123456);

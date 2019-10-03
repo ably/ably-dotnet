@@ -420,8 +420,7 @@ namespace IO.Ably.Tests.Realtime
             var channel = client.Channels.Get("RTN15c1".AddRandomSuffix()) as RealtimeChannel;
             await client.WaitForState(ConnectionState.Connected);
             var connectionId = client.Connection.Id;
-            channel.Attach();
-            await channel.WaitForState(ChannelState.Attached);
+            await channel.AttachAsync();
             channel.State.Should().Be(ChannelState.Attached);
 
             // kill the transport so the connection becomes DISCONNECTED
@@ -437,8 +436,9 @@ namespace IO.Ably.Tests.Realtime
 
             channel.Publish(null, "foo");
 
+            await client.ProcessCommands();
             // currently disconnected so message is queued
-            client.Workflow.State.PendingMessages.Should().HaveCount(1);
+            client.State.PendingMessages.Should().HaveCount(1);
 
             // wait for reconnection
             var didConnect = await awaiter.Task;
@@ -451,7 +451,7 @@ namespace IO.Ably.Tests.Realtime
 
             // channel should be attached and pending messages sent
             channel.State.Should().Be(ChannelState.Attached);
-            client.Workflow.State.PendingMessages.Should().HaveCount(0);
+            client.State.PendingMessages.Should().HaveCount(0);
 
             var history = await channel.HistoryAsync();
             history.Items.Should().HaveCount(1);
@@ -538,7 +538,7 @@ namespace IO.Ably.Tests.Realtime
             channelStateChange.Error.Message.Should().Be("Faked channel error");
 
             // queued messages should now have been sent
-            client.Workflow.State.PendingMessages.Should().HaveCount(0);
+            client.State.PendingMessages.Should().HaveCount(0);
 
             var history = await channel.HistoryAsync();
             history.Items.Should().HaveCount(1);
@@ -999,7 +999,7 @@ namespace IO.Ably.Tests.Realtime
 
             await client.WaitForState(ConnectionState.Connected);
 
-            client.Workflow.State.Connection.ConnectionStateTtl = TimeSpan.FromSeconds(1);
+            client.State.Connection.ConnectionStateTtl = TimeSpan.FromSeconds(1);
             initialConnectionId = client.Connection.Id;
             connectionStateTtl = client.Connection.ConnectionStateTtl;
 
@@ -1133,7 +1133,7 @@ namespace IO.Ably.Tests.Realtime
 
             await Task.Delay(2000);
 
-            client.Workflow.State.Connection.Key = "e02789NdQA86c7!inI5Ydc-ytp7UOm3-3632e02789NdQA86c7";
+            client.State.Connection.Key = "e02789NdQA86c7!inI5Ydc-ytp7UOm3-3632e02789NdQA86c7";
 
             // Kill the transport
             client.ConnectionManager.Transport.Close(false);
@@ -1353,8 +1353,6 @@ namespace IO.Ably.Tests.Realtime
 
             var detatchCount = sentMessages.Count(x => x.Channel == channelName && x.Action == ProtocolMessage.MessageAction.Detach);
             detatchCount.Should().Be(2);
-
-            client.Close();
         }
 
         public ConnectionSandboxTransportSideEffectsSpecs(AblySandboxFixture fixture, ITestOutputHelper output)

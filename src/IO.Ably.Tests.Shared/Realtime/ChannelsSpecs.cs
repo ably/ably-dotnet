@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime
 {
-    public class ChannelsSpecs : ConnectionSpecsBase
+    public class ChannelsSpecs : AblyRealtimeSpecs
     {
         [Fact]
         [Trait("spec", "RTS3")]
@@ -204,7 +204,7 @@ namespace IO.Ably.Tests.Realtime
             // Act
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
 
-            await ProcessCommands(client);
+            await client.ProcessCommands();
 
             // Assert
             client.Channels.Should().BeEmpty();

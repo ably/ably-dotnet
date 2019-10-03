@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Types;
+using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Realtime
 {
@@ -689,5 +690,13 @@ namespace IO.Ably.Realtime
             SyncCompleted?.Invoke(this, EventArgs.Empty);
         }
 
+        internal JToken GetState()
+        {
+            var state = new JObject();
+            state["handlers"] = _handlers.GetState();
+            state["members"] = Map.GetState();
+            state["pendingQueue"] = new JArray(PendingPresenceQueue.Select(x => JObject.FromObject(x.Message)));
+            return state;
+        }
     }
 }

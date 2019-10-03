@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime
 {
-    public class GeneralConnectionSpecs : ConnectionSpecsBase
+    public class GeneralConnectionSpecs : AblyRealtimeSpecs
     {
         [Fact]
         [Trait("spec", "RTN1")]
@@ -77,7 +77,7 @@ namespace IO.Ably.Tests.Realtime
                 ConnectionDetails = new ConnectionDetails { ClientId = "realtimeClient" }
             });
 
-            await ProcessCommands(client);
+            await client.ProcessCommands();
 
             client.RestClient.AblyAuth.ClientId.Should().Be("realtimeClient");
         }

@@ -932,8 +932,7 @@ namespace IO.Ably.Tests.Realtime
             var channelName = "RTL13a".AddRandomSuffix();
             var client = await GetRealtimeClient(protocol);
             var channel = client.Channels.Get(channelName);
-            channel.Attach();
-            await channel.WaitForState(ChannelState.Attached);
+            await channel.AttachAsync();
 
             channel.State.Should().Be(ChannelState.Attached);
 
@@ -953,7 +952,7 @@ namespace IO.Ably.Tests.Realtime
 
             stateChange.Error.ShouldBeEquivalentTo(msg.Error);
             channel.ErrorReason.Should().BeNull();
-
+            await client.ProcessCommands();
             client.GetTestTransport().ProtocolMessagesSent
                 .Count(x => x.Action == ProtocolMessage.MessageAction.Attach).Should().Be(2);
 

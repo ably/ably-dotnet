@@ -19,15 +19,14 @@ namespace IO.Ably.Realtime
             }
         }
 
-        public static bool ShouldSuspend(this RealtimeState state)
+        public static bool ShouldSuspend(this RealtimeState state, Func<DateTimeOffset> now = null)
         {
             var firstAttempt = state.AttemptsInfo.FirstAttempt;
             if (firstAttempt == null)
             {
                 return false;
             }
-
-            var now = Defaults.NowFunc();
+            now = now ?? Defaults.NowFunc();
             return (now() - firstAttempt.Value) >= state.Connection.ConnectionStateTtl;
         }
 

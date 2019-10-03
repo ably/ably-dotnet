@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
@@ -12,6 +13,10 @@ namespace IO.Ably.Realtime.Workflow
 {
     internal class RealtimeWorkflow : IQueueCommand
     {
+        // This is used for the tests so we can have a good
+        // way of figuring out when processing has finished
+        private volatile bool _processingCommand = false;
+
         AblyRealtime Client { get; }
         private AblyAuth Auth => Client.RestClient.AblyAuth;
         public Connection Connection { get; }
@@ -20,18 +25,16 @@ namespace IO.Ably.Realtime.Workflow
         public ConnectionManager ConnectionManager => Connection.ConnectionManager;
         public ILogger Logger { get; }
 
-        internal RealtimeState State { get; }
+        private RealtimeState State => Client.State;
 
         private Func<DateTimeOffset> Now => Connection.Now;
 
         internal ConnectionHeartbeatHandler HeartbeatHandler { get; }
-        internal AcknowledgementProcessor AckProcessor { get; set; }
-
         internal ChannelMessageProcessor ChannelMessageProcessor { get; }
 
         internal List<(string, Func<ProtocolMessage, RealtimeState, ValueTask<bool>>)> MessageHandlers;
 
-        internal readonly Channel<RealtimeCommand> RealtimeMessageLoop = Channel.CreateUnbounded<RealtimeCommand>(
+        internal readonly Channel<RealtimeCommand> CommandChannel = Channel.CreateUnbounded<RealtimeCommand>(
             new UnboundedChannelOptions()
             {
                 SingleReader = true,
@@ -44,18 +47,16 @@ namespace IO.Ably.Realtime.Workflow
             Connection = client.Connection;
             Channels = client.Channels;
             Logger = logger;
-            State = new RealtimeState(client.Options.FallbackHosts?.Shuffle().ToList());
 
             SetInitialConnectionState();
 
             HeartbeatHandler = new ConnectionHeartbeatHandler(Connection.ConnectionManager, logger);
             ChannelMessageProcessor = new ChannelMessageProcessor(Channels, logger);
-            AckProcessor = new AcknowledgementProcessor(Connection, State.Connection);
             MessageHandlers = new List<(string, Func<ProtocolMessage, RealtimeState, ValueTask<bool>>)>
             {
                 ("State handler", (message, state) => ConnectionManager.State.OnMessageReceived(message, state)),
                 ("Heartbeat handler", HeartbeatHandler.OnMessageReceived),
-                ("Ack handler", (message, state) => AckProcessor.OnMessageReceived(message, state))
+                ("Ack handler", (message, _) => HandleAckMessage(message))
             };
         }
 
@@ -76,7 +77,7 @@ namespace IO.Ably.Realtime.Workflow
         {
             foreach (var command in commands)
             {
-                var writeResult = RealtimeMessageLoop.Writer.TryWrite(command);
+                var writeResult = CommandChannel.Writer.TryWrite(command);
                 if (writeResult == false) //Should never happen as we don't close the channels
                 {
                     Logger.Warning(
@@ -87,13 +88,15 @@ namespace IO.Ably.Realtime.Workflow
 
         private async Task Consume()
         {
-            var reader = RealtimeMessageLoop.Reader;
+            var reader = CommandChannel.Reader;
             while (await reader.WaitToReadAsync())
             {
                 if (reader.TryRead(out RealtimeCommand cmd))
                 {
                     try
                     {
+                        _processingCommand = true;
+
                         int level = 0;
                         var cmds = new List<RealtimeCommand> {cmd};
                         while (cmds.Count > 0)
@@ -127,6 +130,10 @@ namespace IO.Ably.Realtime.Workflow
                         // TODO: Figure out there will be a case where the library becomes in an invalid state
                         // TODO: Emit the error on the connection object
                         Logger.Error("Error processing command: " + cmd.Explain(), e);
+                    }
+                    finally
+                    {
+                        _processingCommand = false;
                     }
                 }
             }
@@ -218,15 +225,17 @@ namespace IO.Ably.Realtime.Workflow
                     await ProcessMessage(cmd.ProtocolMessage);
                     break;
                 case SendMessageCommand cmd:
-                    if (State.Connection.CurrentStateObject.CanSend)
+                    if (State.Connection.CurrentStateObject.CanSend || cmd.Force)
                     {
                         SendMessage(cmd.ProtocolMessage, cmd.Callback);
                     }
                     else if (State.Connection.CurrentStateObject.CanQueue)
                     {
                         Logger.Debug("Queuing message");
-                        State.PendingMessages.Enqueue(new MessageAndCallback(cmd.ProtocolMessage, cmd.Callback, Logger));
+                        State.PendingMessages.Enqueue(new MessageAndCallback(cmd.ProtocolMessage, cmd.Callback,
+                            Logger));
                     }
+
                     break;
                 case PingCommand cmd:
                     return ListCommand.Create(HandlePingCommand(cmd).ToArray());
@@ -261,13 +270,15 @@ namespace IO.Ably.Realtime.Workflow
                     var exceptionErrorInfo = cmd.Exception != null ? new ErrorInfo(cmd.Exception.Message, 80000) : null;
                     ErrorInfo resolvedError = cmd.Error ?? exceptionErrorInfo;
 
-                    if (State.ShouldSuspend())
+                    if (State.ShouldSuspend(Now))
                     {
-                        return SetSuspendedStateCommand.Create(resolvedError ?? ErrorInfo.ReasonSuspended, cmd.ClearConnectionKey);
+                        return SetSuspendedStateCommand.Create(resolvedError ?? ErrorInfo.ReasonSuspended,
+                            clearConnectionKey: cmd.ClearConnectionKey);
                     }
                     else
                     {
-                        return SetDisconnectedStateCommand.Create(resolvedError ?? ErrorInfo.ReasonDisconnected, cmd.ClearConnectionKey);
+                        return SetDisconnectedStateCommand.Create(resolvedError ?? ErrorInfo.ReasonDisconnected,
+                            clearConnectionKey: cmd.ClearConnectionKey);
                     }
                 case HandleTrasportEventCommand cmd:
                     if (cmd.TransportState == TransportState.Closed || cmd.Exception != null)
@@ -279,11 +290,13 @@ namespace IO.Ably.Realtime.Workflow
                             case ConnectionState.Connecting:
                                 return HandleConnectingFailureCommand.Create(null, cmd.Exception, false);
                             case ConnectionState.Connected:
-                                var errorInfo = GetErrorInfoFromTransportException(cmd.Exception, ErrorInfo.ReasonDisconnected);
+                                var errorInfo =
+                                    GetErrorInfoFromTransportException(cmd.Exception, ErrorInfo.ReasonDisconnected);
                                 return SetDisconnectedStateCommand.Create(errorInfo,
                                     retryInstantly: Connection.ConnectionResumable, exception: cmd.Exception);
                         }
                     }
+
                     return EmptyCommand.Instance;
                 default:
                     throw new AblyException("No handler found for - " + command.Explain());
@@ -360,7 +373,7 @@ namespace IO.Ably.Realtime.Workflow
             if (message.AckRequired)
             {
                 message.MsgSerial = State.Connection.IncrementSerial();
-                AckProcessor.Queue(message, callback);
+                State.AddAckMessage(message, callback);
             }
 
             ConnectionManager.SendToTransport(message);
@@ -407,8 +420,10 @@ namespace IO.Ably.Realtime.Workflow
 
             if (hadPreviousConnection && resumed == false)
             {
-                AckProcessor.ClearQueueAndFailMessages(null);
-                Logger.Warning("Force detaching all attached channels because the connection did not resume successfully!");
+                ClearAckQueueAndFailMessages(null);
+
+                Logger.Warning(
+                    "Force detaching all attached channels because the connection did not resume successfully!");
 
                 foreach (var channel in Channels)
                 {
@@ -480,12 +495,11 @@ namespace IO.Ably.Realtime.Workflow
 
         public void Close()
         {
-            RealtimeMessageLoop.Writer.Complete();
+            CommandChannel.Writer.Complete();
         }
 
         public async Task<RealtimeCommand> HandleSetStateCommand(RealtimeCommand command)
         {
-
             try
             {
                 switch (command)
@@ -539,7 +553,7 @@ namespace IO.Ably.Realtime.Workflow
                     case SetFailedStateCommand cmd:
 
                         State.Connection.ClearKeyAndId();
-                        AckProcessor.ClearQueueAndFailMessages(ErrorInfo.ReasonFailed);
+                        ClearAckQueueAndFailMessages(ErrorInfo.ReasonFailed);
 
                         var failedState = new ConnectionFailedState(ConnectionManager, cmd.Error, Logger);
                         SetState(failedState);
@@ -583,14 +597,12 @@ namespace IO.Ably.Realtime.Workflow
 
                         if (connectedTransport)
                         {
-                            return SendMessageCommand.Create(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
+                            return SendMessageCommand.Create(new ProtocolMessage(ProtocolMessage.MessageAction.Close), force: true);
                         }
                         else
                         {
                             return SetClosedStateCommand.Create();
                         }
-
-                        break;
 
                     case SetSuspendedStateCommand cmd:
 
@@ -599,7 +611,7 @@ namespace IO.Ably.Realtime.Workflow
                             State.Connection.ClearKey();
                         }
 
-                        AckProcessor.ClearQueueAndFailMessages(ErrorInfo.ReasonSuspended);
+                        ClearAckQueueAndFailMessages(ErrorInfo.ReasonSuspended);
 
                         var suspendedState = new ConnectionSuspendedState(ConnectionManager, cmd.Error, Logger);
                         SetState(suspendedState);
@@ -608,7 +620,7 @@ namespace IO.Ably.Realtime.Workflow
                     case SetClosedStateCommand cmd:
 
                         State.Connection.ClearKeyAndId();
-                        AckProcessor.ClearQueueAndFailMessages(ErrorInfo.ReasonClosed);
+                        ClearAckQueueAndFailMessages(ErrorInfo.ReasonClosed);
 
                         var closedState = new ConnectionClosedState(ConnectionManager, cmd.Error, Logger)
                             {Exception = cmd.Exception};
@@ -698,7 +710,7 @@ namespace IO.Ably.Realtime.Workflow
             if (resumed)
             {
                 // Resend any messages waiting an Ack Queue
-                foreach (var message in AckProcessor.GetQueuedMessages())
+                foreach (var message in State.WaitingForAck.Select(x => x.Message))
                 {
                     ConnectionManager.SendToTransport(message);
                 }
@@ -714,6 +726,93 @@ namespace IO.Ably.Realtime.Workflow
                 var queuedMessage = State.PendingMessages.Dequeue();
                 SendMessage(queuedMessage.Message, queuedMessage.Callback);
             }
+        }
+
+        public void ClearAckQueueAndFailMessages(ErrorInfo error)
+        {
+            foreach (var item in State.WaitingForAck.Where(x => x.Callback != null))
+            {
+                var messageError = error ?? ErrorInfo.ReasonUnknown;
+                item.SafeExecute(false, messageError);
+            }
+
+            State.WaitingForAck.Clear();
+        }
+
+        public void QueueAck(ProtocolMessage message, Action<bool, ErrorInfo> callback)
+        {
+            if (message.AckRequired)
+            {
+                State.WaitingForAck.Add(new MessageAndCallback(message, callback));
+                if (Logger.IsDebug)
+                {
+                    Logger.Debug($"Message ({message.Action}) with serial ({message.MsgSerial}) was queued to get Ack");
+                }
+            }
+        }
+
+        internal ValueTask<bool> HandleAckMessage(ProtocolMessage message)
+        {
+            if (message.Action == ProtocolMessage.MessageAction.Ack ||
+                message.Action == ProtocolMessage.MessageAction.Nack)
+            {
+                var endSerial = message.MsgSerial + (message.Count - 1);
+                var listForProcessing = new List<MessageAndCallback>(State.WaitingForAck);
+                foreach (var current in listForProcessing)
+                {
+                    if (current.Serial <= endSerial)
+                    {
+                        if (message.Action == ProtocolMessage.MessageAction.Ack)
+                        {
+                            current.SafeExecute(true, null);
+                        }
+                        else
+                        {
+                            current.SafeExecute(false, message.Error ?? ErrorInfo.ReasonUnknown);
+                        }
+
+                        State.WaitingForAck.Remove(current);
+                    }
+                }
+                return new ValueTask<bool>(true);
+            }
+
+            return new ValueTask<bool>(false);
+
+        }
+
+        /// <summary>
+        /// Attempt to query the backlog length of the queue.
+        /// </summary>
+        /// <param name="count">The (approximate) count of items in the Channel.</param>
+        public bool TryGetCount(out int count)
+        {
+            #if NETSTANDARD1_4
+            count = 0;
+            return false;
+            #endif
+
+            #if !NETSTANDARD1_4
+            // get this using the reflection
+            try
+            {
+                var prop = CommandChannel.GetType().GetProperty("ItemsCountForDebugger", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (prop != null)
+                {
+                    count = (int)prop.GetValue(CommandChannel);
+                    return true;
+                }
+            }
+            catch { }
+            count = default;
+            return false;
+            #endif
+        }
+
+        public bool IsProcessingCommands()
+        {
+            var gotCount = TryGetCount(out int count);
+            return _processingCommand || (gotCount && count > 0);
         }
     }
 }

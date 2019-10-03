@@ -17,7 +17,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 {
-    public class ConnectingFailureSpecs : ConnectionSpecsBase
+    public class ConnectingFailureSpecs : AblyRealtimeSpecs
     {
         private TokenDetails _returnedDummyTokenDetails = new TokenDetails("123") { Expires = TestHelpers.Now().AddDays(1), ClientId = "123" };
         private int _tokenErrorCode = 40140;
@@ -58,7 +58,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
-            await ProcessCommands(client);
+            await client.ProcessCommands();
 
             renewTokenCalled.Should().BeTrue();
 
@@ -164,7 +164,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
-            await ProcessCommands(client);
+            await client.ProcessCommands();
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 

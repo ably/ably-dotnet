@@ -109,17 +109,5 @@ namespace IO.Ably.Tests
             // Assert
             _context.ShouldQueueCommand<SetConnectingStateCommand>();
         }
-
-        [Fact]
-        [Trait("spec", "RTN7c")]
-        [Trait("sandboxTest", "needed")]
-        public async Task OnAttached_ClearsAckQueue()
-        {
-            // Arrange
-            _state.OnAttachToContext();
-
-            _context.ClearAckQueueMessagesCalled.Should().BeTrue();
-            _context.ClearAckMessagesError.Should().Be(ErrorInfo.ReasonSuspended);
-        }
     }
 }

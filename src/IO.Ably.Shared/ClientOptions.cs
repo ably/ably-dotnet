@@ -4,6 +4,7 @@ using System.Threading;
 using IO.Ably;
 using IO.Ably.Rest;
 using IO.Ably.Transport;
+using Newtonsoft.Json;
 
 namespace IO.Ably
 {
@@ -79,6 +80,7 @@ namespace IO.Ably
 
         public LogLevel? LogLevel { get; set; }
 
+        [JsonIgnore]
         public ILoggerSink LogHander { get; set; }
 
         /// <summary>
@@ -199,16 +201,19 @@ namespace IO.Ably
 
         public string Environment { get; set; }
 
+        [JsonIgnore]
         public ITransportFactory TransportFactory { get; set; }
 
         public bool IdempotentRestPublishing { get; set; }
 
+        [JsonIgnore]
         internal Func<DateTimeOffset> NowFunc
         {
             get => _nowFunc ?? (_nowFunc = Defaults.NowFunc());
             set => _nowFunc = value;
         }
 
+        [JsonIgnore]
         internal ILogger Logger { get; set; } = DefaultLogger.LoggerInstance;
 
         internal AuthMethod Method

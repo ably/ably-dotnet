@@ -31,6 +31,7 @@ namespace IO.Ably.Tests.Realtime
             {
             }
 
+
             // TODO: Add tests to makes sure Presense messages id, timestamp and connectionId are set
             [Theory]
             [ProtocolData]
@@ -889,8 +890,11 @@ namespace IO.Ably.Tests.Realtime
             [Theory]
             [ProtocolData]
             [Trait("spec", "RTP19")]
-            public async Task PresenceMap_WithExistingMembers_WhenSync_ShouldRemoveLocalMembers_RTP19(Protocol protocol)
+            public async Task
+            PresenceMap_WithExistingMembers_WhenSync_ShouldRemoveLocalMembers_RTP19(Protocol protocol)
             {
+                Logger.LogLevel = LogLevel.Debug;
+                Logger.LoggerSink = new OutputLoggerSink(Output);
                 var channelName = "RTP19".AddRandomSuffix();
                 var client = await GetRealtimeClient(protocol, (options, settings) =>
                 {
@@ -902,7 +906,7 @@ namespace IO.Ably.Tests.Realtime
                 // ENTER presence on a channel
                 await channel.Presence.EnterClientAsync("1", "one");
 
-                await Task.Delay(100);
+                await client.ProcessCommands();
 
                 channel.Presence.Map.Members.Should().HaveCount(1);
 
@@ -926,40 +930,29 @@ namespace IO.Ably.Tests.Realtime
                 members.Where(m => m.ClientId == "1").Should().HaveCount(1);
 
                 var leaveMessages = new List<PresenceMessage>();
-                await WaitFor(10000, async done =>
+
+                var awaiter = new TaskCompletionAwaiter();
+                channel.Presence.Subscribe(PresenceAction.Leave, message =>
                 {
-                    channel.Presence.Subscribe(PresenceAction.Leave, message =>
-                    {
-                        Output.WriteLine($"LEAVE message: {message.ToJson()} ");
-                        leaveMessages.Add(message);
-                        done();
-                    });
-
-                    // trigger a server initiated SYNC
-                    Output.WriteLine("SET SUSPENDED");
-                    client.Workflow.QueueCommand(SetSuspendedStateCommand.Create(new ErrorInfo("RTP19 test")));
-                    await client.WaitForState(ConnectionState.Suspended);
-
-                    Output.WriteLine("SET CONNECTED");
-                    var connectedMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
-                    {
-                        ConnectionDetails = new ConnectionDetails() {ConnectionKey = "connectionKey"},
-                        ConnectionId = "1",
-                        ConnectionSerial = 100
-                    };
-                    client.Workflow.QueueCommand(SetConnectedStateCommand.Create(connectedMessage, false));
-
-                    await client.WaitForState(ConnectionState.Connected);
+                    Output.WriteLine($"LEAVE message: {message.ToJson()} ");
+                    leaveMessages.Add(message);
+                    awaiter.SetCompleted();
                 });
 
+                var syncMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Sync)
+                {
+                    Channel = channelName
+                };
+
+                client.ExecuteCommand(SendMessageCommand.Create(syncMessage));
+
+                await awaiter.Task;
                 var serverPresence = await client.RestClient.Channels.Get(channelName).Presence.GetAsync();
                 serverPresence.Items.Count.Should().Be(1);
 
                 // A LEAVE event should have be published for the injected member
                 leaveMessages.Should().HaveCount(1);
                 leaveMessages[0].ClientId.Should().Be(localMessage.ClientId);
-
-                await Task.Delay(10000);
 
                 // valid members entered for this connection are still present
                 members = (await channel.Presence.GetAsync()).ToArray();
@@ -1510,7 +1503,7 @@ namespace IO.Ably.Tests.Realtime
                                 && message.Presence[0].ClientId == "local")
                             {
                                 // fail messages, causing callback to be invoked.
-                                client.Workflow.AckProcessor.ClearQueueAndFailMessages(ErrorInfo.ReasonUnknown);
+                                client.Workflow.ClearAckQueueAndFailMessages(ErrorInfo.ReasonUnknown);
                             }
                         }
 
@@ -1665,7 +1658,11 @@ namespace IO.Ably.Tests.Realtime
                 {
                     /* tests disconnecting and connecting states */
 
-                    var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16b"; });
+                    var client = await GetRealtimeClient(protocol, (options, settings) =>
+                    {
+                        options.ClientId = "RTP16b";
+                        options.DisconnectedRetryTimeout = TimeSpan.FromSeconds(2);
+                    });
                     var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
 
                     List<int> queueCounts = new List<int>();
@@ -1697,15 +1694,14 @@ namespace IO.Ably.Tests.Realtime
                         {
                             partialDone();
                         });
-                    });
+                        Output.WriteLine(client.GetCurrentState());
+
+                    }, onFail: () => Output.WriteLine(client.GetCurrentState()));
 
                     queueCounts[0].Should().Be(2);
                     queueCounts[1].Should().Be(0);
                     presenceMessages[0].Message.Data.Should().Be("Disconnected");
                     presenceMessages[1].Message.Data.Should().Be("Connecting");
-
-                    // clean up
-                    client.Close();
                 }
 
                 [Theory]

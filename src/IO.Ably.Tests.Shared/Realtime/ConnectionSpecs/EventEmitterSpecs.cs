@@ -14,7 +14,7 @@ namespace IO.Ably.Tests.Realtime
 {
     [Trait("spec", "RTE1")]
     [Trait("spec", "RTN4")]
-    public class EventEmitterSpecs : ConnectionSpecsBase
+    public class EventEmitterSpecs : AblyRealtimeSpecs
     {
         [Fact]
         [Trait("spec", "RTN4a")]
@@ -93,7 +93,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.Close();
 
-            await ProcessCommands(client);
+            await client.WaitForState(ConnectionState.Closed);
 
             states.Count.Should().Be(2);
             (from s in states select s.Current).Should().BeEquivalentTo(new[] { ConnectionState.Closing, ConnectionState.Closed });
@@ -123,7 +123,7 @@ namespace IO.Ably.Tests.Realtime
             client.FakeProtocolMessageReceived(
                 new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = expectedError });
 
-            await ProcessCommands(client);
+            await client.ProcessCommands();
 
             stateChange.HasError.Should().BeTrue();
             stateChange.Reason.Should().Be(expectedError);

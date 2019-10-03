@@ -15,7 +15,7 @@ using Task = System.Threading.Tasks.Task;
 namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 {
     [Trait("spec", "RTN17")]
-    public class ConnectionFallbackSpecs : ConnectionSpecsBase
+    public class ConnectionFallbackSpecs : AblyRealtimeSpecs
     {
         [Fact]
         [Trait("spec", "RTN17b")]

@@ -19,7 +19,7 @@ using Xunit.Abstractions;
 namespace IO.Ably.Tests.Realtime
 {
     [Trait("spec", "RTN15")]
-    public class ConnectionFailuresOnceConnectedSpecs : ConnectionSpecsBase
+    public class ConnectionFailuresOnceConnectedSpecs : AblyRealtimeSpecs
     {
         private TokenDetails _returnedDummyTokenDetails = new TokenDetails("123") { Expires = TestHelpers.Now().AddDays(1), ClientId = "123" };
         private int _tokenErrorCode = 40140;
@@ -77,7 +77,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = _tokenErrorInfo });
 
-            await ProcessCommands(client);
+            await client.ProcessCommands();
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
@@ -120,7 +120,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = _tokenErrorInfo });
 
-            await ProcessCommands(client);
+            await client.ProcessCommands();
 
             var urlParams = LastCreatedTransport.Parameters.GetParams();
             urlParams.Should().ContainKey("resume");
@@ -150,7 +150,7 @@ namespace IO.Ably.Tests.Realtime
                 Error = _tokenErrorInfo
             });
 
-            await ProcessCommands(client);
+            await client.ProcessCommands();
 
             Assert.Equal(
                 new[]
@@ -245,12 +245,15 @@ namespace IO.Ably.Tests.Realtime
 
             client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message), callback);
             client.ConnectionManager.Send(new ProtocolMessage(ProtocolMessage.MessageAction.Message), callback);
-            client.Workflow.AckProcessor.GetQueuedMessages().Should().HaveCount(2);
+
+            await client.ProcessCommands();
+
+            client.State.WaitingForAck.Should().HaveCount(2);
 
             await CloseAndWaitToReconnect(client);
 
             LastCreatedTransport.SentMessages.Should().BeEmpty();
-            client.Workflow.AckProcessor.GetQueuedMessages().Should().BeEmpty();
+            client.State.WaitingForAck.Should().BeEmpty();
 
             callbackResults.Should().HaveCount(2);
             callbackResults.All(x => x == false).Should().BeTrue();
@@ -280,7 +283,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             LastCreatedTransport.SentMessages.Should().HaveCount(2);
-            client.Workflow.AckProcessor.GetQueuedMessages().Should().HaveCount(2);
+            client.State.WaitingForAck.Should().HaveCount(2);
         }
 
         public ConnectionFailuresOnceConnectedSpecs(ITestOutputHelper output)

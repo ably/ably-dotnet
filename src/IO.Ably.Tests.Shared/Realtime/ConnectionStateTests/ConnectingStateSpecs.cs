@@ -125,50 +125,6 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public async Task WithInboundErrorMessageWhenItCanUseFallBack_ShouldCallHandleConnectionFailure()
-        {
-            _context.Transport = new FakeTransport() { State = TransportState.Connected };
-            _context.CanUseFallBack = true;
-
-            // Arrange
-            ErrorInfo targetError = new ErrorInfo("test", 123);
-
-            // Act
-            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError }, null);
-
-            // Assert
-            _context.HandledConnectionFailureCalled.Should().BeTrue();
-        }
-
-        // TODO: Fix Test
-        [Fact]
-        public async Task WithInboundErrorMessageMessageWhenItCanUseFallBack_ShouldClearsConnectionKey()
-        {
-            // Arrange
-            _context.Transport = GetConnectedTrasport();
-            _context.CanUseFallBack = true;
-
-            // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("test", 123, System.Net.HttpStatusCode.InternalServerError) }, null);
-
-            var disconnectedCommand = _context.ExecutedCommands.Last() as SetDisconnectedStateCommand;
-            disconnectedCommand.Should().NotBeNull();
-            disconnectedCommand.ClearConnectionKey.Should().BeTrue();
-        }
-
-        [Fact]
-        public async Task WithInboundDisconnectedMessage_ShouldLetConnectionManagerHandleTheDisconnect()
-        {
-            // Arrange
-            _context.Transport = GetConnectedTrasport();
-
-            // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected), null);
-
-            _context.HandledConnectionFailureCalled.Should().BeTrue();
-        }
-
-        [Fact]
         public void Connect_ShouldDoNothing()
         {
             // Act
@@ -186,30 +142,15 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public async Task OnAttachedToContext_CreatesTransport()
+        public async Task ConnectingState_SendsHandleConnectionFailureCommand()
         {
-            _context.AllowTransportCreating = true;
-
-            // Act
-            _state.OnAttachToContext();
-
-            // Assert
-            _context.CreateTransportCalled.Should().BeTrue();
-        }
-
-        [Fact]
-        public async Task ConnectingState_ForceDisconnect()
-        {
-            // Arrange
-            _context.Transport = new FakeTransport() { State = TransportState.Initialized };
-
             // Act
             _state.OnAttachToContext();
             _timer.OnTimeOut();
 
             // Assert
             _timer.StartedWithAction.Should().BeTrue();
-            _context.HandledConnectionFailureCalled.Should().BeTrue();
+            _context.ShouldQueueCommand<HandleConnectingFailureCommand>();
         }
 
         [Theory]

@@ -50,19 +50,6 @@ namespace IO.Ably.Tests
             new ConnectionClosedState(null, _logger).Close();
         }
 
-        [Fact]
-        public void OnAttach_ShouldDestroyTransport()
-        {
-            // Arrange
-            _context.Transport = new FakeTransport();
-
-            // Act
-            _state.OnAttachToContext();
-
-            // Assert
-            _context.DestroyTransportCalled.Should().BeTrue();
-        }
-
         [Theory]
         [InlineData(ProtocolMessage.MessageAction.Ack)]
         [InlineData(ProtocolMessage.MessageAction.Attach)]
@@ -88,18 +75,6 @@ namespace IO.Ably.Tests
 
             // Assert
             result.Should().Be(false);
-        }
-
-        [Fact]
-        [Trait("spec", "RTN7c")]
-        [Trait("sandboxTest", "needed")]
-        public async Task ShouldClearAckQueue()
-        {
-            // Arrange
-            _state.OnAttachToContext();
-
-            _context.ClearAckQueueMessagesCalled.Should().BeTrue();
-            _context.ClearAckMessagesError.Should().Be(ErrorInfo.ReasonClosed);
         }
     }
 }
