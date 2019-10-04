@@ -124,7 +124,7 @@ namespace IO.Ably
 
     public static class TokenDetailsExtensions
     {
-        public static bool IsValidToken(this TokenDetails token)
+        public static bool IsValidToken(this TokenDetails token, DateTimeOffset now)
         {
             if (token == null)
             {
@@ -136,12 +136,12 @@ namespace IO.Ably
                 return true;
             }
 
-            return !token.IsExpired();
+            return !token.IsExpired(now);
         }
 
-        public static bool IsExpired(this TokenDetails token)
+        public static bool IsExpired(this TokenDetails token, DateTimeOffset now)
         {
-            return token.Expires < token.Now();
+            return token.Expires < now;
         }
     }
 }
