@@ -745,6 +745,7 @@ namespace IO.Ably.Tests
             {
                 ClientId = "test",
                 Key = "best",
+                UseTokenAuth = true,
                 UseBinaryProtocol = false,
                 NowFunc = TestHelpers.NowFunc()
             };
