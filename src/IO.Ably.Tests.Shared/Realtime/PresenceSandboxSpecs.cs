@@ -1665,7 +1665,7 @@ namespace IO.Ably.Tests.Realtime
                 {
                     /* tests disconnecting and connecting states */
 
-                    var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "RTP16b"; });
+                    var client = await GetRealtimeClient(protocol, (options, settings) => { options.UseTokenAuth = true; });
                     var channel = client.Channels.Get("RTP16a".AddRandomSuffix()) as RealtimeChannel;
 
                     List<int> queueCounts = new List<int>();

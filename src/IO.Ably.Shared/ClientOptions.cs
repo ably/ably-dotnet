@@ -219,8 +219,7 @@ namespace IO.Ably
         {
             get
             {
-                if (ClientId.IsNotEmpty() || AuthUrl != null || AuthCallback != null || Token.IsNotEmpty() ||
-                    TokenDetails != null)
+                if (AuthUrl != null || AuthCallback != null || Token.IsNotEmpty() || TokenDetails != null)
                 {
                     return Ably.AuthMethod.Token;
                 }
