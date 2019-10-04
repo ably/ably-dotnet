@@ -1,6 +1,6 @@
 # Change Log
 
-## [Unreleased](https://github.com/ably/ably-dotnet/tree/1.1.14)
+## [1.1.14](https://github.com/ably/ably-dotnet/tree/1.1.14)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.13...1.1.14)
 
@@ -22,6 +22,7 @@
 - Add fromEncoded and fromEncodedArray that accept json string [\#370](https://github.com/ably/ably-dotnet/pull/370) ([marto83](https://github.com/marto83))
 - ClientId in options should not force token auth  \(RSA7e2\) [\#357](https://github.com/ably/ably-dotnet/pull/357) ([withakay](https://github.com/withakay))
 
+## [1.1.13](https://github.com/ably/ably-dotnet/tree/1.1.13) 
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.12...1.1.13)
 
