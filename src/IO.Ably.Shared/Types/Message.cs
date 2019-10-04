@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.Serialization;
 using IO.Ably.MessageEncoders;
@@ -122,6 +123,34 @@ namespace IO.Ably
         public static Message[] FromEncodedArray(Message[] encoded, ChannelOptions options = null)
         {
             return MessageHandler.FromEncodedArray(encoded, options);
+        }
+
+        public static Message FromEncoded(string messageJson, ChannelOptions options = null)
+        {
+            try
+            {
+                var message = JsonHelper.Deserialize<Message>(messageJson);
+                return FromEncoded(message, options);
+            }
+            catch (Exception e)
+            {
+                DefaultLogger.Error($"Error decoding message: {messageJson}", e);
+                throw new AblyException("Error decoding message. Error: " + e.Message, 50000);
+            }
+        }
+
+        public static Message[] FromEncodedArray(string messagesJson, ChannelOptions options = null)
+        {
+            try
+            {
+                var messages = JsonHelper.Deserialize<List<Message>>(messagesJson).ToArray();
+                return FromEncodedArray(messages, options);
+            }
+            catch (Exception e)
+            {
+                DefaultLogger.Error($"Error decoding message: {messagesJson}", e);
+                throw new AblyException("Error decoding messages. Error: " + e.Message, 50000);
+            }
         }
     }
 }

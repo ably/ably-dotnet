@@ -7,7 +7,7 @@ COUNTER=0
 
 # runs all tests and logs the run for later use
 function run_all_tests {
-	dotnet test ../src/IO.Ably.Tests.DotNetCore20/IO.Ably.Tests.DotNetCore20.csproj --logger 'trx;logfilename=test-results.trx'
+    dotnet test ../src/IO.Ably.Tests.DotNetCore20/IO.Ably.Tests.DotNetCore20.csproj --logger 'trx;logfilename=test-results.trx'
 }
 
 # function to run failed tests

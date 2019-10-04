@@ -64,6 +64,7 @@ namespace IO.Ably.Transport
                 {
                     Logger.Debug("Error starting connection", ex);
                 }
+
                 _handler?.Invoke(ConnectionState.Error, ex);
             }
         }
@@ -102,7 +103,6 @@ namespace IO.Ably.Transport
                             Logger?.Error("Error Sending to WebSocket", e);
                         }
                     }, _tokenSource.Token).ConfigureAwait(false);
-
         }
 
         public async Task StopConnectionAsync()
@@ -142,6 +142,7 @@ namespace IO.Ably.Transport
                 {
                     Logger.Debug($"Error stopping connection. {typeof(MsWebSocketConnection)} was disposed.", ex);
                 }
+
                 _handler?.Invoke(ConnectionState.Closed, ex);
             }
             catch (Exception ex)

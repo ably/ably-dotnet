@@ -72,8 +72,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTL1")]
         public async Task SendingAMessageAttachesTheChannel_BeforeReceivingTheMessages(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
-
             // Arrange
             var client = await GetRealtimeClient(protocol);
             IRealtimeChannel target = client.Channels.Get("test");
@@ -121,8 +119,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTC1a")]
         public async Task TestAttachChannel_Sending3Messages_EchoesItBack(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
-
             // Arrange
             var client = await GetRealtimeClient(protocol);
             await client.WaitForState(ConnectionState.Connected);
@@ -516,7 +512,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTL6g1b")]
         public async Task WithAnImplicitClientIdFromToken_ShouldReceiveMessageWithCorrectClientID(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
             var rest = await GetRestClient(protocol);
             var token = await rest.Auth.RequestTokenAsync(new TokenParams() { ClientId = "1000" });
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.TokenDetails = token);
@@ -691,8 +686,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTL6f")]
         public async Task PublishedMessagesShouldContainMessageIdsWhenReceived(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
-
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.ClientId = "999");
             var channelName = "test".AddRandomSuffix();
             var channel = client.Channels.Get(channelName);
@@ -767,7 +760,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTL7d")]
         public async Task ShouldPublishAndReceiveFixtureData(Protocol protocol, JObject fixtureData)
         {
-            Logger.LogLevel = LogLevel.Debug;
             var items = (JArray)fixtureData["items"];
             ManualResetEvent resetEvent = new ManualResetEvent(false);
             var client = await GetRealtimeClient(protocol);
@@ -890,8 +882,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("bug", "102")]
         public async Task WhenAttachingToAChannelFromMultipleThreads_ItShouldNotThrowAnError()
         {
-            Logger.LogLevel = LogLevel.Debug;
-
             var client1 = await GetRealtimeClient(Protocol.Json);
             var channel = client1.Channels.Get("test".AddRandomSuffix());
             var task = Task.Run(() => channel.Attach());
@@ -910,8 +900,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTL10d")]
         public async Task WithOneClientPublishingAnotherShouldBeAbleToRetrieveMessages(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
-
             var client1 = await GetRealtimeClient(protocol);
 
             var channelName = "persisted:history".AddRandomSuffix();
@@ -1169,7 +1157,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("issue", "117")]
         public async Task AttachAwaitShouldtimeoutIfStateChanges(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
             var client1 = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
@@ -1198,7 +1185,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("issue", "104")]
         public async Task AttachWithMultipleConcurrentClientsShouldWork(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
             var clients = new List<IRealtimeClient>
             {
                 await GetRealtimeClient(protocol, (opts, _) => opts.AutoConnect = false),
@@ -1229,7 +1215,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("issue", "116")]
         public async Task FailureOfHistoryApiCallMeansChannelsNoLongerAttach(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
             var client = await GetRealtimeClient(protocol, (opts, _) => opts.AutoConnect = false);
             client.Connection.On(ConnectionEvent.Connected, async args =>
             {

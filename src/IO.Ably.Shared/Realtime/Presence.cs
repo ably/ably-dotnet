@@ -688,6 +688,5 @@ namespace IO.Ably.Realtime
         {
             SyncCompleted?.Invoke(this, EventArgs.Empty);
         }
-
     }
 }

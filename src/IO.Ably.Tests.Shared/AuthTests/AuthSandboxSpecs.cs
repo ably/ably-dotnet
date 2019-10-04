@@ -245,7 +245,6 @@ namespace IO.Ably.Tests
             var realtimeClient = await GetRealtimeClient(protocol, (options, _) =>
             {
                 options.TokenDetails = token;
-                options.LogLevel = LogLevel.Debug;
                 options.AuthUrl = new Uri(_errorUrl);
                 options.AutoConnect = false;
             });
