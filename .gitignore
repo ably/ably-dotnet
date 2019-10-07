@@ -24,6 +24,8 @@ bld/
 [Oo]bj/
 .idea
 .ionide/
+.fake
+.vscode
 
 # Visual Studo 2015 cache/options directory
 .vs/
