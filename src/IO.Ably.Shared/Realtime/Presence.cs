@@ -84,7 +84,7 @@ namespace IO.Ably.Realtime
         }
 
         /// <summary>
-        ///     Get current presence in the channel. WaitForSync is not implemented yet. Partial result may be returned
+        ///     Get current presence in the channel.
         /// </summary>
         /// <returns></returns>
         public async Task<IEnumerable<PresenceMessage>> GetAsync(GetParams options)
@@ -110,6 +110,7 @@ namespace IO.Ably.Realtime
                     throw new AblyException(new ErrorInfo($"Channel {_channel.Name}: presence state is out of sync due to the channel being in a SUSPENDED state", 91005));
                 }
 
+                // TODO: Review as I don't see how this is triggered
                 await WaitForSyncAsync();
             }
 
@@ -385,36 +386,43 @@ namespace IO.Ably.Realtime
                     }
                 }
 
-                foreach (var message in messages)
+                if (messages != null)
                 {
-                    bool updateInternalPresence = message.ConnectionId == _channel.RealtimeClient.Connection.Id;
-                    var broadcast = true;
-                    switch (message.Action)
+                    foreach (var message in messages)
                     {
-                        case PresenceAction.Enter:
-                        case PresenceAction.Update:
-                        case PresenceAction.Present:
-                            broadcast &= Map.Put(message);
-                            if (updateInternalPresence)
-                            {
-                                InternalMap.Put(message);
-                            }
+                        bool updateInternalPresence = message.ConnectionId == _channel.RealtimeClient.Connection.Id;
+                        var broadcast = true;
+                        switch (message.Action)
+                        {
+                            case PresenceAction.Enter:
+                            case PresenceAction.Update:
+                            case PresenceAction.Present:
+                                broadcast &= Map.Put(message);
+                                if (updateInternalPresence)
+                                {
+                                    InternalMap.Put(message);
+                                }
 
-                            break;
-                        case PresenceAction.Leave:
-                            broadcast &= Map.Remove(message);
-                            if (updateInternalPresence && !message.IsSynthesized())
-                            {
-                                InternalMap.Remove(message);
-                            }
+                                break;
+                            case PresenceAction.Leave:
+                                broadcast &= Map.Remove(message);
+                                if (updateInternalPresence && !message.IsSynthesized())
+                                {
+                                    InternalMap.Remove(message);
+                                }
 
-                            break;
+                                break;
+                        }
+
+                        if (broadcast)
+                        {
+                            Publish(message);
+                        }
                     }
-
-                    if (broadcast)
-                    {
-                        Publish(message);
-                    }
+                }
+                else
+                {
+                    Logger.Debug("Sync with no presence");
                 }
 
                 // if this is the last message in a sequence of sync updates, end the sync
@@ -428,10 +436,7 @@ namespace IO.Ably.Realtime
             {
                 var errInfo = new ErrorInfo(
                     $"An error occurred processing Presence Messages for channel '{_channel.Name}'. See the InnerException for more details.");
-                _channel.SetChannelState(ChannelState.Failed, errInfo);
                 Logger.Error($"{errInfo.Message} Error: {ex.Message}");
-                errInfo.Message += " See the InnerException for more details.";
-                throw new AblyException(errInfo, ex);
             }
         }
 
