@@ -144,20 +144,27 @@ namespace IO.Ably
 
             public void Message(LogLevel level, string message, params object[] args)
             {
-                var timeStamp = GetLogMessagePreifx();
-                ILoggerSink loggerSink = LoggerSink;
-                if (LogLevel == LogLevel.None || level < LogLevel || loggerSink == null)
+                try
                 {
-                    return;
-                }
+                    var timeStamp = GetLogMessagePreifx();
+                    ILoggerSink loggerSink = LoggerSink;
+                    if (LogLevel == LogLevel.None || level < LogLevel || loggerSink == null)
+                    {
+                        return;
+                    }
 
-                if (args == null || args.Length == 0)
-                {
-                    loggerSink.LogEvent(level, timeStamp + " " + message);
+                    if (args == null || args.Length == 0)
+                    {
+                        loggerSink.LogEvent(level, timeStamp + " " + message);
+                    }
+                    else
+                    {
+                        loggerSink.LogEvent(level, timeStamp + " " + string.Format(message, args));
+                    }
                 }
-                else
+                catch(Exception e)
                 {
-                    loggerSink.LogEvent(level, timeStamp + " " + string.Format(message, args));
+                    Trace.WriteLine("Error logging message. Error: " + e.Message);
                 }
             }
 
@@ -194,24 +201,36 @@ namespace IO.Ably
             /// <summary>Produce long multiline string with the details about the exception, including inner exceptions, if any.</summary>
             private string GetExceptionDetails(Exception ex)
             {
-                var message = new StringBuilder();
-                var ablyException = ex as AblyException;
-                if (ablyException != null)
+                try
                 {
-                    message.AppendLine("Error code: " + ablyException.ErrorInfo.Code);
-                    message.AppendLine("Status code: " + ablyException.ErrorInfo.StatusCode);
-                    message.AppendLine("Reason: " + ablyException.ErrorInfo.Message);
-                }
+                    if (ex == null)
+                    {
+                        return "No exception information";
+                    }
 
-                message.AppendLine(ex.Message);
-                message.AppendLine(ex.StackTrace);
-                if (ex.InnerException != null)
+                    var message = new StringBuilder();
+                    var ablyException = ex as AblyException;
+                    if (ablyException != null)
+                    {
+                        message.AppendLine("Error code: " + ablyException.ErrorInfo.Code);
+                        message.AppendLine("Status code: " + ablyException.ErrorInfo.StatusCode);
+                        message.AppendLine("Reason: " + ablyException.ErrorInfo.Message);
+                    }
+
+                    message.AppendLine(ex.Message);
+                    message.AppendLine(ex.StackTrace);
+                    if (ex.InnerException != null)
+                    {
+                        message.AppendLine("Inner exception:");
+                        message.AppendLine(GetExceptionDetails(ex.InnerException));
+                    }
+
+                    return message.ToString();
+                }
+                catch (Exception e)
                 {
-                    message.AppendLine("Inner exception:");
-                    message.AppendLine(GetExceptionDetails(ex.InnerException));
+                    return "Error getting exception details. Error: " + e.Message;
                 }
-
-                return message.ToString();
             }
         }
     }

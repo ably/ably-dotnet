@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using IO.Ably.Transport;
@@ -58,6 +60,8 @@ namespace IO.Ably.Realtime.Workflow
                 ("Heartbeat handler", HeartbeatHandler.OnMessageReceived),
                 ("Ack handler", (message, _) => HandleAckMessage(message))
             };
+
+            Logger.Debug("Workflow initialised!");
         }
 
         private void SetInitialConnectionState()
@@ -67,10 +71,13 @@ namespace IO.Ably.Realtime.Workflow
             SetRecoverKeyIfPresent(Client.Options.Recover);
         }
 
-
         public void Start()
         {
-            Task.Run(Consume);
+            ThreadPool.QueueUserWorkItem(
+                state =>
+                {
+                    _ = ((RealtimeWorkflow)state).Consume();
+                }, this);
         }
 
         public void QueueCommand(params RealtimeCommand[] commands)
@@ -78,7 +85,7 @@ namespace IO.Ably.Realtime.Workflow
             foreach (var command in commands)
             {
                 var writeResult = CommandChannel.Writer.TryWrite(command);
-                if (writeResult == false) //Should never happen as we don't close the channels
+                if (writeResult == false) // Should never happen as we don't close the channels
                 {
                     Logger.Warning(
                         $"Cannot schedule command: {command.Explain()} because the execution channel is closed");
@@ -88,54 +95,63 @@ namespace IO.Ably.Realtime.Workflow
 
         private async Task Consume()
         {
-            var reader = CommandChannel.Reader;
-            while (await reader.WaitToReadAsync())
+            try
             {
-                if (reader.TryRead(out RealtimeCommand cmd))
+                Logger.Debug("Starting to process Workflow");
+
+                var reader = CommandChannel.Reader;
+                while (await reader.WaitToReadAsync())
                 {
-                    try
+                    if (reader.TryRead(out RealtimeCommand cmd))
                     {
-                        _processingCommand = true;
-
-                        int level = 0;
-                        var cmds = new List<RealtimeCommand> {cmd};
-                        while (cmds.Count > 0)
+                        try
                         {
-                            if (level > 5)
+                            _processingCommand = true;
+
+                            int level = 0;
+                            var cmds = new List<RealtimeCommand> { cmd };
+                            while (cmds.Count > 0)
                             {
-                                throw new Exception("Something is wrong. There shouldn't be 5 levels of nesting");
-                            }
-
-                            var cmdsToExecute = cmds.ToArray();
-                            cmds.Clear();
-
-                            foreach (var cmdToExecute in cmdsToExecute)
-                            {
-                                try
+                                if (level > 5)
                                 {
-                                    var result = await ProcessCommand(cmdToExecute);
-                                    cmds.AddRange(result);
+                                    throw new Exception("Something is wrong. There shouldn't be 5 levels of nesting");
                                 }
-                                catch (Exception e)
-                                {
-                                    Logger.Error("Error Processing command: " + cmdsToExecute.ToString(), e);
-                                }
-                            }
 
-                            level++;
+                                var cmdsToExecute = cmds.ToArray();
+                                cmds.Clear();
+
+                                foreach (var cmdToExecute in cmdsToExecute)
+                                {
+                                    try
+                                    {
+                                        var result = await ProcessCommand(cmdToExecute);
+                                        cmds.AddRange(result);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Logger.Error("Error Processing command: " + cmdsToExecute.ToString(), e);
+                                    }
+                                }
+
+                                level++;
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            // TODO: Figure out there will be a case where the library becomes in an invalid state
+                            // TODO: Emit the error on the connection object
+                            Logger.Error("Error processing command: " + cmd.Explain(), e);
+                        }
+                        finally
+                        {
+                            _processingCommand = false;
                         }
                     }
-                    catch (Exception e)
-                    {
-                        // TODO: Figure out there will be a case where the library becomes in an invalid state
-                        // TODO: Emit the error on the connection object
-                        Logger.Error("Error processing command: " + cmd.Explain(), e);
-                    }
-                    finally
-                    {
-                        _processingCommand = false;
-                    }
                 }
+            }
+            catch(Exception e)
+            {
+                Logger.Error("Error initialising workflow.", e);
             }
         }
 
@@ -183,6 +199,9 @@ namespace IO.Ably.Realtime.Workflow
         {
             switch (command)
             {
+                case InitCommand _:
+                    Logger.Debug("Workflow consumer has been initialised");
+                    break;
                 case ConnectCommand _:
                     var nextCommand = ConnectionManager.Connect();
                     var initFailedChannelsOnConnect =
@@ -266,6 +285,7 @@ namespace IO.Ably.Realtime.Workflow
                         Logger.Error("Error trying to renew token.", ex);
                         return SetDisconnectedStateCommand.Create(ex.ErrorInfo);
                     }
+
                 case HandleConnectingFailureCommand cmd:
                     var exceptionErrorInfo = cmd.Exception != null ? new ErrorInfo(cmd.Exception.Message, 80000) : null;
                     ErrorInfo resolvedError = cmd.Error ?? exceptionErrorInfo;
@@ -280,6 +300,7 @@ namespace IO.Ably.Realtime.Workflow
                         return SetDisconnectedStateCommand.Create(resolvedError ?? ErrorInfo.ReasonDisconnected,
                             clearConnectionKey: cmd.ClearConnectionKey);
                     }
+
                 case HandleTrasportEventCommand cmd:
                     if (cmd.TransportState == TransportState.Closed || cmd.Exception != null)
                     {

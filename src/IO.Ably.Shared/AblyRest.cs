@@ -39,7 +39,7 @@ namespace IO.Ably
 
         internal ClientOptions Options { get; }
 
-        internal ILogger Logger { get; set; }
+        internal ILogger Logger { get; set; } = DefaultLogger.LoggerInstance;
 
         /// <summary>Initializes the RestClient using the api key provided</summary>
         /// <param name="apiKey">Full api key</param>
@@ -84,7 +84,10 @@ namespace IO.Ably
                 throw new AblyException("Invalid options");
             }
 
-            Logger = Options.Logger ?? DefaultLogger.LoggerInstance;
+            if (Options.Logger != null)
+            {
+                Logger = Options.Logger;
+            }
 
             if (Options.LogLevel.HasValue)
             {
