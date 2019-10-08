@@ -92,9 +92,8 @@ namespace IO.Ably.Tests.NETFramework.Realtime
 
                 // Act
                 client.ExecuteCommand(ProcessMessageCommand.Create(disconnectedMessage));
-                await client.ProcessCommands();
 
-                client.State.Connection.State.Should().Be(ConnectionState.Disconnected);
+                await client.WaitForState(ConnectionState.Disconnected, TimeSpan.FromSeconds(1));
             }
 
 

@@ -24,6 +24,7 @@ namespace IO.Ably.Tests.Realtime
     [Trait("type", "integration")]
     public class PresenceSandboxSpecs : SandboxSpecs
     {
+        [Trait("type", "integration")]
         public class GeneralPresenceSandBoxSpecs : PresenceSandboxSpecs
         {
             public GeneralPresenceSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
@@ -1221,6 +1222,7 @@ namespace IO.Ably.Tests.Realtime
             }
 
             [Trait("spec", "RTP5")]
+            [Trait("type", "integration")]
             public class ChannelStatechangeSideEffects : PresenceSandboxSpecs
             {
                 public ChannelStatechangeSideEffects(AblySandboxFixture fixture, ITestOutputHelper output)
@@ -1966,6 +1968,7 @@ namespace IO.Ably.Tests.Realtime
             }
         }
 
+        [Trait("type", "integration")]
         public class With250PresentMembersOnAChannel : PresenceSandboxSpecs
         {
             private const int ExpectedEnterCount = 250;

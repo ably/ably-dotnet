@@ -25,7 +25,6 @@ namespace IO.Ably.Tests
         [ProtocolData]
         public async Task ShouldHaveCorrectStatsAsPerStatsSpec(Protocol protocol)
         {
-            //Logger.LogLevel = LogLevel.Debug;
             await Fixture.SetupStats();
 
             async Task GetAndValidateStats()

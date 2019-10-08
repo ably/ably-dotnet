@@ -259,12 +259,13 @@ namespace IO.Ably.Tests.Realtime
             callbackResults.All(x => x == false).Should().BeTrue();
         }
 
-        private async Task CloseAndWaitToReconnect(AblyRealtime client, ProtocolMessage protocolMessage = null)
+        private async Task CloseAndWaitToReconnect(AblyRealtime client, ProtocolMessage connectedMessage = null)
         {
-            protocolMessage = protocolMessage ?? new ProtocolMessage(ProtocolMessage.MessageAction.Connected);
+            connectedMessage = connectedMessage ?? new ProtocolMessage(ProtocolMessage.MessageAction.Connected);
             LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closed);
-            await new ConnectionAwaiter(client.Connection, ConnectionState.Connecting).Wait();
-            client.FakeProtocolMessageReceived(protocolMessage);
+            await client.WaitForState(ConnectionState.Connecting);
+            client.FakeProtocolMessageReceived(connectedMessage);
+            await client.WaitForState(ConnectionState.Connected);
         }
 
         [Retry]
