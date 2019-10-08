@@ -17,7 +17,7 @@ using Xunit.Abstractions;
 namespace IO.Ably.Tests.Realtime
 {
     [Collection("Channel SandBox")]
-    [Trait("requires", "sandbox")]
+    [Trait("type", "integration")]
     public class ChannelSandboxSpecs : SandboxSpecs
     {
         [Theory]

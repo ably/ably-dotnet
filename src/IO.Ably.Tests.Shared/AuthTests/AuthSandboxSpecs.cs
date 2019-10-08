@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 namespace IO.Ably.Tests
 {
     [Collection("SandBox Collection")]
-    [Trait("requires", "sandbox")]
+    [Trait("type", "integration")]
     public class AuthSandboxSpecs : SandboxSpecs
     {
         private string _errorUrl = "https://echo.ably.io/respondwith?status=500";

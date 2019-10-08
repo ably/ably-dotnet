@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    [Trait("requires", "sandbox")]
+    [Trait("type", "integration")]
     [Trait("spec", "RSC19")]
     [Trait("spec", "RSC19a")]
     [Trait("spec", "RSC19b")]

@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    [Trait("requires", "sandbox")]
+    [Trait("type", "integration")]
     public class StatsSandBoxSpecs : SandboxSpecs
     {
         public readonly static DateTimeOffset StartInterval = DateHelper.CreateDate(DateTimeOffset.UtcNow.Year - 1, 2, 3, 15, 5);

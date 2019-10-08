@@ -15,7 +15,7 @@ using Xunit.Abstractions;
 namespace IO.Ably.Tests.Rest
 {
     [Collection("AblyRest SandBox Collection")]
-    [Trait("requires", "sandbox")]
+    [Trait("type", "integration")]
     public class ChannelSandboxSpecs : SandboxSpecs
     {
         private JObject _examples;
@@ -560,6 +560,7 @@ namespace IO.Ably.Tests.Rest
         }
 
         [Trait("spec", "TM3")]
+        [Trait("type", "integration")]
         public class TM3Spec : SandboxSpecs
         {
             [Fact]

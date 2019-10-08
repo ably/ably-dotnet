@@ -21,7 +21,7 @@ using Xunit.Sdk;
 namespace IO.Ably.Tests.Realtime
 {
     [Collection("Presence Sandbox")]
-    [Trait("requires", "sandbox")]
+    [Trait("type", "integration")]
     public class PresenceSandboxSpecs : SandboxSpecs
     {
         public class GeneralPresenceSandBoxSpecs : PresenceSandboxSpecs

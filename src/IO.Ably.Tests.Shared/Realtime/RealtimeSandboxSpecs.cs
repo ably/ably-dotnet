@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime
 {
-    [Trait("requires", "sandbox")]
+    [Trait("type", "integration")]
     public class RealtimeSandboxSpecs : SandboxSpecs
     {
         public RealtimeSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
