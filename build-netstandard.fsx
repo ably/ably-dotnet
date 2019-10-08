@@ -9,13 +9,21 @@ nuget Fake.DotNet.Testing.XUnit2
 open Fake.Core
 open Fake.IO.Globbing.Operators 
 open Fake.DotNet
+open Fake.IO
 open Fake.DotNet.Testing
 open Fake.DotNet.Testing.XUnit2
+
 
 let netstandardTestDir = "src/IO.Ably.Tests.DotNetCore20"
 let xUnit2 = XUnit2.run
 
 let NetStandardSolution = "src/IO.Ably.NetStandard.sln"
+let buildDir = "build"
+let testResultsDir = Path.combine buildDir "tests"
+
+let configuration = DotNet.Release
+
+Directory.ensure testResultsDir
 
 // *** Define Targets ***
 Target.create "Clean" (fun _ ->
@@ -24,17 +32,17 @@ Target.create "Clean" (fun _ ->
 
 Target.create "BuildNetStandard" (fun _ ->
   DotNet.build (fun opts -> {
-    opts with Configuration = DotNet.Debug
+    opts with Configuration = configuration
   }) NetStandardSolution
 )
 
 Target.create "Unit Tests" (fun _ ->
     Trace.log " --- Testing net core version --- "
-    !! "src/IO.Ably.Tests.DotNetCore20/*/*.DotNetCore20.dll"
-    |> xUnit2 (fun p -> {
-      p with Parallel = Collections
-             XmlOutputPath = Some("/build/tests/unit.test.xml")
-    })
+    let project = !! ("src/IO.Ably.Tests.DotNetCore20/*.csproj") |> Seq.head
+    DotNet.test (fun opts -> { opts with Configuration = configuration
+                                         Filter = Some ("type!=integration")
+                                         Logger = Some( "trx;logfilename=" + (Path.combine testResultsDir "unit-tests.trx"))})
+                project
 )
 
 open Fake.Core.TargetOperators
