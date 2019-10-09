@@ -69,9 +69,9 @@ namespace IO.Ably
                 DateTimeOffset requestTime = Now();
                 if ((requestTime - startTime).TotalSeconds >= Options.HttpMaxRetryDuration.TotalSeconds)
                 {
-                    Logger.Error("Cumulative retry timeout of {0}s was exceeded", Config.CommulativeFailedRequestTimeOutInSeconds);
+                    Logger.Error("Cumulative retry timeout of {0}s was exceeded", Defaults.CommulativeFailedRequestTimeOutInSeconds);
                     throw new AblyException(
-                        new ErrorInfo($"Commulative retry timeout of {Config.CommulativeFailedRequestTimeOutInSeconds}s was exceeded.", 50000, null));
+                        new ErrorInfo($"Commulative retry timeout of {Defaults.CommulativeFailedRequestTimeOutInSeconds}s was exceeded.", 50000, null));
                 }
 
                 Logger.Debug("Executing request: " + request.Url + (currentTry > 0 ? $"try {currentTry}" : string.Empty));

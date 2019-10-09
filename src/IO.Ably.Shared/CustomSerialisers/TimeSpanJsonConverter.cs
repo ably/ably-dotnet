@@ -4,6 +4,8 @@ using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.CustomSerialisers
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "Newtonsoft.Json converter. Used internally.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "CS1591:Missing XML comment for publicly visible type or member", Justification = "Newtonsoft.Json converter. Used internally.")]
     public class TimeSpanJsonConverter : JsonConverter
     {
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

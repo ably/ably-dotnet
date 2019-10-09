@@ -225,7 +225,7 @@ namespace IO.Ably.AcceptanceTests
             [Trait("spec", "RSL4c2")]
             public void WithString_DoesNotApplyAnyEncoding()
             {
-                if (!Config.MsgPackEnabled)
+                if (!Defaults.MsgPackEnabled)
                 {
                     return;
                 }
@@ -243,7 +243,7 @@ namespace IO.Ably.AcceptanceTests
             [Trait("spec", "RSL4c1")]
             public void WithBinaryData_DoesNotApplyAnyEncoding()
             {
-                if (!Config.MsgPackEnabled)
+                if (!Defaults.MsgPackEnabled)
                 {
                     return;
                 }
@@ -262,7 +262,7 @@ namespace IO.Ably.AcceptanceTests
             [Trait("spec", "RSL4c3")]
             public void WithJsonData_AppliesCorrectEncoding()
             {
-                if (!Config.MsgPackEnabled)
+                if (!Defaults.MsgPackEnabled)
                 {
                     return;
                 }
@@ -305,7 +305,7 @@ namespace IO.Ably.AcceptanceTests
             [Fact]
             public void WithBinaryData_SetsEncodingAndDataCorrectly()
             {
-                if (!Config.MsgPackEnabled)
+                if (!Defaults.MsgPackEnabled)
                 {
                     return;
                 }
@@ -326,7 +326,7 @@ namespace IO.Ably.AcceptanceTests
             [Fact]
             public void WithStringData_SetsEncodingAndDataCorrectly()
             {
-                if (!Config.MsgPackEnabled)
+                if (!Defaults.MsgPackEnabled)
                 {
                     return;
                 }
@@ -344,7 +344,7 @@ namespace IO.Ably.AcceptanceTests
             [Fact]
             public void WithJsonData_SetsEncodingAndDataCorrectly()
             {
-                if (!Config.MsgPackEnabled)
+                if (!Defaults.MsgPackEnabled)
                 {
                     return;
                 }

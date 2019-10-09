@@ -9,6 +9,10 @@ using Newtonsoft.Json.Linq;
 
 namespace IO.Ably
 {
+    /// <summary>
+    /// AblyRealtime
+    /// The top-level class for the Ably Realtime library.
+    /// </summary>
     public class AblyRealtime : IRealtimeClient, IDisposable
     {
         internal ILogger Logger { get; private set; }
@@ -19,11 +23,19 @@ namespace IO.Ably
 
         internal volatile bool Disposed = false;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AblyRealtime"/> class with an ably key.
+        /// </summary>
+        /// <param name="key">String key (obtained from application dashboard).</param>
         public AblyRealtime(string key)
             : this(new ClientOptions(key))
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AblyRealtime"/> class with the given options.
+        /// </summary>
+        /// <param name="options"><see cref="ClientOptions"/>.</param>
         public AblyRealtime(ClientOptions options)
             : this(options, clientOptions => new AblyRest(clientOptions))
         {
@@ -51,10 +63,19 @@ namespace IO.Ably
             }
         }
 
+        /// <summary>
+        /// Gets the initialised RestClient.
+        /// </summary>
         public AblyRest RestClient { get; }
 
+        /// <summary>
+        /// Gets the initialised Auth.
+        /// </summary>
         public IAblyAuth Auth => RestClient.AblyAuth;
 
+        /// <summary>
+        /// Current client id.
+        /// </summary>
         public string ClientId => Auth.ClientId;
 
         internal ClientOptions Options => RestClient.Options;
@@ -69,26 +90,47 @@ namespace IO.Ably
 
         internal RealtimeState State { get; }
 
+        /// <summary>
+        /// Convenience method to get Stats with default parameters.
+        /// </summary>
+        /// <returns>returns a PaginatedResult of Stats.</returns>
         public Task<PaginatedResult<Stats>> StatsAsync()
         {
             return RestClient.StatsAsync();
         }
 
+        /// <summary>
+        /// Convenience method to get Stats by passing <see cref="StatsRequestParams"/>.
+        /// </summary>
+        /// <param name="query"><see cref="StatsRequestParams"/>.</param>
+        /// <returns>returns a PaginatedResult of Stats.</returns>
         public Task<PaginatedResult<Stats>> StatsAsync(StatsRequestParams query)
         {
             return RestClient.StatsAsync(query);
         }
 
+        /// <summary>
+        /// Sync version of <see cref="StatsAsync()"/>.
+        /// </summary>
+        /// <returns>returns a PaginatedResult of Stats.</returns>
         public PaginatedResult<Stats> Stats()
         {
             return RestClient.Stats();
         }
 
+        /// <summary>
+        /// Sync version of <see cref="StatsAsync(StatsRequestParams)"/>.
+        /// </summary>
+        /// <param name="query"><see cref="StatsRequestParams"/>.</param>
+        /// <returns>returns a PaginatedResult of Stats.</returns>
         public PaginatedResult<Stats> Stats(StatsRequestParams query)
         {
             return RestClient.Stats(query);
         }
 
+        /// <summary>
+        /// Initiate a connection.
+        /// </summary>
         public void Connect()
         {
             if (Disposed)
@@ -113,7 +155,10 @@ namespace IO.Ably
             Connection.Close();
         }
 
-        /// <summary>Retrieves the ably service time</summary>
+        /// <summary>
+        /// Retrieves the ably service time.
+        /// </summary>
+        /// <returns>returns current server time as DateTimeOffset.</returns>
         public Task<DateTimeOffset> TimeAsync()
         {
             return RestClient.TimeAsync();
@@ -132,6 +177,11 @@ namespace IO.Ably
             }
         }
 
+        /// <summary>
+        /// Debug method to get the full library state.
+        /// Useful when trying to figure out the full state of the library.
+        /// </summary>
+        /// <returns>json object of the full state of the library.</returns>
         public string GetCurrentState()
         {
             var result = new JObject();
@@ -142,8 +192,13 @@ namespace IO.Ably
             return result.ToString();
         }
 
+        /// <summary>
+        /// Disposes the current instance.
+        /// Once disposed, it closes the connection and the library can't be used again.
+        /// </summary>
         public void Dispose()
         {
+            // TODO : Need to move to disposing state and then disposed.
             try
             {
                 Connection?.Dispose();

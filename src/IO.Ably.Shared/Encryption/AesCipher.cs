@@ -16,7 +16,7 @@ namespace AblyPlatform.Cryptography
         private readonly CipherParams _params;
 
         /// <summary>Create a new instance of AesCipther.</summary>
-        /// <param name="params">Cipher params used to configure the RinjaelManaged algorithm</param>
+        /// <param name="params">Cipher params used to configure the RinjaelManaged algorithm.</param>
         public AesCipher(CipherParams @params)
         {
             _params = @params;
@@ -101,9 +101,9 @@ namespace AblyPlatform.Cryptography
 
         public string Algorithm => "AES";
 
-        /// <summary>Encrypt a byte[] using the CipherParams provided in the constructor</summary>
-        /// <param name="input">byte[] to be encrypted</param>
-        /// <returns>Encrypted result</returns>
+        /// <summary>Encrypt a byte[] using the CipherParams provided in the constructor.</summary>
+        /// <param name="input">byte[] to be encrypted.</param>
+        /// <returns>Encrypted result.</returns>
         public byte[] Encrypt(byte[] input)
         {
             try
@@ -116,9 +116,9 @@ namespace AblyPlatform.Cryptography
             }
         }
 
-        /// <summary>Decrypt an encrypted byte[] using the CipherParams provided in the constructor</summary>
-        /// <param name="input">encrypted byte[]</param>
-        /// <returns>decrypted byte[]</returns>
+        /// <summary>Decrypt an encrypted byte[] using the CipherParams provided in the constructor.</summary>
+        /// <param name="input">encrypted byte[].</param>
+        /// <returns>decrypted byte[].</returns>
         public byte[] Decrypt(byte[] input)
         {
             try

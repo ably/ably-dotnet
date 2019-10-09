@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace IO.Ably
 {
+    /// <summary>
+    /// Contains Extension methods working with Task objects.
+    /// </summary>
     public static class TaskExtensions
     {
         /// <summary>
@@ -43,22 +46,29 @@ namespace IO.Ably
             asyncResult.AsyncWaitHandle.WaitOne();
         }
 
-        public static Exception PrepareForRethrow(Exception exception)
-        {
-            ExceptionDispatchInfo.Capture(exception).Throw();
-
-            // The code cannot ever get here. We just return a value to work around a badly-designed API (ExceptionDispatchInfo.Throw):
-            // https://connect.microsoft.com/VisualStudio/feedback/details/689516/exceptiondispatchinfo-api-modifications (http://www.webcitation.org/6XQ7RoJmO)
-            return exception;
-        }
-
-        public static async Task<R> MapAsync<T, R>(this Task<T> start, Func<T, R> mapFunction)
+        /// <summary>
+        /// Helps chain results that return a Task without having to await the first one.
+        /// </summary>
+        /// <typeparam name="T">Type of the input Task.</typeparam>
+        /// <typeparam name="TResult">Type of the returned result.</typeparam>
+        /// <param name="start">The first task.</param>
+        /// <param name="mapFunction">The function used to map to the resulting type.</param>
+        /// <returns>return Task of TResult.</returns>
+        internal static async Task<TResult> MapAsync<T, TResult>(this Task<T> start, Func<T, TResult> mapFunction)
         {
             var value = await start;
             return mapFunction(value);
         }
 
-        public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout, T timeoutResult)
+        /// <summary>
+        /// Helps timeout an async execution after a specificed period.
+        /// </summary>
+        /// <typeparam name="T">Type of Task.</typeparam>
+        /// <param name="task">The task we want to timeout.</param>
+        /// <param name="timeout">The pediod after which the timeout will occur.</param>
+        /// <param name="timeoutResult">The value returned if the timeout occurs.</param>
+        /// <returns>will either return the actual result if the tasks executes in time or the value provided by <paramref name="timeoutResult"/>.</returns>
+        internal static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout, T timeoutResult)
         {
             using (var cts = new CancellationTokenSource())
             {

@@ -55,7 +55,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)SyncExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TaskConstants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ClientOptions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Config.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\CapabilityJsonConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\DateTimeOffsetJsonConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\TimeSpanJsonConverter.cs" />

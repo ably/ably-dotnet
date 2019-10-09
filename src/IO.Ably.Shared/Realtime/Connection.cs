@@ -1,30 +1,50 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
-using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
 {
+    /// <summary>
+    /// Represents the OS network state.
+    /// </summary>
     public enum NetworkState
     {
+        /// <summary>
+        /// Online network state
+        /// </summary>
         Online,
+
+        /// <summary>
+        /// Offline network state
+        /// </summary>
         Offline
     }
 
+    /// <summary>
+    /// A class representing the connection associated with an AblyRealtime instance.
+    /// The Connection object exposes the lifecycle and parameters of the realtime connection.
+    /// </summary>
     public sealed class Connection : EventEmitter<ConnectionEvent, ConnectionStateChange>, IDisposable
     {
-        private readonly Guid ObjectId = Guid.NewGuid(); //Used to identify the connection object for OsEventSubscribers
+        private readonly Guid _objectId = Guid.NewGuid(); // Used to identify the connection object for OsEventSubscribers
         private static readonly ConcurrentDictionary<Guid, Action<NetworkState>> OsEventSubscribers =
             new ConcurrentDictionary<Guid, Action<NetworkState>>();
 
+        /// <summary>
+        /// Gets Action used to notify external clients. The logic is centralised in the RealtimeClient.
+        /// </summary>
         protected override Action<Action> NotifyClient => RealtimeClient.NotifyExternalClients;
 
+        /// <summary>
+        /// This method is used when the Operating system notifies the library about changes in
+        /// the network state.
+        /// </summary>
+        /// <param name="state">The current state of the OS network connection.</param>
+        /// <param name="logger">Current logger.</param>
         internal static void NotifyOperatingSystemNetworkState(NetworkState state, ILogger logger = null)
         {
             if (logger == null)
@@ -59,22 +79,21 @@ namespace IO.Ably.Realtime
         {
             if (Logger.IsDebug)
             {
-                Logger.Debug("Registering OS network state handler for Connection with id: " + ObjectId.ToString("D"));
+                Logger.Debug("Registering OS network state handler for Connection with id: " + _objectId.ToString("D"));
             }
 
-            OsEventSubscribers.AddOrUpdate(ObjectId, stateAction, (_, __) => stateAction);
+            OsEventSubscribers.AddOrUpdate(_objectId, stateAction, (_, __) => stateAction);
         }
 
         private void CleanUpNetworkStateEvents()
         {
             try
             {
-                var result = OsEventSubscribers.TryRemove(ObjectId, out _);
+                var result = OsEventSubscribers.TryRemove(_objectId, out _);
                 if (Logger.IsDebug)
                 {
                     Logger.Debug("Os network listener removed result: " + result);
                 }
-
             }
             catch (Exception)
             {
@@ -143,16 +162,23 @@ namespace IO.Ably.Realtime
         internal long MessageSerial => InnerState.MessageSerial;
 
         /// <summary>
+        /// Gets the current connection Key.
         /// </summary>
         public string Key => InnerState.Key;
 
+        /// <summary>
+        /// Indicates whether the current connection can be resumed.
+        /// </summary>
         public bool ConnectionResumable => Key.IsNotEmpty() && Serial.HasValue;
 
         /// <summary>
-        /// - (RTN16b) Connection#recoveryKey is an attribute composed of the connectionKey, and the latest connectionSerial received on the connection, and the current msgSerial
+        /// - (RTN16b) Connection#recoveryKey is an attribute composed of the connectionKey, and the latest connectionSerial received on the connection, and the current msgSerial.
         /// </summary>
         public string RecoveryKey => ConnectionResumable ? $"{Key}:{Serial.Value}:{MessageSerial}" : string.Empty;
 
+        /// <summary>
+        /// Gets the current connections time to live.
+        /// </summary>
         public TimeSpan ConnectionStateTtl => InnerState.ConnectionStateTtl;
 
         /// <summary>
@@ -163,9 +189,20 @@ namespace IO.Ably.Realtime
         /// </summary>
         public ErrorInfo ErrorReason => InnerState.ErrorReason;
 
+        /// <summary>
+        /// Gets the currently used Host.
+        /// </summary>
         public string Host => InnerState.Host;
+
+        /// <summary>
+        /// Gets the last point in time when the connection was confirmed alive.
+        /// </summary>
         public DateTimeOffset? ConfirmedAliveAt => InnerState.ConfirmedAliveAt;
 
+        /// <summary>
+        /// Disposes the connection object.
+        /// Once this is done the Connection can no longer be used.
+        /// </summary>
         public void Dispose()
         {
             Close();
@@ -182,21 +219,37 @@ namespace IO.Ably.Realtime
             }
         }
 
+        /// <summary>
+        /// EventHandler which exposes Connection state changes in an idiomatic .net way.
+        /// </summary>
         public event EventHandler<ConnectionStateChange> ConnectionStateChanged = delegate { };
 
         // Not be used for testing. Tests should depend on functionality only available to public clients
         internal event EventHandler<ConnectionStateChange> InternalStateChanged = delegate { };
 
+        /// <summary>
+        /// Instructs the library to start a connection to the server.
+        /// </summary>
         public void Connect()
         {
             ExecuteCommand(ConnectCommand.Create());
         }
 
+        /// <summary>
+        /// Sends a ping request to the server and waits for the requests to be confirmed.
+        /// </summary>
+        /// <returns>returns a result which is either successful and has the time it took for the request to complete or
+        /// it contains an error indicating the reason of the failure.</returns>
         public Task<Result<TimeSpan?>> PingAsync()
         {
             return TaskWrapper.Wrap<TimeSpan?>(Ping);
         }
 
+        /// <summary>
+        /// Sends a ping request to the server. It supports an optional <paramref name="callback"/> parameter if the
+        /// client wants to be notified of the result. Use <methodref name="PingAsync"/> inside async methods.
+        /// </summary>
+        /// <param name="callback">an action which will be called when the Ping completes. It either indicates success or contains an error.</param>
         public void Ping(Action<TimeSpan?, ErrorInfo> callback)
         {
             ExecuteCommand(new PingCommand(new PingRequest(callback, Now)));
@@ -233,7 +286,8 @@ namespace IO.Ably.Realtime
             internalHandlers(this, stateChange);
 
             RealtimeClient.NotifyExternalClients(
-                () => {
+                () =>
+                {
                         Emit(stateChange.Event, stateChange);
                         try
                         {
@@ -242,7 +296,8 @@ namespace IO.Ably.Realtime
                         catch (Exception ex)
                         {
                             Logger.Error("Error notifying Connection state changed handlers", ex);
-                        }});
+                        }
+                });
         }
     }
 }

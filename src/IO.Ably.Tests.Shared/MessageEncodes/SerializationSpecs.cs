@@ -10,7 +10,7 @@ namespace IO.Ably.Tests
             [Fact]
             public void CanSerialiseAndDeserializeProtocolMessage()
             {
-                if (!Config.MsgPackEnabled)
+                if (!Defaults.MsgPackEnabled)
                 {
                     return;
                 }

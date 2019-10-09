@@ -13,43 +13,23 @@ using Newtonsoft.Json.Linq;
 
 namespace IO.Ably
 {
-    /// <summary>Client for the ably rest API</summary>
+    /// <summary>Client for the Ably rest API.</summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "Needed properties to be internal for testing.")]
     public sealed class AblyRest : IRestClient
     {
-        internal AblyHttpClient HttpClient { get; private set; }
-
-        internal MessageHandler MessageHandler { get; private set; }
-
-        internal string CustomHost
-        {
-            get => HttpClient.CustomHost;
-            set => HttpClient.CustomHost = value;
-        }
-
-        internal AblyAuth AblyAuth { get; private set; }
-
-        public RestChannels Channels { get; private set; }
+        internal Func<AblyRequest, Task<AblyResponse>> ExecuteHttpRequest;
 
         /// <summary>
-        /// Authentication methods
-        /// </summary>
-        public IAblyAuth Auth => AblyAuth;
-
-        internal Protocol Protocol => Options.UseBinaryProtocol == false ? Protocol.Json : Defaults.Protocol;
-
-        internal ClientOptions Options { get; }
-
-        internal ILogger Logger { get; set; } = DefaultLogger.LoggerInstance;
-
-        /// <summary>Initializes the RestClient using the api key provided</summary>
-        /// <param name="apiKey">Full api key</param>
+        /// Initializes a new instance of the <see cref="AblyRest"/> class using an api key.</summary>
+        /// <param name="apiKey">Full api key.</param>
         public AblyRest(string apiKey)
             : this(new ClientOptions(apiKey))
         {
         }
 
         /// <summary>
-        /// Convenience method for initializing the RestClient by passing a Action{ClientOptions}
+        /// Initializes a new instance of the <see cref="AblyRest"/> class.
+        /// Convenience method for initializing the RestClient by passing a Action{ClientOptions}.
         /// <example>
         /// var rest = new AblyRest(opt => {
         ///  opt.Key = "fake.key:value";
@@ -66,16 +46,44 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// Initialize the library with a custom set of options
+        /// Initialize the library with a custom set of options.
         /// </summary>
-        /// <param name="clientOptions"></param>
+        /// <param name="clientOptions">instance of clientOptions.</param>
         public AblyRest(ClientOptions clientOptions)
         {
             Options = clientOptions;
             InitializeAbly();
         }
 
-        /// <summary>Initializes the rest client and validates the passed in options</summary>
+        internal AblyHttpClient HttpClient { get; private set; }
+
+        internal MessageHandler MessageHandler { get; private set; }
+
+        internal string CustomHost
+        {
+            get => HttpClient.CustomHost;
+            set => HttpClient.CustomHost = value;
+        }
+
+        internal AblyAuth AblyAuth { get; private set; }
+
+        /// <summary>
+        /// A collection of Channels associated with an Ably instance.
+        /// </summary>
+        public RestChannels Channels { get; private set; }
+
+        /// <summary>
+        /// Authentication methods.
+        /// </summary>
+        public IAblyAuth Auth => AblyAuth;
+
+        internal Protocol Protocol => Options.UseBinaryProtocol == false ? Protocol.Json : Defaults.Protocol;
+
+        internal ClientOptions Options { get; }
+
+        internal ILogger Logger { get; set; } = DefaultLogger.LoggerInstance;
+
+        /// <summary>Initializes the rest client and validates the passed in options.</summary>
         private void InitializeAbly()
         {
             if (Options == null)
@@ -107,8 +115,6 @@ namespace IO.Ably
             AblyAuth = new AblyAuth(Options, this);
             Channels = new RestChannels(this);
         }
-
-        internal Func<AblyRequest, Task<AblyResponse>> ExecuteHttpRequest;
 
         internal async Task<AblyResponse> ExecuteRequest(AblyRequest request)
         {
@@ -165,7 +171,8 @@ namespace IO.Ably
             }
         }
 
-        internal async Task<T> ExecuteRequest<T>(AblyRequest request) where T : class
+        internal async Task<T> ExecuteRequest<T>(AblyRequest request)
+            where T : class
         {
             var response = await ExecuteRequest(request);
             if (Logger.IsDebug)
@@ -182,7 +189,8 @@ namespace IO.Ably
             return MessageHandler.ParseResponse<T>(request, response);
         }
 
-        internal async Task<PaginatedResult<T>> ExecutePaginatedRequest<T>(AblyRequest request, Func<PaginatedRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
+        internal async Task<PaginatedResult<T>> ExecutePaginatedRequest<T>(AblyRequest request, Func<PaginatedRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest)
+            where T : class
         {
             var response = await ExecuteRequest(request);
             if (Logger.IsDebug)
@@ -231,26 +239,48 @@ namespace IO.Ably
             return await ExecuteHttpPaginatedRequest(request, requestParams, HttpPaginatedRequestInternal);
         }
 
+        /// <summary>
+        /// Make a generic HTTP request against an endpoint representing a collection
+        /// of some type; this is to provide a forward compatibility path for new APIs.
+        /// </summary>
+        /// <param name="method">http method.</param>
+        /// <param name="path">the path component of the resource URI.</param>
+        /// <param name="requestParams">(optional; may be null): any parameters to send with the request; see API-specific documentation.</param>
+        /// <param name="body">(optional; may be null): an instance of RequestBody. It will be sent as a json object.</param>
+        /// <param name="headers">(optional; may be null): any additional headers to send; see API-specific documentation.</param>
+        /// <returns>a page of results.</returns>
         public async Task<HttpPaginatedResponse> Request(string method, string path, Dictionary<string, string> requestParams = null, JToken body = null, Dictionary<string, string> headers = null)
         {
             var httpMethod = new HttpMethod(method);
             return await Request(httpMethod, path, requestParams, body, headers);
         }
 
+        /// <summary>
+        /// Make a generic HTTP request against an endpoint representing a collection
+        /// of some type; this is to provide a forward compatibility path for new APIs.
+        /// </summary>
+        /// <param name="method">http method.</param>
+        /// <param name="path">the path component of the resource URI.</param>
+        /// <param name="requestParams">(optional; may be null): any parameters to send with the request; see API-specific documentation.</param>
+        /// <param name="body">(optional; may be null): an instance of RequestBody. It will be sent as a json object.</param>
+        /// <param name="headers">(optional; may be null): any additional headers to send; see API-specific documentation.</param>
+        /// <returns>a page of results.</returns>
         public async Task<HttpPaginatedResponse> Request(HttpMethod method, string path, Dictionary<string, string> requestParams = null, JToken body = null, Dictionary<string, string> headers = null)
         {
-            var p = new PaginatedRequestParams();
-            p.Headers = headers;
-            p.ExtraParameters = requestParams;
-            p.Body = body;
-            p.HttpMethod = method;
-            p.Path = path;
+            var p = new PaginatedRequestParams
+            {
+                Headers = headers,
+                ExtraParameters = requestParams,
+                Body = body,
+                HttpMethod = method,
+                Path = path,
+            };
 
             return await HttpPaginatedRequestInternal(p);
         }
 
-        /// <summary>/// Retrieves the ably service time/// </summary>
-        /// <returns></returns>
+        /// <summary>Retrieves the ably service time.</summary>
+        /// <returns>server time as DateTimeOffset.</returns>
         public async Task<DateTimeOffset> TimeAsync()
         {
             AblyRequest request = CreateGetRequest("/time");
@@ -260,19 +290,19 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// Retrieves the stats for the application. Passed default <see cref="StatsRequestParams"/> for the request
+        /// Retrieves the stats for the application. Passed default <see cref="StatsRequestParams"/> for the request.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>returns PaginatedResult of Stats.</returns>
         public Task<PaginatedResult<Stats>> StatsAsync()
         {
             return StatsAsync(new StatsRequestParams());
         }
 
         /// <summary>
-        /// Retrieves the stats for the application using a more specific stats query. Check <see cref="StatsRequestParams"/> for more information
+        /// Retrieves the stats for the application using a more specific stats query. Check <see cref="StatsRequestParams"/> for more information.
         /// </summary>
-        /// <param name="query">stats query</param>
-        /// <returns></returns>
+        /// <param name="query">stats query.</param>
+        /// <returns>returns a PaginatedResult of Stats.</returns>
         public Task<PaginatedResult<Stats>> StatsAsync(StatsRequestParams query)
         {
             return StatsAsync(query as PaginatedRequestParams);
@@ -280,15 +310,15 @@ namespace IO.Ably
 
         /// <summary>
         /// Retrieves the stats for the application based on a custom query. It should be used with <see cref="PaginatedRequestParams"/>.
-        /// It is mainly because of the way a PaginatedResource defines its queries. For retrieving Stats with special parameters use <see cref="StatsAsync(StatsRequestParams)"/>
+        /// It is mainly because of the way a PaginatedResource defines its queries. For retrieving Stats with special parameters use <see cref="StatsAsync(StatsRequestParams)"/>.
         /// </summary>
         /// <example>
         /// var client = new AblyRest("validkey");
         /// var stats = client..StatsAsync();
-        /// var nextPage = cliest..StatsAsync(stats.NextQuery);
+        /// var nextPage = cliest..StatsAsync(stats.NextQuery);.
         /// </example>
-        /// <param name="query"><see cref="PaginatedRequestParams"/> and <see cref="StatsRequestParams"/></param>
-        /// <returns></returns>
+        /// <param name="query"><see cref="PaginatedRequestParams"/> and <see cref="StatsRequestParams"/>.</param>
+        /// <returns>returns a PaginatedResult of Stats.</returns>
         public Task<PaginatedResult<Stats>> StatsAsync(PaginatedRequestParams query)
         {
             query.Validate();
@@ -315,6 +345,11 @@ namespace IO.Ably
             return new AblyRequest(path, HttpMethod.Post, Protocol) { ChannelOptions = options };
         }
 
+        /// <summary>
+        /// Makes an Http request to check whether there is connectivity to ably.
+        /// If Option.SkipInternetCheck is set to true, the method always returns 'true'.
+        /// </summary>
+        /// <returns>returns whether there is internet connectivity.</returns>
         public async Task<bool> CanConnectToAbly()
         {
             if (Options.SkipInternetCheck)
@@ -335,16 +370,29 @@ namespace IO.Ably
             }
         }
 
+        /// <summary>
+        /// Sync version of StatsAsync.
+        /// </summary>
+        /// <returns>returns PaginatedResult of Stats.</returns>
         public PaginatedResult<Stats> Stats()
         {
             return AsyncHelper.RunSync(StatsAsync);
         }
 
+        /// <summary>
+        /// Sync version of StatsAsync.
+        /// </summary>
+        /// <param name="query">stats <see cref="StatsRequestParams"/>.</param>
+        /// <returns>returns PaginatedResult of Stats.</returns>
         public PaginatedResult<Stats> Stats(StatsRequestParams query)
         {
             return AsyncHelper.RunSync(() => StatsAsync(query));
         }
 
+        /// <summary>
+        /// Sync method for getting the current server time.
+        /// </summary>
+        /// <returns>DateTimeOffset of the current server time.</returns>
         public DateTimeOffset Time()
         {
             return AsyncHelper.RunSync(TimeAsync);

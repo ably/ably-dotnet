@@ -65,7 +65,7 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithBinaryData_LeavesDataAndEncodingIntact()
             {
-                if (!Config.MsgPackEnabled)
+                if (!Defaults.MsgPackEnabled)
                 {
                     return;
                 }

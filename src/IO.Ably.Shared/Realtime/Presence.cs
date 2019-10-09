@@ -4,30 +4,45 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using IO.Ably.Realtime;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Realtime
 {
+    /// <summary>
+    /// A class that provides access to presence operations and state for the associated Channel.
+    /// </summary>
     public partial class Presence : IDisposable
     {
-        internal ILogger Logger { get; private set; }
-
-        private event EventHandler InitialSyncCompleted;
-        internal event EventHandler SyncCompleted;
-
         private readonly RealtimeChannel _channel;
         private readonly string _clientId;
         private readonly Handlers<PresenceMessage> _handlers = new Handlers<PresenceMessage>();
-
         private readonly IConnectionManager _connection;
-
         private string _currentSyncChannelSerial;
-
         private bool _initialSyncCompleted = false;
 
+        internal Presence(IConnectionManager connection, RealtimeChannel channel, string cliendId, ILogger logger)
+        {
+            Logger = logger;
+            Map = new PresenceMap(channel.Name, logger);
+            InternalMap = new PresenceMap(channel.Name, logger);
+            PendingPresenceQueue = new ConcurrentQueue<QueuedPresenceMessage>();
+            _connection = connection;
+            _channel = channel;
+            _channel.InternalStateChanged += OnChannelStateChanged;
+            _clientId = cliendId;
+        }
+
+        private event EventHandler InitialSyncCompleted;
+
+        internal event EventHandler SyncCompleted;
+
+        internal ILogger Logger { get; private set; }
+
+        /// <summary>
+        /// Has the sync completed.
+        /// </summary>
         public bool SyncComplete
         {
             get => Map.InitialSyncCompleted | _initialSyncCompleted;
@@ -42,7 +57,18 @@ namespace IO.Ably.Realtime
             }
         }
 
+        /// <summary>
+        /// Indicates whether there is currently a sync in progress.
+        /// </summary>
         public bool IsSyncInProgress => Map.IsSyncInProgress;
+
+        internal bool InternalSyncComplete => !Map.IsSyncInProgress && SyncComplete;
+
+        internal PresenceMap Map { get; }
+
+        internal PresenceMap InternalMap { get; }
+
+        internal ConcurrentQueue<QueuedPresenceMessage> PendingPresenceQueue { get; }
 
         /// <summary>
         /// Called when a protocol message HasPresenceFlag == false. The presence map should be considered in sync immediately
@@ -53,26 +79,9 @@ namespace IO.Ably.Realtime
             SyncComplete = true;
         }
 
-        internal bool InternalSyncComplete => !Map.IsSyncInProgress && SyncComplete;
-
-        internal PresenceMap Map { get; }
-
-        internal PresenceMap InternalMap { get; }
-
-        internal ConcurrentQueue<QueuedPresenceMessage> PendingPresenceQueue { get; }
-
-        internal Presence(IConnectionManager connection, RealtimeChannel channel, string cliendId, ILogger logger)
-        {
-            Logger = logger;
-            Map = new PresenceMap(channel.Name, logger);
-            InternalMap = new PresenceMap(channel.Name, logger);
-            PendingPresenceQueue = new ConcurrentQueue<QueuedPresenceMessage>();
-            _connection = connection;
-            _channel = channel;
-            _channel.InternalStateChanged += OnChannelStateChanged;
-            _clientId = cliendId;
-        }
-
+        /// <summary>
+        /// Disposes the current Presence instance. Removes all listening handlers.
+        /// </summary>
         public void Dispose()
         {
             if (_channel != null)
@@ -84,9 +93,12 @@ namespace IO.Ably.Realtime
         }
 
         /// <summary>
-        ///     Get current presence in the channel.
+        ///     Get the presence state given a set of options <see cref="GetParams"/>. Implicitly attaches the Channel.
+        ///     However, if the channel is in or moves to the FAILED.
+        ///     state before the operation succeeds, it will result in an error.
         /// </summary>
-        /// <returns></returns>
+        /// <param name="options">Options for the Getasync. For details <see cref="GetParams"/>.</param>
+        /// <returns>a list of PresenceMessages.</returns>
         public async Task<IEnumerable<PresenceMessage>> GetAsync(GetParams options)
         {
             // RTP11b
@@ -119,16 +131,40 @@ namespace IO.Ably.Realtime
             return result;
         }
 
+        /// <summary>
+        ///     Get the presence state for the current channel, optionally waiting for Sync to complete.
+        ///     Implicitly attaches the Channel. However, if the channel is in or moves to the FAILED.
+        ///     state before the operation succeeds, it will result in an error.
+        /// </summary>
+        /// <param name="waitForSync">whether it should wait for a sync to complete.</param>
+        /// <returns>the current present members.</returns>
         public async Task<IEnumerable<PresenceMessage>> GetAsync(bool waitForSync)
         {
             return await GetAsync(new GetParams() { WaitForSync = waitForSync });
         }
 
+        /// <summary>
+        ///     Get the presence state for a given clientId, optionally waiting for Sync to complete.
+        ///     Implicitly attaches the Channel. However, if the channel is in or moves to the FAILED.
+        ///     state before the operation succeeds, it will result in an error.
+        /// </summary>
+        /// <param name="clientId">requests Presence for the this clientId.</param>
+        /// <param name="waitForSync">whether it should wait for a sync to complete.</param>
+        /// <returns>the current present members.</returns>
         public async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId, bool waitForSync)
         {
             return await GetAsync(new GetParams() { ClientId = clientId, WaitForSync = waitForSync });
         }
 
+        /// <summary>
+        ///     Get the presence state for a given clientId and connectionId, optionally waiting for Sync to complete.
+        ///     Implicitly attaches the Channel. However, if the channel is in or moves to the FAILED.
+        ///     state before the operation succeeds, it will result in an error.
+        /// </summary>
+        /// <param name="clientId">requests Presence for the this clientId.</param>
+        /// <param name="connectionId">requests Presence for the a specific connectionId.</param>
+        /// <param name="waitForSync">whether it should wait for a sync to complete.</param>
+        /// <returns>the current present members.</returns>
         public async Task<IEnumerable<PresenceMessage>> GetAsync(string clientId = null, string connectionId = null, bool waitForSync = true)
         {
             return await GetAsync(new GetParams() { ClientId = clientId, ConnectionId = connectionId, WaitForSync = waitForSync });
@@ -199,6 +235,11 @@ namespace IO.Ably.Realtime
             return tsc.Task.Result;
         }
 
+        /// <summary>
+        /// Subscribe to presence events on the associated Channel. This implicitly
+        /// attaches the Channel if it is not already attached.
+        /// </summary>
+        /// <param name="handler">handler to be notified for the arrival of presence messages.</param>
         public void Subscribe(Action<PresenceMessage> handler)
         {
             if (_channel.State != ChannelState.Attached && _channel.State != ChannelState.Attaching)
@@ -209,6 +250,12 @@ namespace IO.Ably.Realtime
             _handlers.Add(handler.ToHandlerAction());
         }
 
+        /// <summary>
+        /// Subscribe to presence events with a specific action on the associated Channel. This implicitly
+        /// attaches the Channel if it is not already attached.
+        /// </summary>
+        /// <param name="action">action to be observed.</param>
+        /// <param name="handler">handler to be notified for the arrival of presence messages.</param>
         public void Subscribe(PresenceAction action, Action<PresenceMessage> handler)
         {
             if ((_channel.State != ChannelState.Attached) && (_channel.State != ChannelState.Attaching))
@@ -219,86 +266,204 @@ namespace IO.Ably.Realtime
             _handlers.Add(action.ToString(), new MessageHandlerAction<PresenceMessage>(handler));
         }
 
+        /// <summary>
+        /// Unsubscribe a previously subscribed handler.
+        /// </summary>
+        /// <param name="handler">the handler to be unsubscribed.</param>
+        /// <returns>true if unsubscribed, false if the handler doesn't exist.</returns>
         public bool Unsubscribe(Action<PresenceMessage> handler)
         {
             return _handlers.Remove(handler.ToHandlerAction());
         }
 
+        /// <summary>
+        /// Unsubscribes all attached handlers.
+        /// </summary>
         public void Unsubscribe()
         {
             _handlers.RemoveAll();
         }
 
+        /// <summary>
+        /// Unsubscribe a specific handler for a specific action.
+        /// </summary>
+        /// <param name="presenceAction">the specific action.</param>
+        /// <param name="handler">the handler to be unsubscribed.</param>
+        /// <returns>true if unsubscribed, false if the handler is not found.</returns>
         public bool Unsubscribe(PresenceAction presenceAction, Action<PresenceMessage> handler)
         {
             return _handlers.Remove(presenceAction.ToString(), handler.ToHandlerAction());
         }
 
+        /// <summary>
+        /// Enter this client into this channel. This client will be added to the presence set
+        /// and presence subscribers will see an enter message for this client.
+        /// </summary>
+        /// <param name="data">optional data (eg a status message) for this member.</param>
+        /// <param name="callback">a listener to be notified on completion of the operation.</param>
         public void Enter(object data = null, Action<bool, ErrorInfo> callback = null)
         {
             EnterClient(_clientId, data, callback);
         }
 
+        /// <summary>
+        /// Enter this client into this channel. This client will be added to the presence set
+        /// and presence subscribers will see an enter message for this client.
+        /// </summary>
+        /// <param name="data">optional data (eg a status message) for this member.</param>
+        /// <returns>Result whether the operation was success or error.</returns>
         public Task<Result> EnterAsync(object data = null)
         {
             return EnterClientAsync(_clientId, data);
         }
 
-        public void EnterClient(string clientId, object data, Action<bool, ErrorInfo> callback = null)
-        {
-            UpdatePresence(new PresenceMessage(PresenceAction.Enter, clientId, data), callback);
-        }
-
-        public Task<Result> EnterClientAsync(string clientId, object data)
-        {
-            return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Enter, clientId, data));
-        }
-
+        /// <summary>
+        /// Update the presence data for this client. If the client is not already a member of
+        /// the presence set it will be added, and presence subscribers will see an enter or
+        /// update message for this client.
+        /// </summary>
+        /// <param name="data">optional data (eg a status message) for this member.</param>
+        /// <param name="callback">a listener to be notified on completion of the operation.</param>
         public void Update(object data = null, Action<bool, ErrorInfo> callback = null)
         {
             UpdateClient(_clientId, data, callback);
         }
 
+        /// <summary>
+        /// Update the presence data for this client. If the client is not already a member of
+        /// the presence set it will be added, and presence subscribers will see an enter or
+        /// update message for this client.
+        /// </summary>
+        /// <param name="data">optional data (eg a status message) for this member.</param>
+        /// <returns>Result whether the operation was success or error.</returns>
         public Task<Result> UpdateAsync(object data = null)
         {
             return UpdateClientAsync(_clientId, data);
         }
 
+        /// <summary>
+        ///  Update the presence data for a specified client into this channel.
+        ///  If the client is not already a member of the presence set it will be added,
+        ///  and presence subscribers will see a corresponding presence message
+        ///  with an empty data payload.As for #enterClient above, the connection
+        ///  must be authenticated in a way that enables it to represent an arbitrary clientId.
+        /// </summary>
+        /// <param name="clientId">the id of the client.</param>
+        /// <param name="data">optional data (eg a status message) for this member.</param>
+        /// <param name="callback">a listener to be notified on completion of the operation.</param>
         public void UpdateClient(string clientId, object data, Action<bool, ErrorInfo> callback = null)
         {
             UpdatePresence(new PresenceMessage(PresenceAction.Update, clientId, data), callback);
         }
 
+        /// <summary>
+        ///  Update the presence data for a specified client into this channel.
+        ///  If the client is not already a member of the presence set it will be added,
+        ///  and presence subscribers will see a corresponding presence message
+        ///  with an empty data payload.As for #enterClient above, the connection
+        ///  must be authenticated in a way that enables it to represent an arbitrary clientId.
+        /// </summary>
+        /// <param name="clientId">the id of the client.</param>
+        /// <param name="data">optional data (eg a status message) for this member.</param>
+        /// <returns>Result whether the operation was success or error.</returns>
         public Task<Result> UpdateClientAsync(string clientId, object data)
         {
             return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Update, clientId, data));
         }
 
-        public void Leave(object data = null, Action<bool, ErrorInfo> callback = null)
+        /// <summary>
+        /// Enter a specified client into this channel.The given clientId will be added to
+        /// the presence set and presence subscribers will see a corresponding presence message
+        /// with an empty data payload.
+        /// This method is provided to support connections (eg connections from application
+        /// server instances) that act on behalf of multiple clientIds. In order to be able to
+        /// enter the channel with this method, the client library must have been instanced
+        /// either with a key, or with a token bound to the wildcard clientId.
+        /// </summary>
+        /// <param name="clientId">id of the client.</param>
+        /// <param name="data">optional data (eg a status message) for this member.</param>
+        /// <param name="callback">a listener to be notified on completion of the operation.</param>
+        public void EnterClient(string clientId, object data, Action<bool, ErrorInfo> callback = null)
         {
-            LeaveClient(_clientId, data);
+            UpdatePresence(new PresenceMessage(PresenceAction.Enter, clientId, data), callback);
         }
 
+        /// <summary>
+        /// Enter a specified client into this channel.The given clientId will be added to
+        /// the presence set and presence subscribers will see a corresponding presence message
+        /// with an empty data payload.
+        /// This method is provided to support connections (eg connections from application
+        /// server instances) that act on behalf of multiple clientIds. In order to be able to
+        /// enter the channel with this method, the client library must have been instanced
+        /// either with a key, or with a token bound to the wildcard clientId.
+        /// </summary>
+        /// /// <param name="clientId">id of the client.</param>
+        /// <param name="data">optional data (eg a status message) for this member.</param>
+        /// <returns>Result whether the operation was success or error.</returns>
+        public Task<Result> EnterClientAsync(string clientId, object data)
+        {
+            return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Enter, clientId, data));
+        }
+
+        /// <summary>
+        /// Leave this client from this channel. This client will be removed from the presence
+        /// set and presence subscribers will see a leave message for this client.
+        /// </summary>
+        /// <param name="data">optional data (eg a status message) for this member.</param>
+        /// <param name="callback">a listener to be notified on completion of the operation.</param>
+        public void Leave(object data = null, Action<bool, ErrorInfo> callback = null)
+        {
+            LeaveClient(_clientId, data, callback);
+        }
+
+        /// <summary>
+        /// Leave this client from this channel. This client will be removed from the presence
+        /// set and presence subscribers will see a leave message for this client.
+        /// </summary>
+        /// <param name="data">optional data (eg a status message) for this member.</param>
+        /// <returns>Result whether the operation was success or error.</returns>
         public Task<Result> LeaveAsync(object data = null)
         {
             return LeaveClientAsync(_clientId, data);
         }
 
+        /// <summary>
+        /// Leave a given client from this channel. This client will be removed from the
+        /// presence set and presence subscribers will see a corresponding presence message
+        /// with an empty data payload.
+        /// This method is provided to support connections (eg connections from application
+        /// server instances) that act on behalf of multiple clientIds. In order to be able to
+        /// enter the channel with this method, the client library must have been instanced
+        /// either with a key, or with a token bound to the wildcard clientId.
+        /// </summary>
+        /// <param name="clientId">the id of the client.</param>
+        /// <param name="data">optional data (eg a status message) for this member.</param>
+        /// <param name="callback">a listener to be notified on completion of the operation.</param>
         public void LeaveClient(string clientId, object data, Action<bool, ErrorInfo> callback = null)
         {
             UpdatePresence(new PresenceMessage(PresenceAction.Leave, clientId, data), callback);
         }
 
+        /// <summary>
+        /// Leave a given client from this channel. This client will be removed from the
+        /// presence set and presence subscribers will see a corresponding presence message
+        /// with an empty data payload.
+        /// This method is provided to support connections (eg connections from application
+        /// server instances) that act on behalf of multiple clientIds. In order to be able to
+        /// enter the channel with this method, the client library must have been instanced
+        /// either with a key, or with a token bound to the wildcard clientId.
+        /// </summary>
+        /// <param name="clientId">the id of the client.</param>
+        /// <param name="data">optional data (eg a status message) for this member.</param>
+        /// <returns>Result whether the operation was success or error.</returns>
         public Task<Result> LeaveClientAsync(string clientId, object data)
         {
             return UpdatePresenceAsync(new PresenceMessage(PresenceAction.Leave, clientId, data));
         }
 
-        internal Task<Result> UpdatePresenceAsync(PresenceMessage msg)
+        internal async Task<Result> UpdatePresenceAsync(PresenceMessage msg)
         {
-            var tw = new TaskWrapper();
-            UpdatePresence(msg, tw.Callback);
-            return tw.Task;
+            return await TaskWrapper.Wrap(callback => UpdatePresence(msg, callback));
         }
 
         internal void UpdatePresence(PresenceMessage msg, Action<bool, ErrorInfo> callback)
@@ -663,6 +828,14 @@ namespace IO.Ably.Realtime
             }
         }
 
+        /// <summary>
+        /// Obtain recent history for this channel using the REST API.
+        /// The history provided relates to all clients of this application,
+        /// not just this instance.
+        /// </summary>
+        /// <param name="untilAttach">optionally can add until attached parameter.</param>
+        /// <exception cref="AblyException">can throw if untilAttached=true and the current channel is not attached.</exception>
+        /// <returns>Paginated list of Presence messages.</returns>
         public Task<PaginatedResult<PresenceMessage>> HistoryAsync(bool untilAttach = false)
         {
             var query = new PaginatedRequestParams();
@@ -674,6 +847,15 @@ namespace IO.Ably.Realtime
             return _channel.RestChannel.Presence.HistoryAsync(query);
         }
 
+        /// <summary>
+        /// Obtain recent history for this channel using the REST API.
+        /// The history provided relates to all clients of this application,
+        /// not just this instance.
+        /// </summary>
+        /// <param name="query">the request params. See the Ably REST API documentation for more details.</param>
+        /// <param name="untilAttach">add until attached parameter.</param>
+        /// <exception cref="AblyException">can throw if untilAttached=true and the current channel is not attached.</exception>
+        /// <returns>Paginated list of Presence messages.</returns>
         public Task<PaginatedResult<PresenceMessage>> HistoryAsync(PaginatedRequestParams query, bool untilAttach = false)
         {
             query = query ?? new PaginatedRequestParams();
@@ -685,23 +867,25 @@ namespace IO.Ably.Realtime
             return _channel.RestChannel.Presence.HistoryAsync(query);
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable SA1600 // Elements should be documented
         protected virtual void OnInitialSyncCompleted()
         {
             InitialSyncCompleted?.Invoke(this, EventArgs.Empty);
         }
+#pragma warning restore SA1600 // Elements should be documented
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         internal void OnSyncCompleted()
         {
             SyncCompleted?.Invoke(this, EventArgs.Empty);
         }
 
-        internal JToken GetState()
+        internal JToken GetState() => new JObject
         {
-            var state = new JObject();
-            state["handlers"] = _handlers.GetState();
-            state["members"] = Map.GetState();
-            state["pendingQueue"] = new JArray(PendingPresenceQueue.Select(x => JObject.FromObject(x.Message)));
-            return state;
-        }
+            ["handlers"] = _handlers.GetState(),
+            ["members"] = Map.GetState(),
+            ["pendingQueue"] = new JArray(PendingPresenceQueue.Select(x => JObject.FromObject(x.Message))),
+        };
     }
 }

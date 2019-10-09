@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<RuleSet Name="Rules for IO.Ably" Description="Code analysis rules for IO.Ably c# projects." ToolsVersion="16.0">
+<RuleSet Name="Rules for IO.Ably Tests" Description="Code analysis rules for IO.Ably.Tests c# projects." ToolsVersion="16.0">
   <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
     <Rule Id="CA1001" Action="Warning" />
     <Rule Id="CA1009" Action="Warning" />
@@ -65,6 +65,7 @@
     <Rule Id="CA2242" Action="Warning" />
   </Rules>
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+    <Rule Id="SA0001" Action="None" />
     <Rule Id="SA1025" Action="Error" />
     <Rule Id="SA1028" Action="Error" />
     <Rule Id="SA1101" Action="None" />
@@ -73,9 +74,9 @@
     <Rule Id="SA1130" Action="Info" />
     <Rule Id="SA1200" Action="None" />
     <Rule Id="SA1201" Action="Info" />
-    <Rule Id="SA1202" Action="None" />
+    <Rule Id="SA1202" Action="Info" />
     <Rule Id="SA1203" Action="Info" />
-    <Rule Id="SA1204" Action="None" />
+    <Rule Id="SA1204" Action="Info" />
     <Rule Id="SA1206" Action="Info" />
     <Rule Id="SA1208" Action="Info" />
     <Rule Id="SA1210" Action="Info" />
@@ -89,64 +90,48 @@
     <Rule Id="SA1501" Action="Info" />
     <Rule Id="SA1502" Action="Info" />
     <Rule Id="SA1504" Action="Info" />
+    <Rule Id="SA1512" Action="None" />
+    <Rule Id="SA1514" Action="None" />
+    <Rule Id="SA1515" Action="None" />
+    <Rule Id="SA1600" Action="None" />
+    <Rule Id="SA1601" Action="None" />
+    <Rule Id="SA1602" Action="None" />
+    <Rule Id="SA1604" Action="None" />
+    <Rule Id="SA1605" Action="None" />
+    <Rule Id="SA1606" Action="None" />
+    <Rule Id="SA1607" Action="None" />
+    <Rule Id="SA1608" Action="None" />
+    <Rule Id="SA1610" Action="None" />
+    <Rule Id="SA1611" Action="None" />
+    <Rule Id="SA1612" Action="None" />
+    <Rule Id="SA1613" Action="None" />
+    <Rule Id="SA1614" Action="None" />
+    <Rule Id="SA1615" Action="None" />
+    <Rule Id="SA1616" Action="None" />
+    <Rule Id="SA1617" Action="None" />
+    <Rule Id="SA1618" Action="None" />
+    <Rule Id="SA1619" Action="None" />
+    <Rule Id="SA1620" Action="None" />
+    <Rule Id="SA1621" Action="None" />
+    <Rule Id="SA1622" Action="None" />
     <Rule Id="SA1623" Action="None" />
+    <Rule Id="SA1624" Action="None" />
+    <Rule Id="SA1627" Action="None" />
+    <Rule Id="SA1629" Action="None" />
     <Rule Id="SA1633" Action="None" />
+    <Rule Id="SA1634" Action="None" />
+    <Rule Id="SA1635" Action="None" />
+    <Rule Id="SA1636" Action="None" />
+    <Rule Id="SA1637" Action="None" />
+    <Rule Id="SA1638" Action="None" />
+    <Rule Id="SA1640" Action="None" />
+    <Rule Id="SA1641" Action="None" />
     <Rule Id="SA1642" Action="None" />
     <Rule Id="SA1643" Action="None" />
+    <Rule Id="SA1648" Action="None" />
     <Rule Id="SA1649" Action="Info" />
     <Rule Id="SA1652" Action="None" />
-    <Rule Id="SX1101" Action="Warning" />
-    <Rule Id="SX1309" Action="Warning" />
-  </Rules>
-  <Rules AnalyzerId="xunit.analyzers" RuleNamespace="xunit.analyzers">
-    <Rule Id="xUnit1000" Action="None" />
-    <Rule Id="xUnit1001" Action="None" />
-    <Rule Id="xUnit1002" Action="None" />
-    <Rule Id="xUnit1003" Action="None" />
-    <Rule Id="xUnit1004" Action="None" />
-    <Rule Id="xUnit1005" Action="None" />
-    <Rule Id="xUnit1006" Action="None" />
-    <Rule Id="xUnit1007" Action="None" />
-    <Rule Id="xUnit1008" Action="None" />
-    <Rule Id="xUnit1009" Action="None" />
-    <Rule Id="xUnit1010" Action="None" />
-    <Rule Id="xUnit1011" Action="None" />
-    <Rule Id="xUnit1012" Action="None" />
-    <Rule Id="xUnit1013" Action="None" />
-    <Rule Id="xUnit1014" Action="None" />
-    <Rule Id="xUnit1015" Action="None" />
-    <Rule Id="xUnit1016" Action="None" />
-    <Rule Id="xUnit1017" Action="None" />
-    <Rule Id="xUnit1018" Action="None" />
-    <Rule Id="xUnit1019" Action="None" />
-    <Rule Id="xUnit1020" Action="None" />
-    <Rule Id="xUnit1021" Action="None" />
-    <Rule Id="xUnit1022" Action="None" />
-    <Rule Id="xUnit1023" Action="None" />
-    <Rule Id="xUnit1024" Action="None" />
-    <Rule Id="xUnit1025" Action="None" />
-    <Rule Id="xUnit1026" Action="None" />
-    <Rule Id="xUnit2000" Action="None" />
-    <Rule Id="xUnit2001" Action="None" />
-    <Rule Id="xUnit2002" Action="None" />
-    <Rule Id="xUnit2003" Action="None" />
-    <Rule Id="xUnit2004" Action="None" />
-    <Rule Id="xUnit2005" Action="None" />
-    <Rule Id="xUnit2006" Action="None" />
-    <Rule Id="xUnit2007" Action="None" />
-    <Rule Id="xUnit2008" Action="None" />
-    <Rule Id="xUnit2009" Action="None" />
-    <Rule Id="xUnit2010" Action="None" />
-    <Rule Id="xUnit2011" Action="None" />
-    <Rule Id="xUnit2012" Action="None" />
-    <Rule Id="xUnit2013" Action="None" />
-    <Rule Id="xUnit2014" Action="None" />
-    <Rule Id="xUnit2015" Action="None" />
-    <Rule Id="xUnit2016" Action="None" />
-    <Rule Id="xUnit2017" Action="None" />
-    <Rule Id="xUnit2018" Action="None" />
-    <Rule Id="xUnit2019" Action="None" />
-    <Rule Id="xUnit3000" Action="None" />
-    <Rule Id="xUnit3001" Action="None" />
+    <Rule Id="SX1101" Action="Error" />
+    <Rule Id="SX1309" Action="Error" />
   </Rules>
 </RuleSet>

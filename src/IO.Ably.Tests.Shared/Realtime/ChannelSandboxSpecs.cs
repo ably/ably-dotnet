@@ -742,7 +742,7 @@ namespace IO.Ably.Tests.Realtime
         {
             get
             {
-                if (Config.MsgPackEnabled)
+                if (Defaults.MsgPackEnabled)
 #pragma warning disable 162
                 {
                     yield return new object[] { Defaults.Protocol, GetAes128FixtureData() };

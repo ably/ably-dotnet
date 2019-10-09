@@ -26,6 +26,7 @@ namespace IO.Ably.Realtime
             {
                 return false;
             }
+
             now = now ?? Defaults.NowFunc();
             return (now() - firstAttempt.Value) >= state.Connection.ConnectionStateTtl;
         }

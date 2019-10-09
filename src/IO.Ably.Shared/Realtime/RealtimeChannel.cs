@@ -14,40 +14,37 @@ namespace IO.Ably.Realtime
     /// <summary>Implement realtime channel.</summary>
     internal class RealtimeChannel : EventEmitter<ChannelEvent, ChannelStateChange>, IRealtimeChannel, IDisposable
     {
-        internal AblyRealtime RealtimeClient { get; }
-
-        private IConnectionManager ConnectionManager => RealtimeClient.ConnectionManager;
-
-        private Connection Connection => RealtimeClient.Connection;
-
-        private string PreviousConnectionId { get; set; }
-
-        private ConnectionState ConnectionState => Connection.State;
-
         private readonly Handlers<Message> _handlers = new Handlers<Message>();
-
-        internal IRestChannel RestChannel => RealtimeClient.RestClient.Channels.Get(Name);
-
-        private readonly object _lockQueue = new object();
-
-        internal ChannelAwaiter AttachedAwaiter { get; }
-
-        internal ChannelAwaiter DetachedAwaiter { get; }
-
         private ChannelOptions _options;
         private ChannelState _state;
-
-        protected override Action<Action> NotifyClient => RealtimeClient.NotifyExternalClients;
-
-        public ErrorInfo ErrorReason { get; internal set; }
-
-        public ChannelProperties Properties { get; } = new ChannelProperties();
 
         public event EventHandler<ChannelStateChange> StateChanged = delegate { };
 
         internal event EventHandler<ChannelStateChange> InternalStateChanged = delegate { };
 
         public event EventHandler<ChannelErrorEventArgs> Error = delegate { };
+
+        internal AblyRealtime RealtimeClient { get; }
+
+        private string PreviousConnectionId { get; set; }
+
+        private ConnectionState ConnectionState => Connection.State;
+
+        private IConnectionManager ConnectionManager => RealtimeClient.ConnectionManager;
+
+        private Connection Connection => RealtimeClient.Connection;
+
+        internal IRestChannel RestChannel => RealtimeClient.RestClient.Channels.Get(Name);
+
+        internal ChannelAwaiter AttachedAwaiter { get; }
+
+        internal ChannelAwaiter DetachedAwaiter { get; }
+
+        protected override Action<Action> NotifyClient => RealtimeClient.NotifyExternalClients;
+
+        public ErrorInfo ErrorReason { get; internal set; }
+
+        public ChannelProperties Properties { get; } = new ChannelProperties();
 
         public ChannelOptions Options
         {
@@ -77,7 +74,10 @@ namespace IO.Ably.Realtime
 
         public Presence Presence { get; }
 
-        internal RealtimeChannel(string name, string clientId, AblyRealtime realtimeClient,
+        internal RealtimeChannel(
+            string name,
+            string clientId,
+            AblyRealtime realtimeClient,
             ChannelOptions options = null)
             : base(options?.Logger)
         {
@@ -307,8 +307,8 @@ namespace IO.Ably.Realtime
         /// <summary>Publish a single message on this channel based on a given event name and payload.</summary>
         /// <param name="name">The event name.</param>
         /// <param name="data">The payload of the message.</param>
-        /// <param name="clientId"></param>
-        /// <param name="callback"></param>
+        /// <param name="callback">handler to be notified if the operation succeeded.</param>
+        /// <param name="clientId">optional, id of the client.</param>
         public void Publish(string name, object data, Action<bool, ErrorInfo> callback = null, string clientId = null)
         {
             PublishImpl(new[] { new Message(name, data, clientId) }, callback);
@@ -417,7 +417,7 @@ namespace IO.Ably.Realtime
 
             var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Message, Name)
             {
-                Messages = messages.ToArray()
+                Messages = messages.ToArray(),
             };
 
             SendMessage(msg, callback);
@@ -594,7 +594,7 @@ namespace IO.Ably.Realtime
         }
 
         /// <summary>
-        /// should only be called when the channel is SUSPENDED
+        /// should only be called when the channel is SUSPENDED.
         /// </summary>
         private void ReattachAfterTimeout(ErrorInfo error, ProtocolMessage msg)
         {
@@ -654,11 +654,6 @@ namespace IO.Ably.Realtime
             ConnectionManager.Send(protocolMessage, callback, Options);
         }
 
-        /// <summary>
-        /// Emits an UPDATE if the channel is ATTACHED
-        /// </summary>
-        /// <param name="errorInfo"></param>
-        /// <param name="resumed"></param>
         internal void EmitUpdate(ErrorInfo errorInfo, bool resumed)
         {
             if (State == ChannelState.Attached)
@@ -667,10 +662,6 @@ namespace IO.Ably.Realtime
             }
         }
 
-        /// <summary>
-        /// Emits an <see cref="ChannelEvent.Update"/> if the current channel state is <see cref="ChannelState.Attached"/>
-        /// </summary>
-        /// <param name="protocolMessage"></param>
         internal void EmitUpdate(ChannelState state, ProtocolMessage protocolMessage)
         {
             // TODO: this is not right. Find what should be in place of that logic
@@ -686,7 +677,7 @@ namespace IO.Ably.Realtime
             state["timers"] = JObject.FromObject(new
             {
                 awaitTimer = AttachedAwaiter.Waiting,
-                detachTimer = DetachedAwaiter.Waiting
+                detachTimer = DetachedAwaiter.Waiting,
             });
             state["emitters"] = GetState();
             state["handlers"] = _handlers.GetState();

@@ -10,7 +10,7 @@ namespace IO.Ably
         /// <summary>
         /// Gets the TaskCompletionSource for this event
         /// A handler should Complete this task to allow the
-        /// AuthorizeAsync call to complete
+        /// AuthorizeAsync call to complete.
         /// </summary>
         internal TaskCompletionSource<bool> CompletedTask { get; }
 

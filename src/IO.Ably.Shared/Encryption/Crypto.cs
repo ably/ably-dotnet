@@ -69,13 +69,50 @@ namespace IO.Ably.Encryption
         CTS = 5
     }
 
+    /// <summary>
+    ///     Utility classes for message payload encryption.
+    ///
+    /// This class supports AES/CBC with a default key length of 256 bits
+    /// but supporting other key lengths.Other algorithms and chaining modes are
+    /// not supported directly, but supportable by extending/implementing the base
+    /// classes and interfaces here.
+    ///
+    /// Secure random data for creation of Initialisation Vectors (IVs) and keys
+    /// is obtained from the default system.
+    ///
+    /// Each message payload is encrypted with an IV in CBC mode, and the IV is
+    /// concatenated with the resulting raw ciphertext to construct the "ciphertext"
+    /// data passed to the recipient.
+    /// </summary>
     public static class Crypto
     {
+        /// <summary>
+        /// Default Encryption algorithm. (AES).
+        /// </summary>
         public const string DefaultAlgorithm = "AES";
+
+        /// <summary>
+        /// Default key length (256).
+        /// </summary>
         public const int DefaultKeylength = 256; // bits
+
+        /// <summary>
+        /// Default block length (16).
+        /// </summary>
         public const int DefaultBlocklength = 16; // bytes
+
+        /// <summary>
+        /// Default CipherMode (CBC).
+        /// </summary>
         public const CipherMode DefaultMode = CipherMode.CBC;
 
+        /// <summary>
+        /// Gets default CipherParams based on a base64EncodedKey.
+        /// </summary>
+        /// <param name="base64EncodedKey">required at least base64 encoded key.</param>
+        /// <param name="base64Iv">optional base64Encoded Iv.</param>
+        /// <param name="mode">optional Cipher mode.</param>
+        /// <returns>CipherParams.</returns>
         public static CipherParams GetDefaultParams(string base64EncodedKey, string base64Iv = null, CipherMode? mode = null)
         {
             if (base64EncodedKey == null)
@@ -86,6 +123,13 @@ namespace IO.Ably.Encryption
             return GetDefaultParams(base64EncodedKey.FromBase64(), base64Iv?.FromBase64(), mode);
         }
 
+        /// <summary>
+        /// Gets default params and generates a random key if not supplied.
+        /// </summary>
+        /// <param name="key">optional; key.</param>
+        /// <param name="iv">optional; iv.</param>
+        /// <param name="mode">optional: CipherMode.</param>
+        /// <returns>CipherParams.</returns>
         public static CipherParams GetDefaultParams(byte[] key = null, byte[] iv = null, CipherMode? mode = null)
         {
             if (key != null && key.Any())
@@ -102,10 +146,16 @@ namespace IO.Ably.Encryption
         {
             if (keyLength != 128 && keyLength != 256)
             {
-                throw new AblyException($"Only 128 and 256 keys are supported. Provided key is {keyLength}", 40003, HttpStatusCode.BadRequest);
+                throw new AblyException($"Only 128 and 256 bit keys are supported. Provided key is {keyLength}", 40003, HttpStatusCode.BadRequest);
             }
         }
 
+        /// <summary>
+        /// Gets a ChannelCipher for given cipher params. Currently supports only AES.
+        /// </summary>
+        /// <param name="cipherParams">cipher params.</param>
+        /// <exception cref="AblyException">throws if the encryption algorithm is different from AES.</exception>
+        /// <returns>a computed channel cipher.</returns>
         public static IChannelCipher GetCipher(CipherParams cipherParams)
         {
             if (string.Equals(cipherParams.Algorithm, Crypto.DefaultAlgorithm, StringComparison.CurrentCultureIgnoreCase))
@@ -116,6 +166,12 @@ namespace IO.Ably.Encryption
             throw new AblyException("Currently only the AES encryption algorithm is supported", 50000, HttpStatusCode.InternalServerError);
         }
 
+        /// <summary>
+        /// Computes HMacSha256 hash.
+        /// </summary>
+        /// <param name="text">Text to be hashed.</param>
+        /// <param name="key">Key used for hashing.</param>
+        /// <returns>HMacSha256 hash.</returns>
         public static string ComputeHMacSha256(string text, string key)
         {
             byte[] bytes = text.GetBytes();
@@ -127,6 +183,12 @@ namespace IO.Ably.Encryption
             }
         }
 
+        /// <summary>
+        /// Given a keylength and Cipher mode, generates a random key.
+        /// </summary>
+        /// <param name="keyLength">128 or 256 bit keys are supporter.</param>
+        /// <param name="mode">optional Cipher mode.</param>
+        /// <returns>returns generated encryption key.</returns>
         public static byte[] GenerateRandomKey(int? keyLength = null, CipherMode? mode = null)
         {
             if (keyLength.HasValue)

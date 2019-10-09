@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace IO.Ably
 {
     /// <summary>
-    /// Authentication options
+    /// Authentication options.
     /// </summary>
     public class AuthOptions
     {
@@ -30,18 +29,43 @@ namespace IO.Ably
         /// </summary>
         public HttpMethod AuthMethod { get; set; }
 
+        /// <summary>
+        /// Used to authenticate the client using an Ably Key.
+        /// </summary>
         public string Key { get; set; }
 
+        /// <summary>
+        /// Used to authenticate the client using a provided token.
+        /// </summary>
         public string Token { get; set; }
 
+        /// <summary>
+        /// Used to authenticate the client using a provider Token Details instance.
+        /// </summary>
         public TokenDetails TokenDetails { get; set; }
 
+        // TODO: Documentation - update Auth headers docs.
+
+        /// <summary>
+        /// Extra Auth headers.
+        /// </summary>
         public Dictionary<string, string> AuthHeaders { get; set; }
 
+        // TODO: Documentation - update Auth params docs.
+
+        /// <summary>
+        /// Extra Auth params.
+        /// </summary>
         public Dictionary<string, string> AuthParams { get; set; }
 
+        /// <summary>
+        /// Specify whether to query the server time when requesting a new token.
+        /// </summary>
         public bool? QueryTime { get; set; }
 
+        /// <summary>
+        /// Specify whether to use Token authentication.
+        /// </summary>
         public bool? UseTokenAuth { get; set; }
 
         /// <summary>
@@ -55,9 +79,9 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// Initialized a new instance of AuthOptions by populating the KeyId and KeyValue properties from the full Key
+        /// Initialized a new instance of AuthOptions by populating the KeyId and KeyValue properties from the full Key.
         /// </summary>
-        /// <param name="key">Full ably key string</param>
+        /// <param name="key">Full ably key string.</param>
         public AuthOptions(string key)
             : this()
         {
@@ -65,6 +89,11 @@ namespace IO.Ably
             Key = apiKey.ToString();
         }
 
+        /// <summary>
+        /// Merges two AuthOptions objects.
+        /// </summary>
+        /// <param name="defaults">second AuthOptions object.</param>
+        /// <returns>merged AuthOptions object</returns>
         public AuthOptions Merge(AuthOptions defaults)
         {
             if (AuthCallback == null)
@@ -121,10 +150,10 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// Creates a new AuthOptions instance using values from an existing instance
+        /// Creates a new AuthOptions instance using values from an existing instance.
         /// </summary>
-        /// <param name="existing"></param>
-        /// <returns>AuthOptions</returns>
+        /// <param name="existing">initial AuthOptions object.</param>
+        /// <returns>copied AuthOptions object.</returns>
         internal static AuthOptions FromExisting(AuthOptions existing)
         {
             var newOpts = new AuthOptions();

@@ -8,24 +8,48 @@ using Newtonsoft.Json.Linq;
 
 namespace IO.Ably
 {
+    /// <summary>
+    /// A type that represents a page of results from a paginated http query.
+    /// The response is accompanied by response details and metadata that
+    /// indicates the relative queries available.
+    /// </summary>
     public class HttpPaginatedResponse : PaginatedResult<JToken>
     {
         private const string AblyErrorCodeHeader = "X-Ably-Errorcode";
 
-        private const string AblyErrorMessageHeader = "X-Ably-Errormessage";
-
+        /// <summary>
+        /// Response headers.
+        /// </summary>
         public HttpHeaders Headers { get; private set; }
 
+        /// <summary>
+        /// Response Status code.
+        /// </summary>
         public HttpStatusCode StatusCode { get; private set; }
 
+        /// <summary>
+        /// Is the response successful.
+        /// </summary>
         public bool Success => (int)StatusCode >= 200 && (int)StatusCode < 300;
 
+        /// <summary>
+        /// Error code if any.
+        /// </summary>
         public int ErrorCode { get; set; }
 
+        /// <summary>
+        /// Error message if any.
+        /// </summary>
         public string ErrorMessage { get; set; }
 
+        /// <summary>
+        /// Method attached to the Response so we can provide Next and Prev convenience methods.
+        /// </summary>
         protected new Func<PaginatedRequestParams, Task<HttpPaginatedResponse>> ExecuteDataQueryFunc { get; }
 
+        /// <summary>
+        /// Initialised a new <see cref="HttpPaginatedResponse"/> instance.
+        /// </summary>
         public HttpPaginatedResponse()
         {
         }
@@ -81,6 +105,10 @@ namespace IO.Ably
             queryParams.Headers = requestParams.Headers;
         }
 
+        /// <summary>
+        /// If there is a next result it will make a call to retrieve it. Othewise it will return an empty response.
+        /// </summary>
+        /// <returns>returns the next response.</returns>
         public new Task<HttpPaginatedResponse> NextAsync()
         {
             if (HasNext && ExecuteDataQueryFunc != null)
@@ -91,6 +119,10 @@ namespace IO.Ably
             return Task.FromResult(new HttpPaginatedResponse());
         }
 
+        /// <summary>
+        /// If there is a first result it will make a call to retrieve it. Othewise it will return an empty response.
+        /// </summary>
+        /// <returns>returns the first response in the sequence.</returns>
         public new Task<HttpPaginatedResponse> FirstAsync()
         {
             if (FirstQueryParams != null && FirstQueryParams.IsEmpty == false && ExecuteDataQueryFunc != null)
@@ -101,11 +133,19 @@ namespace IO.Ably
             return Task.FromResult(new HttpPaginatedResponse());
         }
 
+        /// <summary>
+        /// Sync version of NextAsync().
+        /// </summary>
+        /// <returns>returns the next response.</returns>
         public new HttpPaginatedResponse Next()
         {
             return AsyncHelper.RunSync(NextAsync);
         }
 
+        /// <summary>
+        /// Sync version of FirstAsync().
+        /// </summary>
+        /// <returns>returns the next response.</returns>
         public new HttpPaginatedResponse First()
         {
             return AsyncHelper.RunSync(FirstAsync);

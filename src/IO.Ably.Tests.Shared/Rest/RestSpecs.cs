@@ -116,7 +116,7 @@ namespace IO.Ably.Tests
 
         public void ShouldUseBinaryProtocolByDefault()
         {
-            if (!Config.MsgPackEnabled)
+            if (!Defaults.MsgPackEnabled)
             {
                 return;
             }

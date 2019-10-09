@@ -10,47 +10,62 @@ namespace IO.Ably
 {
     /// <summary>
     ///     Data request query used for querying stats and history
-    ///     It makes it easier to pass parameters to the ably service by encapsulating the query string parameters passed
+    ///     It makes it easier to pass parameters to the ably service by encapsulating the query string parameters passed.
     /// </summary>
     public class PaginatedRequestParams
     {
         internal static readonly PaginatedRequestParams Empty = new PaginatedRequestParams();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PaginatedRequestParams"/> class.
+        /// </summary>
         public PaginatedRequestParams()
         {
             ExtraParameters = new Dictionary<string, string>();
             Direction = QueryDirection.Backwards;
         }
 
+        /// <summary>
+        /// HttpMethod that will be used for the query.
+        /// </summary>
         public HttpMethod HttpMethod { get; set; }
 
+        /// <summary>
+        /// Additional headers passed.
+        /// </summary>
         public Dictionary<string, string> Headers { get; set; }
 
+        /// <summary>
+        /// Body of the query.
+        /// </summary>
         public object Body { get; set; }
 
+        /// <summary>
+        /// The path component of the resource URI.
+        /// </summary>
         public string Path { get; set; }
 
         /// <summary>
         ///     Start of the query interval as UTC Date.
-        ///     Default: null
+        ///     Default: null.
         /// </summary>
         public DateTimeOffset? Start { get; set; }
 
         /// <summary>
         ///     End of the query interval as UTC Date
-        ///     Default: null
+        ///     Default: null.
         /// </summary>
         public DateTimeOffset? End { get; set; }
 
         /// <summary>
         ///     The number of the results returned by the server. If there are more result the NextQuery on the PaginatedResource
         ///     will be populated
-        ///     Default: Uses <see cref="Config.Limit" /> which is 100.
+        ///     Default: 100.
         /// </summary>
         public int? Limit { get; set; }
 
         /// <summary>
-        ///     Query directions. It determines the order in which results are returned. <see cref="QueryDirection" />
+        ///     Query directions. It determines the order in which results are returned. <see cref="QueryDirection" />.
         /// </summary>
         public QueryDirection Direction { get; set; }
 
@@ -61,15 +76,20 @@ namespace IO.Ably
 
         /// <summary>
         ///     If the datasource was created by parsing a query string it can be accessed from here.
-        ///     It is mainly used for debugging purposes of Current and NextQueries of PaginatedResources
+        ///     It is mainly used for debugging purposes of Current and NextQueries of PaginatedResources.
         /// </summary>
         public string QueryString { get; private set; }
 
         /// <summary>
-        ///     Gets a value indicating whether <see cref="QueryString" /> is empty (or null)
+        ///     Gets a value indicating whether <see cref="QueryString" /> is empty (or null).
         /// </summary>
         public bool IsEmpty => QueryString.IsEmpty();
 
+        /// <summary>
+        /// Implements PaginatedRequestParams specific equals.
+        /// </summary>
+        /// <param name="other">the other object we are comparing to.</param>
+        /// <returns>true or false.</returns>
         protected bool Equals(PaginatedRequestParams other)
         {
             return Start.Equals(other.Start)
@@ -79,6 +99,7 @@ namespace IO.Ably
                    && ExtraParameters.SequenceEqual(other.ExtraParameters);
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             unchecked
@@ -142,9 +163,10 @@ namespace IO.Ably
             return result;
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
+            if (obj is null)
             {
                 return false;
             }
@@ -249,9 +271,11 @@ namespace IO.Ably
     /// <inheritdoc />
     /// <summary>
     ///     Data request query used for querying history.
-    ///     Functionally identical to <see cref="PaginatedRequestParams"/> and present for backwards compatibility with 0.8 release
+    ///     Functionally identical to <see cref="PaginatedRequestParams"/> and present for backwards compatibility with 0.8 release.
     /// </summary>
     [Obsolete("HistoryRequestParams may be removed in future versions, please use PaginatedRequestParams instead.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "No need.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1502:Element should not be on a single line", Justification = "No need.")]
     public class HistoryRequestParams
         : PaginatedRequestParams
     { }
