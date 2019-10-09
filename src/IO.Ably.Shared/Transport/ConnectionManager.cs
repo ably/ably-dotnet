@@ -142,7 +142,10 @@ namespace IO.Ably.Transport
             {
                 var msg = new ProtocolMessage(ProtocolMessage.MessageAction.Auth)
                 {
-                    Auth = new AuthDetails {AccessToken = tokenDetails.Token}
+                    Auth = new AuthDetails
+                    {
+                        AccessToken = tokenDetails.Token,
+                    },
                 };
 
                 Send(msg);
@@ -154,7 +157,6 @@ namespace IO.Ably.Transport
                 Transport?.Close();
             }
 
-
             if (wait)
             {
                 var waiter = new ConnectionChangeAwaiter(Connection);
@@ -165,9 +167,12 @@ namespace IO.Ably.Transport
                     {
                         var (success, newState) = await waiter.Wait(Defaults.DefaultRealtimeTimeout);
                         if (success == false)
-                            throw new AblyException(new ErrorInfo(
+                        {
+                            throw new AblyException(
+                                new ErrorInfo(
                                 $"Connection state didn't change after Auth updated within {Defaults.DefaultRealtimeTimeout}",
                                 40140));
+                        }
 
                         switch (newState)
                         {
@@ -196,7 +201,9 @@ namespace IO.Ably.Transport
             }
         }
 
-        public void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null,
+        public void Send(
+            ProtocolMessage message,
+            Action<bool, ErrorInfo> callback = null,
             ChannelOptions channelOptions = null)
         {
             if (Logger.IsDebug)
@@ -259,7 +266,7 @@ namespace IO.Ably.Transport
             catch (Exception e)
             {
                 Logger.Error("Error while sending to transport. Trying to reconnect.", e);
-                ((ITransportListener) this).OnTransportEvent(TransportState.Closed, e);
+                ((ITransportListener)this).OnTransportEvent(TransportState.Closed, e);
             }
         }
 
@@ -279,7 +286,11 @@ namespace IO.Ably.Transport
 
         internal async Task<TransportParams> CreateTransportParameters(string host)
         {
-            return await TransportParams.Create(host, RestClient.AblyAuth, Options, Connection.Key,
+            return await TransportParams.Create(
+                host,
+                RestClient.AblyAuth,
+                Options,
+                Connection.Key,
                 Connection.Serial);
         }
 
@@ -311,7 +322,8 @@ namespace IO.Ably.Transport
 
                         // RTN20a
                         var errorInfo =
-                            new ErrorInfo("Connection disconnected due to Operating system network going offline",
+                            new ErrorInfo(
+                                "Connection disconnected due to Operating system network going offline",
                                 80017);
                         ExecuteCommand(SetDisconnectedStateCommand.Create(errorInfo, retryInstantly: true));
                     }

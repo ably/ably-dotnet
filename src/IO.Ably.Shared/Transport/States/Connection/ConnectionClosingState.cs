@@ -27,22 +27,22 @@ namespace IO.Ably.Transport.States.Connection
 
         public override ConnectionState State => ConnectionState.Closing;
 
-        public override async Task<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
+        public override Task<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
         {
             switch (message.Action)
             {
                 case ProtocolMessage.MessageAction.Closed:
                     TransitionState(SetClosedStateCommand.Create());
-                    return true;
+                    return Task.FromResult(true);
                 case ProtocolMessage.MessageAction.Disconnected:
                     TransitionState(SetDisconnectedStateCommand.Create(message.Error));
-                    return true;
+                    return Task.FromResult(true);
                 case ProtocolMessage.MessageAction.Error:
                     TransitionState(SetFailedStateCommand.Create(message.Error));
-                    return true;
+                    return Task.FromResult(true);
             }
 
-            return false;
+            return Task.FromResult(false);
         }
 
         private void TransitionState(RealtimeCommand command)

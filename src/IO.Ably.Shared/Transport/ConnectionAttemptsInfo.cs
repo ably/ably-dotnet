@@ -21,7 +21,7 @@ namespace IO.Ably.Transport
 
         internal List<ConnectionAttempt> Attempts { get; } = new List<ConnectionAttempt>();
 
-        internal DateTimeOffset? FirstAttempt => Attempts.Any() ? Attempts.First().Time : (DateTimeOffset?) null;
+        internal DateTimeOffset? FirstAttempt => Attempts.Any() ? Attempts.First().Time : (DateTimeOffset?)null;
 
         internal int NumberOfAttempts => Attempts.Count;
 

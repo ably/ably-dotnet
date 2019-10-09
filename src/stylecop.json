@@ -2,6 +2,10 @@
   "settings": {
     "layoutRules": {
       "newlineAtEndOfFile":  "require" 
+    },
+    "documentationRules": {
+      "documentInterfaces": true,
+      "documentInternalElements": false
     }
   }
 }

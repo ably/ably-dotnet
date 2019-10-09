@@ -46,7 +46,7 @@ namespace IO.Ably.Utils
                 _connection.InternalStateChanged += ChangeListener;
             }
 
-            void ChangeListener(object _, ConnectionStateChange change)
+            void ChangeListener(object sender, ConnectionStateChange change)
             {
                 _currentState = change.Current;
                 taskCompletionSource.SetResult((true, _currentState));

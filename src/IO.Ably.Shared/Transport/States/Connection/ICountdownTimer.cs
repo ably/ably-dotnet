@@ -69,7 +69,8 @@ namespace IO.Ably.Transport.States.Connection
         private void OnTimerOnElapsed()
         {
             // Ignore the result but don't allow the Countdown timer to take down the process if an exception is thrown
-            var _ = OnTimerOnElapsedAsync();
+            // You never know what will happen if the Logger throws an exception :)
+            _ = OnTimerOnElapsedAsync();
         }
 
         private async Task OnTimerOnElapsedAsync()

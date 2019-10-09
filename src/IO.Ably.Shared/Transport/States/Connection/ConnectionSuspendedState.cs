@@ -1,16 +1,15 @@
 ﻿using System.Threading.Tasks;
 using IO.Ably;
+using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
 
 namespace IO.Ably.Transport.States.Connection
 {
-    using Realtime;
-
     internal class ConnectionSuspendedState : ConnectionStateBase
     {
         private readonly ICountdownTimer _timer;
 
-        public new ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonSuspended;
+        public override ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonSuspended;
 
         public ConnectionSuspendedState(IConnectionContext context, ILogger logger)
             : this(context, null, new CountdownTimer("Suspended state timer", logger), logger)
@@ -30,7 +29,7 @@ namespace IO.Ably.Transport.States.Connection
             RetryIn = context.SuspendRetryTimeout;
         }
 
-        public override ConnectionState State => Realtime.ConnectionState.Suspended;
+        public override ConnectionState State => ConnectionState.Suspended;
 
         public override RealtimeCommand Connect()
         {

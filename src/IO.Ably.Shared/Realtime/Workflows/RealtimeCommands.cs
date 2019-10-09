@@ -31,7 +31,6 @@ namespace IO.Ably.Realtime.Workflow
         }
     }
 
-
     internal class PingTimerCommand : RealtimeCommand
     {
         public string PingRequestId { get; }
@@ -48,7 +47,6 @@ namespace IO.Ably.Realtime.Workflow
 
         public static PingTimerCommand Create(string pingRequestId) => new PingTimerCommand(pingRequestId);
     }
-
 
     internal class ListCommand : RealtimeCommand
     {
@@ -70,15 +68,16 @@ namespace IO.Ably.Realtime.Workflow
     internal class EmptyCommand : RealtimeCommand
     {
         public static EmptyCommand Instance = new EmptyCommand();
-        private EmptyCommand() {}
 
+        private EmptyCommand()
+        {
+        }
 
         protected override string ExplainData()
         {
             return string.Empty;
         }
     }
-
 
     internal class ProcessMessageCommand : RealtimeCommand
     {
@@ -97,7 +96,6 @@ namespace IO.Ably.Realtime.Workflow
         }
     }
 
-
     internal class ConnectCommand : RealtimeCommand
     {
         public static ConnectCommand Create() => new ConnectCommand();
@@ -113,7 +111,9 @@ namespace IO.Ably.Realtime.Workflow
         {
             Recover = recover;
         }
+
         public static SetInitStateCommand Create(string recover) => new SetInitStateCommand(recover);
+
         protected override string ExplainData()
         {
             return string.Empty;
@@ -124,7 +124,7 @@ namespace IO.Ably.Realtime.Workflow
     {
         public static CloseConnectionCommand Create() => new CloseConnectionCommand();
 
-        protected override string ExplainData() => String.Empty;
+        protected override string ExplainData() => string.Empty;
     }
 
     internal class SetConnectingStateCommand : RealtimeCommand
@@ -135,11 +135,12 @@ namespace IO.Ably.Realtime.Workflow
         {
             ClearConnectionKey = clearConnectionKey;
         }
+
         public static SetConnectingStateCommand Create(bool clearConnectionKey = false) => new SetConnectingStateCommand(clearConnectionKey);
 
         protected override string ExplainData()
         {
-            return String.Empty;
+            return string.Empty;
         }
     }
 
@@ -185,7 +186,6 @@ namespace IO.Ably.Realtime.Workflow
 
         public bool ClearConnectionKey { get; }
 
-
         protected override string ExplainData()
         {
             return $"RetryInstantly: {RetryInstantly}" +
@@ -225,7 +225,6 @@ namespace IO.Ably.Realtime.Workflow
             return message;
         }
     }
-
 
     internal class SetFailedStateCommand : RealtimeCommand
     {
@@ -291,12 +290,13 @@ namespace IO.Ably.Realtime.Workflow
 
         public static RetryAuthCommand Create(bool updateState) => new RetryAuthCommand(null, updateState);
 
-        protected override string ExplainData() => "UpdatedState: " + UpdateState + ((Error != null) ? " " + Error.ToString() : "");
+        protected override string ExplainData() => "UpdatedState: " + UpdateState + ((Error != null) ? " " + Error : string.Empty);
     }
 
     internal class SendMessageCommand : RealtimeCommand
     {
         public ProtocolMessage ProtocolMessage { get; }
+
         public Action<bool, ErrorInfo> Callback { get; }
 
         public bool Force { get; }

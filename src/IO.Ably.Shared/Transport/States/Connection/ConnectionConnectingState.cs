@@ -84,7 +84,7 @@ namespace IO.Ably.Transport.States.Connection
                             return true;
                         }
 
-                        if (message.Error?.IsTokenError == true && !shouldRenew) //Always true. Cleanup!
+                        if (message.Error?.IsTokenError == true)
                         {
                             TransitionState(SetDisconnectedStateCommand.Create(message.Error));
                             return true;

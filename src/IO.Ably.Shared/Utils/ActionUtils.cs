@@ -32,14 +32,13 @@ namespace IO.Ably.Utils
                             }
                             catch (Exception)
                             {
-
+                                // at least we tried to get the caller
                             }
                         }
 
-
                         foreach (var e in exc.FlattenAggregate())
                         {
-                            logger.Warning($"Ignoring {e.GetType().FullName} exception thrown from an action called by {caller ?? String.Empty}.");
+                            logger.Warning($"Ignoring {e.GetType().FullName} exception thrown from an action called by {caller ?? string.Empty}.");
                         }
                     }
                 }

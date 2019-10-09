@@ -93,7 +93,7 @@ namespace IO.Ably
         /// Merges two AuthOptions objects.
         /// </summary>
         /// <param name="defaults">second AuthOptions object.</param>
-        /// <returns>merged AuthOptions object</returns>
+        /// <returns>merged AuthOptions object.</returns>
         public AuthOptions Merge(AuthOptions defaults)
         {
             if (AuthCallback == null)

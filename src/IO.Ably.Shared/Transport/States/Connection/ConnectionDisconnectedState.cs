@@ -1,17 +1,13 @@
-﻿using System.Threading.Tasks;
-using IO.Ably;
+﻿using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
-using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
-    using Realtime;
-
     internal class ConnectionDisconnectedState : ConnectionStateBase
     {
         private readonly ICountdownTimer _timer;
 
-        public new ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonDisconnected;
+        public override ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonDisconnected;
 
         public ConnectionDisconnectedState(IConnectionContext context, ILogger logger)
             : this(context, null, new CountdownTimer("Disconnected state timer", logger), logger)
@@ -33,7 +29,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public bool RetryInstantly { get; set; }
 
-        public override ConnectionState State => Realtime.ConnectionState.Disconnected;
+        public override ConnectionState State => ConnectionState.Disconnected;
 
         public override bool CanQueue => true;
 

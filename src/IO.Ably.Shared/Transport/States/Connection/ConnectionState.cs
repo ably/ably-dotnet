@@ -35,7 +35,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public virtual bool IsUpdate { get; set; }
 
-        public ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonUnknown;
+        public virtual ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonUnknown;
 
         public virtual RealtimeCommand Connect()
         {

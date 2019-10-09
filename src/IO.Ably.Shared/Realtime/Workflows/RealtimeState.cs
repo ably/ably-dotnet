@@ -21,6 +21,7 @@ namespace IO.Ably.Realtime.Workflow
             internal List<string> FallbackHosts;
 
             public Guid ConnectionId { get; } = Guid.NewGuid(); // Used to identify the connection for Os Event subscribers
+
             public DateTimeOffset? ConfirmedAliveAt { get; set; }
 
             /// <summary>
@@ -76,7 +77,6 @@ namespace IO.Ably.Realtime.Workflow
                 var connectionEvent = oldState == newState ? ConnectionEvent.Update : newState.ToConnectionEvent();
                 return new ConnectionStateChange(connectionEvent, oldState, newState, state.RetryIn, ErrorReason);
             }
-
 
             public bool HasConnectionStateTtlPassed(Func<DateTimeOffset> now)
             {
@@ -140,9 +140,9 @@ namespace IO.Ably.Realtime.Workflow
         public void AddAckMessage(ProtocolMessage message, Action<bool, ErrorInfo> callback)
         => WaitingForAck.Add(new MessageAndCallback(message, callback));
 
-        public RealtimeState() : this(null)
+        public RealtimeState()
+            : this(null)
         {
-
         }
 
         public RealtimeState(List<string> fallbackHosts, Func<DateTimeOffset> now = null)

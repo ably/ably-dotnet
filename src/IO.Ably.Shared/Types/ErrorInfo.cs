@@ -110,6 +110,7 @@ namespace IO.Ably
             {
                 Href = href;
             }
+
             Cause = cause;
             InnerException = innerException;
         }

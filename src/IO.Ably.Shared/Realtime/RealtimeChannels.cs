@@ -24,7 +24,7 @@ namespace IO.Ably.Realtime
             connection.InternalStateChanged += ConnectionStateChange;
         }
 
-        private void ConnectionStateChange(object _, ConnectionStateChange stateChange)
+        private void ConnectionStateChange(object sender, ConnectionStateChange stateChange)
         {
             foreach (var channel in Channels.Values)
             {
