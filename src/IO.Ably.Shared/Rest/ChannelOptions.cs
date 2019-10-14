@@ -3,17 +3,35 @@ using IO.Ably.Encryption;
 
 namespace IO.Ably
 {
+    /// <summary>
+    /// Channel options used for initialising channels.
+    /// </summary>
     public class ChannelOptions
     {
         internal ILogger Logger { get; set; }
 
+        /// <summary>
+        /// Indicates whether the channel is encrypted.
+        /// </summary>
         public bool Encrypted { get; private set; }
 
+        /// <summary>
+        /// If Encrypted it provides the <see cref="IO.Ably.CipherParams"/>.
+        /// </summary>
         public CipherParams CipherParams { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChannelOptions"/> class.
+        /// </summary>
+        /// <param name="params"><see cref="IO.Ably.CipherParams"/>.</param>
         public ChannelOptions(CipherParams @params)
             : this(DefaultLogger.LoggerInstance, true, @params) { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChannelOptions"/> class.
+        /// </summary>
+        /// <param name="encrypted">whether it is encrypted.</param>
+        /// <param name="params">optional, <see cref="IO.Ably.CipherParams"/>.</param>
         public ChannelOptions(bool encrypted = false, CipherParams @params = null)
             : this(null, encrypted, @params) { }
 
@@ -24,6 +42,10 @@ namespace IO.Ably
             CipherParams = @params ?? Crypto.GetDefaultParams();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChannelOptions"/> class.
+        /// </summary>
+        /// <param name="key">cipher key.</param>
         public ChannelOptions(byte[] key)
         {
             Logger = DefaultLogger.LoggerInstance;
@@ -36,6 +58,7 @@ namespace IO.Ably
             return Encrypted == other.Encrypted && Equals(CipherParams, other.CipherParams);
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
@@ -56,6 +79,7 @@ namespace IO.Ably
             return Equals((ChannelOptions)obj);
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             unchecked

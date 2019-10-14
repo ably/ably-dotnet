@@ -31,7 +31,7 @@ namespace IO.Ably.Tests
 
         internal static async Task<bool> WaitSync(this Presence presence, TimeSpan? waitSpan = null)
         {
-            TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
+            TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
             var inProgress = presence.IsSyncInProgress;
             if (inProgress == false)
             {
@@ -41,7 +41,7 @@ namespace IO.Ably.Tests
             void OnPresenceOnSyncCompleted(object sender, EventArgs e)
             {
                 presence.SyncCompleted -= OnPresenceOnSyncCompleted;
-                _taskCompletionSource.SetResult(true);
+                taskCompletionSource.SetResult(true);
             }
 
             presence.SyncCompleted += OnPresenceOnSyncCompleted;
@@ -50,7 +50,7 @@ namespace IO.Ably.Tests
 
             // Do some waiting. Either the sync will complete or the timeout will finish.
             // if it is the timeout first then we throw an exception. This way we do go down a rabbit hole
-            var firstTask = await Task.WhenAny(waitTask, _taskCompletionSource.Task);
+            var firstTask = await Task.WhenAny(waitTask, taskCompletionSource.Task);
             if (waitTask == firstTask)
             {
                 throw new Exception("Waitsync timed out after: " + timeout.TotalSeconds + " seconds");
@@ -58,6 +58,5 @@ namespace IO.Ably.Tests
 
             return true;
         }
-
     }
 }

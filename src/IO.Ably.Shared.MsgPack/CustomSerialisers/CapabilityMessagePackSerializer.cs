@@ -3,12 +3,14 @@ using MsgPack.Serialization;
 
 namespace IO.Ably.CustomSerialisers
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "Internal serializers")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "CS1591:Missing XML comment for publicly visible type or member", Justification = "Internal serializers")]
+#pragma warning disable SA1600 // Elements should be documented
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class CapabilityMessagePackSerializer : MessagePackSerializer<Capability>
     {
         public CapabilityMessagePackSerializer(SerializationContext ownerContext)
-            : base(ownerContext) { }
+            : base(ownerContext)
+        {
+        }
 
         protected override void PackToCore(Packer packer, Capability objectTree)
         {
@@ -26,4 +28,6 @@ namespace IO.Ably.CustomSerialisers
             return new Capability();
         }
     }
+#pragma warning restore SA1600 // Elements should be documented
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

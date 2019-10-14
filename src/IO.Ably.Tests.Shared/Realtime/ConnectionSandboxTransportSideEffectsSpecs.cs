@@ -116,7 +116,7 @@ namespace IO.Ably.Tests.Realtime
         }
 
         public ConnectionSandboxTransportSideEffectsSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
-            : base((AblySandboxFixture) fixture, (ITestOutputHelper) output)
+            : base(fixture, output)
         {
         }
     }

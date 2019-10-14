@@ -4,13 +4,29 @@ using System.Linq;
 
 namespace IO.Ably
 {
+    /// <summary>
+    /// Enumerable extension methods.
+    /// </summary>
     public static class EnumerableExtensions
     {
+        /// <summary>
+        /// Suffles the values of a collection.
+        /// </summary>
+        /// <typeparam name="T">type.</typeparam>
+        /// <param name="source">source collection.</param>
+        /// <returns>returns a shuffled collection.</returns>
         public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source)
         {
             return source.Shuffle(new Random());
         }
 
+        /// <summary>
+        /// Suffles the values of a collection.
+        /// </summary>
+        /// <typeparam name="T">type.</typeparam>
+        /// <param name="source">source collection.</param>
+        /// <param name="rng">random seed.</param>
+        /// <returns>returns a shuffled collection.</returns>
         public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source, Random rng)
         {
             if (source == null)

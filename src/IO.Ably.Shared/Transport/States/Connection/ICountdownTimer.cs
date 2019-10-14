@@ -5,12 +5,29 @@ using IO.Ably;
 
 namespace IO.Ably.Transport.States.Connection
 {
+    /// <summary>
+    /// Internal interface used for countdown timer.
+    /// </summary>
     public interface ICountdownTimer
     {
+        /// <summary>
+        /// Starts a timer.
+        /// </summary>
+        /// <param name="delay">when to fire.</param>
+        /// <param name="onTimeOut">action to execute.</param>
         void Start(TimeSpan delay, Action onTimeOut);
 
+        /// <summary>
+        /// Starts a timer with async onTimeOut method.
+        /// </summary>
+        /// <param name="delay">when to fire.</param>
+        /// <param name="onTimeOut">async action to execute.</param>
         void StartAsync(TimeSpan delay, Func<Task> onTimeOut);
 
+        /// <summary>
+        /// Aborts the timer.
+        /// </summary>
+        /// <param name="trigger">whether to trigger the action. Default: false.</param>
         void Abort(bool trigger = false);
     }
 

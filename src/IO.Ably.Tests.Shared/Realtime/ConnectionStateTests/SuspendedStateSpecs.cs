@@ -39,7 +39,6 @@ namespace IO.Ably.Tests
             assert?.Invoke(lastCommand as T);
         }
 
-
         [Fact]
         public void ShouldHaveSuspendedState()
         {

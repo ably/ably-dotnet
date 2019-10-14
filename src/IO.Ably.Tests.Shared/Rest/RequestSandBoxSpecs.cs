@@ -99,7 +99,7 @@ namespace IO.Ably.Tests
             var testParams = new Dictionary<string, string> { { "testParams", "testParamValue" } };
             var testHeaders = new Dictionary<string, string> { { "X-Test-Header", "testHeaderValue" } };
 
-            var paginatedResponse = await client.Request(HttpMethod.Get, _channelPath, testParams, null, testHeaders);
+            var paginatedResponse = await client.Request(HttpMethod.Get.Method, _channelPath, testParams, null, testHeaders);
 
             _lastRequest.Headers.Should().ContainKey("Authorization");
             _lastRequest.Headers.Should().ContainKey("X-Test-Header");
@@ -284,7 +284,7 @@ namespace IO.Ably.Tests
             }));
 
             client.HttpClient.CustomHost = "echo.ably.io/respondwith?status=400";
-            var response = await client.Request(HttpMethod.Post, "/");
+            var response = await client.Request(HttpMethod.Post.Method, "/");
             response.Success.Should().BeFalse();
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 

@@ -13,6 +13,7 @@ namespace IO.Ably.Tests.Realtime
     public class ConnectionAttemptsInfoSpecs : MockHttpRealtimeSpecs
     {
         private ConnectionAttemptsInfo Info => _state.AttemptsInfo;
+
         private RealtimeState _state = new RealtimeState();
 
         [Fact]

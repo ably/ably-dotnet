@@ -20,11 +20,11 @@ namespace IO.Ably.Tests.Realtime
         public async Task WhemMessageReceived_ShouldPassTheMessageThroughTheAckProcessor()
         {
             var message = new ProtocolMessage(ProtocolMessage.MessageAction.Ack);
-            //_realtime.ConnectionManager.OnTransportMessageReceived(message);
+            // _realtime.ConnectionManager.OnTransportMessageReceived(message);
 
             await Task.Delay(100); // Let the execution complete
 
-//            _ackProcessor.OnMessageReceivedCalled.Should().BeTrue();
+            // _ackProcessor.OnMessageReceivedCalled.Should().BeTrue();
         }
 
         public AckNackSpecs(ITestOutputHelper output)

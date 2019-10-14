@@ -36,7 +36,6 @@ namespace IO.Ably.Tests
             return GetRealtimeClient(clientOptions);
         }
 
-
         internal virtual AblyRealtime GetRealtimeClient(ClientOptions options = null, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
         {
             var clientOptions = options ?? new ClientOptions(ValidKey);
@@ -82,7 +81,7 @@ namespace IO.Ably.Tests
         protected ProtocolMessage ConnectedProtocolMessage =>
             new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
             {
-                ConnectionDetails = new ConnectionDetails() {ConnectionKey = "connectionKey"},
+                ConnectionDetails = new ConnectionDetails() { ConnectionKey = "connectionKey" },
                 ConnectionId = "1",
                 ConnectionSerial = 100
             };

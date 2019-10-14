@@ -68,69 +68,49 @@ namespace IO.Ably
         /// </summary>
         public AblyRest RestClient { get; }
 
-        /// <summary>
-        /// Gets the initialised Auth.
-        /// </summary>
+        /// <inheritdoc/>
         public IAblyAuth Auth => RestClient.AblyAuth;
 
-        /// <summary>
-        /// Current client id.
-        /// </summary>
+        /// <inheritdoc/>
         public string ClientId => Auth.ClientId;
 
         internal ClientOptions Options => RestClient.Options;
 
         internal ConnectionManager ConnectionManager => Connection.ConnectionManager;
 
-        /// <summary>The collection of channels instanced, indexed by channel name.</summary>
+        /// <inheritdoc/>
         public RealtimeChannels Channels { get; private set; }
 
-        /// <summary>A reference to the connection object for this library instance.</summary>
+        /// <inheritdoc/>
         public Connection Connection { get; }
 
         internal RealtimeState State { get; }
 
-        /// <summary>
-        /// Convenience method to get Stats with default parameters.
-        /// </summary>
-        /// <returns>returns a PaginatedResult of Stats.</returns>
+        /// <inheritdoc/>
         public Task<PaginatedResult<Stats>> StatsAsync()
         {
             return RestClient.StatsAsync();
         }
 
-        /// <summary>
-        /// Convenience method to get Stats by passing <see cref="StatsRequestParams"/>.
-        /// </summary>
-        /// <param name="query"><see cref="StatsRequestParams"/>.</param>
-        /// <returns>returns a PaginatedResult of Stats.</returns>
+        /// <inheritdoc/>
         public Task<PaginatedResult<Stats>> StatsAsync(StatsRequestParams query)
         {
             return RestClient.StatsAsync(query);
         }
 
-        /// <summary>
-        /// Sync version of <see cref="StatsAsync()"/>.
-        /// </summary>
-        /// <returns>returns a PaginatedResult of Stats.</returns>
+        /// <inheritdoc/>
         public PaginatedResult<Stats> Stats()
         {
             return RestClient.Stats();
         }
 
-        /// <summary>
-        /// Sync version of <see cref="StatsAsync(StatsRequestParams)"/>.
-        /// </summary>
-        /// <param name="query"><see cref="StatsRequestParams"/>.</param>
-        /// <returns>returns a PaginatedResult of Stats.</returns>
+        /// <inheritdoc/>
         public PaginatedResult<Stats> Stats(StatsRequestParams query)
         {
             return RestClient.Stats(query);
         }
 
-        /// <summary>
-        /// Initiate a connection.
-        /// </summary>
+        /// <inheritdoc/>
         public void Connect()
         {
             if (Disposed)
@@ -141,10 +121,7 @@ namespace IO.Ably
             Connection.Connect();
         }
 
-        /// <summary>
-        ///     This simply calls connection.close. Causes the connection to close, entering the closed state. Once
-        ///     closed, the library will not attempt to re-establish the connection without a call to connect().
-        /// </summary>
+        /// <inheritdoc/>
         public void Close()
         {
             if (Disposed)
@@ -155,10 +132,7 @@ namespace IO.Ably
             Connection.Close();
         }
 
-        /// <summary>
-        /// Retrieves the ably service time.
-        /// </summary>
-        /// <returns>returns current server time as DateTimeOffset.</returns>
+        /// <inheritdoc/>
         public Task<DateTimeOffset> TimeAsync()
         {
             return RestClient.TimeAsync();

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace IO.Ably.Rest
@@ -10,16 +9,20 @@ namespace IO.Ably.Rest
     /// The Ably Realtime service organises the traffic within any application into named channels.
     /// Channels are the "unit" of message distribution; clients attach to channels to subscribe to messages,
     /// and every message broadcast by the service is associated with a unique channel.
-    /// A channel cannot be instantiated but needs to be created using the AblyRest.Channels.Get("channelname")
+    /// A channel cannot be instantiated but needs to be created using the AblyRest.Channels.Get("channelname").
     /// </summary>
     public class RestChannel : IRestChannel, IPresence
     {
         private const int IdempotentGeneratedIdLength = 9;
 
+        /// <inheritdoc/>
         public string Name { get; private set; }
 
         private readonly AblyRest _ablyRest;
 
+        /// <summary>
+        /// Channel options of this channel.
+        /// </summary>
         public ChannelOptions Options
         {
             get => _options;
@@ -37,12 +40,7 @@ namespace IO.Ably.Rest
             _basePath = $"/channels/{name.EncodeUriPart()}";
         }
 
-        /// <summary>
-        /// Publish a message to the channel
-        /// </summary>
-        /// <param name="name">The event name of the message to publish</param>
-        /// <param name="data">The message payload. Allowed payloads are string, objects and byte[]</param>
-        /// <param name="clientId">Explicit message clientId</param>
+        /// <inheritdoc/>
         public Task PublishAsync(string name, object data, string clientId = null)
         {
             var request = _ablyRest.CreatePostRequest(_basePath + "/messages", Options);
@@ -51,15 +49,13 @@ namespace IO.Ably.Rest
             return _ablyRest.ExecuteRequest(request);
         }
 
+        /// <inheritdoc/>
         public Task PublishAsync(Message message)
         {
             return PublishAsync(new[] { message });
         }
 
-        /// <summary>
-        /// Publish a list of messages to the channel
-        /// </summary>
-        /// <param name="messages">a list of messages</param>
+        /// <inheritdoc/>
         public Task PublishAsync(IEnumerable<Message> messages)
         {
             var result = _ablyRest.AblyAuth.ValidateClientIds(messages);
@@ -94,12 +90,10 @@ namespace IO.Ably.Rest
             return _ablyRest.ExecuteRequest(request);
         }
 
+        /// <inheritdoc/>
         public IPresence Presence => this;
 
-        /// <summary>
-        /// Obtain the set of members currently present for a channel
-        /// </summary>
-        /// <returns><see cref="PaginatedResult{T}"/> of the PresenseMessages</returns>
+        /// <inheritdoc/>
         Task<PaginatedResult<PresenceMessage>> IPresence.GetAsync(int? limit, string clientId, string connectionId)
         {
             if (limit.HasValue && (limit < 0 || limit > 1000))
@@ -125,6 +119,7 @@ namespace IO.Ably.Rest
             return _ablyRest.ExecutePaginatedRequest(request, Presence.GetAsync);
         }
 
+        /// <inheritdoc/>
         Task<PaginatedResult<PresenceMessage>> IPresence.GetAsync(PaginatedRequestParams query)
         {
             if (query == null)
@@ -140,19 +135,13 @@ namespace IO.Ably.Rest
             return _ablyRest.ExecutePaginatedRequest(request, Presence.GetAsync);
         }
 
-        /// <summary>
-        /// Get the presence messages history for the channel
-        /// </summary>
-        /// <returns><see cref="PaginatedResult{T}"/></returns>
+        /// <inheritdoc/>
         Task<PaginatedResult<PresenceMessage>> IPresence.HistoryAsync()
         {
             return Presence.HistoryAsync(new PaginatedRequestParams());
         }
 
-        /// <summary>
-        /// Get the presence messages history for the channel by specifying a query
-        /// </summary>
-        /// <returns><see cref="PaginatedResult{T}"/></returns>
+        /// <inheritdoc/>
         Task<PaginatedResult<PresenceMessage>> IPresence.HistoryAsync(PaginatedRequestParams query)
         {
             query = query ?? new PaginatedRequestParams();
@@ -164,20 +153,13 @@ namespace IO.Ably.Rest
             return _ablyRest.ExecutePaginatedRequest(request, Presence.HistoryAsync);
         }
 
-        /// <summary>
-        /// Return the message history of the channel
-        /// </summary>
-        /// <returns><see cref="PaginatedResult{T}"/> of Messages</returns>
+        /// <inheritdoc/>
         public Task<PaginatedResult<Message>> HistoryAsync()
         {
             return HistoryAsync(new PaginatedRequestParams());
         }
 
-        /// <summary>
-        /// Return the message history of the channel
-        /// </summary>
-        /// <param name="query"><see cref="PaginatedRequestParams"/></param>
-        /// <returns><see cref="PaginatedResult{T}"/> of Messages</returns>
+        /// <inheritdoc/>
         public Task<PaginatedResult<Message>> HistoryAsync(PaginatedRequestParams query)
         {
             query = query ?? new PaginatedRequestParams();
@@ -191,26 +173,31 @@ namespace IO.Ably.Rest
             return _ablyRest.ExecutePaginatedRequest(request, HistoryAsync);
         }
 
+        /// <inheritdoc/>
         public void Publish(string name, object data, string clientId = null)
         {
             AsyncHelper.RunSync(() => PublishAsync(name, data, clientId));
         }
 
+        /// <inheritdoc/>
         public void Publish(Message message)
         {
             AsyncHelper.RunSync(() => PublishAsync(message));
         }
 
+        /// <inheritdoc/>
         public void Publish(IEnumerable<Message> messages)
         {
             AsyncHelper.RunSync(() => PublishAsync(messages));
         }
 
+        /// <inheritdoc/>
         public PaginatedResult<Message> History()
         {
             return AsyncHelper.RunSync(HistoryAsync);
         }
 
+        /// <inheritdoc/>
         public PaginatedResult<Message> History(PaginatedRequestParams query)
         {
             return AsyncHelper.RunSync(() => HistoryAsync(query));

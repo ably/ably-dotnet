@@ -30,7 +30,7 @@ namespace IO.Ably.Tests.Infrastructure
             return channelAwaiter.WaitAsync();
         }
 
-        public static void ExecuteCommand(this IRealtimeClient client, RealtimeCommand command)
+        internal static void ExecuteCommand(this IRealtimeClient client, RealtimeCommand command)
         {
             ((AblyRealtime)client).Workflow.QueueCommand(command);
         }

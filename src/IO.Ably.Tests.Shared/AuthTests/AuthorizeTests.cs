@@ -12,7 +12,6 @@ namespace IO.Ably.Tests.AuthTests
     [Collection("UnitTests")]
     public class ServerTimeTests : AuthorizationTests
     {
-
         [Fact]
         [Trait("spec", "RSA10k")]
         public async Task Authorize_WillObtainServerTimeAndPersistTheOffsetFromTheLocalClock()
@@ -36,7 +35,7 @@ namespace IO.Ably.Tests.AuthTests
             serverTimeCalled.Should().BeTrue();
             testAblyAuth.GetServerTimeOffset().Should().HaveValue();
             testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(await testAblyAuth.GetServerTime(), precision: 1000); // Allow 1s clock skew
-            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(30), precision: 1000); //Allow 1s clock skew
+            testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(30), precision: 1000); // Allow 1s clock skew
         }
 
         [Fact]
@@ -128,7 +127,6 @@ namespace IO.Ably.Tests.AuthTests
             testAblyAuth.Options.QueryTime = true;
             await testAblyAuth.AuthorizeAsync(tokenParams);
 
-
             // intercept the (mocked) HttpRequest so we can get a reference to the AblyRequest
             TokenRequest tokenRequest = null;
             var exFunc = client.ExecuteHttpRequest;
@@ -194,7 +192,8 @@ namespace IO.Ably.Tests.AuthTests
             testAblyAuth.GetServerTimeOffset()?.Should().BeCloseTo(DateTimeOffset.UtcNow.AddMinutes(30), 1000);
         }
 
-        public ServerTimeTests(ITestOutputHelper output) : base(output)
+        public ServerTimeTests(ITestOutputHelper output)
+            : base(output)
         {
         }
     }
@@ -323,9 +322,6 @@ namespace IO.Ably.Tests.AuthTests
             testAblyAuth.LastRequestAuthOptions.Should().BeSameAs(customAuthOptions);
         }
 
-
-
-
         [Fact]
         [Trait("spec", "RSA10l")]
         public async Task Authorize_RestClientAuthoriseMethodsShouldBeMarkedObsoleteAndLogADeprecationWarning()
@@ -403,8 +399,6 @@ namespace IO.Ably.Tests.AuthTests
             serverTimeCalled.Should().BeTrue();
             exception.Should().NotBeNull();
         }
-
-
 
         public AuthorizeTests(ITestOutputHelper helper)
             : base(helper) { }

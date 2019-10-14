@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace IO.Ably.Types
 {
     /// <summary>
-    /// AuthDetails is a type used with an AUTH protocol messages to send authentication details
+    /// AuthDetails is a type used with an AUTH protocol messages to send authentication details.
     /// </summary>
     public class AuthDetails
     {

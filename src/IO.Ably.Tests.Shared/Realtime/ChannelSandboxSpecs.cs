@@ -339,7 +339,8 @@ namespace IO.Ably.Tests.Realtime
         public async Task TransientPublishing_WhenNotConnected_ShouldPublishWithoutAttemptingAttach(Protocol protocol)
         {
             var channelName = "RTL6c2".AddRandomSuffix();
-            var pubClient = await GetRealtimeClient(protocol,
+            var pubClient = await GetRealtimeClient(
+                                protocol,
                                 (options, settings) => { options.AutoConnect = false; });
 
             var subClient = await GetRealtimeClient(protocol);
@@ -379,7 +380,8 @@ namespace IO.Ably.Tests.Realtime
         {
             var channelName = "RTL6c4".AddRandomSuffix();
 
-            var pubClient = await GetRealtimeClient(protocol,
+            var pubClient = await GetRealtimeClient(
+                                protocol,
                                 (options, settings) =>
                                     {
                                         options.Key = "not:valid.key";
@@ -394,7 +396,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 pubChannel.Publish("foo", "bar");
             }
-            catch (AblyException e)
+            catch (AblyException)
             {
                 expectedError = true;
             }
@@ -425,7 +427,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 pubChannel.Publish("foo", "bar");
             }
-            catch (AblyException e)
+            catch
             {
                 expectedError = true;
             }
@@ -502,7 +504,9 @@ namespace IO.Ably.Tests.Realtime
             });
 
             await channel.PublishAsync(new Message("test", "withClientId"));
-            await Task.Delay(1000);
+
+            await client.ProcessCommands();
+
             messagesReceived.Should().BeGreaterThan(0);
             receivedClienId.Should().Be(clientId);
         }
@@ -527,7 +531,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             await channel.PublishAsync(new Message("test", "withClientId"));
-            await Task.Delay(100);
+            await client.ProcessCommands();
             messageReceived.Should().BeTrue();
         }
 
@@ -654,7 +658,8 @@ namespace IO.Ably.Tests.Realtime
             // Send a followup message
             var followupMessage = await channel.PublishAsync("followup", "message");
             followupMessage.IsSuccess.Should().BeTrue();
-            await Task.Delay(100);
+            await realtimeClient.ProcessCommands();
+
             messageReceived.Should().Be(1);
         }
 
@@ -853,7 +858,7 @@ namespace IO.Ably.Tests.Realtime
             var channel = client.Channels.Get("test".AddRandomSuffix());
             var tsc = new TaskCompletionAwaiter(5000);
 
-            channel.Once(ChannelEvent.Attached, async x =>
+            channel.Once(ChannelEvent.Attached, x =>
             {
                 channel.Publish("wibble", "wobble", (success, info) =>
                 {

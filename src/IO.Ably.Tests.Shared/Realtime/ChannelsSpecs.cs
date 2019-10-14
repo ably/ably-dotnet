@@ -118,7 +118,7 @@ namespace IO.Ably.Tests.Realtime
             // Act
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, TestChannelName));
 
-            await Task.Delay(50);
+            await client.ProcessCommands();
 
             // Assert
             client.Channels.Should().BeEmpty();
@@ -262,7 +262,7 @@ namespace IO.Ably.Tests.Realtime
 
             channel.Publish(new Message(null, "This is a test", Guid.NewGuid().ToString()));
 
-            await Task.Delay(100);
+            await client.ProcessCommands();
 
             Assert.Equal(options.ToJson(), channel2.Options.ToJson());
             Assert.True(options.CipherParams.Equals(cipherParams));

@@ -30,8 +30,5 @@ namespace IO.Ably.Tests
         {
             return Task.FromResult(r);
         }
-
-
-
     }
 }

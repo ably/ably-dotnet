@@ -7,12 +7,18 @@ using Newtonsoft.Json;
 
 namespace IO.Ably
 {
+    /// <summary>
+    /// A class providing parameters of a token request.
+    /// </summary>
     public class TokenRequest
     {
         internal Func<DateTimeOffset> Now { get; set; }
 
         private DateTimeOffset? _timestamp;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TokenRequest"/> class.
+        /// </summary>
         public TokenRequest()
             : this(Defaults.NowFunc())
         { }
@@ -24,7 +30,7 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// The Id against which the request is made
+        /// The Id against which the request is made.
         /// </summary>
         [JsonProperty("keyName")]
         public string KeyName { get; set; }
@@ -33,7 +39,7 @@ namespace IO.Ably
         /// Requested time to live for the token. If the token request
         /// is successful, the TTL of the returned token will be less
         /// than or equal to this value depending on application settings
-        /// and the attributes of the issuing key
+        /// and the attributes of the issuing key.
         /// </summary>
         [JsonProperty("ttl")]
         public TimeSpan? Ttl { get; set; }
@@ -80,6 +86,10 @@ namespace IO.Ably
         [JsonProperty("nonce")]
         public string Nonce { get; set; }
 
+        /// <summary>
+        /// The Message Authentication Code for this request. See the Ably
+        /// Authentication documentation for more details.
+        /// </summary>
         [JsonProperty("mac")]
         public string Mac { get; set; }
 

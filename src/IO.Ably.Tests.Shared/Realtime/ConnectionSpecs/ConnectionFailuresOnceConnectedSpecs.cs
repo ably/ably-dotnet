@@ -202,7 +202,7 @@ namespace IO.Ably.Tests.Realtime
 
             List<ConnectionState> states = new List<ConnectionState>();
             var errors = new List<ErrorInfo>();
-            client.Connection.On ((args) =>
+            client.Connection.On((args) =>
             {
                 if (args.HasError)
                 {

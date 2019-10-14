@@ -65,6 +65,7 @@ namespace IO.Ably.Tests
             var realtime = client as AblyRealtime;
             var taskAwaiter = new TaskCompletionAwaiter();
 
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             Task.Run(async () =>
             {
                 while (true)
@@ -76,8 +77,8 @@ namespace IO.Ably.Tests
                         taskAwaiter.SetCompleted();
                     }
                 }
-
             });
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
             await taskAwaiter.Task;
         }

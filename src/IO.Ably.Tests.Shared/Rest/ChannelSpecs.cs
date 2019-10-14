@@ -300,7 +300,9 @@ namespace IO.Ably.Tests.Rest
                  * HistoryAsync (which accepts a PaginatedRequestParams instance as a parameter.
                  */
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 var query = new HistoryRequestParams();
+#pragma warning restore CS0618 // Type or member is obsolete
                 var now = DateTimeOffset.Now;
                 query.Start = now.AddHours(-1);
                 query.End = now;

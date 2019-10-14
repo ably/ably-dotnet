@@ -52,7 +52,6 @@ namespace IO.Ably.Tests.Realtime
             client.Connect();
 
             await WaitForState(client);
-            await Task.Delay(100);
 
             states.Should().BeEquivalentTo(new[] { ConnectionState.Connecting, ConnectionState.Connected });
             client.Connection.State.Should().Be(ConnectionState.Connected);
@@ -96,25 +95,8 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN8b")]
-        public async Task WithMultipleClients_ShouldHaveUniqueConnectionIdsProvidedByAbly(Protocol protocol)
-        {
-            var clients = new[]
-            {
-                await GetRealtimeClient(protocol),
-                await GetRealtimeClient(protocol),
-                await GetRealtimeClient(protocol)
-            };
-
-            await Task.Delay(5000);
-
-            var distinctConnectionIds = clients.Select(x => x.Connection.Id).Distinct();
-            distinctConnectionIds.Should().HaveCount(3);
-        }
-
-        [Theory]
-        [ProtocolData]
         [Trait("spec", "RTN9b")]
-        public async Task WithMultipleClients_ShouldHaveUniqueConnectionKeysProvidedByAbly(Protocol protocol)
+        public async Task WithMultipleClients_ShouldHaveUniqueConnectionKeysAndIdsProvidedByAbly(Protocol protocol)
         {
             var clients = new[]
             {
@@ -124,9 +106,11 @@ namespace IO.Ably.Tests.Realtime
             };
 
             // Wait for the clients to connect
-            await Task.Delay(TimeSpan.FromSeconds(6));
+            await Task.WhenAll(clients.Select(x => x.WaitForState(ConnectionState.Connected)));
 
-            var distinctConnectionIds = clients.Select(x => x.Connection.Key).Distinct();
+            var distinctConnectionKeys = clients.Select(x => x.Connection.Key).Distinct();
+            var distinctConnectionIds = clients.Select(x => x.Connection.Id).Distinct();
+            distinctConnectionKeys.Should().HaveCount(3);
             distinctConnectionIds.Should().HaveCount(3);
         }
 
@@ -278,7 +262,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             await client.WaitForState(ConnectionState.Connected);
-            client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create( new ErrorInfo("force disconnect")));
+            client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(new ErrorInfo("force disconnect")));
 
             await AssertsClosesAndDoesNotReconnect(client, ConnectionState.Disconnected);
 
@@ -889,7 +873,6 @@ namespace IO.Ably.Tests.Realtime
 
             await client.WaitForState(ConnectionState.Connected);
 
-
             var stateChanges = new List<ConnectionStateChange>();
             client.Connection.Once(ConnectionEvent.Disconnected, state =>
             {
@@ -1020,7 +1003,7 @@ namespace IO.Ably.Tests.Realtime
             channels[1].State.Should().Be(ChannelState.Initialized); // set attaching later
             channels[2].State.Should().Be(ChannelState.Suspended);
 
-            await WaitFor(60000, async done =>
+            await WaitFor(60000, done =>
             {
                 client.Connection.Once(ConnectionEvent.Disconnected, change2 =>
                 {
@@ -1140,7 +1123,6 @@ namespace IO.Ably.Tests.Realtime
             await Task.Delay(1000);
 
             await WaitForState(client, ConnectionState.Connected);
-            await Task.Delay(100);
 
             stateChanges.Should().Contain(x => x.Current == ChannelState.Detached);
         }

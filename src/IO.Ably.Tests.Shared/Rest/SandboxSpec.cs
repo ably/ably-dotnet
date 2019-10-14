@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
-using IO.Ably.Utils;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,7 +21,6 @@ namespace IO.Ably.Tests
         protected ManualResetEvent ResetEvent { get; }
 
         private List<AblyRealtime> RealtimeClients = new List<AblyRealtime>();
-
 
         public SandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
         {
@@ -77,7 +75,9 @@ namespace IO.Ably.Tests
             await TestHelpers.WaitFor(10000, 1, done);
         }
 
-        protected async Task AssertMultipleTimes(Func<Task> testAction, int maxNumberOfTimes,
+        protected async Task AssertMultipleTimes(
+            Func<Task> testAction,
+            int maxNumberOfTimes,
             TimeSpan durationBetweenAttempts)
         {
             for (int i = 0; i < maxNumberOfTimes; i++)
@@ -87,13 +87,12 @@ namespace IO.Ably.Tests
                     await testAction();
                     break; // If there were no exceptions then we are all good and can return
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     await Task.Delay(durationBetweenAttempts);
                 }
             }
         }
-
 
         protected async Task WaitFor(int timeoutMs, Action<Action> done, Action onFail = null)
         {
@@ -110,7 +109,6 @@ namespace IO.Ably.Tests
             await TestHelpers.WaitFor(10000, taskCount, done, onFail);
         }
 
-
         public class OutputLoggerSink : ILoggerSink
         {
             private readonly ITestOutputHelper _output;
@@ -122,14 +120,16 @@ namespace IO.Ably.Tests
 
             public void LogEvent(LogLevel level, string message)
             {
-                try {
+                try
+                {
                     Debug.WriteLine($"{level}: {message}");
                     _output.WriteLine($"{level}: {message}");
-                } catch (Exception ex) {
-                    //In rare events this happens and crashes the test runner
-                    Console.WriteLine($"{level}: {message}");
                 }
-
+                catch (Exception ex)
+                {
+                    // In rare events this happens and crashes the test runner
+                    Console.WriteLine($"{level}: {message}. Exception: {ex.Message}");
+                }
             }
         }
 
@@ -172,7 +172,6 @@ namespace IO.Ably.Tests
             {
                 try
                 {
-
                     client.Dispose();
                 }
                 catch (Exception ex)
@@ -180,6 +179,7 @@ namespace IO.Ably.Tests
                     Output?.WriteLine("Error disposing Client: " + ex.Message);
                 }
             }
+
             ResetEvent?.Dispose();
         }
     }

@@ -106,7 +106,7 @@ namespace IO.Ably.Tests.Realtime
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Auth));
 
-            await Task.Delay(1000);
+            await client.ProcessCommands();
 
             client.RestClient.AblyAuth.CurrentToken.Should().NotBe(initialToken);
             client.ClientId.Should().Be(initialClientId);
@@ -226,7 +226,7 @@ namespace IO.Ably.Tests.Realtime
                     ClientId = "RTN21",
                     ConnectionStateTtl = TimeSpan.MaxValue
                 },
-                Error = new ErrorInfo("fake-error")
+                Error = new ErrorInfo("fake-error"),
             });
 
             var didUpdate = await updateAwaiter.Task;
@@ -238,11 +238,7 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.ConnectionStateTtl.Should().Be(TimeSpan.MaxValue);
         }
 
-        public ConnectionSandboxOperatingSystemEventsForNetworkSpecs(
-            AblySandboxFixture fixture,
-            ITestOutputHelper output)
-            : base((AblySandboxFixture) fixture, (ITestOutputHelper) output)
-        {
-        }
+        public ConnectionSandboxOperatingSystemEventsForNetworkSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
+            : base(fixture, output) { }
     }
 }

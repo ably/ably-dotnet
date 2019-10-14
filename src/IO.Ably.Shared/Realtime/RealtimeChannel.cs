@@ -11,7 +11,6 @@ using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Realtime
 {
-    /// <summary>Implement realtime channel.</summary>
     internal class RealtimeChannel : EventEmitter<ChannelEvent, ChannelStateChange>, IRealtimeChannel, IDisposable
     {
         private readonly Handlers<Message> _handlers = new Handlers<Message>();
@@ -54,9 +53,6 @@ namespace IO.Ably.Realtime
 
         public string Name { get; }
 
-        /// <summary>
-        ///     Indicates the current state of this channel.
-        /// </summary>
         public ChannelState State
         {
             get => _state;
@@ -180,10 +176,6 @@ namespace IO.Ably.Realtime
             }
         }
 
-        /// <summary>
-        ///     Attach to this channel. Any resulting channel state change will be indicated to any registered
-        ///     <see cref="StateChanged" /> listener.
-        /// </summary>
         public void Attach(Action<bool, ErrorInfo> callback = null)
         {
             if (State == ChannelState.Attached)
@@ -236,10 +228,6 @@ namespace IO.Ably.Realtime
             SetChannelState(PreviousState, new ErrorInfo("Channel didn't detach within the default timeout", 50000));
         }
 
-        /// <summary>
-        ///     Detach from this channel. Any resulting channel state change will be indicated to any registered
-        ///     <see cref="StateChanged" /> listener.
-        /// </summary>
         public void Detach(Action<bool, ErrorInfo> callback = null)
         {
             if (State == ChannelState.Initialized || State == ChannelState.Detaching ||
@@ -304,11 +292,6 @@ namespace IO.Ably.Realtime
             _handlers.RemoveAll();
         }
 
-        /// <summary>Publish a single message on this channel based on a given event name and payload.</summary>
-        /// <param name="name">The event name.</param>
-        /// <param name="data">The payload of the message.</param>
-        /// <param name="callback">handler to be notified if the operation succeeded.</param>
-        /// <param name="clientId">optional, id of the client.</param>
         public void Publish(string name, object data, Action<bool, ErrorInfo> callback = null, string clientId = null)
         {
             PublishImpl(new[] { new Message(name, data, clientId) }, callback);

@@ -3,13 +3,16 @@ using System.Collections.Generic;
 
 namespace IO.Ably
 {
+    /// <summary>
+    /// A class providing parameters of a token request.
+    /// </summary>
     public class TokenParams
     {
         /// <summary>
         /// Requested time to live for the token. If the token request
         /// is successful, the TTL of the returned token will be less
         /// than or equal to this value depending on application settings
-        /// and the attributes of the issuing key
+        /// and the attributes of the issuing key.
         /// </summary>
         public TimeSpan? Ttl { get; set; }
 
@@ -39,6 +42,11 @@ namespace IO.Ably
         /// </summary>
         public string Nonce { get; set; }
 
+        /// <summary>
+        /// Merges two another instance of TokenParams with the current instance.
+        /// </summary>
+        /// <param name="otherParams">other instance.</param>
+        /// <returns>a new instance of merged token params.</returns>
         public TokenParams Merge(TokenParams otherParams)
         {
             if (otherParams == null)
@@ -55,6 +63,10 @@ namespace IO.Ably
             return result;
         }
 
+        /// <summary>
+        /// Creates a new instance of token params and populates all the current values.
+        /// </summary>
+        /// <returns>a new instance of token params.</returns>
         public TokenParams Clone()
         {
             var result = new TokenParams();
@@ -70,16 +82,27 @@ namespace IO.Ably
             return result;
         }
 
+        /// <summary>
+        /// Get a new instance of TokenParams and applies the
+        /// default Capability and Ttl.
+        /// </summary>
+        /// <returns>instance of TokenParams.</returns>
         public static TokenParams WithDefaultsApplied()
         {
             var tokenParams = new TokenParams
             {
                 Capability = Defaults.DefaultTokenCapability,
-                Ttl = Defaults.DefaultTokenTtl
+                Ttl = Defaults.DefaultTokenTtl,
             };
             return tokenParams;
         }
 
+        /// <summary>
+        /// Populates a dictionary of strings and optionally merges with
+        /// an existing one. Internal method.
+        /// </summary>
+        /// <param name="mergeWith">optional, dictionary of strings to merge with.</param>
+        /// <returns>returns a merge.</returns>
         public Dictionary<string, string> ToRequestParams(Dictionary<string, string> mergeWith = null)
         {
             var dictionary = new Dictionary<string, string>();

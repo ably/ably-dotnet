@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Pipes;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,11 +10,9 @@ using IO.Ably.Realtime.Workflow;
 using IO.Ably.Rest;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Transport;
-using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace IO.Ably.Tests.Realtime
 {
@@ -31,7 +27,6 @@ namespace IO.Ably.Tests.Realtime
                 : base(fixture, output)
             {
             }
-
 
             // TODO: Add tests to makes sure Presense messages id, timestamp and connectionId are set
             [Theory]
@@ -106,7 +101,6 @@ namespace IO.Ably.Tests.Realtime
 
                 var client = await GetRealtimeClient(protocol);
                 await client.WaitForState(ConnectionState.Connected);
-
 
                 var channel = client.Channels.Get(channelName);
                 await channel.AttachAsync();
@@ -203,7 +197,7 @@ namespace IO.Ably.Tests.Realtime
                     client.Workflow.QueueCommand(ProcessMessageCommand.Create(protocolMessage));
                 }
 
-                await Task.Delay(100); // We need to let go of the thread to allow time for the manager thread to process messages
+                await client.ProcessCommands();
 
                 int n = 0;
                 foreach (var testMsg in testData)
@@ -287,7 +281,7 @@ namespace IO.Ably.Tests.Realtime
                     transportFactory.OnTransportCreated = t => transport = t;
                     var clientA = await GetRealtimeClient(protocol, (options, settings) =>
                     {
-                        options.DefaultTokenParams = new TokenParams {Capability = capability, ClientId = "martin"};
+                        options.DefaultTokenParams = new TokenParams { Capability = capability, ClientId = "martin" };
                         options.TransportFactory = transportFactory;
                     });
                     await clientA.WaitForState(ConnectionState.Connected);
@@ -295,7 +289,8 @@ namespace IO.Ably.Tests.Realtime
                     return (clientA, clientA.RestClient, transport);
                 }
 
-                async Task<(IRealtimeChannel, IRestChannel)> GetChannelsAndEnsurePresenceSynced(IRealtimeClient rt,
+                async Task<(IRealtimeChannel, IRestChannel)> GetChannelsAndEnsurePresenceSynced(
+                    IRealtimeClient rt,
                     IRestClient rest)
                 {
                     var rtChannel = rt.Channels.Get(channelName);
@@ -340,7 +335,6 @@ namespace IO.Ably.Tests.Realtime
                         count++;
                     }
                 }
-
 
                 // arrange
                 var (realtimeClient, restClient, testTransport) = await InitiliseRealtimeAndConnect();
@@ -771,7 +765,7 @@ namespace IO.Ably.Tests.Realtime
                     Presence = TestPresence3(),
                 }));
 
-                await Task.Delay(100); // Allow time for the messages to be processed
+                await client.ProcessCommands();
 
                 var presence1 = await channel.Presence.GetAsync("1", false);
                 var presence2 = await channel.Presence.GetAsync("2", false);
@@ -1556,7 +1550,7 @@ namespace IO.Ably.Tests.Realtime
                     });
 
                     channel.State.Should().Be(ChannelState.Attached);
-                    states.Should().BeEquivalentTo(new[] {ConnectionState.Connecting, ConnectionState.Connected});
+                    states.Should().BeEquivalentTo(new[] { ConnectionState.Connecting, ConnectionState.Connected });
                     errInfo.Should().BeNull();
                     queueCounts[0].Should().Be(1);
                     queueCounts[1].Should().Be(0);
@@ -1674,7 +1668,9 @@ namespace IO.Ably.Tests.Realtime
                     client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(null));
                     await client.WaitForState(ConnectionState.Disconnected);
 
-                    await WaitForMultiple(2, partialDone =>
+                    await WaitForMultiple(
+                    2,
+                    partialDone =>
                     {
                         client.Connection.Once(ConnectionEvent.Connecting, change =>
                         {
@@ -1697,8 +1693,8 @@ namespace IO.Ably.Tests.Realtime
                             partialDone();
                         });
                         Output.WriteLine(client.GetCurrentState());
-
-                    }, onFail: () => Output.WriteLine(client.GetCurrentState()));
+                    },
+                    onFail: () => Output.WriteLine(client.GetCurrentState()));
 
                     queueCounts[0].Should().Be(2);
                     queueCounts[1].Should().Be(0);
@@ -1840,7 +1836,6 @@ namespace IO.Ably.Tests.Realtime
                     errCount.Should().Be(4);
 
                     client.Close();
-
                 }
 
                 [Theory]
@@ -1948,7 +1943,7 @@ namespace IO.Ably.Tests.Realtime
                         // simulate disconnect
                         ably.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(new ErrorInfo("Connection disconnected due to Operating system network going offline", 80017)));
 
-                        await Task.Delay(2000);
+                        await ably.ProcessCommands();
 
                         // simulate reconnect
                         ably.Workflow.QueueCommand(SetConnectingStateCommand.Create());

@@ -12,7 +12,6 @@ namespace IO.Ably.Tests
 {
     public class PresenceSpecs : MockHttpRestSpecs
     {
-
         [Fact]
         [Trait("spec", "RSP1")]
         [Trait("spec", "RSP3a")]

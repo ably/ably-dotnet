@@ -15,9 +15,7 @@ namespace IO.Ably.Realtime
         private readonly string _channelName;
         private readonly object _lock = new object();
 
-        /// <summary>
-        /// Exposed internally to allow for testing
-        /// </summary>
+        // Exposed internally to allow for testing.
         internal ConcurrentDictionary<string, PresenceMessage> Members => _members;
 
         private readonly ConcurrentDictionary<string, PresenceMessage> _members;

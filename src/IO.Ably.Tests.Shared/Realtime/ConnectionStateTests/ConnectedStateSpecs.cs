@@ -66,7 +66,6 @@ namespace IO.Ably.Tests
 
             // Assert
             result.Should().BeTrue();
-            //_context.ExecutedCommands.
             _context.ShouldQueueCommand<SetDisconnectedStateCommand>();
         }
 

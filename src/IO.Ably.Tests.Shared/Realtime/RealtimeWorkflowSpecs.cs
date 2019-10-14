@@ -10,6 +10,7 @@ using IO.Ably.Transport;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
+using static IO.Ably.Tests.SandboxSpecs;
 
 namespace IO.Ably.Tests.NETFramework.Realtime
 {
@@ -27,7 +28,8 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 ConnectionSerial = 100,
                 ConnectionDetails = new ConnectionDetails()
                 {
-                    ClientId = "client1", ConnectionKey = "validKey"
+                    ClientId = "client1",
+                    ConnectionKey = "validKey"
                 },
             };
             var client = GetRealtimeClient(options => options.AutoConnect = false);
@@ -51,12 +53,11 @@ namespace IO.Ably.Tests.NETFramework.Realtime
 
             client.ExecuteCommand(SetFailedStateCommand.Create(null));
 
-            await Task.Delay(100); // Wait for the command to be executed
+            await client.ProcessCommands();
 
             client.State.Connection.Key.Should().BeEmpty();
             client.State.Connection.Id.Should().BeEmpty();
         }
-
 
         public class ConnectingCommandSpecs : AblyRealtimeSpecs
         {
@@ -84,18 +85,27 @@ namespace IO.Ably.Tests.NETFramework.Realtime
             [Fact]
             public async Task WithInboundDisconnectedMessage_ShouldTrasnsitionToDisconnectedState()
             {
-                // Arrange
-                var client = GetRealtimeClient();
+                try
+                {
+                    Logger.LogLevel = LogLevel.Debug;
+                    Logger.LoggerSink = new OutputLoggerSink(Output);
+                    // Arrange
+                    var client = GetRealtimeClient();
+                    client.Connect();
 
-                await client.WaitForState(ConnectionState.Connecting);
-                var disconnectedMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected);
+                    await client.WaitForState(ConnectionState.Connecting);
+                    var disconnectedMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected);
 
-                // Act
-                client.ExecuteCommand(ProcessMessageCommand.Create(disconnectedMessage));
+                    // Act
+                    client.ExecuteCommand(ProcessMessageCommand.Create(disconnectedMessage));
 
-                await client.WaitForState(ConnectionState.Disconnected, TimeSpan.FromSeconds(1));
+                    await client.WaitForState(ConnectionState.Disconnected, TimeSpan.FromSeconds(5));
+                }
+                finally
+                {
+                    Logger.LogLevel = LogLevel.Warning;
+                }
             }
-
 
             [Fact]
             public async Task WhenDisconnectedWithFallback_ShouldRetryConnectionImmediately()
@@ -111,7 +121,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
 
                 // Assert
                 states.Should().HaveCount(2);
-                states.Should().BeEquivalentTo(new[] {ConnectionState.Disconnected, ConnectionState.Connecting});
+                states.Should().BeEquivalentTo(new[] { ConnectionState.Disconnected, ConnectionState.Connecting });
             }
 
             [Fact]
@@ -129,7 +139,8 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 LastCreatedTransport.Should().NotBeNull();
             }
 
-            public ConnectingCommandSpecs(ITestOutputHelper output) : base(output)
+            public ConnectingCommandSpecs(ITestOutputHelper output)
+                : base(output)
             {
             }
         }
@@ -152,7 +163,8 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 client.State.WaitingForAck.Should().BeEmpty();
             }
 
-            public SuspendedCommandSpecs(ITestOutputHelper output) : base(output)
+            public SuspendedCommandSpecs(ITestOutputHelper output)
+                : base(output)
             {
             }
         }
@@ -198,13 +210,11 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 LastCreatedTransport.LastMessageSend.Action.Should().Be(ProtocolMessage.MessageAction.Close);
             }
 
-            public ClosingCommandSpecs(ITestOutputHelper output) : base(output)
+            public ClosingCommandSpecs(ITestOutputHelper output)
+                : base(output)
             {
             }
         }
-
-
-
 
         public class SetFailedStateCommandSpecs : AblyRealtimeSpecs
         {
@@ -240,7 +250,8 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 client.State.WaitingForAck.Should().BeEmpty();
             }
 
-            public SetFailedStateCommandSpecs(ITestOutputHelper output) : base(output)
+            public SetFailedStateCommandSpecs(ITestOutputHelper output)
+                : base(output)
             {
             }
         }
@@ -263,7 +274,6 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 client.ConnectionManager.Transport.Should().BeNull();
             }
 
-
             [Fact]
             [Trait("spec", "RTN7c")]
             [Trait("sandboxTest", "needed")]
@@ -280,7 +290,8 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 client.State.WaitingForAck.Should().BeEmpty();
             }
 
-            public ClosedCommandSpecs(ITestOutputHelper output) : base(output)
+            public ClosedCommandSpecs(ITestOutputHelper output)
+                : base(output)
             {
             }
         }
@@ -315,9 +326,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 Assert.Equal(2, targetMessage3.MsgSerial);
             }
 
-
             // TODO: Move the test to the workflow tests for send message
-
             [Theory]
             [InlineData(ProtocolMessage.MessageAction.Ack)]
             [InlineData(ProtocolMessage.MessageAction.Attach)]
@@ -410,12 +419,10 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 // Act
                 client.ExecuteCommand(SendMessageCommand.Create(message, callback));
                 client.ExecuteCommand(ProcessMessageCommand.Create(
-                    new ProtocolMessage(ProtocolMessage.MessageAction.Ack) {MsgSerial = 0, Count = 1}
-                ));
+                    new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = 0, Count = 1 }));
                 client.ExecuteCommand(SendMessageCommand.Create(message, callback));
                 client.ExecuteCommand(ProcessMessageCommand.Create(
-                    new ProtocolMessage(ProtocolMessage.MessageAction.Ack) {MsgSerial = 1, Count = 1}
-                ));
+                    new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = 1, Count = 1 }));
 
                 await client.ProcessCommands();
 
@@ -453,7 +460,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                         }
                     };
 
-                var ackMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Ack) {MsgSerial = 0, Count = 3};
+                var ackMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Ack) { MsgSerial = 0, Count = 3 };
 
                 // Act
                 client.Workflow.QueueAck(message1, GetCallback(0));
@@ -483,10 +490,10 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 // Act
                 client.ExecuteCommand(SendMessageCommand.Create(message, callback));
                 client.ExecuteCommand(ProcessMessageCommand.Create(
-                    new ProtocolMessage(ProtocolMessage.MessageAction.Nack) {MsgSerial = 0, Count = 1}));
+                    new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 0, Count = 1 }));
                 client.ExecuteCommand(SendMessageCommand.Create(message, callback));
                 client.ExecuteCommand(ProcessMessageCommand.Create(
-                    new ProtocolMessage(ProtocolMessage.MessageAction.Nack) {MsgSerial = 1, Count = 1}));
+                    new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 1, Count = 1 }));
 
                 await client.ProcessCommands();
 
@@ -512,9 +519,8 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 client.ExecuteCommand(SendMessageCommand.Create(message, callback));
                 client.ExecuteCommand(SendMessageCommand.Create(message, callback));
 
-
                 client.ExecuteCommand(ProcessMessageCommand.Create(
-                    new ProtocolMessage(ProtocolMessage.MessageAction.Nack) {MsgSerial = 0, Count = 3, Error = error}));
+                    new ProtocolMessage(ProtocolMessage.MessageAction.Nack) { MsgSerial = 0, Count = 3, Error = error }));
 
                 await client.ProcessCommands();
 
@@ -530,7 +536,8 @@ namespace IO.Ably.Tests.NETFramework.Realtime
             }
         }
 
-        public RealtimeWorkflowSpecs(ITestOutputHelper output) : base(output)
+        public RealtimeWorkflowSpecs(ITestOutputHelper output)
+            : base(output)
         {
         }
     }

@@ -260,11 +260,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             stateChanges.Count(x => x.Current == ConnectionState.Connecting).Should().Be(numberOfAttemps);
         }
 
-        private new DateTimeOffset NowFunc()
-        {
-            return DateTimeOffset.UtcNow;
-        }
-
         [Retry(3)]
         [Trait("spec", "RTN14e")]
         public async Task WhenInSuspendedState_ShouldTryAndReconnectAfterSuspendRetryTimeoutIsReached()

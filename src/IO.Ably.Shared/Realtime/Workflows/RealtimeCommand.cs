@@ -2,7 +2,7 @@ using System;
 
 namespace IO.Ably.Realtime.Workflow
 {
-    public abstract class RealtimeCommand
+    internal abstract class RealtimeCommand
     {
         public Guid Id { get; private set; } = Guid.NewGuid();
 

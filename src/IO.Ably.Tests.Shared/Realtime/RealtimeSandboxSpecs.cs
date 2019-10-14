@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
@@ -83,7 +80,6 @@ namespace IO.Ably.Tests.Realtime
                 }
             });
 
-
             // AuthorizeAsync will not return until either a CONNECTED or ERROR response
             // (or timeout) is seen from Ably, so we do not need to use WaitForState() here
             await Assert.ThrowsAsync<AblyException>(() => client.Auth.AuthorizeAsync(new TokenParams { ClientId = invalidClientId }));
@@ -91,7 +87,7 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.State.Should().Be(ConnectionState.Failed);
         }
 
-        //TODO: Figure out which one is the right test
+        // TODO: Figure out which one is the right test
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTC8")]
@@ -115,7 +111,6 @@ namespace IO.Ably.Tests.Realtime
             client2.Close();
 
             await client2.WaitForState(ConnectionState.Closed);
-
         }
 
         [Theory]

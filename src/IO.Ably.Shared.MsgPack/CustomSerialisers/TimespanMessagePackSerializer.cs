@@ -4,8 +4,8 @@ using MsgPack.Serialization;
 
 namespace IO.Ably.CustomSerialisers
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "Internal serializers")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "CS1591:Missing XML comment for publicly visible type or member", Justification = "Internal serializers")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable SA1600 // Elements should be documented
     public class TimespanMessagePackSerializer : MessagePackSerializer<TimeSpan>
     {
         public TimespanMessagePackSerializer(SerializationContext ownerContext)
@@ -22,4 +22,6 @@ namespace IO.Ably.CustomSerialisers
             return TimeSpan.FromMilliseconds(data.AsInt64());
         }
     }
+#pragma warning restore SA1600 // Elements should be documented
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

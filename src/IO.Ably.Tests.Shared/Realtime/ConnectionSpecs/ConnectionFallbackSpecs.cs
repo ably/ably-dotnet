@@ -141,7 +141,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             var client = await GetConnectedClient(opts => opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10));
 
             List<ConnectionState> states = new List<ConnectionState>();
-            client.Connection.On ((args) =>
+            client.Connection.On((args) =>
             {
                 states.Add(args.Current);
             });

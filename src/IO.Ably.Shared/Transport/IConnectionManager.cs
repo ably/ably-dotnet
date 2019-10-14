@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Threading.Tasks;
 using IO.Ably.Realtime;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport
 {
-    public delegate void MessageReceivedDelegate(ProtocolMessage message);
-
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "No need to document internal interfaces.")]
     internal interface IConnectionManager
     {
         Connection Connection { get; }

@@ -336,7 +336,7 @@ namespace IO.Ably.Realtime.Workflow
         }
     }
 
-    public class HandleConnectingTokenErrorCommand : RealtimeCommand
+    internal class HandleConnectingTokenErrorCommand : RealtimeCommand
     {
         public ErrorInfo Error { get; }
 
@@ -353,7 +353,7 @@ namespace IO.Ably.Realtime.Workflow
         }
     }
 
-    public class HandleConnectingFailureCommand : RealtimeCommand
+    internal class HandleConnectingFailureCommand : RealtimeCommand
     {
         public ErrorInfo Error { get; }
 
@@ -377,7 +377,7 @@ namespace IO.Ably.Realtime.Workflow
         }
     }
 
-    public class HandleTrasportEventCommand : RealtimeCommand
+    internal class HandleTrasportEventCommand : RealtimeCommand
     {
         public TransportState TransportState { get; }
 

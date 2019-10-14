@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -41,6 +39,7 @@ namespace IO.Ably.Realtime.Workflow
             internal long MessageSerial { get; set; } = 0;
 
             /// <summary>
+            /// The current connection key.
             /// </summary>
             public string Key { get; set; }
 

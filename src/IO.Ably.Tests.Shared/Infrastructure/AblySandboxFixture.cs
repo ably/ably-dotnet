@@ -84,7 +84,7 @@ namespace IO.Ably.Tests
                     var result = await execute();
                     return result;
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     if (count > 1)
                     {
@@ -95,7 +95,6 @@ namespace IO.Ably.Tests
                 count++;
             }
         }
-
 
         public async Task SetupStats()
         {

@@ -56,6 +56,7 @@ namespace IO.Ably.Tests
         public ConnectionStateBase State { get; set; }
 
         public List<RealtimeCommand> ExecutedCommands = new List<RealtimeCommand>();
+
         public TransportState TransportState => Transport.State;
 
         public ITransport Transport { get; set; }
@@ -168,8 +169,6 @@ namespace IO.Ably.Tests
             ClearAckMessagesError = error;
         }
 
-
-
         public Task<bool> CanUseFallBackUrl(ErrorInfo error)
         {
             CanUseFallBackUrlCalled = true;
@@ -215,7 +214,6 @@ namespace IO.Ably.Tests
             lastCommand.Should().BeOfType<T>();
             commandCheck?.Invoke(lastCommand as T);
         }
-
 
         public void ShouldHaveNotChangedState()
         {

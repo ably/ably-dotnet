@@ -10,7 +10,7 @@ namespace IO.Ably.Tests
 {
     public class TaskUtilsTests
     {
-        class MockBagroundService
+        public class MockBagroundService
         {
             public static async Task FailingTask()
             {

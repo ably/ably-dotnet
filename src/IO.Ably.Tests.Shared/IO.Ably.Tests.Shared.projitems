@@ -59,7 +59,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\Utf8EncoderTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessagePack\SerializationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MsgPackMessageSerializerTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Realtime\AckProtocolTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelsSpecs.cs" />

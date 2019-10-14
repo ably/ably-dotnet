@@ -9,6 +9,9 @@ using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Realtime
 {
+    /// <summary>
+    /// Manages Realtime channels.
+    /// </summary>
     public class RealtimeChannels : IChannels<IRealtimeChannel>
     {
         internal ILogger Logger { get; }
@@ -39,11 +42,13 @@ namespace IO.Ably.Realtime
             }
         }
 
+        /// <inheritdoc/>
         public IRealtimeChannel Get(string name)
         {
             return Get(name, null);
         }
 
+        /// <inheritdoc/>
         public IRealtimeChannel Get(string name, ChannelOptions options)
         {
             // if the channel cannot be found
@@ -72,8 +77,10 @@ namespace IO.Ably.Realtime
             return result;
         }
 
+        /// <inheritdoc/>
         public IRealtimeChannel this[string name] => Get(name);
 
+        /// <inheritdoc/>
         public bool Release(string name)
         {
             if (Logger.IsDebug) { Logger.Debug($"Releasing channel #{name}"); }
@@ -86,7 +93,11 @@ namespace IO.Ably.Realtime
                     var detachedChannel = (RealtimeChannel)s;
                     if (args.Current == ChannelState.Detached || args.Current == ChannelState.Failed)
                     {
-                        if (Logger.IsDebug) { Logger.Debug($"Channel #{name} was removed from Channel list. State {args.Current}"); }
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug($"Channel #{name} was removed from Channel list. State {args.Current}");
+                        }
+
                         detachedChannel.InternalStateChanged -= eventHandler;
 
                         RealtimeChannel removedChannel;
@@ -97,7 +108,10 @@ namespace IO.Ably.Realtime
                     }
                     else
                     {
-                        if (Logger.IsDebug) { Logger.Debug($"Waiting to remove Channel #{name}. State {args.Current}"); }
+                        if (Logger.IsDebug)
+                        {
+                            Logger.Debug($"Waiting to remove Channel #{name}. State {args.Current}");
+                        }
                     }
                 };
 
@@ -109,6 +123,7 @@ namespace IO.Ably.Realtime
             return false;
         }
 
+        /// <inheritdoc/>
         public void ReleaseAll()
         {
             var channelList = Channels.Keys.ToArray();
@@ -118,16 +133,19 @@ namespace IO.Ably.Realtime
             }
         }
 
+        /// <inheritdoc/>
         public bool Exists(string name)
         {
             return Channels.ContainsKey(name);
         }
 
+        /// <inheritdoc/>
         IEnumerator<IRealtimeChannel> IEnumerable<IRealtimeChannel>.GetEnumerator()
         {
             return Channels.ToArray().Select(x => x.Value).GetEnumerator();
         }
 
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return Channels.ToArray().Select(x => x.Value).GetEnumerator();
