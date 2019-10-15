@@ -11,6 +11,7 @@ nuget Fake.DotNet.ILMerge
 #r "System.Xml.Linq.dll"
 // include Fake modules, see Fake modules section
 
+open Fake.Core.TargetOperators
 open Fake.Core.Operators
 open Fake.Core
 open Fake.IO.Globbing.Operators 
@@ -67,6 +68,10 @@ Target.create "NetStandard - Build" (fun _ ->
   DotNet.build (fun opts -> {
     opts with Configuration = configuration
   }) NetStandardSolution
+)
+
+Target.create "Restore" (fun _ ->
+    DotNet.restore id "src/IO.Ably.sln"
 )
 
 Target.create "NetStandard - Unit Tests" (fun _ ->
@@ -166,3 +171,28 @@ Target.create "NetFramework - Integration Tests" ( fun _ ->
     //                                      Logger = Some( "trx;logfilename=" + (Path.combine testResultsDir "integration-tests-framework.trx"))})
     //             project
 )
+
+Target.create "Prepare" ignore
+Target.create "Fabulous" ignore
+Target.create "Build.NetFramework" ignore
+Target.create "Build.NetStandard" ignore
+Target.create "Test.NetFramework" ignore
+Target.create "Test.NetStandard" ignore
+
+"Clean"
+  ==> "Restore"
+  ==> "Prepare"
+
+"Prepare" 
+  ==> "NetFramework - Build"
+  ==> "Build.NetFramework"
+
+"Build.NetFramework" 
+  ==> "NetFramework - Unit Tests"
+
+"NetFramework - Unit Tests" 
+  ==> "NetFramework - Integration Tests"
+  ==> "Test.NetFramework"
+
+
+Target.runOrDefaultWithArguments  "Test.NetFramework"
