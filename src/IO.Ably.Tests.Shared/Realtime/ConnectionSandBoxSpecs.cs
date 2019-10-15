@@ -383,7 +383,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15e")]
         public async Task ShouldUpdateConnectionKeyWhenConnectionIsResumed(Protocol protocol)
         {
-            var client = await GetRealtimeClient(protocol, (options, _) => options.LogLevel = LogLevel.Debug);
+            var client = await GetRealtimeClient(protocol);
 
             await WaitForState(client, ConnectionState.Connected);
             var initialConnectionKey = client.Connection.Key;
@@ -1160,8 +1160,6 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
-                opts.LogLevel = LogLevel.Debug;
-                opts.LogHander = new OutputLoggerSink(Output);
             });
 
             var stateChanges = new List<ConnectionState>();

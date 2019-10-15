@@ -113,9 +113,16 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             });
 
             await client.WaitForState(ConnectionState.Disconnected);
+            await client.ProcessCommands();
 
+            Output.WriteLine(client.GetCurrentState());
             await client.TimeAsync();
-            handler.Requests.Last().RequestUri.ToString().Should().Contain(client.Connection.Host);
+
+            var lastRequestUri = handler.Requests.Last().RequestUri.ToString();
+            var wasLastRequestAFallback = client.State.Connection.FallbackHosts.Any(x => lastRequestUri.Contains(x));
+            wasLastRequestAFallback.Should().BeTrue();
+
+            lastRequestUri.Should().Contain(client.State.Connection.Host);
         }
 
         [Fact]
@@ -153,22 +160,23 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
+            await client.ProcessCommands();
+
             for (int i = 0; i < 5; i++)
             {
-                if (client.Connection.State == ConnectionState.Connecting)
-                {
-                    retryHosts.Add(LastCreatedTransport.Parameters.Host);
-                }
-                else
+                if (client.Connection.State != ConnectionState.Connecting)
                 {
                     await Task.Delay(50); // wait just enough for the disconnect timer to kick in
-                    retryHosts.Add(LastCreatedTransport.Parameters.Host);
                 }
+
+                retryHosts.Add(LastCreatedTransport.Parameters.Host);
 
                 client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
                 {
                     Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
                 });
+
+                await client.ProcessCommands();
             }
 
             retryHosts.Count.Should().BeGreaterOrEqualTo(3);
@@ -205,6 +213,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
+            await client.ProcessCommands();
+
             for (int i = 0; i < 5; i++)
             {
                 var now = nowFunc();
@@ -223,6 +233,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 {
                     Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
                 });
+
+                await client.ProcessCommands();
             }
 
             retryHosts.Should().Contain("realtime.ably.io");
@@ -249,7 +261,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
             });
 
-            client.Connection.State.Should().Be(ConnectionState.Failed);
+            await client.WaitForState(ConnectionState.Failed);
         }
 
         public ConnectionFallbackSpecs(ITestOutputHelper output)

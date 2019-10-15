@@ -57,11 +57,11 @@ namespace IO.Ably.Transport
             TriedToRenewToken = true;
         }
 
-        public int DisconnectedCount => Attempts.SelectMany(x => x.FailedStates)
+        public int DisconnectedCount() => Attempts.SelectMany(x => x.FailedStates)
             .Count(x => x.State == ConnectionState.Disconnected && x.ShouldUseFallback());
 
-        public int SuspendedCount => Attempts.SelectMany(x => x.FailedStates)
-            .Count(x => x.State == ConnectionState.Suspended && x.ShouldUseFallback());
+        public int SuspendedCount() => Attempts.SelectMany(x => x.FailedStates)
+            .Count(x => x.State == ConnectionState.Suspended);
 
         public void UpdateAttemptState(ConnectionStateBase newState)
         {

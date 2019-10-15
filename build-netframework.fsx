@@ -18,4 +18,4 @@ open Fake.Core.TargetOperators
   ==> "NetFramework - Unit Tests"
 
 // *** Start Build ***
-Target.runOrDefault "NetFramework - Build"
+Target.runOrDefault "NetFramework - Unit Tests"

@@ -6,14 +6,23 @@ nuget Fake.DotNet.MSBuild
 nuget Fake.DotNet.Testing.XUnit2
 nuget Fake.DotNet.ILMerge
 //"
+
+#r "System.Core.dll"
+#r "System.Xml.Linq.dll"
 // include Fake modules, see Fake modules section
 
+open Fake.Core.Operators
 open Fake.Core
 open Fake.IO.Globbing.Operators 
 open Fake.DotNet
 open Fake.IO
+open Fake
 open Fake.DotNet.Testing
 open Fake.DotNet.Testing.XUnit2
+open System.Xml.Linq
+open System.Xml.XPath
+open FSharp.Core
+open Fake.Testing.Common
 
 
 let sourceDir = __SOURCE_DIRECTORY__
@@ -89,12 +98,71 @@ Target.create "NetFramework - Build" (fun _ ->
   mergeJsonNet buildPath packageDir
 )
 
+let findFailedXUnitTests (resultsPath:string) =
+    let doc = XDocument.Load(resultsPath)
+    let nodes = doc.XPathSelectElements("//test-case[@success='False']")
+    for node in nodes do
+        printfn "TestName: %s" (node.Attribute(XName.Get("name"))).Value
+
+
+type TestRun =
+  | Method of string
+  | UnitTests
+  | IntegrationTests
+
+let findNextTestPath (resultsPath:string) =
+    [ 1 .. 100 ] 
+    |> Seq.map ( fun i -> resultsPath.Replace(".xml", sprintf "-%d.xml" i))
+    |> Seq.find (File.exists >> not)
+    
+let trimTestMethod (testMethod:string) = 
+    match testMethod.Contains("(") with
+    | true -> testMethod.Substring(0, testMethod.IndexOf("("))
+    | false -> testMethod
+
+let runFrameworkTests testToRun = 
+  Directory.ensure testResultsDir
+  let testDir = Path.combine sourceDir "src/IO.Ably.Tests.NETFramework/bin/Release"
+  let testDll = !! (Path.combine testDir "*.Tests.*.dll")
+
+  match testToRun with
+  | Method testMethodName -> testDll 
+                          |> xUnit2 (fun p -> { p with NUnitXmlOutputPath = Some ( findNextTestPath (Path.combine testResultsDir "xunit-netframework.xml"))
+                                                       Method = Some (trimTestMethod testMethodName)
+                               })
+  | UnitTests -> testDll 
+                 |> xUnit2 (fun p -> { p with NUnitXmlOutputPath = Some (Path.combine testResultsDir "xunit-netframework-unit.xml")
+                                              ExcludeTraits = [ ("type", "integration")]
+                               })      
+  | IntegrationTests ->  testDll 
+                         |> xUnit2 (fun p -> { p with NUnitXmlOutputPath = Some (Path.combine testResultsDir "xunit-netframework-integration.xml")
+                                                      IncludeTraits = [ ("type", "integration")]
+                                                      ErrorLevel = TestRunnerErrorLevel.DontFailBuild // TODO: Make sure to retry the tests
+                               })                                                    
+
+
 Target.create "NetFramework - Unit Tests" (fun _ ->
+    
+    runFrameworkTests UnitTests
+
+    // Directory.ensure testResultsDir
+    // Trace.log " --- Testing net core version --- "
+    // let project = !! ("src/IO.Ably.Tests.NETFramework/*.csproj") |> Seq.head
+    // DotNet.test (fun opts -> { opts with Configuration = configuration
+    //                                      Filter = Some ("type!=integration")
+    //                                      Logger = Some( "trx;logfilename=" + (Path.combine testResultsDir "unit-tests-framework.trx"))})
+    //             project
+)
+
+Target.create "NetFramework - Integration Tests" ( fun _ -> 
     Directory.ensure testResultsDir
-    Trace.log " --- Testing net core version --- "
-    let project = !! ("src/IO.Ably.Tests.NETFramework/*.csproj") |> Seq.head
-    DotNet.test (fun opts -> { opts with Configuration = configuration
-                                         Filter = Some ("type!=integration")
-                                         Logger = Some( "trx;logfilename=" + (Path.combine testResultsDir "unit-tests-framework.trx"))})
-                project
+    let testDir = Path.combine sourceDir "src/IO.Ably.Tests.NETFramework/bin/Release"
+    !! (Path.combine testDir "*.Tests.*.dll")
+    |> xUnit2 (fun p -> { p with HtmlOutputPath = Some (Path.combine testResultsDir "xunit-netframework.html")})
+    // Trace.log " --- Testing net core version --- "
+    // let project = !! ("src/IO.Ably.Tests.NETFramework/*.csproj") |> Seq.head
+    // DotNet.test (fun opts -> { opts with Configuration = configuration
+    //                                      Filter = Some ("type=integration")
+    //                                      Logger = Some( "trx;logfilename=" + (Path.combine testResultsDir "integration-tests-framework.trx"))})
+    //             project
 )

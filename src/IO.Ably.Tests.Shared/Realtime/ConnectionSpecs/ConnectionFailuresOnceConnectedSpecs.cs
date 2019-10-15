@@ -222,6 +222,7 @@ namespace IO.Ably.Tests.Realtime
             LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closed);
 
             await client.WaitForState(ConnectionState.Connecting);
+            await client.ProcessCommands();
 
             var urlParams = LastCreatedTransport.Parameters.GetParams();
             urlParams.Should().ContainKey("resume")
@@ -266,6 +267,7 @@ namespace IO.Ably.Tests.Realtime
             await client.WaitForState(ConnectionState.Connecting);
             client.FakeProtocolMessageReceived(connectedMessage);
             await client.WaitForState(ConnectionState.Connected);
+            await client.ProcessCommands();
         }
 
         [Retry]

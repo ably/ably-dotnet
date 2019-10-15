@@ -888,14 +888,8 @@ namespace IO.Ably.Tests.Realtime
             public async Task
             PresenceMap_WithExistingMembers_WhenSync_ShouldRemoveLocalMembers_RTP19(Protocol protocol)
             {
-                Logger.LogLevel = LogLevel.Debug;
-                Logger.LoggerSink = new OutputLoggerSink(Output);
                 var channelName = "RTP19".AddRandomSuffix();
-                var client = await GetRealtimeClient(protocol, (options, settings) =>
-                {
-                    options.LogHander = new OutputLoggerSink(Output);
-                    options.LogLevel = LogLevel.Debug;
-                });
+                var client = await GetRealtimeClient(protocol);
                 var channel = client.Channels.Get(channelName);
 
                 // ENTER presence on a channel

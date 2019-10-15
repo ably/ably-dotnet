@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Transport;
 using IO.Ably.Types;
@@ -260,7 +261,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             stateChanges.Count(x => x.Current == ConnectionState.Connecting).Should().Be(numberOfAttemps);
         }
 
-        [Retry(3)]
+        [Fact]
         [Trait("spec", "RTN14e")]
         public async Task WhenInSuspendedState_ShouldTryAndReconnectAfterSuspendRetryTimeoutIsReached()
         {
@@ -279,15 +280,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 opts.NowFunc = NowWrapperFunc;
             });
 
-            client.Connect();
-            do
-            {
-                LastCreatedTransport.Listener?.OnTransportEvent(TransportState.Closing, new Exception());
-
-                await WaitForConnectingOrSuspended(client);
-                nowFunc = () => DateTimeOffset.UtcNow.AddSeconds(30);
-            }
-            while (client.Connection.State != ConnectionState.Suspended);
+            client.ExecuteCommand(SetSuspendedStateCommand.Create(ErrorInfo.ReasonSuspended));
 
             var elapsed = await client.WaitForState(ConnectionState.Connecting);
             elapsed.Should().BeCloseTo(client.Options.SuspendedRetryTimeout, 100);
@@ -302,12 +295,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN14f")]
         public async Task WhenInSuspendedStateAfterRetrying_ShouldGoBackToSuspendedState()
         {
-            Func<DateTimeOffset> nowFunc = () => DateTimeOffset.UtcNow;
-
-            // We want access to the modified closure so we can manipulate time within ConnectionAttemptsInfo
-            // ReSharper disable once AccessToModifiedClosure
-            DateTimeOffset NowWrapperFn() => nowFunc();
-
             FakeTransportFactory.InitialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false;
 
@@ -318,20 +305,12 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10);
                 opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(10);
                 opts.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
-                opts.NowFunc = NowWrapperFn;
             });
 
-            client.Connect();
-            do
-            {
-                LastCreatedTransport.Listener?.OnTransportEvent(TransportState.Closing, new Exception());
-                await WaitForConnectingOrSuspended(client);
-                nowFunc = () => DateTimeOffset.UtcNow.AddSeconds(30);
-            }
-            while (client.Connection.State != ConnectionState.Suspended);
+            client.ExecuteCommand(SetSuspendedStateCommand.Create(ErrorInfo.ReasonSuspended));
 
-            await new ConnectionAwaiter(client.Connection, ConnectionState.Connecting).Wait();
-            await new ConnectionAwaiter(client.Connection, ConnectionState.Suspended).Wait();
+            await client.WaitForState(ConnectionState.Connecting);
+            await client.WaitForState(ConnectionState.Suspended);
         }
 
         public ConnectingFailureSpecs(ITestOutputHelper output)

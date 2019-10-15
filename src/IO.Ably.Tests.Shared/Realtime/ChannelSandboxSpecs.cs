@@ -1161,9 +1161,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("issue", "117")]
         public async Task AttachAwaitShouldtimeoutIfStateChanges(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
-            Logger.LoggerSink = new OutputLoggerSink(Output);
-
             var client1 = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
@@ -1240,8 +1237,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("issue", "205")]
         public async Task ShouldReturnToPreviousStateIfAttachMessageNotReceivedWithinDefaultTimeout2(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
-            Logger.LoggerSink = new OutputLoggerSink(Output);
             var client = await GetRealtimeClient(protocol);
             client.Options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(2000);
             bool? didAttach = null;

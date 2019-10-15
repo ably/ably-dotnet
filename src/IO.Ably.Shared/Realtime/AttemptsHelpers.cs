@@ -27,6 +27,11 @@ namespace IO.Ably.Realtime
                 return false;
             }
 
+            if (state.AttemptsInfo.SuspendedCount() > 0)
+            {
+                return true;
+            }
+
             now = now ?? Defaults.NowFunc();
             return (now() - firstAttempt.Value) >= state.Connection.ConnectionStateTtl;
         }
@@ -35,8 +40,8 @@ namespace IO.Ably.Realtime
         {
             var lastFailedState = state.AttemptsInfo.Attempts.SelectMany(x => x.FailedStates).LastOrDefault(x => x.ShouldUseFallback());
             string customHost = string.Empty;
-            var disconnectedCount = state.AttemptsInfo.DisconnectedCount;
-            var suspendedCount = state.AttemptsInfo.SuspendedCount;
+            var disconnectedCount = state.AttemptsInfo.DisconnectedCount();
+            var suspendedCount = state.AttemptsInfo.SuspendedCount();
 
             if (lastFailedState != null)
             {

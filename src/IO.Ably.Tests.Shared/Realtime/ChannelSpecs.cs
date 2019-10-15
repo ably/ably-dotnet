@@ -1204,13 +1204,12 @@ namespace IO.Ably.Tests.Realtime
                 channel.Error += (sender, args) =>
                 {
                     error = args.Reason;
-                    Done();
                 };
 
                 var message = new Message("name", "encrypted with otherChannelOptions") { Encoding = "json" };
                 client.FakeMessageReceived(message, channel.Name);
 
-                WaitOne();
+                await client.ProcessCommands();
 
                 error.Should().NotBeNull();
                 receivedMessage.Encoding.Should().Be("json");
@@ -1228,6 +1227,8 @@ namespace IO.Ably.Tests.Realtime
 
                 var protocolMessage = SetupTestProtocolmessage();
                 client.FakeProtocolMessageReceived(protocolMessage);
+
+                await client.ProcessCommands();
 
                 receivedMessages.Should().HaveCount(3);
                 receivedMessages.Select(x => x.Id).Should().BeEquivalentTo(
@@ -1252,6 +1253,8 @@ namespace IO.Ably.Tests.Realtime
                 });
 
                 client.FakeProtocolMessageReceived(protocolMessage);
+
+                await client.ProcessCommands();
 
                 receivedMessages.Should().HaveCount(3);
                 receivedMessages.Select(x => x.Id)
@@ -1281,6 +1284,7 @@ namespace IO.Ably.Tests.Realtime
 
                 client.FakeProtocolMessageReceived(protocolMessage);
 
+                await client.ProcessCommands();
                 receivedMessage.ConnectionId.Should().Be(expectedConnId);
             }
 
@@ -1296,13 +1300,17 @@ namespace IO.Ably.Tests.Realtime
                 List<Message> receivedMessages = new List<Message>();
                 channel.Subscribe(msg => { receivedMessages.Add(msg); });
 
-                var protocolMessage = SetupTestProtocolmessage(timestamp: timeStamp, messages: new[]
-                {
-                    new Message("message1", "data"),
-                    new Message("message1", "data") { Timestamp = timeStamp.AddMinutes(1) },
-                });
+                var protocolMessage = SetupTestProtocolmessage(
+                    timestamp: timeStamp,
+                    messages: new[]
+                    {
+                        new Message("message1", "data"),
+                        new Message("message1", "data") { Timestamp = timeStamp.AddMinutes(1) },
+                    });
 
                 client.FakeProtocolMessageReceived(protocolMessage);
+
+                await client.ProcessCommands();
 
                 receivedMessages.First().Timestamp.Should().Be(timeStamp);
                 receivedMessages.Last().Timestamp.Should().Be(timeStamp.AddMinutes(1));

@@ -41,7 +41,6 @@ namespace IO.Ably.Tests
             var clientOptions = options ?? new ClientOptions(ValidKey);
             clientOptions.SkipInternetCheck = true; // This is for the Unit tests
             var client = new AblyRealtime(clientOptions, opts => GetRestClient(handleRequestFunc, clientOptions));
-            RealtimeClients.Add(client);
             return client;
         }
 
@@ -52,7 +51,6 @@ namespace IO.Ably.Tests
             optionsAction?.Invoke(options);
 
             var client = new AblyRealtime(options, clientOptions => GetRestClient(handleRequestFunc, clientOptions));
-            RealtimeClients.Add(client);
             return client;
         }
 
