@@ -70,8 +70,13 @@ Target.create "NetStandard - Build" (fun _ ->
   }) NetStandardSolution
 )
 
+let nugetRestore solutionFile = 
+  CreateProcess.fromRawCommand "./tools/nuget.exe" ["restore"; solutionFile]
+  |> Proc.run // start with the above configuration
+
 Target.create "Restore" (fun _ ->
     DotNet.restore id "src/IO.Ably.sln"
+    nugetRestore "src/IO.Ably.sln" |> ignore
 )
 
 Target.create "NetStandard - Unit Tests" (fun _ ->
