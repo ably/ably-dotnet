@@ -27,9 +27,11 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN14b")]
         public async Task WithTokenErrorAndRenewableToken_ShouldRenewTokenAutomaticallyWithoutEmittingError()
         {
+            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
+            Logger.LogLevel = LogLevel.Debug;
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
             bool renewTokenCalled = false;
-            var client = GetRealtimeClient(
+            var client = GetClientWithFakeTransport(
                 opts =>
             {
                 opts.TokenDetails = tokenDetails;
@@ -39,7 +41,11 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             {
                 if (request.Url.Contains("/keys"))
                 {
-                    renewTokenCalled = true;
+                    if (renewTokenCalled == false)
+                    {
+                        renewTokenCalled = true;
+                    }
+
                     return _returnedDummyTokenDetails.ToJson().ToAblyResponse();
                 }
 
@@ -60,9 +66,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
             await client.ProcessCommands();
-
             renewTokenCalled.Should().BeTrue();
-
             var currentToken = client.RestClient.AblyAuth.CurrentToken;
             currentToken.Token.Should().Be(_returnedDummyTokenDetails.Token);
             currentToken.ClientId.Should().Be(_returnedDummyTokenDetails.ClientId);
@@ -135,6 +139,9 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN14b")]
         public async Task WithTokenErrorTwice_ShouldNotRenewAndRaiseErrorAndTransitionToDisconnected()
         {
+            Logger.LogLevel = LogLevel.Debug;
+            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
+
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
             var renewCount = 0;
             var client = GetRealtimeClient(
@@ -168,6 +175,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             await client.ProcessCommands();
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+
+            await client.ProcessCommands();
 
             await client.WaitForState(ConnectionState.Disconnected);
             renewCount.Should().Be(1);
