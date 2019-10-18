@@ -7,6 +7,12 @@ trigger:
 - master
 - poc/*
 
+resources:
+  repositories:
+  - repository: self
+    checkoutOptions:
+      submodules: true
+
 jobs:
 - job: Windows
   pool:
