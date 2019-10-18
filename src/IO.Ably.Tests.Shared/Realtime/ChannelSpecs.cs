@@ -1123,7 +1123,8 @@ namespace IO.Ably.Tests.Realtime
                 client.FakeMessageReceived(new Message("blah", "best"), TestChannelName);
 
                 WaitOne();
-
+                
+                await Task.Delay(250);
                 messages.Should().HaveCount(3);
             }
 

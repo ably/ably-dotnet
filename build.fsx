@@ -248,12 +248,12 @@ Target.create "NetStandard - Unit Tests" (fun _ ->
 
 Target.create "NetStandard - Integration Tests" (fun _ ->
 
-    let logs = runFrameworkTests IntegrationTests
+    let logs = runStandardTests IntegrationTests
 
     let failedTestNames = findFailedDotnetTestTests logs
 
     for test in failedTestNames do
-        runFrameworkTests (Method test) |> ignore 
+        runStandardTests (Method test) |> ignore 
 )
 
 Target.create "Prepare" ignore

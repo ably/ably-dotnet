@@ -27,8 +27,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN14b")]
         public async Task WithTokenErrorAndRenewableToken_ShouldRenewTokenAutomaticallyWithoutEmittingError()
         {
-            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
-            Logger.LogLevel = LogLevel.Debug;
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
             bool renewTokenCalled = false;
             var client = GetClientWithFakeTransport(
