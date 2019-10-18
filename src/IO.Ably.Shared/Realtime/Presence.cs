@@ -602,6 +602,7 @@ namespace IO.Ably.Realtime
                 var errInfo = new ErrorInfo(
                     $"An error occurred processing Presence Messages for channel '{_channel.Name}'. See the InnerException for more details.");
                 Logger.Error($"{errInfo.Message} Error: {ex.Message}");
+                _channel.OnError(errInfo);
             }
         }
 

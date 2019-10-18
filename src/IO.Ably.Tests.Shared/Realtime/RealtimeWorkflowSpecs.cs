@@ -85,26 +85,17 @@ namespace IO.Ably.Tests.NETFramework.Realtime
             [Fact]
             public async Task WithInboundDisconnectedMessage_ShouldTrasnsitionToDisconnectedState()
             {
-                try
-                {
-                    Logger.LogLevel = LogLevel.Debug;
-                    Logger.LoggerSink = new OutputLoggerSink(Output);
-                    // Arrange
-                    var client = GetRealtimeClient();
-                    client.Connect();
+                // Arrange
+                var client = GetRealtimeClient();
+                client.Connect();
 
-                    await client.WaitForState(ConnectionState.Connecting);
-                    var disconnectedMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected);
+                await client.WaitForState(ConnectionState.Connecting);
+                var disconnectedMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected);
 
-                    // Act
-                    client.ExecuteCommand(ProcessMessageCommand.Create(disconnectedMessage));
+                // Act
+                client.ExecuteCommand(ProcessMessageCommand.Create(disconnectedMessage));
 
-                    await client.WaitForState(ConnectionState.Disconnected, TimeSpan.FromSeconds(5));
-                }
-                finally
-                {
-                    Logger.LogLevel = LogLevel.Warning;
-                }
+                await client.WaitForState(ConnectionState.Disconnected, TimeSpan.FromSeconds(5));
             }
 
             [Fact]

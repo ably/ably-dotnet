@@ -253,6 +253,8 @@ namespace IO.Ably.Realtime.Workflow
                     await ProcessMessage(cmd.ProtocolMessage);
                     break;
                 case SendMessageCommand cmd:
+                    // TODO: Handle edge case where the transport has already closed
+                    // but we haven't processed the messages that closes it
                     if (State.Connection.CurrentStateObject.CanSend || cmd.Force)
                     {
                         SendMessage(cmd.ProtocolMessage, cmd.Callback);
@@ -294,7 +296,7 @@ namespace IO.Ably.Realtime.Workflow
                     catch (AblyException ex)
                     {
                         Logger.Error("Error trying to renew token.", ex);
-                        return SetDisconnectedStateCommand.Create(ex.ErrorInfo);
+                        return SetDisconnectedStateCommand.Create(ex.ErrorInfo).TriggeredBy(cmd);
                     }
 
                 case HandleConnectingFailureCommand cmd:
@@ -305,16 +307,25 @@ namespace IO.Ably.Realtime.Workflow
                     {
                         return SetSuspendedStateCommand.Create(
                             resolvedError ?? ErrorInfo.ReasonSuspended,
-                            clearConnectionKey: cmd.ClearConnectionKey);
+                            clearConnectionKey: cmd.ClearConnectionKey)
+                            .TriggeredBy(cmd);
                     }
                     else
                     {
                         return SetDisconnectedStateCommand.Create(
                             resolvedError ?? ErrorInfo.ReasonDisconnected,
-                            clearConnectionKey: cmd.ClearConnectionKey);
+                            clearConnectionKey: cmd.ClearConnectionKey)
+                            .TriggeredBy(cmd);
                     }
 
                 case HandleTrasportEventCommand cmd:
+
+                    if (ConnectionManager.Transport != null
+                        && ConnectionManager.Transport.Id != cmd.TransportId)
+                    {
+                        Logger.Debug($"Skipping Transport Event command because the transport it relates to no longer exists. Current transport: {ConnectionManager.Transport.Id}");
+                        return EmptyCommand.Instance;
+                    }
 
                     // If it's an error or has been closed we want to do something about it
                     if (cmd.TransportState == TransportState.Closed || cmd.Exception != null)
@@ -322,16 +333,16 @@ namespace IO.Ably.Realtime.Workflow
                         switch (State.Connection.State)
                         {
                             case ConnectionState.Closing:
-                                return SetClosedStateCommand.Create(exception: cmd.Exception);
+                                return SetClosedStateCommand.Create(exception: cmd.Exception).TriggeredBy(cmd);
                             case ConnectionState.Connecting:
-                                return HandleConnectingFailureCommand.Create(null, cmd.Exception, false);
+                                return HandleConnectingFailureCommand.Create(null, cmd.Exception, false).TriggeredBy(cmd);
                             case ConnectionState.Connected:
                                 var errorInfo =
                                     GetErrorInfoFromTransportException(cmd.Exception, ErrorInfo.ReasonDisconnected);
                                 return SetDisconnectedStateCommand.Create(
                                     errorInfo,
                                     retryInstantly: Connection.ConnectionResumable,
-                                    exception: cmd.Exception);
+                                    exception: cmd.Exception).TriggeredBy(cmd);
                             default:
                                 break;
                         }

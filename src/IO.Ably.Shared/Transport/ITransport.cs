@@ -40,6 +40,11 @@ namespace IO.Ably.Transport
     public interface ITransport : IDisposable
     {
         /// <summary>
+        /// Unique id to represent each transport instance.
+        /// </summary>
+        Guid Id { get; }
+
+        /// <summary>
         /// Current state of the connection.
         /// </summary>
         TransportState State { get; }
@@ -89,7 +94,7 @@ namespace IO.Ably.Transport
     public interface ITransportListener
     {
         /// <summary>
-        /// Called when data has been recevied on the transport websocket.
+        /// Called when data has been received on the transport websocket.
         /// </summary>
         /// <param name="data"><see cref="RealtimeTransportData"/>.</param>
         void OnTransportDataReceived(RealtimeTransportData data);
@@ -97,8 +102,9 @@ namespace IO.Ably.Transport
         /// <summary>
         /// Called when the TransportState changes.
         /// </summary>
+        /// <param name="transportId">Unique identifier for the current transport instance.</param>
         /// <param name="state">the new state.</param>
         /// <param name="exception">optional, exception.</param>
-        void OnTransportEvent(TransportState state, Exception exception = null);
+        void OnTransportEvent(Guid transportId, TransportState state, Exception exception = null);
     }
 }

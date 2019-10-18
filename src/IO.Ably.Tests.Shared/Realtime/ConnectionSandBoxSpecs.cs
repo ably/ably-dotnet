@@ -712,7 +712,8 @@ namespace IO.Ably.Tests.Realtime
         public async Task ResumeRequest_WithTokenAuthError_TransportWillBeClosed(Protocol protocol)
         {
             var authClient = await GetRestClient(protocol);
-            var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
+            var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(10) });
+            tokenDetails.Expires = DateTimeOffset.UtcNow.AddMinutes(1); // Cheat to make sure the client uses the token
 
             var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
@@ -730,29 +731,12 @@ namespace IO.Ably.Tests.Realtime
 
             channel.Once(ChannelEvent.Detached, change => throw new Exception("channel should not detach"));
 
-            List<ProtocolMessage> messages = new List<ProtocolMessage>();
-            client.BeforeProtocolMessageProcessed(message => messages.Add(message));
-
-            ConnectionStateChange stateChange = null;
-            await WaitFor(done =>
-            {
-                client.Connection.Once(ConnectionEvent.Disconnected, change =>
-                {
-                    stateChange = change;
-                    done();
-                });
-            });
-            stateChange.Reason.Code.Should().Be(40142);
-
-            await WaitFor(done =>
-            {
-                client.Connection.Once(ConnectionEvent.Connected, change =>
-                {
-                    stateChange = change;
-                    done();
-                });
-            });
-            stateChange.Reason.Should().BeNull();
+            client.Connection.Once(ConnectionEvent.Disconnected, change =>
+                           {
+                               change.Reason.Code.Should().Be(40142);
+                           });
+            await client.WaitForState(ConnectionState.Disconnected);
+            await client.WaitForState(ConnectionState.Connected);
 
             // transport should have been closed and the client should have a new transport instanced
             var secondTransport = client.GetTestTransport();
@@ -789,6 +773,7 @@ namespace IO.Ably.Tests.Realtime
         {
             var authClient = await GetRestClient(protocol);
             var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
+            tokenDetails.Expires = DateTimeOffset.UtcNow.AddMinutes(10); // Cheat the client
 
             var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
@@ -818,7 +803,7 @@ namespace IO.Ably.Tests.Realtime
             var awaiter = new TaskCompletionAwaiter(10000);
             var authClient = await GetRestClient(protocol);
             var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
-
+            tokenDetails.Expires = DateTimeOffset.UtcNow.AddMinutes(10); // Cheat the client
             var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
                 options.TokenDetails = tokenDetails;
@@ -861,7 +846,11 @@ namespace IO.Ably.Tests.Realtime
             var awaiter = new TaskCompletionAwaiter(10000);
             var authClient = await GetRestClient(protocol);
 
-            var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
+            var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams
+            {
+                ClientId = "123",
+                Ttl = TimeSpan.FromSeconds(5),
+            });
 
             var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
@@ -915,7 +904,7 @@ namespace IO.Ably.Tests.Realtime
             var authClient = await GetRestClient(protocol);
 
             var tokenDetails = await authClient.AblyAuth.RequestTokenAsync(new TokenParams { ClientId = "123", Ttl = TimeSpan.FromSeconds(2) });
-
+            tokenDetails.Expires = DateTimeOffset.UtcNow.AddMinutes(10); // Cheat the client
             var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
                 options.TokenDetails = tokenDetails;
@@ -944,7 +933,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             await client.WaitForState(ConnectionState.Failed);
-
+            await client.ProcessCommands();
             stateChanges.Select(x => x.Current).Should().BeEquivalentTo(new[]
                                                                             {
                                                                                 ConnectionState.Disconnected,

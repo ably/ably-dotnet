@@ -43,7 +43,7 @@ namespace IO.Ably.Utils
             }
             finally
             {
-                _connection.InternalStateChanged += ChangeListener;
+                _connection.InternalStateChanged -= ChangeListener;
             }
 
             void ChangeListener(object sender, ConnectionStateChange change)

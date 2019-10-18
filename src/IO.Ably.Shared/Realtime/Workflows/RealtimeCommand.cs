@@ -10,6 +10,8 @@ namespace IO.Ably.Realtime.Workflow
 
         public string Name => GetType().Name;
 
+        public string TriggeredByMessage { get; private set; } = string.Empty;
+
         public string Explain()
         {
             var data = ExplainData();
@@ -18,7 +20,12 @@ namespace IO.Ably.Realtime.Workflow
                 data = " Data: " + data;
             }
 
-            return $"{GetType().Name}:{data} Meta:{Id}|{Created:s}";
+            return $"{GetType().Name}:{data} Meta:{Id}|{Created:s}|TriggeredBy: {TriggeredByMessage}";
+        }
+
+        public void RecordTrigger(RealtimeCommand trigger)
+        {
+            TriggeredByMessage += $"{trigger.Name}:{trigger.Id}";
         }
 
         protected abstract string ExplainData();
@@ -26,6 +33,16 @@ namespace IO.Ably.Realtime.Workflow
         public override string ToString()
         {
             return $"{Name}: {Explain()}";
+        }
+    }
+
+    internal static class RealtimeCommandExtensions
+    {
+        public static T TriggeredBy<T>(this T command, RealtimeCommand triggerCommand)
+            where T : RealtimeCommand
+        {
+            command.RecordTrigger(triggerCommand);
+            return command;
         }
     }
 }

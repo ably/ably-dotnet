@@ -18,7 +18,7 @@ jobs:
   #condition: and(succeeded(), not(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))) 
 
   # Run Build which will by default run the unit tests
-  - script: .\build.cmd
+  - script: .\build.cmd Test.NetStandard
 
   #- task: CopyFiles@2
   #  inputs:

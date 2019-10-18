@@ -379,22 +379,25 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class HandleTrasportEventCommand : RealtimeCommand
     {
+        public Guid TransportId { get; }
+
         public TransportState TransportState { get; }
 
         public Exception Exception { get; }
 
-        public HandleTrasportEventCommand(TransportState transportState, Exception ex)
+        public HandleTrasportEventCommand(Guid transportId, TransportState transportState, Exception ex)
         {
+            TransportId = transportId;
             TransportState = transportState;
             Exception = ex;
         }
 
-        public static HandleTrasportEventCommand Create(TransportState state, Exception ex) =>
-            new HandleTrasportEventCommand(state, ex);
+        public static HandleTrasportEventCommand Create(Guid transportId, TransportState state, Exception ex) =>
+            new HandleTrasportEventCommand(transportId, state, ex);
 
         protected override string ExplainData()
         {
-            return $"TrasportState: {TransportState}. Exception: {Exception?.Message}";
+            return $"Transport Id: {TransportId}. TrasportState: {TransportState}. Exception: {Exception?.Message}";
         }
     }
 }

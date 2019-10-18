@@ -204,7 +204,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             await Task.Delay(1000); // Let the connecting state complete it's logic otherwise by the time we get to here
                                     // The transport is not created yet as this is done on a separate thread
 
-            LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closing, new Exception());
+            LastCreatedTransport.Listener.OnTransportEvent(LastCreatedTransport.Id, TransportState.Closing, new Exception());
 
             WaitOne();
             connectionArgs.Current.Should().Be(ConnectionState.Disconnected);
@@ -246,7 +246,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             do
             {
-                LastCreatedTransport.Listener?.OnTransportEvent(TransportState.Closing, new Exception());
+                LastCreatedTransport.Listener?.OnTransportEvent(LastCreatedTransport.Id, TransportState.Closing, new Exception());
                 await WaitForConnectingOrSuspended(client);
                 var now = nowFunc();
                 nowFunc = () => now.AddSeconds(30);

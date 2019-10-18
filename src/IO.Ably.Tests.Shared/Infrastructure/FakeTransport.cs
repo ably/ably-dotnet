@@ -40,6 +40,8 @@ namespace IO.Ably.Tests
 
         public RealtimeTransportData LastTransportData => SentMessages.LastOrDefault();
 
+        public Guid Id { get; } = Guid.NewGuid();
+
         public TransportState State { get; set; }
 
         public ITransportListener Listener { get; set; }
@@ -53,7 +55,7 @@ namespace IO.Ably.Tests
             ConnectCalled = true;
             if (OnConnectChangeStateToConnected)
             {
-                Listener?.OnTransportEvent(TransportState.Connected);
+                Listener?.OnTransportEvent(Id, TransportState.Connected);
                 State = TransportState.Connected;
             }
         }
@@ -63,7 +65,7 @@ namespace IO.Ably.Tests
             CloseCalled = true;
             if (suppressClosedEvent == false)
             {
-                Listener?.OnTransportEvent(TransportState.Closed);
+                Listener?.OnTransportEvent(Id, TransportState.Closed);
             }
         }
 

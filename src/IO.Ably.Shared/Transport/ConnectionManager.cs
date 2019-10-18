@@ -266,12 +266,13 @@ namespace IO.Ably.Transport
             catch (Exception e)
             {
                 Logger.Error("Error while sending to transport. Trying to reconnect.", e);
-                ((ITransportListener)this).OnTransportEvent(TransportState.Closed, e);
+                ((ITransportListener)this).OnTransportEvent(Transport.Id, TransportState.Closed, e);
             }
         }
 
-        void ITransportListener.OnTransportEvent(TransportState transportState, Exception ex)
-            => ExecuteCommand(HandleTrasportEventCommand.Create(transportState, ex));
+        // Start here: See how to assign the id. What if the Transport instance is null
+        void ITransportListener.OnTransportEvent(Guid transportId, TransportState transportState, Exception ex)
+            => ExecuteCommand(HandleTrasportEventCommand.Create(transportId, transportState, ex));
 
         void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)
         {

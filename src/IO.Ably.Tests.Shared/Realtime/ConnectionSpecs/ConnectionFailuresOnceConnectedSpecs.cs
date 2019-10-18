@@ -219,7 +219,7 @@ namespace IO.Ably.Tests.Realtime
             var firstTransport = LastCreatedTransport;
             var connectionKey = client.Connection.Key;
             var serial = client.Connection.Serial.Value;
-            LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closed);
+            LastCreatedTransport.Listener.OnTransportEvent(LastCreatedTransport.Id, TransportState.Closed);
 
             await client.WaitForState(ConnectionState.Connecting);
             await client.ProcessCommands();
@@ -263,7 +263,7 @@ namespace IO.Ably.Tests.Realtime
         private async Task CloseAndWaitToReconnect(AblyRealtime client, ProtocolMessage connectedMessage = null)
         {
             connectedMessage = connectedMessage ?? new ProtocolMessage(ProtocolMessage.MessageAction.Connected);
-            LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closed);
+            LastCreatedTransport.Listener.OnTransportEvent(LastCreatedTransport.Id, TransportState.Closed);
             await client.WaitForState(ConnectionState.Connecting);
             client.FakeProtocolMessageReceived(connectedMessage);
             await client.WaitForState(ConnectionState.Connected);
