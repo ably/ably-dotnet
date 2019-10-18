@@ -18,6 +18,7 @@ open Fake.IO.Globbing.Operators
 open Fake.DotNet
 open Fake.IO
 open Fake
+open System
 open Fake.DotNet.Testing
 open Fake.DotNet.Testing.XUnit2
 open System.Xml.Linq
@@ -79,15 +80,6 @@ Target.create "Restore" (fun _ ->
     nugetRestore "src/IO.Ably.sln" |> ignore
 )
 
-Target.create "NetStandard - Unit Tests" (fun _ ->
-    Directory.ensure testResultsDir
-    Trace.log " --- Testing net core version --- "
-    let project = !! ("src/IO.Ably.Tests.DotNetCore20/*.csproj") |> Seq.head
-    DotNet.test (fun opts -> { opts with Configuration = configuration
-                                         Filter = Some ("type!=integration")
-                                         Logger = Some( "trx;logfilename=" + (Path.combine testResultsDir "unit-tests-standard.trx"))})
-                project
-)
 
 Target.create "NetFramework - Build" (fun _ ->
   let buildMode = Environment.environVarOrDefault "buildMode" "Release"
@@ -108,11 +100,6 @@ Target.create "NetFramework - Build" (fun _ ->
   mergeJsonNet buildPath packageDir
 )
 
-let findFailedXUnitTests (resultsPath:string) =
-    let doc = XDocument.Load(resultsPath)
-    let nodes = doc.XPathSelectElements("//test-case[@success='False']")
-    for node in nodes do
-        printfn "TestName: %s" (node.Attribute(XName.Get("name"))).Value
 
 
 type TestRun =
@@ -130,55 +117,146 @@ let trimTestMethod (testMethod:string) =
     | true -> testMethod.Substring(0, testMethod.IndexOf("("))
     | false -> testMethod
 
+let findFailedXUnitTests (resultsPath:string) =
+    let doc = XDocument.Load(resultsPath)
+    let nodes = doc.XPathSelectElements("//test-case[@success='False']")
+
+    nodes 
+    |> Seq.map (fun node -> (node.Attribute(XName.Get("name"))).Value)
+    |> Seq.map trimTestMethod
+
+let findFailedDotnetTestTests (resultsPath:string) =
+    let doc = XDocument.Load(resultsPath)
+    let nodes = doc.XPathSelectElements("//UnitTestResult[@outcome='Failed']")
+
+    nodes 
+    |> Seq.map (fun node -> (node.Attribute(XName.Get("testName"))).Value)
+    |> Seq.map trimTestMethod  
+
+let runStandardTests testToRun = 
+  Directory.ensure testResultsDir
+  Directory.ensure testResultsDir
+  Trace.log " --- Testing net core version --- "
+  let project = !! ("src/IO.Ably.Tests.DotNetCore20/*.csproj") |> Seq.head
+ 
+  match testToRun with
+  | Method testMethodName -> 
+                          let logsPath = findNextTestPath(Path.combine testResultsDir "tests-netstandard.trx")
+                          DotNet.test (fun opts -> { opts with Configuration = configuration
+                                                               Filter = Some testMethodName
+                                                               Logger = Some( "trx;logfilename=" + (Path.combine testResultsDir "integration-tests-standard.trx"))
+                                         })
+                                      project
+                          logsPath                             
+  | UnitTests -> 
+                 let logsPath = Path.combine testResultsDir "tests-netstandard-unit.trx"
+                 DotNet.test (fun opts -> { opts with Configuration = configuration
+                                                      Filter = Some ("type!=integration")
+                                                      Logger = Some( "trx;logfilename=" + logsPath)
+                                         })
+                              project
+                 logsPath                              
+  | IntegrationTests ->  
+                         let logsPath = Path.combine testResultsDir "tests-netstandard-integration.trx"
+                         try
+                           DotNet.test (fun opts -> { opts with Configuration = configuration
+                                                                Filter = Some ("type=integration")
+                                                                Logger = Some( "trx;logfilename=" + logsPath)
+                                           })
+                                project
+                          with 
+                          | :? Fake.DotNet.MSBuildException -> 
+                              printfn "Not all integration tests passed the first time"  
+
+                         logsPath                                                                                
+
+
 let runFrameworkTests testToRun = 
   Directory.ensure testResultsDir
   let testDir = Path.combine sourceDir "src/IO.Ably.Tests.NETFramework/bin/Release"
   let testDll = !! (Path.combine testDir "*.Tests.*.dll")
-
+ 
   match testToRun with
-  | Method testMethodName -> testDll 
-                          |> xUnit2 (fun p -> { p with NUnitXmlOutputPath = Some ( findNextTestPath (Path.combine testResultsDir "xunit-netframework.xml"))
+  | Method testMethodName -> 
+                          let logsPath = findNextTestPath(Path.combine testResultsDir "xunit-netframework.xml")
+                          testDll 
+                          |> xUnit2 (fun p -> { p with NUnitXmlOutputPath = Some (  logsPath)
                                                        Method = Some (trimTestMethod testMethodName)
                                })
-  | UnitTests -> testDll 
-                 |> xUnit2 (fun p -> { p with NUnitXmlOutputPath = Some (Path.combine testResultsDir "xunit-netframework-unit.xml")
+                          logsPath                             
+  | UnitTests -> 
+                 let logsPath = Path.combine testResultsDir "xunit-netframework-unit.xml"
+                 testDll 
+                 |> xUnit2 (fun p -> { p with NUnitXmlOutputPath = Some logsPath
                                               ExcludeTraits = [ ("type", "integration")]
-                               })      
-  | IntegrationTests ->  testDll 
-                         |> xUnit2 (fun p -> { p with NUnitXmlOutputPath = Some (Path.combine testResultsDir "xunit-netframework-integration.xml")
+                               })  
+                 logsPath                             
+  | IntegrationTests ->  
+                         let logsPath = Path.combine testResultsDir "xunit-netframework-integration.xml"
+                         testDll 
+                         |> xUnit2 (fun p -> { p with NUnitXmlOutputPath = Some logsPath
                                                       IncludeTraits = [ ("type", "integration")]
+                                                      TimeOut = TimeSpan.FromMinutes(20.)
+                                                      Parallel = ParallelMode.Collections
                                                       ErrorLevel = TestRunnerErrorLevel.DontFailBuild // TODO: Make sure to retry the tests
-                               })                                                    
+                               }) 
+                         logsPath                                                                                
 
+Target.create "NetFramework.Integration.Rerun" (fun _ -> 
+    
+    let buildMode = Environment.environVarOrDefault "buildMode" "Release"
+    let setParams (defaults:MSBuildParams) =
+          { defaults with
+              Verbosity = Some(Quiet)
+              Targets = ["Build"]
+              Properties =
+                  [
+                      "Optimize", "True"
+                      "DebugSymbols", "True"
+                      "Configuration", buildMode
+                  ]
+           }
+    MSBuild.build setParams NetFrameworkSolution
+
+
+    let logsPath = Path.combine testResultsDir "xunit-netframework-integration.xml"
+    
+    let failedTestNames = findFailedXUnitTests logsPath
+
+    for test in failedTestNames do
+        runFrameworkTests (Method test) |> ignore  
+)
 
 Target.create "NetFramework - Unit Tests" (fun _ ->
     
-    runFrameworkTests UnitTests
-
-    // Directory.ensure testResultsDir
-    // Trace.log " --- Testing net core version --- "
-    // let project = !! ("src/IO.Ably.Tests.NETFramework/*.csproj") |> Seq.head
-    // DotNet.test (fun opts -> { opts with Configuration = configuration
-    //                                      Filter = Some ("type!=integration")
-    //                                      Logger = Some( "trx;logfilename=" + (Path.combine testResultsDir "unit-tests-framework.trx"))})
-    //             project
+    runFrameworkTests UnitTests |> ignore
 )
 
 Target.create "NetFramework - Integration Tests" ( fun _ -> 
-    Directory.ensure testResultsDir
-    let testDir = Path.combine sourceDir "src/IO.Ably.Tests.NETFramework/bin/Release"
-    !! (Path.combine testDir "*.Tests.*.dll")
-    |> xUnit2 (fun p -> { p with HtmlOutputPath = Some (Path.combine testResultsDir "xunit-netframework.html")})
-    // Trace.log " --- Testing net core version --- "
-    // let project = !! ("src/IO.Ably.Tests.NETFramework/*.csproj") |> Seq.head
-    // DotNet.test (fun opts -> { opts with Configuration = configuration
-    //                                      Filter = Some ("type=integration")
-    //                                      Logger = Some( "trx;logfilename=" + (Path.combine testResultsDir "integration-tests-framework.trx"))})
-    //             project
+
+    let logs = runFrameworkTests IntegrationTests
+
+    let failedTestNames = findFailedXUnitTests logs
+
+    for test in failedTestNames do
+        runFrameworkTests (Method test) |> ignore   
+)
+
+Target.create "NetStandard - Unit Tests" (fun _ ->
+    runStandardTests UnitTests |> ignore
+)
+
+Target.create "NetStandard - Integration Tests" (fun _ ->
+
+    let logs = runFrameworkTests IntegrationTests
+
+    let failedTestNames = findFailedDotnetTestTests logs
+
+    for test in failedTestNames do
+        runFrameworkTests (Method test) |> ignore 
 )
 
 Target.create "Prepare" ignore
-Target.create "Fabulous" ignore
 Target.create "Build.NetFramework" ignore
 Target.create "Build.NetStandard" ignore
 Target.create "Test.NetFramework" ignore
@@ -192,12 +270,23 @@ Target.create "Test.NetStandard" ignore
   ==> "NetFramework - Build"
   ==> "Build.NetFramework"
 
+"Prepare"
+  ==> "NetStandard - Build"
+  ==> "Build.NetStandard"
+
 "Build.NetFramework" 
   ==> "NetFramework - Unit Tests"
 
 "NetFramework - Unit Tests" 
   ==> "NetFramework - Integration Tests"
   ==> "Test.NetFramework"
+
+"Build.NetStandard"
+  ==> "NetStandard - Unit Tests"
+
+"NetStandard - Unit Tests"
+  ==> "NetStandard - Integration Tests"
+  ==> "Test.NetStandard"
 
 
 Target.runOrDefaultWithArguments  "Test.NetFramework"
