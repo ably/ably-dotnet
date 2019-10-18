@@ -137,12 +137,9 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN14b")]
         public async Task WithTokenErrorTwice_ShouldNotRenewAndRaiseErrorAndTransitionToDisconnected()
         {
-            Logger.LogLevel = LogLevel.Debug;
-            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
-
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
             var renewCount = 0;
-            var client = GetRealtimeClient(
+            var client = GetClientWithFakeTransport(
                 opts =>
             {
                 opts.TokenDetails = tokenDetails;
@@ -283,14 +280,14 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             {
                 opts.AutoConnect = false;
                 opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10);
-                opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(100);
+                opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(1000);
                 opts.NowFunc = NowWrapperFunc;
             });
 
             client.ExecuteCommand(SetSuspendedStateCommand.Create(ErrorInfo.ReasonSuspended));
 
             var elapsed = await client.WaitForState(ConnectionState.Connecting);
-            elapsed.Should().BeCloseTo(client.Options.SuspendedRetryTimeout, 100);
+            elapsed.Should().BeCloseTo(client.Options.SuspendedRetryTimeout, 1000);
         }
 
         private static Task WaitForConnectingOrSuspended(AblyRealtime client)
