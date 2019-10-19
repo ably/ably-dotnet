@@ -422,7 +422,7 @@ namespace IO.Ably.Tests.Realtime
 
             await client.ProcessCommands();
             // currently disconnected so message is queued
-            //client.State.PendingMessages.Should().HaveCount(1);
+            // client.State.PendingMessages.Should().HaveCount(1);
 
             // wait for reconnection
             var didConnect = await awaiter.Task;

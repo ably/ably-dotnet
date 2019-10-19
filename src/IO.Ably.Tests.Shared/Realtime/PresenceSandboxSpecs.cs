@@ -1364,7 +1364,8 @@ namespace IO.Ably.Tests.Realtime
                     p.Should().HaveCount(3);
 
                     await presence.EnterAsync();
-
+                    
+                    await Task.Delay(250);
                     presence.Map.Members.Should().HaveCount(4);
                     presence.InternalMap.Members.Should().HaveCount(1);
 
