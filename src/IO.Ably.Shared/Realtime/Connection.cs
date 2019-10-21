@@ -252,7 +252,7 @@ namespace IO.Ably.Realtime
         {
             ThrowIfDisposed();
 
-            ExecuteCommand(new PingCommand(new PingRequest(callback, Now)));
+            ExecuteCommand(PingCommand.Create(new PingRequest(callback, Now)));
         }
 
         private void ExecuteCommand(RealtimeCommand cmd)

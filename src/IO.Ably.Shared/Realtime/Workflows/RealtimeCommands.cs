@@ -11,10 +11,12 @@ namespace IO.Ably.Realtime.Workflow
     {
         internal PingRequest Request { get; }
 
-        public PingCommand(PingRequest request)
+        private PingCommand(PingRequest request)
         {
             Request = request;
         }
+
+        public static PingCommand Create(PingRequest request) => new PingCommand(request);
 
         protected override string ExplainData()
         {
@@ -24,6 +26,10 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class InitCommand : RealtimeCommand
     {
+        private InitCommand()
+        {
+        }
+
         public static InitCommand Create() => new InitCommand();
 
         protected override string ExplainData()
@@ -41,7 +47,7 @@ namespace IO.Ably.Realtime.Workflow
             return "PingRequest id: " + PingRequestId;
         }
 
-        public PingTimerCommand(string pingRequestId)
+        private PingTimerCommand(string pingRequestId)
         {
             PingRequestId = pingRequestId;
         }
@@ -53,7 +59,7 @@ namespace IO.Ably.Realtime.Workflow
     {
         public IEnumerable<RealtimeCommand> Commands { get; }
 
-        public ListCommand(IEnumerable<RealtimeCommand> commands)
+        private ListCommand(IEnumerable<RealtimeCommand> commands)
         {
             Commands = commands.ToList();
         }
@@ -82,7 +88,7 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class ProcessMessageCommand : RealtimeCommand
     {
-        public ProcessMessageCommand(ProtocolMessage protocolMessage)
+        private ProcessMessageCommand(ProtocolMessage protocolMessage)
         {
             ProtocolMessage = protocolMessage;
         }
@@ -99,6 +105,10 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class ConnectCommand : RealtimeCommand
     {
+        private ConnectCommand()
+        {
+        }
+
         public static ConnectCommand Create() => new ConnectCommand();
 
         protected override string ExplainData() => string.Empty;
@@ -106,9 +116,9 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class SetInitStateCommand : RealtimeCommand
     {
-        public string Recover { get; set; }
+        public string Recover { get; }
 
-        public SetInitStateCommand(string recover)
+        private SetInitStateCommand(string recover)
         {
             Recover = recover;
         }
@@ -151,6 +161,10 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class CloseConnectionCommand : RealtimeCommand
     {
+        private CloseConnectionCommand()
+        {
+        }
+
         public static CloseConnectionCommand Create() => new CloseConnectionCommand();
 
         protected override string ExplainData() => string.Empty;
@@ -158,9 +172,9 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class SetConnectingStateCommand : RealtimeCommand
     {
-        public bool ClearConnectionKey { get; set; } = false;
+        public bool ClearConnectionKey { get; } = false;
 
-        public SetConnectingStateCommand(bool clearConnectionKey)
+        private SetConnectingStateCommand(bool clearConnectionKey)
         {
             ClearConnectionKey = clearConnectionKey;
         }
@@ -179,7 +193,7 @@ namespace IO.Ably.Realtime.Workflow
 
         public bool IsUpdate { get; }
 
-        public SetConnectedStateCommand(ProtocolMessage message, bool isUpdate)
+        private SetConnectedStateCommand(ProtocolMessage message, bool isUpdate)
         {
             Message = message;
             IsUpdate = isUpdate;
@@ -196,7 +210,7 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class SetDisconnectedStateCommand : RealtimeCommand
     {
-        public SetDisconnectedStateCommand(ErrorInfo error, bool retryInstantly, bool skipAttach, Exception exception, bool clearConnectionKey)
+        private SetDisconnectedStateCommand(ErrorInfo error, bool retryInstantly, bool skipAttach, Exception exception, bool clearConnectionKey)
         {
             Error = error;
             RetryInstantly = retryInstantly;
@@ -235,7 +249,7 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class SetSuspendedStateCommand : RealtimeCommand
     {
-        public SetSuspendedStateCommand(ErrorInfo error, bool clearConnectionKey)
+        private SetSuspendedStateCommand(ErrorInfo error, bool clearConnectionKey)
         {
             Error = error;
             ClearConnectionKey = clearConnectionKey;
@@ -257,7 +271,7 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class SetFailedStateCommand : RealtimeCommand
     {
-        public SetFailedStateCommand(ErrorInfo error)
+        private SetFailedStateCommand(ErrorInfo error)
         {
             Error = error;
         }
@@ -274,6 +288,10 @@ namespace IO.Ably.Realtime.Workflow
 
     internal class SetClosingStateCommand : RealtimeCommand
     {
+        private SetClosingStateCommand()
+        {
+        }
+
         protected override string ExplainData()
         {
             return string.Empty;
@@ -288,7 +306,7 @@ namespace IO.Ably.Realtime.Workflow
 
         public Exception Exception { get; }
 
-        public SetClosedStateCommand(ErrorInfo error, Exception exception = null)
+        private SetClosedStateCommand(ErrorInfo error, Exception exception = null)
         {
             Exception = exception;
             Error = error ?? ErrorInfo.ReasonClosed;
@@ -309,7 +327,7 @@ namespace IO.Ably.Realtime.Workflow
 
         public bool UpdateState { get; }
 
-        public RetryAuthCommand(ErrorInfo error, bool updateState)
+        private RetryAuthCommand(ErrorInfo error, bool updateState)
         {
             Error = error;
             UpdateState = updateState;
@@ -330,7 +348,7 @@ namespace IO.Ably.Realtime.Workflow
 
         public bool Force { get; }
 
-        public SendMessageCommand(ProtocolMessage protocolMessage, Action<bool, ErrorInfo> callback, bool force)
+        private SendMessageCommand(ProtocolMessage protocolMessage, Action<bool, ErrorInfo> callback, bool force)
         {
             ProtocolMessage = protocolMessage;
             Callback = callback;
@@ -351,7 +369,7 @@ namespace IO.Ably.Realtime.Workflow
 
         public RealtimeCommand CommandToQueue { get; }
 
-        public DelayCommand(TimeSpan delay, RealtimeCommand commandToQueue)
+        private DelayCommand(TimeSpan delay, RealtimeCommand commandToQueue)
         {
             Delay = delay;
             CommandToQueue = commandToQueue;
@@ -369,7 +387,7 @@ namespace IO.Ably.Realtime.Workflow
     {
         public ErrorInfo Error { get; }
 
-        public HandleConnectingTokenErrorCommand(ErrorInfo error)
+        private HandleConnectingTokenErrorCommand(ErrorInfo error)
         {
             Error = error;
         }
@@ -390,7 +408,7 @@ namespace IO.Ably.Realtime.Workflow
 
         public bool ClearConnectionKey { get; }
 
-        public HandleConnectingFailureCommand(ErrorInfo error, Exception ex, bool clearConnectionKey)
+        private HandleConnectingFailureCommand(ErrorInfo error, Exception ex, bool clearConnectionKey)
         {
             Error = error;
             Exception = ex;
@@ -414,7 +432,7 @@ namespace IO.Ably.Realtime.Workflow
 
         public Exception Exception { get; }
 
-        public HandleTrasportEventCommand(Guid transportId, TransportState transportState, Exception ex)
+        private HandleTrasportEventCommand(Guid transportId, TransportState transportState, Exception ex)
         {
             TransportId = transportId;
             TransportState = transportState;

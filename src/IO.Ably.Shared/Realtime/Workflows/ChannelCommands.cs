@@ -2,9 +2,9 @@ namespace IO.Ably.Realtime.Workflow
 {
     internal class ChannelCommand : RealtimeCommand
     {
-        public string ChannelName { get; set; }
+        public string ChannelName { get; }
 
-        public RealtimeCommand Command { get; set; }
+        public RealtimeCommand Command { get; }
 
         public ChannelCommand(string channelName, RealtimeCommand command)
         {

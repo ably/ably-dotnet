@@ -4,9 +4,9 @@ namespace IO.Ably.Realtime.Workflow
 {
     internal abstract class RealtimeCommand
     {
-        public Guid Id { get; private set; } = Guid.NewGuid();
+        public Guid Id { get; } = Guid.NewGuid();
 
-        public DateTimeOffset Created { get; private set; } = DateTimeOffset.UtcNow;
+        public DateTimeOffset Created { get; } = DateTimeOffset.UtcNow;
 
         public string Name => GetType().Name;
 

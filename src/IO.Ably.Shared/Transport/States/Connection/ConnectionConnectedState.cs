@@ -38,7 +38,7 @@ namespace IO.Ably.Transport.States.Connection
                     Context.ExecuteCommand(SetConnectedStateCommand.Create(message, isUpdate: true));
                     return true;
                 case ProtocolMessage.MessageAction.Close:
-                    Context.ExecuteCommand(new SetClosedStateCommand(message.Error));
+                    Context.ExecuteCommand(SetClosedStateCommand.Create(message.Error));
                     return true;
                 case ProtocolMessage.MessageAction.Disconnected:
                     if (message.Error?.IsTokenError ?? false)
