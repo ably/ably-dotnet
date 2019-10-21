@@ -72,8 +72,10 @@ namespace IO.Ably.Tests
             // set the Key to an empty string to override the sandbox settings
             var restClient = await helper.GetRestClientWithRequests(protocol, almostExpiredToken, invalidateKey: true);
 
+            var now = DateTimeOffset.UtcNow;
+
             // check the client thinks the token is valid
-            restClient.AblyAuth.CurrentToken.IsValidToken().Should().BeTrue();
+            restClient.AblyAuth.CurrentToken.IsValidToken(now).Should().BeTrue();
 
             var channelName = "RSA4a".AddRandomSuffix();
 
@@ -245,7 +247,6 @@ namespace IO.Ably.Tests
             var realtimeClient = await GetRealtimeClient(protocol, (options, _) =>
             {
                 options.TokenDetails = token;
-                options.LogLevel = LogLevel.Debug;
                 options.AuthUrl = new Uri(_errorUrl);
                 options.AutoConnect = false;
             });
@@ -495,25 +496,6 @@ namespace IO.Ably.Tests
 
             error.ErrorInfo.Code.Should().Be(40104);
             error.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-        }
-
-        [Theory]
-        [ProtocolData]
-        [Trait("spec", "RSA7a2")]
-        public async Task WithClientId_RequestsATokenOnFirstMessageWithCorrectDefaults(Protocol protocol)
-        {
-            var ably = await GetRestClient(protocol, ablyOptions => ablyOptions.ClientId = "123");
-            var channel = ably.Channels.Get("test");
-            await channel.PublishAsync("test", "true");
-
-            var token = ably.AblyAuth.CurrentToken;
-
-            token.Should().NotBeNull();
-            token.ClientId.Should().Be("123");
-            token.Expires.Should()
-                .BeWithin(TimeSpan.FromSeconds(20))
-                .Before(DateTimeOffset.UtcNow + Defaults.DefaultTokenTtl);
-            token.Capability.ToJson().Should().Be(Defaults.DefaultTokenCapability.ToJson());
         }
 
         [Theory]
@@ -771,6 +753,25 @@ namespace IO.Ably.Tests
             var message = (await channel.HistoryAsync()).Items.First();
             message.ClientId.Should().Be("123");
             message.Data.Should().Be("test");
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("issue", "374")]
+        public async Task WhenClientTimeIsWrongAndQueryTimeSetToTrue_ShouldNotTreatTokenAsInvalid(Protocol protocol)
+        {
+            // Our device's clock is fast. The server returns by default a token valid for an hour
+            Func<DateTimeOffset> nowFunc = () => DateTimeOffset.UtcNow.AddHours(2);
+
+            var realtimeClient = await GetRealtimeClient(protocol, (opts, _) =>
+            {
+                opts.NowFunc = nowFunc;
+                opts.QueryTime = true;
+                opts.ClientId = "clientId";
+                opts.UseTokenAuth = true; // We force the token auth because further on it's not necessary when there is a key present
+            });
+
+            await realtimeClient.WaitForState(ConnectionState.Connected);
         }
 
         /// <summary>

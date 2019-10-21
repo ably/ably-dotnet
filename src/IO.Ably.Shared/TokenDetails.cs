@@ -155,8 +155,9 @@ namespace IO.Ably
         /// Checks whether the token is valid.
         /// </summary>
         /// <param name="token"><see cref="TokenDetails"/>.</param>
+        /// <param name="now">the correct instance of now to compare with the token.</param>
         /// <returns>true / false.</returns>
-        public static bool IsValidToken(this TokenDetails token)
+        public static bool IsValidToken(this TokenDetails token, DateTimeOffset now)
         {
             if (token == null)
             {
@@ -168,17 +169,18 @@ namespace IO.Ably
                 return true;
             }
 
-            return !token.IsExpired();
+            return !token.IsExpired(now);
         }
 
         /// <summary>
         /// Checks whether the <see cref="TokenDetails"/> are valid.
         /// </summary>
         /// <param name="token"><see cref="TokenDetails"/>.</param>
+        /// <param name="now">the correct instance of now to compare with the token.</param>
         /// <returns>true / false.</returns>
-        public static bool IsExpired(this TokenDetails token)
+        public static bool IsExpired(this TokenDetails token, DateTimeOffset now)
         {
-            return token.Expires < token.Now();
+            return token.Expires < now;
         }
     }
 }

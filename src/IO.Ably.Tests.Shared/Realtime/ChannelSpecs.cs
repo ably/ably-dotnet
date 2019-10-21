@@ -1311,7 +1311,9 @@ namespace IO.Ably.Tests.Realtime
                 client.FakeProtocolMessageReceived(protocolMessage);
 
                 await client.ProcessCommands();
+                await Task.Delay(50);
 
+                receivedMessages.Should().HaveCount(2);
                 receivedMessages.First().Timestamp.Should().Be(timeStamp);
                 receivedMessages.Last().Timestamp.Should().Be(timeStamp.AddMinutes(1));
             }

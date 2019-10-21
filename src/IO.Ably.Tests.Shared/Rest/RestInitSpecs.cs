@@ -30,10 +30,11 @@ namespace IO.Ably.Tests
 
             [Fact]
             [Trait("spec", "RSA4")]
-            public void WithKeyAndClientId_ShouldUseTokenAuth()
+            [Trait("spec", "RSA7e2")]
+            public void WithKeyAndClientId_ShouldUseBasicAuth()
             {
                 var client = new AblyRest(new ClientOptions { Key = ValidKey, ClientId = "123" });
-                Assert.Equal(AuthMethod.Token, client.AblyAuth.AuthMethod);
+                Assert.Equal(AuthMethod.Basic, client.AblyAuth.AuthMethod);
             }
 
             [Fact]

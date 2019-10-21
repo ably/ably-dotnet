@@ -223,7 +223,7 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN15e")]
         public async Task ShouldUpdateConnectionKeyWhenConnectionIsResumed(Protocol protocol)
         {
-            var client = await GetRealtimeClient(protocol, (options, _) => options.LogLevel = LogLevel.Debug);
+            var client = await GetRealtimeClient(protocol);
 
             await WaitForState(client, ConnectionState.Connected);
             var initialConnectionKey = client.Connection.Key;
@@ -239,8 +239,6 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         public async Task WithAuthUrlShouldGetTokenFromUrl(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
-
             var client = await GetRestClient(protocol);
             var token = await client.Auth.RequestTokenAsync(new TokenParams() {ClientId = "*"});
             var settings = await Fixture.GetSettings();
@@ -288,7 +286,6 @@ namespace IO.Ably.Tests.Realtime
         [Trait("spec", "RTN16d")]
         public async Task WhenConnectionFailsToRecover_ShouldEmmitDetachedMessageToChannels(Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
             var stateChanges = new List<ChannelStateChange>();
 
             var client = await GetRealtimeClient(protocol);
@@ -349,7 +346,6 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
-                opts.LogLevel = LogLevel.Debug;
             });
 
             var stateChanges = new List<ConnectionState>();
@@ -417,7 +413,6 @@ namespace IO.Ably.Tests.Realtime
             WithChannelInAttachingState_WhenTransportIsDisconnected_ShouldResendAttachMessageOnConnectionResumed(
                 Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
             var client = await GetRealtimeClient(protocol);
             var sentMessages = new List<ProtocolMessage>();
             client.SetOnTransportCreated(wrapper =>
@@ -469,7 +464,6 @@ namespace IO.Ably.Tests.Realtime
             WithChannelInDetachingState_WhenTransportIsDisconnected_ShouldResendDetachMessageOnConnectionResumed(
                 Protocol protocol)
         {
-            Logger.LogLevel = LogLevel.Debug;
             var client = await GetRealtimeClient(protocol);
             var sentMessages = new List<ProtocolMessage>();
             client.SetOnTransportCreated(wrapper =>
@@ -515,7 +509,6 @@ namespace IO.Ably.Tests.Realtime
             WhenOperatingSystemNetworkIsNotAvailable_ShouldTransitionToDisconnectedAndRetry(Protocol protocol,
                 ConnectionState initialState)
         {
-            Logger.LogLevel = LogLevel.Debug;
             var client = await GetRealtimeClient(protocol, (options, _) => options.AutoConnect = false);
 
             client.Connect();

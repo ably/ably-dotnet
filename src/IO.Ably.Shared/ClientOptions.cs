@@ -275,11 +275,12 @@ namespace IO.Ably
 
         /// <summary>
         /// [Obsolete] Tells the library whether to capture the current SynchronizationContext and use it when triggering handlers and emitters
+        /// The default has changed from `true` to `false`
         /// It will be removed in the next version of the library.
-        /// Default: true.
+        /// Default: false.
         /// </summary>
         [Obsolete("We will no longer support the SynchronizationContext in the library. This property will be removed in future versions")]
-        public bool CaptureCurrentSynchronizationContext { get; set; } = true;
+        public bool CaptureCurrentSynchronizationContext { get; set; } = false;
 
         /// <summary>
         /// [Obsolete] Allows developers to provide their Captured Context to be used when triggering handlers and emitters
@@ -303,8 +304,7 @@ namespace IO.Ably
         {
             get
             {
-                if (ClientId.IsNotEmpty() || AuthUrl != null || AuthCallback != null || Token.IsNotEmpty() ||
-                    TokenDetails != null)
+                if (AuthUrl != null || AuthCallback != null || Token.IsNotEmpty() || TokenDetails != null)
                 {
                     return Ably.AuthMethod.Token;
                 }

@@ -70,7 +70,8 @@ namespace IO.Ably.Tests
                 });
 
                 await client.StatsAsync();
-                client.AblyAuth.CurrentToken.IsValidToken().Should().BeTrue();
+                var now = DateTimeOffset.UtcNow;
+                client.AblyAuth.CurrentToken.IsValidToken(now).Should().BeTrue();
             }
         }
     }

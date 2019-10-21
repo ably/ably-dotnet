@@ -7,7 +7,6 @@ namespace IO.Ably.Tests
     public class ImplicitTokenAuthWithClientId
     {
         private const string ApiKey = "123.456:789";
-        private string _clientId;
 
         internal AblyRequest CurrentRequest { get; set; }
 
@@ -15,15 +14,18 @@ namespace IO.Ably.Tests
 
         public int ExecutionCount { get; set; }
 
+        public int TokenRequestcount { get; set; }
+
         public ImplicitTokenAuthWithClientId()
         {
-            _clientId = "123";
-            Client = new AblyRest(new ClientOptions() { Key = ApiKey, ClientId = _clientId, UseBinaryProtocol = false });
+            var clientId = "123";
+            Client = new AblyRest(new ClientOptions() { Key = ApiKey, ClientId = clientId, UseBinaryProtocol = false });
             Client.ExecuteHttpRequest = request =>
             {
                 ExecutionCount++;
                 if (request.Url.Contains("requestToken"))
                 {
+                    TokenRequestcount++;
                     return string.Format(
                                 "{{ \"access_token\": {{ \"id\": \"unique-token-id\", \"expires\": \"{0}\"}}}}",
                                 DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeInMilliseconds()).ToAblyResponse();
@@ -38,7 +40,8 @@ namespace IO.Ably.Tests
         {
             Client.Channels.Get("test").PublishAsync("test", "true");
 
-            ExecutionCount.Should().Be(2);
+            ExecutionCount.Should().Be(1);
+            TokenRequestcount.Should().Be(0);
         }
 
         [Fact]
@@ -52,7 +55,7 @@ namespace IO.Ably.Tests
         {
             Client.Channels.Get("test").PublishAsync("test", "true");
 
-            Client.AblyAuth.CurrentToken.Should().NotBeNull();
+            Client.AblyAuth.CurrentToken.Should().BeNull();
         }
     }
 }

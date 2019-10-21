@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using IO.Ably.MessageEncoders;
 using Newtonsoft.Json;
@@ -151,6 +152,48 @@ namespace IO.Ably
         public static Message[] FromEncodedArray(Message[] encoded, ChannelOptions options = null)
         {
             return MessageHandler.FromEncodedArray(encoded, options);
+        }
+
+        /// <summary>
+        /// Decodes the json representation of a Message using the default list of encoders.
+        /// </summary>
+        /// <param name="messageJson">json representation of a Message.</param>
+        /// <param name="options">optional channel options. <see cref="ChannelOptions"/>.</param>
+        /// <returns>message with decoded payload.</returns>
+        /// <exception cref="AblyException">AblyException if there is an issue decoding the message. The most likely error is invalid json string.</exception>
+        public static Message FromEncoded(string messageJson, ChannelOptions options = null)
+        {
+            try
+            {
+                var message = JsonHelper.Deserialize<Message>(messageJson);
+                return FromEncoded(message, options);
+            }
+            catch (Exception e)
+            {
+                DefaultLogger.Error($"Error decoding message: {messageJson}", e);
+                throw new AblyException("Error decoding message. Error: " + e.Message, 50000);
+            }
+        }
+
+        /// <summary>
+        /// Decodes a json representation of an array of messages using the default list of encoders.
+        /// </summary>
+        /// <param name="messagesJson">json representation of an array of messages.</param>
+        /// <param name="options">optional channel options. <see cref="ChannelOptions"/>.</param>
+        /// <returns>array of decoded messages.</returns>
+        /// <exception cref="AblyException">AblyException if there is an issue decoding the message. The most likely error is invalid json string.</exception>
+        public static Message[] FromEncodedArray(string messagesJson, ChannelOptions options = null)
+        {
+            try
+            {
+                var messages = JsonHelper.Deserialize<List<Message>>(messagesJson).ToArray();
+                return FromEncodedArray(messages, options);
+            }
+            catch (Exception e)
+            {
+                DefaultLogger.Error($"Error decoding message: {messagesJson}", e);
+                throw new AblyException("Error decoding messages. Error: " + e.Message, 50000);
+            }
         }
     }
 }

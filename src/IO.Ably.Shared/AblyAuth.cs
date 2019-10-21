@@ -125,6 +125,13 @@ namespace IO.Ably
             {
                 var authInfo = Convert.ToBase64String(Options.Key.GetBytes());
                 request.Headers["Authorization"] = "Basic " + authInfo;
+
+                // (RSA7e) If clientId is provided in ClientOptions and RSA4 indicates that basic auth is to be used, then:
+                if (Options.ClientId.IsNotEmpty())
+                {
+                    // (RSA7e2) For REST clients, all requests should include an X-Ably-ClientId header with value set to the clientId, Base64 encoded
+                    request.Headers["X-Ably-ClientId"] = Options.ClientId.ToBase64();
+                }
             }
             else
             {
@@ -145,7 +152,7 @@ namespace IO.Ably
                 throw new AblyException("AuthMethod is set to Auth so there is no current valid token.");
             }
 
-            if (CurrentToken.IsValidToken())
+            if (CurrentToken.IsValidToken(ServerTimeOffset() ?? Now()))
             {
                 return CurrentToken;
             }
@@ -166,13 +173,14 @@ namespace IO.Ably
 
                 await OnAuthUpdated(token, false);
 
-                if (token.IsValidToken())
+                var now = ServerTimeOffset() ?? Now();
+                if (token.IsValidToken(now))
                 {
                     CurrentToken = token;
                     return token;
                 }
 
-                if (token != null && token.IsExpired())
+                if (token != null && token.IsExpired(now))
                 {
                     throw new AblyException("Token has expired: " + CurrentToken, 40142, HttpStatusCode.Unauthorized);
                 }
@@ -342,6 +350,9 @@ namespace IO.Ably
             {
                 throw new AblyException("Invalid token response returned", 80019);
             }
+
+            // TODO: Remove the Now function from the token
+            result.Now = Now;
 
             return result;
         }
