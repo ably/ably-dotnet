@@ -61,7 +61,5 @@ namespace IO.Ably.Transport
         /// the connection secret key string that is used to resume a connection and its state.
         /// </summary>
         public string ConnectionKey { get; private set; }
-
-        // TODO: Add extra details.
     }
 }

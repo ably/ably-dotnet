@@ -145,8 +145,7 @@ namespace IO.Ably.Realtime.Workflow
                         }
                         catch (Exception e)
                         {
-                            // TODO: Figure out there will be a case where the library becomes in an invalid state
-                            // TODO: Emit the error on the connection object
+                            // TODO: Emit the error to the error reporting service
                             Logger.Error("Error processing command: " + cmd.Explain(), e);
                         }
                         finally
@@ -275,8 +274,6 @@ namespace IO.Ably.Realtime.Workflow
                     await ProcessMessage(cmd.ProtocolMessage);
                     break;
                 case SendMessageCommand cmd:
-                    // TODO: Handle edge case where the transport has already closed
-                    // but we haven't processed the messages that closes it
                     if (State.Connection.CurrentStateObject.CanSend || cmd.Force)
                     {
                         SendMessage(cmd.ProtocolMessage, cmd.Callback);
