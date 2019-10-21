@@ -224,8 +224,34 @@ namespace IO.Ably.Tests.Realtime
             // sets their errorReason to null
             chan1.ErrorReason.Should().BeNull();
 
-            // and sets the connections errorReason to null
+            // and sets the connection's errorReason to null
             client.Connection.ErrorReason.Should().BeNull();
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTN11d")]
+        public async Task WithClosedConnection_WhenConnectCalled_TransitionsChannelsToInitialized(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            await client.WaitForState(ConnectionState.Connected);
+
+            var chan1 = client.Channels.Get("RTN11d".AddRandomSuffix());
+            await chan1.AttachAsync();
+
+            // show that the channel is not in the initialized state already
+            chan1.State.Should().NotBe(ChannelState.Initialized);
+
+            client.Close();
+            await client.WaitForState(ConnectionState.Closed);
+
+            // show there is a no-null error present on the connection
+            client.Connect();
+            await client.WaitForState(ConnectionState.Connecting);
+            client.Connection.State.Should().Be(ConnectionState.Connecting);
+
+            // transitions all the channels to INITIALIZED
+            chan1.State.Should().Be(ChannelState.Initialized);
         }
 
         [Theory]
