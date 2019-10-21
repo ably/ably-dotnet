@@ -114,16 +114,18 @@ namespace IO.Ably.Tests.Realtime
             var client = GetClientWithFakeTransport();
 
             ConnectionStateChange stateChange = null;
-            client.Connection.On(state =>
+            var awaiter = new TaskCompletionAwaiter();
+            client.Connection.On(ConnectionEvent.Failed, state =>
             {
                 stateChange = state;
+                awaiter.Tick();
             });
 
             var expectedError = new ErrorInfo("fake error");
             client.FakeProtocolMessageReceived(
                 new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = expectedError });
 
-            await client.ProcessCommands();
+            await awaiter.Task;
 
             stateChange.HasError.Should().BeTrue();
             stateChange.Reason.Should().Be(expectedError);

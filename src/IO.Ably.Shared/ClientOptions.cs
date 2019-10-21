@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using IO.Ably.Transport;
 using Newtonsoft.Json;
 
@@ -271,6 +272,22 @@ namespace IO.Ably
         /// Switched on IdempotentRest publishing. Currently switched off by default in libraries with version less than 1.2.
         /// </summary>
         public bool IdempotentRestPublishing { get; set; }
+
+        /// <summary>
+        /// [Obsolete] Tells the library whether to capture the current SynchronizationContext and use it when triggering handlers and emitters
+        /// It will be removed in the next version of the library.
+        /// Default: true.
+        /// </summary>
+        [Obsolete("We will no longer support the SynchronizationContext in the library. This property will be removed in future versions")]
+        public bool CaptureCurrentSynchronizationContext { get; set; } = true;
+
+        /// <summary>
+        /// [Obsolete] Allows developers to provide their Captured Context to be used when triggering handlers and emitters
+        /// It will be removed in the next version of the library.
+        /// Default: null.
+        /// </summary>
+        [Obsolete("We will no longer support the SynchronizationContext in the library. This property will be removed in future versions")]
+        public SynchronizationContext CustomContext { get; set; }
 
         [JsonIgnore]
         internal Func<DateTimeOffset> NowFunc

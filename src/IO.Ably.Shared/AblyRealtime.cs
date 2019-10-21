@@ -15,11 +15,11 @@ namespace IO.Ably
     /// </summary>
     public class AblyRealtime : IRealtimeClient, IDisposable
     {
+        private SynchronizationContext _synchronizationContext;
+
         internal ILogger Logger { get; private set; }
 
         internal RealtimeWorkflow Workflow { get; private set; }
-
-        private SynchronizationContext _synchronizationContext;
 
         internal volatile bool Disposed = false;
 
@@ -44,6 +44,7 @@ namespace IO.Ably
         internal AblyRealtime(ClientOptions options, Func<ClientOptions, AblyRest> createRestFunc)
         {
             Logger = options.Logger;
+            CaptureSynchronizationContext(options);
             RestClient = createRestFunc != null ? createRestFunc.Invoke(options) : new AblyRest(options);
 
             Connection = new Connection(this, options.NowFunc, options.Logger);
@@ -60,6 +61,18 @@ namespace IO.Ably
             if (options.AutoConnect)
             {
                 Connect();
+            }
+        }
+
+        private void CaptureSynchronizationContext(ClientOptions options)
+        {
+            if (options.CustomContext != null)
+            {
+                _synchronizationContext = options.CustomContext;
+            }
+            else if (options.CaptureCurrentSynchronizationContext)
+            {
+                _synchronizationContext = SynchronizationContext.Current;
             }
         }
 
