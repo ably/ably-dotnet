@@ -1407,7 +1407,7 @@ namespace IO.Ably.Tests.Realtime
                         var protocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
                         {
                             Channel = channelName,
-                            Flags = 0 // no presence, no resume
+                            Flags = 0, // no presence, no resume
                         };
 
                         client.GetTestTransport().FakeReceivedMessage(protocolMessage);
