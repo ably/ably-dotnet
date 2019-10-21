@@ -44,17 +44,21 @@ namespace IO.Ably
         /// </summary>
         public TokenDetails TokenDetails { get; set; }
 
-        // TODO: Documentation - update Auth headers docs.
-
         /// <summary>
         /// Extra Auth headers.
+        /// A set of key value pair headers to be added to any request made to the.
+        /// Useful when an application requires these to be added to validate the request or implement the response.
+        /// If the authHeaders object contains an authorization key,
+        /// then withCredentials will be set on the xhr request.
         /// </summary>
         public Dictionary<string, string> AuthHeaders { get; set; }
 
-        // TODO: Documentation - update Auth params docs.
-
         /// <summary>
         /// Extra Auth params.
+        /// A set of key value pair params to be added to any request made to the authUrl.
+        /// When the authMethod is GET, query params are added to the URL,
+        /// whereas when authMethod is POST, the params are sent as URL encoded form data.
+        /// Useful when an application require these to be added to validate the request or implement the response.
         /// </summary>
         public Dictionary<string, string> AuthParams { get; set; }
 
