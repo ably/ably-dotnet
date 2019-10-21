@@ -13,7 +13,7 @@ namespace IO.Ably.Realtime
     /// <summary>
     /// A class that provides access to presence operations and state for the associated Channel.
     /// </summary>
-    public partial class Presence : IDisposable
+    public partial class Presence
     {
         private readonly RealtimeChannel _channel;
         private readonly string _clientId;
@@ -82,7 +82,7 @@ namespace IO.Ably.Realtime
         /// <summary>
         /// Disposes the current Presence instance. Removes all listening handlers.
         /// </summary>
-        public void Dispose()
+        internal void RemoveAllListeners()
         {
             if (_channel != null)
             {

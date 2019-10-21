@@ -103,7 +103,7 @@ namespace IO.Ably.Realtime
                         RealtimeChannel removedChannel;
                         if (Channels.TryRemove(name, out removedChannel))
                         {
-                            removedChannel.Dispose();
+                            removedChannel.RemoveAllListeners();
                         }
                     }
                     else
@@ -130,6 +130,26 @@ namespace IO.Ably.Realtime
             foreach (var channelName in channelList)
             {
                 Release(channelName);
+            }
+        }
+
+        internal void CleanupChannels()
+        {
+            try
+            {
+                var channels = Channels.Keys.ToList();
+                foreach (var channelName in channels)
+                {
+                    var success = Channels.TryRemove(channelName, out RealtimeChannel channel);
+                    if (success)
+                    {
+                        channel.RemoveAllListeners();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error while disposing channels", e);
             }
         }
 

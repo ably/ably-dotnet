@@ -165,6 +165,7 @@ namespace IO.Ably.Realtime
         public void Dispose()
         {
             DetachListener();
+            _timer?.Dispose();
         }
     }
 }

@@ -28,7 +28,7 @@ namespace IO.Ably.Realtime
     /// A class representing the connection associated with an AblyRealtime instance.
     /// The Connection object exposes the lifecycle and parameters of the realtime connection.
     /// </summary>
-    public sealed class Connection : EventEmitter<ConnectionEvent, ConnectionStateChange>, IDisposable
+    public sealed class Connection : EventEmitter<ConnectionEvent, ConnectionStateChange>
     {
         private readonly Guid _objectId = Guid.NewGuid(); // Used to identify the connection object for OsEventSubscribers
         private static readonly ConcurrentDictionary<Guid, Action<NetworkState>> OsEventSubscribers =
@@ -199,13 +199,8 @@ namespace IO.Ably.Realtime
         /// </summary>
         public DateTimeOffset? ConfirmedAliveAt => InnerState.ConfirmedAliveAt;
 
-        /// <summary>
-        /// Disposes the connection object.
-        /// Once this is done the Connection can no longer be used.
-        /// </summary>
-        public void Dispose()
+        internal void RemoveAllListeners()
         {
-            Close();
             ClearAllDelegatesOfStateChangeEventHandler();
             CleanUpNetworkStateEvents();
             Off();
@@ -232,6 +227,8 @@ namespace IO.Ably.Realtime
         /// </summary>
         public void Connect()
         {
+            ThrowIfDisposed();
+
             ExecuteCommand(ConnectCommand.Create());
         }
 
@@ -242,6 +239,7 @@ namespace IO.Ably.Realtime
         /// it contains an error indicating the reason of the failure.</returns>
         public Task<Result<TimeSpan?>> PingAsync()
         {
+            ThrowIfDisposed();
             return TaskWrapper.Wrap<TimeSpan?>(Ping);
         }
 
@@ -252,16 +250,13 @@ namespace IO.Ably.Realtime
         /// <param name="callback">an action which will be called when the Ping completes. It either indicates success or contains an error.</param>
         public void Ping(Action<TimeSpan?, ErrorInfo> callback)
         {
+            ThrowIfDisposed();
+
             ExecuteCommand(new PingCommand(new PingRequest(callback, Now)));
         }
 
         private void ExecuteCommand(RealtimeCommand cmd)
         {
-            if (RealtimeClient.Disposed)
-            {
-                throw new ObjectDisposedException("This instance has been disposed. Please create a new one.");
-            }
-
             // Find a better way to reference the workflow
             RealtimeClient.Workflow.QueueCommand(cmd);
         }
@@ -298,6 +293,14 @@ namespace IO.Ably.Realtime
                             Logger.Error("Error notifying Connection state changed handlers", ex);
                         }
                 });
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (RealtimeClient.Disposed)
+            {
+                throw new ObjectDisposedException("The ably realtime instance has been disposed. Please create a new one.");
+            }
         }
     }
 }

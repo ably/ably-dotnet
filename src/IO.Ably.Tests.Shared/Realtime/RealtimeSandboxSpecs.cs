@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
@@ -15,6 +17,29 @@ namespace IO.Ably.Tests.Realtime
         public RealtimeSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
             : base(fixture, output)
         {
+        }
+
+        [Theory]
+        [ProtocolData]
+        public async Task WhenDisposed_ShouldSendClosingMessage(Protocol protocol)
+        {
+            var sentMessages = new List<ProtocolMessage>();
+            var client = await GetRealtimeClient(protocol, (opts, _) =>
+            {
+                opts.TransportFactory = new TestTransportFactory()
+                {
+                    OnMessageSent = sentMessages.Add
+                };
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            client.Dispose();
+
+            await client.ProcessCommands();
+            sentMessages.Count.Should().Be(1);
+            sentMessages.First().Action.Should().Be(ProtocolMessage.MessageAction.Close);
+            client.Disposed.Should().BeTrue();
         }
 
         [Theory]

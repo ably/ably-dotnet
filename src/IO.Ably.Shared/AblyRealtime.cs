@@ -172,16 +172,35 @@ namespace IO.Ably
         /// </summary>
         public void Dispose()
         {
-            // TODO : Need to move to disposing state and then disposed.
-            try
+            Dispose(true);
+        }
+
+        /// <summary>
+        /// Disposes the current instance.
+        /// Once disposed, it closes the connection and the library can't be used again.
+        /// </summary>
+        /// <param name="disposing">Whether the dispose method triggered it directly.</param>
+        protected void Dispose(bool disposing)
+        {
+            if (Disposed)
             {
-                Connection?.Dispose();
-                Workflow.Close();
+                return;
             }
-            catch (Exception e)
+
+            if (disposing)
             {
-                Logger.Error("Error disposing Ably Realtime", e);
+                try
+                {
+                    Connection?.RemoveAllListeners();
+                    Channels?.CleanupChannels();
+                }
+                catch (Exception e)
+                {
+                    Logger.Error("Error disposing Ably Realtime", e);
+                }
             }
+
+            Workflow.QueueCommand(DisposeCommand.Create());
 
             Disposed = true;
         }

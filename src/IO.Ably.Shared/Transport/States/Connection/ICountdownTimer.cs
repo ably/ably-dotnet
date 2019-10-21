@@ -31,7 +31,7 @@ namespace IO.Ably.Transport.States.Connection
         void Abort(bool trigger = false);
     }
 
-    internal class CountdownTimer : ICountdownTimer
+    internal class CountdownTimer : ICountdownTimer, IDisposable
     {
         internal ILogger Logger { get; private set; }
 
@@ -176,6 +176,11 @@ namespace IO.Ably.Transport.States.Connection
                 _timer.Dispose();
                 _timer = null;
             }
+        }
+
+        public void Dispose()
+        {
+            _timer?.Dispose();
         }
     }
 }

@@ -181,6 +181,28 @@ namespace IO.Ably.Realtime.Workflow
                         return cmd.Commands;
                     case EmptyCommand _:
                         return Enumerable.Empty<RealtimeCommand>();
+                    case DisposeCommand _:
+                        if (State.Connection.State == ConnectionState.Connected)
+                        {
+                            return new RealtimeCommand[]
+                            {
+                                SendMessageCommand.Create(
+                                    new ProtocolMessage(ProtocolMessage.MessageAction.Close), force: true),
+                                CompleteWorkflowCommand.Create(),
+                            };
+                        }
+                        else
+                        {
+                            return new RealtimeCommand[] { CompleteWorkflowCommand.Create() };
+                        }
+
+                        break;
+                    case CompleteWorkflowCommand _:
+                        Channels.ReleaseAll();
+                        ConnectionManager.Transport?.Dispose();
+                        CommandChannel.Writer.TryComplete();
+                        State.Connection.CurrentStateObject?.AbortTimer();
+                        return Enumerable.Empty<RealtimeCommand>();
                     default:
                         var next = await ProcessCommandInner(command);
                         return new[]
@@ -539,11 +561,6 @@ namespace IO.Ably.Realtime.Workflow
             }
 
             return Task.CompletedTask;
-        }
-
-        public void Close()
-        {
-            CommandChannel.Writer.Complete();
         }
 
         public async Task<RealtimeCommand> HandleSetStateCommand(RealtimeCommand command)

@@ -1,4 +1,5 @@
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using IO.Ably.Transport;
@@ -113,6 +114,34 @@ namespace IO.Ably.Realtime.Workflow
         }
 
         public static SetInitStateCommand Create(string recover) => new SetInitStateCommand(recover);
+
+        protected override string ExplainData()
+        {
+            return string.Empty;
+        }
+    }
+
+    internal class DisposeCommand : RealtimeCommand
+    {
+        private DisposeCommand()
+        {
+        }
+
+        public static DisposeCommand Create() => new DisposeCommand();
+
+        protected override string ExplainData()
+        {
+            return string.Empty;
+        }
+    }
+
+    internal class CompleteWorkflowCommand : RealtimeCommand
+    {
+        private CompleteWorkflowCommand()
+        {
+        }
+
+        public static CompleteWorkflowCommand Create() => new CompleteWorkflowCommand();
 
         protected override string ExplainData()
         {

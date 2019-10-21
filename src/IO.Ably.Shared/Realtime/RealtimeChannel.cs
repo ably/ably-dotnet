@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Realtime
 {
-    internal class RealtimeChannel : EventEmitter<ChannelEvent, ChannelStateChange>, IRealtimeChannel, IDisposable
+    internal class RealtimeChannel : EventEmitter<ChannelEvent, ChannelStateChange>, IRealtimeChannel
     {
         private readonly Handlers<Message> _handlers = new Handlers<Message>();
         private ChannelOptions _options;
@@ -368,12 +368,12 @@ namespace IO.Ably.Realtime
             }
         }
 
-        public void Dispose()
+        internal void RemoveAllListeners()
         {
             AttachedAwaiter?.Dispose();
             DetachedAwaiter?.Dispose();
             _handlers.RemoveAll();
-            Presence?.Dispose();
+            Presence?.RemoveAllListeners();
         }
 
         internal void AddUntilAttachParameter(PaginatedRequestParams query)
