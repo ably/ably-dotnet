@@ -41,13 +41,6 @@ namespace IO.Ably.Transport.States.Connection
                     Context.ExecuteCommand(new SetClosedStateCommand(message.Error));
                     return true;
                 case ProtocolMessage.MessageAction.Disconnected:
-                    if (await Context.CanUseFallBackUrl(message.Error))
-                    {
-                        Context.ExecuteCommand(SetDisconnectedStateCommand.Create(message.Error, retryInstantly: true, clearConnectionKey: true));
-
-                        // TODO: Should we fall through here or return
-                    }
-
                     if (message.Error?.IsTokenError ?? false)
                     {
                         if (Context.ShouldWeRenewToken(message.Error, state))
@@ -62,7 +55,15 @@ namespace IO.Ably.Transport.States.Connection
                         return true;
                     }
 
-                    Context.ExecuteCommand(SetDisconnectedStateCommand.Create(message.Error));
+                    if (await Context.CanUseFallBackUrl(message.Error))
+                    {
+                        Context.ExecuteCommand(SetDisconnectedStateCommand.Create(message.Error, retryInstantly: true, clearConnectionKey: true));
+                    }
+                    else
+                    {
+                        Context.ExecuteCommand(SetDisconnectedStateCommand.Create(message.Error));
+                    }
+
                     return true;
                 case ProtocolMessage.MessageAction.Error:
                     // an error message may signify an error state in the connection or in a channel

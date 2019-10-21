@@ -994,8 +994,7 @@ namespace IO.Ably.Tests.Realtime
                 client.Connection.Once(ConnectionEvent.Disconnected, change2 =>
                 {
                     disconnectedAt = DateTime.UtcNow;
-                    channels[1].Attach(); // connection disconnected so this should become attaching
-                    channels[1].WaitForState(ChannelState.Attaching);
+                    channels[1].Attach();
                     client.Connection.Once(ConnectionEvent.Connecting, change3 =>
                     {
                         reconnectedAt = DateTime.UtcNow;
@@ -1013,7 +1012,7 @@ namespace IO.Ably.Tests.Realtime
             });
 
             var interval = reconnectedAt - disconnectedAt;
-            interval.TotalMilliseconds.Should().BeGreaterThan(5000);
+            interval.TotalMilliseconds.Should().BeGreaterThan(5000 - 10 /* Allow 10 milliseconds */);
             initialConnectionId.Should().NotBeNullOrEmpty();
             initialConnectionId.Should().NotBe(newConnectionId);
             connectionStateTtl.Should().Be(TimeSpan.FromSeconds(1));
@@ -1022,10 +1021,6 @@ namespace IO.Ably.Tests.Realtime
             await channels[0].WaitForState(ChannelState.Attached);
             await channels[1].WaitForState(ChannelState.Attached);
             await channels[2].WaitForState(ChannelState.Attached);
-
-            channels[0].State.Should().Be(ChannelState.Attached);
-            channels[1].State.Should().Be(ChannelState.Attached);
-            channels[2].State.Should().Be(ChannelState.Attached);
         }
 
         [Theory]
