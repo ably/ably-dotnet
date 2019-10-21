@@ -645,12 +645,6 @@ namespace IO.Ably.Realtime
             }
         }
 
-        internal void EmitUpdate(ChannelState state, ProtocolMessage protocolMessage)
-        {
-            // TODO: this is not right. Find what should be in place of that logic
-            SetChannelState(State, protocolMessage.Error, protocolMessage, emitUpdate: true);
-        }
-
         public JObject GetCurrentState()
         {
             var state = new JObject();
