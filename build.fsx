@@ -1,3 +1,4 @@
+open System.Text.RegularExpressions
 #r "paket:
 nuget Fake.Core.Target 
 nuget Fake.IO.FileSystem
@@ -107,6 +108,11 @@ type TestRun =
   | UnitTests
   | IntegrationTests
 
+let findNextTrxTestPath (resultsPath:string) =
+    [ 1 .. 100 ] 
+    |> Seq.map ( fun i -> resultsPath.Replace(".trx", sprintf "-%d.trx" i))
+    |> Seq.find (File.exists >> not)
+
 let findNextTestPath (resultsPath:string) =
     [ 1 .. 100 ] 
     |> Seq.map ( fun i -> resultsPath.Replace(".xml", sprintf "-%d.xml" i))
@@ -126,25 +132,28 @@ let findFailedXUnitTests (resultsPath:string) =
     |> Seq.map trimTestMethod
 
 let findFailedDotnetTestTests (resultsPath:string) =
-    let doc = XDocument.Load(resultsPath)
+    let xml = File.readAsString resultsPath
+    let tidyXml = Regex.Replace(xml, @"xmlns=\""[^\""]+\""", "") // Remove the namespace to make xpath queries easier
+    let doc = XDocument.Parse(tidyXml);
     let nodes = doc.XPathSelectElements("//UnitTestResult[@outcome='Failed']")
+    printfn "Nodes found: %d" (nodes |> Seq.length)
 
     nodes 
     |> Seq.map (fun node -> (node.Attribute(XName.Get("testName"))).Value)
     |> Seq.map trimTestMethod  
+    |> Seq.toList
 
 let runStandardTests testToRun = 
   Directory.ensure testResultsDir
-  Directory.ensure testResultsDir
   Trace.log " --- Testing net core version --- "
-  let project = !! ("src/IO.Ably.Tests.DotNetCore20/*.csproj") |> Seq.head
- 
+  let project = Path.combine sourceDir "src/IO.Ably.Tests.DotNetCore20/IO.Ably.Tests.DotNetCore20.csproj"
+  
   match testToRun with
   | Method testMethodName -> 
-                          let logsPath = findNextTestPath(Path.combine testResultsDir "tests-netstandard.trx")
+                          let logsPath = findNextTrxTestPath(Path.combine testResultsDir "tests-netstandard.trx")
                           DotNet.test (fun opts -> { opts with Configuration = configuration
                                                                Filter = Some testMethodName
-                                                               Logger = Some( "trx;logfilename=" + (Path.combine testResultsDir "integration-tests-standard.trx"))
+                                                               Logger = Some( "trx;logfilename=" + logsPath)
                                          })
                                       project
                           logsPath                             
@@ -168,8 +177,7 @@ let runStandardTests testToRun =
                           | :? Fake.DotNet.MSBuildException -> 
                               printfn "Not all integration tests passed the first time"  
 
-                         logsPath                                                                                
-
+                         logsPath    
 
 let runFrameworkTests testToRun = 
   Directory.ensure testResultsDir

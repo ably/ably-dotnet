@@ -36,8 +36,8 @@ jobs:
   #    artifactName: Windows
   - task: PublishTestResults@2
     inputs:
-      testResultsFormat: 'xUnit'
-      testResultsFiles: '**/build/test/**/*.xml'
+      testResultsFormat: 'VSTest'
+      testResultsFiles: '**/build/test/**/*.trx'
       testRunTitle: '$(Agent.JobName)'
 
 variables:
