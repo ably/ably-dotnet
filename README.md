@@ -1,14 +1,27 @@
 # ably-dotnet
 
 [![NuGet version](https://badge.fury.io/nu/ably.io.svg)](https://badge.fury.io/nu/ably.io)
+[![NetFramework build status](https://dev.azure.com/vayadigital/Ably%20Realtime/_apis/build/status/ably.ably-dotnet?branchName=master)](https://dev.azure.com/vayadigital/Ably%20Realtime/_build/latest?definitionId=1&branchName=master)
+[![NetStandard build status](https://dev.azure.com/vayadigital/Ably%20Realtime/_apis/build/status/ably.ably-dotnet%20(1)?branchName=master)](https://dev.azure.com/vayadigital/Ably%20Realtime/_build/latest?definitionId=2&branchName=master)
 
 A .NET client library for [www.ably.io](https://www.ably.io), the realtime messaging service. This library currently targets the [Ably 1.1-beta client library specification](https://www.ably.io/documentation/client-lib-development-guide/features/). You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or or [view our client library SDKs feature support matrix](https://www.ably.io/download/sdk-feature-support-matrix) to see the list of all the available features.
 
+## Significant changes in 1.1.15
+
+Version 1.1.15 has seen a significant rewrite of the library internals which was needed to make the library safer and provide a good basis for implementing the rest of the spec. 
+Here is a list of the significant changes. You can find a full list in the release notes.
+
+1. [Breaking]Presence and IRealtimeChannel no longer implement the IDisposable interface. They don't hold on to any unmanaged recourses and there was no to expose the Dispose function. 
+2. [Breaking]ITransport has acquired an Id Property and ITransportListener.OnTransportEvent has an Id parameter. This is needed because we need to distinguish events raised different Transport instances. Sometimes the Closed event doesn't get processed until another transport has already been instantiated. 
+3. `ClientOptions.CaptureCurrentSynchronizationContext` has been deprecated and defaulted to `false`. It will be removed in future versions. You need to make sure that you don't directly update UI elements if you are building a WPF or Xamarin.Forms application from Ably handlers. If you still require the functionality please set it back to `true` and open an Ably Support ticket that you need the functionality. The main reason to disable this feature is that the library should not assume on which thread updates should be posted and that needs to be handled by the developer.
+4. IRealtimeClient implements IDisposable - If you want to clean up after the library you can now safely call `Dispose()`. Please note that you can no longer use this instance and have to create a new one.
+5. Logging has been greatly improved. We've removed a lot of verbose messages that brought little value. There is a helpful debug method called `.GetCurrentState()` on the realtime client that will dump the whole library's state as a json string. This will be helpful to include in the support tickets.
+
 ## Supported platforms
 
-* .NET 4.6+ &ast;
+* .NET 4.6.2+ &ast;
 * .NET Core &ast;&ast;
-* .NET Standard 1.4+
+* .NET Standard 2.0+
 * Mono 5.4+
 * UWP
 * [Xamarin.Android 8.0+](https://developer.xamarin.com/releases/android/xamarin.android_8/xamarin.android_8.0/)
@@ -18,7 +31,7 @@ A .NET client library for [www.ably.io](https://www.ably.io), the realtime messa
 This is because [System.Net.WebSockets]('https://msdn.microsoft.com/en-us/library/system.net.websockets(v=vs.110).aspx') is not fully implementented on Windows 7.
 See [this repository](https://github.com/ably-forks/ably-dotnet-alternative-transports) for a working example using the [websocket4net library](https://github.com/kerryjiang/WebSocket4Net).
 
-&ast;&ast; We regression-test the library against .NET Core 2 but it is designed to be compatible with all versions of .NET Core (and any other runtime implementation that is compatible with .NET Standard 1.4 or greater). If you find any compatibility issues, please do [raise an issue](https://github.com/ably/ably-dotnet/issues) in this repository or contact Ably customer support for advice. Any known runtime incompatibilities can be found [here](https://github.com/ably/ably-dotnet/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
+&ast;&ast; We regression-test the library against .NET Core 2 and .Net Framework 4.6.2. If you find any compatibility issues, please do [raise an issue](https://github.com/ably/ably-dotnet/issues) in this repository or contact Ably customer support for advice. Any known runtime incompatibilities can be found [here](https://github.com/ably/ably-dotnet/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
 
 ### Partial platform support
 
@@ -376,7 +389,7 @@ See [the nuget page](http://nuget.org/packages/ably.io/) for specifics.
 
 ## Support, feedback and troubleshooting
 
-Please visit http://support.ably.io/ for access to our knowledgebase and to ask for any assistance.
+Please visit http://support.ably.io/ for access to our knowledge-base and to ask for any assistance.
 
 You can also view the [community reported Github issues](https://github.com/ably/ably-dotnet/issues).
 
@@ -391,12 +404,12 @@ You can also view the [community reported Github issues](https://github.com/ably
 
 ## Building and Packaging
 
-The build scripts are written in powershell using PSake and need to be run on Windows with Visual Studio 2017 installed. Additionally nuget.exe and GitVersion.exe are required, these can be installed via [chocolatey](https://chocolatey.org)
+The build scripts are written partly using `fake' and partly in powershell using PSake and need to be run on Windows with Visual Studio 2017 installed. Additionally nuget.exe and GitVersion.exe are required, these can be installed via [chocolatey](https://chocolatey.org)
 
     choco install nuget.commandline
     choco install gitversion.portable
 
-Running `.\build.ps1` will start the build process and run the tests. 
+Running `.\build.cmd` will start the build process and run the tests. 
 Running `package.ps1` will run the build script and create a nuget package.
 
 ## Working from source
@@ -425,8 +438,8 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 * Run `package.ps1` to create the nuget package. 
 * Run `nuget push ably.io.*.nupkg -Source https://www.nuget.org/api/v2/package` (a private nuget API Key is required to complete this step, more information on publishing nuget packages can be found [here](https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package))
 
-&dagger; GitVersion is required, see the preceeding section 'Building and Packaging' for more information.
+&dagger; GitVersion is required, see the preceding section 'Building and Packaging' for more information.
 
 ## License
 
-Copyright (c) 2016 Ably Real-time Ltd, Licensed under the Apache License, Version 2.0.  Refer to [LICENSE](LICENSE) for the license terms.
+Copyright (c) 2019 Ably Real-time Ltd, Licensed under the Apache License, Version 2.0.  Refer to [LICENSE](LICENSE) for the license terms.
