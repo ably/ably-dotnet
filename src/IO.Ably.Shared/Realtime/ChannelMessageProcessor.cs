@@ -43,13 +43,14 @@ namespace IO.Ably.Realtime
                 case ProtocolMessage.MessageAction.Error:
                     channel.SetChannelState(ChannelState.Failed, protocolMessage);
                     break;
-                case ProtocolMessage.MessageAction.Attach:
                 case ProtocolMessage.MessageAction.Attached:
+                    channel.Properties.AttachSerial = protocolMessage.ChannelSerial;
                     if (channel.State == ChannelState.Attached)
                     {
                         // RTL12
                         if (!protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed))
                         {
+                            channel.Presence.ChannelAttached(protocolMessage);
                             channel.EmitUpdate(protocolMessage.Error, false);
                         }
                     }

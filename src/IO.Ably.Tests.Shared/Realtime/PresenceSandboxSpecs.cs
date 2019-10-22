@@ -1292,6 +1292,100 @@ namespace IO.Ably.Tests.Realtime
 
                 [Theory]
                 [ProtocolData]
+                [Trait("spec", "RTP17c2")]
+                public async Task WhenChannelBecomesAttached_AndSyncInitiatedAsPartOfAttach_AndResumeIsFalseAndSyncNotExpected_ShouldReEnterMembersInInternalMap(Protocol protocol)
+                {
+                    /*
+                     * If the resumed flag is false and a SYNC is not expected...
+                     */
+
+                    var channelName = "RTP17c2".AddRandomSuffix();
+                    var setupClient = await GetRealtimeClient(protocol);
+                    var setupChannel = setupClient.Channels.Get(channelName);
+
+                    // enter 3 client to the channel
+                    for (int i = 0; i < 3; i++)
+                    {
+                        await setupChannel.Presence.EnterClientAsync($"member_{i}", null);
+                    }
+
+                    var client = await GetRealtimeClient(protocol, (options, settings) => { options.ClientId = "local"; });
+                    await client.WaitForState();
+                    var channel = client.Channels.Get(channelName);
+                    var presence = channel.Presence;
+
+                    var p = await presence.GetAsync();
+                    p.Should().HaveCount(3);
+
+                    await presence.EnterAsync();
+
+                    await Task.Delay(250);
+                    presence.Map.Members.Should().HaveCount(4);
+                    presence.InternalMap.Members.Should().HaveCount(1);
+
+                    List<PresenceMessage> leaveMessages = new List<PresenceMessage>();
+                    PresenceMessage updateMessage = null;
+                    PresenceMessage enterMessage = null;
+                    bool? hasPresence = null;
+                    bool? resumed = null;
+                    await WaitForMultiple(2, partialDone =>
+                    {
+                        presence.Subscribe(PresenceAction.Leave, message =>
+                        {
+                            leaveMessages.Add(message);
+                        });
+
+                        presence.Subscribe(PresenceAction.Update, message =>
+                        {
+                            updateMessage = message;
+                            partialDone(); // 1 call
+                        });
+
+                        presence.Subscribe(PresenceAction.Enter, message =>
+                        {
+                            enterMessage = message; // not expected to hit
+                        });
+
+                        client.GetTestTransport().AfterDataReceived = message =>
+                        {
+                            if (message.Action == ProtocolMessage.MessageAction.Attached)
+                            {
+                                hasPresence = message.HasFlag(ProtocolMessage.Flag.HasPresence);
+                                resumed = message.HasFlag(ProtocolMessage.Flag.Resumed);
+                                client.GetTestTransport().AfterDataReceived = _ => { };
+                                partialDone(); // 1 call
+                            }
+                        };
+
+                        // inject attached message
+                        var protocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
+                        {
+                            Channel = channelName,
+                            Flags = 0, // no presence, no resume
+                        };
+
+                        client.GetTestTransport().FakeReceivedMessage(protocolMessage);
+                    });
+
+                    leaveMessages.Should().HaveCount(4);
+                    foreach (var msg in leaveMessages)
+                    {
+                        msg.ClientId.Should().BeOneOf("member_0", "member_1", "member_2", "local");
+                    }
+
+                    updateMessage.Should().NotBeNull();
+                    updateMessage.ClientId.Should().Be("local");
+                    enterMessage.Should().BeNull();
+
+                    presence.Unsubscribe();
+                    var remainingMembers = await presence.GetAsync();
+
+                    remainingMembers.Should().HaveCount(1);
+                    remainingMembers.First().ClientId.Should().Be("local");
+                }
+
+                [Theory]
+                [ProtocolData]
                 [Trait("spec", "RTP5b")]
                 public async Task WhenChannelBecomesAttached_ShouldSendQueuedMessagesAndInitiateSYNC(Protocol protocol)
                 {

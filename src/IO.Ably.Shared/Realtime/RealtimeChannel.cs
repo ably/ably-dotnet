@@ -493,13 +493,6 @@ namespace IO.Ably.Realtime
                     }
 
                     break;
-                case ChannelState.Attached:
-                    if (protocolMessage != null)
-                    {
-                        Properties.AttachSerial = protocolMessage.ChannelSerial;
-                    }
-
-                    break;
                 case ChannelState.Detaching:
                     AttachedAwaiter.Fail(new ErrorInfo("Channel transitioned to detaching", 50000));
 
@@ -517,6 +510,9 @@ namespace IO.Ably.Realtime
                         Logger.Warning($"#{Name}. Cannot send Detach messages when connection is in Failed State");
                     }
 
+                    break;
+                case ChannelState.Attached:
+                    Presence.ChannelAttached(protocolMessage);
                     break;
                 case ChannelState.Detached:
                     /* RTL13a check for unexpected detach */
@@ -539,12 +535,16 @@ namespace IO.Ably.Realtime
                             break;
                     }
 
+                    Presence.ChannelDetachedOrFailed(error);
+
                     break;
                 case ChannelState.Failed:
                     AttachedAwaiter.Fail(error);
                     DetachedAwaiter.Fail(error);
+                    Presence.ChannelDetachedOrFailed(error);
                     break;
                 case ChannelState.Suspended:
+                    Presence.ChannelSuspended(error);
                     break;
             }
         }

@@ -30,7 +30,6 @@ namespace IO.Ably.Realtime
             PendingPresenceQueue = new ConcurrentQueue<QueuedPresenceMessage>();
             _connection = connection;
             _channel = channel;
-            _channel.InternalStateChanged += OnChannelStateChanged;
             _clientId = cliendId;
         }
 
@@ -84,11 +83,6 @@ namespace IO.Ably.Realtime
         /// </summary>
         internal void RemoveAllListeners()
         {
-            if (_channel != null)
-            {
-                _channel.InternalStateChanged -= OnChannelStateChanged;
-            }
-
             _handlers.RemoveAll();
         }
 
@@ -727,34 +721,28 @@ namespace IO.Ably.Realtime
             }
         }
 
-        private void OnChannelStateChanged(object sender, ChannelStateChange e)
+        internal void ChannelDetachedOrFailed(ErrorInfo error)
         {
-            if (e.Current == ChannelState.Attached)
-            {
-                ChannelAttached(e);
-            }
-            else if (e.Current == ChannelState.Detached || e.Current == ChannelState.Failed)
-            {
-                FailQueuedMessages(e.Error);
-                Map.Clear();
-                InternalMap.Clear();
-            }
-            else if (e.Current == ChannelState.Suspended)
-            {
-                /*
+            FailQueuedMessages(error);
+            Map.Clear();
+            InternalMap.Clear();
+        }
+
+        internal void ChannelSuspended(ErrorInfo error)
+        {
+            /*
                  * (RTP5f) If the channel enters the SUSPENDED state then all queued presence messages will fail
                  * immediately, and the PresenceMap is maintained
                  */
-                FailQueuedMessages(e.Error);
-            }
+            FailQueuedMessages(error);
         }
 
-        internal void ChannelAttached(ChannelStateChange e)
+        internal void ChannelAttached(ProtocolMessage attachMessage)
         {
             /* Start sync, if hasPresence is not set end sync immediately dropping all the current presence members */
             StartSync();
-            var hasPresence = e.ProtocolMessage != null &&
-                              e.ProtocolMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
+            var hasPresence = attachMessage != null &&
+                              attachMessage.HasFlag(ProtocolMessage.Flag.HasPresence);
 
             if (hasPresence)
             {
@@ -764,7 +752,7 @@ namespace IO.Ably.Realtime
                 if (Logger.IsDebug)
                 {
                     Logger.Debug(
-                        $"Protocol message has presence flag. Starting Presence SYNC. Flag: {e.ProtocolMessage.Flags}");
+                        $"Protocol message has presence flag. Starting Presence SYNC. Flag: {attachMessage.Flags}");
                 }
 
                 StartSync();
@@ -781,6 +769,8 @@ namespace IO.Ably.Realtime
                     */
                 EndSync();
                 SendQueuedMessages();
+
+                // TODO: Missing sending my members if any
             }
         }
 

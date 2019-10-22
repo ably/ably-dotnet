@@ -8,7 +8,6 @@ using FluentAssertions.Execution;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
-using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
@@ -1407,13 +1406,12 @@ namespace IO.Ably.Tests.Realtime
                 var client = await GetConnectedClient();
 
                 var channel = client.Channels.Get("history");
-                SetState(
-                    channel,
-                    ChannelState.Attached,
-                    message: new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
-                    {
-                        ChannelSerial = "101"
-                    });
+                client.ProcessMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attached)
+                {
+                    Channel = "history",
+                    ChannelSerial = "101"
+                });
+                await client.ProcessCommands();
 
                 await channel.HistoryAsync(true);
 
