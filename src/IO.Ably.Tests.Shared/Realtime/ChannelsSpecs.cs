@@ -30,6 +30,7 @@ namespace IO.Ably.Tests.Realtime
         public async Task ShouldReturnExistingChannel()
         {
             var client = await GetConnectedClient();
+
             // Arrange
             var channel = client.Channels.Get("test");
 

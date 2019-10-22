@@ -20,7 +20,7 @@ namespace IO.Ably.Tests
 
         protected ManualResetEvent ResetEvent { get; }
 
-        private List<AblyRealtime> RealtimeClients = new List<AblyRealtime>();
+        private readonly List<AblyRealtime> _realtimeClients = new List<AblyRealtime>();
 
         public SandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
         {
@@ -66,7 +66,7 @@ namespace IO.Ably.Tests
             optionsAction?.Invoke(defaultOptions, settings);
             var client = new AblyRealtime(defaultOptions, createRestFunc);
 
-            RealtimeClients.Add(client);
+            _realtimeClients.Add(client);
             return client;
         }
 
@@ -167,8 +167,8 @@ namespace IO.Ably.Tests
 
         public void Dispose()
         {
-            Output.WriteLine("Test end disposing connections: " + RealtimeClients.Count);
-            foreach (var client in RealtimeClients)
+            Output.WriteLine("Test end disposing connections: " + _realtimeClients.Count);
+            foreach (var client in _realtimeClients)
             {
                 try
                 {

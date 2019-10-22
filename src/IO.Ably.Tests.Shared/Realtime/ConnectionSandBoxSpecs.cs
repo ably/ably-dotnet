@@ -447,6 +447,7 @@ namespace IO.Ably.Tests.Realtime
             channel.Publish(null, "foo");
 
             await client.ProcessCommands();
+
             // currently disconnected so message is queued
             // client.State.PendingMessages.Should().HaveCount(1);
 

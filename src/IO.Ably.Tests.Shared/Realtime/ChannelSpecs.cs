@@ -19,7 +19,7 @@ namespace IO.Ably.Tests.Realtime
 {
     public class ChannelSpecs : AblyRealtimeSpecs
     {
-        private Action<ClientOptions> SwitchBinaryOff = opts => opts.UseBinaryProtocol = false;
+        private Action<ClientOptions> _switchBinaryOff = opts => opts.UseBinaryProtocol = false;
 
         public class GeneralSpecs : ChannelSpecs
         {
@@ -47,7 +47,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 // ChannelState and ChannelEvent should have values that are aligned
                 // to allow for casting between the two (with the exception of the Update event)
-                // The assigned values are arbitary, but should be unique per event/state pair
+                // The assigned values are arbitrary, but should be unique per event/state pair
                 ((int)ChannelEvent.Initialized).Should().Be(0);
                 ((int)ChannelEvent.Attaching).Should().Be(1);
                 ((int)ChannelEvent.Attached).Should().Be(2);
@@ -57,7 +57,7 @@ namespace IO.Ably.Tests.Realtime
                 ((int)ChannelEvent.Failed).Should().Be(6);
                 ((int)ChannelEvent.Update).Should().Be(7);
 
-                // each ChannelState should have an equivelant ChannelEvent
+                // each ChannelState should have an equivalent ChannelEvent
                 ((int)ChannelState.Failed).Should().Be((int)ChannelEvent.Failed);
                 ((int)ChannelState.Detached).Should().Be((int)ChannelEvent.Detached);
                 ((int)ChannelState.Detaching).Should().Be((int)ChannelEvent.Detaching);
@@ -486,6 +486,7 @@ namespace IO.Ably.Tests.Realtime
             public async Task WhenConnectionIsClosedClosingSuspendedOrFailed_ShouldThrowError()
             {
                 var client = await GetConnectedClient();
+
                 // Closed
                 client.Workflow.SetState(new ConnectionClosedState(client.ConnectionManager, Logger));
                 Assert.Throws<AblyException>(() => client.Channels.Get("closed").Attach());
@@ -973,6 +974,7 @@ namespace IO.Ably.Tests.Realtime
 
                     await client.WaitForState(ConnectionState.Connected);
                     await client.ProcessCommands();
+
                     // Messages should be sent
                     LastCreatedTransport.LastMessageSend.Should().NotBeNull();
                     client.State.PendingMessages.Should().BeEmpty();
@@ -1103,7 +1105,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL7a")]
             public async Task WithNoArguments_AddsAListenerForAllMessages()
             {
-                var (client, channel) = await GetClientAndChannel(SwitchBinaryOff);
+                var (client, channel) = await GetClientAndChannel(_switchBinaryOff);
                 SetState(channel, ChannelState.Attached);
                 var messages = new ConcurrentBag<Message>();
                 int count = 0;
@@ -1130,7 +1132,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL7b")]
             public async Task WithEventArguments_ShouldOnlyNotifyWhenNameMatchesMessageName()
             {
-                var (client, channel) = await GetClientAndChannel(SwitchBinaryOff);
+                var (client, channel) = await GetClientAndChannel(_switchBinaryOff);
                 SetState(channel, ChannelState.Attached);
                 var messages = new List<Message>();
                 channel.Subscribe("test", message =>
@@ -1152,7 +1154,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL7c")]
             public async Task ShouldImplicitlyAttachAChannel()
             {
-                var channel = await GetTestChannel(optionsAction: SwitchBinaryOff);
+                var channel = await GetTestChannel(optionsAction: _switchBinaryOff);
                 channel.State.Should().Be(ChannelState.Initialized);
                 channel.Subscribe(message =>
                 {
@@ -1166,7 +1168,7 @@ namespace IO.Ably.Tests.Realtime
             public async Task WithAMessageThatFailDecryption_ShouldDeliverMessageButEmmitErrorOnTheChannel()
             {
                 var otherChannelOptions = new ChannelOptions(true);
-                var client = await GetConnectedClient(SwitchBinaryOff);
+                var client = await GetConnectedClient(_switchBinaryOff);
                 var encryptedChannel = client.Channels.Get("encrypted", new ChannelOptions(true));
                 SetState(encryptedChannel, ChannelState.Attached);
                 bool msgReceived = false,
@@ -1193,7 +1195,7 @@ namespace IO.Ably.Tests.Realtime
             public async Task
                 WithMessageThatCantBeDecoded_ShouldDeliverMessageWithResidualEncodingAndEmitTheErrorOnTheChannel()
             {
-                var (client, channel) = await GetClientAndChannel(SwitchBinaryOff);
+                var (client, channel) = await GetClientAndChannel(_switchBinaryOff);
                 SetState(channel, ChannelState.Attached);
 
                 Message receivedMessage = null;
@@ -1217,7 +1219,7 @@ namespace IO.Ably.Tests.Realtime
             [Fact]
             public async Task WithMultipleMessages_ShouldSetIdOnEachMessage()
             {
-                var (client, channel) = await GetClientAndChannel(SwitchBinaryOff);
+                var (client, channel) = await GetClientAndChannel(_switchBinaryOff);
 
                 SetState(channel, ChannelState.Attached);
 
@@ -1237,7 +1239,7 @@ namespace IO.Ably.Tests.Realtime
             [Fact]
             public async Task WithMultipleMessagesHaveIds_ShouldPreserveTheirIds()
             {
-                var (client, channel) = await GetClientAndChannel(SwitchBinaryOff);
+                var (client, channel) = await GetClientAndChannel(_switchBinaryOff);
 
                 SetState(channel, ChannelState.Attached);
 
@@ -1269,7 +1271,7 @@ namespace IO.Ably.Tests.Realtime
                 string messageConId,
                 string expectedConnId)
             {
-                var (client, channel) = await GetClientAndChannel(SwitchBinaryOff);
+                var (client, channel) = await GetClientAndChannel(_switchBinaryOff);
 
                 SetState(channel, ChannelState.Attached);
 
@@ -1292,7 +1294,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 SetNowFunc(() => DateTimeOffset.UtcNow);
                 var timeStamp = Now;
-                var (client, channel) = await GetClientAndChannel(SwitchBinaryOff);
+                var (client, channel) = await GetClientAndChannel(_switchBinaryOff);
 
                 SetState(channel, ChannelState.Attached);
 
@@ -1355,7 +1357,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL8a")]
             public async Task ShouldRemoveHandlerFromSubscribers()
             {
-                var (client, channel) = await GetClientAndChannel(SwitchBinaryOff);
+                var (client, channel) = await GetClientAndChannel(_switchBinaryOff);
                 SetState(channel, ChannelState.Attached);
 
                 channel.Subscribe(_handler);
@@ -1369,7 +1371,7 @@ namespace IO.Ably.Tests.Realtime
             [Trait("spec", "RTL8b")]
             public async Task WithEventName_ShouldUnsubscribeHandlerFromTheSpecifiedEvent()
             {
-                var (client, channel) = await GetClientAndChannel(SwitchBinaryOff);
+                var (client, channel) = await GetClientAndChannel(_switchBinaryOff);
                 SetState(channel, ChannelState.Attached);
                 channel.Subscribe("test", _handler);
                 channel.Unsubscribe("test", _handler);

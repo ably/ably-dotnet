@@ -67,7 +67,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSandBoxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSandboxTransportSideEffectsSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSpecs\AblyRealtimeTestExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSpecs\AckNackSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSpecs\ConnectionFailuresOnceConnectedSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSpecs\ConnectionFailureSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSpecs\ConnectionFallbackSpecs.cs" />

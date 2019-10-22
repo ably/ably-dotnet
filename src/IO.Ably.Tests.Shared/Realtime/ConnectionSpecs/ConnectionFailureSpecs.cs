@@ -205,8 +205,9 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 Done();
             });
 
-            await Task.Delay(1000); // Let the connecting state complete it's logic otherwise by the time we get to here
-                                    // The transport is not created yet as this is done on a separate thread
+            // Let the connecting state complete it's logic otherwise by the time we get to here
+            // The transport is not created yet as this is done on a separate thread
+            await Task.Delay(1000);
 
             LastCreatedTransport.Listener.OnTransportEvent(LastCreatedTransport.Id, TransportState.Closing, new Exception());
 

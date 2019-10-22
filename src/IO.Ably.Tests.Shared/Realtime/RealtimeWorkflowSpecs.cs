@@ -363,6 +363,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
             public async Task WhenReceivingAckOrNackMessage_ShouldHandleAction(ProtocolMessage.MessageAction action)
             {
                 var client = GetDisconnectedClient();
+
                 // Act
                 bool result = await client.Workflow.HandleAckMessage(new ProtocolMessage(action));
 
@@ -390,6 +391,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 ProtocolMessage.MessageAction action)
             {
                 var client = GetDisconnectedClient();
+
                 // Act
                 bool result = await client.Workflow.HandleAckMessage(new ProtocolMessage(action));
 
@@ -462,6 +464,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 await client.ProcessCommands();
 
                 await awaiter.Task;
+
                 // Assert
                 Assert.Equal(3, callbacks.Count);
                 Assert.True(callbacks.TrueForAll(c => c.Item1)); // Ack
