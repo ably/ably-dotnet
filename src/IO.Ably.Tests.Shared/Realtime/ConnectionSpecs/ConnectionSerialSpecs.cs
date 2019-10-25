@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.Realtime;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -7,14 +8,16 @@ using Xunit.Abstractions;
 namespace IO.Ably.Tests.Realtime
 {
     [Trait("spec", "RTN10")]
-    public class ConnectionSerialSpecs : ConnectionSpecsBase
+    public class ConnectionSerialSpecs : AblyRealtimeSpecs
     {
         [Fact]
         [Trait("spec", "RTN10a")]
-        public void OnceConnected_ConnectionSerialShouldBeMinusOne()
+        public async Task OnceConnected_ConnectionSerialShouldBeMinusOne()
         {
             var client = GetClientWithFakeTransport();
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
+            await client.WaitForState(ConnectionState.Connected);
+
             client.Connection.Serial.Should().Be(-1);
         }
 
@@ -25,26 +28,29 @@ namespace IO.Ably.Tests.Realtime
             // Arrange
             var client = GetClientWithFakeTransport();
             long targetSerial = 1234567;
-            client.Connection.Serial = targetSerial;
+            client.State.Connection.Serial = targetSerial;
 
             // Act
-            var transportParams = await client.ConnectionManager.CreateTransportParameters();
+            var transportParams = await client.ConnectionManager.CreateTransportParameters("https://realtime.ably.io");
 
             transportParams.ConnectionSerial.Should().Be(targetSerial);
         }
 
         [Fact]
         [Trait("spec", "RTN10b")]
-        public void WhenProtocolMessageWithSerialReceived_SerialShouldUpdate()
+        public async Task WhenProtocolMessageWithSerialReceived_SerialShouldUpdate()
         {
             // Arrange
             var client = GetClientWithFakeTransport();
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
+            await client.WaitForState(ConnectionState.Connected);
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Message)
             {
                 ConnectionSerial = 123456
             });
+
+            await client.ProcessCommands();
 
             // Act
             client.Connection.Serial.Should().Be(123456);

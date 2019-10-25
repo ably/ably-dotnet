@@ -8,6 +8,7 @@ using Xunit;
 
 namespace IO.Ably.Tests
 {
+    [Collection("UnitTests")]
     [Trait("spec", "RSA8e")]
     public class AuthOptionsMergeTests
     {

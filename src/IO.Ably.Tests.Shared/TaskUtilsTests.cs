@@ -10,7 +10,7 @@ namespace IO.Ably.Tests
 {
     public class TaskUtilsTests
     {
-        class MockBagroundService
+        public class MockBagroundService
         {
             public static async Task FailingTask()
             {
@@ -19,7 +19,7 @@ namespace IO.Ably.Tests
             }
         }
 
-        [Fact(Skip="Even this test crashes the test process on Circle CI")]
+        [Fact(Skip = "Keeps failing when ran on the build server")]
         public async Task FailingTaskShouldHaveExceptionHandled()
         {
             var tsc = new TaskCompletionAwaiter(500);
@@ -32,7 +32,7 @@ namespace IO.Ably.Tests
             result.Should().BeTrue();
         }
 
-        [Fact(Skip = "Маnual test only. Otherwise it crashes the test host process on the CI server")]
+        [Fact(Skip="This kills the test runner. ONLY run manually")]
         public async Task FailingTaskWrappingAsyncWillNotHaveExceptionHandled()
         {
             /*

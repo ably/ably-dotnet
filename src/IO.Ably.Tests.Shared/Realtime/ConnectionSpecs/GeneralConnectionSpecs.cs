@@ -1,3 +1,6 @@
+using System.Diagnostics;
+using System.IO.Pipes;
+using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Transport;
@@ -7,13 +10,13 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime
 {
-    public class GeneralConnectionSpecs : ConnectionSpecsBase
+    public class GeneralConnectionSpecs : AblyRealtimeSpecs
     {
         [Fact]
         [Trait("spec", "RTN1")]
-        public void ShouldUseWebSocketTransport()
+        public async Task ShouldUseWebSocketTransport()
         {
-            var client = GetRealtimeClient();
+            var client = await GetConnectedClient(); // The transport is created by the connecting state
 
             client.ConnectionManager.Transport.GetType().Should().BeAssignableTo<ITransport>();
         }
@@ -21,12 +24,13 @@ namespace IO.Ably.Tests.Realtime
         [Fact]
         [Trait("spec", "RTN3")]
         [Trait("spec", "RTN6")]
-        public void WithAutoConnect_CallsConnectOnTransport()
+        public async Task WithAutoConnect_CallsConnectOnTransport()
         {
             var client = GetClientWithFakeTransport(opts => opts.AutoConnect = true);
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected));
 
-            client.ConnectionManager.ConnectionState.Should().Be(ConnectionState.Connected);
+            await client.WaitForState(ConnectionState.Connected);
+
             LastCreatedTransport.ConnectCalled.Should().BeTrue();
         }
 
@@ -42,7 +46,7 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTN19")]
-        public void WhenConnectedMessageReceived_ConnectionShouldBeInConnectedStateAndConnectionDetailsAreUpdated()
+        public async Task WhenConnectedMessageReceived_ConnectionShouldBeInConnectedStateAndConnectionDetailsAreUpdated()
         {
             var client = GetClientWithFakeTransport();
 
@@ -56,14 +60,15 @@ namespace IO.Ably.Tests.Realtime
                 ConnectionDetails = connectionDetailsMessage
             });
 
-            client.Connection.State.Should().Be(ConnectionState.Connected);
+            await client.WaitForState(ConnectionState.Connected);
+
             client.Connection.Key.Should().Be("boo");
         }
 
         [Fact]
         [Trait("spec", "RSA15a")]
         [Trait("sandboxTest", "needed")]
-        public void WhenConnectedMessageReceivedWithClientId_AblyAuthShouldUseConnectionClientId()
+        public async Task WhenConnectedMessageReceivedWithClientId_AblyAuthShouldUseConnectionClientId()
         {
             var client = GetClientWithFakeTransport();
 
@@ -71,6 +76,8 @@ namespace IO.Ably.Tests.Realtime
             {
                 ConnectionDetails = new ConnectionDetails { ClientId = "realtimeClient" }
             });
+
+            await client.ProcessCommands();
 
             client.RestClient.AblyAuth.ClientId.Should().Be("realtimeClient");
         }

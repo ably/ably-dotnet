@@ -17,10 +17,20 @@
     <Compile Include="$(MSBuildThisFileDirectory)ApiKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaginatedRequestParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelEvent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\AttemptsHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.GetParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.QueuedPresenceMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\PresenceMap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\ChannelCommands.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\IQueueCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\PingRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\RealtimeCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\RealtimeCommands.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\RealtimeState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\RealtimeWorkflow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transport\AttemptFailedState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionAttempt.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\IConnectionContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\AuthDetails.cs" />
@@ -33,7 +43,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\PresenceExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\TaskExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HttpUtility.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IChannelCommands.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IChannels.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ILogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IoC.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IPlatform.cs" />
@@ -45,7 +55,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)SyncExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TaskConstants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ClientOptions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Config.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\CapabilityJsonConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\DateTimeOffsetJsonConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CustomSerialisers\TimeSpanJsonConverter.cs" />
@@ -100,9 +109,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)TokenParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TokenRequestPostData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TokenResponse.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Transport\AcknowledgementProcessor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionAttemptsInfo.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionHeartbeatRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionHeartbeatHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\IConnectionManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\ITransport.cs" />
@@ -130,7 +138,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Types\PresenceMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\ProtocolMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\ActionOnDispose.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utils\ReflectionUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\ActionUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\ConnectionAwaiter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\StringUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\TaskUtils.cs" />
   </ItemGroup>

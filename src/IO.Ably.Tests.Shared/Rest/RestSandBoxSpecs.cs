@@ -7,10 +7,10 @@ using Xunit.Abstractions;
 namespace IO.Ably.Tests
 {
     [Collection("AblyRest SandBox Collection")]
-    [Trait("requires", "sandbox")]
-    public class RestSandBoxSpecses : SandboxSpecs
+    [Trait("type", "integration")]
+    public class RestSandBoxSpecs : SandboxSpecs
     {
-        public RestSandBoxSpecses(AblySandboxFixture fixture, ITestOutputHelper output)
+        public RestSandBoxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
             : base(fixture, output) { }
 
         [Theory]
@@ -43,7 +43,7 @@ namespace IO.Ably.Tests
 
         [Collection("AblyRest SandBox Collection")]
         [Trait("requires", "sandbox")]
-        public class WithTokenAuthAndInvalidToken : RestSandBoxSpecses
+        public class WithTokenAuthAndInvalidToken : RestSandBoxSpecs
         {
             public WithTokenAuthAndInvalidToken(AblySandboxFixture fixture, ITestOutputHelper output)
                 : base(fixture, output) { }

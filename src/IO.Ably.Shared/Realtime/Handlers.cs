@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Realtime
 {
@@ -35,7 +36,7 @@ namespace IO.Ably.Realtime
         }
 
         /// <summary>Add handler to the collection.</summary>
-        /// <param name="handler"></param>
+        /// <param name="handler">MessageHandler action to be added.</param>
         public void Add(MessageHandlerAction<T> handler)
         {
             try
@@ -74,7 +75,7 @@ namespace IO.Ably.Realtime
         }
 
         /// <summary>Remove handler from the collection.</summary>
-        /// <param name="handler"></param>
+        /// <param name="handler">MessageHandler action to be removed.</param>
         /// <returns>True if removed, false if not found.</returns>
         public bool Remove(MessageHandlerAction<T> handler)
         {
@@ -135,6 +136,18 @@ namespace IO.Ably.Realtime
             {
                 _lock.ExitWriteLock();
             }
+        }
+
+        internal JObject GetState()
+        {
+            var state = new JObject();
+            state["*"] = _handlers.Count;
+            foreach (var key in _specificHandlers.Keys)
+            {
+                state[key] = _specificHandlers[key].Count;
+            }
+
+            return state;
         }
     }
 }

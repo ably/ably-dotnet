@@ -1,18 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO.Pipes;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
+using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Transport;
 using IO.Ably.Types;
+using IO.Ably.Utils;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 {
-    public class ConnectingFailureSpecs : ConnectionSpecsBase
+    public class ConnectingFailureSpecs : AblyRealtimeSpecs
     {
         private TokenDetails _returnedDummyTokenDetails = new TokenDetails("123") { Expires = TestHelpers.Now().AddDays(1), ClientId = "123" };
         private int _tokenErrorCode = 40140;
@@ -21,7 +27,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN14b")]
         public async Task WithTokenErrorAndRenewableToken_ShouldRenewTokenAutomaticallyWithoutEmittingError()
         {
-            // Now = DateTimeOffset.Now;
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
             bool renewTokenCalled = false;
             var client = GetClientWithFakeTransport(
@@ -29,28 +34,36 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             {
                 opts.TokenDetails = tokenDetails;
                 opts.UseBinaryProtocol = false;
+                opts.AutoConnect = false;
             }, request =>
             {
                 if (request.Url.Contains("/keys"))
                 {
-                    renewTokenCalled = true;
+                    if (renewTokenCalled == false)
+                    {
+                        renewTokenCalled = true;
+                    }
+
                     return _returnedDummyTokenDetails.ToJson().ToAblyResponse();
                 }
 
                 return AblyResponse.EmptyResponse.ToTask();
             });
-
+            client.Connect();
             List<ErrorInfo> raisedErrors = new List<ErrorInfo>();
-            client.Connection.InternalStateChanged += (sender, args) =>
+            client.Connection.On((args) =>
             {
                 if (args.HasError)
                 {
                     raisedErrors.Add(args.Reason);
                 }
-            };
+            });
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+            await client.WaitForState(ConnectionState.Connecting);
 
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+
+            await client.ProcessCommands();
             renewTokenCalled.Should().BeTrue();
             var currentToken = client.RestClient.AblyAuth.CurrentToken;
             currentToken.Token.Should().Be(_returnedDummyTokenDetails.Token);
@@ -66,7 +79,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         {
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
             bool renewTokenCalled = false;
-            var client = GetClientWithFakeTransport(
+            var client = await GetConnectedClient(
                 opts =>
             {
                 opts.Key = string.Empty;
@@ -83,10 +96,11 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 return AblyResponse.EmptyResponse.ToTask();
             });
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+
+            await client.WaitForState(ConnectionState.Failed);
 
             renewTokenCalled.Should().BeFalse();
-            client.Connection.State.Should().Be(ConnectionState.Failed);
             client.Connection.ErrorReason.Should().NotBeNull();
             client.Connection.ErrorReason.Code.Should().Be(_tokenErrorCode);
         }
@@ -111,14 +125,15 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 return AblyResponse.EmptyResponse.ToTask();
             });
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
-            client.Connection.State.Should().Be(ConnectionState.Disconnected);
+            await client.WaitForState(ConnectionState.Disconnected);
+
             client.Connection.ErrorReason.Should().NotBeNull();
             client.Connection.ErrorReason.Code.Should().Be(123);
         }
 
-        [Fact]
+        [Retry]
         [Trait("spec", "RTN14b")]
         public async Task WithTokenErrorTwice_ShouldNotRenewAndRaiseErrorAndTransitionToDisconnected()
         {
@@ -129,6 +144,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             {
                 opts.TokenDetails = tokenDetails;
                 opts.UseBinaryProtocol = false;
+                opts.AutoConnect = false;
             }, request =>
             {
                 if (request.Url.Contains("/keys"))
@@ -145,10 +161,19 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             {
                 disconnected = true;
             });
+            client.Connect();
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+            await client.WaitForState(ConnectionState.Connecting);
 
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+
+            await client.ProcessCommands();
+
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
+
+            await client.ProcessCommands();
+
+            await client.WaitForState(ConnectionState.Disconnected);
             renewCount.Should().Be(1);
             disconnected.Should().BeTrue();
             client.Connection.ErrorReason.Should().NotBeNull();
@@ -171,14 +196,20 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             client.Connect();
 
-            await WaitForConnectingOrSuspended(client);
+            await client.WaitForState(ConnectionState.Connecting);
+
             ConnectionStateChange connectionArgs = null;
-            client.Connection.InternalStateChanged += (sender, args) =>
+            client.Connection.On((args) =>
             {
                 connectionArgs = args;
                 Done();
-            };
-            LastCreatedTransport.Listener.OnTransportEvent(TransportState.Closing, new Exception());
+            });
+
+            // Let the connecting state complete it's logic otherwise by the time we get to here
+            // The transport is not created yet as this is done on a separate thread
+            await Task.Delay(1000);
+
+            LastCreatedTransport.Listener.OnTransportEvent(LastCreatedTransport.Id, TransportState.Closing, new Exception());
 
             WaitOne();
             connectionArgs.Current.Should().Be(ConnectionState.Disconnected);
@@ -213,14 +244,14 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             client.Connect();
             List<ConnectionStateChange> stateChanges = new List<ConnectionStateChange>();
-            client.Connection.InternalStateChanged += (sender, args) =>
+            client.Connection.On((args) =>
             {
                 stateChanges.Add(args);
-            };
+            });
 
             do
             {
-                LastCreatedTransport.Listener?.OnTransportEvent(TransportState.Closing, new Exception());
+                LastCreatedTransport.Listener?.OnTransportEvent(LastCreatedTransport.Id, TransportState.Closing, new Exception());
                 await WaitForConnectingOrSuspended(client);
                 var now = nowFunc();
                 nowFunc = () => now.AddSeconds(30);
@@ -235,17 +266,13 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             stateChanges.Count(x => x.Current == ConnectionState.Connecting).Should().Be(numberOfAttemps);
         }
 
-        private new DateTimeOffset NowFunc()
-        {
-            return DateTimeOffset.UtcNow;
-        }
-
         [Fact]
         [Trait("spec", "RTN14e")]
         public async Task WhenInSuspendedState_ShouldTryAndReconnectAfterSuspendRetryTimeoutIsReached()
         {
             Func<DateTimeOffset> nowFunc = () => DateTimeOffset.UtcNow;
             DateTimeOffset NowWrapperFunc() => nowFunc();
+
             FakeTransportFactory.InitialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false;
 
@@ -254,43 +281,25 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             {
                 opts.AutoConnect = false;
                 opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10);
-                opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(100);
+                opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(1000);
                 opts.NowFunc = NowWrapperFunc;
             });
 
-            client.Connect();
-            do
-            {
-                LastCreatedTransport.Listener?.OnTransportEvent(TransportState.Closing, new Exception());
+            client.ExecuteCommand(SetSuspendedStateCommand.Create(ErrorInfo.ReasonSuspended));
 
-                await WaitForConnectingOrSuspended(client);
-                nowFunc = () => DateTimeOffset.UtcNow.AddSeconds(30);
-            }
-            while (client.Connection.State != ConnectionState.Suspended);
-
-            var awaiter = new ConnectionAwaiter(client.Connection, ConnectionState.Connecting);
-            var elapsed = await awaiter.Wait();
-            elapsed.Should().BeCloseTo(client.Options.SuspendedRetryTimeout, 100);
+            var elapsed = await client.WaitForState(ConnectionState.Connecting);
+            elapsed.Should().BeCloseTo(client.Options.SuspendedRetryTimeout, 1000);
         }
 
-        private static async Task WaitForConnectingOrSuspended(AblyRealtime client)
+        private static Task WaitForConnectingOrSuspended(AblyRealtime client)
         {
-            await
-                Task.WhenAll(
-                    new ConnectionAwaiter(client.Connection, ConnectionState.Connecting, ConnectionState.Suspended).Wait(),
-                    Task.Delay(10));
+            return new ConnectionAwaiter(client.Connection, ConnectionState.Connecting, ConnectionState.Suspended).Wait();
         }
 
         [Fact]
         [Trait("spec", "RTN14f")]
         public async Task WhenInSuspendedStateAfterRetrying_ShouldGoBackToSuspendedState()
         {
-            Func<DateTimeOffset> nowFunc = () => DateTimeOffset.UtcNow;
-
-            // We want access to the modified closure so we can manipulate time within ConnectionAttemptsInfo
-            // ReSharper disable once AccessToModifiedClosure
-            DateTimeOffset NowWrapperFn() => nowFunc();
-
             FakeTransportFactory.InitialiseFakeTransport =
                 transport => transport.OnConnectChangeStateToConnected = false;
 
@@ -301,20 +310,12 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10);
                 opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(10);
                 opts.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);
-                opts.NowFunc = NowWrapperFn;
             });
 
-            client.Connect();
-            do
-            {
-                LastCreatedTransport.Listener?.OnTransportEvent(TransportState.Closing, new Exception());
-                await WaitForConnectingOrSuspended(client);
-                nowFunc = () => DateTimeOffset.UtcNow.AddSeconds(30);
-            }
-            while (client.Connection.State != ConnectionState.Suspended);
+            client.ExecuteCommand(SetSuspendedStateCommand.Create(ErrorInfo.ReasonSuspended));
 
-            await new ConnectionAwaiter(client.Connection, ConnectionState.Connecting).Wait();
-            await new ConnectionAwaiter(client.Connection, ConnectionState.Suspended).Wait();
+            await client.WaitForState(ConnectionState.Connecting);
+            await client.WaitForState(ConnectionState.Suspended);
         }
 
         public ConnectingFailureSpecs(ITestOutputHelper output)

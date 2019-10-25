@@ -46,6 +46,7 @@ namespace IO.Ably
         public static readonly Capability DefaultTokenCapability = Capability.AllowAll;
         public const int Port = 80;
         public const int TlsPort = 443;
+        public const int CommulativeFailedRequestTimeOutInSeconds = 10;
 
         // Buffer in seconds before a token is considered unusable
         public const int TokenExpireBufferInSeconds = 15;
@@ -68,8 +69,11 @@ namespace IO.Ably
 
 #if MSGPACK
         internal const Protocol DefaultProtocol = IO.Ably.Protocol.MsgPack;
+        internal const bool MsgPackEnabled = true;
 #else
         internal const Protocol Protocol = IO.Ably.Protocol.Json;
+        internal const bool MsgPackEnabled = false;
+
 #endif
 
         static Defaults()

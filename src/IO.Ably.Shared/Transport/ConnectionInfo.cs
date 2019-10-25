@@ -3,21 +3,20 @@ using IO.Ably.Types;
 
 namespace IO.Ably.Transport
 {
+    /// <summary>
+    /// Contains current connection details.
+    /// </summary>
     public class ConnectionInfo
     {
-        public static readonly ConnectionInfo Empty = new ConnectionInfo();
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionInfo"/> class.
+        /// </summary>
+        public ConnectionInfo() { }
 
-        private ConnectionInfo() { }
-
-        public ConnectionInfo(string connectionId, long connectionSerial, string connectionKey, string clientId, TimeSpan? connectionStateTtl = null)
-        {
-            ClientId = clientId;
-            ConnectionId = connectionId;
-            ConnectionSerial = connectionSerial;
-            ConnectionKey = connectionKey;
-            ConnectionStateTtl = connectionStateTtl;
-        }
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionInfo"/> class.
+        /// </summary>
+        /// <param name="message">initialises it from a message.</param>
         public ConnectionInfo(ProtocolMessage message)
         {
             if (message == null)
@@ -38,14 +37,29 @@ namespace IO.Ably.Transport
             ConnectionKey = message.ConnectionDetails?.ConnectionKey;
         }
 
+        /// <summary>
+        /// current connection time to live.
+        /// </summary>
         public TimeSpan? ConnectionStateTtl { get; private set; }
 
+        /// <summary>
+        /// contains the client ID assigned to the connection.
+        /// </summary>
         public string ClientId { get; private set; }
 
+        /// <summary>
+        /// Unique id of the current connection.
+        /// </summary>
         public string ConnectionId { get; private set; }
 
+        /// <summary>
+        /// the connection serial.
+        /// </summary>
         public long ConnectionSerial { get; private set; }
 
+        /// <summary>
+        /// the connection secret key string that is used to resume a connection and its state.
+        /// </summary>
         public string ConnectionKey { get; private set; }
     }
 }

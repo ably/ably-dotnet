@@ -53,7 +53,7 @@ namespace IO.Ably.Tests
             request.RequestBody = testAppSpec["post_apps"].ToString().GetBytes();
             request.Protocol = Protocol.Json;
 
-            var response = await client.Execute(request);
+            var response = await RetryExecute(() => client.Execute(request));
 
             var json = JObject.Parse(response.TextResponse);
 
@@ -72,6 +72,28 @@ namespace IO.Ably.Tests
 
             // await SetupSampleStats(settings);
             return settings;
+        }
+
+        private static async Task<AblyResponse> RetryExecute(Func<Task<AblyResponse>> execute)
+        {
+            int count = 0;
+            while (true)
+            {
+                try
+                {
+                    var result = await execute();
+                    return result;
+                }
+                catch (Exception)
+                {
+                    if (count > 1)
+                    {
+                        throw;
+                    }
+                }
+
+                count++;
+            }
         }
 
         public async Task SetupStats()

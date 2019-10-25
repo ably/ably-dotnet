@@ -9,19 +9,38 @@ namespace IO.Ably
     /// <summary>Level of a log message.</summary>
     public enum LogLevel : byte
     {
+        /// <summary>
+        /// Verbose setting. Logs everything.
+        /// </summary>
         Debug = 0,
+
+        /// <summary>
+        /// Warning setting. Logs clues that something is not 100% right.
+        /// </summary>
         Warning,
+
+        /// <summary>
+        /// Error setting. Logs errors
+        /// </summary>
         Error,
+
+        /// <summary>
+        /// None setting. No logs produced
+        /// </summary>
         None = 99
     }
 
     /// <summary>An interface that actually logs that messages somewhere.</summary>
     public interface ILoggerSink
     {
+        /// <summary>
+        /// Implement this method to log messages using your current infrastructure.
+        /// </summary>
+        /// <param name="level">the log level of the message.</param>
+        /// <param name="message">the actual message.</param>
         void LogEvent(LogLevel level, string message);
     }
 
-    /// <inheritdoc />
     /// <summary>The default logger implementation, that writes to debug output.</summary>
     internal class DefaultLoggerSink : ILoggerSink
     {
@@ -68,12 +87,19 @@ namespace IO.Ably
             set => LoggerInstance.LogLevel = value;
         }
 
+        /// <summary>
+        /// The current LoggerSink. When the library is initialised with a LoggerSink
+        /// this property gets set.
+        /// </summary>
         public static ILoggerSink LoggerSink
         {
             get => LoggerInstance.LoggerSink;
             set => LoggerInstance.LoggerSink = value;
         }
 
+        /// <summary>
+        /// IsDebug.
+        /// </summary>
         public static bool IsDebug => LoggerInstance.LogLevel == LogLevel.Debug;
 
         internal static IDisposable SetTempDestination(ILoggerSink i)
@@ -95,7 +121,7 @@ namespace IO.Ably
             LoggerInstance.Error(message, args);
         }
 
-        /// <summary>Log a warning message</summary>
+        /// <summary>Log a warning message.</summary>
         internal static void Warning(string message, params object[] args)
         {
             LoggerInstance.Warning(message, args);
@@ -107,18 +133,9 @@ namespace IO.Ably
             LoggerInstance.Debug(message, args);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.LayoutRules", "SA1502:Element should not be on a single line", Justification = "Empty constructors are ok")]
         internal class InternalLogger : ILogger
         {
-            /// <summary>Maximum level to log.</summary>
-            /// <remarks>E.g. set to LogLevel.Warning to have only errors and warnings in the log.</remarks>
-            public LogLevel LogLevel { get; set; }
-
-            public ILoggerSink LoggerSink { get; set; }
-
-            public bool IsDebug => LogLevel == LogLevel.Debug;
-
-            internal Func<DateTimeOffset> Now { get; set; }
-
             public InternalLogger()
                 : this(Defaults.DefaultLogLevel, new DefaultLoggerSink()) { }
 
@@ -135,6 +152,16 @@ namespace IO.Ably
                 Now = nowProvider ?? Defaults.NowFunc();
             }
 
+            /// <summary>Maximum level to log.</summary>
+            /// <remarks>E.g. set to LogLevel.Warning to have only errors and warnings in the log.</remarks>
+            public LogLevel LogLevel { get; set; }
+
+            public ILoggerSink LoggerSink { get; set; }
+
+            public bool IsDebug => LogLevel == LogLevel.Debug;
+
+            internal Func<DateTimeOffset> Now { get; set; }
+
             public IDisposable SetTempDestination(ILoggerSink i)
             {
                 ILoggerSink o = LoggerSink;
@@ -144,20 +171,27 @@ namespace IO.Ably
 
             public void Message(LogLevel level, string message, params object[] args)
             {
-                var timeStamp = GetLogMessagePreifx();
-                ILoggerSink loggerSink = LoggerSink;
-                if (LogLevel == LogLevel.None || level < LogLevel || loggerSink == null)
+                try
                 {
-                    return;
-                }
+                    var timeStamp = GetLogMessagePreifx();
+                    ILoggerSink loggerSink = LoggerSink;
+                    if (LogLevel == LogLevel.None || level < LogLevel || loggerSink == null)
+                    {
+                        return;
+                    }
 
-                if (args == null || args.Length == 0)
-                {
-                    loggerSink.LogEvent(level, timeStamp + " " + message);
+                    if (args == null || args.Length == 0)
+                    {
+                        loggerSink.LogEvent(level, timeStamp + " " + message);
+                    }
+                    else
+                    {
+                        loggerSink.LogEvent(level, timeStamp + " " + string.Format(message, args));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    loggerSink.LogEvent(level, timeStamp + " " + string.Format(message, args));
+                    Trace.WriteLine("Error logging message. Error: " + e.Message);
                 }
             }
 
@@ -179,7 +213,7 @@ namespace IO.Ably
                 Message(LogLevel.Error, message, args);
             }
 
-            /// <summary>Log a warning message</summary>
+            /// <summary>Log a warning message.</summary>
             public void Warning(string message, params object[] args)
             {
                 Message(LogLevel.Warning, message, args);
@@ -194,24 +228,36 @@ namespace IO.Ably
             /// <summary>Produce long multiline string with the details about the exception, including inner exceptions, if any.</summary>
             private string GetExceptionDetails(Exception ex)
             {
-                var message = new StringBuilder();
-                var ablyException = ex as AblyException;
-                if (ablyException != null)
+                try
                 {
-                    message.AppendLine("Error code: " + ablyException.ErrorInfo.Code);
-                    message.AppendLine("Status code: " + ablyException.ErrorInfo.StatusCode);
-                    message.AppendLine("Reason: " + ablyException.ErrorInfo.Message);
-                }
+                    if (ex == null)
+                    {
+                        return "No exception information";
+                    }
 
-                message.AppendLine(ex.Message);
-                message.AppendLine(ex.StackTrace);
-                if (ex.InnerException != null)
+                    var message = new StringBuilder();
+
+                    if (ex is AblyException ablyException)
+                    {
+                        message.AppendLine("Error code: " + ablyException.ErrorInfo.Code);
+                        message.AppendLine("Status code: " + ablyException.ErrorInfo.StatusCode);
+                        message.AppendLine("Reason: " + ablyException.ErrorInfo.Message);
+                    }
+
+                    message.AppendLine(ex.Message);
+                    message.AppendLine(ex.StackTrace);
+                    if (ex.InnerException != null)
+                    {
+                        message.AppendLine("Inner exception:");
+                        message.AppendLine(GetExceptionDetails(ex.InnerException));
+                    }
+
+                    return message.ToString();
+                }
+                catch (Exception e)
                 {
-                    message.AppendLine("Inner exception:");
-                    message.AppendLine(GetExceptionDetails(ex.InnerException));
+                    return "Error getting exception details. Error: " + e.Message;
                 }
-
-                return message.ToString();
             }
         }
     }

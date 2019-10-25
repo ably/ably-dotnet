@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\AuthorizeTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\AuthSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AuthTests\RequestTokenTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AuthTests\TestAblyAuth.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CapabilityTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CipherParamsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DataRequestQueryParseFacts.cs" />
@@ -29,7 +30,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AblySpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\AsyncLazy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\ConnectionAwaiter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeAckProcessor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeAuth.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeConnectionContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\FakeHttpClient.cs" />
@@ -59,13 +59,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\Utf8EncoderTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessagePack\SerializationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MsgPackMessageSerializerTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Realtime\AckProtocolTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelsSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionAttempsInfoSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSandboxOperatingSystemEventsForNetworkSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSandBoxSpecs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSpecs\AckNackSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSandboxTransportSideEffectsSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSpecs\AblyRealtimeTestExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSpecs\ConnectionFailuresOnceConnectedSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSpecs\ConnectionFailureSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSpecs\ConnectionFallbackSpecs.cs" />
@@ -75,7 +76,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSpecs\ConnectionPingSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSpecs\ConnectionRecoverySpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSpecs\ConnectionSerialSpecs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSpecs\ConnectionSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSpecs\EventEmitterSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionSpecs\GeneralConnectionSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateTests\ClosedStateSpecs.cs" />
@@ -92,6 +92,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ProtocolMessageSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeWorkflowSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RestProtocolTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\AblyHttpClientSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\ChannelSandboxSpecs.cs" />

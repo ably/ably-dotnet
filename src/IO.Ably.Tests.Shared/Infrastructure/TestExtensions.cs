@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
+using IO.Ably.Types;
+using IO.Ably.Utils;
 
 namespace IO.Ably.Tests.Infrastructure
 {
@@ -26,6 +29,16 @@ namespace IO.Ably.Tests.Infrastructure
             }
 
             return channelAwaiter.WaitAsync();
+        }
+
+        internal static void ExecuteCommand(this IRealtimeClient client, RealtimeCommand command)
+        {
+            ((AblyRealtime)client).Workflow.QueueCommand(command);
+        }
+
+        internal static void ProcessMessage(this IRealtimeClient client, ProtocolMessage message)
+        {
+            ((AblyRealtime)client).Workflow.QueueCommand(ProcessMessageCommand.Create(message));
         }
     }
 }

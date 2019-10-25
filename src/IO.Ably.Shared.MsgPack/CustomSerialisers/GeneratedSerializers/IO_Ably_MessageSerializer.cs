@@ -13,10 +13,9 @@ using MsgPack;
 
 namespace IO.Ably.CustomSerialisers
 {
+#pragma warning disable SA1600 // Elements should be documented
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
-
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("MsgPack.Serialization.CodeDomSerializers.CodeDomSerializerBuilder", "0.6.0.0")]
-    //[System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public class IO_Ably_MessageSerializer : MsgPack.Serialization.MessagePackSerializer<IO.Ably.Message>
     {
 
@@ -290,4 +289,6 @@ namespace IO.Ably.CustomSerialisers
             }
         }
     }
+#pragma warning restore SA1600 // Elements should be documented
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

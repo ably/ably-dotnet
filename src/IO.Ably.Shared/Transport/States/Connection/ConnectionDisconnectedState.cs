@@ -1,16 +1,13 @@
-﻿using System.Threading.Tasks;
-using IO.Ably;
-using IO.Ably.Types;
+﻿using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 
 namespace IO.Ably.Transport.States.Connection
 {
-    using IO.Ably.Realtime;
-
     internal class ConnectionDisconnectedState : ConnectionStateBase
     {
         private readonly ICountdownTimer _timer;
 
-        public new ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonDisconnected;
+        public override ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonDisconnected;
 
         public ConnectionDisconnectedState(IConnectionContext context, ILogger logger)
             : this(context, null, new CountdownTimer("Disconnected state timer", logger), logger)
@@ -32,19 +29,19 @@ namespace IO.Ably.Transport.States.Connection
 
         public bool RetryInstantly { get; set; }
 
-        public override ConnectionState State => Realtime.ConnectionState.Disconnected;
+        public override ConnectionState State => ConnectionState.Disconnected;
 
         public override bool CanQueue => true;
 
-        public override void Connect()
+        public override RealtimeCommand Connect()
         {
-            Context.SetState(new ConnectionConnectingState(Context, Logger));
+           return SetConnectingStateCommand.Create();
         }
 
         public override void Close()
         {
             AbortTimer();
-            Context.SetState(new ConnectionClosedState(Context, Logger));
+            Context.ExecuteCommand(SetClosedStateCommand.Create());
         }
 
         public override void AbortTimer()
@@ -52,30 +49,17 @@ namespace IO.Ably.Transport.States.Connection
             _timer.Abort();
         }
 
-        public override Task OnAttachToContext()
+        public override void OnAttachToContext()
         {
-            Context.DestroyTransport();
-
-            if (Logger.IsDebug)
-            {
-                Logger.Debug("RetryInstantly set to '" + RetryInstantly + "'");
-            }
-
-            if (RetryInstantly)
-            {
-                Context.SetState(new ConnectionConnectingState(Context, Logger));
-            }
-            else
+            if (RetryInstantly == false)
             {
                 _timer.Start(Context.RetryTimeout, OnTimeOut);
             }
-
-            return TaskConstants.BooleanTrue;
         }
 
         private void OnTimeOut()
         {
-            Context.Execute(() => Context.SetState(new ConnectionConnectingState(Context, Logger)));
+            Context.ExecuteCommand(SetConnectingStateCommand.Create());
         }
     }
 }

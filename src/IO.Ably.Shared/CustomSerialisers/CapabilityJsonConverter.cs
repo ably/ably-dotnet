@@ -4,6 +4,8 @@ using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.CustomSerialisers
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable SA1600 // Elements should be documented
     public class CapabilityJsonConverter : JsonConverter
     {
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -22,4 +24,6 @@ namespace IO.Ably.CustomSerialisers
             return objectType == typeof(Capability);
         }
     }
+#pragma warning restore SA1600 // Elements should be documented
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

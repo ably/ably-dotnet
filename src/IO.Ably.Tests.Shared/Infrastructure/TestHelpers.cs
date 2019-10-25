@@ -25,7 +25,7 @@ namespace IO.Ably.Tests
             return Defaults.NowFunc();
         }
 
-        public static async Task WaitFor(int timeoutMs, int taskCount, Action<Action> action)
+        public static async Task WaitFor(int timeoutMs, int taskCount, Action<Action> action, Action onFail = null)
         {
             var tsc = new TaskCompletionAwaiter(timeoutMs, taskCount);
 
@@ -43,6 +43,8 @@ namespace IO.Ably.Tests
                 {
                     msg += $" Completed {taskCount - tsc.TaskCount} of {taskCount} tasks.";
                 }
+
+                onFail?.Invoke();
 
                 throw new Exception(msg);
             }

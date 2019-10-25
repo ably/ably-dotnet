@@ -3,39 +3,73 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using IO.Ably;
 
 namespace IO.Ably.Transport
 {
+    /// <summary>
+    /// Parameters passed when creating a new Websocket transport.
+    /// </summary>
     public class TransportParams
     {
         internal static Regex RecoveryKeyRegex { get; set; } = new Regex(@"^([\w!-]+):(-?\d+):(-?\d+)$");
 
         internal ILogger Logger { get; private set; }
 
+        /// <summary>
+        /// Host used to establish the connection.
+        /// </summary>
         public string Host { get; private set; }
 
+        /// <summary>
+        /// Use a secure connection.
+        /// </summary>
         public bool Tls { get; private set; }
 
+        /// <summary>
+        /// A list of fallback hosts.
+        /// </summary>
         public string[] FallbackHosts { get; private set; }
 
+        /// <summary>
+        /// Connection port.
+        /// </summary>
         public int Port { get; private set; }
 
+        /// <summary>
+        /// Connection key.
+        /// </summary>
         public string ConnectionKey { get; private set; }
 
+        /// <summary>
+        /// Connection serial.
+        /// </summary>
         public long? ConnectionSerial { get; set; }
 
+        /// <summary>
+        /// Whether to use the binary protocol.
+        /// </summary>
         public bool UseBinaryProtocol { get; private set; }
 
-        // TODO: Look at inconsisten protection levels
         internal AuthMethod AuthMethod { get; private set; }
 
+        /// <summary>
+        /// Either ably key or token value.
+        /// </summary>
         public string AuthValue { get; private set; } // either key or token
 
+        /// <summary>
+        /// Recover value used to recover a connection.
+        /// </summary>
         public string RecoverValue { get; private set; }
 
+        /// <summary>
+        /// Id of the client establishing the connection.
+        /// </summary>
         public string ClientId { get; private set; }
 
+        /// <summary>
+        /// Whether to echo message.
+        /// </summary>
         public bool EchoMessages { get; private set; }
 
         private TransportParams()
@@ -75,7 +109,10 @@ namespace IO.Ably.Transport
             return result;
         }
 
-        // Add logic for random fallback hosts
+        /// <summary>
+        /// Helper method used to construct the server uri.
+        /// </summary>
+        /// <returns>Server uri.</returns>
         public Uri GetUri()
         {
             var wsScheme = Tls ? "wss://" : "ws://";
@@ -84,6 +121,10 @@ namespace IO.Ably.Transport
             return uriBuilder.Uri;
         }
 
+        /// <summary>
+        /// Gets the current query parameters a dictionary.
+        /// </summary>
+        /// <returns>dictionary of query parameters.</returns>
         public Dictionary<string, string> GetParams()
         {
             var result = new Dictionary<string, string>();

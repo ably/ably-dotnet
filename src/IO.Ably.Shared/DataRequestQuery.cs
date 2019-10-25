@@ -2,16 +2,34 @@ using System.Collections.Generic;
 
 namespace IO.Ably
 {
+    /// <summary>
+    /// Stats Granularity enum.
+    /// </summary>
     public enum StatsIntervalGranularity
     {
+        /// <summary>
+        /// Minute
+        /// </summary>
         Minute,
+
+        /// <summary>
+        /// Hour.
+        /// </summary>
         Hour,
+
+        /// <summary>
+        /// Day.
+        /// </summary>
         Day,
-        Month
+
+        /// <summary>
+        /// Month
+        /// </summary>
+        Month,
     }
 
     /// <summary>
-    /// Stats query. Allows you query for application statistics
+    /// Stats query. Allows you query for application statistics.
     /// </summary>
     public class StatsRequestParams : PaginatedRequestParams
     {
@@ -20,6 +38,9 @@ namespace IO.Ably
         /// </summary>
         public StatsIntervalGranularity? Unit { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StatsRequestParams"/> class.
+        /// </summary>
         public StatsRequestParams()
         {
             Unit = StatsIntervalGranularity.Minute;

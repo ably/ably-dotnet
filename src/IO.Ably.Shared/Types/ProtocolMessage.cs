@@ -6,32 +6,52 @@ using Newtonsoft.Json;
 
 namespace IO.Ably.Types
 {
+    /// <summary>
+    ///  A message sent and received over the Realtime protocol.
+    ///  A ProtocolMessage always relates to a single channel only, but
+    ///  can contain multiple individual Messages or PresenceMessages.
+    ///  ProtocolMessages are serially numbered on a connection.
+    ///  See the Ably client library developer documentation for further
+    ///  details on the members of a ProtocolMessage.
+    /// </summary>
     public class ProtocolMessage
     {
+        /// <summary>
+        /// Action associated with the message.
+        /// </summary>
         public enum MessageAction
         {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable SA1602 // Enumeration items should be documented
             Heartbeat = 0,
-            Ack,
-            Nack,
-            Connect,
-            Connected,
-            Disconnect,
-            Disconnected,
-            Close,
-            Closed,
-            Error,
-            Attach,
-            Attached,
-            Detach,
-            Detached,
-            Presence,
-            Message,
-            Sync,
-            Auth
+            Ack = 1,
+            Nack = 2,
+            Connect = 3,
+            Connected = 4,
+            Disconnect = 5,
+            Disconnected = 6,
+            Close = 7,
+            Closed = 8,
+            Error = 9,
+            Attach = 10,
+            Attached = 11,
+            Detach = 12,
+            Detached = 13,
+            Presence = 14,
+            Message = 15,
+            Sync = 16,
+            Auth = 17
+#pragma warning restore SA1602 // Enumeration items should be documented
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         }
 
+        /// <summary>
+        /// Message Flag sent by the server.
+        /// </summary>
         public enum Flag
         {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable SA1602 // Enumeration items should be documented
             HasPresence = 1 << 0,
             HasBacklog = 1 << 1,
             Resumed = 1 << 2,
@@ -41,8 +61,16 @@ namespace IO.Ably.Types
             Publish = 1 << 17,
             Subscribe = 1 << 18,
             PresenceSubscribe = 1 << 19
+#pragma warning restore SA1602 // Enumeration items should be documented
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         }
 
+        /// <summary>
+        /// Helper method to check for the existance of a flag in an integer.
+        /// </summary>
+        /// <param name="value">int value storing the flag.</param>
+        /// <param name="flag">flag we check for.</param>
+        /// <returns>true or false.</returns>
         public static bool HasFlag(int? value, Flag flag)
         {
             if (value == null)
@@ -53,6 +81,9 @@ namespace IO.Ably.Types
             return (value.Value & (int)flag) != 0;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProtocolMessage"/> class.
+        /// </summary>
         public ProtocolMessage()
         {
             Messages = new Message[] { };
@@ -71,48 +102,93 @@ namespace IO.Ably.Types
             Channel = channel;
         }
 
+        /// <summary>
+        /// Current message action.
+        /// </summary>
         [JsonProperty("action")]
         public MessageAction Action { get; set; }
 
+        /// <summary>
+        /// <see cref="AuthDetails"/> for the current message.
+        /// </summary>
         [JsonProperty("auth")]
         public AuthDetails Auth { get; set; }
 
+        /// <summary>
+        /// Current message flags.
+        /// </summary>
         [JsonProperty("flags")]
         public int? Flags { get; set; }
 
+        /// <summary>
+        /// Count.
+        /// </summary>
         [JsonProperty("count")]
         public int? Count { get; set; }
 
+        /// <summary>
+        /// Error associated with the message.
+        /// </summary>
         [JsonProperty("error")]
         public ErrorInfo Error { get; set; }
 
+        /// <summary>
+        /// Ably generated message id.
+        /// </summary>
         [JsonProperty("id")]
         public string Id { get; set; }
 
+        /// <summary>
+        /// Optional channel for which the message belongs to.
+        /// </summary>
         [JsonProperty("channel")]
         public string Channel { get; set; }
 
+        /// <summary>
+        /// Current channel serial.
+        /// </summary>
         [JsonProperty("channelSerial")]
         public string ChannelSerial { get; set; }
 
+        /// <summary>
+        /// Current connectionId.
+        /// </summary>
         [JsonProperty("connectionId")]
         public string ConnectionId { get; set; }
 
+        /// <summary>
+        /// Current connection serial.
+        /// </summary>
         [JsonProperty("connectionSerial")]
         public long? ConnectionSerial { get; set; }
 
+        /// <summary>
+        /// Current message serial.
+        /// </summary>
         [JsonProperty("msgSerial")]
         public long MsgSerial { get; set; }
 
+        /// <summary>
+        /// Timestamp of the message.
+        /// </summary>
         [JsonProperty("timestamp")]
         public DateTimeOffset? Timestamp { get; set; }
 
+        /// <summary>
+        /// List of messages contained in this protocol message.
+        /// </summary>
         [JsonProperty("messages")]
         public Message[] Messages { get; set; }
 
+        /// <summary>
+        /// List of presence messages contained in this protocol message.
+        /// </summary>
         [JsonProperty("presence")]
         public PresenceMessage[] Presence { get; set; }
 
+        /// <summary>
+        /// Connection details received. <see cref="IO.Ably.ConnectionDetails"/>.
+        /// </summary>
         [JsonProperty("connectionDetails")]
         public ConnectionDetails ConnectionDetails { get; set; }
 
@@ -143,11 +219,17 @@ namespace IO.Ably.Types
             }
         }
 
+        /// <summary>
+        /// Convenience method to check if the current message contians a flag.
+        /// </summary>
+        /// <param name="flag">Flag we are looking for.</param>
+        /// <returns>true / false.</returns>
         public bool HasFlag(Flag flag)
         {
             return HasFlag(Flags, flag);
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             var text = new StringBuilder();

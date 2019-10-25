@@ -5,7 +5,7 @@
     */
 
     /// <summary>
-    /// States defined for a channel. ChannelEvents are a logical subset of <see cref="ChannelEvent"/> (which has the additional Update event)
+    /// States defined for a channel. ChannelEvents are a logical subset of <see cref="ChannelEvent"/> (which has the additional Update event).
     /// </summary>
     public enum ChannelState
     {

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
@@ -17,6 +19,8 @@ namespace IO.Ably.Tests
         protected ITestOutputHelper Output { get; }
 
         protected ManualResetEvent ResetEvent { get; }
+
+        private readonly List<AblyRealtime> _realtimeClients = new List<AblyRealtime>();
 
         public SandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
         {
@@ -59,14 +63,11 @@ namespace IO.Ably.Tests
             defaultOptions.UseBinaryProtocol = protocol == Defaults.Protocol;
             defaultOptions.TransportFactory = new TestTransportFactory();
 
-            // Prevent the Xunit concurrent context being captured which is
-            // an implementation of <see cref="SynchronizationContext"/> which runs work on custom threads
-            // rather than in the thread pool, and limits the number of in-flight actions.
-            //
-            // This can create out of order responses that would not normally occur
-            defaultOptions.CaptureCurrentSynchronizationContext = false;
             optionsAction?.Invoke(defaultOptions, settings);
-            return new AblyRealtime(defaultOptions, createRestFunc);
+            var client = new AblyRealtime(defaultOptions, createRestFunc);
+
+            _realtimeClients.Add(client);
+            return client;
         }
 
         protected async Task WaitFor(Action<Action> done)
@@ -74,19 +75,38 @@ namespace IO.Ably.Tests
             await TestHelpers.WaitFor(10000, 1, done);
         }
 
-        protected async Task WaitFor(int timeoutMs, Action<Action> done)
+        protected async Task AssertMultipleTimes(
+            Func<Task> testAction,
+            int maxNumberOfTimes,
+            TimeSpan durationBetweenAttempts)
         {
-            await TestHelpers.WaitFor(timeoutMs, 1, done);
+            for (int i = 0; i < maxNumberOfTimes; i++)
+            {
+                try
+                {
+                    await testAction();
+                    break; // If there were no exceptions then we are all good and can return
+                }
+                catch (Exception)
+                {
+                    await Task.Delay(durationBetweenAttempts);
+                }
+            }
         }
 
-        protected async Task WaitFor(int timeoutMs, int taskCount, Action<Action> done)
+        protected async Task WaitFor(int timeoutMs, Action<Action> done, Action onFail = null)
+        {
+            await TestHelpers.WaitFor(timeoutMs, 1, done, onFail);
+        }
+
+        protected async Task WaitFor(int timeoutMs, int taskCount, Action<Action> done, Action onFail = null)
         {
             await TestHelpers.WaitFor(timeoutMs, taskCount, done);
         }
 
-        protected async Task WaitForMultiple(int taskCount, Action<Action> done)
+        protected async Task WaitForMultiple(int taskCount, Action<Action> done, Action onFail = null)
         {
-            await TestHelpers.WaitFor(10000, taskCount, done);
+            await TestHelpers.WaitFor(10000, taskCount, done, onFail);
         }
 
         public class OutputLoggerSink : ILoggerSink
@@ -100,8 +120,22 @@ namespace IO.Ably.Tests
 
             public void LogEvent(LogLevel level, string message)
             {
-                _output.WriteLine($"{level}: {message}");
+                try
+                {
+                    Debug.WriteLine($"{level}: {message}");
+                    _output.WriteLine($"{level}: {message}");
+                }
+                catch (Exception ex)
+                {
+                    // In rare events this happens and crashes the test runner
+                    Console.WriteLine($"{level}: {message}. Exception: {ex.Message}");
+                }
             }
+        }
+
+        protected Task WaitToBecomeConnected(AblyRealtime realtime, TimeSpan? waitSpan = null)
+        {
+            return WaitForState(realtime, waitSpan: waitSpan);
         }
 
         protected Task WaitForState(AblyRealtime realtime, ConnectionState awaitedState = ConnectionState.Connected, TimeSpan? waitSpan = null)
@@ -133,6 +167,19 @@ namespace IO.Ably.Tests
 
         public void Dispose()
         {
+            Output.WriteLine("Test end disposing connections: " + _realtimeClients.Count);
+            foreach (var client in _realtimeClients)
+            {
+                try
+                {
+                    client.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Output?.WriteLine("Error disposing Client: " + ex.Message);
+                }
+            }
+
             ResetEvent?.Dispose();
         }
     }

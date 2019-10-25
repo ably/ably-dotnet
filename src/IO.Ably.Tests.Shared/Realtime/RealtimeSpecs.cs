@@ -98,7 +98,7 @@ namespace IO.Ably.Tests
             ClientOptions options = new ClientOptions();
 
             // Act
-            if (Config.MsgPackEnabled)
+            if (Defaults.MsgPackEnabled)
 #pragma warning disable 162
             {
                 Assert.True(options.UseBinaryProtocol);

@@ -26,7 +26,7 @@ namespace IO.Ably.Tests
             d.AddRange(_data);
             yield return d.ToArray();
 
-            if (Config.MsgPackEnabled)
+            if (Defaults.MsgPackEnabled)
 #pragma warning disable 162
             {
                 d = new List<object> { Defaults.Protocol };

@@ -54,8 +54,6 @@ namespace IO.Ably
         /// Run a synchronous method in a fire-and-forget manner.
         /// An optional handler can be provided to process exceptions, if they occur.
         /// </summary>
-        /// <param name="action"></param>
-        /// <param name="handler"></param>
         internal static void RunInBackground(Action action, Action<Exception> handler = null)
         {
             if (action == null)
@@ -85,8 +83,6 @@ namespace IO.Ably
         /// Run a <see cref="Task"/> in a fire-and-forget manner.
         /// An optional handler can be provided to process exceptions, if they occur.
         /// </summary>
-        /// <param name="task"></param>
-        /// <param name="handler"></param>
         internal static void RunInBackground(Task task, Action<Exception> handler = null)
         {
             if (task == null)

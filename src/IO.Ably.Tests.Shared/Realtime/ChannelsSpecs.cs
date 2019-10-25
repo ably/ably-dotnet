@@ -11,19 +11,15 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime
 {
-    public class ChannelsSpecs : ConnectionSpecsBase
+    public class ChannelsSpecs : AblyRealtimeSpecs
     {
-        private AblyRealtime _realtime;
-
-        private IChannels<IRealtimeChannel> Channels => _realtime.Channels;
-
         [Fact]
         [Trait("spec", "RTS3")]
         [Trait("spec", "RTS3a")]
-        public void ShouldGetAChannelByName()
+        public async Task ShouldGetAChannelByName()
         {
             // Act
-            var channel = Channels.Get("test");
+            var channel = await GetTestChannel();
 
             // Assert
             channel.Should().NotBeNull();
@@ -31,13 +27,15 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTS3a")]
-        public void ShouldReturnExistingChannel()
+        public async Task ShouldReturnExistingChannel()
         {
+            var client = await GetConnectedClient();
+
             // Arrange
-            var channel = Channels.Get("test");
+            var channel = client.Channels.Get("test");
 
             // Act
-            var channel2 = Channels.Get("test");
+            var channel2 = client.Channels.Get("test");
 
             // Assert
             channel.Should().BeSameAs(channel2);
@@ -45,13 +43,14 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTS3b")]
-        public void ShouldCreateChannelWithOptions()
+        public async Task ShouldCreateChannelWithOptions()
         {
             // Arrange
+            var client = await GetConnectedClient();
             var options = new ChannelOptions();
 
             // Act
-            var channel = Channels.Get("test", options);
+            var channel = client.Channels.Get("test", options);
 
             // Assert
             Assert.Same(options, channel.Options);
@@ -59,14 +58,15 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTS3c")]
-        public void WithExistingChannelAndOptions_ShouldGetExistingChannelAndupdateOpitons()
+        public async Task WithExistingChannelAndOptions_ShouldGetExistingChannelAndupdateOpitons()
         {
             // Arrange
+            var client = await GetConnectedClient();
             ChannelOptions options = new ChannelOptions();
-            var channel = Channels.Get("test");
+            var channel = client.Channels.Get("test");
 
             // Act
-            var channel2 = Channels.Get("test", options);
+            var channel2 = client.Channels.Get("test", options);
 
             // Assert
             Assert.NotNull(channel2);
@@ -76,14 +76,15 @@ namespace IO.Ably.Tests.Realtime
         [Fact]
         [Trait("spec", "RTS4")]
         [Trait("spec", "RTS4a")]
-        public void Release_ShouldDetachChannel()
+        public async Task Release_ShouldDetachChannel()
         {
             // Arrange
-            var channel = Channels.Get("test");
+            var client = await GetConnectedClient();
+            var channel = client.Channels.Get("test");
             channel.Attach();
 
             // Act
-            Channels.Release("test");
+            client.Channels.Release("test");
 
             // Assert
             Assert.Equal(ChannelState.Detaching, channel.State);
@@ -91,17 +92,18 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTS4a")]
-        public void Release_ShouldNotRemoveChannelBeforeDetached()
+        public async Task Release_ShouldNotRemoveChannelBeforeDetached()
         {
             // Arrange
-            var channel = Channels.Get("test");
+            var client = await GetConnectedClient();
+            var channel = client.Channels.Get("test");
             channel.Attach();
 
             // Act
-            Channels.Release("test");
+            client.Channels.Release("test");
 
             // Assert
-            Assert.Same(channel, Channels.Single());
+            Assert.Same(channel, client.Channels.Single());
         }
 
         [Fact]
@@ -109,45 +111,49 @@ namespace IO.Ably.Tests.Realtime
         public async Task Release_ShouldRemoveChannelWhenDetached()
         {
             // Arrange
-            var channel = Channels.Get("test");
+            var (client, channel) = await GetClientAndChannel();
+
             channel.Attach();
-            Channels.Release("test");
+            client.Channels.Release(TestChannelName);
 
             // Act
-            await _realtime.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, "test"));
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, TestChannelName));
 
-            await Task.Delay(50);
+            await client.ProcessCommands();
 
             // Assert
-            Channels.Should().BeEmpty();
+            client.Channels.Should().BeEmpty();
         }
 
         [Fact]
         [Trait("spec", "RTS4a")]
-        public void Release_RemovesChannelWhenFailed()
+        public async Task Release_RemovesChannelWhenFailed()
         {
             // Arrange
-            var channel = Channels.Get("test");
+            var (client, channel) = await GetClientAndChannel();
             channel.Attach();
-            Channels.Release("test");
+            client.Channels.Release("test");
 
             // Act
-            _realtime.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
+
+            await channel.WaitForState(ChannelState.Failed);
 
             // Assert
-            Channels.Should().BeEmpty();
+            client.Channels.Should().BeEmpty();
         }
 
         [Fact]
         [Trait("spec", "RTS4a")]
-        public void ReleaseAll_ShouldDetachChannel()
+        public async Task ReleaseAll_ShouldDetachChannel()
         {
             // Arrange
-            var channel = Channels.Get("test");
+            var (client, channel) = await GetClientAndChannel();
+
             channel.Attach();
 
             // Act
-            Channels.ReleaseAll();
+            client.Channels.ReleaseAll();
 
             // Assert
             Assert.Equal(ChannelState.Detaching, channel.State);
@@ -155,17 +161,17 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTS4a")]
-        public void ReleaseAll_ShouldNotRemoveChannelBeforeDetached()
+        public async Task ReleaseAll_ShouldNotRemoveChannelBeforeDetached()
         {
             // Arrange
-            var channel = Channels.Get("test");
+            var (client, channel) = await GetClientAndChannel();
             channel.Attach();
 
             // Act
-            Channels.ReleaseAll();
+            client.Channels.ReleaseAll();
 
             // Assert
-            Assert.Same(channel, Channels.Single());
+            Assert.Same(channel, client.Channels.Single());
         }
 
         [Fact]
@@ -173,17 +179,17 @@ namespace IO.Ably.Tests.Realtime
         public async Task ReleaseAll_ShouldRemoveChannelWhenDetached()
         {
             // Arrange
-            var channel = Channels.Get("test");
+            var (client, channel) = await GetClientAndChannel();
             channel.Attach();
-            Channels.ReleaseAll();
+            client.Channels.ReleaseAll();
 
             // Act
-            await _realtime.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, "test"));
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Detached, TestChannelName));
 
             await new ChannelAwaiter(channel, ChannelState.Detached).WaitAsync();
 
             // Assert
-            Channels.Should().BeEmpty();
+            client.Channels.Should().BeEmpty();
         }
 
         [Fact]
@@ -191,27 +197,30 @@ namespace IO.Ably.Tests.Realtime
         public async Task ReleaseAll_ShouldRemoveChannelWhenFailded()
         {
             // Arrange
-            var channel = Channels.Get("test");
+            var (client, channel) = await GetClientAndChannel();
+
             channel.Attach();
-            Channels.ReleaseAll();
+            client.Channels.ReleaseAll();
 
             // Act
-            await _realtime.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error, "test"));
+
+            await client.ProcessCommands();
 
             // Assert
-            Assert.False(Channels.Any());
+            client.Channels.Should().BeEmpty();
         }
 
         [Fact]
         [Trait("spec", "RTS4a")]
         [Trait("spec", "RTS1")]
-        public void AllowsEnumeration()
+        public async Task AllowsEnumeration()
         {
             // Arrange
-            var channel = Channels.Get("test");
+            var (client, channel) = await GetClientAndChannel();
 
             // Act
-            IEnumerator enumerator = (Channels as IEnumerable).GetEnumerator();
+            IEnumerator enumerator = (client.Channels as IEnumerable).GetEnumerator();
             enumerator.MoveNext();
 
             // Assert
@@ -221,13 +230,13 @@ namespace IO.Ably.Tests.Realtime
 
         [Fact]
         [Trait("spec", "RTS4a")]
-        public void AllowsGenericEnumeration()
+        public async Task AllowsGenericEnumeration()
         {
             // Arrange
-            var channel = Channels.Get("test");
+            var (client, channel) = await GetClientAndChannel();
 
             // Act
-            IEnumerator<IRealtimeChannel> enumerator = Channels.GetEnumerator();
+            IEnumerator<IRealtimeChannel> enumerator = (client.Channels as IEnumerable<IRealtimeChannel>).GetEnumerator();
             enumerator.MoveNext();
 
             // Assert
@@ -238,21 +247,24 @@ namespace IO.Ably.Tests.Realtime
         public ChannelsSpecs(ITestOutputHelper output)
             : base(output)
         {
-            _realtime = GetConnectedClient();
         }
 
         [Fact]
         [Trait("issue", "167")]
-        public async void PublishShouldNotAlterChannelOptions()
+        public async Task PublishShouldNotAlterChannelOptions()
         {
             var key = Convert.FromBase64String("dDGE8dYl8M9+uyUTIv0+ncs1hEa++HiNDu75Dyj4kmw=");
             var cipherParams = new CipherParams(key);
             var options = new ChannelOptions(cipherParams); // enable encrytion
-            var channel = Channels.Get("test", options);
+            var client = await GetConnectedClient();
+            var channel = client.Channels.Get("test", options);
 
-            var channel2 = Channels.Get("test");
+            var channel2 = client.Channels.Get("test");
 
-            await channel.PublishAsync(new Message(null, "This is a test", Guid.NewGuid().ToString()));
+            channel.Publish(new Message(null, "This is a test", Guid.NewGuid().ToString()));
+
+            await client.ProcessCommands();
+
             Assert.Equal(options.ToJson(), channel2.Options.ToJson());
             Assert.True(options.CipherParams.Equals(cipherParams));
         }

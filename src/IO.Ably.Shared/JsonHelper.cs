@@ -9,6 +9,10 @@ using Newtonsoft.Json.Linq;
 
 namespace IO.Ably
 {
+    /// <summary>
+    /// Public helper class for serialising and deserialising
+    /// json using Ably's specific converters for DateTimeOffset, TimeSpan and Capability.
+    /// </summary>
     public static class JsonHelper
     {
         private static JsonSerializerSettings GetJsonSettings()
@@ -36,6 +40,11 @@ namespace IO.Ably
 
         internal static JsonSerializerSettings Settings => _settings ?? (_settings = GetJsonSettings());
 
+        /// <summary>
+        /// Serialise an object to json.
+        /// </summary>
+        /// <param name="obj">Object to be serialised.</param>
+        /// <returns>json string.</returns>
         public static string Serialize(object obj)
         {
             if (obj == null)
@@ -46,16 +55,33 @@ namespace IO.Ably
             return SerializeObject(obj, obj.GetType());
         }
 
+        /// <summary>
+        /// Deserialise a json string to an object of type T.
+        /// </summary>
+        /// <typeparam name="T">type of object.</typeparam>
+        /// <param name="json">input json string.</param>
+        /// <returns>deserialised object of type T.</returns>
         public static T Deserialize<T>(string json)
         {
             return (T)DeserializeObject(json, typeof(T));
         }
 
+        /// <summary>
+        /// Deserialise a json string to an object.
+        /// </summary>
+        /// <param name="json">input json string.</param>
+        /// <returns>deserialised object.</returns>
         public static object Deserialize(string json)
         {
             return DeserializeObject(json, null);
         }
 
+        /// <summary>
+        /// Convert a JObject to an object of type T.
+        /// </summary>
+        /// <typeparam name="T">Type of object to deserialise to.</typeparam>
+        /// <param name="obj">input JObject.</param>
+        /// <returns>object of type T.</returns>
         public static T DeserializeObject<T>(JObject obj)
         {
             return obj.ToObject<T>(GetSerializer());

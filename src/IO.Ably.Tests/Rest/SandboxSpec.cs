@@ -70,7 +70,9 @@ namespace IO.Ably.Tests
                 try 
                 {
                     _output.WriteLine($"{level}: {message}");
-                } catch {} // We don't care if that fails
+                }
+                catch { } // we don't care if that fails
+                
             }
         }
 

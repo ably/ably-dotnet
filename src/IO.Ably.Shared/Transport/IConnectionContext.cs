@@ -1,21 +1,18 @@
 ﻿using System;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
-using IO.Ably.Types;
+using IO.Ably.Realtime.Workflow;
 
 namespace IO.Ably.Transport
 {
-    using IO.Ably.Transport.States.Connection;
-
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "No need to document internal interfaces.")]
     internal interface IConnectionContext
     {
         TimeSpan DefaultTimeout { get; }
 
         TimeSpan RetryTimeout { get; }
 
-        void SendToTransport(ProtocolMessage message);
-
-        Task Execute(Action action);
+        void ExecuteCommand(RealtimeCommand cmd);
 
         ITransport Transport { get; }
 
@@ -23,32 +20,8 @@ namespace IO.Ably.Transport
 
         TimeSpan SuspendRetryTimeout { get; }
 
-        void ClearTokenAndRecordRetry();
-
-        Task SetState(ConnectionStateBase state, bool skipAttach = false);
-
-        Task CreateTransport();
-
-        void DestroyTransport(bool suppressClosedEvent = true);
-
-        void SetConnectionClientId(string clientId);
-
-        bool ShouldWeRenewToken(ErrorInfo error);
-
-        void Send(ProtocolMessage message, Action<bool, ErrorInfo> callback = null, ChannelOptions channelOptions = null);
-
-        Task<bool> RetryBecauseOfTokenError(ErrorInfo error);
-
-        Task RetryAuthentication(ErrorInfo error = null, bool updateState = true);
-
-        void HandleConnectingFailure(ErrorInfo error, Exception ex);
-
-        void SendPendingMessages(bool resumed);
-
-        void ClearAckQueueAndFailMessages(ErrorInfo error);
+        bool ShouldWeRenewToken(ErrorInfo error, RealtimeState state);
 
         Task<bool> CanUseFallBackUrl(ErrorInfo error);
-
-        void DetachAttachedChannels(ErrorInfo error);
     }
 }

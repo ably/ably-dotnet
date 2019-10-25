@@ -1,22 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace IO.Ably.Tests.Realtime
 {
-    [Trait("requires", "sandbox")]
+    [Trait("type", "integration")]
     public class RealtimeSandboxSpecs : SandboxSpecs
     {
         public RealtimeSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
             : base(fixture, output)
         {
+        }
+
+        [Theory]
+        [ProtocolData]
+        public async Task WhenDisposed_ShouldSendClosingMessage(Protocol protocol)
+        {
+            var sentMessages = new List<ProtocolMessage>();
+            var client = await GetRealtimeClient(protocol, (opts, _) =>
+            {
+                opts.TransportFactory = new TestTransportFactory()
+                {
+                    OnMessageSent = sentMessages.Add
+                };
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            client.Dispose();
+
+            await client.ProcessCommands();
+            sentMessages.Count.Should().Be(1);
+            sentMessages.First().Action.Should().Be(ProtocolMessage.MessageAction.Close);
+            client.Disposed.Should().BeTrue();
         }
 
         [Theory]
@@ -58,7 +81,8 @@ namespace IO.Ably.Tests.Realtime
             // For a realtime client, Auth#authorize instructs the library to obtain
             // a token using the provided tokenParams and authOptions and upgrade
             // the current connection to use that token
-            var client = await GetRealtimeClient(protocol, (opts, _) => {
+            var client = await GetRealtimeClient(protocol, (opts, _) =>
+            {
                 opts.ClientId = validClientId1;
                 opts.UseTokenAuth = true;
             });
@@ -72,6 +96,7 @@ namespace IO.Ably.Tests.Realtime
             client.Connection.State.Should().Be(ConnectionState.Connected);
             client.RestClient.AblyAuth.CurrentToken.Should().Be(tokenDetails);
             var didUpdate = await awaiter.Task;
+
             client.Connection.State.Should().Be(ConnectionState.Connected);
             didUpdate.Should().BeTrue(
                 "the AUTH message should trigger a CONNECTED response from the server that causes an UPDATE to be emitted.");
@@ -86,30 +111,58 @@ namespace IO.Ably.Tests.Realtime
 
             // AuthorizeAsync will not return until either a CONNECTED or ERROR response
             // (or timeout) is seen from Ably, so we do not need to use WaitForState() here
-            await client.Auth.AuthorizeAsync(new TokenParams { ClientId = invalidClientId });
-            client.Connection.State.Should().Be(ConnectionState.Failed);
-            client.Close();
+            await Assert.ThrowsAsync<AblyException>(() => client.Auth.AuthorizeAsync(new TokenParams { ClientId = invalidClientId }));
 
-            // if not currently connected, to connects with the token.
+            client.Connection.State.Should().Be(ConnectionState.Failed);
+        }
+
+        // TODO: Figure out which one is the right test
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RTC8")]
+        [Trait("spec", "RTC8a")]
+        [Trait("spec", "RTC8a1")]
+        [Trait("spec", "RTC8a2")]
+        [Trait("spec", "RTC8a3")]
+        public async Task WithNotConnectedClient_WhenAuthorizeCalled_ShouldConnect(Protocol protocol)
+        {
+            var validClientId1 = "RTC8";
+
             var client2 = await GetRealtimeClient(protocol, (opts, _) =>
             {
                 opts.AutoConnect = false;
-                opts.TokenDetails = tokenDetails;
+                opts.ClientId = validClientId1;
             });
+
             await client2.Auth.AuthorizeAsync();
             await client2.WaitForState(ConnectionState.Connected);
             client2.Connection.State.Should().Be(ConnectionState.Connected);
             client2.Close();
 
+            await client2.WaitForState(ConnectionState.Closed);
+        }
+
+        [Theory]
+        [ProtocolData]
+        public async Task WithConnectedClient_OnAuthUpdated_ShouldTimeOutIfNoResponseFromTheServer(Protocol protocol)
+        {
+            var validClientId1 = "RTC8";
+
+            var client = await GetRealtimeClient(protocol, (opts, _) =>
+            {
+                opts.AutoConnect = true;
+                opts.ClientId = validClientId1;
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+
             // internally AblyAuth.AuthorizeCompleted is used to indicate when an Authorize call is finished
             // AuthorizeCompleted should timeout if no valid response (CONNECTED or ERROR) is received from Ably
             var auth = client.RestClient.AblyAuth;
-            auth.Options.RealtimeRequestTimeout = TimeSpan.FromSeconds(1);
-            var authEventArgs = new AblyAuthUpdatedEventArgs();
             try
             {
-                var result = await auth.AuthorizeCompleted(authEventArgs);
-                result.Should().BeFalse("AuthorizeCompleted should timeout");
+                client.BlockActionFromSending(ProtocolMessage.MessageAction.Auth);
+                await auth.OnAuthUpdated(new TokenDetails("test"), true);
                 throw new Exception("AuthorizeCompleted did not raise an exception.");
             }
             catch (AblyException e)
@@ -201,58 +254,65 @@ namespace IO.Ably.Tests.Realtime
             var clientId = "RTC8a1-downgrade".AddRandomSuffix();
             var channelName = "RTC8a1-downgrade-channel".AddRandomSuffix();
             var wrongChannelName = "wrong".AddRandomSuffix();
-            var capability = new Capability();
-            capability.AddResource(channelName).AllowAll();
 
-            var restClient = await GetRestClient(protocol);
-            var tokenDetails = await restClient.Auth.RequestTokenAsync(new TokenParams
-            {
-                ClientId = clientId,
-                Capability = capability
-            });
-
-            var realtime = await GetRealtimeClient(protocol, (opts, _) =>
-            {
-                opts.Token = tokenDetails.Token;
-            });
-            await realtime.WaitForState(ConnectionState.Connected);
-
+            var (realtime, channel) = await SetupRealtimeClient();
+            channel.On(statechange => Output.WriteLine($"Changed state: {statechange.Previous} to {statechange.Current}. Error: {statechange.Error}"));
             realtime.Connection.Once(ConnectionEvent.Disconnected, change => throw new Exception("Should not require a disconnect"));
-            var channel = realtime.Channels.Get(channelName);
 
-            channel.Attach();
-            await channel.WaitForState();
+            var result = await channel.PublishAsync("test", "should-not-fail");
+            result.IsSuccess.Should().BeTrue();
 
-            var awaiter1 = new TaskCompletionAwaiter(10000);
-            channel.Publish("test", "should-not-fail", (b, info) =>
-            {
-                b.Should().BeTrue();
-                info.Should().BeNull();
-                awaiter1.SetCompleted();
-            });
+            ChannelStateChange stateChange = null;
 
-            Assert.True(await awaiter1.Task);
-            channel.State.Should().Be(ChannelState.Attached);
-
-            // channel should fail fast, allow 2000ms
-            var channelFailedAwaiter = new TaskCompletionAwaiter(12000);
-            capability = new Capability();
-            capability.AddResource(wrongChannelName).AllowSubscribe();
-            var newToken = await realtime.Auth.AuthorizeAsync(new TokenParams
-            {
-                Capability = capability,
-                ClientId = clientId
-            });
-            newToken.Should().NotBeNull();
+            var failedAwaiter = new TaskCompletionAwaiter(2000);
             channel.Once(ChannelEvent.Failed, state =>
             {
-                state.Error.Code.Should().Be(40160);
-                state.Error.Message.Should().Contain("Channel denied access");
-                channelFailedAwaiter.SetCompleted();
+                stateChange = state;
+                failedAwaiter.SetCompleted();
             });
+            await DowngradeCapability(realtime);
 
-            var channelFailed = await channelFailedAwaiter.Task;
-            channelFailed.Should().BeTrue("channel should have failed");
+            await channel.WaitForState(ChannelState.Failed, TimeSpan.FromSeconds(6));
+            await failedAwaiter.Task;
+
+            stateChange.Should().NotBeNull("channel should have failde");
+            stateChange.Error.Code.Should().Be(40160);
+            stateChange.Error.Message.Should().Contain("Channel denied access");
+
+            async Task DowngradeCapability(AblyRealtime rt)
+            {
+                var capability = new Capability();
+                capability.AddResource(wrongChannelName).AllowSubscribe();
+
+                var newToken = await rt.Auth.AuthorizeAsync(new TokenParams
+                {
+                    Capability = capability,
+                    ClientId = clientId,
+                });
+
+                newToken.Should().NotBeNull();
+            }
+
+            async Task<(AblyRealtime, IRealtimeChannel)> SetupRealtimeClient()
+            {
+                var capability = new Capability();
+                capability.AddResource(channelName).AllowAll();
+
+                var restClient = await GetRestClient(protocol);
+                var tokenDetails = await restClient.Auth.RequestTokenAsync(new TokenParams
+                {
+                    ClientId = clientId,
+                    Capability = capability
+                });
+
+                var rt = await GetRealtimeClient(protocol, (opts, _) => { opts.Token = tokenDetails.Token; });
+
+                await rt.WaitForState(ConnectionState.Connected);
+                var ch = rt.Channels.Get(channelName);
+                await ch.AttachAsync();
+
+                return (rt, ch);
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.Realtime;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -7,7 +8,7 @@ using Xunit.Abstractions;
 namespace IO.Ably.Tests.Realtime
 {
     [Trait("spec", "RTN9")]
-    public class ConnectionKeySpecs : ConnectionSpecsBase
+    public class ConnectionKeySpecs : AblyRealtimeSpecs
     {
         [Fact]
         [Trait("spec", "RTN9a")]
@@ -20,10 +21,11 @@ namespace IO.Ably.Tests.Realtime
         [Fact]
         [Trait("spec", "RTN9b")]
         [Trait("sandboxTest", "needed")]
-        public void OnceConnected_ShouldUseKeyFromConnectedMessage()
+        public async Task OnceConnected_ShouldUseKeyFromConnectedMessage()
         {
             var client = GetClientWithFakeTransport();
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected) { ConnectionDetails = new ConnectionDetails() { ConnectionKey = "key" } });
+            await client.WaitForState(ConnectionState.Connected);
             client.Connection.Key.Should().Be("key");
         }
 
@@ -34,10 +36,10 @@ namespace IO.Ably.Tests.Realtime
             // Arrange
             string targetKey = "1234567";
             var client = GetClientWithFakeTransport();
-            client.Connection.Key = targetKey;
+            client.State.Connection.Key = targetKey;
 
             // Act
-            var transportParamsForReconnect = await client.ConnectionManager.CreateTransportParameters();
+            var transportParamsForReconnect = await client.ConnectionManager.CreateTransportParameters("https://realtime.ably.io");
 
             // Assert
             transportParamsForReconnect

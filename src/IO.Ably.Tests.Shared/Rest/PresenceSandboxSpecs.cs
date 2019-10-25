@@ -6,7 +6,7 @@ using Xunit.Abstractions;
 namespace IO.Ably.Tests.Rest
 {
     [Collection("AblyRest SandBox Collection")]
-    [Trait("requires", "sandbox")]
+    [Trait("type", "integration")]
     public class PresenceSandboxSpecs : SandboxSpecs
     {
         public PresenceSandboxSpecs(AblySandboxFixture fixture, ITestOutputHelper output)

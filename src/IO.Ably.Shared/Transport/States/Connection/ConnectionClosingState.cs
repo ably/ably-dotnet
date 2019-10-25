@@ -1,53 +1,54 @@
 ﻿using System;
 using System.Threading.Tasks;
-using IO.Ably;
+using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
 {
-    using IO.Ably.Realtime;
-
     internal class ConnectionClosingState : ConnectionStateBase
     {
         private const int CloseTimeout = 1000;
+        private readonly bool _connectedTransport;
         private readonly ICountdownTimer _timer;
 
-        /// <summary>
-        /// used to mitigate a potential race condition where by OnAttachToContext()
-        /// can be called after Connect() is called but before the new state is attached
-        /// </summary>
-        private bool _inConnectTransition = false;
-
-        public ConnectionClosingState(IConnectionContext context, ILogger logger)
-            : this(context, null, new CountdownTimer("Closing state timer", logger), logger)
+        public ConnectionClosingState(IConnectionContext context, bool connectedTransport, ILogger logger)
+            : this(context, null, connectedTransport, new CountdownTimer("Closing state timer", logger), logger)
         {
         }
 
-        public ConnectionClosingState(IConnectionContext context, ErrorInfo error, ICountdownTimer timer, ILogger logger)
+        public ConnectionClosingState(IConnectionContext context, ErrorInfo error, bool connectedTransport, ICountdownTimer timer, ILogger logger)
             : base(context, logger)
         {
+            _connectedTransport = connectedTransport;
             _timer = timer;
             Error = error ?? ErrorInfo.ReasonClosed;
         }
 
-        public override ConnectionState State => Realtime.ConnectionState.Closing;
+        public override ConnectionState State => ConnectionState.Closing;
 
-        public override Task<bool> OnMessageReceived(ProtocolMessage message)
+        public override Task<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
         {
             switch (message.Action)
             {
                 case ProtocolMessage.MessageAction.Closed:
-                    TransitionState(new ConnectionClosedState(Context, Logger));
-                    return TaskConstants.BooleanTrue;
+                    TransitionState(SetClosedStateCommand.Create());
+                    return Task.FromResult(true);
                 case ProtocolMessage.MessageAction.Disconnected:
-                    TransitionState(new ConnectionDisconnectedState(Context, message.Error, Logger));
-                    return TaskConstants.BooleanTrue;
+                    TransitionState(SetDisconnectedStateCommand.Create(message.Error));
+                    return Task.FromResult(true);
                 case ProtocolMessage.MessageAction.Error:
-                    TransitionState(new ConnectionFailedState(Context, message.Error, Logger));
-                    return TaskConstants.BooleanTrue;
+                    TransitionState(SetFailedStateCommand.Create(message.Error));
+                    return Task.FromResult(true);
             }
 
-            return TaskConstants.BooleanFalse;
+            return Task.FromResult(false);
+        }
+
+        private void TransitionState(RealtimeCommand command)
+        {
+            _timer.Abort();
+            Context.ExecuteCommand(command);
         }
 
         public override void AbortTimer()
@@ -55,44 +56,23 @@ namespace IO.Ably.Transport.States.Connection
             _timer.Abort();
         }
 
-        public override Task OnAttachToContext()
+        public override void OnAttachToContext()
         {
-            if (_inConnectTransition)
+            if (_connectedTransport)
             {
-                return TaskConstants.BooleanTrue;
-            }
-
-            var transport = Context.Transport;
-            if (transport?.State == TransportState.Connected)
-            {
-                Context.SendToTransport(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
                 _timer.Start(TimeSpan.FromMilliseconds(CloseTimeout), OnTimeOut);
             }
-            else
-            {
-                Context.SetState(new ConnectionClosedState(Context, Logger));
-            }
-
-            return TaskConstants.BooleanTrue;
         }
 
         private void OnTimeOut()
         {
-            Context.Execute(() => Context.SetState(new ConnectionClosedState(Context, Logger)));
+            Context.ExecuteCommand(SetClosedStateCommand.Create());
         }
 
-        private void TransitionState(ConnectionStateBase newState)
+        public override RealtimeCommand Connect()
         {
             _timer.Abort();
-            Context.SetState(newState);
-        }
-
-        public override void Connect()
-        {
-            _inConnectTransition = true;
-            _timer.Abort();
-            Context.Connection.Key = string.Empty;
-            Context.SetState(new ConnectionConnectingState(Context, Logger));
+            return SetConnectingStateCommand.Create(clearConnectionKey: true);
         }
     }
 }

@@ -5,31 +5,32 @@ using IO.Ably.Transport;
 using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
+using System.Threading;
 
 namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 {
-    public class ConnectionRecoverySpecs : ConnectionSpecsBase
+    public class ConnectionRecoverySpecs : AblyRealtimeSpecs
     {
         [Fact]
         [Trait("spec", "RTN16c")]
         public async Task WhenConnectionIsClosed_ConnectionIdAndKeyShouldBeReset()
         {
-            var client = GetConnectedClient();
+            var client = await GetConnectedClient();
 
             client.Close();
 
-            await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
 
-            client.Connection.State.Should().Be(ConnectionState.Closed);
+            await client.WaitForState(ConnectionState.Closed);
             client.Connection.Id.Should().BeNullOrEmpty();
             client.Connection.Key.Should().BeNullOrEmpty();
         }
 
         [Fact]
         [Trait("spec", "RTN16b")]
-        public void RecoveryKey_ShouldBeConnectionKeyPlusConnectionSerialPlusMsgSerial()
+        public async Task RecoveryKey_ShouldBeConnectionKeyPlusConnectionSerialPlusMsgSerial()
         {
-            var client = GetConnectedClient();
+            var client = await GetConnectedClient();
             client.Connection.RecoveryKey.Should().Be($"{client.Connection.Key}:{client.Connection.Serial}:{client.Connection.MessageSerial}");
         }
 
@@ -62,7 +63,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             var client = GetRealtimeClient(options => { options.Recover = recoveryKey; });
 
-            var transportParams = await client.ConnectionManager.CreateTransportParameters();
+            var transportParams = await client.ConnectionManager.CreateTransportParameters("https://realtime.ably.io");
             var paramsDict = transportParams.GetParams();
             paramsDict.ContainsKey("recover").Should().BeTrue();
             paramsDict.ContainsKey("connection_serial").Should().BeTrue();

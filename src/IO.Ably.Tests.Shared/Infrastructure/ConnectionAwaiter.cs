@@ -1,21 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using IO.Ably.Realtime;
 
-namespace IO.Ably.Tests
+namespace IO.Ably.Tests.Infrastructure
 {
-    /// <summary>Utility class to wait for a specified state of the connection, with timeout.</summary>
     internal class ConnectionAwaiter
     {
-        private static readonly HashSet<ConnectionState> PermanentlyFailedStates = new HashSet<ConnectionState>
-        {
-            ConnectionState.Suspended,
-            ConnectionState.Closed,
-            ConnectionState.Failed
-        };
-
         private readonly List<ConnectionState> _awaitedStates = new List<ConnectionState>();
 
         private readonly Connection _connection;
@@ -38,10 +31,10 @@ namespace IO.Ably.Tests
         private void RemoveListener()
         {
             DefaultLogger.Debug($"[{_id}] Removing Connection listener");
-            _connection.InternalStateChanged -= Conn_StateChanged;
+            _connection.Off(Conn_StateChanged);
         }
 
-        private void Conn_StateChanged(object sender, ConnectionStateChange e)
+        private void Conn_StateChanged(ConnectionStateChange e)
         {
             if (_awaitedStates.Contains(e.Current))
             {
@@ -63,7 +56,8 @@ namespace IO.Ably.Tests
 
             if (DefaultLogger.IsDebug)
             {
-                DefaultLogger.Debug($"[{_id}] Waiting for state {string.Join(",", _awaitedStates)} for {timeout.TotalSeconds} seconds");
+                DefaultLogger.Debug(
+                    $"[{_id}] Waiting for state {string.Join(",", _awaitedStates)} for {timeout.TotalSeconds} seconds");
             }
 
             if (_awaitedStates.Contains(_connection.State))
@@ -72,9 +66,9 @@ namespace IO.Ably.Tests
                 return TimeSpan.Zero;
             }
 
-            _connection.InternalStateChanged += Conn_StateChanged;
+            _connection.On(Conn_StateChanged);
             var tResult = _taskCompletionSource.Task;
-            var tCompleted = await Task.WhenAny(tResult, Task.Delay(timeout)).ConfigureAwait(true);
+            var tCompleted = await Task.WhenAny(tResult, Task.Delay(timeout)).ConfigureAwait(false);
             if (tCompleted == tResult)
             {
                 stopwatch.Stop();
@@ -83,7 +77,8 @@ namespace IO.Ably.Tests
 
             DefaultLogger.Debug($"[{_id} Timeout exceeded. Throwing TimeoutException");
             RemoveListener();
-            throw new TimeoutException();
+            throw new TimeoutException(
+                $"Expected ''{_awaitedStates.Select(x => x.ToString()).JoinStrings()}' but current state was '{_connection.State}'");
         }
     }
 }

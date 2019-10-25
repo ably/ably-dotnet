@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 namespace IO.Ably.Tests.Rest
 {
     [Collection("AblyRest SandBox Collection")]
-    [Trait("requires", "sandbox")]
+    [Trait("type", "integration")]
     public class JwtSandboxSpec : SandboxSpecs
     {
         private readonly string _echoServer = "https://echo.ably.io/createJWT";

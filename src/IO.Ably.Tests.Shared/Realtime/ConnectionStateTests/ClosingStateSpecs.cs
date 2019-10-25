@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -42,7 +43,7 @@ namespace IO.Ably.Tests
         public async Task ShouldNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(action));
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(action), null);
 
             // Assert
             result.Should().BeFalse();
@@ -52,11 +53,11 @@ namespace IO.Ably.Tests
         public async Task ShouldHandleInboundClosedMessageAndMoveToClosed()
         {
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed), null);
 
             // Assert
             result.Should().BeTrue();
-            _context.StateShouldBe<ConnectionClosedState>();
+            _context.ShouldQueueCommand<SetClosedStateCommand>();
         }
 
         [Fact]
@@ -65,70 +66,35 @@ namespace IO.Ably.Tests
             ErrorInfo targetError = new ErrorInfo("test", 123);
 
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError });
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError }, null);
 
             // Assert
             result.Should().BeTrue();
-            var targetState = _context.StateShouldBe<ConnectionFailedState>();
-            targetState.Error.ShouldBeEquivalentTo(targetError);
+            _context.ShouldQueueCommand<SetFailedStateCommand>(cmd => cmd.Error.ShouldBeEquivalentTo(targetError));
         }
 
         [Fact]
         public async Task ShouldHandleInboundDisconnectedMessageAndGoToDisconnectedState()
         {
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected), null);
 
             // Assert
             Assert.True(result);
-            _context.StateShouldBe<ConnectionDisconnectedState>();
-        }
-
-        [Fact]
-        [Trait("spec", "RTN12a")]
-
-        // When the closing state is initialised a Close message is sent
-        public async Task OnAttachedToTransport_ShouldSendClosedMessage()
-        {
-            // Arrange
-            var transport = new FakeTransport() { State = TransportState.Connected };
-            _context.Transport = transport;
-
-            // Act
-            await _state.OnAttachToContext();
-
-            // Assert
-            _context.LastMessageSent.Action.Should().Be(ProtocolMessage.MessageAction.Close);
-        }
-
-        [Theory]
-        [InlineData(TransportState.Closed)]
-        [InlineData(TransportState.Closing)]
-        [InlineData(TransportState.Connecting)]
-        [InlineData(TransportState.Initialized)]
-        public async Task WhenTransportIsNotConnected_ShouldGoStraightToClosed(TransportState transportState)
-        {
-            // Arrange
-            _context.Transport = new FakeTransport() { State = transportState };
-
-            // Act
-            await _state.OnAttachToContext();
-
-            // Assert
-            _context.StateShouldBe<ConnectionClosedState>();
+            _context.ShouldQueueCommand<SetDisconnectedStateCommand>();
         }
 
         [Fact]
         [Trait("spec", "RTN12b")]
         public async Task AfterTimeoutExpires_ShouldForceStateToClosed()
         {
-            _context.Transport = new FakeTransport() { State = TransportState.Connected };
+            var state = GetState(connectedTransport: true);
+            state.OnAttachToContext();
 
-            await _state.OnAttachToContext();
             _timer.StartedWithAction.Should().BeTrue();
             _timer.OnTimeOut();
 
-            _context.StateShouldBe<ConnectionClosedState>();
+            _context.ShouldQueueCommand<SetClosedStateCommand>();
         }
 
         [Fact]
@@ -139,13 +105,13 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport(TransportState.Connected);
 
             // Act
-            await _state.OnAttachToContext();
-            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed));
+            _state.OnAttachToContext();
+            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed), null);
 
             // Assert
             _timer.StartedWithAction.Should().BeTrue();
             _timer.Aborted.Should().BeTrue();
-            _context.StateShouldBe<ConnectionClosedState>();
+            _context.ShouldQueueCommand<SetClosedStateCommand>();
         }
 
         [Fact]
@@ -155,22 +121,22 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport(TransportState.Connected);
 
             // Act
-            await _state.OnAttachToContext();
-            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error));
+            _state.OnAttachToContext();
+            await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error), null);
 
             // Assert
             _timer.StartedWithAction.Should().BeTrue();
             _timer.Aborted.Should().BeTrue();
-            _context.StateShouldBe<ConnectionFailedState>();
+            _context.ShouldQueueCommand<SetFailedStateCommand>();
         }
 
         private FakeConnectionContext _context;
         private ConnectionClosingState _state;
         private FakeTimer _timer;
 
-        private ConnectionClosingState GetState(ErrorInfo info = null)
+        private ConnectionClosingState GetState(ErrorInfo info = null, bool connectedTransport = true)
         {
-            return new ConnectionClosingState(_context, info, _timer, Logger);
+            return new ConnectionClosingState(_context, info, connectedTransport, _timer, Logger);
         }
 
         public ClosingStateSpecs(ITestOutputHelper output)

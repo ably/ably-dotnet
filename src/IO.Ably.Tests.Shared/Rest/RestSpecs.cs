@@ -116,7 +116,7 @@ namespace IO.Ably.Tests
 
         public void ShouldUseBinaryProtocolByDefault()
         {
-            if (!Config.MsgPackEnabled)
+            if (!Defaults.MsgPackEnabled)
             {
                 return;
             }
@@ -484,7 +484,7 @@ namespace IO.Ably.Tests
                 _handler.Requests.First().RequestUri.Host.Should().Be(Defaults.RestHost);
             }
 
-            [Fact]
+            [Retry(3)]
             [Trait("spec", "RSC15a")]
             [Trait("intermittent", "true")]
             public async Task ShouldAttemptFallbackHostsInRandomOrder()

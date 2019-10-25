@@ -1,24 +1,41 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
-using IO.Ably;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
+using Newtonsoft.Json.Linq;
 
 namespace IO.Ably
 {
-    public class AblyRealtime : IRealtimeClient
+    /// <summary>
+    /// AblyRealtime
+    /// The top-level class for the Ably Realtime library.
+    /// </summary>
+    public class AblyRealtime : IRealtimeClient, IDisposable
     {
-        internal ILogger Logger { get; private set; }
-
         private SynchronizationContext _synchronizationContext;
 
+        internal ILogger Logger { get; private set; }
+
+        internal RealtimeWorkflow Workflow { get; private set; }
+
+        internal volatile bool Disposed = false;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AblyRealtime"/> class with an ably key.
+        /// </summary>
+        /// <param name="key">String key (obtained from application dashboard).</param>
         public AblyRealtime(string key)
             : this(new ClientOptions(key))
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AblyRealtime"/> class with the given options.
+        /// </summary>
+        /// <param name="options"><see cref="ClientOptions"/>.</param>
         public AblyRealtime(ClientOptions options)
             : this(options, clientOptions => new AblyRest(clientOptions))
         {
@@ -28,13 +45,18 @@ namespace IO.Ably
         {
             Logger = options.Logger;
             CaptureSynchronizationContext(options);
-
             RestClient = createRestFunc != null ? createRestFunc.Invoke(options) : new AblyRest(options);
-            Channels = new RealtimeChannels(this);
+
             Connection = new Connection(this, options.NowFunc, options.Logger);
             Connection.Initialise();
 
-            RestClient.AblyAuth.AuthUpdated += Connection.ConnectionManager.OnAuthUpdated;
+            Channels = new RealtimeChannels(this, Connection);
+            RestClient.AblyAuth.OnAuthUpdated = ConnectionManager.OnAuthUpdated;
+
+            State = new RealtimeState(options.FallbackHosts?.Shuffle().ToList());
+
+            Workflow = new RealtimeWorkflow(this, Logger);
+            Workflow.Start();
 
             if (options.AutoConnect)
             {
@@ -54,60 +76,76 @@ namespace IO.Ably
             }
         }
 
+        /// <summary>
+        /// Gets the initialised RestClient.
+        /// </summary>
         public AblyRest RestClient { get; }
 
+        /// <inheritdoc/>
         public IAblyAuth Auth => RestClient.AblyAuth;
 
+        /// <inheritdoc/>
         public string ClientId => Auth.ClientId;
 
         internal ClientOptions Options => RestClient.Options;
 
         internal ConnectionManager ConnectionManager => Connection.ConnectionManager;
 
-        /// <summary>The collection of channels instanced, indexed by channel name.</summary>
+        /// <inheritdoc/>
         public RealtimeChannels Channels { get; private set; }
 
-        /// <summary>A reference to the connection object for this library instance.</summary>
+        /// <inheritdoc/>
         public Connection Connection { get; }
 
+        internal RealtimeState State { get; }
+
+        /// <inheritdoc/>
         public Task<PaginatedResult<Stats>> StatsAsync()
         {
             return RestClient.StatsAsync();
         }
 
+        /// <inheritdoc/>
         public Task<PaginatedResult<Stats>> StatsAsync(StatsRequestParams query)
         {
             return RestClient.StatsAsync(query);
         }
 
+        /// <inheritdoc/>
         public PaginatedResult<Stats> Stats()
         {
             return RestClient.Stats();
         }
 
+        /// <inheritdoc/>
         public PaginatedResult<Stats> Stats(StatsRequestParams query)
         {
             return RestClient.Stats(query);
         }
 
-        /// <summary>
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public void Connect()
         {
+            if (Disposed)
+            {
+                throw new ObjectDisposedException("This instance has been disposed. Please create a new one.");
+            }
+
             Connection.Connect();
         }
 
-        /// <summary>
-        ///     This simply calls connection.close. Causes the connection to close, entering the closed state. Once
-        ///     closed, the library will not attempt to re-establish the connection without a call to connect().
-        /// </summary>
+        /// <inheritdoc/>
         public void Close()
         {
+            if (Disposed)
+            {
+                throw new ObjectDisposedException("This instance has been disposed. Please create a new one.");
+            }
+
             Connection.Close();
         }
 
-        /// <summary>Retrieves the ably service time</summary>
+        /// <inheritdoc/>
         public Task<DateTimeOffset> TimeAsync()
         {
             return RestClient.TimeAsync();
@@ -124,6 +162,60 @@ namespace IO.Ably
             {
                 action();
             }
+        }
+
+        /// <summary>
+        /// Debug method to get the full library state.
+        /// Useful when trying to figure out the full state of the library.
+        /// </summary>
+        /// <returns>json object of the full state of the library.</returns>
+        public string GetCurrentState()
+        {
+            var result = new JObject();
+            result["options"] = JObject.FromObject(Options);
+            result["state"] = State.WhatDoIHave();
+            result["channels"] = Channels.GetCurrentState();
+            result["isDisposed"] = Disposed;
+            return result.ToString();
+        }
+
+        /// <summary>
+        /// Disposes the current instance.
+        /// Once disposed, it closes the connection and the library can't be used again.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        /// <summary>
+        /// Disposes the current instance.
+        /// Once disposed, it closes the connection and the library can't be used again.
+        /// </summary>
+        /// <param name="disposing">Whether the dispose method triggered it directly.</param>
+        protected void Dispose(bool disposing)
+        {
+            if (Disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                try
+                {
+                    Connection?.RemoveAllListeners();
+                    Channels?.CleanupChannels();
+                }
+                catch (Exception e)
+                {
+                    Logger.Error("Error disposing Ably Realtime", e);
+                }
+            }
+
+            Workflow.QueueCommand(DisposeCommand.Create());
+
+            Disposed = true;
         }
     }
 }

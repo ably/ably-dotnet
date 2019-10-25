@@ -2,6 +2,9 @@
 
 namespace IO.Ably.Realtime
 {
+    /// <summary>
+    /// A class that provides access to presence operations and state for the associated Channel.
+    /// </summary>
     public partial class Presence
     {
         internal class QueuedPresenceMessage

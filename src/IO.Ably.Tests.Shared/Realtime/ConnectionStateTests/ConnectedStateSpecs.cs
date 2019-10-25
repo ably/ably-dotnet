@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -21,9 +22,9 @@ namespace IO.Ably.Tests
             _state = GetState();
         }
 
-        private ConnectionConnectedState GetState(ConnectionInfo info = null)
+        private ConnectionConnectedState GetState()
         {
-            return new ConnectionConnectedState(_context, info ?? new ConnectionInfo(string.Empty, 0, string.Empty, string.Empty));
+            return new ConnectionConnectedState(_context);
         }
 
         [Fact]
@@ -50,7 +51,7 @@ namespace IO.Ably.Tests
         public async Task ShouldNotHandleInboundMessageAction(ProtocolMessage.MessageAction action)
         {
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(action));
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(action), null);
 
             // Assert
             Assert.False(result);
@@ -58,14 +59,14 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public async Task ShouldHandleInboundDisconnectedMessageAndSetStateToDisconnected()
+        public async Task ShouldHandleInboundDisconnectedMessageAndShouldQueueSetDisconnectedStateCommand()
         {
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected));
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected), null);
 
             // Assert
             result.Should().BeTrue();
-            _context.StateShouldBe<ConnectionDisconnectedState>();
+            _context.ShouldQueueCommand<SetDisconnectedStateCommand>();
         }
 
         [Fact]
@@ -74,12 +75,11 @@ namespace IO.Ably.Tests
             ErrorInfo targetError = new ErrorInfo("test", 123);
 
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError });
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError }, null);
 
             // Assert
             result.Should().BeTrue();
-            var newState = _context.StateShouldBe<ConnectionFailedState>();
-            newState.Error.ShouldBeEquivalentTo(targetError);
+            _context.ShouldQueueCommand<SetFailedStateCommand>(cmd => cmd.Error.ShouldBeEquivalentTo(targetError));
         }
 
         [Fact]
@@ -100,33 +100,17 @@ namespace IO.Ably.Tests
             _state.Close();
 
             // Assert
-            _context.StateShouldBe<ConnectionClosingState>();
+            _context.ShouldQueueCommand<SetClosingStateCommand>();
         }
 
         [Fact]
         [Trait("spec", "RTN12c")]
         public async Task WhenCloseMessageReceived_ShouldChangeStateToClosed()
         {
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Close));
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Close), null);
 
             result.Should().BeTrue();
-            _context.StateShouldBe<ConnectionClosedState>();
-        }
-
-        [Fact]
-        [Trait("spec", "RTN8b")]
-        public void ConnectedState_UpdatesConnectionInformation()
-        {
-            // Act
-            var state = GetState(new ConnectionInfo("test", 12564, "test test", string.Empty));
-
-            state.BeforeTransition();
-
-            // Assert
-            var connection = _context.Connection;
-            connection.Id.Should().Be("test");
-            connection.Serial.Should().Be(12564);
-            connection.Key.Should().Be("test test");
+            _context.ShouldQueueCommand<SetClosedStateCommand>();
         }
     }
 }

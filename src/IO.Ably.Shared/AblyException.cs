@@ -3,8 +3,14 @@ using System.Net;
 
 namespace IO.Ably
 {
+    /// <summary>
+    /// Ably exception if an action cannot be performed over http.
+    /// </summary>
     public class InsecureRequestException : AblyException
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InsecureRequestException"/> class.
+        /// </summary>
         public InsecureRequestException()
             : base("Current action cannot be performed over http")
         {
@@ -17,22 +23,24 @@ namespace IO.Ably
     /// </summary>
     public class AblyException : Exception
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AblyException"/> class.
+        /// </summary>
         public AblyException()
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AblyException"/> class.
-        /// Creates AblyException
         /// </summary>
-        /// <param name="reason">Reason passed to the error info class</param>
+        /// <param name="reason">Reason passed to the error info class.</param>
         public AblyException(string reason)
             : this(new ErrorInfo(reason, 500, null))
         {
         }
 
         /// <summary>
-        /// Creates AblyException. ErrorInfo is automatically generated based on the inner exception message. StatusCode is set to 50000
+        /// Creates AblyException. ErrorInfo is automatically generated based on the inner exception message. StatusCode is set to 50000.
         /// </summary>
         /// <param name="ex">Original exception to be wrapped.</param>
         public AblyException(Exception ex)
@@ -43,8 +51,8 @@ namespace IO.Ably
         /// <summary>
         /// Creates an AblyException and populates ErrorInfo with the supplied parameters.
         /// </summary>
-        /// <param name="reason"></param>
-        /// <param name="code"></param>
+        /// <param name="reason">reason.</param>
+        /// <param name="code">error code.</param>
         public AblyException(string reason, int code)
             : this(new ErrorInfo(reason, code))
         {
@@ -53,6 +61,9 @@ namespace IO.Ably
         /// <summary>
         /// Creates AblyException and populates ErrorInfo with the supplied parameters.
         /// </summary>
+        /// <param name="reason">error reason.</param>
+        /// <param name="code">error code.</param>
+        /// <param name="statusCode">optional, http status code. <see cref="HttpStatusCode"/>.</param>
         public AblyException(string reason, int code, HttpStatusCode? statusCode = null)
             : this(new ErrorInfo(reason, code, statusCode))
         {
@@ -61,6 +72,7 @@ namespace IO.Ably
         /// <summary>
         /// Creates AblyException with supplied error info.
         /// </summary>
+        /// <param name="info">Error info.</param>
         public AblyException(ErrorInfo info)
             : base(info.ToString(), info.InnerException)
         {
@@ -68,14 +80,19 @@ namespace IO.Ably
         }
 
         /// <summary>
-        /// Creates AblyException with ErrorInfo and sets the supplied exception as innerException
+        /// Creates AblyException with ErrorInfo and sets the supplied exception as innerException.
         /// </summary>
+        /// <param name="info">Error info.</param>
+        /// <param name="innerException">Inner exception.</param>
         public AblyException(ErrorInfo info, Exception innerException)
             : base(info.ToString(), innerException ?? info.InnerException)
         {
             ErrorInfo = info;
         }
 
+        /// <summary>
+        /// Gets the current error info for the exception.
+        /// </summary>
         public ErrorInfo ErrorInfo { get; set; }
 
         internal static AblyException FromResponse(AblyResponse response)

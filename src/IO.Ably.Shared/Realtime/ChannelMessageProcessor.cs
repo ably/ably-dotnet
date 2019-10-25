@@ -1,5 +1,7 @@
+using System.Threading.Tasks;
 using IO.Ably;
 using IO.Ably.MessageEncoders;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
 using IO.Ably.Types;
 
@@ -10,14 +12,11 @@ namespace IO.Ably.Realtime
         internal ILogger Logger { get; private set; }
 
         private IChannels<IRealtimeChannel> _channels;
-        private ConnectionManager _connectionManager;
 
-        public ChannelMessageProcessor(ConnectionManager connectionManager, IChannels<IRealtimeChannel> channels)
+        public ChannelMessageProcessor(IChannels<IRealtimeChannel> channels, ILogger logger)
         {
-            Logger = connectionManager.Logger;
-            _connectionManager = connectionManager;
+            Logger = logger;
             _channels = channels;
-            _connectionManager.MessageReceived += MessageReceived;
         }
 
         private RealtimeChannel GetChannel(string name)
@@ -25,18 +24,18 @@ namespace IO.Ably.Realtime
             return _channels.Get(name) as RealtimeChannel;
         }
 
-        private void MessageReceived(ProtocolMessage protocolMessage)
+        public Task<bool> MessageReceived(ProtocolMessage protocolMessage, RealtimeState state)
         {
             if (protocolMessage.Channel.IsEmpty())
             {
-                return;
+                return Task.FromResult(false);
             }
 
             var channel = _channels.Exists(protocolMessage.Channel) ? GetChannel(protocolMessage.Channel) : null;
             if (channel == null)
             {
                 Logger.Warning($"Message received {protocolMessage} for a channel that does not exist {protocolMessage.Channel}");
-                return;
+                return Task.FromResult(false);
             }
 
             switch (protocolMessage.Action)
@@ -44,14 +43,15 @@ namespace IO.Ably.Realtime
                 case ProtocolMessage.MessageAction.Error:
                     channel.SetChannelState(ChannelState.Failed, protocolMessage);
                     break;
-                case ProtocolMessage.MessageAction.Attach:
                 case ProtocolMessage.MessageAction.Attached:
+                    channel.Properties.AttachSerial = protocolMessage.ChannelSerial;
                     if (channel.State == ChannelState.Attached)
                     {
                         // RTL12
                         if (!protocolMessage.HasFlag(ProtocolMessage.Flag.Resumed))
                         {
-                            channel.EmitUpdate(ChannelState.Attached, protocolMessage);
+                            channel.Presence.ChannelAttached(protocolMessage);
+                            channel.EmitUpdate(protocolMessage.Error, false);
                         }
                     }
                     else
@@ -90,6 +90,8 @@ namespace IO.Ably.Realtime
                     channel.Presence.OnPresence(protocolMessage.Presence, protocolMessage.ChannelSerial);
                     break;
             }
+
+            return Task.FromResult(true);
         }
     }
 }

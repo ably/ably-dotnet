@@ -8,6 +8,7 @@ namespace IO.Ably.Tests
     using Xunit;
     using Xunit.Abstractions;
 
+    [Collection("UnitTests")]
     public class AuthorizationTests : MockHttpRestSpecs
     {
         internal AblyResponse DummyTokenResponse = new AblyResponse() { Type = ResponseType.Json, TextResponse = "{ \"access_token\": {}}" };

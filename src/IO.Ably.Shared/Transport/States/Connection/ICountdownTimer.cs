@@ -5,16 +5,33 @@ using IO.Ably;
 
 namespace IO.Ably.Transport.States.Connection
 {
+    /// <summary>
+    /// Internal interface used for countdown timer.
+    /// </summary>
     public interface ICountdownTimer
     {
+        /// <summary>
+        /// Starts a timer.
+        /// </summary>
+        /// <param name="delay">when to fire.</param>
+        /// <param name="onTimeOut">action to execute.</param>
         void Start(TimeSpan delay, Action onTimeOut);
 
+        /// <summary>
+        /// Starts a timer with async onTimeOut method.
+        /// </summary>
+        /// <param name="delay">when to fire.</param>
+        /// <param name="onTimeOut">async action to execute.</param>
         void StartAsync(TimeSpan delay, Func<Task> onTimeOut);
 
+        /// <summary>
+        /// Aborts the timer.
+        /// </summary>
+        /// <param name="trigger">whether to trigger the action. Default: false.</param>
         void Abort(bool trigger = false);
     }
 
-    internal class CountdownTimer : ICountdownTimer
+    internal class CountdownTimer : ICountdownTimer, IDisposable
     {
         internal ILogger Logger { get; private set; }
 
@@ -66,7 +83,14 @@ namespace IO.Ably.Transport.States.Connection
             return timer;
         }
 
-        private async void OnTimerOnElapsed()
+        private void OnTimerOnElapsed()
+        {
+            // Ignore the result but don't allow the Countdown timer to take down the process if an exception is thrown
+            // You never know what will happen if the Logger throws an exception :)
+            _ = OnTimerOnElapsedAsync();
+        }
+
+        private async Task OnTimerOnElapsedAsync()
         {
             lock (_lock)
             {
@@ -105,8 +129,6 @@ namespace IO.Ably.Transport.States.Connection
             catch (Exception ex)
             {
                 Logger.Error("Error in method called by timer.", ex);
-
-                // throw; //TODO: BAD ME!
             }
         }
 
@@ -154,6 +176,11 @@ namespace IO.Ably.Transport.States.Connection
                 _timer.Dispose();
                 _timer = null;
             }
+        }
+
+        public void Dispose()
+        {
+            _timer?.Dispose();
         }
     }
 }

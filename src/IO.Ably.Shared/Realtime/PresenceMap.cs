@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace IO.Ably.Realtime
 {
@@ -14,17 +15,7 @@ namespace IO.Ably.Realtime
         private readonly string _channelName;
         private readonly object _lock = new object();
 
-        public enum State
-        {
-            Initialized,
-            SyncStarting,
-            InSync,
-            Failed
-        }
-
-        /// <summary>
-        /// Exposed internally to allow for testing
-        /// </summary>
+        // Exposed internally to allow for testing.
         internal ConcurrentDictionary<string, PresenceMessage> Members => _members;
 
         private readonly ConcurrentDictionary<string, PresenceMessage> _members;
@@ -209,6 +200,16 @@ namespace IO.Ably.Realtime
         protected virtual void OnSyncNoLongerInProgress()
         {
             SyncNoLongerInProgress?.Invoke(this, EventArgs.Empty);
+        }
+
+        internal JObject GetState()
+        {
+            var state = new JObject();
+            state["channelName"] = _channelName;
+            state["syncInProgress"] = _isSyncInProgress;
+            state["initialSyncComplete"] = InitialSyncCompleted;
+            state["members"] = new JArray(_members.Select(x => JObject.FromObject(new { Name = x.Key, Data = x.Value })));
+            return state;
         }
     }
 }

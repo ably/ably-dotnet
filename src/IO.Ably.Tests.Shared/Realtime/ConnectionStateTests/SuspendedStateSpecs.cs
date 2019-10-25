@@ -1,6 +1,9 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -26,6 +29,14 @@ namespace IO.Ably.Tests
             _timer = new FakeTimer();
             _context = new FakeConnectionContext();
             _state = GetState();
+        }
+
+        private void LastCommandShouldBe<T>(Action<T> assert = null)
+            where T : RealtimeCommand
+        {
+            var lastCommand = _context.ExecutedCommands.Last();
+            lastCommand.Should().BeOfType<T>();
+            assert?.Invoke(lastCommand as T);
         }
 
         [Fact]
@@ -55,7 +66,7 @@ namespace IO.Ably.Tests
         public async Task ShouldIgnoreInboundMessages(ProtocolMessage.MessageAction action)
         {
             // Act
-            var result = await _state.OnMessageReceived(new ProtocolMessage(action));
+            var result = await _state.OnMessageReceived(new ProtocolMessage(action), null);
 
             // Assert
             Assert.False(result);
@@ -69,7 +80,7 @@ namespace IO.Ably.Tests
             _state.Close();
 
             // Assert
-            _context.StateShouldBe<ConnectionClosedState>();
+            LastCommandShouldBe<SetClosedStateCommand>();
             _timer.Aborted.Should().BeTrue();
         }
 
@@ -77,10 +88,10 @@ namespace IO.Ably.Tests
         public void Connect_ShouldChangeStateToConnecting()
         {
             // Act
-            _state.Connect();
+            var command = _state.Connect();
 
             // Assert
-            _context.StateShouldBe<ConnectionConnectingState>();
+            command.Should().BeOfType<SetConnectingStateCommand>();
         }
 
         [Fact]
@@ -90,24 +101,12 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport(TransportState.Initialized);
 
             // Act
-            await _state.OnAttachToContext();
+            _state.OnAttachToContext();
             _timer.StartedWithAction.Should().BeTrue();
             _timer.OnTimeOut();
 
             // Assert
-            _context.StateShouldBe<ConnectionConnectingState>();
-        }
-
-        [Fact]
-        [Trait("spec", "RTN7c")]
-        [Trait("sandboxTest", "needed")]
-        public async Task OnAttached_ClearsAckQueue()
-        {
-            // Arrange
-            await _state.OnAttachToContext();
-
-            _context.ClearAckQueueMessagesCalled.Should().BeTrue();
-            _context.ClearAckMessagesError.Should().Be(ErrorInfo.ReasonSuspended);
+            _context.ShouldQueueCommand<SetConnectingStateCommand>();
         }
     }
 }

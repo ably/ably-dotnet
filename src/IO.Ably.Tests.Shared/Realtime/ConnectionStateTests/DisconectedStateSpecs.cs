@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -12,7 +13,6 @@ namespace IO.Ably.Tests
     public class DisconectedStateSpecs : AblySpecs
     {
         private FakeConnectionContext _context;
-        private ConnectionInfo _connectionInfo;
         private ConnectionDisconnectedState _state;
         private FakeTimer _timer;
 
@@ -20,7 +20,6 @@ namespace IO.Ably.Tests
             : base(output)
         {
             _context = new FakeConnectionContext();
-            _connectionInfo = new ConnectionInfo(string.Empty, 0, string.Empty, string.Empty);
             _timer = new FakeTimer();
             _state = GetState();
         }
@@ -60,7 +59,7 @@ namespace IO.Ably.Tests
             var state = GetState(ErrorInfo.ReasonClosed);
 
             // Act
-            bool handled = await state.OnMessageReceived(new ProtocolMessage(action));
+            bool handled = await state.OnMessageReceived(new ProtocolMessage(action), null);
 
             // Assert
             handled.Should().BeFalse();
@@ -77,7 +76,7 @@ namespace IO.Ably.Tests
             state.Close();
 
             // Assert
-            _context.StateShouldBe<ConnectionClosedState>();
+            _context.ShouldQueueCommand<SetClosedStateCommand>();
             _timer.Aborted.Should().BeTrue();
         }
 
@@ -88,10 +87,10 @@ namespace IO.Ably.Tests
             var state = GetState(ErrorInfo.ReasonClosed);
 
             // Act
-            state.Connect();
+            var command = state.Connect();
 
             // Assert
-            _context.StateShouldBe<ConnectionConnectingState>();
+            command.Should().BeOfType<SetConnectingStateCommand>();
         }
 
         [Fact]
@@ -103,30 +102,12 @@ namespace IO.Ably.Tests
             var state = GetState(ErrorInfo.ReasonClosed);
 
             // Act
-            await state.OnAttachToContext();
+            state.OnAttachToContext();
             _timer.OnTimeOut();
 
             // Assert
             _timer.StartedWithAction.Should().BeTrue();
-            _context.StateShouldBe<ConnectionConnectingState>();
-        }
-
-        [Fact]
-        public async Task WhenDisconnectedWithFallback_ShouldRetryConnectionImmediately()
-        {
-            // Arrange
-            // Arrange
-            var transport = new FakeTransport() { State = TransportState.Initialized };
-            _context.Transport = transport;
-            var state = GetState(ErrorInfo.ReasonClosed);
-            state.RetryInstantly = true;
-
-            // Act
-            await state.OnAttachToContext();
-
-            // Assert
-            _timer.StartedWithAction.Should().BeFalse();
-            _context.StateShouldBe<ConnectionConnectingState>();
+            _context.ShouldQueueCommand<SetConnectingStateCommand>();
         }
     }
 }

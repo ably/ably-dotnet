@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
@@ -36,10 +37,10 @@ namespace IO.Ably.Tests
         public void ConnectCalled_ShouldGoToConnecting()
         {
             // Act
-            _state.Connect();
+            var command = _state.Connect();
 
             // Assert
-            _context.StateShouldBe<ConnectionConnectingState>();
+            command.Should().BeOfType<SetConnectingStateCommand>();
         }
 
         [Fact]
@@ -47,17 +48,6 @@ namespace IO.Ably.Tests
         {
             // Act
             _state.Close();
-        }
-
-        [Fact]
-        public void BeforeTransition_DestroysTransport()
-        {
-            // Arrange
-            // Act
-            _state.BeforeTransition();
-
-            // Assert
-            _context.DestroyTransportCalled.Should().BeTrue();
         }
 
         [Theory]
@@ -81,37 +71,10 @@ namespace IO.Ably.Tests
         public async Task ShouldNotHandleInboundMessages(ProtocolMessage.MessageAction action)
         {
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(action));
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(action), null);
 
             // Assert
             Assert.False(result);
-        }
-
-        [Fact]
-        public void BeforeTransition_ShouldClearConnectionKeyAndId()
-        {
-            // Arrange
-            _context.Connection.Key = "Test";
-            _context.Connection.Id = "Test";
-
-            // Act
-            _state.BeforeTransition();
-
-            // Assert
-            _context.Connection.Key.Should().BeNullOrEmpty();
-            _context.Connection.Id.Should().BeNullOrEmpty();
-        }
-
-        [Fact]
-        [Trait("spec", "RTN7c")]
-        [Trait("sandboxTest", "needed")]
-        public async Task OnAttached_ClearsAckQueue()
-        {
-            // Arrange
-            await _state.OnAttachToContext();
-
-            _context.ClearAckQueueMessagesCalled.Should().BeTrue();
-            _context.ClearAckMessagesError.Should().Be(ErrorInfo.ReasonFailed);
         }
     }
 }

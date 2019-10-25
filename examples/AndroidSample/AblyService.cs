@@ -20,8 +20,7 @@ namespace AndroidSample
                 LogHander = this,
                 LogLevel = LogLevel.Debug, 
                 AutoConnect = false,
-                UseBinaryProtocol = false,
-                TransportFactory = new WebSocketTransport.WebSocketTransportFactory()
+                UseBinaryProtocol = false
             });
             _ably.Connection.On(change =>
             {

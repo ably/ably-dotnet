@@ -1,7 +1,10 @@
 using System;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using FluentAssertions;
+using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -11,14 +14,14 @@ using Xunit.Abstractions;
 namespace IO.Ably.Tests.Realtime
 {
     [Trait("spec", "RTN13")]
-    public class ConnectionPingSpecs : ConnectionSpecsBase
+    public class ConnectionPingSpecs : AblyRealtimeSpecs
     {
         [Fact]
         [Trait("spec", "RTN13a")]
         public async Task OnHeartBeatMessageReceived_ShouldReturnElapsedTime()
         {
             SetNowFunc(() => DateTimeOffset.UtcNow);
-            var client = GetConnectedClient();
+            var client = await GetConnectedClient();
 
             FakeTransportFactory.LastCreatedTransport.SendAction = async message =>
             {
@@ -26,14 +29,16 @@ namespace IO.Ably.Tests.Realtime
                 if (message.Original.Action == ProtocolMessage.MessageAction.Heartbeat)
                 {
                     await Task.Delay(1);
-                    await client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat));
+                    client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat)
+                    {
+                        Id = message.Original.Id,
+                    });
                 }
             };
             var result = await client.Connection.PingAsync();
 
             result.IsSuccess.Should().BeTrue();
 
-            // Because the now object is static when executed in parallel with other tests the results are affected
             result.Value.Value.Should().BeGreaterThan(TimeSpan.FromMilliseconds(0));
 
             // reset
@@ -46,26 +51,28 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = GetClientWithFakeTransport();
 
-            await client.ConnectionManager.SetState(new ConnectionClosedState(client.ConnectionManager, new ErrorInfo(), Logger));
+            client.Workflow.QueueCommand(SetClosedStateCommand.Create(new ErrorInfo()));
+            await client.WaitForState(ConnectionState.Closed);
 
             var result = await client.Connection.PingAsync();
 
             result.IsSuccess.Should().BeFalse();
-            result.Error.Should().Be(ConnectionHeartbeatRequest.DefaultError);
+            result.Error.Should().Be(PingRequest.DefaultError);
 
-            await client.ConnectionManager.SetState(new ConnectionFailedState(client.ConnectionManager, new ErrorInfo(), Logger));
+            client.Workflow.QueueCommand(SetFailedStateCommand.Create(new ErrorInfo()));
+            await client.WaitForState(ConnectionState.Failed);
 
             var resultFailed = await client.Connection.PingAsync();
 
             resultFailed.IsSuccess.Should().BeFalse();
-            resultFailed.Error.Should().Be(ConnectionHeartbeatRequest.DefaultError);
+            resultFailed.Error.Should().Be(PingRequest.DefaultError);
         }
 
         [Fact]
         [Trait("spec", "RTN13c")]
         public async Task WhenDefaultTimeoutExpiresWithoutReceivingHeartbeatMessage_ShouldFailWithTimeoutError()
         {
-            var client = GetConnectedClient(opts => opts.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100));
+            var client = await GetConnectedClient(opts => opts.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(1000));
 
             var result = await client.Connection.PingAsync();
 

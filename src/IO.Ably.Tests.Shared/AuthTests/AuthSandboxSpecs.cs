@@ -12,8 +12,8 @@ using Xunit.Abstractions;
 
 namespace IO.Ably.Tests
 {
-    [Collection("AblyRest SandBox Collection")]
-    [Trait("requires", "sandbox")]
+    [Collection("SandBox Collection")]
+    [Trait("type", "integration")]
     public class AuthSandboxSpecs : SandboxSpecs
     {
         private string _errorUrl = "https://echo.ably.io/respondwith?status=500";
@@ -285,7 +285,8 @@ namespace IO.Ably.Tests
                 });
 
                 realtimeClient.Connection.Connect();
-                await Task.Delay(100);
+                await realtimeClient.ProcessCommands();
+
                 (await tca.Task).Should().BeTrue(context);
             }
 
@@ -772,7 +773,6 @@ namespace IO.Ably.Tests
 
             await realtimeClient.WaitForState(ConnectionState.Connected);
         }
-
 
         /// <summary>
         /// Helper methods that return an AblyRest or AblyRealitme instance and a list of AblyRequest that

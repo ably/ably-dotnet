@@ -1,7 +1,10 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.AcceptanceTests;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
@@ -34,10 +37,10 @@ namespace IO.Ably.Tests
         public void WhenConnectCalled_MovesToConnectingState()
         {
             // Act
-            _state.Connect();
+            var command = _state.Connect();
 
             // Assert
-            _context.StateShouldBe<ConnectionConnectingState>();
+            command.Should().BeOfType<SetConnectingStateCommand>();
         }
 
         [Fact]
@@ -45,19 +48,6 @@ namespace IO.Ably.Tests
         {
             // Act
             new ConnectionClosedState(null, _logger).Close();
-        }
-
-        [Fact]
-        public void BeforeTransition_ShouldDestroyTransport()
-        {
-            // Arrange
-            _context.Transport = new FakeTransport();
-
-            // Act
-            _state.BeforeTransition();
-
-            // Assert
-            _context.DestroyTransportCalled.Should().BeTrue();
         }
 
         [Theory]
@@ -81,36 +71,10 @@ namespace IO.Ably.Tests
         public async Task ShouldNotHandleInboundMessageWithAction(ProtocolMessage.MessageAction action)
         {
             // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(action));
+            bool result = await _state.OnMessageReceived(new ProtocolMessage(action), null);
 
             // Assert
             result.Should().Be(false);
-        }
-
-        [Fact]
-        [Trait("spec", "RTN7c")]
-        [Trait("sandboxTest", "needed")]
-        public async Task ShouldClearAckQueue()
-        {
-            // Arrange
-            await _state.OnAttachToContext();
-
-            _context.ClearAckQueueMessagesCalled.Should().BeTrue();
-            _context.ClearAckMessagesError.Should().Be(ErrorInfo.ReasonClosed);
-        }
-
-        [Fact]
-        public void ShouldClearConnectionKeyAndId()
-        {
-            // Arrange
-            _context.Connection.Key = "test";
-
-            // Act
-            _state.BeforeTransition();
-
-            // Assert
-            _context.Connection.Key.Should().BeNullOrEmpty();
-            _context.Connection.Id.Should().BeNullOrEmpty();
         }
     }
 }

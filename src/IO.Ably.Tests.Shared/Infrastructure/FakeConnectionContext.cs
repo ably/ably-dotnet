@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
@@ -44,21 +46,20 @@ namespace IO.Ably.Tests
             SendToTransportCalled = true;
         }
 
-        public bool SendToTransportCalled { get; set; }
-
-        public Task Execute(Action action)
+        public void ExecuteCommand(RealtimeCommand cmd)
         {
-            action();
-            return TaskConstants.BooleanTrue;
+            ExecutedCommands.Add(cmd);
         }
 
+        public bool SendToTransportCalled { get; set; }
+
         public ConnectionStateBase State { get; set; }
+
+        public List<RealtimeCommand> ExecutedCommands = new List<RealtimeCommand>();
 
         public TransportState TransportState => Transport.State;
 
         public ITransport Transport { get; set; }
-
-        public AblyRest RestClient { get; set; }
 
         public Queue<ProtocolMessage> QueuedMessages { get; } = new Queue<ProtocolMessage>();
 
@@ -117,7 +118,7 @@ namespace IO.Ably.Tests
         {
         }
 
-        public bool ShouldWeRenewToken(ErrorInfo error)
+        public bool ShouldWeRenewToken(ErrorInfo error, RealtimeState state)
         {
             return ShouldWeRenewTokenValue;
         }
@@ -147,17 +148,12 @@ namespace IO.Ably.Tests
             return RetryFunc(error);
         }
 
-        public Task RetryAuthentication(ErrorInfo error = null, bool updateState = true)
-        {
-            throw new NotImplementedException();
-        }
-
         public void CloseConnection()
         {
             CloseConnectionCalled = true;
         }
 
-        public void HandleConnectingFailure(ErrorInfo error, Exception ex)
+        public void HandleConnectingFailure(ErrorInfo error, Exception ex, bool clearConnectionKey)
         {
             HandledConnectionFailureCalled = true;
         }
@@ -208,6 +204,15 @@ namespace IO.Ably.Tests
         {
             LastSetState.Should().BeOfType<T>();
             return (T)LastSetState;
+        }
+
+        public void ShouldQueueCommand<T>(Action<T> commandCheck = null)
+            where T : RealtimeCommand
+        {
+            var lastCommand = ExecutedCommands.LastOrDefault();
+            lastCommand.Should().NotBeNull();
+            lastCommand.Should().BeOfType<T>();
+            commandCheck?.Invoke(lastCommand as T);
         }
 
         public void ShouldHaveNotChangedState()

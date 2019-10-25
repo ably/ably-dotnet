@@ -5,28 +5,16 @@ using System.Net;
 
 namespace IO.Ably
 {
+    /// <summary>
+    /// Extension methods for Dictionary objects.
+    /// </summary>
     public static class DictionaryExtensions
     {
-        public static TValue Get<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
-        {
-            if (dictionary.ContainsKey(key))
-            {
-                return dictionary[key];
-            }
-
-            return default(TValue);
-        }
-
-        public static TValue Get<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue)
-        {
-            if (dictionary.ContainsKey(key))
-            {
-                return dictionary[key];
-            }
-
-            return defaultValue;
-        }
-
+        /// <summary>
+        /// Converts a dictionary of strings to a querystring.
+        /// </summary>
+        /// <param name="params">dictionary to convert.</param>
+        /// <returns>returns a url encoded query string.</returns>
         public static string ToQueryString(this Dictionary<string, string> @params)
         {
             if (@params == null || @params.Count == 0)
@@ -37,6 +25,12 @@ namespace IO.Ably
             return string.Join("&", @params.Select(x => $"{WebUtility.UrlEncode(x.Key)}={WebUtility.UrlEncode(x.Value)}"));
         }
 
+        /// <summary>
+        /// Merges two dictionaries of strings without overwriting keys if they exist.
+        /// </summary>
+        /// <param name="first">first dictionary.</param>
+        /// <param name="second">second dictionary.</param>
+        /// <returns>returns merged dictionary.</returns>
         public static Dictionary<string, string> Merge(this Dictionary<string, string> first, Dictionary<string, string> second)
         {
             if (second == null)

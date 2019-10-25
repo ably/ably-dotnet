@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using IO.Ably;
+using IO.Ably.Realtime.Workflow;
 using IO.Ably.Types;
 
 namespace IO.Ably.Transport.States.Connection
@@ -26,17 +26,18 @@ namespace IO.Ably.Transport.States.Connection
 
         public override bool CanQueue => true;
 
-        public override void Connect()
+        public override RealtimeCommand Connect()
         {
             Logger.Debug("Already connecting!");
+            return EmptyCommand.Instance;
         }
 
         public override void Close()
         {
-            TransitionState(new ConnectionClosingState(Context, Logger));
+            TransitionState(SetClosingStateCommand.Create());
         }
 
-        public override async Task<bool> OnMessageReceived(ProtocolMessage message)
+        public override async Task<bool> OnMessageReceived(ProtocolMessage message, RealtimeState state)
         {
             if (message == null)
             {
@@ -49,8 +50,7 @@ namespace IO.Ably.Transport.States.Connection
                     {
                         if (Context.Transport.State == TransportState.Connected)
                         {
-                            var info = new ConnectionInfo(message);
-                            TransitionState(new ConnectionConnectedState(Context, info, message.Error, Logger));
+                            TransitionState(SetConnectedStateCommand.Create(message, false));
                         }
 
                         return true;
@@ -58,50 +58,39 @@ namespace IO.Ably.Transport.States.Connection
 
                 case ProtocolMessage.MessageAction.Disconnected:
                     {
-                        Context.HandleConnectingFailure(message.Error, null);
+                        Context.ExecuteCommand(HandleConnectingFailureCommand.Create(message.Error));
                         return true;
                     }
 
                 case ProtocolMessage.MessageAction.Error:
                     {
                         // If the error is a token error do some magic
-                        bool shouldRenew = Context.ShouldWeRenewToken(message.Error);
+                        bool shouldRenew = Context.ShouldWeRenewToken(message.Error, state);
                         if (shouldRenew)
                         {
-                            try
-                            {
-                                Context.ClearTokenAndRecordRetry();
-                                await Context.CreateTransport();
-                                return true;
-                            }
-                            catch (AblyException ex)
-                            {
-                                Logger.Error("Error trying to renew token.", ex);
-                                TransitionState(new ConnectionDisconnectedState(Context, ex.ErrorInfo, Logger));
-                                return true;
-                            }
+                            Context.ExecuteCommand(HandleConnectingTokenErrorCommand.Create(message.Error));
+                            return true;
                         }
 
                         if (await Context.CanUseFallBackUrl(message.Error))
                         {
-                            Context.Connection.Key = null;
-                            Context.HandleConnectingFailure(message.Error, null);
+                            Context.ExecuteCommand(HandleConnectingFailureCommand.Create(message.Error, clearConnectionKey: true));
                             return true;
                         }
 
                         if (message.Error?.IsTokenError == true && !Context.Connection.RestClient.AblyAuth.TokenRenewable)
                         {
-                            TransitionState(new ConnectionFailedState(Context, message.Error, Logger));
+                            TransitionState(SetFailedStateCommand.Create(message.Error));
                             return true;
                         }
 
-                        if (message.Error?.IsTokenError == true && !shouldRenew)
+                        if (message.Error?.IsTokenError == true)
                         {
-                            TransitionState(new ConnectionDisconnectedState(Context, message.Error, Logger));
+                            TransitionState(SetDisconnectedStateCommand.Create(message.Error));
                             return true;
                         }
 
-                        TransitionState(new ConnectionFailedState(Context, message.Error, Logger));
+                        TransitionState(SetFailedStateCommand.Create(message.Error));
                         return true;
                     }
             }
@@ -114,29 +103,20 @@ namespace IO.Ably.Transport.States.Connection
             _timer.Abort();
         }
 
-        public override async Task OnAttachToContext()
+        public override void OnAttachToContext()
         {
-            // RTN15g - If a client has been disconnected for longer
-            // than the connectionStateTtl, it should not attempt to resume.
-            if (Context.Connection.ConfirmedAliveAt?.Add(Context.Connection.ConnectionStateTtl) < DateTimeOffset.UtcNow)
-            {
-                Context.Connection.Id = string.Empty;
-                Context.Connection.Key = string.Empty;
-            }
-
-            await Context.CreateTransport();
             _timer.Start(Context.DefaultTimeout, onTimeOut: OnTimeOut);
         }
 
         private void OnTimeOut()
         {
-            Context.Execute(() => Context.HandleConnectingFailure(null, null));
+            Context.ExecuteCommand(HandleConnectingFailureCommand.Create());
         }
 
-        private void TransitionState(ConnectionStateBase newState)
+        private void TransitionState(RealtimeCommand command)
         {
             _timer.Abort();
-            Context.SetState(newState);
+            Context.ExecuteCommand(command);
         }
     }
 }

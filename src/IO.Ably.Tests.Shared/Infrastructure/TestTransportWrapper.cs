@@ -44,7 +44,7 @@ namespace IO.Ably.Tests.Infrastructure
 
                 try
                 {
-                    _wrappedListener.OnTransportDataReceived(data);
+                    _wrappedListener?.OnTransportDataReceived(data);
                 }
                 catch (Exception e)
                 {
@@ -61,9 +61,9 @@ namespace IO.Ably.Tests.Infrastructure
                 }
             }
 
-            public void OnTransportEvent(TransportState state, Exception exception = null)
+            public void OnTransportEvent(Guid transportId, TransportState state, Exception exception = null)
             {
-                _wrappedListener?.OnTransportEvent(state, exception);
+                _wrappedListener?.OnTransportEvent(transportId, state, exception);
             }
         }
 
@@ -90,6 +90,8 @@ namespace IO.Ably.Tests.Infrastructure
             _handler = new MessageHandler(protocol);
         }
 
+        public Guid Id => WrappedTransport.Id;
+
         public TransportState State => WrappedTransport.State;
 
         public ITransportListener Listener
@@ -100,7 +102,7 @@ namespace IO.Ably.Tests.Infrastructure
 
         public void FakeTransportState(TransportState state, Exception ex = null)
         {
-            Listener?.OnTransportEvent(state, ex);
+            Listener?.OnTransportEvent(Id, state, ex);
         }
 
         public void FakeReceivedMessage(ProtocolMessage message)

@@ -3,8 +3,16 @@ using System.Text;
 
 namespace IO.Ably
 {
+    /// <summary>
+    /// String utility functions.
+    /// </summary>
     public static class StringUtils
     {
+        /// <summary>
+        /// Returns UTF8 bytes from a given string.
+        /// </summary>
+        /// <param name="text">input string.</param>
+        /// <returns>UTF8 byte[].</returns>
         public static byte[] GetBytes(this string text)
         {
             return Encoding.UTF8.GetBytes(text);

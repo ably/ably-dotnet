@@ -154,21 +154,11 @@ namespace IO.Ably.Transport
 
         public void SendText(string message)
         {
-            if (Logger != null && Logger.IsDebug)
-            {
-                Logger.Debug("SendText: Enqueue text for sending");
-            }
-
             EnqueueForSending(message.GetBytes(), WebSocketMessageType.Binary);
         }
 
         public void SendData(byte[] data)
         {
-            if (Logger != null && Logger.IsDebug)
-            {
-                Logger.Debug("SendData: Enqueue binary data for sending");
-            }
-
             EnqueueForSending(data, WebSocketMessageType.Binary);
         }
 
@@ -231,11 +221,6 @@ namespace IO.Ably.Transport
                         while (!result.EndOfMessage);
 
                         ms.Seek(0, SeekOrigin.Begin);
-
-                        if (Logger != null && Logger.IsDebug)
-                        {
-                            Logger.Debug("Receiving message with type: " + result.MessageType);
-                        }
 
                         switch (result.MessageType)
                         {

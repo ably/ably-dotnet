@@ -1,7 +1,13 @@
 ﻿namespace IO.Ably.Realtime
 {
+    /// <summary>
+    /// Channel properties.
+    /// </summary>
     public class ChannelProperties
     {
+        /// <summary>
+        /// contains the last channelSerial received in an ATTACHED ProtocolMesage for the channel, see RTL15a.
+        /// </summary>
         public string AttachSerial { get; internal set; } = null;
     }
 }

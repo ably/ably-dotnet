@@ -9,9 +9,9 @@
 //------------------------------------------------------------------------------
 
 namespace IO.Ably.CustomSerialisers {
-    
-    
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("MsgPack.Serialization.CodeDomSerializers.CodeDomSerializerBuilder", "0.6.0.0")]
+
+#pragma warning disable SA1600 // Elements should be documented
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class IO_Ably_RequestCountSerializer : MsgPack.Serialization.MessagePackSerializer<IO.Ably.RequestCount> {
         
         private MsgPack.Serialization.MessagePackSerializer<string> _serializer0;
@@ -113,4 +113,6 @@ namespace IO.Ably.CustomSerialisers {
             }
         }
     }
+#pragma warning restore SA1600 // Elements should be documented
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

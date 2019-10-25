@@ -2,6 +2,11 @@
   "settings": {
     "layoutRules": {
       "newlineAtEndOfFile":  "require" 
+    },
+    "documentationRules": {
+      "companyName": "Ably Realtime ltd",
+      "documentInterfaces": true,
+      "documentInternalElements": false
     }
   }
 }

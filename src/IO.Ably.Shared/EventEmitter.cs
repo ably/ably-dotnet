@@ -3,28 +3,108 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using IO.Ably;
+using Newtonsoft.Json.Linq;
 
 namespace IO.Ably
 {
+    /// <summary>
+    /// An interface exposing the ability to register listeners for a class of events.
+    /// </summary>
+    /// <typeparam name="TEvent">Type of event.</typeparam>
+    /// <typeparam name="TArgs">Type of arguments passed.</typeparam>
     public interface IEventEmitter<TEvent, TArgs> where TEvent : struct where TArgs : EventArgs
     {
+        /// <summary>
+        /// Unregisters all event listeners.
+        /// </summary>
         void Off();
 
+        /// <summary>
+        /// Register a given listerner for all events.
+        /// </summary>
+        /// <param name="listener">listener function.</param>
         void On(Action<TArgs> listener);
 
+        /// <summary>
+        /// Register a given listener for a single occurrance of a single event.
+        /// </summary>
+        /// <param name="listener">listener function.</param>
         void Once(Action<TArgs> listener);
 
+        /// <summary>
+        /// Unregister the passed listener.
+        /// </summary>
+        /// <param name="listener">listener function.</param>
         void Off(Action<TArgs> listener);
 
+        /// <summary>
+        /// Register the given listener for a given event.
+        /// </summary>
+        /// <param name="state">the event to listen for.</param>
+        /// <param name="action">listener function.</param>
         void On(TEvent state, Action<TArgs> action);
 
+        /// <summary>
+        /// Register the given listener for a single occurance of a single event.
+        /// </summary>
+        /// <param name="state">the event to listen for.</param>
+        /// <param name="action">listener function.</param>
         void Once(TEvent state, Action<TArgs> action);
 
+        /// <summary>
+        /// Unregister a given listener for a single event.
+        /// </summary>
+        /// <param name="state">the event to listen for.</param>
+        /// <param name="action">listener function.</param>
         void Off(TEvent state, Action<TArgs> action);
+
+        /// <summary>
+        /// Register a given listerner for all events.
+        /// </summary>
+        /// <param name="listener">listener function.</param>
+        void On(Func<TArgs, Task> listener);
+
+        /// <summary>
+        /// Register a given listener for a single occurrance of a single event.
+        /// </summary>
+        /// <param name="listener">listener function.</param>
+        void Once(Func<TArgs, Task> listener);
+
+        /// <summary>
+        /// Unregister the passed listener.
+        /// </summary>
+        /// <param name="listener">async listener function.</param>
+        void Off(Func<TArgs, Task> listener);
+
+        /// <summary>
+        /// Register the given listener for a given event.
+        /// </summary>
+        /// <param name="state">the event to listen for.</param>
+        /// <param name="action">async listener function.</param>
+        void On(TEvent state, Func<TArgs, Task> action);
+
+        /// <summary>
+        /// Register the given listener for a single occurance of a single event.
+        /// </summary>
+        /// <param name="state">the event to listen for.</param>
+        /// <param name="action">async listener function.</param>
+        void Once(TEvent state, Func<TArgs, Task> action);
+
+        /// <summary>
+        /// Unregister a given listener for a single event.
+        /// </summary>
+        /// <param name="state">the event to listen for.</param>
+        /// <param name="action">async listener function.</param>
+        void Off(TEvent state, Func<TArgs, Task> action);
     }
 
-    public abstract class EventEmitter<TState, TArgs> : IEventEmitter<TState, TArgs> where TState : struct
+    /// <summary>
+    /// Abstract class that allows other classes to implement the IEventEmitter interface.
+    /// </summary>
+    /// <typeparam name="TState">Type of Event.</typeparam>
+    /// <typeparam name="TArgs">Type of args passed to the listeners.</typeparam>
+    public abstract class EventEmitter<TState, TArgs> : IEventEmitter<TState, TArgs>
+        where TState : struct
         where TArgs : EventArgs
     {
         internal EventEmitter(ILogger logger)
@@ -37,9 +117,18 @@ namespace IO.Ably
         private readonly List<Emitter<TState, TArgs>> _emitters = new List<Emitter<TState, TArgs>>();
         private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
 
+        internal JArray GetState()
+        {
+            return new JArray(_emitters.Select(x => new { state = x.State, once = x.Once }));
+        }
+
+        /// <summary>
+        /// Used to delegate notifying the clients.
+        /// </summary>
         protected abstract Action<Action> NotifyClient { get; }
 
-        private class Emitter<TStatePrivate, TArgsPrivate> where TStatePrivate : struct
+        private class Emitter<TStatePrivate, TArgsPrivate>
+            where TStatePrivate : struct
         {
             public Action<TArgsPrivate> Action { get; }
 
@@ -64,6 +153,7 @@ namespace IO.Ably
             }
         }
 
+        /// <inheritdoc/>
         public void Off()
         {
             _lock.EnterWriteLock();
@@ -77,6 +167,7 @@ namespace IO.Ably
             }
         }
 
+        /// <inheritdoc/>
         public void On(Action<TArgs> listener)
         {
             _lock.EnterUpgradeableReadLock();
@@ -98,6 +189,7 @@ namespace IO.Ably
             }
         }
 
+        /// <inheritdoc/>
         public void On(Func<TArgs, Task> listener)
         {
             _lock.EnterUpgradeableReadLock();
@@ -119,6 +211,7 @@ namespace IO.Ably
             }
         }
 
+        /// <inheritdoc/>
         public void Once(Action<TArgs> listener)
         {
             _lock.EnterUpgradeableReadLock();
@@ -140,6 +233,7 @@ namespace IO.Ably
             }
         }
 
+        /// <inheritdoc/>
         public void Once(Func<TArgs, Task> listener)
         {
             _lock.EnterUpgradeableReadLock();
@@ -161,6 +255,7 @@ namespace IO.Ably
             }
         }
 
+        /// <inheritdoc/>
         public void Off(Action<TArgs> listener)
         {
             _lock.EnterWriteLock();
@@ -174,6 +269,7 @@ namespace IO.Ably
             }
         }
 
+        /// <inheritdoc/>
         public void Off(Func<TArgs, Task> listener)
         {
             _lock.EnterWriteLock();
@@ -187,6 +283,7 @@ namespace IO.Ably
             }
         }
 
+        /// <inheritdoc/>
         public void On(TState state, Action<TArgs> action)
         {
             _lock.EnterWriteLock();
@@ -200,6 +297,7 @@ namespace IO.Ably
             }
         }
 
+        /// <inheritdoc/>
         public void On(TState state, Func<TArgs, Task> action)
         {
             _lock.EnterWriteLock();
@@ -213,6 +311,7 @@ namespace IO.Ably
             }
         }
 
+        /// <inheritdoc/>
         public void Once(TState state, Action<TArgs> action)
         {
             _lock.EnterWriteLock();
@@ -226,6 +325,7 @@ namespace IO.Ably
             }
         }
 
+        /// <inheritdoc/>
         public void Once(TState state, Func<TArgs, Task> action)
         {
             _lock.EnterWriteLock();
@@ -239,6 +339,7 @@ namespace IO.Ably
             }
         }
 
+        /// <inheritdoc/>
         public void Off(TState state, Action<TArgs> action)
         {
             _lock.EnterWriteLock();
@@ -252,6 +353,7 @@ namespace IO.Ably
             }
         }
 
+        /// <inheritdoc/>
         public void Off(TState state, Func<TArgs, Task> action)
         {
             _lock.EnterWriteLock();
@@ -265,6 +367,11 @@ namespace IO.Ably
             }
         }
 
+        /// <summary>
+        /// Protected method that Emits an event and calls all registered listeners that match.
+        /// </summary>
+        /// <param name="state">the event emitted.</param>
+        /// <param name="data">the data arguments passed to the listeners.</param>
         protected void Emit(TState state, TArgs data)
         {
             List<Emitter<TState, TArgs>> emitters;
@@ -303,7 +410,7 @@ namespace IO.Ably
                     try
                     {
                         current.Action?.Invoke(data);
-                        current.AsyncAction?.Invoke(data);
+                        var ignoredTask = current.AsyncAction?.Invoke(data);
                     }
                     catch (Exception ex)
                     {

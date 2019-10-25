@@ -18,7 +18,7 @@ namespace IO.Ably.Realtime
         private readonly ChannelState _awaitedState;
         private readonly List<Action<bool, ErrorInfo>> _callbacks = new List<Action<bool, ErrorInfo>>();
 
-        private bool _waiting;
+        public bool Waiting { get; private set; }
 
         private readonly CountdownTimer _timer;
         private readonly string _name;
@@ -46,12 +46,12 @@ namespace IO.Ably.Realtime
             lock (_lock)
             {
                 _timer?.Abort();
-                if (_waiting == false)
+                if (Waiting == false)
                 {
                     return;
                 }
 
-                _waiting = false;
+                Waiting = false;
             }
 
             if (error != null)
@@ -107,7 +107,7 @@ namespace IO.Ably.Realtime
 
             lock (_lock)
             {
-                if (_waiting)
+                if (Waiting)
                 {
                     Logger.Warning(
                         $"Awaiter for {_awaitedState} has been called multiple times. Adding action to callbacks");
@@ -116,7 +116,7 @@ namespace IO.Ably.Realtime
                 }
 
                 _timer.Start(timeout, ElapsedSync);
-                _waiting = true;
+                Waiting = true;
                 _callbacks.Add(callback);
 
                 return true;
@@ -127,7 +127,7 @@ namespace IO.Ably.Realtime
         {
             lock (_lock)
             {
-                _waiting = false;
+                Waiting = false;
             }
 
             _onTimeout?.Invoke();
@@ -149,7 +149,7 @@ namespace IO.Ably.Realtime
         {
             lock (_lock)
             {
-                if (_waiting == false)
+                if (Waiting == false)
                 {
                     return;
                 }
@@ -165,6 +165,7 @@ namespace IO.Ably.Realtime
         public void Dispose()
         {
             DetachListener();
+            _timer?.Dispose();
         }
     }
 }

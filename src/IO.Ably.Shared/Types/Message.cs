@@ -1,23 +1,30 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.Serialization;
 using IO.Ably.MessageEncoders;
-using IO.Ably.Utils;
 using Newtonsoft.Json;
 
 namespace IO.Ably
 {
-    /// <summary>A class representing an individual message to be sent or received via the Ably realtime service</summary>
+    /// <summary>A class representing an individual message to be sent or received via the Ably realtime service.</summary>
     [DebuggerDisplay("{ToString()}")]
     public class Message : IMessage
     {
         private static readonly Message DefaultInstance = new Message();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Message"/> class.
+        /// </summary>
         public Message()
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Message"/> class.
+        /// </summary>
+        /// <param name="name">message name.</param>
+        /// <param name="data">message data.</param>
+        /// <param name="clientId">id of the publisher of this message.</param>
         public Message(string name = null, object data = null, string clientId = null)
         {
             Name = name;
@@ -28,24 +35,23 @@ namespace IO.Ably
             }
         }
 
-        /// <summary>A globally unique message id</summary>
+        /// <summary>A globally unique message id.</summary>
         [JsonProperty("id")]
         public string Id { get; set; }
 
-        /// <summary>The id of the publisher of this message</summary>
-        ///
+        /// <summary>The id of the publisher of this message.</summary>
         [JsonProperty("clientId")]
         public string ClientId { get; set; }
 
-        /// <summary>The connection id of the publisher of the message</summary>
+        /// <summary>The connection id of the publisher of the message.</summary>
         [JsonProperty("connectionId")]
         public string ConnectionId { get; set; }
 
-        /// <summary>The event name, if available</summary>
+        /// <summary>The event name, if available.</summary>
         [JsonProperty("name")]
         public string Name { get; set; }
 
-        /// <summary>Timestamp when the message was received by the Ably real-time service</summary>
+        /// <summary>Timestamp when the message was received by the Ably real-time service.</summary>
         [JsonProperty("timestamp")]
         public DateTimeOffset? Timestamp { get; set; }
 
@@ -61,6 +67,7 @@ namespace IO.Ably
         [JsonProperty("encoding")]
         public string Encoding { get; set; }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             var result = $"Name: {Name}, Data: {Data}, Encoding: {Encoding}, Timestamp: {Timestamp}";
@@ -72,14 +79,23 @@ namespace IO.Ably
             return result;
         }
 
+        /// <summary>
+        /// Checks if this is an empty message.
+        /// </summary>
         [JsonIgnore]
         public bool IsEmpty => Equals(this, DefaultInstance);
 
+        /// <summary>
+        /// Checks equality with another message.
+        /// </summary>
+        /// <param name="other">other Message object.</param>
+        /// <returns>true / false..</returns>
         protected bool Equals(Message other)
         {
             return string.Equals(Id, other.Id) && string.Equals(ClientId, other.ClientId) && string.Equals(ConnectionId, other.ConnectionId) && string.Equals(Name, other.Name) && Timestamp.Equals(other.Timestamp) && Equals(Data, other.Data) && string.Equals(Encoding, other.Encoding);
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
@@ -100,6 +116,7 @@ namespace IO.Ably
             return Equals((Message)obj);
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             unchecked
@@ -115,16 +132,35 @@ namespace IO.Ably
             }
         }
 
+        /// <summary>
+        /// Decodes the current message data using the default list of encoders.
+        /// </summary>
+        /// <param name="encoded">encoded message object.</param>
+        /// <param name="options">optional channel options. <see cref="ChannelOptions"/>.</param>
+        /// <returns>message with decoded payload.</returns>
         public static Message FromEncoded(Message encoded, ChannelOptions options = null)
         {
             return MessageHandler.FromEncoded(encoded, options);
         }
 
+        /// <summary>
+        /// Decodes an array of messages. <see cref="FromEncoded(Message, ChannelOptions)"/>.
+        /// </summary>
+        /// <param name="encoded">array of encoded Messages.</param>
+        /// <param name="options">optional channel options. <see cref="ChannelOptions"/>.</param>
+        /// <returns>array of decoded messages.</returns>
         public static Message[] FromEncodedArray(Message[] encoded, ChannelOptions options = null)
         {
             return MessageHandler.FromEncodedArray(encoded, options);
         }
 
+        /// <summary>
+        /// Decodes the json representation of a Message using the default list of encoders.
+        /// </summary>
+        /// <param name="messageJson">json representation of a Message.</param>
+        /// <param name="options">optional channel options. <see cref="ChannelOptions"/>.</param>
+        /// <returns>message with decoded payload.</returns>
+        /// <exception cref="AblyException">AblyException if there is an issue decoding the message. The most likely error is invalid json string.</exception>
         public static Message FromEncoded(string messageJson, ChannelOptions options = null)
         {
             try
@@ -139,6 +175,13 @@ namespace IO.Ably
             }
         }
 
+        /// <summary>
+        /// Decodes a json representation of an array of messages using the default list of encoders.
+        /// </summary>
+        /// <param name="messagesJson">json representation of an array of messages.</param>
+        /// <param name="options">optional channel options. <see cref="ChannelOptions"/>.</param>
+        /// <returns>array of decoded messages.</returns>
+        /// <exception cref="AblyException">AblyException if there is an issue decoding the message. The most likely error is invalid json string.</exception>
         public static Message[] FromEncodedArray(string messagesJson, ChannelOptions options = null)
         {
             try
