@@ -1163,7 +1163,7 @@ namespace IO.Ably.Tests.Realtime
                 channel.State.Should().Be(ChannelState.Attaching);
             }
 
-            [Retry(3)]
+            [Fact]
             [Trait("spec", "RTL7d")]
             public async Task WithAMessageThatFailDecryption_ShouldDeliverMessageButEmmitErrorOnTheChannel()
             {

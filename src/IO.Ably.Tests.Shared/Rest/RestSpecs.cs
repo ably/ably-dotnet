@@ -484,7 +484,7 @@ namespace IO.Ably.Tests
                 _handler.Requests.First().RequestUri.Host.Should().Be(Defaults.RestHost);
             }
 
-            [Retry(3)]
+            [Fact]
             [Trait("spec", "RSC15a")]
             [Trait("intermittent", "true")]
             public async Task ShouldAttemptFallbackHostsInRandomOrder()
