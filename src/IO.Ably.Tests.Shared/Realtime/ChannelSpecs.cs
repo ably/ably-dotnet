@@ -722,7 +722,7 @@ namespace IO.Ably.Tests.Realtime
                 channel.State.Should().Be(ChannelState.Detached);
             }
 
-            [Retry]
+            [Fact]
             [Trait("spec", "RTL5f")]
             public async Task ShouldReturnToPreviousStateIfDetachedMessageWasNotReceivedWithinDefaultTimeout()
             {
@@ -782,7 +782,7 @@ namespace IO.Ably.Tests.Realtime
                 Assert.True(called);
             }
 
-            [Retry] // replaces fact
+            [Fact]
             [Trait("spec", "RTL5e")]
             public async Task WithACallback_ShouldCallCallbackWithErrorIfDetachFails()
             {

@@ -1,10 +1,9 @@
-﻿using FluentAssertions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
+using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
 using Xunit;

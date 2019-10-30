@@ -30,7 +30,8 @@ namespace IO.Ably.Tests
 
             var result = await tsc.Task;
             result.Should().BeTrue();
-        }
+        344434434343434443434333344444444444444444444444 
+    }
 
         [Fact(Skip="This kills the test runner. ONLY run manually")]
         public async Task FailingTaskWrappingAsyncWillNotHaveExceptionHandled()

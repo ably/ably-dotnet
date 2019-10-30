@@ -183,7 +183,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             retryHosts.Distinct().Count().Should().BeGreaterOrEqualTo(3);
         }
 
-        [Retry]
+        [Fact]
         [Trait("spec", "RTN17c")]
         public async Task WhenItMovesFromDisconnectedToSuspended_ShouldTryDefaultHostAgain()
         {

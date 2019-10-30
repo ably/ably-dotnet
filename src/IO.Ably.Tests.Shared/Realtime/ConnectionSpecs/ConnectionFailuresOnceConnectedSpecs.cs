@@ -270,7 +270,7 @@ namespace IO.Ably.Tests.Realtime
             await client.ProcessCommands();
         }
 
-        [Retry]
+        [Fact]
         [Trait("spec", "RTN15f")]
         public async Task AckMessagesAreResentWhenConnectionIsDroppedAndResumed()
         {
