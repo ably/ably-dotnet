@@ -114,7 +114,8 @@ namespace IO.Ably.Tests.Rest
                 didError = true;
                 e.ErrorInfo.Code.Should().Be(40144);
                 e.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized, "StatusCode should be 401"); // 401
-                e.Message.Should().Contain("Error verifying JWT; err = invalid signature");
+                e.Message.Should().Contain("Error verifying JWT;");
+                e.Message.Should().Contain("err = signature verification failed");
             }
 
             didError.Should().BeTrue();
