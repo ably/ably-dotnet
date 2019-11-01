@@ -51,7 +51,6 @@ namespace IO.Ably.Tests.Rest
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSC1")]
-        [Trait("spec", "RSC1a")]
         [Trait("spec", "RSC1c")]
         [Trait("spec", "RSA3d")]
         public async Task Jwt_WithEmbeddedJwtToken_CanMakeRequest(Protocol protocol)
@@ -72,7 +71,6 @@ namespace IO.Ably.Tests.Rest
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSC1")]
-        [Trait("spec", "RSC1a")]
         [Trait("spec", "RSC1c")]
         [Trait("spec", "RSA3d")]
         public async Task Jwt_WithEmbeddedAndEncryptedJwtToken_CanMakeRequest(Protocol protocol)
