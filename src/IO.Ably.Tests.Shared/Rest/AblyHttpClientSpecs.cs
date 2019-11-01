@@ -36,6 +36,7 @@ namespace IO.Ably.Tests
 
         [Fact]
         [Trait("spec", "RSC7a")]
+        [Trait("spec", "G4")]
         public async Task WhenCallingUrl_AddsDefaultAblyLibraryVersionHeader()
         {
             var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("Success") };

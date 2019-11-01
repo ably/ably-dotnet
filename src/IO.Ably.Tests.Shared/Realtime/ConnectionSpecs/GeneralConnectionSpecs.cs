@@ -18,7 +18,18 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetConnectedClient(); // The transport is created by the connecting state
 
-            client.ConnectionManager.Transport.GetType().Should().BeAssignableTo<ITransport>();
+            client.ConnectionManager.Transport.Should().NotBeNull();
+        }
+
+        [Fact]
+        [Trait("spec", "G4")]
+        public async Task ShouldAddVersionToCreatedWebSocketTransport()
+        {
+            var client = await GetConnectedClient();
+
+            // We care about the TransportParams GetUri() function. It doesn't matter it's a test transport
+            var webSocketTransport = client.ConnectionManager.Transport as FakeTransport;
+            webSocketTransport.Parameters.GetUri().ToString().Should().Contain(("v=" + Defaults.ProtocolVersion));
         }
 
         [Fact]
