@@ -1,5 +1,30 @@
 # Change Log
 
+## [Unreleased](https://github.com/ably/ably-dotnet/tree/HEAD)
+
+## [1.1.15-beta1](https://github.com/ably/ably-dotnet/tree/1.1.15-beta1)
+
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.14...1.1.15-beta1)
+
+**Implemented enhancements:**
+
+- Improve library internals [\#363](https://github.com/ably/ably-dotnet/issues/363)
+
+**Fixed bugs:**
+
+- Handle Presence Sync with empty list of presence messages [\#379](https://github.com/ably/ably-dotnet/issues/379)
+- Using a clientId should no longer be forcing token auth in the 1.1 spec [\#330](https://github.com/ably/ably-dotnet/issues/330)
+
+**Closed issues:**
+
+- Resuming after Windows has been asleep \(.Net Framework\) [\#332](https://github.com/ably/ably-dotnet/issues/332)
+- Detecting network availability changes [\#331](https://github.com/ably/ably-dotnet/issues/331)
+
+**Merged pull requests:**
+
+- Poc/channels [\#372](https://github.com/ably/ably-dotnet/pull/372) ([marto83](https://github.com/marto83))
+
+
 ## [1.1.14](https://github.com/ably/ably-dotnet/tree/1.1.14)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.13...1.1.14)
@@ -22,7 +47,7 @@
 - Add fromEncoded and fromEncodedArray that accept json string [\#370](https://github.com/ably/ably-dotnet/pull/370) ([marto83](https://github.com/marto83))
 - ClientId in options should not force token auth  \(RSA7e2\) [\#357](https://github.com/ably/ably-dotnet/pull/357) ([withakay](https://github.com/withakay))
 
-## [1.1.13](https://github.com/ably/ably-dotnet/tree/1.1.13) 
+## [1.1.13](https://github.com/ably/ably-dotnet/tree/1.1.13)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.12...1.1.13)
 
@@ -49,7 +74,7 @@
 
 - RunInBackground bug [\#367](https://github.com/ably/ably-dotnet/pull/367) ([withakay](https://github.com/withakay))
 
-## [1.1.12](https://github.com/ably/ably-dotnet/tree/1.1.12) 
+## [1.1.12](https://github.com/ably/ably-dotnet/tree/1.1.12)
 
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.11...1.1.12)
 
@@ -537,12 +562,12 @@ Changes since 0.8.5
 
 ## [0.8.5]
 
-Upgraded Websocket transport with one that's compatible with netstandard1.3. 
+Upgraded Websocket transport with one that's compatible with netstandard1.3.
 
 
 ## [0.8.4.2]
 
-Bug fix release. Added extra logging. 
+Bug fix release. Added extra logging.
 
 **Fixed bugs:**
 
@@ -589,7 +614,7 @@ Bug fix release. Added extra logging.
 
 **Fixed bugs:**
 
-- NullReferenceException in ConnectionManager.cs [\#72](https://github.com/ably/ably-dotnet/issues/72) 
+- NullReferenceException in ConnectionManager.cs [\#72](https://github.com/ably/ably-dotnet/issues/72)
 
 ## [v0.8.2-beta](https://github.com/ably/ably-dotnet/tree/v0.8.2-beta) (2016-06-10)
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/v0.7.2...v0.8.2-beta)

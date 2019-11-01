@@ -1,11 +1,12 @@
-open System.Text.RegularExpressions
 #r "paket:
 nuget Fake.Core.Target 
+nuget Fake.Core.CommandLineParsing
+nuget Fake.DotNet.AssemblyInfoFile
 nuget Fake.IO.FileSystem
 nuget Fake.DotNet.Cli
 nuget Fake.DotNet.MSBuild
 nuget Fake.DotNet.Testing.XUnit2
-nuget Fake.DotNet.ILMerge
+nuget Fake.DotNet.NuGet
 //"
 
 #r "System.Core.dll"
@@ -26,38 +27,71 @@ open System.Xml.Linq
 open System.Xml.XPath
 open FSharp.Core
 open Fake.Testing.Common
+open Fake.DotNet.NuGet
+open System.Text.RegularExpressions
 
-
-let sourceDir = __SOURCE_DIRECTORY__
+let currentDir = __SOURCE_DIRECTORY__
 let netstandardTestDir = "src/IO.Ably.Tests.DotNetCore20"
 let xUnit2 = XUnit2.run
 
 let NetStandardSolution = "src/IO.Ably.NetStandard.sln"
 let NetFrameworkSolution = "src/IO.Ably.NetFramework.sln"
-let buildDir = Path.combine sourceDir "build"
+let buildDir = Path.combine currentDir "build"
+let srcDir = Path.combine currentDir "src"
 let testResultsDir = Path.combine buildDir "tests"
 let packageDir = Path.combine buildDir "package"
 let configuration = DotNet.Release
+let packageSolution = "src/IO.Ably.Package.sln"
+let buildMode = Environment.environVarOrDefault "buildMode" "Release"
+
+let cli = """
+usage: prog [options]
+
+options:
+ -t <str>       Target
+ -v <str>       Version
+"""
+
+// retrieve the fake 5 context information
+let ctx = Context.forceFakeContext ()
+// get the arguments
+let args = ctx.Arguments
+let parser = Docopt(cli)
+let parsedArguments = parser.Parse(args |> List.toArray)
+
+let version = match DocoptResult.tryGetArgument "-v" parsedArguments  with
+                | None -> ""
+                | Some version -> version
 
 let mergeJsonNet path outputPath = 
   let target = Path.combine path "IO.Ably.dll"
+  let docsFile = Path.combine path "IO.Ably.xml"
   let out = Path.combine outputPath "IO.Ably.dll"
+  
+  Directory.ensure outputPath
 
-  ILMerge.run 
-    { ILMerge.Params.Create() with DebugInfo = true
-                                   TargetKind = ILMerge.TargetKind.Library
-                                   Internalize = ILMerge.InternalizeTypes.Internalize
-                                   Libraries = 
-                                      Seq.concat 
-                                        [
-                                          !! (Path.combine path "Newtonsoft.Json.dll")
-                                        ]
-                                   AttributeFile = target } out target
+  CreateProcess.fromRawCommand "./tools/ilrepack.exe" 
+      [
+        "/lib:" + path
+        "/targetplatform:v4"
+        "/internalize"
+        "/attr:" + target
+        "/keyfile:IO.Ably.snk"
+        "/parallel"
+        "/out:" + out
+        target
+        Path.combine path "Newtonsoft.Json.dll"
+        ]
+  |> Proc.run // start with the above configuration
+  |> ignore
+
+  // Copy the xml docs
+  if File.exists docsFile then Shell.copy outputPath [ docsFile ]
 
 
 // *** Define Targets ***
 Target.create "Clean" (fun _ ->
-  Trace.log (sprintf "Current dir: %s" sourceDir)
+  Trace.log (sprintf "Current dir: %s" currentDir)
   Trace.log " --- Removing build folder ---"
   Directory.delete(buildDir) 
   Directory.delete(packageDir) 
@@ -66,11 +100,17 @@ Target.create "Clean" (fun _ ->
   Directory.ensure packageDir
 )
 
-Target.create "NetStandard - Build" (fun _ ->
-  DotNet.build (fun opts -> {
-    opts with Configuration = configuration
-  }) NetStandardSolution
+Target.create "Version" (fun _ -> 
+  AssemblyInfoFile.createCSharp "./src/CommonAssemblyInfo.cs"
+      [   
+          AssemblyInfo.Company "Ably Realtime"
+          AssemblyInfo.Description "Client for ably.io realtime service"
+          AssemblyInfo.Product "Ably .Net Library"
+          AssemblyInfo.Version version
+          AssemblyInfo.FileVersion version
+      ]
 )
+
 
 let nugetRestore solutionFile = 
   CreateProcess.fromRawCommand "./tools/nuget.exe" ["restore"; solutionFile]
@@ -81,9 +121,7 @@ Target.create "Restore" (fun _ ->
     nugetRestore "src/IO.Ably.sln" |> ignore
 )
 
-
 Target.create "NetFramework - Build" (fun _ ->
-  let buildMode = Environment.environVarOrDefault "buildMode" "Release"
   let setParams (defaults:MSBuildParams) =
         { defaults with
             Verbosity = Some(Quiet)
@@ -96,12 +134,7 @@ Target.create "NetFramework - Build" (fun _ ->
                 ]
          }
   MSBuild.build setParams NetFrameworkSolution
-
-  let buildPath = Path.combine "src/IO.Ably.NETFramework/bin" "Release"
-  mergeJsonNet buildPath packageDir
 )
-
-
 
 type TestRun =
   | Method of string
@@ -146,7 +179,7 @@ let findFailedDotnetTestTests (resultsPath:string) =
 let runStandardTests testToRun = 
   Directory.ensure testResultsDir
   Trace.log " --- Testing net core version --- "
-  let project = Path.combine sourceDir "src/IO.Ably.Tests.DotNetCore20/IO.Ably.Tests.DotNetCore20.csproj"
+  let project = Path.combine currentDir "src/IO.Ably.Tests.DotNetCore20/IO.Ably.Tests.DotNetCore20.csproj"
   
   match testToRun with
   | Method testMethodName -> 
@@ -181,7 +214,7 @@ let runStandardTests testToRun =
 
 let runFrameworkTests testToRun = 
   Directory.ensure testResultsDir
-  let testDir = Path.combine sourceDir "src/IO.Ably.Tests.NETFramework/bin/Release"
+  let testDir = Path.combine currentDir "src/IO.Ably.Tests.NETFramework/bin/Release"
   let testDll = !! (Path.combine testDir "*.Tests.*.dll")
  
   match testToRun with
@@ -212,7 +245,6 @@ let runFrameworkTests testToRun =
 
 Target.create "NetFramework.Integration.Rerun" (fun _ -> 
     
-    let buildMode = Environment.environVarOrDefault "buildMode" "Release"
     let setParams (defaults:MSBuildParams) =
           { defaults with
               Verbosity = Some(Quiet)
@@ -250,6 +282,12 @@ Target.create "NetFramework - Integration Tests" ( fun _ ->
         runFrameworkTests (Method test) |> ignore   
 )
 
+Target.create "NetStandard - Build" (fun _ ->
+  DotNet.build (fun opts -> {
+    opts with Configuration = configuration
+  }) NetStandardSolution
+)
+
 Target.create "NetStandard - Unit Tests" (fun _ ->
     runStandardTests UnitTests |> ignore
 )
@@ -264,11 +302,52 @@ Target.create "NetStandard - Integration Tests" (fun _ ->
         runStandardTests (Method test) |> ignore 
 )
 
+Target.create "Package - Build All" (fun _ -> 
+  let setParams (defaults:MSBuildParams) =
+        { defaults with
+            Verbosity = Some(Quiet)
+            Targets = ["Build"]
+            Properties =
+                [
+                    "Optimize", "True"
+                    "DebugSymbols", "True"
+                    "Configuration", buildMode
+                    "StyleCopEnabled", "True"
+                ]
+         }
+  MSBuild.build setParams packageSolution
+)
+
+Target.create "Package - Merge json.net" (fun _ -> 
+  let projectsToMerge = [ "IO.Ably.Android"; "IO.Ably.iOS"; "IO.Ably.NETFramework" ]
+  let paths = projectsToMerge 
+              |> Seq.map (Path.combine "src")
+              |> Seq.map (fun path -> sprintf "%s/bin/%s" path buildMode)
+
+  paths 
+  |> Seq.iter ( fun path -> mergeJsonNet path (Path.combine path "packaged"))
+
+)
+
+Target.create "Package - Create nuget" (fun _ -> 
+  CreateProcess.fromRawCommand "./tools/nuget.exe" 
+      [
+        "pack"
+        "./nuget/io.ably.nuspec"
+        "-properties"
+        sprintf "version=%s;configuration=Release" version 
+        ]
+  |> Proc.run // start with the above configuration
+  |> ignore      
+)
+
 Target.create "Prepare" ignore
 Target.create "Build.NetFramework" ignore
 Target.create "Build.NetStandard" ignore
 Target.create "Test.NetFramework" ignore
 Target.create "Test.NetStandard" ignore
+
+Target.create "Package" ignore
 
 "Clean"
   ==> "Restore"
@@ -281,6 +360,13 @@ Target.create "Test.NetStandard" ignore
 "Prepare"
   ==> "NetStandard - Build"
   ==> "Build.NetStandard"
+
+"Prepare"
+  ==> "Version"
+  ==> "Package - Build All"
+  ==> "Package - Merge json.net"
+  ==> "Package - Create nuget"
+  ==> "Package"
 
 "Build.NetFramework" 
   ==> "NetFramework - Unit Tests"

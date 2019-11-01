@@ -132,7 +132,7 @@ namespace IO.Ably.Tests.AuthTests
             date.Should().BeCloseTo(data.Timestamp.Value);
         }
 
-        [Retry]
+        [Fact]
         public async Task RequestToken_WithoutTimeStamp_SetsCurrentTimeOnTheRequest()
         {
             var tokenParams = new TokenParams();
@@ -144,7 +144,7 @@ namespace IO.Ably.Tests.AuthTests
             Now.Should().BeCloseTo(data.Timestamp.Value, 200);
         }
 
-        [Retry(3)]
+        [Fact]
         public async Task RequestToken_WithQueryTime_SendsTimeRequestAndUsesReturnedTimeForTheRequest()
         {
             var rest = GetRestClient();

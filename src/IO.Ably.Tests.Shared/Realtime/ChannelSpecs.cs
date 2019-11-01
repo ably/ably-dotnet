@@ -722,7 +722,7 @@ namespace IO.Ably.Tests.Realtime
                 channel.State.Should().Be(ChannelState.Detached);
             }
 
-            [Retry]
+            [Fact]
             [Trait("spec", "RTL5f")]
             public async Task ShouldReturnToPreviousStateIfDetachedMessageWasNotReceivedWithinDefaultTimeout()
             {
@@ -782,7 +782,7 @@ namespace IO.Ably.Tests.Realtime
                 Assert.True(called);
             }
 
-            [Retry] // replaces fact
+            [Fact]
             [Trait("spec", "RTL5e")]
             public async Task WithACallback_ShouldCallCallbackWithErrorIfDetachFails()
             {
@@ -1163,7 +1163,7 @@ namespace IO.Ably.Tests.Realtime
                 channel.State.Should().Be(ChannelState.Attaching);
             }
 
-            [Retry(3)]
+            [Fact]
             [Trait("spec", "RTL7d")]
             public async Task WithAMessageThatFailDecryption_ShouldDeliverMessageButEmmitErrorOnTheChannel()
             {
@@ -1171,20 +1171,26 @@ namespace IO.Ably.Tests.Realtime
                 var client = await GetConnectedClient(_switchBinaryOff);
                 var encryptedChannel = client.Channels.Get("encrypted", new ChannelOptions(true));
                 SetState(encryptedChannel, ChannelState.Attached);
-                bool msgReceived = false,
-                    errorEmitted = false;
-                encryptedChannel.Subscribe(msg => { msgReceived = true; });
+                var awaiter = new TaskCompletionAwaiter(taskCount: 2);
+                var msgReceived = false;
+                var errorEmitted = false;
+
+                encryptedChannel.Subscribe(msg =>
+                {
+                    msgReceived = true;
+                    awaiter.Tick();
+                });
                 encryptedChannel.Error += (sender, args) =>
                 {
                     errorEmitted = true;
-                    Done();
+                    awaiter.Tick();
                 };
 
                 var message = new Message("name", "encrypted with otherChannelOptions");
                 new MessageHandler(Protocol.Json).EncodePayloads(otherChannelOptions, new[] { message });
                 client.FakeMessageReceived(message, encryptedChannel.Name);
 
-                WaitOne();
+                await awaiter.Task;
 
                 msgReceived.Should().BeTrue();
                 errorEmitted.Should().BeTrue();

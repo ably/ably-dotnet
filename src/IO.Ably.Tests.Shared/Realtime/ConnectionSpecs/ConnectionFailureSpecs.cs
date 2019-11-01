@@ -133,7 +133,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             client.Connection.ErrorReason.Code.Should().Be(123);
         }
 
-        [Retry]
+        [Fact]
         [Trait("spec", "RTN14b")]
         public async Task WithTokenErrorTwice_ShouldNotRenewAndRaiseErrorAndTransitionToDisconnected()
         {

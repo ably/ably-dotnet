@@ -11,7 +11,7 @@ A .NET client library for [www.ably.io](https://www.ably.io), the realtime messa
 Version 1.1.15 has seen a significant rewrite of the library internals which was needed to make the library safer and provide a good basis for implementing the rest of the spec. 
 Here is a list of the significant changes. You can find a full list in the release notes.
 
-1. [Breaking]Presence and IRealtimeChannel no longer implement the IDisposable interface. They don't hold on to any unmanaged recourses and there was no to expose the Dispose function. 
+1. [Breaking]Presence and IRealtimeChannel no longer implement the IDisposable interface. They don't hold on to any unmanaged recourses and there was no need to expose the Dispose function. 
 2. [Breaking]ITransport has acquired an Id Property and ITransportListener.OnTransportEvent has an Id parameter. This is needed because we need to distinguish events raised different Transport instances. Sometimes the Closed event doesn't get processed until another transport has already been instantiated. 
 3. `ClientOptions.CaptureCurrentSynchronizationContext` has been deprecated and defaulted to `false`. It will be removed in future versions. You need to make sure that you don't directly update UI elements if you are building a WPF or Xamarin.Forms application from Ably handlers. If you still require the functionality please set it back to `true` and open an Ably Support ticket that you need the functionality. The main reason to disable this feature is that the library should not assume on which thread updates should be posted and that needs to be handled by the developer.
 4. IRealtimeClient implements IDisposable - If you want to clean up after the library you can now safely call `Dispose()`. Please note that you can no longer use this instance and have to create a new one.
@@ -407,10 +407,9 @@ You can also view the [community reported Github issues](https://github.com/ably
 The build scripts are written partly using `fake' and partly in powershell using PSake and need to be run on Windows with Visual Studio 2017 installed. Additionally nuget.exe and GitVersion.exe are required, these can be installed via [chocolatey](https://chocolatey.org)
 
     choco install nuget.commandline
-    choco install gitversion.portable
 
-Running `.\build.cmd` will start the build process and run the tests. 
-Running `package.ps1` will run the build script and create a nuget package.
+Running `.\build.cmd` will start the build process and run the tests. By default it runs the NetFramework tests. 
+To run the Netcore build and tests you can run `.\build.cmd Test.NetStandard`
 
 ## Working from source
 
@@ -431,14 +430,11 @@ If you want to incorporate ably-dotnet into your project from source (perhaps to
 
 This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
 
-* Update the version number in [GitVersion.yml](./GetVersion.yml)&dagger; and commit the change.
 * Run [`github_changelog_generator`](https://github.com/skywinder/Github-Changelog-Generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). Once the `CHANGELOG` update has completed, manually change the `Unreleased` heading and link with the current version number such as `v1.0.0`. Also ensure that the `Full Changelog` link points to the new version tag instead of the `HEAD`. Commit this change.
 * Add a tag for the version and push to origin such as `git tag 1.0.0 && git push origin 1.0.0`. For beta versions the version string should be `Maj.Min.Patch-betaN`, e.g `1.0.0-beta1`
 * Visit [https://github.com/ably/ably-dotnet/tags](https://github.com/ably/ably-dotnet/tags) and `Add release notes` for the release including links to the changelog entry.
-* Run `package.ps1` to create the nuget package. 
+* Run `package.cmd` to create the nuget package. 
 * Run `nuget push ably.io.*.nupkg -Source https://www.nuget.org/api/v2/package` (a private nuget API Key is required to complete this step, more information on publishing nuget packages can be found [here](https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package))
-
-&dagger; GitVersion is required, see the preceding section 'Building and Packaging' for more information.
 
 ## License
 
