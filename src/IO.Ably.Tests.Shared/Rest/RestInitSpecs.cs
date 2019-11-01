@@ -30,7 +30,6 @@ namespace IO.Ably.Tests
 
             [Fact]
             [Trait("spec", "RSA4")]
-            [Trait("spec", "RSA7e2")]
             public void WithKeyAndClientId_ShouldUseBasicAuth()
             {
                 var client = new AblyRest(new ClientOptions { Key = ValidKey, ClientId = "123" });
