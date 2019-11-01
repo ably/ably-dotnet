@@ -510,7 +510,6 @@ namespace IO.Ably.Tests
 
             [Fact]
             [Trait("spec", "RSC15a")]
-            [Trait("intermittent", "true")]
             public async Task ShouldAttemptFallbackHostsInRandomOrder()
             {
                 int interations = 20;

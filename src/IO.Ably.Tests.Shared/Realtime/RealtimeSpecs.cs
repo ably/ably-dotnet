@@ -19,7 +19,7 @@ namespace IO.Ably.Tests
             client.Options.Should().BeSameAs(client.RestClient.Options);
         }
 
-        public class RealtimeProperiesSpec : MockHttpRealtimeSpecs
+        public class RealtimePropertiesSpec : MockHttpRealtimeSpecs
         {
             private AblyRealtime _client;
 
@@ -77,7 +77,7 @@ namespace IO.Ably.Tests
                 LastRequest.Url.Should().Contain("time");
             }
 
-            public RealtimeProperiesSpec(ITestOutputHelper output)
+            public RealtimePropertiesSpec(ITestOutputHelper output)
                 : base(output)
             {
                 _client = GetRealtimeClient();
