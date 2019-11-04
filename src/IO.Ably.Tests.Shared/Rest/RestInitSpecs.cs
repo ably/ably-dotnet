@@ -137,6 +137,14 @@ namespace IO.Ably.Tests
 
                 rest.AblyAuth.TokenRenewable.Should().BeTrue();
             }
+
+            [Fact]
+            [Trait("spec", "RSC1b")]
+            public void WithoutTokenAuthAndNoKey_ShouldThrow()
+            {
+                var error = Assert.Throws<AblyException>(() => new AblyRest(new ClientOptions()));
+                error.ErrorInfo.Code.Should().Be(40106);
+            }
         }
 
         [Fact]
@@ -146,6 +154,7 @@ namespace IO.Ably.Tests
             {
                 opts.Tls = true;
                 opts.TlsPort = 111;
+                opts.Key = ValidKey;
             });
             client.HttpClient.Options.Port.Should().Be(111);
         }
@@ -157,6 +166,7 @@ namespace IO.Ably.Tests
             {
                 opts.Tls = false;
                 opts.Port = 111;
+                opts.Key = ValidKey;
             });
             client.HttpClient.Options.Port.Should().Be(111);
         }

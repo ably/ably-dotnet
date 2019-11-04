@@ -285,7 +285,7 @@ namespace IO.Ably.Tests
             [Fact]
             public async Task WithOutKeyIdThrowsException()
             {
-                var client = new AblyRest(new ClientOptions());
+                var client = new AblyRest(new ClientOptions() { UseTokenAuth = true });
                 await Assert.ThrowsAsync<AblyException>(() => client.Auth.CreateTokenRequestAsync(null, null));
             }
 
