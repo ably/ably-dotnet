@@ -37,6 +37,28 @@ namespace IO.Ably.Tests
             }
 
             [Fact]
+            [Trait("spec", "RSA4a1")]
+            public void WithTokenButNoWayToRenew_ShouldLogErrorMessageWithError()
+            {
+                var testLogger =
+                    new TestLogger(
+                        "Warning: library initialized with a token literal without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help");
+                var client = new AblyRest(new ClientOptions { Token = "Test", Logger = testLogger });
+                testLogger.MessageSeen.Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSA4a1")]
+            public void WithTokenDetailsButNoWayToRenew_ShouldLogErrorMessageWithError()
+            {
+                var testLogger =
+                    new TestLogger(
+                        "Warning: library initialized with a token literal without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help");
+                var client = new AblyRest(new ClientOptions { TokenDetails = new TokenDetails("test"), Logger = testLogger });
+                testLogger.MessageSeen.Should().BeTrue();
+            }
+
+            [Fact]
             public void WithKeyNoClientIdAndAuthToken_ShouldSetCurrentToken()
             {
                 ClientOptions options = new ClientOptions { Key = ValidKey, ClientId = "123", Token = "blah" };

@@ -50,9 +50,7 @@ namespace IO.Ably
             ?? CurrentTokenParams?.ClientId
             ?? Options.GetClientId();
 
-        private bool HasTokenId => Options.Token.IsNotEmpty();
-
-        public bool TokenRenewable => TokenCreatedExternally || (HasApiKey && HasTokenId == false);
+        public bool TokenRenewable => TokenCreatedExternally || HasApiKey;
 
         private bool TokenCreatedExternally => Options.AuthUrl.IsNotEmpty() || Options.AuthCallback != null;
 
@@ -117,6 +115,11 @@ namespace IO.Ably
                     "No authentication options provided; need one of: key, authUrl, or authCallback (or for testing only, token or tokenDetails)",
                     40106,
                     HttpStatusCode.NotFound));
+            }
+
+            if (method == AuthMethod.Token && TokenRenewable == false)
+            {
+                Logger.Error("Warning: library initialized with a token literal without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help");
             }
 
             return method;
