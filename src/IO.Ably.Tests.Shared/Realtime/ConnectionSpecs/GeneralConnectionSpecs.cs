@@ -29,7 +29,7 @@ namespace IO.Ably.Tests.Realtime
 
             // We care about the TransportParams GetUri() function. It doesn't matter it's a test transport
             var webSocketTransport = client.ConnectionManager.Transport as FakeTransport;
-            webSocketTransport.Parameters.GetUri().ToString().Should().Contain(("v=" + Defaults.ProtocolVersion));
+            webSocketTransport.Parameters.GetUri().ToString().Should().Contain("v=" + Defaults.ProtocolVersion);
         }
 
         [Fact]
