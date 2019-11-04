@@ -462,6 +462,25 @@ namespace IO.Ably.Tests
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RSA4a2")]
+        public async Task WithTokenAuth_WhenUnauthorizedErrorAndNoRenew_ShouldThrow40171AblyException(Protocol protocol)
+        {
+            var ablyRest = await GetRestClient(protocol);
+            var token = ablyRest.Auth.RequestToken(new TokenParams { Ttl = TimeSpan.FromSeconds(1) });
+
+            await Task.Delay(2000);
+            var ably = await GetRestClient(protocol, opts =>
+            {
+                opts.Key = string.Empty;
+                opts.TokenDetails = token;
+            });
+
+            var ex = await Assert.ThrowsAsync<AblyException>(() => ably.StatsAsync());
+            ex.ErrorInfo.Code.Should().Be(40171);
+        }
+
+        [Theory]
+        [ProtocolData]
         public async Task WithTokenId_WhenTryingToPublishToUnspecifiedChannel_ThrowsAblyException(Protocol protocol)
         {
             var capability = new Capability();

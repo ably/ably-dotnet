@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using IO.Ably;
@@ -137,12 +138,16 @@ namespace IO.Ably
                 }
 
                 if (ex.ErrorInfo.IsUnAuthorizedError
-                    && ex.ErrorInfo.IsTokenError
-                    && AblyAuth.TokenRenewable)
+                    && ex.ErrorInfo.IsTokenError)
                 {
+                    if (AblyAuth.TokenRenewable == false)
+                    {
+                        throw new AblyException(ErrorInfo.NonRenewableToken, ex); // RSA4a2
+                    }
+
                     if (Logger.IsDebug)
                     {
-                        Logger.Debug("Handling UnAuthorized Error, attmepting to Re-authorize and repeat request.");
+                        Logger.Debug("Handling UnAuthorized Error, attempting to Re-authorize and repeat request.");
                     }
 
                     try

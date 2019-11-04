@@ -165,7 +165,7 @@ namespace IO.Ably
                 }
             }
 
-            throw new AblyException(new ErrorInfo("Error exectuting request", 50000));
+            throw new AblyException(new ErrorInfo("Error executing request", 50000));
         }
 
         private void LogResponse(AblyResponse ablyResponse, string url)

@@ -213,7 +213,7 @@ namespace IO.Ably
             }
             else
             {
-                Logger.Debug("Auth.RenewToken called but token was not Renewable");
+                throw new AblyException(ErrorInfo.NonRenewableToken);
             }
 
             return null;
