@@ -300,25 +300,6 @@ namespace IO.Ably
         [JsonIgnore]
         internal ILogger Logger { get; set; } = DefaultLogger.LoggerInstance;
 
-        internal AuthMethod Method
-        {
-            get
-            {
-                if (AuthUrl != null || AuthCallback != null || Token.IsNotEmpty() || TokenDetails != null)
-                {
-                    return Ably.AuthMethod.Token;
-                }
-
-                if (Key.IsNotEmpty())
-                {
-                    return Ably.AuthMethod.Basic;
-                }
-
-                // default
-                return Ably.AuthMethod.Token;
-            }
-        }
-
         internal bool SkipInternetCheck { get; set; } = false;
 
         internal TimeSpan RealtimeRequestTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;

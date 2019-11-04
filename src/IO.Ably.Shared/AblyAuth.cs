@@ -65,7 +65,7 @@ namespace IO.Ably
 
         internal void Initialise()
         {
-            SetAuthMethod();
+            AuthMethod = CheckAndGetAuthMethod();
 
             CurrentAuthOptions = Options;
             CurrentTokenParams = Options.DefaultTokenParams;
@@ -99,16 +99,39 @@ namespace IO.Ably
             ServerTimeOffset = () => Now() - diff;
         }
 
-        private void SetAuthMethod()
+        private AuthMethod CheckAndGetAuthMethod()
         {
+            AuthMethod method;
             if (Options.UseTokenAuth.HasValue)
             {
-                // ASK: Should I throw an error if a particular auth is not possible
-                AuthMethod = Options.UseTokenAuth.Value ? AuthMethod.Token : AuthMethod.Basic;
+                method = Options.UseTokenAuth.Value ? AuthMethod.Token : AuthMethod.Basic;
             }
             else
             {
-                AuthMethod = Options.Method;
+                method = IsTokenAuth() ? AuthMethod.Token : AuthMethod.Basic;
+            }
+
+            if (method == AuthMethod.Basic && Options.Key.IsEmpty())
+            {
+                throw new AblyException(new ErrorInfo(
+                    "No authentication options provided; need one of: key, authUrl, or authCallback (or for testing only, token or tokenDetails)",
+                    40106,
+                    HttpStatusCode.NotFound));
+            }
+
+            return method;
+
+            bool IsTokenAuth()
+            {
+                if (Options.AuthUrl.IsNotEmpty()
+                    || Options.AuthCallback != null
+                    || Options.Token.IsNotEmpty()
+                    || Options.TokenDetails != null)
+                {
+                    return true;
+                }
+
+                return false;
             }
         }
 
