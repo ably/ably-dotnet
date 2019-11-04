@@ -19,7 +19,8 @@ namespace IO.Ably.Tests
             [Trait("spec", "RSC1")]
             public void WithInvalidKey_ThrowsAnException()
             {
-                Assert.Throws<AblyException>(() => new AblyRest("InvalidKey"));
+                // Needs to have ':' because otherwise it's considered a token
+                Assert.Throws<AblyException>(() => new AblyRest("InvalidKey:boo"));
             }
 
             [Fact]
@@ -205,16 +206,6 @@ namespace IO.Ably.Tests
             public async Task WhenErrorCodeIsNotTokenSpecific_ShouldThrow()
             {
                 var client = GetConfiguredRestClient(40100, null);
-
-                await Assert.ThrowsAsync<AblyException>(() => client.StatsAsync());
-            }
-
-            [Fact]
-            [Trait("spec", "RSC14c")]
-            [Trait("spec", "RSC14d")]
-            public async Task WhenClientHasNoMeansOfRenewingToken_ShouldThrow()
-            {
-                var client = GetConfiguredRestClient(Defaults.TokenErrorCodesRangeStart, null, false);
 
                 await Assert.ThrowsAsync<AblyException>(() => client.StatsAsync());
             }
