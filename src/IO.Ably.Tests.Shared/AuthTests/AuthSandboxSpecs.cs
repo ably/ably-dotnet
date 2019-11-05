@@ -55,8 +55,8 @@ namespace IO.Ably.Tests
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RSA4a")]
-        public async Task RestClient_WithExpiredToken_WhenTokenExpired_ShouldNotRetryAndRaiseError(Protocol protocol)
+        [Trait("spec", "RSA4a2")]
+        public async Task RestClient_WhenTokenExpired_ShouldNotRetryAndRaiseError(Protocol protocol)
         {
             var helper = new RSA4Helper(this);
 
@@ -90,7 +90,7 @@ namespace IO.Ably.Tests
                 // (401 HTTP status code and an Ably error value 40140 <= code < 40150)
                 // As the token is expired we can expect a specific code "40142": "token expired"
                 e.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-                e.ErrorInfo.Code.Should().Be(40142);
+                e.ErrorInfo.Code.Should().Be(40171);
             }
 
             // did not retry the request
@@ -100,7 +100,7 @@ namespace IO.Ably.Tests
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RSA4a")]
+        [Trait("spec", "RSA4a2")]
         public async Task RealtimeClient_NewInstanceWithExpiredToken_ShouldNotRetryAndHaveError(Protocol protocol)
         {
             var helper = new RSA4Helper(this);
@@ -124,7 +124,7 @@ namespace IO.Ably.Tests
             realtimeClient.Connection.State.Should().Be(ConnectionState.Failed);
             connected.Should().BeFalse();
 
-            realtimeClient.Connection.ErrorReason.Code.Should().Be(40142);
+            realtimeClient.Connection.ErrorReason.Code.Should().Be(40171);
             helper.Requests.Count.Should().Be(0);
         }
 
@@ -150,7 +150,7 @@ namespace IO.Ably.Tests
             await realtimeClient.WaitForState(ConnectionState.Failed);
             realtimeClient.Connection.State.Should().Be(ConnectionState.Failed);
 
-            realtimeClient.Connection.ErrorReason.Code.Should().Be(40142);
+            realtimeClient.Connection.ErrorReason.Code.Should().Be(40171);
             helper.Requests.Count.Should().Be(0);
         }
 
@@ -772,66 +772,6 @@ namespace IO.Ably.Tests
             var message = (await channel.HistoryAsync()).Items.First();
             message.ClientId.Should().Be("123");
             message.Data.Should().Be("test");
-        }
-
-        [Theory]
-        [ProtocolData]
-        [Trait("spec", "RSA4a2")]
-        public async Task WhenTokenIsNotRenewable_WithTokenErrorWhenConnected_ShouldSetStateToFailedWithCorrectError(Protocol protocol)
-        {
-            var ablyRest = await GetRestClient(protocol, opts => { opts.QueryTime = true; });
-            var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams() { Ttl = TimeSpan.FromMilliseconds(100) });
-            var settings = await Fixture.GetSettings();
-
-            var client = new AblyRealtime(new ClientOptions
-            {
-                Token = token.Token,
-                Environment = settings.Environment,
-                UseBinaryProtocol = protocol == Defaults.Protocol,
-            });
-
-            var tsc = new TaskCompletionAwaiter();
-            ErrorInfo err = null;
-            client.Connection.On(ConnectionEvent.Failed, state =>
-            {
-                err = state.Reason;
-                tsc.SetCompleted();
-            });
-
-            var b = await tsc.Task;
-            err.Should().NotBeNull();
-            Output.WriteLine("Error message: " + err.Message);
-            err.Code.Should().Be(40171);
-        }
-
-        [Theory]
-        [ProtocolData]
-        [Trait("spec", "RSA4a2")]
-        public async Task WhenTokenIsNotRenewable_WithTokenErrorWhenConnecting_ShouldSetStateToFailedWithCorrectError(Protocol protocol)
-        {
-            var ablyRest = await GetRestClient(protocol, opts => { opts.QueryTime = true; });
-            var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams() { Ttl = TimeSpan.FromSeconds(5) });
-            var settings = await Fixture.GetSettings();
-
-            var client = new AblyRealtime(new ClientOptions
-            {
-                Token = token.Token,
-                Environment = settings.Environment,
-                UseBinaryProtocol = protocol == Defaults.Protocol,
-            });
-
-            var tsc = new TaskCompletionAwaiter();
-            ErrorInfo err = null;
-            client.Connection.On(ConnectionEvent.Failed, state =>
-            {
-                err = state.Reason;
-                tsc.SetCompleted();
-            });
-
-            var b = await tsc.Task;
-            err.Should().NotBeNull();
-            Output.WriteLine("Error message: " + err.Message);
-            err.Code.Should().Be(40171);
         }
 
         [Theory]
