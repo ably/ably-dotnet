@@ -617,10 +617,23 @@ namespace IO.Ably.Realtime.Workflow
                         State.Connection.ClearKeyAndId();
                         ClearAckQueueAndFailMessages(ErrorInfo.ReasonFailed);
 
-                        var failedState = new ConnectionFailedState(ConnectionManager, cmd.Error, Logger);
+                        var error = TransformIfTokenErrorAndNotRetriable();
+                        var failedState = new ConnectionFailedState(ConnectionManager, error, Logger);
                         SetState(failedState);
 
                         ConnectionManager.DestroyTransport(true);
+
+                        ErrorInfo TransformIfTokenErrorAndNotRetriable()
+                        {
+                            if (cmd.Error.IsTokenError && Auth.TokenRenewable == false)
+                            {
+                                var newError = ErrorInfo.NonRenewableToken;
+                                newError.Message += $" Original: {cmd.Error.Message} ({cmd.Error.Code})";
+                                return newError;
+                            }
+
+                            return cmd.Error;
+                        }
 
                         break;
                     case SetDisconnectedStateCommand cmd:

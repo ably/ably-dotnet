@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Tests.Realtime;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -771,6 +772,66 @@ namespace IO.Ably.Tests
             var message = (await channel.HistoryAsync()).Items.First();
             message.ClientId.Should().Be("123");
             message.Data.Should().Be("test");
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSA4a2")]
+        public async Task WhenTokenIsNotRenewable_WithTokenErrorWhenConnected_ShouldSetStateToFailedWithCorrectError(Protocol protocol)
+        {
+            var ablyRest = await GetRestClient(protocol, opts => { opts.QueryTime = true; });
+            var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams() { Ttl = TimeSpan.FromMilliseconds(100) });
+            var settings = await Fixture.GetSettings();
+
+            var client = new AblyRealtime(new ClientOptions
+            {
+                Token = token.Token,
+                Environment = settings.Environment,
+                UseBinaryProtocol = protocol == Defaults.Protocol,
+            });
+
+            var tsc = new TaskCompletionAwaiter();
+            ErrorInfo err = null;
+            client.Connection.On(ConnectionEvent.Failed, state =>
+            {
+                err = state.Reason;
+                tsc.SetCompleted();
+            });
+
+            var b = await tsc.Task;
+            err.Should().NotBeNull();
+            Output.WriteLine("Error message: " + err.Message);
+            err.Code.Should().Be(40171);
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSA4a2")]
+        public async Task WhenTokenIsNotRenewable_WithTokenErrorWhenConnecting_ShouldSetStateToFailedWithCorrectError(Protocol protocol)
+        {
+            var ablyRest = await GetRestClient(protocol, opts => { opts.QueryTime = true; });
+            var token = await ablyRest.Auth.RequestTokenAsync(new TokenParams() { Ttl = TimeSpan.FromSeconds(5) });
+            var settings = await Fixture.GetSettings();
+
+            var client = new AblyRealtime(new ClientOptions
+            {
+                Token = token.Token,
+                Environment = settings.Environment,
+                UseBinaryProtocol = protocol == Defaults.Protocol,
+            });
+
+            var tsc = new TaskCompletionAwaiter();
+            ErrorInfo err = null;
+            client.Connection.On(ConnectionEvent.Failed, state =>
+            {
+                err = state.Reason;
+                tsc.SetCompleted();
+            });
+
+            var b = await tsc.Task;
+            err.Should().NotBeNull();
+            Output.WriteLine("Error message: " + err.Message);
+            err.Code.Should().Be(40171);
         }
 
         [Theory]
