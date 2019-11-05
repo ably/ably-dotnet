@@ -22,7 +22,7 @@ namespace IO.Ably.Transport.States.Connection
             _timer = timer;
         }
 
-        public override ConnectionState State => Realtime.ConnectionState.Connecting;
+        public override ConnectionState State => ConnectionState.Connecting;
 
         public override bool CanQueue => true;
 
