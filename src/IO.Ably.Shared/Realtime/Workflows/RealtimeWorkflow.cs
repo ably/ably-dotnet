@@ -186,13 +186,13 @@ namespace IO.Ably.Realtime.Workflow
                             return new RealtimeCommand[]
                             {
                                 SendMessageCommand.Create(
-                                    new ProtocolMessage(ProtocolMessage.MessageAction.Close), force: true),
-                                CompleteWorkflowCommand.Create(),
+                                    new ProtocolMessage(ProtocolMessage.MessageAction.Close), force: true).TriggeredBy(command),
+                                CompleteWorkflowCommand.Create().TriggeredBy(command),
                             };
                         }
                         else
                         {
-                            return new RealtimeCommand[] { CompleteWorkflowCommand.Create() };
+                            return new RealtimeCommand[] { CompleteWorkflowCommand.Create().TriggeredBy(command) };
                         }
 
                         break;
@@ -235,7 +235,7 @@ namespace IO.Ably.Realtime.Workflow
                 case ConnectCommand _:
                     var nextCommand = ConnectionManager.Connect();
                     var initFailedChannelsOnConnect =
-                        ChannelCommand.CreateForAllChannels(InitialiseFailedChannelsOnConnect.Create());
+                        ChannelCommand.CreateForAllChannels(InitialiseFailedChannelsOnConnect.Create().TriggeredBy(command));
                     return ListCommand.Create(initFailedChannelsOnConnect, nextCommand);
 
                 case CloseConnectionCommand _:
@@ -251,8 +251,8 @@ namespace IO.Ably.Realtime.Workflow
                         return ListCommand.Create(
                             SetDisconnectedStateCommand.Create (
                                 retryAuth.Error,
-                                skipAttach: State.Connection.State == ConnectionState.Connecting),
-                            SetConnectingStateCommand.Create());
+                                skipAttach: State.Connection.State == ConnectionState.Connecting).TriggeredBy(command),
+                            SetConnectingStateCommand.Create().TriggeredBy(command));
                     }
                     else
                     {
@@ -532,7 +532,7 @@ namespace IO.Ably.Realtime.Workflow
                 yield return SendMessageCommand.Create(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat)
                 {
                     Id = cmd.Request.Id, // Pass the ping request id so we can match it on the way back
-                });
+                }).TriggeredBy(cmd);
 
                 // Only trigger the timer if there is a callback
                 // Question: Do we trigger the error if there is no callback but then we can just emmit it
@@ -541,7 +541,7 @@ namespace IO.Ably.Realtime.Workflow
                     State.PingRequests.Add(cmd.Request);
                     yield return DelayCommand.Create(
                         ConnectionManager.DefaultTimeout,
-                        PingTimerCommand.Create(cmd.Request.Id));
+                        PingTimerCommand.Create(cmd.Request.Id)).TriggeredBy(cmd);
                 }
             }
         }
@@ -606,7 +606,7 @@ namespace IO.Ably.Realtime.Workflow
                             // RSA4c2 & RSA4d
                             if (ex.ErrorInfo.Code == 80019 & !ex.ErrorInfo.IsForbiddenError)
                             {
-                                return SetDisconnectedStateCommand.Create(ex.ErrorInfo);
+                                return SetDisconnectedStateCommand.Create(ex.ErrorInfo).TriggeredBy(command);
                             }
 
                             throw;
@@ -657,7 +657,7 @@ namespace IO.Ably.Realtime.Workflow
 
                         if (cmd.RetryInstantly)
                         {
-                            return SetConnectingStateCommand.Create();
+                            return SetConnectingStateCommand.Create().TriggeredBy(command);
                         }
 
                         break;
@@ -672,11 +672,11 @@ namespace IO.Ably.Realtime.Workflow
 
                         if (connectedTransport)
                         {
-                            return SendMessageCommand.Create(new ProtocolMessage(ProtocolMessage.MessageAction.Close), force: true);
+                            return SendMessageCommand.Create(new ProtocolMessage(ProtocolMessage.MessageAction.Close), force: true).TriggeredBy(command);
                         }
                         else
                         {
-                            return SetClosedStateCommand.Create();
+                            return SetClosedStateCommand.Create().TriggeredBy(command);
                         }
 
                     case SetSuspendedStateCommand cmd:
@@ -715,7 +715,7 @@ namespace IO.Ably.Realtime.Workflow
 
                 if (command is SetFailedStateCommand == false)
                 {
-                    return SetFailedStateCommand.Create(ex.ErrorInfo);
+                    return SetFailedStateCommand.Create(ex.ErrorInfo).TriggeredBy(command);
                 }
             }
 
