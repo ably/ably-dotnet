@@ -109,7 +109,7 @@ namespace IO.Ably.Transport.States.Connection
             _timer.Abort();
         }
 
-        public override void OnAttachToContext()
+        public override void StartTimer()
         {
             _timer.Start(Context.DefaultTimeout, onTimeOut: OnTimeOut);
         }

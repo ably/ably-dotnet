@@ -89,7 +89,7 @@ namespace IO.Ably.Tests
         public async Task AfterTimeoutExpires_ShouldForceStateToClosed()
         {
             var state = GetState(connectedTransport: true);
-            state.OnAttachToContext();
+            state.StartTimer();
 
             _timer.StartedWithAction.Should().BeTrue();
             _timer.OnTimeOut();
@@ -105,7 +105,7 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport(TransportState.Connected);
 
             // Act
-            _state.OnAttachToContext();
+            _state.StartTimer();
             await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Closed), null);
 
             // Assert
@@ -121,7 +121,7 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport(TransportState.Connected);
 
             // Act
-            _state.OnAttachToContext();
+            _state.StartTimer();
             await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error), null);
 
             // Assert

@@ -642,26 +642,43 @@ namespace IO.Ably.Realtime.Workflow
                         break;
                     case SetDisconnectedStateCommand cmd:
 
-                        if (cmd.ClearConnectionKey)
+                        var (retryInstantly, clearKey) = await GetDisconnectFlags();
+                        if (clearKey)
                         {
                             State.Connection.ClearKey();
                         }
 
                         var disconnectedState = new ConnectionDisconnectedState(ConnectionManager, cmd.Error, Logger)
                         {
-                            RetryInstantly = cmd.RetryInstantly
+                            RetryInstantly = retryInstantly,
+                            Exception = cmd.Exception,
                         };
 
-                        SetState(disconnectedState, skipAttach: cmd.SkipAttach);
+                        SetState(disconnectedState, skipTimer: cmd.SkipAttach);
 
                         if (cmd.SkipAttach == false)
                         {
                             ConnectionManager.DestroyTransport(true);
                         }
 
-                        if (cmd.RetryInstantly)
+                        if (retryInstantly)
                         {
                             return SetConnectingStateCommand.Create().TriggeredBy(command);
+                        }
+
+                        async Task<(bool retry, bool clearKey)> GetDisconnectFlags()
+                        {
+                            if (cmd.RetryInstantly)
+                            {
+                                return (true, cmd.ClearConnectionKey);
+                            }
+
+                            if (cmd.Error.IsRetryableStatusCode() || cmd.Exception != null)
+                            {
+                                return (await Client.RestClient.CanConnectToAbly(), true);
+                            }
+
+                            return (false, cmd.ClearConnectionKey);
                         }
 
                         break;
@@ -726,14 +743,14 @@ namespace IO.Ably.Realtime.Workflow
             return EmptyCommand.Instance;
         }
 
-        public void SetState(ConnectionStateBase newState, bool skipAttach = false)
+        public void SetState(ConnectionStateBase newState, bool skipTimer = false)
         {
             if (Logger.IsDebug)
             {
                 var message = $"Changing state from {State.Connection.State} => {newState.State}.";
-                if (skipAttach)
+                if (skipTimer)
                 {
-                    message += " SkipAttach";
+                    message += " Skip timer";
                 }
 
                 Logger.Debug(message);
@@ -757,9 +774,9 @@ namespace IO.Ably.Realtime.Workflow
                     State.Connection.CurrentStateObject.AbortTimer();
                 }
 
-                if (skipAttach == false)
+                if (skipTimer == false)
                 {
-                    newState.OnAttachToContext();
+                    newState.StartTimer();
                 }
                 else if (Logger.IsDebug)
                 {

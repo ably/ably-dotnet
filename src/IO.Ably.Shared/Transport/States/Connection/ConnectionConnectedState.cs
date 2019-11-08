@@ -55,15 +55,7 @@ namespace IO.Ably.Transport.States.Connection
                         return true;
                     }
 
-                    if (await Context.CanUseFallBackUrl(message.Error))
-                    {
-                        Context.ExecuteCommand(SetDisconnectedStateCommand.Create(message.Error, retryInstantly: true, clearConnectionKey: true).TriggeredBy("ConnectedState.OnMessageReceived()"));
-                    }
-                    else
-                    {
-                        Context.ExecuteCommand(SetDisconnectedStateCommand.Create(message.Error).TriggeredBy("ConnectedState.OnMessageReceived()"));
-                    }
-
+                    Context.ExecuteCommand(SetDisconnectedStateCommand.Create(message.Error).TriggeredBy("ConnectedState.OnMessageReceived()"));
                     return true;
                 case ProtocolMessage.MessageAction.Error:
                     // an error message may signify an error state in the connection or in a channel

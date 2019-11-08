@@ -25,11 +25,11 @@ namespace IO.Ably.Transport
 
         public bool ShouldUseFallback()
         {
-            return IsFailedOrSuspendedState() &&
+            return IsDisconnectedOrSuspendedState() &&
                    (IsRecoverableError() || IsRecoverableException());
         }
 
-        private bool IsFailedOrSuspendedState()
+        private bool IsDisconnectedOrSuspendedState()
         {
             return State == ConnectionState.Disconnected || State == ConnectionState.Suspended;
         }

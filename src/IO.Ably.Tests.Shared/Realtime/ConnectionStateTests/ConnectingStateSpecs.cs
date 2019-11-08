@@ -145,7 +145,7 @@ namespace IO.Ably.Tests
         public async Task ConnectingState_SendsHandleConnectionFailureCommand()
         {
             // Act
-            _state.OnAttachToContext();
+            _state.StartTimer();
             _timer.OnTimeOut();
 
             // Assert
@@ -163,7 +163,7 @@ namespace IO.Ably.Tests
             _context.Transport = transport;
 
             // Act
-            _state.OnAttachToContext();
+            _state.StartTimer();
             transport.State = TransportState.Connected;
             await _state.OnMessageReceived(new ProtocolMessage(action), null);
 

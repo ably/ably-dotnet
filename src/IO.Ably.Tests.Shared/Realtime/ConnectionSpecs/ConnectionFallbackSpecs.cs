@@ -141,7 +141,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN17e")]
         public async Task WhenRealtimeGoesFromFallbackHostToDefault_RestRequestShouldBeOnDefaultHost()
         {
-
             var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("[12345678]") };
             var handler = new FakeHttpMessageHandler(response);
             var client = new AblyRealtime(new ClientOptions(ValidKey)

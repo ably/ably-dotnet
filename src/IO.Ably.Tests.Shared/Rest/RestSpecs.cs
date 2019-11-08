@@ -613,8 +613,8 @@ namespace IO.Ably.Tests
             public async Task ShouldOnlyRetryFallbackHostWhileTheTimeTakenIsLessThanHttpMaxRetryDuration()
             {
                 DateTimeOffset now = DateTimeOffset.UtcNow;
-                Func<DateTimeOffset> NowFunc = () => now;
-                var options = new ClientOptions(ValidKey) { HttpMaxRetryDuration = TimeSpan.FromSeconds(21), NowFunc = NowFunc };
+                Func<DateTimeOffset> nowFunc = () => now;
+                var options = new ClientOptions(ValidKey) { HttpMaxRetryDuration = TimeSpan.FromSeconds(21), NowFunc = nowFunc };
                 var client = new AblyRest(options);
                 _response.StatusCode = HttpStatusCode.BadGateway;
                 var handler = new FakeHttpMessageHandler(
@@ -637,8 +637,8 @@ namespace IO.Ably.Tests
             public async Task WhenUsingAFallbackHost_AfterFallbackRetryTimeoutPasses_ShouldRetryMainHost()
             {
                 DateTimeOffset now = DateTimeOffset.UtcNow;
-                Func<DateTimeOffset> NowFunc = () => now;
-                var options = new ClientOptions(ValidKey) { FallbackRetryTimeout = TimeSpan.FromSeconds(10), NowFunc = NowFunc };
+                Func<DateTimeOffset> nowFunc = () => now;
+                var options = new ClientOptions(ValidKey) { FallbackRetryTimeout = TimeSpan.FromSeconds(10), NowFunc = nowFunc };
                 var client = new AblyRest(options);
                 var requestCount = 0;
 
@@ -687,8 +687,8 @@ namespace IO.Ably.Tests
             public async Task WhenUsingAFallbackHost_IfPreferredFallbackFails_ShouldRetryMainHostFirst()
             {
                 DateTimeOffset now = DateTimeOffset.UtcNow;
-                Func<DateTimeOffset> NowFunc = () => now;
-                var options = new ClientOptions(ValidKey) { FallbackRetryTimeout = TimeSpan.FromSeconds(10), NowFunc = NowFunc };
+                Func<DateTimeOffset> nowFunc = () => now;
+                var options = new ClientOptions(ValidKey) { FallbackRetryTimeout = TimeSpan.FromSeconds(10), NowFunc = nowFunc };
                 var client = new AblyRest(options);
                 var requestCount = 0;
 

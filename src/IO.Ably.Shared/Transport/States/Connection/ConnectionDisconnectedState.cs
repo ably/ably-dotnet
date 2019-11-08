@@ -49,7 +49,7 @@ namespace IO.Ably.Transport.States.Connection
             _timer.Abort();
         }
 
-        public override void OnAttachToContext()
+        public override void StartTimer()
         {
             if (RetryInstantly == false)
             {
