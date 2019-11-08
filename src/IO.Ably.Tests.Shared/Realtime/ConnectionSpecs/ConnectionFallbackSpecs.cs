@@ -6,6 +6,7 @@ using System.Net.Http;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
+using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Transport.States.Connection;
 using IO.Ably.Types;
 using Xunit;
@@ -63,7 +64,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN17a")]
         public async Task WhenPreviousAttemptFailed_ShouldGoToDefaultHostFirst()
         {
-            var client = await GetConnectedClient();
+            var client = GetRealtimeClient();
 
             List<ConnectionState> states = new List<ConnectionState>();
             client.Connection.On((args) =>
@@ -80,6 +81,17 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             await client.WaitForState(ConnectionState.Failed);
 
             client.Connect();
+
+            await client.WaitForState(ConnectionState.Connecting);
+
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+            {
+                ConnectionDetails = new ConnectionDetails() { ConnectionKey = "connectionKey" },
+                ConnectionId = "1",
+                ConnectionSerial = 100
+            });
+            await client.WaitForState(ConnectionState.Connected);
+
             LastCreatedTransport.Parameters.Host.Should().Be(Defaults.RealtimeHost);
         }
 
@@ -121,6 +133,73 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             var lastRequestUri = handler.Requests.Last().RequestUri.ToString();
             var wasLastRequestAFallback = client.State.Connection.FallbackHosts.Any(x => lastRequestUri.Contains(x));
             wasLastRequestAFallback.Should().BeTrue();
+
+            lastRequestUri.Should().Contain(client.State.Connection.Host);
+        }
+
+        [Fact]
+        [Trait("spec", "RTN17e")]
+        public async Task WhenRealtimeGoesFromFallbackHostToDefault_RestRequestShouldBeOnDefaultHost()
+        {
+
+            var response = new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("[12345678]") };
+            var handler = new FakeHttpMessageHandler(response);
+            var client = new AblyRealtime(new ClientOptions(ValidKey)
+            {
+                UseBinaryProtocol = false,
+                SkipInternetCheck = true,
+                TransportFactory = FakeTransportFactory
+            });
+
+            client.RestClient.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(10), handler);
+
+            Logger.LogLevel = LogLevel.Debug;
+            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+            {
+                ConnectionDetails = new ConnectionDetails() { ConnectionKey = "connectionKey" },
+                ConnectionId = "1",
+                ConnectionSerial = 100
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
+            {
+                Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
+            });
+
+            await client.WaitForState(ConnectionState.Disconnected);
+            await client.ProcessCommands();
+
+            await client.TimeAsync();
+            Output.WriteLine(handler.Requests.Last().RequestUri.ToString());
+            // Reconnect
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+            {
+                ConnectionDetails = new ConnectionDetails() { ConnectionKey = "connectionKey" },
+                ConnectionId = "1",
+                ConnectionSerial = 100
+            });
+
+            await client.WaitForState(ConnectionState.Connected);
+
+            // Force another disconnect
+            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected)
+            {
+                Error = new ErrorInfo() { StatusCode = HttpStatusCode.GatewayTimeout }
+            });
+
+            await client.WaitForState(ConnectionState.Disconnected);
+            await client.ProcessCommands();
+
+            await client.TimeAsync();
+
+            Output.WriteLine(handler.Requests.Last().RequestUri.ToString());
+
+            var lastRequestUri = handler.Requests.Last().RequestUri.ToString();
+            var wasLastRequestAFallback = client.State.Connection.FallbackHosts.Any(x => lastRequestUri.Contains(x));
+            wasLastRequestAFallback.Should().BeFalse();
 
             lastRequestUri.Should().Contain(client.State.Connection.Host);
         }
