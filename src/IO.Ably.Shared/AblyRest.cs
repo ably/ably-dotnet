@@ -59,11 +59,11 @@ namespace IO.Ably
 
         internal MessageHandler MessageHandler { get; private set; }
 
-        internal string CustomHost
-        {
-            get => HttpClient.CustomHost;
-            set => HttpClient.CustomHost = value;
-        }
+        internal void SetRealtimeFallbackHost(string host)
+            => HttpClient.RealtimeConnectedFallbackHost = host;
+
+        internal void ClearRealtimeFallbackHost()
+            => HttpClient.RealtimeConnectedFallbackHost = null;
 
         internal AblyAuth AblyAuth { get; private set; }
 

@@ -240,6 +240,13 @@ namespace IO.Ably
         public TimeSpan HttpRequestTimeout { get; set; } = TimeSpan.FromSeconds(10);
 
         /// <summary>
+        /// After a failed request to the default endpoint, followed by a successful request to a fallback endpoint),
+        /// the period in milliseconds before HTTP requests are retried against the default endpoint.
+        /// Default: 10 minutes.
+        /// </summary>
+        public TimeSpan FallbackRetryTimeout { get; set; } = Defaults.FallbackRetryTimeout;
+
+        /// <summary>
         /// Maximum number of Http retries the library will attempt.
         /// Default: 3.
         /// </summary>

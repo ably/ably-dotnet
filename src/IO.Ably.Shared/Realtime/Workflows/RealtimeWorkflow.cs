@@ -420,7 +420,11 @@ namespace IO.Ably.Realtime.Workflow
         {
             if (IsFallbackHost())
             {
-                Client.RestClient.CustomHost = newHost;
+                Client.RestClient.SetRealtimeFallbackHost(newHost);
+            }
+            else
+            {
+                Client.RestClient.ClearRealtimeFallbackHost();
             }
 
             State.Connection.Host = newHost;

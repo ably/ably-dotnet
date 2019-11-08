@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,6 +13,46 @@ namespace IO.Ably
 {
     internal class AblyHttpClient : IAblyHttpClient
     {
+        private class HttpResponseWrapper
+        {
+            public AblyResponse AblyResponse { get; set; }
+
+            public bool Success { get; set; }
+
+            public bool CanRetry { get; set; }
+
+            public Exception Exception { get; set; }
+
+            public string GetFailedMessage()
+            {
+                if (Exception != null)
+                {
+                    return "Can't make request because of Exception: " + Exception.Message;
+                }
+
+                return $"Ably server returned error. Status: {AblyResponse.StatusCode}.";
+            }
+
+            private HttpResponseWrapper()
+            {
+            }
+
+            public static HttpResponseWrapper FromError(Exception ex, bool canRetry)
+            {
+                return new HttpResponseWrapper { Success = false, CanRetry = canRetry, Exception = ex };
+            }
+
+            public static HttpResponseWrapper FromResponse(AblyResponse response, bool success, bool canRetry)
+            {
+                return new HttpResponseWrapper { Success = success, AblyResponse = response, CanRetry = canRetry };
+            }
+
+            public static HttpResponseWrapper FromSuccess(AblyResponse response)
+                => new HttpResponseWrapper { Success = true, AblyResponse = response };
+        }
+
+        private Random _random = new Random();
+
         internal Func<HttpRequestMessage, Task<HttpResponseMessage>> SendAsync { get; set; }
 
         internal Func<DateTimeOffset> Now { get; set; }
@@ -19,7 +61,44 @@ namespace IO.Ably
 
         internal AblyHttpOptions Options { get; }
 
-        internal string CustomHost { get; set; }
+        private bool CanRetry => Options.IsDefaultHost || Options.FallbackHostsUseDefault;
+
+        internal string PreferredHost { get; private set; }
+
+        private string _realtimeConnectedFallbackHost;
+
+        internal string RealtimeConnectedFallbackHost
+        {
+            get => _realtimeConnectedFallbackHost;
+            set
+            {
+                _realtimeConnectedFallbackHost = value;
+                if (value.IsNotEmpty())
+                {
+                    // The realtime connection has set a custom host. We try and stick with it.
+                    PreferredHost = null;
+                    FallbackHostUsedFrom = null;
+                }
+            }
+        }
+
+        internal void SetPreferredHost(string currentHost)
+        {
+            // If we are retrying the default host we need to clear the preferred one
+            // and usedFrom timestamp
+            if (currentHost == Options.Host)
+            {
+                PreferredHost = null;
+                FallbackHostUsedFrom = null;
+            }
+            else
+            {
+                FallbackHostUsedFrom = Now();
+                PreferredHost = currentHost;
+            }
+        }
+
+        private DateTimeOffset? FallbackHostUsedFrom { get; set; }
 
         internal HttpClient Client { get; set; }
 
@@ -47,35 +126,107 @@ namespace IO.Ably
 
         public async Task<AblyResponse> Execute(AblyRequest request)
         {
-            var fallbackHosts = Options.FallbackHosts.ToList();
-            if (CustomHost.IsNotEmpty())
-            {
-                // The custom host is a fallback host currently in use by the Realtime client.
-                // We need to remove it from the fallback hosts
-                fallbackHosts.Remove(CustomHost);
-            }
-
-            var random = new Random();
+            var fallbackHosts = GetFallbackHosts();
 
             int currentTry = 0;
             var startTime = Now();
+
             var numberOfRetries = Options.HttpMaxRetryCount;
-            var host = CustomHost.IsNotEmpty() ? CustomHost : Options.Host;
+            var host = GetHost();
 
             while (currentTry < numberOfRetries)
             {
-                DateTimeOffset requestTime = Now();
-                if ((requestTime - startTime).TotalSeconds >= Options.HttpMaxRetryDuration.TotalSeconds)
-                {
-                    Logger.Error("Cumulative retry timeout of {0}s was exceeded", Defaults.CommulativeFailedRequestTimeOutInSeconds);
-                    throw new AblyException(
-                        new ErrorInfo($"Commulative retry timeout of {Defaults.CommulativeFailedRequestTimeOutInSeconds}s was exceeded.", 50000, null));
-                }
+                EnsureMaxRetryDurationNotExceeded();
 
-                Logger.Debug("Executing request: " + request.Url + (currentTry > 0 ? $"try {currentTry}" : string.Empty));
+                Logger.Debug("Executing request: " + host + request.Url + (currentTry > 0 ? $"try {currentTry}" : string.Empty));
+
                 try
                 {
-                    var message = GetRequestMessage(request, host);
+                    var response = await MakeRequest(host);
+                    currentTry++;
+
+                    if (response.Success)
+                    {
+                        return response.AblyResponse;
+                    }
+
+                    if (CanRetry && response.CanRetry)
+                    {
+                        Logger.Warning("Failed response. " + response.GetFailedMessage() + ". Retrying...");
+                        var (success, newHost) = HandleHostChangeForRetryableFailure();
+                        if (success)
+                        {
+                            Logger.Debug($"Retrying using host: {newHost}");
+
+                            host = newHost;
+                            continue;
+                        }
+                    }
+
+                    // We only return the request if there is no exception
+                    if (request.NoExceptionOnHttpError && response.Exception == null)
+                    {
+                        return response.AblyResponse;
+                    }
+
+                    // there is a case where the user has disabled fallback and there is no exception.
+                    // in that case we need to create a new AblyException
+                    throw response.Exception ?? AblyException.FromResponse(response.AblyResponse);
+                }
+                catch (AblyException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    // TODO: Sentry logging here
+                    throw new AblyException(new ErrorInfo("Error executing request. " + ex.Message, 50000), ex);
+                }
+            }
+
+            throw new AblyException(new ErrorInfo("Error executing request", 50000));
+
+            List<string> GetFallbackHosts()
+            {
+                var results = Options.FallbackHosts.ToList();
+                if (PreferredHost.IsNotEmpty())
+                {
+                    // The custom host is a fallback host currently in use by the Realtime client.
+                    // We need to remove it from the fallback hosts
+                    results.Remove(PreferredHost);
+                }
+
+                return results;
+            }
+
+            string GetHost()
+            {
+                // First try the realtime host to which there is a websocket connection
+                if (RealtimeConnectedFallbackHost.IsNotEmpty())
+                {
+                    return RealtimeConnectedFallbackHost;
+                }
+
+                // If there is a fallback host and it has expired then clear it and return the default host
+                if (FallbackHostUsedFrom.HasValue && FallbackHostUsedFrom.Value.Add(Options.FallbackRetryTimeOut) < Now())
+                {
+                    PreferredHost = null;
+                    FallbackHostUsedFrom = null;
+                    return Options.Host;
+                }
+
+                // otherwise if there is a preferred host then return it otherwise return the default host
+                var hostToUse = PreferredHost.IsNotEmpty() ? PreferredHost : Options.Host;
+                return hostToUse;
+            }
+
+            // Tries to make a request
+            // If it fails it will return
+            async Task<HttpResponseWrapper> MakeRequest(string requestHost)
+            {
+                try
+                {
+                    var message = GetRequestMessage(request, requestHost);
                     await LogMessage(message);
                     var response = await SendAsync(message).ConfigureAwait(false);
                     var ablyResponse = await GetAblyResponse(response);
@@ -83,64 +234,23 @@ namespace IO.Ably
 
                     if (response.IsSuccessStatusCode)
                     {
-                        return ablyResponse;
+                        return HttpResponseWrapper.FromSuccess(ablyResponse);
                     }
 
-                    if (IsRetryableResponse(response) && (Options.IsDefaultHost || Options.FallbackHostsUseDefault))
+                    if (IsRetryableResponse(response) || request.NoExceptionOnHttpError)
                     {
-                        Logger.Warning("Failed response. Retrying. Returned response with status code: " +
-                                       response.StatusCode);
-
-                        if (TryGetNextRandomHost(fallbackHosts, random, out host))
-                        {
-                            Logger.Debug("Retrying using host {0}", host);
-                            currentTry++;
-                            continue;
-                        }
-                    }
-
-                    if (request.NoExceptionOnHttpError)
-                    {
-                        return ablyResponse;
-                    }
-
-                    try
-                    {
-                        response.EnsureSuccessStatusCode();
-                    }
-                    catch (HttpRequestException ex)
-                    {
-                        throw new AblyException(ErrorInfo.Parse(ablyResponse), ex);
+                        return HttpResponseWrapper.FromResponse(ablyResponse, false, IsRetryableResponse(response));
                     }
 
                     throw AblyException.FromResponse(ablyResponse);
                 }
-                catch (HttpRequestException ex) when (IsRetryableError(ex) && (Options.IsDefaultHost || Options.FallbackHostsUseDefault))
-                {
-                    Logger.Warning("Error making a connection to Ably servers. Retrying", ex);
-                    if (TryGetNextRandomHost(fallbackHosts, random, out host))
-                    {
-                        Logger.Debug("Retrying using host {0}", host);
-                        currentTry++;
-                        continue;
-                    }
-
-                    throw;
-                }
-                catch (TaskCanceledException ex) when (IsRetryableError(ex) && (Options.IsDefaultHost || Options.FallbackHostsUseDefault))
-                {
-                    Logger.Warning("Error making a connection to Ably servers. Retrying", ex);
-                    if (TryGetNextRandomHost(fallbackHosts, random, out host))
-                    {
-                        Logger.Debug("Retrying using host {0}", host);
-                        currentTry++;
-                        continue;
-                    }
-
-                    throw;
-                }
                 catch (HttpRequestException ex)
                 {
+                    if (IsRetryableError(ex))
+                    {
+                        return HttpResponseWrapper.FromError(ex, true);
+                    }
+
                     StringBuilder reason = new StringBuilder(ex.Message);
                     var innerEx = ex.InnerException;
                     while (innerEx != null)
@@ -153,19 +263,73 @@ namespace IO.Ably
                 }
                 catch (TaskCanceledException ex)
                 {
-                    // if the cancellation was not requested then this is timeout.
+                    if (IsRetryableError(ex))
+                    {
+                        return HttpResponseWrapper.FromError(ex, IsRetryableError(ex));
+                    }
+
                     if (ex.CancellationToken.IsCancellationRequested == false)
                     {
-                        throw new AblyException(new ErrorInfo("Error executing request. Request timed out.", 50000), ex);
+                        throw new AblyException(
+                            new ErrorInfo("Error executing request. Request timed out.", 50000),
+                            ex);
                     }
-                    else
-                    {
-                        throw new AblyException(new ErrorInfo("Error executing request", 50000), ex);
-                    }
+
+                    throw new AblyException(new ErrorInfo("Error executing request", 50000), ex);
                 }
             }
 
-            throw new AblyException(new ErrorInfo("Error executing request", 50000));
+            (bool success, string host) HandleHostChangeForRetryableFailure()
+            {
+                if (fallbackHosts.Count == 0)
+                {
+                    Logger.Debug("No more hosts left to retry. Cannot assign a new fallback host.");
+                    return (false, null);
+                }
+
+                bool hasRealtimeFallbackHost = RealtimeConnectedFallbackHost.IsNotEmpty();
+
+                bool isFirstTryForRequest = currentTry == 0;
+
+                if (hasRealtimeFallbackHost)
+                {
+                    string nextHost = GetNextFallbackHost();
+                    return (nextHost.IsNotEmpty(), nextHost);
+                }
+                else
+                {
+                    // If there is a Preferred fallback host already set
+                    // and it failed we should try the default host first
+                    var nextHost = isFirstTryForRequest && PreferredHost.IsNotEmpty()
+                        ? Options.Host
+                        : GetNextFallbackHost();
+
+                    SetPreferredHost(nextHost);
+                    return (nextHost.IsNotEmpty(), nextHost);
+                }
+            }
+
+            string GetNextFallbackHost()
+            {
+                if (fallbackHosts.Count == 0)
+                {
+                    return null;
+                }
+
+                var fallbackHost = fallbackHosts[_random.Next() % fallbackHosts.Count];
+                fallbackHosts.Remove(fallbackHost);
+                return fallbackHost;
+            }
+
+            void EnsureMaxRetryDurationNotExceeded()
+            {
+                if ((Now() - startTime).TotalSeconds >= Options.HttpMaxRetryDuration.TotalSeconds)
+                {
+                    Logger.Error("Cumulative retry timeout of {0}s was exceeded", Defaults.CommulativeFailedRequestTimeOutInSeconds);
+                    throw new AblyException(
+                        new ErrorInfo($"Cumulative retry timeout of {Defaults.CommulativeFailedRequestTimeOutInSeconds}s was exceeded.", 50000, null));
+                }
+            }
         }
 
         private void LogResponse(AblyResponse ablyResponse, string url)
@@ -229,17 +393,9 @@ namespace IO.Ably
             Logger.Debug(logMessage.ToString());
         }
 
-        private bool TryGetNextRandomHost(List<string> hosts, Random random, out string host)
+        private bool IsFallbackHost(string host)
         {
-            if (hosts.Count == 0)
-            {
-                host = string.Empty;
-                return false;
-            }
-
-            host = hosts[random.Next() % hosts.Count];
-            hosts.Remove(host);
-            return true;
+            return Options.FallbackHosts.Contains(host);
         }
 
         internal bool IsRetryableResponse(HttpResponseMessage response)
