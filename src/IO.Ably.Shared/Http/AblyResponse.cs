@@ -34,7 +34,9 @@ namespace IO.Ably
 
         internal string Encoding { get; }
 
-        internal static AblyResponse EmptyResponse => new AblyResponse { TextResponse = "[{}]" };
+        internal static AblyResponse EmptyResponse => new AblyResponse { TextResponse = "[{}]"};
+
+        internal static AblyResponse InternetCheckTimeoutResponse => new AblyResponse { TextResponse = "timeout" };
 
         internal AblyResponse()
         {
