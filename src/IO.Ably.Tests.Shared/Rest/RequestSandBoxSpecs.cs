@@ -65,7 +65,7 @@ namespace IO.Ably.Tests
         public async Task Request_ShouldAcceptCorrectHttpVerbs(Protocol protocol)
         {
             var client = TrackLastRequest(await GetRestClient(protocol));
-            client.HttpClient.CustomHost = "localhost";
+            client.HttpClient.SetPreferredHost("localhost");
             var mockHttp = new MockHttpMessageHandler();
 
             var verbs = new[] { "GET", "POST", "PUT", "PATCH", "DELETE" };
@@ -253,7 +253,7 @@ namespace IO.Ably.Tests
             }));
 
             // custom host with a port that is not in use speeds up the test
-            client.HttpClient.CustomHost = "fake.host:54321";
+            client.HttpClient.SetPreferredHost("fake.host:54321");
             try
             {
                 await client.Request(HttpMethod.Post, "/");
@@ -283,7 +283,7 @@ namespace IO.Ably.Tests
                 options.HttpRequestTimeout = TimeSpan.FromSeconds(1);
             }));
 
-            client.HttpClient.CustomHost = "echo.ably.io/respondwith?status=400";
+            client.HttpClient.SetPreferredHost("echo.ably.io/respondwith?status=400");
             var response = await client.Request(HttpMethod.Post.Method, "/");
             response.Success.Should().BeFalse();
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);

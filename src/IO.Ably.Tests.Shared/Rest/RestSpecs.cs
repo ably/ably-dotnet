@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -487,14 +488,12 @@ namespace IO.Ably.Tests
 
             [Fact]
             [Trait("spec", "RSC15e")]
-            public async Task ShouldAttemptDefaultHostFirstAfterFailure()
+            public async Task ShouldAttemptHttpRequestsAgainstTheDefaultHost()
             {
                 _response.StatusCode = HttpStatusCode.BadGateway;
                 var client = CreateClient(null);
 
-                var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
-                _handler.Requests.Clear();
-                ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
 
                 _handler.Requests.First().RequestUri.Host.Should().Be(Defaults.RestHost);
             }
@@ -543,7 +542,7 @@ namespace IO.Ably.Tests
                 _response.StatusCode = HttpStatusCode.BadGateway;
                 var client = CreateClient(opts => opts.HttpMaxRetryCount = 10);
 
-                var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
+                await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
 
                 _handler.Requests.Count.Should().Be(Defaults.FallbackHosts.Length + 1); // First attempt is with rest.ably.io
             }
@@ -586,15 +585,18 @@ namespace IO.Ably.Tests
             [Trait("spec", "TO3k6")]
             public async Task ShouldUseDefaultFallbackHostsIfNullArrayProvided()
             {
-                _response.StatusCode = HttpStatusCode.BadGateway;
                 List<string> attemptedList = new List<string>();
 
                 var client = CreateClient(options =>
                 {
                     options.FallbackHosts = null;
                 });
+
+                var handler = new FakeHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.BadGateway));
+                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
+
                 await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
-                attemptedList.AddRange(_handler.Requests.Select(x => x.RequestUri.Host).ToList());
+                attemptedList.AddRange(handler.Requests.Select(x => x.RequestUri.Host).ToList());
 
                 attemptedList.Count.Should().Be(3); // HttpMaxRetryCount defaults to 3
                 attemptedList[0].Should().Be("rest.ably.io");
@@ -610,15 +612,17 @@ namespace IO.Ably.Tests
             [Trait("spec", "TO3l6")]
             public async Task ShouldOnlyRetryFallbackHostWhileTheTimeTakenIsLessThanHttpMaxRetryDuration()
             {
-                var options = new ClientOptions(ValidKey) { HttpMaxRetryDuration = TimeSpan.FromSeconds(21) };
+                DateTimeOffset now = DateTimeOffset.UtcNow;
+                Func<DateTimeOffset> NowFunc = () => now;
+                var options = new ClientOptions(ValidKey) { HttpMaxRetryDuration = TimeSpan.FromSeconds(21), NowFunc = NowFunc };
                 var client = new AblyRest(options);
                 _response.StatusCode = HttpStatusCode.BadGateway;
                 var handler = new FakeHttpMessageHandler(
                     _response,
                     () =>
                     {
-                        // Tweak time to pretend 10 seconds have ellapsed
-                        NowAddSeconds(10);
+                        // Tweak time to pretend 10 seconds have elapsed
+                        now = now.AddSeconds(10);
                     });
 
                 client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
@@ -626,6 +630,106 @@ namespace IO.Ably.Tests
                 var ex = await Assert.ThrowsAsync<AblyException>(() => MakeAnyRequest(client));
 
                 handler.Requests.Count.Should().Be(3); // First attempt is with rest.ably.io
+            }
+
+            [Fact]
+            [Trait("spec", "RSC15f")]
+            public async Task WhenUsingAFallbackHost_AfterFallbackRetryTimeoutPasses_ShouldRetryMainHost()
+            {
+                DateTimeOffset now = DateTimeOffset.UtcNow;
+                Func<DateTimeOffset> NowFunc = () => now;
+                var options = new ClientOptions(ValidKey) { FallbackRetryTimeout = TimeSpan.FromSeconds(10), NowFunc = NowFunc };
+                var client = new AblyRest(options);
+                var requestCount = 0;
+
+                _response.StatusCode = HttpStatusCode.BadGateway;
+                Func<HttpResponseMessage> getResponse = () =>
+                {
+                    try
+                    {
+                        switch (requestCount)
+                        {
+                            case 0:
+                                return new HttpResponseMessage(HttpStatusCode.BadGateway);
+                            case 1:
+                                return new HttpResponseMessage(HttpStatusCode.OK);
+                            case 2:
+                                now = now.AddSeconds(20);
+                                return new HttpResponseMessage(HttpStatusCode.OK);
+                            default:
+                                return new HttpResponseMessage(HttpStatusCode.OK);
+                        }
+                    }
+                    finally
+                    {
+                        requestCount++;
+                    }
+                };
+
+                var handler = new FakeHttpMessageHandler(getResponse);
+
+                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
+
+                MakeAnyRequest(client); // This will generate 2 requests - 1 failed and 1 succeed
+                MakeAnyRequest(client); // This will generate 1 request which should be using fallback host
+                MakeAnyRequest(client); // This will generate 1 request which should be back to the default host
+
+                handler.Requests.Count.Should().Be(4); // First attempt is with rest.ably.io
+                var attemptedHosts = handler.Requests.Select(x => x.RequestUri.Host).ToList();
+                attemptedHosts[0].Should().Be(Defaults.RestHost);
+                attemptedHosts[1].Should().BeOneOf(Defaults.FallbackHosts);
+                attemptedHosts[2].Should().BeOneOf(Defaults.FallbackHosts);
+                attemptedHosts[3].Should().Be(Defaults.RestHost);
+            }
+
+            [Fact]
+            [Trait("spec", "RSC15f")]
+            public async Task WhenUsingAFallbackHost_IfPreferredFallbackFails_ShouldRetryMainHostFirst()
+            {
+                DateTimeOffset now = DateTimeOffset.UtcNow;
+                Func<DateTimeOffset> NowFunc = () => now;
+                var options = new ClientOptions(ValidKey) { FallbackRetryTimeout = TimeSpan.FromSeconds(10), NowFunc = NowFunc };
+                var client = new AblyRest(options);
+                var requestCount = 0;
+
+                _response.StatusCode = HttpStatusCode.BadGateway;
+                Func<HttpResponseMessage> getResponse = () =>
+                {
+                    try
+                    {
+                        switch (requestCount)
+                        {
+                            case 0:
+                                return new HttpResponseMessage(HttpStatusCode.BadGateway);
+                            case 1:
+                                return new HttpResponseMessage(HttpStatusCode.OK);
+                            case 2:
+                                return new HttpResponseMessage(HttpStatusCode.BadGateway);
+                            default:
+                                return new HttpResponseMessage(HttpStatusCode.OK);
+                        }
+                    }
+                    finally
+                    {
+                        requestCount++;
+                    }
+                };
+
+                var handler = new FakeHttpMessageHandler(getResponse);
+
+                client.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(6), handler);
+
+                MakeAnyRequest(client); // This will generate 2 requests - 1 failed and 1 succeed
+                MakeAnyRequest(client); // This will generate 2 request one to fallback host and the next one to the default host
+                MakeAnyRequest(client); // This will generate 1 request which should be back to the default host
+
+                handler.Requests.Count.Should().Be(5); // First attempt is with rest.ably.io
+                var attemptedHosts = handler.Requests.Select(x => x.RequestUri.Host).ToList();
+                attemptedHosts[0].Should().Be(Defaults.RestHost);
+                attemptedHosts[1].Should().BeOneOf(Defaults.FallbackHosts);
+                attemptedHosts[2].Should().BeOneOf(Defaults.FallbackHosts);
+                attemptedHosts[3].Should().Be(Defaults.RestHost);
+                attemptedHosts[4].Should().Be(Defaults.RestHost);
             }
 
             private static async Task MakeAnyRequest(AblyRest client)
