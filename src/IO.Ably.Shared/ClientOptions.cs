@@ -219,25 +219,25 @@ namespace IO.Ably
         /// Number of seconds before the library will retry after reaching Suspended state.
         /// Default: 30s.
         /// </summary>
-        public TimeSpan SuspendedRetryTimeout { get; set; } = TimeSpan.FromSeconds(30);
+        public TimeSpan SuspendedRetryTimeout { get; set; } = Defaults.SuspendedRetryTimeout;
 
         /// <summary>
         /// Number of seconds before a channel will try to reattach itself after becoming suspended.
         /// Default: 15s.
         /// </summary>
-        public TimeSpan ChannelRetryTimeout { get; set; } = TimeSpan.FromSeconds(15);
+        public TimeSpan ChannelRetryTimeout { get; set; } = Defaults.ChannelRetryTimeout;
 
         /// <summary>
         /// Timeout for opening an http request.
         /// Default: 4s.
         /// </summary>
-        public TimeSpan HttpOpenTimeout { get; set; } = TimeSpan.FromSeconds(4);
+        public TimeSpan HttpOpenTimeout { get; set; } = Defaults.MaxHttpOpenTimeout;
 
         /// <summary>
         /// Timeout for completing an http request.
         /// Default: 10s.
         /// </summary>
-        public TimeSpan HttpRequestTimeout { get; set; } = TimeSpan.FromSeconds(10);
+        public TimeSpan HttpRequestTimeout { get; set; } = Defaults.MaxHttpRequestTimeout;
 
         /// <summary>
         /// After a failed request to the default endpoint, followed by a successful request to a fallback endpoint),
@@ -250,13 +250,13 @@ namespace IO.Ably
         /// Maximum number of Http retries the library will attempt.
         /// Default: 3.
         /// </summary>
-        public int HttpMaxRetryCount { get; set; } = 3;
+        public int HttpMaxRetryCount { get; set; } = Defaults.HttpMaxRetryCount;
 
         /// <summary>
         /// Duration for which the library will retry an http request.
         /// Default: 15s.
         /// </summary>
-        public TimeSpan HttpMaxRetryDuration { get; set; } = TimeSpan.FromSeconds(15);
+        public TimeSpan HttpMaxRetryDuration { get; set; } = Defaults.HttpMaxRetryDuration;
 
         /// <summary>
         /// Provides Channels Setting for all Channels created. For more information see <see cref="ChannelOptions"/>.

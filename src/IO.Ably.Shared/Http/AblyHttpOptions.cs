@@ -41,12 +41,12 @@ namespace IO.Ably
             Host = Defaults.RestHost;
 
             // Setting up some defaults
-            DisconnectedRetryTimeout = TimeSpan.FromSeconds(15);
-            SuspendedRetryTimeout = TimeSpan.FromSeconds(30);
-            HttpOpenTimeout = TimeSpan.FromSeconds(4);
-            HttpRequestTimeout = TimeSpan.FromSeconds(15);
-            HttpMaxRetryCount = 3;
-            HttpMaxRetryDuration = TimeSpan.FromSeconds(10);
+            DisconnectedRetryTimeout = Defaults.DisconnectedRetryTimeout;
+            SuspendedRetryTimeout = Defaults.SuspendedRetryTimeout;
+            HttpOpenTimeout = Defaults.MaxHttpOpenTimeout;
+            HttpRequestTimeout = Defaults.MaxHttpRequestTimeout;
+            HttpMaxRetryCount = Defaults.HttpMaxRetryCount;
+            HttpMaxRetryDuration = Defaults.HttpMaxRetryDuration;
             FallbackRetryTimeOut = Defaults.FallbackRetryTimeout;
             FallbackHosts = Defaults.FallbackHosts;
             FallbackHostsUseDefault = false;
