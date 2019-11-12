@@ -37,8 +37,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN17b")]
         public async Task WithCustomPortAndError_ConnectionGoesStraightToFailedInsteadOfDisconnected()
         {
-            Logger.LogLevel = LogLevel.Debug;
-            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
             var client = await GetConnectedClient(opts => opts.Port = 100);
 
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error)
@@ -81,9 +79,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN17a")]
         public async Task WhenPreviousAttemptFailed_ShouldGoToDefaultHostFirst()
         {
-            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
-            Logger.LogLevel = LogLevel.Debug;
-
             var client = GetClientWithFakeTransport();
 
             var realtimeHosts = new List<string>();
@@ -306,9 +301,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
         [Trait("spec", "RTN17c")]
         public async Task WhenItMovesFromDisconnectedToSuspended_ShouldTryDefaultHostAgain()
         {
-            Logger.LoggerSink = new SandboxSpecs.OutputLoggerSink(Output);
-            Logger.LogLevel = LogLevel.Debug;
-
             var now = DateTimeOffset.UtcNow;
 
             Func<DateTimeOffset> testNow = () => now;
