@@ -109,22 +109,6 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        [Trait("spec", "RTN14g")]
-        public async Task WithInboundErrorMessage_WhenNotTokenErrorAndChannelsEmpty_GoesToFailed()
-        {
-            // Arrange
-            _context.Transport = GetConnectedTrasport();
-            _context.CanUseFallBack = false;
-            ErrorInfo targetError = new ErrorInfo("test", 123);
-
-            // Act
-            bool result = await _state.OnMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError }, null);
-
-            // Assert
-            _context.ShouldQueueCommand<SetFailedStateCommand>();
-        }
-
-        [Fact]
         public void Connect_ShouldDoNothing()
         {
             // Act
@@ -142,7 +126,7 @@ namespace IO.Ably.Tests
         }
 
         [Fact]
-        public async Task ConnectingState_SendsHandleConnectionFailureCommand()
+        public async Task ConnectingState_SendsHandleConnectionDisconnectedCommand()
         {
             // Act
             _state.StartTimer();
@@ -150,26 +134,7 @@ namespace IO.Ably.Tests
 
             // Assert
             _timer.StartedWithAction.Should().BeTrue();
-            _context.ShouldQueueCommand<HandleConnectingFailureCommand>();
-        }
-
-        [Theory]
-        [InlineData(ProtocolMessage.MessageAction.Connected)]
-        [InlineData(ProtocolMessage.MessageAction.Error)]
-        public async Task WhenMessageReceived_ForceDisconnectNotAppliedAndTimerShouldBeAborted(ProtocolMessage.MessageAction action)
-        {
-            // Arrange
-            var transport = new FakeTransport() { State = TransportState.Initialized };
-            _context.Transport = transport;
-
-            // Act
-            _state.StartTimer();
-            transport.State = TransportState.Connected;
-            await _state.OnMessageReceived(new ProtocolMessage(action), null);
-
-            // Assert
-            _timer.StartedWithAction.Should().BeTrue();
-            _timer.Aborted.Should().BeTrue();
+            _context.ShouldQueueCommand<HandleConnectingDisconnectedCommand>();
         }
     }
 }

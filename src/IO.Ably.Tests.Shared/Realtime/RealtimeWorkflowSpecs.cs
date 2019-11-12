@@ -16,53 +16,88 @@ namespace IO.Ably.Tests.NETFramework.Realtime
 {
     public class RealtimeWorkflowSpecs : AblyRealtimeSpecs
     {
-        [Fact]
-        [Trait("spec", "RTN8b")]
-        public void ConnectedState_UpdatesConnectionInformation()
+
+
+        public class GeneralSpecs : AblyRealtimeSpecs
         {
-            // Act
-            // TODO: Move this test to the workflow tests
-            var connectedProtocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+            [Fact]
+            [Trait("spec", "RTN8b")]
+            public void ConnectedState_UpdatesConnectionInformation()
             {
-                ConnectionId = "1",
-                ConnectionSerial = 100,
-                ConnectionDetails = new ConnectionDetails()
-                {
-                    ClientId = "client1",
-                    ConnectionKey = "validKey"
-                },
-            };
-            var client = GetRealtimeClient(options => options.AutoConnect = false);
-            client.Workflow.ProcessCommand(SetConnectedStateCommand.Create(connectedProtocolMessage, false));
+             // Act
+             var connectedProtocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Connected)
+             {
+                 ConnectionId = "1",
+                 ConnectionSerial = 100,
+                 ConnectionDetails = new ConnectionDetails()
+                 {
+                     ClientId = "client1",
+                     ConnectionKey = "validKey"
+                 },
+             };
+             var client = GetRealtimeClient(options => options.AutoConnect = false);
+             client.Workflow.ProcessCommand(SetConnectedStateCommand.Create(connectedProtocolMessage, false));
 
-            // Assert
-            var connection = client.Connection;
-            connection.Id.Should().Be("1");
-            connection.Serial.Should().Be(100);
-            connection.Key.Should().Be("validKey");
-            client.Auth.ClientId.Should().Be("client1");
+             // Assert
+             var connection = client.Connection;
+             connection.Id.Should().Be("1");
+             connection.Serial.Should().Be(100);
+             connection.Key.Should().Be("validKey");
+             client.Auth.ClientId.Should().Be("client1");
+            }
+
+            [Fact]
+            public async Task SetFailedState_ShouldClearConnectionKeyAndId()
+            {
+             var client = GetDisconnectedClient();
+
+             client.State.Connection.Key = "Test";
+             client.State.Connection.Id = "Test";
+
+             client.ExecuteCommand(SetFailedStateCommand.Create(null));
+
+             await client.ProcessCommands();
+
+             client.State.Connection.Key.Should().BeEmpty();
+             client.State.Connection.Id.Should().BeEmpty();
+            }
+
+            public GeneralSpecs(ITestOutputHelper output) : base(output)
+            {
+            }
         }
 
-        [Fact]
-        public async Task SetFailedState_ShouldClearConnectionKeyAndId()
+        public class ConnectingStateSpecs : AblyRealtimeSpecs
         {
-            var client = GetDisconnectedClient();
+            [Fact]
+            [Trait("spec", "RTN14g")]
+            public async Task WithInboundErrorMessage_WhenNotTokenErrorAndChannelsEmpty_GoesToFailed()
+            {
+                var client = GetRealtimeClient(opts => opts.RealtimeHost = "non-default.ably.io"); // Force no fallback
 
-            client.State.Connection.Key = "Test";
-            client.State.Connection.Id = "Test";
+                await client.WaitForState(ConnectionState.Connecting);
 
-            client.ExecuteCommand(SetFailedStateCommand.Create(null));
+                // Arrange
+                ErrorInfo targetError = new ErrorInfo("test", 123);
 
-            await client.ProcessCommands();
+                // Act
+                client.Workflow.ProcessCommand(ProcessMessageCommand.Create(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = targetError }));
 
-            client.State.Connection.Key.Should().BeEmpty();
-            client.State.Connection.Id.Should().BeEmpty();
+                // Assert
+                await client.WaitForState(ConnectionState.Failed);
+            }
+
+            public ConnectingStateSpecs(ITestOutputHelper output)
+                : base(output)
+            {
+            }
         }
+
 
         public class ConnectingCommandSpecs : AblyRealtimeSpecs
         {
             [Fact]
-            public async Task WithInboundErrorMessageMessageWhenItCanUseFallBack_ShouldClearsConnectionKey()
+            public async Task WithInboundErrorMessageWhenItCanUseFallBack_ShouldClearsConnectionKey()
             {
                 // Arrange
                 var client = GetRealtimeClient();
@@ -76,21 +111,20 @@ namespace IO.Ably.Tests.NETFramework.Realtime
 
                 // Act
                 client.ExecuteCommand(ProcessMessageCommand.Create(messageWithError));
-                await client.ProcessCommands();
+                await client.WaitForState(ConnectionState.Disconnected);
 
-                client.State.Connection.State.Should().Be(ConnectionState.Disconnected);
                 client.State.Connection.Key.Should().BeEmpty();
             }
 
             [Fact]
-            public async Task WithInboundDisconnectedMessage_ShouldTrasnsitionToDisconnectedState()
+            public async Task WithInboundDisconnectedMessage_ShouldTransitionToDisconnectedState()
             {
                 // Arrange
                 var client = GetRealtimeClient();
                 client.Connect();
 
                 await client.WaitForState(ConnectionState.Connecting);
-                var disconnectedMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected);
+                var disconnectedMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Disconnected) { Error = ErrorInfo.ReasonDisconnected };
 
                 // Act
                 client.ExecuteCommand(ProcessMessageCommand.Create(disconnectedMessage));
