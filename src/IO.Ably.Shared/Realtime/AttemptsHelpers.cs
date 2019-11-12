@@ -45,16 +45,25 @@ namespace IO.Ably.Realtime
 
             if (lastFailedState != null)
             {
+                // RTN17a if we were previously connected to a fallback host
+                // we need to first try again on the default host before starting to check fallback hosts
+                if (state.Connection.Host.IsNotEmpty() && state.Connection.IsFallbackHost)
+                {
+                    return getRealtimeHost();
+                }
+
                 if (lastFailedState.State == ConnectionState.Disconnected)
                 {
-                    customHost = state.Connection.FallbackHosts[disconnectedCount % state.Connection.FallbackHosts.Count];
+                    // DisconnectedCount will always be > 0 and we want to start with the first host.
+                    customHost = state.Connection.FallbackHosts[(disconnectedCount - 1) % state.Connection.FallbackHosts.Count];
                 }
 
                 if (lastFailedState.State == ConnectionState.Suspended && suspendedCount > 1)
                 {
+                    // We -1 just to preserve the logic as above.
                     customHost =
                         state.Connection.FallbackHosts[
-                            (disconnectedCount + suspendedCount) % state.Connection.FallbackHosts.Count];
+                            (disconnectedCount + suspendedCount - 1) % state.Connection.FallbackHosts.Count];
                 }
 
                 if (customHost.IsNotEmpty())

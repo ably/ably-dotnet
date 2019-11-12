@@ -131,7 +131,7 @@ namespace IO.Ably
             int currentTry = 0;
             var startTime = Now();
 
-            var numberOfRetries = Options.HttpMaxRetryCount;
+            var numberOfRetries = Options.HttpMaxRetryCount; // One for the first request
             var host = GetHost();
 
             while (currentTry < numberOfRetries)
@@ -143,7 +143,6 @@ namespace IO.Ably
                 try
                 {
                     var response = await MakeRequest(host);
-                    currentTry++;
 
                     if (response.Success)
                     {
@@ -152,6 +151,8 @@ namespace IO.Ably
 
                     if (CanRetry && response.CanRetry)
                     {
+                        currentTry++;
+
                         Logger.Warning("Failed response. " + response.GetFailedMessage() + ". Retrying...");
                         var (success, newHost) = HandleHostChangeForRetryableFailure();
                         if (success)
@@ -201,23 +202,28 @@ namespace IO.Ably
 
             string GetHost()
             {
+                // If there is a fallback host and it has expired then clear it and return the default host
+                if (FallbackHostUsedFrom.HasValue && FallbackHostUsedFrom.Value.Add(Options.FallbackRetryTimeOut) < Now())
+                {
+                    PreferredHost = null;
+                    FallbackHostUsedFrom = null;
+                    return GetDefaultHost();
+                }
+
+                // otherwise if there is a preferred host then return it otherwise return the default host
+                var hostToUse = PreferredHost.IsNotEmpty() ? PreferredHost : GetDefaultHost();
+                return hostToUse;
+            }
+
+            string GetDefaultHost()
+            {
                 // First try the realtime host to which there is a websocket connection
                 if (RealtimeConnectedFallbackHost.IsNotEmpty())
                 {
                     return RealtimeConnectedFallbackHost;
                 }
 
-                // If there is a fallback host and it has expired then clear it and return the default host
-                if (FallbackHostUsedFrom.HasValue && FallbackHostUsedFrom.Value.Add(Options.FallbackRetryTimeOut) < Now())
-                {
-                    PreferredHost = null;
-                    FallbackHostUsedFrom = null;
-                    return Options.Host;
-                }
-
-                // otherwise if there is a preferred host then return it otherwise return the default host
-                var hostToUse = PreferredHost.IsNotEmpty() ? PreferredHost : Options.Host;
-                return hostToUse;
+                return Options.Host;
             }
 
             // Tries to make a request
@@ -287,26 +293,17 @@ namespace IO.Ably
                     return (false, null);
                 }
 
-                bool hasRealtimeFallbackHost = RealtimeConnectedFallbackHost.IsNotEmpty();
+                bool isFirstTryForRequest = currentTry == 1;
 
-                bool isFirstTryForRequest = currentTry == 0;
-
-                if (hasRealtimeFallbackHost)
-                {
-                    string nextHost = GetNextFallbackHost();
-                    return (nextHost.IsNotEmpty(), nextHost);
-                }
-                else
-                {
-                    // If there is a Preferred fallback host already set
-                    // and it failed we should try the default host first
-                    var nextHost = isFirstTryForRequest && PreferredHost.IsNotEmpty()
-                        ? Options.Host
+                // If there is a Preferred fallback host already set
+                // and it failed we should try the realtimeconnected fallback host first
+                // and then the default host
+                var nextHost = isFirstTryForRequest && PreferredHost.IsNotEmpty()
+                        ? RealtimeConnectedFallbackHost ?? Options.Host
                         : GetNextFallbackHost();
 
-                    SetPreferredHost(nextHost);
-                    return (nextHost.IsNotEmpty(), nextHost);
-                }
+                SetPreferredHost(nextHost);
+                return (nextHost.IsNotEmpty(), nextHost);
             }
 
             string GetNextFallbackHost()
