@@ -6,6 +6,12 @@
 
 A .NET client library for [www.ably.io](https://www.ably.io), the realtime messaging service. This library currently targets the [Ably 1.1-beta client library specification](https://www.ably.io/documentation/client-lib-development-guide/features/). You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or or [view our client library SDKs feature support matrix](https://www.ably.io/download/sdk-feature-support-matrix) to see the list of all the available features.
 
+## Xamarin and VS 2017
+
+There is an open issue for versions 1.1.14 and above when working with Xamarim Projects and Visual Studio 2017. Ably (1.1.14) was compiled using MsBuild that came with VS 2019 which causes an issue when a Xamarin app is compiled using VS 2017. More information can be found in this [Stackoverflow post](https://stackoverflow.com/questions/58032635/updating-nuget-caused-exception-unhandled-system-typeloadexception/58064929#58064929). 
+Until we resolve the issue you can either use version 1.1.13 or update to using Visual Studio 2019. Please create an support issue if this is causing problems. 
+
+
 ## Significant changes in 1.1.15
 
 Version 1.1.15 has seen a significant rewrite of the library internals which was needed to make the library safer and provide a good basis for implementing the rest of the spec. 
