@@ -7,8 +7,9 @@ namespace IO.Ably.MessageEncoders
     {
         public override string EncodingName => "cipher";
 
-        public override Result Decode(IMessage payload, ChannelOptions options)
+        public override Result Decode(IMessage payload, EncodingDecodingContext context)
         {
+            var options = context.ChannelOptions;
             Logger = options?.Logger ?? DefaultLogger.LoggerInstance;
 
             if (IsEmpty(payload.Data))
@@ -60,8 +61,9 @@ namespace IO.Ably.MessageEncoders
             return string.Empty;
         }
 
-        public override Result Encode(IMessage payload, ChannelOptions options)
+        public override Result Encode(IMessage payload, EncodingDecodingContext context)
         {
+            var options = context.ChannelOptions;
             if (IsEmpty(payload.Data) || IsEncrypted(payload))
             {
                 return Result.Ok();

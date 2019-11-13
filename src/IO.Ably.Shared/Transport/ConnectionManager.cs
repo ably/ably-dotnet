@@ -220,7 +220,7 @@ namespace IO.Ably.Transport
                 return;
             }
 
-            Handler.EncodeProtocolMessage(message, channelOptions);
+            Handler.EncodeProtocolMessage(message, channelOptions.ToEncodingDecodingContext());
 
             if (State.CanSend == false && State.CanQueue == false)
             {

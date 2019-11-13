@@ -11,12 +11,12 @@ namespace IO.Ably.MessageEncoders
 
         public override string EncodingName => "utf-8";
 
-        public override Result Encode(IMessage payload, ChannelOptions options)
+        public override Result Encode(IMessage payload, EncodingDecodingContext context)
         {
             return Result.Ok();
         }
 
-        public override Result Decode(IMessage payload, ChannelOptions options)
+        public override Result Decode(IMessage payload, EncodingDecodingContext context)
         {
             // Assume all the other steps will always work with Utf8
             if (CurrentEncodingIs(payload, EncodingName))

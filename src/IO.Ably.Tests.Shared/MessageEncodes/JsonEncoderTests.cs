@@ -23,14 +23,14 @@ namespace IO.Ably.Tests.MessageEncodes
         private Message EncodePayload(object data, string encoding = "")
         {
             var payload = new Message() { Data = data, Encoding = encoding };
-            _encoder.Encode(payload, new ChannelOptions());
+            _encoder.Encode(payload, new EncodingDecodingContext());
             return payload;
         }
 
         private Message DecodePayload(object data, string encoding = "")
         {
             var payload = new Message() { Data = data, Encoding = encoding };
-            _encoder.Decode(payload, new ChannelOptions());
+            _encoder.Decode(payload, new EncodingDecodingContext());
             return payload;
         }
 
@@ -70,7 +70,7 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithInvalidJsonPayload_ShouldReturnFailedResult()
             {
-                var result = _encoder.Decode(new Message() { Data = "test", Encoding = "json" }, new ChannelOptions());
+                var result = _encoder.Decode(new Message() { Data = "test", Encoding = "json" }, new EncodingDecodingContext());
                 result.IsFailure.Should().BeTrue();
                 result.Error.Message.Should().Be("Invalid Json data: 'test'");
             }

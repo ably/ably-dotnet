@@ -11,8 +11,9 @@ namespace IO.Ably.MessageEncoders
     {
         public override string EncodingName => "json";
 
-        public override Result Decode(IMessage payload, ChannelOptions options)
+        public override Result Decode(IMessage payload, EncodingDecodingContext context)
         {
+            var options = context.ChannelOptions;
             Logger = options?.Logger ?? DefaultLogger.LoggerInstance;
 
             if (IsEmpty(payload.Data) || !CurrentEncodingIs(payload, EncodingName))
@@ -34,7 +35,7 @@ namespace IO.Ably.MessageEncoders
             return Result.Ok();
         }
 
-        public override Result Encode(IMessage payload, ChannelOptions options)
+        public override Result Encode(IMessage payload, EncodingDecodingContext context)
         {
             if (IsEmpty(payload.Data))
             {
