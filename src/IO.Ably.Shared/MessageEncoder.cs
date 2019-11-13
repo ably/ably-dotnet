@@ -66,6 +66,7 @@ namespace IO.Ably
         /// </summary>
         public EncodingDecodingContext()
         {
+            ChannelOptions = new ChannelOptions();
         }
 
         /// <summary>
@@ -74,7 +75,7 @@ namespace IO.Ably
         /// <param name="options">Channel options used for the encode / decode operations.</param>
         public EncodingDecodingContext(ChannelOptions options)
         {
-            ChannelOptions = options;
+            ChannelOptions = options ?? new ChannelOptions();
         }
     }
 

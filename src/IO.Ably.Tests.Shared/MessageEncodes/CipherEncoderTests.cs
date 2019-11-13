@@ -91,9 +91,9 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithStringData_EncryptsDataAndSetsCorrectEncoding()
             {
-                var payload = new Message() { Data = _stringData };
+                IPayload payload = new Message() { Data = _stringData };
 
-                _encoder.Encode(payload, _channelOptions.ToEncodingDecodingContext());
+                payload = _encoder.Encode(payload, _channelOptions.ToEncodingDecodingContext()).Value;
 
                 var result =
                      _crypto.Decrypt(payload.Data as byte[]).GetText();
@@ -114,9 +114,9 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithStringData_EncryptsTheDataAndAddsEncodingAndExtraUtf8()
             {
-                var payload = new Message() { Data = _stringData };
+                IPayload payload = new Message() { Data = _stringData };
 
-                _encoder.Encode(payload, _channelOptions.ToEncodingDecodingContext());
+                payload = _encoder.Encode(payload, _channelOptions.ToEncodingDecodingContext()).Value;
 
                 string result = _crypto.Decrypt((byte[])payload.Data).GetText();
                 result.Should().Be(_stringData);
@@ -126,9 +126,9 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithBinaryData_EncryptsTheDataAndAddsCorrectEncoding()
             {
-                var payload = new Message() { Data = _binaryData };
+                IPayload payload = new Message() { Data = _binaryData };
 
-                _encoder.Encode(payload, _channelOptions.ToEncodingDecodingContext());
+                payload = _encoder.Encode(payload, _channelOptions.ToEncodingDecodingContext()).Value;
 
                 byte[] result = _crypto.Decrypt((byte[])payload.Data);
                 result.Should().BeEquivalentTo(_binaryData);
@@ -138,9 +138,9 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithJsonData_EncryptsTheDataAndAddsCorrectEncodings()
             {
-                var payload = new Message() { Data = _stringData, Encoding = "json" };
+                IPayload payload = new Message() { Data = _stringData, Encoding = "json" };
 
-                _encoder.Encode(payload, _channelOptions.ToEncodingDecodingContext());
+                payload = _encoder.Encode(payload, _channelOptions.ToEncodingDecodingContext()).Value;
 
                 string result = _crypto.Decrypt((byte[])payload.Data).GetText();
                 result.Should().BeEquivalentTo(_stringData);
@@ -150,9 +150,9 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithAlreadyEncryptedData_LeavesDataAndEncodingIntact()
             {
-                var payload = new Message() { Data = _encryptedData, Encoding = "utf-8/cipher+aes-256-cbc" };
+                IPayload payload = new Message() { Data = _encryptedData, Encoding = "utf-8/cipher+aes-256-cbc" };
 
-                _encoder.Encode(payload, _channelOptions.ToEncodingDecodingContext());
+                payload = _encoder.Encode(payload, _channelOptions.ToEncodingDecodingContext()).Value;
 
                 payload.Data.Should().BeSameAs(_encryptedData);
                 payload.Encoding.Should().Be("utf-8/cipher+aes-256-cbc");
@@ -169,9 +169,9 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithCipherPayload_DercyptsDataAndStripsEncoding()
             {
-                var payload = new Message() { Data = _encryptedBinaryData, Encoding = "cipher+aes-256-cbc" };
+                IPayload payload = new Message() { Data = _encryptedBinaryData, Encoding = "cipher+aes-256-cbc" };
 
-                _encoder.Decode(payload, _channelOptions.ToEncodingDecodingContext());
+                payload = _encoder.Decode(payload, _channelOptions.ToEncodingDecodingContext()).Value;
 
                 ((byte[])payload.Data).Should().BeEquivalentTo(_binaryData);
                 payload.Encoding.Should().BeEmpty();
@@ -180,9 +180,9 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithCipherPayloadBeforeOtherPayloads_DecryptsDataAndStriptsCipherEncoding()
             {
-                var payload = new Message() { Data = _encryptedBinaryData, Encoding = "utf-8/cipher+aes-256-cbc" };
+                IPayload payload = new Message() { Data = _encryptedBinaryData, Encoding = "utf-8/cipher+aes-256-cbc" };
 
-                _encoder.Decode(payload, _channelOptions.ToEncodingDecodingContext());
+                payload = _encoder.Decode(payload, _channelOptions.ToEncodingDecodingContext()).Value;
 
                 ((byte[])payload.Data).Should().BeEquivalentTo(_binaryData);
                 payload.Encoding.Should().Be("utf-8");
@@ -191,9 +191,9 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithOtherTypeOfPayload_LeavesDataAndEncodingIntact()
             {
-                var payload = new Message() { Data = "test", Encoding = "utf-8" };
+                IPayload payload = new Message() { Data = "test", Encoding = "utf-8" };
 
-                _encoder.Decode(payload, _channelOptions.ToEncodingDecodingContext());
+                payload = _encoder.Decode(payload, _channelOptions.ToEncodingDecodingContext()).Value;
 
                 payload.Data.Should().Be("test");
                 payload.Encoding.Should().Be("utf-8");
@@ -204,9 +204,9 @@ namespace IO.Ably.Tests.MessageEncodes
             {
                 var initialEncoding = "utf-8/cipher+aes-128-cbc";
                 var encryptedValue = "test";
-                var payload = new Message() { Data = encryptedValue, Encoding = initialEncoding };
+                IPayload payload = new Message() { Data = encryptedValue, Encoding = initialEncoding };
 
-                _encoder.Decode(payload, _channelOptions.ToEncodingDecodingContext());
+                payload = _encoder.Decode(payload, _channelOptions.ToEncodingDecodingContext()).Value;
 
                 payload.Encoding.Should().Be(initialEncoding);
                 payload.Data.Should().Be(encryptedValue);
@@ -223,9 +223,9 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithCipherPayload_DercyptsDataAndStripsEncoding()
             {
-                var payload = new Message() { Data = _encryptedBinaryData, Encoding = "cipher+aes-256-cbc" };
+                IPayload payload = new Message() { Data = _encryptedBinaryData, Encoding = "cipher+aes-256-cbc" };
 
-                _encoder.Decode(payload, _channelOptions.ToEncodingDecodingContext());
+                payload = _encoder.Decode(payload, _channelOptions.ToEncodingDecodingContext()).Value;
 
                 ((byte[])payload.Data).Should().BeEquivalentTo(_binaryData);
                 payload.Encoding.Should().BeEmpty();

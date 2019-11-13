@@ -17,11 +17,10 @@ namespace IO.Ably.Tests.MessageEncodes
             _encoder = new Utf8Encoder();
         }
 
-        private Message DecodePayload(object data, string encoding = "")
+        private IPayload DecodePayload(object data, string encoding = "")
         {
             var payload = new Message() { Data = data, Encoding = encoding };
-            _encoder.Decode(payload, new EncodingDecodingContext());
-            return payload;
+            return _encoder.Decode(payload, new EncodingDecodingContext()).Value;
         }
 
         public class Decode : Utf8EncoderTests

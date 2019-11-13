@@ -54,6 +54,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\Base64EncoderTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\CipherEncoderTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\JsonEncoderTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\MessageDecodingAcceptanceTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\MessageEncodersAcceptanceTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\SerializationSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncodes\Utf8EncoderTests.cs" />

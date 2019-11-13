@@ -5,39 +5,45 @@ namespace IO.Ably.MessageEncoders
 {
     internal class Base64Encoder : MessageEncoder
     {
-        public override string EncodingName => "base64";
+        public const string EncodingNameStr = "base64";
 
-        public override Result Decode(IMessage payload, EncodingDecodingContext context)
+        public override string EncodingName => EncodingNameStr;
+
+        public override Result<ProcessedPayload> Decode(IPayload payload, EncodingDecodingContext context)
         {
             if (CurrentEncodingIs(payload, EncodingName) && payload.Data is string data)
             {
-                payload.Data = data.FromBase64();
-                RemoveCurrentEncodingPart(payload);
+                return Result.Ok(new ProcessedPayload()
+                {
+                    Data = data.FromBase64(),
+                    Encoding = RemoveCurrentEncodingPart(payload),
+                });
             }
 
-            return Result.Ok();
+            return Result.Ok(new ProcessedPayload(payload));
         }
 
-        public override Result Encode(IMessage payload, EncodingDecodingContext context)
+        public override bool CanProcess(string currentEncoding)
+            => currentEncoding.EqualsTo(EncodingNameStr);
+
+        public override Result<ProcessedPayload> Encode(IPayload payload, EncodingDecodingContext context)
         {
             var data = payload.Data;
             if (IsEmpty(data))
             {
-                return Result.Ok();
+                return Result.Ok(new ProcessedPayload(payload));
             }
 
             if (data is byte[] bytes)
             {
-                payload.Data = bytes.ToBase64();
-                AddEncoding(payload, EncodingName);
+                return Result.Ok(new ProcessedPayload()
+                {
+                    Data = bytes.ToBase64(),
+                    Encoding = AddEncoding(payload, EncodingName),
+                });
             }
 
-            return Result.Ok();
-        }
-
-        public Base64Encoder()
-            : base()
-        {
+            return Result.Ok(new ProcessedPayload(payload));
         }
     }
 }
