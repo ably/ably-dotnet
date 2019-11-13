@@ -7,7 +7,7 @@ namespace IO.Ably.MessageEncoders
     {
         public override string EncodingName => "base64";
 
-        public override Result Decode(IMessage payload, ChannelOptions options)
+        public override Result Decode(IMessage payload, EncodingDecodingContext context)
         {
             if (CurrentEncodingIs(payload, EncodingName) && payload.Data is string data)
             {
@@ -18,7 +18,7 @@ namespace IO.Ably.MessageEncoders
             return Result.Ok();
         }
 
-        public override Result Encode(IMessage payload, ChannelOptions options)
+        public override Result Encode(IMessage payload, EncodingDecodingContext context)
         {
             var data = payload.Data;
             if (IsEmpty(data))

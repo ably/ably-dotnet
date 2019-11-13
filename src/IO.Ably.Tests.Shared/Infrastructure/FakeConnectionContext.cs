@@ -19,8 +19,6 @@ namespace IO.Ably.Tests
 
         public bool CreateTransportCalled { get; private set; }
 
-        public bool DestroyTransportCalled { get; private set; }
-
         public bool ResetConnectionAttemptsCalled { get; private set; }
 
         public FakeConnectionContext()
@@ -32,28 +30,16 @@ namespace IO.Ably.Tests
 
         public IAblyAuth Auth { get; set; }
 
-        public bool RenewTokenValue { get; set; }
-
         public bool ShouldWeRenewTokenValue { get; set; }
 
         public TimeSpan DefaultTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;
 
         public TimeSpan RetryTimeout { get; set; } = Defaults.DisconnectedRetryTimeout;
 
-        public void SendToTransport(ProtocolMessage message)
-        {
-            LastMessageSent = message;
-            SendToTransportCalled = true;
-        }
-
         public void ExecuteCommand(RealtimeCommand cmd)
         {
             ExecutedCommands.Add(cmd);
         }
-
-        public bool SendToTransportCalled { get; set; }
-
-        public ConnectionStateBase State { get; set; }
 
         public List<RealtimeCommand> ExecutedCommands = new List<RealtimeCommand>();
 
@@ -62,45 +48,6 @@ namespace IO.Ably.Tests
         public Connection Connection { get; set; }
 
         public TimeSpan SuspendRetryTimeout { get; set; }
-
-        private bool TriedToRenewToken { get; set; }
-
-        public bool AllowTransportCreating { get; set; }
-
-        public Task CreateTransport()
-        {
-            CreateTransportCalled = true;
-            if (AllowTransportCreating)
-            {
-                Transport = new FakeTransport();
-            }
-
-            return TaskConstants.BooleanTrue;
-        }
-
-        public void DestroyTransport(bool suppressClosedEvent = true)
-        {
-            DestroyTransportCalled = true;
-        }
-
-        public void AttemptConnection()
-        {
-            AttempConnectionCalled = true;
-        }
-
-        public void ResetConnectionAttempts()
-        {
-            ResetConnectionAttemptsCalled = true;
-        }
-
-        public Task<bool> CanConnectToAbly()
-        {
-            return Task.FromResult(CanConnectToAblyBool);
-        }
-
-        public void SetConnectionClientId(string clientId)
-        {
-        }
 
         public bool ShouldWeRenewToken(ErrorInfo error, RealtimeState state)
         {

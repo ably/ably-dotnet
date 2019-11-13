@@ -15,31 +15,25 @@ namespace IO.Ably.MessageEncoders
     {
         internal ILogger Logger { get; private set; }
 
-        public static List<MessageEncoder> Encoders
+        public static List<MessageEncoder> DefaultEncoders { get; } = new List<MessageEncoder>
         {
-            get
-            {
-                if (_encoders == null)
-                {
-                    InitializeMessageEncoders();
-                }
+            new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), new Base64Encoder()
+        };
 
-                return _encoders;
-            }
-        }
-
+        public List<MessageEncoder> Encoders = new List<MessageEncoder>();
         private static readonly Type[] UnsupportedTypes = new[]
             {
                 typeof(short), typeof(int), typeof(double), typeof(float), typeof(decimal), typeof(DateTime), typeof(DateTimeOffset), typeof(byte), typeof(bool),
-                typeof(long), typeof(uint), typeof(ulong), typeof(ushort), typeof(sbyte)
+                typeof(long), typeof(uint), typeof(ulong), typeof(ushort), typeof(sbyte),
             };
 
-        private static object _syncLock = new object();
         private readonly Protocol _protocol;
-        public static List<MessageEncoder> _encoders = null;
 
         public MessageHandler()
-            : this(DefaultLogger.LoggerInstance, Defaults.Protocol) { }
+            : this(DefaultLogger.LoggerInstance, Defaults.Protocol)
+        {
+            Encoders.AddRange(DefaultEncoders);
+        }
 
         public MessageHandler(Protocol protocol)
             : this(DefaultLogger.LoggerInstance, protocol) { }
@@ -48,27 +42,9 @@ namespace IO.Ably.MessageEncoders
         {
             Logger = logger;
             _protocol = protocol;
-
-            InitializeMessageEncoders();
         }
 
-        private static void InitializeMessageEncoders()
-        {
-            if (_encoders != null)
-            {
-                return;
-            }
-
-            lock (_syncLock)
-            {
-                _encoders = new List<MessageEncoder>
-                {
-                    new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), new Base64Encoder()
-                };
-            }
-        }
-
-        public IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response, ChannelOptions options)
+        public IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response, EncodingDecodingContext context)
         {
             if (response.Type != ResponseType.Json)
             {
@@ -77,7 +53,7 @@ namespace IO.Ably.MessageEncoders
             }
 
             var messages = JsonHelper.Deserialize<List<PresenceMessage>>(response.TextResponse);
-            ProcessMessages(messages, options);
+            ProcessMessages(messages, context);
             return messages;
 
 #if MSGPACK
@@ -89,12 +65,12 @@ namespace IO.Ably.MessageEncoders
 #endif
         }
 
-        public IEnumerable<Message> ParseMessagesResponse(AblyResponse response, ChannelOptions options)
+        public IEnumerable<Message> ParseMessagesResponse(AblyResponse response, EncodingDecodingContext context)
         {
             if (response.Type == ResponseType.Json)
             {
                 var messages = JsonHelper.Deserialize<List<Message>>(response.TextResponse);
-                ProcessMessages(messages, options);
+                ProcessMessages(messages, context);
                 return messages;
             }
 
@@ -108,9 +84,9 @@ namespace IO.Ably.MessageEncoders
 #endif
         }
 
-        private void ProcessMessages<T>(IEnumerable<T> payloads, ChannelOptions options) where T : IMessage
+        private void ProcessMessages<T>(IEnumerable<T> payloads, EncodingDecodingContext context) where T : IMessage
         {
-            DecodePayloads(options, payloads as IEnumerable<IMessage>);
+            DecodePayloads(context, payloads as IEnumerable<IMessage>);
         }
 
         public void SetRequestBody(AblyRequest request)
@@ -177,7 +153,7 @@ namespace IO.Ably.MessageEncoders
 
         private byte[] GetMessagesRequestBody(IEnumerable<Message> payloads, ChannelOptions options)
         {
-            EncodePayloads(options, payloads);
+            EncodePayloads(new EncodingDecodingContext(options), payloads);
 #if MSGPACK
             if (_protocol == Protocol.MsgPack)
             {
@@ -187,35 +163,35 @@ namespace IO.Ably.MessageEncoders
             return JsonHelper.Serialize(payloads).GetBytes();
         }
 
-        internal Result EncodePayloads(ChannelOptions options, IEnumerable<IMessage> payloads)
+        internal Result EncodePayloads(EncodingDecodingContext context, IEnumerable<IMessage> payloads)
         {
             var result = Result.Ok();
             foreach (var payload in payloads)
             {
-                result = Result.Combine(result, EncodePayload(payload, options));
+                result = Result.Combine(result, EncodePayload(payload, context));
             }
 
             return result;
         }
 
-        internal static Result DecodePayloads(ChannelOptions options, IEnumerable<IMessage> payloads)
+        internal static Result DecodePayloads(EncodingDecodingContext context, IEnumerable<IMessage> payloads, IEnumerable<MessageEncoder> encoders = null)
         {
             var result = Result.Ok();
             foreach (var payload in payloads)
             {
-                result = Result.Combine(result, DecodePayload(payload, options));
+                result = Result.Combine(result, DecodePayload(payload, context, encoders));
             }
 
             return result;
         }
 
-        private static Result EncodePayload(IMessage payload, ChannelOptions options)
+        private static Result EncodePayload(IMessage payload, EncodingDecodingContext context, IEnumerable<MessageEncoder> encoders = null)
         {
             ValidatePayloadDataType(payload);
             var result = Result.Ok();
-            foreach (var encoder in Encoders)
+            foreach (var encoder in encoders ?? DefaultEncoders)
             {
-                result = Result.Combine(result, encoder.Encode(payload, options));
+                result = Result.Combine(result, encoder.Encode(payload, context));
             }
 
             return result;
@@ -246,12 +222,12 @@ namespace IO.Ably.MessageEncoders
             return Nullable.GetUnderlyingType(type);
         }
 
-        private static Result DecodePayload(IMessage payload, ChannelOptions options)
+        private static Result DecodePayload(IMessage payload, EncodingDecodingContext context, IEnumerable<MessageEncoder> encoders = null)
         {
             var result = Result.Ok();
-            foreach (var encoder in (Encoders as IEnumerable<MessageEncoder>).Reverse())
+            foreach (var encoder in (encoders ?? DefaultEncoders).Reverse())
             {
-                result = Result.Combine(result, encoder.Decode(payload, options));
+                result = Result.Combine(result, encoder.Decode(payload, context));
             }
 
             return result;
@@ -270,7 +246,8 @@ namespace IO.Ably.MessageEncoders
             if (typeof(T) == typeof(Message))
             {
                 var typedResult = result as PaginatedResult<Message>;
-                typedResult.Items.AddRange(ParseMessagesResponse(response, request.ChannelOptions));
+                var context = request.ChannelOptions.ToEncodingDecodingContext();
+                typedResult.Items.AddRange(ParseMessagesResponse(response, context));
             }
 
             if (typeof(T) == typeof(Stats))
@@ -282,7 +259,8 @@ namespace IO.Ably.MessageEncoders
             if (typeof(T) == typeof(PresenceMessage))
             {
                 var typedResult = result as PaginatedResult<PresenceMessage>;
-                typedResult.Items.AddRange(ParsePresenceMessages(response, request.ChannelOptions));
+                var context = request.ChannelOptions.ToEncodingDecodingContext();
+                typedResult.Items.AddRange(ParsePresenceMessages(response, context));
             }
 
             return result;
@@ -389,15 +367,14 @@ namespace IO.Ably.MessageEncoders
             return protocolMessage;
         }
 
-        public Result EncodeProtocolMessage(ProtocolMessage protocolMessage, ChannelOptions channelOptions)
+        public Result EncodeProtocolMessage(ProtocolMessage protocolMessage, EncodingDecodingContext context)
         {
-            var options = channelOptions ?? new ChannelOptions();
             var result = Result.Ok();
             if (protocolMessage.Messages != null)
             {
                 foreach (var message in protocolMessage.Messages)
                 {
-                    result = Result.Combine(result, EncodePayload(message, options));
+                    result = Result.Combine(result, EncodePayload(message, context));
                 }
             }
 
@@ -405,7 +382,7 @@ namespace IO.Ably.MessageEncoders
             {
                 foreach (var presence in protocolMessage.Presence)
                 {
-                    result = Result.Combine(result, EncodePayload(presence, options));
+                    result = Result.Combine(result, EncodePayload(presence, context));
                 }
             }
 
@@ -428,7 +405,8 @@ namespace IO.Ably.MessageEncoders
             foreach (var message in messages ?? Enumerable.Empty<IMessage>())
             {
                 SetMessageIdConnectionIdAndTimestamp(protocolMessage, message, index);
-                result = Result.Combine(result, DecodePayload(message, options));
+                var context = options.ToEncodingDecodingContext();
+                result = Result.Combine(result, DecodePayload(message, context));
                 index++;
             }
 
@@ -485,7 +463,8 @@ namespace IO.Ably.MessageEncoders
 
         internal static T FromEncoded<T>(T encoded, ChannelOptions options = null) where T : IMessage
         {
-            var result = DecodePayload(encoded, options);
+            var context = options.ToEncodingDecodingContext();
+            var result = DecodePayload(encoded, context);
             if (result.IsFailure)
             {
                 throw new AblyException(result.Error);
@@ -496,9 +475,10 @@ namespace IO.Ably.MessageEncoders
 
         internal static T[] FromEncodedArray<T>(T[] encodedArray, ChannelOptions options = null) where T : IMessage
         {
+            var context = options.ToEncodingDecodingContext();
             foreach (var encoded in encodedArray)
             {
-                DecodePayload(encoded, options);
+                DecodePayload(encoded, context);
             }
 
             return encodedArray;

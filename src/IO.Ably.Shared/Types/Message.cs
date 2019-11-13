@@ -25,6 +25,7 @@ namespace IO.Ably
         /// </summary>
         /// <param name="name">message name.</param>
         /// <param name="data">message data.</param>
+        /// <param name="extras">extra message parameters.</param>
         /// <param name="clientId">id of the publisher of this message.</param>
         public Message(string name = null, object data = null, string clientId = null, MessageExtras extras = null)
         {
@@ -63,7 +64,7 @@ namespace IO.Ably
         public object Data { get; set; }
 
         /// <summary>
-        /// TODO: Add better description
+        /// Extra properties associated with the message.
         /// </summary>
         [JsonProperty("extras")]
         public MessageExtras Extras { get; set; }
