@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using IO.Ably.MessageEncoders;
+using IO.Ably.Types;
 using Newtonsoft.Json;
 
 namespace IO.Ably
@@ -25,7 +26,7 @@ namespace IO.Ably
         /// <param name="name">message name.</param>
         /// <param name="data">message data.</param>
         /// <param name="clientId">id of the publisher of this message.</param>
-        public Message(string name = null, object data = null, string clientId = null)
+        public Message(string name = null, object data = null, string clientId = null, MessageExtras extras = null)
         {
             Name = name;
             Data = data;
@@ -33,6 +34,8 @@ namespace IO.Ably
             {
                 ClientId = clientId;
             }
+
+            Extras = extras;
         }
 
         /// <summary>A globally unique message id.</summary>
@@ -58,6 +61,12 @@ namespace IO.Ably
         /// <summary>The message payload. Supported data types are objects, byte[] and strings.</summary>
         [JsonProperty("data")]
         public object Data { get; set; }
+
+        /// <summary>
+        /// TODO: Add better description
+        /// </summary>
+        [JsonProperty("extras")]
+        public MessageExtras Extras { get; set; }
 
         /// <summary>
         ///     The encoding for the message data. Encoding and decoding of messages is handled automatically by the client
