@@ -9,49 +9,60 @@ namespace IO.Ably.MessageEncoders
 {
     internal class JsonEncoder : MessageEncoder
     {
-        public override string EncodingName => "json";
+        public const string EncodingNameStr = "json";
 
-        public override Result Decode(IMessage payload, EncodingDecodingContext context)
+        public override string EncodingName => EncodingNameStr;
+
+        public override Result<ProcessedPayload> Decode(IPayload payload, EncodingDecodingContext context)
         {
             var options = context.ChannelOptions;
             Logger = options?.Logger ?? DefaultLogger.LoggerInstance;
 
             if (IsEmpty(payload.Data) || !CurrentEncodingIs(payload, EncodingName))
             {
-                return Result.Ok();
+                return Result.Ok(new ProcessedPayload(payload));
             }
 
             try
             {
-                payload.Data = JsonHelper.Deserialize(payload.Data as string);
+                return Result.Ok(new ProcessedPayload()
+                {
+                    Data = JsonHelper.Deserialize(payload.Data as string),
+                    Encoding = RemoveCurrentEncodingPart(payload),
+                });
             }
             catch (Exception ex)
             {
                 Logger.Error($"Invalid Json data: '{payload.Data}'", ex);
-                return Result.Fail(new ErrorInfo($"Invalid Json data: '{payload.Data}'"));
+                return Result.Fail<ProcessedPayload>(new ErrorInfo($"Invalid Json data: '{payload.Data}'"));
             }
-
-            RemoveCurrentEncodingPart(payload);
-            return Result.Ok();
         }
 
-        public override Result Encode(IMessage payload, EncodingDecodingContext context)
+        public override bool CanProcess(string currentEncoding)
+        {
+            return currentEncoding.EqualsTo(EncodingNameStr);
+        }
+
+        public override Result<ProcessedPayload> Encode(IPayload payload, EncodingDecodingContext context)
         {
             if (IsEmpty(payload.Data))
             {
-                return Result.Ok();
+                return Result.Ok(new ProcessedPayload(payload));
             }
 
             if (NeedsJsonEncoding(payload))
             {
-                payload.Data = JsonHelper.Serialize(payload.Data);
-                AddEncoding(payload, EncodingName);
+                return Result.Ok(new ProcessedPayload()
+                {
+                    Data = JsonHelper.Serialize(payload.Data),
+                    Encoding = AddEncoding(payload, EncodingName),
+                });
             }
 
-            return Result.Ok();
+            return Result.Ok(new ProcessedPayload(payload));
         }
 
-        public bool NeedsJsonEncoding(IMessage payload)
+        public bool NeedsJsonEncoding(IPayload payload)
         {
             return payload.Data is string == false && payload.Data is byte[] == false;
         }

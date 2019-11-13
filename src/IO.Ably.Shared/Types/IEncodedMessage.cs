@@ -5,7 +5,15 @@ namespace IO.Ably
     // No need to document an internal interface.
 #pragma warning disable SA1600 // Elements should be documented
 #pragma warning disable SA1649 // File name should match first type name
-    internal interface IMessage
+
+    internal interface IPayload
+    {
+        object Data { get; set; }
+
+        string Encoding { get; set; }
+    }
+
+    internal interface IMessage : IPayload
     {
         string Id { get; set; }
 

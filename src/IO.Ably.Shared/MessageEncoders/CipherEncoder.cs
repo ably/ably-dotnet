@@ -1,3 +1,4 @@
+using System;
 using IO.Ably;
 using IO.Ably.Encryption;
 
@@ -5,22 +6,24 @@ namespace IO.Ably.MessageEncoders
 {
     internal class CipherEncoder : MessageEncoder
     {
-        public override string EncodingName => "cipher";
+        public const string EncodingNameStr = "cipher";
 
-        public override Result Decode(IMessage payload, EncodingDecodingContext context)
+        public override string EncodingName => EncodingNameStr;
+
+        public override Result<ProcessedPayload> Decode(IPayload payload, EncodingDecodingContext context)
         {
             var options = context.ChannelOptions;
             Logger = options?.Logger ?? DefaultLogger.LoggerInstance;
 
             if (IsEmpty(payload.Data))
             {
-                return Result.Ok();
+                return Result.Ok(new ProcessedPayload(payload));
             }
 
             var currentEncoding = GetCurrentEncoding(payload);
             if (currentEncoding.Contains(EncodingName) == false)
             {
-                return Result.Ok();
+                return Result.Ok(new ProcessedPayload(payload));
             }
 
             var cipherType = GetCipherType(currentEncoding);
@@ -28,7 +31,7 @@ namespace IO.Ably.MessageEncoders
             {
                 Logger.Error(
                     $"Cipher algorithm {options.CipherParams.CipherType.ToLower()} does not match message cipher algorithm of {currentEncoding}");
-                return Result.Fail(new ErrorInfo($"Cipher algorithm {options.CipherParams.CipherType.ToLower()} does not match message cipher algorithm of {currentEncoding}"));
+                return Result.Fail<ProcessedPayload>(new ErrorInfo($"Cipher algorithm {options.CipherParams.CipherType.ToLower()} does not match message cipher algorithm of {currentEncoding}"));
             }
 
             var cipher = Crypto.GetCipher(options.CipherParams);
@@ -36,17 +39,19 @@ namespace IO.Ably.MessageEncoders
             {
                 if ((payload.Data is byte[]) == false)
                 {
-                    return Result.Fail("Expected data to be byte[] but received " + payload.Data.GetType());
+                    return Result.Fail<ProcessedPayload>(new ErrorInfo("Expected data to be byte[] but received " + payload.Data.GetType()));
                 }
 
-                payload.Data = cipher.Decrypt(payload.Data as byte[]);
-                RemoveCurrentEncodingPart(payload);
-                return Result.Ok();
+                return Result.Ok(new ProcessedPayload()
+                {
+                    Data = payload.Data = cipher.Decrypt(payload.Data as byte[]),
+                    Encoding = RemoveCurrentEncodingPart(payload),
+                });
             }
             catch (AblyException ex)
             {
                 Logger.Error($"Error decrypting payload using cypher {options.CipherParams.CipherType}. Leaving it encrypted", ex);
-                return Result.Fail($"Error decrypting payload using cypher {options.CipherParams.CipherType}. Leaving it encrypted");
+                return Result.Fail<ProcessedPayload>(new ErrorInfo($"Error decrypting payload using cypher {options.CipherParams.CipherType}. Leaving it encrypted"));
             }
         }
 
@@ -61,33 +66,44 @@ namespace IO.Ably.MessageEncoders
             return string.Empty;
         }
 
-        public override Result Encode(IMessage payload, EncodingDecodingContext context)
+        public override bool CanProcess(string currentEncoding)
+        {
+            return currentEncoding.IsNotEmpty() && currentEncoding.StartsWith(EncodingNameStr, StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        public override Result<ProcessedPayload> Encode(IPayload payload, EncodingDecodingContext context)
         {
             var options = context.ChannelOptions;
             if (IsEmpty(payload.Data) || IsEncrypted(payload))
             {
-                return Result.Ok();
+                return Result.Ok(new ProcessedPayload(payload));
             }
 
             if (options.Encrypted == false)
             {
-                return Result.Ok();
+                return Result.Ok(new ProcessedPayload(payload));
             }
 
             if (payload.Data is string data)
             {
-                payload.Data = data.GetBytes();
-                AddEncoding(payload, "utf-8");
+                return Result.Ok(new ProcessedPayload()
+                {
+                    Data = data.GetBytes(),
+                    Encoding = AddEncoding(payload, "utf-8"),
+                });
             }
 
             var cipher = Crypto.GetCipher(options.CipherParams);
-            payload.Data = cipher.Encrypt(payload.Data as byte[]);
-            AddEncoding(payload, $"{EncodingName}+{options.CipherParams.CipherType.ToLower()}");
+            var result = new ProcessedPayload()
+            {
+                Data = cipher.Encrypt(payload.Data as byte[]),
+                Encoding = AddEncoding(payload, $"{EncodingName}+{options.CipherParams.CipherType.ToLower()}"),
+            };
 
-            return Result.Ok();
+            return Result.Ok(result);
         }
 
-        private bool IsEncrypted(IMessage payload)
+        private bool IsEncrypted(IPayload payload)
         {
             return payload.Encoding.IsNotEmpty() && payload.Encoding.Contains(EncodingName);
         }

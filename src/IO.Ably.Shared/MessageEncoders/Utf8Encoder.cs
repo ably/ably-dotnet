@@ -4,28 +4,33 @@ namespace IO.Ably.MessageEncoders
 {
     internal class Utf8Encoder : MessageEncoder
     {
-        public Utf8Encoder()
-            : base()
+        public const string EncodingNameStr = "utf-8";
+
+        public override string EncodingName => EncodingNameStr;
+
+        public override bool CanProcess(string currentEncoding)
         {
+            return currentEncoding.EqualsTo(EncodingNameStr);
         }
 
-        public override string EncodingName => "utf-8";
-
-        public override Result Encode(IMessage payload, EncodingDecodingContext context)
+        public override Result<ProcessedPayload> Encode(IPayload payload, EncodingDecodingContext context)
         {
-            return Result.Ok();
+            return Result.Ok(new ProcessedPayload(payload));
         }
 
-        public override Result Decode(IMessage payload, EncodingDecodingContext context)
+        public override Result<ProcessedPayload> Decode(IPayload payload, EncodingDecodingContext context)
         {
             // Assume all the other steps will always work with Utf8
             if (CurrentEncodingIs(payload, EncodingName))
             {
-                payload.Data = (payload.Data as byte[]).GetText();
-                RemoveCurrentEncodingPart(payload);
+                return Result.Ok(new ProcessedPayload()
+                {
+                    Data = (payload.Data as byte[]).GetText(),
+                    Encoding = RemoveCurrentEncodingPart(payload),
+                });
             }
 
-            return Result.Ok();
+            return Result.Ok(new ProcessedPayload(payload));
         }
     }
 }
