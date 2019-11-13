@@ -6,38 +6,55 @@ namespace IO.Ably.MessageEncoders
 {
     internal abstract class MessageEncoder
     {
+        public class ProcessedPayload : IPayload
+        {
+            public object Data { get; set; }
+
+            public string Encoding { get; set; }
+
+            public ProcessedPayload()
+            {
+            }
+
+            public ProcessedPayload(IPayload payload)
+            {
+                Data = payload.Data;
+                Encoding = payload.Encoding;
+            }
+        }
+
         internal ILogger Logger { get; set; }
 
         public abstract string EncodingName { get; }
 
-        public abstract Result Encode(IMessage payload, EncodingDecodingContext context);
+        public abstract bool CanProcess(string currentEncoding);
 
-        public abstract Result Decode(IMessage payload, EncodingDecodingContext context);
+        public abstract Result<ProcessedPayload> Encode(IPayload payload, EncodingDecodingContext context);
+
+        public abstract Result<ProcessedPayload> Decode(IPayload payload, EncodingDecodingContext context);
 
         public bool IsEmpty(object data)
         {
             return data == null || (data is string s && s.IsEmpty());
         }
 
-        public void AddEncoding(IMessage payload, string encoding = null)
+        public static string AddEncoding(IPayload payload, string encoding)
         {
-            var encodingToAdd = encoding ?? EncodingName;
+            var encodingToAdd = encoding;
             if (payload.Encoding.IsEmpty())
             {
-                payload.Encoding = encodingToAdd;
+                return encodingToAdd;
             }
-            else
-            {
-                payload.Encoding += "/" + encodingToAdd;
-            }
+
+            return payload.Encoding + "/" + encodingToAdd;
         }
 
-        public bool CurrentEncodingIs(IMessage payload, string encoding)
+        public static bool CurrentEncodingIs(IPayload payload, string encoding)
         {
             return payload.Encoding.IsNotEmpty() && payload.Encoding.EndsWith(encoding, StringComparison.CurrentCultureIgnoreCase);
         }
 
-        public string GetCurrentEncoding(IMessage payload)
+        public static string GetCurrentEncoding(IPayload payload)
         {
             if (payload.Encoding.IsEmpty())
             {
@@ -47,15 +64,15 @@ namespace IO.Ably.MessageEncoders
             return payload.Encoding.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries).Last();
         }
 
-        protected void RemoveCurrentEncodingPart(IMessage payload)
+        public static string RemoveCurrentEncodingPart(IPayload payload)
         {
             if (payload.Encoding.IsEmpty())
             {
-                return;
+                return string.Empty;
             }
 
             var encodings = payload.Encoding.Split(new[] { '/' });
-            payload.Encoding = string.Join("/", encodings.Take(encodings.Length - 1));
+            return string.Join("/", encodings.Take(encodings.Length - 1));
         }
     }
 }

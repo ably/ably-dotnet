@@ -17,7 +17,7 @@ namespace IO.Ably.MessageEncoders
 
         public static List<MessageEncoder> DefaultEncoders { get; } = new List<MessageEncoder>
         {
-            new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), new Base64Encoder()
+            new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), new Base64Encoder(),
         };
 
         public List<MessageEncoder> Encoders = new List<MessageEncoder>();
@@ -185,13 +185,25 @@ namespace IO.Ably.MessageEncoders
             return result;
         }
 
-        private static Result EncodePayload(IMessage payload, EncodingDecodingContext context, IEnumerable<MessageEncoder> encoders = null)
+        internal static Result EncodePayload(IMessage payload, EncodingDecodingContext context, IEnumerable<MessageEncoder> encoders = null)
         {
             ValidatePayloadDataType(payload);
             var result = Result.Ok();
             foreach (var encoder in encoders ?? DefaultEncoders)
             {
-                result = Result.Combine(result, encoder.Encode(payload, context));
+                var encodeResult = encoder.Encode(payload, context);
+                if (encodeResult.IsSuccess)
+                {
+                    payload.Data = encodeResult.Value.Data;
+                    payload.Encoding = encodeResult.Value.Encoding;
+                }
+
+                result = Result.Combine(result, encodeResult);
+
+                if (result.IsFailure)
+                {
+                    break;
+                }
             }
 
             return result;
@@ -222,15 +234,57 @@ namespace IO.Ably.MessageEncoders
             return Nullable.GetUnderlyingType(type);
         }
 
-        private static Result DecodePayload(IMessage payload, EncodingDecodingContext context, IEnumerable<MessageEncoder> encoders = null)
+        internal static Result DecodePayload(IMessage payload, EncodingDecodingContext context, IEnumerable<MessageEncoder> encoders = null)
         {
-            var result = Result.Ok();
-            foreach (var encoder in (encoders ?? DefaultEncoders).Reverse())
-            {
-                result = Result.Combine(result, encoder.Decode(payload, context));
-            }
+            var actualEncoders = (encoders ?? DefaultEncoders).ToList();
 
-            return result;
+            var numberOfEncodings = payload.Encoding.IsNotEmpty() ? payload.Encoding.Count(x => x == '/') : 0;
+            bool isFirstEncodingBase64 = MessageEncoder.CurrentEncodingIs(payload, Base64Encoder.EncodingNameStr);
+            int processedEncodings = 0;
+            context.BaseEncodedPreviousPayload = payload.Data;
+            while (true)
+            {
+                // if the first encoding is a base64 one and we just processed it then
+                // we should save the payload data in the context
+                if (isFirstEncodingBase64 && processedEncodings == 1)
+                {
+                    context.BaseEncodedPreviousPayload = payload.Data;
+                }
+
+                var currentEncoding = MessageEncoder.GetCurrentEncoding(payload);
+                if (currentEncoding.IsEmpty())
+                {
+                    return Result.Ok();
+                }
+
+                var decoder = actualEncoders.FirstOrDefault(x => x.CanProcess(currentEncoding));
+                if (decoder == null)
+                {
+                    return Result.Ok();
+                }
+
+                var result = decoder.Decode(payload, context);
+
+                if (result.IsSuccess)
+                {
+                    context.Encoding = result.Value.Encoding;
+                    payload.Data = result.Value.Data;
+                    payload.Encoding = result.Value.Encoding;
+                }
+                else
+                {
+                    return result;
+                }
+
+                // just to be safe
+                if (processedEncodings > numberOfEncodings)
+                {
+                    // TODO: Send to Sentry
+                    throw new AblyException("Error in decoding loop");
+                }
+
+                processedEncodings++;
+            }
         }
 
         internal static PaginatedResult<T> Paginated<T>(AblyRequest request, AblyResponse response, Func<PaginatedRequestParams, Task<PaginatedResult<T>>> executeDataQueryRequest) where T : class
