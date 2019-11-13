@@ -23,6 +23,7 @@ namespace IO.Ably.MessageEncoders
             new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), new VCDiffEncoder(), Base64Encoder,
         };
 
+        public List<MessageEncoder> Encoders = new List<MessageEncoder>();
         private static readonly Type[] UnsupportedTypes = new[]
             {
                 typeof(short), typeof(int), typeof(double), typeof(float), typeof(decimal), typeof(DateTime), typeof(DateTimeOffset), typeof(byte), typeof(bool),
