@@ -88,7 +88,7 @@ namespace IO.Ably.Tests.Infrastructure
         public TestTransportWrapper(ITransport wrappedTransport, Protocol protocol)
         {
             WrappedTransport = wrappedTransport;
-            _handler = new MessageHandler(protocol);
+            _handler = new MessageHandler(DefaultLogger.LoggerInstance, protocol);
         }
 
         public bool ThrowOnConnect { get; set; } = false;
