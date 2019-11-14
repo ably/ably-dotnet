@@ -74,30 +74,28 @@ namespace IO.Ably.MessageEncoders
         public override Result<ProcessedPayload> Encode(IPayload payload, EncodingDecodingContext context)
         {
             var options = context.ChannelOptions;
-            if (IsEmpty(payload.Data) || IsEncrypted(payload))
+            var currentPayload = new ProcessedPayload(payload);
+            if (IsEmpty(payload.Data) || IsEncrypted(currentPayload))
             {
-                return Result.Ok(new ProcessedPayload(payload));
+                return Result.Ok(new ProcessedPayload(currentPayload));
             }
 
             if (options.Encrypted == false)
             {
-                return Result.Ok(new ProcessedPayload(payload));
+                return Result.Ok(new ProcessedPayload(currentPayload));
             }
 
-            if (payload.Data is string data)
+            if (currentPayload.Data is string data)
             {
-                return Result.Ok(new ProcessedPayload()
-                {
-                    Data = data.GetBytes(),
-                    Encoding = AddEncoding(payload, "utf-8"),
-                });
+                currentPayload.Data = data.GetBytes();
+                currentPayload.Encoding = AddEncoding(payload, "utf-8");
             }
 
             var cipher = Crypto.GetCipher(options.CipherParams);
             var result = new ProcessedPayload()
             {
-                Data = cipher.Encrypt(payload.Data as byte[]),
-                Encoding = AddEncoding(payload, $"{EncodingName}+{options.CipherParams.CipherType.ToLower()}"),
+                Data = cipher.Encrypt(currentPayload.Data as byte[]),
+                Encoding = AddEncoding(currentPayload, $"{EncodingName}+{options.CipherParams.CipherType.ToLower()}"),
             };
 
             return Result.Ok(result);
