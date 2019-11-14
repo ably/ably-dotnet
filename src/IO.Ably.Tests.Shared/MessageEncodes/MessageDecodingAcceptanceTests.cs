@@ -1,4 +1,6 @@
+using System.Security.Cryptography;
 using FluentAssertions;
+using IO.Ably.Encryption;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Tests;
 using Xunit;
@@ -29,7 +31,8 @@ namespace IO.Ably.AcceptanceTests
                 var context = new EncodingDecodingContext();
                 MessageHandler.DecodePayload(payload, context);
 
-                ((byte[])context.BaseEncodedPreviousPayload).Should().BeEquivalentTo(_binaryData);
+                context.PreviousPayload.Should().BeEquivalentTo(_binaryData);
+                context.PreviousPayloadEncoding.Should().BeEquivalentTo("utf-8");
             }
 
             [Fact]
@@ -38,10 +41,39 @@ namespace IO.Ably.AcceptanceTests
                 var message = new Message() { Data = new { Text = "Hello" } };
                 MessageHandler.EncodePayload(message, new EncodingDecodingContext());
                 var payloadData = message.Data as string;
+                var payloadEncoding = message.Encoding;
 
                 var context = new EncodingDecodingContext();
                 MessageHandler.DecodePayload(message, context);
-                context.BaseEncodedPreviousPayload.Should().Be(payloadData);
+                context.PreviousPayload.Should().BeEquivalentTo(payloadData.GetBytes());
+                context.PreviousPayloadEncoding.Should().Be(payloadEncoding);
+            }
+
+            [Fact]
+            public void WithFailedEncoding_ShouldLeaveOriginalDataAndEncodingInPayload()
+            {
+                var initialEncoding = "utf-8/cipher+aes-128-cbc";
+                var encryptedValue = "test";
+                var payload = new Message() { Data = encryptedValue, Encoding = initialEncoding };
+
+                var channelOptions =
+                    new ChannelOptions(true, new CipherParams(
+                        Crypto.DefaultAlgorithm,
+                        GenerateKey(Crypto.DefaultKeylength),
+                        Encryption.CipherMode.CBC));
+
+                var context = channelOptions.ToEncodingDecodingContext();
+                var result = MessageHandler.DecodePayload(payload, context);
+
+                result.IsFailure.Should().BeTrue();
+                payload.Encoding.Should().Be(initialEncoding);
+                payload.Data.Should().Be(encryptedValue);
+            }
+
+            private byte[] GenerateKey(int keyLength)
+            {
+                var keyGen = new Rfc2898DeriveBytes("password", 8);
+                return keyGen.GetBytes(keyLength / 8);
             }
         }
 
