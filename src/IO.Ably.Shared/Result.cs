@@ -2,6 +2,66 @@
 
 namespace IO.Ably
 {
+    /// <summary>
+    /// A unit type is a type that allows only one value (and thus can hold no information)
+    /// Original source
+    /// https://github.com/louthy/language-ext/blob/0eb922bf9ca33944a5aa0745d791255321a4b351/LanguageExt.Core/DataTypes/Unit/Unit.cs.
+    /// </summary>
+    [Serializable]
+    public struct Unit : IEquatable<Unit>, IComparable<Unit>
+    {
+#pragma warning disable SA1600 // Elements should be documented
+#pragma warning disable SA1129 // Do not use default value constructor
+        /// <summary>
+        /// Default value.
+        /// </summary>
+        public static readonly Unit Default = new Unit();
+
+        /// <inheritdoc />
+        public override int GetHashCode() =>
+            0;
+
+        /// <inheritdoc />
+        public override bool Equals(object obj) =>
+            obj is Unit;
+
+        /// <summary>
+        /// Returns ().
+        /// </summary>
+        /// <returns>().</returns>
+        public override string ToString() =>
+            "()";
+
+        public bool Equals(Unit other) =>
+            true;
+
+        public static bool operator ==(Unit lhs, Unit rhs) =>
+            true;
+
+        public static bool operator !=(Unit lhs, Unit rhs) =>
+            false;
+
+        public static bool operator >(Unit lhs, Unit rhs) =>
+            false;
+
+        public static bool operator >=(Unit lhs, Unit rhs) =>
+            true;
+
+        public static bool operator <(Unit lhs, Unit rhs) =>
+            false;
+
+        public static bool operator <=(Unit lhs, Unit rhs) =>
+            true;
+
+        public int CompareTo(Unit other) =>
+            0;
+
+        public static Unit operator +(Unit a, Unit b) =>
+            Default;
+#pragma warning enable SA1600 // Elements should be documented
+#pragma warning enable SA1129 // Do not use default value constructor
+    }
+
     // https://github.com/vkhorikov/FuntionalPrinciplesCsharp/blob/master/New/CustomerManagement.Logic/Common/Result.cs
     // Slightly modified version of the above
 
@@ -79,6 +139,22 @@ namespace IO.Ably
         }
 
         /// <summary>
+        /// Factory method to create a failed Result of T.
+        /// </summary>
+        /// <typeparam name="T">Type of value.</typeparam>
+        /// <param name="other">Creates a failed result from another.</param>
+        /// <returns>failed Result of T.</returns>
+        public static Result<T> Fail<T>(Result other)
+        {
+            if (other.IsSuccess || other.Error == null)
+            {
+                throw new InvalidOperationException();
+            }
+
+            return Fail<T>(other.Error);
+        }
+
+        /// <summary>
         /// Factory method to create a successful Result.
         /// </summary>
         /// <returns>Result.</returns>
@@ -153,6 +229,66 @@ namespace IO.Ably
             : base(isSuccess, error)
         {
             _value = value;
+        }
+    }
+
+    /// <summary>
+    /// Extension methods to help with chaining result calls.
+    /// </summary>
+    public static class ResultExtension
+    {
+        /// <summary>
+        /// Map takes a result and if successful executes the mapper function on the value.
+        /// </summary>
+        /// <param name="initial">Initial Result of T.</param>
+        /// <param name="mapper">Mapper function that transforms the value.</param>
+        /// <typeparam name="T">Initial type of the Value wrapped in the Result.</typeparam>
+        /// <typeparam name="TResult">The new type returned from the mapper function.</typeparam>
+        /// <returns>a new result.</returns>
+        public static Result<TResult> Map<T, TResult>(this Result<T> initial, Func<T, TResult> mapper)
+        {
+            if (initial.IsSuccess)
+            {
+                return Result.Ok(mapper(initial.Value));
+            }
+
+            return Result.Fail<TResult>(initial);
+        }
+
+        /// <summary>
+        /// Helper method for Result of T. It will execute the provided action if
+        /// the result is successful.
+        /// </summary>
+        /// <param name="result">The Result we check.</param>
+        /// <param name="successFunc">The action that is executed when the result is successful.</param>
+        /// <typeparam name="T">Type of Value wrapped by the Result.</typeparam>
+        /// <returns>The original passed object to facilitate chaining.</returns>
+        public static Result<T> IfSuccess<T>(this Result<T> result, Action<T> successFunc)
+        {
+            if (result.IsSuccess)
+            {
+                successFunc(result.Value);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Map takes a result and if successful executes the mapper function on the value.
+        /// </summary>
+        /// <param name="initial">Initial Result of T.</param>
+        /// <param name="bindFunc">Bind function that takes the value and returns a new Result.</param>
+        /// <typeparam name="T">Initial type of the Value wrapped in the Result.</typeparam>
+        /// <typeparam name="TResult">The new type returned from the bind function.</typeparam>
+        /// <returns>a new result.</returns>
+        public static Result<TResult> Bind<T, TResult>(this Result<T> initial, Func<T, Result<TResult>> bindFunc)
+        {
+            if (initial.IsSuccess)
+            {
+                return bindFunc(initial.Value);
+            }
+
+            return Result.Fail<TResult>(initial);
         }
     }
 }
