@@ -53,7 +53,7 @@ namespace IO.Ably.Realtime.Workflow
 
         internal ChannelMessageProcessor ChannelMessageProcessor { get; }
 
-        internal List<(string, Func<ProtocolMessage, RealtimeState, Task<bool>>)> MessageHandlers;
+        internal List<(string, Func<ProtocolMessage, RealtimeState, Task<bool>>)> ProtocolMessageProcessors;
 
         internal readonly Channel<RealtimeCommand> CommandChannel = Channel.CreateUnbounded<RealtimeCommand>(
             new UnboundedChannelOptions()
@@ -72,12 +72,12 @@ namespace IO.Ably.Realtime.Workflow
             SetInitialConnectionState();
 
             HeartbeatHandler = new ConnectionHeartbeatHandler(Connection.ConnectionManager, logger);
-            ChannelMessageProcessor = new ChannelMessageProcessor(Channels, logger);
-            MessageHandlers = new List<(string, Func<ProtocolMessage, RealtimeState, Task<bool>>)>
+            ChannelMessageProcessor = new ChannelMessageProcessor(Channels, client.MessageHandler, logger);
+            ProtocolMessageProcessors = new List<(string, Func<ProtocolMessage, RealtimeState, Task<bool>>)>
             {
                 ("State handler", (message, state) => ConnectionManager.State.OnMessageReceived(message, state)),
                 ("Heartbeat handler", HeartbeatHandler.OnMessageReceived),
-                ("Ack handler", (message, _) => HandleAckMessage(message))
+                ("Ack handler", (message, _) => HandleAckMessage(message)),
             };
 
             Logger.Debug("Workflow initialised!");
@@ -445,7 +445,7 @@ namespace IO.Ably.Realtime.Workflow
                     State.Connection.UpdateSerial(message);
                     State.Connection.SetConfirmedAlive(Now());
 
-                    foreach (var (name, handler) in MessageHandlers)
+                    foreach (var (name, handler) in ProtocolMessageProcessors)
                     {
                         var handled = await handler(message, State);
                         if (Logger.IsDebug)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using IO.Ably.Rest;
 using IO.Ably.Transport;
@@ -16,6 +17,8 @@ namespace IO.Ably.Realtime
         private readonly Handlers<Message> _handlers = new Handlers<Message>();
         private ChannelOptions _options;
         private ChannelState _state;
+
+        internal EncodingDecodingContext EncodingDecodingContext { get; private set; }
 
         public event EventHandler<ChannelStateChange> StateChanged = delegate { };
 
@@ -79,6 +82,7 @@ namespace IO.Ably.Realtime
         {
             Name = name;
             Options = options;
+            EncodingDecodingContext = new EncodingDecodingContext(options);
             Presence = new Presence(realtimeClient.ConnectionManager, this, clientId, Logger);
             RealtimeClient = realtimeClient;
             State = ChannelState.Initialized;
