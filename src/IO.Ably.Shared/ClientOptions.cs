@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using IO.Ably.Transport;
 using Newtonsoft.Json;
@@ -320,6 +321,12 @@ namespace IO.Ably
         internal bool SkipInternetCheck { get; set; } = false;
 
         internal TimeSpan RealtimeRequestTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;
+
+        /// <summary>
+        /// Provides clients the ability to add extra encoders to the client libraries
+        /// It will initially be used for the deltas functionality but can be extended.
+        /// </summary>
+        public Dictionary<string, IAblyCodec> Codecs { get; } = new Dictionary<string, IAblyCodec>();
 
         /// <summary>
         /// Default constructor for ClientOptions.

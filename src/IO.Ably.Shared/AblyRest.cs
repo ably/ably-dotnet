@@ -108,7 +108,9 @@ namespace IO.Ably
             }
 
             Logger.Debug("Protocol set to: " + Protocol);
-            MessageHandler = new MessageHandler(Protocol);
+
+            var additionalEncoders = Options.Codecs.Select(kv => new AblyCodecEncoder(kv.Key, kv.Value));
+            MessageHandler = new MessageHandler(Logger, Protocol, additionalEncoders);
 
             HttpClient = new AblyHttpClient(new AblyHttpOptions(Options));
             ExecuteHttpRequest = HttpClient.Execute;

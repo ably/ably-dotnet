@@ -35,13 +35,13 @@ namespace IO.Ably.MessageEncoders
             Encoders.AddRange(DefaultEncoders);
         }
 
-        public MessageHandler(Protocol protocol)
-            : this(DefaultLogger.LoggerInstance, protocol) { }
-
-        public MessageHandler(ILogger logger, Protocol protocol)
+        public MessageHandler(ILogger logger, Protocol protocol, IEnumerable<AblyCodecEncoder> additionalEncoders = null)
         {
             Logger = logger;
             _protocol = protocol;
+
+            Encoders.AddRange(additionalEncoders ?? new List<AblyCodecEncoder>());
+            Encoders.AddRange(DefaultEncoders);
         }
 
         public IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response, EncodingDecodingContext context)

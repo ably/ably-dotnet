@@ -46,7 +46,7 @@ namespace IO.Ably.AcceptanceTests
         }
 
         public MessageDecodingAcceptanceTests(ITestOutputHelper output)
-            : base((ITestOutputHelper) output)
+            : base(output)
         {
         }
     }
