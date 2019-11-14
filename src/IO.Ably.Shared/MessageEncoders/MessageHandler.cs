@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-
+using System.Xml.XPath;
 using IO.Ably;
 using IO.Ably.Realtime;
 using IO.Ably.Types;
@@ -15,12 +15,14 @@ namespace IO.Ably.MessageEncoders
     {
         internal ILogger Logger { get; private set; }
 
+        internal static Base64Encoder Base64Encoder = new Base64Encoder();
+
         public static List<MessageEncoder> DefaultEncoders { get; } = new List<MessageEncoder>
         {
-            new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), new Base64Encoder(),
+            new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), Base64Encoder,
         };
 
-        public List<MessageEncoder> Encoders = new List<MessageEncoder>();
+        public List<MessageEncoder> CustomEncoders = new List<MessageEncoder>();
         private static readonly Type[] UnsupportedTypes = new[]
             {
                 typeof(short), typeof(int), typeof(double), typeof(float), typeof(decimal), typeof(DateTime), typeof(DateTimeOffset), typeof(byte), typeof(bool),
@@ -32,7 +34,6 @@ namespace IO.Ably.MessageEncoders
         public MessageHandler()
             : this(DefaultLogger.LoggerInstance, Defaults.Protocol)
         {
-            Encoders.AddRange(DefaultEncoders);
         }
 
         public MessageHandler(ILogger logger, Protocol protocol, IEnumerable<AblyCodecEncoder> additionalEncoders = null)
@@ -40,8 +41,7 @@ namespace IO.Ably.MessageEncoders
             Logger = logger;
             _protocol = protocol;
 
-            Encoders.AddRange(additionalEncoders ?? new List<AblyCodecEncoder>());
-            Encoders.AddRange(DefaultEncoders);
+            CustomEncoders.AddRange(additionalEncoders ?? new List<AblyCodecEncoder>());
         }
 
         public IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response, EncodingDecodingContext context)
@@ -86,6 +86,7 @@ namespace IO.Ably.MessageEncoders
 
         private void ProcessMessages<T>(IEnumerable<T> payloads, EncodingDecodingContext context) where T : IMessage
         {
+            // TODO: What happens with rest request where we can't decode messages
             DecodePayloads(context, payloads as IEnumerable<IMessage>);
         }
 
@@ -98,23 +99,6 @@ namespace IO.Ably.MessageEncoders
                 LogRequestBody(request.RequestBody);
             }
 #endif
-        }
-
-        private void LogRequestBody(byte[] requestBody)
-        {
-            try
-            {
-#if MSGPACK
-                var body = MsgPackHelper.DeserialiseMsgPackObject(requestBody)?.ToString();
-                Logger.Debug("RequestBody: " + (body ?? "No body present"));
-#else
-                Logger.Debug("RequestBody: MsgPack disabled, cannot log request");
-#endif
-            }
-            catch (Exception ex)
-            {
-                Logger.Error("Error while logging request body.", ex);
-            }
         }
 
         public byte[] GetRequestBody(AblyRequest request)
@@ -222,68 +206,108 @@ namespace IO.Ably.MessageEncoders
             {
                 throw new AblyException("Unsupported payload type. Only string, binarydata (byte[]) and objects convertable to json are supported being directly sent. This ensures that libraries in different languages work correctly. To send the requested value please create a DTO and pass the DTO as payload. For example if you are sending an '10' then create a class with one property; assign the value to the property and send it.");
             }
-        }
 
-        private static Type GetNullableType(Type type)
-        {
-            if (type.GetTypeInfo().IsValueType == false)
+            Type GetNullableType(Type type)
             {
-                return null; // ref-type
-            }
+                if (type.GetTypeInfo().IsValueType == false)
+                {
+                    return null; // ref-type
+                }
 
-            return Nullable.GetUnderlyingType(type);
+                return Nullable.GetUnderlyingType(type);
+            }
         }
 
         internal static Result DecodePayload(IMessage payload, EncodingDecodingContext context, IEnumerable<MessageEncoder> encoders = null)
         {
             var actualEncoders = (encoders ?? DefaultEncoders).ToList();
 
-            var numberOfEncodings = payload.Encoding.IsNotEmpty() ? payload.Encoding.Count(x => x == '/') : 0;
-            bool isFirstEncodingBase64 = MessageEncoder.CurrentEncodingIs(payload, Base64Encoder.EncodingNameStr);
-            int processedEncodings = 0;
-            context.BaseEncodedPreviousPayload = payload.Data;
-            while (true)
+            var decodeResult = GetOriginalMessagePayload()
+                .IfSuccess(x =>
+                {
+                    var (previousPayloadEncoding, previousPayload) = x;
+                    context.PreviousPayload = previousPayload;
+                    context.PreviousPayloadEncoding = previousPayloadEncoding;
+                })
+                .Bind(_ =>
+                {
+                    var (processResult, decodedPayload) = ProcessPayload();
+                    payload.Data = decodedPayload.Data;
+                    payload.Encoding = decodedPayload.Encoding;
+
+                    return processResult;
+                });
+
+            return decodeResult;
+
+            Result<(string previousPayloadEncoding, byte[] previousPayload)> GetOriginalMessagePayload()
             {
-                // if the first encoding is a base64 one and we just processed it then
-                // we should save the payload data in the context
-                if (isFirstEncodingBase64 && processedEncodings == 1)
+                if (payload.Data is byte[] data)
                 {
-                    context.BaseEncodedPreviousPayload = payload.Data;
+                    return Result.Ok((payload.Encoding, data));
                 }
 
-                var currentEncoding = MessageEncoder.GetCurrentEncoding(payload);
-                if (currentEncoding.IsEmpty())
+                bool isFirstEncodingBase64 = MessageEncoder.CurrentEncodingIs(payload, Base64Encoder.EncodingNameStr);
+                if (isFirstEncodingBase64)
                 {
-                    return Result.Ok();
+                    var result = Base64Encoder.Decode(payload, new EncodingDecodingContext());
+                    return result.Map(x => (MessageEncoder.RemoveCurrentEncodingPart(payload), (byte[])x.Data));
                 }
 
-                var decoder = actualEncoders.FirstOrDefault(x => x.CanProcess(currentEncoding));
-                if (decoder == null)
+                var utf8Bytes = ((string)payload.Data).GetBytes();
+                return Result.Ok((payload.Encoding, utf8bytes: utf8Bytes));
+            }
+
+            // Local function that tidies the processing
+            // the first part of the tuple will return the result. We don't have `true` or `false` because
+            // we care about the error message that came from the encoder that failed.
+            // The processed payload is returned separately so we can still update the message.
+            (Result<Unit> processResult, IPayload processedPayload) ProcessPayload()
+            {
+                int processedEncodings = 0;
+                var numberOfEncodings = payload.Encoding.IsNotEmpty() ? payload.Encoding.Count(x => x == '/') + 1 : 0;
+                if (numberOfEncodings == 0 || payload.Data == null)
                 {
-                    return Result.Ok();
+                    return (Result.Ok(Unit.Default), payload);
                 }
 
-                var result = decoder.Decode(payload, context);
-
-                if (result.IsSuccess)
+                IPayload currentPayload = payload;
+                while (true)
                 {
-                    context.Encoding = result.Value.Encoding;
-                    payload.Data = result.Value.Data;
-                    payload.Encoding = result.Value.Encoding;
-                }
-                else
-                {
-                    return result;
-                }
+                    var currentEncoding = MessageEncoder.GetCurrentEncoding(currentPayload);
+                    if (currentEncoding.IsEmpty())
+                    {
+                        return (Result.Ok(Unit.Default), currentPayload);
+                    }
 
-                // just to be safe
-                if (processedEncodings > numberOfEncodings)
-                {
-                    // TODO: Send to Sentry
-                    throw new AblyException("Error in decoding loop");
-                }
+                    var decoder = actualEncoders.FirstOrDefault(x => x.CanProcess(currentEncoding));
+                    if (decoder == null)
+                    {
+                        return (Result.Fail<Unit>(new ErrorInfo($"Missing decoder for '{currentEncoding}'")), currentPayload);
+                    }
 
-                processedEncodings++;
+                    var result = decoder.Decode(currentPayload, context);
+
+                    if (result.IsSuccess)
+                    {
+                        context.Encoding = result.Value.Encoding;
+                        currentPayload = result.Value;
+                    }
+                    else
+                    {
+                        // If an encoder fails we want to return the result up to this encoder
+                        return (Result.Fail<Unit>(result), currentPayload);
+                    }
+
+                    // just to be safe
+                    if (processedEncodings > numberOfEncodings)
+                    {
+                        // TODO: Send to Sentry
+                        throw new AblyException("Error in decoding loop");
+                    }
+
+                    processedEncodings++;
+                }
             }
         }
 
@@ -426,41 +450,38 @@ namespace IO.Ably.MessageEncoders
             var result = Result.Ok();
             if (protocolMessage.Messages != null)
             {
-                foreach (var message in protocolMessage.Messages)
-                {
-                    result = Result.Combine(result, EncodePayload(message, context));
-                }
+                result = Result.Combine(EncodePayloads(context, protocolMessage.Messages));
             }
 
             if (protocolMessage.Presence != null)
             {
-                foreach (var presence in protocolMessage.Presence)
-                {
-                    result = Result.Combine(result, EncodePayload(presence, context));
-                }
+                result = Result.Combine(EncodePayloads(context, protocolMessage.Presence));
             }
 
             return result;
         }
 
-        public static Result DecodeProtocolMessage(ProtocolMessage protocolMessage, ChannelOptions channelOptions)
+        public Result DecodeProtocolMessage(ProtocolMessage protocolMessage, EncodingDecodingContext context)
         {
-            var options = channelOptions ?? new ChannelOptions();
+            var encoders = DefaultEncoders.Concat(CustomEncoders).ToList();
 
             return Result.Combine(
-                DecodeMessages(protocolMessage, protocolMessage.Messages, options),
-                DecodeMessages(protocolMessage, protocolMessage.Presence, options));
+                DecodeMessages(protocolMessage, protocolMessage.Messages, context, encoders),
+                DecodeMessages(protocolMessage, protocolMessage.Presence, context, encoders));
         }
 
-        private static Result DecodeMessages(ProtocolMessage protocolMessage, IEnumerable<IMessage> messages, ChannelOptions options)
+        private Result DecodeMessages(
+            ProtocolMessage protocolMessage,
+            IEnumerable<IMessage> messages,
+            EncodingDecodingContext context,
+            List<MessageEncoder> encoders)
         {
             var result = Result.Ok();
             var index = 0;
             foreach (var message in messages ?? Enumerable.Empty<IMessage>())
             {
                 SetMessageIdConnectionIdAndTimestamp(protocolMessage, message, index);
-                var context = options.ToEncodingDecodingContext();
-                result = Result.Combine(result, DecodePayload(message, context));
+                result = Result.Combine(result, DecodePayload(message, context, encoders));
                 index++;
             }
 

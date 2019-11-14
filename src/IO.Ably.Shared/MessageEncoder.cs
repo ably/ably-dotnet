@@ -47,9 +47,14 @@ namespace IO.Ably
     public class EncodingDecodingContext
     {
         /// <summary>
+        /// It stores the encoding of PreviousPayload. It's used for debugging purposes.
+        /// </summary>
+        public string PreviousPayloadEncoding { get; set; }
+
+        /// <summary>
         /// the base payload of the previous message (ie without any transport-specific encoding step).
         /// </summary>
-        public object BaseEncodedPreviousPayload { get; set; }
+        public byte[] PreviousPayload { get; set; }
 
         /// <summary>
         /// the residual encoding string for this message prior to the present encode/decode step.
