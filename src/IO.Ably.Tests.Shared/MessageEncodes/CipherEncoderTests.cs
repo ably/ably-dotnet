@@ -72,7 +72,7 @@ namespace IO.Ably.Tests.MessageEncodes
 
                 var options = new ChannelOptions(new CipherParams("mgg", key));
                 var encoder = new CipherEncoder();
-                var error = Assert.Throws<AblyException>(delegate
+                var error = Assert.Throws<AblyException>(() =>
                 {
                     encoder.Encode(new Message() { Data = "string" }, options.ToEncodingDecodingContext());
                 });
@@ -202,14 +202,15 @@ namespace IO.Ably.Tests.MessageEncodes
             [Fact]
             public void WithCipherEncodingThatDoesNotMatchTheCurrentCipher_LeavesMessageUnencrypted()
             {
-                var initialEncoding = "utf-8/cipher+aes-128-cbc";
-                var encryptedValue = "test";
-                IPayload payload = new Message() { Data = encryptedValue, Encoding = initialEncoding };
+                 var initialEncoding = "utf-8/cipher+aes-128-cbc";
+                 var encryptedValue = "test";
+                 IPayload payload = new Message() { Data = encryptedValue, Encoding = initialEncoding };
 
-                payload = _encoder.Decode(payload, _channelOptions.ToEncodingDecodingContext()).Value;
+                 var result = _encoder.Decode(payload, _channelOptions.ToEncodingDecodingContext());
 
-                payload.Encoding.Should().Be(initialEncoding);
-                payload.Data.Should().Be(encryptedValue);
+                 result.IsFailure.Should().BeTrue();
+                 payload.Encoding.Should().Be(initialEncoding);
+                 payload.Data.Should().Be(encryptedValue);
             }
         }
 
