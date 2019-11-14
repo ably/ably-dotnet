@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)AblyRest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ApiKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\AblyCodecEncoder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaginatedRequestParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelEvent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\AttemptsHelpers.cs" />

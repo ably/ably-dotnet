@@ -1186,7 +1186,7 @@ namespace IO.Ably.Tests.Realtime
                 };
 
                 var message = new Message("name", "encrypted with otherChannelOptions");
-                new MessageHandler(Protocol.Json).EncodePayloads(otherChannelOptions.ToEncodingDecodingContext(), new[] { message });
+                new MessageHandler(Logger, Protocol.Json).EncodePayloads(otherChannelOptions.ToEncodingDecodingContext(), new[] { message });
                 client.FakeMessageReceived(message, encryptedChannel.Name);
 
                 await awaiter.Task;
