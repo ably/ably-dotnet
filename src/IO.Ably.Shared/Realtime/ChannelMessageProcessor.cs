@@ -12,11 +12,13 @@ namespace IO.Ably.Realtime
         internal ILogger Logger { get; private set; }
 
         private IChannels<IRealtimeChannel> _channels;
+        private readonly MessageHandler _messageHandler;
 
-        public ChannelMessageProcessor(IChannels<IRealtimeChannel> channels, ILogger logger)
+        public ChannelMessageProcessor(IChannels<IRealtimeChannel> channels, MessageHandler messageHandler, ILogger logger)
         {
             Logger = logger;
             _channels = channels;
+            _messageHandler = messageHandler;
         }
 
         private RealtimeChannel GetChannel(string name)
@@ -69,7 +71,7 @@ namespace IO.Ably.Realtime
 
                     break;
                 case ProtocolMessage.MessageAction.Message:
-                    var result = MessageHandler.DecodeProtocolMessage(protocolMessage, channel.Options);
+                    var result = _messageHandler.DecodeProtocolMessage(protocolMessage, channel.EncodingDecodingContext);
                     if (result.IsFailure)
                     {
                         channel.OnError(result.Error);
@@ -82,12 +84,28 @@ namespace IO.Ably.Realtime
 
                     break;
                 case ProtocolMessage.MessageAction.Presence:
-                    MessageHandler.DecodeProtocolMessage(protocolMessage, channel.Options);
-                    channel.Presence.OnPresence(protocolMessage.Presence, null);
+                    var presenceDecodeResult = _messageHandler.DecodeProtocolMessage(protocolMessage, channel.EncodingDecodingContext);
+                    if (presenceDecodeResult.IsFailure)
+                    {
+                        channel.OnError(presenceDecodeResult.Error);
+                    }
+                    else
+                    {
+                        channel.Presence.OnPresence(protocolMessage.Presence, null);
+                    }
+
                     break;
                 case ProtocolMessage.MessageAction.Sync:
-                    MessageHandler.DecodeProtocolMessage(protocolMessage, channel.Options);
-                    channel.Presence.OnPresence(protocolMessage.Presence, protocolMessage.ChannelSerial);
+                    var decodeResult = _messageHandler.DecodeProtocolMessage(protocolMessage, channel.EncodingDecodingContext);
+                    if (decodeResult.IsFailure)
+                    {
+                        channel.OnError(decodeResult.Error);
+                    }
+                    else
+                    {
+                        channel.Presence.OnPresence(protocolMessage.Presence, protocolMessage.ChannelSerial);
+                    }
+
                     break;
             }
 
