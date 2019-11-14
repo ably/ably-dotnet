@@ -220,7 +220,8 @@ namespace IO.Ably.Transport
                 return;
             }
 
-            Handler.EncodeProtocolMessage(message, channelOptions.ToEncodingDecodingContext());
+            // TODO: What happens if a message fails encoding before being sent.
+            var encodingResult = Handler.EncodeProtocolMessage(message, channelOptions.ToEncodingDecodingContext());
 
             if (State.CanSend == false && State.CanQueue == false)
             {
