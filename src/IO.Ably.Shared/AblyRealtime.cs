@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Transport;
@@ -85,6 +86,8 @@ namespace IO.Ably
         /// Gets the initialised RestClient.
         /// </summary>
         public AblyRest RestClient { get; }
+
+        internal MessageHandler MessageHandler => RestClient.MessageHandler;
 
         /// <inheritdoc/>
         public IAblyAuth Auth => RestClient.AblyAuth;
