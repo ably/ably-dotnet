@@ -1,3 +1,6 @@
 [submodule "common"]
 	path = common
 	url = https://github.com/ably/ably-common.git
+[submodule "codecs/delta-dotnet"]
+	path = codecs/delta-dotnet
+	url = git@github.com:ably/ably-delta-codec-dotnet.git
