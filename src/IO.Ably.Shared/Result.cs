@@ -274,6 +274,23 @@ namespace IO.Ably
         }
 
         /// <summary>
+        /// Helper method for Result. It is only executed if the result is failed and passed the ErrorInfo
+        /// to the Action.
+        /// </summary>
+        /// <param name="result">the Result we check.</param>
+        /// <param name="failAction">the action that is executed in case of a failure.</param>
+        /// <returns>the same Result object to facilitate chaining.</returns>
+        public static Result IfFailure(this Result result, Action<ErrorInfo> failAction)
+        {
+            if (result.IsFailure)
+            {
+                failAction(result.Error);
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Map takes a result and if successful executes the mapper function on the value.
         /// </summary>
         /// <param name="initial">Initial Result of T.</param>
