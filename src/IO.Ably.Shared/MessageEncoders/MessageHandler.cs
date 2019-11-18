@@ -221,24 +221,28 @@ namespace IO.Ably.MessageEncoders
         internal static Result DecodePayload(IMessage payload, EncodingDecodingContext context, IEnumerable<MessageEncoder> encoders = null)
         {
             var actualEncoders = (encoders ?? DefaultEncoders).ToList();
+            var pp = context.PreviousPayload; // We take a chance that this will not be modified but replaced
 
-            var decodeResult = GetOriginalMessagePayload()
-                .IfSuccess(x =>
-                {
-                    var (previousPayloadEncoding, previousPayload) = x;
-                    context.PreviousPayload = previousPayload;
-                    context.PreviousPayloadEncoding = previousPayloadEncoding;
-                })
-                .Bind(_ =>
-                {
-                    var (processResult, decodedPayload) = ProcessPayload();
-                    payload.Data = decodedPayload.Data;
-                    payload.Encoding = decodedPayload.Encoding;
+            var (processResult, decodedPayload) = Decode();
 
-                    return processResult;
+            // None of the encoders updated the PreviousPayload
+            // then we need to set the default one
+            Result overallResult = processResult;
+            if (pp == context.PreviousPayload)
+            {
+                var originalPayload = GetOriginalMessagePayload();
+                originalPayload.IfSuccess(x =>
+                {
+                    context.PreviousPayload = x.previousPayload;
+                    context.PreviousPayloadEncoding = x.previousPayloadEncoding;
                 });
+                overallResult = Result.Combine(overallResult, originalPayload);
+            }
 
-            return decodeResult;
+            payload.Data = decodedPayload.Data;
+            payload.Encoding = decodedPayload.Encoding;
+
+            return overallResult;
 
             Result<(string previousPayloadEncoding, byte[] previousPayload)> GetOriginalMessagePayload()
             {
@@ -262,7 +266,7 @@ namespace IO.Ably.MessageEncoders
             // the first part of the tuple will return the result. We don't have `true` or `false` because
             // we care about the error message that came from the encoder that failed.
             // The processed payload is returned separately so we can still update the message.
-            (Result<Unit> processResult, IPayload processedPayload) ProcessPayload()
+            (Result<Unit> processResult, IPayload processedPayload) Decode()
             {
                 int processedEncodings = 0;
                 var numberOfEncodings = payload.Encoding.IsNotEmpty() ? payload.Encoding.Count(x => x == '/') + 1 : 0;
@@ -303,7 +307,7 @@ namespace IO.Ably.MessageEncoders
                     if (processedEncodings > numberOfEncodings)
                     {
                         // TODO: Send to Sentry
-                        throw new AblyException("Error in decoding loop");
+                        return (Result.Fail<Unit>(new ErrorInfo("Failed to decode message encoding")), currentPayload);
                     }
 
                     processedEncodings++;
@@ -465,9 +469,14 @@ namespace IO.Ably.MessageEncoders
         {
             var encoders = DefaultEncoders.Concat(CustomEncoders).ToList();
 
-            return Result.Combine(
+            var result = Result.Combine(
                 DecodeMessages(protocolMessage, protocolMessage.Messages, context, encoders),
                 DecodeMessages(protocolMessage, protocolMessage.Presence, context, encoders));
+
+            result.IfFailure(error =>
+                Logger.Warning("Failed to decode one or more messages. Please check the previous log messages for more Warnings"));
+
+            return result;
         }
 
         private Result DecodeMessages(
@@ -481,7 +490,10 @@ namespace IO.Ably.MessageEncoders
             foreach (var message in messages ?? Enumerable.Empty<IMessage>())
             {
                 SetMessageIdConnectionIdAndTimestamp(protocolMessage, message, index);
-                result = Result.Combine(result, DecodePayload(message, context, encoders));
+                var decodeResult = DecodePayload(message, context, encoders)
+                    .IfFailure(error => Logger.Warning($"Error decoding message with id: {message.Id}. Error: {error.Message}. Exception: {error.InnerException?.Message}"));
+
+                result = Result.Combine(result, decodeResult);
                 index++;
             }
 
