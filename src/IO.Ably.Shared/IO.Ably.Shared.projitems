@@ -15,7 +15,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)AblyRealtime.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AblyRest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ApiKey.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Diff\DataHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diff\DeltaApplicationResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Diff\DeltaDecoder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Diff\SequenceContinuityException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diff\Vcdiff\AddressCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diff\Vcdiff\Adler32.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diff\Vcdiff\CodeTable.cs" />
@@ -24,8 +27,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Diff\Vcdiff\IOHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diff\Vcdiff\VcdiffDecoder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diff\Vcdiff\VcdiffFormatException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Diff\SequenceContinuityException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Diff\VcdiffDecoder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\VCDiffEncoder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\EncodingDecodingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PaginatedRequestParams.cs" />
