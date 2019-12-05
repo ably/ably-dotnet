@@ -9,6 +9,7 @@ using IO.Ably.Transport;
 using IO.Ably.Types;
 using IO.Ably.Utils;
 using Newtonsoft.Json.Linq;
+using IO.Ably.MessageEncoders;
 
 namespace IO.Ably.Realtime
 {

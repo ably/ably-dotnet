@@ -16,7 +16,7 @@ namespace IO.Ably.MessageEncoders
         public override Result<ProcessedPayload> Decode(IPayload payload, EncodingDecodingContext context)
         {
             var options = context.ChannelOptions;
-            Logger = options?.Logger ?? DefaultLogger.LoggerInstance;
+            var logger = options?.Logger ?? DefaultLogger.LoggerInstance;
 
             if (IsEmpty(payload.Data) || !CurrentEncodingIs(payload, EncodingName))
             {
@@ -33,7 +33,7 @@ namespace IO.Ably.MessageEncoders
             }
             catch (Exception ex)
             {
-                Logger.Error($"Invalid Json data: '{payload.Data}'", ex);
+                logger.Error($"Invalid Json data: '{payload.Data}'", ex);
                 return Result.Fail<ProcessedPayload>(new ErrorInfo($"Invalid Json data: '{payload.Data}'"));
             }
         }
