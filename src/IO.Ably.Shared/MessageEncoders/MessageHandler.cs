@@ -19,10 +19,9 @@ namespace IO.Ably.MessageEncoders
 
         public static List<MessageEncoder> DefaultEncoders { get; } = new List<MessageEncoder>
         {
-            new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), Base64Encoder,
+            new JsonEncoder(), new Utf8Encoder(), new CipherEncoder(), new VCDiffEncoder(), Base64Encoder,
         };
 
-        public List<MessageEncoder> CustomEncoders = new List<MessageEncoder>();
         private static readonly Type[] UnsupportedTypes = new[]
             {
                 typeof(short), typeof(int), typeof(double), typeof(float), typeof(decimal), typeof(DateTime), typeof(DateTimeOffset), typeof(byte), typeof(bool),
@@ -36,12 +35,10 @@ namespace IO.Ably.MessageEncoders
         {
         }
 
-        public MessageHandler(ILogger logger, Protocol protocol, IEnumerable<AblyCodecEncoder> additionalEncoders = null)
+        public MessageHandler(ILogger logger, Protocol protocol)
         {
             Logger = logger;
             _protocol = protocol;
-
-            CustomEncoders.AddRange(additionalEncoders ?? new List<AblyCodecEncoder>());
         }
 
         public IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response, EncodingDecodingContext context)
@@ -467,11 +464,9 @@ namespace IO.Ably.MessageEncoders
 
         public Result DecodeProtocolMessage(ProtocolMessage protocolMessage, EncodingDecodingContext context)
         {
-            var encoders = DefaultEncoders.Concat(CustomEncoders).ToList();
-
             var result = Result.Combine(
-                DecodeMessages(protocolMessage, protocolMessage.Messages, context, encoders),
-                DecodeMessages(protocolMessage, protocolMessage.Presence, context, encoders));
+                DecodeMessages(protocolMessage, protocolMessage.Messages, context, DefaultEncoders),
+                DecodeMessages(protocolMessage, protocolMessage.Presence, context, DefaultEncoders));
 
             result.IfFailure(error =>
                 Logger.Warning("Failed to decode one or more messages. Please check the previous log messages for more Warnings"));

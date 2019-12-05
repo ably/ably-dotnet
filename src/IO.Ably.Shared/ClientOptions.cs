@@ -323,12 +323,6 @@ namespace IO.Ably
         internal TimeSpan RealtimeRequestTimeout { get; set; } = Defaults.DefaultRealtimeTimeout;
 
         /// <summary>
-        /// Provides clients the ability to add extra encoders to the client libraries
-        /// It will initially be used for the deltas functionality but can be extended.
-        /// </summary>
-        public Dictionary<string, IAblyCodec> Codecs { get; } = new Dictionary<string, IAblyCodec>();
-
-        /// <summary>
         /// Default constructor for ClientOptions.
         /// </summary>
         public ClientOptions()
