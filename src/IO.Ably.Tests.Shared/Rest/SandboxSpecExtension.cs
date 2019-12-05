@@ -18,15 +18,15 @@ namespace IO.Ably.Tests
             return connectionAwaiter.Wait();
         }
 
-        internal static Task WaitForState(this IRealtimeChannel channel, ChannelState awaitedState = ChannelState.Attached, TimeSpan? waitSpan = null)
+        internal static async Task WaitForState(this IRealtimeChannel channel, ChannelState awaitedState = ChannelState.Attached, TimeSpan? waitSpan = null)
         {
             var channelAwaiter = new ChannelAwaiter(channel, awaitedState);
-            if (waitSpan.HasValue)
+            var timespan = waitSpan.GetValueOrDefault(TimeSpan.FromSeconds(2));
+            Result<bool> result = await channelAwaiter.WaitAsync(timespan);
+            if (result.IsFailure)
             {
-                return channelAwaiter.WaitAsync(waitSpan.Value);
+                 throw new Exception($"Channel '{channel.Name}' did not reach '{awaitedState}' in {timespan.TotalSeconds} seconds. Current state {channel.State}");
             }
-
-            return channelAwaiter.WaitAsync();
         }
 
         internal static async Task<bool> WaitSync(this Presence presence, TimeSpan? waitSpan = null)
