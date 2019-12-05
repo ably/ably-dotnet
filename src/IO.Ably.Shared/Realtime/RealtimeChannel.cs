@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using IO.Ably.Rest;
 using IO.Ably.Transport;
@@ -13,6 +13,7 @@ using IO.Ably.MessageEncoders;
 
 namespace IO.Ably.Realtime
 {
+    [DebuggerDisplay("{Name}. State = {_state}. Error = {ErrorReason} ")]
     internal class RealtimeChannel : EventEmitter<ChannelEvent, ChannelStateChange>, IRealtimeChannel
     {
         private readonly Handlers<Message> _handlers = new Handlers<Message>();
