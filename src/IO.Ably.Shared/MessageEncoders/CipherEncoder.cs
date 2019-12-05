@@ -13,7 +13,7 @@ namespace IO.Ably.MessageEncoders
         public override Result<ProcessedPayload> Decode(IPayload payload, EncodingDecodingContext context)
         {
             var options = context.ChannelOptions;
-            Logger = options?.Logger ?? DefaultLogger.LoggerInstance;
+            var logger = options?.Logger ?? DefaultLogger.LoggerInstance;
 
             if (IsEmpty(payload.Data))
             {
@@ -29,7 +29,7 @@ namespace IO.Ably.MessageEncoders
             var cipherType = GetCipherType(currentEncoding);
             if (cipherType.ToLower() != options.CipherParams.CipherType.ToLower())
             {
-                Logger.Error(
+                logger.Error(
                     $"Cipher algorithm {options.CipherParams.CipherType.ToLower()} does not match message cipher algorithm of {currentEncoding}");
                 return Result.Fail<ProcessedPayload>(new ErrorInfo($"Cipher algorithm {options.CipherParams.CipherType.ToLower()} does not match message cipher algorithm of {currentEncoding}"));
             }
@@ -50,7 +50,7 @@ namespace IO.Ably.MessageEncoders
             }
             catch (AblyException ex)
             {
-                Logger.Error($"Error decrypting payload using cypher {options.CipherParams.CipherType}. Leaving it encrypted", ex);
+                logger.Error($"Error decrypting payload using cypher {options.CipherParams.CipherType}. Leaving it encrypted", ex);
                 return Result.Fail<ProcessedPayload>(new ErrorInfo($"Error decrypting payload using cypher {options.CipherParams.CipherType}. Leaving it encrypted"));
             }
         }

@@ -23,8 +23,6 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
-        internal ILogger Logger { get; set; }
-
         public abstract string EncodingName { get; }
 
         public abstract bool CanProcess(string currentEncoding);

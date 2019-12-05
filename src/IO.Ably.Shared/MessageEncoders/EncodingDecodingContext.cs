@@ -1,50 +1,11 @@
 using IO.Ably.Transport;
 
-namespace IO.Ably
+namespace IO.Ably.MessageEncoders
 {
-    /// <summary>
-    /// Interface for implementing generic codecs that work alongside Ably build in ones.
-    /// To start with the main implementation will be the Delta codec which supports the vcdiff encoding.
-    /// </summary>
-    public interface IAblyCodec
-    {
-        /// <summary>
-        /// Decodes a payload.
-        /// </summary>
-        /// <param name="payload">the payload being decoded.</param>
-        /// <param name="decodingContext">the context needed for the operation.</param>
-        /// <returns>a decoded object.</returns>
-        object Decode(object payload, EncodingDecodingContext decodingContext);
-
-        /// <summary>
-        /// Encodes a payload.
-        /// </summary>
-        /// <param name="payload">the payload that needs to be encoded.</param>
-        /// <param name="encodingContext">the context needed for the operation.</param>
-        /// <returns><see cref="EncodingResult"/>.</returns>
-        EncodingResult Encode(object payload, EncodingDecodingContext encodingContext);
-    }
-
-    /// <summary>
-    /// Result from an encoding operation.
-    /// </summary>
-    public class EncodingResult
-    {
-        /// <summary>
-        /// The encoded payload.
-        /// </summary>
-        public object NewPayload { get; set; }
-
-        /// <summary>
-        /// The encoding string after the payload was encoded.
-        /// </summary>
-        public string NewEncoding { get; set; }
-    }
-
     /// <summary>
     /// Class used to provide context between different encoders.
     /// </summary>
-    public class EncodingDecodingContext
+    internal class EncodingDecodingContext
     {
         /// <summary>
         /// It stores the encoding of PreviousPayload. It's used for debugging purposes.
@@ -87,7 +48,7 @@ namespace IO.Ably
     /// <summary>
     /// Helpers methods for <see cref="EncodingDecodingContext"/>.
     /// </summary>
-    public static class EncodingDecodingContextHelpers
+    internal static class EncodingDecodingContextHelpers
     {
         /// <summary>
         /// Creates a new <see cref="EncodingDecodingContext"/> from the provided <see cref="ChannelOptions"/>.
