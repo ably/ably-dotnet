@@ -1,4 +1,5 @@
 using System;
+using IO.Ably.Diff;
 
 namespace IO.Ably.MessageEncoders
 {
@@ -24,8 +25,37 @@ namespace IO.Ably.MessageEncoders
 
         public override Result<ProcessedPayload> Decode(IPayload payload, EncodingDecodingContext context)
         {
-            var logger = context?.ChannelOptions?.Logger ?? DefaultLogger.LoggerInstance;
-            return Result.Ok(new ProcessedPayload(payload));
+            var logger = context.ChannelOptions?.Logger ?? DefaultLogger.LoggerInstance;
+
+            if (payload == null)
+            {
+                return Result.Ok(new ProcessedPayload());
+            }
+
+            var payloadBytes = DataHelpers.ConvertToByteArray(payload);
+            try
+            {
+                var result = DeltaDecoder.ApplyDelta(context.PreviousPayload, payloadBytes);
+                context.PreviousPayload = result.AsByteArray();
+                context.PreviousPayloadEncoding = context.Encoding;
+                context.Encoding = RemoveCurrentEncodingPart(payload);
+                return Result.Ok(new ProcessedPayload()
+                {
+                    Data = result.AsByteArray(),
+                    Encoding = RemoveCurrentEncodingPart(payload),
+                });
+            }
+            catch (Exception e)
+            {
+                // TODO: Rethrow an error to indicate the vcdiff failed and things need to happen.
+                var error =
+                    $"Payload Encoding: {context.PreviousPayloadEncoding}. Payload: {context.PreviousPayload.Length} bytes";
+                logger.Error("Error decoding vcdiff message: " + error, e);
+
+                // TODO: Specify the correct error codes
+                return Result.Fail<ProcessedPayload>(new ErrorInfo("Failed to decode vcdiff message"));
+                throw new AblyException(new ErrorInfo("Error decoding payload. Decoding Context: " + context), e);
+            }
 
             // TODO: Indicate terminal failure
 //            try

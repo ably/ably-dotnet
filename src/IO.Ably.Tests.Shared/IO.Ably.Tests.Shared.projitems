@@ -88,6 +88,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateTests\InitializedStateSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ConnectionStateTests\SuspendedStateSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\CountDownTimerSpecs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\DiffSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\MockHttpRealtimeSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\PresenceSandboxSpecs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ProtocolMessageSpecs.cs" />

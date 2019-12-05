@@ -37,7 +37,7 @@ namespace IO.Ably.MessageEncoders
             var cipher = Crypto.GetCipher(options.CipherParams);
             try
             {
-                if ((payload.Data is byte[]) == false)
+                if (payload.Data is byte[] == false)
                 {
                     return Result.Fail<ProcessedPayload>(new ErrorInfo("Expected data to be byte[] but received " + payload.Data.GetType()));
                 }
