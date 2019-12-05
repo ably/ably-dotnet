@@ -49,7 +49,7 @@ namespace IO.Ably.MessageEncoders
             {
                 // TODO: Rethrow an error to indicate the vcdiff failed and things need to happen.
                 var error =
-                    $"Payload Encoding: {context.PreviousPayloadEncoding}. Payload: {context.PreviousPayload.Length} bytes";
+                    $"Payload Encoding: {context.PreviousPayloadEncoding}. Payload: {context.PreviousPayload?.Length} bytes";
                 logger.Error("Error decoding vcdiff message: " + error, e);
 
                 // TODO: Specify the correct error codes
