@@ -1,5 +1,5 @@
 using System;
-using IO.Ably.Diff;
+using IO.Ably.DeltaCodec;
 
 namespace IO.Ably.MessageEncoders
 {
