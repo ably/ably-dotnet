@@ -46,4 +46,8 @@
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\lib\delta-codec\IO.Ably.DeltaCodec\IO.Ably.DeltaCodec.csproj" />
+  </ItemGroup>
+
 </Project>
