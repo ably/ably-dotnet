@@ -19,7 +19,7 @@ namespace IO.Ably.Types
         /// <summary>
         /// Format.
         /// </summary>
-        public string Fromat { get; set; }
+        public string Format { get; set; }
 
         /// <summary>
         /// From.
