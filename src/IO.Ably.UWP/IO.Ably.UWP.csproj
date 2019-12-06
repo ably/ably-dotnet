@@ -196,6 +196,12 @@
   <ItemGroup>
     <None Include="IO.Ably.snk" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\lib\delta-codec\IO.Ably.DeltaCodec\IO.Ably.DeltaCodec.csproj">
+      <Project>{412deb5f-7936-4027-8bf8-977f23d465ed}</Project>
+      <Name>IO.Ably.DeltaCodec</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="..\IO.Ably.Shared\IO.Ably.Shared.projitems" Label="Shared" />
   <Import Project="..\IO.Ably.Shared.MsgPack\IO.Ably.Shared.MsgPack.projitems" Label="Shared" Condition="$(DefineConstants.Contains(MSGPACK))" />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
