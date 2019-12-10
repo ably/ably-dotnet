@@ -8,14 +8,14 @@ namespace IO.Ably.MessageEncoders
     /// </summary>
     internal class DecodingContext
     {
-        public PreviousPayload LastMessageData { get; set; }
-
-        public string PreviousPayloadString { get; set; }
+        public PayloadCache PreviousPayload { get; set; }
 
         /// <summary>
         /// The channel options for the current channel.
         /// </summary>
         public ChannelOptions ChannelOptions { get; set; }
+
+        public byte[] GetPreviousPayloadBytes() => PreviousPayload?.GetBytes();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DecodingContext"/> class.

@@ -73,7 +73,7 @@ namespace IO.Ably.Realtime
                 case ProtocolMessage.MessageAction.Message:
                     var result = _messageHandler.DecodeMessages(
                         protocolMessage,
-                        protocolMessage.Presence,
+                        protocolMessage.Messages,
                         channel.MessageDecodingContext);
 
                     if (result.IsFailure)

@@ -15,7 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)AblyRealtime.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AblyRest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ApiKey.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\PreviousPayload.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\PayloadCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\VCDiffEncoder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\DecodingContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MessageEncoders\VcdiffErrorInfo.cs" />

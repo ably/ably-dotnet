@@ -31,22 +31,22 @@ namespace IO.Ably.AcceptanceTests
                 var context = new DecodingContext();
                 MessageHandler.DecodePayload(payload, context);
 
-                context.PreviousPayload.Should().BeEquivalentTo(_binaryData);
-                context.PreviousPayloadEncoding.Should().BeEquivalentTo("utf-8");
+                context.PreviousPayload.GetBytes().Should().BeEquivalentTo(_binaryData);
+                context.PreviousPayload.Encoding.Should().BeEquivalentTo("utf-8");
             }
 
             [Fact]
             public void WhenBase64IsNotTheFirstEncoding_ShouldSaveTheOriginalPayloadInContext()
             {
-                var message = new Message() { Data = new { Text = "Hello" } };
+                var message = new Message { Data = new { Text = "Hello" } };
                 MessageHandler.EncodePayload(message, new DecodingContext());
                 var payloadData = message.Data as string;
                 var payloadEncoding = message.Encoding;
 
                 var context = new DecodingContext();
                 MessageHandler.DecodePayload(message, context);
-                context.PreviousPayload.Should().BeEquivalentTo(payloadData.GetBytes());
-                context.PreviousPayloadEncoding.Should().Be(payloadEncoding);
+                context.PreviousPayload.GetBytes().Should().BeEquivalentTo(payloadData.GetBytes());
+                context.PreviousPayload.Encoding.Should().Be(payloadEncoding);
             }
 
             [Fact]
