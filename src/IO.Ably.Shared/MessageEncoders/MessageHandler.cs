@@ -231,8 +231,7 @@ namespace IO.Ably.MessageEncoders
                 var originalPayloadResult = GetOriginalMessagePayload();
                 originalPayloadResult.IfSuccess(x =>
                 {
-                    context.PreviousPayload = x.previousPayload;
-                    context.PreviousPayloadEncoding = x.previousPayloadEncoding;
+                    context.PreviousPayload = x;
                 });
                 overallResult = Result.Combine(overallResult, originalPayloadResult);
             }
@@ -242,22 +241,21 @@ namespace IO.Ably.MessageEncoders
 
             return overallResult;
 
-            Result<(string previousPayloadEncoding, byte[] previousPayload)> GetOriginalMessagePayload()
+            Result<PayloadCache> GetOriginalMessagePayload()
             {
                 if (payload.Data is byte[] data)
                 {
-                    return Result.Ok((payload.Encoding, data));
+                    return Result.Ok(new PayloadCache(data, payload.Encoding));
                 }
 
                 bool isFirstEncodingBase64 = MessageEncoder.CurrentEncodingIs(payload, Base64Encoder.EncodingNameStr);
                 if (isFirstEncodingBase64)
                 {
                     var result = Base64Encoder.Decode(payload, new DecodingContext());
-                    return result.Map(x => (MessageEncoder.RemoveCurrentEncodingPart(payload), (byte[])x.Data));
+                    return result.Map(x => new PayloadCache((byte[])x.Data, MessageEncoder.RemoveCurrentEncodingPart(payload)));
                 }
 
-                var utf8Bytes = ((string)payload.Data).GetBytes();
-                return Result.Ok((payload.Encoding, utf8bytes: utf8Bytes));
+                return Result.Ok(new PayloadCache((string)payload.Data, payload.Encoding));
             }
 
             // Local function that tidies the processing
