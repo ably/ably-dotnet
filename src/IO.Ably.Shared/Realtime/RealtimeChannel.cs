@@ -21,6 +21,8 @@ namespace IO.Ably.Realtime
         private ChannelState _state;
         private volatile bool _decodeRecoveryInProgress = false;
 
+        internal LastMessageIds LastSuccessfulMessageIds { get; set; } = LastMessageIds.Empty;
+
         internal DecodingContext MessageDecodingContext { get; private set; }
 
         public event EventHandler<ChannelStateChange> StateChanged = delegate { };
@@ -185,36 +187,52 @@ namespace IO.Ably.Realtime
 
         public void Attach(Action<bool, ErrorInfo> callback = null)
         {
-            if (State == ChannelState.Attached)
-            {
-                ActionUtils.SafeExecute(() => callback?.Invoke(true, null), Logger, $"{Name}-Attach()");
-
-                return;
-            }
-
-            // NOTE: This is already properly fixed in 1.2 branch
-            if (IsTerminalConnectionState || ConnectionState == ConnectionState.Suspended)
-            {
-                var connectionState = RealtimeClient.State.Connection.CurrentStateObject;
-                var connectionStateError = connectionState.Error ?? connectionState.DefaultErrorInfo;
-                ActionUtils.SafeExecute(() => callback?.Invoke(
-                    false,
-                    new ErrorInfo(
-                        $"Cannot attach when connection is in {ConnectionState} state",
-                        ErrorCodes.ChannelOperationFailed,
-                        cause: connectionStateError)));
-                return;
-            }
-
             Attach(null, null, callback);
         }
 
-        private void Attach(ErrorInfo error, ProtocolMessage msg = null, Action<bool, ErrorInfo> callback = null)
+        private void Attach(
+            ErrorInfo error,
+            ProtocolMessage msg = null,
+            Action<bool, ErrorInfo> callback = null,
+            bool force = false)
         {
-            var actualError = error == null && msg?.Error != null ? msg.Error : error;
-            if (AttachedAwaiter.StartWait(callback, ConnectionManager.Options.RealtimeRequestTimeout))
+            if (force == false)
             {
-                SetChannelState(ChannelState.Attaching, error, msg);
+                if (State == ChannelState.Attached)
+                {
+                    ActionUtils.SafeExecute(() => callback?.Invoke(true, null), Logger, $"{Name}-Attach()");
+                    return;
+                }
+
+                /* TODO: Handle RTL4h where Attach operation should be queued if another attach is in progress. */
+            }
+
+            if (IsTerminalConnectionState)
+            {
+                // TODO: Check the spec whether there is a specific error code.
+                ActionUtils.SafeExecute(() => callback?.Invoke(
+                    false,
+                    new ErrorInfo($"Cannot attach when connection is in {ConnectionState} state")));
+                return;
+            }
+
+            var actualError = error == null && msg?.Error != null ? msg.Error : error;
+            SetChannelState(ChannelState.Attaching, actualError, msg);
+
+            if (AttachedAwaiter.StartWait(callback, ConnectionManager.Options.RealtimeRequestTimeout, force))
+            {
+                if (ConnectionState == ConnectionState.Initialized)
+                {
+                    Connection.Connect();
+                }
+
+                var protocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name);
+                if (_decodeRecoveryInProgress && LastSuccessfulMessageIds != LastMessageIds.Empty)
+                {
+                    protocolMessage.ChannelSerial = LastSuccessfulMessageIds.ProtocolMessageChannelSerial;
+                }
+
+                SendMessage(protocolMessage);
             }
         }
 
@@ -225,13 +243,30 @@ namespace IO.Ably.Realtime
 
         internal void StartDecodeFailureRecovery()
         {
+            Logger.Debug("DecodeRecovery: Starting decode failure recovery.");
             if (_decodeRecoveryInProgress)
             {
-                Logger.Debug("Decode recovery already in progress. Skipping ...");
+                Logger.Warning("Decode recovery already in progress. Skipping ...");
                 return;
             }
 
-            Attach();
+            Attach(
+                error: null,
+                msg: null,
+                callback: (success, error) =>
+                {
+                    if (success)
+                    {
+                        Logger.Debug("DecodeRecovery: Successfully recovered from a decode failure.");
+                    }
+                    else
+                    {
+                        Logger.Debug("DecodeRecovery: Failed to recover from decode failure.");
+                    }
+
+                    _decodeRecoveryInProgress = false;
+                },
+                force: true);
         }
 
         private void OnAttachTimeout()
@@ -505,20 +540,6 @@ namespace IO.Ably.Realtime
                 case ChannelState.Attaching:
                     DetachedAwaiter.Fail(new ErrorInfo("Channel transitioned to Attaching", 50000));
 
-                    if (ConnectionState == ConnectionState.Initialized)
-                    {
-                        Connection.Connect();
-                    }
-
-                    if (IsTerminalConnectionState)
-                    {
-                        Logger.Warning($"#{Name}. Cannot send Attach messages when connection is in {ConnectionState} State");
-                    }
-                    else
-                    {
-                        SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name));
-                    }
-
                     break;
                 case ChannelState.Detaching:
                     AttachedAwaiter.Fail(new ErrorInfo("Channel transitioned to detaching", 50000));
@@ -578,6 +599,8 @@ namespace IO.Ably.Realtime
 
         private void Reattach(ErrorInfo error, ProtocolMessage msg)
         {
+            // TODO: Have a look at changing it so we have a better way to schedule
+            // stuff in the background.
             TaskUtils.RunInBackground(
                 () =>
             {
@@ -608,7 +631,9 @@ namespace IO.Ably.Realtime
         /// </summary>
         private void ReattachAfterTimeout(ErrorInfo error, ProtocolMessage msg)
         {
-            Task.Run(async () =>
+            // We capture the task but ignore it to make sure an error doesn't take down
+            // the thread
+            _ = Task.Run(async () =>
             {
                 await Task.Delay(RealtimeClient.Options.ChannelRetryTimeout);
 

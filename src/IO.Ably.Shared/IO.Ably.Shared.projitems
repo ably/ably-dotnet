@@ -22,6 +22,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)PaginatedRequestParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelEvent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\AttemptsHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realtime\LastMessageIds.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.GetParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Presence.QueuedPresenceMessage.cs" />
