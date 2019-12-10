@@ -19,8 +19,9 @@ namespace IO.Ably.Realtime
         private readonly Handlers<Message> _handlers = new Handlers<Message>();
         private ChannelOptions _options;
         private ChannelState _state;
+        private volatile bool _decodeRecoveryInProgress = false;
 
-        internal EncodingDecodingContext EncodingDecodingContext { get; private set; }
+        internal DecodingContext MessageDecodingContext { get; private set; }
 
         public event EventHandler<ChannelStateChange> StateChanged = delegate { };
 
@@ -84,7 +85,7 @@ namespace IO.Ably.Realtime
         {
             Name = name;
             Options = options;
-            EncodingDecodingContext = new EncodingDecodingContext(options);
+            MessageDecodingContext = new DecodingContext(options);
             Presence = new Presence(realtimeClient.ConnectionManager, this, clientId, Logger);
             RealtimeClient = realtimeClient;
             State = ChannelState.Initialized;
@@ -211,6 +212,17 @@ namespace IO.Ably.Realtime
         public async Task<Result> AttachAsync()
         {
             return await TaskWrapper.Wrap(Attach);
+        }
+
+        internal void StartDecodeFailureRecovery()
+        {
+            if (_decodeRecoveryInProgress)
+            {
+                Logger.Debug("Decode recovery already in progress. Skipping ...");
+                return;
+            }
+
+            Attach();
         }
 
         private void OnAttachTimeout()

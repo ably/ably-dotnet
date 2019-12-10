@@ -20,7 +20,7 @@ namespace IO.Ably.Tests.MessageEncodes
         private IPayload DecodePayload(object data, string encoding = "")
         {
             var payload = new Message() { Data = data, Encoding = encoding };
-            return _encoder.Decode(payload, new EncodingDecodingContext()).Value;
+            return _encoder.Decode(payload, new DecodingContext()).Value;
         }
 
         public class Decode : Utf8EncoderTests

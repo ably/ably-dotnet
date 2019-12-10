@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Xml.XPath;
 using IO.Ably;
@@ -41,7 +42,7 @@ namespace IO.Ably.MessageEncoders
             _protocol = protocol;
         }
 
-        public IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response, EncodingDecodingContext context)
+        public IEnumerable<PresenceMessage> ParsePresenceMessages(AblyResponse response, DecodingContext context)
         {
             if (response.Type != ResponseType.Json)
             {
@@ -62,7 +63,7 @@ namespace IO.Ably.MessageEncoders
 #endif
         }
 
-        public IEnumerable<Message> ParseMessagesResponse(AblyResponse response, EncodingDecodingContext context)
+        public IEnumerable<Message> ParseMessagesResponse(AblyResponse response, DecodingContext context)
         {
             if (response.Type == ResponseType.Json)
             {
@@ -81,7 +82,7 @@ namespace IO.Ably.MessageEncoders
 #endif
         }
 
-        private void ProcessMessages<T>(IEnumerable<T> payloads, EncodingDecodingContext context) where T : IMessage
+        private void ProcessMessages<T>(IEnumerable<T> payloads, DecodingContext context) where T : IMessage
         {
             // TODO: What happens with rest request where we can't decode messages
             DecodePayloads(context, payloads as IEnumerable<IMessage>);
@@ -134,7 +135,7 @@ namespace IO.Ably.MessageEncoders
 
         private byte[] GetMessagesRequestBody(IEnumerable<Message> payloads, ChannelOptions options)
         {
-            EncodePayloads(new EncodingDecodingContext(options), payloads);
+            EncodePayloads(new DecodingContext(options), payloads);
 #if MSGPACK
             if (_protocol == Protocol.MsgPack)
             {
@@ -144,7 +145,7 @@ namespace IO.Ably.MessageEncoders
             return JsonHelper.Serialize(payloads).GetBytes();
         }
 
-        internal Result EncodePayloads(EncodingDecodingContext context, IEnumerable<IMessage> payloads)
+        internal Result EncodePayloads(DecodingContext context, IEnumerable<IMessage> payloads)
         {
             var result = Result.Ok();
             foreach (var payload in payloads)
@@ -155,7 +156,7 @@ namespace IO.Ably.MessageEncoders
             return result;
         }
 
-        internal static Result DecodePayloads(EncodingDecodingContext context, IEnumerable<IMessage> payloads, IEnumerable<MessageEncoder> encoders = null)
+        internal static Result DecodePayloads(DecodingContext context, IEnumerable<IMessage> payloads, IEnumerable<MessageEncoder> encoders = null)
         {
             var result = Result.Ok();
             foreach (var payload in payloads)
@@ -166,7 +167,7 @@ namespace IO.Ably.MessageEncoders
             return result;
         }
 
-        internal static Result EncodePayload(IMessage payload, EncodingDecodingContext context, IEnumerable<MessageEncoder> encoders = null)
+        internal static Result EncodePayload(IMessage payload, DecodingContext context, IEnumerable<MessageEncoder> encoders = null)
         {
             ValidatePayloadDataType(payload);
             var result = Result.Ok();
@@ -215,7 +216,7 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
-        internal static Result DecodePayload(IMessage payload, EncodingDecodingContext context, IEnumerable<MessageEncoder> encoders = null)
+        internal static Result DecodePayload(IMessage payload, DecodingContext context, IEnumerable<MessageEncoder> encoders = null)
         {
             var actualEncoders = (encoders ?? DefaultEncoders).ToList();
             var pp = context.PreviousPayload; // We take a chance that this will not be modified but replaced
@@ -227,13 +228,13 @@ namespace IO.Ably.MessageEncoders
             Result overallResult = processResult;
             if (pp == context.PreviousPayload)
             {
-                var originalPayload = GetOriginalMessagePayload();
-                originalPayload.IfSuccess(x =>
+                var originalPayloadResult = GetOriginalMessagePayload();
+                originalPayloadResult.IfSuccess(x =>
                 {
                     context.PreviousPayload = x.previousPayload;
                     context.PreviousPayloadEncoding = x.previousPayloadEncoding;
                 });
-                overallResult = Result.Combine(overallResult, originalPayload);
+                overallResult = Result.Combine(overallResult, originalPayloadResult);
             }
 
             payload.Data = decodedPayload.Data;
@@ -251,7 +252,7 @@ namespace IO.Ably.MessageEncoders
                 bool isFirstEncodingBase64 = MessageEncoder.CurrentEncodingIs(payload, Base64Encoder.EncodingNameStr);
                 if (isFirstEncodingBase64)
                 {
-                    var result = Base64Encoder.Decode(payload, new EncodingDecodingContext());
+                    var result = Base64Encoder.Decode(payload, new DecodingContext());
                     return result.Map(x => (MessageEncoder.RemoveCurrentEncodingPart(payload), (byte[])x.Data));
                 }
 
@@ -291,7 +292,6 @@ namespace IO.Ably.MessageEncoders
 
                     if (result.IsSuccess)
                     {
-                        context.Encoding = result.Value.Encoding;
                         currentPayload = result.Value;
                     }
                     else
@@ -446,7 +446,7 @@ namespace IO.Ably.MessageEncoders
             return protocolMessage;
         }
 
-        public Result EncodeProtocolMessage(ProtocolMessage protocolMessage, EncodingDecodingContext context)
+        public Result EncodeProtocolMessage(ProtocolMessage protocolMessage, DecodingContext context)
         {
             var result = Result.Ok();
             if (protocolMessage.Messages != null)
@@ -462,54 +462,56 @@ namespace IO.Ably.MessageEncoders
             return result;
         }
 
-        public Result DecodeProtocolMessage(ProtocolMessage protocolMessage, EncodingDecodingContext context)
-        {
-            var result = Result.Combine(
-                DecodeMessages(protocolMessage, protocolMessage.Messages, context, DefaultEncoders),
-                DecodeMessages(protocolMessage, protocolMessage.Presence, context, DefaultEncoders));
-
-            result.IfFailure(error =>
-                Logger.Warning("Failed to decode one or more messages. Please check the previous log messages for more Warnings"));
-
-            return result;
-        }
-
-        private Result DecodeMessages(
+        public Result DecodeMessages(
             ProtocolMessage protocolMessage,
             IEnumerable<IMessage> messages,
-            EncodingDecodingContext context,
-            List<MessageEncoder> encoders)
+            ChannelOptions options)
+        {
+            var context = options.ToEncodingDecodingContext();
+            return DecodeMessages(protocolMessage, messages, context);
+        }
+
+        public Result DecodeMessages(
+            ProtocolMessage protocolMessage,
+            IEnumerable<IMessage> messages,
+            DecodingContext context)
         {
             var result = Result.Ok();
             var index = 0;
             foreach (var message in messages ?? Enumerable.Empty<IMessage>())
             {
-                SetMessageIdConnectionIdAndTimestamp(protocolMessage, message, index);
-                var decodeResult = DecodePayload(message, context, encoders)
+                SetMessageIdConnectionIdAndTimestamp(message, index);
+                var decodeResult = DecodePayload(message, context, DefaultEncoders)
                     .IfFailure(error => Logger.Warning($"Error decoding message with id: {message.Id}. Error: {error.Message}. Exception: {error.InnerException?.Message}"));
 
                 result = Result.Combine(result, decodeResult);
+
+                if (result.IsFailure)
+                {
+                    break;
+                }
+
                 index++;
             }
 
             return result;
-        }
 
-        private static void SetMessageIdConnectionIdAndTimestamp(ProtocolMessage protocolMessage, IMessage message, int i)
-        {
-            if (message.Id.IsEmpty())
+            void SetMessageIdConnectionIdAndTimestamp(IMessage message, int i)
             {
-                message.Id = $"{protocolMessage.Id}:{i}";
-            }
+                if (message.Id.IsEmpty())
+                {
+                    message.Id = $"{protocolMessage.Id}:{i}";
+                }
 
-            if (message.ConnectionId.IsEmpty())
-            {
-                message.ConnectionId = protocolMessage.ConnectionId;
-            }
+                if (message.ConnectionId.IsEmpty())
+                {
+                    message.ConnectionId = protocolMessage.ConnectionId;
+                }
 
-            if (message.Timestamp.HasValue == false)
-            {
-                message.Timestamp = protocolMessage.Timestamp;
+                if (message.Timestamp.HasValue == false)
+                {
+                    message.Timestamp = protocolMessage.Timestamp;
+                }
             }
         }
 
