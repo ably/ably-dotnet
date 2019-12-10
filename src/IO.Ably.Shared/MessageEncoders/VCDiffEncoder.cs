@@ -35,11 +35,17 @@ namespace IO.Ably.MessageEncoders
             {
                 var payloadBytes = DataHelpers.ConvertToByteArray(payload.Data);
 
-                var result = DeltaDecoder.ApplyDelta(context.PreviousPayload, payloadBytes);
-                context.PreviousPayload = result.AsByteArray();
-                context.PreviousPayloadEncoding = context.Encoding;
-                context.Encoding = RemoveCurrentEncodingPart(payload);
-                return Result.Ok(new ProcessedPayload()
+                var previousPayload = context.PreviousPayload.GetBytes();
+                if (previousPayload is null)
+                {
+                    return Result.Fail<ProcessedPayload>(new VcdiffErrorInfo("Missing previous payload"));
+                }
+
+                var result = DeltaDecoder.ApplyDelta(previousPayload, payloadBytes);
+                var nextEncoding = RemoveCurrentEncodingPart(payload);
+
+                context.PreviousPayload = new PayloadCache(result.AsByteArray(), nextEncoding);
+                return Result.Ok(new ProcessedPayload
                 {
                     Data = result.AsByteArray(),
                     Encoding = RemoveCurrentEncodingPart(payload),
@@ -48,7 +54,7 @@ namespace IO.Ably.MessageEncoders
             catch (Exception ex)
             {
                 var error =
-                    $"Payload Encoding: {context.PreviousPayloadEncoding}. Payload: {context.PreviousPayload?.Length} bytes";
+                    $"Payload Encoding: {context.PreviousPayload?.Encoding}. Payload: {context.PreviousPayload?.GetBytes().Length} bytes";
                 logger.Error("Error decoding vcdiff message: " + error, ex);
 
                 return Result.Fail<ProcessedPayload>(new VcdiffErrorInfo("Failed to decode vcdiff message", ex));
