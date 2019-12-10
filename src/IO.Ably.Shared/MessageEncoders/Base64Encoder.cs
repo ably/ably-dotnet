@@ -9,7 +9,7 @@ namespace IO.Ably.MessageEncoders
 
         public override string EncodingName => EncodingNameStr;
 
-        public override Result<ProcessedPayload> Decode(IPayload payload, EncodingDecodingContext context)
+        public override Result<ProcessedPayload> Decode(IPayload payload, DecodingContext context)
         {
             if (CurrentEncodingIs(payload, EncodingName) && payload.Data is string data)
             {
@@ -26,7 +26,7 @@ namespace IO.Ably.MessageEncoders
         public override bool CanProcess(string currentEncoding)
             => currentEncoding.EqualsTo(EncodingNameStr);
 
-        public override Result<ProcessedPayload> Encode(IPayload payload, EncodingDecodingContext context)
+        public override Result<ProcessedPayload> Encode(IPayload payload, DecodingContext context)
         {
             var data = payload.Data;
             if (IsEmpty(data))

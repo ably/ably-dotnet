@@ -13,7 +13,7 @@ namespace IO.Ably.MessageEncoders
 
         public override string EncodingName => EncodingNameStr;
 
-        public override Result<ProcessedPayload> Decode(IPayload payload, EncodingDecodingContext context)
+        public override Result<ProcessedPayload> Decode(IPayload payload, DecodingContext context)
         {
             var options = context.ChannelOptions;
             var logger = options?.Logger ?? DefaultLogger.LoggerInstance;
@@ -43,7 +43,7 @@ namespace IO.Ably.MessageEncoders
             return currentEncoding.EqualsTo(EncodingNameStr);
         }
 
-        public override Result<ProcessedPayload> Encode(IPayload payload, EncodingDecodingContext context)
+        public override Result<ProcessedPayload> Encode(IPayload payload, DecodingContext context)
         {
             if (IsEmpty(payload.Data))
             {

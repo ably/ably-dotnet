@@ -28,7 +28,7 @@ namespace IO.Ably.AcceptanceTests
             {
                 var payload = new Message() { Data = _base64Data, Encoding = "utf-8/base64" };
 
-                var context = new EncodingDecodingContext();
+                var context = new DecodingContext();
                 MessageHandler.DecodePayload(payload, context);
 
                 context.PreviousPayload.Should().BeEquivalentTo(_binaryData);
@@ -39,11 +39,11 @@ namespace IO.Ably.AcceptanceTests
             public void WhenBase64IsNotTheFirstEncoding_ShouldSaveTheOriginalPayloadInContext()
             {
                 var message = new Message() { Data = new { Text = "Hello" } };
-                MessageHandler.EncodePayload(message, new EncodingDecodingContext());
+                MessageHandler.EncodePayload(message, new DecodingContext());
                 var payloadData = message.Data as string;
                 var payloadEncoding = message.Encoding;
 
-                var context = new EncodingDecodingContext();
+                var context = new DecodingContext();
                 MessageHandler.DecodePayload(message, context);
                 context.PreviousPayload.Should().BeEquivalentTo(payloadData.GetBytes());
                 context.PreviousPayloadEncoding.Should().Be(payloadEncoding);
