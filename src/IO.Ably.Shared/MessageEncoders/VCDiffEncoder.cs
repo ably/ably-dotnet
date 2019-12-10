@@ -35,7 +35,7 @@ namespace IO.Ably.MessageEncoders
             {
                 var payloadBytes = DataHelpers.ConvertToByteArray(payload.Data);
 
-                var previousPayload = context.PreviousPayload.GetBytes();
+                var previousPayload = context.PreviousPayload?.GetBytes();
                 if (previousPayload is null)
                 {
                     return Result.Fail<ProcessedPayload>(new VcdiffErrorInfo("Missing previous payload"));
