@@ -21,6 +21,7 @@ namespace IO.Ably
         public const int InvalidClientId = 40012;
         public const int InvalidMessageDataOrEncoding = 40013;
         public const int ResourceDisposed = 40014;
+        public const int VCDiffDecodeError = 40018;
         public const int BatchError = 40020;
 
         /* 401 codes */

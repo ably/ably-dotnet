@@ -30,9 +30,9 @@ namespace IO.Ably.MessageEncoders
 
         public abstract bool CanProcess(string currentEncoding);
 
-        public abstract Result<ProcessedPayload> Encode(IPayload payload, EncodingDecodingContext context);
+        public abstract Result<ProcessedPayload> Encode(IPayload payload, DecodingContext context);
 
-        public abstract Result<ProcessedPayload> Decode(IPayload payload, EncodingDecodingContext context);
+        public abstract Result<ProcessedPayload> Decode(IPayload payload, DecodingContext context);
 
         public bool IsEmpty(object data)
         {

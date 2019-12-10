@@ -18,12 +18,12 @@ namespace IO.Ably.MessageEncoders
             return currentEncoding.IsNotEmpty() && currentEncoding.StartsWith("vcdiff");
         }
 
-        public override Result<ProcessedPayload> Encode(IPayload payload, EncodingDecodingContext context)
+        public override Result<ProcessedPayload> Encode(IPayload payload, DecodingContext context)
         {
             return Result.Ok(new ProcessedPayload(payload));
         }
 
-        public override Result<ProcessedPayload> Decode(IPayload payload, EncodingDecodingContext context)
+        public override Result<ProcessedPayload> Decode(IPayload payload, DecodingContext context)
         {
             var logger = context.ChannelOptions?.Logger ?? DefaultLogger.LoggerInstance;
             if (payload == null)
@@ -45,15 +45,13 @@ namespace IO.Ably.MessageEncoders
                     Encoding = RemoveCurrentEncodingPart(payload),
                 });
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                // TODO: Rethrow an error to indicate the vcdiff failed and things need to happen.
                 var error =
                     $"Payload Encoding: {context.PreviousPayloadEncoding}. Payload: {context.PreviousPayload?.Length} bytes";
-                logger.Error("Error decoding vcdiff message: " + error, e);
+                logger.Error("Error decoding vcdiff message: " + error, ex);
 
-                // TODO: Specify the correct error codes
-                return Result.Fail<ProcessedPayload>(new ErrorInfo("Failed to decode vcdiff message"));
+                return Result.Fail<ProcessedPayload>(new VcdiffErrorInfo("Failed to decode vcdiff message", ex));
             }
         }
     }

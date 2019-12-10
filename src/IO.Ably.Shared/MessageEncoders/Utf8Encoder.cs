@@ -13,12 +13,12 @@ namespace IO.Ably.MessageEncoders
             return currentEncoding.EqualsTo(EncodingNameStr);
         }
 
-        public override Result<ProcessedPayload> Encode(IPayload payload, EncodingDecodingContext context)
+        public override Result<ProcessedPayload> Encode(IPayload payload, DecodingContext context)
         {
             return Result.Ok(new ProcessedPayload(payload));
         }
 
-        public override Result<ProcessedPayload> Decode(IPayload payload, EncodingDecodingContext context)
+        public override Result<ProcessedPayload> Decode(IPayload payload, DecodingContext context)
         {
             // Assume all the other steps will always work with Utf8
             if (CurrentEncodingIs(payload, EncodingName))

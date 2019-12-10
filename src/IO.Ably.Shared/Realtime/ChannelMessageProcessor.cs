@@ -71,10 +71,21 @@ namespace IO.Ably.Realtime
 
                     break;
                 case ProtocolMessage.MessageAction.Message:
-                    var result = _messageHandler.DecodeProtocolMessage(protocolMessage, channel.EncodingDecodingContext);
+                    var result = _messageHandler.DecodeMessages(
+                        protocolMessage,
+                        protocolMessage.Presence,
+                        channel.MessageDecodingContext);
+
                     if (result.IsFailure)
                     {
-                        channel.OnError(result.Error);
+                        Logger.Error($"{channel.Name} - failed to decode message. ErrorCode: {result.Error.Code}, Message: {result.Error.Message}");
+                        if (result.Error is VcdiffErrorInfo)
+                        {
+                            // Start Vcdiff recovery for this channel
+
+                            // Break any further message processing
+                            return Task.FromResult(true);
+                        }
                     }
 
                     foreach (var msg in protocolMessage.Messages)
@@ -84,27 +95,25 @@ namespace IO.Ably.Realtime
 
                     break;
                 case ProtocolMessage.MessageAction.Presence:
-                    var presenceDecodeResult = _messageHandler.DecodeProtocolMessage(protocolMessage, channel.EncodingDecodingContext);
+                case ProtocolMessage.MessageAction.Sync:
+
+                    var presenceDecodeResult = _messageHandler.DecodeMessages(
+                                                protocolMessage,
+                                                protocolMessage.Presence,
+                                                channel.Options);
+
                     if (presenceDecodeResult.IsFailure)
                     {
+                        Logger.Error($"{channel.Name} - failed to decode presence message. ErrorCode: {presenceDecodeResult.Error.Code}, Message: {presenceDecodeResult.Error.Message}");
+
                         channel.OnError(presenceDecodeResult.Error);
                     }
-                    else
-                    {
-                        channel.Presence.OnPresence(protocolMessage.Presence, null);
-                    }
 
-                    break;
-                case ProtocolMessage.MessageAction.Sync:
-                    var decodeResult = _messageHandler.DecodeProtocolMessage(protocolMessage, channel.EncodingDecodingContext);
-                    if (decodeResult.IsFailure)
-                    {
-                        channel.OnError(decodeResult.Error);
-                    }
-                    else
-                    {
-                        channel.Presence.OnPresence(protocolMessage.Presence, protocolMessage.ChannelSerial);
-                    }
+                    string syncSerial = protocolMessage.Action == ProtocolMessage.MessageAction.Sync
+                            ? protocolMessage.ChannelSerial
+                            : null;
+
+                    channel.Presence.OnPresence(protocolMessage.Presence, syncSerial);
 
                     break;
             }
