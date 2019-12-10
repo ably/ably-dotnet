@@ -81,12 +81,14 @@ namespace IO.Ably.Realtime
                         Logger.Error($"{channel.Name} - failed to decode message. ErrorCode: {result.Error.Code}, Message: {result.Error.Message}");
                         if (result.Error is VcdiffErrorInfo)
                         {
-                            // Start Vcdiff recovery for this channel
+                            channel.StartDecodeFailureRecovery();
 
                             // Break any further message processing
                             return Task.FromResult(true);
                         }
                     }
+
+                    channel.LastSuccessfulMessageIds = LastMessageIds.Create(protocolMessage);
 
                     foreach (var msg in protocolMessage.Messages)
                     {
