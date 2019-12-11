@@ -213,7 +213,7 @@ namespace IO.Ably
                 }
             }
 
-            Workflow.QueueCommand(DisposeCommand.Create());
+            Workflow.QueueCommand(DisposeCommand.Create().TriggeredBy($"AblyRealtime.Dispose({disposing}"));
 
             Disposed = true;
         }

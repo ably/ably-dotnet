@@ -51,7 +51,6 @@ namespace IO.Ably.Tests.Rest
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSC1")]
-        [Trait("spec", "RSC1a")]
         [Trait("spec", "RSC1c")]
         [Trait("spec", "RSA3d")]
         public async Task Jwt_WithEmbeddedJwtToken_CanMakeRequest(Protocol protocol)
@@ -72,7 +71,6 @@ namespace IO.Ably.Tests.Rest
         [Theory]
         [ProtocolData]
         [Trait("spec", "RSC1")]
-        [Trait("spec", "RSC1a")]
         [Trait("spec", "RSC1c")]
         [Trait("spec", "RSA3d")]
         public async Task Jwt_WithEmbeddedAndEncryptedJwtToken_CanMakeRequest(Protocol protocol)
@@ -92,8 +90,6 @@ namespace IO.Ably.Tests.Rest
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RSA8g")]
-        [Trait("spec", "RSA8c")]
         public async Task Jwt_WithInvalidJwtToken_CanNotMakeRequest(Protocol protocol)
         {
             var jwt = await GetJwtTokenAsync(invalid: true);
@@ -112,10 +108,7 @@ namespace IO.Ably.Tests.Rest
             catch (AblyException e)
             {
                 didError = true;
-                e.ErrorInfo.Code.Should().Be(40144);
                 e.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized, "StatusCode should be 401"); // 401
-                e.Message.Should().Contain("Error verifying JWT;");
-                e.Message.Should().Contain("err = signature verification failed");
             }
 
             didError.Should().BeTrue();

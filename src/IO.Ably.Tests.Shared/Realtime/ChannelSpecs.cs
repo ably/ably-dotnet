@@ -464,7 +464,6 @@ namespace IO.Ably.Tests.Realtime
             }
 
             [Fact]
-            [Trait("spec", "RTL4h")]
             public async Task WhenAttaching_ShouldAddMultipleAwaitingHandlers()
             {
                 var client = await GetConnectedClient();

@@ -28,6 +28,9 @@ namespace IO.Ably.Realtime.Workflow
             TriggeredByMessage += $"{trigger.Name}:{trigger.Id}";
         }
 
+        public void RecordTrigger(string message) =>
+            TriggeredByMessage += message;
+
         protected abstract string ExplainData();
 
         public override string ToString()
@@ -42,6 +45,13 @@ namespace IO.Ably.Realtime.Workflow
             where T : RealtimeCommand
         {
             command.RecordTrigger(triggerCommand);
+            return command;
+        }
+
+        public static T TriggeredBy<T>(this T command, string message)
+            where T : RealtimeCommand
+        {
+            command.RecordTrigger(message);
             return command;
         }
     }

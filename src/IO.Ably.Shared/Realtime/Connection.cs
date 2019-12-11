@@ -229,7 +229,7 @@ namespace IO.Ably.Realtime
         {
             ThrowIfDisposed();
 
-            ExecuteCommand(ConnectCommand.Create());
+            ExecuteCommand(ConnectCommand.Create().TriggeredBy("Connection.Connect()"));
         }
 
         /// <summary>
@@ -252,7 +252,7 @@ namespace IO.Ably.Realtime
         {
             ThrowIfDisposed();
 
-            ExecuteCommand(PingCommand.Create(new PingRequest(callback, Now)));
+            ExecuteCommand(PingCommand.Create(new PingRequest(callback, Now)).TriggeredBy("Connection.Ping()"));
         }
 
         private void ExecuteCommand(RealtimeCommand cmd)
@@ -268,7 +268,7 @@ namespace IO.Ably.Realtime
         /// </summary>
         public void Close()
         {
-            ExecuteCommand(CloseConnectionCommand.Create());
+            ExecuteCommand(CloseConnectionCommand.Create().TriggeredBy("Connection.Close()"));
         }
 
         internal void NotifyUpdate(ConnectionStateChange stateChange)

@@ -74,39 +74,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
         [Fact]
         [Trait("spec", "RTN14b")]
-        [Trait("spec", "RSA4a")]
-        public async Task WithTokenErrorAndNonRenewableToken_ShouldRaiseErrorAndTransitionToFailed()
-        {
-            var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
-            bool renewTokenCalled = false;
-            var client = await GetConnectedClient(
-                opts =>
-            {
-                opts.Key = string.Empty;
-                opts.TokenDetails = tokenDetails;
-                opts.UseBinaryProtocol = false;
-            }, request =>
-            {
-                if (request.Url.Contains("/keys"))
-                {
-                    renewTokenCalled = true;
-                    return _returnedDummyTokenDetails.ToJson().ToAblyResponse();
-                }
-
-                return AblyResponse.EmptyResponse.ToTask();
-            });
-
-            client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
-
-            await client.WaitForState(ConnectionState.Failed);
-
-            renewTokenCalled.Should().BeFalse();
-            client.Connection.ErrorReason.Should().NotBeNull();
-            client.Connection.ErrorReason.Code.Should().Be(_tokenErrorCode);
-        }
-
-        [Fact]
-        [Trait("spec", "RTN14b")]
         public async Task WithTokenErrorAndTokenRenewalFails_ShouldRaiseErrorAndTransitionToDisconnected()
         {
             var tokenDetails = new TokenDetails("id") { Expires = Now.AddHours(1) };
@@ -119,7 +86,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             {
                 if (request.Url.Contains("/keys"))
                 {
-                    throw new AblyException(new ErrorInfo() { Code = 123 });
+                    throw new AblyException(new ErrorInfo() { Code = _tokenErrorCode });
                 }
 
                 return AblyResponse.EmptyResponse.ToTask();
@@ -130,7 +97,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             await client.WaitForState(ConnectionState.Disconnected);
 
             client.Connection.ErrorReason.Should().NotBeNull();
-            client.Connection.ErrorReason.Code.Should().Be(123);
+            client.Connection.ErrorReason.Code.Should().Be(_tokenErrorCode);
         }
 
         [Fact]

@@ -33,13 +33,13 @@ namespace IO.Ably.Transport.States.Connection
 
         public override RealtimeCommand Connect()
         {
-            return SetConnectingStateCommand.Create();
+            return SetConnectingStateCommand.Create().TriggeredBy("SuspendedState.Connect()");
         }
 
         public override void Close()
         {
             _timer.Abort();
-            Context.ExecuteCommand(SetClosedStateCommand.Create());
+            Context.ExecuteCommand(SetClosedStateCommand.Create().TriggeredBy("SuspendedState.Close()"));
         }
 
         public override void AbortTimer()
@@ -57,7 +57,7 @@ namespace IO.Ably.Transport.States.Connection
 
         private void OnTimeOut()
         {
-            Context.ExecuteCommand(SetConnectingStateCommand.Create());
+            Context.ExecuteCommand(SetConnectingStateCommand.Create().TriggeredBy("SuspendedState.OnTimeOut()"));
         }
     }
 }

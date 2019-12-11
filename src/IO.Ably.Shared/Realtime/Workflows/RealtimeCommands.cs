@@ -373,6 +373,7 @@ namespace IO.Ably.Realtime.Workflow
         {
             Delay = delay;
             CommandToQueue = commandToQueue;
+            CommandToQueue.TriggeredBy(this);
         }
 
         public static DelayCommand Create(TimeSpan delay, RealtimeCommand command) => new DelayCommand(delay, command);

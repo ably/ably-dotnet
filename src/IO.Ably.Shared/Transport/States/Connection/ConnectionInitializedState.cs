@@ -18,7 +18,7 @@ namespace IO.Ably.Transport.States.Connection
 
         public override RealtimeCommand Connect()
         {
-            return SetConnectingStateCommand.Create();
+            return SetConnectingStateCommand.Create().TriggeredBy("InitializedState.Connect()");
         }
 
         public override void AbortTimer()

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Tests.Infrastructure;
+using IO.Ably.Tests.Realtime;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -54,8 +55,8 @@ namespace IO.Ably.Tests
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RSA4a")]
-        public async Task RestClient_WithExpiredToken_WhenTokenExpired_ShouldNotRetryAndRaiseError(Protocol protocol)
+        [Trait("spec", "RSA4a2")]
+        public async Task RestClient_WhenTokenExpired_ShouldNotRetryAndRaiseError(Protocol protocol)
         {
             var helper = new RSA4Helper(this);
 
@@ -89,7 +90,7 @@ namespace IO.Ably.Tests
                 // (401 HTTP status code and an Ably error value 40140 <= code < 40150)
                 // As the token is expired we can expect a specific code "40142": "token expired"
                 e.ErrorInfo.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-                e.ErrorInfo.Code.Should().Be(40142);
+                e.ErrorInfo.Code.Should().Be(40171);
             }
 
             // did not retry the request
@@ -99,7 +100,7 @@ namespace IO.Ably.Tests
 
         [Theory]
         [ProtocolData]
-        [Trait("spec", "RSA4a")]
+        [Trait("spec", "RSA4a2")]
         public async Task RealtimeClient_NewInstanceWithExpiredToken_ShouldNotRetryAndHaveError(Protocol protocol)
         {
             var helper = new RSA4Helper(this);
@@ -123,7 +124,7 @@ namespace IO.Ably.Tests
             realtimeClient.Connection.State.Should().Be(ConnectionState.Failed);
             connected.Should().BeFalse();
 
-            realtimeClient.Connection.ErrorReason.Code.Should().Be(40142);
+            realtimeClient.Connection.ErrorReason.Code.Should().Be(40171);
             helper.Requests.Count.Should().Be(0);
         }
 
@@ -149,7 +150,7 @@ namespace IO.Ably.Tests
             await realtimeClient.WaitForState(ConnectionState.Failed);
             realtimeClient.Connection.State.Should().Be(ConnectionState.Failed);
 
-            realtimeClient.Connection.ErrorReason.Code.Should().Be(40142);
+            realtimeClient.Connection.ErrorReason.Code.Should().Be(40171);
             helper.Requests.Count.Should().Be(0);
         }
 
@@ -458,6 +459,25 @@ namespace IO.Ably.Tests
             // If it doesn't throw we are good :)
             await httpTokenAbly.Channels.Get("foo").PublishAsync("test", "true");
             await httpsTokenAbly.Channels.Get("foo").PublishAsync("test", "true");
+        }
+
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSA4a2")]
+        public async Task WithTokenAuth_WhenUnauthorizedErrorAndNoRenew_ShouldThrow40171AblyException(Protocol protocol)
+        {
+            var ablyRest = await GetRestClient(protocol);
+            var token = ablyRest.Auth.RequestToken(new TokenParams { Ttl = TimeSpan.FromSeconds(1) });
+
+            await Task.Delay(2000);
+            var ably = await GetRestClient(protocol, opts =>
+            {
+                opts.Key = string.Empty;
+                opts.TokenDetails = token;
+            });
+
+            var ex = await Assert.ThrowsAsync<AblyException>(() => ably.StatsAsync());
+            ex.ErrorInfo.Code.Should().Be(40171);
         }
 
         [Theory]

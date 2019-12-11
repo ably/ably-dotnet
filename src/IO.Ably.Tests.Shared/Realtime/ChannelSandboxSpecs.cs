@@ -1269,6 +1269,43 @@ namespace IO.Ably.Tests.Realtime
             channel.State.Should().Be(ChannelState.Attached);
         }
 
+        [Theory]
+        [ProtocolData]
+        [Trait("issue ", "382")]
+
+        public async Task WhenSubscribeHandlerBlocks_ShouldBehaveOk(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            var channel = client.Channels.Get("test".AddRandomSuffix());
+            int processedMessaged = 0;
+            List<int> order = new List<int>();
+            var taskAwaiter = new TaskCompletionAwaiter(20000);
+            channel.Subscribe(m =>
+            {
+                if (processedMessaged <= 0)
+                {
+                    Task.Delay(15000).WaitAndUnwrapException();
+                }
+
+                order.Add(int.Parse(m.Data.ToString()));
+
+                processedMessaged++;
+                if (processedMessaged == 3)
+                {
+                    taskAwaiter.SetCompleted();
+                }
+            });
+
+            await channel.AttachAsync();
+            channel.Publish("test", "1");
+            channel.Publish("test", "2");
+            channel.Publish("test", "3");
+            await taskAwaiter.Task;
+
+            order.Should().HaveCount(3);
+            order.Should().BeInAscendingOrder();
+        }
+
         // [Theory]
         // [ProtocolData]
         // public async Task WhenAttachAsyncCalledAfterSubscribe_ShouldWaitUntilChannelIsAttached(Protocol protocol)

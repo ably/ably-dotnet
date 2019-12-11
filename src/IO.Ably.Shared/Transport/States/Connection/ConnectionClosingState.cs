@@ -32,13 +32,13 @@ namespace IO.Ably.Transport.States.Connection
             switch (message.Action)
             {
                 case ProtocolMessage.MessageAction.Closed:
-                    TransitionState(SetClosedStateCommand.Create());
+                    TransitionState(SetClosedStateCommand.Create().TriggeredBy("ClosingState.OnMessageReceived()"));
                     return Task.FromResult(true);
                 case ProtocolMessage.MessageAction.Disconnected:
-                    TransitionState(SetDisconnectedStateCommand.Create(message.Error));
+                    TransitionState(SetDisconnectedStateCommand.Create(message.Error).TriggeredBy("ClosingState.OnMessageReceived()"));
                     return Task.FromResult(true);
                 case ProtocolMessage.MessageAction.Error:
-                    TransitionState(SetFailedStateCommand.Create(message.Error));
+                    TransitionState(SetFailedStateCommand.Create(message.Error).TriggeredBy("ClosingState.OnMessageReceived()"));
                     return Task.FromResult(true);
             }
 
@@ -66,13 +66,13 @@ namespace IO.Ably.Transport.States.Connection
 
         private void OnTimeOut()
         {
-            Context.ExecuteCommand(SetClosedStateCommand.Create());
+            Context.ExecuteCommand(SetClosedStateCommand.Create().TriggeredBy("ClosingState.OnTimeOut()"));
         }
 
         public override RealtimeCommand Connect()
         {
             _timer.Abort();
-            return SetConnectingStateCommand.Create(clearConnectionKey: true);
+            return SetConnectingStateCommand.Create(clearConnectionKey: true).TriggeredBy("ClosingState.Connect()");
         }
     }
 }

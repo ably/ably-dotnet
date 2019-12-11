@@ -13,16 +13,18 @@ namespace IO.Ably.Tests
 {
     public class RestSpecs : MockHttpRestSpecs
     {
-        [Trait("spec", "RSC1")]
         public class WhenInitialisingRestClient
         {
             [Fact]
+            [Trait("spec", "RSC1")]
             public void WithInvalidKey_ThrowsAnException()
             {
-                Assert.Throws<AblyException>(() => new AblyRest("InvalidKey"));
+                // Needs to have ':' because otherwise it's considered a token
+                Assert.Throws<AblyException>(() => new AblyRest("InvalidKey:boo"));
             }
 
             [Fact]
+            [Trait("spec", "RSC1")]
             public void WithValidKey_InitialisesTheClient()
             {
                 var client = new AblyRest(ValidKey);
@@ -30,6 +32,7 @@ namespace IO.Ably.Tests
             }
 
             [Fact]
+            [Trait("spec", "RSC1")]
             public void WithKeyInOptions_InitialisesTheClient()
             {
                 var client = new AblyRest(new ClientOptions(ValidKey));
@@ -37,6 +40,7 @@ namespace IO.Ably.Tests
             }
 
             [Fact]
+            [Trait("spec", "RSC1")]
             public void Ctor_WithKeyPassedInOptions_InitializesClient()
             {
                 var client = new AblyRest(opts => opts.Key = ValidKey);
@@ -44,6 +48,7 @@ namespace IO.Ably.Tests
             }
 
             [Fact]
+            [Trait("spec", "RSC1")]
             public void WithTokenAndClientId_InitializesClient()
             {
                 var client = new AblyRest(opts =>
@@ -53,6 +58,26 @@ namespace IO.Ably.Tests
                 });
 
                 Assert.Equal(AuthMethod.Token, client.AblyAuth.AuthMethod);
+            }
+
+            [Theory]
+            [Trait("spec", "RSC1a")]
+            [InlineData(AblySpecs.ValidKey, false)]
+            [InlineData("fake token", true)]
+            [InlineData("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c", true)]
+            [InlineData("boo.Boo:boo", false)] // It determines whether it's a key based on ':'
+            public void WithAString_ShouldRecogniseBetweenKeyAndToken(string key, bool isToken)
+            {
+                var client = new AblyRest(key);
+
+                if (isToken)
+                {
+                    client.Options.Token.Should().Be(key);
+                }
+                else
+                {
+                    client.Options.Key.Should().Be(key);
+                }
             }
         }
 
@@ -181,16 +206,6 @@ namespace IO.Ably.Tests
             public async Task WhenErrorCodeIsNotTokenSpecific_ShouldThrow()
             {
                 var client = GetConfiguredRestClient(40100, null);
-
-                await Assert.ThrowsAsync<AblyException>(() => client.StatsAsync());
-            }
-
-            [Fact]
-            [Trait("spec", "RSC14c")]
-            [Trait("spec", "RSC14d")]
-            public async Task WhenClientHasNoMeansOfRenewingToken_ShouldThrow()
-            {
-                var client = GetConfiguredRestClient(Defaults.TokenErrorCodesRangeStart, null, false);
 
                 await Assert.ThrowsAsync<AblyException>(() => client.StatsAsync());
             }
@@ -486,7 +501,6 @@ namespace IO.Ably.Tests
 
             [Fact]
             [Trait("spec", "RSC15a")]
-            [Trait("intermittent", "true")]
             public async Task ShouldAttemptFallbackHostsInRandomOrder()
             {
                 int interations = 20;
