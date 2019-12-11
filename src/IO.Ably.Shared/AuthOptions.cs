@@ -92,7 +92,7 @@ namespace IO.Ably
         {
             if (key.IsEmpty())
             {
-                throw new AblyException(new ErrorInfo("key string cannot be null", 40000));
+                throw new AblyException(new ErrorInfo("Auth Key cannot be empty", 40106));
             }
 
             if (key.Contains(":"))
