@@ -426,6 +426,14 @@ If you want to incorporate ably-dotnet into your project from source (perhaps to
     2. Right click Dependencies and select Add Reference
     3. In the dialogue that opens you should see a list of the projects in your solution. Check the box next to IO.Ably.NETFramework (or whatever version you are trying to use) and click OK.
 
+## Spec
+
+The dotnet library follows the Ably [`Client Library development guide`](https://docs.ably.io/client-lib-development-guide/features/). To ensure it is easier to look up whether a spec item has been implemented or not; we add a Trait attribute to tests that implement parts of the spec. The convertion is to add `[Trait("spec", "spec tag")]` to unit tests. 
+
+To get a list of all spec items that appear in the tests you can run a script located in the tools directory. 
+You need to have .net core 3.0 installed. It works on Mac, Linux and Windows. Run `dotnet fsi tools/list-test-categories.fsx`. It will produce a `results.csv` file which will include all spec items, which file it was found and on what line.
+
+
 ## Release process
 
 This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
