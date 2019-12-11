@@ -55,15 +55,12 @@ namespace IO.Ably.Realtime
                 if (lastFailedState.State == ConnectionState.Disconnected)
                 {
                     // DisconnectedCount will always be > 0 and we want to start with the first host.
-                    customHost = state.Connection.FallbackHosts[(disconnectedCount - 1) % state.Connection.FallbackHosts.Count];
+                    customHost = GetFallbackHost(disconnectedCount);
                 }
 
                 if (lastFailedState.State == ConnectionState.Suspended && suspendedCount > 1)
                 {
-                    // We -1 just to preserve the logic as above.
-                    customHost =
-                        state.Connection.FallbackHosts[
-                            (disconnectedCount + suspendedCount - 1) % state.Connection.FallbackHosts.Count];
+                    customHost = GetFallbackHost(disconnectedCount + suspendedCount);
                 }
 
                 if (customHost.IsNotEmpty())
@@ -73,6 +70,18 @@ namespace IO.Ably.Realtime
             }
 
             return getRealtimeHost();
+            
+            string GetFallbackHost(int failedRequestCount)
+            {
+                if (state.Connection.FallbackHosts.Count == 0)
+                {
+                    return string.Empty;
+                }
+                
+                //We -1 because the index is 0 based where the failedRequestCount starts from 1
+                var index = (failedRequestCount - 1) % state.Connection.FallbackHosts.Count;
+                return state.Connection.FallbackHosts[index];
+            }
         }
     }
 }
