@@ -92,6 +92,8 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
                 return AblyResponse.EmptyResponse.ToTask();
             });
 
+            await client.WaitForState(ConnectionState.Connecting);
+
             client.FakeProtocolMessageReceived(new ProtocolMessage(ProtocolMessage.MessageAction.Error) { Error = new ErrorInfo("Unauthorised", _tokenErrorCode, HttpStatusCode.Unauthorized) });
 
             await client.WaitForState(ConnectionState.Disconnected);
@@ -165,10 +167,13 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
 
             await client.WaitForState(ConnectionState.Connecting);
 
-            ConnectionStateChange connectionArgs = null;
             client.Connection.On((args) =>
             {
-                connectionArgs = args;
+                args.Current.Should().Be(ConnectionState.Disconnected);
+                args.Previous.Should().Be(ConnectionState.Connecting);
+                args.Event.Should().Be(ConnectionEvent.Disconnected);
+                args.RetryIn.Should().Be(options.DisconnectedRetryTimeout);
+                args.Reason.Should().NotBeNull();
                 Done();
             });
 
@@ -179,11 +184,6 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             LastCreatedTransport.Listener.OnTransportEvent(LastCreatedTransport.Id, TransportState.Closing, new Exception());
 
             WaitOne();
-            connectionArgs.Current.Should().Be(ConnectionState.Disconnected);
-            connectionArgs.Previous.Should().Be(ConnectionState.Connecting);
-            connectionArgs.Event.Should().Be(ConnectionEvent.Disconnected);
-            connectionArgs.RetryIn.Should().Be(options.DisconnectedRetryTimeout);
-            connectionArgs.Reason.Should().NotBeNull();
         }
 
         [Fact(Skip = "Requires a SandBox Spec")]
@@ -273,7 +273,7 @@ namespace IO.Ably.Tests.Realtime.ConnectionSpecs
             // this will keep it in connecting state
             var client = GetClientWithFakeTransport(opts =>
             {
-                opts.AutoConnect = false;
+                opts.AutoConnect = true;
                 opts.DisconnectedRetryTimeout = TimeSpan.FromMilliseconds(10);
                 opts.SuspendedRetryTimeout = TimeSpan.FromMilliseconds(10);
                 opts.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(100);

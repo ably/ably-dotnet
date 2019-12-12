@@ -16,7 +16,7 @@ namespace IO.Ably.Realtime.Workflow
                 FallbackHosts = fallbackHosts ?? new List<string>();
             }
 
-            internal List<string> FallbackHosts;
+            public List<string> FallbackHosts { get; }
 
             public Guid ConnectionId { get; } = Guid.NewGuid(); // Used to identify the connection for Os Event subscribers
 
@@ -35,6 +35,8 @@ namespace IO.Ably.Realtime.Workflow
             public long? Serial { get; set; }
 
             public string Host { get; set; }
+
+            public bool IsFallbackHost => FallbackHosts.Contains(Host);
 
             internal long MessageSerial { get; set; } = 0;
 

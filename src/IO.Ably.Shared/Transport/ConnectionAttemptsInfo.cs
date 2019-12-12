@@ -63,20 +63,23 @@ namespace IO.Ably.Transport
         public int SuspendedCount() => Attempts.SelectMany(x => x.FailedStates)
             .Count(x => x.State == ConnectionState.Suspended);
 
-        public void UpdateAttemptState(ConnectionStateBase newState)
+        public void UpdateAttemptState(ConnectionStateBase newState, ILogger logger)
         {
             switch (newState.State)
             {
                 case ConnectionState.Connecting:
+                    logger.Debug("Recording connection attempt.");
                     Attempts.Add(new ConnectionAttempt(Now()));
                     break;
                 case ConnectionState.Failed:
                 case ConnectionState.Closed:
                 case ConnectionState.Connected:
+                    logger.Debug("Resetting Attempts collection.");
                     Reset();
                     break;
                 case ConnectionState.Suspended:
                 case ConnectionState.Disconnected:
+                    logger.Debug($"Recording failed attempt for state {newState.State}.");
                     if (newState.Exception != null)
                     {
                         RecordAttemptFailure(newState.State, newState.Exception);

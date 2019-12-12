@@ -36,6 +36,8 @@ namespace IO.Ably
 
         internal static AblyResponse EmptyResponse => new AblyResponse { TextResponse = "[{}]" };
 
+        internal static AblyResponse InternetCheckTimeoutResponse => new AblyResponse { TextResponse = "timeout" };
+
         internal AblyResponse()
         {
             Headers = new EmptyHttpHeaders();

@@ -101,7 +101,7 @@ namespace IO.Ably.Tests
             _context.Transport = new FakeTransport(TransportState.Initialized);
 
             // Act
-            _state.OnAttachToContext();
+            _state.StartTimer();
             _timer.StartedWithAction.Should().BeTrue();
             _timer.OnTimeOut();
 

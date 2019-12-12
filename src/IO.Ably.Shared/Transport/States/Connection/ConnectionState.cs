@@ -55,7 +55,7 @@ namespace IO.Ably.Transport.States.Connection
         {
         }
 
-        public virtual void OnAttachToContext()
+        public virtual void StartTimer()
         {
         }
 

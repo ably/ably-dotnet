@@ -39,11 +39,6 @@ namespace IO.Ably.Transport
 
         public ConnectionState ConnectionState => Connection.State;
 
-        public Task<bool> CanUseFallBackUrl(ErrorInfo error)
-        {
-            return RestClient.CanFallback(error);
-        }
-
         public ConnectionManager(Connection connection, Func<DateTimeOffset> nowFunc, ILogger logger)
         {
             Now = nowFunc;
@@ -271,7 +266,7 @@ namespace IO.Ably.Transport
         }
 
         void ITransportListener.OnTransportEvent(Guid transportId, TransportState transportState, Exception ex)
-            => ExecuteCommand(HandleTrasportEventCommand.Create(transportId, transportState, ex).TriggeredBy("OnTransportEvent()"));
+            => ExecuteCommand(HandleTrasportEventCommand.Create(transportId, transportState, ex).TriggeredBy("ConnectionManager.OnTransportEvent()"));
 
         void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)
         {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 using IO.Ably.Realtime.Workflow;
 using IO.Ably.Types;
@@ -58,44 +59,14 @@ namespace IO.Ably.Transport.States.Connection
 
                 case ProtocolMessage.MessageAction.Disconnected:
                     {
-                        Context.ExecuteCommand(HandleConnectingFailureCommand.Create(message.Error)
+                        Context.ExecuteCommand(HandleConnectingDisconnectedCommand.Create(message.Error)
                             .TriggeredBy("ConnectingState.OnMessageReceived(Disconnected)"));
                         return true;
                     }
 
                 case ProtocolMessage.MessageAction.Error:
                     {
-                        // If the error is a token error do some magic
-                        bool shouldRenew = Context.ShouldWeRenewToken(message.Error, state);
-                        if (shouldRenew)
-                        {
-                            Context.ExecuteCommand(HandleConnectingTokenErrorCommand.Create(message.Error)
-                                .TriggeredBy("ConnectingState.OnMessageReceived(Error)"));
-                            return true;
-                        }
-
-                        if (await Context.CanUseFallBackUrl(message.Error))
-                        {
-                            Context.ExecuteCommand(HandleConnectingFailureCommand.Create(message.Error, clearConnectionKey: true)
-                                .TriggeredBy("ConnectingState.OnMessageReceived(Error)"));
-                            return true;
-                        }
-
-                        if (message.Error?.IsTokenError == true && !Context.Connection.RestClient.AblyAuth.TokenRenewable)
-                        {
-                            TransitionState(SetFailedStateCommand.Create(message.Error)
-                                .TriggeredBy("ConnectingState.OnMessageReceived(Error)"));
-                            return true;
-                        }
-
-                        if (message.Error?.IsTokenError == true)
-                        {
-                            TransitionState(SetDisconnectedStateCommand.Create(message.Error)
-                                .TriggeredBy("ConnectingState.OnMessageReceived(Error)"));
-                            return true;
-                        }
-
-                        TransitionState(SetFailedStateCommand.Create(message.Error)
+                        Context.ExecuteCommand(HandleConnectingErrorCommand.Create(message.Error)
                             .TriggeredBy("ConnectingState.OnMessageReceived(Error)"));
                         return true;
                     }
@@ -109,14 +80,14 @@ namespace IO.Ably.Transport.States.Connection
             _timer.Abort();
         }
 
-        public override void OnAttachToContext()
+        public override void StartTimer()
         {
             _timer.Start(Context.DefaultTimeout, onTimeOut: OnTimeOut);
         }
 
         private void OnTimeOut()
         {
-            Context.ExecuteCommand(HandleConnectingFailureCommand.Create().TriggeredBy("ConnectingState.OnTimeOut()"));
+            Context.ExecuteCommand(HandleConnectingDisconnectedCommand.Create(new ErrorInfo("Connecting timeout", ErrorCodes.ConnectionTimedOut, HttpStatusCode.GatewayTimeout)).TriggeredBy("ConnectingState.OnTimeOut()"));
         }
 
         private void TransitionState(RealtimeCommand command)

@@ -389,7 +389,7 @@ namespace IO.Ably.Tests.Realtime
         [Theory]
         [ProtocolData]
         [Trait("spec", "RTN14c")]
-        public async Task ShouldFailIfConnectionIsNotEstablishedWithInDefaultTimeout(Protocol protocol)
+        public async Task ShouldDisconnectIfConnectionIsNotEstablishedWithInDefaultTimeout(Protocol protocol)
         {
             var client = await GetRealtimeClient(protocol, (options, _) =>
             {

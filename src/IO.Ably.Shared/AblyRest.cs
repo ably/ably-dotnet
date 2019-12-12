@@ -59,11 +59,11 @@ namespace IO.Ably
 
         internal MessageHandler MessageHandler { get; private set; }
 
-        internal string CustomHost
-        {
-            get => HttpClient.CustomHost;
-            set => HttpClient.CustomHost = value;
-        }
+        internal void SetRealtimeFallbackHost(string host)
+            => HttpClient.RealtimeConnectedFallbackHost = host;
+
+        internal void ClearRealtimeFallbackHost()
+            => HttpClient.RealtimeConnectedFallbackHost = null;
 
         internal AblyAuth AblyAuth { get; private set; }
 
@@ -364,8 +364,14 @@ namespace IO.Ably
             try
             {
                 var request = new AblyRequest(Defaults.InternetCheckUrl, HttpMethod.Get);
-                var response = await ExecuteHttpRequest(request);
-                return response.TextResponse == Defaults.InternetCheckOkMessage;
+                var response = await ExecuteHttpRequest(request).TimeoutAfter(Defaults.MaxHttpOpenTimeout, AblyResponse.EmptyResponse);
+                var success = response.TextResponse == Defaults.InternetCheckOkMessage;
+                if (success == false)
+                {
+                    Logger.Warning("Cannot get a valid internet connection. Response: " + response.TextResponse);
+                }
+
+                return success;
             }
             catch (Exception ex)
             {

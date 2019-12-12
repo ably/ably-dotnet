@@ -153,7 +153,7 @@ namespace IO.Ably.Tests
             CloseConnectionCalled = true;
         }
 
-        public void HandleConnectingFailure(ErrorInfo error, Exception ex, bool clearConnectionKey)
+        public void ilure(ErrorInfo error, Exception ex, bool clearConnectionKey)
         {
             HandledConnectionFailureCalled = true;
         }
@@ -169,20 +169,12 @@ namespace IO.Ably.Tests
             ClearAckMessagesError = error;
         }
 
-        public Task<bool> CanUseFallBackUrl(ErrorInfo error)
-        {
-            CanUseFallBackUrlCalled = true;
-            return CanUseFallBack ? TaskConstants.BooleanTrue : TaskConstants.BooleanFalse;
-        }
-
         public void DetachAttachedChannels(ErrorInfo error)
         {
             DetachAttachedChannelsCalled = true;
         }
 
         public bool DetachAttachedChannelsCalled { get; set; }
-
-        public bool CanUseFallBackUrlCalled { get; set; }
 
         public ErrorInfo ClearAckMessagesError { get; set; }
 
