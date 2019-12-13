@@ -66,7 +66,7 @@ namespace IO.Ably.Tests
             var taskAwaiter = new TaskCompletionAwaiter();
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            Task.Run(async () =>
+            _ = Task.Run(async () =>
             {
                 while (true)
                 {

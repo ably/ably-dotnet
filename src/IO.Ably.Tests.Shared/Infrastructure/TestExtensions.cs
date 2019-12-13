@@ -36,9 +36,10 @@ namespace IO.Ably.Tests.Infrastructure
             ((AblyRealtime)client).Workflow.QueueCommand(command);
         }
 
-        internal static void ProcessMessage(this IRealtimeClient client, ProtocolMessage message)
+        internal static async Task ProcessMessage(this IRealtimeClient client, ProtocolMessage message)
         {
             ((AblyRealtime)client).Workflow.QueueCommand(ProcessMessageCommand.Create(message));
+            await client.ProcessCommands();
         }
     }
 }
