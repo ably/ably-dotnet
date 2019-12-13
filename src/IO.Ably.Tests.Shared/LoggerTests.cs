@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using FluentAssertions;
 using Xunit;
 
@@ -10,11 +11,14 @@ namespace IO.Ably.AcceptanceTests
         {
             LastLevel = level;
             LastMessage = message;
+            Messages.Add(level + ": " + message);
         }
 
         public LogLevel? LastLevel { get; set; }
 
         public string LastMessage { get; set; }
+
+        public List<string> Messages { get; } = new List<string>();
     }
 
     public class LoggerTests : IDisposable

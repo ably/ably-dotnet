@@ -35,6 +35,11 @@ namespace IO.Ably.Tests.Infrastructure
             _cancellationTokenSource.Token.Register(() => _taskCompletionSource.TrySetResult(false));
         }
 
+        public void Done()
+        {
+            SetCompleted();
+        }
+
         public void Tick()
         {
             TaskCount--;

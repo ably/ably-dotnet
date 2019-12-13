@@ -47,9 +47,9 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
-        private byte[] ByteData { get; }
+        public byte[] ByteData { get; }
 
-        private string StringData { get; }
+        public string StringData { get; }
 
         public string Encoding { get; }
 
