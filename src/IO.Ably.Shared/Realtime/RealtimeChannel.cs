@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using IO.Ably.Rest;
 using IO.Ably.Transport;
@@ -19,7 +20,18 @@ namespace IO.Ably.Realtime
         private readonly Handlers<Message> _handlers = new Handlers<Message>();
         private ChannelOptions _options;
         private ChannelState _state;
-        private volatile bool _decodeRecoveryInProgress = false;
+
+        private int _decodeRecoveryInProgress = 0;
+
+        // We use interlocked exchange because it is a thread safe way to read a variable
+        // without the need of locking. Generally DecodeRecovery is set from a method triggered by
+        // the RealtimeWorkflow but it can also be called inside a callback which can potentially
+        // triggered on another thread.
+        internal bool DecodeRecovery
+        {
+            get => Interlocked.CompareExchange(ref _decodeRecoveryInProgress, 0, 0) == 1;
+            set => Interlocked.Exchange(ref _decodeRecoveryInProgress, value ? 1 : 0);
+        }
 
         internal LastMessageIds LastSuccessfulMessageIds { get; set; } = LastMessageIds.Empty;
 
@@ -227,7 +239,7 @@ namespace IO.Ably.Realtime
                 }
 
                 var protocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name);
-                if (_decodeRecoveryInProgress && LastSuccessfulMessageIds != LastMessageIds.Empty)
+                if (DecodeRecovery && LastSuccessfulMessageIds != LastMessageIds.Empty)
                 {
                     protocolMessage.ChannelSerial = LastSuccessfulMessageIds.ProtocolMessageChannelSerial;
                 }
@@ -241,17 +253,19 @@ namespace IO.Ably.Realtime
             return await TaskWrapper.Wrap(Attach);
         }
 
-        internal void StartDecodeFailureRecovery()
+        internal void StartDecodeFailureRecovery(ErrorInfo reason)
         {
             Logger.Debug("DecodeRecovery: Starting decode failure recovery.");
-            if (_decodeRecoveryInProgress)
+            if (DecodeRecovery)
             {
                 Logger.Warning("Decode recovery already in progress. Skipping ...");
                 return;
             }
 
+            DecodeRecovery = true;
+
             Attach(
-                error: null,
+                error: reason,
                 msg: null,
                 callback: (success, error) =>
                 {
@@ -264,7 +278,7 @@ namespace IO.Ably.Realtime
                         Logger.Debug("DecodeRecovery: Failed to recover from decode failure.");
                     }
 
-                    _decodeRecoveryInProgress = false;
+                    DecodeRecovery = false;
                 },
                 force: true);
         }

@@ -52,6 +52,7 @@ namespace IO.Ably.Realtime
 
         /// <summary>
         /// Error if any that caused the state change.
+        /// TODO: Update to Reason to be inline with the other libraries.
         /// </summary>
         public ErrorInfo Error { get; }
 

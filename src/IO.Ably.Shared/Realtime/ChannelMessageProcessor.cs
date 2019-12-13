@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading.Tasks;
 using IO.Ably;
 using IO.Ably.MessageEncoders;
@@ -71,6 +72,23 @@ namespace IO.Ably.Realtime
 
                     break;
                 case ProtocolMessage.MessageAction.Message:
+
+                    if (channel.State == ChannelState.Attaching)
+                    {
+                        Logger.Warning(
+                            $"Channel #{channel.Name} is currently in Attaching state. Messages received in this state are ignored. Ignoring ${protocolMessage.Messages?.Length ?? 0} messages");
+                        return TaskConstants.BooleanTrue;
+                    }
+
+                    if (ValidateIfDeltaItHasCorrectPreviousMessageId(protocolMessage, channel.LastSuccessfulMessageIds) == false)
+                    {
+                        var message =
+                            "Delta message decode failure. Previous message id does not equal expected message id.";
+                        var reason = new ErrorInfo(message, ErrorCodes.VCDiffDecodeError);
+                        channel.StartDecodeFailureRecovery(reason);
+                        return TaskConstants.BooleanTrue;
+                    }
+
                     var result = _messageHandler.DecodeMessages(
                         protocolMessage,
                         protocolMessage.Messages,
@@ -81,10 +99,10 @@ namespace IO.Ably.Realtime
                         Logger.Error($"{channel.Name} - failed to decode message. ErrorCode: {result.Error.Code}, Message: {result.Error.Message}");
                         if (result.Error is VcdiffErrorInfo)
                         {
-                            channel.StartDecodeFailureRecovery();
+                            channel.StartDecodeFailureRecovery(result.Error);
 
                             // Break any further message processing
-                            return Task.FromResult(true);
+                            return TaskConstants.BooleanTrue;
                         }
                     }
 
@@ -121,6 +139,24 @@ namespace IO.Ably.Realtime
             }
 
             return Task.FromResult(true);
+        }
+
+        private bool ValidateIfDeltaItHasCorrectPreviousMessageId(ProtocolMessage protocolMessage, LastMessageIds channelSuccessfulMessageIds)
+        {
+            if (protocolMessage.Messages == null || protocolMessage.Messages.Length == 0)
+            {
+                return true;
+            }
+
+            var firstMessage = protocolMessage.Messages.First();
+            var deltaFrom = firstMessage.Extras?.Delta?.From;
+            if (deltaFrom != null && deltaFrom.EqualsTo(channelSuccessfulMessageIds.LastMessageId) == false)
+            {
+               Logger.Warning($"Delta message decode failure. Previous message id does not equal expected message id. PreviousMessageId: {channelSuccessfulMessageIds.LastMessageId}. ExpectedMessageId: {deltaFrom}");
+               return false;
+            }
+
+            return true;
         }
     }
 }
