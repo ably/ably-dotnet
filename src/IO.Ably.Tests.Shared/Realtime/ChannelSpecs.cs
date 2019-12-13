@@ -1324,6 +1324,38 @@ namespace IO.Ably.Tests.Realtime
                 receivedMessages.Last().Timestamp.Should().Be(timeStamp.AddMinutes(1));
             }
 
+            [Fact]
+            [Trait("spec", "RTL16")]
+            public async Task WhenMessageReceivedWhileChannelIsAttaching_ShouldIgnoreMessage()
+            {
+                var (client, channel) = await GetClientAndChannel(_switchBinaryOff);
+
+                SetState(channel, ChannelState.Attached);
+                List<Message> received = new List<Message>();
+                channel.Subscribe(received.Add);
+
+                await ReceiveMessage("1");
+                received.Should().Contain(x => x.Id == "1");
+
+                SetState(channel, ChannelState.Attaching);
+                await ReceiveMessage("2");
+                received.Should().NotContain(x => x.Id == "2");
+
+                SetState(channel, ChannelState.Attached);
+                await ReceiveMessage("3");
+                received.Should().Contain(x => x.Id == "3");
+
+                Task ReceiveMessage(string id)
+                {
+                    var protocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message)
+                    {
+                        Channel = channel.Name,
+                        Messages = new[] { new Message { Id = id, Data = "message " }, },
+                    };
+                    return client.ProcessMessage(protocolMessage);
+                }
+            }
+
             private ProtocolMessage SetupTestProtocolmessage(
                 string connectionId = null,
                 DateTimeOffset? timestamp = null,
