@@ -70,6 +70,27 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\delta-test-messages\1">
+      <Link>delta\1</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\delta-test-messages\1.vcdiff">
+      <Link>delta\1.vcdiff</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\delta-test-messages\2">
+      <Link>delta\2</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\delta-test-messages\2.vcdiff">
+      <Link>delta\2.vcdiff</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\delta-test-messages\3">
+      <Link>delta\3</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\delta-test-messages\3.vcdiff">
+      <Link>delta\3.vcdiff</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\delta-test-messages\4">
+      <Link>delta\4</Link>
+    </EmbeddedResource>
     <EmbeddedResource Include="MsgPackStatsTest.json" />
   </ItemGroup>
   <ItemGroup>

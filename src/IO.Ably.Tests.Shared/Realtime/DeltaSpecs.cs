@@ -114,6 +114,67 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
             lastMessageSend.ChannelSerial.Should().Be("testSerial");
         }
 
+        [Fact]
+        [Trait("spec", "RSL6f")]
+        public async Task
+            WhenMultipleMessagesWithAMixOfNormalAndDeltaMessages_ShouldDecodeCorrectly()
+        {
+            var (realtime, c) = await GetClientAndChannel();
+            RealtimeChannel channel = (RealtimeChannel)c;
+            channel.SetChannelState(ChannelState.Attached);
+
+            List<Message> messages = new List<Message>();
+            channel.Subscribe(messages.Add);
+            var protocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message)
+            {
+                Channel = channel.Name,
+                Messages = new[]
+                {
+                    CreateMessage("delta.1", false),
+                    CreateMessage("delta.1.vcdiff", true),
+                    CreateMessage("delta.2.vcdiff", true),
+                    CreateMessage("delta.3.vcdiff", true),
+                },
+            };
+
+            await realtime.ProcessMessage(protocolMessage);
+
+            var awaiter = new ConditionalAwaiter(() => messages.Count == 4);
+            await awaiter;
+
+            messages[0].Data.Should().BeOfType<string>();
+            IsCorrectFile(((string)messages[0].Data).GetBytes(), "delta.1");
+            messages[1].Data.Should().BeOfType<byte[]>();
+            IsCorrectFile((byte[])messages[1].Data, "delta.2");
+            messages[2].Data.Should().BeOfType<byte[]>();
+            IsCorrectFile((byte[])messages[2].Data, "delta.3");
+            messages[3].Data.Should().BeOfType<byte[]>();
+            IsCorrectFile((byte[])messages[3].Data, "delta.4");
+
+            void IsCorrectFile(byte[] actual, string expectedFile)
+            {
+                actual.SequenceEqual(ResourceHelper.GetBinaryResource(expectedFile)).Should().BeTrue("Bytes are not the same as " + expectedFile);
+            }
+
+            Message CreateMessage(string filename, bool isDelta)
+            {
+                if (isDelta)
+                {
+                    return new Message()
+                    {
+                        Data = ResourceHelper.GetBinaryResource(filename).ToBase64(),
+                        Encoding = "vcdiff/base64",
+                    };
+                }
+
+                return new Message()
+                {
+                    Data = ResourceHelper.GetResource(filename),
+                    Encoding = string.Empty,
+                };
+            }
+        }
+
         public DeltaSpecs(ITestOutputHelper output)
             : base(output)
         {
