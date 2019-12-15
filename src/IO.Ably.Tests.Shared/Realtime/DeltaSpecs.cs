@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using IO.Ably.Realtime;
 using IO.Ably.Realtime.Workflow;
+using IO.Ably.Tests.DotNetCore20.Infrastructure;
 using IO.Ably.Tests.Infrastructure;
 using IO.Ably.Types;
 using Xunit;
@@ -17,7 +19,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
         public async Task WhenMessageRecevied_WithDeltaError_ShouldNotPassMessageToChannelSubscriber()
         {
             var (realtime, c) = await GetClientAndChannel();
-            RealtimeChannel channel = (RealtimeChannel) c;
+            RealtimeChannel channel = (RealtimeChannel)c;
             channel.SetChannelState(ChannelState.Attached);
             List<Message> receivedMessages = new List<Message>();
             channel.Subscribe(receivedMessages.Add);
@@ -26,7 +28,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
                 new ProtocolMessage(ProtocolMessage.MessageAction.Message)
                 {
                     Channel = channel.Name,
-                    Messages = new[] {new Message() {Id = "goodMessage", Data = "test"},},
+                    Messages = new[] { new Message() { Id = "goodMessage", Data = "test" }, },
                 }));
 
             realtime.ExecuteCommand(ProcessMessageCommand.Create(
@@ -34,7 +36,9 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
                 {
                     Channel = channel.Name,
                     Messages = new[]
-                        {new Message() {Extras = new MessageExtras() {Delta = new DeltaExtras() {From = "1"}}}},
+                    {
+                        new Message() { Extras = new MessageExtras() { Delta = new DeltaExtras() { From = "1" } } },
+                    },
                 }));
 
             await Task.Delay(2000); // wait for 2 seconds
@@ -51,7 +55,7 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
             WhenMessageReceived_WithNotMatchingDeltaFromProperty_ShouldStartDecodeRecoveryAndMoveToAttachingWithError()
         {
             var (realtime, c) = await GetClientAndChannel();
-            RealtimeChannel channel = (RealtimeChannel) c;
+            RealtimeChannel channel = (RealtimeChannel)c;
             channel.SetChannelState(ChannelState.Attached);
             var awaiter = new TaskCompletionAwaiter();
             ChannelStateChange stateChange = null;
@@ -67,7 +71,9 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
                 {
                     Channel = channel.Name,
                     Messages = new[]
-                        {new Message() {Extras = new MessageExtras() {Delta = new DeltaExtras() {From = "1"}}}},
+                    {
+                        new Message { Extras = new MessageExtras() { Delta = new DeltaExtras() { From = "1" } } },
+                    },
                 }));
 
             await awaiter.Task;
@@ -82,14 +88,14 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
             WhenMessageReceivedAndFailsVcdiffDecoding_ShouldSendAttachProtocolMessageWithLastSuccessfulChannelSerial()
         {
             var (realtime, c) = await GetClientAndChannel();
-            RealtimeChannel channel = (RealtimeChannel) c;
+            RealtimeChannel channel = (RealtimeChannel)c;
             channel.SetChannelState(ChannelState.Attached);
 
             var successfulProtocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Message)
             {
                 Channel = channel.Name,
                 ChannelSerial = "testSerial",
-                Messages = new[] {new Message {Data = "test", Encoding = string.Empty},},
+                Messages = new[] { new Message { Data = "test", Encoding = string.Empty }, },
             };
             realtime.ExecuteCommand(ProcessMessageCommand.Create(successfulProtocolMessage));
 
@@ -101,7 +107,9 @@ namespace IO.Ably.Tests.DotNetCore20.Realtime
                 {
                     Channel = channel.Name,
                     Messages = new[]
-                        {new Message() {Extras = new MessageExtras() {Delta = new DeltaExtras() {From = "1"}}}},
+                    {
+                        new Message() { Extras = new MessageExtras() { Delta = new DeltaExtras() { From = "1" } } },
+                    },
                 }));
 
             await awaiter.Task;
