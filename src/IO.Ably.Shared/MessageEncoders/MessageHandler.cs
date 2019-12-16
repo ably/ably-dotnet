@@ -216,7 +216,7 @@ namespace IO.Ably.MessageEncoders
             }
         }
 
-        internal static Result DecodePayload(IMessage payload, DecodingContext context, IEnumerable<MessageEncoder> encoders = null)
+        internal static Result DecodePayload(IMessage payload, DecodingContext context, IEnumerable<MessageEncoder> encoders = null, ILogger logger = null)
         {
             var actualEncoders = (encoders ?? DefaultEncoders).ToList();
             var pp = context.PreviousPayload; // We take a chance that this will not be modified but replaced
@@ -283,7 +283,8 @@ namespace IO.Ably.MessageEncoders
                     var decoder = actualEncoders.FirstOrDefault(x => x.CanProcess(currentEncoding));
                     if (decoder == null)
                     {
-                        return (Result.Fail<Unit>(new ErrorInfo($"Missing decoder for '{currentEncoding}'")), currentPayload);
+                        logger?.Warning($"Missing decoder for '{currentEncoding}'. Leaving as it is");
+                        return (Result.Ok(Unit.Default), currentPayload);
                     }
 
                     var result = decoder.Decode(currentPayload, context);
@@ -543,10 +544,11 @@ namespace IO.Ably.MessageEncoders
             return isMsgPack;
         }
 
-        internal static T FromEncoded<T>(T encoded, ChannelOptions options = null) where T : IMessage
+        internal static T FromEncoded<T>(T encoded, ChannelOptions options = null)
+            where T : IMessage
         {
             var context = options.ToEncodingDecodingContext();
-            var result = DecodePayload(encoded, context);
+            var result = DecodePayload(encoded, context, logger: DefaultLogger.LoggerInstance);
             if (result.IsFailure)
             {
                 throw new AblyException(result.Error);
@@ -555,12 +557,13 @@ namespace IO.Ably.MessageEncoders
             return encoded;
         }
 
-        internal static T[] FromEncodedArray<T>(T[] encodedArray, ChannelOptions options = null) where T : IMessage
+        internal static T[] FromEncodedArray<T>(T[] encodedArray, ChannelOptions options = null)
+            where T : IMessage
         {
             var context = options.ToEncodingDecodingContext();
             foreach (var encoded in encodedArray)
             {
-                DecodePayload(encoded, context);
+                DecodePayload(encoded, context, logger: DefaultLogger.LoggerInstance);
             }
 
             return encodedArray;
