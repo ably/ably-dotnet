@@ -8,6 +8,8 @@ namespace IO.Ably.Transport.States.Connection
 {
     internal class ConnectionClosingState : ConnectionStateBase
     {
+        public override ErrorInfo DefaultErrorInfo => ErrorInfo.ReasonClosed;
+
         private const int CloseTimeout = 1000;
         private readonly bool _connectedTransport;
         private readonly ICountdownTimer _timer;
