@@ -219,12 +219,16 @@ namespace IO.Ably.Realtime
                 /* TODO: Handle RTL4h where Attach operation should be queued if another attach is in progress. */
             }
 
-            if (IsTerminalConnectionState)
+            if (IsInStateThatShouldFailAttach())
             {
-                // TODO: Check the spec whether there is a specific error code.
+                var connectionState = RealtimeClient.State.Connection.CurrentStateObject;
+                var connectionStateError = connectionState.Error ?? connectionState.DefaultErrorInfo;
                 ActionUtils.SafeExecute(() => callback?.Invoke(
                     false,
-                    new ErrorInfo($"Cannot attach when connection is in {ConnectionState} state")));
+                    new ErrorInfo(
+                        $"Cannot attach when connection is in {ConnectionState} state",
+                        ErrorCodes.ChannelOperationFailed,
+                        cause: connectionStateError)));
                 return;
             }
 
@@ -245,6 +249,15 @@ namespace IO.Ably.Realtime
                 }
 
                 SendMessage(protocolMessage);
+            }
+
+            // RTL4b States that should fail an Attach call
+            bool IsInStateThatShouldFailAttach()
+            {
+                return ConnectionState == ConnectionState.Closed ||
+                        ConnectionState == ConnectionState.Closing ||
+                        ConnectionState == ConnectionState.Failed ||
+                        ConnectionState == ConnectionState.Suspended;
             }
         }
 
@@ -688,10 +701,6 @@ namespace IO.Ably.Realtime
                 }
             }
         }
-
-        private bool IsTerminalConnectionState => ConnectionState == ConnectionState.Closed ||
-                                                  ConnectionState == ConnectionState.Closing ||
-                                                  ConnectionState == ConnectionState.Failed;
 
         private void SendMessage(ProtocolMessage protocolMessage, Action<bool, ErrorInfo> callback = null)
         {

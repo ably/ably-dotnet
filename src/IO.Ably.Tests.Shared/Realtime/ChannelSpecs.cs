@@ -482,29 +482,43 @@ namespace IO.Ably.Tests.Realtime
 
             [Fact]
             [Trait("spec", "RTL4b")]
-            public async Task WhenConnectionIsClosedClosingSuspendedOrFailed_ShouldThrowError()
+            public async Task WhenConnectionIsClosedClosingSuspendedOrFailed_ShouldCallCallbackWithError()
             {
                 var client = await GetConnectedClient();
 
                 // Closed
                 client.Workflow.SetState(new ConnectionClosedState(client.ConnectionManager, Logger));
-                Assert.Throws<AblyException>(() => client.Channels.Get("closed").Attach());
+                var closedAttach = await client.Channels.Get("closed").AttachAsync();
+                AssertAttachResultIsFailure(closedAttach);
 
                 // Closing
                 client.Workflow.SetState(new ConnectionClosingState(client.ConnectionManager, false, Logger));
-                Assert.Throws<AblyException>(() => client.Channels.Get("closing").Attach());
+                var closingAttach = await client.Channels.Get("closing").AttachAsync();
+                AssertAttachResultIsFailure(closingAttach);
 
                 // Suspended
                 client.Workflow.SetState(new ConnectionSuspendedState(client.ConnectionManager, Logger));
-                var error = Assert.Throws<AblyException>(() => client.Channels.Get("suspended").Attach());
-                error.ErrorInfo.Code.Should().Be(500);
+                var suspendedAttach = await client.Channels.Get("suspended").AttachAsync();
+                AssertAttachResultIsFailure(suspendedAttach);
 
                 // Failed
                 client.Workflow.SetState(new ConnectionFailedState(
                     client.ConnectionManager,
                     ErrorInfo.ReasonFailed,
                     Logger));
-                Assert.Throws<AblyException>(() => client.Channels.Get("failed").Attach());
+
+                var failedAttach = await client.Channels.Get("failed").AttachAsync();
+                AssertAttachResultIsFailure(failedAttach);
+
+                void AssertAttachResultIsFailure(Result r)
+                {
+                    r.IsFailure.Should().BeTrue();
+                    r.Error.Code.Should().Be(ErrorCodes.ChannelOperationFailed);
+                    r.Error.Message.Should().Contain("Cannot attach when connection is in");
+                    var defaultErrorInfo = client.State.Connection.CurrentStateObject.DefaultErrorInfo;
+                    r.Error.Cause.Message.Should().Be(defaultErrorInfo.Message);
+                    r.Error.Cause.Code.Should().Be(defaultErrorInfo.Code);
+                }
             }
 
             [Fact]
