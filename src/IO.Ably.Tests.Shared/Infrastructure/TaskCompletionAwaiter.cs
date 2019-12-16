@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -65,6 +66,11 @@ namespace IO.Ably.Tests.Infrastructure
         }
 
         public Task<bool> Task => _taskCompletionSource.Task;
+
+        public TaskAwaiter<bool> GetAwaiter()
+        {
+            return _taskCompletionSource.Task.GetAwaiter();
+        }
 
         public void Dispose()
         {

@@ -13,6 +13,7 @@ using IO.Ably.Types;
 using Xunit;
 using Xunit.Abstractions;
 using System.Threading;
+using IO.Ably.AcceptanceTests;
 using IO.Ably.Realtime.Workflow;
 
 namespace IO.Ably.Tests.Realtime
@@ -1178,61 +1179,62 @@ namespace IO.Ably.Tests.Realtime
 
             [Fact]
             [Trait("spec", "RTL7d")]
-            public async Task WithAMessageThatFailDecryption_ShouldDeliverMessageButEmmitErrorOnTheChannel()
+            public async Task WithAMessageThatFailDecryption_ShouldDeliverMessageAndNotPutAnErrorOnTheChannel()
             {
                 var otherChannelOptions = new ChannelOptions(true);
                 var client = await GetConnectedClient(_switchBinaryOff);
                 var encryptedChannel = client.Channels.Get("encrypted", new ChannelOptions(true));
                 SetState(encryptedChannel, ChannelState.Attached);
-                var awaiter = new TaskCompletionAwaiter(taskCount: 2);
+                var awaiter = new TaskCompletionAwaiter();
                 var msgReceived = false;
                 var errorEmitted = false;
 
                 encryptedChannel.Subscribe(msg =>
                 {
                     msgReceived = true;
-                    awaiter.Tick();
+                    awaiter.Done();
                 });
+
                 encryptedChannel.Error += (sender, args) =>
                 {
                     errorEmitted = true;
-                    awaiter.Tick();
                 };
 
                 var message = new Message("name", "encrypted with otherChannelOptions");
                 new MessageHandler(Logger, Protocol.Json).EncodePayloads(otherChannelOptions.ToEncodingDecodingContext(), new[] { message });
+
                 client.FakeMessageReceived(message, encryptedChannel.Name);
 
-                await awaiter.Task;
+                await awaiter;
 
                 msgReceived.Should().BeTrue();
-                errorEmitted.Should().BeTrue();
+                errorEmitted.Should().BeFalse();
             }
 
             [Fact]
             [Trait("spec", "RTL7e")]
             public async Task
-                WithMessageThatCantBeDecoded_ShouldDeliverMessageWithResidualEncodingAndEmitTheErrorOnTheChannel()
+                WithMessageThatCantBeDecoded_ShouldDeliverMessageWithResidualEncodingAndLogError()
             {
+                var otherChannelOptions = new ChannelOptions(true);
                 var (client, channel) = await GetClientAndChannel(_switchBinaryOff);
                 SetState(channel, ChannelState.Attached);
 
                 Message receivedMessage = null;
                 channel.Subscribe(msg => { receivedMessage = msg; });
 
-                ErrorInfo error = null;
-                channel.Error += (sender, args) =>
-                {
-                    error = args.Reason;
-                };
-
                 var message = new Message("name", "encrypted with otherChannelOptions") { Encoding = "json" };
-                client.FakeMessageReceived(message, channel.Name);
+                new MessageHandler(Logger, Protocol.Json).EncodePayloads(otherChannelOptions.ToEncodingDecodingContext(), new[] { message });
 
-                await client.ProcessCommands();
+                var testSink = new TestLoggerSink();
+                using (DefaultLogger.SetTempDestination(testSink))
+                {
+                    client.FakeMessageReceived(message, channel.Name);
+                    await client.ProcessCommands();
+                }
 
-                error.Should().NotBeNull();
-                receivedMessage.Encoding.Should().Be("json");
+                receivedMessage.Encoding.Should().Be(message.Encoding);
+                testSink.Messages.Should().Contain(x => x.Contains("Error decrypting payload"));
             }
 
             [Fact]
