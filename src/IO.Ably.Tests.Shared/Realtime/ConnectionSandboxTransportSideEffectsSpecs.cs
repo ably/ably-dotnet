@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,29 +28,27 @@ namespace IO.Ably.Tests.Realtime
             var sentMessages = new List<ProtocolMessage>();
             var client = await GetRealtimeClient(protocol, (options, settings) =>
             {
-                options.TransportFactory = new TestTransportFactory()
+                var optionsTransportFactory = new TestTransportFactory()
                 {
-                    OnMessageSent = sentMessages.Add
+                    OnMessageSent = sentMessages.Add,
                 };
+                options.TransportFactory = optionsTransportFactory;
             });
 
             await client.WaitForState(ConnectionState.Connected);
 
             var transport = client.GetTestTransport();
-            transport.MessageSent = sentMessages.Add;
 
             var channel = client.Channels.Get(channelName);
-            channel.Once(ChannelEvent.Attaching, change =>
-            {
-                transport.Close(false);
-            });
             channel.Attach();
             await channel.WaitForState(ChannelState.Attaching);
+            await client.ProcessCommands();
+            transport.Close(false);
+
             bool didDisconnect = false;
             client.Connection.Once(ConnectionEvent.Disconnected, change =>
             {
                 didDisconnect = true;
-                sentMessages.Count(x => x.Channel == channelName && x.Action == ProtocolMessage.MessageAction.Attach).Should().Be(1);
             });
 
             await client.WaitForState(ConnectionState.Disconnected);
@@ -80,7 +79,7 @@ namespace IO.Ably.Tests.Realtime
             {
                 options.TransportFactory = new TestTransportFactory()
                 {
-                    OnMessageSent = OnMessageSent
+                    OnMessageSent = OnMessageSent,
                 };
             });
 
@@ -103,20 +102,11 @@ namespace IO.Ably.Tests.Realtime
             channel.Detach();
             await channel.WaitForState(ChannelState.Detaching);
 
-            bool didDisconnect = false;
-            client.Connection.Once(ConnectionEvent.Disconnected, change =>
-            {
-                didDisconnect = true;
-            });
-
             await client.WaitForState(ConnectionState.Disconnected);
             channel.State.Should().Be(ChannelState.Detaching);
             await client.WaitForState(ConnectionState.Connected);
 
-            client.Connection.State.Should().Be(ConnectionState.Connected);
-            didDisconnect.Should().BeTrue();
-
-            await channel.WaitForState(ChannelState.Detached);
+            await channel.WaitForState(ChannelState.Detached, TimeSpan.FromSeconds(10));
         }
 
         public ConnectionSandboxTransportSideEffectsSpecs(AblySandboxFixture fixture, ITestOutputHelper output)
