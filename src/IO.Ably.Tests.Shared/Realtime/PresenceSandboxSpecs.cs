@@ -297,8 +297,8 @@ namespace IO.Ably.Tests.Realtime
 
                     var rChannel = rest.Channels.Get(channelName);
 
-                    await rtChannel.WaitForState(ChannelState.Attached);
                     await rtChannel.Presence.EnterAsync();
+                    await rtChannel.WaitForState(ChannelState.Attached);
                     await rtChannel.Presence.WaitSync();
 
                     return (rtChannel, rChannel);
@@ -1283,7 +1283,16 @@ namespace IO.Ably.Tests.Realtime
                         channel.Presence.InternalMap.Members.Should().HaveCount(0);
                     });
 
-                    channel.SetChannelState(channelState, new ErrorInfo("RTP5a test"));
+                    if (channelState == ChannelState.Detached)
+                    {
+                        // We need to call detach because if we just blindly set the state to Detached
+                        // it will trigger a retry
+                        channel.Detach();
+                    }
+                    else
+                    {
+                        channel.SetChannelState(channelState, new ErrorInfo("RTP5a test"));
+                    }
 
                     await channel.WaitForState(channelState);
 
@@ -1772,7 +1781,6 @@ namespace IO.Ably.Tests.Realtime
                         client.GetTestTransport().MessageSent = messageList.Add;
 
                         // force state
-                        await channel.WaitForState(ChannelState.Attached);
                         channel.SetChannelState(state);
                         await channel.WaitForState(state);
 
