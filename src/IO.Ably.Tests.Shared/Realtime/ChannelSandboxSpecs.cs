@@ -42,11 +42,11 @@ namespace IO.Ably.Tests.Realtime
             // Arrange
             var client = await GetRealtimeClient(protocol);
             Semaphore signal = new Semaphore(0, 2);
-            var args = new List<ChannelStateChange>();
-            IRealtimeChannel target = client.Channels.Get("test");
-            target.StateChanged += (s, e) =>
+            var stateChanges = new List<ChannelStateChange>();
+            IRealtimeChannel target = client.Channels.Get("test".AddRandomSuffix());
+            target.StateChanged += (s, stateChange) =>
             {
-                args.Add(e);
+                stateChanges.Add(stateChange);
                 signal.Release();
             };
 
@@ -55,15 +55,15 @@ namespace IO.Ably.Tests.Realtime
 
             // Assert
             signal.WaitOne(10000);
-            args.Count.ShouldBeEquivalentTo(1);
-            args[0].Current.ShouldBeEquivalentTo(ChannelState.Attaching);
-            args[0].Error.ShouldBeEquivalentTo(null);
+            stateChanges.Count.ShouldBeEquivalentTo(1);
+            stateChanges[0].Current.ShouldBeEquivalentTo(ChannelState.Attaching);
+            stateChanges[0].Error.ShouldBeEquivalentTo(null);
             target.State.ShouldBeEquivalentTo(ChannelState.Attaching);
 
             signal.WaitOne(10000);
-            args.Count.ShouldBeEquivalentTo(2);
-            args[1].Current.ShouldBeEquivalentTo(ChannelState.Attached);
-            args[1].Error.ShouldBeEquivalentTo(null);
+            stateChanges.Count.ShouldBeEquivalentTo(2);
+            stateChanges[1].Current.ShouldBeEquivalentTo(ChannelState.Attached);
+            stateChanges[1].Error.ShouldBeEquivalentTo(null);
             target.State.ShouldBeEquivalentTo(ChannelState.Attached);
         }
 
