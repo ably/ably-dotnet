@@ -476,7 +476,6 @@ namespace IO.Ably.Tests.Realtime
             var client = await GetRealtimeClient(protocol);
             var channel = client.Channels.Get("RTN15c1".AddRandomSuffix()) as RealtimeChannel;
             await client.WaitForState(ConnectionState.Connected);
-            await channel.WaitForState(ChannelState.Attached);
             var connectionId = client.Connection.Id;
 
             // inject fake error messages into protocol messages
@@ -976,7 +975,7 @@ namespace IO.Ably.Tests.Realtime
         [ProtocolData]
         [Trait("spec", "RTN15g")]
         [Trait("spec", "RTN15g1")]
-        [Trait("spec", "RTN15g2")]
+        // "RTN15g2" It can't implement that spec item because RTN23a is not even implemented
         [Trait("spec", "RTN15g3")]
         public async Task WhenDisconnectedPastTTL_ShouldNotResume_ShouldClearConnectionStateAndAttemptNewConnection(Protocol protocol)
         {
@@ -1033,7 +1032,7 @@ namespace IO.Ably.Tests.Realtime
                     });
                 });
 
-                client.GetTestTransport().Close(); // close event is surpressed by default
+                client.GetTestTransport().Close(); // close event is suppressed by default
                 client.Workflow.QueueCommand(SetDisconnectedStateCommand.Create(ErrorInfo.ReasonDisconnected));
             });
 
