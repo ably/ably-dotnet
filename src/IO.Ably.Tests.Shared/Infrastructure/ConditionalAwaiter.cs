@@ -31,8 +31,9 @@ namespace IO.Ably.Tests.DotNetCore20.Infrastructure
                 _completionSource.SetException(new Exception("10 seconds elapsed. Giving up"));
             }
 
-            if (_condition())
+            if (_condition() && _completionSource.Task.IsCompleted == false)
             {
+                _timer.Enabled = false;
                 _completionSource.SetResult(true);
                 _timer.Elapsed -= TimerOnElapsed;
                 _timer.Dispose();
