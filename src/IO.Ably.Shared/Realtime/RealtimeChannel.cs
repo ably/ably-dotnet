@@ -120,18 +120,12 @@ namespace IO.Ably.Realtime
                 case ConnectionState.Connected:
                     if (State == ChannelState.Suspended)
                     {
-                        if (AttachedAwaiter.StartWait(null, ConnectionManager.Options.RealtimeRequestTimeout))
-                        {
-                            SetChannelState(ChannelState.Attaching);
-                        }
+                        Attach();
                     }
 
-                    if (State == ChannelState.Attaching)
+                    if (State == ChannelState.Attaching && AttachedAwaiter.Waiting == false)
                     {
-                        if (AttachedAwaiter.StartWait(null, ConnectionManager.Options.RealtimeRequestTimeout))
-                        {
-                            SetChannelState(ChannelState.Attaching, true);
-                        }
+                        Attach(null, emitUpdate: true);
                     }
 
                     /*
@@ -149,18 +143,12 @@ namespace IO.Ably.Realtime
                      */
                     if (State == ChannelState.Attached && connectionRefreshed)
                     {
-                        if (AttachedAwaiter.StartWait(null, ConnectionManager.Options.RealtimeRequestTimeout, restart: true))
-                        {
-                            SetChannelState(ChannelState.Attaching, false);
-                        }
+                        Attach(null, force: true, emitUpdate: false);
                     }
 
-                    if (State == ChannelState.Detaching)
+                    if (State == ChannelState.Detaching && DetachedAwaiter.Waiting == false)
                     {
-                        if (DetachedAwaiter.StartWait(null, ConnectionManager.Options.RealtimeRequestTimeout))
-                        {
-                            SetChannelState(ChannelState.Detaching, true);
-                        }
+                        Detach(null, force: true, emitUpdate: true);
                     }
 
                     break;
@@ -173,7 +161,7 @@ namespace IO.Ably.Realtime
                     DetachedAwaiter.Fail(new ErrorInfo("Connection is closed"));
                     if (State == ChannelState.Attached || State == ChannelState.Attaching)
                     {
-                        SetChannelState(ChannelState.Detaching);
+                        Detach();
                     }
 
                     break;
@@ -206,7 +194,8 @@ namespace IO.Ably.Realtime
             ErrorInfo error,
             ProtocolMessage msg = null,
             Action<bool, ErrorInfo> callback = null,
-            bool force = false)
+            bool force = false,
+            bool emitUpdate = false)
         {
             if (force == false)
             {
@@ -233,7 +222,7 @@ namespace IO.Ably.Realtime
             }
 
             var actualError = error == null && msg?.Error != null ? msg.Error : error;
-            SetChannelState(ChannelState.Attaching, actualError, msg);
+            SetChannelState(ChannelState.Attaching, actualError, msg, emitUpdate);
 
             if (AttachedAwaiter.StartWait(callback, ConnectionManager.Options.RealtimeRequestTimeout, force))
             {
@@ -319,8 +308,13 @@ namespace IO.Ably.Realtime
 
         public void Detach(Action<bool, ErrorInfo> callback = null)
         {
-            if (State == ChannelState.Initialized || State == ChannelState.Detaching ||
-                State == ChannelState.Detached)
+            Detach(callback, force: false, emitUpdate: false);
+        }
+
+        private void Detach(Action<bool, ErrorInfo> callback, bool force, bool emitUpdate)
+        {
+            if (force == false && (State == ChannelState.Initialized || State == ChannelState.Detaching ||
+                State == ChannelState.Detached))
             {
                 ActionUtils.SafeExecute(() => callback?.Invoke(true, null), Logger, $"{Name}-Detach()");
                 return;
@@ -328,12 +322,29 @@ namespace IO.Ably.Realtime
 
             if (State == ChannelState.Failed)
             {
-                throw new AblyException("Cannot Detach channel because it is in Failed state.");
+                Logger.Warning("Cannot Detach channel because it is in Failed state.");
+                var error = new ErrorInfo("Cannot Detach channel because it is in Failed state.", ErrorCodes.ChannelOperationFailed);
+                ActionUtils.SafeExecute(() => callback?.Invoke(false, error), Logger, $"{Name}-Detach()");
+                return;
             }
 
-            if (DetachedAwaiter.StartWait(callback, ConnectionManager.Options.RealtimeRequestTimeout))
+            if (DetachedAwaiter.StartWait(callback, ConnectionManager.Options.RealtimeRequestTimeout, force))
             {
-                SetChannelState(ChannelState.Detaching);
+                SetChannelState(ChannelState.Detaching, emitUpdate);
+
+                if (ConnectionState == ConnectionState.Closed || ConnectionState == ConnectionState.Connecting ||
+                    ConnectionState == ConnectionState.Suspended)
+                {
+                    SetChannelState(ChannelState.Detached);
+                }
+                else if (ConnectionState != ConnectionState.Failed)
+                {
+                    SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name));
+                }
+                else
+                {
+                    Logger.Warning($"#{Name}. Cannot send Detach messages when connection is in Failed State");
+                }
             }
             else
             {
@@ -522,18 +533,11 @@ namespace IO.Ably.Realtime
                 return;
             }
 
-            ChannelEvent channelEvent;
-            if (emitUpdate)
-            {
-                channelEvent = ChannelEvent.Update;
-            }
-            else
-            {
-                channelEvent = (ChannelEvent)state;
-            }
+            ChannelEvent channelEvent = emitUpdate ? ChannelEvent.Update : (ChannelEvent)state;
 
             var channelStateChange = new ChannelStateChange(channelEvent, state, State, error, protocolMessage);
             HandleStateChange(state, error, protocolMessage);
+
             InternalStateChanged.Invoke(this, channelStateChange);
 
             // Notify external client using the thread they subscribe on
@@ -566,25 +570,9 @@ namespace IO.Ably.Realtime
             {
                 case ChannelState.Attaching:
                     DetachedAwaiter.Fail(new ErrorInfo("Channel transitioned to Attaching", 50000));
-
                     break;
                 case ChannelState.Detaching:
                     AttachedAwaiter.Fail(new ErrorInfo("Channel transitioned to detaching", 50000));
-
-                    if (ConnectionState == ConnectionState.Closed || ConnectionState == ConnectionState.Connecting ||
-                        ConnectionState == ConnectionState.Suspended)
-                    {
-                        SetChannelState(ChannelState.Detached, error);
-                    }
-                    else if (ConnectionState != ConnectionState.Failed)
-                    {
-                        SendMessage(new ProtocolMessage(ProtocolMessage.MessageAction.Detach, Name));
-                    }
-                    else
-                    {
-                        Logger.Warning($"#{Name}. Cannot send Detach messages when connection is in Failed State");
-                    }
-
                     break;
                 case ChannelState.Attached:
                     Presence.ChannelAttached(protocolMessage);
@@ -597,7 +585,8 @@ namespace IO.Ably.Realtime
                          an attempt to reattach the channel should be made immediately */
                         case ChannelState.Attached:
                         case ChannelState.Suspended:
-                            SetChannelState(ChannelState.Detached, error, protocolMessage);
+                            // TODO: Cleanup - I don't think we need that
+                            // SetChannelState(ChannelState.Detached, error, protocolMessage);
                             Reattach(error, protocolMessage);
                             break;
                         case ChannelState.Attaching:
@@ -626,31 +615,24 @@ namespace IO.Ably.Realtime
 
         private void Reattach(ErrorInfo error, ProtocolMessage msg)
         {
-            // TODO: Have a look at changing it so we have a better way to schedule
-            // stuff in the background.
-            TaskUtils.RunInBackground(
-                () =>
+            try
             {
-                try
+                Attach(error, msg, (success, info) =>
                 {
-                    Attach(error, msg, (success, info) =>
+                    if (!success)
                     {
-                        if (!success)
+                        // If the attach timed out the channel will set SUSPENDED (as described by RTL4f and RTL13b)
+                        if (State == ChannelState.Suspended)
                         {
-                            // If the attach timed out the channel will set SUSPENDED (as described by RTL4f and RTL13b)
-                            if (State == ChannelState.Suspended)
-                            {
-                                ReattachAfterTimeout(error, msg);
-                            }
+                            ReattachAfterTimeout(error, msg);
                         }
-                    });
-                }
-                catch (Exception e)
-                {
-                    Logger.Error("Reattach channel failed; channel = " + Name, e);
-                }
-            },
-                e => Logger.Warning(e.Message));
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Reattach channel failed; channel = " + Name, e);
+            }
         }
 
         /// <summary>
