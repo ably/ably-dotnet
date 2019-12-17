@@ -37,6 +37,7 @@ namespace IO.Ably.Realtime
                 }
                 catch (Exception e)
                 {
+                    // TODO: Send to Sentry
                     Logger.Error($"Error notifying channel '{channel.Name}' of connection stage change", e);
                 }
             }
