@@ -705,12 +705,14 @@ namespace IO.Ably.Tests.Realtime
 
             [Fact]
             [Trait("spec", "RTL5b")]
-            public async Task WhenStateIsFailed_DetachShouldThrowAnError()
+            public async Task WhenStateIsFailed_DetachShouldReturnAnError()
             {
                 var channel = await GetTestChannel();
                 SetChannelState(channel, ChannelState.Failed, new ErrorInfo());
 
-                var ex = Assert.Throws<AblyException>(() => channel.Detach());
+                var result = await channel.DetachAsync();
+                result.IsFailure.Should().BeTrue();
+                result.Error.Should().NotBeNull();
             }
 
             [Fact]
