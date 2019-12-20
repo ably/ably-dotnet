@@ -31,6 +31,5 @@ namespace IO.Ably.Tests
             var result = await tsc.Task;
             result.Should().BeTrue();
         }
-
     }
 }
