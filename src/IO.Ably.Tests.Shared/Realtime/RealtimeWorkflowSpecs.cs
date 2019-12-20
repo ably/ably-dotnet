@@ -112,8 +112,7 @@ namespace IO.Ably.Tests.NETFramework.Realtime
                 };
 
                 // Act
-                client.ExecuteCommand(ProcessMessageCommand.Create(messageWithError));
-                await client.WaitForState(ConnectionState.Disconnected);
+                await client.ProcessMessage(messageWithError);
 
                 client.State.Connection.Key.Should().BeEmpty();
             }
