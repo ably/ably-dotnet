@@ -3,4 +3,4 @@
 	url = https://github.com/ably/ably-common.git
 [submodule "lib/delta-codec"]
 	path = lib/delta-codec
-	url = git@github.com:ably/delta-codec-dotnet.git
+	url = https://github.com/ably/delta-codec-dotnet.git
