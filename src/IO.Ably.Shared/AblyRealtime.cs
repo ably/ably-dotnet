@@ -53,7 +53,7 @@ namespace IO.Ably
             Channels = new RealtimeChannels(this, Connection);
             RestClient.AblyAuth.OnAuthUpdated = ConnectionManager.OnAuthUpdated;
 
-            State = new RealtimeState(options.FallbackHosts?.Shuffle().ToList());
+            State = new RealtimeState(options.FallbackHosts?.Shuffle().ToList(), options.NowFunc);
 
             Workflow = new RealtimeWorkflow(this, Logger);
             Workflow.Start();
@@ -213,7 +213,7 @@ namespace IO.Ably
                 }
             }
 
-            Workflow.QueueCommand(DisposeCommand.Create());
+            Workflow.QueueCommand(DisposeCommand.Create().TriggeredBy($"AblyRealtime.Dispose({disposing}"));
 
             Disposed = true;
         }

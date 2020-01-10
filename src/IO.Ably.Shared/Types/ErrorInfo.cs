@@ -21,6 +21,7 @@ namespace IO.Ably
         internal static readonly ErrorInfo ReasonNeverConnected = new ErrorInfo("Unable to establish connection", 80002);
         internal static readonly ErrorInfo ReasonTimeout = new ErrorInfo("Unable to establish connection", 80014);
         internal static readonly ErrorInfo ReasonUnknown = new ErrorInfo("Unknown error", 50000, HttpStatusCode.InternalServerError);
+        internal static readonly ErrorInfo NonRenewableToken = new ErrorInfo("The library was initialized with a token without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help", 40171, HttpStatusCode.Unauthorized);
 
         internal const string CodePropertyName = "code";
         internal const string StatusCodePropertyName = "statusCode";

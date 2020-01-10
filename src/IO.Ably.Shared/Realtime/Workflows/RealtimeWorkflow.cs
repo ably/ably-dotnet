@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Channels;
@@ -13,6 +14,19 @@ using IO.Ably.Utils;
 
 namespace IO.Ably.Realtime.Workflow
 {
+    /// <summary>
+    /// Realtime workflow has 2 roles
+    /// 1. It serializes requests coming from different threads and guarantees that they are executing one by one and in order
+    /// on a single thread. This makes it very easy to mutate state because we are immune from thread race conditions.
+    /// There requests are encapsulated in Command objects (objects inheriting from RealtimeCommand) which provide
+    /// information about what needs to happen and also hold any parameters necessary for the operation. For example if we take the
+    /// SetClosedStateCommand object. The intension is to change the Connection state to Closed but the Command object also contains the error
+    /// if any associated with this request. This makes logging very easy as we can clearly see the intent of the command and the parameters. Also in the
+    /// future we can parse the logs and easily recreate state in the library.
+    /// 2. Centralizes the logic for handling Commands. It is now much easier to find where things are happening. If you exclude
+    /// Channel presence and Channel state management, everything else could be found in this class. It does make it rather long but
+    /// the logic block are rather small and easy to understand.
+    /// </summary>
     internal class RealtimeWorkflow : IQueueCommand
     {
         // This is used for the tests so we can have a good
@@ -186,13 +200,13 @@ namespace IO.Ably.Realtime.Workflow
                             return new RealtimeCommand[]
                             {
                                 SendMessageCommand.Create(
-                                    new ProtocolMessage(ProtocolMessage.MessageAction.Close), force: true),
-                                CompleteWorkflowCommand.Create(),
+                                    new ProtocolMessage(ProtocolMessage.MessageAction.Close), force: true).TriggeredBy(command),
+                                CompleteWorkflowCommand.Create().TriggeredBy(command),
                             };
                         }
                         else
                         {
-                            return new RealtimeCommand[] { CompleteWorkflowCommand.Create() };
+                            return new RealtimeCommand[] { CompleteWorkflowCommand.Create().TriggeredBy(command) };
                         }
 
                         break;
@@ -235,7 +249,7 @@ namespace IO.Ably.Realtime.Workflow
                 case ConnectCommand _:
                     var nextCommand = ConnectionManager.Connect();
                     var initFailedChannelsOnConnect =
-                        ChannelCommand.CreateForAllChannels(InitialiseFailedChannelsOnConnect.Create());
+                        ChannelCommand.CreateForAllChannels(InitialiseFailedChannelsOnConnect.Create().TriggeredBy(command));
                     return ListCommand.Create(initFailedChannelsOnConnect, nextCommand);
 
                 case CloseConnectionCommand _:
@@ -251,8 +265,8 @@ namespace IO.Ably.Realtime.Workflow
                         return ListCommand.Create(
                             SetDisconnectedStateCommand.Create (
                                 retryAuth.Error,
-                                skipAttach: State.Connection.State == ConnectionState.Connecting),
-                            SetConnectingStateCommand.Create());
+                                skipAttach: State.Connection.State == ConnectionState.Connecting).TriggeredBy(command),
+                            SetConnectingStateCommand.Create().TriggeredBy(command));
                     }
                     else
                     {
@@ -304,13 +318,21 @@ namespace IO.Ably.Realtime.Workflow
                 case HandleConnectingTokenErrorCommand cmd:
                     try
                     {
-                        ClearTokenAndRecordRetry();
+                        if (Auth.TokenRenewable)
+                        {
+                            if (State.AttemptsInfo.TriedToRenewToken == false)
+                            {
+                                ClearTokenAndRecordRetry();
+                                await AttemptANewConnection(); // We recreate the transport after clearing the token
 
-                        var host = AttemptsHelpers.GetHost(State, Client.Options.FullRealtimeHost);
-                        SetNewHostInState(host);
+                                return EmptyCommand.Instance;
+                            }
 
-                        await ConnectionManager.CreateTransport(host);
-                        return EmptyCommand.Instance;
+                            return SetDisconnectedStateCommand.Create(cmd.Error).TriggeredBy(cmd);
+                        }
+
+                        // If Token is not renewable we go to the failed state
+                        return SetFailedStateCommand.Create(cmd.Error).TriggeredBy(cmd);
                     }
                     catch (AblyException ex)
                     {
@@ -318,24 +340,68 @@ namespace IO.Ably.Realtime.Workflow
                         return SetDisconnectedStateCommand.Create(ex.ErrorInfo).TriggeredBy(cmd);
                     }
 
-                case HandleConnectingFailureCommand cmd:
-                    var exceptionErrorInfo = cmd.Exception != null ? new ErrorInfo(cmd.Exception.Message, 80000) : null;
-                    ErrorInfo resolvedError = cmd.Error ?? exceptionErrorInfo;
+                    async Task AttemptANewConnection()
+                    {
+                        var host = AttemptsHelpers.GetHost(State, Client.Options.FullRealtimeHost);
+                        SetNewHostInState(host);
 
+                        await ConnectionManager.CreateTransport(host);
+                    }
+
+                case HandleConnectingDisconnectedCommand cmd:
                     if (State.ShouldSuspend(Now))
                     {
                         return SetSuspendedStateCommand.Create(
-                            resolvedError ?? ErrorInfo.ReasonSuspended,
-                            clearConnectionKey: cmd.ClearConnectionKey)
+                                cmd.Error ?? ErrorInfo.ReasonSuspended,
+                                clearConnectionKey: true)
                             .TriggeredBy(cmd);
                     }
                     else
                     {
                         return SetDisconnectedStateCommand.Create(
-                            resolvedError ?? ErrorInfo.ReasonDisconnected,
-                            clearConnectionKey: cmd.ClearConnectionKey)
+                                cmd.Error ?? ErrorInfo.ReasonDisconnected,
+                                clearConnectionKey: true)
                             .TriggeredBy(cmd);
                     }
+
+                case HandleConnectingErrorCommand cmd:
+
+                    var exceptionErrorInfo = cmd.Exception != null ? new ErrorInfo(cmd.Exception.Message, 80000, HttpStatusCode.BadGateway) { InnerException = cmd.Exception } : null;
+                    ErrorInfo resolvedError = cmd.Error ?? exceptionErrorInfo;
+
+                    if (resolvedError == null)
+                    {
+                        Logger.Warning("Connecting Error protocol message received without error object.");
+                        return SetFailedStateCommand.Create(null).TriggeredBy(cmd);
+                    }
+
+                    // If it is a Token error we delegate the error handling to HandleConnectingTokenErrorCommand
+                    if (resolvedError.IsTokenError)
+                    {
+                        return HandleConnectingTokenErrorCommand.Create(resolvedError)
+                            .TriggeredBy(cmd);
+                    }
+
+                    if (await Client.RestClient.CanFallback(resolvedError))
+                    {
+                        if (State.ShouldSuspend(Now))
+                        {
+                            return SetSuspendedStateCommand.Create(
+                                    resolvedError ?? ErrorInfo.ReasonSuspended,
+                                    clearConnectionKey: true)
+                                .TriggeredBy(cmd);
+                        }
+                        else
+                        {
+                            return SetDisconnectedStateCommand.Create(
+                                    resolvedError ?? ErrorInfo.ReasonDisconnected,
+                                    clearConnectionKey: true)
+                                .TriggeredBy(cmd);
+                        }
+                    }
+
+                    return SetFailedStateCommand.Create(resolvedError)
+                        .TriggeredBy(cmd);
 
                 case HandleTrasportEventCommand cmd:
 
@@ -354,7 +420,7 @@ namespace IO.Ably.Realtime.Workflow
                             case ConnectionState.Closing:
                                 return SetClosedStateCommand.Create(exception: cmd.Exception).TriggeredBy(cmd);
                             case ConnectionState.Connecting:
-                                return HandleConnectingFailureCommand.Create(null, cmd.Exception, false).TriggeredBy(cmd);
+                                return HandleConnectingErrorCommand.Create(null, cmd.Exception, false).TriggeredBy(cmd);
                             case ConnectionState.Connected:
                                 var errorInfo =
                                     GetErrorInfoFromTransportException(cmd.Exception, ErrorInfo.ReasonDisconnected);
@@ -420,7 +486,11 @@ namespace IO.Ably.Realtime.Workflow
         {
             if (IsFallbackHost())
             {
-                Client.RestClient.CustomHost = newHost;
+                Client.RestClient.SetRealtimeFallbackHost(newHost);
+            }
+            else
+            {
+                Client.RestClient.ClearRealtimeFallbackHost();
             }
 
             State.Connection.Host = newHost;
@@ -532,7 +602,7 @@ namespace IO.Ably.Realtime.Workflow
                 yield return SendMessageCommand.Create(new ProtocolMessage(ProtocolMessage.MessageAction.Heartbeat)
                 {
                     Id = cmd.Request.Id, // Pass the ping request id so we can match it on the way back
-                });
+                }).TriggeredBy(cmd);
 
                 // Only trigger the timer if there is a callback
                 // Question: Do we trigger the error if there is no callback but then we can just emmit it
@@ -541,7 +611,7 @@ namespace IO.Ably.Realtime.Workflow
                     State.PingRequests.Add(cmd.Request);
                     yield return DelayCommand.Create(
                         ConnectionManager.DefaultTimeout,
-                        PingTimerCommand.Create(cmd.Request.Id));
+                        PingTimerCommand.Create(cmd.Request.Id)).TriggeredBy(cmd);
                 }
             }
         }
@@ -606,7 +676,7 @@ namespace IO.Ably.Realtime.Workflow
                             // RSA4c2 & RSA4d
                             if (ex.ErrorInfo.Code == 80019 & !ex.ErrorInfo.IsForbiddenError)
                             {
-                                return SetDisconnectedStateCommand.Create(ex.ErrorInfo);
+                                return SetDisconnectedStateCommand.Create(ex.ErrorInfo).TriggeredBy(command);
                             }
 
                             throw;
@@ -617,34 +687,64 @@ namespace IO.Ably.Realtime.Workflow
                         State.Connection.ClearKeyAndId();
                         ClearAckQueueAndFailMessages(ErrorInfo.ReasonFailed);
 
-                        var failedState = new ConnectionFailedState(ConnectionManager, cmd.Error, Logger);
+                        var error = TransformIfTokenErrorAndNotRetriable();
+                        var failedState = new ConnectionFailedState(ConnectionManager, error, Logger);
                         SetState(failedState);
 
                         ConnectionManager.DestroyTransport(true);
 
+                        ErrorInfo TransformIfTokenErrorAndNotRetriable()
+                        {
+                            if (cmd.Error.IsTokenError && Auth.TokenRenewable == false)
+                            {
+                                var newError = ErrorInfo.NonRenewableToken;
+                                newError.Message += $" Original: {cmd.Error.Message} ({cmd.Error.Code})";
+                                return newError;
+                            }
+
+                            return cmd.Error;
+                        }
+
                         break;
                     case SetDisconnectedStateCommand cmd:
 
-                        if (cmd.ClearConnectionKey)
+                        var (retryInstantly, clearKey) = await GetDisconnectFlags();
+                        if (clearKey)
                         {
                             State.Connection.ClearKey();
                         }
 
                         var disconnectedState = new ConnectionDisconnectedState(ConnectionManager, cmd.Error, Logger)
                         {
-                            RetryInstantly = cmd.RetryInstantly
+                            RetryInstantly = retryInstantly,
+                            Exception = cmd.Exception,
                         };
 
-                        SetState(disconnectedState, skipAttach: cmd.SkipAttach);
+                        SetState(disconnectedState, skipTimer: cmd.SkipAttach);
 
                         if (cmd.SkipAttach == false)
                         {
                             ConnectionManager.DestroyTransport(true);
                         }
 
-                        if (cmd.RetryInstantly)
+                        if (retryInstantly)
                         {
-                            return SetConnectingStateCommand.Create();
+                            return SetConnectingStateCommand.Create().TriggeredBy(command);
+                        }
+
+                        async Task<(bool retry, bool clearKey)> GetDisconnectFlags()
+                        {
+                            if (cmd.RetryInstantly)
+                            {
+                                return (true, cmd.ClearConnectionKey);
+                            }
+
+                            if ((cmd.Error != null && cmd.Error.IsRetryableStatusCode()) || cmd.Exception != null)
+                            {
+                                return (await Client.RestClient.CanConnectToAbly(), true);
+                            }
+
+                            return (false, cmd.ClearConnectionKey);
                         }
 
                         break;
@@ -659,11 +759,11 @@ namespace IO.Ably.Realtime.Workflow
 
                         if (connectedTransport)
                         {
-                            return SendMessageCommand.Create(new ProtocolMessage(ProtocolMessage.MessageAction.Close), force: true);
+                            return SendMessageCommand.Create(new ProtocolMessage(ProtocolMessage.MessageAction.Close), force: true).TriggeredBy(command);
                         }
                         else
                         {
-                            return SetClosedStateCommand.Create();
+                            return SetClosedStateCommand.Create().TriggeredBy(command);
                         }
 
                     case SetSuspendedStateCommand cmd:
@@ -702,21 +802,21 @@ namespace IO.Ably.Realtime.Workflow
 
                 if (command is SetFailedStateCommand == false)
                 {
-                    return SetFailedStateCommand.Create(ex.ErrorInfo);
+                    return SetFailedStateCommand.Create(ex.ErrorInfo).TriggeredBy(command);
                 }
             }
 
             return EmptyCommand.Instance;
         }
 
-        public void SetState(ConnectionStateBase newState, bool skipAttach = false)
+        public void SetState(ConnectionStateBase newState, bool skipTimer = false)
         {
             if (Logger.IsDebug)
             {
                 var message = $"Changing state from {State.Connection.State} => {newState.State}.";
-                if (skipAttach)
+                if (skipTimer)
                 {
-                    message += " SkipAttach";
+                    message += " Skip timer";
                 }
 
                 Logger.Debug(message);
@@ -736,13 +836,13 @@ namespace IO.Ably.Realtime.Workflow
                         return;
                     }
 
-                    State.AttemptsInfo.UpdateAttemptState(newState);
+                    State.AttemptsInfo.UpdateAttemptState(newState, Logger);
                     State.Connection.CurrentStateObject.AbortTimer();
                 }
 
-                if (skipAttach == false)
+                if (skipTimer == false)
                 {
-                    newState.OnAttachToContext();
+                    newState.StartTimer();
                 }
                 else if (Logger.IsDebug)
                 {

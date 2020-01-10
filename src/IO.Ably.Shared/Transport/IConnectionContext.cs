@@ -21,7 +21,5 @@ namespace IO.Ably.Transport
         TimeSpan SuspendRetryTimeout { get; }
 
         bool ShouldWeRenewToken(ErrorInfo error, RealtimeState state);
-
-        Task<bool> CanUseFallBackUrl(ErrorInfo error);
     }
 }

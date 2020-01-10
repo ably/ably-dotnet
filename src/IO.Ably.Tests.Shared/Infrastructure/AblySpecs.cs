@@ -44,6 +44,19 @@ namespace IO.Ably.Tests
             return client;
         }
 
+        internal virtual AblyRealtime GetRealtimeClientWithFakeMessageHandler(ClientOptions options = null, FakeHttpMessageHandler fakeMessageHandler = null)
+        {
+            var clientOptions = options ?? new ClientOptions(ValidKey);
+            clientOptions.SkipInternetCheck = true; // This is for the Unit tests
+            var client = new AblyRealtime(clientOptions);
+            if (fakeMessageHandler != null)
+            {
+                client.RestClient.HttpClient.CreateInternalHttpClient(TimeSpan.FromSeconds(10), fakeMessageHandler);
+            }
+
+            return client;
+        }
+
         internal virtual AblyRealtime GetRealtimeClient(Action<ClientOptions> optionsAction, Func<AblyRequest, Task<AblyResponse>> handleRequestFunc = null)
         {
             var options = new ClientOptions(ValidKey);
@@ -65,6 +78,14 @@ namespace IO.Ably.Tests
             var options = new ClientOptions(ValidKey) { TransportFactory = FakeTransportFactory };
             optionsAction?.Invoke(options);
             var client = GetRealtimeClient(options, handleRequestFunc);
+            return client;
+        }
+
+        internal AblyRealtime GetClientWithFakeTransportAndMessageHandler(Action<ClientOptions> optionsAction = null, FakeHttpMessageHandler messageHandler = null)
+        {
+            var options = new ClientOptions(ValidKey) { TransportFactory = FakeTransportFactory };
+            optionsAction?.Invoke(options);
+            var client = GetRealtimeClientWithFakeMessageHandler(options, messageHandler);
             return client;
         }
 

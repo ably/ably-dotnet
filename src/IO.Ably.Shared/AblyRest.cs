@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using IO.Ably;
@@ -58,11 +59,11 @@ namespace IO.Ably
 
         internal MessageHandler MessageHandler { get; private set; }
 
-        internal string CustomHost
-        {
-            get => HttpClient.CustomHost;
-            set => HttpClient.CustomHost = value;
-        }
+        internal void SetRealtimeFallbackHost(string host)
+            => HttpClient.RealtimeConnectedFallbackHost = host;
+
+        internal void ClearRealtimeFallbackHost()
+            => HttpClient.RealtimeConnectedFallbackHost = null;
 
         internal AblyAuth AblyAuth { get; private set; }
 
@@ -137,12 +138,16 @@ namespace IO.Ably
                 }
 
                 if (ex.ErrorInfo.IsUnAuthorizedError
-                    && ex.ErrorInfo.IsTokenError
-                    && AblyAuth.TokenRenewable)
+                    && ex.ErrorInfo.IsTokenError)
                 {
+                    if (AblyAuth.TokenRenewable == false)
+                    {
+                        throw new AblyException(ErrorInfo.NonRenewableToken, ex); // RSA4a2
+                    }
+
                     if (Logger.IsDebug)
                     {
-                        Logger.Debug("Handling UnAuthorized Error, attmepting to Re-authorize and repeat request.");
+                        Logger.Debug("Handling UnAuthorized Error, attempting to Re-authorize and repeat request.");
                     }
 
                     try
@@ -359,8 +364,14 @@ namespace IO.Ably
             try
             {
                 var request = new AblyRequest(Defaults.InternetCheckUrl, HttpMethod.Get);
-                var response = await ExecuteHttpRequest(request);
-                return response.TextResponse == Defaults.InternetCheckOkMessage;
+                var response = await ExecuteHttpRequest(request).TimeoutAfter(Defaults.MaxHttpOpenTimeout, AblyResponse.EmptyResponse);
+                var success = response.TextResponse == Defaults.InternetCheckOkMessage;
+                if (success == false)
+                {
+                    Logger.Warning("Cannot get a valid internet connection. Response: " + response.TextResponse);
+                }
+
+                return success;
             }
             catch (Exception ex)
             {

@@ -102,7 +102,7 @@ namespace IO.Ably.Tests
             var state = GetState(ErrorInfo.ReasonClosed);
 
             // Act
-            state.OnAttachToContext();
+            state.StartTimer();
             _timer.OnTimeOut();
 
             // Assert

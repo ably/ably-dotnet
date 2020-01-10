@@ -23,6 +23,7 @@ namespace IO.Ably.Tests
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "G3")]
         public async Task ShouldHaveCorrectStatsAsPerStatsSpec(Protocol protocol)
         {
             await Fixture.SetupStats();

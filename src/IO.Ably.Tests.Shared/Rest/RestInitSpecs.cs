@@ -30,11 +30,32 @@ namespace IO.Ably.Tests
 
             [Fact]
             [Trait("spec", "RSA4")]
-            [Trait("spec", "RSA7e2")]
             public void WithKeyAndClientId_ShouldUseBasicAuth()
             {
                 var client = new AblyRest(new ClientOptions { Key = ValidKey, ClientId = "123" });
                 Assert.Equal(AuthMethod.Basic, client.AblyAuth.AuthMethod);
+            }
+
+            [Fact]
+            [Trait("spec", "RSA4a1")]
+            public void WithTokenButNoWayToRenew_ShouldLogErrorMessageWithError()
+            {
+                var testLogger =
+                    new TestLogger(
+                        "Warning: library initialized with a token literal without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help");
+                var client = new AblyRest(new ClientOptions { Token = "Test", Logger = testLogger });
+                testLogger.MessageSeen.Should().BeTrue();
+            }
+
+            [Fact]
+            [Trait("spec", "RSA4a1")]
+            public void WithTokenDetailsButNoWayToRenew_ShouldLogErrorMessageWithError()
+            {
+                var testLogger =
+                    new TestLogger(
+                        "Warning: library initialized with a token literal without any way to renew the token when it expires (no authUrl, authCallback, or key). See https://help.ably.io/error/40171 for help");
+                var client = new AblyRest(new ClientOptions { TokenDetails = new TokenDetails("test"), Logger = testLogger });
+                testLogger.MessageSeen.Should().BeTrue();
             }
 
             [Fact]
@@ -138,6 +159,14 @@ namespace IO.Ably.Tests
 
                 rest.AblyAuth.TokenRenewable.Should().BeTrue();
             }
+
+            [Fact]
+            [Trait("spec", "RSC1b")]
+            public void WithoutTokenAuthAndNoKey_ShouldThrow()
+            {
+                var error = Assert.Throws<AblyException>(() => new AblyRest(new ClientOptions()));
+                error.ErrorInfo.Code.Should().Be(40106);
+            }
         }
 
         [Fact]
@@ -147,6 +176,7 @@ namespace IO.Ably.Tests
             {
                 opts.Tls = true;
                 opts.TlsPort = 111;
+                opts.Key = ValidKey;
             });
             client.HttpClient.Options.Port.Should().Be(111);
         }
@@ -158,6 +188,7 @@ namespace IO.Ably.Tests
             {
                 opts.Tls = false;
                 opts.Port = 111;
+                opts.Key = ValidKey;
             });
             client.HttpClient.Options.Port.Should().Be(111);
         }

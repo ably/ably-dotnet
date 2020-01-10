@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace IO.Ably
@@ -89,8 +90,21 @@ namespace IO.Ably
         public AuthOptions(string key)
             : this()
         {
-            var apiKey = ApiKey.Parse(key);
-            Key = apiKey.ToString();
+            if (key.IsEmpty())
+            {
+                throw new AblyException(new ErrorInfo("Auth Key cannot be empty", 40106));
+            }
+
+            if (key.Contains(":"))
+            {
+                var apiKey = ApiKey.Parse(key);
+
+                Key = apiKey.ToString();
+            }
+            else
+            {
+                Token = key;
+            }
         }
 
         /// <summary>

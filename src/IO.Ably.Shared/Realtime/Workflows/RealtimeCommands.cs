@@ -273,7 +273,7 @@ namespace IO.Ably.Realtime.Workflow
     {
         private SetFailedStateCommand(ErrorInfo error)
         {
-            Error = error;
+            Error = error ?? ErrorInfo.ReasonFailed;
         }
 
         public ErrorInfo Error { get; }
@@ -373,6 +373,7 @@ namespace IO.Ably.Realtime.Workflow
         {
             Delay = delay;
             CommandToQueue = commandToQueue;
+            CommandToQueue.TriggeredBy(this);
         }
 
         public static DelayCommand Create(TimeSpan delay, RealtimeCommand command) => new DelayCommand(delay, command);
@@ -392,7 +393,21 @@ namespace IO.Ably.Realtime.Workflow
             Error = error;
         }
 
-        public static HandleConnectingTokenErrorCommand Create(ErrorInfo error) => new HandleConnectingTokenErrorCommand(error);
+        public static RealtimeCommand Create(ErrorInfo error)
+        {
+            if (error == null || error.IsTokenError == false)
+            {
+#if DEBUG
+                throw new ArgumentException("Cannot create a TokenError command with an error that is not a token error.");
+#endif
+                DefaultLogger.Warning("Cannot create a TokenError command with an error that is not a token error");
+
+                // TODO: Sentry alert
+                return EmptyCommand.Instance;
+            }
+
+            return new HandleConnectingTokenErrorCommand(error);
+        }
 
         protected override string ExplainData()
         {
@@ -400,7 +415,25 @@ namespace IO.Ably.Realtime.Workflow
         }
     }
 
-    internal class HandleConnectingFailureCommand : RealtimeCommand
+    internal class HandleConnectingDisconnectedCommand : RealtimeCommand
+    {
+        public ErrorInfo Error { get; }
+
+        private HandleConnectingDisconnectedCommand(ErrorInfo error)
+        {
+            Error = error;
+        }
+
+        public static HandleConnectingDisconnectedCommand Create(ErrorInfo error = null) =>
+            new HandleConnectingDisconnectedCommand(error);
+
+        protected override string ExplainData()
+        {
+            return $"Error: {Error}.";
+        }
+    }
+
+    internal class HandleConnectingErrorCommand : RealtimeCommand
     {
         public ErrorInfo Error { get; }
 
@@ -408,15 +441,15 @@ namespace IO.Ably.Realtime.Workflow
 
         public bool ClearConnectionKey { get; }
 
-        private HandleConnectingFailureCommand(ErrorInfo error, Exception ex, bool clearConnectionKey)
+        private HandleConnectingErrorCommand(ErrorInfo error, Exception ex, bool clearConnectionKey)
         {
             Error = error;
             Exception = ex;
             ClearConnectionKey = clearConnectionKey;
         }
 
-        public static HandleConnectingFailureCommand Create(ErrorInfo error = null, Exception ex = null, bool clearConnectionKey = false) =>
-            new HandleConnectingFailureCommand(error, ex, clearConnectionKey);
+        public static HandleConnectingErrorCommand Create(ErrorInfo error = null, Exception ex = null, bool clearConnectionKey = false) =>
+            new HandleConnectingErrorCommand(error, ex, clearConnectionKey);
 
         protected override string ExplainData()
         {

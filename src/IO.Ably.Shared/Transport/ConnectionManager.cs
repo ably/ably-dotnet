@@ -39,11 +39,6 @@ namespace IO.Ably.Transport
 
         public ConnectionState ConnectionState => Connection.State;
 
-        public Task<bool> CanUseFallBackUrl(ErrorInfo error)
-        {
-            return RestClient.CanFallback(error);
-        }
-
         public ConnectionManager(Connection connection, Func<DateTimeOffset> nowFunc, ILogger logger)
         {
             Now = nowFunc;
@@ -240,7 +235,7 @@ namespace IO.Ably.Transport
                     HttpStatusCode.ServiceUnavailable);
             }
 
-            ExecuteCommand(SendMessageCommand.Create(message, callback));
+            ExecuteCommand(SendMessageCommand.Create(message, callback).TriggeredBy("ConnectionManager.Send()"));
 
             Result VerifyMessageHasCompatibleClientId(ProtocolMessage protocolMessage)
             {
@@ -270,14 +265,13 @@ namespace IO.Ably.Transport
             }
         }
 
-        // Start here: See how to assign the id. What if the Transport instance is null
         void ITransportListener.OnTransportEvent(Guid transportId, TransportState transportState, Exception ex)
-            => ExecuteCommand(HandleTrasportEventCommand.Create(transportId, transportState, ex));
+            => ExecuteCommand(HandleTrasportEventCommand.Create(transportId, transportState, ex).TriggeredBy("ConnectionManager.OnTransportEvent()"));
 
         void ITransportListener.OnTransportDataReceived(RealtimeTransportData data)
         {
             var message = Handler.ParseRealtimeData(data);
-            ExecuteCommand(ProcessMessageCommand.Create(message));
+            ExecuteCommand(ProcessMessageCommand.Create(message).TriggeredBy("ConnectionManager.OnTransportDataReceived()"));
         }
 
         public void ExecuteCommand(RealtimeCommand cmd)
@@ -308,7 +302,7 @@ namespace IO.Ably.Transport
                             Logger.Debug("Network state is Online. Attempting reconnect.");
                         }
 
-                        ExecuteCommand(ConnectCommand.Create());
+                        ExecuteCommand(ConnectCommand.Create().TriggeredBy("ConnectionManager.HandleNetworkStateChange(Online)"));
                     }
 
                     break;
@@ -326,7 +320,7 @@ namespace IO.Ably.Transport
                             new ErrorInfo(
                                 "Connection disconnected due to Operating system network going offline",
                                 80017);
-                        ExecuteCommand(SetDisconnectedStateCommand.Create(errorInfo, retryInstantly: true));
+                        ExecuteCommand(SetDisconnectedStateCommand.Create(errorInfo, retryInstantly: true).TriggeredBy("ConnectionManager.HandleNetworkStateChange(Offline)"));
                     }
 
                     break;
