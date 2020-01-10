@@ -11,5 +11,7 @@ namespace IO.Ably
         string PlatformId { get; }
 
         ITransportFactory TransportFactory { get; }
+
+        void RegisterOsNetworkStateChanged();
     }
 }

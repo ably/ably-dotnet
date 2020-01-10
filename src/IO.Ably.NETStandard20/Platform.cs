@@ -6,14 +6,25 @@ namespace IO.Ably
 {
     internal class Platform : IPlatform
     {
+        internal static bool _hookedUpToNetworkEvents = false;
+        private static readonly object _lock = new object();
+
         public string PlatformId => "netstandard20";
 
         public ITransportFactory TransportFactory => null;
 
-        static Platform()
+        public void RegisterOsNetworkStateChanged()
         {
-            NetworkChange.NetworkAvailabilityChanged += (sender, eventArgs) =>
-                Connection.NotifyOperatingSystemNetworkState(eventArgs.IsAvailable ? NetworkState.Online : NetworkState.Offline);
+            lock (_lock)
+            {
+                if (_hookedUpToNetworkEvents == false)
+                {
+                    NetworkChange.NetworkAvailabilityChanged += (sender, eventArgs) =>
+                        Connection.NotifyOperatingSystemNetworkState(eventArgs.IsAvailable ? NetworkState.Online : NetworkState.Offline);
+                }
+
+                _hookedUpToNetworkEvents = true;
+            }
         }
     }
 }
