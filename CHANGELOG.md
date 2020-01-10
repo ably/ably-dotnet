@@ -1,6 +1,32 @@
 # Change Log
 
-## [Unreleased](https://github.com/ably/ably-dotnet/tree/HEAD)
+## [1.1.15](https://github.com/ably/ably-dotnet/tree/1.1.15) (2020-01-10)
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.15-beta1...1.1.15)
+
+**Implemented enhancements:**
+
+- Add test for RTC8a4 [\#316](https://github.com/ably/ably-dotnet/issues/316)
+- Add support for remembered REST fallback host  [\#268](https://github.com/ably/ably-dotnet/issues/268)
+- Include the host in error messages for v1.0 [\#218](https://github.com/ably/ably-dotnet/issues/218)
+
+**Fixed bugs:**
+
+- On unhandled exception should not put channel into failed state [\#378](https://github.com/ably/ably-dotnet/issues/378)
+- Xamaring Android when full linking is enabled fails to request token [\#375](https://github.com/ably/ably-dotnet/issues/375)
+- Disconnect event not fired and will not connect after explicit disconnect [\#360](https://github.com/ably/ably-dotnet/issues/360)
+- Odd API for untilAttach queries [\#100](https://github.com/ably/ably-dotnet/issues/100)
+
+**Closed issues:**
+
+- Application freezes on network state change [\#373](https://github.com/ably/ably-dotnet/issues/373)
+- Remove System.Net.Http nuget dependency from full .Net Framework build [\#211](https://github.com/ably/ably-dotnet/issues/211)
+
+**Merged pull requests:**
+
+- Release/1.1.15 [\#390](https://github.com/ably/ably-dotnet/pull/390) ([marto83](https://github.com/marto83))
+- Bump Microsoft.NETCore.UniversalWindowsPlatform from 6.0.2 to 6.0.6 in /src/IO.Ably.UWP [\#388](https://github.com/ably/ably-dotnet/pull/388) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Implemented RSC15f and RTN17e and improved fallback handling [\#385](https://github.com/ably/ably-dotnet/pull/385) ([marto83](https://github.com/marto83))
+- Feature/spec align [\#383](https://github.com/ably/ably-dotnet/pull/383) ([marto83](https://github.com/marto83))
 
 ## [1.1.15-beta1](https://github.com/ably/ably-dotnet/tree/1.1.15-beta1)
 
