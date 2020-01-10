@@ -127,6 +127,20 @@ namespace IO.Ably.Tests
             Assert.NotNull(realtime.Auth);
         }
 
+        [Theory(Skip = "This test can only be run on its own without any other tests because it depends on static values. Make sure you run each test case individually.")]
+        [InlineData(false)]
+        [InlineData(true)]
+        [Trait("issue", "380")]
+        public void AutomaticNetworkDetectionCanBeDisabledByClientOption(bool disable)
+        {
+            var realtime = new AblyRealtime(new ClientOptions(ValidKey)
+            {
+                DisableAutomaticNetworkStateMonitoring = disable,
+            });
+
+            Platform._hookedUpToNetworkEvents.Should().Be(!disable);
+        }
+
         public RealtimeSpecs(ITestOutputHelper output)
             : base(output)
         {

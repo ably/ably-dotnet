@@ -153,11 +153,6 @@ namespace IO.Ably.Tests
             CloseConnectionCalled = true;
         }
 
-        public void ilure(ErrorInfo error, Exception ex, bool clearConnectionKey)
-        {
-            HandledConnectionFailureCalled = true;
-        }
-
         public void SendPendingMessages(bool resumed)
         {
             SendPendingMessagesCalled = true;
