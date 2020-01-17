@@ -131,14 +131,22 @@ namespace IO.Ably.Tests
         [InlineData(false)]
         [InlineData(true)]
         [Trait("issue", "380")]
-        public void AutomaticNetworkDetectionCanBeDisabledByClientOption(bool disable)
+        public void AutomaticNetworkDetectionCanBeDisabledByClientOption(bool enabled)
         {
             var realtime = new AblyRealtime(new ClientOptions(ValidKey)
             {
-                DisableAutomaticNetworkStateMonitoring = disable,
+                AutomaticNetworkStateMonitoring = enabled,
             });
 
-            Platform._hookedUpToNetworkEvents.Should().Be(!disable);
+            Platform._hookedUpToNetworkEvents.Should().Be(enabled);
+        }
+
+        [Fact]
+        [Trait("issue", "380")]
+        public void AutomaticNetworkStateMonitoring_ShouldBeEnabledByDefault()
+        {
+            var clientOptions = new ClientOptions(ValidKey);
+            clientOptions.AutomaticNetworkStateMonitoring.Should().Be(true);
         }
 
         public RealtimeSpecs(ITestOutputHelper output)

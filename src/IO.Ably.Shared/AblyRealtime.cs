@@ -50,7 +50,7 @@ namespace IO.Ably
             Connection = new Connection(this, options.NowFunc, options.Logger);
             Connection.Initialise();
 
-            if (options.DisableAutomaticNetworkStateMonitoring == false)
+            if (options.AutomaticNetworkStateMonitoring)
             {
                 IoC.RegisterOsNetworkStateChanged();
             }
