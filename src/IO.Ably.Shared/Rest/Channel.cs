@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using IO.Ably.Encryption;
 
 namespace IO.Ably.Rest
 {
@@ -13,8 +14,6 @@ namespace IO.Ably.Rest
     /// </summary>
     public class RestChannel : IRestChannel, IPresence
     {
-        private const int IdempotentGeneratedIdLength = 9;
-
         /// <inheritdoc/>
         public string Name { get; private set; }
 
@@ -70,9 +69,7 @@ namespace IO.Ably.Rest
                 if (messages.All(m => m.Id == null))
                 {
                     // generate a base id string by base64-encoding a sequence of at least 9 bytes
-                    var b = new byte[IdempotentGeneratedIdLength];
-                    new Random().NextBytes(b);
-                    var baseId = Convert.ToBase64String(b);
+                    var baseId = Crypto.GetRandomMessageId();
                     int serial = 0;
                     foreach (var message in messages)
                     {
