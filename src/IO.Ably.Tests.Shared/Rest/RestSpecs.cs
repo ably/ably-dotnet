@@ -338,26 +338,8 @@ namespace IO.Ably.Tests
             {
                 var clientOptions = new ClientOptions();
 
-                // Now working against 1.1+ so this should be true
+                // This test needs to change once we implement v1.2
                 clientOptions.IdempotentRestPublishing.Should().BeFalse();
-
-                // Test the internal method that is called from
-                // ClientOptions constructor with different
-                // major and minor versions
-                clientOptions.SetIdempotentRestPublishingDefault(0, 8);
-                clientOptions.IdempotentRestPublishing.Should().BeFalse();
-
-                clientOptions.SetIdempotentRestPublishingDefault(1, 0);
-                clientOptions.IdempotentRestPublishing.Should().BeFalse();
-
-                clientOptions.SetIdempotentRestPublishingDefault(1, 1);
-                clientOptions.IdempotentRestPublishing.Should().BeFalse();
-
-                clientOptions.SetIdempotentRestPublishingDefault(1, 2);
-                clientOptions.IdempotentRestPublishing.Should().BeTrue();
-
-                clientOptions.SetIdempotentRestPublishingDefault(2, 0);
-                clientOptions.IdempotentRestPublishing.Should().BeTrue();
             }
 
             private static async Task MakeAnyRequest(AblyRest client)

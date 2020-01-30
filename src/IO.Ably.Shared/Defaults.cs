@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using IO.Ably;
@@ -8,8 +9,7 @@ namespace IO.Ably
 {
     internal static class Defaults
     {
-        internal const int ProtocolMajorVersion = 1;
-        internal const int ProtocolMinorVersion = 1;
+        internal static float ProtocolVersionNumber = 1.1F;
 
         internal static readonly string AssemblyVersion = GetVersion();
 
@@ -32,7 +32,7 @@ namespace IO.Ably
             }
         }
 
-        public static string ProtocolVersion { get; } = $"{ProtocolMajorVersion}.{ProtocolMinorVersion}";
+        public static string ProtocolVersion { get; } = ProtocolVersionNumber.ToString(CultureInfo.InvariantCulture);
 
         public const int QueryLimit = 100;
 
