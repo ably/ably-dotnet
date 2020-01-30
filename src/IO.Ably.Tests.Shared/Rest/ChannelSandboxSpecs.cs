@@ -107,7 +107,7 @@ namespace IO.Ably.Tests.Rest
             await channel.PublishAsync("test", "test");
         }
 
-        [Theory(Skip = "Problem picking up correct environment, needs fix")]
+        [Theory]
         [ProtocolData]
         [Trait("spec", "RSL1k1")]
         public async Task IdempotentPublishing_LibraryGeneratesIds(Protocol protocol)
@@ -146,13 +146,13 @@ namespace IO.Ably.Tests.Rest
             }
         }
 
-        [Theory(Skip = "Problem picking up correct environment, needs fix")]
+        [Theory]
         [ProtocolData]
         [Trait("spec", "RSL1k2")]
         [Trait("spec", "RSL1k3")]
         public async Task IdempotentPublishing_ClientProvidedMessageIdsArePreserved(Protocol protocol)
         {
-            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true, "idempotent-dev");
+            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true);
             var channel = client.Channels.Get("test".AddRandomSuffix());
 
             var msg = new Message("test", "test") { Id = "RSL1k2" };
@@ -166,35 +166,41 @@ namespace IO.Ably.Tests.Rest
                 new Message("test3", "test3"),
             };
 
-            messages[0].Id = "RSL1k3";
+            messages[0].Id = "RSL1k3:0";
+            messages[1].Id = "RSL1k3:1";
+            messages[2].Id = "RSL1k3:2";
 
             // Can publish further messages in the same channel
             await channel.PublishAsync(messages);
 
-            messages[0].Id.Should().Be("RSL1k3");
-            messages[1].Id.Should().BeNull();
-            messages[2].Id.Should().BeNull();
+            messages[0].Id.Should().Be("RSL1k3:0");
+            messages[1].Id.Should().Be("RSL1k3:1");
+            messages[2].Id.Should().Be("RSL1k3:2");
 
             var history = await channel.HistoryAsync();
             history.Items.Should().HaveCount(4);
             history.Items[3].Id.Should().Be("RSL1k2");
-            history.Items[2].Id.Should().Be("RSL1k3");
+            history.Items[2].Id.Should().Be("RSL1k3:0");
+            history.Items[1].Id.Should().Be("RSL1k3:1");
+            history.Items[0].Id.Should().Be("RSL1k3:2");
         }
 
-        [Theory(Skip = "Problem picking up correct environment, needs fix")]
+        [Theory]
         [ProtocolData]
         [Trait("spec", "RSL1k4")]
         public async Task IdempotentPublishing_SimulateErrorAndRetry(Protocol protocol)
         {
             int numberOfRetries = 2;
-            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true, "idempotent-dev");
+            var client = await GetRestClient(protocol, opts =>
+            {
+                opts.FallbackHosts = new[] { "sandbox-rest.ably.io" };
+                opts.IdempotentRestPublishing = true;
+            });
 
             var suffix = string.Empty.AddRandomSuffix();
             var channelName = $"test{suffix}";
             var channel = client.Channels.Get(channelName);
 
-            // batch publishing is not supported at the time
-            // of writing, so just send one message
             var messages = new[]
             {
                 new Message($"test1{suffix}", "test1")
@@ -206,7 +212,6 @@ namespace IO.Ably.Tests.Rest
             client.HttpClient.Options.HttpMaxRetryCount = numberOfRetries;
             client.HttpClient.SendAsync = async message =>
             {
-                message.RequestUri = new Uri($"https://{client.Options.FullRestHost()}/channels/{channelName}/messages");
                 var result = await client.HttpClient.InternalSendAsync(message);
                 tryCount++;
                 if (tryCount < numberOfRetries)
@@ -233,12 +238,63 @@ namespace IO.Ably.Tests.Rest
             history.Items[0].Name.Should().Be($"test1{suffix}");
         }
 
-        [Theory(Skip = "Problem picking up correct environment, needs fix")]
+        [Theory]
+        [ProtocolData]
+        [Trait("spec", "RSL1k5")]
+        public async Task IdempotentPublishing_WithClientSpecificMessage_ShouldRetry(Protocol protocol)
+        {
+            int numberOfRetries = 2;
+            var client = await GetRestClient(protocol, opts =>
+            {
+                opts.FallbackHosts = new[] { "sandbox-rest.ably.io" };
+                opts.IdempotentRestPublishing = true;
+            });
+
+            var suffix = string.Empty.AddRandomSuffix();
+            var channelName = $"persisted:clientspecificmessage_test{suffix}";
+            var channel = client.Channels.Get(channelName);
+
+            var payload = new Message($"test1{suffix}", "test1");
+            payload.Id = "client_id";
+
+            // intercept the HTTP request overriding the RequestUri
+            // to make it appear that a retry against another host has happened
+            int tryCount = 0;
+            client.HttpClient.Options.HttpMaxRetryCount = numberOfRetries;
+            client.HttpClient.SendAsync = async message =>
+            {
+                var result = await client.HttpClient.InternalSendAsync(message);
+                tryCount++;
+                if (tryCount < numberOfRetries)
+                {
+                    // setting IsDefaultHost and raising a TaskCanceledException
+                    // will cause the request to retry
+                    client.HttpClient.Options.IsDefaultHost = true;
+                    throw new TaskCanceledException("faked exception to cause retry");
+                }
+
+                return result;
+            };
+
+            await channel.PublishAsync(payload);
+
+            // publish http request should be made twice
+            tryCount.Should().Be(numberOfRetries);
+
+            // restore the SendAsync method
+            client.HttpClient.SendAsync = client.HttpClient.InternalSendAsync;
+
+            var history = await channel.HistoryAsync();
+            history.Items.Should().HaveCount(1);
+            history.Items[0].Name.Should().Be($"test1{suffix}");
+        }
+
+        [Theory]
         [ProtocolData]
         [Trait("spec", "RSL1k5")]
         public async Task IdempotentPublishing_SendingAMessageMultipleTimesShouldOnlyPublishOnce(Protocol protocol)
         {
-            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true, "idempotent-dev");
+            var client = await GetRestClient(protocol, opts => opts.IdempotentRestPublishing = true);
             var channel = client.Channels.Get("test".AddRandomSuffix());
 
             var msg = new Message("test", "test") { Id = "RSL1k5" };
