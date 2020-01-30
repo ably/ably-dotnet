@@ -328,7 +328,7 @@ namespace IO.Ably.Tests
 
                 client.Channels["test"].PublishAsync("boo", "baa");
 
-                var message = (LastRequest.PostData as List<Message>).First();
+                var message = (LastRequest.PostData as IEnumerable<Message>).First();
 
                 message.ClientId.Should().BeNullOrEmpty();
             }
