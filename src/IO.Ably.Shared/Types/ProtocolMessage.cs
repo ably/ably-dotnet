@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -48,6 +49,7 @@ namespace IO.Ably.Types
         /// <summary>
         /// Message Flag sent by the server.
         /// </summary>
+        [Flags]
         public enum Flag
         {
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
@@ -80,6 +82,9 @@ namespace IO.Ably.Types
 
             return (value.Value & (int)flag) != 0;
         }
+
+        [JsonProperty("params")]
+        public ChannelParams Params { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProtocolMessage"/> class.
@@ -227,6 +232,25 @@ namespace IO.Ably.Types
         public bool HasFlag(Flag flag)
         {
             return HasFlag(Flags, flag);
+        }
+
+        public void SetFlag(Flag flag)
+        {
+            var value = Flags.GetValueOrDefault();
+            value |= (int)flag;
+            Flags = value;
+        }
+
+        public void SetModesAsFlags(IEnumerable<ChannelMode> modes)
+        {
+            foreach (var mode in modes)
+            {
+                var flag = mode.ToFlag();
+                if (flag != null)
+                {
+                    SetFlag(flag.Value);
+                }
+            }
         }
 
         /// <inheritdoc/>
