@@ -198,5 +198,14 @@ namespace IO.Ably.Encryption
 
             return AesCipher.GenerateKey(mode, keyLength);
         }
+
+        private static RNGCryptoServiceProvider secureRandom = new RNGCryptoServiceProvider();
+
+        public static string GetRandomMessageId()
+        {
+            byte[] bytes = new byte[9];
+            secureRandom.GetBytes(bytes);
+            return bytes.ToBase64();
+        }
     }
 }
