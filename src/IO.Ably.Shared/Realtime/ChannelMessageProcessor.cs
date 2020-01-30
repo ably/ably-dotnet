@@ -1,9 +1,7 @@
 using System.Linq;
 using System.Threading.Tasks;
-using IO.Ably;
 using IO.Ably.MessageEncoders;
 using IO.Ably.Realtime.Workflow;
-using IO.Ably.Transport;
 using IO.Ably.Types;
 
 namespace IO.Ably.Realtime
@@ -48,6 +46,17 @@ namespace IO.Ably.Realtime
                     break;
                 case ProtocolMessage.MessageAction.Attached:
                     channel.Properties.AttachSerial = protocolMessage.ChannelSerial;
+
+                    if (protocolMessage.Flags.HasValue)
+                    {
+                        channel.AttachedModes = new ChannelModes(((ProtocolMessage.Flag)protocolMessage.Flags.Value).FromFlag());
+                    }
+
+                    if (protocolMessage.Params != null)
+                    {
+                        channel.AttachedParams = protocolMessage.Params;
+                    }
+
                     if (channel.State == ChannelState.Attached)
                     {
                         // RTL12

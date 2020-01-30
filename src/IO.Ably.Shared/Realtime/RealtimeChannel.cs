@@ -71,6 +71,10 @@ namespace IO.Ably.Realtime
             set => _options = value ?? new ChannelOptions();
         }
 
+        public ChannelParams AttachedParams { get; set; }
+
+        public ChannelModes AttachedModes { get; set; }
+
         public string Name { get; }
 
         public ChannelState State
@@ -231,11 +235,7 @@ namespace IO.Ably.Realtime
                     Connection.Connect();
                 }
 
-                var protocolMessage = new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name);
-                if (DecodeRecovery && LastSuccessfulMessageIds != LastMessageIds.Empty)
-                {
-                    protocolMessage.ChannelSerial = LastSuccessfulMessageIds.ProtocolMessageChannelSerial;
-                }
+                var protocolMessage = CreateAttachMessage();
 
                 SendMessage(protocolMessage);
             }
@@ -247,6 +247,30 @@ namespace IO.Ably.Realtime
                         ConnectionState == ConnectionState.Closing ||
                         ConnectionState == ConnectionState.Failed ||
                         ConnectionState == ConnectionState.Suspended;
+            }
+
+            ProtocolMessage CreateAttachMessage()
+            {
+                var message = new ProtocolMessage(ProtocolMessage.MessageAction.Attach, Name);
+                if (DecodeRecovery && LastSuccessfulMessageIds != LastMessageIds.Empty)
+                {
+                    message.ChannelSerial = LastSuccessfulMessageIds.ProtocolMessageChannelSerial;
+                }
+
+                if (Options != null)
+                {
+                    if (Options.Params.Any())
+                    {
+                        message.Params = Options.Params;
+                    }
+
+                    if (Options.Modes.Any())
+                    {
+                        message.SetModesAsFlags(Options.Modes);
+                    }
+                }
+
+                return message;
             }
         }
 
@@ -355,6 +379,25 @@ namespace IO.Ably.Realtime
         public async Task<Result> DetachAsync()
         {
             return await TaskWrapper.Wrap(Detach);
+        }
+
+        public void SetOptions(ChannelOptions options, Action<bool, ErrorInfo> callback = null)
+        {
+            Options = options;
+            if (ShouldReAttach(options))
+            {
+                Attach(null, null, callback, force: true);
+            }
+            else
+            {
+                ActionUtils.SafeExecute(() => callback?.Invoke(true, null), Logger, "SetOptions - no need to attach");
+            }
+        }
+
+        public async Task<Result> SetOptions(ChannelOptions options)
+        {
+            Action<Action<bool, ErrorInfo>> setOptions = callback => SetOptions(options, callback);
+            return await TaskWrapper.Wrap(setOptions);
         }
 
         public void Subscribe(Action<Message> handler)
@@ -700,6 +743,13 @@ namespace IO.Ably.Realtime
             {
                 Emit(ChannelEvent.Update, new ChannelStateChange(ChannelEvent.Update, State, State, errorInfo, resumed));
             }
+        }
+
+        internal bool ShouldReAttach(ChannelOptions options)
+        {
+            return
+                (State == ChannelState.Attached || State == ChannelState.Attaching) &&
+                (options.Modes.Any() || options.Params.Any());
         }
 
         public JObject GetCurrentState()

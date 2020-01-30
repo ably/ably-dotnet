@@ -35,6 +35,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\RealtimeCommands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\RealtimeState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\Workflows\RealtimeWorkflow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Rest\ChannelOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\AttemptFailedState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionAttempt.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\ConnectionInfo.cs" />
@@ -107,7 +108,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\IRealtimeChannel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\RealtimeTransportData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\Channel.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Rest\ChannelOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Rest\IChannel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Result.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Statistics.cs" />
@@ -136,6 +136,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Transport\MsWebSocketTransport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transport\MsWebSocketConnection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realtime\ChannelProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Types\ChannelModes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Types\ChannelParams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\ConnectionDetailsMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\ErrorCodes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Types\ErrorInfo.cs" />

@@ -20,6 +20,10 @@ namespace IO.Ably
         /// </summary>
         public CipherParams CipherParams { get; private set; }
 
+        public ChannelParams Params = new ChannelParams();
+
+        public ChannelModes Modes = new ChannelModes();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ChannelOptions"/> class.
         /// </summary>
