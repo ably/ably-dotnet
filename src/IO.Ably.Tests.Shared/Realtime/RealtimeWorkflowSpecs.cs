@@ -16,8 +16,6 @@ namespace IO.Ably.Tests.NETFramework.Realtime
 {
     public class RealtimeWorkflowSpecs : AblyRealtimeSpecs
     {
-
-
         public class GeneralSpecs : AblyRealtimeSpecs
         {
             [Fact]
@@ -62,7 +60,8 @@ namespace IO.Ably.Tests.NETFramework.Realtime
              client.State.Connection.Id.Should().BeEmpty();
             }
 
-            public GeneralSpecs(ITestOutputHelper output) : base(output)
+            public GeneralSpecs(ITestOutputHelper output)
+                : base(output)
             {
             }
         }
@@ -92,7 +91,6 @@ namespace IO.Ably.Tests.NETFramework.Realtime
             {
             }
         }
-
 
         public class ConnectingCommandSpecs : AblyRealtimeSpecs
         {

@@ -44,8 +44,10 @@ namespace IO.Ably.Realtime
         /// the network state.
         /// </summary>
         /// <param name="state">The current state of the OS network connection.</param>
-        /// <param name="logger">Current logger.</param>
-        internal static void NotifyOperatingSystemNetworkState(NetworkState state, ILogger logger = null)
+        public static void NotifyOperatingSystemNetworkState(NetworkState state) =>
+            NotifyOperatingSystemNetworkState(state, null);
+
+        internal static void NotifyOperatingSystemNetworkState(NetworkState state, ILogger logger)
         {
             if (logger == null)
             {

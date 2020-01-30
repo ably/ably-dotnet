@@ -1153,7 +1153,7 @@ namespace IO.Ably.Tests.Realtime
             stateChange2.Error.Message.Should().Be(detachedMessage.Error.Message);
 
             // retry should happen after SuspendedRetryTimeout has elapsed
-            (end - start).Should().BeCloseTo(requestTimeout, 500);
+            (end - start).Should().BeCloseTo(requestTimeout, 2000);
         }
 
         [Theory]

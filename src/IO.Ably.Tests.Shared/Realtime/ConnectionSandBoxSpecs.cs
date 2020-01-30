@@ -393,9 +393,8 @@ namespace IO.Ably.Tests.Realtime
         {
             var client = await GetRealtimeClient(protocol, (options, _) =>
             {
-                options.RealtimeHost = "localhost";
                 options.AutoConnect = false;
-                options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(500);
+                options.RealtimeRequestTimeout = TimeSpan.FromMilliseconds(50);
             });
 
             client.Connect();
