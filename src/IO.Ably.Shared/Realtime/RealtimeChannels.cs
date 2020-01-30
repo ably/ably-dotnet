@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using IO.Ably.Realtime.Workflow;
 using Newtonsoft.Json.Linq;
@@ -71,7 +72,12 @@ namespace IO.Ably.Realtime
             {
                 if (options != null)
                 {
-                    result.Options = options;
+                    if (result.ShouldReAttach(options))
+                    {
+                        throw new AblyException(new ErrorInfo("Channels.Get() cannot be used to set channel options that would cause the channel to reattach. Please, use Channel.SetOptions() instead.", 40000, HttpStatusCode.BadRequest));
+                    }
+
+                    result.SetOptions(options);
                 }
             }
 
