@@ -43,10 +43,7 @@ namespace IO.Ably.Rest
         /// <inheritdoc/>
         public Task PublishAsync(string name, object data, string clientId = null)
         {
-            var request = _ablyRest.CreatePostRequest(_basePath + "/messages", Options);
-
-            request.PostData = new List<Message> { new Message(name, data, clientId) };
-            return _ablyRest.ExecuteRequest(request);
+            return PublishAsync(new Message(name, data, clientId));
         }
 
         /// <inheritdoc/>
