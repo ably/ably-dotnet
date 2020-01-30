@@ -86,6 +86,8 @@ namespace IO.Ably.Encryption
     /// </summary>
     public static class Crypto
     {
+        private const int IdempotentGeneratedIdLength = 9;
+
         /// <summary>
         /// Default Encryption algorithm. (AES).
         /// </summary>
@@ -201,9 +203,13 @@ namespace IO.Ably.Encryption
 
         private static RNGCryptoServiceProvider secureRandom = new RNGCryptoServiceProvider();
 
+        /// <summary>
+        /// Generates a cryptographically random message id.
+        /// </summary>
+        /// <returns>base64 encoded random array of 9 bytes.</returns>
         public static string GetRandomMessageId()
         {
-            byte[] bytes = new byte[9];
+            byte[] bytes = new byte[IdempotentGeneratedIdLength];
             secureRandom.GetBytes(bytes);
             return bytes.ToBase64();
         }
