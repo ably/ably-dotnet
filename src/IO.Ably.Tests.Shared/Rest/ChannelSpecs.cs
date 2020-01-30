@@ -118,7 +118,7 @@ namespace IO.Ably.Tests.Rest
 
                 LastRequest.Method.Should().Be(HttpMethod.Post);
                 LastRequest.Url.Should().Be($"/channels/{channel.Name}/messages");
-                var messages = LastRequest.PostData as List<Message>;
+                var messages = LastRequest.PostData as IEnumerable<Message>;
                 messages.Should().HaveCount(1);
                 messages.First().Data.Should().Be("data");
                 messages.First().Name.Should().Be("event");
@@ -211,8 +211,7 @@ namespace IO.Ably.Tests.Rest
                 var channel = rest.Channels.Get("Test");
                 channel.PublishAsync("event", "data");
 
-                Assert.IsType<List<Message>>(LastRequest.PostData);
-                var messages = LastRequest.PostData as List<Message>;
+                var messages = LastRequest.PostData as IEnumerable<Message>;
                 var data = messages.First();
                 Assert.Equal("data", data.Data);
                 Assert.Equal("event", data.Name);
@@ -225,8 +224,7 @@ namespace IO.Ably.Tests.Rest
                 var channel = rest.Channels.Get("Test");
                 channel.PublishAsync("event", new byte[] { 1, 2 });
 
-                Assert.IsType<List<Message>>(LastRequest.PostData);
-                var postData = (LastRequest.PostData as IList<Message>).First();
+                var postData = (LastRequest.PostData as IEnumerable<Message>).First();
                 Assert.Equal("base64", postData.Encoding);
             }
 
