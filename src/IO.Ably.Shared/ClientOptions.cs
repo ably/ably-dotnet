@@ -278,8 +278,10 @@ namespace IO.Ably
 
         /// <summary>
         /// Switched on IdempotentRest publishing. Currently switched off by default in libraries with version less than 1.2.
+        /// Default before 1.2: false.
+        /// Default after 1.2: true.
         /// </summary>
-        public bool IdempotentRestPublishing { get; set; }
+        public bool IdempotentRestPublishing { get; set; } = Defaults.ProtocolVersionNumber >= 1.2;
 
         /// <summary>
         /// [Obsolete] Tells the library whether to capture the current SynchronizationContext and use it when triggering handlers and emitters
@@ -327,7 +329,6 @@ namespace IO.Ably
         /// </summary>
         public ClientOptions()
         {
-            Init();
         }
 
         /// <summary>
@@ -338,25 +339,6 @@ namespace IO.Ably
         public ClientOptions(string key)
             : base(key)
         {
-            Init();
-        }
-
-        private void Init()
-        {
-            SetIdempotentRestPublishingDefault(Defaults.ProtocolMajorVersion, Defaults.ProtocolMinorVersion);
-        }
-
-        internal void SetIdempotentRestPublishingDefault(int majorVersion, int minorVersion)
-        {
-            // (TO3n) idempotentRestPublishing defaults to false for clients with version < 1.1, otherwise true.
-            if ((majorVersion == 1 && minorVersion >= 2) || majorVersion > 1)
-            {
-                IdempotentRestPublishing = true;
-            }
-            else
-            {
-                IdempotentRestPublishing = false;
-            }
         }
     }
 }
