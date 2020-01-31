@@ -1,5 +1,17 @@
 # Change Log
 
+## [1.1.16](https://github.com/ably/ably-dotnet/tree/1.1.16) (2020-01-31)
+[Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.15...1.1.16)
+
+**Implemented enhancements:**
+
+- Expose a custom way to notify the library about OperatingSystemNetworkState [\#380](https://github.com/ably/ably-dotnet/issues/380)
+
+**Merged pull requests:**
+
+- Issue/380 allow to disable networkstate monitoring [\#392](https://github.com/ably/ably-dotnet/pull/392) ([marto83](https://github.com/marto83))
+
+
 ## [1.1.15](https://github.com/ably/ably-dotnet/tree/1.1.15) (2020-01-10)
 [Full Changelog](https://github.com/ably/ably-dotnet/compare/1.1.15-beta1...1.1.15)
 
