@@ -61,6 +61,11 @@ namespace IO.Ably.Tests
             return JsonHelper.Serialize(message);
         }
 
+        private ProtocolMessage Deserialize(string messageString)
+        {
+            return JsonHelper.Deserialize<ProtocolMessage>(messageString);
+        }
+
         // Serialization tests
         [Theory]
         [InlineData(ProtocolMessage.MessageAction.Attach)]
@@ -154,6 +159,17 @@ namespace IO.Ably.Tests
 
             // Act & Assert
             Serialize(message).Should().Be(expectedMessage.ToString());
+        }
+
+        [Fact]
+        public void SerializesMessageParamsCorrectly()
+        {
+            ChannelParams channelParams = new ChannelParams() { { "rewind", "1" }, { "delta", "delta" } };
+            ProtocolMessage message = new ProtocolMessage(ProtocolMessage.MessageAction.Attach) { Params = channelParams };
+            var serialized = Serialize(message);
+            var deserialized = Deserialize(serialized);
+            deserialized.Params.Should().HaveCount(2);
+            deserialized.Params.First().Should().Be(new KeyValuePair<string, string>("rewind", "1"));
         }
 
         [Theory]

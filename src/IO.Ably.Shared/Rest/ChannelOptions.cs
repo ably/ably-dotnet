@@ -1,4 +1,6 @@
+using System;
 using System.ComponentModel.Design;
+using System.Threading.Channels;
 using IO.Ably;
 using IO.Ably.Encryption;
 
@@ -146,8 +148,40 @@ namespace IO.Ably
         /// <returns>the same ChannelOptions object so other calls can be chained.</returns>
         public static ChannelOptions WithParam(this ChannelOptions options, string key, string value)
         {
-            options.Params.Add(key, value);
+            options.Params[key] = value;
             return options;
+        }
+
+        /// <summary>
+        /// Makes adding Rewind by a number of messages easier.
+        /// Full documentation can be found here: https://www.ably.io/documentation/realtime/channel-params#rewind.
+        /// </summary>
+        /// <param name="options">the <see cref="ChannelOptions"/> that will be modified.</param>
+        /// <param name="numberOfMessages">the value passed to Rewind param.</param>
+        /// <returns>the same ChannelOptions object so other calls can be chained.</returns>
+        public static ChannelOptions WithRewind(this ChannelOptions options, int numberOfMessages)
+        {
+            return options.WithParam("rewind", numberOfMessages.ToString());
+        }
+
+        /// <summary>
+        /// Makes adding Rewind by a time period with an option interval easier.
+        /// Full documentation can be found here: https://www.ably.io/documentation/realtime/channel-params#rewind.
+        /// </summary>
+        /// <param name="options">the <see cref="ChannelOptions"/> that will be modified.</param>
+        /// <param name="rewindBy">by how much should we rewind.</param>
+        /// <param name="limit">the max number of messages that should be returned. Max: 100.</param>
+        /// <returns>the same ChannelOptions object so other calls can be chained.</returns>
+        public static ChannelOptions WithRewind(this ChannelOptions options, TimeSpan rewindBy, int? limit)
+        {
+            var result = options.WithParam("rewind", rewindBy.TotalSeconds + "s");
+            if (limit.HasValue && limit > 0)
+            {
+                var l = Math.Max(limit.Value, 100);
+                result.WithParam("rewindLimit", l.ToString());
+            }
+
+            return result;
         }
     }
 }
