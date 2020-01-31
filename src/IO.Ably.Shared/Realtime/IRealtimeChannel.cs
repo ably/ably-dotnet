@@ -59,7 +59,7 @@ namespace IO.Ably.Realtime
 
         /// <summary>
         /// Attach to this channel and return a Task that can be awaited.
-        /// The task completes when the Atach has completed.
+        /// The task completes when Attach has completed.
         /// </summary>
         /// <returns>Task of Result.</returns>
         Task<Result> AttachAsync();
@@ -169,5 +169,21 @@ namespace IO.Ably.Realtime
         /// <returns><see cref="PaginatedResult{T}"/> of past Messages.</returns>
         /// <exception cref="AblyException">Throws an error if untilAttach is true and the channel is not currently attached.</exception>
         Task<PaginatedResult<Message>> HistoryAsync(PaginatedRequestParams query, bool untilAttach = false);
+
+        /// <summary>
+        /// Updates the options for a channel. If the ChannelModes or ChannelParams differ and the channel is Attaching or Attached
+        /// then the channel will be reattached.
+        /// </summary>
+        /// <param name="options">the new <see cref="ChannelOptions"/> for the channel.</param>
+        /// <param name="callback">callback that will indicate whether the method succeeded.</param>
+        void SetOptions(ChannelOptions options, Action<bool, ErrorInfo> callback);
+
+        /// <summary>
+        /// Updates the options for a channel. If the ChannelModes or ChannelParams differ and the channel is Attaching or Attached
+        /// then the channel will be reattached.
+        /// </summary>
+        /// <param name="options">the new <see cref="ChannelOptions"/> for the channel.</param>
+        /// <returns>returns Result to indicate whether the operation completed successfully or failed.</returns>
+        Task<Result> SetOptionsAsync(ChannelOptions options);
     }
 }
