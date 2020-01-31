@@ -62,6 +62,7 @@ namespace IO.Ably.Tests.Shared.Realtime
                 ("Count", typeof(int?)),
                 ("Error", typeof(ErrorInfo)),
                 ("Flags", typeof(int?)),
+                ("Params", typeof(ChannelParams)),
                 ("MsgSerial", typeof(long)),
                 ("Messages", typeof(Message[])),
                 ("Presence", typeof(PresenceMessage[])),
@@ -69,8 +70,8 @@ namespace IO.Ably.Tests.Shared.Realtime
             };
 
             var props = pm.GetType().GetProperties();
-            props.Length.Should().Be(15);
-            propertyNamesAndTypes.Length.Should().Be(15);
+            props.Length.Should().Be(16);
+            propertyNamesAndTypes.Length.Should().Be(16);
 
             foreach (var propertyInfo in props)
             {
