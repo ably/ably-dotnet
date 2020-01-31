@@ -18,7 +18,8 @@ namespace IO.Ably
 
         /// <summary>
         /// Create or retrieve a channel with the specified name and options
-        /// If new options are specified the existing channel's options are updated.
+        /// If the channel already exists the channel's options are updated and
+        /// the channel is reattached if the new options contain Modes or Params.
         /// </summary>
         /// <param name="name">name of the channel.</param>
         /// <param name="options"><see cref="ChannelOptions"/>.</param>
