@@ -264,17 +264,14 @@ namespace IO.Ably.Realtime
                     message.ChannelSerial = LastSuccessfulMessageIds.ProtocolMessageChannelSerial;
                 }
 
-                if (Options != null)
+                if (Options.Params.Any())
                 {
-                    if (Options.Params.Any())
-                    {
-                        message.Params = Options.Params;
-                    }
+                    message.Params = Options.Params;
+                }
 
-                    if (Options.Modes.Any())
-                    {
-                        message.SetModesAsFlags(Options.Modes);
-                    }
+                if (Options.Modes.Any())
+                {
+                    message.SetModesAsFlags(Options.Modes);
                 }
 
                 if (AttachResume)
