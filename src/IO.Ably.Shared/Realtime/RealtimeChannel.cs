@@ -394,7 +394,7 @@ namespace IO.Ably.Realtime
             }
         }
 
-        public async Task<Result> SetOptions(ChannelOptions options)
+        public async Task<Result> SetOptionsAsync(ChannelOptions options)
         {
             Action<Action<bool, ErrorInfo>> setOptions = callback => SetOptions(options, callback);
             return await TaskWrapper.Wrap(setOptions);
@@ -747,9 +747,16 @@ namespace IO.Ably.Realtime
 
         internal bool ShouldReAttach(ChannelOptions options)
         {
-            return
-                (State == ChannelState.Attached || State == ChannelState.Attaching) &&
-                (options.Modes.Any() || options.Params.Any());
+            bool isAttachedOrAttaching = State == ChannelState.Attached || State == ChannelState.Attaching;
+            bool hasModesWhichAreDifferentThanCurrentOptions =
+                options.Modes.Any() &&
+                options.Modes.All(x => _options.Modes.Contains(x)) == false;
+            bool hasParamsWhichAreDifferentThanCurrentOptions =
+                options.Params.Any() &&
+                options.Params.All(x =>
+                    _options.Params.TryGetValue(x.Key, out string value) && x.Value.EqualsTo(value, true)) == false;
+
+            return isAttachedOrAttaching && (hasModesWhichAreDifferentThanCurrentOptions || hasParamsWhichAreDifferentThanCurrentOptions);
         }
 
         public JObject GetCurrentState()
