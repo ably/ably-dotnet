@@ -22,6 +22,12 @@ namespace IO.Ably.Realtime
         private ChannelOptions _options;
         private ChannelState _state;
 
+        /// <summary>
+        /// True when the channel moves to the @ATTACHED@ state, and False
+        /// when the channel moves to the @DETACHING@ or @FAILED@ states.
+        /// </summary>
+        internal bool AttachResume { get; set; } = false;
+
         private int _decodeRecoveryInProgress = 0;
 
         // We use interlocked exchange because it is a thread safe way to read a variable
@@ -271,6 +277,11 @@ namespace IO.Ably.Realtime
                     }
                 }
 
+                if (AttachResume)
+                {
+                    message.SetFlag(ProtocolMessage.Flag.AttachResume);
+                }
+
                 return message;
             }
         }
@@ -384,8 +395,10 @@ namespace IO.Ably.Realtime
 
         public void SetOptions(ChannelOptions options, Action<bool, ErrorInfo> callback = null)
         {
+            // We need to make the check before we replace the options
+            var shouldReAttach = ShouldReAttach(options);
             Options = options;
-            if (ShouldReAttach(options))
+            if (shouldReAttach)
             {
                 Attach(null, null, callback, force: true);
             }
@@ -617,8 +630,10 @@ namespace IO.Ably.Realtime
                     break;
                 case ChannelState.Detaching:
                     AttachedAwaiter.Fail(new ErrorInfo("Channel transitioned to detaching", 50000));
+                    AttachResume = false;
                     break;
                 case ChannelState.Attached:
+                    AttachResume = true;
                     Presence.ChannelAttached(protocolMessage);
                     break;
                 case ChannelState.Detached:
@@ -647,6 +662,7 @@ namespace IO.Ably.Realtime
 
                     break;
                 case ChannelState.Failed:
+                    AttachResume = false;
                     AttachedAwaiter.Fail(error);
                     DetachedAwaiter.Fail(error);
                     Presence.ChannelDetachedOrFailed(error);
