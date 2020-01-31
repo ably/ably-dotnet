@@ -95,5 +95,13 @@ namespace IO.Ably
             : base(modes)
         {
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChannelModes"/> class.
+        /// </summary>
+        /// <param name="modes">A list of modes to be populated.</param>
+        public ChannelModes(params ChannelMode[] modes)
+        {
+        }
     }
 }

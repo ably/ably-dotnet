@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -749,12 +750,11 @@ namespace IO.Ably.Realtime
         {
             bool isAttachedOrAttaching = State == ChannelState.Attached || State == ChannelState.Attaching;
             bool hasModesWhichAreDifferentThanCurrentOptions =
-                options.Modes.Any() &&
-                options.Modes.All(x => _options.Modes.Contains(x)) == false;
+                (options.Modes.All(x => _options.Modes.Contains(x)) &&
+                _options.Modes.All(x => options.Modes.Contains(x))) == false;
             bool hasParamsWhichAreDifferentThanCurrentOptions =
-                options.Params.Any() &&
-                options.Params.All(x =>
-                    _options.Params.TryGetValue(x.Key, out string value) && x.Value.EqualsTo(value, true)) == false;
+                (options.Params.All(x => _options.Params.Contains(x))
+                && _options.Params.All(x => options.Params.Contains(x))) == false;
 
             return isAttachedOrAttaching && (hasModesWhichAreDifferentThanCurrentOptions || hasParamsWhichAreDifferentThanCurrentOptions);
         }

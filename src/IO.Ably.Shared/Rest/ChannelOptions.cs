@@ -8,6 +8,8 @@ namespace IO.Ably
     /// </summary>
     public class ChannelOptions
     {
+        private ChannelModes _modes = new ChannelModes();
+        private ChannelParams _params = new ChannelParams();
         internal ILogger Logger { get; set; }
 
         /// <summary>
@@ -25,13 +27,21 @@ namespace IO.Ably
         /// In that list are 'delta' and 'rewind'. For more information about channel params visit
         /// https://www.ably.io/documentation/realtime/channel-params.
         /// </summary>
-        public ChannelParams Params = new ChannelParams();
+        public ChannelParams Params
+        {
+            get => _params;
+            set => _params = value ?? new ChannelParams();
+        }
 
         /// <summary>
         /// Channel Modes like Params are passed to the server when attaching the channel.
         /// They let specify how the channel will behave and what is allowed. <see cref="ChannelMode"/>.
         /// </summary>
-        public ChannelModes Modes = new ChannelModes();
+        public ChannelModes Modes
+        {
+            get => _modes;
+            set => _modes = value ?? new ChannelModes();
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChannelOptions"/> class.

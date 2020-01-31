@@ -244,6 +244,73 @@ namespace IO.Ably.Tests.Realtime
             Assert.False(enumerator.MoveNext());
         }
 
+        [Fact]
+        [Trait("spec", "RTS3c")]
+        public async Task WithExistingChannel_Get_WithNewChannelOptions_WillUpdateChannelOptions()
+        {
+            var client = GetClientWithFakeTransport(options => options.AutoConnect = false);
+
+            var channelOptions1 = new ChannelOptions(true);
+            var channelOptions2 = new ChannelOptions(false);
+            var channel = client.Channels.Get("Test", channelOptions1);
+            var channel2 = client.Channels.Get("Test", channelOptions2);
+
+            channel.Should().BeSameAs(channel2);
+            channel2.Options.Should().BeSameAs(channelOptions2);
+        }
+
+        [Fact]
+        [Trait("spec", "RTS3c1")]
+        public async Task WithExistingChannel_Get_WithNewChannelOptionsButMatchingModesAndParams_WillUpdateChannelOptions()
+        {
+            var client = await GetConnectedClient();
+
+            var channelOptions1 = new ChannelOptions(true)
+            {
+                Modes = new ChannelModes(ChannelMode.Presence, ChannelMode.Publish),
+                Params = { { "test", "best" }, { "best", "test" } },
+            };
+            var channelOptions2 = new ChannelOptions(false)
+            {
+                Modes = new ChannelModes(ChannelMode.Publish, ChannelMode.Presence),
+                Params = { { "best", "test" }, { "test", "best" }, },
+            };
+            var channel = client.Channels.Get("Test", channelOptions1);
+            // Make the channel attaching
+            channel.Attach();
+            await channel.WaitForState(ChannelState.Attaching);
+            var channel2 = client.Channels.Get("Test", channelOptions2);
+
+            channel.Should().BeSameAs(channel2);
+            channel2.Options.Should().BeSameAs(channelOptions2);
+        }
+
+        [Fact]
+        [Trait("spec", "RTS3c")]
+        public async Task WithExistingChannel_Get_WithNewChannelOptionsButDifferentModesAndParams_WillUpdateChannelOptions()
+        {
+            var client = await GetConnectedClient();
+
+            var channelOptions1 = new ChannelOptions(true)
+            {
+                Modes = new ChannelModes(ChannelMode.Presence, ChannelMode.Publish),
+                Params = { { "test", "best" }, },
+            };
+            var channelOptions2 = new ChannelOptions(false)
+            {
+                Modes = new ChannelModes(ChannelMode.Presence, ChannelMode.Publish),
+            };
+            var channel = client.Channels.Get("Test", channelOptions1);
+            // Make the channel attaching
+            channel.Attach();
+            await channel.WaitForState(ChannelState.Attaching);
+            var ex = Assert.Throws<AblyException>(() => client.Channels.Get("Test", channelOptions2));
+
+            ex.ErrorInfo.Code.Should().Be(40000);
+            ex.Message.Should().Contain("SetOptions");
+        }
+
+
         public ChannelsSpecs(ITestOutputHelper output)
             : base(output)
         {
