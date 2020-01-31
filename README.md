@@ -35,7 +35,7 @@ Here is a list of the significant changes. You can find a full list in the relea
 * [Xamarin.iOS 11.4+](https://developer.xamarin.com/releases/ios/xamarin.ios_11/xamarin.ios_11.4/)
 
 &ast; To target Windows 7 (with .Net 4.6) a custom [ITransportFactory](https://github.com/ably/ably-dotnet/blob/master/src/IO.Ably.Shared/Transport/ITransport.cs) will need to be implemented in your project that uses an alternate Web Socket library. 
-This is because [System.Net.WebSockets]('https://msdn.microsoft.com/en-us/library/system.net.websockets(v=vs.110).aspx') is not fully implementented on Windows 7.
+This is because [System.Net.WebSockets]('https://msdn.microsoft.com/en-us/library/system.net.websockets(v=vs.110).aspx') is not fully implemented on Windows 7.
 See [this repository](https://github.com/ably-forks/ably-dotnet-alternative-transports) for a working example using the [websocket4net library](https://github.com/kerryjiang/WebSocket4Net).
 
 &ast;&ast; We regression-test the library against .NET Core 2 and .Net Framework 4.6.2. If you find any compatibility issues, please do [raise an issue](https://github.com/ably/ably-dotnet/issues) in this repository or contact Ably customer support for advice. Any known runtime incompatibilities can be found [here](https://github.com/ably/ably-dotnet/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
@@ -50,20 +50,19 @@ Unity support is currently in beta. See below for details on why it's considered
 
 Shortcomings & considerations:
 
-* This library is only tested manually on Unity. We do not yet have automated tests running on the Unity platform.
-* Installation requires developers to manually set up the library
+* This library is only tested manually on Unity for Windows. We do not yet have automated tests running on the Unity platform.
+* Installation requires developers to import a custom unity packages that includes all of Ably's dependencies.
 
 Unity Requirements:
 
 - Unity 2018.2.0 or newer
 - The following Unity Player settings must be applied:
-  - Scripting Runtime Version should be '.NET 4.x Equivelant'
+  - Scripting Runtime Version should be '.NET 4.x Equivalent'
   - Api Compatibility Level should be '.NET Standard 2.0'
-- Json.NET 9.0.1 or newer. If you are targetting macOS or iOS (or other platforms that require the IL2CPP scripting backend) then a version of Json.NET that has been modified to work with an AOT compiler is required, we have had success with [Json.Net.Unity3D](https://github.com/SaladLab/Json.Net.Unity3D)
 
-The .NET Standard build of ably-dotnet (IO.Ably.dll) needs to be added the asset folder of your Unity project.
-As Unity does not support Nuget out of the box we currently recommend building ably-dotnet from source, although it should be possible to [extract the required assembly from the nuget package](https://articles.runtings.co.uk/2014/09/easily-extracting-nupkg-files-with.html) or use a [3rd party Nuget extension for Unity](https://assetstore.unity.com/packages/tools/utilities/nuget-for-unity-104640), but those options are beyond the scope of this document. To build from source clone this repository and build the IO.Ably.NETStandard20 project, this can be done from Visual Studio by opening the IO.Ably.sln file or via the command line. To build via the comandline `cd` to `ably-dotnet/src/IO.Ably.NETStandard20/` and run `dotnet build`, the build output can then be found in `ably-dotnet/src/IO.Ably.NETStandard20/bin/Release/netstandard2.0`, navigate there to obtain the required `IO.Ably.dll`.
-Finally, install a compatible version of Json.NET into your Unity projects asset folder (e.g. [Json.Net.Unity3D](https://github.com/SaladLab/Json.Net.Unity3D)).
+Please download the latest unity package from the [github releases page](https://github.com/ably/ably-dotnet/releases). All releases from 1.1.16 will include a unity package as well.
+
+Implementation note for Unity. The library creates a number of threads and all callbacks are executed on non UI threads. This makes it difficult to update UI elements inside any callback executed by Ably. To make it easier we still support capturing the SynchronizationContext and synchronizing callbacks to the UI thread. This is OK for smaller projects and can be enabled using the following Client option `CaptureCurrentSynchronizationContext`. Even thought the setting is deprecated it will not be removed.
 
 ### Unsupported platforms
 
