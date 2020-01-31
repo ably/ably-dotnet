@@ -9,18 +9,29 @@ namespace IO.Ably
 {
     internal class Platform : IPlatform
     {
+        internal static bool _hookedUpToNetworkEvents = false;
+        private static readonly object _lock = new object();
+
         public string PlatformId => "uwp";
 
         public ITransportFactory TransportFactory => null;
 
-        static Platform()
+        public void RegisterOsNetworkStateChanged()
         {
-            NetworkInformation.NetworkStatusChanged += sender =>
+            lock (_lock)
+            {
+                if (_hookedUpToNetworkEvents == false)
                 {
-                    ConnectionProfile InternetConnectionProfile = NetworkInformation.GetInternetConnectionProfile();
-                    Connection.NotifyOperatingSystemNetworkState(
-                        InternetConnectionProfile == null ? NetworkState.Offline : NetworkState.Online);
-                };
+                    NetworkInformation.NetworkStatusChanged += sender =>
+                    {
+                        ConnectionProfile InternetConnectionProfile = NetworkInformation.GetInternetConnectionProfile();
+                        Connection.NotifyOperatingSystemNetworkState(
+                            InternetConnectionProfile == null ? NetworkState.Offline : NetworkState.Online);
+                    };
+                }
+
+                _hookedUpToNetworkEvents = true;
+            }
         }
     }
 }

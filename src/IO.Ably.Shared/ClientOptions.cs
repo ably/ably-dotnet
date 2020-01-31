@@ -297,6 +297,16 @@ namespace IO.Ably
         [Obsolete("We will no longer support the SynchronizationContext in the library. This property will be removed in future versions")]
         public SynchronizationContext CustomContext { get; set; }
 
+        /// <summary>
+        /// Allows developers to control Automatic network state monitoring. When set to `false` the library will not subscribe to
+        /// `NetworkChange.NetworkAvailabilityChanged` events. Developers can manually notify the Connection for changes by calling
+        /// `Connection.NotifyOperatingSystemNetworkState(NetworkState.Online or NetworkState.Offline)`.
+        /// Unity and some Mono environments don't have `NetworkChange.NetworkAvailabilityChanged` event implemented and
+        /// which used to prevent the library from initialising.
+        /// Default: true.
+        /// </summary>
+        public bool AutomaticNetworkStateMonitoring { get; set; } = true;
+
         [JsonIgnore]
         internal Func<DateTimeOffset> NowFunc
         {

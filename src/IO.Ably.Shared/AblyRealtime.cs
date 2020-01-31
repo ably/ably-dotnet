@@ -50,6 +50,11 @@ namespace IO.Ably
             Connection = new Connection(this, options.NowFunc, options.Logger);
             Connection.Initialise();
 
+            if (options.AutomaticNetworkStateMonitoring)
+            {
+                IoC.RegisterOsNetworkStateChanged();
+            }
+
             Channels = new RealtimeChannels(this, Connection);
             RestClient.AblyAuth.OnAuthUpdated = ConnectionManager.OnAuthUpdated;
 

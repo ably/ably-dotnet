@@ -23,6 +23,7 @@ Here is a list of the significant changes. You can find a full list in the relea
 4. IRealtimeClient implements IDisposable - If you want to clean up after the library you can now safely call `Dispose()`. Please note that you can no longer use this instance and have to create a new one.
 5. Logging has been greatly improved. We've removed a lot of verbose messages that brought little value. There is a helpful debug method called `.GetCurrentState()` on the realtime client that will dump the whole library's state as a json string. This will be helpful to include in the support tickets.
 
+
 ## Supported platforms
 
 * .NET 4.6.2+ &ast;
