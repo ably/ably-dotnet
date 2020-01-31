@@ -143,6 +143,35 @@ namespace IO.Ably.Tests.Realtime
 
         [Theory]
         [ProtocolData]
+        [Trait("spec", "RTL4j2")]
+        public async Task TestAttachResume_And_RewindParam(Protocol protocol)
+        {
+            var client = await GetRealtimeClient(protocol);
+            var client1 = await GetRealtimeClient(protocol, (opts, _) => opts.AutoConnect = false);
+            var client2 = await GetRealtimeClient(protocol, (opts, _) => opts.AutoConnect = false);
+
+            var channel = client.Channels.Get("Test");
+            await channel.PublishAsync("test", "test");
+
+            var channelWithAttachResume = client1.Channels.Get("Test", new ChannelOptions().WithRewind(1)) as RealtimeChannel;
+            channelWithAttachResume.AttachResume = true;
+            var channel1Messages = new List<Message>();
+            channelWithAttachResume.Subscribe(channel1Messages.Add);
+            await channelWithAttachResume.WaitForState(ChannelState.Attached);
+            var channelWithoutAttachResume = client2.Channels.Get("Test", new ChannelOptions().WithRewind(1));
+
+            var channel2Messages = new List<Message>();
+            channelWithoutAttachResume.Subscribe(channel2Messages.Add);
+            await channelWithoutAttachResume.WaitForState(ChannelState.Attached);
+
+            await Task.Delay(2000);
+
+            channel2Messages.Should().HaveCount(1);
+            channel1Messages.Should().BeEmpty();
+        }
+
+        [Theory]
+        [ProtocolData]
         [Trait("spec", "RTC1a")]
         public async Task TestAttachChannel_Sending3Messages_EchoesItBack(Protocol protocol)
         {
