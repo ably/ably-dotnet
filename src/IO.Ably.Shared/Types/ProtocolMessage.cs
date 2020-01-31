@@ -59,10 +59,11 @@ namespace IO.Ably.Types
             Resumed = 1 << 2,
             HasLocalPresence = 1 << 3,
             Transient = 1 << 4,
+            AttachResume = 1 << 5,
             Presence = 1 << 16,
             Publish = 1 << 17,
             Subscribe = 1 << 18,
-            PresenceSubscribe = 1 << 19
+            PresenceSubscribe = 1 << 19,
 #pragma warning restore SA1602 // Enumeration items should be documented
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         }
